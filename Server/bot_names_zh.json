@@ -1,0 +1,368 @@
+{
+    "fte_optimus_gs_t3": {
+        "en": "Optimus Prime",
+        "zh": "G1擎天柱",
+        "faction": "汽车人",
+        "note": "G1 经典战术系"
+    },
+    "fte_stars_gs_t3": {
+        "en": "Starscream",
+        "zh": "红蜘蛛",
+        "faction": "霸天虎",
+        "note": "G1 经典战术系"
+    },
+    "arcee_gs_deluxe2014": {
+        "en": "Arcee",
+        "zh": "阿尔茜",
+        "faction": "汽车人",
+        "note": "勇士系"
+    },
+    "blaster_gs_leader2016": {
+        "en": "Blaster",
+        "zh": "录音机",
+        "faction": "汽车人",
+        "note": "科技系"
+    },
+    "bumblebee_cin_dotm": {
+        "en": "Bumblebee (DOTM)",
+        "zh": "大黄蜂",
+        "faction": "汽车人",
+        "note": "真人电影3·月黑之时"
+    },
+    "bumblebee_gs_kabam": {
+        "en": "Bumblebee",
+        "zh": "小黄蜂",
+        "faction": "汽车人",
+        "note": "经典G1 侦察系"
+    },
+    "cheetor_bw_transmetal": {
+        "en": "Cheetor",
+        "zh": "黄豹",
+        "faction": "汽车人",
+        "note": "超能勇士·金属变异"
+    },
+    "cliffjumper_gs_kabam": {
+        "en": "Cliffjumper",
+        "zh": "飞过山",
+        "faction": "汽车人",
+        "note": "经典G1 爆破系"
+    },
+    "dinobot_bw_kabam": {
+        "en": "Dinobot",
+        "zh": "恐龙勇士",
+        "faction": "汽车人",
+        "note": "超能勇士 战术系"
+    },
+    "drift_cin_aoe": {
+        "en": "Drift",
+        "zh": "漂移",
+        "faction": "汽车人",
+        "note": "真人电影4·绝迹重生"
+    },
+    "grimlock_gs_mp08": {
+        "en": "Grimlock",
+        "zh": "钢锁",
+        "faction": "汽车人",
+        "note": "恐龙派领袖 格斗系"
+    },
+    "hotrod_cin_tlk": {
+        "en": "Hot Rod",
+        "zh": "热破",
+        "faction": "汽车人",
+        "note": "真人电影5·最后的骑士"
+    },
+    "hound_cin_tlk": {
+        "en": "Hound",
+        "zh": "探长",
+        "faction": "汽车人",
+        "note": "真人电影5·最后的骑士"
+    },
+    "ironhide_cin_rotf": {
+        "en": "Ironhide (ROTF)",
+        "zh": "电影铁皮",
+        "faction": "汽车人",
+        "note": "真人电影2·卷土重来"
+    },
+    "ironhide_gs_kabam": {
+        "en": "Ironhide",
+        "zh": "G1铁皮",
+        "faction": "汽车人",
+        "note": "经典G1 格斗系"
+    },
+    "jazz_gs_twm05": {
+        "en": "Jazz",
+        "zh": "爵士",
+        "faction": "汽车人",
+        "note": "经典G1 侦察系"
+    },
+    "jetfire_gs_leader2014": {
+        "en": "Jetfire",
+        "zh": "天火",
+        "faction": "汽车人",
+        "note": "经典G1 科技系"
+    },
+    "mirage_gs_deluxe2016": {
+        "en": "Mirage",
+        "zh": "幻影",
+        "faction": "汽车人",
+        "note": "经典G1 科技系"
+    },
+    "optimusprimal_bw_mp32": {
+        "en": "Optimus Primal",
+        "zh": "猩猩队长",
+        "faction": "汽车人",
+        "note": "超能勇士 巨无霸领袖"
+    },
+    "optimusprime_cin_tf": {
+        "en": "Optimus Prime (MV1)",
+        "zh": "电影擎天柱",
+        "faction": "汽车人",
+        "note": "真人电影1代 格斗系"
+    },
+    "prowl_gs_deluxe2016": {
+        "en": "Prowl",
+        "zh": "警车",
+        "faction": "汽车人",
+        "note": "经典G1 侦察系"
+    },
+    "ratchet_gs_kabam": {
+        "en": "Ratchet",
+        "zh": "救护车",
+        "faction": "汽车人",
+        "note": "经典G1 科技系"
+    },
+    "rhinox_gs_voyager2014": {
+        "en": "Rhinox",
+        "zh": "犀牛",
+        "faction": "汽车人",
+        "note": "超能勇士 科技系"
+    },
+    "rodimusprime_gs_mp09": {
+        "en": "Rodimus Prime",
+        "zh": "补天士",
+        "faction": "汽车人",
+        "note": "经典G1 战术系"
+    },
+    "sideswipe_gs": {
+        "en": "Sideswipe",
+        "zh": "横炮",
+        "faction": "汽车人",
+        "note": "经典G1 侦察系"
+    },
+    "sunstreaker_gs_deluxe2008": {
+        "en": "Sunstreaker",
+        "zh": "飞毛腿",
+        "faction": "汽车人",
+        "note": "经典G1 格斗系"
+    },
+    "ultramagnus_gs_leader": {
+        "en": "Ultra Magnus",
+        "zh": "通天晓",
+        "faction": "汽车人",
+        "note": "经典G1 战术系"
+    },
+    "wheeljack_gs_mp20": {
+        "en": "Wheeljack",
+        "zh": "千斤顶",
+        "faction": "汽车人",
+        "note": "经典G1 科技系"
+    },
+    "windblade_gs": {
+        "en": "Windblade",
+        "zh": "风刃",
+        "faction": "汽车人",
+        "note": "风刃 勇士系"
+    },
+    "barricade_cin_dotm": {
+        "en": "Barricade",
+        "zh": "路障",
+        "faction": "霸天虎",
+        "note": "真人电影3·月黑之时"
+    },
+    "bludgeon_gs_rd20": {
+        "en": "Bludgeon",
+        "zh": "雷震",
+        "faction": "霸天虎",
+        "note": "武士浪人 勇士系"
+    },
+    "bonecrusher_cin_rotf": {
+        "en": "Bonecrusher",
+        "zh": "碎骨魔",
+        "faction": "霸天虎",
+        "note": "真人电影2·卷土重来"
+    },
+    "cyclonus_gs_uw06": {
+        "en": "Cyclonus",
+        "zh": "狂飙",
+        "faction": "霸天虎",
+        "note": "经典G1 战术系"
+    },
+    "dirge_gs_deluxe2008": {
+        "en": "Dirge",
+        "zh": "挽歌",
+        "faction": "霸天虎",
+        "note": "挽歌 勇士系"
+    },
+    "galvatron_gs_voyager2016": {
+        "en": "Galvatron",
+        "zh": "惊破天",
+        "faction": "霸天虎",
+        "note": "经典G1 爆破系"
+    },
+    "grindor_cin_rotf": {
+        "en": "Grindor",
+        "zh": "碾碎器",
+        "faction": "霸天虎",
+        "note": "真人电影2 (眩晕同型)"
+    },
+    "kickback_gs_kabam": {
+        "en": "Kickback",
+        "zh": "反冲",
+        "faction": "霸天虎",
+        "note": "昆虫部队 侦察系"
+    },
+    "megatron_cin_rotf": {
+        "en": "Megatron (ROTF)",
+        "zh": "电影威震天",
+        "faction": "霸天虎",
+        "note": "真人电影2·卷土重来 坦克型"
+    },
+    "megatron_gs_leader2015": {
+        "en": "Megatron",
+        "zh": "G1威震天",
+        "faction": "霸天虎",
+        "note": "经典G1 战术系"
+    },
+    "megatronus_gs_kabam": {
+        "en": "Megatronus",
+        "zh": "震天尊",
+        "faction": "霸天虎",
+        "note": "十三元祖 震天尊"
+    },
+    "mixmaster_cin_rotf": {
+        "en": "Mixmaster",
+        "zh": "搅拌者",
+        "faction": "霸天虎",
+        "note": "大力神挖掘部队 爆破系"
+    },
+    "motormaster_gs_voyager2015": {
+        "en": "Motormaster",
+        "zh": "汽车大师",
+        "faction": "霸天虎",
+        "note": "飞虎队领袖 格斗系"
+    },
+    "necrotronus_gs_kabam": {
+        "en": "Necrotronus",
+        "zh": "亡灵天尊",
+        "faction": "霸天虎",
+        "note": "殁天仇 勇士系"
+    },
+    "nemesisprime_gs_voyager2015": {
+        "en": "Nemesis Prime",
+        "zh": "暗天陨",
+        "faction": "霸天虎",
+        "note": "暗黑煞 战术系"
+    },
+    "ramjet_gs_deluxe2008": {
+        "en": "Ramjet",
+        "zh": "冲锋",
+        "faction": "霸天虎",
+        "note": "经典G1 爆破系"
+    },
+    "scorponok_bw_kabam": {
+        "en": "Scorponok",
+        "zh": "巨蝎勇士",
+        "faction": "霸天虎",
+        "note": "超能勇士 原始兽"
+    },
+    "shockwave_gs": {
+        "en": "Shockwave",
+        "zh": "震荡波",
+        "faction": "霸天虎",
+        "note": "经典G1 科技系"
+    },
+    "skywarp_gs_leader2015": {
+        "en": "Skywarp",
+        "zh": "闹翻天",
+        "faction": "霸天虎",
+        "note": "经典G1 科技系"
+    },
+    "slipstream_gs": {
+        "en": "Slipstream",
+        "zh": "滑流",
+        "faction": "霸天虎",
+        "note": "狂派女寻猎者 侦察系"
+    },
+    "soundblaster_gs_mp13b": {
+        "en": "Soundblaster",
+        "zh": "音板",
+        "faction": "霸天虎",
+        "note": "录音板 爆破系"
+    },
+    "soundwave_gs": {
+        "en": "Soundwave",
+        "zh": "声波",
+        "faction": "霸天虎",
+        "note": "经典G1 科技系"
+    },
+    "thundercracker_gs_leader2015": {
+        "en": "Thundercracker",
+        "zh": "惊天雷",
+        "faction": "霸天虎",
+        "note": "经典G1 格斗系"
+    },
+    "tantrum_gs_kabam": {
+        "en": "Tantrum",
+        "zh": "野牛",
+        "faction": "霸天虎",
+        "note": "巨兽部队 格斗系"
+    },
+    "waspinator_gs_deluxe": {
+        "en": "Waspinator",
+        "zh": "黄蜂勇士",
+        "faction": "霸天虎",
+        "note": "超能勇士 爆破系"
+    },
+    "sharkticon_gs_kabam": {
+        "en": "Sharkticon",
+        "zh": "饿鲨1000",
+        "faction": "杂兵 (Sharkticon)",
+        "note": "五面怪侍卫"
+    },
+    "sharkticon_gs_brawler": {
+        "en": "Sharkticon (Brawler)",
+        "zh": "饿鲨",
+        "faction": "杂兵 (Sharkticon)",
+        "note": "格斗系"
+    },
+    "sharkticon_gs_demolition": {
+        "en": "Sharkticon (Demolition)",
+        "zh": "饿鲨",
+        "faction": "杂兵 (Sharkticon)",
+        "note": "爆破系"
+    },
+    "sharkticon_gs_scout": {
+        "en": "Sharkticon (Scout)",
+        "zh": "饿鲨",
+        "faction": "杂兵 (Sharkticon)",
+        "note": "侦察系"
+    },
+    "sharkticon_gs_tactician": {
+        "en": "Sharkticon (Tactician)",
+        "zh": "饿鲨",
+        "faction": "杂兵 (Sharkticon)",
+        "note": "战术系"
+    },
+    "sharkticon_gs_tech": {
+        "en": "Sharkticon (Tech)",
+        "zh": "饿鲨",
+        "faction": "杂兵 (Sharkticon)",
+        "note": "科技系"
+    },
+    "sharkticon_gs_warrior": {
+        "en": "Sharkticon (Warrior)",
+        "zh": "饿鲨",
+        "faction": "杂兵 (Sharkticon)",
+        "note": "勇士系"
+    }
+}
