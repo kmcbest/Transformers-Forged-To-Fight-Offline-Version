@@ -34,3 +34,4 @@
 *.png
 generate_compliance_img.py
 generate_changelog_img.py
+assets_netflix/

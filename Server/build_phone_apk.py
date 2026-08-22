@@ -272,6 +272,67 @@ def build(
                 data = hook
             elif info.filename == wanted_il2cpp and replacement_il2cpp is not None:
                 data = replacement_il2cpp
+            elif info.filename == "assets/assetpack/characters/moves.assetbundle":
+                mpath = Path("assets_netflix/moves.assetbundle")
+                if mpath.exists():
+                    data = mpath.read_bytes()
+            elif info.filename == "assets/assetpack/characters_procedural_odr/character_anim_procedural.assetbundle":
+                panimpath = Path("assets_netflix/character_anim_procedural.assetbundle")
+                if panimpath.exists():
+                    data = panimpath.read_bytes()
+            elif info.filename == "assets/assetpack/characters_procedural_odr/character_audio_procedural.assetbundle":
+                paudiopath = Path("assets_netflix/character_audio_procedural.assetbundle")
+                if paudiopath.exists():
+                    data = paudiopath.read_bytes()
+            elif info.filename == "assets/assetpack/characters_procedural_odr/character_matinee_procedural.assetbundle":
+                pmatpath = Path("assets_netflix/character_matinee_procedural.assetbundle")
+                if pmatpath.exists():
+                    data = pmatpath.read_bytes()
+            elif info.filename == "assets/packs.txt":
+                try:
+                    pdict = json.loads(data.decode("utf-8"))
+                    packs = pdict.get("packs", {})
+                    for pkey in [
+                        "chromia_gs_kabam_odr",
+                        "deadend_gs_deluxe2015_odr",
+                        "optimusprime_gs_v_odr",
+                        "starscream_gs_odr",
+                    ]:
+                        packs[pkey] = pkey
+                    pdict["packs"] = packs
+                    data = json.dumps(pdict, indent=4).encode("utf-8")
+                except Exception:
+                    pass
+            elif info.filename == "assets/portraits_odr/toc.txt":
+                try:
+                    ptoc = json.loads(data.decode("utf-8"))
+                    flist = ptoc.get("files", [])
+                    for pentry in [
+                        "portraits/portrait_chromia_gs_large.png",
+                        "portraits/portrait_chromia_gs_small.jpg",
+                        "portraits/portrait_deadend_gs_large.png",
+                        "portraits/portrait_deadend_gs_small.jpg",
+                    ]:
+                        if pentry not in flist:
+                            flist.append(pentry)
+                    ptoc["files"] = flist
+                    data = json.dumps(ptoc, indent=4).encode("utf-8")
+                except Exception:
+                    pass
+            elif info.filename == "assets/dialogue_odr/toc.txt":
+                try:
+                    dtoc = json.loads(data.decode("utf-8"))
+                    flist = dtoc.get("files", [])
+                    for dentry in [
+                        "dialogue/chromia_gs.png",
+                        "dialogue/deadend_gs.png",
+                    ]:
+                        if dentry not in flist:
+                            flist.append(dentry)
+                    dtoc["files"] = flist
+                    data = json.dumps(dtoc, indent=4).encode("utf-8")
+                except Exception:
+                    pass
             zout.writestr(info, data)
         # A pristine APK has no runtime hook entry. Replace it when rebuilding a
         # previous offline APK, or add it here when building from the original.
@@ -280,7 +341,6 @@ def build(
 
         # Ensure G1 Optimus Prime and G1 Starscream ODR packages are registered and available
         if char_bundle_data is not None:
-            
             # Optimus Prime G1
             op_bundle_path = "assets/assetpack/optimusprime_gs_v_odr/optimusprime_gs_v.assetbundle"
             op_toc_path = "assets/optimusprime_gs_v_odr/toc.txt"
@@ -330,6 +390,74 @@ def build(
                     "files": [], "pad": {"deliverymode": 1, "assetpack": "default"}, "version": "9.2.0"
                 }, indent=4)
                 zout.writestr(ss_toc_path, ss_toc_json)
+
+        # Inject Netflix Edition characters: Chromia and Dead End
+        netflix_dir = Path("assets_netflix")
+        if netflix_dir.is_dir():
+            chromia_bundle = netflix_dir / "chromia_gs_kabam.assetbundle"
+            if chromia_bundle.exists():
+                cdata = chromia_bundle.read_bytes()
+                zout.writestr("assets/assetpack/chromia_gs_kabam_odr/chromia_gs_kabam.assetbundle", cdata)
+                chromia_mf = netflix_dir / "chromia_gs_kabam.assetbundle.manifest"
+                if chromia_mf.exists():
+                    zout.writestr("assets/assetpack/chromia_gs_kabam_odr/chromia_gs_kabam.assetbundle.manifest", chromia_mf.read_bytes())
+                chromia_toc = json.dumps({
+                    "tags": [], "pack": "chromia_gs_kabam_odr", "scenes": {},
+                    "bundles": {
+                        "chromia_gs_kabam": {
+                            "crc": 0, "compression": "LZ4", "typetreehash": None,
+                            "file": "chromia_gs_kabam_odr/chromia_gs_kabam.assetbundle",
+                            "ts": 637933503540000000, "deterministic": False, "manifest": "manifest_main",
+                            "paths": {
+                                "bundles/characters/merged/chromia_gs_kabam_lw": "Assets/Bundles/Characters/Merged/Chromia_GS_Kabam/Chromia_GS_Kabam_lw.prefab",
+                                "bundles/characters/merged/chromia_gs_kabam": "Assets/Bundles/Characters/Merged/Chromia_GS_Kabam/Chromia_GS_Kabam.prefab"
+                            },
+                            "directory": "odr", "deps": ["character_fx", "moves", "character_audio"],
+                            "contenthash": None, "size": len(cdata), "hash": 0, "parent": "", "mount": "None"
+                        }
+                    },
+                    "files": [], "pad": {"deliverymode": 1, "assetpack": "default"}, "version": "9.2.0"
+                }, indent=4)
+                zout.writestr("assets/chromia_gs_kabam_odr/toc.txt", chromia_toc)
+
+            deadend_bundle = netflix_dir / "deadend_gs_deluxe2015.assetbundle"
+            if deadend_bundle.exists():
+                ddata = deadend_bundle.read_bytes()
+                zout.writestr("assets/assetpack/deadend_gs_deluxe2015_odr/deadend_gs_deluxe2015.assetbundle", ddata)
+                deadend_mf = netflix_dir / "deadend_gs_deluxe2015.assetbundle.manifest"
+                if deadend_mf.exists():
+                    zout.writestr("assets/assetpack/deadend_gs_deluxe2015_odr/deadend_gs_deluxe2015.assetbundle.manifest", deadend_mf.read_bytes())
+                deadend_toc = json.dumps({
+                    "tags": [], "pack": "deadend_gs_deluxe2015_odr", "scenes": {},
+                    "bundles": {
+                        "deadend_gs_deluxe2015": {
+                            "crc": 0, "compression": "LZ4", "typetreehash": None,
+                            "file": "deadend_gs_deluxe2015_odr/deadend_gs_deluxe2015.assetbundle",
+                            "ts": 637933503540000000, "deterministic": False, "manifest": "manifest_main",
+                            "paths": {
+                                "bundles/characters/merged/deadend_gs_deluxe2015_lw": "Assets/Bundles/Characters/Merged/DeadEnd_GS_Deluxe2015/Deadend_GS_Deluxe2015_lw.prefab",
+                                "bundles/characters/merged/deadend_gs_deluxe2015": "Assets/Bundles/Characters/Merged/DeadEnd_GS_Deluxe2015/Deadend_GS_Deluxe2015.prefab"
+                            },
+                            "directory": "odr", "deps": ["character_fx", "moves", "character_audio"],
+                            "contenthash": None, "size": len(ddata), "hash": 0, "parent": "", "mount": "None"
+                        }
+                    },
+                    "files": [], "pad": {"deliverymode": 1, "assetpack": "default"}, "version": "9.2.0"
+                }, indent=4)
+                zout.writestr("assets/deadend_gs_deluxe2015_odr/toc.txt", deadend_toc)
+
+            # Portraits and Dialogue
+            for fpath, ztarget in [
+                ("portrait_chromia_gs_large.png", "assets/assetpack/portraits_odr/portraits/portrait_chromia_gs_large.png"),
+                ("portrait_chromia_gs_small.jpg", "assets/assetpack/portraits_odr/portraits/portrait_chromia_gs_small.jpg"),
+                ("portrait_deadend_gs_large.png", "assets/assetpack/portraits_odr/portraits/portrait_deadend_gs_large.png"),
+                ("portrait_deadend_gs_small.jpg", "assets/assetpack/portraits_odr/portraits/portrait_deadend_gs_small.jpg"),
+                ("chromia_gs.png", "assets/assetpack/dialogue_odr/dialogue/chromia_gs.png"),
+                ("deadend_gs.png", "assets/assetpack/dialogue_odr/dialogue/deadend_gs.png"),
+            ]:
+                pfile = netflix_dir / fpath
+                if pfile.exists():
+                    zout.writestr(ztarget, pfile.read_bytes())
 
         if payload is not None:
             payload_info = zipfile.ZipInfo(PAYLOAD_ASSET, date_time=(1980, 1, 1, 0, 0, 0))
