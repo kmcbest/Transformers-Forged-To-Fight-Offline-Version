@@ -184,7 +184,7 @@ def base_stats(bid, rank=1, level=1):
 # fight was verified working with these exact numbers, so we preserve them rather than
 # let the authored curve change proven-working entries.
 _MSA_OVERRIDE = {
-    "bumblebee_gs_kabam": 1,
+    "bumblebee_gs_kabam": 3,
     "fte_optimus_gs_t3": 3,
     "fte_stars_gs_t3": 3,
 }
