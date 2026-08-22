@@ -355,8 +355,8 @@ def art_base(bid):
 # Optimus loads the generic placeholder. Optimus -> the movie Optimus Prime bundle; Starscream
 # -> skywarp (the same Seeker jet mold, the closest shipped mesh; there is no Starscream bundle).
 _MODEL_OVERRIDE = {
-    "fte_optimus_gs_t3": "optimusprime_cin_tf",
-    "fte_stars_gs_t3": "skywarp_gs_leader2015",
+    "fte_optimus_gs_t3": "optimusprime_gs_v",
+    "fte_stars_gs_t3": "starscream_gs",
 }
 
 
