@@ -52,6 +52,7 @@ def patch_moves_bundle(bundle_bytes: bytes) -> bytes:
         "fx_p_Chromia_pink_projectile_impact": "fx_p_aqua_projectile_impact",
         "fx_p_chromia_muzzle_flash": "fx_p_dinobot_laser_flash",
         "fx_l_hit_small_Chromia_perceptual_pink": "",
+        "projectile_chromia_bullet": "projectile_ramjet_bullet",
     }
 
     for obj in env.objects:
