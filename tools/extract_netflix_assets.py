@@ -43,16 +43,52 @@ def transcode_assetbundle_to_2020(bundle_bytes: bytes) -> bytes:
     return bf.save(packer="lz4")
 
 
+def patch_chromia_bundle(bundle_bytes: bytes) -> bytes:
+    """Fixes Chromia S3 axe material pointer and projectile PrefabList for Unity 2020."""
+    env = UnityPy.load(bundle_bytes)
+
+    for obj in env.objects:
+        # 1. Update S3 axe SkinnedMeshRenderer material from broken 5363102012143072554 to valid axe material 1952278396157663915
+        if obj.type.name == "SkinnedMeshRenderer":
+            tree = obj.read_typetree()
+            if tree.get("m_Materials") == [{"m_FileID": 0, "m_PathID": 5363102012143072554}]:
+                tree["m_Materials"] = [{"m_FileID": 0, "m_PathID": 1952278396157663915}]
+                obj.save_typetree(tree)
+
+        # 2. Update projectile_chromia_bullet PrefabList to 9.2.0 aqua projectile & impact PathIDs
+        if obj.type.name == "MonoBehaviour" and obj.path_id == 7545326053262791197:
+            tree = obj.read_typetree()
+            tree["PrefabList"] = [
+                {"Prefab": {"m_FileID": 0, "m_PathID": -6431503622299597799}, "Amount": 1},
+                {"Prefab": {"m_FileID": 1, "m_PathID": 1710874057756880304}, "Amount": 1},  # fx_p_aqua_projectile
+                {"Prefab": {"m_FileID": 1, "m_PathID": 8527048721734798431}, "Amount": 1},  # fx_p_aqua_projectile_impact
+            ]
+            obj.save_typetree(tree)
+
+    bf = env.file
+    bf.version = 7
+    bf.version_engine = "2020.3.31f1"
+    bf.version_player = "5.x.x"
+    for sub in bf.files.values():
+        if hasattr(sub, "version"):
+            sub.version = "2020.3f1"
+        if hasattr(sub, "unity_version"):
+            sub.unity_version = "2020.3.31f1"
+
+    return bf.save(packer="lz4")
+
+
 def patch_moves_bundle(bundle_bytes: bytes) -> bytes:
     """Transcodes moves.assetbundle and maps missing particle FX to base particles."""
     env = UnityPy.load(bundle_bytes)
 
     replacements = {
+        "fx_p_chromia_muzzle_flash": "fx_p_aqua_muzzle_flash",
+        "fx_p_dinobot_laser_flash": "fx_p_aqua_muzzle_flash",
         "fx_p_chromia_pink_projectile": "fx_p_aqua_projectile",
         "fx_p_Chromia_pink_projectile_impact": "fx_p_aqua_projectile_impact",
-        "fx_p_chromia_muzzle_flash": "fx_p_dinobot_laser_flash",
         "fx_l_hit_small_Chromia_perceptual_pink": "",
-        "projectile_chromia_bullet": "projectile_ramjet_bullet",
+        "projectile_chromia_bullet_new": "projectile_chromia_bullet",
     }
 
     for obj in env.objects:
@@ -134,7 +170,10 @@ def main():
             dst_file = out_dir / fname
             if fname.endswith(".assetbundle"):
                 print(f"  Transcoding {fname} to Unity 2020 format...")
-                data = transcode_assetbundle_to_2020(data)
+                if fname == "chromia_gs_kabam.assetbundle":
+                    data = patch_chromia_bundle(data)
+                else:
+                    data = transcode_assetbundle_to_2020(data)
             dst_file.write_bytes(data)
             print(f"  Wrote {dst_file} ({len(data)} bytes)")
         else:
