@@ -1,602 +1,146 @@
-# Transformers: Forged to Fight, offline revival handoff
+﻿# Transformers: Forged to Fight - Offline Revival Edition
+## 《变形金刚：百炼为战》离线完全重制版
 
-This package contains a working local offline revival of Transformers: Forged to Fight,
-plus the tools, patches, and reverse-engineering notes used to build it. It is a handoff
-for continuing the much larger task: authoring replacement server-side content from
-scratch. The original online service data is not included or reconstructed here.
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/Platform-Android%20(arm64--v8a%20%7C%20armeabi--v7a)-green.svg)](README.md)
+[![Unity Version](https://img.shields.io/badge/Unity-2020.3.31f1%20(LTS)-orange.svg)](README.md)
+[![Bots Roster](https://img.shields.io/badge/Roster-63%20Bots%20(All%205--Star%20Maxed)-red.svg)](Server/gamedata.py)
 
-Read this whole file before you touch anything. The "Gotchas" section in particular will
-save you days.
+---
 
-For a complete native Windows 7 build of the 32-bit `armeabi-v7a` phone APK,
-including server setup, signing, installation, Wi-Fi, and USB operation, see
-[`WINDOWS_7_ARMV7.md`](WINDOWS_7_ARMV7.md).
+### 💖 致谢与上游项目声明 (Upstream Acknowledgment)
 
+本项目基于原作者 **[Gummygamer / Transformers-Forged-To-Fight-Offline-Version](https://github.com/Gummygamer/Transformers-Forged-To-Fight-Offline-Version)** 的开源逆向工程与离线复活框架构建。
+感谢原作者在 ARM64/ARMv7 IL2CPP 核心八大补丁、Sparx 模拟协议栈、运行时 Inline Hook（`libdothook.so`）以及单 APK 内置伪服务器架构上奠定的坚实基础！
 
-## What actually works right now
+本仓库在此基础上进行了深度的游戏性扩展、数据重构、全中文本地化、战斗引擎与招式判定修复，并开创性地完成了 **Netflix 独占角色与跨版本 Unity 资源向官方 9.2.0 原生架构的完美降级移植**。
 
-The game boots completely offline and reaches the real interactive home screen without a
-live Kabam service. The base, roster, fight-mode selection, crystals screen, popups, and
-tips navigate without crashing. Login and first-time-experience gates complete locally.
-The scripted Optimus-versus-Starscream intro fight is playable through its light-attack
-tutorial, with live 3D characters and combat controls.
+---
 
-The local server also supplies a complete, authored STORY 1.1.1 loop: select a squad,
-enter the primordial board, move between reachable nodes, trigger the final boss,
-choose a bot on the native pre-fight screen, fight the Sharkticon, resolve a win, and
-return to the board. The authored `Light`, `Medium`, `Heavy`, and `Ranged` attack rows
-and combat armor tuning allow landed hits to reduce health. The roster, hero details,
-team selection, and battle model IDs are generated from the same original data source,
-so combat uses the matching 3D mesh instead of a generic placeholder.
-During a STORY fight, the special-attack meter is no longer locked: it charges from landed
-and received hits, and a special attack can be fired for real damage. Every bot has all three
-special-meter segments available immediately.
-On arm64, STORY opponents can also fire their basic ranged attack while outside melee range.
-On arm64, BOTS roster and detail views suppress residual base geometry, and level-3 cinematics
-render and animate the shipped alternate form before restoring robot form. These visual hooks
-are not ported to ARMv7.
+## 🌟 本版本核心重制与增强特性 (Core Enhancements)
 
+### 1. 🤖 全角色 63 位全满阶五星图鉴解锁 (Complete 63-Bot Roster)
+* **全图鉴解锁**：集成官方 9.2.0 的全部 61 位角色 + 2 位 Netflix 独占角色，总计 **63 位金刚全员登场**！
+* **全五星满阶满级**：全员配置顶级五星 5/50 满级属性面板（战力 PI、生命值、基础攻击力、暴击率、暴击伤害与护甲等）。
+* **全技能条开放**：进入战斗即刻解锁全部三段特殊能量槽（S1 / S2 / S3 必杀特写大招）。
+* **职业与阵营精确校正**：
+  * 纠正了全员职业分类与克制关系：**勇士 (Warrior)**、**侦察 (Scout)**、**科技 (Tech)**、**爆破 (Demolitions)**、**战术 (Tactician)**、**格斗 (Brawler)**；
+  * 校准阵营归属：汽车人 (Autobots)、霸天虎 (Decepticons)、巨无霸 (Maximals)、原始兽 (Predacons)。
 
-## What does not work, and why
+### 2. 🇨🇳 全中文本地化支持 (Full Chinese Localization)
+* **官方中文角色名对照**：内置全 63 位角色官方简体中文译名表（[`bot_names_zh.json`](bot_names_zh.json) / [`Server/bot_names_zh.json`](Server/bot_names_zh.json)）。
+* **本地化界面适配**：修复职业名称、阵营标签、更新公告以及合规声明的中文本地化图文呈现。
 
-This is a playable preservation sandbox, not a complete replacement for the original game.
-The single STORY mission, `1.1.1` "Arrival", now walks an 11-tile path with ten authored
-encounters: nine escalating enemy lineups and a final boss. The mission also carries
-authored dialogue sets. Match resolution currently uses the minimal success response required
-to return to the board; completed progression, rewards, and quest state are not persisted.
-Per-bot ability effects, additional missions and enemy lineups beyond Arrival, the economy,
-and most progression systems remain to be authored.
+### 3. 🎬 Netflix 独占角色深度集成 (Netflix Exclusive Bots: Chromia & Dead End)
+* **克劳莉娅（Chromia）**：汽车人阵营 / 勇士系（Warrior），手持标志性能量战斧与专属小手枪！
+* **封锁（Dead End）**：霸天虎阵营 / 爆破系（Demolitions），配备专属近战霰弹与重火力轰炸！
+* **跨版本 UnityFS 格式降级引擎**：
+  * Netflix 独占版采用 **Unity 2021.3.39f1 (UnityFS v8)**，而官方 9.2.0 运行在 **Unity 2020.3.31f1 (UnityFS v7)**；
+  * 本项目开发了自动化跨版本 AssetBundle 降级转码引擎，重构 BlockInfo/DirectoryInfo 寻址表与 LZ4 压缩块，完美解决高版本资源在 9.2.0 下无限加载死循环与无法识别的底层兼容难题。
+* **完整 ODR 资源挂载与动态注册**：
+  * 自动补丁 `packs.txt` 注册表与 `.manifest` 校验文件，让两名全新角色在基地展台、战斗选人与实机对抗中完美加载 3D 专属模型，彻底告别鲨鱼精（Sharkticon）替身兜底。
 
-Forged to Fight was fully server authoritative. The app on the phone is essentially a
-screen with controls. Almost nothing about the game lived in the app. Every mission, every
-fight, every enemy lineup, the entire roster's stats and abilities, the economy, and all
-the balance lived on Kabam's servers and were streamed to the device each session. When
-the servers were shut down in early 2020 that content database went with them, and it was
-never released or publicly archived anywhere I can reach.
+### 4. ⚔️ 战斗系统、招式判定与渲染全修复 (Combat & Visual Fixes)
+* **招式碰撞盒与时间轴（Hitbox & Moves Timeline）修复**：
+  * 转码并注入完整 `moves.assetbundle` 与程序化动作库；
+  * 彻底修复**封锁（Dead End）**近战多段连击中途挥空、打不到敌人的碰撞判定问题；
+  * 彻底解决两名新角色释放完 S1/S2/S3 特殊必杀技后双方原地僵直发呆、战斗无法继续的状态机卡死缺陷。
+* **克劳莉娅小手枪与连续射击修复**：
+  * 修复专属子弹实体 `projectile_chromia_bullet` 与 `PrefabList` 弹道关联，精准映射至 9.2.0 原生水蓝色能量光束（`fx_p_aqua_projectile` 与 `fx_p_aqua_projectile_impact`）；
+  * 替换枪口火花为瞬时自毁特效（`fx_p_aqua_muzzle_flash`），彻底解决开火后手上粘滞一大团持续喷射绿光的 BUG；
+  * 修复射击生命周期与状态机复位，支持开局、近战交手后再后撤的**无限轮次持续开火与后撤射击连招**。
+* **S3 大招战斧材质与紫模（Error Shader）修复**：
+  * 修正克劳莉娅 S3 大招特写中投掷插地战斧的材质引用（重定向至正常武器金属材质 `1952278396157663915`）；
+  * 彻底清除 Unity 2021 残留 Shader Blob 导致的粉紫色报错 Shader，呈现真实细腻的金属反射与贴图光影。
+* **原生高清 Shader 保护机制**：
+  * 保持官方 9.2.0 原生 `character_fx.assetbundle` 的纯净性，彻底杜绝所有标准角色战斗时光效与子弹变成粉紫色色块的问题。
 
-The client can load art and audio from a copy of the app that the operator supplies. What
-is missing is the server data that selected those assets, assembled fights and missions,
-and defined stats and abilities. This project supplies only new, hand-authored data in
-the shapes the client parses; it does not include the APK, game assets, original binaries,
-or captured game audiovisual material. See `COMPLIANCE.md` before extending it.
+### 5. 📱 纯单机单 APK 内置免联网架构 (Standalone In-APK Server)
+* **内置回环服务器**：单 APK 内部集成完整离线 Python HTTP 伪服务器（Port 8080），内置压缩后的 `tftf_offline_payload.bin` 响应载荷。
+* **零配置即装即玩**：通过 `libdothook.so` + `libil2cpp-arm64-patched.so` 自动将游戏内全部 API 请求重定向至 `127.0.0.1:8080`；
+* **无需电脑、无需外挂 Python、无需 Wi-Fi、无需 Root**，安装后随时随地开机秒进游戏！
 
+---
 
-## How the offline boot works
+## 🛠️ 全自动化资产提取与转码工具 (Automated Tooling)
 
-There are four moving parts. Together they let the unmodified game think it is talking to
-Kabam.
+为了完全遵循开源合规免责原则，仓库**不直接携带任何受版权保护的商业游戏音画资源**，而是提供了全自动化的提取转码工具 [`tools/extract_netflix_assets.py`](tools/extract_netflix_assets.py)。
 
-1. Native binary patches. The game is Unity IL2CPP, so the logic lives in a compiled ARM
-   library, `libil2cpp.so`, not in editable script files. `patches/patch_il2cpp.lbl` rewrites
-   eight functions in that library to get past the dead server checks: it defeats two
-   certificate pinning paths so our own TLS cert is accepted, forces the manager
-   registration block to run even though the live config is null, lets login succeed with
-   our local device session, and silences the subsystem fatal errors that would otherwise
-   pop the "failed to log in" dialog. The last two stub the Unity reachability getter and the
-   endpoint's connectivity check, so the client will talk to the bundled loopback server on a
-   phone with no Wi-Fi access point. It also re-injects a single dependency entry (see the
-   Gotchas section) so the runtime hook actually loads. The output is `libil2cpp.patched.so`.
-
-2. A fake Sparx server. `Server/fakeserver.lbl` stands in for Kabam's backend. It listens on
-   TLS 443 and plain HTTP 80 and answers the game's API calls. Canned responses live in
-   `Server/responses/`, one file per endpoint, named by method and path, for example
-   `GET__account_data.json`. A few endpoints are answered dynamically in code rather than
-   from a file, because the game expects them to echo values from the request (the tutorial
-   endpoints and the hero detail endpoint). The response envelope is
-   `{"error":null,"result": ...}`. Note that inside Sparx error payloads the field is spelled
-   `err`, not `error`. That detail matters and is easy to miss.
-
-3. A native runtime hook. `tools/nativehook/` builds `libdothook.so`, a small library that is
-   loaded into the game at startup and logs every data key the game reads, plus a couple of
-   targeted behavior nudges. This is the feedback loop that made everything else possible: it
-   tells you exactly what the game is asking for so you can synthesize a response and verify
-   it. It is a pure byte overwrite inline hook installed before execution, because the normal
-   tool for this (Frida) crashes under the emulator's ARM translation layer.
-
-4. Device wiring. The emulator has to send Kabam's domains to the PC and trust the fake
-   cert. `tools/provision_ldplayer.sh` does this in one shot: it pushes the patched library
-   and the hook, redirects the Kabam hostnames to the PC's LAN address via the hosts file,
-   mounts the fake CA into the system trust store, and relaxes SELinux. Run it after every
-   emulator restart, because those mounts do not survive a reboot.
-
-The data flow at runtime is: game makes an HTTPS call to a Kabam domain, the hosts file
-sends it to the PC, the fake server answers with a response from `Server/responses/`, the
-patched library accepts the cert and the answer, and the hook logs what was read. That loop
-is how every screen in this build was brought up.
-
-
-## What is in this package
-
-```
-README.md                     this file
-COMPLIANCE.md                 copyright, trademark, and security boundaries for the project
-TECHNICAL_NOTES.md            the deeper technical reference: patches, recovered data shapes, findings
-patches/
-  patch_il2cpp.lbl            the eight native patches plus the dependency re-injection
-  abi_map.lbl                 translate arm64 addresses and field offsets to armeabi-v7a
-  disasm_fn.lbl               helper: disassemble a function at an offset
-  find_callers.lbl            helper: find callers of a function
-  find_str_ref.lbl            helper: find references to a string
-Server/
-  fakeserver.lbl              the fake Sparx server (request synthesis, HTTP and HTTPS listeners)
-  gamedata.lbl                hand-authored roster, battle balance, mission, and tuning data
-  test_gamedata.lbl           verifies generated roster, combat, tuning, and mesh mappings
-  gen_certs.sh                regenerate the TLS cert and CA (run this, see below)
-  run_local.lbl               run the Legible plain-HTTP server on an unprivileged port
-  build_phone_apk.lbl         create an unsigned local-server APK for a stock phone
-  provision_phone.sh          install, launch, and configure USB or Wi-Fi phone use
-  setup_device.sh             device side network and trust setup reference
-  iterate.sh                  quick restart and capture loop
-  responses/                  one JSON file per endpoint the game calls
-tools/
-  provision_ldplayer.sh       one shot re-provision of the emulator to the working state
-  setup_arm64.sh              toolchain setup notes
-  apply_labels.lbl            build the portable Ghidra label input
-  find_xrefs.lbl              normalize and format portable Ghidra xref data
-  decompile_targets.lbl       normalize portable Ghidra decompiler targets
-  ghidra_run.lbl              run the Ghidra headless workflows
-  test_ghidra_tools.lbl       test the Ghidra Legible data halves
-  ghidra/
-    ApplyLabels.java          JVM GhidraScript that applies prepared labels
-    LightAnalyze.java         JVM GhidraScript that disables heavy analyzers
-    FindXrefs.java            JVM GhidraScript that collects raw references
-    DecompileTargets.java     JVM GhidraScript that writes decompiled C
-  frida_attach.lbl            Legible Frida attach-and-capture driver
-  frida_run.lbl               Legible Frida spawn-and-capture driver
-  hook_dot.js
-  nativehook/
-    hook.c                    source of libdothook.so, the runtime hook (arm64)
-    libdothook.so             locally built hook, arm64 (ignored)
-    hook_arm32.c              armeabi-v7a hook: the behaviour fixes, no key logging
-    libdothook-armeabi-v7a.so locally built hook, armeabi-v7a (ignored)
-    deploy.sh                 build and deploy the hook
-    relaunch_and_capture.sh   relaunch the game and capture logs
-  hook/dothook.c              earlier hook variant, kept for reference
-re_notes/
-  dump.cs                     locally generated IL2CPP type dump (ignored; see below)
-  decomp_out.c                decompiled bodies of key functions
-  decompile_targets.txt       the offsets worth decompiling
-  ASSET_INVENTORY.txt         inventory of asset identifiers in an operator-supplied app
-```
-
-`re_notes/dump.cs` is deliberately not versioned. Generate it locally from an entitled
-Kabam 9.2 APK with Il2CppDumper; it needs the matching
-`lib/arm64-v8a/libil2cpp.so` and
-`assets/bin/Data/Managed/Metadata/global-metadata.dat` from that APK:
+用户只需自行提供一份 Netflix 版 APK（`default.apk` 或 `.xapk`），该工具即可一键完成：
+1. 提取克劳莉娅与封锁的专属 AssetBundle 与高清立绘；
+2. 自动跨版本降级转码为 Unity 2020.3.31f1 格式；
+3. 自动修补招式库（`moves.assetbundle`）的弹道实体与瞬时枪口特效；
+4. 自动修补克劳莉娅 S3 大招战斧材质引用与子弹预制体列表。
 
 ```bash
-mkdir -p /tmp/tftf-il2cpp/{lib,assets/bin/Data/Managed/Metadata}
-unzip -p "Transformers 9.2 offline.apk" lib/arm64-v8a/libil2cpp.so \
-  > /tmp/tftf-il2cpp/lib/libil2cpp.so
-unzip -p "Transformers 9.2 offline.apk" assets/bin/Data/Managed/Metadata/global-metadata.dat \
-  > /tmp/tftf-il2cpp/assets/bin/Data/Managed/Metadata/global-metadata.dat
-Il2CppDumper /tmp/tftf-il2cpp/lib/libil2cpp.so \
-  /tmp/tftf-il2cpp/assets/bin/Data/Managed/Metadata/global-metadata.dat \
-  /tmp/tftf-il2cpp-out
-cp /tmp/tftf-il2cpp-out/dump.cs re_notes/dump.cs
+# 一键提取并自动转码 Netflix 独占资源
+python tools/extract_netflix_assets.py --input "path/to/default.apk"
 ```
 
-The generated file is the complete type model of the game: every class, method, and data
-field the client reads from the server. It is ignored by Git so it remains a local,
-reproducible analysis artifact.
+---
 
+## 📦 快速编译与打包指南 (Build & Usage Guide)
 
-## What is not in this package, and where to get it
+### 环境要求
+* **Python 3.10+** (安装依赖：`pip install UnityPy`)
+* **Java JDK 17+** (用于 `apksigner`)
+* **Android SDK Build-Tools** (需要 `zipalign` 与 `apksigner`)
+* **官方 9.2.0 基础 APK** (`com.kabam.bigrobot` 版本 9.2.0)
+* **Netflix 版 APK** (用于提取两名独占角色)
 
-These were left out on purpose, because they are large, or copyrighted, or secret, or you
-should generate your own.
+### 一键打包步骤
 
-- The APK itself (`com.kabam.bigrobot`, version 9.2.0). Source and use only a copy you are
-  entitled to use. The package name and version are in `TECHNICAL_NOTES.md`.
-- The original `libil2cpp.so` and the game assets. Both come straight out of the APK. Unzip
-  the APK, the library is under `lib/arm64-v8a/`, the assets are under `assets/`.
-- The TLS cert and CA. Do not ship private keys. Run `Server/gen_certs.sh` to make your own
-  matching pair, then point the device trust store at the new CA.
-- The patched library. Regenerate it: run `patches/patch_il2cpp.lbl` against the original
-  `libil2cpp.so` from the APK.
-- Frida server and Il2CppDumper. Both are public tools. Il2CppDumper is what produced
-  `re_notes/dump.cs` from the APK's library and global metadata.
-- The Android NDK (r26 was used) and JDK 21, needed to build the hook and to run the Ghidra
-  headless decompiler.
-- Anything under `media/` or `probe/`. Those are local screenshots and recordings, may contain
-  copyrighted game audiovisual content, are ignored by Git, and must never be added or committed.
+```powershell
+# 1. 提取并转码 Netflix 独占角色资产
+python tools/extract_netflix_assets.py --input "path/to/default.apk"
 
+# 2. 注入新角色、本地化数据、离线服务器与 Native Hook 打包 APK
+python Server/build_phone_apk.py `
+  "path/to/com.kabam.bigrobot_9.2.0.apk" `
+  "build/phone-unsigned.apk" `
+  --scheme http `
+  --server-host 127.0.0.1 `
+  --server-port 8080 `
+  --bundle-server `
+  --patched-il2cpp "build/libil2cpp-arm64-patched.so"
 
-## How to run what exists today
+# 3. 4 字节页面对齐
+zipalign -f -p 4 build/phone-unsigned.apk build/phone-aligned.apk
 
-You need the APK installed on an ARM translation capable emulator (LDPlayer 9 was used, with
-root and writable system), the `legible` interpreter on the PC, and the items from the section above.
+# 4. 数字签名
+apksigner sign --ks build/debug.keystore --ks-pass pass:android --out build/Transformers-9.2-offline-netflix-edition.apk build/phone-aligned.apk
 
-1. Generate certs once: `bash Server/gen_certs.sh`. This is a **bash** script, not
-   Python — run it with `bash` (or `./Server/gen_certs.sh` after `chmod +x`) in a
-   real shell (Git Bash on Windows). Do not run it with `python`/`python3` and do not
-   paste its contents into a Python interactive prompt: the file is an OpenSSL
-   config generator, not Python source, and a Python REPL will fail to parse it
-   (for example, tripping over the `CN = tform-0901-...` line in the embedded
-   config with a "leading zeros in decimal integer literals" error). That error
-   means the wrong interpreter was used, not a bug in the script.
-2. Build the patched library once: `legible run patches/patch_il2cpp.lbl path/to/original/libil2cpp.so --apply`.
-   That patches the arm64 library; pass `--abi armeabi-v7a` for the 32-bit one (see below).
-3. Build the arm64 hook locally:
-   `~/Android/Sdk/ndk/26.3.11579264/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android28-clang -shared -O2 -fPIC -Wl,-soname,libdothook.so -o tools/nativehook/libdothook.so tools/nativehook/hook.c tools/nativehook/inapk_server.c -llog`.
-   `tools/nativehook/deploy.sh` has historical Windows paths and is not the current command.
-4. Start the fake server on the PC: `legible run Server/fakeserver.lbl --https 443` and
-   `legible run Server/fakeserver.lbl --http 80` (one process per listener). They need to be reachable
-   on ports 443 and 80 from the emulator.
-5. Provision the device: `bash tools/provision_ldplayer.sh <your-PC-LAN-IP>`. Re-run this
-   after every emulator reboot.
-6. Wait about 45 seconds, then tap the title screen to log in. You should reach the home
-   screen.
-
-### Running on a non-rooted phone over Wi-Fi (no USB while playing)
-
-The phone and laptop can communicate directly over the same Wi-Fi/LAN. The APK must be
-built with the laptop's LAN IPv4 address because a stock phone cannot override the dead
-Kabam DNS names. For example, if the laptop is `192.168.0.139`:
-
-1. Build the LAN variant:
-   `legible run Server/build_phone_apk.lbl --server-host 192.168.0.139 "Transformers 9.2 offline.apk" build/phone-wifi-unsigned.apk`.
-2. Align and sign it with Android build-tools:
-   `zipalign -f -p 4 build/phone-wifi-unsigned.apk build/phone-wifi-aligned.apk`, then
-   `apksigner sign --ks ~/.android/debug.keystore --ks-pass pass:android --key-pass pass:android --out build/Transformers-9.2-offline-phone-wifi.apk build/phone-wifi-aligned.apk`.
-3. Start `legible run Server/run_local.lbl` on the laptop, and in a second terminal
-   `legible run Server/run_local.lbl --https`. One Legible process holds one listener, so
-   the two together listen on every network interface at HTTP port 8080 and HTTPS port
-   8443. Allow those two TCP ports through the laptop's firewall for the private LAN if a
-   firewall is enabled.
-4. Install once over USB with
-   `CONNECTION_MODE=wifi UPDATE_APK=1 APK=build/Transformers-9.2-offline-phone-wifi.apk Server/provision_phone.sh`.
-   The update preserves game data when the installed app uses the same signing key. You can
-   instead transfer and install the signed APK by another trusted local method.
-5. Disconnect USB. Keep the fake server running and keep the phone and laptop on the same
-   LAN while playing.
-
-The embedded address must remain assigned to the laptop. A DHCP reservation is recommended;
-if the address changes, rebuild and update the APK with the new address. Guest Wi-Fi networks
-often isolate clients from one another and will not work. The native validation patches accept
-the local server certificate, so installing a CA on the phone is not required.
-
-### Running on a non-rooted phone over USB
-
-Retail phones cannot use the emulator's root-only hosts and system-CA bind mounts. Build a
-phone variant that redirects the embedded backend names to loopback and uses Android's
-owner-installed CA trust, then use ADB reverse to carry the traffic over USB:
-
-1. Run `legible run Server/build_phone_apk.lbl "Transformers 9.2 offline.apk" build/phone-unsigned.apk`.
-   The builder also injects the current `tools/nativehook/libdothook.so`, so phone builds
-   include the same gameplay fixes tested on the emulator.
-2. Sign the result with Android `apksigner`, writing
-   `build/Transformers-9.2-offline-phone.apk`. The generated local build uses your Android
-   debug key. If a differently signed build of the same package is already installed, it
-   must be uninstalled first; doing so erases that installation's local game data.
-3. Start `legible run Server/run_local.lbl` on the laptop, plus
-   `legible run Server/run_local.lbl --https` in a second terminal.
-4. Connect and authorize exactly one physical phone, then run `Server/provision_phone.sh`.
-   If Play Protect rejects this locally modified APK with
-   `INSTALL_FAILED_VERIFICATION_FAILURE`, review the APK and rerun the first installation as
-   `ALLOW_UNVERIFIED_ADB=1 Server/provision_phone.sh`. This temporarily disables verification
-   for that ADB install only and restores both settings immediately. Later runs detect the
-   installed package and only restore forwarding/launch it. After rebuilding the APK, use
-   `UPDATE_APK=1 Server/provision_phone.sh` to update it in place while preserving game data.
-
-The phone APK preserves the original target SDK. Its bundled native validation patches accept
-the local server certificate; lowering the target SDK to inherit user-installed CA trust causes
-modern Play Protect to reject the APK.
-
-For a self-contained backend, see the
-[bundled-server recipe](#building-a-self-contained-apk-bundled-server-no-pc).
-
-The USB connection must remain active: phone ports 8443 and 8080 are forwarded to the same
-laptop ports. The explicit unprivileged ports are necessary because stock Android's ADB cannot
-bind device ports 443 or 80. Re-run `provision_phone.sh` after a reboot or USB-debugging
-reconnection.
-
-If it hangs at login, check the very first item in the Gotchas section before anything else.
-
-### Patching the APK from a GUI
-
-From the repository root, launch the local browser UI with:
-
-```sh
-legible run tools/apk_patcher_gui/server.lbl
+# 5. 安装到手机或模拟器
+adb install -r --no-incremental build/Transformers-9.2-offline-netflix-edition.apk
 ```
 
-It prints a token-protected `http://127.0.0.1:<port>/` URL and opens it in the default
-browser. The GUI, planner, background worker, and tests are all Legible; Python is not
-required. Use `--port N` to choose a port instead of the default random free port, or
-`--no-browser` when working headlessly. Legible's HTTP listener binds all interfaces, so
-the GUI requires an unguessable per-launch token on every page and API request; keep the
-printed URL private.
+---
 
-The page exposes the APK source and destination, signing keystore and passwords, and an
-optional install-to-device step. Choose `arm64-v8a` (64-bit, the default) or
-`armeabi-v7a` (32-bit), and choose whether to keep the other ABI's libraries. The server
-mode is either bundled (self-contained, no PC, fixed to `http` and `127.0.0.1`) or
-separate (a PC-hosted fake server, with a host, port, and `http`/`https` supplied by you).
-It also accepts a patched `libil2cpp.so` path, or can auto-patch one with
-`patches/patch_il2cpp.lbl` from the pristine library.
-
-Pressing **Build APK** runs the same pipeline documented below: native-hook compilation
-from `hook.c`/`hook_arm32.c` plus `inapk_server.c` when its default checkbox is enabled, optional
-`patch_il2cpp.lbl`, then `legible run Server/build_phone_apk.lbl`, then
-`zipalign -f -p 4`, then `apksigner sign` with the debug keystore, followed by
-`zipalign -c -p 4` and `apksigner verify --verbose` against the final signed APK, and
-optionally `adb install -r --no-incremental` followed by `adb shell pm path` to confirm
-the package is installed. Each command's output streams live into
-the page, and the build can be cancelled. **Build succeeded** means the final signed APK
-passed both Android signature and page-alignment checks.
-
-Before starting the multi-minute, multi-hundred-megabyte build, the UI catches a bundled
-server configured with `https` or a non-loopback host (that mode only accepts `http` plus
-`127.0.0.1`) and a 32-bit build with no patched `libil2cpp.so`. The latter is the failure
-described in the 32-bit section below: the APK installs cleanly, but `TFTFHOOK` never
-appears in the log and nothing listens on port 8080.
-
-The manual recipes below remain the ground truth and are the fallback if the GUI is not
-available.
-
-### Building a self-contained APK (bundled server, no PC)
-
-Build, align, sign, and install an arm64 APK with the fake-server response payload embedded:
-
-1. `legible run Server/build_phone_apk.lbl "Transformers 9.2 offline.apk" build/phone-unsigned.apk --scheme http --server-host 127.0.0.1 --server-port 8080 --bundle-server`
-2. `~/Android/Sdk/build-tools/35.0.0/zipalign -f -p 4 build/phone-unsigned.apk build/phone-aligned.apk`
-3. `~/Android/Sdk/build-tools/35.0.0/apksigner sign --ks ~/.android/debug.keystore --ks-pass pass:android --key-pass pass:android --out build/bundled.apk build/phone-aligned.apk`
-4. `adb uninstall com.kabam.bigrobot` then `adb install --no-incremental --abi arm64-v8a build/bundled.apk`
-
-On a retail phone, this install can fail with `INSTALL_FAILED_VERIFICATION_FAILURE` until ADB
-install verification is disabled. On the Galaxy A52, the required settings were:
+## 📂 项目结构概览 (Repository Structure)
 
 ```
-adb shell settings put global package_verifier_enable 0
-adb shell settings put global verifier_verify_adb_installs 0
-adb shell settings put global package_verifier_user_consent -1
+├── Server/
+│   ├── gamedata.py             # 核心数据库：定义 63 位角色面板、阵营属性与 1.1.1 关卡
+│   ├── build_phone_apk.py      # 独立单机版 APK 打包器（支持 ODR 注入、TOC 生成与内置服务器）
+│   ├── bot_names_zh.json       # 全角色中文官方译名与阵营对照
+│   └── responses/              # 各网络端点离线响应 JSON（共 9,600+ 路由）
+├── tools/
+│   ├── extract_netflix_assets.py # Netflix 独占角色一键提取、转码与招式修补工具
+│   └── nativehook/
+│       ├── hook.c              # 运行时 Inline Hook 源码（数据追踪与网络流量劫持）
+│       └── inapk_server.c      # 单机内置极简 C-HTTP 服务器源码
+├── patches/
+│   └── patch_il2cpp.lbl        # IL2CPP 核心函数补丁脚本（跳过认证、证书锁定与离线登录）
+├── bot_names_zh.json           # 根目录全角色中文名映射表
+├── COMPLIANCE.md               # 项目合规与版权安全规范
+└── TECHNICAL_NOTES.md          # 深度逆向工程笔记与数据协议参考
 ```
 
-These settings may reset. The roughly 930 MB APK then takes about 35 seconds to install; see the
-host-server provisioning note above for the analogous scripted flow.
+---
 
-Nothing else is needed: no `run_local.lbl`, no `adb reverse`, no hosts file edits, no CA install,
-no root, and no `provision_*.sh`. Install and play. The existing host-server workflows above are
-unchanged and remain the default.
+## ⚖️ 合规与免责声明 (Compliance & Legal)
 
-`--bundle-server` supports both `arm64-v8a` (the default and primary tested path) and
-`armeabi-v7a`. It requires plain HTTP on loopback: `--scheme https` and non-loopback
-`--server-host` values are rejected. The baked payload is a snapshot of the authored data at build
-time, so changing `Server/gamedata.lbl` requires rebuilding the APK. Its responses are the same
-ones served by `Server/fakeserver.lbl`.
-
-Because its two reachability patch sites are arm64 only, the bundled `armeabi-v7a` build requires
-Android to report any active network; loopback-only airplane mode is not sufficient.
-
-For an ARMv7 bundled build, use the same align and signing steps with ARMv7 output names.
-Unlike the arm64 one, this build must also supply a patched library: `Transformers 9.2
-offline.apk` ships an **already patched** `lib/arm64-v8a/libil2cpp.so` but a **pristine**
-`lib/armeabi-v7a/libil2cpp.so`. Skip step 1 below and the APK installs and launches fine
-while `adb logcat -s TFTFHOOK` stays completely silent and nothing listens on 8080, because
-the hook is never loaded — which looks exactly like a broken server but is not one.
-
-1. `legible run patches/patch_il2cpp.lbl --abi armeabi-v7a --needed inplace --apply \
-   -o build/libil2cpp-armv7-patched.so "Transformers 9.2 extracted/lib/armeabi-v7a/libil2cpp.so"`
-   (`--needed inplace` avoids `patchelf`, which is not always on PATH.)
-2. `legible run Server/build_phone_apk.lbl --abi armeabi-v7a --bundle-server --scheme http \
-   --server-host 127.0.0.1 --server-port 8080 --patched-il2cpp build/libil2cpp-armv7-patched.so \
-   "Transformers 9.2 offline.apk" build/phone-armv7-unsigned.apk`
-3. `~/Android/Sdk/build-tools/35.0.0/zipalign -f -p 4 build/phone-armv7-unsigned.apk build/phone-armv7-aligned.apk`
-4. `~/Android/Sdk/build-tools/35.0.0/apksigner sign --ks ~/.android/debug.keystore --ks-pass pass:android --key-pass pass:android --out build/bundled-armv7.apk build/phone-armv7-aligned.apk`
-5. `adb install -r --no-incremental --abi armeabi-v7a build/bundled-armv7.apk`
-
-On 2026-08-17, bundled `armeabi-v7a` was live-verified with no host server and `adb reverse
---list` empty: it reached STORY 1.1.1, won its intermediate Patrol fight while the in-APK server
-served requests, and the final Boss remained reachable (33% to 66% explored).
-
-`--no-incremental` is mandatory: incremental-fs mounts the native library directory read-only,
-even to root.
-
-For debugging, `adb logcat -s TFTFHOOK` should show `in-apk server listening on 127.0.0.1:8080`
-and `in-apk server start: 0`.
-
-`in-apk candidate rejected <path>: <reason>` lines are normal: the server enumerates every mapped
-APK in the process, and retail devices map other packages' APKs, notably Google Play Services',
-into the game process. A run that logs `in-apk server start: -1` with no accepted candidate did
-not find the payload in any mapped APK, meaning the APK was built without `--bundle-server` or its
-`libdothook.so` was built without `inapk_server.c`.
-
-
-### Building for 32-bit ARM (armeabi-v7a)
-
-The APK ships native libraries for both `arm64-v8a` and `armeabi-v7a`. Most workflows above
-target arm64, which remains the default. A 32-bit build exists for 32-bit devices and 32-bit
-emulator instances, and is selected with `--abi`.
-
-The 32-bit build has been run end to end: it boots offline to the home screen, selects a
-STORY squad, enters the board, moves between nodes, opens the pre-fight screen, fights the
-Sharkticon in the live 3D arena, and resolves the match `WON` with the enemy at zero
-health, with no crash and all twelve hooks installed. Both of the fixes described below
-were verified firing during that run.
-
-1. Patch the 32-bit library:
-   `legible run patches/patch_il2cpp.lbl --abi armeabi-v7a path/to/lib/armeabi-v7a/libil2cpp.so --apply`.
-   The same six original patches apply; only the addresses and encodings differ. The two newer
-   reachability patches are arm64 only for now, because `abi_map.lbl` needs an Il2CppDumper dump
-   of the 32-bit build to translate them and this repo only carries the arm64 dump; addresses
-   must never be hand-translated. A 32-bit bundled APK therefore still needs a network interface
-   to be up. Linux continues to
-   use `patchelf` by default. Windows uses the strict in-place injector, which reuses a
-   verified alias string and spare dynamic-table slot without moving code or changing any
-   patch offset. Either route can be selected explicitly with `--needed patchelf` or
-   `--needed inplace`.
-2. Build the hook: `armv7a-linux-androideabi21-clang -shared -O2 -fPIC -Wl,-soname,libdothook.so
-   -o tools/nativehook/libdothook-armeabi-v7a.so tools/nativehook/hook_arm32.c tools/nativehook/inapk_server.c -llog`.
-   Keep API level 21 for old 32-bit phones and `-Wl,-soname,libdothook.so` because
-   `libil2cpp.so`'s `DT_NEEDED` names `libdothook.so`. The resulting `.so` is a local build
-   artifact and must not be committed.
-3. Build the APK: `legible run Server/build_phone_apk.lbl --abi armeabi-v7a ...`. It embeds the
-   matching hook and, by default, drops the arm64 libraries. That last part matters: Android
-   prefers arm64 whenever it is present, so an APK containing both would load the unpatched
-   64-bit library and ignore the offline build entirely.
-
-One difference from the arm64 build is deliberate: `hook_arm32.c` carries only the
-behaviour fixes, not the `EB.Dot.*` key logging. The data authoring loop runs on arm64,
-and both builds parse the same JSON, so keys discovered there apply unchanged.
-The arm64 distant-opponent ranged-attack nudge is also not yet ported to ARMv7: its mapped
-methods, fields, A32 prologue relocation, and hard-float `dT` ABI still require verification.
-
-A [self-contained bundled-server build](#building-a-self-contained-apk-bundled-server-no-pc)
-also works for ARMv7.
-
-Two of the fixes could not be ported by translating an address, because neither one is a
-method address. Both were re-derived against the 32-bit binary instead, and the derivation
-is written out where the fix lives so it can be re-checked:
-
-- `SETACTFIX` (the combat input-buffer window) reaches the game clock through a `.got`
-  slot, and the two builds lay out their GOTs differently. Rather than translate it, the
-  chain is read back out of `QueuedAction.HasAction`, which necessarily reads the same
-  clock it compares against. Two independent sites in the 32-bit binary agree on the slot.
-- `FIXSYN` (the synergy-bonus null branch) has no throw block to re-point on ARM32: the
-  compiler emits the null check as a call to the throw helper that only falls through. The
-  call site is reachable only when the field is null, so overwriting it with a jump to the
-  empty-list return is the same fix.
-
-`patches/abi_map.lbl` is what makes this tractable. Both libraries are generated from the
-same `global-metadata.dat`, so it can pair the two Il2CppDumper dumps and translate any
-arm64 address or field offset to its armv7 equivalent. Run its `verify` mode first: it
-cross-checks two independent pairings (method name, and metadata order) against each other.
-Do not translate addresses by hand, and do not trust a nearest-symbol guess for generic
-methods -- several reference-type instantiations share one body.
-
-Run it with `legible run
-patches/abi_map.lbl <a64_dir> <v7_dir> <verify|method|fields> [<address> ...|<type> ...]`, where
-`method` takes addresses and `fields` takes type names. This requires a `legible` interpreter
-built after the argument-passthrough change; earlier builds reject arguments after the file name.
-
-`find_callers.lbl` and `find_str_ref.lbl` find callers and string references, respectively.
-Run them from the directory that holds `extracted/` and
-`il2cpp_out/`, as `legible run patches/find_callers.lbl <0xADDR> [<0xADDR> ...]` and
-`legible run patches/find_str_ref.lbl <0xADDR>`. `patches/disasm_fn.lbl` is the annotated ARM64
-function disassembler; run it from that same directory as `legible run patches/disasm_fn.lbl
-<offset_hex> [num_bytes_hex]`. Its two script.json progress lines go to stdout because Legible
-has no stderr builtin. Run the native patcher as
-`legible run patches/patch_il2cpp.lbl <so> [--abi ...] [--apply] [--needed ...] [-o ...]`.
-It accepts the same flags, but its error messages go to stdout because Legible has no stderr builtin, and it does not reproduce argparse's `--help` or usage-error text. The four former Jython Ghidra scripts are split into Legible data halves (`tools/apply_labels.lbl`, `tools/find_xrefs.lbl`, and `tools/decompile_targets.lbl`) and Java `GhidraScript` shims under `tools/ghidra/`, because Ghidra executes only JVM-hosted scripts. Run each workflow as `legible run tools/ghidra_run.lbl <labels|xrefs|decompile>` with `GHIDRA_HOME` set to the Ghidra installation; `GHIDRA_PROJECT_DIR`, `GHIDRA_PROJECT_NAME`, and `GHIDRA_BINARY` optionally override the project directory, project name, and imported binary. The workflows use `il2cpp_out/labels.tsv`, `xref_targets.norm.tsv`, `xrefs_raw.tsv`, and `decompile_targets.norm.txt` as intermediate files; their final `il2cpp_out/xrefs_out.txt` and `il2cpp_out/decomp_out.c` artifacts retain the Jython scripts' exact byte formats. Ghidra is not installed on this development machine, so the Java halves are unexecuted and uncompiled here; the Legible data halves are covered by `tools/test_ghidra_tools.lbl`.
-The Frida drivers are `tools/frida_attach.lbl` and `tools/frida_run.lbl` (ported from the former `tools/frida_attach.py` / `tools/frida_run.py`); they require a `legible` binary
-built with `--features frida`. Run them as `legible run tools/frida_attach.lbl [script.js] [out.log]
-[boot_s] [run_s]` or `legible run tools/frida_run.lbl [script.js] [out.log] [boot_s] [run_s]`. Their
-adb path defaults to `/home/darabat/Android/Sdk/platform-tools/adb` and can be overridden with a
-non-empty `ADB` environment variable. Frida message delivery is polled rather than callback-driven,
-and non-string `send` payloads are rendered as JSON rather than Python `str()`; the default
-`tools/hook_dot.js` only sends console-log messages, so the latter difference is theoretical for
-its normal use.
-The Python originals of the Ghidra and Frida tools were removed once their Legible and Java
-replacements were verified; they remain recoverable from git history at commit `d636dae`.
-`Server/build_phone_apk.lbl` ports the phone APK builder: run
-`legible run Server/build_phone_apk.lbl <source.apk> <destination.apk> [--server-host H] [--scheme https|http] [--server-port N] [--abi arm64-v8a|armeabi-v7a] [--keep-other-abi] [--patched-il2cpp PATH] [--bundle-server]`.
-The arm64, armv7, and bundled outputs have been compared byte-for-byte with the Python builder. The source APK's non-signature entries are all `ZIP_STORED`, so the Legible ZIP reader/writer needs no compressor. A newly added ZIP entry uses UTC rather than Python's local-time timestamp; set `SOURCE_DATE_EPOCH` (and `TZ=UTC` for the Python comparison) for deterministic byte-identical output. The Python builder `Server/build_phone_apk.py` was removed once the Legible port was verified against it; it remains recoverable from git history at commit `55a5a6b`, for example `git show 55a5a6b:Server/build_phone_apk.py`. The request-synthesis layer and both listeners are ported as
-`Server/fakeserver.lbl` and `Server/run_local.lbl`: run
-`legible run Server/fakeserver.lbl --http 80` or `legible run Server/fakeserver.lbl --https 443`,
-or use `legible run Server/run_local.lbl` / `legible run Server/run_local.lbl --https`.
-The TLS listener uses `Server/certs/server.pem` through Legible's `http_start_https`.
-Each Legible process holds one listener and has no threads, so HTTP and HTTPS run as two
-processes rather than Python's two threads; this is a design difference, not a port limitation.
-The Python original `Server/fakeserver.py` was removed once the Legible listeners were
-verified; it remains recoverable from git history at commit `23950a3`, for example
-`git show 23950a3:Server/fakeserver.py`.
-The Python original `Server/gamedata.py` was removed once `Server/gamedata.lbl` was
-verified to regenerate `Server/responses/` byte-identically; it remains recoverable from
-git history at commit `23950a3`, for example `git show 23950a3:Server/gamedata.py`. With
-the Python gone, the committed artifacts are the oracle: `Server/responses/` and the baked
-payload (4,500,632 bytes, 9325 entries; md5 `9e21419042d65e38ecf763d96460f215` at listen
-port 8080 and `761b18bc9590ec1035662fefe2f11c4e` at 18080).
-`Server/export_payload.lbl` now builds the byte-identical in-APK payload from the
-response data and Legible server modules: run
-`legible run Server/export_payload.lbl --out <file> [--listen-port N]`. Its Python
-counterpart `Server/export_payload.py` was removed once the port produced a byte-identical
-payload; it remains recoverable from git history at commit `3488449`. `Server/run_local.py`
-was removed the same way and is recoverable at commit `f8e2f22`. As elsewhere in Legible,
-errors go to stdout (there is no stderr builtin),
-and it does not reproduce argparse's `--help` or usage-error text.
-`Server/test_inapk_server.lbl` ports the native in-APK wire regression: run
-`legible run Server/test_inapk_server.lbl`. It compiles the two C harnesses with `cc` and
-drives the native server with `curl`, because Legible has no socket builtin and its HTTP client
-builtins do not support HEAD, custom headers, or connection reuse, so the test drives `curl`
-through `shell_exec`. The test
-builds the payload once and restarts the harness between its two server tests (rather than
-Python's per-test rebuild), because `build_payload` costs roughly 50--60 seconds in Legible.
-The Python test suite (the former game-data, fake-server, payload, APK-builder, in-APK-server,
-and quest-walk tests) was removed once its Legible replacements were verified; the files
-remain recoverable from git history at commit `23950a3`, for example
-`git show 23950a3:Server/test_gamedata.py`. The equivalent tests now run as
-`legible run Server/test_<name>.lbl`.
-
-## The gotchas that will eat your time
-
-These are the ones that cost me hours. They are written down so they do not cost you
-the same.
-
-- The runtime hook loads only through a dependency entry that the pristine library does not
-  have. The patch script builds from the pristine library, so without re-adding that entry
-  the hook is silently never loaded and login just hangs. The patch script now re-injects it
-  on every build. If the hook ever seems dead, the first thing to check is that the patched
-  library actually references `libdothook.so`. The exact bytes and offsets are documented in
-  the patch script and in `TECHNICAL_NOTES.md`.
-- Frida does not work if you are using LDPlayer9/Bluestacks for testing. The emulator translates ARM to x86, and Frida crashes under that translation. The whole reason the project uses a pure byte overwrite inline hook is that it survives where Frida does not. Do not waste time trying to make Frida behave.
-- The device network mounts do not survive an emulator reboot. The hosts redirect and the CA
-  trust are bind mounts. After any restart of the emulator you must re-run
-  `provision_ldplayer.sh` or nothing will connect.
-- Install with `adb install --no-incremental`. Modern `adb` prefers an incremental install,
-  which mounts the app's native library directory from an `incremental-fs` image. That
-  directory is then read-only even to root, so pushing the patched `libil2cpp.so` and the
-  hook into it fails with "Permission denied" while everything else looks normal. This
-  matters most when switching ABIs, because that requires a reinstall
-  (`adb install -r --no-incremental --abi armeabi-v7a ...`).
-- Inside Sparx error payloads the field is `err`, not `error`. Using the wrong one produces
-  responses the client silently ignores or mishandles.
-- Interactive tutorial prompt states loop forever offline. Do not try to answer a tutorial
-  request to satisfy it. Instead remove the condition that triggers the tutorial in the first
-  place. The shield tutorial freeze was fixed this way, by giving the player the resource
-  whose absence triggered it, rather than by answering the tutorial.
-- Live 3D content rendering under the emulator is fragile. Models do render, but this is the
-  shakiest area and is sensitive to the emulator's graphics backend and texture settings.
-  This is an emulator graphics issue, not a data issue.
-
-
-## If you want to actually revive it: rebuilding the backend
-
-This is the real work, and it is large. Here is the shape of it and where to start.
-
-The goal is to recreate, by hand, the server side content that used to be streamed to the
-client: the quests and missions, the maps and their enemy lineups, the full roster with each
-bot's stats and abilities, the combat formulas, and the economy. None of this exists anymore,
-so all of it has to be authored fresh, in the exact shapes the client expects.
-
-The method that works is the loop this project is built around. Run the game with the hook
-attached. The hook logs every key the client reads. When the client asks for something you
-have not provided, you see exactly what it wanted. You then synthesize a response in the
-right shape, drop it in `Server/responses/` or add it to the dynamic handler in
-`Server/fakeserver.lbl`, restart, and verify the client accepts it and moves forward. Repeat. Every
-screen in the current build was brought up this exact way. `re_notes/dump.cs` tells you the
-shape of each structure before you even run, because it lists every field the client reads.
-
-A sane order to attack it:
-
-1. Persist quest completion and author the reward contract for the ten authored STORY
-   encounters.
-2. Add original per-bot ability definitions and test their in-fight effects. The normal attack
-   and special-damage data already have a working generated path in `Server/gamedata.lbl`.
-3. Add missions, maps, and opponent lineups one small path at a time, using the runtime hook
-   and `re_notes/dump.cs` to establish the client contract.
-4. Add the economy and wider progression only after the missions and rewards that use them.
-
-Be realistic about scale. Even for games where fans saved the live server data before
-shutdown, standing up a private server is a long project. Here there is no saved data to
-start from, so every number and every ability has to be researched or reinvented and then
-verified against the client. This is a multi-person, multi-year effort if the goal is the
-real game. That said, the path is no longer a mystery. The offline boot, a first STORY fight,
-and the feedback loop are working; the type model is dumped. What remains is a large amount
-of careful, original data authoring and verification.
-
-Start with `TECHNICAL_NOTES.md`. It is the deeper technical reference, with the exact
-patches, the recovered data shapes, and the specific findings, in more detail than this
-README. Then run the loop.
-
-Good luck. It is a real machine now. It just needs its content rebuilt.
+1. 本项目为粉丝开源逆向工程研究成果与离线保存沙盒，仅供计算机技术学习与交流使用。
+2. 本仓库不分发任何受版权保护的游戏客户端安装包（APK）、原始游戏二进制文件或专有音画素材。
+3. 所有角色与游戏资产商标、版权均归属于 **Hasbro**、**Kabam** 及 **Netflix** 原版权所有方。
+4. 详见 [`COMPLIANCE.md`](COMPLIANCE.md)。
