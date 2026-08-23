@@ -78,6 +78,35 @@ def patch_chromia_bundle(bundle_bytes: bytes) -> bytes:
     return bf.save(packer="lz4")
 
 
+def patch_deadend_bundle(bundle_bytes: bytes) -> bytes:
+    """Fixes Dead End grenade material pointers for Unity 2020."""
+    env = UnityPy.load(bundle_bytes)
+
+    for obj in env.objects:
+        if obj.type.name == "SkinnedMeshRenderer":
+            tree = obj.read_typetree()
+            mats = tree.get("m_Materials", [])
+            modified = False
+            for m in mats:
+                if m.get("m_PathID") in [5840752304272669847, -8150449380963715650]:
+                    m["m_PathID"] = 8990873932192355227
+                    modified = True
+            if modified:
+                obj.save_typetree(tree)
+
+    bf = env.file
+    bf.version = 7
+    bf.version_engine = "2020.3.31f1"
+    bf.version_player = "5.x.x"
+    for sub in bf.files.values():
+        if hasattr(sub, "version"):
+            sub.version = "2020.3f1"
+        if hasattr(sub, "unity_version"):
+            sub.unity_version = "2020.3.31f1"
+
+    return bf.save(packer="lz4")
+
+
 def patch_moves_bundle(bundle_bytes: bytes) -> bytes:
     """Transcodes moves.assetbundle and maps missing particle FX to base particles."""
     env = UnityPy.load(bundle_bytes)
@@ -172,6 +201,8 @@ def main():
                 print(f"  Transcoding {fname} to Unity 2020 format...")
                 if fname == "chromia_gs_kabam.assetbundle":
                     data = patch_chromia_bundle(data)
+                elif fname == "deadend_gs_deluxe2015.assetbundle":
+                    data = patch_deadend_bundle(data)
                 else:
                     data = transcode_assetbundle_to_2020(data)
             dst_file.write_bytes(data)
