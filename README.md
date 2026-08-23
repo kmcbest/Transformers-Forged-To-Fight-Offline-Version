@@ -6,7 +6,119 @@
 [![Unity Version](https://img.shields.io/badge/Unity-2020.3.31f1%20(LTS)-orange.svg)](README.md)
 [![Bots Roster](https://img.shields.io/badge/Roster-63%20Bots%20(All%205--Star%20Maxed)-red.svg)](Server/gamedata.py)
 
+> [English](#english) | [中文说明](#中文说明)
+
 ---
+
+<a name="english"></a>
+# English
+
+### 💖 Acknowledgments & Upstream Attribution
+
+This project is built upon the open-source reverse engineering and offline revival framework created by **[Gummygamer / Transformers-Forged-To-Fight-Offline-Version](https://github.com/Gummygamer/Transformers-Forged-To-Fight-Offline-Version)**.
+We express our deepest gratitude to the original author for establishing the foundational IL2CPP binary patches, Sparx server simulation layer, runtime inline hook (`libdothook.so`), and standalone in-APK server architecture.
+
+This fork extends the project with massive gameplay enhancements, full data reconstruction, complete Chinese localization, full combat engine and hitbox fixes, and pioneering **cross-version Unity asset transcoding for Netflix exclusive characters (Chromia & Dead End) ported to native 9.2.0**.
+
+---
+
+## 🌟 Core Enhancements & Major Features
+
+### 1. 🤖 Complete 63-Bot Roster (All 5-Star Maxed)
+* **Full Roster Unlocked**: Combines all 61 official Kabam 9.2.0 characters + 2 Netflix exclusive characters = **63 Bots Total**!
+* **Maxed 5-Star Stats**: Every bot is configured with authentic 5-Star Rank 5 (Level 50) maxed stat profiles (PI, Health, Attack, Critical Rate, Critical Damage, and Armor).
+* **Instant Special Meter**: All three special attack meter segments (S1 / S2 / S3) are immediately available upon entering combat.
+* **Accurate Faction & Class Mapping**:
+  * Corrected all 6 classes: **Warrior**, **Scout**, **Tech**, **Demolitions**, **Tactician**, **Brawler**.
+  * Calibrated faction allegiances: Autobots, Decepticons, Maximals, Predacons.
+
+### 2. 🎬 Netflix Exclusive Characters Integration (Chromia & Dead End)
+* **Chromia (克劳莉娅)**: Autobot / **Warrior** class, equipped with her signature energy battleaxes and left-hand blaster pistol!
+* **Dead End (封锁)**: Decepticon / **Demolitions** class, wielding heavy shotgun blasts and destructive barrage firepower!
+* **Cross-Version UnityFS Asset Transcoding Engine**:
+  * Netflix edition runs on **Unity 2021.3.39f1 (UnityFS v8)**, whereas official Kabam 9.2.0 runs on **Unity 2020.3.31f1 (UnityFS v7)**;
+  * Automated transcoding engine reconstructs BlockInfo/DirectoryInfo tables and LZ4 compressed blocks, solving infinite loading hangs and format incompatibility.
+* **Full ODR Registration & Manifest Injection**:
+  * Auto-patches `packs.txt` and generates verified `.manifest` files so both characters render their authentic 3D models in base showcase, roster select, and combat arenas (no Sharkticon fallback).
+
+### 3. ⚔️ Combat System, Hitbox & Visual FX Fixes
+* **Hitbox & Moves Timeline Fixes**:
+  * Transcodes and injects full `moves.assetbundle` and procedural animation libraries;
+  * Fixed Dead End's melee combo chain where intermediate hits whiffed;
+  * Fixed the softlock freeze where both fighters froze in place after executing S1/S2/S3 special attacks.
+* **Chromia Pistol & Ranged Combat Loop Fix**:
+  * Restored `projectile_chromia_bullet` entity with proper 9.2.0 aqua projectile energy beam bindings (`fx_p_aqua_projectile` & `fx_p_aqua_projectile_impact`);
+  * Replaced muzzle flash with instantaneous self-destroying particle (`fx_p_aqua_muzzle_flash`), eliminating persistent green flame sticking to her hand;
+  * Fixed combat state machine to enable infinite repeated dash-back ranged shooting cycles.
+* **S3 Cinematic Battleaxe Material & Purple Shader Fix**:
+  * Re-pointed S3 thrown battleaxe mesh material to valid weapon metal material (`1952278396157663915`);
+  * Eliminated Unity 2021 error shader (magenta/purple texture), restoring true metallic textures and specular highlights.
+* **Native High-Definition Shader Preservation**:
+  * Retained clean Kabam 9.2.0 `character_fx.assetbundle` to prevent global battle particle and shader corruption.
+
+### 4. 📱 Standalone In-APK Offline Architecture
+* **Embedded Loopback Server**: Runs a lightweight Python HTTP server on port 8080 inside the APK, serving compressed `tftf_offline_payload.bin` (9,600+ routes).
+* **Zero Configuration Needed**: Network calls automatically redirected to `127.0.0.1:8080` via `libdothook.so` + patched `libil2cpp.so`.
+* **No PC, no Wi-Fi, no external server, no root required** — install and play offline anywhere!
+
+### 5. 🇨🇳 Full Chinese Localization
+* Built-in official Simplified Chinese bot name translation table ([`bot_names_zh.json`](bot_names_zh.json)).
+* Localized class names, faction badges, update notes, and compliance statement screens.
+
+---
+
+## 🛠️ Automated Extraction & Transcoding Tool
+
+To maintain full compliance and copyright safety, this repository **does not distribute proprietary game assets**. Instead, an automated tool [`tools/extract_netflix_assets.py`](tools/extract_netflix_assets.py) is provided.
+
+Users provide their own Netflix edition APK/XAPK to transcode the exclusive assets:
+
+```bash
+# Extract and transcode Netflix exclusive assets in one command
+python tools/extract_netflix_assets.py --input "path/to/default.apk"
+```
+
+---
+
+## 📦 Build & Packaging Guide
+
+### Requirements
+* **Python 3.10+** (`pip install UnityPy`)
+* **Java JDK 17+** (for `apksigner`)
+* **Android SDK Build-Tools** (`zipalign` and `apksigner`)
+* **Base Kabam 9.2.0 APK** (`com.kabam.bigrobot` v9.2.0)
+* **Netflix Edition APK** (for extracting exclusive bots)
+
+### One-Click Build Steps
+
+```powershell
+# 1. Extract and transcode Netflix exclusive assets
+python tools/extract_netflix_assets.py --input "path/to/default.apk"
+
+# 2. Build offline APK with embedded server and hook
+python Server/build_phone_apk.py `
+  "path/to/com.kabam.bigrobot_9.2.0.apk" `
+  "build/phone-unsigned.apk" `
+  --scheme http `
+  --server-host 127.0.0.1 `
+  --server-port 8080 `
+  --bundle-server `
+  --patched-il2cpp "build/libil2cpp-arm64-patched.so"
+
+# 3. 4-byte page alignment
+zipalign -f -p 4 build/phone-unsigned.apk build/phone-aligned.apk
+
+# 4. Digital signature
+apksigner sign --ks build/debug.keystore --ks-pass pass:android --out build/Transformers-9.2-offline-netflix-edition.apk build/phone-aligned.apk
+
+# 5. Install to device or emulator
+adb install -r --no-incremental build/Transformers-9.2-offline-netflix-edition.apk
+```
+
+---
+
+<a name="中文说明"></a>
+# 中文说明
 
 ### 💖 致谢与上游项目声明 (Upstream Acknowledgment)
 
@@ -59,60 +171,6 @@
 * **内置回环服务器**：单 APK 内部集成完整离线 Python HTTP 伪服务器（Port 8080），内置压缩后的 `tftf_offline_payload.bin` 响应载荷。
 * **零配置即装即玩**：通过 `libdothook.so` + `libil2cpp-arm64-patched.so` 自动将游戏内全部 API 请求重定向至 `127.0.0.1:8080`；
 * **无需电脑、无需外挂 Python、无需 Wi-Fi、无需 Root**，安装后随时随地开机秒进游戏！
-
----
-
-## 🛠️ 全自动化资产提取与转码工具 (Automated Tooling)
-
-为了完全遵循开源合规免责原则，仓库**不直接携带任何受版权保护的商业游戏音画资源**，而是提供了全自动化的提取转码工具 [`tools/extract_netflix_assets.py`](tools/extract_netflix_assets.py)。
-
-用户只需自行提供一份 Netflix 版 APK（`default.apk` 或 `.xapk`），该工具即可一键完成：
-1. 提取克劳莉娅与封锁的专属 AssetBundle 与高清立绘；
-2. 自动跨版本降级转码为 Unity 2020.3.31f1 格式；
-3. 自动修补招式库（`moves.assetbundle`）的弹道实体与瞬时枪口特效；
-4. 自动修补克劳莉娅 S3 大招战斧材质引用与子弹预制体列表。
-
-```bash
-# 一键提取并自动转码 Netflix 独占资源
-python tools/extract_netflix_assets.py --input "path/to/default.apk"
-```
-
----
-
-## 📦 快速编译与打包指南 (Build & Usage Guide)
-
-### 环境要求
-* **Python 3.10+** (安装依赖：`pip install UnityPy`)
-* **Java JDK 17+** (用于 `apksigner`)
-* **Android SDK Build-Tools** (需要 `zipalign` 与 `apksigner`)
-* **官方 9.2.0 基础 APK** (`com.kabam.bigrobot` 版本 9.2.0)
-* **Netflix 版 APK** (用于提取两名独占角色)
-
-### 一键打包步骤
-
-```powershell
-# 1. 提取并转码 Netflix 独占角色资产
-python tools/extract_netflix_assets.py --input "path/to/default.apk"
-
-# 2. 注入新角色、本地化数据、离线服务器与 Native Hook 打包 APK
-python Server/build_phone_apk.py `
-  "path/to/com.kabam.bigrobot_9.2.0.apk" `
-  "build/phone-unsigned.apk" `
-  --scheme http `
-  --server-host 127.0.0.1 `
-  --server-port 8080 `
-  --bundle-server `
-  --patched-il2cpp "build/libil2cpp-arm64-patched.so"
-
-# 3. 4 字节页面对齐
-zipalign -f -p 4 build/phone-unsigned.apk build/phone-aligned.apk
-
-# 4. 数字签名
-apksigner sign --ks build/debug.keystore --ks-pass pass:android --out build/Transformers-9.2-offline-netflix-edition.apk build/phone-aligned.apk
-
-# 5. 安装到手机或模拟器
-adb install -r --no-incremental build/Transformers-9.2-offline-netflix-edition.apk
-```
 
 ---
 
