@@ -135,7 +135,25 @@ def generate_sg_assets(apk_path: str, output_dir: str = "assets_redeco") -> None
     final_wpns_img = Image.fromarray(np.stack([w_out_r, w_out_g, w_out_b, wa], axis=-1).astype(np.uint8))
     final_wpns_img.save(out_dir / "cha_optimusprime_sg_wpns_a.png")
 
-    print("[*] Rebuilding UnityFS AssetBundle for Unity 2020.3.31f1 (Namespace Isolation)...")
+    print("[*] Rebuilding UnityFS AssetBundle for Unity 2020.3.31f1 (Complete CAB & Namespace Isolation)...")
+
+    bf = list(n_env.files.values())[0]
+    old_cab = "CAB-b410173457409b90fdb6c9c74aebad82"
+    new_cab = "CAB-5a77e8ed0714b990adb6c9c74aebad82"
+
+    def replace_str_in_tree(tree_obj, old_s, new_s):
+        if isinstance(tree_obj, dict):
+            for k, v in tree_obj.items():
+                if isinstance(v, str) and old_s in v:
+                    tree_obj[k] = v.replace(old_s, new_s)
+                else:
+                    replace_str_in_tree(v, old_s, new_s)
+        elif isinstance(tree_obj, list):
+            for idx, item in enumerate(tree_obj):
+                if isinstance(item, str) and old_s in item:
+                    tree_obj[idx] = item.replace(old_s, new_s)
+                else:
+                    replace_str_in_tree(item, old_s, new_s)
 
     for obj in n_env.objects:
         if obj.type.name == "Texture2D":
@@ -149,6 +167,9 @@ def generate_sg_assets(apk_path: str, output_dir: str = "assets_redeco") -> None
                 data_obj = obj.read()
                 data_obj.image = final_wpns_img
                 data_obj.save()
+            else:
+                replace_str_in_tree(tree, old_cab, new_cab)
+                obj.save_typetree(tree)
         elif obj.type.name == "AssetBundle":
             tree = obj.read_typetree()
             tree["m_Name"] = "data/optimusprime_sg_voyager2015_odr/optimusprime_sg_voyager2015.assetbundle"
@@ -158,15 +179,31 @@ def generate_sg_assets(apk_path: str, output_dir: str = "assets_redeco") -> None
                 new_k = k.replace("nemesisprime_gs_voyager2015", "optimusprime_sg_voyager2015")
                 new_container.append((new_k, v))
             tree["m_Container"] = new_container
+            replace_str_in_tree(tree, old_cab, new_cab)
             obj.save_typetree(tree)
         elif obj.type.name == "GameObject":
             tree = obj.read_typetree()
             gname = tree.get("m_Name", "")
             if "nemesisprime" in gname.lower():
                 tree["m_Name"] = gname.replace("NemesisPrime", "OptimusPrime_SG").replace("nemesisprime", "optimusprime_sg")
+            replace_str_in_tree(tree, old_cab, new_cab)
+            obj.save_typetree(tree)
+        else:
+            try:
+                tree = obj.read_typetree()
+                replace_str_in_tree(tree, old_cab, new_cab)
                 obj.save_typetree(tree)
+            except Exception:
+                pass
 
-    bf = n_env.file
+    new_files = {}
+    for subfname, subf in bf.files.items():
+        new_subfname = subfname.replace(old_cab, new_cab)
+        if hasattr(subf, "name"):
+            subf.name = new_subfname
+        new_files[new_subfname] = subf
+
+    bf.files = new_files
     bf.version = 7
     bf.version_engine = "2020.3.31f1"
     bf.version_player = "5.x.x"
