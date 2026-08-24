@@ -2,9 +2,10 @@
 """
 generate_starsaber_assets.py
 
-Automated asset synthesis and procedural recoloring tool for Autobot Supreme Commander
-Star Saber (史达). Fuses Jetfire Leader mold, Motormaster Saber Blade & MoveSet,
-Windblade S2 Cyclone, and Jetfire S3 Supersonic Matinee with full CAB deep re-indexing.
+Automated composite grafting tool for Autobot Supreme Commander Star Saber (史达).
+Performs full physical Mesh grafting of Motormaster's Saber Blade, MoveSet re-wiring
+(Motormaster Sword Combo, Motormaster S1, Windblade S2, Jetfire Heavy & S3), procedural
+Victory recoloring, and deep CAB isolation for zero-collision offline execution.
 
 Usage:
     python tools/generate_starsaber_assets.py --input "path/to/com.kabam.bigrobot_9.2.0.apk"
@@ -50,15 +51,20 @@ def generate_starsaber_assets(apk_path: str, output_dir: str = "assets_redeco") 
     print("[*] Synthesizing Star Saber (史达) texture maps...")
 
     j_main_img = None
-    j_wpns_img = None
     for obj in j_env.objects:
         if obj.type.name == "Texture2D":
             tree = obj.read_typetree()
             tname = tree.get("m_Name", "")
             if tname == "cha_jetfire_gs_leader2014_main_a":
                 j_main_img = obj.read().image
-            elif tname == "cha_jetfire_gs_leader2014_wpns_a":
-                j_wpns_img = obj.read().image
+
+    m_wpns_img = None
+    for obj in m_env.objects:
+        if obj.type.name == "Texture2D":
+            tree = obj.read_typetree()
+            tname = tree.get("m_Name", "")
+            if "wpns_a" in tname:
+                m_wpns_img = obj.read().image
 
     # 1. Main Body Texture Recolor (Star Saber Victory Scheme)
     j_arr = np.array(j_main_img.convert("RGBA"), dtype=np.float32)
@@ -99,8 +105,8 @@ def generate_starsaber_assets(apk_path: str, output_dir: str = "assets_redeco") 
     final_main_img = Image.fromarray(np.stack([final_r, final_g, final_b, ja], axis=-1).astype(np.uint8))
     final_main_img.save(out_dir / "cha_starsaber_gs_leader2014_main_a.png")
 
-    # 2. Saber Blade (王者之剑) Weapons Texture Recolor
-    w_arr = np.array(j_wpns_img.convert("RGBA"), dtype=np.float32)
+    # 2. Saber Blade (王者之剑) Weapons Texture Synthesis
+    w_arr = np.array(m_wpns_img.convert("RGBA"), dtype=np.float32)
     wr, wg, wb, wa = w_arr[:, :, 0], w_arr[:, :, 1], w_arr[:, :, 2], w_arr[:, :, 3]
     wlum = (wr * 0.299 + wg * 0.587 + wb * 0.114) / 255.0
 
@@ -112,10 +118,51 @@ def generate_starsaber_assets(apk_path: str, output_dir: str = "assets_redeco") 
     final_wpns_img = Image.fromarray(np.stack([saber_blade_r, saber_blade_g, saber_blade_b, wa], axis=-1).astype(np.uint8))
     final_wpns_img.save(out_dir / "cha_starsaber_gs_leader2014_wpns_a.png")
 
+    print("[*] Performing Physical 3D Mesh Grafting (Motormaster Saber Blade -> Star Saber Right Hand)...")
+    sword_mesh_tree = None
+    for obj in m_env.objects:
+        if obj.type.name == "Mesh":
+            tree = obj.read_typetree()
+            if "sword" in tree.get("m_Name", ""):
+                sword_mesh_tree = tree
+                break
+
+    if sword_mesh_tree is not None:
+        sword_mesh_tree["m_Name"] = "cha_starsaber_gs_leader2014_wpns_sword"
+        for obj in j_env.objects:
+            if obj.path_id == -4439679313609908059 and obj.type.name == "Mesh":
+                obj.save_typetree(sword_mesh_tree)
+                print("[+] Successfully replaced weapon Mesh with Motormaster Saber Blade!")
+
+    print("[*] Rewiring Combat MoveSet (Sword Combo + Motormaster S1 + Windblade S2 + Jetfire S3)...")
+    for obj in j_env.objects:
+        if obj.path_id == 2601823321879744519 and obj.type.name == "MonoBehaviour":
+            tree = obj.read_typetree()
+            moves = tree.get("_moves", [])
+            if len(moves) >= 10:
+                # 0..3: Sword Light Combo 01..04
+                moves[0] = {"_name": "move_sword_attack_light_01", "_animStateName": "Base.LightAttack01", "_asset": {"m_FileID": 3, "m_PathID": -1283304507747283112}}
+                moves[1] = {"_name": "move_sword_attack_light_02", "_animStateName": "Base.LightAttack02", "_asset": {"m_FileID": 3, "m_PathID": 7616440351077033282}}
+                moves[2] = {"_name": "move_sword_attack_light_03", "_animStateName": "Base.LightAttack03", "_asset": {"m_FileID": 3, "m_PathID": -3329254882358104680}}
+                moves[3] = {"_name": "move_sword_attack_light_04", "_animStateName": "Base.LightAttack04", "_asset": {"m_FileID": 3, "m_PathID": 4145453135915101152}}
+                # 4..5: Sword Medium Attacks 01..02
+                moves[4] = {"_name": "move_sword_attack_medium_01", "_animStateName": "Base.MediumAttack01", "_asset": {"m_FileID": 3, "m_PathID": -1389778547757567769}}
+                moves[5] = {"_name": "move_sword_attack_medium_02", "_animStateName": "Base.MediumAttack02", "_asset": {"m_FileID": 3, "m_PathID": -3898379380470346085}}
+                # 6: S1 -> Motormaster Sword Thrust / Slash
+                moves[6] = {"_name": "move_motormaster_special_01", "_animStateName": "Base.SpecialAttack01", "_asset": {"m_FileID": 3, "m_PathID": 8279538491675176653}}
+                # 7: S2 -> Windblade Cyclone Stormfall Dance
+                moves[7] = {"_name": "move_windblade_special_02", "_animStateName": "Base.SpecialAttack02", "_asset": {"m_FileID": 3, "m_PathID": -6524404075124180520}}
+                # 8..9: Sword Block & Block React
+                moves[8] = {"_name": "move_sword_block_react", "_animStateName": "Base.BlockReact", "_asset": {"m_FileID": 3, "m_PathID": 2656533506074151531}}
+                moves[9] = {"_name": "move_sword_block_react", "_animStateName": "Base.BlockReactRanged", "_asset": {"m_FileID": 3, "m_PathID": 6843684539569461767}}
+                tree["_moves"] = moves
+                obj.save_typetree(tree)
+                print("[+] Successfully re-wired MoveSet with Motormaster Sword Combo, S1, and Windblade S2!")
+
     print("[*] Rebuilding Star Saber AssetBundle with Deep CAB & Namespace Isolation...")
 
     bf = list(j_env.files.values())[0]
-    old_cab = "CAB-3614242745988849077"
+    old_cab = "CAB-b8c9c95336c492304a83824d5971bea0"
     for subfname in bf.files.keys():
         if subfname.startswith("CAB-") and not subfname.endswith((".resS", ".resource")):
             old_cab = subfname
@@ -224,7 +271,7 @@ def generate_starsaber_assets(apk_path: str, output_dir: str = "assets_redeco") 
     make_portrait(p_quest_bytes, "portrait_starsaber_quest.png", False)
     make_portrait(p_large_bytes, "starsaber.png", False)
 
-    print(f"[+] Star Saber (史达) assets successfully generated in: {out_dir}/")
+    print(f"[+] Star Saber (史达) composite assets successfully generated in: {out_dir}/")
 
 
 def find_default_apk() -> str | None:
