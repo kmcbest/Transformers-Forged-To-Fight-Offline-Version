@@ -491,8 +491,8 @@ def build(
                             "file": "optimusprime_sg_voyager2015_odr/optimusprime_sg_voyager2015.assetbundle",
                             "ts": 637933503540000000, "deterministic": False, "manifest": "manifest_main",
                             "paths": {
-                                "bundles/characters/merged/optimusprime_sg_voyager2015_lw": "Assets/Bundles/Characters/Merged/NemesisPrime_GS_Voyager2015/NemesisPrime_GS_Voyager2015_lw.prefab",
-                                "bundles/characters/merged/optimusprime_sg_voyager2015": "Assets/Bundles/Characters/Merged/NemesisPrime_GS_Voyager2015/NemesisPrime_GS_Voyager2015.prefab"
+                                "bundles/characters/merged/optimusprime_sg_voyager2015_lw": "Assets/Bundles/Characters/Merged/optimusprime_sg_voyager2015/optimusprime_sg_voyager2015_lw.prefab",
+                                "bundles/characters/merged/optimusprime_sg_voyager2015": "Assets/Bundles/Characters/Merged/optimusprime_sg_voyager2015/optimusprime_sg_voyager2015.prefab"
                             },
                             "directory": "odr", "deps": ["character_fx", "moves", "character_audio"],
                             "contenthash": None, "size": len(sgdata), "hash": 0, "parent": "", "mount": "None"

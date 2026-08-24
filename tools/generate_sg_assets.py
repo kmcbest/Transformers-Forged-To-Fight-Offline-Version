@@ -135,7 +135,7 @@ def generate_sg_assets(apk_path: str, output_dir: str = "assets_redeco") -> None
     final_wpns_img = Image.fromarray(np.stack([w_out_r, w_out_g, w_out_b, wa], axis=-1).astype(np.uint8))
     final_wpns_img.save(out_dir / "cha_optimusprime_sg_wpns_a.png")
 
-    print("[*] Rebuilding UnityFS AssetBundle for Unity 2020.3.31f1...")
+    print("[*] Rebuilding UnityFS AssetBundle for Unity 2020.3.31f1 (Namespace Isolation)...")
 
     for obj in n_env.objects:
         if obj.type.name == "Texture2D":
@@ -149,6 +149,22 @@ def generate_sg_assets(apk_path: str, output_dir: str = "assets_redeco") -> None
                 data_obj = obj.read()
                 data_obj.image = final_wpns_img
                 data_obj.save()
+        elif obj.type.name == "AssetBundle":
+            tree = obj.read_typetree()
+            tree["m_Name"] = "data/optimusprime_sg_voyager2015_odr/optimusprime_sg_voyager2015.assetbundle"
+            tree["m_AssetBundleName"] = "data/optimusprime_sg_voyager2015_odr/optimusprime_sg_voyager2015.assetbundle"
+            new_container = []
+            for k, v in tree.get("m_Container", []):
+                new_k = k.replace("nemesisprime_gs_voyager2015", "optimusprime_sg_voyager2015")
+                new_container.append((new_k, v))
+            tree["m_Container"] = new_container
+            obj.save_typetree(tree)
+        elif obj.type.name == "GameObject":
+            tree = obj.read_typetree()
+            gname = tree.get("m_Name", "")
+            if "nemesisprime" in gname.lower():
+                tree["m_Name"] = gname.replace("NemesisPrime", "OptimusPrime_SG").replace("nemesisprime", "optimusprime_sg")
+                obj.save_typetree(tree)
 
     bf = n_env.file
     bf.version = 7
