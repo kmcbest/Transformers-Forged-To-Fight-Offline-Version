@@ -4,13 +4,18 @@ generate_starsaber_assets.py
 
 Complete composite grafting pipeline for Autobot Supreme Commander Star Saber (史达).
 Performs:
-1. Physical 3D Mesh grafting: Injects Motormaster's Saber Blade into weapon slot
-2. AnimatorOverrideController fight grafting: Injects Motormaster's sword combo & S1,
-   Windblade's S2 AnimationClip, and retains Jetfire's Heavy & S3
+1. Physical 3D Mesh grafting: Replaces Jetfire's rifle with Motormaster's Saber Blade
+   and sets SkinnedMeshRenderer.m_Enabled = True so the sword is always visibly held.
+2. AnimatorOverrideController fight grafting:
+   - Slots [2, 3, 41, 43, 42, 44]: Motormaster Sword Combos (Light 01-04, Medium 01-02)
+   - Slot [4]: Motormaster S1 (motormaster_gs_attackSpecial_01)
+   - Slot [5]: Windblade S2 (Windblade_normal_attackSpecial_02)
+   - Slot [58]: Windblade Heavy Attack (windblade_Normal_attackHeavy)
+   - Slots [51, 52, 53]: Jetfire original Ranged Shooting (Preserved!)
+   - Slot [31]: Jetfire S3 Supersonic Matinee (Preserved!)
 3. MoveSet MoveInfo rewiring for hitboxes and damage frames
 4. Procedural Victory color synthesis (Ceramic White, Victory Red, Cobalt Blue, Imperial Gold)
-5. Single-pass unified serialization ensuring 100% persistence
-6. Deep CAB & namespace isolation (CAB-7e3f890123456789abcdef0123456789)
+5. Deep CAB & namespace isolation (CAB-7e3f890123456789abcdef0123456789)
 
 Usage:
     python tools/generate_starsaber_assets.py --input "path/to/com.kabam.bigrobot_9.2.0.apk"
@@ -112,22 +117,22 @@ def generate_starsaber_assets(apk_path: str, output_dir: str = "assets_redeco") 
     final_wpns_img = Image.fromarray(np.stack([saber_blade_r, saber_blade_g, saber_blade_b, wa], axis=-1).astype(np.uint8))
     final_wpns_img.save(out_dir / "cha_starsaber_gs_leader2014_wpns_a.png")
 
-    print("[*] Extracting Motormaster Saber Blade Mesh...")
+    print("[*] Extracting Motormaster Saber Blade Mesh & S1 Clip...")
     sword_mesh_tree = None
+    mm_s1_clip_tree = None
     for obj in m_env.objects:
         if obj.type.name == "Mesh" and "sword" in obj.read_typetree().get("m_Name", ""):
             sword_mesh_tree = obj.read_typetree()
             sword_mesh_tree["m_Name"] = "cha_starsaber_gs_leader2014_wpns_sword"
-            print("[+] Found Motormaster Saber Blade Mesh")
-            break
+        elif obj.path_id == 3742169598881406520 and obj.type.name == "AnimationClip":
+            mm_s1_clip_tree = obj.read_typetree()
 
     print("[*] Extracting Windblade S2 AnimationClip...")
     wb_s2_clip_tree = None
     for obj in w_env.objects:
-        if obj.type.name == "AnimationClip" and "attackSpecial_02" in obj.read_typetree().get("m_Name", ""):
+        if obj.path_id == -2626501024704866973 and obj.type.name == "AnimationClip":
             wb_s2_clip_tree = obj.read_typetree()
             print(f"[+] Found Windblade S2 Clip: {wb_s2_clip_tree.get('m_Name')}")
-            break
 
     print("[*] Executing Unified Single-Pass Grafting & Deep CAB Isolation...")
 
@@ -155,7 +160,8 @@ def generate_starsaber_assets(apk_path: str, output_dir: str = "assets_redeco") 
                 else:
                     replace_str_in_tree(item, old_s, new_s)
 
-    WB_S2_PATHID = -6524404075124180520
+    MM_S1_SLOT = 1268969612974345036
+    WB_S2_SLOT = 1506806542112082771
 
     for obj in j_env.objects:
         if obj.path_id == -4439679313609908059 and obj.type.name == "Mesh" and sword_mesh_tree is not None:
@@ -163,36 +169,55 @@ def generate_starsaber_assets(apk_path: str, output_dir: str = "assets_redeco") 
             replace_str_in_tree(tree, old_cab, new_cab)
             obj.save_typetree(tree)
             print("[+] Injected Saber Blade Mesh into weapon slot")
-        elif obj.path_id == 1268969612974345036 and wb_s2_clip_tree is not None:
-            tree = wb_s2_clip_tree
-            WB_S2_PATHID = obj.path_id
+        elif obj.path_id in [738325550751503188, -6612254241771744554] and obj.type.name == "SkinnedMeshRenderer":
+            tree = obj.read_typetree()
+            tree["m_Enabled"] = True
             replace_str_in_tree(tree, old_cab, new_cab)
             obj.save_typetree(tree)
-            print(f"[+] Injected Windblade S2 AnimationClip at PathID: {WB_S2_PATHID}")
+            print(f"[+] Enabled SkinnedMeshRenderer (PathID={obj.path_id}) for permanent sword visibility!")
+        elif obj.path_id == MM_S1_SLOT and mm_s1_clip_tree is not None:
+            tree = mm_s1_clip_tree
+            replace_str_in_tree(tree, old_cab, new_cab)
+            obj.save_typetree(tree)
+            print("[+] Injected Motormaster S1 AnimationClip")
+        elif obj.path_id == WB_S2_SLOT and wb_s2_clip_tree is not None:
+            tree = wb_s2_clip_tree
+            replace_str_in_tree(tree, old_cab, new_cab)
+            obj.save_typetree(tree)
+            print("[+] Injected Windblade S2 AnimationClip")
         elif obj.path_id == -8402565767957608701 and obj.type.name == "AnimatorOverrideController":
             tree = obj.read_typetree()
             clips = tree.get("m_Clips", [])
-            # Motormaster Sword combos (FileID 2 = common animation bundle in Jetfire)
-            clips[41]["m_OverrideClip"] = {"m_FileID": 2, "m_PathID": -4980757935915932854}  # Light 01
-            clips[42]["m_OverrideClip"] = {"m_FileID": 2, "m_PathID": 6308122467145514604}   # Light 02
-            clips[43]["m_OverrideClip"] = {"m_FileID": 2, "m_PathID": -4106831893816218441}  # Light 03
-            clips[44]["m_OverrideClip"] = {"m_FileID": 2, "m_PathID": -705967800912522861}   # Light 04
-            clips[45]["m_OverrideClip"] = {"m_FileID": 2, "m_PathID": 7146863003282264883}   # Medium 01
-            clips[46]["m_OverrideClip"] = {"m_FileID": 2, "m_PathID": 7146863003282264883}   # Medium 02
-            # S1 -> Motormaster S1 Sword Thrust
-            clips[51]["m_OverrideClip"] = {"m_FileID": 2, "m_PathID": -3948795660449728024}  # Motormaster S1
-            # S2 -> Windblade S2 Cyclone Dance
-            clips[52]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": WB_S2_PATHID}           # Windblade S2
-            # S3 -> Keeps Jetfire S3 (clips[53])
-            # Heavy -> Keeps Jetfire Heavy (clips[40])
+            # Motormaster Sword Combos:
+            clips[2]["m_OverrideClip"] = {"m_FileID": 2, "m_PathID": 740649405912261330}   # Light 01
+            clips[3]["m_OverrideClip"] = {"m_FileID": 2, "m_PathID": -2512025252598410331} # Light 02
+            clips[41]["m_OverrideClip"] = {"m_FileID": 2, "m_PathID": -4980757935915932854} # Light 03
+            clips[43]["m_OverrideClip"] = {"m_FileID": 2, "m_PathID": -4106831893816218441} # Light 04
+            clips[42]["m_OverrideClip"] = {"m_FileID": 2, "m_PathID": 6308122467145514604}  # Medium 01
+            clips[44]["m_OverrideClip"] = {"m_FileID": 2, "m_PathID": -705967800912522861}  # Medium 02
+            clips[45]["m_OverrideClip"] = {"m_FileID": 2, "m_PathID": 7146863003282264883}  # Sword Block React
+            clips[46]["m_OverrideClip"] = {"m_FileID": 2, "m_PathID": 7146863003282264883}  # Sword Block React Ranged
+            # S1: Motormaster S1 Thrust
+            clips[4]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": MM_S1_SLOT}            # Slot 4 = SpecialAttack01
+            # S2: Windblade S2 Cyclone Dance
+            clips[5]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": WB_S2_SLOT}            # Slot 5 = SpecialAttack02
+            # Heavy Attack: Windblade Heavy Attack
+            clips[58]["m_OverrideClip"] = {"m_FileID": 2, "m_PathID": 2534697979766001969} # Slot 58 = HeavyAttack
+            # Ranged Shooting: Jetfire Original Ranged Shooting (Preserved!)
+            clips[51]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": 7808332553383168359} # Slot 51 = Ranged 01
+            clips[52]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": -7264490462704346615} # Slot 52 = Ranged 02
+            clips[53]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": -1145688102861077554} # Slot 53 = Ranged 03
+            # S3: Jetfire S3 Supersonic Air Raid (Preserved!)
+            clips[31]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": -4700446166485423738} # Slot 31 = SpecialAttack03
+            clips[32]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": 5007219591915846681}  # Slot 32 = SpecialAttack03 Reaction
             tree["m_Clips"] = clips
             replace_str_in_tree(tree, old_cab, new_cab)
             obj.save_typetree(tree)
-            print("[+] Successfully grafted AnimatorOverrideController fight clips!")
+            print("[+] Successfully grafted AnimatorOverrideController fight clips with true slot alignment!")
         elif obj.path_id == 2601823321879744519 and obj.type.name == "MonoBehaviour":
             tree = obj.read_typetree()
             moves = tree.get("_moves", [])
-            if len(moves) >= 10:
+            if len(moves) >= 50:
                 moves[0] = {"_name": "move_sword_attack_light_01", "_animStateName": "Base.LightAttack01", "_asset": {"m_FileID": 3, "m_PathID": -1283304507747283112}}
                 moves[1] = {"_name": "move_sword_attack_light_02", "_animStateName": "Base.LightAttack02", "_asset": {"m_FileID": 3, "m_PathID": 7616440351077033282}}
                 moves[2] = {"_name": "move_sword_attack_light_03", "_animStateName": "Base.LightAttack03", "_asset": {"m_FileID": 3, "m_PathID": -3329254882358104680}}
@@ -203,10 +228,14 @@ def generate_starsaber_assets(apk_path: str, output_dir: str = "assets_redeco") 
                 moves[7] = {"_name": "move_windblade_special_02", "_animStateName": "Base.SpecialAttack02", "_asset": {"m_FileID": 3, "m_PathID": -6524404075124180520}}
                 moves[8] = {"_name": "move_sword_block_react", "_animStateName": "Base.BlockReact", "_asset": {"m_FileID": 3, "m_PathID": 2656533506074151531}}
                 moves[9] = {"_name": "move_sword_block_react", "_animStateName": "Base.BlockReactRanged", "_asset": {"m_FileID": 3, "m_PathID": 6843684539569461767}}
+                moves[41] = {"_name": "move_heavy_plane_donut", "_animStateName": "Base.HeavyAttack", "_asset": {"m_FileID": 3, "m_PathID": 4908036883554989015}}
+                moves[42] = {"_name": "move_attackRanged_jetfire_handGun_right_01", "_animStateName": "Base.RangedAttack01", "_asset": {"m_FileID": 3, "m_PathID": 4026438278308373272}}
+                moves[43] = {"_name": "move_attackRanged_jetfire_handGun_right_02", "_animStateName": "Base.RangedAttack02", "_asset": {"m_FileID": 3, "m_PathID": -3609132228276371244}}
+                moves[44] = {"_name": "move_attackRanged_jetfire_handGun_right_03", "_animStateName": "Base.RangedAttack03", "_asset": {"m_FileID": 3, "m_PathID": -4303718209525360164}}
                 tree["_moves"] = moves
                 replace_str_in_tree(tree, old_cab, new_cab)
                 obj.save_typetree(tree)
-                print("[+] Successfully re-wired MoveSet with Motormaster Sword Combo, S1, and Windblade S2!")
+                print("[+] Successfully re-wired MoveSet with Motormaster Sword Combo, S1, Windblade S2/Heavy, and Jetfire Ranged!")
         elif obj.type.name == "Texture2D":
             tree = obj.read_typetree()
             tname = tree.get("m_Name", "")
