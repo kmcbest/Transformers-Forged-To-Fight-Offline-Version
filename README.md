@@ -77,6 +77,9 @@ python tools/extract_netflix_assets.py --input "path/to/default.apk"
 
 # 2. (Optional) Generate Shattered Glass Optimus Prime (倾天柱) assets from base APK
 python tools/generate_sg_assets.py --input "path/to/com.kabam.bigrobot_9.2.0.apk"
+
+# 3. (Optional) Generate Star Saber (史达) composite assets from base APK
+python tools/generate_starsaber_assets.py --input "path/to/com.kabam.bigrobot_9.2.0.apk"
 ```
 
 ---

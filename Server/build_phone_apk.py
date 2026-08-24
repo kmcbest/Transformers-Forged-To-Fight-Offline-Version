@@ -297,6 +297,7 @@ def build(
                         "deadend_gs_deluxe2015_odr",
                         "optimusprime_gs_v_odr",
                         "optimusprime_sg_voyager2015_odr",
+                        "starsaber_gs_leader2014_odr",
                         "starscream_gs_odr",
                     ]:
                         packs[pkey] = pkey
@@ -315,6 +316,8 @@ def build(
                         "portraits/portrait_deadend_gs_small.jpg",
                         "portraits/portrait_optimus_sg_large.png",
                         "portraits/portrait_optimus_sg_small.jpg",
+                        "portraits/portrait_starsaber_large.png",
+                        "portraits/portrait_starsaber_small.jpg",
                     ]:
                         if pentry not in flist:
                             flist.append(pentry)
@@ -328,6 +331,7 @@ def build(
                     flist = qtoc.get("files", [])
                     for qentry in [
                         "questboard/portrait_optimus_sg_quest.png",
+                        "questboard/portrait_starsaber_quest.png",
                     ]:
                         if qentry not in flist:
                             flist.append(qentry)
@@ -343,6 +347,7 @@ def build(
                         "dialogue/chromia_gs.png",
                         "dialogue/deadend_gs.png",
                         "dialogue/optimus_sg.png",
+                        "dialogue/starsaber.png",
                     ]:
                         if dentry not in flist:
                             flist.append(dentry)
@@ -507,6 +512,39 @@ def build(
                 ("portrait_optimus_sg_small.jpg", "assets/assetpack/portraits_odr/portraits/portrait_optimus_sg_small.jpg"),
                 ("portrait_optimus_sg_quest.png", "assets/assetpack/questboard_odr/questboard/portrait_optimus_sg_quest.png"),
                 ("optimus_sg.png", "assets/assetpack/dialogue_odr/dialogue/optimus_sg.png"),
+            ]:
+                pfile = redeco_dir / fpath
+                if pfile.exists():
+                    zout.writestr(ztarget, pfile.read_bytes())
+
+            ss_bundle = redeco_dir / "starsaber_gs_leader2014.assetbundle"
+            if ss_bundle.exists():
+                ssdata = ss_bundle.read_bytes()
+                zout.writestr("assets/assetpack/starsaber_gs_leader2014_odr/starsaber_gs_leader2014.assetbundle", ssdata)
+                ss_toc = json.dumps({
+                    "tags": [], "pack": "starsaber_gs_leader2014_odr", "scenes": {},
+                    "bundles": {
+                        "starsaber_gs_leader2014": {
+                            "crc": 0, "compression": "LZ4", "typetreehash": None,
+                            "file": "starsaber_gs_leader2014_odr/starsaber_gs_leader2014.assetbundle",
+                            "ts": 637933503540000000, "deterministic": False, "manifest": "manifest_main",
+                            "paths": {
+                                "bundles/characters/merged/starsaber_gs_leader2014_lw": "Assets/Bundles/Characters/Merged/starsaber_gs_leader2014/starsaber_gs_leader2014_lw.prefab",
+                                "bundles/characters/merged/starsaber_gs_leader2014": "Assets/Bundles/Characters/Merged/starsaber_gs_leader2014/starsaber_gs_leader2014.prefab"
+                            },
+                            "directory": "odr", "deps": ["character_fx", "moves", "character_audio"],
+                            "contenthash": None, "size": len(ssdata), "hash": 0, "parent": "", "mount": "None"
+                        }
+                    },
+                    "files": [], "pad": {"deliverymode": 1, "assetpack": "default"}, "version": "9.2.0"
+                }, indent=4)
+                zout.writestr("assets/starsaber_gs_leader2014_odr/toc.txt", ss_toc)
+
+            for fpath, ztarget in [
+                ("portrait_starsaber_large.png", "assets/assetpack/portraits_odr/portraits/portrait_starsaber_large.png"),
+                ("portrait_starsaber_small.jpg", "assets/assetpack/portraits_odr/portraits/portrait_starsaber_small.jpg"),
+                ("portrait_starsaber_quest.png", "assets/assetpack/questboard_odr/questboard/portrait_starsaber_quest.png"),
+                ("starsaber.png", "assets/assetpack/dialogue_odr/dialogue/starsaber.png"),
             ]:
                 pfile = redeco_dir / fpath
                 if pfile.exists():

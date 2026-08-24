@@ -98,6 +98,7 @@ ROSTER = {
     "rhinox_gs_voyager2014":        ("autobot",    "tech", 5),
     "rodimusprime_gs_mp09":         ("autobot",    "tact", 5),
     "sideswipe_gs":                 ("autobot",    "scou", 5),
+    "starsaber_gs_leader2014":      ("autobot",    "tact", 5),
     "sunstreaker_gs_deluxe2008":    ("autobot",    "braw", 5),
     "ultramagnus_gs_leader":        ("autobot",    "tact", 5),
     "wheeljack_gs_mp20":            ("autobot",    "tech", 5),
@@ -299,6 +300,7 @@ _ART_BASE = {
     "rhinox_gs_voyager2014": "rhino_bw",  # Only the Beast Wars-styled art ships.
     "rodimusprime_gs_mp09": "rodimus_gs",
     "sideswipe_gs": "sides_gs",
+    "starsaber_gs_leader2014": "starsaber",
     "sunstreaker_gs_deluxe2008": "sunstreak_gs",
     "ultramagnus_gs_leader": "ultram_gs",
     "wheeljack_gs_mp20": "wheelj_gs",
@@ -414,6 +416,7 @@ _BOT_NAMES = {
     "rhinox_gs_voyager2014": "Rhinox",
     "rodimusprime_gs_mp09": "Rodimus Prime",
     "sideswipe_gs": "Sideswipe",
+    "starsaber_gs_leader2014": "Star Saber",
     "sunstreaker_gs_deluxe2008": "Sunstreaker",
     "ultramagnus_gs_leader": "Ultra Magnus",
     "wheeljack_gs_mp20": "Wheeljack",
