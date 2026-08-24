@@ -111,8 +111,13 @@ def generate_sg_assets(apk_path: str, output_dir: str = "assets_redeco") -> None
               np.where(is_metal_silver, silver_b,
               np.where(is_pure_navy, navy_b, purple_b)))
 
-    final_main_img = Image.fromarray(np.stack([final_r, final_g, final_b, na], axis=-1).astype(np.uint8))
-    final_main_img.save(out_dir / "cha_optimusprime_sg_main_a.png")
+    custom_main_path = out_dir / "cha_optimusprime_sg_main_a.png"
+    if custom_main_path.is_file():
+        print(f"[*] Found custom user-edited main texture: {custom_main_path}, loading custom image...")
+        final_main_img = Image.open(custom_main_path).convert("RGBA")
+    else:
+        final_main_img = Image.fromarray(np.stack([final_r, final_g, final_b, na], axis=-1).astype(np.uint8))
+        final_main_img.save(custom_main_path)
 
     # Weapons Texture
     w_arr = np.array(n_wpns_img.convert("RGBA"), dtype=np.float32)
