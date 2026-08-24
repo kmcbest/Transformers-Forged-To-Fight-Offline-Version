@@ -32,6 +32,10 @@
 /toolchain/
 *.zip
 *.png
-generate_compliance_img.py
-generate_changelog_img.py
 assets_netflix/
+assets_redeco/
+extracted_optimus/
+*.bin
+*.log
+*.jpeg
+[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]*

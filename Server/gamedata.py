@@ -92,6 +92,7 @@ ROSTER = {
     "mirage_gs_deluxe2016":         ("autobot",    "tech", 5),
     "optimusprimal_bw_mp32":        ("autobot",    "braw", 5),
     "optimusprime_cin_tf":          ("autobot",    "braw", 5),
+    "optimusprime_sg_voyager2015":  ("autobot",    "tact", 5),
     "prowl_gs_deluxe2016":          ("autobot",    "scou", 5),
     "ratchet_gs_kabam":             ("autobot",    "tech", 5),
     "rhinox_gs_voyager2014":        ("autobot",    "tech", 5),
@@ -293,6 +294,7 @@ _ART_BASE = {
     "mirage_gs_deluxe2016": "mirag_gs",
     "optimusprimal_bw_mp32": "oprimal_bw",
     "optimusprime_cin_tf": "optimus_c_tf",
+    "optimusprime_sg_voyager2015": "optimus_sg",
     "ratchet_gs_kabam": "ratch_gs",
     "rhinox_gs_voyager2014": "rhino_bw",  # Only the Beast Wars-styled art ships.
     "rodimusprime_gs_mp09": "rodimus_gs",
@@ -406,6 +408,7 @@ _BOT_NAMES = {
     "mirage_gs_deluxe2016": "Mirage",
     "optimusprimal_bw_mp32": "Optimus Primal",
     "optimusprime_cin_tf": "Optimus Prime (MV1)",
+    "optimusprime_sg_voyager2015": "SG Optimus Prime",
     "prowl_gs_deluxe2016": "Prowl",
     "ratchet_gs_kabam": "Ratchet",
     "rhinox_gs_voyager2014": "Rhinox",

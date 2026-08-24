@@ -296,6 +296,7 @@ def build(
                         "chromia_gs_kabam_odr",
                         "deadend_gs_deluxe2015_odr",
                         "optimusprime_gs_v_odr",
+                        "optimusprime_sg_voyager2015_odr",
                         "starscream_gs_odr",
                     ]:
                         packs[pkey] = pkey
@@ -312,11 +313,26 @@ def build(
                         "portraits/portrait_chromia_gs_small.jpg",
                         "portraits/portrait_deadend_gs_large.png",
                         "portraits/portrait_deadend_gs_small.jpg",
+                        "portraits/portrait_optimus_sg_large.png",
+                        "portraits/portrait_optimus_sg_small.jpg",
                     ]:
                         if pentry not in flist:
                             flist.append(pentry)
                     ptoc["files"] = flist
                     data = json.dumps(ptoc, indent=4).encode("utf-8")
+                except Exception:
+                    pass
+            elif info.filename == "assets/questboard_odr/toc.txt":
+                try:
+                    qtoc = json.loads(data.decode("utf-8"))
+                    flist = qtoc.get("files", [])
+                    for qentry in [
+                        "questboard/portrait_optimus_sg_quest.png",
+                    ]:
+                        if qentry not in flist:
+                            flist.append(qentry)
+                    qtoc["files"] = flist
+                    data = json.dumps(qtoc, indent=4).encode("utf-8")
                 except Exception:
                     pass
             elif info.filename == "assets/dialogue_odr/toc.txt":
@@ -326,6 +342,7 @@ def build(
                     for dentry in [
                         "dialogue/chromia_gs.png",
                         "dialogue/deadend_gs.png",
+                        "dialogue/optimus_sg.png",
                     ]:
                         if dentry not in flist:
                             flist.append(dentry)
@@ -456,6 +473,42 @@ def build(
                 ("deadend_gs.png", "assets/assetpack/dialogue_odr/dialogue/deadend_gs.png"),
             ]:
                 pfile = netflix_dir / fpath
+                if pfile.exists():
+                    zout.writestr(ztarget, pfile.read_bytes())
+
+        # Inject Redeco custom characters (SG Optimus Prime / 倾天柱)
+        redeco_dir = Path("assets_redeco")
+        if redeco_dir.is_dir():
+            sg_bundle = redeco_dir / "optimusprime_sg_voyager2015.assetbundle"
+            if sg_bundle.exists():
+                sgdata = sg_bundle.read_bytes()
+                zout.writestr("assets/assetpack/optimusprime_sg_voyager2015_odr/optimusprime_sg_voyager2015.assetbundle", sgdata)
+                sg_toc = json.dumps({
+                    "tags": [], "pack": "optimusprime_sg_voyager2015_odr", "scenes": {},
+                    "bundles": {
+                        "optimusprime_sg_voyager2015": {
+                            "crc": 0, "compression": "LZ4", "typetreehash": None,
+                            "file": "optimusprime_sg_voyager2015_odr/optimusprime_sg_voyager2015.assetbundle",
+                            "ts": 637933503540000000, "deterministic": False, "manifest": "manifest_main",
+                            "paths": {
+                                "bundles/characters/merged/optimusprime_sg_voyager2015_lw": "Assets/Bundles/Characters/Merged/NemesisPrime_GS_Voyager2015/NemesisPrime_GS_Voyager2015_lw.prefab",
+                                "bundles/characters/merged/optimusprime_sg_voyager2015": "Assets/Bundles/Characters/Merged/NemesisPrime_GS_Voyager2015/NemesisPrime_GS_Voyager2015.prefab"
+                            },
+                            "directory": "odr", "deps": ["character_fx", "moves", "character_audio"],
+                            "contenthash": None, "size": len(sgdata), "hash": 0, "parent": "", "mount": "None"
+                        }
+                    },
+                    "files": [], "pad": {"deliverymode": 1, "assetpack": "default"}, "version": "9.2.0"
+                }, indent=4)
+                zout.writestr("assets/optimusprime_sg_voyager2015_odr/toc.txt", sg_toc)
+
+            for fpath, ztarget in [
+                ("portrait_optimus_sg_large.png", "assets/assetpack/portraits_odr/portraits/portrait_optimus_sg_large.png"),
+                ("portrait_optimus_sg_small.jpg", "assets/assetpack/portraits_odr/portraits/portrait_optimus_sg_small.jpg"),
+                ("portrait_optimus_sg_quest.png", "assets/assetpack/questboard_odr/questboard/portrait_optimus_sg_quest.png"),
+                ("optimus_sg.png", "assets/assetpack/dialogue_odr/dialogue/optimus_sg.png"),
+            ]:
+                pfile = redeco_dir / fpath
                 if pfile.exists():
                     zout.writestr(ztarget, pfile.read_bytes())
 

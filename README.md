@@ -1,4 +1,4 @@
-﻿# Transformers: Forged to Fight - Offline Revival Edition
+# Transformers: Forged to Fight - Offline Revival Edition
 ## 《变形金刚：百炼为战》离线完全重制版
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -67,15 +67,16 @@ This fork extends the project with massive gameplay enhancements, full data reco
 
 ---
 
-## 🛠️ Automated Extraction & Transcoding Tool
+## 🛠️ Automated Extraction & Transcoding Tools
 
-To maintain full compliance and copyright safety, this repository **does not distribute proprietary game assets**. Instead, an automated tool [`tools/extract_netflix_assets.py`](tools/extract_netflix_assets.py) is provided.
-
-Users provide their own Netflix edition APK/XAPK to transcode the exclusive assets:
+To maintain full compliance and copyright safety, this repository **does not distribute proprietary game assets**. Automated tools are provided for all content:
 
 ```bash
-# Extract and transcode Netflix exclusive assets in one command
+# 1. (Optional) Extract and transcode Netflix exclusive assets (Chromia & Dead End)
 python tools/extract_netflix_assets.py --input "path/to/default.apk"
+
+# 2. (Optional) Generate Shattered Glass Optimus Prime (倾天柱) assets from base APK
+python tools/generate_sg_assets.py --input "path/to/com.kabam.bigrobot_9.2.0.apk"
 ```
 
 ---
