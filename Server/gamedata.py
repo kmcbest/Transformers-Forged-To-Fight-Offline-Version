@@ -92,7 +92,7 @@ ROSTER = {
     "mirage_gs_deluxe2016":         ("autobot",    "tech", 5),
     "optimusprimal_bw_mp32":        ("autobot",    "braw", 5),
     "optimusprime_cin_tf":          ("autobot",    "braw", 5),
-    "optimusprime_sg_voyager2015":  ("autobot",    "tact", 5),
+    "optimusprime_sg_voyager2015":  ("autobot",    "braw", 5),
     "prowl_gs_deluxe2016":          ("autobot",    "scou", 5),
     "ratchet_gs_kabam":             ("autobot",    "tech", 5),
     "rhinox_gs_voyager2014":        ("autobot",    "tech", 5),

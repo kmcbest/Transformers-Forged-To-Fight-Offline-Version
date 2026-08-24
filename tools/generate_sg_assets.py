@@ -140,6 +140,48 @@ def generate_sg_assets(apk_path: str, output_dir: str = "assets_redeco") -> None
     final_wpns_img = Image.fromarray(np.stack([w_out_r, w_out_g, w_out_b, wa], axis=-1).astype(np.uint8))
     final_wpns_img.save(out_dir / "cha_optimusprime_sg_wpns_a.png")
 
+    # 3. Vehicle / Transformation Truck Texture Synthesis (tform_misc_A)
+    tform_misc_img = None
+    for obj in n_env.objects:
+        if obj.type.name == "Texture2D" and obj.read_typetree().get("m_Name") == "tform_misc_A":
+            tform_misc_img = obj.read().image
+            break
+
+    if tform_misc_img is not None:
+        t_arr = np.array(tform_misc_img.convert("RGBA"), dtype=np.float32)
+        tr, tg, tb, ta = t_arr[:, :, 0], t_arr[:, :, 1], t_arr[:, :, 2], t_arr[:, :, 3]
+        tlum = (tr * 0.299 + tg * 0.587 + tb * 0.114) / 255.0
+
+        is_t_window = (tr > 70) & (tg < 50) & (tb < 50)
+        is_t_chrome = (tlum > 0.45) & (~is_t_window)
+        is_t_chassis = (tlum < 0.18) & (~is_t_window)
+
+        t_purple_r = np.clip(tlum * 195.0 + 40.0, 0, 255)
+        t_purple_g = np.clip(tlum * 20.0 + 5.0, 0, 255)
+        t_purple_b = np.clip(tlum * 255.0 + 40.0, 0, 255)
+
+        t_yellow_r = np.clip(tlum * 60.0 + 240.0, 0, 255)
+        t_yellow_g = np.clip(tlum * 60.0 + 215.0, 0, 255)
+        t_yellow_b = np.clip(tlum * 10.0 + 15.0, 0, 255)
+
+        t_silver_r = np.clip(tlum * 220.0 + 30.0, 0, 255)
+        t_silver_g = np.clip(tlum * 225.0 + 30.0, 0, 255)
+        t_silver_b = np.clip(tlum * 235.0 + 35.0, 0, 255)
+
+        t_navy_r = np.clip(tlum * 35.0 + 8.0, 0, 255)
+        t_navy_g = np.clip(tlum * 65.0 + 15.0, 0, 255)
+        t_navy_b = np.clip(tlum * 130.0 + 25.0, 0, 255)
+
+        tf_r = np.where(is_t_window, t_yellow_r, np.where(is_t_chrome, t_silver_r, np.where(is_t_chassis, t_navy_r, t_purple_r)))
+        tf_g = np.where(is_t_window, t_yellow_g, np.where(is_t_chrome, t_silver_g, np.where(is_t_chassis, t_navy_g, t_purple_g)))
+        tf_b = np.where(is_t_window, t_yellow_b, np.where(is_t_chrome, t_silver_b, np.where(is_t_chassis, t_navy_b, t_purple_b)))
+
+        final_tform_img = Image.fromarray(np.stack([tf_r, tf_g, tf_b, ta], axis=-1).astype(np.uint8))
+        final_tform_img.save(out_dir / "cha_optimusprime_sg_tform_misc_a.png")
+        print("[+] Synthesized Shattered Glass Truck vehicle mode texture!")
+    else:
+        final_tform_img = None
+
     print("[*] Rebuilding UnityFS AssetBundle for Unity 2020.3.31f1 (Complete CAB & Namespace Isolation)...")
 
     bf = list(n_env.files.values())[0]
@@ -171,6 +213,10 @@ def generate_sg_assets(apk_path: str, output_dir: str = "assets_redeco") -> None
             elif tname == "cha_nemesisprime_gs_voyager2015_wpns_a":
                 data_obj = obj.read()
                 data_obj.image = final_wpns_img
+                data_obj.save()
+            elif tname == "tform_misc_A" and final_tform_img is not None:
+                data_obj = obj.read()
+                data_obj.image = final_tform_img
                 data_obj.save()
             else:
                 replace_str_in_tree(tree, old_cab, new_cab)
