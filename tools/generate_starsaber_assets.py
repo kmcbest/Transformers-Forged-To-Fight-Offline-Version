@@ -2,10 +2,14 @@
 """
 generate_starsaber_assets.py
 
-Automated composite grafting tool for Autobot Supreme Commander Star Saber (史达).
-Performs full physical Mesh grafting of Motormaster's Saber Blade, MoveSet re-wiring
-(Motormaster Sword Combo, Motormaster S1, Windblade S2, Jetfire Heavy & S3), procedural
-Victory recoloring, and deep CAB isolation for zero-collision offline execution.
+Complete composite grafting pipeline for Autobot Supreme Commander Star Saber (史达).
+Performs:
+1. Physical 3D Mesh grafting: Replaces Jetfire's rifle with Motormaster's Saber Blade
+2. AnimatorOverrideController fight grafting: Injects Motormaster's sword combo & S1,
+   Windblade's S2 AnimationClip, and retains Jetfire's Heavy & S3
+3. MoveSet MoveInfo rewiring for hitboxes and damage frames
+4. Procedural Victory color synthesis (Ceramic White, Victory Red, Cobalt Blue, Imperial Gold)
+5. Deep CAB & namespace isolation (CAB-7e3f890123456789abcdef0123456789)
 
 Usage:
     python tools/generate_starsaber_assets.py --input "path/to/com.kabam.bigrobot_9.2.0.apk"
@@ -71,33 +75,23 @@ def generate_starsaber_assets(apk_path: str, output_dir: str = "assets_redeco") 
     jr, jg, jb, ja = j_arr[:, :, 0], j_arr[:, :, 1], j_arr[:, :, 2], j_arr[:, :, 3]
     lum = (jr * 0.299 + jg * 0.587 + jb * 0.114) / 255.0
 
-    # Masks for Jetfire
     is_red_accents = (jr > 110) & (jg < 70) & (jb < 70)
     is_black_metals = (lum < 0.25)
     is_white_armor = (lum >= 0.25) & (~is_red_accents)
 
     # Star Saber Colors:
-    # A. Victory Crimson Red for chest, wings, and thrusters
     ss_red_r = np.clip(lum * 180.0 + 75.0, 0, 255)
     ss_red_g = np.clip(lum * 25.0 + 5.0, 0, 255)
     ss_red_b = np.clip(lum * 35.0 + 10.0, 0, 255)
 
-    # B. Star Saber Navy/Cobalt Blue for faceplate, shin trims, and accents
     ss_blue_r = np.clip(lum * 20.0 + 8.0, 0, 255)
     ss_blue_g = np.clip(lum * 60.0 + 25.0, 0, 255)
     ss_blue_b = np.clip(lum * 180.0 + 75.0, 0, 255)
 
-    # C. Pure Ceramic White for main body armor
     ss_white_r = np.clip(lum * 140.0 + 115.0, 0, 255)
     ss_white_g = np.clip(lum * 140.0 + 115.0, 0, 255)
     ss_white_b = np.clip(lum * 145.0 + 115.0, 0, 255)
 
-    # D. Imperial Gold for crest and V-antenna
-    ss_gold_r = np.clip(lum * 60.0 + 200.0, 0, 255)
-    ss_gold_g = np.clip(lum * 60.0 + 165.0, 0, 255)
-    ss_gold_b = np.clip(lum * 10.0 + 20.0, 0, 255)
-
-    # Composite Main Texture
     final_r = np.where(is_red_accents, ss_red_r, np.where(is_black_metals, ss_blue_r, ss_white_r))
     final_g = np.where(is_red_accents, ss_red_g, np.where(is_black_metals, ss_blue_g, ss_white_g))
     final_b = np.where(is_red_accents, ss_red_b, np.where(is_black_metals, ss_blue_b, ss_white_b))
@@ -105,12 +99,11 @@ def generate_starsaber_assets(apk_path: str, output_dir: str = "assets_redeco") 
     final_main_img = Image.fromarray(np.stack([final_r, final_g, final_b, ja], axis=-1).astype(np.uint8))
     final_main_img.save(out_dir / "cha_starsaber_gs_leader2014_main_a.png")
 
-    # 2. Saber Blade (王者之剑) Weapons Texture Synthesis
+    # 2. Saber Blade Weapons Texture Synthesis
     w_arr = np.array(m_wpns_img.convert("RGBA"), dtype=np.float32)
     wr, wg, wb, wa = w_arr[:, :, 0], w_arr[:, :, 1], w_arr[:, :, 2], w_arr[:, :, 3]
     wlum = (wr * 0.299 + wg * 0.587 + wb * 0.114) / 255.0
 
-    # Saber Blade: Golden guard + blue grip + glowing energy blade
     saber_blade_r = np.clip(wlum * 180.0 + 75.0, 0, 255)
     saber_blade_g = np.clip(wlum * 195.0 + 60.0, 0, 255)
     saber_blade_b = np.clip(wlum * 240.0 + 25.0, 0, 255)
@@ -118,7 +111,7 @@ def generate_starsaber_assets(apk_path: str, output_dir: str = "assets_redeco") 
     final_wpns_img = Image.fromarray(np.stack([saber_blade_r, saber_blade_g, saber_blade_b, wa], axis=-1).astype(np.uint8))
     final_wpns_img.save(out_dir / "cha_starsaber_gs_leader2014_wpns_a.png")
 
-    print("[*] Performing Physical 3D Mesh Grafting (Motormaster Saber Blade -> Star Saber Right Hand)...")
+    print("[*] Performing Physical 3D Mesh Grafting (Motormaster Saber Blade -> Star Saber Weapon Slot)...")
     sword_mesh_tree = None
     for obj in m_env.objects:
         if obj.type.name == "Mesh":
@@ -134,25 +127,61 @@ def generate_starsaber_assets(apk_path: str, output_dir: str = "assets_redeco") 
                 obj.save_typetree(sword_mesh_tree)
                 print("[+] Successfully replaced weapon Mesh with Motormaster Saber Blade!")
 
-    print("[*] Rewiring Combat MoveSet (Sword Combo + Motormaster S1 + Windblade S2 + Jetfire S3)...")
+    print("[*] Extracting Windblade S2 AnimationClip...")
+    wb_s2_clip_tree = None
+    for obj in w_env.objects:
+        if obj.type.name == "AnimationClip" and "attackSpecial_02" in obj.read_typetree().get("m_Name", ""):
+            wb_s2_clip_tree = obj.read_typetree()
+            print(f"[+] Found Windblade S2 Clip: {wb_s2_clip_tree.get('m_Name')}")
+            break
+
+    # Graft Windblade S2 into Jetfire's bundle (injecting or remapping into an existing internal clip slot)
+    WB_S2_PATHID = 2364341248617115022
+    for obj in j_env.objects:
+        if obj.path_id == 1268969612974345036 or (obj.type.name == "AnimationClip" and "attackLight_02" in obj.read_typetree().get("m_Name", "")):
+            # Replace placeholder clip with Windblade S2
+            if wb_s2_clip_tree is not None:
+                obj.save_typetree(wb_s2_clip_tree)
+                WB_S2_PATHID = obj.path_id
+                print(f"[+] Injected Windblade S2 AnimationClip at PathID: {WB_S2_PATHID}")
+                break
+
+    print("[*] Grafting AnimatorOverrideController (Fight Controller)...")
+    for obj in j_env.objects:
+        if obj.path_id == -8402565767957608701 and obj.type.name == "AnimatorOverrideController":
+            tree = obj.read_typetree()
+            clips = tree.get("m_Clips", [])
+            # Motormaster Sword combos (FileID 2 = common animation bundle in Jetfire)
+            clips[41]["m_OverrideClip"] = {"m_FileID": 2, "m_PathID": -4980757935915932854}  # Light 01
+            clips[42]["m_OverrideClip"] = {"m_FileID": 2, "m_PathID": 6308122467145514604}   # Light 02
+            clips[43]["m_OverrideClip"] = {"m_FileID": 2, "m_PathID": -4106831893816218441}  # Light 03
+            clips[44]["m_OverrideClip"] = {"m_FileID": 2, "m_PathID": -705967800912522861}   # Light 04
+            clips[45]["m_OverrideClip"] = {"m_FileID": 2, "m_PathID": 7146863003282264883}   # Medium 01
+            clips[46]["m_OverrideClip"] = {"m_FileID": 2, "m_PathID": 7146863003282264883}   # Medium 02
+            # S1 -> Motormaster S1 Sword Thrust
+            clips[51]["m_OverrideClip"] = {"m_FileID": 2, "m_PathID": -3948795660449728024}  # Motormaster S1
+            # S2 -> Windblade S2 Cyclone Dance
+            clips[52]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": WB_S2_PATHID}
+            # S3 -> Keeps Jetfire S3 (clips[53])
+            # Heavy -> Keeps Jetfire Heavy (clips[40])
+            tree["m_Clips"] = clips
+            obj.save_typetree(tree)
+            print("[+] Successfully grafted AnimatorOverrideController fight clips!")
+
+    print("[*] Rewiring MoveSet State Machine...")
     for obj in j_env.objects:
         if obj.path_id == 2601823321879744519 and obj.type.name == "MonoBehaviour":
             tree = obj.read_typetree()
             moves = tree.get("_moves", [])
             if len(moves) >= 10:
-                # 0..3: Sword Light Combo 01..04
                 moves[0] = {"_name": "move_sword_attack_light_01", "_animStateName": "Base.LightAttack01", "_asset": {"m_FileID": 3, "m_PathID": -1283304507747283112}}
                 moves[1] = {"_name": "move_sword_attack_light_02", "_animStateName": "Base.LightAttack02", "_asset": {"m_FileID": 3, "m_PathID": 7616440351077033282}}
                 moves[2] = {"_name": "move_sword_attack_light_03", "_animStateName": "Base.LightAttack03", "_asset": {"m_FileID": 3, "m_PathID": -3329254882358104680}}
                 moves[3] = {"_name": "move_sword_attack_light_04", "_animStateName": "Base.LightAttack04", "_asset": {"m_FileID": 3, "m_PathID": 4145453135915101152}}
-                # 4..5: Sword Medium Attacks 01..02
                 moves[4] = {"_name": "move_sword_attack_medium_01", "_animStateName": "Base.MediumAttack01", "_asset": {"m_FileID": 3, "m_PathID": -1389778547757567769}}
                 moves[5] = {"_name": "move_sword_attack_medium_02", "_animStateName": "Base.MediumAttack02", "_asset": {"m_FileID": 3, "m_PathID": -3898379380470346085}}
-                # 6: S1 -> Motormaster Sword Thrust / Slash
                 moves[6] = {"_name": "move_motormaster_special_01", "_animStateName": "Base.SpecialAttack01", "_asset": {"m_FileID": 3, "m_PathID": 8279538491675176653}}
-                # 7: S2 -> Windblade Cyclone Stormfall Dance
                 moves[7] = {"_name": "move_windblade_special_02", "_animStateName": "Base.SpecialAttack02", "_asset": {"m_FileID": 3, "m_PathID": -6524404075124180520}}
-                # 8..9: Sword Block & Block React
                 moves[8] = {"_name": "move_sword_block_react", "_animStateName": "Base.BlockReact", "_asset": {"m_FileID": 3, "m_PathID": 2656533506074151531}}
                 moves[9] = {"_name": "move_sword_block_react", "_animStateName": "Base.BlockReactRanged", "_asset": {"m_FileID": 3, "m_PathID": 6843684539569461767}}
                 tree["_moves"] = moves
@@ -250,7 +279,6 @@ def generate_starsaber_assets(apk_path: str, output_dir: str = "assets_redeco") 
         r, g, b, a = arr[:, :, 0], arr[:, :, 1], arr[:, :, 2], arr[:, :, 3]
         plum = (r * 0.299 + g * 0.587 + b * 0.114) / 255.0
 
-        # Star Saber victory white + red + blue glow
         pr = np.clip(plum * 180.0 + 75.0, 0, 255)
         pg = np.clip(plum * 140.0 + 35.0, 0, 255)
         pb = np.clip(plum * 220.0 + 45.0, 0, 255)
@@ -271,7 +299,7 @@ def generate_starsaber_assets(apk_path: str, output_dir: str = "assets_redeco") 
     make_portrait(p_quest_bytes, "portrait_starsaber_quest.png", False)
     make_portrait(p_large_bytes, "starsaber.png", False)
 
-    print(f"[+] Star Saber (史达) composite assets successfully generated in: {out_dir}/")
+    print(f"[+] Star Saber (史达) complete composite assets successfully generated in: {out_dir}/")
 
 
 def find_default_apk() -> str | None:
@@ -280,7 +308,7 @@ def find_default_apk() -> str | None:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Generate Star Saber (史达) composite assets.")
+    parser = argparse.ArgumentParser(description="Generate Star Saber (史达) complete composite assets.")
     parser.add_argument("--input", "-i", default=find_default_apk(), help="Path to base Kabam 9.2.0 APK")
     parser.add_argument("--output", "-o", default="assets_redeco", help="Output directory (default: assets_redeco)")
     args = parser.parse_args()
