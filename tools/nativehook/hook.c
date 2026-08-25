@@ -51,16 +51,24 @@ static void seg_handler(int sig, siginfo_t* si, void* uc){
 static FILE* g_f = NULL;
 static void flog(const char* fmt, ...){
     if (!g_f) {
-        const char* paths[] = {
-            "/sdcard/Documents/tftf_debug.log",
-            "/sdcard/Download/tftf_debug.log",
-            "/sdcard/Android/data/com.kabam.bigrobot/files/tftf_debug.log",
-            "/data/data/com.kabam.bigrobot/files/dotkeys.log",
-            NULL
-        };
-        for (int i = 0; paths[i]; i++) {
-            g_f = fopen(paths[i], "a");
-            if (g_f) break;
+        char fname[64];
+        time_t rawtime;
+        time(&rawtime);
+        struct tm* ti = localtime(&rawtime);
+        if (ti) {
+            snprintf(fname, sizeof(fname), "tftf_%04d%02d%02d_%02d%02d%02d.log",
+                     ti->tm_year + 1900, ti->tm_mon + 1, ti->tm_mday,
+                     ti->tm_hour, ti->tm_min, ti->tm_sec);
+        } else {
+            snprintf(fname, sizeof(fname), "tftf_%ld.log", (long)rawtime);
+        }
+
+        char logpath[128];
+        snprintf(logpath, sizeof(logpath), "/data/data/com.kabam.bigrobot/files/%s", fname);
+        g_f = fopen(logpath, "w");
+        if (!g_f) {
+            snprintf(logpath, sizeof(logpath), "/sdcard/Android/data/com.kabam.bigrobot/files/%s", fname);
+            g_f = fopen(logpath, "w");
         }
     }
     if (!g_f) return;
@@ -498,9 +506,9 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0xDE8750, "SP3BEAT", 2, 0 }, // 145 Simulation.FixedUpdate -> drive the alt/robot beat schedule
     { 0xDB1D30, "AIRANGE", 2, 0 }, // 146 AIController.Simulate -> basic Attack while the AI can shoot at range
     { 0x12D9770, "PREFIGHT_REF", 2, 0 }, // 147 PrefightScreenPresentation.Refresh
-    { 0x12D6F14, "PREFIGHT_SET", 2, 0 }, // 148 PrefightScreenPresentation.Setup
-    { 0x12DC694, "PREFIGHT_HCH", 2, 0 }, // 149 PrefightScreenPresentation.OnHeroChanged
-    { 0x12DB53C, "PREFIGHT_PCL", 2, 0 }, // 150 PrefightScreenPresentation.OnPortraitClicked
+    { 0x118E068, "PORTRAIT_REF", 2, 0 }, // 148 HeroPortrait.RefreshFromData
+    { 0xECCFD0,  "NODEINFO_REF", 2, 0 }, // 149 NodeInfoPresentation.Refresh
+    { 0xED1FF0,  "NODEINFO_SET", 2, 0 }, // 150 NodeInfoPresentation.SetupWindow
 };
 #define NH (int)(sizeof(H)/sizeof(H[0]))
 
@@ -3599,6 +3607,43 @@ static void resolve_hero_bid(void* hd, char* out, size_t out_len) {
     }
 }
 
+static int g_opp_class = -1;
+
+static void set_go_active(void* obj, int active) {
+    if (!obj_ok(obj)) return;
+    char clsname[64];
+    memset(clsname, 0, sizeof(clsname));
+    il2cpp_object_class(obj, clsname, sizeof(clsname));
+    void* go = obj;
+    if (!strstr(clsname, "GameObject")) {
+        go = ((void*(*)(void*, void*))(g_base + 0x144B490))(obj, NULL);
+    }
+    if (obj_ok(go)) {
+        ((void(*)(void*, int, void*))(g_base + 0x16A2218))(go, active ? 1 : 0, NULL);
+    }
+}
+
+static void apply_advantage_indicator(void* ai, int relation) {
+    if (!obj_ok(ai)) return;
+    char clsname[64];
+    memset(clsname, 0, sizeof(clsname));
+    if (!il2cpp_object_class(ai, clsname, sizeof(clsname)) || !strstr(clsname, "AdvantageIndicator")) return;
+
+    void* adv_go = fld_p(ai, 0x20);
+    void* dis_go = fld_p(ai, 0x28);
+
+    if (relation == 1) {
+        set_go_active(adv_go, 1);
+        set_go_active(dis_go, 0);
+    } else if (relation == -1) {
+        set_go_active(adv_go, 0);
+        set_go_active(dis_go, 1);
+    } else {
+        set_go_active(adv_go, 0);
+        set_go_active(dis_go, 0);
+    }
+}
+
 static void update_prefight_advantage(void* self) {
     if (!obj_ok(self)) return;
     void* p_stats = fld_p(self, 0x1B0);
@@ -3611,16 +3656,10 @@ static void update_prefight_advantage(void* self) {
     resolve_hero_bid(o_stats, o_bid, sizeof(o_bid));
     int p_class = get_bot_class(p_bid);
     int o_class = get_bot_class(o_bid);
+    if (o_class >= 0) g_opp_class = o_class;
     int rel = get_class_relation(p_class, o_class);
     flog("UPDATE_ADVANTAGE self=%p player=%s(class %d) opp=%s(class %d) -> rel=%d",
          self, p_bid, p_class, o_bid, o_class, rel);
-
-    // Call native RefreshClassBonusContainers
-    ((void(*)(void*, void*))(g_base + 0x12DA360))(self, NULL);
-
-    typedef void (*fn_indicate)(void*, void*);
-    fn_indicate fn_adv = (fn_indicate)(g_base + 0x12EFA24);
-    fn_indicate fn_dis = (fn_indicate)(g_base + 0x12EFA54);
 
     for (int off = 0x20; off <= 0x240; off += 8) {
         void* candidate = fld_p(self, off);
@@ -3628,8 +3667,7 @@ static void update_prefight_advantage(void* self) {
             char clsname[64];
             memset(clsname, 0, sizeof(clsname));
             if (il2cpp_object_class(candidate, clsname, sizeof(clsname)) && strstr(clsname, "AdvantageIndicator")) {
-                if (rel == 1) fn_adv(candidate, NULL);
-                else if (rel == -1) fn_dis(candidate, NULL);
+                apply_advantage_indicator(candidate, rel);
             }
         }
     }
@@ -3653,16 +3691,13 @@ static void update_prefight_advantage(void* self) {
                 }
                 int hp_class = get_bot_class(hp_bid);
                 int hp_rel = get_class_relation(hp_class, o_class);
-                flog("PORTRAIT[%d] bot=%s(class %d) vs opp(class %d) -> rel=%d", i, hp_bid, hp_class, o_class, hp_rel);
-
                 for (int off = 0x20; off <= 0x250; off += 8) {
                     void* candidate = fld_p(hp, off);
                     if (obj_ok(candidate)) {
                         char clsname[64];
                         memset(clsname, 0, sizeof(clsname));
                         if (il2cpp_object_class(candidate, clsname, sizeof(clsname)) && strstr(clsname, "AdvantageIndicator")) {
-                            if (hp_rel == 1) fn_adv(candidate, NULL);
-                            else if (hp_rel == -1) fn_dis(candidate, NULL);
+                            apply_advantage_indicator(candidate, hp_rel);
                         }
                     }
                 }
@@ -3671,24 +3706,54 @@ static void update_prefight_advantage(void* self) {
     }
 }
 
+// 147: PrefightScreenPresentation.Refresh
 void* hook_147(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
     void* r = H[147].orig(a0,a1,a2,a3,a4,a5,a6,a7);
     PROTECT({ update_prefight_advantage(a0); });
     return r;
 }
+
+// 148: HeroPortrait.RefreshFromData
 void* hook_148(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
     void* r = H[148].orig(a0,a1,a2,a3,a4,a5,a6,a7);
-    PROTECT({ update_prefight_advantage(a0); });
+    PROTECT({
+        if (g_opp_class >= 0 && obj_ok(a1)) {
+            char bid[64];
+            memset(bid, 0, sizeof(bid));
+            resolve_hero_bid(a1, bid, sizeof(bid));
+            int my_class = get_bot_class(bid);
+            int rel = get_class_relation(my_class, g_opp_class);
+            flog("PORTRAIT_REF hp=%p bot=%s(class %d) vs opp(class %d) -> rel=%d", a0, bid, my_class, g_opp_class, rel);
+            for (int off = 0x20; off <= 0x250; off += 8) {
+                void* candidate = fld_p(a0, off);
+                if (obj_ok(candidate)) {
+                    char clsname[64];
+                    memset(clsname, 0, sizeof(clsname));
+                    if (il2cpp_object_class(candidate, clsname, sizeof(clsname)) && strstr(clsname, "AdvantageIndicator")) {
+                        apply_advantage_indicator(candidate, rel);
+                    }
+                }
+            }
+        }
+    });
     return r;
 }
+
+// 149: NodeInfoPresentation.Refresh
 void* hook_149(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
     void* r = H[149].orig(a0,a1,a2,a3,a4,a5,a6,a7);
-    PROTECT({ update_prefight_advantage(a0); });
+    PROTECT({
+        flog("NODEINFO_REF this=%p", a0);
+    });
     return r;
 }
+
+// 150: NodeInfoPresentation.SetupWindow
 void* hook_150(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
     void* r = H[150].orig(a0,a1,a2,a3,a4,a5,a6,a7);
-    PROTECT({ update_prefight_advantage(a0); });
+    PROTECT({
+        flog("NODEINFO_SET this=%p", a0);
+    });
     return r;
 }
 static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hook_7,hook_8,
