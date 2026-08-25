@@ -1465,21 +1465,21 @@ BASE_SOCKET_TYPE = "building"
 BASE_BUILDINGS = {
     "bldg_battle_centre": {
         "name": "Battle Centre",
-        "desc": "Coordinate your Autobots' battles from here.",
-        "model": "z_bldg_battle_centre_01",
+        "desc": "The command centre of your base.",
+        "model": "z_bldg_battle_centre_03",
     },
     "bldg_away_team": {
-        "name": "Away Team",
-        "desc": "Send bots on away missions across Cybertron.",
-        "model": "z_bldg_away_team_01",
+        "name": "Away Team Station",
+        "desc": "Coordinates away missions.",
+        "model": "z_bldg_away_team_03",
     },
     "bldg_alliance_help": {
-        "name": "Alliance Beacon",
+        "name": "Alliance Relay",
         "desc": "Call in help from allied Autobots.",
-        "model": "z_bldg_alliance_help_01",
+        "model": "z_bldg_alliance_help_03",
     },
     "bldg_crystal_free": {
-        "name": "Crystal Chamber",
+        "name": "Free Crystal Vault",
         "desc": "Synthesizes a free crystal now and then.",
         "model": "z_bldg_gacha_free_01",
     },
@@ -1495,14 +1495,16 @@ BASE_BUILDINGS = {
     },
 }
 
-# Which building sits in which plot's socket. All positions must be walkable
-# (on the plus-shaped walkway) so their tiles -- and building sockets -- exist.
 BASE_PLACEMENTS = {
     (2, 2): "bldg_battle_centre",
     (2, 1): "bldg_away_team",
     (2, 3): "bldg_alliance_help",
     (1, 2): "bldg_crystal_free",
     (3, 2): "bldg_crystal_daily",
+    (2, 0): "bldg_crystal_premium",
+    (2, 4): "bldg_away_team",
+    (0, 2): "bldg_alliance_help",
+    (4, 2): "bldg_crystal_daily",
 }
 
 

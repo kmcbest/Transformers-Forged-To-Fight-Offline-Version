@@ -35,7 +35,9 @@
 assets_netflix/
 assets_redeco/
 extracted_optimus/
+extracted_apk/
 *.bin
 *.log
 *.jpeg
 [0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]*
+tools/apk_asset_index.json

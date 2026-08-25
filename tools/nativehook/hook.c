@@ -50,7 +50,39 @@ static void seg_handler(int sig, siginfo_t* si, void* uc){
 #define LOG(...) do { __android_log_print(ANDROID_LOG_ERROR, "TFTFHOOK", __VA_ARGS__); flog(__VA_ARGS__); } while(0)
 static FILE* g_f = NULL;
 static void flog(const char* fmt, ...){
-    if (!g_f) g_f = fopen("/data/data/com.kabam.bigrobot/files/dotkeys.log", "a");
+    if (!g_f) {
+        char fname[64];
+        time_t rawtime;
+        time(&rawtime);
+        struct tm* ti = localtime(&rawtime);
+        if (ti) {
+            snprintf(fname, sizeof(fname), "tftf_%04d%02d%02d_%02d%02d%02d.log",
+                     ti->tm_year + 1900, ti->tm_mon + 1, ti->tm_mday,
+                     ti->tm_hour, ti->tm_min, ti->tm_sec);
+        } else {
+            snprintf(fname, sizeof(fname), "tftf_%ld.log", (long)rawtime);
+        }
+
+        const char* dirs[] = {
+            "/sdcard/Documents",
+            "/storage/emulated/0/Documents",
+            "/sdcard/Download",
+            "/storage/emulated/0/Download",
+            "/sdcard/Android/data/com.kabam.bigrobot/files",
+            "/data/data/com.kabam.bigrobot/files",
+            NULL
+        };
+
+        for (int i = 0; dirs[i]; i++) {
+            char logpath[256];
+            snprintf(logpath, sizeof(logpath), "%s/%s", dirs[i], fname);
+            g_f = fopen(logpath, "w");
+            if (g_f) {
+                __android_log_print(ANDROID_LOG_ERROR, "TFTFHOOK", "Logging to %s", logpath);
+                break;
+            }
+        }
+    }
     if (!g_f) return;
     va_list ap; va_start(ap, fmt); vfprintf(g_f, fmt, ap); va_end(ap);
     fputc('\n', g_f); fflush(g_f);
@@ -985,17 +1017,9 @@ void* hook_78(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
 }
 // ---- base-board render diagnostics (slot 79) ----
 #define FORCELIGHT 1
-#define MATSWAP 0
-// KEYBOOST: 1 = force KEYBOOST_VAL as the _UnitIntensity of the BASE key light only.
-// See the block at the end of log_tod_lighting for what it proves.
-// s28 re-test: re-enabled now that BUILDINGS exist on the board. The s26 negative was
-// measured against the terrain only, whose material produces no lit output regardless
-// (s27) -- nothing on the board back then COULD respond to light. The building meshes
-// use their own materials from buildings.assetbundle, so if they appear under boost the
-// base's light/exposure combo is the residual culprit; if they stay black, the building
-// materials fail the same way the terrain's does.
-#define KEYBOOST 1
-#define KEYBOOST_VAL 12000.0f
+#define MATSWAP 1
+#define KEYBOOST 0
+#define KEYBOOST_VAL 1.0f
 // Base-board visibility workarounds: BLDGACT force-activates a building GameObject the
 // game itself disables (not a root-cause fix).  SHFIX injects flat-white spherical-harmonic
 // ambient because baked lighting supplies none (a cosmetic workaround).  The base terrain's
@@ -2542,8 +2566,6 @@ void* hook_90(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
     });
     return r;
 }
-// ONBLDSET (slot 93): BaseNodeController.OnBuildingSet(this=a0, buildingId=a1, go=a2).
-// Logs the model-name string and whether a real GameObject arrived.
 void* hook_93(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
     PROTECT({
         char nm[64]; nm[0]=0;
@@ -2554,7 +2576,33 @@ void* hook_93(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
         if ((uintptr_t)a2) dump_go("ONBLDSET", a2);
     });
     void* r = H[93].orig(a0,a1,a2,a3,a4,a5,a6,a7);
-    PROTECT({ if ((uintptr_t)a2) dump_go("ONBLDSET-post", a2); });
+    PROTECT({
+        if ((uintptr_t)a2) {
+            void (*go_set_active)(void*,int,void*) = (void(*)(void*,int,void*))(g_base + 0x1B50CA8);
+            void* (*comp_get_go)(void*,void*) = (void*(*)(void*,void*))(g_base + 0x1B4BD28);
+            void* (*go_gcic)(void*,void*) = (void*(*)(void*,void*))(g_base + 0x11E5B70);
+            void* (*go_transform)(void*,void*) = (void*(*)(void*,void*))(g_base + 0x1B50BD8);
+            void  (*tr_set_parent)(void*,void*,int,void*) = (void(*)(void*,void*,int,void*))(g_base + 0x16B877C);
+            void* ctr = go_transform(a2, NULL);
+            if (obj_ok(ctr)) tr_set_parent(ctr, NULL, 1, NULL);
+            go_set_active(a2, 1, NULL);
+            bldg_track(a2);
+            void* gcicmi = fld_p(*(void**)(g_base + 0x2C33E58), 0x0);
+            void* rends = obj_ok(gcicmi) ? go_gcic(a2, gcicmi) : NULL;
+            int rn = obj_ok(rends) ? (int)*(int32_t*)((uintptr_t)rends + 0x18) : 0;
+            for (int k = 0; k < rn; k++) {
+                void* rr = *(void**)((uintptr_t)rends + 0x20 + 8*k);
+                if (!obj_ok(rr)) continue;
+                void* rgo = comp_get_go(rr, NULL);
+                if (obj_ok(rgo)) {
+                    void* rtr = go_transform(rgo, NULL);
+                    if (obj_ok(rtr)) tr_set_parent(rtr, ctr, 1, NULL);
+                    go_set_active(rgo, 1, NULL);
+                }
+            }
+            dump_go("ONBLDSET-post", a2);
+        }
+    });
     return r;
 }
 // BLDGSWAP (slot 95): both the DefaultRelic fallback path and the later real-name refresh
@@ -2645,12 +2693,25 @@ void* hook_95(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                 if (obj_ok(a1)) obj_set_name(clone,a1,NULL);
                 void* parent_go=fld_p(a0,0xB0);
                 void* parent_tr=obj_ok(parent_go)?go_transform(parent_go,NULL):NULL;
-                if (obj_ok(ctr) && obj_ok(parent_tr)) tr_set_parent(ctr,parent_tr,1,NULL);
-                if (obj_ok(ctr) && obj_ok(a2)) { V3 pos=tr_get_position(a2,NULL); tr_set_position(ctr,pos,NULL); }
+                if (obj_ok(ctr) && obj_ok(a2)) {
+                    V3 pos=tr_get_position(a2,NULL);
+                    pos.x *= 3.5f;
+                    pos.z *= 3.5f;
+                    tr_set_position(ctr,pos,NULL);
+                }
 #if BLDGSCALE
                 if (obj_ok(ctr)) { V3 scale; scale.x=scale.y=scale.z=BLDGSCALE_VAL; tr_set_local_scale(ctr,scale,NULL); flog("BLDGSCALE applied key='%s' mult=%.2f",resolved,BLDGSCALE_VAL); }
 #endif
                 go_set_active(clone,1,NULL);
+                void* gcicmi = fld_p(*(void**)(g_base + 0x2C33E58), 0x0);
+                void* rends = obj_ok(gcicmi) ? go_gcic(clone, gcicmi) : NULL;
+                int rn = obj_ok(rends) ? (int)*(int32_t*)((uintptr_t)rends + 0x18) : 0;
+                for (int k = 0; k < rn; k++) {
+                    void* rr = *(void**)((uintptr_t)rends + 0x20 + 8*k);
+                    if (!obj_ok(rr)) continue;
+                    void* rgo = comp_get_go(rr, NULL);
+                    if (obj_ok(rgo)) go_set_active(rgo, 1, NULL);
+                }
                 replacement=clone;
                 flog("BLDGSWAP outcome=return-clone key='%s' clone=%p parent=%p node=%p",resolved,clone,parent_tr,a2);
                 dump_go("BLDGSWAP-return",clone);

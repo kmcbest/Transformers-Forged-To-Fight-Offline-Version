@@ -288,6 +288,11 @@ def build(
                 pmatpath = Path("assets_netflix/character_matinee_procedural.assetbundle")
                 if pmatpath.exists():
                     data = pmatpath.read_bytes()
+            elif info.filename.startswith("assets/assetpack/") and info.filename.endswith(".assetbundle"):
+                b_name = Path(info.filename).name
+                rpath = Path("assets_redeco") / b_name
+                if rpath.exists():
+                    data = rpath.read_bytes()
             elif info.filename == "assets/packs.txt":
                 try:
                     pdict = json.loads(data.decode("utf-8"))
@@ -522,25 +527,29 @@ def build(
             for bpath in redeco_dir.glob("*.assetbundle"):
                 bot_id = bpath.stem
                 bdata = bpath.read_bytes()
-                zout.writestr(f"assets/assetpack/{bot_id}_odr/{bot_id}.assetbundle", bdata)
-                b_toc = json.dumps({
-                    "tags": [], "pack": f"{bot_id}_odr", "scenes": {},
-                    "bundles": {
-                        bot_id: {
-                            "crc": 0, "compression": "LZ4", "typetreehash": None,
-                            "file": f"{bot_id}_odr/{bot_id}.assetbundle",
-                            "ts": 637933503540000000, "deterministic": False, "manifest": "manifest_main",
-                            "paths": {
-                                f"bundles/characters/merged/{bot_id}_lw": f"Assets/Bundles/Characters/Merged/{bot_id}/{bot_id}_lw.prefab",
-                                f"bundles/characters/merged/{bot_id}": f"Assets/Bundles/Characters/Merged/{bot_id}/{bot_id}.prefab"
-                            },
-                            "directory": "odr", "deps": ["character_fx", "moves", "character_audio"],
-                            "contenthash": None, "size": len(bdata), "hash": 0, "parent": "", "mount": "None"
-                        }
-                    },
-                    "files": [], "pad": {"deliverymode": 1, "assetpack": "default"}, "version": "9.2.0"
-                }, indent=4)
-                zout.writestr(f"assets/{bot_id}_odr/toc.txt", b_toc)
+                bundle_target = f"assets/assetpack/{bot_id}_odr/{bot_id}.assetbundle"
+                toc_target = f"assets/{bot_id}_odr/toc.txt"
+                if bundle_target not in names:
+                    zout.writestr(bundle_target, bdata)
+                if toc_target not in names:
+                    b_toc = json.dumps({
+                        "tags": [], "pack": f"{bot_id}_odr", "scenes": {},
+                        "bundles": {
+                            bot_id: {
+                                "crc": 0, "compression": "LZ4", "typetreehash": None,
+                                "file": f"{bot_id}_odr/{bot_id}.assetbundle",
+                                "ts": 637933503540000000, "deterministic": False, "manifest": "manifest_main",
+                                "paths": {
+                                    f"bundles/characters/merged/{bot_id}_lw": f"Assets/Bundles/Characters/Merged/{bot_id}/{bot_id}_lw.prefab",
+                                    f"bundles/characters/merged/{bot_id}": f"Assets/Bundles/Characters/Merged/{bot_id}/{bot_id}.prefab"
+                                },
+                                "directory": "odr", "deps": ["character_fx", "moves", "character_audio"],
+                                "contenthash": None, "size": len(bdata), "hash": 0, "parent": "", "mount": "None"
+                            }
+                        },
+                        "files": [], "pad": {"deliverymode": 1, "assetpack": "default"}, "version": "9.2.0"
+                    }, indent=4)
+                    zout.writestr(toc_target, b_toc)
 
             # Inject all portraits and dialogue icons from assets_redeco
             for pfile in redeco_dir.glob("portrait_*_large.png"):
