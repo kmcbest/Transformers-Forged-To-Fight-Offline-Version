@@ -15,7 +15,7 @@
         "en": "Arcee",
         "zh": "阿尔茜",
         "faction": "汽车人",
-        "note": "勇士系"
+        "note": "战士系"
     },
     "blaster_gs_leader2016": {
         "en": "Blaster",
@@ -33,7 +33,7 @@
         "en": "Bumblebee",
         "zh": "小黄蜂",
         "faction": "汽车人",
-        "note": "经典G1 侦察系"
+        "note": "经典G1 侦查系"
     },
     "cheetor_bw_transmetal": {
         "en": "Cheetor",
@@ -45,7 +45,7 @@
         "en": "Chromia",
         "zh": "克劳莉娅",
         "faction": "汽车人",
-        "note": "经典G1 勇士系"
+        "note": "经典G1 战士系"
     },
     "cliffjumper_gs_kabam": {
         "en": "Cliffjumper",
@@ -69,7 +69,7 @@
         "en": "Grimlock",
         "zh": "钢锁",
         "faction": "汽车人",
-        "note": "恐龙派领袖 格斗系"
+        "note": "恐龙派领袖 斗士系"
     },
     "hotrod_cin_tlk": {
         "en": "Hot Rod",
@@ -93,13 +93,13 @@
         "en": "Ironhide",
         "zh": "G1铁皮",
         "faction": "汽车人",
-        "note": "经典G1 格斗系"
+        "note": "经典G1 斗士系"
     },
     "jazz_gs_twm05": {
         "en": "Jazz",
         "zh": "爵士",
         "faction": "汽车人",
-        "note": "经典G1 侦察系"
+        "note": "经典G1 侦查系"
     },
     "jetfire_gs_leader2014": {
         "en": "Jetfire",
@@ -123,13 +123,13 @@
         "en": "Optimus Prime (MV1)",
         "zh": "电影擎天柱",
         "faction": "汽车人",
-        "note": "真人电影1代 格斗系"
+        "note": "真人电影1代 斗士系"
     },
     "prowl_gs_deluxe2016": {
         "en": "Prowl",
         "zh": "警车",
         "faction": "汽车人",
-        "note": "经典G1 侦察系"
+        "note": "经典G1 侦查系"
     },
     "ratchet_gs_kabam": {
         "en": "Ratchet",
@@ -153,13 +153,13 @@
         "en": "Sideswipe",
         "zh": "横炮",
         "faction": "汽车人",
-        "note": "经典G1 侦察系"
+        "note": "经典G1 侦查系"
     },
     "sunstreaker_gs_deluxe2008": {
         "en": "Sunstreaker",
         "zh": "飞毛腿",
         "faction": "汽车人",
-        "note": "经典G1 格斗系"
+        "note": "经典G1 斗士系"
     },
     "ultramagnus_gs_leader": {
         "en": "Ultra Magnus",
@@ -177,7 +177,7 @@
         "en": "Windblade",
         "zh": "风刃",
         "faction": "汽车人",
-        "note": "风刃 勇士系"
+        "note": "风刃 战士系"
     },
     "barricade_cin_dotm": {
         "en": "Barricade",
@@ -189,7 +189,7 @@
         "en": "Bludgeon",
         "zh": "雷震",
         "faction": "霸天虎",
-        "note": "武士浪人 勇士系"
+        "note": "武士浪人 战士系"
     },
     "bonecrusher_cin_rotf": {
         "en": "Bonecrusher",
@@ -213,7 +213,7 @@
         "en": "Dirge",
         "zh": "挽歌",
         "faction": "霸天虎",
-        "note": "挽歌 勇士系"
+        "note": "挽歌 战士系"
     },
     "galvatron_gs_voyager2016": {
         "en": "Galvatron",
@@ -231,7 +231,7 @@
         "en": "Kickback",
         "zh": "反冲",
         "faction": "霸天虎",
-        "note": "昆虫部队 侦察系"
+        "note": "昆虫部队 侦查系"
     },
     "megatron_cin_rotf": {
         "en": "Megatron (ROTF)",
@@ -261,13 +261,13 @@
         "en": "Motormaster",
         "zh": "汽车大师",
         "faction": "霸天虎",
-        "note": "飞虎队领袖 格斗系"
+        "note": "飞虎队领袖 斗士系"
     },
     "necrotronus_gs_kabam": {
         "en": "Necrotronus",
         "zh": "亡灵天尊",
         "faction": "霸天虎",
-        "note": "殁天仇 勇士系"
+        "note": "殁天仇 战士系"
     },
     "nemesisprime_gs_voyager2015": {
         "en": "Nemesis Prime",
@@ -303,7 +303,7 @@
         "en": "Slipstream",
         "zh": "滑流",
         "faction": "霸天虎",
-        "note": "狂派女寻猎者 侦察系"
+        "note": "狂派女寻猎者 侦查系"
     },
     "soundblaster_gs_mp13b": {
         "en": "Soundblaster",
@@ -321,13 +321,13 @@
         "en": "Thundercracker",
         "zh": "惊天雷",
         "faction": "霸天虎",
-        "note": "经典G1 格斗系"
+        "note": "经典G1 斗士系"
     },
     "tantrum_gs_kabam": {
         "en": "Tantrum",
         "zh": "野牛",
         "faction": "霸天虎",
-        "note": "巨兽部队 格斗系"
+        "note": "巨兽部队 斗士系"
     },
     "waspinator_gs_deluxe": {
         "en": "Waspinator",
@@ -345,7 +345,7 @@
         "en": "Sharkticon (Brawler)",
         "zh": "饿鲨",
         "faction": "杂兵 (Sharkticon)",
-        "note": "格斗系"
+        "note": "斗士系"
     },
     "sharkticon_gs_demolition": {
         "en": "Sharkticon (Demolition)",
@@ -357,7 +357,7 @@
         "en": "Sharkticon (Scout)",
         "zh": "饿鲨",
         "faction": "杂兵 (Sharkticon)",
-        "note": "侦察系"
+        "note": "侦查系"
     },
     "sharkticon_gs_tactician": {
         "en": "Sharkticon (Tactician)",
@@ -375,6 +375,48 @@
         "en": "Sharkticon (Warrior)",
         "zh": "饿鲨",
         "faction": "杂兵 (Sharkticon)",
-        "note": "勇士系"
+        "note": "战士系"
+    },
+    "thrust_gs_deluxe2008": {
+        "en": "Thrust",
+        "zh": "冲锋",
+        "faction": "霸天虎",
+        "note": "侦查系"
+    },
+    "acidstorm_gs_leader2015": {
+        "en": "Acid Storm",
+        "zh": "酸雨",
+        "faction": "霸天虎",
+        "note": "科技系"
+    },
+    "ionstorm_gs_leader2015": {
+        "en": "Ion Storm",
+        "zh": "离子风",
+        "faction": "霸天虎",
+        "note": "战术系"
+    },
+    "novastorm_gs_leader2015": {
+        "en": "Nova Storm",
+        "zh": "新星风",
+        "faction": "霸天虎",
+        "note": "爆破系"
+    },
+    "sunstorm_gs_leader2015": {
+        "en": "Sunstorm",
+        "zh": "太阳风",
+        "faction": "霸天虎",
+        "note": "战士系"
+    },
+    "bitstream_gs_leader2015": {
+        "en": "Bitstream",
+        "zh": "比特流",
+        "faction": "霸天虎",
+        "note": "科技系"
+    },
+    "hotlink_gs_leader2015": {
+        "en": "Hotlink",
+        "zh": "热链接",
+        "faction": "霸天虎",
+        "note": "斗士系"
     }
 }

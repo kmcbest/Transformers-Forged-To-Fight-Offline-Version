@@ -136,7 +136,7 @@ adb install -r --no-incremental build/Transformers-9.2-offline-netflix-edition.a
 * **全五星满阶满级**：全员配置顶级五星 5/50 满级属性面板（战力 PI、生命值、基础攻击力、暴击率、暴击伤害与护甲等）。
 * **全技能条开放**：进入战斗即刻解锁全部三段特殊能量槽（S1 / S2 / S3 必杀特写大招）。
 * **职业与阵营精确校正**：
-  * 纠正了全员职业分类与克制关系：**勇士 (Warrior)**、**侦察 (Scout)**、**科技 (Tech)**、**爆破 (Demolitions)**、**战术 (Tactician)**、**格斗 (Brawler)**；
+  * 纠正了全员职业分类与克制关系：**战士 (Warrior)**、**侦查 (Scout)**、**科技 (Tech)**、**爆破 (Demolitions)**、**战术 (Tactician)**、**斗士 (Brawler)**；
   * 校准阵营归属：汽车人 (Autobots)、霸天虎 (Decepticons)、巨无霸 (Maximals)、原始兽 (Predacons)。
 
 ### 2. 🇨🇳 全中文本地化支持 (Full Chinese Localization)
@@ -144,7 +144,7 @@ adb install -r --no-incremental build/Transformers-9.2-offline-netflix-edition.a
 * **本地化界面适配**：修复职业名称、阵营标签、更新公告以及合规声明的中文本地化图文呈现。
 
 ### 3. 🎬 Netflix 独占角色深度集成 (Netflix Exclusive Bots: Chromia & Dead End)
-* **克劳莉娅（Chromia）**：汽车人阵营 / 勇士系（Warrior），手持标志性能量战斧与专属小手枪！
+* **克劳莉娅（Chromia）**：汽车人阵营 / 战士系（Warrior），手持标志性能量战斧与专属小手枪！
 * **封锁（Dead End）**：霸天虎阵营 / 爆破系（Demolitions），配备专属近战霰弹与重火力轰炸！
 * **跨版本 UnityFS 格式降级引擎**：
   * Netflix 独占版采用 **Unity 2021.3.39f1 (UnityFS v8)**，而官方 9.2.0 运行在 **Unity 2020.3.31f1 (UnityFS v7)**；

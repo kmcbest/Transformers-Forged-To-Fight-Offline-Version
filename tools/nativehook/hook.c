@@ -485,6 +485,10 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     // that walks the alternation schedule while the cinematic latch is up.
     { 0xDE8750, "SP3BEAT", 2, 0 }, // 145 Simulation.FixedUpdate -> drive the alt/robot beat schedule
     { 0xDB1D30, "AIRANGE", 2, 0 }, // 146 AIController.Simulate -> basic Attack while the AI can shoot at range
+    { 0x12DA360, "PREFIGHT_CB", 2, 0 }, // 147 PrefightScreenPresentation.RefreshClassBonusContainers
+    { 0x12D9E30, "PREFIGHT_HD", 2, 0 }, // 148 PrefightScreenPresentation.RefreshHeroData
+    { 0x12EFA24, "ADV_IND_ADV", 2, 0 }, // 149 AdvantageIndicator.IndicateAdvantage
+    { 0x12EFA54, "ADV_IND_DIS", 2, 0 }, // 150 AdvantageIndicator.IndicateDisadvantage
 };
 #define NH (int)(sizeof(H)/sizeof(H[0]))
 
@@ -3458,6 +3462,30 @@ void hook_146(void* self, float dT, void* method){
         }
     });
 }
+void* hook_147(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
+    PROTECT({
+        flog("PREFIGHT_CB RefreshClassBonusContainers this=%p", a0);
+    });
+    return H[147].orig(a0,a1,a2,a3,a4,a5,a6,a7);
+}
+void* hook_148(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
+    PROTECT({
+        flog("PREFIGHT_HD RefreshHeroData this=%p", a0);
+    });
+    return H[148].orig(a0,a1,a2,a3,a4,a5,a6,a7);
+}
+void* hook_149(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
+    PROTECT({
+        flog("ADV_IND_ADV IndicateAdvantage this=%p", a0);
+    });
+    return H[149].orig(a0,a1,a2,a3,a4,a5,a6,a7);
+}
+void* hook_150(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
+    PROTECT({
+        flog("ADV_IND_DIS IndicateDisadvantage this=%p", a0);
+    });
+    return H[150].orig(a0,a1,a2,a3,a4,a5,a6,a7);
+}
 static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hook_7,hook_8,
     hook_9,hook_10,hook_11,hook_12,hook_13,hook_14,hook_15,hook_16,hook_17,hook_18,hook_19,hook_20,hook_21,
     hook_22,hook_23,hook_24,hook_25,hook_26,hook_27,hook_28,hook_29,hook_30,
@@ -3473,7 +3501,7 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     hook_115,hook_116,hook_117,hook_118,hook_119,hook_120,hook_121,hook_122,hook_123,hook_124,hook_125,hook_126,hook_127,
     hook_128,hook_129,hook_130,hook_131,hook_132,hook_133,hook_134,hook_135,hook_136,hook_137,
     hook_138,hook_139,hook_140,hook_141,hook_142,hook_143,hook_144,
-    hook_145,hook_146 };
+    hook_145,hook_146,hook_147,hook_148,hook_149,hook_150 };
 
 static void write_jump(uint8_t* dst, void* target){
     uint32_t* p = (uint32_t*)dst;
