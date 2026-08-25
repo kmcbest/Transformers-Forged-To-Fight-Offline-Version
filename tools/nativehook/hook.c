@@ -50,7 +50,19 @@ static void seg_handler(int sig, siginfo_t* si, void* uc){
 #define LOG(...) do { __android_log_print(ANDROID_LOG_ERROR, "TFTFHOOK", __VA_ARGS__); flog(__VA_ARGS__); } while(0)
 static FILE* g_f = NULL;
 static void flog(const char* fmt, ...){
-    if (!g_f) g_f = fopen("/data/data/com.kabam.bigrobot/files/dotkeys.log", "a");
+    if (!g_f) {
+        const char* paths[] = {
+            "/sdcard/Documents/tftf_debug.log",
+            "/sdcard/Download/tftf_debug.log",
+            "/sdcard/Android/data/com.kabam.bigrobot/files/tftf_debug.log",
+            "/data/data/com.kabam.bigrobot/files/dotkeys.log",
+            NULL
+        };
+        for (int i = 0; paths[i]; i++) {
+            g_f = fopen(paths[i], "a");
+            if (g_f) break;
+        }
+    }
     if (!g_f) return;
     va_list ap; va_start(ap, fmt); vfprintf(g_f, fmt, ap); va_end(ap);
     fputc('\n', g_f); fflush(g_f);
