@@ -497,10 +497,10 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     // that walks the alternation schedule while the cinematic latch is up.
     { 0xDE8750, "SP3BEAT", 2, 0 }, // 145 Simulation.FixedUpdate -> drive the alt/robot beat schedule
     { 0xDB1D30, "AIRANGE", 2, 0 }, // 146 AIController.Simulate -> basic Attack while the AI can shoot at range
-    { 0x12DA360, "PREFIGHT_CB", 2, 0 }, // 147 PrefightScreenPresentation.RefreshClassBonusContainers
-    { 0x12D9E30, "PREFIGHT_HD", 2, 0 }, // 148 PrefightScreenPresentation.RefreshHeroData
-    { 0x12EFA24, "ADV_IND_ADV", 2, 0 }, // 149 AdvantageIndicator.IndicateAdvantage
-    { 0x12EFA54, "ADV_IND_DIS", 2, 0 }, // 150 AdvantageIndicator.IndicateDisadvantage
+    { 0x12D9770, "PREFIGHT_REF", 2, 0 }, // 147 PrefightScreenPresentation.Refresh
+    { 0x12D6F14, "PREFIGHT_SET", 2, 0 }, // 148 PrefightScreenPresentation.Setup
+    { 0x12DC694, "PREFIGHT_HCH", 2, 0 }, // 149 PrefightScreenPresentation.OnHeroChanged
+    { 0x12DB53C, "PREFIGHT_PCL", 2, 0 }, // 150 PrefightScreenPresentation.OnPortraitClicked
 };
 #define NH (int)(sizeof(H)/sizeof(H[0]))
 
@@ -3599,101 +3599,97 @@ static void resolve_hero_bid(void* hd, char* out, size_t out_len) {
     }
 }
 
-void* hook_147(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
-    PROTECT({
-        void* p_stats = fld_p(a0, 0x1B0);
-        void* o_stats = fld_p(a0, 0x1B8);
-        char p_bid[64];
-        char o_bid[64];
-        memset(p_bid, 0, sizeof(p_bid));
-        memset(o_bid, 0, sizeof(o_bid));
-        resolve_hero_bid(p_stats, p_bid, sizeof(p_bid));
-        resolve_hero_bid(o_stats, o_bid, sizeof(o_bid));
-        int p_class = get_bot_class(p_bid);
-        int o_class = get_bot_class(o_bid);
-        int rel = get_class_relation(p_class, o_class);
-        flog("PREFIGHT_CB this=%p player=%s(class %d) opp=%s(class %d) relation=%d",
-             a0, p_bid, p_class, o_bid, o_class, rel);
+static void update_prefight_advantage(void* self) {
+    if (!obj_ok(self)) return;
+    void* p_stats = fld_p(self, 0x1B0);
+    void* o_stats = fld_p(self, 0x1B8);
+    char p_bid[64];
+    char o_bid[64];
+    memset(p_bid, 0, sizeof(p_bid));
+    memset(o_bid, 0, sizeof(o_bid));
+    resolve_hero_bid(p_stats, p_bid, sizeof(p_bid));
+    resolve_hero_bid(o_stats, o_bid, sizeof(o_bid));
+    int p_class = get_bot_class(p_bid);
+    int o_class = get_bot_class(o_bid);
+    int rel = get_class_relation(p_class, o_class);
+    flog("UPDATE_ADVANTAGE self=%p player=%s(class %d) opp=%s(class %d) -> rel=%d",
+         self, p_bid, p_class, o_bid, o_class, rel);
 
-        typedef void (*fn_indicate)(void*, void*);
-        fn_indicate fn_adv = (fn_indicate)(g_base + 0x12EFA24);
-        fn_indicate fn_dis = (fn_indicate)(g_base + 0x12EFA54);
-        for (int off = 0x20; off <= 0x240; off += 8) {
-            void* candidate = fld_p(a0, off);
-            if (obj_ok(candidate)) {
-                char clsname[64];
-                memset(clsname, 0, sizeof(clsname));
-                if (il2cpp_object_class(candidate, clsname, sizeof(clsname)) && strstr(clsname, "AdvantageIndicator")) {
-                    if (rel == 1) fn_adv(candidate, NULL);
-                    else if (rel == -1) fn_dis(candidate, NULL);
+    // Call native RefreshClassBonusContainers
+    ((void(*)(void*, void*))(g_base + 0x12DA360))(self, NULL);
+
+    typedef void (*fn_indicate)(void*, void*);
+    fn_indicate fn_adv = (fn_indicate)(g_base + 0x12EFA24);
+    fn_indicate fn_dis = (fn_indicate)(g_base + 0x12EFA54);
+
+    for (int off = 0x20; off <= 0x240; off += 8) {
+        void* candidate = fld_p(self, off);
+        if (obj_ok(candidate)) {
+            char clsname[64];
+            memset(clsname, 0, sizeof(clsname));
+            if (il2cpp_object_class(candidate, clsname, sizeof(clsname)) && strstr(clsname, "AdvantageIndicator")) {
+                if (rel == 1) fn_adv(candidate, NULL);
+                else if (rel == -1) fn_dis(candidate, NULL);
+            }
+        }
+    }
+
+    void* portraits_list = ((void*(*)(void*, void*))(g_base + 0x12D6BB4))(self, NULL);
+    if (obj_ok(portraits_list)) {
+        int count = *(int*)((uintptr_t)portraits_list + 0x18);
+        void* items_array = *(void**)((uintptr_t)portraits_list + 0x10);
+        if (obj_ok(items_array) && count > 0 && count <= 10) {
+            for (int i = 0; i < count; i++) {
+                void* hp = *(void**)((uintptr_t)items_array + 0x20 + i * 8);
+                if (!obj_ok(hp)) continue;
+                char hp_bid[64];
+                memset(hp_bid, 0, sizeof(hp_bid));
+                for (int off = 0x20; off <= 0x220; off += 8) {
+                    void* candidate = fld_p(hp, off);
+                    if (obj_ok(candidate)) {
+                        resolve_hero_bid(candidate, hp_bid, sizeof(hp_bid));
+                        if (hp_bid[0]) break;
+                    }
+                }
+                int hp_class = get_bot_class(hp_bid);
+                int hp_rel = get_class_relation(hp_class, o_class);
+                flog("PORTRAIT[%d] bot=%s(class %d) vs opp(class %d) -> rel=%d", i, hp_bid, hp_class, o_class, hp_rel);
+
+                for (int off = 0x20; off <= 0x250; off += 8) {
+                    void* candidate = fld_p(hp, off);
+                    if (obj_ok(candidate)) {
+                        char clsname[64];
+                        memset(clsname, 0, sizeof(clsname));
+                        if (il2cpp_object_class(candidate, clsname, sizeof(clsname)) && strstr(clsname, "AdvantageIndicator")) {
+                            if (hp_rel == 1) fn_adv(candidate, NULL);
+                            else if (hp_rel == -1) fn_dis(candidate, NULL);
+                        }
+                    }
                 }
             }
         }
-    });
-    return H[147].orig(a0,a1,a2,a3,a4,a5,a6,a7);
+    }
+}
+
+void* hook_147(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
+    void* r = H[147].orig(a0,a1,a2,a3,a4,a5,a6,a7);
+    PROTECT({ update_prefight_advantage(a0); });
+    return r;
 }
 void* hook_148(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
     void* r = H[148].orig(a0,a1,a2,a3,a4,a5,a6,a7);
-    PROTECT({
-        void* o_stats = fld_p(a0, 0x1B8);
-        char o_bid[64];
-        memset(o_bid, 0, sizeof(o_bid));
-        resolve_hero_bid(o_stats, o_bid, sizeof(o_bid));
-        int o_class = get_bot_class(o_bid);
-
-        void* portraits_list = ((void*(*)(void*, void*))(g_base + 0x12D6BB4))(a0, NULL);
-        if (obj_ok(portraits_list)) {
-            int count = *(int*)((uintptr_t)portraits_list + 0x18);
-            void* items_array = *(void**)((uintptr_t)portraits_list + 0x10);
-            if (obj_ok(items_array) && count > 0 && count <= 10) {
-                typedef void (*fn_indicate)(void*, void*);
-                fn_indicate fn_adv = (fn_indicate)(g_base + 0x12EFA24);
-                fn_indicate fn_dis = (fn_indicate)(g_base + 0x12EFA54);
-
-                for (int i = 0; i < count; i++) {
-                    void* hp = *(void**)((uintptr_t)items_array + 0x20 + i * 8);
-                    if (!obj_ok(hp)) continue;
-                    char hp_bid[64];
-                    memset(hp_bid, 0, sizeof(hp_bid));
-                    for (int off = 0x20; off <= 0x220; off += 8) {
-                        void* candidate = fld_p(hp, off);
-                        if (obj_ok(candidate)) {
-                            resolve_hero_bid(candidate, hp_bid, sizeof(hp_bid));
-                            if (hp_bid[0]) break;
-                        }
-                    }
-                    int hp_class = get_bot_class(hp_bid);
-                    int hp_rel = get_class_relation(hp_class, o_class);
-                    flog("PORTRAIT[%d] bot=%s(class %d) vs opp(class %d) -> rel=%d", i, hp_bid, hp_class, o_class, hp_rel);
-
-                    for (int off = 0x20; off <= 0x250; off += 8) {
-                        void* candidate = fld_p(hp, off);
-                        if (obj_ok(candidate)) {
-                            char clsname[64];
-                            memset(clsname, 0, sizeof(clsname));
-                            if (il2cpp_object_class(candidate, clsname, sizeof(clsname)) && strstr(clsname, "AdvantageIndicator")) {
-                                if (hp_rel == 1) fn_adv(candidate, NULL);
-                                else if (hp_rel == -1) fn_dis(candidate, NULL);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    });
+    PROTECT({ update_prefight_advantage(a0); });
     return r;
 }
 void* hook_149(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
-    PROTECT({
-        flog("ADV_IND_ADV IndicateAdvantage this=%p", a0);
-    });
-    return H[149].orig(a0,a1,a2,a3,a4,a5,a6,a7);
+    void* r = H[149].orig(a0,a1,a2,a3,a4,a5,a6,a7);
+    PROTECT({ update_prefight_advantage(a0); });
+    return r;
 }
 void* hook_150(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
-    PROTECT({
-        flog("ADV_IND_DIS IndicateDisadvantage this=%p", a0);
-    });
-    return H[150].orig(a0,a1,a2,a3,a4,a5,a6,a7);
+    void* r = H[150].orig(a0,a1,a2,a3,a4,a5,a6,a7);
+    PROTECT({ update_prefight_advantage(a0); });
+    return r;
 }
 static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hook_7,hook_8,
     hook_9,hook_10,hook_11,hook_12,hook_13,hook_14,hook_15,hook_16,hook_17,hook_18,hook_19,hook_20,hook_21,
