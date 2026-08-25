@@ -388,5 +388,47 @@
         "zh": "饿鲨",
         "faction": "杂兵 (Sharkticon)",
         "note": "勇士系"
+    },
+    "thrust_gs_deluxe2008": {
+        "en": "Thrust",
+        "zh": "冲锋",
+        "faction": "霸天虎",
+        "note": "侦察系"
+    },
+    "acidstorm_gs_leader2015": {
+        "en": "Acid Storm",
+        "zh": "酸雨",
+        "faction": "霸天虎",
+        "note": "科技系"
+    },
+    "ionstorm_gs_leader2015": {
+        "en": "Ion Storm",
+        "zh": "离子风",
+        "faction": "霸天虎",
+        "note": "战术系"
+    },
+    "novastorm_gs_leader2015": {
+        "en": "Nova Storm",
+        "zh": "新星风",
+        "faction": "霸天虎",
+        "note": "爆破系"
+    },
+    "sunstorm_gs_leader2015": {
+        "en": "Sunstorm",
+        "zh": "太阳风",
+        "faction": "霸天虎",
+        "note": "勇士系"
+    },
+    "bitstream_gs_leader2015": {
+        "en": "Bitstream",
+        "zh": "比特流",
+        "faction": "霸天虎",
+        "note": "科技系"
+    },
+    "hotlink_gs_leader2015": {
+        "en": "Hotlink",
+        "zh": "热链接",
+        "faction": "霸天虎",
+        "note": "格斗系"
     }
 }

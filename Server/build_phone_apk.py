@@ -293,12 +293,19 @@ def build(
                     pdict = json.loads(data.decode("utf-8"))
                     packs = pdict.get("packs", {})
                     for pkey in [
+                        "acidstorm_gs_leader2015_odr",
+                        "bitstream_gs_leader2015_odr",
                         "chromia_gs_kabam_odr",
                         "deadend_gs_deluxe2015_odr",
+                        "hotlink_gs_leader2015_odr",
+                        "ionstorm_gs_leader2015_odr",
+                        "novastorm_gs_leader2015_odr",
                         "optimusprime_gs_v_odr",
                         "optimusprime_sg_voyager2015_odr",
                         "starsaber_gs_leader2014_odr",
                         "starscream_gs_odr",
+                        "sunstorm_gs_leader2015_odr",
+                        "thrust_gs_deluxe2008_odr",
                     ]:
                         packs[pkey] = pkey
                     pdict["packs"] = packs
@@ -310,14 +317,28 @@ def build(
                     ptoc = json.loads(data.decode("utf-8"))
                     flist = ptoc.get("files", [])
                     for pentry in [
+                        "portraits/portrait_acidstorm_large.png",
+                        "portraits/portrait_acidstorm_small.jpg",
+                        "portraits/portrait_bitstream_large.png",
+                        "portraits/portrait_bitstream_small.jpg",
                         "portraits/portrait_chromia_gs_large.png",
                         "portraits/portrait_chromia_gs_small.jpg",
                         "portraits/portrait_deadend_gs_large.png",
                         "portraits/portrait_deadend_gs_small.jpg",
+                        "portraits/portrait_hotlink_large.png",
+                        "portraits/portrait_hotlink_small.jpg",
+                        "portraits/portrait_ionstorm_large.png",
+                        "portraits/portrait_ionstorm_small.jpg",
+                        "portraits/portrait_novastorm_large.png",
+                        "portraits/portrait_novastorm_small.jpg",
                         "portraits/portrait_optimus_sg_large.png",
                         "portraits/portrait_optimus_sg_small.jpg",
                         "portraits/portrait_starsaber_large.png",
                         "portraits/portrait_starsaber_small.jpg",
+                        "portraits/portrait_sunstorm_large.png",
+                        "portraits/portrait_sunstorm_small.jpg",
+                        "portraits/portrait_thrust_large.png",
+                        "portraits/portrait_thrust_small.jpg",
                     ]:
                         if pentry not in flist:
                             flist.append(pentry)
@@ -330,8 +351,15 @@ def build(
                     qtoc = json.loads(data.decode("utf-8"))
                     flist = qtoc.get("files", [])
                     for qentry in [
+                        "questboard/portrait_acidstorm_quest.png",
+                        "questboard/portrait_bitstream_quest.png",
+                        "questboard/portrait_hotlink_quest.png",
+                        "questboard/portrait_ionstorm_quest.png",
+                        "questboard/portrait_novastorm_quest.png",
                         "questboard/portrait_optimus_sg_quest.png",
                         "questboard/portrait_starsaber_quest.png",
+                        "questboard/portrait_sunstorm_quest.png",
+                        "questboard/portrait_thrust_quest.png",
                     ]:
                         if qentry not in flist:
                             flist.append(qentry)
@@ -344,10 +372,17 @@ def build(
                     dtoc = json.loads(data.decode("utf-8"))
                     flist = dtoc.get("files", [])
                     for dentry in [
+                        "dialogue/acidstorm.png",
+                        "dialogue/bitstream.png",
                         "dialogue/chromia_gs.png",
                         "dialogue/deadend_gs.png",
+                        "dialogue/hotlink.png",
+                        "dialogue/ionstorm.png",
+                        "dialogue/novastorm.png",
                         "dialogue/optimus_sg.png",
                         "dialogue/starsaber.png",
+                        "dialogue/sunstorm.png",
+                        "dialogue/thrust.png",
                     ]:
                         if dentry not in flist:
                             flist.append(dentry)
@@ -481,74 +516,42 @@ def build(
                 if pfile.exists():
                     zout.writestr(ztarget, pfile.read_bytes())
 
-        # Inject Redeco custom characters (SG Optimus Prime / 倾天柱)
+        # Inject Redeco custom characters (All newbots + SG Optimus + Star Saber)
         redeco_dir = Path("assets_redeco")
         if redeco_dir.is_dir():
-            sg_bundle = redeco_dir / "optimusprime_sg_voyager2015.assetbundle"
-            if sg_bundle.exists():
-                sgdata = sg_bundle.read_bytes()
-                zout.writestr("assets/assetpack/optimusprime_sg_voyager2015_odr/optimusprime_sg_voyager2015.assetbundle", sgdata)
-                sg_toc = json.dumps({
-                    "tags": [], "pack": "optimusprime_sg_voyager2015_odr", "scenes": {},
+            for bpath in redeco_dir.glob("*.assetbundle"):
+                bot_id = bpath.stem
+                bdata = bpath.read_bytes()
+                zout.writestr(f"assets/assetpack/{bot_id}_odr/{bot_id}.assetbundle", bdata)
+                b_toc = json.dumps({
+                    "tags": [], "pack": f"{bot_id}_odr", "scenes": {},
                     "bundles": {
-                        "optimusprime_sg_voyager2015": {
+                        bot_id: {
                             "crc": 0, "compression": "LZ4", "typetreehash": None,
-                            "file": "optimusprime_sg_voyager2015_odr/optimusprime_sg_voyager2015.assetbundle",
+                            "file": f"{bot_id}_odr/{bot_id}.assetbundle",
                             "ts": 637933503540000000, "deterministic": False, "manifest": "manifest_main",
                             "paths": {
-                                "bundles/characters/merged/optimusprime_sg_voyager2015_lw": "Assets/Bundles/Characters/Merged/optimusprime_sg_voyager2015/optimusprime_sg_voyager2015_lw.prefab",
-                                "bundles/characters/merged/optimusprime_sg_voyager2015": "Assets/Bundles/Characters/Merged/optimusprime_sg_voyager2015/optimusprime_sg_voyager2015.prefab"
+                                f"bundles/characters/merged/{bot_id}_lw": f"Assets/Bundles/Characters/Merged/{bot_id}/{bot_id}_lw.prefab",
+                                f"bundles/characters/merged/{bot_id}": f"Assets/Bundles/Characters/Merged/{bot_id}/{bot_id}.prefab"
                             },
                             "directory": "odr", "deps": ["character_fx", "moves", "character_audio"],
-                            "contenthash": None, "size": len(sgdata), "hash": 0, "parent": "", "mount": "None"
+                            "contenthash": None, "size": len(bdata), "hash": 0, "parent": "", "mount": "None"
                         }
                     },
                     "files": [], "pad": {"deliverymode": 1, "assetpack": "default"}, "version": "9.2.0"
                 }, indent=4)
-                zout.writestr("assets/optimusprime_sg_voyager2015_odr/toc.txt", sg_toc)
+                zout.writestr(f"assets/{bot_id}_odr/toc.txt", b_toc)
 
-            for fpath, ztarget in [
-                ("portrait_optimus_sg_large.png", "assets/assetpack/portraits_odr/portraits/portrait_optimus_sg_large.png"),
-                ("portrait_optimus_sg_small.jpg", "assets/assetpack/portraits_odr/portraits/portrait_optimus_sg_small.jpg"),
-                ("portrait_optimus_sg_quest.png", "assets/assetpack/questboard_odr/questboard/portrait_optimus_sg_quest.png"),
-                ("optimus_sg.png", "assets/assetpack/dialogue_odr/dialogue/optimus_sg.png"),
-            ]:
-                pfile = redeco_dir / fpath
-                if pfile.exists():
-                    zout.writestr(ztarget, pfile.read_bytes())
-
-            ss_bundle = redeco_dir / "starsaber_gs_leader2014.assetbundle"
-            if ss_bundle.exists():
-                ssdata = ss_bundle.read_bytes()
-                zout.writestr("assets/assetpack/starsaber_gs_leader2014_odr/starsaber_gs_leader2014.assetbundle", ssdata)
-                ss_toc = json.dumps({
-                    "tags": [], "pack": "starsaber_gs_leader2014_odr", "scenes": {},
-                    "bundles": {
-                        "starsaber_gs_leader2014": {
-                            "crc": 0, "compression": "LZ4", "typetreehash": None,
-                            "file": "starsaber_gs_leader2014_odr/starsaber_gs_leader2014.assetbundle",
-                            "ts": 637933503540000000, "deterministic": False, "manifest": "manifest_main",
-                            "paths": {
-                                "bundles/characters/merged/starsaber_gs_leader2014_lw": "Assets/Bundles/Characters/Merged/starsaber_gs_leader2014/starsaber_gs_leader2014_lw.prefab",
-                                "bundles/characters/merged/starsaber_gs_leader2014": "Assets/Bundles/Characters/Merged/starsaber_gs_leader2014/starsaber_gs_leader2014.prefab"
-                            },
-                            "directory": "odr", "deps": ["character_fx", "moves", "character_audio"],
-                            "contenthash": None, "size": len(ssdata), "hash": 0, "parent": "", "mount": "None"
-                        }
-                    },
-                    "files": [], "pad": {"deliverymode": 1, "assetpack": "default"}, "version": "9.2.0"
-                }, indent=4)
-                zout.writestr("assets/starsaber_gs_leader2014_odr/toc.txt", ss_toc)
-
-            for fpath, ztarget in [
-                ("portrait_starsaber_large.png", "assets/assetpack/portraits_odr/portraits/portrait_starsaber_large.png"),
-                ("portrait_starsaber_small.jpg", "assets/assetpack/portraits_odr/portraits/portrait_starsaber_small.jpg"),
-                ("portrait_starsaber_quest.png", "assets/assetpack/questboard_odr/questboard/portrait_starsaber_quest.png"),
-                ("starsaber.png", "assets/assetpack/dialogue_odr/dialogue/starsaber.png"),
-            ]:
-                pfile = redeco_dir / fpath
-                if pfile.exists():
-                    zout.writestr(ztarget, pfile.read_bytes())
+            # Inject all portraits and dialogue icons from assets_redeco
+            for pfile in redeco_dir.glob("portrait_*_large.png"):
+                zout.writestr(f"assets/assetpack/portraits_odr/portraits/{pfile.name}", pfile.read_bytes())
+            for pfile in redeco_dir.glob("portrait_*_small.jpg"):
+                zout.writestr(f"assets/assetpack/portraits_odr/portraits/{pfile.name}", pfile.read_bytes())
+            for pfile in redeco_dir.glob("portrait_*_quest.png"):
+                zout.writestr(f"assets/assetpack/questboard_odr/questboard/{pfile.name}", pfile.read_bytes())
+            for pfile in redeco_dir.glob("*.png"):
+                if not pfile.name.startswith("portrait_") and not pfile.name.startswith("cha_") and not pfile.name.startswith("debug_"):
+                    zout.writestr(f"assets/assetpack/dialogue_odr/dialogue/{pfile.name}", pfile.read_bytes())
 
         if payload is not None:
             payload_info = zipfile.ZipInfo(PAYLOAD_ASSET, date_time=(1980, 1, 1, 0, 0, 0))

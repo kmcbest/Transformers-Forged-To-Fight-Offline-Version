@@ -105,7 +105,9 @@ ROSTER = {
     "windblade_gs":                 ("autobot",    "warr", 5),
 
     # --- Decepticons ---
+    "acidstorm_gs_leader2015":      ("decepticon", "tech", 5),
     "barricade_cin_dotm":           ("decepticon", "scou", 5),
+    "bitstream_gs_leader2015":      ("decepticon", "tech", 5),
     "bludgeon_gs_rd20":             ("decepticon", "warr", 5),
     "bonecrusher_cin_rotf":         ("decepticon", "warr", 5),
     "cyclonus_gs_uw06":             ("decepticon", "tact", 5),
@@ -113,6 +115,8 @@ ROSTER = {
     "dirge_gs_deluxe2008":          ("decepticon", "warr", 5),
     "galvatron_gs_voyager2016":     ("decepticon", "demo", 5),
     "grindor_cin_rotf":             ("decepticon", "braw", 5),
+    "hotlink_gs_leader2015":        ("decepticon", "braw", 5),
+    "ionstorm_gs_leader2015":       ("decepticon", "tact", 5),
     "kickback_gs_kabam":            ("decepticon", "scou", 5),
     "megatron_cin_rotf":            ("decepticon", "demo", 5),
     "megatron_gs_leader2015":       ("decepticon", "tact", 5),
@@ -121,6 +125,7 @@ ROSTER = {
     "motormaster_gs_voyager2015":   ("decepticon", "braw", 5),
     "necrotronus_gs_kabam":         ("decepticon", "warr", 5),
     "nemesisprime_gs_voyager2015":  ("decepticon", "tact", 5),
+    "novastorm_gs_leader2015":      ("decepticon", "demo", 5),
     "ramjet_gs_deluxe2008":         ("decepticon", "demo", 5),
     "scorponok_bw_kabam":           ("decepticon", "warr", 5),
     "shockwave_gs":                 ("decepticon", "tech", 5),
@@ -128,7 +133,9 @@ ROSTER = {
     "slipstream_gs":                ("decepticon", "scou", 5),
     "soundblaster_gs_mp13b":        ("decepticon", "demo", 5),
     "soundwave_gs":                 ("decepticon", "tech", 5),
+    "sunstorm_gs_leader2015":       ("decepticon", "warr", 5),
     "thundercracker_gs_leader2015": ("decepticon", "braw", 5),
+    "thrust_gs_deluxe2008":         ("decepticon", "scou", 5),
     "tantrum_gs_kabam":             ("decepticon", "braw", 5),
     "waspinator_gs_deluxe":         ("decepticon", "demo", 5),
 
@@ -307,13 +314,18 @@ _ART_BASE = {
     "windblade_gs": "windb_gs",
 
     # --- Decepticons ---
+    "acidstorm_gs_leader2015": "acidstorm",
     "barricade_cin_dotm": "barri_c",
+    "bitstream_gs_leader2015": "bitstream",
     "bludgeon_gs_rd20": "bludge_gs",
     "bonecrusher_cin_rotf": "bonec_c",
     # The misspelled clyclon_gs is large-only; use the correctly spelled paired art.
     "cyclonus_gs_uw06": "cyclon_gs",
     "deadend_gs_deluxe2015": "deadend_gs",
+    "dirge_gs_deluxe2008": "dirge_gs",
     "grindor_cin_rotf": "grind_c_rotf",
+    "hotlink_gs_leader2015": "hotlink",
+    "ionstorm_gs_leader2015": "ionstorm",
     "kickback_gs_kabam": "kickb_gs",
     "megatron_cin_rotf": "megat_c",
     "megatron_gs_leader2015": "megat_gs",
@@ -322,10 +334,14 @@ _ART_BASE = {
     "motormaster_gs_voyager2015": "motorm_gs",
     "necrotronus_gs_kabam": "necrotro_gs",
     "nemesisprime_gs_voyager2015": "nemesis_p",
+    "novastorm_gs_leader2015": "novastorm",
+    "ramjet_gs_deluxe2008": "ramjet_gs",
     "shockwave_gs": "shock_c",
     "soundblaster_gs_mp13b": "soundblast_gs",
     "soundwave_gs": "sound_gs",
+    "sunstorm_gs_leader2015": "sunstorm",
     "thundercracker_gs_leader2015": "thunder_gs",
+    "thrust_gs_deluxe2008": "thrust",
     "waspinator_gs_deluxe": "wasp_bw",  # Only the Beast Wars-styled art ships.
 
     # --- Sharkticon NPC variants ---
