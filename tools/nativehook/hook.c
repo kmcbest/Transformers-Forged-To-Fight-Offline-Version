@@ -3614,14 +3614,74 @@ void* hook_147(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
         int rel = get_class_relation(p_class, o_class);
         flog("PREFIGHT_CB this=%p player=%s(class %d) opp=%s(class %d) relation=%d",
              a0, p_bid, p_class, o_bid, o_class, rel);
+
+        typedef void (*fn_indicate)(void*, void*);
+        fn_indicate fn_adv = (fn_indicate)(g_base + 0x12EFA24);
+        fn_indicate fn_dis = (fn_indicate)(g_base + 0x12EFA54);
+        for (int off = 0x20; off <= 0x240; off += 8) {
+            void* candidate = fld_p(a0, off);
+            if (obj_ok(candidate)) {
+                char clsname[64];
+                memset(clsname, 0, sizeof(clsname));
+                if (il2cpp_object_class(candidate, clsname, sizeof(clsname)) && strstr(clsname, "AdvantageIndicator")) {
+                    if (rel == 1) fn_adv(candidate, NULL);
+                    else if (rel == -1) fn_dis(candidate, NULL);
+                }
+            }
+        }
     });
     return H[147].orig(a0,a1,a2,a3,a4,a5,a6,a7);
 }
 void* hook_148(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
+    void* r = H[148].orig(a0,a1,a2,a3,a4,a5,a6,a7);
     PROTECT({
-        flog("PREFIGHT_HD RefreshHeroData this=%p", a0);
+        void* o_stats = fld_p(a0, 0x1B8);
+        char o_bid[64];
+        memset(o_bid, 0, sizeof(o_bid));
+        resolve_hero_bid(o_stats, o_bid, sizeof(o_bid));
+        int o_class = get_bot_class(o_bid);
+
+        void* portraits_list = ((void*(*)(void*, void*))(g_base + 0x12D6BB4))(a0, NULL);
+        if (obj_ok(portraits_list)) {
+            int count = *(int*)((uintptr_t)portraits_list + 0x18);
+            void* items_array = *(void**)((uintptr_t)portraits_list + 0x10);
+            if (obj_ok(items_array) && count > 0 && count <= 10) {
+                typedef void (*fn_indicate)(void*, void*);
+                fn_indicate fn_adv = (fn_indicate)(g_base + 0x12EFA24);
+                fn_indicate fn_dis = (fn_indicate)(g_base + 0x12EFA54);
+
+                for (int i = 0; i < count; i++) {
+                    void* hp = *(void**)((uintptr_t)items_array + 0x20 + i * 8);
+                    if (!obj_ok(hp)) continue;
+                    char hp_bid[64];
+                    memset(hp_bid, 0, sizeof(hp_bid));
+                    for (int off = 0x20; off <= 0x220; off += 8) {
+                        void* candidate = fld_p(hp, off);
+                        if (obj_ok(candidate)) {
+                            resolve_hero_bid(candidate, hp_bid, sizeof(hp_bid));
+                            if (hp_bid[0]) break;
+                        }
+                    }
+                    int hp_class = get_bot_class(hp_bid);
+                    int hp_rel = get_class_relation(hp_class, o_class);
+                    flog("PORTRAIT[%d] bot=%s(class %d) vs opp(class %d) -> rel=%d", i, hp_bid, hp_class, o_class, hp_rel);
+
+                    for (int off = 0x20; off <= 0x250; off += 8) {
+                        void* candidate = fld_p(hp, off);
+                        if (obj_ok(candidate)) {
+                            char clsname[64];
+                            memset(clsname, 0, sizeof(clsname));
+                            if (il2cpp_object_class(candidate, clsname, sizeof(clsname)) && strstr(clsname, "AdvantageIndicator")) {
+                                if (hp_rel == 1) fn_adv(candidate, NULL);
+                                else if (hp_rel == -1) fn_dis(candidate, NULL);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     });
-    return H[148].orig(a0,a1,a2,a3,a4,a5,a6,a7);
+    return r;
 }
 void* hook_149(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
     PROTECT({
