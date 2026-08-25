@@ -3462,9 +3462,146 @@ void hook_146(void* self, float dT, void* method){
         }
     });
 }
+// ---------------------------------------------------------------------------
+// Faction & Class Advantage System (6-Class Cycle)
+// 0: Tactician (战术系) -> beats 1: Brawler (斗士系)
+// 1: Brawler (斗士系)   -> beats 2: Warrior (战士系)
+// 2: Warrior (战士系)   -> beats 3: Scout (侦查系)
+// 3: Scout (侦查系)     -> beats 4: Tech (科技系)
+// 4: Tech (科技系)      -> beats 5: Demolitions (爆破系)
+// 5: Demolitions (爆破系) -> beats 0: Tactician (战术系)
+// ---------------------------------------------------------------------------
+
+typedef struct {
+    const char* bid;
+    int klass;
+} BotClassEntry;
+
+static const BotClassEntry g_bot_classes[] = {
+    // Autobots
+    {"arcee_gs_deluxe2014", 3},        // scou
+    {"blaster_gs_leader2016", 4},      // tech
+    {"bumblebee_cin_dotm", 3},         // scou
+    {"bumblebee_gs_kabam", 3},         // scou
+    {"cheetor_bw_transmetal", 3},      // scou
+    {"chromia_gs_kabam", 2},           // warr
+    {"cliffjumper_gs_kabam", 2},       // warr
+    {"dinobot_bw_kabam", 1},           // braw
+    {"drift_cin_aoe", 2},              // warr
+    {"fte_optimus_gs_t3", 1},          // braw
+    {"fte_stars_gs_t3", 0},            // tact
+    {"grimlock_gs_mp08", 1},           // braw
+    {"hotrod_cin_tlk", 2},             // warr
+    {"hound_cin_tlk", 0},              // tact
+    {"ironhide_cin_rotf", 5},          // demo
+    {"ironhide_gs_kabam", 5},          // demo
+    {"jazz_gs_twm05", 3},              // scou
+    {"jetfire_gs_leader2014", 4},      // tech
+    {"mirage_gs_deluxe2016", 4},       // tech
+    {"optimusprimal_bw_mp32", 1},      // braw
+    {"optimusprime_cin_tf", 1},        // braw
+    {"prowl_gs_deluxe2016", 3},        // scou
+    {"ratchet_gs_kabam", 4},           // tech
+    {"rhinox_gs_voyager2014", 4},      // tech
+    {"rodimusprime_gs_mp09", 0},       // tact
+    {"sideswipe_gs", 3},               // scou
+    {"starsaber_gs_leader2014", 0},    // tact
+    {"sunstreaker_gs_deluxe2008", 1},  // braw
+    {"ultramagnus_gs_leader", 0},      // tact
+    {"wheeljack_gs_mp20", 4},          // tech
+    {"windblade_gs", 2},               // warr
+
+    // Decepticons
+    {"acidstorm_gs_leader2015", 4},    // tech
+    {"barricade_cin_dotm", 3},         // scou
+    {"bitstream_gs_leader2015", 4},    // tech
+    {"bludgeon_gs_rd20", 2},           // warr
+    {"bonecrusher_cin_rotf", 2},       // warr
+    {"cyclonus_gs_uw06", 0},           // tact
+    {"deadend_gs_deluxe2015", 5},      // demo
+    {"dirge_gs_deluxe2008", 2},        // warr
+    {"galvatron_gs_voyager2016", 5},   // demo
+    {"grindor_cin_rotf", 1},           // braw
+    {"hotlink_gs_leader2015", 1},      // braw
+    {"ionstorm_gs_leader2015", 0},     // tact
+    {"kickback_gs_kabam", 3},          // scou
+    {"megatron_cin_rotf", 5},          // demo
+    {"megatron_gs_leader2015", 0},     // tact
+    {"megatronus_gs_kabam", 5},        // demo
+    {"mixmaster_cin_rotf", 5},         // demo
+    {"motormaster_gs_voyager2015", 1}, // braw
+    {"necrotronus_gs_kabam", 2},       // warr
+    {"nemesisprime_gs_voyager2015", 0},// tact
+    {"novastorm_gs_leader2015", 5},    // demo
+    {"ramjet_gs_deluxe2008", 5},       // demo
+    {"scorponok_bw_kabam", 2},         // warr
+    {"shockwave_gs", 4},               // tech
+    {"skywarp_gs_leader2015", 4},      // tech
+    {"slipstream_gs", 3},              // scou
+    {"soundblaster_gs_mp13b", 5},      // demo
+    {"soundwave_gs", 4},               // tech
+    {"sunstorm_gs_leader2015", 2},     // warr
+    {"thundercracker_gs_leader2015", 1},// braw
+    {"thrust_gs_deluxe2008", 3},       // scou
+    {"tantrum_gs_kabam", 1},           // braw
+    {"waspinator_gs_deluxe", 5},       // demo
+
+    // Sharkticons
+    {"sharkticon_gs_kabam", 1},        // braw
+    {"sharkticon_gs_brawler", 1},      // braw
+    {"sharkticon_gs_demolition", 5},   // demo
+    {"sharkticon_gs_scout", 3},        // scou
+    {"sharkticon_gs_tactician", 0},    // tact
+    {"sharkticon_gs_tech", 4},         // tech
+    {"sharkticon_gs_warrior", 2},      // warr
+};
+
+static int get_bot_class(const char* bid) {
+    if (!bid || !bid[0]) return -1;
+    for (size_t i = 0; i < sizeof(g_bot_classes)/sizeof(g_bot_classes[0]); i++) {
+        if (strstr(bid, g_bot_classes[i].bid)) return g_bot_classes[i].klass;
+    }
+    return -1;
+}
+
+static int get_class_relation(int my_class, int opp_class) {
+    if (my_class < 0 || my_class > 5 || opp_class < 0 || opp_class > 5) return 0;
+    if ((my_class + 1) % 6 == opp_class) return 1;  // Advantage (我方克制对方 -> 绿箭头)
+    if ((opp_class + 1) % 6 == my_class) return -1; // Disadvantage (我方被克制 -> 红箭头)
+    return 0; // Neutral (无克制)
+}
+
+static void resolve_hero_bid(void* hd, char* out, size_t out_len) {
+    out[0] = 0;
+    if (!obj_ok(hd)) return;
+    for (int off = 0x10; off <= 0x80; off += 8) {
+        void* s = fld_p(hd, off);
+        if (obj_ok(s)) {
+            char tmp[64];
+            read_str(s, tmp, sizeof(tmp));
+            if (get_bot_class(tmp) >= 0) {
+                snprintf(out, out_len, "%s", tmp);
+                return;
+            }
+        }
+    }
+}
+
 void* hook_147(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
     PROTECT({
-        flog("PREFIGHT_CB RefreshClassBonusContainers this=%p", a0);
+        void* p_stats = fld_p(a0, 0x1B0);
+        void* o_stats = fld_p(a0, 0x1B8);
+        char p_bid[64];
+        char o_bid[64];
+        memset(p_bid, 0, sizeof(p_bid));
+        memset(o_bid, 0, sizeof(o_bid));
+        resolve_hero_bid(p_stats, p_bid, sizeof(p_bid));
+        resolve_hero_bid(o_stats, o_bid, sizeof(o_bid));
+        int p_class = get_bot_class(p_bid);
+        int o_class = get_bot_class(o_bid);
+        int rel = get_class_relation(p_class, o_class);
+        flog("PREFIGHT_CB this=%p player=%s(class %d) opp=%s(class %d) relation=%d",
+             a0, p_bid, p_class, o_bid, o_class, rel);
     });
     return H[147].orig(a0,a1,a2,a3,a4,a5,a6,a7);
 }
