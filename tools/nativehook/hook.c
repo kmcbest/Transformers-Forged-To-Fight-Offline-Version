@@ -1017,7 +1017,7 @@ void* hook_78(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
 }
 // ---- base-board render diagnostics (slot 79) ----
 #define FORCELIGHT 1
-#define MATSWAP 1
+#define MATSWAP 0
 #define KEYBOOST 0
 #define KEYBOOST_VAL 1.0f
 // Base-board visibility workarounds: BLDGACT force-activates a building GameObject the
@@ -1233,7 +1233,7 @@ static const int TF_WHITE[4] = { 1, 1, 0, 1 };
 // camera (camera reframing is a closed dead end -- it occludes the buildings behind
 // the terrain stitch hump).
 #define BLDGSCALE     1
-#define BLDGSCALE_VAL 1.5f
+#define BLDGSCALE_VAL 1.35f
 // BLDGDIAG records the hierarchy and renderer bounds at Refresh to distinguish an
 // inactive/empty/off-frame building from one that is merely too small or dark.
 // BLDGACT forces the building plus any inactive ancestors active; BLDGPROBE moves
@@ -2582,6 +2582,7 @@ void* hook_93(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
             void* (*comp_get_go)(void*,void*) = (void*(*)(void*,void*))(g_base + 0x1B4BD28);
             void* (*go_gcic)(void*,void*) = (void*(*)(void*,void*))(g_base + 0x11E5B70);
             void* (*go_transform)(void*,void*) = (void*(*)(void*,void*))(g_base + 0x1B50BD8);
+            void* (*tr_get_parent)(void*,void*) = (void*(*)(void*,void*))(g_base + 0x16AA7D8);
             void  (*tr_set_parent)(void*,void*,int,void*) = (void(*)(void*,void*,int,void*))(g_base + 0x16B877C);
             void* ctr = go_transform(a2, NULL);
             if (obj_ok(ctr)) tr_set_parent(ctr, NULL, 1, NULL);
@@ -2595,9 +2596,13 @@ void* hook_93(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                 if (!obj_ok(rr)) continue;
                 void* rgo = comp_get_go(rr, NULL);
                 if (obj_ok(rgo)) {
-                    void* rtr = go_transform(rgo, NULL);
-                    if (obj_ok(rtr)) tr_set_parent(rtr, ctr, 1, NULL);
                     go_set_active(rgo, 1, NULL);
+                    void* cur_tr = go_transform(rgo, NULL);
+                    while (obj_ok(cur_tr) && cur_tr != ctr) {
+                        void* cur_go = comp_get_go(cur_tr, NULL);
+                        if (obj_ok(cur_go)) go_set_active(cur_go, 1, NULL);
+                        cur_tr = tr_get_parent(cur_tr, NULL);
+                    }
                 }
             }
             dump_go("ONBLDSET-post", a2);
@@ -2624,6 +2629,7 @@ void* hook_95(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
         void* (*obj_instantiate)(void*,void*) = (void*(*)(void*,void*))(g_base + 0x16A1AF8);
         void  (*obj_set_name)(void*,void*,void*) = (void(*)(void*,void*,void*))(g_base + 0x16A1760);
         void* (*go_transform)(void*,void*) = (void*(*)(void*,void*))(g_base + 0x1B50BD8);
+        void* (*tr_get_parent)(void*,void*) = (void*(*)(void*,void*))(g_base + 0x16AA7D8);
         void  (*tr_set_parent)(void*,void*,int,void*) = (void(*)(void*,void*,int,void*))(g_base + 0x16B877C);
         void  (*tr_set_local_position)(void*,V3,void*) = (void(*)(void*,V3,void*))(g_base + 0x16B7E0C);
         void  (*tr_set_local_scale)(void*,V3,void*) = (void(*)(void*,V3,void*))(g_base + 0x16B84CC);
@@ -2695,8 +2701,8 @@ void* hook_95(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                 void* parent_tr=obj_ok(parent_go)?go_transform(parent_go,NULL):NULL;
                 if (obj_ok(ctr) && obj_ok(a2)) {
                     V3 pos=tr_get_position(a2,NULL);
-                    pos.x *= 3.5f;
-                    pos.z *= 3.5f;
+                    pos.x *= 5.5f;
+                    pos.z *= 4.5f;
                     tr_set_position(ctr,pos,NULL);
                 }
 #if BLDGSCALE
@@ -2710,7 +2716,15 @@ void* hook_95(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                     void* rr = *(void**)((uintptr_t)rends + 0x20 + 8*k);
                     if (!obj_ok(rr)) continue;
                     void* rgo = comp_get_go(rr, NULL);
-                    if (obj_ok(rgo)) go_set_active(rgo, 1, NULL);
+                    if (obj_ok(rgo)) {
+                        go_set_active(rgo, 1, NULL);
+                        void* cur_tr = go_transform(rgo, NULL);
+                        while (obj_ok(cur_tr) && cur_tr != ctr) {
+                            void* cur_go = comp_get_go(cur_tr, NULL);
+                            if (obj_ok(cur_go)) go_set_active(cur_go, 1, NULL);
+                            cur_tr = tr_get_parent(cur_tr, NULL);
+                        }
+                    }
                 }
                 replacement=clone;
                 flog("BLDGSWAP outcome=return-clone key='%s' clone=%p parent=%p node=%p",resolved,clone,parent_tr,a2);

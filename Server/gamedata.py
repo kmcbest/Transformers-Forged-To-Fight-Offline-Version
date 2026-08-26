@@ -1496,15 +1496,11 @@ BASE_BUILDINGS = {
 }
 
 BASE_PLACEMENTS = {
-    (2, 2): "bldg_battle_centre",
-    (2, 1): "bldg_away_team",
-    (2, 3): "bldg_alliance_help",
-    (1, 2): "bldg_crystal_free",
-    (3, 2): "bldg_crystal_daily",
-    (2, 0): "bldg_crystal_premium",
-    (2, 4): "bldg_away_team",
-    (0, 2): "bldg_alliance_help",
-    (4, 2): "bldg_crystal_daily",
+    (1, 1): "bldg_away_team",        # Back-Left (Away Team Station + Spaceship Shuttle)
+    (1, 2): "bldg_battle_centre",    # Back-Center (Battle Centre Command Tower)
+    (1, 3): "bldg_alliance_help",    # Back-Right (Alliance Help Radar Tower)
+    (2, 1): "bldg_crystal_free",     # Mid-Left (Free Crystal Vault)
+    (2, 3): "bldg_crystal_premium",  # Mid-Right (Premium Crystal Vault)
 }
 
 
@@ -1526,26 +1522,11 @@ def build_base_summary():
 
 
 def build_base_map():
-    """The base's EB.Missions.Map.
-
-    Identical wire shape to the quest map (build_quest_map documents the reader in
-    detail): a square `grid` of gridDimension rows x gridDimension tile dicts indexed
-    [row][col], plus `pathData`. The differences are all base-specific:
-
-      * every walkable tile carries a `sockets` dictionary -- the build plots. Tile
-        sockets are what BaseBoard's node/building interaction hangs off; without them
-        a node has nothing to place into.
-      * there is no `final`/boss tile: a base is not cleared, so no encounter is
-        authored here.
-      * pathData must still hold at least one path element, for the same reason as the
-        quest board: Map.Deserialize stores paths = NULL for an empty pathData, and
-        PathAnalyzer.GetPathsFromMap (@0xB3C718) then NREs during board build.
-    """
+    """The base's EB.Missions.Map."""
     dim = BASE_DIM
     centre = dim // 2
 
     def links_for(row, col):
-        """Absolute positions reachable from (row, col) -- the plus-shaped walkway."""
         out = []
         for r, c in ((row - 1, col), (row + 1, col), (row, col - 1), (row, col + 1)):
             if 0 <= r < dim and 0 <= c < dim and _base_walkable(r, c):
@@ -1564,8 +1545,6 @@ def build_base_map():
                 "walkable": True, "hidden": False,
                 "lab": "Plot %d-%d" % (row, col),
                 "links": lk, "visibleLinks": lk,
-                # Entry key -> Socket.id; `entityType` -> Socket.type (see the
-                # socket wire-contract note above BASE_BUILDINGS).
                 "sockets": {
                     _base_socket_id(row, col): {
                         "entityType": BASE_SOCKET_TYPE,
@@ -1581,12 +1560,11 @@ def build_base_map():
 
     walkable = sum(1 for row in range(dim) for col in range(dim)
                    if _base_walkable(row, col))
-    # One path along the centre row and one down the centre column: the walkway the
-    # plus-shaped layout implies. Each element is a MapPath dict whose `path` key is a
-    # list of {x,y} integer tile positions (see build_quest_map).
+    # Circuit pathways connecting all 3 rows and 3 columns
     path_data = [
-        {"path": [{"x": centre, "y": c} for c in range(dim)]},
-        {"path": [{"x": r, "y": centre} for r in range(dim)]},
+        {"path": [{"x": r, "y": c} for c in range(1, 4)]} for r in range(1, 4)
+    ] + [
+        {"path": [{"x": r, "y": c} for r in range(1, 4)]} for c in range(1, 4)
     ]
 
     return {
@@ -1601,9 +1579,8 @@ def build_base_map():
 
 
 def _base_walkable(row, col):
-    """The authored base layout: a plus/cross of plots through the centre."""
-    centre = BASE_DIM // 2
-    return row == centre or col == centre
+    """3x3 core grid of plots (rows 1..3, cols 1..3)."""
+    return 1 <= row <= 3 and 1 <= col <= 3
 
 
 def _base_socket_id(row, col):
