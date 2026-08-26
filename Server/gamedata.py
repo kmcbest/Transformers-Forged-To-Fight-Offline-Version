@@ -229,11 +229,25 @@ def special_damage_ratios(bid, star):
 
 
 # ---------------------------------------------------------------------------
+# Defense Modules (MODS) catalog loader
+# ---------------------------------------------------------------------------
+def _load_mods():
+    mpath = os.path.join(HERE, "mods_catalog.json")
+    if os.path.exists(mpath):
+        try:
+            with open(mpath, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return []
+
+
+# ---------------------------------------------------------------------------
 # JSON builders -- emit the exact proven shapes from Server/responses/.
 # ---------------------------------------------------------------------------
 def build_blueprints(lang="en"):
     """`blueprints` map for getLoginData. Same keys as the working response:
-    id, et(entity type -- MUST be 'bot' for the roster to populate), s1/s2/s3
+    id, et(entity type -- 'bot' for characters, 'mod' for defense modules), s1/s2/s3
     (special-attack damage ratios), msa (max special attacks), ab (attack bonus),
     plus the gg/mfl/nfr/fcpg/fhpag fields the client reads.
 
@@ -250,28 +264,33 @@ def build_blueprints(lang="en"):
         out[bid] = {
             "id": bid, "et": "bot",
             "c": bid, "r": star, "a": faction,
-            # cl/class (-> BCGBlueprintBase.HeroClass, CharacterMetaData.Class enum:
-            # braw=1 tact=2 scou=4 demo=8 warr=16 tech=32). SetScreenType filters the
-            # roster by a class bitmask reading this; a bot with no class defaults to
-            # none=0 and drops out of the filtered list.
             "cl": klass,
-            # FriendlyName / FriendlyNameShort -- non-null so SetScreenType's tile setup
-            # doesn't deref a null name (see display_name).
             "name": name, "name_s": name,
-            # m/mdl -> BCGBlueprintBase.ModelID (_modelID@0x40). This is the field the combat
-            # actor loader (CharacterWorldLoader.LoadActor(blueprint)) uses to mount the 3D
-            # mesh bundle. It was NEVER emitted here, so every fighter loaded the generic
-            # placeholder mech. Author the full-bid model id (see model_id) so the player's
-            # Optimus and each enemy render their real character mesh. i/img keeps the SHORT
-            # portrait base; ma/map_asset mirrors the model id for the questboard marker.
             "m": model_id(bid), "mdl": model_id(bid),
             "i": art_base(bid), "img": art_base(bid),
             "ma": model_id(bid), "map_asset": model_id(bid),
-            # s1/s2/s3: transform/special-attack damage ratios (see
-            # special_damage_ratios). Above every normal-attack percent so a transform
-            # out-damages punches and kicks.
             "s1": s1, "s2": s2, "s3": s3,
             "msa": max_special_attacks(bid, star),
+            "ab": 100.0, "gg": 1, "mfl": 0, "nfr": 0,
+            "fcpg": "", "fhpag": "",
+        }
+    for m in _load_mods():
+        mid = m["id"]
+        star = m.get("default_star", 5)
+        klass = m.get("class_affinity", "tech")
+        mdl = m.get("model_id", mid)
+        base = art_base(mid)
+        name = m.get("name_zh" if lang == "zh" else "name_en", m.get("name_en", mid))
+        out[mid] = {
+            "id": mid, "et": "tower",
+            "c": mid, "r": star, "a": "autobot",
+            "cl": "",
+            "name": name, "name_s": name,
+            "m": mdl, "mdl": mdl,
+            "i": base, "img": base,
+            "ma": mdl, "map_asset": mdl,
+            "s1": 1.0, "s2": 1.0, "s3": 1.0,
+            "msa": 0,
             "ab": 100.0, "gg": 1, "mfl": 0, "nfr": 0,
             "fcpg": "", "fhpag": "",
         }
@@ -354,6 +373,31 @@ _ART_BASE = {
     "sharkticon_gs_tactician": "npc_shark_tact",
     "sharkticon_gs_tech": "npc_shark_tech",
     "sharkticon_gs_warrior": "npc_shark_warr",
+
+    # --- Defense Modules (MODS) official shipped portraits ---
+    "mods_primemodule_01": "primemodule",
+    "mods_harmaccelerator_01": "harm",
+    "mods_EMImodule_01": "emi",
+    "mods_repairmodule_01": "repair",
+    "mods_strangerefractor_01": "strangerefractor",
+    "mods_superconductor_1000": "superconductor",
+    "mods_superconductor_2000": "superconductor",
+    "mods_immobilizer_01": "immobilizer",
+    "mods_laserguidance_01": "laserguidance",
+    "mods_nightbirdsmark_01": "nightbirdsmark",
+    "mods_brawlersfury_01": "brawlersfury",
+    "mods_demolitionscache_01": "democache",
+    "mods_exofilter_01": "exofilter",
+    "mods_fluxincapacitator_01": "flux",
+    "mods_robotresource_01": "robotresource",
+    "mods_scoutssentry_01": "scoutssentry",
+    "mods_security_01": "security",
+    "mods_tacticianstrick_02": "tacticianstrick",
+    "mods_techconsole_01": "techconsole",
+    "mods_warriorscall": "warriorscall",
+    "mods_generic_def_01": "gen_def",
+    "mods_generic_off_01": "gen_off",
+    "mods_generic_utl_01": "gen_utl",
 }
 
 
@@ -535,6 +579,20 @@ def build_characters(lang="en"):
             "m": model_id(bid), "mdl": model_id(bid),
             "ma": model_id(bid), "map_asset": model_id(bid),
             "hc": faction, "hero_colour": faction,
+        }
+    for m in _load_mods():
+        mid = m["id"]
+        mdl = m.get("model_id", mid)
+        base = art_base(mid)
+        name = m.get("name_zh" if lang == "zh" else "name_en", m.get("name_en", mid))
+        out[mid] = {
+            "id": mid,
+            "name": name, "name_s": name,
+            "sg": "", "gen": "autobot", "aip": "", "sps": "",
+            "i": base, "img": base,
+            "m": mdl, "mdl": mdl,
+            "ma": mdl, "map_asset": mdl,
+            "hc": "autobot", "hero_colour": "autobot",
         }
     return out
 
@@ -754,7 +812,33 @@ def build_heroes():
     rank 1 (see build_hero_entry), so one rank-1 BCGHeroBase per owned bot is what the
     roster looks up. Rank keys are strings in JSON; the client converts them to the int
     keys of Dictionary<int,BCGHeroBase> (verified live: string "1" resolved fine)."""
-    return {bid: {"1": build_hero_base(bid, 1)} for bid in OWNED}
+    out = {bid: {"1": build_hero_base(bid, 1)} for bid in OWNED}
+    for m in _load_mods():
+        mid = m["id"]
+        star = m.get("default_star", 5)
+        hp0, atk0 = _STAR_BASE.get(star, _STAR_BASE[5])
+        rating = (hp0 + atk0) // 20
+        out[mid] = {
+            "1": {
+                "id": mid, "r": 1, "m": star, "s": star,
+                "max_hp": hp0, "mhpb": hp0, "attack": atk0, "attb": atk0,
+                "mana_start": 0, "stun_time": 0, "special_attacks": 0,
+                "rating": rating,
+                "rating_hp": hp0 // 2, "rating_attack": atk0 // 2,
+                "rating_hp_base": hp0 // 2, "rating_attack_base": atk0 // 2,
+                "ab": 0,
+                "hp": float(hp0), "armor": 500.0, "crit_chance": 0.1, "crit_damage": 1.5,
+                "perfect_block_chance": 0.1, "block_proficiency": 0.75, "mana_gain": 1.0,
+                "resist_magic": 0.0, "resist_physical": 0.0, "stun_chance": 0.0,
+                "cr": 0.0, "rcr": 0.0, "rcd": 0.0, "spb": 0.0, "pjb": 0.0, "cpw": 0.0,
+                "ap": 0.0, "bp": 0.0, "il": 0.0, "il2": 0.0, "il3": 0.0, "is4": 0.0,
+                "eg": 0.0, "fg": 0.0, "ar": 0.0, "hr": 0.0, "hm": 0.0, "am": 0.0,
+                "hrhp": 0.0, "hra": 0.0,
+                "stat_mods": [], "sig_mods": [], "buff_mods": [],
+                "i": [], "i2": [], "i3": [], "i4": [],
+            }
+        }
+    return out
 
 
 def build_stat_modifiers():
@@ -975,14 +1059,37 @@ def build_active_team(activity_id="1.1.1-0", heroes=None):
     }
 
 
+def build_mod_entry(mid, rank=1, level=1):
+    """One owned-module record for getUserData `updates.heroes` (entity_type='tower')."""
+    mod_dict = {m["id"]: m for m in _load_mods()}
+    mod_info = mod_dict.get(mid, {})
+    star = mod_info.get("default_star", 5)
+    hp0, atk0 = _STAR_BASE.get(star, _STAR_BASE[5])
+    rating = (hp0 + atk0) // 20
+    return {
+        "entity_type": "tower", "bid": mid,
+        "rank": rank, "level": level, "sig_lvl": 0,
+        "required_xp": 0, "max_xp": 100,
+        "stamina": 100, "stamina_ts": 0, "stamina_full_ts": 0, "stt": "",
+        "max_hp": hp0, "attack": atk0,
+        "rating": rating,
+        "rating_attack": atk0 // 2, "rating_hp": hp0 // 2,
+        "rating_attack_base": atk0 // 2, "rating_hp_base": hp0 // 2,
+        "special_attacks": 0, "pvpb": {}, "exc": {},
+        "mana_gain": 1.0, "mana_start": 0,
+        "flvl": 0, "req_fxp": 0, "max_fxp": 0, "mfl": 0,
+    }
+
+
 def build_user_data(team=None):
     """Full getUserData result. userData maxes + owned heroes through `updates`,
     exactly as the proven response and the README/TECHNICAL_NOTES describe."""
     heroes = [build_hero_entry(bid) for bid in OWNED]
+    mods = [build_mod_entry(m["id"]) for m in _load_mods()]
     return {
         # teamSizeMax expanded to 5 as requested
         "userData": {"blueprintsMax": 500, "teamSizeMax": 5, "teamCountMax": 5},
-        "updates": {"heroes": heroes, "savedTeams": [build_saved_team(heroes=team)],
+        "updates": {"heroes": heroes + mods, "savedTeams": [build_saved_team(heroes=team)],
                     "activeTeams": [build_active_team(heroes=team)]},
         "deletes": {},
     }
@@ -1671,30 +1778,47 @@ def build_base_hero_details(req_heroes):
     requested hero, drawn from the authored stat curve so the numbers match the roster
     instead of the old crude ad-hoc curve in fakeserver."""
     out = []
+    mod_dict = {m["id"]: m for m in _load_mods()}
     for h in (req_heroes or []):
         bid = h.get("bid", "")
         rank = int(h.get("rank", 1) or 1)
         level = int(h.get("level", 1) or 1)
-        faction, klass, star = ROSTER.get(bid, ("decepticon", "tact", 1))
-        hp, atk = base_stats(bid, rank, level)
-        # ManaGain@0x54 seeds _powerGainRate@0x138; these original authored values keep the
-        # per-hit `attackValues[*].m` contribution nonzero for both combatants.
-        out.append({
-            "bid": bid, "rank": rank, "level": level,
-            "sig_lvl": int(h.get("sig_lvl", 0) or 0),
-            # The request identifies the enemy only by bid. Keep its authored render
-            # identity on the computed detail too; the wire walk check confirmed the
-            # intermediate warrior must resolve as npc_shark_warr, not a blank default.
-            "i": art_base(bid), "img": art_base(bid),
-            "m": model_id(bid), "mdl": model_id(bid),
-            "rating_hp": hp, "max_hp": hp,
-            "rating_attack": atk, "attack": atk,
-            "health": hp, "armor": 0, "crit_rate": 0, "crit_dmg": 0,
-            "block_prof": 0, "perfect_block": 0, "sig_ability": 0,
-            "special_attacks": max_special_attacks(bid, star), "user_owned": True,
-            "mana_gain": _MANA_GAIN_RATE, "mana_start": _DIAG_MANA_START,
-            "synergyBonuses": [], "pvpb": {},
-        })
+        if bid in mod_dict:
+            mod_info = mod_dict[bid]
+            star = mod_info.get("default_star", 5)
+            mdl = mod_info.get("model_id", bid)
+            hp0, atk0 = _STAR_BASE.get(star, _STAR_BASE[5])
+            hp = hp0 * level
+            atk = atk0 * level
+            out.append({
+                "bid": bid, "rank": rank, "level": level,
+                "sig_lvl": int(h.get("sig_lvl", 0) or 0),
+                "i": art_base(bid), "img": art_base(bid),
+                "m": mdl, "mdl": mdl,
+                "rating_hp": hp, "max_hp": hp,
+                "rating_attack": atk, "attack": atk,
+                "health": hp, "armor": 0, "crit_rate": 0, "crit_dmg": 0,
+                "block_prof": 0, "perfect_block": 0, "sig_ability": 0,
+                "special_attacks": 0, "user_owned": True,
+                "mana_gain": _MANA_GAIN_RATE, "mana_start": _DIAG_MANA_START,
+                "synergyBonuses": [], "pvpb": {},
+            })
+        else:
+            faction, klass, star = ROSTER.get(bid, ("decepticon", "tact", 1))
+            hp, atk = base_stats(bid, rank, level)
+            out.append({
+                "bid": bid, "rank": rank, "level": level,
+                "sig_lvl": int(h.get("sig_lvl", 0) or 0),
+                "i": art_base(bid), "img": art_base(bid),
+                "m": model_id(bid), "mdl": model_id(bid),
+                "rating_hp": hp, "max_hp": hp,
+                "rating_attack": atk, "attack": atk,
+                "health": hp, "armor": 0, "crit_rate": 0, "crit_dmg": 0,
+                "block_prof": 0, "perfect_block": 0, "sig_ability": 0,
+                "special_attacks": max_special_attacks(bid, star), "user_owned": True,
+                "mana_gain": _MANA_GAIN_RATE, "mana_start": _DIAG_MANA_START,
+                "synergyBonuses": [], "pvpb": {},
+            })
     return out
 
 

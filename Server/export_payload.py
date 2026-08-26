@@ -264,7 +264,8 @@ def build_entries(listen_port: int = 8080) -> dict[str, bytes]:
     add("@logindata:zh", _envelope(gamedata.build_login_data(lang="zh")))
     add("@herodata:open", b'{"error":null,"result":[')
     add("@herodata:close", b"]}")
-    for bid in sorted(gamedata.OWNED):
+    all_owned = sorted(set(gamedata.OWNED) | {m["id"] for m in gamedata._load_mods()})
+    for bid in all_owned:
         for rank in range(1, 6):
             for level in range(1, 31):
                 add(f"@hero:{bid}:{rank}:{level}", _hero_detail(bid, rank, level))

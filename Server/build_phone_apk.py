@@ -293,6 +293,24 @@ def build(
                 rpath = Path("assets_redeco") / b_name
                 if rpath.exists():
                     data = rpath.read_bytes()
+            elif info.filename == "assets/towers_odr/toc.txt":
+                try:
+                    toc_dict = json.loads(data.decode("utf-8"))
+                    tpaths = toc_dict["bundles"]["towers"]["paths"]
+                    for mod_stem in [
+                        "mods_generic_utl_01", "mods_laserguidance", "mods_nightbirdsmark", "mods_techconsole",
+                        "mods_generic_off_01", "mods_brawlersfury", "mods_robotresource", "mods_scoutssentry",
+                        "mods_superconductor", "mods_health", "mods_repairmodule", "mods_security",
+                        "mods_emimodule", "mods_strangerefractor", "defaulttower", "mods_immobilizer",
+                        "mods_fluxincapacitator", "mods_exofilter", "mods_harmaccelerator", "mods_demolitionscache",
+                        "mods_primemodule", "mods_warriorscall", "mods_generic_def_01", "mods_attack",
+                        "mods_tacticianstrick"
+                    ]:
+                        tpaths[f"bundles/characters/merged/{mod_stem}"] = f"Assets/Bundles/quest/towers/prefabs/{mod_stem}.prefab"
+                        tpaths[f"bundles/characters/merged/{mod_stem}_lw"] = f"Assets/Bundles/quest/towers/prefabs/{mod_stem}.prefab"
+                    data = json.dumps(toc_dict, indent=4).encode("utf-8")
+                except Exception as e:
+                    print(f"Failed to patch towers toc: {e}")
             elif info.filename == "assets/packs.txt":
                 try:
                     pdict = json.loads(data.decode("utf-8"))
@@ -526,6 +544,8 @@ def build(
         if redeco_dir.is_dir():
             for bpath in redeco_dir.glob("*.assetbundle"):
                 bot_id = bpath.stem
+                if bot_id == "towers":
+                    continue
                 bdata = bpath.read_bytes()
                 bundle_target = f"assets/assetpack/{bot_id}_odr/{bot_id}.assetbundle"
                 toc_target = f"assets/{bot_id}_odr/toc.txt"

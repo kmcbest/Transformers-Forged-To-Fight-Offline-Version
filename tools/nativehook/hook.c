@@ -706,7 +706,7 @@ MKHOOK(9) MKHOOK(10) MKHOOK(11) MKHOOK(12) MKHOOK(14) MKHOOK(15) MKHOOK(16)
 MKHOOK(17) MKHOOK(18) MKHOOK(19) MKHOOK(20)
 MKHOOK(25) MKHOOK(26) MKHOOK(27) MKHOOK(29) MKHOOK(30)
 // marker slots (jp=2): log tag once per call
-MKHOOK(33) MKHOOK(34) MKHOOK(35) MKHOOK(39) MKHOOK(40) MKHOOK(41) MKHOOK(42)
+MKHOOK(33) MKHOOK(34) MKHOOK(35) MKHOOK(39) MKHOOK(40) MKHOOK(41)
 MKHOOK(47) MKHOOK(48) MKHOOK(49) MKHOOK(51)
 // slots 53/54/55: BCGHeroBase ctor field readers (jp=1 key logging, HB-prefixed via g_inhb)
 MKHOOK(53) MKHOOK(54) MKHOOK(55)
@@ -2342,6 +2342,10 @@ MKRET_INT(36) MKRET_INT(38)
     return r; }
 MKENT(31) MKENT(32)
 // jp=8: userOwnsBot(this=a0, bp=a1) -> log bp string + bool ret
+void* hook_42(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
+    PROTECT( flog("==SETSCR== type=%d force=%d this=%p", (int)(intptr_t)a1, (int)(intptr_t)a2, a0); );
+    return H[42].orig(a0,a1,a2,a3,a4,a5,a6,a7);
+}
 void* hook_43(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
     void* r = H[43].orig(a0,a1,a2,a3,a4,a5,a6,a7);
     PROTECT( char b[64]; b[0]=0; uintptr_t s=(uintptr_t)a1;
@@ -3614,7 +3618,6 @@ static int relocate(uint8_t* tr, uint8_t* src, int ninstr){
     return o;
 }
 
-extern void* handlers[];
 static int inline_hook(void* target, void* handler, fn8* orig_out){
     uint8_t* t = (uint8_t*)target;
     uint32_t first = *(uint32_t*)t;
