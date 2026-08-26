@@ -243,6 +243,20 @@ def _load_mods():
 
 
 # ---------------------------------------------------------------------------
+# Relics catalog loader
+# ---------------------------------------------------------------------------
+def _load_relics():
+    rpath = os.path.join(HERE, "relics_catalog.json")
+    if os.path.exists(rpath):
+        try:
+            with open(rpath, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return []
+
+
+# ---------------------------------------------------------------------------
 # JSON builders -- emit the exact proven shapes from Server/responses/.
 # ---------------------------------------------------------------------------
 def build_blueprints(lang="en"):
@@ -284,6 +298,25 @@ def build_blueprints(lang="en"):
         out[mid] = {
             "id": mid, "et": "tower",
             "c": mid, "r": star, "a": "autobot",
+            "cl": "",
+            "name": name, "name_s": name,
+            "m": mdl, "mdl": mdl,
+            "i": base, "img": base,
+            "ma": mdl, "map_asset": mdl,
+            "s1": 1.0, "s2": 1.0, "s3": 1.0,
+            "msa": 0,
+            "ab": 100.0, "gg": 1, "mfl": 0, "nfr": 0,
+            "fcpg": "", "fhpag": "",
+        }
+    for r in _load_relics():
+        rid = r["id"]
+        star = r.get("default_star", 5)
+        mdl = r.get("model_id", rid)
+        base = art_base(rid)
+        name = r.get("name_zh" if lang == "zh" else "name_en", r.get("name_en", rid))
+        out[rid] = {
+            "id": rid, "et": "relic",
+            "c": rid, "r": star, "a": "autobot",
             "cl": "",
             "name": name, "name_s": name,
             "m": mdl, "mdl": mdl,
@@ -398,6 +431,37 @@ _ART_BASE = {
     "mods_generic_def_01": "gen_def",
     "mods_generic_off_01": "gen_off",
     "mods_generic_utl_01": "gen_utl",
+
+    # --- Relics official shipped portraits ---
+    "relic_allspark": "allspark",
+    "relic_covenant_primus": "covenant_primus",
+    "relic_matrix_of_leadership": "matrix_of_leadership",
+    "relic_origin_matrix": "origin_matrix",
+    "relic_ancienthead": "ancienthead",
+    "relic_solus_forge": "solus_forge",
+    "relic_dark_energon_crystal": "dark_energon_crystal",
+    "relic_unstable_energon_crystal": "unstable_energon_crystal",
+    "relic_stasis_generator": "stasis_generator",
+    "relic_cloaking_field": "cloaking_field",
+    "relic_fallen_titan_hand": "fallen_titan_hand",
+    "relic_ancient_tablet": "ancient_tablet",
+    "relic_goldendisk": "goldendisk",
+    "relic_shattered_disk": "shattered_disk_t4",
+    "relic_statue_op": "statue_op_c",
+    "relic_statue_megatron": "statue_megatron",
+    "relic_statue_hotrod": "statue_hotrod",
+    "relic_statue_solus": "statue_solus_g",
+    "relic_jazz": "relic_jazz_t4",
+    "relic_optimus_primal": "relic_optimus_primal_t4",
+    "relic_megatron": "relic_megatron_t4",
+    "relic_bumblebee": "relic_bumblebee_t4",
+    "relic_blaster": "relic_blaster_t4",
+    "relic_cheetor": "relic_cheetor_t4",
+    "relic_hound": "relic_hound_t4",
+    "relic_galvatron": "relic_galvatron_t4",
+    "relic_kickback": "relic_kickback_t4",
+    "relic_alliance_victory": "relic_ave_t4",
+    "relic_raid_champion": "relic_raid_t4",
 }
 
 
@@ -587,6 +651,20 @@ def build_characters(lang="en"):
         name = m.get("name_zh" if lang == "zh" else "name_en", m.get("name_en", mid))
         out[mid] = {
             "id": mid,
+            "name": name, "name_s": name,
+            "sg": "", "gen": "autobot", "aip": "", "sps": "",
+            "i": base, "img": base,
+            "m": mdl, "mdl": mdl,
+            "ma": mdl, "map_asset": mdl,
+            "hc": "autobot", "hero_colour": "autobot",
+        }
+    for r in _load_relics():
+        rid = r["id"]
+        mdl = r.get("model_id", rid)
+        base = art_base(rid)
+        name = r.get("name_zh" if lang == "zh" else "name_en", r.get("name_en", rid))
+        out[rid] = {
+            "id": rid,
             "name": name, "name_s": name,
             "sg": "", "gen": "autobot", "aip": "", "sps": "",
             "i": base, "img": base,
@@ -821,6 +899,31 @@ def build_heroes():
         out[mid] = {
             "1": {
                 "id": mid, "r": 1, "m": star, "s": star,
+                "max_hp": hp0, "mhpb": hp0, "attack": atk0, "attb": atk0,
+                "mana_start": 0, "stun_time": 0, "special_attacks": 0,
+                "rating": rating,
+                "rating_hp": hp0 // 2, "rating_attack": atk0 // 2,
+                "rating_hp_base": hp0 // 2, "rating_attack_base": atk0 // 2,
+                "ab": 0,
+                "hp": float(hp0), "armor": 500.0, "crit_chance": 0.1, "crit_damage": 1.5,
+                "perfect_block_chance": 0.1, "block_proficiency": 0.75, "mana_gain": 1.0,
+                "resist_magic": 0.0, "resist_physical": 0.0, "stun_chance": 0.0,
+                "cr": 0.0, "rcr": 0.0, "rcd": 0.0, "spb": 0.0, "pjb": 0.0, "cpw": 0.0,
+                "ap": 0.0, "bp": 0.0, "il": 0.0, "il2": 0.0, "il3": 0.0, "is4": 0.0,
+                "eg": 0.0, "fg": 0.0, "ar": 0.0, "hr": 0.0, "hm": 0.0, "am": 0.0,
+                "hrhp": 0.0, "hra": 0.0,
+                "stat_mods": [], "sig_mods": [], "buff_mods": [],
+                "i": [], "i2": [], "i3": [], "i4": [],
+            }
+        }
+    for r in _load_relics():
+        rid = r["id"]
+        star = r.get("default_star", 5)
+        hp0, atk0 = _STAR_BASE.get(star, _STAR_BASE[5])
+        rating = (hp0 + atk0) // 20
+        out[rid] = {
+            "1": {
+                "id": rid, "r": 1, "m": star, "s": star,
                 "max_hp": hp0, "mhpb": hp0, "attack": atk0, "attb": atk0,
                 "mana_start": 0, "stun_time": 0, "special_attacks": 0,
                 "rating": rating,
@@ -1081,15 +1184,38 @@ def build_mod_entry(mid, rank=1, level=1):
     }
 
 
+def build_relic_entry(rid, rank=1, level=1):
+    """One owned-relic record for getUserData `updates.heroes` (entity_type='relic')."""
+    relic_dict = {r["id"]: r for r in _load_relics()}
+    relic_info = relic_dict.get(rid, {})
+    star = relic_info.get("default_star", 5)
+    hp0, atk0 = _STAR_BASE.get(star, _STAR_BASE[5])
+    rating = (hp0 + atk0) // 20
+    return {
+        "entity_type": "relic", "bid": rid,
+        "rank": rank, "level": level, "sig_lvl": 0,
+        "required_xp": 0, "max_xp": 100,
+        "stamina": 100, "stamina_ts": 0, "stamina_full_ts": 0, "stt": "",
+        "max_hp": hp0, "attack": atk0,
+        "rating": rating,
+        "rating_attack": atk0 // 2, "rating_hp": hp0 // 2,
+        "rating_attack_base": atk0 // 2, "rating_hp_base": hp0 // 2,
+        "special_attacks": 0, "pvpb": {}, "exc": {},
+        "mana_gain": 1.0, "mana_start": 0,
+        "flvl": 0, "req_fxp": 0, "max_fxp": 0, "mfl": 0,
+    }
+
+
 def build_user_data(team=None):
     """Full getUserData result. userData maxes + owned heroes through `updates`,
     exactly as the proven response and the README/TECHNICAL_NOTES describe."""
     heroes = [build_hero_entry(bid) for bid in OWNED]
     mods = [build_mod_entry(m["id"]) for m in _load_mods()]
+    relics = [build_relic_entry(r["id"]) for r in _load_relics()]
     return {
         # teamSizeMax expanded to 5 as requested
         "userData": {"blueprintsMax": 500, "teamSizeMax": 5, "teamCountMax": 5},
-        "updates": {"heroes": heroes + mods, "savedTeams": [build_saved_team(heroes=team)],
+        "updates": {"heroes": heroes + mods + relics, "savedTeams": [build_saved_team(heroes=team)],
                     "activeTeams": [build_active_team(heroes=team)]},
         "deletes": {},
     }
@@ -1710,9 +1836,6 @@ def build_base_mission():
         "modes": ["base"],
         "data": build_base_summary(),
         "map": build_base_map(),
-        # Placements: socket id -> the building occupying it. `key` is the
-        # building id; it travels to NewEntity as extraData, which is what makes
-        # the base builder clone the catalogue entry (see note at BASE_BUILDINGS).
         "placements": {
             _base_socket_id(r, c): {
                 "entityType": "building",
@@ -1726,12 +1849,7 @@ def build_base_mission():
 
 
 def build_base_available_buildings():
-    """The building catalogue, one entry per BASE_BUILDINGS row.
-
-    Keys per Building.Deserialize (@0x149C594); see the wire-contract note at
-    BASE_BUILDINGS. `levels` is a List<BuildingLevelRange> used only by the
-    upgrade-cost math, safe to leave empty for display.
-    """
+    """The building catalogue, one entry per BASE_BUILDINGS row."""
     out = []
     for bid, spec in BASE_BUILDINGS.items():
         out.append({
@@ -1779,14 +1897,15 @@ def build_base_hero_details(req_heroes):
     instead of the old crude ad-hoc curve in fakeserver."""
     out = []
     mod_dict = {m["id"]: m for m in _load_mods()}
+    relic_dict = {r["id"]: r for r in _load_relics()}
     for h in (req_heroes or []):
         bid = h.get("bid", "")
         rank = int(h.get("rank", 1) or 1)
         level = int(h.get("level", 1) or 1)
-        if bid in mod_dict:
-            mod_info = mod_dict[bid]
-            star = mod_info.get("default_star", 5)
-            mdl = mod_info.get("model_id", bid)
+        if bid in mod_dict or bid in relic_dict:
+            item_info = mod_dict.get(bid) or relic_dict.get(bid)
+            star = item_info.get("default_star", 5)
+            mdl = item_info.get("model_id", bid)
             hp0, atk0 = _STAR_BASE.get(star, _STAR_BASE[5])
             hp = hp0 * level
             atk = atk0 * level

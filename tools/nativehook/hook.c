@@ -2343,7 +2343,53 @@ MKRET_INT(36) MKRET_INT(38)
 MKENT(31) MKENT(32)
 // jp=8: userOwnsBot(this=a0, bp=a1) -> log bp string + bool ret
 void* hook_42(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
-    PROTECT( flog("==SETSCR== type=%d force=%d this=%p", (int)(intptr_t)a1, (int)(intptr_t)a2, a0); );
+    char b[64]; b[0]=0; uintptr_t s=(uintptr_t)a1;
+    if(s>=0x100000 && !(s&7)){
+        int32_t l=*(int32_t*)(s+0x10); uint16_t*c=(uint16_t*)(s+0x14);
+        if(l>=0&&l<60){for(int i=0;i<l;i++)b[i]=(char)c[i];b[l]=0;}
+    }
+    if(strcasecmp(b, "relics") == 0 || strcasecmp(b, "relic") == 0 || strcasecmp(b, "building") == 0){
+        PROTECT(
+            // 1. Show heroesGridContainer (alpha 1.0)
+            uintptr_t hgc = *(uintptr_t*)((char*)a0 + 0x140);
+            if (hgc && !(hgc & 7)) {
+                uintptr_t p = *(uintptr_t*)(hgc + 0x70);
+                if (p && !(p & 7)) {
+                    void (*set_alpha)(void*, float) = (void(*)(void*, float))(*(uintptr_t*)(*(uintptr_t*)p + 0x1E8));
+                    if (set_alpha) set_alpha((void*)p, 1.0f);
+                }
+            }
+            // 2. Hide buildingsGridContainer (alpha 0.0)
+            uintptr_t bgc = *(uintptr_t*)((char*)a0 + 0x148);
+            if (bgc && !(bgc & 7)) {
+                uintptr_t p = *(uintptr_t*)(bgc + 0x70);
+                if (p && !(p & 7)) {
+                    void (*set_alpha)(void*, float) = (void(*)(void*, float))(*(uintptr_t*)(*(uintptr_t*)p + 0x1E8));
+                    if (set_alpha) set_alpha((void*)p, 0.0f);
+                }
+            }
+            // 3. Get all relics
+            uintptr_t str_klass = *(uintptr_t*)s;
+            static struct { uintptr_t klass; uintptr_t monitor; int32_t length; uint16_t chars[8]; } rstr;
+            rstr.klass = str_klass;
+            rstr.monitor = 0;
+            rstr.length = 5;
+            rstr.chars[0]='r'; rstr.chars[1]='e'; rstr.chars[2]='l'; rstr.chars[3]='i'; rstr.chars[4]='c'; rstr.chars[5]=0;
+            
+            void* (*get_entities)(void*, void*) = (void*(*)(void*, void*))(g_base + 0xC210D4);
+            void* entities = get_entities(&rstr, NULL);
+            *(void**)((char*)a0 + 0x158) = entities;
+            
+            // 4. Update screen type pointers on HeroesScreen
+            *(void**)((char*)a0 + 0x280) = &rstr; // _screenType = "relic" (not "building", enables HeroPortrait clicks!)
+            
+            // 5. ShowGridContainer(this=a0, animate=false, onReady=a3)
+            void (*show_grid)(void*, int, void*) = (void(*)(void*, int, void*))(g_base + 0xC58598);
+            show_grid(a0, 0, a3);
+            flog("==SETSCR== RELICS grid populated with entities=%p", entities);
+        );
+        return NULL;
+    }
     return H[42].orig(a0,a1,a2,a3,a4,a5,a6,a7);
 }
 void* hook_43(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){

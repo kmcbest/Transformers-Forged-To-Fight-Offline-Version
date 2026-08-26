@@ -311,6 +311,31 @@ def build(
                     data = json.dumps(toc_dict, indent=4).encode("utf-8")
                 except Exception as e:
                     print(f"Failed to patch towers toc: {e}")
+            elif info.filename == "assets/relics_odr/toc.txt":
+                try:
+                    toc_dict = json.loads(data.decode("utf-8"))
+                    rpaths = toc_dict["bundles"]["relics"]["paths"]
+                    for relic_stem in [
+                        "rlc1", "rlc2", "rlc3", "rlc4", "rlc5", "rlc6", "rlc7", "rlc8", "rlc9", "rlc10",
+                        "rlc11", "rlc13", "rlc14", "rlc19", "rlc20", "rlc22", "rlc28", "rlc29",
+                        "rlc30a", "rlc30b", "rlc30c", "rlc30d",
+                        "rlc31a", "rlc31b", "rlc31c", "rlc31d",
+                        "rlc33a", "rlc33b", "rlc33c", "rlc33d",
+                        "rlc34a", "rlc34b", "rlc34c", "rlc34d",
+                        "rlc35a", "rlc35b", "rlc35c", "rlc35d",
+                        "rlc36a", "rlc36b", "rlc36c", "rlc36d",
+                        "rlc37a", "rlc37b", "rlc37c", "rlc37d",
+                        "rlc38a", "rlc38b", "rlc38c", "rlc38d",
+                        "rlc39a", "rlc39b", "rlc39c", "rlc39d",
+                        "rlc40a", "rlc40b", "rlc40c", "rlc40d",
+                        "rlc41a", "rlc41b", "rlc41c", "rlc41d",
+                        "rlc_jazz_a", "rlc_jazz_b", "rlc_jazz_c", "rlc_jazz_gs", "defaultrelic"
+                    ]:
+                        rpaths[f"bundles/characters/merged/{relic_stem}"] = f"Assets/Bundles/quest/relics/prefabs/{relic_stem}.prefab"
+                        rpaths[f"bundles/characters/merged/{relic_stem}_lw"] = f"Assets/Bundles/quest/relics/prefabs/{relic_stem}.prefab"
+                    data = json.dumps(toc_dict, indent=4).encode("utf-8")
+                except Exception as e:
+                    print(f"Failed to patch relics toc: {e}")
             elif info.filename == "assets/packs.txt":
                 try:
                     pdict = json.loads(data.decode("utf-8"))
@@ -544,7 +569,7 @@ def build(
         if redeco_dir.is_dir():
             for bpath in redeco_dir.glob("*.assetbundle"):
                 bot_id = bpath.stem
-                if bot_id == "towers":
+                if bot_id in ("towers", "relics"):
                     continue
                 bdata = bpath.read_bytes()
                 bundle_target = f"assets/assetpack/{bot_id}_odr/{bot_id}.assetbundle"
