@@ -1,15 +1,27 @@
 [
     {
+        "id": "relic_immobilizer",
+        "name_en": "Immobilizer",
+        "name_zh": "禁锢定身器",
+        "category": "Prime Artifact",
+        "default_star": 5,
+        "portrait_base": "immobilizer",
+        "model_id": "rlc3",
+        "description_en": "An ancient Cybertronian device engineered to project temporal immobilization waves.",
+        "description_zh": "能够投射强力时空定身力场的古老赛博坦禁锢装置。",
+        "scale": 0.12
+    },
+    {
         "id": "relic_allspark",
         "name_en": "The AllSpark",
         "name_zh": "火种源",
         "category": "Prime Artifact",
         "default_star": 5,
         "portrait_base": "allspark",
-        "model_id": "rlc1",
+        "model_id": "rlc2",
         "description_en": "The mystical source of all Cybertronian life and divine energon matrix power.",
         "description_zh": "孕育赛博坦所有生命的神秘源泉，蕴含无限神圣能量。",
-        "scale": 0.056
+        "scale": 0.12
     },
     {
         "id": "relic_covenant_primus",
@@ -18,10 +30,10 @@
         "category": "Prime Artifact",
         "default_star": 5,
         "portrait_base": "covenant_primus",
-        "model_id": "rlc2",
+        "model_id": "rlc7",
         "description_en": "The sacred tome chronicling the past, present, and prophecies of Cybertron.",
         "description_zh": "记载着赛博坦过去、现在与未来命运预言的神圣典籍。",
-        "scale": 0.06
+        "scale": 0.12
     },
     {
         "id": "relic_matrix_of_leadership",
@@ -30,10 +42,10 @@
         "category": "Prime Artifact",
         "default_star": 5,
         "portrait_base": "matrix_of_leadership",
-        "model_id": "rlc3",
+        "model_id": "rlc14",
         "description_en": "The legendary conduit of Primus' wisdom, carried by the chosen Prime.",
         "description_zh": "传承自普神意志的领袖神物，赋予持有者无穷智慧与威能。",
-        "scale": 0.112
+        "scale": 0.12
     },
     {
         "id": "relic_origin_matrix",
@@ -42,10 +54,10 @@
         "category": "Prime Artifact",
         "default_star": 5,
         "portrait_base": "origin_matrix",
-        "model_id": "rlc4",
+        "model_id": "rlc8",
         "description_en": "An ancient prototype matrix containing pure primordial cosmic energon.",
         "description_zh": "蕴含纯净原初宇宙能量的远古矩阵雏形。",
-        "scale": 0.121
+        "scale": 0.12
     },
     {
         "id": "relic_ancienthead",
@@ -54,7 +66,7 @@
         "category": "Ancient Relic",
         "default_star": 5,
         "portrait_base": "ancienthead",
-        "model_id": "rlc5",
+        "model_id": "rlc4",
         "description_en": "The deactivated cranial command matrix of an ancient Cybertronian Titan.",
         "description_zh": "沉睡远古泰坦巨神的头部指令矩阵核心。",
         "scale": 0.12
@@ -66,7 +78,7 @@
         "category": "Prime Artifact",
         "default_star": 5,
         "portrait_base": "solus_forge",
-        "model_id": "rlc6",
+        "model_id": "rlc5",
         "description_en": "The mythical hammer able to craft and forge any Cybertronian artifact.",
         "description_zh": "十三天尊索拉斯的造物神锤，可铸造世间一切神器。",
         "scale": 0.12
@@ -78,7 +90,7 @@
         "category": "Cosmic Artifact",
         "default_star": 5,
         "portrait_base": "dark_energon_crystal",
-        "model_id": "rlc7",
+        "model_id": "rlc6",
         "description_en": "A potent crystal infused with the dark blood of Unicron.",
         "description_zh": "凝聚宇宙大帝暗黑邪能的强力水晶碎片。",
         "scale": 0.12
@@ -90,7 +102,7 @@
         "category": "Cosmic Artifact",
         "default_star": 5,
         "portrait_base": "unstable_energon_crystal",
-        "model_id": "rlc8",
+        "model_id": "rlc11",
         "description_en": "A volatile crystal pulsating with raw, concentrated energon output.",
         "description_zh": "不断脉动释放高能辐射的高浓缩激化能量结晶。",
         "scale": 0.12
@@ -102,10 +114,10 @@
         "category": "Technology",
         "default_star": 4,
         "portrait_base": "stasis_generator",
-        "model_id": "rlc9",
+        "model_id": "rlc20",
         "description_en": "Generates a localized temporal stasis distortion field.",
         "description_zh": "投射局部时空停滞力场，禁锢空间范围内的敌方目标。",
-        "scale": 0.079
+        "scale": 0.12
     },
     {
         "id": "relic_cloaking_field",
@@ -114,7 +126,7 @@
         "category": "Technology",
         "default_star": 4,
         "portrait_base": "cloaking_field",
-        "model_id": "rlc10",
+        "model_id": "rlc19",
         "description_en": "Bends light and sensor telemetry to cloak friendly forces.",
         "description_zh": "偏折光线与雷达探测，为阵地提供全方位光学隐形伪装。",
         "scale": 0.12
@@ -126,10 +138,10 @@
         "category": "Ancient Relic",
         "default_star": 5,
         "portrait_base": "fallen_titan_hand",
-        "model_id": "rlc19",
+        "model_id": "rlc9",
         "description_en": "The petrified gauntlet of a battle-tested ancient Titan warrior.",
         "description_zh": "远古泰坦战神的装甲臂铠残骸，散发着沉重的威压。",
-        "scale": 0.061
+        "scale": 0.12
     },
     {
         "id": "relic_ancient_tablet",

@@ -77,14 +77,14 @@
     "description_zh": "利用顶级双重超导回路极大超频能量获取效率，极速狂暴充能大招。"
   },
   {
-    "id": "mods_immobilizer_01",
-    "name_en": "Immobilizer",
-    "name_zh": "禁锢定身器",
+    "id": "mods_paralyzer_01",
+    "name_en": "Paralyzer",
+    "name_zh": "机能阻断器",
     "category": "Utility",
     "class_affinity": "tact",
     "default_star": 5,
-    "description_en": "Restricts attacker movement speed and reduces their attack reaction times.",
-    "description_zh": "释放重力禁锢力场，降低入侵者的移动速度与攻速。",
+    "description_en": "Emits paralyzing pulses that disrupt attacker combat sub-routines and hinder movement.",
+    "description_zh": "释放强力麻痹电弧脉冲，阻断入侵者的战斗机能并迟滞其行动。",
     "model_id": "mods_immobilizer"
   },
   {
@@ -101,7 +101,7 @@
   {
     "id": "mods_nightbirdsmark_01",
     "name_en": "Nightbird's Mark",
-    "name_zh": "夜莺的印记",
+    "name_zh": "夜莺标记",
     "category": "Offensive",
     "class_affinity": "scou",
     "default_star": 5,
@@ -144,13 +144,13 @@
   },
   {
     "id": "mods_fluxincapacitator_01",
-    "name_en": "Flux Incapacitator",
-    "name_zh": "通量失能器",
+    "name_en": "Transwarp Cell",
+    "name_zh": "曲速电池",
     "category": "Utility",
     "class_affinity": "scou",
     "default_star": 5,
-    "description_en": "Discharges flux bursts that drain attacker stamina and disrupt active buffs.",
-    "description_zh": "定期释放通量脉冲，清除敌方增益并削减其耐力。",
+    "description_en": "Discharges transwarp flux bursts that disrupt attacker space-time coordinates and drain buffs.",
+    "description_zh": "释放曲速跃迁通量脉冲，清除敌方增益并削减其耐力。",
     "model_id": "mods_fluxincapacitator"
   },
   {
@@ -220,36 +220,58 @@
     "model_id": "mods_warriorscall"
   },
   {
-    "id": "mods_generic_def_01",
-    "name_en": "Reinforced Armor Mod",
-    "name_zh": "护甲增强模块",
-    "category": "Defensive",
-    "class_affinity": "tech",
-    "default_star": 3,
-    "description_en": "Standard defensive plating that provides a solid boost to maximum health and armor.",
-    "description_zh": "标准防御型装甲模块，稳步提升守军的最大生命值与护甲值。",
-    "model_id": "mods_generic_def_01"
-  },
-  {
     "id": "mods_generic_off_01",
-    "name_en": "Supercharged Cell Mod",
-    "name_zh": "超导电池模块",
+    "name_en": "Generic Offence",
+    "name_zh": "基础攻击模块",
     "category": "Offensive",
     "class_affinity": "demo",
     "default_star": 3,
-    "description_en": "Standard offensive energy cell that amplifies basic attack damage.",
-    "description_zh": "标准进攻型能量电芯，直接提升守军的基础攻击力。",
+    "description_en": "Standard offensive module that amplifies basic attack damage.",
+    "description_zh": "标准基础进攻型模块，直接提升守军的基础攻击力。",
     "model_id": "mods_generic_off_01"
   },
   {
+    "id": "mods_generic_def_01",
+    "name_en": "Generic Defense",
+    "name_zh": "基础防御模块",
+    "category": "Defensive",
+    "class_affinity": "tech",
+    "default_star": 3,
+    "description_en": "Standard defensive module that provides a solid boost to maximum health and armor.",
+    "description_zh": "标准基础防御型模块，稳步提升守军的最大生命值与护甲值。",
+    "model_id": "mods_generic_def_01"
+  },
+  {
     "id": "mods_generic_utl_01",
-    "name_en": "Nanite Capacitor Mod",
-    "name_zh": "纳米电容模块",
+    "name_en": "Generic Utility",
+    "name_zh": "基础通用模块",
     "category": "Utility",
     "class_affinity": "tact",
     "default_star": 3,
-    "description_en": "Standard utility capacitor that enhances stamina recovery and combat utility.",
-    "description_zh": "标准辅助型电容模块，提升守军的能量恢复与战术适应性。",
+    "description_en": "Standard utility module that enhances stamina recovery and combat utility.",
+    "description_zh": "标准基础战术通用模块，提升守军的能量恢复与战术适应性。",
     "model_id": "mods_generic_utl_01"
+  },
+  {
+    "id": "mods_attack_01",
+    "name_en": "Attack Module",
+    "name_zh": "加攻模块",
+    "category": "Offensive",
+    "class_affinity": "warr",
+    "default_star": 4,
+    "description_en": "Employs energon blade resonators to massively empower base defender attacks.",
+    "description_zh": "搭载能量利刃共鸣核心，大幅强化基地守军的直接攻击杀伤力。",
+    "model_id": "mods_attack"
+  },
+  {
+    "id": "mods_health_01",
+    "name_en": "Health Module",
+    "name_zh": "加血模块",
+    "category": "Defensive",
+    "class_affinity": "tech",
+    "default_star": 4,
+    "description_en": "Emits vitality resonance fields, significantly increasing defender maximum health points.",
+    "description_zh": "释放高频生命修补力场，显著提升守备金刚的最大生命值上限。",
+    "model_id": "mods_health"
   }
 ]
