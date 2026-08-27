@@ -41,3 +41,6 @@ extracted_apk/
 *.jpeg
 [0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]*
 tools/apk_asset_index.json
+
+gamecache/vungle_cache/
+gamecache/Unity/

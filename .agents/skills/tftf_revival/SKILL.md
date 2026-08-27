@@ -99,3 +99,32 @@ Every character, mod, and relic requires 3 portrait formats:
    cmd /c ".\toolchain\android-13\apksigner.bat sign --ks build\debug.keystore --ks-pass pass:android --out build\Transformers-9.2-offline-redeco-edition.apk build\phone-aligned-redeco.apk"
    Remove-Item -Force build\phone-unsigned-redeco.apk, build\phone-aligned-redeco.apk
    ```
+
+---
+
+## 6. 特殊着色器特效与“鬼魂/自发光”机制 (Ghost / Hologram Emissive Technique)
+
+### 6.1 PBR Composite (RAOE) 贴图通道解密
+在 TFTF 使用的 `EB/Character/PBR` 及 `EB/Character/PBR/Uber` 高级角色着色器中，贴图 `_pbr_composite_tex`（通常命名为 `*_RAOE` 或 `*_RMEA`）采用 4 通道紧凑打包：
+* **R 通道 (Red)**：Roughness（粗糙度）
+* **G 通道 (Green)**：Ambient Occlusion / Metallic（环境遮挡 / 金属度）
+* **B 通道 (Blue)**：Cavity / Detail Mask（凹陷与细节）
+* **A 通道 (Alpha)**：**Emissive Mask（自发光 / 能量辉光蒙版）**
+
+### 6.2 幽灵/能量过载/全息发光实战技巧 (Ghost Starscream / Hologram)
+* **原理**：当向角色的 `_pbr_composite_tex` 注入具有高亮度 Alpha 甚至全彩亮度的贴图时，着色器会将这些区域视作 $100\%$ 自发光材质（Self-Illuminating），并与战斗场景的 Bloom 泛光及后处理（Post-Processing）产生剧烈光学反应，呈现出通体晶莹剔透、幽幽发光的“能量幽灵”视觉效果。
+* **应用场景**：
+  * 鬼魂红蜘蛛（Ghost Starscream）
+  * 黑暗能量超载形态（Dark Energon Overload）
+  * 领袖能量矩阵爆发 / 赛博坦全息分身投影
+
+---
+
+## 7. 3D 武器挂点与骨骼绑定标准 (Weapon Socket Rigging)
+
+### 7.1 官方武器标准挂点 `RightProp`
+* 在所有 TFTF 金刚手部骨骼树中，`RightHand` 下方均存在官方预设的 **`RightProp`** 节点（例如坐标 `(-0.588, 0.510, 0.047)`），此点恰好为握拳时的**手心中心空洞**。
+* **铁律**：
+  1. 将武器网格的 `RootBone` 与 `m_Bones[0]` 直接绑定至 **`RightProp`**；
+  2. 将网格的 `BindPose[0]` 设为标准单位矩阵（`Matrix4x4.identity`）；
+  3. 确保网格的 `Stream 2` 携带完整的 `Channel[12]`（BoneWeight = 1.0）与 `Channel[13]`（BoneIndex = 0），即可实现武器与手心 100% 贴合，彻底避免位移漂移与隐形。
