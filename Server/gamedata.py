@@ -860,8 +860,9 @@ def build_rarity_properties():
 def build_hero_base(bid, rank=1):
     """One BCGHeroBase record for login `heroes[bid][rank]`. Deterministic/original,
     reusing the same authored stat curve as the owned-hero + blueprint builders."""
-    faction, klass, star = ROSTER.get(bid, ("decepticon", "tact", 1))
-    hp, atk = base_stats(bid, rank, 1)
+    faction, klass, star = ROSTER.get(bid, ("decepticon", "tact", 5))
+    level = max(1, rank * 10)
+    hp, atk = base_stats(bid, rank, level)
     rating = (hp + atk) // 20
     return {
         "id": bid, "r": rank, "m": star, "s": star,
@@ -871,7 +872,7 @@ def build_hero_base(bid, rank=1):
         "rating": rating,
         "rating_hp": hp // 2, "rating_attack": atk // 2,
         "rating_hp_base": hp // 2, "rating_attack_base": atk // 2,
-        "ab": 0,
+        "ab": 1,
         # combat-tuning floats: sensible neutral values (roster view doesn't need real balance)
         "hp": float(hp), "armor": 0.0, "crit_chance": 0.05, "crit_damage": 1.5,
         "perfect_block_chance": 0.1, "block_proficiency": 0.75, "mana_gain": _MANA_GAIN_RATE,
@@ -889,11 +890,11 @@ def build_heroes():
     """Login-data top-level `heroes` map = BCGManager._baseHeroData (BCGHeroBaseDict:
     Dictionary<string blueprintId, Dictionary<int rank, BCGHeroBase>>). HeroData..ctor
     resolves mHeroBase from this per (blueprint,rank); mHeroBase != null => mValid =>
-    the BOTS tile draws its rarity frame / rating / portrait. Owned heroes are served at
-    rank 1 (see build_hero_entry), so one rank-1 BCGHeroBase per owned bot is what the
-    roster looks up. Rank keys are strings in JSON; the client converts them to the int
-    keys of Dictionary<int,BCGHeroBase> (verified live: string "1" resolved fine)."""
-    out = {bid: {"1": build_hero_base(bid, 1)} for bid in OWNED}
+    the BOTS tile draws its rarity frame / rating / portrait. Provides ranks 1..5."""
+    out = {}
+    for bid in OWNED:
+        faction, klass, star = ROSTER.get(bid, ("decepticon", "tact", 5))
+        out[bid] = {str(r): build_hero_base(bid, r) for r in range(1, max(2, star + 1))}
     for m in _load_mods():
         mid = m["id"]
         star = m.get("default_star", 5)
@@ -1024,14 +1025,19 @@ def build_login_data(lang="en"):
     }
 
 
-def build_hero_entry(bid, rank=1, level=1):
+def build_hero_entry(bid, rank=None, level=None):
     """One owned-hero record for getUserData `updates.heroes`. Same keys as the
-    proven single-hero response; entity_type MUST be 'bot'."""
-    faction, klass, star = ROSTER.get(bid, ("decepticon", "tact", 1))
+    proven single-hero response; entity_type MUST be 'bot'.
+    Defaults to full 5-Star Rank 5 Level 50 Awakened (sig_lvl 100, flvl 100)."""
+    faction, klass, star = ROSTER.get(bid, ("decepticon", "tact", 5))
+    if rank is None:
+        rank = max(1, star)
+    if level is None:
+        level = rank * 10
     hp, atk = base_stats(bid, rank, level)
     return {
         "entity_type": "bot", "bid": bid,
-        "rank": rank, "level": level, "sig_lvl": 0,
+        "rank": rank, "level": level, "sig_lvl": 100,
         "required_xp": 0, "max_xp": 100,
         "stamina": 100, "stamina_ts": 0, "stamina_full_ts": 0, "stt": "",
         "max_hp": hp, "attack": atk,
@@ -1040,7 +1046,7 @@ def build_hero_entry(bid, rank=1, level=1):
         "rating_attack_base": atk // 2, "rating_hp_base": hp // 2,
         "special_attacks": max_special_attacks(bid, star), "pvpb": {}, "exc": {},
         "mana_gain": _MANA_GAIN_RATE, "mana_start": _DIAG_MANA_START,
-        "flvl": 0, "req_fxp": 0, "max_fxp": 0, "mfl": 0,
+        "flvl": 100, "req_fxp": 0, "max_fxp": 100, "mfl": 100,
     }
 
 
@@ -1217,7 +1223,7 @@ def build_user_data(team=None):
     relics = [build_relic_entry(r["id"]) for r in _load_relics()]
     return {
         # teamSizeMax expanded to 5 as requested
-        "userData": {"blueprintsMax": 500, "teamSizeMax": 5, "teamCountMax": 5},
+        "userData": {"blueprintsMax": 500, "teamSizeMax": 5, "teamCountMax": 5, "BotDupedTut": {"id": "BotDupedTut", "state": 2, "completed": True, "branch": ""}, "BotDupedTutorial": {"id": "BotDupedTutorial", "state": 2, "completed": True, "branch": ""}, "ForgeBotTut": {"id": "ForgeBotTut", "state": 2, "completed": True, "branch": ""}, "ForgeBotTutorial": {"id": "ForgeBotTutorial", "state": 2, "completed": True, "branch": ""}, "ForgeModTut": {"id": "ForgeModTut", "state": 2, "completed": True, "branch": ""}, "ForgeModTutorial": {"id": "ForgeModTutorial", "state": 2, "completed": True, "branch": ""}, "RankUpTut": {"id": "RankUpTut", "state": 2, "completed": True, "branch": ""}, "RankUpTutorial": {"id": "RankUpTutorial", "state": 2, "completed": True, "branch": ""}, "UpgradeBotsScreen": {"id": "UpgradeBotsScreen", "state": 2, "completed": True, "branch": ""}, "RelicTut": {"id": "RelicTut", "state": 2, "completed": True, "branch": ""}, "RelicsTutorial": {"id": "RelicsTutorial", "state": 2, "completed": True, "branch": ""}, "MasteryPointIntro": {"id": "MasteryPointIntro", "state": 2, "completed": True, "branch": ""}, "MasteriesTutorial": {"id": "MasteriesTutorial", "state": 2, "completed": True, "branch": ""}, "MasteryPointTutorial": {"id": "MasteryPointTutorial", "state": 2, "completed": True, "branch": ""}, "ShieldTutorial": {"id": "ShieldTutorial", "state": 2, "completed": True, "branch": ""}, "AutoFightTutorial": {"id": "AutoFightTutorial", "state": 2, "completed": True, "branch": ""}, "AvoidanceTutorial": {"id": "AvoidanceTutorial", "state": 2, "completed": True, "branch": ""}, "ClassAdvantageTutorial": {"id": "ClassAdvantageTutorial", "state": 2, "completed": True, "branch": ""}, "ClassGateTutorial": {"id": "ClassGateTutorial", "state": 2, "completed": True, "branch": ""}, "LinkNodesTutorial": {"id": "LinkNodesTutorial", "state": 2, "completed": True, "branch": ""}, "RaidsTutorial": {"id": "RaidsTutorial", "state": 2, "completed": True, "branch": ""}, "RaidTutorial": {"id": "RaidTutorial", "state": 2, "completed": True, "branch": ""}, "StashTutorial": {"id": "StashTutorial", "state": 2, "completed": True, "branch": ""}, "TreasuryTutorial": {"id": "TreasuryTutorial", "state": 2, "completed": True, "branch": ""}, "SparksTutorial": {"id": "SparksTutorial", "state": 2, "completed": True, "branch": ""}, "ArenaTutorial": {"id": "ArenaTutorial", "state": 2, "completed": True, "branch": ""}, "AllianceEventsTutorial": {"id": "AllianceEventsTutorial", "state": 2, "completed": True, "branch": ""}, "DailyMissionsTutorial": {"id": "DailyMissionsTutorial", "state": 2, "completed": True, "branch": ""}, "BotPlacementTutorial": {"id": "BotPlacementTutorial", "state": 2, "completed": True, "branch": ""}},
         "updates": {"heroes": heroes + mods + relics, "savedTeams": [build_saved_team(heroes=team)],
                     "activeTeams": [build_active_team(heroes=team)]},
         "deletes": {},
@@ -1426,11 +1432,14 @@ def build_quest_progression(qid="1.1.1", start=(0, 1), team=None):
     # This quest-local dictionary is what the pre-fight bot selector enumerates.
     # Truncating it silently drops chosen squad members from the mission.
     for bid in bids:
-        hp, atk = base_stats(bid, 1, 1)
+        faction, klass, star = ROSTER.get(bid, ("decepticon", "tact", 5))
+        rank = max(1, star)
+        level = rank * 10
+        hp, atk = base_stats(bid, rank, level)
         quest_team[bid] = {
             "hp": 1.0,
             "pi": (hp + atk) // 20,
-            "sig_lvl": 0,
+            "sig_lvl": 100,
             "stat_mods": [],
             "sig_mods": [],
         }
@@ -1926,19 +1935,22 @@ def build_base_hero_details(req_heroes):
                 "synergyBonuses": [], "pvpb": {},
             })
         else:
-            faction, klass, star = ROSTER.get(bid, ("decepticon", "tact", 1))
+            faction, klass, star = ROSTER.get(bid, ("decepticon", "tact", 5))
             hp, atk = base_stats(bid, rank, level)
+            req_sig = h.get("sig_lvl")
+            sig_val = int(req_sig) if req_sig is not None else 100
             out.append({
                 "bid": bid, "rank": rank, "level": level,
-                "sig_lvl": int(h.get("sig_lvl", 0) or 0),
+                "sig_lvl": sig_val,
                 "i": art_base(bid), "img": art_base(bid),
                 "m": model_id(bid), "mdl": model_id(bid),
                 "rating_hp": hp, "max_hp": hp,
                 "rating_attack": atk, "attack": atk,
                 "health": hp, "armor": 0, "crit_rate": 0, "crit_dmg": 0,
-                "block_prof": 0, "perfect_block": 0, "sig_ability": 0,
+                "block_prof": 0, "perfect_block": 0, "sig_ability": 1,
                 "special_attacks": max_special_attacks(bid, star), "user_owned": True,
                 "mana_gain": _MANA_GAIN_RATE, "mana_start": _DIAG_MANA_START,
+                "flvl": 100, "req_fxp": 0, "max_fxp": 100, "mfl": 100,
                 "synergyBonuses": [], "pvpb": {},
             })
     return out

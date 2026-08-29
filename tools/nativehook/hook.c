@@ -517,6 +517,9 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     // that walks the alternation schedule while the cinematic latch is up.
     { 0xDE8750, "SP3BEAT", 2, 0 }, // 145 Simulation.FixedUpdate -> drive the alt/robot beat schedule
     { 0xDB1D30, "AIRANGE", 2, 0 }, // 146 AIController.Simulate -> basic Attack while the AI can shoot at range
+    { 0x14F4468, "BOTDUPEDCHECK", 2, 0 }, // 147 BotDuped check/start entry -> return 0 to suppress tutorial
+    { 0x1BF0C20, "TUTUIHOOKTOGGLE", 2, 0 }, // 148 TutorialUIHook.ToggleEnabled -> suppress yellow glow
+    { 0x1BF0D10, "TUTUIHOOKCLICK", 2, 0 }, // 149 TutorialUIHook.Clicked -> suppress tutorial click crash
 };
 #define NH (int)(sizeof(H)/sizeof(H[0]))
 
@@ -3179,14 +3182,13 @@ void* hook_114(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
 // FTEBASEFIX (slot 102): permit the base-edit branch only; authored tutorial state is
 // otherwise unchanged and the original result is retained for every other branch.
 void* hook_102(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
-    void* r = H[102].orig(a0,a1,a2,a3,a4,a5,a6,a7);
     char tutorial[32]={0}, branch[48]={0};
     PROTECT({ read_str(a0,tutorial,sizeof tutorial); read_str(a1,branch,sizeof branch); });
-    if (!strcmp(tutorial,"FTE") && !strcmp(branch,"FTEBaseCrystal")) {
-        LOG("FTEBASEFIX forced complete tutorial=%s branch=%s",tutorial,branch);
-        return (void*)1;
+    if (!strcmp(tutorial,"FTE")) {
+        if (!strcmp(branch,"FTEBaseCrystal")) return (void*)1;
+        return H[102].orig(a0,a1,a2,a3,a4,a5,a6,a7);
     }
-    return r;
+    return (void*)1;
 }
 // CAMFRAME (slot 94): a0 is the base's BaseCameraController. get__CurrentPosOffset runs every
 // frame from UpdateCamera (right after it applies the FOV), so it is a convenient place to poke
@@ -3583,6 +3585,16 @@ void hook_146(void* self, float dT, void* method){
         }
     });
 }
+void* hook_147(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
+    flog("BOTDUPEDCHECK suppressed -> return 0");
+    return NULL;
+}
+void* hook_148(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
+    return NULL;
+}
+void* hook_149(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
+    return NULL;
+}
 static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hook_7,hook_8,
     hook_9,hook_10,hook_11,hook_12,hook_13,hook_14,hook_15,hook_16,hook_17,hook_18,hook_19,hook_20,hook_21,
     hook_22,hook_23,hook_24,hook_25,hook_26,hook_27,hook_28,hook_29,hook_30,
@@ -3598,7 +3610,7 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     hook_115,hook_116,hook_117,hook_118,hook_119,hook_120,hook_121,hook_122,hook_123,hook_124,hook_125,hook_126,hook_127,
     hook_128,hook_129,hook_130,hook_131,hook_132,hook_133,hook_134,hook_135,hook_136,hook_137,
     hook_138,hook_139,hook_140,hook_141,hook_142,hook_143,hook_144,
-    hook_145,hook_146 };
+    hook_145,hook_146,hook_147,hook_148,hook_149 };
 
 static void write_jump(uint8_t* dst, void* target){
     uint32_t* p = (uint32_t*)dst;

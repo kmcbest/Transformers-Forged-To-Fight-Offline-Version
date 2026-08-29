@@ -607,6 +607,13 @@ def build(
                 if not pfile.name.startswith("portrait_") and not pfile.name.startswith("cha_") and not pfile.name.startswith("debug_"):
                     zout.writestr(f"assets/assetpack/dialogue_odr/dialogue/{pfile.name}", pfile.read_bytes())
 
+            # Inject official authentic Chinese localization snapshots
+            xlate_assets_dir = Path("assets/xlate/snapshots")
+            if xlate_assets_dir.exists():
+                for xfile in xlate_assets_dir.rglob("*.json"):
+                    rel_zip_path = str(xfile).replace("\\", "/")
+                    zout.writestr(rel_zip_path, xfile.read_bytes())
+
         if payload is not None:
             payload_info = zipfile.ZipInfo(PAYLOAD_ASSET, date_time=(1980, 1, 1, 0, 0, 0))
             payload_info.compress_type = zipfile.ZIP_STORED
