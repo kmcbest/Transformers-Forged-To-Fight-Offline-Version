@@ -592,12 +592,18 @@ int tftf_apk_candidates(const char *maps_path, const char *cmdline_path,
 int tftf_server_start_from_apk(void) {
     /* Hot-reload: check for loose payload in external app data or local paths */
     const char *hot_paths[] = {
-        "/storage/emulated/0/Android/data/com.kabam.bigrobot/files/tftf_offline_payload.bin",
+        "/sdcard/Documents/tftf_offline_payload.bin",
+        "/storage/emulated/0/Documents/tftf_offline_payload.bin",
+        "/sdcard/Download/tftf_offline_payload.bin",
+        "/storage/emulated/0/Download/tftf_offline_payload.bin",
         "/sdcard/Android/data/com.kabam.bigrobot/files/tftf_offline_payload.bin",
+        "/storage/emulated/0/Android/data/com.kabam.bigrobot/files/tftf_offline_payload.bin",
         "/data/data/com.kabam.bigrobot/files/tftf_offline_payload.bin",
-        "/data/local/tmp/tftf_offline_payload.bin"
+        "/data/user/0/com.kabam.bigrobot/files/tftf_offline_payload.bin",
+        "/data/local/tmp/tftf_offline_payload.bin",
+        NULL
     };
-    for (size_t h = 0; h < sizeof(hot_paths) / sizeof(hot_paths[0]); h++) {
+    for (size_t h = 0; hot_paths[h]; h++) {
         int hfd = open(hot_paths[h], O_RDONLY);
         if (hfd >= 0) {
             struct stat hst;
@@ -605,7 +611,7 @@ int tftf_server_start_from_apk(void) {
                 int hrc = map_payload_fd(hfd, 0, (size_t)hst.st_size);
                 close(hfd);
                 if (!hrc) {
-                    logmsg("HOT RELOAD payload %s (size %zu)", hot_paths[h], (size_t)hst.st_size);
+                    logmsg("HOT RELOAD payload active: %s (size %zu)", hot_paths[h], (size_t)hst.st_size);
                     return 0;
                 }
                 logmsg("HOT RELOAD rejected %s: invalid payload (%d)", hot_paths[h], hrc);
