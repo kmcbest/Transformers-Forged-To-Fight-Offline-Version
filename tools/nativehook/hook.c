@@ -79,6 +79,8 @@ static void flog(const char* fmt, ...){
             g_f = fopen(logpath, "w");
             if (g_f) {
                 __android_log_print(ANDROID_LOG_ERROR, "TFTFHOOK", "Logging to %s", logpath);
+                fprintf(g_f, "LOG FILE OPENED: %s\n", logpath);
+                fflush(g_f);
                 break;
             }
         }

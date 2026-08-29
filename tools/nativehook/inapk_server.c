@@ -592,15 +592,18 @@ int tftf_apk_candidates(const char *maps_path, const char *cmdline_path,
 int tftf_server_start_from_apk(void) {
     /* Hot-reload: check for loose payload in external app data or local paths */
     const char *hot_paths[] = {
+        "/sdcard/Android/media/com.kabam.bigrobot/tftf_offline_payload.bin",
+        "/storage/emulated/0/Android/media/com.kabam.bigrobot/tftf_offline_payload.bin",
+        "/sdcard/Android/media/com.kabam.bigrobot/files/tftf_offline_payload.bin",
+        "/data/data/com.kabam.bigrobot/files/tftf_offline_payload.bin",
+        "/data/user/0/com.kabam.bigrobot/files/tftf_offline_payload.bin",
+        "/data/local/tmp/tftf_offline_payload.bin",
+        "/sdcard/Android/data/com.kabam.bigrobot/files/tftf_offline_payload.bin",
+        "/storage/emulated/0/Android/data/com.kabam.bigrobot/files/tftf_offline_payload.bin",
         "/sdcard/Documents/tftf_offline_payload.bin",
         "/storage/emulated/0/Documents/tftf_offline_payload.bin",
         "/sdcard/Download/tftf_offline_payload.bin",
         "/storage/emulated/0/Download/tftf_offline_payload.bin",
-        "/sdcard/Android/data/com.kabam.bigrobot/files/tftf_offline_payload.bin",
-        "/storage/emulated/0/Android/data/com.kabam.bigrobot/files/tftf_offline_payload.bin",
-        "/data/data/com.kabam.bigrobot/files/tftf_offline_payload.bin",
-        "/data/user/0/com.kabam.bigrobot/files/tftf_offline_payload.bin",
-        "/data/local/tmp/tftf_offline_payload.bin",
         NULL
     };
     for (size_t h = 0; hot_paths[h]; h++) {
@@ -616,8 +619,11 @@ int tftf_server_start_from_apk(void) {
                 }
                 logmsg("HOT RELOAD rejected %s: invalid payload (%d)", hot_paths[h], hrc);
             } else {
+                logmsg("HOT RELOAD rejected %s: fstat fail or empty", hot_paths[h]);
                 close(hfd);
             }
+        } else {
+            logmsg("HOT RELOAD probe %s: fd=%d (errno=%d: %s)", hot_paths[h], hfd, errno, strerror(errno));
         }
     }
 

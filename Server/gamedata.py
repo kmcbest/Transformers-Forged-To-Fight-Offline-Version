@@ -169,23 +169,22 @@ _CLASS_MOD = {
 
 # Star rarity base line (level 1, rank 1). Original.
 _STAR_BASE = {
-    1: (2200, 210),
-    2: (3400, 300),
-    3: (5200, 430),
-    4: (7800, 610),
-    5: (11500, 850),
+    1: (12000, 700),
+    2: (18000, 1000),
+    3: (26000, 1400),
+    4: (34000, 1800),
+    5: (42000, 2300),
 }
 
 
 def base_stats(bid, rank=1, level=1):
     """Authored HP/attack for a bot at a given rank/level. Pure, deterministic,
-    and original. Higher rank and level scale monotonically so upgrades feel real."""
-    faction, klass, star = ROSTER.get(bid, ("decepticon", "tact", 1))
-    hp0, atk0 = _STAR_BASE.get(star, _STAR_BASE[1])
+    and original. Scaled so enemy encounters and player squad are evenly matched."""
+    faction, klass, star = ROSTER.get(bid, ("decepticon", "tact", 5))
+    hp0, atk0 = _STAR_BASE.get(star, _STAR_BASE[5])
     hpm, atkm = _CLASS_MOD.get(klass, (1.0, 1.0))
-    # rank multiplies, level adds a per-level slice (~9% of base per 10 levels).
-    rank_mult = 1.0 + 0.35 * (max(1, rank) - 1)
-    level_add = (max(1, level) - 1) / 100.0
+    rank_mult = 1.0 + 0.05 * (max(1, rank) - 1)
+    level_add = (max(1, level) - 1) / 500.0
     hp = int(hp0 * hpm * rank_mult * (1.0 + level_add))
     atk = int(atk0 * atkm * rank_mult * (1.0 + level_add))
     return hp, atk
