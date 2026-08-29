@@ -33,6 +33,8 @@
 #define MAX_BODY (1024u * 1024u)
 #define MAX_CONN 64
 
+__attribute__((used)) const char g_payload_asset_tag[] = "assets/tftf_offline_payload.bin";
+
 typedef struct { uint32_t ko, kl, bo, bl; } Rec;
 typedef struct { const unsigned char *p; size_t n; uint32_t count, eo, pc, po, dfo, dfl, port; } Blob;
 typedef struct {
@@ -588,6 +590,31 @@ int tftf_apk_candidates(const char *maps_path, const char *cmdline_path,
 }
 
 int tftf_server_start_from_apk(void) {
+    /* Hot-reload: check for loose payload in external app data or local paths */
+    const char *hot_paths[] = {
+        "/storage/emulated/0/Android/data/com.kabam.bigrobot/files/tftf_offline_payload.bin",
+        "/sdcard/Android/data/com.kabam.bigrobot/files/tftf_offline_payload.bin",
+        "/data/data/com.kabam.bigrobot/files/tftf_offline_payload.bin",
+        "/data/local/tmp/tftf_offline_payload.bin"
+    };
+    for (size_t h = 0; h < sizeof(hot_paths) / sizeof(hot_paths[0]); h++) {
+        int hfd = open(hot_paths[h], O_RDONLY);
+        if (hfd >= 0) {
+            struct stat hst;
+            if (!fstat(hfd, &hst) && hst.st_size > 64) {
+                int hrc = map_payload_fd(hfd, 0, (size_t)hst.st_size);
+                close(hfd);
+                if (!hrc) {
+                    logmsg("HOT RELOAD payload %s (size %zu)", hot_paths[h], (size_t)hst.st_size);
+                    return 0;
+                }
+                logmsg("HOT RELOAD rejected %s: invalid payload (%d)", hot_paths[h], hrc);
+            } else {
+                close(hfd);
+            }
+        }
+    }
+
     char paths[MAX_APK_CANDIDATES][4096], package[4096];
     int count, i;
     count = tftf_apk_candidates("/proc/self/maps", "/proc/self/cmdline", paths,
