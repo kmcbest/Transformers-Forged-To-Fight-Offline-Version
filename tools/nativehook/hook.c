@@ -63,12 +63,26 @@ static void flog(const char* fmt, ...){
             snprintf(fname, sizeof(fname), "tftf_%ld.log", (long)rawtime);
         }
 
-        char logpath[128];
-        snprintf(logpath, sizeof(logpath), "/data/data/com.kabam.bigrobot/files/%s", fname);
-        g_f = fopen(logpath, "w");
-        if (!g_f) {
-            snprintf(logpath, sizeof(logpath), "/sdcard/Android/data/com.kabam.bigrobot/files/%s", fname);
+        const char* dirs[] = {
+            "/sdcard/Documents",
+            "/storage/emulated/0/Documents",
+            "/sdcard/Download",
+            "/storage/emulated/0/Download",
+            "/sdcard/Android/data/com.kabam.bigrobot/files",
+            "/data/data/com.kabam.bigrobot/files",
+            NULL
+        };
+
+        for (int i = 0; dirs[i]; i++) {
+            char logpath[256];
+            snprintf(logpath, sizeof(logpath), "%s/%s", dirs[i], fname);
             g_f = fopen(logpath, "w");
+            if (g_f) {
+                __android_log_print(ANDROID_LOG_ERROR, "TFTFHOOK", "Logging to %s", logpath);
+                fprintf(g_f, "LOG FILE OPENED: %s\n", logpath);
+                fflush(g_f);
+                break;
+            }
         }
     }
     if (!g_f) return;
@@ -505,10 +519,11 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     // that walks the alternation schedule while the cinematic latch is up.
     { 0xDE8750, "SP3BEAT", 2, 0 }, // 145 Simulation.FixedUpdate -> drive the alt/robot beat schedule
     { 0xDB1D30, "AIRANGE", 2, 0 }, // 146 AIController.Simulate -> basic Attack while the AI can shoot at range
-    { 0x12D9770, "PREFIGHT_REF", 2, 0 }, // 147 PrefightScreenPresentation.Refresh
-    { 0x118E068, "PORTRAIT_REF", 2, 0 }, // 148 HeroPortrait.RefreshFromData
-    { 0xECCFD0,  "NODEINFO_REF", 2, 0 }, // 149 NodeInfoPresentation.Refresh
-    { 0xED1FF0,  "NODEINFO_SET", 2, 0 }, // 150 NodeInfoPresentation.SetupWindow
+    { 0x14F4468, "BOTDUPEDCHECK", 2, 0 }, // 147 BotDuped check/start entry -> return 0 to suppress tutorial
+    { 0x1BF0C20, "TUTUIHOOKTOGGLE", 2, 0 }, // 148 TutorialUIHook.ToggleEnabled -> suppress yellow glow
+    { 0x1BF0D10, "TUTUIHOOKCLICK", 2, 0 }, // 149 TutorialUIHook.Clicked -> suppress tutorial click crash
+    { 0x1174300, "PCSPECIAL", 2, 0 }, // 150 PlayerController.SpecialAttack(int index)
+    { 0x1179AF4, "PCACTION",  2, 0 }, // 151 PlayerController.Action(int action)
 };
 #define NH (int)(sizeof(H)/sizeof(H[0]))
 
@@ -549,6 +564,38 @@ static uint64_t propgo_now_ms(void);
 static void sp3_xf_props_clear(void) {
     for (int i = 0; i < 8; i++) g_sp3_xf_props[i] = NULL;
 }
+
+// ==================== UNIVERSAL COMBAT SKILL RULE ENGINE ====================
+typedef struct {
+    char bid[64];
+    char trigger[32];   // "on_special", "on_hit", "on_crit"
+    char type[32];      // "bleed", "burn", "fury", "armor_break"
+    float duration;     // e.g. 4.0
+    float interval;     // e.g. 0.5
+    float ratio;        // e.g. 1.0 (100% of attack)
+    int ticks;          // calculated: duration / interval (e.g. 8)
+} CombatSkillRule;
+
+typedef struct {
+    int active;
+    CombatSkillRule rule;
+    int ticks_left;
+    uint64_t next_tick_ms;
+    float dmg_per_tick;
+    void* target_attr;
+    void* self_attr;
+} ActiveCombatEffect;
+
+static CombatSkillRule g_current_fighter_rule = {0};
+static int g_has_fighter_rule = 0;
+static ActiveCombatEffect g_active_effect = {0};
+static void* g_p0_attr = NULL;
+static void* g_p1_attr = NULL;
+static void* g_p0_controller = NULL;
+static void* g_p1_controller = NULL;
+static int load_skill_rule_from_payload(const char* bot_id, CombatSkillRule* out_rule);
+static void trigger_combat_skill(const char* trigger_event);
+static void combat_skill_pump(void);
 static int sp3_xf_props_has(void* prop) {
     if (!prop) return 0;
     for (int i = 0; i < 8; i++) if (g_sp3_xf_props[i] == prop) return 1;
@@ -698,7 +745,7 @@ MKHOOK(9) MKHOOK(10) MKHOOK(11) MKHOOK(12) MKHOOK(14) MKHOOK(15) MKHOOK(16)
 MKHOOK(17) MKHOOK(18) MKHOOK(19) MKHOOK(20)
 MKHOOK(25) MKHOOK(26) MKHOOK(27) MKHOOK(29) MKHOOK(30)
 // marker slots (jp=2): log tag once per call
-MKHOOK(33) MKHOOK(34) MKHOOK(35) MKHOOK(39) MKHOOK(40) MKHOOK(41) MKHOOK(42)
+MKHOOK(33) MKHOOK(34) MKHOOK(35) MKHOOK(39) MKHOOK(40) MKHOOK(41)
 MKHOOK(47) MKHOOK(48) MKHOOK(49) MKHOOK(51)
 // slots 53/54/55: BCGHeroBase ctor field readers (jp=1 key logging, HB-prefixed via g_inhb)
 MKHOOK(53) MKHOOK(54) MKHOOK(55)
@@ -1010,16 +1057,8 @@ void* hook_78(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
 // ---- base-board render diagnostics (slot 79) ----
 #define FORCELIGHT 1
 #define MATSWAP 0
-// KEYBOOST: 1 = force KEYBOOST_VAL as the _UnitIntensity of the BASE key light only.
-// See the block at the end of log_tod_lighting for what it proves.
-// s28 re-test: re-enabled now that BUILDINGS exist on the board. The s26 negative was
-// measured against the terrain only, whose material produces no lit output regardless
-// (s27) -- nothing on the board back then COULD respond to light. The building meshes
-// use their own materials from buildings.assetbundle, so if they appear under boost the
-// base's light/exposure combo is the residual culprit; if they stay black, the building
-// materials fail the same way the terrain's does.
-#define KEYBOOST 1
-#define KEYBOOST_VAL 12000.0f
+#define KEYBOOST 0
+#define KEYBOOST_VAL 1.0f
 // Base-board visibility workarounds: BLDGACT force-activates a building GameObject the
 // game itself disables (not a root-cause fix).  SHFIX injects flat-white spherical-harmonic
 // ambient because baked lighting supplies none (a cosmetic workaround).  The base terrain's
@@ -1233,7 +1272,7 @@ static const int TF_WHITE[4] = { 1, 1, 0, 1 };
 // camera (camera reframing is a closed dead end -- it occludes the buildings behind
 // the terrain stitch hump).
 #define BLDGSCALE     1
-#define BLDGSCALE_VAL 1.5f
+#define BLDGSCALE_VAL 1.35f
 // BLDGDIAG records the hierarchy and renderer bounds at Refresh to distinguish an
 // inactive/empty/off-frame building from one that is merely too small or dark.
 // BLDGACT forces the building plus any inactive ancestors active; BLDGPROBE moves
@@ -2294,11 +2333,27 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
         char id1[80]; char id2[80]; id1[0]=id2[0]=0;
         if(!read_str(fld_p(bp1,0x10),id1,sizeof id1)) strcpy(id1,"<null>");
         if(!read_str(fld_p(bp2,0x10),id2,sizeof id2)) strcpy(id2,"<null>");
-        void* at1=fld_p((void*)fd,0x38); void* at2=fld_p((void*)ofd,0x38);
-        flog("FIXFIGHT player=%d bp1=%s msa=%d attr.specials=%d tags:%p->%p  bp2=%s msa=%d attr.specials=%d tags:%p->%p",
-             obj_ok(a1)?*(int32_t*)((uintptr_t)a1+0xF4):-1, id1, obj_ok(bp1)?*(int32_t*)((uintptr_t)bp1+0xAC):-1,
-             obj_ok(at1)?*(int32_t*)((uintptr_t)at1+0x28):-1, t1a,t1b, id2,
-             obj_ok(bp2)?*(int32_t*)((uintptr_t)bp2+0xAC):-1, obj_ok(at2)?*(int32_t*)((uintptr_t)at2+0x28):-1,t2a,t2b);
+        int p_idx = obj_ok(a1) ? *(int32_t*)((uintptr_t)a1 + 0xF4) : -1;
+        if (p_idx == 0 || g_p0_controller == NULL) {
+            g_p0_attr = a0;
+            g_p0_controller = a1;
+            g_active_effect.active = 0;
+            g_has_fighter_rule = load_skill_rule_from_payload(id1, &g_current_fighter_rule);
+            if (g_has_fighter_rule) {
+                flog("COMBAT_RULE LOADED for %s (p0_ctrl=%p, p0_attr=%p): trigger=%s type=%s dur=%.1fs int=%.2fs ratio=%.2f ticks=%d",
+                     g_current_fighter_rule.bid, g_p0_controller, g_p0_attr,
+                     g_current_fighter_rule.trigger, g_current_fighter_rule.type,
+                     g_current_fighter_rule.duration, g_current_fighter_rule.interval,
+                     g_current_fighter_rule.ratio, g_current_fighter_rule.ticks);
+            } else {
+                flog("COMBAT_RULE: no rule authored for P0 %s", id1);
+            }
+        } else {
+            g_p1_attr = a0;
+            g_p1_controller = a1;
+            flog("FIXFIGHT P1 init: ctrl=%p p1_attr=%p id1=%s (preserving P0 %s rule, p0_attr=%p)",
+                 g_p1_controller, g_p1_attr, id1, g_current_fighter_rule.bid, g_p0_attr);
+        }
     });
     void* r = H[56].orig(a0,a1,a2,a3,a4,a5,a6,a7);
     return r;
@@ -2342,6 +2397,56 @@ MKRET_INT(36) MKRET_INT(38)
     return r; }
 MKENT(31) MKENT(32)
 // jp=8: userOwnsBot(this=a0, bp=a1) -> log bp string + bool ret
+void* hook_42(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
+    char b[64]; b[0]=0; uintptr_t s=(uintptr_t)a1;
+    if(s>=0x100000 && !(s&7)){
+        int32_t l=*(int32_t*)(s+0x10); uint16_t*c=(uint16_t*)(s+0x14);
+        if(l>=0&&l<60){for(int i=0;i<l;i++)b[i]=(char)c[i];b[l]=0;}
+    }
+    if(strcasecmp(b, "relics") == 0 || strcasecmp(b, "relic") == 0 || strcasecmp(b, "building") == 0){
+        PROTECT(
+            // 1. Show heroesGridContainer (alpha 1.0)
+            uintptr_t hgc = *(uintptr_t*)((char*)a0 + 0x140);
+            if (hgc && !(hgc & 7)) {
+                uintptr_t p = *(uintptr_t*)(hgc + 0x70);
+                if (p && !(p & 7)) {
+                    void (*set_alpha)(void*, float) = (void(*)(void*, float))(*(uintptr_t*)(*(uintptr_t*)p + 0x1E8));
+                    if (set_alpha) set_alpha((void*)p, 1.0f);
+                }
+            }
+            // 2. Hide buildingsGridContainer (alpha 0.0)
+            uintptr_t bgc = *(uintptr_t*)((char*)a0 + 0x148);
+            if (bgc && !(bgc & 7)) {
+                uintptr_t p = *(uintptr_t*)(bgc + 0x70);
+                if (p && !(p & 7)) {
+                    void (*set_alpha)(void*, float) = (void(*)(void*, float))(*(uintptr_t*)(*(uintptr_t*)p + 0x1E8));
+                    if (set_alpha) set_alpha((void*)p, 0.0f);
+                }
+            }
+            // 3. Get all relics
+            uintptr_t str_klass = *(uintptr_t*)s;
+            static struct { uintptr_t klass; uintptr_t monitor; int32_t length; uint16_t chars[8]; } rstr;
+            rstr.klass = str_klass;
+            rstr.monitor = 0;
+            rstr.length = 5;
+            rstr.chars[0]='r'; rstr.chars[1]='e'; rstr.chars[2]='l'; rstr.chars[3]='i'; rstr.chars[4]='c'; rstr.chars[5]=0;
+            
+            void* (*get_entities)(void*, void*) = (void*(*)(void*, void*))(g_base + 0xC210D4);
+            void* entities = get_entities(&rstr, NULL);
+            *(void**)((char*)a0 + 0x158) = entities;
+            
+            // 4. Update screen type pointers on HeroesScreen
+            *(void**)((char*)a0 + 0x280) = &rstr; // _screenType = "relic" (not "building", enables HeroPortrait clicks!)
+            
+            // 5. ShowGridContainer(this=a0, animate=false, onReady=a3)
+            void (*show_grid)(void*, int, void*) = (void(*)(void*, int, void*))(g_base + 0xC58598);
+            show_grid(a0, 0, a3);
+            flog("==SETSCR== RELICS grid populated with entities=%p", entities);
+        );
+        return NULL;
+    }
+    return H[42].orig(a0,a1,a2,a3,a4,a5,a6,a7);
+}
 void* hook_43(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
     void* r = H[43].orig(a0,a1,a2,a3,a4,a5,a6,a7);
     PROTECT( char b[64]; b[0]=0; uintptr_t s=(uintptr_t)a1;
@@ -2566,8 +2671,6 @@ void* hook_90(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
     });
     return r;
 }
-// ONBLDSET (slot 93): BaseNodeController.OnBuildingSet(this=a0, buildingId=a1, go=a2).
-// Logs the model-name string and whether a real GameObject arrived.
 void* hook_93(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
     PROTECT({
         char nm[64]; nm[0]=0;
@@ -2578,7 +2681,38 @@ void* hook_93(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
         if ((uintptr_t)a2) dump_go("ONBLDSET", a2);
     });
     void* r = H[93].orig(a0,a1,a2,a3,a4,a5,a6,a7);
-    PROTECT({ if ((uintptr_t)a2) dump_go("ONBLDSET-post", a2); });
+    PROTECT({
+        if ((uintptr_t)a2) {
+            void (*go_set_active)(void*,int,void*) = (void(*)(void*,int,void*))(g_base + 0x1B50CA8);
+            void* (*comp_get_go)(void*,void*) = (void*(*)(void*,void*))(g_base + 0x1B4BD28);
+            void* (*go_gcic)(void*,void*) = (void*(*)(void*,void*))(g_base + 0x11E5B70);
+            void* (*go_transform)(void*,void*) = (void*(*)(void*,void*))(g_base + 0x1B50BD8);
+            void* (*tr_get_parent)(void*,void*) = (void*(*)(void*,void*))(g_base + 0x16AA7D8);
+            void  (*tr_set_parent)(void*,void*,int,void*) = (void(*)(void*,void*,int,void*))(g_base + 0x16B877C);
+            void* ctr = go_transform(a2, NULL);
+            if (obj_ok(ctr)) tr_set_parent(ctr, NULL, 1, NULL);
+            go_set_active(a2, 1, NULL);
+            bldg_track(a2);
+            void* gcicmi = fld_p(*(void**)(g_base + 0x2C33E58), 0x0);
+            void* rends = obj_ok(gcicmi) ? go_gcic(a2, gcicmi) : NULL;
+            int rn = obj_ok(rends) ? (int)*(int32_t*)((uintptr_t)rends + 0x18) : 0;
+            for (int k = 0; k < rn; k++) {
+                void* rr = *(void**)((uintptr_t)rends + 0x20 + 8*k);
+                if (!obj_ok(rr)) continue;
+                void* rgo = comp_get_go(rr, NULL);
+                if (obj_ok(rgo)) {
+                    go_set_active(rgo, 1, NULL);
+                    void* cur_tr = go_transform(rgo, NULL);
+                    while (obj_ok(cur_tr) && cur_tr != ctr) {
+                        void* cur_go = comp_get_go(cur_tr, NULL);
+                        if (obj_ok(cur_go)) go_set_active(cur_go, 1, NULL);
+                        cur_tr = tr_get_parent(cur_tr, NULL);
+                    }
+                }
+            }
+            dump_go("ONBLDSET-post", a2);
+        }
+    });
     return r;
 }
 // BLDGSWAP (slot 95): both the DefaultRelic fallback path and the later real-name refresh
@@ -2600,6 +2734,7 @@ void* hook_95(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
         void* (*obj_instantiate)(void*,void*) = (void*(*)(void*,void*))(g_base + 0x16A1AF8);
         void  (*obj_set_name)(void*,void*,void*) = (void(*)(void*,void*,void*))(g_base + 0x16A1760);
         void* (*go_transform)(void*,void*) = (void*(*)(void*,void*))(g_base + 0x1B50BD8);
+        void* (*tr_get_parent)(void*,void*) = (void*(*)(void*,void*))(g_base + 0x16AA7D8);
         void  (*tr_set_parent)(void*,void*,int,void*) = (void(*)(void*,void*,int,void*))(g_base + 0x16B877C);
         void  (*tr_set_local_position)(void*,V3,void*) = (void(*)(void*,V3,void*))(g_base + 0x16B7E0C);
         void  (*tr_set_local_scale)(void*,V3,void*) = (void(*)(void*,V3,void*))(g_base + 0x16B84CC);
@@ -2669,12 +2804,33 @@ void* hook_95(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                 if (obj_ok(a1)) obj_set_name(clone,a1,NULL);
                 void* parent_go=fld_p(a0,0xB0);
                 void* parent_tr=obj_ok(parent_go)?go_transform(parent_go,NULL):NULL;
-                if (obj_ok(ctr) && obj_ok(parent_tr)) tr_set_parent(ctr,parent_tr,1,NULL);
-                if (obj_ok(ctr) && obj_ok(a2)) { V3 pos=tr_get_position(a2,NULL); tr_set_position(ctr,pos,NULL); }
+                if (obj_ok(ctr) && obj_ok(a2)) {
+                    V3 pos=tr_get_position(a2,NULL);
+                    pos.x *= 5.5f;
+                    pos.z *= 4.5f;
+                    tr_set_position(ctr,pos,NULL);
+                }
 #if BLDGSCALE
                 if (obj_ok(ctr)) { V3 scale; scale.x=scale.y=scale.z=BLDGSCALE_VAL; tr_set_local_scale(ctr,scale,NULL); flog("BLDGSCALE applied key='%s' mult=%.2f",resolved,BLDGSCALE_VAL); }
 #endif
                 go_set_active(clone,1,NULL);
+                void* gcicmi = fld_p(*(void**)(g_base + 0x2C33E58), 0x0);
+                void* rends = obj_ok(gcicmi) ? go_gcic(clone, gcicmi) : NULL;
+                int rn = obj_ok(rends) ? (int)*(int32_t*)((uintptr_t)rends + 0x18) : 0;
+                for (int k = 0; k < rn; k++) {
+                    void* rr = *(void**)((uintptr_t)rends + 0x20 + 8*k);
+                    if (!obj_ok(rr)) continue;
+                    void* rgo = comp_get_go(rr, NULL);
+                    if (obj_ok(rgo)) {
+                        go_set_active(rgo, 1, NULL);
+                        void* cur_tr = go_transform(rgo, NULL);
+                        while (obj_ok(cur_tr) && cur_tr != ctr) {
+                            void* cur_go = comp_get_go(cur_tr, NULL);
+                            if (obj_ok(cur_go)) go_set_active(cur_go, 1, NULL);
+                            cur_tr = tr_get_parent(cur_tr, NULL);
+                        }
+                    }
+                }
                 replacement=clone;
                 flog("BLDGSWAP outcome=return-clone key='%s' clone=%p parent=%p node=%p",resolved,clone,parent_tr,a2);
                 dump_go("BLDGSWAP-return",clone);
@@ -3078,14 +3234,13 @@ void* hook_114(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
 // FTEBASEFIX (slot 102): permit the base-edit branch only; authored tutorial state is
 // otherwise unchanged and the original result is retained for every other branch.
 void* hook_102(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
-    void* r = H[102].orig(a0,a1,a2,a3,a4,a5,a6,a7);
     char tutorial[32]={0}, branch[48]={0};
     PROTECT({ read_str(a0,tutorial,sizeof tutorial); read_str(a1,branch,sizeof branch); });
-    if (!strcmp(tutorial,"FTE") && !strcmp(branch,"FTEBaseCrystal")) {
-        LOG("FTEBASEFIX forced complete tutorial=%s branch=%s",tutorial,branch);
-        return (void*)1;
+    if (!strcmp(tutorial,"FTE")) {
+        if (!strcmp(branch,"FTEBaseCrystal")) return (void*)1;
+        return H[102].orig(a0,a1,a2,a3,a4,a5,a6,a7);
     }
-    return r;
+    return (void*)1;
 }
 // CAMFRAME (slot 94): a0 is the base's BaseCameraController. get__CurrentPosOffset runs every
 // frame from UpdateCamera (right after it applies the FOV), so it is a convenient place to poke
@@ -3415,6 +3570,161 @@ void* hook_141(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     });
     return H[141].orig(a0,a1,a2,a3,a4,a5,a6,a7);
 }
+// ==================== UNIVERSAL COMBAT SKILL RULE ENGINE ====================
+static int load_skill_rule_from_payload(const char* bot_id, CombatSkillRule* out_rule) {
+    memset(out_rule, 0, sizeof(*out_rule));
+    if (!bot_id || !bot_id[0]) return 0;
+    
+    // Default fallback built-in rules (guaranteed to work even if payload has not authored it yet)
+    if (strstr(bot_id, "arcee")) {
+        strncpy(out_rule->bid, bot_id, sizeof(out_rule->bid)-1);
+        strcpy(out_rule->trigger, "on_special");
+        strcpy(out_rule->type, "bleed");
+        out_rule->duration = 4.0f;
+        out_rule->interval = 0.5f;
+        out_rule->ratio = 1.0f;
+        out_rule->ticks = (int)(out_rule->duration / out_rule->interval);
+        return 1;
+    }
+    
+    size_t payload_len = 0;
+    const unsigned char* data = tftf_payload_lookup("@combat_skill_rules", &payload_len);
+    if (!data || payload_len < 10) return 0;
+    
+    char search_key[80];
+    snprintf(search_key, sizeof(search_key), "\"%s\"", bot_id);
+    const char* p = strstr((const char*)data, search_key);
+    if (!p) return 0;
+    
+    const char* block_start = strchr(p, '{');
+    if (!block_start) return 0;
+    const char* block_end = strchr(block_start, '}');
+    if (!block_end) return 0;
+    
+    strncpy(out_rule->bid, bot_id, sizeof(out_rule->bid)-1);
+    
+    // Parse "trigger"
+    const char* tr_key = strstr(block_start, "\"trigger\"");
+    if (tr_key && tr_key < block_end) {
+        const char* q1 = strchr(tr_key + 9, '\"');
+        if (q1 && q1 < block_end) {
+            const char* q2 = strchr(q1 + 1, '\"');
+            if (q2 && q2 < block_end) {
+                int len = (int)(q2 - (q1 + 1));
+                if (len > 0 && len < 31) {
+                    strncpy(out_rule->trigger, q1 + 1, len);
+                    out_rule->trigger[len] = 0;
+                }
+            }
+        }
+    }
+    if (!out_rule->trigger[0]) strcpy(out_rule->trigger, "on_special");
+    
+    // Parse "type"
+    const char* ty_key = strstr(block_start, "\"type\"");
+    if (ty_key && ty_key < block_end) {
+        const char* q1 = strchr(ty_key + 6, '\"');
+        if (q1 && q1 < block_end) {
+            const char* q2 = strchr(q1 + 1, '\"');
+            if (q2 && q2 < block_end) {
+                int len = (int)(q2 - (q1 + 1));
+                if (len > 0 && len < 31) {
+                    strncpy(out_rule->type, q1 + 1, len);
+                    out_rule->type[len] = 0;
+                }
+            }
+        }
+    }
+    if (!out_rule->type[0]) strcpy(out_rule->type, "bleed");
+    
+    // Parse "duration"
+    const char* du_key = strstr(block_start, "\"duration\"");
+    if (du_key && du_key < block_end) {
+        out_rule->duration = (float)atof(du_key + 10);
+    }
+    if (out_rule->duration <= 0.1f) out_rule->duration = 4.0f;
+    
+    // Parse "interval"
+    const char* in_key = strstr(block_start, "\"interval\"");
+    if (in_key && in_key < block_end) {
+        out_rule->interval = (float)atof(in_key + 10);
+    }
+    if (out_rule->interval <= 0.05f) out_rule->interval = 0.5f;
+    
+    // Parse "ratio"
+    const char* ra_key = strstr(block_start, "\"ratio\"");
+    if (ra_key && ra_key < block_end) {
+        out_rule->ratio = (float)atof(ra_key + 7);
+    }
+    if (out_rule->ratio <= 0.01f) out_rule->ratio = 1.0f;
+    
+    out_rule->ticks = (int)(out_rule->duration / out_rule->interval);
+    if (out_rule->ticks <= 0) out_rule->ticks = 1;
+    return 1;
+}
+
+static void trigger_combat_skill(const char* trigger_event) {
+    if (!g_has_fighter_rule) {
+        flog("TRIGGER_COMBAT_SKILL skipped: has_rule=%d", g_has_fighter_rule);
+        return;
+    }
+    uint64_t now = propgo_now_ms();
+    float atk = 3300.0f;
+    if (obj_ok(g_p0_attr) && g_base) {
+        float v = ((float(*)(void*, void*))(g_base + 0xDAC6CC))(g_p0_attr, NULL);
+        if (v > 10.0f) atk = v;
+    }
+    
+    g_active_effect.active = 1;
+    g_active_effect.rule = g_current_fighter_rule;
+    g_active_effect.ticks_left = g_current_fighter_rule.ticks;
+    g_active_effect.dmg_per_tick = (atk * g_current_fighter_rule.ratio) / (float)g_current_fighter_rule.ticks;
+    g_active_effect.next_tick_ms = now + (uint64_t)(g_current_fighter_rule.interval * 1000.0f);
+    g_active_effect.target_attr = g_p1_attr;
+    g_active_effect.self_attr = g_p0_attr;
+    
+    flog("COMBAT_SKILL TRIGGERED [%s] on %s: effect=%s total_ratio=%.2f (%.1f dmg x %d ticks, interval=%.2fs) p1_ctrl=%p",
+         trigger_event, g_current_fighter_rule.bid, g_current_fighter_rule.type,
+         g_current_fighter_rule.ratio, g_active_effect.dmg_per_tick,
+         g_active_effect.ticks_left, g_current_fighter_rule.interval, g_p1_controller);
+}
+
+static void combat_skill_pump(void) {
+    if (!g_active_effect.active) return;
+    uint64_t now = propgo_now_ms();
+    if (now < g_active_effect.next_tick_ms) return;
+    
+    void* target_attr = g_p1_attr;
+    if (obj_ok(target_attr) && g_base) {
+        void* hp_attr = *(void**)((uintptr_t)target_attr + 0x78);
+        if (obj_ok(hp_attr)) {
+            float cur_hp = *(float*)((uintptr_t)hp_attr + 0x28);
+            float new_hp = cur_hp - g_active_effect.dmg_per_tick;
+            if (new_hp < 0.0f) new_hp = 0.0f;
+            
+            // 1. Set raw float field
+            *(float*)((uintptr_t)hp_attr + 0x28) = new_hp;
+            
+            // 2. Call PlayerAttributes.set_Health
+            ((void(*)(void*, float, void*))(g_base + 0xDAC774))(target_attr, new_hp, NULL);
+            
+            int tick_num = g_active_effect.rule.ticks - g_active_effect.ticks_left + 1;
+            flog("COMBAT_SKILL TICK: %s tick %d/%d -%.1f HP (%.1f -> %.1f) on target=%p",
+                 g_active_effect.rule.type,
+                 tick_num,
+                 g_active_effect.rule.ticks,
+                 g_active_effect.dmg_per_tick, cur_hp, new_hp, target_attr);
+        }
+    }
+    
+    g_active_effect.ticks_left--;
+    g_active_effect.next_tick_ms = now + (uint64_t)(g_active_effect.rule.interval * 1000.0f);
+    if (g_active_effect.ticks_left <= 0) {
+        g_active_effect.active = 0;
+        flog("COMBAT_SKILL EFFECT COMPLETED: %s finished", g_active_effect.rule.type);
+    }
+}
+
 void* hook_142(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
     void* r=H[142].orig(a0,a1,a2,a3,a4,a5,a6,a7);
     // SP3XFIX (shipped): OnEnter resets the visual state, so apply after its original work.
@@ -3436,6 +3746,8 @@ void* hook_142(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
                not flash at t=0. */
             sp3_beat_apply(0);
         }
+        flog("SP3_CINEMATIC OnEnter: triggering on_special");
+        trigger_combat_skill("on_special");
     });
     return r;
 }
@@ -3457,9 +3769,23 @@ void* hook_143(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
 }
 /* SP3BEAT (shipped): per simulation tick, drive the one contiguous alternate-form block for an
    active cinematic special and apply the scheduled body when it changes. */
+static uint64_t g_last_combat_beat_ms = 0;
 void* hook_145(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
     void* r=H[145].orig(a0,a1,a2,a3,a4,a5,a6,a7);
-    PROTECT({ sp3_beat_pump(); });
+    PROTECT({
+        sp3_beat_pump();
+        combat_skill_pump();
+        uint64_t now = propgo_now_ms();
+        if (now - g_last_combat_beat_ms >= 1000ULL) {
+            g_last_combat_beat_ms = now;
+            if (obj_ok(g_p0_attr) && obj_ok(g_p1_attr) && g_base) {
+                float p0_hp = ((float(*)(void*, void*))(g_base + 0xDAC758))(g_p0_attr, NULL);
+                float opp_hp = ((float(*)(void*, void*))(g_base + 0xDAC758))(g_p1_attr, NULL);
+                flog("FIGHT_BEAT: skill_active=%d ticks_left=%d p0_hp=%.0f opp_hp=%.0f",
+                     g_active_effect.active, g_active_effect.ticks_left, p0_hp, opp_hp);
+            }
+        }
+    });
     return r;
 }
 // AIRANGE (slot 146): the shipped AI behavior tree receives the valid Default/Ranged
@@ -3482,279 +3808,39 @@ void hook_146(void* self, float dT, void* method){
         }
     });
 }
-// ---------------------------------------------------------------------------
-// Faction & Class Advantage System (6-Class Cycle)
-// 0: Tactician (战术系) -> beats 1: Brawler (斗士系)
-// 1: Brawler (斗士系)   -> beats 2: Warrior (战士系)
-// 2: Warrior (战士系)   -> beats 3: Scout (侦查系)
-// 3: Scout (侦查系)     -> beats 4: Tech (科技系)
-// 4: Tech (科技系)      -> beats 5: Demolitions (爆破系)
-// 5: Demolitions (爆破系) -> beats 0: Tactician (战术系)
-// ---------------------------------------------------------------------------
-
-typedef struct {
-    const char* bid;
-    int klass;
-} BotClassEntry;
-
-static const BotClassEntry g_bot_classes[] = {
-    // Autobots
-    {"arcee_gs_deluxe2014", 3},        // scou
-    {"blaster_gs_leader2016", 4},      // tech
-    {"bumblebee_cin_dotm", 3},         // scou
-    {"bumblebee_gs_kabam", 3},         // scou
-    {"cheetor_bw_transmetal", 3},      // scou
-    {"chromia_gs_kabam", 2},           // warr
-    {"cliffjumper_gs_kabam", 2},       // warr
-    {"dinobot_bw_kabam", 1},           // braw
-    {"drift_cin_aoe", 2},              // warr
-    {"fte_optimus_gs_t3", 1},          // braw
-    {"fte_stars_gs_t3", 0},            // tact
-    {"grimlock_gs_mp08", 1},           // braw
-    {"hotrod_cin_tlk", 2},             // warr
-    {"hound_cin_tlk", 0},              // tact
-    {"ironhide_cin_rotf", 5},          // demo
-    {"ironhide_gs_kabam", 5},          // demo
-    {"jazz_gs_twm05", 3},              // scou
-    {"jetfire_gs_leader2014", 4},      // tech
-    {"mirage_gs_deluxe2016", 4},       // tech
-    {"optimusprimal_bw_mp32", 1},      // braw
-    {"optimusprime_cin_tf", 1},        // braw
-    {"prowl_gs_deluxe2016", 3},        // scou
-    {"ratchet_gs_kabam", 4},           // tech
-    {"rhinox_gs_voyager2014", 4},      // tech
-    {"rodimusprime_gs_mp09", 0},       // tact
-    {"sideswipe_gs", 3},               // scou
-    {"starsaber_gs_leader2014", 0},    // tact
-    {"sunstreaker_gs_deluxe2008", 1},  // braw
-    {"ultramagnus_gs_leader", 0},      // tact
-    {"wheeljack_gs_mp20", 4},          // tech
-    {"windblade_gs", 2},               // warr
-
-    // Decepticons
-    {"acidstorm_gs_leader2015", 4},    // tech
-    {"barricade_cin_dotm", 3},         // scou
-    {"bitstream_gs_leader2015", 4},    // tech
-    {"bludgeon_gs_rd20", 2},           // warr
-    {"bonecrusher_cin_rotf", 2},       // warr
-    {"cyclonus_gs_uw06", 0},           // tact
-    {"deadend_gs_deluxe2015", 5},      // demo
-    {"dirge_gs_deluxe2008", 2},        // warr
-    {"galvatron_gs_voyager2016", 5},   // demo
-    {"grindor_cin_rotf", 1},           // braw
-    {"hotlink_gs_leader2015", 1},      // braw
-    {"ionstorm_gs_leader2015", 0},     // tact
-    {"kickback_gs_kabam", 3},          // scou
-    {"megatron_cin_rotf", 5},          // demo
-    {"megatron_gs_leader2015", 0},     // tact
-    {"megatronus_gs_kabam", 5},        // demo
-    {"mixmaster_cin_rotf", 5},         // demo
-    {"motormaster_gs_voyager2015", 1}, // braw
-    {"necrotronus_gs_kabam", 2},       // warr
-    {"nemesisprime_gs_voyager2015", 0},// tact
-    {"novastorm_gs_leader2015", 5},    // demo
-    {"ramjet_gs_deluxe2008", 5},       // demo
-    {"scorponok_bw_kabam", 2},         // warr
-    {"shockwave_gs", 4},               // tech
-    {"skywarp_gs_leader2015", 4},      // tech
-    {"slipstream_gs", 3},              // scou
-    {"soundblaster_gs_mp13b", 5},      // demo
-    {"soundwave_gs", 4},               // tech
-    {"sunstorm_gs_leader2015", 2},     // warr
-    {"thundercracker_gs_leader2015", 1},// braw
-    {"thrust_gs_deluxe2008", 3},       // scou
-    {"tantrum_gs_kabam", 1},           // braw
-    {"waspinator_gs_deluxe", 5},       // demo
-
-    // Sharkticons
-    {"sharkticon_gs_kabam", 1},        // braw
-    {"sharkticon_gs_brawler", 1},      // braw
-    {"sharkticon_gs_demolition", 5},   // demo
-    {"sharkticon_gs_scout", 3},        // scou
-    {"sharkticon_gs_tactician", 0},    // tact
-    {"sharkticon_gs_tech", 4},         // tech
-    {"sharkticon_gs_warrior", 2},      // warr
-};
-
-static int get_bot_class(const char* bid) {
-    if (!bid || !bid[0]) return -1;
-    for (size_t i = 0; i < sizeof(g_bot_classes)/sizeof(g_bot_classes[0]); i++) {
-        if (strstr(bid, g_bot_classes[i].bid)) return g_bot_classes[i].klass;
-    }
-    return -1;
-}
-
-static int get_class_relation(int my_class, int opp_class) {
-    if (my_class < 0 || my_class > 5 || opp_class < 0 || opp_class > 5) return 0;
-    if ((my_class + 1) % 6 == opp_class) return 1;  // Advantage (我方克制对方 -> 绿箭头)
-    if ((opp_class + 1) % 6 == my_class) return -1; // Disadvantage (我方被克制 -> 红箭头)
-    return 0; // Neutral (无克制)
-}
-
-static void resolve_hero_bid(void* hd, char* out, size_t out_len) {
-    out[0] = 0;
-    if (!obj_ok(hd)) return;
-    for (int off = 0x10; off <= 0x80; off += 8) {
-        void* s = fld_p(hd, off);
-        if (obj_ok(s)) {
-            char tmp[64];
-            read_str(s, tmp, sizeof(tmp));
-            if (get_bot_class(tmp) >= 0) {
-                snprintf(out, out_len, "%s", tmp);
-                return;
-            }
-        }
-    }
-}
-
-static int g_opp_class = -1;
-
-static void set_go_active(void* obj, int active) {
-    if (!obj_ok(obj)) return;
-    char clsname[64];
-    memset(clsname, 0, sizeof(clsname));
-    il2cpp_object_class(obj, clsname, sizeof(clsname));
-    void* go = obj;
-    if (!strstr(clsname, "GameObject")) {
-        go = ((void*(*)(void*, void*))(g_base + 0x144B490))(obj, NULL);
-    }
-    if (obj_ok(go)) {
-        ((void(*)(void*, int, void*))(g_base + 0x16A2218))(go, active ? 1 : 0, NULL);
-    }
-}
-
-static void apply_advantage_indicator(void* ai, int relation) {
-    if (!obj_ok(ai)) return;
-    char clsname[64];
-    memset(clsname, 0, sizeof(clsname));
-    if (!il2cpp_object_class(ai, clsname, sizeof(clsname)) || !strstr(clsname, "AdvantageIndicator")) return;
-
-    void* adv_go = fld_p(ai, 0x20);
-    void* dis_go = fld_p(ai, 0x28);
-
-    if (relation == 1) {
-        set_go_active(adv_go, 1);
-        set_go_active(dis_go, 0);
-    } else if (relation == -1) {
-        set_go_active(adv_go, 0);
-        set_go_active(dis_go, 1);
-    } else {
-        set_go_active(adv_go, 0);
-        set_go_active(dis_go, 0);
-    }
-}
-
-static void update_prefight_advantage(void* self) {
-    if (!obj_ok(self)) return;
-    void* p_stats = fld_p(self, 0x1B0);
-    void* o_stats = fld_p(self, 0x1B8);
-    char p_bid[64];
-    char o_bid[64];
-    memset(p_bid, 0, sizeof(p_bid));
-    memset(o_bid, 0, sizeof(o_bid));
-    resolve_hero_bid(p_stats, p_bid, sizeof(p_bid));
-    resolve_hero_bid(o_stats, o_bid, sizeof(o_bid));
-    int p_class = get_bot_class(p_bid);
-    int o_class = get_bot_class(o_bid);
-    if (o_class >= 0) g_opp_class = o_class;
-    int rel = get_class_relation(p_class, o_class);
-    flog("UPDATE_ADVANTAGE self=%p player=%s(class %d) opp=%s(class %d) -> rel=%d",
-         self, p_bid, p_class, o_bid, o_class, rel);
-
-    for (int off = 0x20; off <= 0x240; off += 8) {
-        void* candidate = fld_p(self, off);
-        if (obj_ok(candidate)) {
-            char clsname[64];
-            memset(clsname, 0, sizeof(clsname));
-            if (il2cpp_object_class(candidate, clsname, sizeof(clsname)) && strstr(clsname, "AdvantageIndicator")) {
-                apply_advantage_indicator(candidate, rel);
-            }
-        }
-    }
-
-    void* portraits_list = ((void*(*)(void*, void*))(g_base + 0x12D6BB4))(self, NULL);
-    if (obj_ok(portraits_list)) {
-        int count = *(int*)((uintptr_t)portraits_list + 0x18);
-        void* items_array = *(void**)((uintptr_t)portraits_list + 0x10);
-        if (obj_ok(items_array) && count > 0 && count <= 10) {
-            for (int i = 0; i < count; i++) {
-                void* hp = *(void**)((uintptr_t)items_array + 0x20 + i * 8);
-                if (!obj_ok(hp)) continue;
-                char hp_bid[64];
-                memset(hp_bid, 0, sizeof(hp_bid));
-                for (int off = 0x20; off <= 0x220; off += 8) {
-                    void* candidate = fld_p(hp, off);
-                    if (obj_ok(candidate)) {
-                        resolve_hero_bid(candidate, hp_bid, sizeof(hp_bid));
-                        if (hp_bid[0]) break;
-                    }
-                }
-                int hp_class = get_bot_class(hp_bid);
-                int hp_rel = get_class_relation(hp_class, o_class);
-                for (int off = 0x20; off <= 0x250; off += 8) {
-                    void* candidate = fld_p(hp, off);
-                    if (obj_ok(candidate)) {
-                        char clsname[64];
-                        memset(clsname, 0, sizeof(clsname));
-                        if (il2cpp_object_class(candidate, clsname, sizeof(clsname)) && strstr(clsname, "AdvantageIndicator")) {
-                            apply_advantage_indicator(candidate, hp_rel);
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-// 147: PrefightScreenPresentation.Refresh
 void* hook_147(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
-    void* r = H[147].orig(a0,a1,a2,a3,a4,a5,a6,a7);
-    PROTECT({ update_prefight_advantage(a0); });
-    return r;
+    flog("BOTDUPEDCHECK suppressed -> return 0");
+    return NULL;
 }
-
-// 148: HeroPortrait.RefreshFromData
 void* hook_148(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
-    void* r = H[148].orig(a0,a1,a2,a3,a4,a5,a6,a7);
+    return NULL;
+}
+void* hook_149(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
+    return NULL;
+}
+void* hook_150(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7){
+    int index = (int)(intptr_t)a1;
+    flog("SPECIAL_ATTACK index=%d called on controller=%p (p0=%p, is_p0=%d, bot=%s)",
+         index, self, g_p0_controller, (self == g_p0_controller), g_current_fighter_rule.bid);
     PROTECT({
-        if (g_opp_class >= 0 && obj_ok(a1)) {
-            char bid[64];
-            memset(bid, 0, sizeof(bid));
-            resolve_hero_bid(a1, bid, sizeof(bid));
-            int my_class = get_bot_class(bid);
-            int rel = get_class_relation(my_class, g_opp_class);
-            flog("PORTRAIT_REF hp=%p bot=%s(class %d) vs opp(class %d) -> rel=%d", a0, bid, my_class, g_opp_class, rel);
-            for (int off = 0x20; off <= 0x250; off += 8) {
-                void* candidate = fld_p(a0, off);
-                if (obj_ok(candidate)) {
-                    char clsname[64];
-                    memset(clsname, 0, sizeof(clsname));
-                    if (il2cpp_object_class(candidate, clsname, sizeof(clsname)) && strstr(clsname, "AdvantageIndicator")) {
-                        apply_advantage_indicator(candidate, rel);
-                    }
-                }
-            }
+        if (self == g_p0_controller || g_p0_controller == NULL) {
+            trigger_combat_skill("on_special");
         }
     });
-    return r;
+    return H[150].orig(self, a1, a2, a3, a4, a5, a6, a7);
 }
-
-// 149: NodeInfoPresentation.Refresh
-void* hook_149(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
-    void* r = H[149].orig(a0,a1,a2,a3,a4,a5,a6,a7);
+void* hook_151(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7){
+    int action = (int)(intptr_t)a1;
+    if (action >= 4 && action <= 10) {
+        flog("PLAYER_ACTION action=%d on controller=%p (p0=%p, is_p0=%d)",
+             action, self, g_p0_controller, (self == g_p0_controller));
+    }
     PROTECT({
-        flog("NODEINFO_REF this=%p", a0);
+        if ((self == g_p0_controller || g_p0_controller == NULL) && (action == 6 || action == 7 || action == 8)) {
+            trigger_combat_skill("on_special");
+        }
     });
-    return r;
-}
-
-// 150: NodeInfoPresentation.SetupWindow
-void* hook_150(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
-    void* r = H[150].orig(a0,a1,a2,a3,a4,a5,a6,a7);
-    PROTECT({
-        flog("NODEINFO_SET this=%p", a0);
-    });
-    return r;
+    return H[151].orig(self, a1, a2, a3, a4, a5, a6, a7);
 }
 static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hook_7,hook_8,
     hook_9,hook_10,hook_11,hook_12,hook_13,hook_14,hook_15,hook_16,hook_17,hook_18,hook_19,hook_20,hook_21,
@@ -3771,7 +3857,7 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     hook_115,hook_116,hook_117,hook_118,hook_119,hook_120,hook_121,hook_122,hook_123,hook_124,hook_125,hook_126,hook_127,
     hook_128,hook_129,hook_130,hook_131,hook_132,hook_133,hook_134,hook_135,hook_136,hook_137,
     hook_138,hook_139,hook_140,hook_141,hook_142,hook_143,hook_144,
-    hook_145,hook_146,hook_147,hook_148,hook_149,hook_150 };
+    hook_145,hook_146,hook_147,hook_148,hook_149,hook_150,hook_151 };
 
 static void write_jump(uint8_t* dst, void* target){
     uint32_t* p = (uint32_t*)dst;
@@ -3837,7 +3923,6 @@ static int relocate(uint8_t* tr, uint8_t* src, int ninstr){
     return o;
 }
 
-extern void* handlers[];
 static int inline_hook(void* target, void* handler, fn8* orig_out){
     uint8_t* t = (uint8_t*)target;
     uint32_t first = *(uint32_t*)t;
