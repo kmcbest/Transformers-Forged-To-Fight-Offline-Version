@@ -102,7 +102,7 @@ ROSTER = {
     "sunstreaker_gs_deluxe2008":    ("autobot",    "braw", 5),
     "ultramagnus_gs_leader":        ("autobot",    "tact", 5),
     "wheeljack_gs_mp20":            ("autobot",    "tech", 5),
-    "windblade_gs":                 ("autobot",    "warr", 5),
+    "windblade_gs":                 ("autobot",    "scou", 5),
 
     # --- Decepticons ---
     "acidstorm_gs_leader2015":      ("decepticon", "tech", 5),
@@ -148,6 +148,23 @@ ROSTER = {
     "sharkticon_gs_tech":           ("decepticon", "tech", 1),
     "sharkticon_gs_warrior":        ("decepticon", "warr", 1),
 }
+
+# ==================== UNIVERSAL COMBAT SKILL RULES ====================
+# Authors all dynamic passive/active skill effects. Hot-reloaded via payload!
+COMBAT_SKILL_RULES = {
+    "arcee_gs_deluxe2014": {
+        "trigger": "on_special",   # Trigger: on_special (S1/S2/S3), on_hit, on_crit
+        "type": "bleed",           # Effect type: bleed, burn, fury, armor_break
+        "duration": 4.0,           # Total effect duration in seconds
+        "interval": 0.5,           # Tick rate interval in seconds
+        "ratio": 1.0,              # Total damage ratio: 1.0 = 100% attack damage
+    },
+}
+
+
+def build_combat_skill_rules():
+    return COMBAT_SKILL_RULES
+
 
 # Which bots the offline player owns at boot. For a preservation sandbox we grant the
 # ENTIRE roster so every screen (roster grid, hero details, team select) has content.
@@ -880,7 +897,9 @@ def build_hero_base(bid, rank=1):
         "ap": 0.0, "bp": 0.0, "il": 0.0, "il2": 0.0, "il3": 0.0, "is4": 0.0,
         "eg": 0.0, "fg": 0.0, "ar": 0.0, "hr": 0.0, "hm": 0.0, "am": 0.0,
         "hrhp": 0.0, "hra": 0.0,
-        "stat_mods": [], "sig_mods": [], "buff_mods": [],
+        "stat_mods": ["arcee_s_bleed"] if bid == "arcee_gs_deluxe2014" else [],
+        "sig_mods": [],
+        "buff_mods": ["arcee_s_bleed"] if bid == "arcee_gs_deluxe2014" else [],
         "i": [], "i2": [], "i3": [], "i4": [],
     }
 
@@ -986,6 +1005,35 @@ def build_stat_modifiers():
             "rh": 0.0,
             "ra": 0.0,
         },
+        "arcee_s_bleed": {
+            "id": "arcee_s_bleed",
+            "t": "bleed",
+            "tm": "special_attack",
+            "tr": ["on_special_attack_hit", "on_hit"],
+            "uit": ["bleed"],
+            "pri": 1,
+            "trm": 1.0,
+            "trs": "",
+            "trr": "none",
+            "c": 1.0,
+            "m": 1.0,
+            "d": 4.0,
+            "s": "stack",
+            "ta": "target",
+            "mt": "debuff",
+            "v": "bleed",
+            "ms": "",
+            "st": 0,
+            "g": "damage",
+            "gc": 0.0,
+            "gcv": "",
+            "rcv": "",
+            "ti": 8,
+            "a": [],
+            "au": [],
+            "rh": 0.0,
+            "ra": 0.0,
+        },
     }
 
 
@@ -1001,7 +1049,15 @@ def build_login_data(lang="en"):
         "heroRatingMaxHPWeight": 1.0,
         "attributeGrowthDefs": [],
         "statMods": build_stat_modifiers(),
-        "statModAppears": {},
+        "statModAppears": {
+            "arcee_s_bleed": {
+                "id": "arcee_s_bleed",
+                "title": "MS_ID_STAT_MOD_BLEED_NAME",
+                "desc": "MS_ID_STAT_MOD_BLEED_DESC",
+                "icon": "buff_bleed",
+                "type": "debuff",
+            },
+        },
         # NOTE (session 3): this map is BCGManager._baseHeroData (BCGHeroBaseDict), the per-
         # (blueprint,rank) BASE-ATTRIBUTE templates -> structure heroes[blueprintId][rank] =
         # { <BCGHeroBase fields, parsed by BCGHeroBase..ctor RVA 0xC21AC4> }. It is EMPTY here,
@@ -1044,6 +1100,7 @@ def build_hero_entry(bid, rank=None, level=None):
         "rating_attack": atk // 2, "rating_hp": hp // 2,
         "rating_attack_base": atk // 2, "rating_hp_base": hp // 2,
         "special_attacks": max_special_attacks(bid, star), "pvpb": {}, "exc": {},
+        "stat_mods": ["arcee_s_bleed"] if bid == "arcee_gs_deluxe2014" else [],
         "mana_gain": _MANA_GAIN_RATE, "mana_start": _DIAG_MANA_START,
         "flvl": 100, "req_fxp": 0, "max_fxp": 100, "mfl": 100,
     }
@@ -1950,6 +2007,7 @@ def build_base_hero_details(req_heroes):
                 "special_attacks": max_special_attacks(bid, star), "user_owned": True,
                 "mana_gain": _MANA_GAIN_RATE, "mana_start": _DIAG_MANA_START,
                 "flvl": 100, "req_fxp": 0, "max_fxp": 100, "mfl": 100,
+                "stat_mods": ["arcee_s_bleed"] if bid == "arcee_gs_deluxe2014" else [],
                 "synergyBonuses": [], "pvpb": {},
             })
     return out
