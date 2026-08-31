@@ -3675,11 +3675,17 @@ static void show_android_toast(const char* text) {
         if (!h) h = dlopen("libart.so", RTLD_NOW);
         if (h) get_vms = (JNI_GetCreatedJavaVMs_fn)dlsym(h, "JNI_GetCreatedJavaVMs");
     }
-    if (!get_vms) return;
+    if (!get_vms) {
+        flog("TOAST: JNI_GetCreatedJavaVMs not found");
+        return;
+    }
     
     JavaVM* vms[2] = {0};
     jsize n_vms = 0;
-    if (get_vms(vms, 2, &n_vms) != JNI_OK || n_vms <= 0 || !vms[0]) return;
+    if (get_vms(vms, 2, &n_vms) != JNI_OK || n_vms <= 0 || !vms[0]) {
+        flog("TOAST: no JavaVM found");
+        return;
+    }
     
     JavaVM* vm = vms[0];
     JNIEnv* env = NULL;
@@ -3689,8 +3695,27 @@ static void show_android_toast(const char* text) {
             attached = 1;
         }
     }
-    if (!env) return;
+    if (!env) {
+        flog("TOAST: failed to get JNIEnv");
+        return;
+    }
     
+    jclass looper_cls = (*env)->FindClass(env, "android/os/Looper");
+    if (looper_cls) {
+        jmethodID my_looper_m = (*env)->GetStaticMethodID(env, looper_cls, "myLooper", "()Landroid/os/Looper;");
+        jobject my_lp = my_looper_m ? (*env)->CallStaticObjectMethod(env, looper_cls, my_looper_m) : NULL;
+        if (!my_lp) {
+            jmethodID prepare_m = (*env)->GetStaticMethodID(env, looper_cls, "prepare", "()V");
+            if (prepare_m) {
+                (*env)->CallStaticVoidMethod(env, looper_cls, prepare_m);
+                if ((*env)->ExceptionOccurred(env)) {
+                    (*env)->ExceptionClear(env);
+                }
+            }
+        }
+    }
+    if ((*env)->ExceptionOccurred(env)) (*env)->ExceptionClear(env);
+
     jclass up_cls = (*env)->FindClass(env, "com/unity3d/player/UnityPlayer");
     if (up_cls) {
         jfieldID act_fld = (*env)->GetStaticFieldID(env, up_cls, "currentActivity", "Landroid/app/Activity;");
@@ -3707,11 +3732,22 @@ static void show_android_toast(const char* text) {
                         jobject toast_obj = (*env)->CallStaticObjectMethod(env, toast_cls, make_text, act, jstr, 0);
                         if (toast_obj) {
                             (*env)->CallVoidMethod(env, toast_obj, show_m);
+                            flog("TOAST SUCCESS: %s", text);
                         }
                     }
                 }
+            } else {
+                flog("TOAST: currentActivity is null");
             }
+        } else {
+            flog("TOAST: currentActivity field not found");
         }
+    } else {
+        flog("TOAST: UnityPlayer class not found");
+    }
+    
+    if ((*env)->ExceptionOccurred(env)) {
+        (*env)->ExceptionClear(env);
     }
     if (attached) {
         (*vm)->DetachCurrentThread(vm);
