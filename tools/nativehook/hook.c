@@ -524,6 +524,7 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x1BF0D10, "TUTUIHOOKCLICK", 2, 0 }, // 149 TutorialUIHook.Clicked -> suppress tutorial click crash
     { 0x1174300, "PCSPECIAL", 2, 0 }, // 150 PlayerController.SpecialAttack(int index)
     { 0x1179AF4, "PCACTION",  2, 0 }, // 151 PlayerController.Action(int action)
+    { 0xA569AC,  "HUDSCREEN_CTOR", 2, 0 }, // 152 HudScreen..ctor
 };
 #define NH (int)(sizeof(H)/sizeof(H[0]))
 
@@ -593,6 +594,7 @@ static void* g_p0_attr = NULL;
 static void* g_p1_attr = NULL;
 static void* g_p0_controller = NULL;
 static void* g_p1_controller = NULL;
+static void* g_hud_screen = NULL;
 static int load_skill_rule_from_payload(const char* bot_id, CombatSkillRule* out_rule);
 static void trigger_combat_skill(const char* trigger_event);
 static void combat_skill_pump(void);
@@ -3687,6 +3689,20 @@ static void trigger_combat_skill(const char* trigger_event) {
          trigger_event, g_current_fighter_rule.bid, g_current_fighter_rule.type,
          g_current_fighter_rule.ratio, g_active_effect.dmg_per_tick,
          g_active_effect.ticks_left, g_current_fighter_rule.interval, g_p1_controller);
+
+    if (obj_ok(g_hud_screen) && g_base) {
+        if (g_strnew) {
+            void* buff_str = g_strnew(g_current_fighter_rule.type);
+            if (obj_ok(buff_str)) {
+                // HudScreen.AddBuff(this=x0, buffId=x1, playerIndex=w2, duration=s0, duration2=s1, isDebuff=w3, method=x4)
+                ((void(*)(void*, void*, int32_t, float, float, int32_t, void*))(g_base + 0xA583A4))(
+                    g_hud_screen, buff_str, 1, g_current_fighter_rule.duration, g_current_fighter_rule.duration, 1, NULL
+                );
+                flog("HUDSCREEN AddBuff dispatched: type=%s target_p=1 dur=%.1f",
+                     g_current_fighter_rule.type, g_current_fighter_rule.duration);
+            }
+        }
+    }
 }
 
 static void combat_skill_pump(void) {
@@ -3842,6 +3858,14 @@ void* hook_151(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
     });
     return H[151].orig(self, a1, a2, a3, a4, a5, a6, a7);
 }
+void* hook_152(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    void* r = H[152].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    PROTECT({
+        g_hud_screen = a0;
+        flog("HUDSCREEN CAPTURED: %p", g_hud_screen);
+    });
+    return r;
+}
 static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hook_7,hook_8,
     hook_9,hook_10,hook_11,hook_12,hook_13,hook_14,hook_15,hook_16,hook_17,hook_18,hook_19,hook_20,hook_21,
     hook_22,hook_23,hook_24,hook_25,hook_26,hook_27,hook_28,hook_29,hook_30,
@@ -3857,7 +3881,7 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     hook_115,hook_116,hook_117,hook_118,hook_119,hook_120,hook_121,hook_122,hook_123,hook_124,hook_125,hook_126,hook_127,
     hook_128,hook_129,hook_130,hook_131,hook_132,hook_133,hook_134,hook_135,hook_136,hook_137,
     hook_138,hook_139,hook_140,hook_141,hook_142,hook_143,hook_144,
-    hook_145,hook_146,hook_147,hook_148,hook_149,hook_150,hook_151 };
+    hook_145,hook_146,hook_147,hook_148,hook_149,hook_150,hook_151,hook_152 };
 
 static void write_jump(uint8_t* dst, void* target){
     uint32_t* p = (uint32_t*)dst;
