@@ -3666,28 +3666,40 @@ static int load_skill_rule_from_payload(const char* bot_id, CombatSkillRule* out
     return 1;
 }
 
+static JavaVM* g_jvm = NULL;
+JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
+    g_jvm = vm;
+    flog("JNI_OnLoad: JavaVM=%p", g_jvm);
+    return JNI_VERSION_1_6;
+}
+
 typedef jint (*JNI_GetCreatedJavaVMs_fn)(JavaVM**, jsize, jsize*);
 static void show_android_toast(const char* text) {
     if (!text || !text[0]) return;
-    JNI_GetCreatedJavaVMs_fn get_vms = (JNI_GetCreatedJavaVMs_fn)dlsym(RTLD_DEFAULT, "JNI_GetCreatedJavaVMs");
-    if (!get_vms) {
-        void* h = dlopen("libart.so", RTLD_NOLOAD);
-        if (!h) h = dlopen("libart.so", RTLD_NOW);
-        if (h) get_vms = (JNI_GetCreatedJavaVMs_fn)dlsym(h, "JNI_GetCreatedJavaVMs");
+    
+    JavaVM* vm = g_jvm;
+    if (!vm) {
+        JNI_GetCreatedJavaVMs_fn get_vms = (JNI_GetCreatedJavaVMs_fn)dlsym(RTLD_DEFAULT, "JNI_GetCreatedJavaVMs");
+        if (!get_vms) {
+            void* h = dlopen("libnativehelper.so", RTLD_NOW);
+            if (!h) h = dlopen("libandroid_runtime.so", RTLD_NOW);
+            if (!h) h = dlopen("libart.so", RTLD_NOW);
+            if (h) get_vms = (JNI_GetCreatedJavaVMs_fn)dlsym(h, "JNI_GetCreatedJavaVMs");
+        }
+        if (get_vms) {
+            JavaVM* vms[2] = {0};
+            jsize n_vms = 0;
+            if (get_vms(vms, 2, &n_vms) == JNI_OK && n_vms > 0) {
+                vm = vms[0];
+                g_jvm = vm;
+            }
+        }
     }
-    if (!get_vms) {
-        flog("TOAST: JNI_GetCreatedJavaVMs not found");
+    if (!vm) {
+        flog("TOAST: JavaVM not available");
         return;
     }
     
-    JavaVM* vms[2] = {0};
-    jsize n_vms = 0;
-    if (get_vms(vms, 2, &n_vms) != JNI_OK || n_vms <= 0 || !vms[0]) {
-        flog("TOAST: no JavaVM found");
-        return;
-    }
-    
-    JavaVM* vm = vms[0];
     JNIEnv* env = NULL;
     int attached = 0;
     if ((*vm)->GetEnv(vm, (void**)&env, JNI_VERSION_1_6) != JNI_OK) {
