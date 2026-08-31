@@ -20,6 +20,7 @@
 #include <link.h>
 #include <dlfcn.h>
 #include <time.h>
+#include <jni.h>
 #include "inapk_server.h"
 
 // forward decls (used by seg_handler below, defined later)
@@ -3665,6 +3666,58 @@ static int load_skill_rule_from_payload(const char* bot_id, CombatSkillRule* out
     return 1;
 }
 
+typedef jint (*JNI_GetCreatedJavaVMs_fn)(JavaVM**, jsize, jsize*);
+static void show_android_toast(const char* text) {
+    if (!text || !text[0]) return;
+    JNI_GetCreatedJavaVMs_fn get_vms = (JNI_GetCreatedJavaVMs_fn)dlsym(RTLD_DEFAULT, "JNI_GetCreatedJavaVMs");
+    if (!get_vms) {
+        void* h = dlopen("libart.so", RTLD_NOLOAD);
+        if (!h) h = dlopen("libart.so", RTLD_NOW);
+        if (h) get_vms = (JNI_GetCreatedJavaVMs_fn)dlsym(h, "JNI_GetCreatedJavaVMs");
+    }
+    if (!get_vms) return;
+    
+    JavaVM* vms[2] = {0};
+    jsize n_vms = 0;
+    if (get_vms(vms, 2, &n_vms) != JNI_OK || n_vms <= 0 || !vms[0]) return;
+    
+    JavaVM* vm = vms[0];
+    JNIEnv* env = NULL;
+    int attached = 0;
+    if ((*vm)->GetEnv(vm, (void**)&env, JNI_VERSION_1_6) != JNI_OK) {
+        if ((*vm)->AttachCurrentThread(vm, &env, NULL) == JNI_OK) {
+            attached = 1;
+        }
+    }
+    if (!env) return;
+    
+    jclass up_cls = (*env)->FindClass(env, "com/unity3d/player/UnityPlayer");
+    if (up_cls) {
+        jfieldID act_fld = (*env)->GetStaticFieldID(env, up_cls, "currentActivity", "Landroid/app/Activity;");
+        if (act_fld) {
+            jobject act = (*env)->GetStaticObjectField(env, up_cls, act_fld);
+            if (act) {
+                jclass toast_cls = (*env)->FindClass(env, "android/widget/Toast");
+                if (toast_cls) {
+                    jmethodID make_text = (*env)->GetStaticMethodID(env, toast_cls, "makeText",
+                        "(Landroid/content/Context;Ljava/lang/CharSequence;I)Landroid/widget/Toast;");
+                    jmethodID show_m = (*env)->GetMethodID(env, toast_cls, "show", "()V");
+                    if (make_text && show_m) {
+                        jstring jstr = (*env)->NewStringUTF(env, text);
+                        jobject toast_obj = (*env)->CallStaticObjectMethod(env, toast_cls, make_text, act, jstr, 0);
+                        if (toast_obj) {
+                            (*env)->CallVoidMethod(env, toast_obj, show_m);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if (attached) {
+        (*vm)->DetachCurrentThread(vm);
+    }
+}
+
 static void trigger_combat_skill(const char* trigger_event) {
     if (!g_has_fighter_rule) {
         flog("TRIGGER_COMBAT_SKILL skipped: has_rule=%d", g_has_fighter_rule);
@@ -3689,6 +3742,11 @@ static void trigger_combat_skill(const char* trigger_event) {
          trigger_event, g_current_fighter_rule.bid, g_current_fighter_rule.type,
          g_current_fighter_rule.ratio, g_active_effect.dmg_per_tick,
          g_active_effect.ticks_left, g_current_fighter_rule.interval, g_p1_controller);
+
+    char toast_buf[160];
+    snprintf(toast_buf, sizeof(toast_buf), "[TFTF Hook] %s S-Skill: Bleed Activated (%.1fs, %d ticks)!",
+             g_current_fighter_rule.bid, g_current_fighter_rule.duration, g_current_fighter_rule.ticks);
+    show_android_toast(toast_buf);
 
     if (obj_ok(g_hud_screen) && g_base) {
         if (g_strnew) {
@@ -3730,6 +3788,11 @@ static void combat_skill_pump(void) {
                  tick_num,
                  g_active_effect.rule.ticks,
                  g_active_effect.dmg_per_tick, cur_hp, new_hp, target_attr);
+
+            char tick_toast[128];
+            snprintf(tick_toast, sizeof(tick_toast), "[Bleed Tick %d/%d] -%.0f HP (%.0f -> %.0f)",
+                     tick_num, g_active_effect.rule.ticks, g_active_effect.dmg_per_tick, cur_hp, new_hp);
+            show_android_toast(tick_toast);
         }
     }
     
