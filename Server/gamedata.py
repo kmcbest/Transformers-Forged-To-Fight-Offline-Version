@@ -1052,9 +1052,9 @@ def build_login_data(lang="en"):
         "statModAppears": {
             "arcee_s_bleed": {
                 "id": "arcee_s_bleed",
-                "title": "MS_ID_STAT_MOD_BLEED_NAME",
-                "desc": "MS_ID_STAT_MOD_BLEED_DESC",
-                "icon": "buff_bleed",
+                "title": "ID_STAT_BLD_HUD",
+                "desc": "ID_STAT_ARCEE_HEADSHOT",
+                "icon": "\ue414",
                 "type": "debuff",
             },
         },

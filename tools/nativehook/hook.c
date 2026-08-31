@@ -525,7 +525,7 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x1BF0D10, "TUTUIHOOKCLICK", 2, 0 }, // 149 TutorialUIHook.Clicked -> suppress tutorial click crash
     { 0x1174300, "PCSPECIAL", 2, 0 }, // 150 PlayerController.SpecialAttack(int index)
     { 0x1179AF4, "PCACTION",  2, 0 }, // 151 PlayerController.Action(int action)
-    { 0xA569AC,  "HUDSCREEN_CTOR", 2, 0 }, // 152 HudScreen..ctor
+    { 0xFF0620,  "HUDENTER",  2, 0 }, // 152 HudScreen.WindowEnter -> capture live g_hud_screen
 };
 #define NH (int)(sizeof(H)/sizeof(H[0]))
 
@@ -596,6 +596,9 @@ static void* g_p1_attr = NULL;
 static void* g_p0_controller = NULL;
 static void* g_p1_controller = NULL;
 static void* g_hud_screen = NULL;
+static float g_p0_max_hp = 0.0f;
+static float g_p1_max_hp = 0.0f;
+static float g_p1_live_hp = 0.0f;
 static int load_skill_rule_from_payload(const char* bot_id, CombatSkillRule* out_rule);
 static void trigger_combat_skill(const char* trigger_event);
 static void combat_skill_pump(void);
@@ -2354,6 +2357,8 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
         } else {
             g_p1_attr = a0;
             g_p1_controller = a1;
+            g_p1_max_hp = 0.0f;
+            g_p1_live_hp = 0.0f;
             flog("FIXFIGHT P1 init: ctrl=%p p1_attr=%p id1=%s (preserving P0 %s rule, p0_attr=%p)",
                  g_p1_controller, g_p1_attr, id1, g_current_fighter_rule.bid, g_p0_attr);
         }
@@ -3786,26 +3791,27 @@ static void trigger_combat_skill(const char* trigger_event) {
     g_active_effect.target_attr = g_p1_attr;
     g_active_effect.self_attr = g_p0_attr;
     
-    flog("COMBAT_SKILL TRIGGERED [%s] on %s: effect=%s total_ratio=%.2f (%.1f dmg x %d ticks, interval=%.2fs) p1_ctrl=%p",
+    flog("COMBAT_SKILL TRIGGERED [%s] on %s: effect=%s total_ratio=%.2f (%.1f dmg x %d ticks, interval=%.2fs) p1_ctrl=%p hud=%p",
          trigger_event, g_current_fighter_rule.bid, g_current_fighter_rule.type,
          g_current_fighter_rule.ratio, g_active_effect.dmg_per_tick,
-         g_active_effect.ticks_left, g_current_fighter_rule.interval, g_p1_controller);
+         g_active_effect.ticks_left, g_current_fighter_rule.interval, g_p1_controller, g_hud_screen);
 
     char toast_buf[160];
-    snprintf(toast_buf, sizeof(toast_buf), "[TFTF Hook] %s S-Skill: Bleed Activated (%.1fs, %d ticks)!",
+    snprintf(toast_buf, sizeof(toast_buf), "[TFTF Hook] %s S-Skill: BLEED \xEE\x90\x94 Activated (%.1fs, %d ticks)!",
              g_current_fighter_rule.bid, g_current_fighter_rule.duration, g_current_fighter_rule.ticks);
     show_android_toast(toast_buf);
 
+    if (obj_ok(g_p1_controller) && g_base) {
+        // 1. Notify opponent controller of Buff/Debuff addition (triggers native buff grid & HUD state)
+        ((void(*)(void*, void*, void*))(g_base + 0x1179D78))(g_p1_controller, NULL, NULL);
+    }
+
     if (obj_ok(g_hud_screen) && g_base) {
-        if (g_strnew) {
-            void* buff_str = g_strnew(g_current_fighter_rule.type);
-            if (obj_ok(buff_str)) {
-                // HudScreen.AddBuff(this=x0, buffId=x1, playerIndex=w2, duration=s0, duration2=s1, isDebuff=w3, method=x4)
-                ((void(*)(void*, void*, int32_t, float, float, int32_t, void*))(g_base + 0xA583A4))(
-                    g_hud_screen, buff_str, 1, g_current_fighter_rule.duration, g_current_fighter_rule.duration, 1, NULL
-                );
-                flog("HUDSCREEN AddBuff dispatched: type=%s target_p=1 dur=%.1f",
-                     g_current_fighter_rule.type, g_current_fighter_rule.duration);
+        void* health_bars = *(void**)((uintptr_t)g_hud_screen + 0x120);
+        if (obj_ok(health_bars)) {
+            void* p1_bar = *(void**)((uintptr_t)health_bars + 0x28);
+            if (obj_ok(p1_bar)) {
+                ((void(*)(void*, void*))(g_base + 0xFEA7D0))(p1_bar, NULL);
             }
         }
     }
@@ -3818,30 +3824,58 @@ static void combat_skill_pump(void) {
     
     void* target_attr = g_p1_attr;
     if (obj_ok(target_attr) && g_base) {
+        float cur_hp = ((float(*)(void*, void*))(g_base + 0xDAC758))(target_attr, NULL);
+        if (g_p1_max_hp <= 0.0f || cur_hp > g_p1_max_hp) {
+            g_p1_max_hp = cur_hp;
+        }
+        if (g_p1_live_hp <= 0.0f || g_p1_live_hp > g_p1_max_hp) {
+            g_p1_live_hp = (cur_hp > 0.0f) ? cur_hp : g_p1_max_hp;
+        }
+        
+        float prev_hp = g_p1_live_hp;
+        g_p1_live_hp -= g_active_effect.dmg_per_tick;
+        if (g_p1_live_hp < 0.0f) g_p1_live_hp = 0.0f;
+        float new_hp = g_p1_live_hp;
+        
+        // 1. Direct attribute mutation
         void* hp_attr = *(void**)((uintptr_t)target_attr + 0x78);
         if (obj_ok(hp_attr)) {
-            float cur_hp = *(float*)((uintptr_t)hp_attr + 0x28);
-            float new_hp = cur_hp - g_active_effect.dmg_per_tick;
-            if (new_hp < 0.0f) new_hp = 0.0f;
-            
-            // 1. Set raw float field
             *(float*)((uintptr_t)hp_attr + 0x28) = new_hp;
-            
-            // 2. Call PlayerAttributes.set_Health
-            ((void(*)(void*, float, void*))(g_base + 0xDAC774))(target_attr, new_hp, NULL);
-            
-            int tick_num = g_active_effect.rule.ticks - g_active_effect.ticks_left + 1;
-            flog("COMBAT_SKILL TICK: %s tick %d/%d -%.1f HP (%.1f -> %.1f) on target=%p",
-                 g_active_effect.rule.type,
-                 tick_num,
-                 g_active_effect.rule.ticks,
-                 g_active_effect.dmg_per_tick, cur_hp, new_hp, target_attr);
-
-            char tick_toast[128];
-            snprintf(tick_toast, sizeof(tick_toast), "[Bleed Tick %d/%d] -%.0f HP (%.0f -> %.0f)",
-                     tick_num, g_active_effect.rule.ticks, g_active_effect.dmg_per_tick, cur_hp, new_hp);
-            show_android_toast(tick_toast);
         }
+        
+        // 2. Notify PlayerController
+        if (obj_ok(g_p1_controller) && obj_ok(hp_attr)) {
+            ((void(*)(void*, void*, void*))(g_base + 0x1179840))(g_p1_controller, hp_attr, NULL);
+        }
+        
+        // 3. Update live in-game HUD health bar and flash safely
+        if (obj_ok(g_hud_screen)) {
+            void* health_bars = *(void**)((uintptr_t)g_hud_screen + 0x120);
+            if (obj_ok(health_bars)) {
+                void* p1_bar = *(void**)((uintptr_t)health_bars + 0x28);
+                if (obj_ok(p1_bar)) {
+                    float pct = (g_p1_max_hp > 0.0f) ? (new_hp / g_p1_max_hp) : 0.0f;
+                    if (pct < 0.0f) pct = 0.0f;
+                    if (pct > 1.0f) pct = 1.0f;
+                    // A. Directly update opponent health bar fill amount: HudHealthBar.SetNormalizedAmount(float pct) @0xFEA88C
+                    ((void(*)(void*, float, void*))(g_base + 0xFEA88C))(p1_bar, pct, NULL);
+                    // B. Directly flash opponent health bar: HudHealthBar.Flash() @0xFEA7D0
+                    ((void(*)(void*, void*))(g_base + 0xFEA7D0))(p1_bar, NULL);
+                }
+            }
+        }
+        
+        int tick_num = g_active_effect.rule.ticks - g_active_effect.ticks_left + 1;
+        flog("COMBAT_SKILL TICK: %s tick %d/%d -%.1f HP (%.1f -> %.1f, max=%.1f) on target=%p (hud=%p, p1_ctrl=%p)",
+             g_active_effect.rule.type,
+             tick_num,
+             g_active_effect.rule.ticks,
+             g_active_effect.dmg_per_tick, prev_hp, new_hp, g_p1_max_hp, target_attr, g_hud_screen, g_p1_controller);
+
+        char tick_toast[128];
+        snprintf(tick_toast, sizeof(tick_toast), "\xEE\x90\x94 [BLEED -%.0f] %d/%d (HP: %.0f -> %.0f)",
+                 g_active_effect.dmg_per_tick, tick_num, g_active_effect.rule.ticks, prev_hp, new_hp);
+        show_android_toast(tick_toast);
     }
     
     g_active_effect.ticks_left--;
@@ -3950,7 +3984,7 @@ void* hook_150(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
     flog("SPECIAL_ATTACK index=%d called on controller=%p (p0=%p, is_p0=%d, bot=%s)",
          index, self, g_p0_controller, (self == g_p0_controller), g_current_fighter_rule.bid);
     PROTECT({
-        if (self == g_p0_controller || g_p0_controller == NULL) {
+        if (self == g_p0_controller && obj_ok(g_p0_controller)) {
             trigger_combat_skill("on_special");
         }
     });
@@ -3962,20 +3996,16 @@ void* hook_151(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
         flog("PLAYER_ACTION action=%d on controller=%p (p0=%p, is_p0=%d)",
              action, self, g_p0_controller, (self == g_p0_controller));
     }
-    PROTECT({
-        if ((self == g_p0_controller || g_p0_controller == NULL) && (action == 6 || action == 7 || action == 8)) {
-            trigger_combat_skill("on_special");
-        }
-    });
     return H[151].orig(self, a1, a2, a3, a4, a5, a6, a7);
 }
 void* hook_152(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
-    void* r = H[152].orig(a0, a1, a2, a3, a4, a5, a6, a7);
     PROTECT({
-        g_hud_screen = a0;
-        flog("HUDSCREEN CAPTURED: %p", g_hud_screen);
+        if (obj_ok(a0) && g_hud_screen != a0) {
+            g_hud_screen = a0;
+            flog("HUDSCREEN LIVE CAPTURED: %p", g_hud_screen);
+        }
     });
-    return r;
+    return H[152].orig(a0, a1, a2, a3, a4, a5, a6, a7);
 }
 static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hook_7,hook_8,
     hook_9,hook_10,hook_11,hook_12,hook_13,hook_14,hook_15,hook_16,hook_17,hook_18,hook_19,hook_20,hook_21,
