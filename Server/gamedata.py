@@ -493,6 +493,18 @@ def art_base(bid):
     The two-token derivation below is only a fallback that happens to be right for 12
     roster bots, so all irregular shipped names are explicitly recorded in _ART_BASE.
     """
+    if not hasattr(art_base, "_mapping"):
+        mapping_file = os.path.join(os.path.dirname(__file__), "bot_portrait_mapping.json")
+        if os.path.exists(mapping_file):
+            try:
+                with open(mapping_file, "r", encoding="utf-8", errors="ignore") as f:
+                    art_base._mapping = json.load(f)
+            except Exception:
+                art_base._mapping = {}
+        else:
+            art_base._mapping = {}
+    if getattr(art_base, "_mapping", None) and bid in art_base._mapping and art_base._mapping[bid]:
+        return art_base._mapping[bid]
     if bid in _ART_BASE:
         return _ART_BASE[bid]
     parts = bid.split("_")
@@ -1441,6 +1453,10 @@ def build_quest_enemy(map_override=None, tod_index=None, key=None, is_final_boss
     map_override = ARENA_LEVEL if map_override is None else map_override
     tod_index = ARENA_TOD_INDEX if tod_index is None else tod_index
     key = (ENCOUNTER_SENTINELS[-1] if is_final_boss else ENCOUNTER_SENTINELS[0]) if key is None else key
+    faction, klass, star = ROSTER.get(key, ("decepticon", "tact", 5))
+    rank = max(1, star)
+    level = rank * 10
+    hp, atk = base_stats(key, rank, level)
     return {
         # The entity key doubles as the combat blueprint id. PrefightScreenData sends it
         # verbatim to /bcg/getBaseHeroData; an arbitrary encounter id therefore creates a
@@ -1450,7 +1466,12 @@ def build_quest_enemy(map_override=None, tod_index=None, key=None, is_final_boss
         "parentEntityType": "boss",
         "isFinalBoss": is_final_boss,
         "characters": [key],
-        "rank": 1, "level": 1, "sig_lvl": 0, "flvl": 0,
+        "rank": rank, "level": level, "sig_lvl": 0, "flvl": 0,
+        "hp": 1.0,
+        "pi": (hp + atk) // 20,
+        "rating": (hp + atk) // 20,
+        "rating_attack": atk // 2,
+        "rating_hp": hp // 2,
         "aiType": 0, "aiString": "default", "aiPer": "default",
         "mapOverride": map_override, "todIndex": tod_index,
     }
@@ -1511,7 +1532,7 @@ def build_quest_progression(qid="1.1.1", start=(0, 1), team=None):
         "previouslyCleared": [],
         # revealed = List<QuestTileProgressionNode>; each authored as a tile position so the path
         # tiles read as revealed (non-hidden path tiles are visible regardless, but keep it explicit).
-        "revealed": [{"x": r, "y": 1} for r in range(3)],
+        "revealed": [{"x": r, "y": 1} for r in range(QUEST_DIM)],
         # users keyed by uid string; the local-uid entry becomes the board player (see above).
         "users": {LOCAL_UID: user},
     }

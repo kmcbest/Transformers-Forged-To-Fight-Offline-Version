@@ -200,14 +200,14 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0xC584CC,  "OWNS",      8, 0 }, // 43 HeroesScreen.userOwnsBot(this,bp) -> bp + bool ret
     // ---- texture-load diagnostics (2026-07-15 session 3): is the portrait a static
     //      path-texture load (that fails offline) or a live camera render? ----
-    { 0xE910DC, "TEXPATH",  30, 0 }, // 44 HeroPortrait.LoadTexture(this,path) -> log path string (a1)
+    { 0xE910DC, "TEXPATH",  2000, 0 }, // 44 HeroPortrait.LoadTexture(this,path) -> log path string (a1)
     { 0xC21AC4, "==HEROBASE==",2, 0 }, // 45 BCGHeroBase..ctor(IDictionary) marker (brackets its fast-dot keys; drives the login `heroes` map). Author that map -> mHeroBase resolves -> tiles render.
-    { 0xE916B4, "TEXDONE",  31, 0 }, // 46 HeroPortrait.OnHeroTextureLoaded -> did it fire? path set? loaded flag
+    { 0xE916B4, "TEXDONE",  2000, 0 }, // 46 HeroPortrait.OnHeroTextureLoaded -> did it fire? path set? loaded flag
     { 0xC58598, "SHOWGRID",  2, 0 }, // 47 HeroesScreen.ShowGridContainer (marker)
     { 0xC59EE4, "ANIMNEW",   2, 0 }, // 48 HeroesScreen.AnimateNewEntities (grid reveal tween)
     { 0xC59E90, "INTRODONE", 2, 0 }, // 49 HeroesScreen.OnIntroTransitionComplete (marker)
-    { 0x1991FD0,"SETPATH",  30, 0 }, // 50 UITextureRef.set_baseTexturePath(this,value) -> log value (a1)
-    { 0x1992610,"UITLOAD",   2, 0 }, // 51 UITextureRef.LoadTexture(paths) (marker)
+    { 0x1991FD0,"SETPATH",  2000, 0 }, // 50 UITextureRef.set_baseTexturePath(this,value) -> log value (a1)
+    { 0x1992610,"UITLOAD",  2000, 0 }, // 51 UITextureRef.LoadTexture(paths) (marker)
     { 0x14641FC,"FDS2",     34, 0 }, // 52 EB.Fast.Dot.String(name,altPath,data,def) -> log both JSONPath keys
     // ---- BCGHeroBase ctor field readers (2026-07-15 session 4): the 3 fast-dot
     //      variants the ctor uses that weren't otherwise hooked. jp=1 -> log key at

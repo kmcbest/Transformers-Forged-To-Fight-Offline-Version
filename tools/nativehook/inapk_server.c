@@ -379,11 +379,18 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
             g_pos[slot].x=x;g_pos[slot].y=y;
             int picked[6];
             for(int k=0; k<6; k++) {
+                if(k == 0) {
+                    snprintf(g_pos[slot].e_bid[0], sizeof g_pos[slot].e_bid[0], "slipstream_gs");
+                    snprintf(e_bid[0], sizeof e_bid[0], "slipstream_gs");
+                    picked[0] = -1;
+                    continue;
+                }
                 int cand;
                 for(;;) {
                     cand = q_rand() % ENEMY_POOL_SIZE;
+                    if(!strcmp(g_enemy_pool[cand], "slipstream_gs")) continue;
                     int dup = 0;
-                    for(int prev=0; prev<k; prev++) {
+                    for(int prev=1; prev<k; prev++) {
                         if(picked[prev] == cand) { dup = 1; break; }
                     }
                     if(!dup) break;
@@ -409,7 +416,8 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
     if(strstr(p,"/quests/quest-movedir/")) { int dx=1,dy=0,sx=0,sy=1,nx,ny;
         const char *z=strrchr(p,'/'); const char *yseg=z?z+1:""; const char *z2=z?NULL:NULL; if(z){z2=z-1;while(z2>p&&*z2!='/')z2--; if(*z2=='/')z2++;} if(!z||!z2)return NULL; char xs[32], ys[32], seg[96];snprintf(ys,sizeof ys,"%.31s",yseg);snprintf(xs,sizeof xs,"%.*s",(int)(z-z2),z2); const char *z3=z2-2;while(z3>p&&*z3!='/')z3--;if(*z3=='/')z3++;snprintf(seg,sizeof seg,"%.*s",(int)(z2-z3-1),z3);char *dash=strrchr(seg,'-');if(!dash)return NULL;*dash=0;snprintf(qid,sizeof qid,"%.63s",seg);char *ep;long lx=strtol(xs,&ep,10);if(*ep)lx=1;long ly=strtol(ys,&ep,10);if(*ep){lx=1;ly=0;}dx=(int)lx;dy=(int)ly;
         char e_bid[6][64];
-        for(int k=0; k<6; k++) snprintf(e_bid[k], sizeof e_bid[k], "%s", g_enemy_pool[k % ENEMY_POOL_SIZE]);
+        snprintf(e_bid[0], sizeof e_bid[0], "slipstream_gs");
+        for(int k=1; k<6; k++) snprintf(e_bid[k], sizeof e_bid[k], "%s", g_enemy_pool[k % ENEMY_POOL_SIZE]);
         pthread_mutex_lock(&g_pos_lock);int slot=-1;for(int i=0;i<16;i++)if(!strcmp(g_pos[i].qid,qid)){slot=i;break;}if(slot<0)for(int i=0;i<16;i++)if(!g_pos[i].qid[0]){slot=i;snprintf(g_pos[i].qid,sizeof g_pos[i].qid,"%s",qid);break;}
         if(slot>=0){
             sx=g_pos[slot].x;sy=g_pos[slot].y;if(!sx&&!sy){sy=1;g_pos[slot].y=1;}
