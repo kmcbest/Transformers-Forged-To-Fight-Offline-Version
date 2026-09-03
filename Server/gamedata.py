@@ -102,7 +102,7 @@ ROSTER = {
     "sunstreaker_gs_deluxe2008":    ("autobot",    "braw", 5),
     "ultramagnus_gs_leader":        ("autobot",    "tact", 5),
     "wheeljack_gs_mp20":            ("autobot",    "tech", 5),
-    "windblade_gs":                 ("autobot",    "scou", 5),
+    "windblade_gs":                 ("autobot",    "warr", 5),
 
     # --- Decepticons ---
     "acidstorm_gs_leader2015":      ("decepticon", "tech", 5),
@@ -148,23 +148,6 @@ ROSTER = {
     "sharkticon_gs_tech":           ("decepticon", "tech", 1),
     "sharkticon_gs_warrior":        ("decepticon", "warr", 1),
 }
-
-# ==================== UNIVERSAL COMBAT SKILL RULES ====================
-# Authors all dynamic passive/active skill effects. Hot-reloaded via payload!
-COMBAT_SKILL_RULES = {
-    "arcee_gs_deluxe2014": {
-        "trigger": "on_special",   # Trigger: on_special (S1/S2/S3), on_hit, on_crit
-        "type": "bleed",           # Effect type: bleed, burn, fury, armor_break
-        "duration": 4.0,           # Total effect duration in seconds
-        "interval": 0.5,           # Tick rate interval in seconds
-        "ratio": 1.0,              # Total damage ratio: 1.0 = 100% attack damage
-    },
-}
-
-
-def build_combat_skill_rules():
-    return COMBAT_SKILL_RULES
-
 
 # Which bots the offline player owns at boot. For a preservation sandbox we grant the
 # ENTIRE roster so every screen (roster grid, hero details, team select) has content.
@@ -493,18 +476,6 @@ def art_base(bid):
     The two-token derivation below is only a fallback that happens to be right for 12
     roster bots, so all irregular shipped names are explicitly recorded in _ART_BASE.
     """
-    if not hasattr(art_base, "_mapping"):
-        mapping_file = os.path.join(os.path.dirname(__file__), "bot_portrait_mapping.json")
-        if os.path.exists(mapping_file):
-            try:
-                with open(mapping_file, "r", encoding="utf-8", errors="ignore") as f:
-                    art_base._mapping = json.load(f)
-            except Exception:
-                art_base._mapping = {}
-        else:
-            art_base._mapping = {}
-    if getattr(art_base, "_mapping", None) and bid in art_base._mapping and art_base._mapping[bid]:
-        return art_base._mapping[bid]
     if bid in _ART_BASE:
         return _ART_BASE[bid]
     parts = bid.split("_")
@@ -909,9 +880,7 @@ def build_hero_base(bid, rank=1):
         "ap": 0.0, "bp": 0.0, "il": 0.0, "il2": 0.0, "il3": 0.0, "is4": 0.0,
         "eg": 0.0, "fg": 0.0, "ar": 0.0, "hr": 0.0, "hm": 0.0, "am": 0.0,
         "hrhp": 0.0, "hra": 0.0,
-        "stat_mods": ["arcee_s_bleed"] if bid == "arcee_gs_deluxe2014" else [],
-        "sig_mods": [],
-        "buff_mods": ["arcee_s_bleed"] if bid == "arcee_gs_deluxe2014" else [],
+        "stat_mods": [], "sig_mods": [], "buff_mods": [],
         "i": [], "i2": [], "i3": [], "i4": [],
     }
 
@@ -1017,35 +986,6 @@ def build_stat_modifiers():
             "rh": 0.0,
             "ra": 0.0,
         },
-        "arcee_s_bleed": {
-            "id": "arcee_s_bleed",
-            "t": "bleed",
-            "tm": "special_attack",
-            "tr": ["on_special_attack_hit", "on_hit"],
-            "uit": ["bleed"],
-            "pri": 1,
-            "trm": 1.0,
-            "trs": "",
-            "trr": "none",
-            "c": 1.0,
-            "m": 1.0,
-            "d": 4.0,
-            "s": "stack",
-            "ta": "target",
-            "mt": "debuff",
-            "v": "bleed",
-            "ms": "",
-            "st": 0,
-            "g": "damage",
-            "gc": 0.0,
-            "gcv": "",
-            "rcv": "",
-            "ti": 8,
-            "a": [],
-            "au": [],
-            "rh": 0.0,
-            "ra": 0.0,
-        },
     }
 
 
@@ -1061,15 +1001,7 @@ def build_login_data(lang="en"):
         "heroRatingMaxHPWeight": 1.0,
         "attributeGrowthDefs": [],
         "statMods": build_stat_modifiers(),
-        "statModAppears": {
-            "arcee_s_bleed": {
-                "id": "arcee_s_bleed",
-                "title": "ID_STAT_BLD_HUD",
-                "desc": "ID_STAT_ARCEE_HEADSHOT",
-                "icon": "\ue414",
-                "type": "debuff",
-            },
-        },
+        "statModAppears": {},
         # NOTE (session 3): this map is BCGManager._baseHeroData (BCGHeroBaseDict), the per-
         # (blueprint,rank) BASE-ATTRIBUTE templates -> structure heroes[blueprintId][rank] =
         # { <BCGHeroBase fields, parsed by BCGHeroBase..ctor RVA 0xC21AC4> }. It is EMPTY here,
@@ -1112,7 +1044,6 @@ def build_hero_entry(bid, rank=None, level=None):
         "rating_attack": atk // 2, "rating_hp": hp // 2,
         "rating_attack_base": atk // 2, "rating_hp_base": hp // 2,
         "special_attacks": max_special_attacks(bid, star), "pvpb": {}, "exc": {},
-        "stat_mods": ["arcee_s_bleed"] if bid == "arcee_gs_deluxe2014" else [],
         "mana_gain": _MANA_GAIN_RATE, "mana_start": _DIAG_MANA_START,
         "flvl": 100, "req_fxp": 0, "max_fxp": 100, "mfl": 100,
     }
@@ -1453,10 +1384,6 @@ def build_quest_enemy(map_override=None, tod_index=None, key=None, is_final_boss
     map_override = ARENA_LEVEL if map_override is None else map_override
     tod_index = ARENA_TOD_INDEX if tod_index is None else tod_index
     key = (ENCOUNTER_SENTINELS[-1] if is_final_boss else ENCOUNTER_SENTINELS[0]) if key is None else key
-    faction, klass, star = ROSTER.get(key, ("decepticon", "tact", 5))
-    rank = max(1, star)
-    level = rank * 10
-    hp, atk = base_stats(key, rank, level)
     return {
         # The entity key doubles as the combat blueprint id. PrefightScreenData sends it
         # verbatim to /bcg/getBaseHeroData; an arbitrary encounter id therefore creates a
@@ -1466,12 +1393,7 @@ def build_quest_enemy(map_override=None, tod_index=None, key=None, is_final_boss
         "parentEntityType": "boss",
         "isFinalBoss": is_final_boss,
         "characters": [key],
-        "rank": rank, "level": level, "sig_lvl": 0, "flvl": 0,
-        "hp": 1.0,
-        "pi": (hp + atk) // 20,
-        "rating": (hp + atk) // 20,
-        "rating_attack": atk // 2,
-        "rating_hp": hp // 2,
+        "rank": 1, "level": 1, "sig_lvl": 0, "flvl": 0,
         "aiType": 0, "aiString": "default", "aiPer": "default",
         "mapOverride": map_override, "todIndex": tod_index,
     }
@@ -1532,7 +1454,7 @@ def build_quest_progression(qid="1.1.1", start=(0, 1), team=None):
         "previouslyCleared": [],
         # revealed = List<QuestTileProgressionNode>; each authored as a tile position so the path
         # tiles read as revealed (non-hidden path tiles are visible regardless, but keep it explicit).
-        "revealed": [{"x": r, "y": 1} for r in range(QUEST_DIM)],
+        "revealed": [{"x": r, "y": 1} for r in range(3)],
         # users keyed by uid string; the local-uid entry becomes the board player (see above).
         "users": {LOCAL_UID: user},
     }
@@ -2028,7 +1950,6 @@ def build_base_hero_details(req_heroes):
                 "special_attacks": max_special_attacks(bid, star), "user_owned": True,
                 "mana_gain": _MANA_GAIN_RATE, "mana_start": _DIAG_MANA_START,
                 "flvl": 100, "req_fxp": 0, "max_fxp": 100, "mfl": 100,
-                "stat_mods": ["arcee_s_bleed"] if bid == "arcee_gs_deluxe2014" else [],
                 "synergyBonuses": [], "pvpb": {},
             })
     return out

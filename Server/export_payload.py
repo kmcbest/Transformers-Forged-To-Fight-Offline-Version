@@ -292,7 +292,6 @@ def build_entries(listen_port: int = 8080) -> dict[str, bytes]:
     add("@userdata:template", _user_data_template())
     for bid in sorted(set(gamedata.OWNED) | set(gamedata.DEFAULT_TEAM)):
         add(f"@savedteam:hero:{bid}", json.dumps(gamedata.build_hero_entry(bid), separators=(",", ":")).encode())
-    add("@combat_skill_rules", json.dumps(gamedata.build_combat_skill_rules(), separators=(",", ":")).encode())
 
     return entries
 
