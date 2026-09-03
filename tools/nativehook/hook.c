@@ -46,7 +46,7 @@ static void seg_handler(int sig, siginfo_t* si, void* uc){
     else if (o->sa_handler && o->sa_handler!=SIG_DFL && o->sa_handler!=SIG_IGN) o->sa_handler(sig);
     else { signal(sig, SIG_DFL); raise(sig); }
 }
-#define PROTECT(stmt) do { g_prot=1; if (sigsetjmp(g_jb,1)==0) { stmt } g_prot=0; } while(0)
+#define PROTECT(...) do { g_prot=1; if (sigsetjmp(g_jb,1)==0) { __VA_ARGS__ } g_prot=0; } while(0)
 #define LOG(...) do { __android_log_print(ANDROID_LOG_ERROR, "TFTFHOOK", __VA_ARGS__); flog(__VA_ARGS__); } while(0)
 static FILE* g_f = NULL;
 static void flog(const char* fmt, ...){
@@ -522,6 +522,17 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x14F4468, "BOTDUPEDCHECK", 2, 0 }, // 147 BotDuped check/start entry -> return 0 to suppress tutorial
     { 0x1BF0C20, "TUTUIHOOKTOGGLE", 2, 0 }, // 148 TutorialUIHook.ToggleEnabled -> suppress yellow glow
     { 0x1BF0D10, "TUTUIHOOKCLICK", 2, 0 }, // 149 TutorialUIHook.Clicked -> suppress tutorial click crash
+    { 0xBE2230,  "CALC_RATING_CB",     0, 0 }, // 150 <CalculateNodeRating>b__0
+    { 0xE50A44,  "CALC_RATING_ENTER",  0, 0 }, // 151 BossCard.CalculateNodeRating
+    { 0xFEAFA0,  "HUD_PLAYER_INFO_INIT", 0, 0 }, // 152 HudPlayerInfo.Init
+    { 0x1174300, "PCSPECIAL",          2, 0 }, // 153 PlayerController.SpecialAttack(int index)
+    { 0x1179AF4, "PCACTION",           2, 0 }, // 154 PlayerController.Action(int action)
+    { 0xE33DB8,  "SPEXIT",             2, 0 }, // 155 PlayerSpecialAttackState.OnExit -> reset attack chain on special end (S1/S2)
+    { 0x11828E0, "HEAVYENTER",         2, 0 }, // 156 PlayerNewHeavyAttackState.OnEnter -> reset attack chain on heavy attack
+    { 0x1180480, "HITREACT",           2, 0 }, // 157 PlayerHitReactState.OnEnter -> reset attack chain on being hit
+    { 0x1179938, "HITSTUN",            2, 0 }, // 158 PlayerController.ApplyHitStun -> reset attack chain on hit stun
+    { 0x117AB6C, "APPLYDMG",           2, 0 }, // 159 PlayerController.ApplyDamage -> reset attack chain on taking damage
+    { 0x1173B28, "BLOCKENTER",         2, 0 }, // 160 PlayerBlockState.OnEnter -> reset attack chain on entering block
 };
 #define NH (int)(sizeof(H)/sizeof(H[0]))
 
@@ -2277,6 +2288,36 @@ void* hook_13(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
     PROTECT( ensure_empty_tags(); fix_blueprint_tags(a0); );
     return r;
 }
+#include "bot_info.h"
+
+static int g_last_enemy_pi = 3000;
+static float g_last_enemy_hp = 50000.0f;
+static float g_last_enemy_atk = 2500.0f;
+static void* g_p0_controller = NULL;
+
+static void calc_enemy_stats_all(const char* bid, int rank, int level, float* out_hp, float* out_atk, int* out_pi) {
+    int hp = 42000, atk = 2300, rating = 44300;
+    if (bid && *bid) {
+        for (int i = 0; i < NUM_ENEMY_STATS; i++) {
+            if (strcmp(ENEMY_STATS[i].id, bid) == 0) {
+                hp = ENEMY_STATS[i].hp;
+                atk = ENEMY_STATS[i].atk;
+                rating = ENEMY_STATS[i].rating;
+                break;
+            }
+        }
+    }
+    if (out_hp) *out_hp = (float)hp;
+    if (out_atk) *out_atk = (float)atk;
+    if (out_pi) *out_pi = rating;
+}
+
+static int calc_enemy_rating(const char* bid, int rank, int level) {
+    int pi = 0;
+    calc_enemy_stats_all(bid, rank, level, NULL, NULL, &pi);
+    return pi;
+}
+
 // slot 56 FIXFIGHT: PlayerAttributes.Init(this=a0, owner=a1, manager=a2, fighterData=a3,
 // opponentFighterData=a4). At dac178 it does `new HashSet<string>(this._blueprint.Tags)` and
 // throws ArgumentNullException when Tags is null -> "unknown error" as the fight loads. The
@@ -2299,13 +2340,63 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
         char id1[80]; char id2[80]; id1[0]=id2[0]=0;
         if(!read_str(fld_p(bp1,0x10),id1,sizeof id1)) strcpy(id1,"<null>");
         if(!read_str(fld_p(bp2,0x10),id2,sizeof id2)) strcpy(id2,"<null>");
-        void* at1=fld_p((void*)fd,0x38); void* at2=fld_p((void*)ofd,0x38);
+        void* at1=fld_p((void*)fd,0x30); void* at2=fld_p((void*)ofd,0x30);
+        void* ch1=fld_p((void*)fd,0x38); void* ch2=fld_p((void*)ofd,0x38);
+        int player_idx = obj_ok(a1) ? *(int32_t*)((uintptr_t)a1+0xF4) : -1;
+        if (player_idx == 0 && obj_ok(a1)) g_p0_controller = a1;
+        int32_t cur_hp = (at1 && obj_ok(at1)) ? *(int32_t*)((char*)at1 + 0x2C) : 0;
+        if (player_idx == 1 || (player_idx != 0 && cur_hp <= 0)) {
+            float hp_f = 50000.0f;
+            float atk_f = 2500.0f;
+            int pi = 3000;
+            calc_enemy_stats_all(id1, 5, 50, &hp_f, &atk_f, &pi);
+            int32_t hp = (int32_t)hp_f;
+            int32_t atk = (int32_t)atk_f;
+            g_last_enemy_pi = pi;
+            g_last_enemy_hp = hp_f;
+            g_last_enemy_atk = atk_f;
+            if (at1 && obj_ok(at1)) {
+                *(int32_t*)((char*)at1 + 0x28) = 3;     // SpecialAttackCount (3 bars capacity)
+                *(int32_t*)((char*)at1 + 0x2C) = hp;    // HPMax
+                *(int32_t*)((char*)at1 + 0x30) = hp;    // HPMaxBase
+                *(float*)  ((char*)at1 + 0x34) = 1.0f;  // HP (normalized 1.0f)
+                *(int32_t*)((char*)at1 + 0x38) = atk;   // Attack
+                *(int32_t*)((char*)at1 + 0x3C) = atk;   // AttackBase
+                *(float*)  ((char*)at1 + 0x40) = 0.0f;  // Armor
+                *(float*)  ((char*)at1 + 0x44) = 0.2f;  // CritChance
+                *(float*)  ((char*)at1 + 0x48) = 1.5f;  // CritDamage
+                *(float*)  ((char*)at1 + 0x50) = 0.5f;  // BlockProficiency
+                *(float*)  ((char*)at1 + 0x54) = 1.0f;  // ManaGain
+                *(int32_t*)((char*)at1 + 0x58) = 0;     // ManaStart = 0
+            }
+            if (at2 && obj_ok(at2)) {
+                *(int32_t*)((char*)at2 + 0x58) = 0;     // Player ManaStart = 0
+            }
+            if (ch1 && obj_ok(ch1)) {
+                *(int32_t*)((char*)ch1 + 0x28) = 3;     // NumSpecials
+                *(int32_t*)((char*)ch1 + 0x2C) = hp;
+                *(int32_t*)((char*)ch1 + 0x30) = hp;
+                *(float*)  ((char*)ch1 + 0x34) = 1.0f;
+                *(int32_t*)((char*)ch1 + 0x38) = atk;
+                *(int32_t*)((char*)ch1 + 0x3C) = atk;
+                *(float*)  ((char*)ch1 + 0x58) = 1.0f;  // HP multiplier in CharacterData
+            }
+            LOG("FIXFIGHT_STATS: player=%d bp=%s filled hp=%d atk=%d pi=%d",
+                 player_idx, id1, hp, atk, pi);
+        }
         flog("FIXFIGHT player=%d bp1=%s msa=%d attr.specials=%d tags:%p->%p  bp2=%s msa=%d attr.specials=%d tags:%p->%p",
-             obj_ok(a1)?*(int32_t*)((uintptr_t)a1+0xF4):-1, id1, obj_ok(bp1)?*(int32_t*)((uintptr_t)bp1+0xAC):-1,
+             player_idx, id1, obj_ok(bp1)?*(int32_t*)((uintptr_t)bp1+0xAC):-1,
              obj_ok(at1)?*(int32_t*)((uintptr_t)at1+0x28):-1, t1a,t1b, id2,
              obj_ok(bp2)?*(int32_t*)((uintptr_t)bp2+0xAC):-1, obj_ok(at2)?*(int32_t*)((uintptr_t)at2+0x28):-1,t2a,t2b);
     });
     void* r = H[56].orig(a0,a1,a2,a3,a4,a5,a6,a7);
+    PROTECT({
+        if (a0 && obj_ok(a0)) {
+            typedef void (*fn_set_mana)(void*, float, void*);
+            fn_set_mana set_mana = (fn_set_mana)(g_base + 0xDAC720);
+            set_mana(a0, 0.0f, NULL);
+        }
+    });
     return r;
 }
 // slot 57 FIXHS: HashSet<T>..ctor(this=a0, collection=a1, comparer=a2). The (IEnumerable,
@@ -3556,6 +3647,10 @@ void* hook_143(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
             flog("SP3XFIX exit pc=%p pump=%d tms=%llu", pc, g_sp3_beat_ticks,
                  (unsigned long long)propgo_now_ms());
             ((void(*)(void*,int,void*))(g_base + 0x117A67C))(pc,0,NULL);
+            *(uint64_t*)((uintptr_t)pc + 0x1c0) = 0;
+            *(uint32_t*)((uintptr_t)pc + 0x1c8) = 0;
+            if (g_base) ((void(*)(void*,void*))(g_base + 0x1177288))(pc, NULL);
+            flog("SP3XFIX reset attack chain on pc=%p", pc);
         }
     });
     return r;
@@ -3597,6 +3692,158 @@ void* hook_148(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
 void* hook_149(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
     return NULL;
 }
+void* hook_150(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    int rating = (int)(intptr_t)a2;
+    if (rating < 10000) {
+        void* card = (a0 && obj_ok(a0)) ? *(void**)((char*)a0 + 0x10) : NULL;
+        void* boss = (card && obj_ok(card)) ? *(void**)((char*)card + 0x358) : NULL;
+        void* ch = (boss && obj_ok(boss)) ? *(void**)((char*)boss + 0x30) : NULL;
+        char ch_str[64] = "";
+        if (ch && obj_ok(ch)) {
+            int len = *(int*)((char*)ch + 0x10);
+            uint16_t* chars = (uint16_t*)((char*)ch + 0x14);
+            if (len > 0 && len < 60) {
+                for (int i = 0; i < len; i++) ch_str[i] = (char)chars[i];
+                ch_str[len] = 0;
+            }
+        }
+        int rank = (boss && obj_ok(boss)) ? *(int*)((char*)boss + 0x60) : 5;
+        int level = (boss && obj_ok(boss)) ? *(int*)((char*)boss + 0x64) : 50;
+        rating = calc_enemy_rating(ch_str, rank, level);
+        a2 = (void*)(intptr_t)rating;
+        LOG("CALC_RATING_CB: fixed rating %s (rank %d lvl %d) -> %d", ch_str, rank, level, rating);
+    }
+    return H[150].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+}
+void* hook_151(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    void* boss = (a0 && obj_ok(a0)) ? *(void**)((char*)a0 + 0x358) : NULL;
+    void* ch = (boss && obj_ok(boss)) ? *(void**)((char*)boss + 0x30) : NULL;
+    char ch_str[64] = "";
+    if (ch && obj_ok(ch)) {
+        int len = *(int*)((char*)ch + 0x10);
+        uint16_t* chars = (uint16_t*)((char*)ch + 0x14);
+        if (len > 0 && len < 60) {
+            for (int i = 0; i < len; i++) ch_str[i] = (char)chars[i];
+            ch_str[len] = 0;
+        }
+    }
+    int rank = (boss && obj_ok(boss)) ? *(int*)((char*)boss + 0x60) : -1;
+    int level = (boss && obj_ok(boss)) ? *(int*)((char*)boss + 0x64) : -1;
+    flog("CALCULATE_NODE_RATING: card=%p boss=%p ch='%s' rank=%d lvl=%d",
+         a0, boss, ch_str, rank, level);
+    return H[151].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+}
+void* hook_152(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    if (a1 && obj_ok(a1)) {
+        int* p_rating = (int*)((char*)a1 + 0x38);
+        if (*p_rating <= 0 && g_last_enemy_pi > 0) {
+            *p_rating = g_last_enemy_pi;
+            LOG("HUD_RATING_OVERRIDE: fixed rating -> %d", g_last_enemy_pi);
+        }
+    }
+    return H[152].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+}
+
+static void reset_player_attack_chain(void* pc) {
+    if (!obj_ok(pc)) return;
+    *(uint64_t*)((uintptr_t)pc + 0x1c0) = 0;
+    *(uint32_t*)((uintptr_t)pc + 0x1c8) = 0;
+    if (g_base) {
+        ((void(*)(void*, void*))(g_base + 0x1177288))(pc, NULL);
+    }
+    flog("RESET_ATTACK_CHAIN on pc=%p", pc);
+}
+
+void* hook_153(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7){
+    int index = (int)(intptr_t)a1;
+    flog("SPECIAL_ATTACK index=%d called on controller=%p (p0=%p, is_p0=%d)",
+         index, self, g_p0_controller, (self == g_p0_controller));
+    PROTECT({
+        reset_player_attack_chain(self);
+    });
+    return H[153].orig(self, a1, a2, a3, a4, a5, a6, a7);
+}
+void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7){
+    int action = (int)(intptr_t)a1;
+    if (action >= 4 && action <= 10) {
+        flog("PLAYER_ACTION action=%d on controller=%p (p0=%p, is_p0=%d)",
+             action, self, g_p0_controller, (self == g_p0_controller));
+    }
+    return H[154].orig(self, a1, a2, a3, a4, a5, a6, a7);
+}
+void* hook_155(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    void* pc = fld_p(a0, 0x18);
+    void* r = H[155].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    PROTECT({
+        if (obj_ok(pc)) {
+            flog("SPECIAL_EXIT (S1/S2) resetting attack chain on pc=%p", pc);
+            reset_player_attack_chain(pc);
+        } else if (obj_ok(g_p0_controller)) {
+            flog("SPECIAL_EXIT (S1/S2) fallback resetting attack chain on g_p0=%p", g_p0_controller);
+            reset_player_attack_chain(g_p0_controller);
+        }
+    });
+    return r;
+}
+void* hook_156(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    void* pc = fld_p(a0, 0x18);
+    void* r = H[156].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    PROTECT({
+        if (obj_ok(pc)) {
+            flog("HEAVY_ENTER resetting attack chain on pc=%p", pc);
+            reset_player_attack_chain(pc);
+        } else if (obj_ok(g_p0_controller)) {
+            reset_player_attack_chain(g_p0_controller);
+        }
+    });
+    return r;
+}
+void* hook_157(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    void* pc = fld_p(a0, 0x18);
+    void* r = H[157].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    PROTECT({
+        if (obj_ok(pc)) {
+            flog("HIT_REACT resetting attack chain on pc=%p", pc);
+            reset_player_attack_chain(pc);
+        } else if (obj_ok(g_p0_controller)) {
+            reset_player_attack_chain(g_p0_controller);
+        }
+    });
+    return r;
+}
+void* hook_158(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    void* r = H[158].orig(self, a1, a2, a3, a4, a5, a6, a7);
+    PROTECT({
+        if (obj_ok(self)) {
+            flog("HIT_STUN resetting attack chain on pc=%p", self);
+            reset_player_attack_chain(self);
+        }
+    });
+    return r;
+}
+void* hook_159(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    void* r = H[159].orig(self, a1, a2, a3, a4, a5, a6, a7);
+    PROTECT({
+        if (obj_ok(self)) {
+            flog("APPLY_DAMAGE resetting attack chain on pc=%p", self);
+            reset_player_attack_chain(self);
+        }
+    });
+    return r;
+}
+void* hook_160(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    void* pc = fld_p(a0, 0x18);
+    void* r = H[160].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    PROTECT({
+        if (obj_ok(pc)) {
+            flog("BLOCK_ENTER resetting attack chain on pc=%p", pc);
+            reset_player_attack_chain(pc);
+        } else if (obj_ok(g_p0_controller)) {
+            reset_player_attack_chain(g_p0_controller);
+        }
+    });
+    return r;
+}
 static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hook_7,hook_8,
     hook_9,hook_10,hook_11,hook_12,hook_13,hook_14,hook_15,hook_16,hook_17,hook_18,hook_19,hook_20,hook_21,
     hook_22,hook_23,hook_24,hook_25,hook_26,hook_27,hook_28,hook_29,hook_30,
@@ -3612,7 +3859,9 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     hook_115,hook_116,hook_117,hook_118,hook_119,hook_120,hook_121,hook_122,hook_123,hook_124,hook_125,hook_126,hook_127,
     hook_128,hook_129,hook_130,hook_131,hook_132,hook_133,hook_134,hook_135,hook_136,hook_137,
     hook_138,hook_139,hook_140,hook_141,hook_142,hook_143,hook_144,
-    hook_145,hook_146,hook_147,hook_148,hook_149 };
+    hook_145,hook_146,hook_147,hook_148,hook_149,hook_150,hook_151,
+    hook_152,hook_153,hook_154,hook_155,hook_156,hook_157,hook_158,
+    hook_159,hook_160 };
 
 static void write_jump(uint8_t* dst, void* target){
     uint32_t* p = (uint32_t*)dst;
