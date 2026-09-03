@@ -529,6 +529,7 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x1180480, "HITREACT",   2, 0 }, // 154 PlayerHitReactState.OnEnter -> reset attack chain on being hit
     { 0x1179938, "HITSTUN",    2, 0 }, // 155 PlayerController.ApplyHitStun -> reset attack chain on hit stun
     { 0x117AB6C, "APPLYDMG",   2, 0 }, // 156 PlayerController.ApplyDamage -> reset attack chain on taking damage
+    { 0x1173B28, "BLOCKENTER", 2, 0 }, // 157 PlayerBlockState.OnEnter -> reset attack chain on entering block
 };
 #define NH (int)(sizeof(H)/sizeof(H[0]))
 
@@ -3697,6 +3698,19 @@ void* hook_156(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
     });
     return r;
 }
+void* hook_157(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    void* pc = fld_p(a0, 0x18);
+    void* r = H[157].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    PROTECT({
+        if (obj_ok(pc)) {
+            flog("BLOCK_ENTER resetting attack chain on pc=%p", pc);
+            reset_player_attack_chain(pc);
+        } else if (obj_ok(g_p0_controller)) {
+            reset_player_attack_chain(g_p0_controller);
+        }
+    });
+    return r;
+}
 static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hook_7,hook_8,
     hook_9,hook_10,hook_11,hook_12,hook_13,hook_14,hook_15,hook_16,hook_17,hook_18,hook_19,hook_20,hook_21,
     hook_22,hook_23,hook_24,hook_25,hook_26,hook_27,hook_28,hook_29,hook_30,
@@ -3713,7 +3727,7 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     hook_128,hook_129,hook_130,hook_131,hook_132,hook_133,hook_134,hook_135,hook_136,hook_137,
     hook_138,hook_139,hook_140,hook_141,hook_142,hook_143,hook_144,
     hook_145,hook_146,hook_147,hook_148,hook_149,
-    hook_150,hook_151,hook_152,hook_153,hook_154,hook_155,hook_156 };
+    hook_150,hook_151,hook_152,hook_153,hook_154,hook_155,hook_156,hook_157 };
 
 static void write_jump(uint8_t* dst, void* target){
     uint32_t* p = (uint32_t*)dst;
