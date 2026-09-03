@@ -533,6 +533,7 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x1179938, "HITSTUN",            2, 0 }, // 158 PlayerController.ApplyHitStun -> reset attack chain on hit stun
     { 0x117AB6C, "APPLYDMG",           2, 0 }, // 159 PlayerController.ApplyDamage -> reset attack chain on taking damage
     { 0x1173B28, "BLOCKENTER",         2, 0 }, // 160 PlayerBlockState.OnEnter -> reset attack chain on entering block
+    { 0xC16688,  "GET_MAP_ASSET_ID",   2, 0 }, // 161 BCGBlueprintBase.get_MapAssetID -> resolve to real portrait resource name
 };
 #define NH (int)(sizeof(H)/sizeof(H[0]))
 
@@ -3844,6 +3845,182 @@ void* hook_160(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     });
     return r;
 }
+
+struct ArtBaseMap { const char* bid; const char* art; };
+static const struct ArtBaseMap ART_BASE_MAP[] = {
+    { "acidstorm_gs_leader2015", "acidstorm" },
+    { "arcee_gs_deluxe2014", "arcee_gs" },
+    { "barricade_cin_dotm", "barri_c" },
+    { "bitstream_gs_leader2015", "bitstream" },
+    { "blaster_gs_leader2016", "blastr_gs" },
+    { "bludgeon_gs_rd20", "bludge_gs" },
+    { "bonecrusher_cin_rotf", "bonec_c" },
+    { "bumblebee_cin_dotm", "bumbl_c" },
+    { "bumblebee_gs_kabam", "bumbl_gs" },
+    { "cheetor_bw_transmetal", "cheetor_bw" },
+    { "chromia_gs_kabam", "chromia_gs" },
+    { "cliffjumper_gs_kabam", "cliffjump_gs" },
+    { "cyclonus_gs_uw06", "cyclon_gs" },
+    { "deadend_gs_deluxe2015", "deadend_gs" },
+    { "dinobot_bw_kabam", "dinob_bw" },
+    { "dirge_gs_deluxe2008", "dirge_gs" },
+    { "drift_cin_aoe", "drift_c" },
+    { "fte_optimus_gs_t3", "optimus_gs" },
+    { "fte_stars_gs_t3", "stars_gs" },
+    { "galvatron_gs_voyager2016", "galvatron_gs" },
+    { "grimlock_gs_mp08", "griml_gs" },
+    { "grindor_cin_rotf", "grind_c_rotf" },
+    { "hotlink_gs_leader2015", "hotlink" },
+    { "hotrod_cin_tlk", "hotrod_c" },
+    { "hound_cin_tlk", "hound_c" },
+    { "ionstorm_gs_leader2015", "ionstorm" },
+    { "ironhide_cin_rotf", "ironh_c_rotf" },
+    { "ironhide_gs_kabam", "ironh_gs" },
+    { "jazz_gs_twm05", "jazz_gs" },
+    { "jetfire_gs_leader2014", "jetfire_gs" },
+    { "kickback_gs_kabam", "kickb_gs" },
+    { "megatron_cin_rotf", "megat_c" },
+    { "megatron_gs_leader2015", "megat_gs" },
+    { "megatronus_gs_kabam", "megatro_gs" },
+    { "mirage_gs_deluxe2016", "mirag_gs" },
+    { "mixmaster_cin_rotf", "mixma_c_rotf" },
+    { "mods_EMImodule_01", "emi" },
+    { "mods_attack_01", "attack" },
+    { "mods_brawlersfury_01", "brawlersfury" },
+    { "mods_demolitionscache_01", "democache" },
+    { "mods_exofilter_01", "exofilter" },
+    { "mods_fluxincapacitator_01", "flux" },
+    { "mods_generic_def_01", "gen_def" },
+    { "mods_generic_off_01", "gen_off" },
+    { "mods_generic_utl_01", "gen_utl" },
+    { "mods_harmaccelerator_01", "harm" },
+    { "mods_health_01", "health" },
+    { "mods_laserguidance_01", "laserguidance" },
+    { "mods_nightbirdsmark_01", "nightbirdsmark" },
+    { "mods_paralyzer_01", "paralyzer" },
+    { "mods_primemodule_01", "primemodule" },
+    { "mods_repairmodule_01", "repair" },
+    { "mods_robotresource_01", "robotresource" },
+    { "mods_scoutssentry_01", "scoutssentry" },
+    { "mods_security_01", "security" },
+    { "mods_strangerefractor_01", "strangerefractor" },
+    { "mods_superconductor_1000", "superconductor" },
+    { "mods_superconductor_2000", "superconductor" },
+    { "mods_tacticianstrick_02", "tacticianstrick" },
+    { "mods_techconsole_01", "techconsole" },
+    { "mods_warriorscall", "warriorscall" },
+    { "motormaster_gs_voyager2015", "motorm_gs" },
+    { "necrotronus_gs_kabam", "necrotro_gs" },
+    { "nemesisprime_gs_voyager2015", "nemesis_p" },
+    { "novastorm_gs_leader2015", "novastorm" },
+    { "optimusprimal_bw_mp32", "oprimal_bw" },
+    { "optimusprime_cin_tf", "optimus_c_tf" },
+    { "optimusprime_sg_voyager2015", "optimus_sg" },
+    { "prowl_gs_deluxe2016", "prowl_gs" },
+    { "ramjet_gs_deluxe2008", "ramjet_gs" },
+    { "ratchet_gs_kabam", "ratch_gs" },
+    { "relic_alliance_victory", "relic_ave_t4" },
+    { "relic_allspark", "allspark" },
+    { "relic_ancient_tablet", "ancient_tablet" },
+    { "relic_ancienthead", "ancienthead" },
+    { "relic_blaster", "relic_blaster_t4" },
+    { "relic_bumblebee", "relic_bumblebee_t4" },
+    { "relic_cheetor", "relic_cheetor_t4" },
+    { "relic_cloaking_field", "cloaking_field" },
+    { "relic_covenant_primus", "covenant_primus" },
+    { "relic_dark_energon_crystal", "dark_energon_crystal" },
+    { "relic_fallen_titan_hand", "fallen_titan_hand" },
+    { "relic_galvatron", "relic_galvatron_t4" },
+    { "relic_goldendisk", "goldendisk" },
+    { "relic_hound", "relic_hound_t4" },
+    { "relic_immobilizer", "immobilizer" },
+    { "relic_jazz", "relic_jazz_t4" },
+    { "relic_kickback", "relic_kickback_t4" },
+    { "relic_matrix_of_leadership", "matrix_of_leadership" },
+    { "relic_megatron", "relic_megatron_t4" },
+    { "relic_optimus_primal", "relic_optimus_primal_t4" },
+    { "relic_origin_matrix", "origin_matrix" },
+    { "relic_raid_champion", "relic_raid_t4" },
+    { "relic_shattered_disk", "shattered_disk_t4" },
+    { "relic_solus_forge", "solus_forge" },
+    { "relic_stasis_generator", "stasis_generator" },
+    { "relic_statue_hotrod", "statue_hotrod" },
+    { "relic_statue_megatron", "statue_megatron" },
+    { "relic_statue_op", "statue_op_c" },
+    { "relic_statue_solus", "statue_solus_g" },
+    { "relic_unstable_energon_crystal", "unstable_energon_crystal" },
+    { "rhinox_gs_voyager2014", "rhino_bw" },
+    { "rodimusprime_gs_mp09", "rodimus_gs" },
+    { "scorponok_bw_kabam", "scorponok_bw" },
+    { "sharkticon_gs_brawler", "npc_shark_braw" },
+    { "sharkticon_gs_demolition", "npc_shark_demo" },
+    { "sharkticon_gs_kabam", "npc_shark_gold" },
+    { "sharkticon_gs_scout", "npc_shark_scou" },
+    { "sharkticon_gs_tactician", "npc_shark_tact" },
+    { "sharkticon_gs_tech", "npc_shark_tech" },
+    { "sharkticon_gs_warrior", "npc_shark_warr" },
+    { "shockwave_gs", "shock_c" },
+    { "sideswipe_gs", "sides_gs" },
+    { "skywarp_gs_leader2015", "skywarp_gs" },
+    { "slipstream_gs", "slipstream_gs" },
+    { "soundblaster_gs_mp13b", "soundblast_gs" },
+    { "soundwave_gs", "sound_gs" },
+    { "starsaber_gs_leader2014", "starsaber" },
+    { "sunstorm_gs_leader2015", "sunstorm" },
+    { "sunstreaker_gs_deluxe2008", "sunstreak_gs" },
+    { "tantrum_gs_kabam", "tantrum_gs" },
+    { "thrust_gs_deluxe2008", "thrust" },
+    { "thundercracker_gs_leader2015", "thunder_gs" },
+    { "ultramagnus_gs_leader", "ultram_gs" },
+    { "waspinator_gs_deluxe", "wasp_bw" },
+    { "wheeljack_gs_mp20", "wheelj_gs" },
+    { "windblade_gs", "windb_gs" },
+};
+#define NUM_ART_BASE_MAP (int)(sizeof(ART_BASE_MAP)/sizeof(ART_BASE_MAP[0]))
+
+static const char* resolve_art_base(const char* bid) {
+    if (!bid || !*bid) return bid;
+    for (int i = 0; i < NUM_ART_BASE_MAP; i++) {
+        if (strcmp(ART_BASE_MAP[i].bid, bid) == 0) {
+            return ART_BASE_MAP[i].art;
+        }
+    }
+    return bid;
+}
+
+void* hook_161(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7) {
+    void* r = H[161].orig(a0,a1,a2,a3,a4,a5,a6,a7);
+    if (!g_strnew) return r;
+    char id[80]; id[0] = 0;
+    if (r && read_str(r, id, sizeof(id)) && id[0]) {
+        const char* art = resolve_art_base(id);
+        if (art && strcmp(art, id) != 0) {
+            LOG("GET_MAP_ASSET_ID(str): %s -> %s", id, art);
+            return g_strnew(art);
+        }
+        return r;
+    }
+    if (obj_ok(a0)) {
+        void* ch = *(void**)((char*)a0 + 0x28);
+        if (ch && read_str(ch, id, sizeof(id)) && id[0]) {
+            const char* art = resolve_art_base(id);
+            if (art) {
+                LOG("GET_MAP_ASSET_ID(ch): %s -> %s", id, art);
+                return g_strnew(art);
+            }
+        }
+        void* bid = *(void**)((char*)a0 + 0x10);
+        if (bid && read_str(bid, id, sizeof(id)) && id[0]) {
+            const char* art = resolve_art_base(id);
+            if (art) {
+                LOG("GET_MAP_ASSET_ID(id): %s -> %s", id, art);
+                return g_strnew(art);
+            }
+        }
+    }
+    return r;
+}
+
 static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hook_7,hook_8,
     hook_9,hook_10,hook_11,hook_12,hook_13,hook_14,hook_15,hook_16,hook_17,hook_18,hook_19,hook_20,hook_21,
     hook_22,hook_23,hook_24,hook_25,hook_26,hook_27,hook_28,hook_29,hook_30,
@@ -3861,7 +4038,7 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     hook_138,hook_139,hook_140,hook_141,hook_142,hook_143,hook_144,
     hook_145,hook_146,hook_147,hook_148,hook_149,hook_150,hook_151,
     hook_152,hook_153,hook_154,hook_155,hook_156,hook_157,hook_158,
-    hook_159,hook_160 };
+    hook_159,hook_160,hook_161 };
 
 static void write_jump(uint8_t* dst, void* target){
     uint32_t* p = (uint32_t*)dst;
