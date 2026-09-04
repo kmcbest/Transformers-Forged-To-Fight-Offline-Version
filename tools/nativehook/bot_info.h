@@ -28,7 +28,7 @@ static const EnemyStat ENEMY_STATS[] = {
     { "sunstreaker_gs_deluxe2008", 52500, 2070, 54570 },
     { "ultramagnus_gs_leader", 42000, 2300, 44300 },
     { "wheeljack_gs_mp20", 44100, 2185, 46285 },
-    { "windblade_gs", 39900, 2645, 42545 },
+    { "windblade_gs", 35700, 2760, 38460 },
     { "barricade_cin_dotm", 35700, 2760, 38460 },
     { "bludgeon_gs_rd20", 39900, 2645, 42545 },
     { "bonecrusher_cin_rotf", 39900, 2645, 42545 },

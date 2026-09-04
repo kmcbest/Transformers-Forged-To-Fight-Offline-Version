@@ -102,7 +102,7 @@ ROSTER = {
     "sunstreaker_gs_deluxe2008":    ("autobot",    "braw", 5),
     "ultramagnus_gs_leader":        ("autobot",    "tact", 5),
     "wheeljack_gs_mp20":            ("autobot",    "tech", 5),
-    "windblade_gs":                 ("autobot",    "warr", 5),
+    "windblade_gs":                 ("autobot",    "scou", 5),
 
     # --- Decepticons ---
     "acidstorm_gs_leader2015":      ("decepticon", "tech", 5),
