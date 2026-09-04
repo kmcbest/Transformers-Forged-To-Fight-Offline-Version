@@ -3636,6 +3636,8 @@ void* hook_142(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     });
     return r;
 }
+static void reset_player_attack_chain(void* pc);
+
 // SP3XFIX (shipped): drop the hold before restoring robot form at cinematic exit.
 void* hook_143(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
     void* pc=fld_p(a0,0x18);
@@ -3648,10 +3650,7 @@ void* hook_143(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
             flog("SP3XFIX exit pc=%p pump=%d tms=%llu", pc, g_sp3_beat_ticks,
                  (unsigned long long)propgo_now_ms());
             ((void(*)(void*,int,void*))(g_base + 0x117A67C))(pc,0,NULL);
-            *(uint64_t*)((uintptr_t)pc + 0x1c0) = 0;
-            *(uint32_t*)((uintptr_t)pc + 0x1c8) = 0;
-            if (g_base) ((void(*)(void*,void*))(g_base + 0x1177288))(pc, NULL);
-            flog("SP3XFIX reset attack chain on pc=%p", pc);
+            reset_player_attack_chain(pc);
         }
     });
     return r;
@@ -3747,12 +3746,15 @@ void* hook_152(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
 
 static void reset_player_attack_chain(void* pc) {
     if (!obj_ok(pc)) return;
+    if (g_p0_controller && pc != g_p0_controller) return;
+    int32_t p_idx = *(int32_t*)((uintptr_t)pc + 0xF4);
+    if (p_idx != 0) return;
     *(uint64_t*)((uintptr_t)pc + 0x1c0) = 0;
     *(uint32_t*)((uintptr_t)pc + 0x1c8) = 0;
     if (g_base) {
         ((void(*)(void*, void*))(g_base + 0x1177288))(pc, NULL);
     }
-    flog("RESET_ATTACK_CHAIN on pc=%p", pc);
+    flog("RESET_ATTACK_CHAIN on p0 pc=%p", pc);
 }
 
 void* hook_153(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7){
@@ -3777,11 +3779,7 @@ void* hook_155(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     void* r = H[155].orig(a0, a1, a2, a3, a4, a5, a6, a7);
     PROTECT({
         if (obj_ok(pc)) {
-            flog("SPECIAL_EXIT (S1/S2) resetting attack chain on pc=%p", pc);
             reset_player_attack_chain(pc);
-        } else if (obj_ok(g_p0_controller)) {
-            flog("SPECIAL_EXIT (S1/S2) fallback resetting attack chain on g_p0=%p", g_p0_controller);
-            reset_player_attack_chain(g_p0_controller);
         }
     });
     return r;
@@ -3791,10 +3789,7 @@ void* hook_156(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     void* r = H[156].orig(a0, a1, a2, a3, a4, a5, a6, a7);
     PROTECT({
         if (obj_ok(pc)) {
-            flog("HEAVY_ENTER resetting attack chain on pc=%p", pc);
             reset_player_attack_chain(pc);
-        } else if (obj_ok(g_p0_controller)) {
-            reset_player_attack_chain(g_p0_controller);
         }
     });
     return r;
@@ -3804,10 +3799,7 @@ void* hook_157(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     void* r = H[157].orig(a0, a1, a2, a3, a4, a5, a6, a7);
     PROTECT({
         if (obj_ok(pc)) {
-            flog("HIT_REACT resetting attack chain on pc=%p", pc);
             reset_player_attack_chain(pc);
-        } else if (obj_ok(g_p0_controller)) {
-            reset_player_attack_chain(g_p0_controller);
         }
     });
     return r;
@@ -3816,7 +3808,6 @@ void* hook_158(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
     void* r = H[158].orig(self, a1, a2, a3, a4, a5, a6, a7);
     PROTECT({
         if (obj_ok(self)) {
-            flog("HIT_STUN resetting attack chain on pc=%p", self);
             reset_player_attack_chain(self);
         }
     });
@@ -3826,7 +3817,6 @@ void* hook_159(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
     void* r = H[159].orig(self, a1, a2, a3, a4, a5, a6, a7);
     PROTECT({
         if (obj_ok(self)) {
-            flog("APPLY_DAMAGE resetting attack chain on pc=%p", self);
             reset_player_attack_chain(self);
         }
     });
@@ -3837,10 +3827,7 @@ void* hook_160(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     void* r = H[160].orig(a0, a1, a2, a3, a4, a5, a6, a7);
     PROTECT({
         if (obj_ok(pc)) {
-            flog("BLOCK_ENTER resetting attack chain on pc=%p", pc);
             reset_player_attack_chain(pc);
-        } else if (obj_ok(g_p0_controller)) {
-            reset_player_attack_chain(g_p0_controller);
         }
     });
     return r;
