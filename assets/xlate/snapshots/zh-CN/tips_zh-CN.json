@@ -1,0 +1,1355 @@
+{
+  "meta": {
+    "format": "sparx",
+    "language": "zh-CN",
+    "tagged": [
+      "tips",
+      "client"
+    ],
+    "hash": "03d2985397015b198c2fa1f68b51f5cc0b0b185e",
+    "ts": 1521762936,
+    "string_count": 134
+  },
+  "strings": [
+    {
+      "k": "ID_LOADING_TIPS_00",
+      "v": "获取经验值来提升你的指挥官等级和壮大你的基地！",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_01",
+      "v": "如果感觉到任务变得困难，升级你的机器人。",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_02",
+      "v": "在基地的水晶提炼厂中领取免费水晶。",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_03",
+      "v": "重玩任务来探索其他路径。\n这绝不像看上去那么简单！",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_04",
+      "v": "记住格挡！\n格挡将显著地抵消即将到来的伤害。",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_05",
+      "v": "升阶来提高机器人能力效果，如破甲和流血！",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_06",
+      "v": "完成日常任务获取特定类别的火种！",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_07",
+      "v": "试过升阶吗？突袭其他指挥官的基地获取突袭货币 然后从突袭商店商店中购买火种。",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_08",
+      "v": "[F2B700FF]爆破系[-]机器人是爆炸伤害专家，可以加强\n特殊攻击以获得范围更大，更强力的爆炸效果。",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_09",
+      "v": "[0035ACFF]战术系[-] 机器人强大的协同作用和高超的策略帮助他们\n在战斗中适应敌人的力量。",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_10",
+      "v": "[782CB7FF]斗士系[-]机器人是披甲的盟友和狂怒的敌人\n不惜一切的重视力量。",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_11",
+      "v": "[E72B25FF]战士系[-]机器人拥有致命的精准\n并喜爱让敌人流失能量。",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_12",
+      "v": "[1D9312FF]侦察系[-] 机器人通过频繁的\n特殊攻击和高暴击快速击败对手。",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_13",
+      "v": "[109AC4FF]科技系[-]机器人制造护盾，操纵能量，\n并且装备着最先进的定制武器。",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_14",
+      "v": "机器人有六个类别:\n [1D9312FF]侦察系[-]、[109AC4FF]科技系[-]、[F2B700FF]爆破系[-]、[0035ACFF]战术系[-]、[782CB7FF]斗士系[-]和 [E72B25FF]战士系[-].",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_15",
+      "v": "每个类别都能相互克制。\n选择适合的类别将提升你的机器人的优势。",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_16",
+      "v": "如果你的机器人在战斗中被击倒，\n使用复活让他们重新战斗。",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_17",
+      "v": "点击并长按完成一次重击。\n你的机器人的攻击突破了敌人的格挡！",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_18",
+      "v": "将矿-13的类别与机器人类别匹配以获得加成。",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_19",
+      "v": "当升阶时，一些特殊能力，如护甲加成或震击，\n将变得更强大。",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_20",
+      "v": "[1D9312FF]侦察系[-]机器人使出的迅猛攻击\n使他们在面对[109AC4FF]科技系[-]机器人时具有类别优势。",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_21",
+      "v": "[109AC4FF]科技系[-]机器人制造出的强大护盾使\n他们具有应对[F2B700FF]爆破系[-]机器人强力攻击的类别优势。",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_22",
+      "v": "更少、更大、更宽的攻击使[F2B700FF]爆破系[-]机器人\n在面对[0035ACFF]战术系[-]机器人时具有类别优势。",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_23",
+      "v": "[0035ACFF]战术系[-]机器人的反装甲能力帮助\n他们在应对[782CB7FF]斗士系[-]机器人时具有类别优势。",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_24",
+      "v": "低暴击高伤害使[782CB7FF]斗士系[-]机器人\n类别强于[E72B25FF]战士系[-]机器人。",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_25",
+      "v": "追踪系统使[E72B25FF]战士系[-]机器人\n类别强于[1D9312FF]侦察系[-]机器人",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_26",
+      "v": "流血减益会使机器人流失能量，持续减少其生命值。",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_27",
+      "v": "机器人的段位、阶层、等级越高，提供的锻造经验值也越高。",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_28",
+      "v": "锻造机器人除了能获得锻造经验值外，还会提供矿-13、黄金和水晶碎片。",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_29",
+      "v": "最大锻造等级只能通过\n熔铸达到相应阶层的机器人才能解锁。",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_30",
+      "v": "机器人能获取锻造经验值进行提升。\n他们的锻造等级越高，提供的锻造经验值越多。",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_31",
+      "v": "[FFBA00FF]躲避：[-]向左滑动以躲避对手的近距离攻击。",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_32",
+      "v": "[FFBA00FF]冲刺：[-]向右滑动从远距离向对手发动冲刺。",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_33",
+      "v": "[FFBA00FF]回避：[-]向上或向下滑动来回避对手的远程攻击。",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_34",
+      "v": "[FFBA00FF]格挡：[-]长按屏幕左边来格挡，大幅度降低攻击造成的伤害！",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_35",
+      "v": "[FFBA00FF]连招：[-]使用轻击和普通攻击可制造更长的连招！",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_36",
+      "v": "[FFBA00FF]重击：[-]长按屏幕右侧来突破对手的格挡！",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_37",
+      "v": "[FFBA00FF]远程攻击：[-]点击屏幕右侧从远处发射飞弹！",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_38",
+      "v": "[FFBA00FF]特殊攻击：[-]化解或受到攻击时将获得能量。\n保存能量用来释放特殊攻击！",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_39",
+      "v": "一些机器人会在升阶时获得全新能力。",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_40",
+      "v": "[FFBA00FF]战斗提示：[-]别在对手格挡时浪费掉你的特殊攻击！\n因为他们将遭受较小伤害，而且随后能做出反击。",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_41",
+      "v": "加入同盟来参与同盟合作任务！",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_42",
+      "v": "加入同盟来参加同盟事件，并与你的朋友一起获得奖励！",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_43",
+      "v": "在任务中，节点之间的连线风格表明它是否被探索过。",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_44",
+      "v": "通过将机器人部署在基地防御中来获得黄金。\n稍后回来领取它们！",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_45",
+      "v": "基地防御中生成的黄金数量\n随机器人的级别和稀有度而增加。",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_46",
+      "v": "除了被偷窃之外，在突袭中战胜敌方机器人将获得突袭货币。",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_47",
+      "v": "通过基地的移动指挥部，来派遣机器人完成任务！",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_48",
+      "v": "护盾将保护你免受突袭和复仇。",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_49",
+      "v": "在护盾生效时进行突袭或复仇将移除护盾。",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_50",
+      "v": "复仇只能在被攻击后的短时间内进行，\n因此快速反击吧！",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_51",
+      "v": "即使是一次失败的袭击或复仇也将给对手\n一次报仇雪恨的机会。",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_52",
+      "v": "[FFBA00FF]战斗提示：[-]机器人使用特殊攻击时将无懈可击。\n等待对手特殊攻击结束，再予以反击！",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_53",
+      "v": "[FFBA00FF]战斗提示：[-]成功命中一到两次远程攻击后，立即向前冲刺并展开连击！",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_54",
+      "v": "[FFBA00FF]战斗提示：[-]暂停游戏，查看每个机器人可用技能的信息。",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_55",
+      "v": "[FFBA00FF]战斗提示：[-]对手靠近墙壁时尝试使用重击吧！\n他们在那种情况下将很难闪躲。",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_56",
+      "v": "[FFBA00FF]战斗提示：[-]在使用轻击和中等攻击命中对手后，\n尝试马上发动你的特殊攻击吧。",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_57",
+      "v": "[FFBA00FF]战斗提示：[-]对手冲刺到你面前时，\n你可以回避并反击！",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_58",
+      "v": "[FFBA00FF]战斗提示：[-]每次只有一个机器人可以使用特殊攻击！",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_59",
+      "v": "[FFBA00FF]战斗提示：[-]留神对手的特殊攻击槽。当他们具备发动特殊攻击的条件时，才是最危险的时候！",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_60",
+      "v": "[FFBA00FF]战斗提示：[-]别在对手格挡时浪费掉你的特殊攻击！\n因为他们将遭受较小伤害，而且随后能做出反击。",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_61",
+      "v": "在竞技场中与其他玩家的机器人进行战斗，以获得黄金和事件奖励！",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_EXPLOREWORLD",
+      "v": "探索这个未知的星球并收集那些你所喜爱而又具有代表性的机器人，来组建你的终极小队吧！",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_GIFT_A00",
+      "v": "即使你已经加入一个同盟，你仍可以在同盟菜单中轻触搜索图示来搜索其他同盟。",
+      "vn": 1
+    },
+    {
+      "k": "ID_LOADING_TIPS_STARSCREAMFIGHT",
+      "v": "学习如何战斗并打败红蜘蛛！用双手畅玩《变形金刚：百炼为战》才是王道！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_ALLIANCE_ENERGY",
+      "v": "同盟能量",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_ALLIANCE_ENERGY_TOPBAR_DESC",
+      "v": "同盟能量用于在同盟任务的节点间移动。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_AP_DESC",
+      "v": "你可以在同盟里赚取忠诚度，用来购买同盟水晶。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_AP_TITLE",
+      "v": "忠诚度",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_AVA_ENERGY",
+      "v": "战争能量",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_AVA_ENERGY_TOPBAR_DESC",
+      "v": "战争能量可用来在同盟战争中的地块间移动。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_AVE_SELECTION_BRACKET_TITLE",
+      "v": "在同盟任务中取得更高成绩将使你晋升至更高段位。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_AVE_SELECTION_DIFFICULTY",
+      "v": "难易度会控制敌人的强度和打败他们之后的奖励。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_AVE_SELECTION_EVENT_SCORE",
+      "v": "对敌人造成伤害以赚取活动积分。战胜越困难的敌人获得的积分越高。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_AVE_SELECTION_MULTIPLIER",
+      "v": "所选地图和难度上所有敌人的平均评分。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_AVE_SELECTION_PRESTIGE",
+      "v": "地图和难度越高，完成任务后可得积分越高。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_AVE_SELECTION_RANK_REWARDS",
+      "v": "赚取点数来收集绝佳的排名和里程碑奖励！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_AVE_SELECTION_REWARDS",
+      "v": "完成及探索地图以获得奖励。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_AVE_SELECTION_SELECT_EVENT",
+      "v": "选择一个任务",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_AVE_SELECTION_SELECT_MISSION",
+      "v": "前期地图较为简单，但是困难地图会奖励丰厚的积分和奖励。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_CATFRAG_DESC",
+      "v": "收集火种精华来合成火种！       ",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_CATFRAG_TYPE",
+      "v": "火种精华",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_CHEST_DESC",
+      "v": "完成当前任务宝箱就能自动打开。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_CHEST_TITLE",
+      "v": "宝箱",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_CHEST_TITLE_LEVEL",
+      "v": "宝箱等级{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_DUPE_HERO_TYPE",
+      "v": "重复的机器人",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_ENERGY_REWARD_DESC",
+      "v": "能量用于在任务的节点间移动。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_ENERGY_TITLE",
+      "v": "能量",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_ENERGY_TOPBAR_DESC",
+      "v": "能量用于在任务的节点间移动。能量总是在自动回复。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_EVO_DESC",
+      "v": "使用火种使机器人已达到最高等级。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_EVT_DESC",
+      "v": "事件的点数。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_FRAGMENT_TYPE",
+      "v": "水晶碎片",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_GACHA_DESC",
+      "v": "水晶里包含了有用的道具、机器人和程序。他们能在太空桥中打开。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_GACHA_FRAG_DESC",
+      "v": "收集水晶碎片组成水晶！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_GOLD_REWARD_DESC",
+      "v": "你可以在任务和竞技场赚取黄金，用来升级机器人和模块。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_GOLD_TITLE",
+      "v": "黄金",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_GOLD_TOPBAR_DESC",
+      "v": "用黄金和矿-13与火种一同使用来升级机器人和模块。黄金能通过完成任务，在竞技场战斗或者出售道具获取。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_HC_DESC",
+      "v": "你可以在能量晶体商店和各种游戏模式里找到能量晶体，用来购买商店中的水晶和道具。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_HC_TITLE",
+      "v": "能量晶体",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_HERO_DESC_FORMAT",
+      "v": "层级：{0}\n类别：{1}\n评分：{2}\n特殊能力：{3}\n特殊招式: {4}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_HERO_TYPE",
+      "v": "机器人",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_ISO_DESC",
+      "v": "使用矿-13升级你的机器人。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_ITEM_TYPE",
+      "v": "道具",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_MANY_ITEMS_DESC",
+      "v": "许多道具",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_MASTERIES",
+      "v": "在你的指挥官简介中打开精通页面，花费精通点数来强化你的机器人。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_MATERIAL_TYPE",
+      "v": "矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_MEDALS_REWARD_DESC",
+      "v": "奖章数量将决定你在突袭排行榜上的位置。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_MEDALS_TITLE",
+      "v": "奖章",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_MULTIVERSEARENA_TICKET_DESC",
+      "v": "用来解锁部分竞技场。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_MULTIVERSEARENA_TICKET_TITLE",
+      "v": "竞技场入场券",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_PVPRAID_REWARD_DESC",
+      "v": "你可以在突袭里赚取突袭货币，用来购买突袭商店中的火种和其他道具。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_PVPRAID_TITLE",
+      "v": "突袭货币",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_PVP_OPPONENT_DESC_FORMAT",
+      "v": "特殊能力：{0}\n\n标志性能力: {1}\n\n{2}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_PVP_REWARD_DESC",
+      "v": "你可以在竞技场赚取竞技场货币，用来购买竞技场水晶。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_PVP_TITLE",
+      "v": "竞技场货币",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_PVP_TOPBAR_DESC",
+      "v": "使用竞技场货币来购买独有的竞技场水晶或解锁其他竞技场。竞技场货币可以通过竞技比赛获得。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_RAID_TICKETS_REWARD_DESC",
+      "v": "使用突袭入场券参与突袭。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_RAID_TICKETS_TITLE",
+      "v": "突袭入场券",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_RESOURCE_TYPE",
+      "v": "资源",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_SP_TITLE",
+      "v": "精通点",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_XP_DESC",
+      "v": "收集经验值提升指挥官等级并解锁新的功能。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_XP_TITLE",
+      "v": "经验值",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_TOOLTIP_ACTIVECLASSES",
+      "v": "机器人在防卫中的类别",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_TOOLTIP_BRAWLER",
+      "v": "斗士系机器人是披甲的盟友和暴怒的敌人，不惜一切追求力量。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_TOOLTIP_DEFENDERRATING",
+      "v": "所有机器人和模块在防卫时的总评分。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_TOOLTIP_DEMOLITIONS",
+      "v": "爆破系机器人是制造爆炸伤害的专家，他们的特殊攻击将造成更大更广的爆炸。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_TOOLTIP_POTENTIAL_REWARDS",
+      "v": "成功赢得这个突袭来领取这些奖励。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_TOOLTIP_QUANTITY_FORMAT",
+      "v": "已拥有：{0}/{1}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_TOOLTIP_RESOURCEINFO",
+      "v": "资源概要",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_TOOLTIP_SCOUT",
+      "v": "频繁的特殊攻击和高暴击率使侦察系机器人能够快速的消灭敌人。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_TOOLTIP_TACTICIAN",
+      "v": "搭配强大的协同能力和高超的作战策略，战术系机器人在战斗期间能够利用对手的力量对抗他们。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_TOOLTIP_TECH",
+      "v": "科技系机器人能生成护盾，操控力量，并且还装备有许多高等级的自定义武器。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_TOOLTIP_TOPDEFENDER",
+      "v": "最强的个体机器人和模块的防御组合。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_TOOLTIP_WARRIOR",
+      "v": "战士系机器人拥有致命的精准，并且爱在他们的对手身上开几道口子。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_00",
+      "v": "获取经验值来提升你的指挥官等级和壮大你的基地！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_01",
+      "v": "如果感觉到任务变得困难，升级你的机器人。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_02",
+      "v": "在基地的水晶提炼厂中领取免费水晶。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_03",
+      "v": "重玩任务来探索其他路径。\n这绝不像看上去那么简单！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_04",
+      "v": "记住格挡！\n格挡将显著地抵消即将到来的伤害。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_05",
+      "v": "升阶来提高机器人能力效果，如破甲和流血！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_06",
+      "v": "完成日常任务获取特定类别的火种！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_07",
+      "v": "试过升阶吗？突袭其他指挥官的基地获取突袭货币 然后从突袭商店商店中购买火种。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_08",
+      "v": "[F2B700FF]爆破系[-]机器人是爆炸伤害专家，可以加强\n特殊攻击以获得范围更大，更强力的爆炸效果。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_09",
+      "v": "[0035ACFF]战术系[-] 机器人强大的协同作用和高超的策略帮助他们\n在战斗中适应敌人的力量。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_10",
+      "v": "[782CB7FF]斗士系[-]机器人是披甲的盟友和狂怒的敌人\n不惜一切的重视力量。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_11",
+      "v": "[E72B25FF]战士系[-]机器人拥有致命的精准\n并喜爱让敌人流失能量。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_12",
+      "v": "[1D9312FF]侦察系[-] 机器人通过频繁的\n特殊攻击和高暴击快速击败对手。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_13",
+      "v": "[109AC4FF]科技系[-]机器人制造护盾，操纵能量，\n并且装备着最先进的定制武器。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_14",
+      "v": "机器人有六个类别:\n [1D9312FF]侦察系[-]、[109AC4FF]科技系[-]、[F2B700FF]爆破系[-]、[0035ACFF]战术系[-]、[782CB7FF]斗士系[-]和 [E72B25FF]战士系[-].",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_15",
+      "v": "每个类别都能相互克制。\n选择适合的类别将提升你的机器人的优势。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_16",
+      "v": "如果你的机器人在战斗中被击倒，\n使用复活让他们重新战斗。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_17",
+      "v": "点击并长按完成一次重击。\n你的机器人的攻击突破了敌人的格挡！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_18",
+      "v": "将矿-13的类别与机器人类别匹配以获得加成。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_19",
+      "v": "当升阶时，一些特殊能力，如护甲加成或震击，\n将变得更强大。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_20",
+      "v": "[1D9312FF]侦察系[-]机器人使出的迅猛攻击\n使他们在面对[109AC4FF]科技系[-]机器人时具有类别优势。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_21",
+      "v": "[109AC4FF]科技系[-]机器人制造出的强大护盾使\n他们具有应对[F2B700FF]爆破系[-]机器人强力攻击的类别优势。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_22",
+      "v": "更少、更大、更宽的攻击使[F2B700FF]爆破系[-]机器人\n在面对[0035ACFF]战术系[-]机器人时具有类别优势。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_23",
+      "v": "[0035ACFF]战术系[-]机器人的反装甲能力帮助\n他们在应对[782CB7FF]斗士系[-]机器人时具有类别优势。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_24",
+      "v": "低暴击高伤害使[782CB7FF]斗士系[-]机器人\n类别强于[E72B25FF]战士系[-]机器人。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_25",
+      "v": "追踪系统使[E72B25FF]战士系[-]机器人\n类别强于[1D9312FF]侦察系[-]机器人",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_26",
+      "v": "流血减益会使机器人流失能量，持续减少其生命值。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_27",
+      "v": "机器人的段位、阶层、等级越高，提供的锻造经验值也越高。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_28",
+      "v": "锻造机器人除了能获得锻造经验值外，还会提供矿-13、黄金和水晶碎片。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_29",
+      "v": "最大锻造等级只能通过\n熔铸达到相应阶层的机器人才能解锁。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_30",
+      "v": "机器人能获取锻造经验值进行提升。\n他们的锻造等级越高，提供的锻造经验值越多。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_31",
+      "v": "[FFBA00FF]躲避：[-]向左滑动以躲避对手的近距离攻击。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_32",
+      "v": "[FFBA00FF]冲刺：[-]向右滑动从远距离向对手发动冲刺。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_33",
+      "v": "[FFBA00FF]回避：[-]向上或向下滑动来回避对手的远程攻击。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_34",
+      "v": "[FFBA00FF]格挡：[-]长按屏幕左边来格挡，大幅度降低攻击造成的伤害！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_35",
+      "v": "[FFBA00FF]连招：[-]使用轻击和普通攻击可制造更长的连招！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_36",
+      "v": "[FFBA00FF]重击：[-]长按屏幕右侧来突破对手的格挡！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_37",
+      "v": "[FFBA00FF]远程攻击：[-]点击屏幕右侧从远处发射飞弹！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_38",
+      "v": "[FFBA00FF]特殊攻击：[-]化解或受到攻击时将获得能量。\n保存能量用来释放特殊攻击！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_39",
+      "v": "一些机器人会在升阶时获得全新能力。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_40",
+      "v": "[FFBA00FF]战斗提示：[-]别在对手格挡时浪费掉你的特殊攻击！\n因为他们将遭受较小伤害，而且随后能做出反击。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_41",
+      "v": "加入同盟来参与同盟合作任务！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_42",
+      "v": "加入同盟来参加同盟事件，并与你的朋友一起获得奖励！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_43",
+      "v": "在任务中，节点之间的连线风格表明它是否被探索过。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_44",
+      "v": "通过将机器人部署在基地防御中来获得黄金。\n稍后回来领取它们！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_45",
+      "v": "基地防御中生成的黄金数量\n随机器人的级别和稀有度而增加。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_46",
+      "v": "除了被偷窃之外，在突袭中战胜敌方机器人将获得突袭货币。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_47",
+      "v": "通过基地的移动指挥部，来派遣机器人完成任务！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_48",
+      "v": "护盾将保护你免受突袭和复仇。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_49",
+      "v": "在护盾生效时进行突袭或复仇将移除护盾。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_50",
+      "v": "复仇只能在被攻击后的短时间内进行，\n因此快速反击吧！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_51",
+      "v": "即使是一次失败的袭击或复仇也将给对手\n一次报仇雪恨的机会。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_52",
+      "v": "[FFBA00FF]战斗提示：[-]机器人使用特殊攻击时将无懈可击。\n等待对手特殊攻击结束，再予以反击！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_53",
+      "v": "[FFBA00FF]战斗提示：[-]成功命中一到两次远程攻击后，立即向前冲刺并展开连击！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_54",
+      "v": "[FFBA00FF]战斗提示：[-]暂停游戏，查看每个机器人可用技能的信息。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_55",
+      "v": "[FFBA00FF]战斗提示：[-]对手靠近墙壁时尝试使用重击吧！\n他们在那种情况下将很难闪躲。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_56",
+      "v": "[FFBA00FF]战斗提示：[-]在使用轻击和中等攻击命中对手后，\n尝试马上发动你的特殊攻击吧。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_57",
+      "v": "[FFBA00FF]战斗提示：[-]对手冲刺到你面前时，\n你可以回避并反击！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_58",
+      "v": "[FFBA00FF]战斗提示：[-]每次只有一个机器人可以使用特殊攻击！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_59",
+      "v": "[FFBA00FF]战斗提示：[-]留神对手的特殊攻击槽。当他们具备发动特殊攻击的条件时，才是最危险的时候！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_60",
+      "v": "[FFBA00FF]战斗提示：[-]别在对手格挡时浪费掉你的特殊攻击！\n因为他们将遭受较小伤害，而且随后能做出反击。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_61",
+      "v": "在竞技场中与其他玩家的机器人进行战斗，以获得黄金和事件奖励！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_EXPLOREWORLD",
+      "v": "探索这个未知的星球并收集那些你所喜爱而又具有代表性的机器人，来组建你的终极小队吧！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_GIFT_A00",
+      "v": "即使你已经加入一个同盟，你仍可以在同盟菜单中轻触搜索图示来搜索其他同盟。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_LOADING_TIPS_STARSCREAMFIGHT",
+      "v": "学习如何战斗并打败红蜘蛛！用双手畅玩《变形金刚：百炼为战》才是王道！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_ALLIANCE_ENERGY",
+      "v": "同盟能量",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_ALLIANCE_ENERGY_TOPBAR_DESC",
+      "v": "同盟能量用于在同盟任务的节点间移动。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_AP_DESC",
+      "v": "你可以在同盟里赚取忠诚度，用来购买同盟水晶。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_AP_TITLE",
+      "v": "忠诚度",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_AVA_ENERGY",
+      "v": "战争能量",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_AVA_ENERGY_TOPBAR_DESC",
+      "v": "战争能量可用来在同盟战争中的地块间移动。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_AVE_SELECTION_BRACKET_TITLE",
+      "v": "在同盟任务中取得更高成绩将使你晋升至更高段位。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_AVE_SELECTION_DIFFICULTY",
+      "v": "难易度会控制敌人的强度和打败他们之后的奖励。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_AVE_SELECTION_EVENT_SCORE",
+      "v": "对敌人造成伤害以赚取活动积分。战胜越困难的敌人获得的积分越高。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_AVE_SELECTION_MULTIPLIER",
+      "v": "所选地图和难度上所有敌人的平均评分。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_AVE_SELECTION_PRESTIGE",
+      "v": "地图和难度越高，完成任务后可得积分越高。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_AVE_SELECTION_RANK_REWARDS",
+      "v": "赚取点数来收集绝佳的排名和里程碑奖励！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_AVE_SELECTION_REWARDS",
+      "v": "完成及探索地图以获得奖励。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_AVE_SELECTION_SELECT_EVENT",
+      "v": "选择一个任务",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_AVE_SELECTION_SELECT_MISSION",
+      "v": "前期地图较为简单，但是困难地图会奖励丰厚的积分和奖励。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_CATFRAG_DESC",
+      "v": "收集火种精华来合成火种！       ",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_CATFRAG_TYPE",
+      "v": "火种精华",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_CHEST_DESC",
+      "v": "完成当前任务宝箱就能自动打开。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_CHEST_TITLE",
+      "v": "宝箱",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_CHEST_TITLE_LEVEL",
+      "v": "宝箱等级{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_DUPE_HERO_TYPE",
+      "v": "重复的机器人",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_ENERGY_REWARD_DESC",
+      "v": "能量用于在任务的节点间移动。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_ENERGY_TITLE",
+      "v": "能量",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_ENERGY_TOPBAR_DESC",
+      "v": "能量用于在任务的节点间移动。能量总是在自动回复。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_EVO_DESC",
+      "v": "使用火种使机器人已达到最高等级。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_EVT_DESC",
+      "v": "事件的点数。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_FRAGMENT_TYPE",
+      "v": "水晶碎片",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_GACHA_DESC",
+      "v": "水晶里包含了有用的道具、机器人和程序。他们能在太空桥中打开。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_GACHA_FRAG_DESC",
+      "v": "收集水晶碎片组成水晶！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_GOLD_REWARD_DESC",
+      "v": "你可以在任务和竞技场赚取黄金，用来升级机器人和模块。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_GOLD_TITLE",
+      "v": "黄金",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_GOLD_TOPBAR_DESC",
+      "v": "用黄金和矿-13与火种一同使用来升级机器人和模块。黄金能通过完成任务，在竞技场战斗或者出售道具获取。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_HC_DESC",
+      "v": "你可以在能量晶体商店和各种游戏模式里找到能量晶体，用来购买商店中的水晶和道具。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_HC_TITLE",
+      "v": "能量晶体",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_HERO_DESC_FORMAT",
+      "v": "层级：{0}\n类别：{1}\n评分：{2}\n特殊能力：{3}\n特殊招式: {4}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_HERO_TYPE",
+      "v": "机器人",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_ISO_DESC",
+      "v": "使用矿-13升级你的机器人。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_ITEM_TYPE",
+      "v": "道具",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_MANY_ITEMS_DESC",
+      "v": "许多道具",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_MASTERIES",
+      "v": "在你的指挥官简介中打开精通页面，花费精通点数来强化你的机器人。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_MATERIAL_TYPE",
+      "v": "矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_MEDALS_REWARD_DESC",
+      "v": "奖章数量将决定你在突袭排行榜上的位置。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_MEDALS_TITLE",
+      "v": "奖章",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_MULTIVERSEARENA_TICKET_DESC",
+      "v": "用来解锁部分竞技场。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_MULTIVERSEARENA_TICKET_TITLE",
+      "v": "竞技场入场券",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_PVPRAID_REWARD_DESC",
+      "v": "你可以在突袭里赚取突袭货币，用来购买突袭商店中的火种和其他道具。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_PVPRAID_TITLE",
+      "v": "突袭货币",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_PVP_OPPONENT_DESC_FORMAT",
+      "v": "特殊能力：{0}\n\n标志性能力: {1}\n\n{2}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_PVP_REWARD_DESC",
+      "v": "你可以在竞技场赚取竞技场货币，用来购买竞技场水晶。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_PVP_TITLE",
+      "v": "竞技场货币",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_PVP_TOPBAR_DESC",
+      "v": "使用竞技场货币来购买独有的竞技场水晶或解锁其他竞技场。竞技场货币可以通过竞技比赛获得。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_RAID_TICKETS_REWARD_DESC",
+      "v": "使用突袭入场券参与突袭。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_RAID_TICKETS_TITLE",
+      "v": "突袭入场券",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_RESOURCE_TYPE",
+      "v": "资源",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_SP_TITLE",
+      "v": "精通点",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_XP_DESC",
+      "v": "收集经验值提升指挥官等级并解锁新的功能。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_XP_TITLE",
+      "v": "经验值",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_TOOLTIP_ACTIVECLASSES",
+      "v": "机器人在防卫中的类别",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_TOOLTIP_BRAWLER",
+      "v": "斗士系机器人是披甲的盟友和暴怒的敌人，不惜一切追求力量。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_TOOLTIP_DEFENDERRATING",
+      "v": "所有机器人和模块在防卫时的总评分。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_TOOLTIP_DEMOLITIONS",
+      "v": "爆破系机器人是制造爆炸伤害的专家，他们的特殊攻击将造成更大更广的爆炸。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_TOOLTIP_POTENTIAL_REWARDS",
+      "v": "成功赢得这个突袭来领取这些奖励。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_TOOLTIP_QUANTITY_FORMAT",
+      "v": "已拥有：{0}/{1}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_TOOLTIP_RESOURCEINFO",
+      "v": "资源概要",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_TOOLTIP_SCOUT",
+      "v": "频繁的特殊攻击和高暴击率使侦察系机器人能够快速的消灭敌人。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_TOOLTIP_TACTICIAN",
+      "v": "搭配强大的协同能力和高超的作战策略，战术系机器人在战斗期间能够利用对手的力量对抗他们。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_TOOLTIP_TECH",
+      "v": "科技系机器人能生成护盾，操控力量，并且还装备有许多高等级的自定义武器。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_TOOLTIP_TOPDEFENDER",
+      "v": "最强的个体机器人和模块的防御组合。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_TOOLTIP_WARRIOR",
+      "v": "战士系机器人拥有致命的精准，并且爱在他们的对手身上开几道口子。",
+      "vn": 1
+    }
+  ]
+}

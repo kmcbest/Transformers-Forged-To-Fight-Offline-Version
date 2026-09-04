@@ -1,0 +1,4015 @@
+{
+  "meta": {
+    "format": "sparx",
+    "language": "zh-CN",
+    "tagged": [
+      "bcg",
+      "client"
+    ],
+    "hash": "9c929ecd7a77f32e0166f20cd219f41c3fb385b5",
+    "ts": 1526576577,
+    "string_count": 400
+  },
+  "strings": [
+    {
+      "k": "ID_BARRI_BACKFIRE",
+      "v": "[A48705FF]{0}%[-]几率施加逆火，持续[A48705FF]{2}[-]秒。",
+      "vn": 1
+    },
+    {
+      "k": "ID_BARRI_BACKFIREDMG",
+      "v": "带有逆火的对手使用特殊攻击时将受到[A48705FF]{1}%[-]攻击的震击伤害。",
+      "vn": 1
+    },
+    {
+      "k": "ID_BARRI_BACKFIREDMG_SHORT",
+      "v": "对手处于带有逆火效果时，激活特殊攻击将受到伤害。",
+      "vn": 1
+    },
+    {
+      "k": "ID_BARRI_BACKFIREDMG_SHORTPAUSE",
+      "v": "特殊攻击逆火，激活时将受到伤害。",
+      "vn": 1
+    },
+    {
+      "k": "ID_BARRI_BACKFIRE_SP3",
+      "v": "施加[A48705FF]{1}[-]层逆火，每层持续[A48705FF]{2}[-]秒。",
+      "vn": 1
+    },
+    {
+      "k": "ID_BARRI_MELEECRITDMG",
+      "v": "根据对手储存的能量，最高[A48705FF]+{1}%[-]暴击伤害。",
+      "vn": 1
+    },
+    {
+      "k": "ID_BARRI_PWSTEAL",
+      "v": "[A48705FF]{0}%[-]几率触发能量窃取，将对手[A48705FF]{1}%[-]的能量据为己用。",
+      "vn": 1
+    },
+    {
+      "k": "ID_BARRI_PWSTEAL_SHORT",
+      "v": "夺取对手的部分能量据为己用。",
+      "vn": 1
+    },
+    {
+      "k": "ID_BARRI_SIG_B_LONG",
+      "v": "现在逆火的效果可以叠加，它的持续时间增加了[A48705FF]{1}%[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_BARRI_SIG_B_SHORT",
+      "v": "现在逆火可叠加且持续时间加长。",
+      "vn": 1
+    },
+    {
+      "k": "ID_BARRI_SIG_LEVEL",
+      "v": "坏警察{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_BARRI_SIG_LONG",
+      "v": "路障的攻击将使对手产生延迟效应。当逆火的持续时间结束时将眩晕对手[A48705FF]{2}[-]秒。坏警察就要有个坏样子。",
+      "vn": 1
+    },
+    {
+      "k": "ID_BARRI_SIG_SHORT",
+      "v": "路障的攻击将使对手产生延迟效应。当逆火的持续时间结束时将眩晕对手。",
+      "vn": 1
+    },
+    {
+      "k": "ID_BARRI_SIG_TITLE",
+      "v": "坏警察",
+      "vn": 1
+    },
+    {
+      "k": "ID_BLUDGE_ARMRENEW",
+      "v": "雷震变成坦克形态时将刷新护甲增加增益的持续时间。",
+      "vn": 1
+    },
+    {
+      "k": "ID_BLUDGE_BLADEDMG",
+      "v": "通过全神贯注于基础刀刃攻击，雷震能获得额外的能量。当受到敌方攻击时雷震将失去这些能量。",
+      "vn": 1
+    },
+    {
+      "k": "ID_BLUDGE_BLDCHANCE",
+      "v": "[A48705FF]+{1}%[-]几率在刀刃攻击暴击时施加流血。",
+      "vn": 1
+    },
+    {
+      "k": "ID_BLUDGE_CRITDMG",
+      "v": "当雷震的近战攻击落空时，他摧毁对手的渴望变得更强，下一次暴击命中时增加[A48705FF]+{1}%[-]暴击伤害。",
+      "vn": 1
+    },
+    {
+      "k": "ID_BLUDGE_PROTIP",
+      "v": "雷震能通过刀刃攻击获得额外的能量，但会在失去专注和受到攻击时失去它们。经常使用你的特殊攻击，并利用额外的机会造成特殊攻击流血。",
+      "vn": 1
+    },
+    {
+      "k": "ID_BLUDGE_SIG_B_LONG_EXTRA",
+      "v": "精通古老塞博坦武术－钢铠法的雷震在使用他的基本剑术进行攻击时，需要在{2}秒内不被击中，力量条才会增加[A48705FF]{1}%[-]。如果力量没有被使用，附加的力量会在雷震被击中时丧失。",
+      "vn": 1
+    },
+    {
+      "k": "ID_BLUDGE_SIG_B_SHORT_EXTRA",
+      "v": "精通古老塞博坦武术－钢铠法的雷震在使用他的基本剑术进行攻击时，需要高度集中才能获得附加力量。",
+      "vn": 1
+    },
+    {
+      "k": "ID_BLUDGE_SIG_LEVEL",
+      "v": "钢铠法{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_BLUDGE_SIG_LONG",
+      "v": "雷震精通于古老的赛博坦武术-钢铠法，[A48705FF]{2}[-]秒内未受到攻击，他将获得[A48705FF]+{1}%[-]暴击伤害增益。",
+      "vn": 1
+    },
+    {
+      "k": "ID_BLUDGE_SIG_LONG_EXTRA",
+      "v": "雷震精通于古老的赛博坦武术-钢铠法，如果在[A48705FF]{2}[-]秒内未受到攻击，他将获得一个[A48705FF]+{1}%[-]暴击伤害增益。雷震也能从基础剑术攻击中获取额外的能量。但当他受到敌方攻击时，雷震将失去未使用的额外能量。",
+      "vn": 1
+    },
+    {
+      "k": "ID_BLUDGE_SIG_SHORT",
+      "v": "雷震精通于古老的赛博坦武术-钢铠法，他需要全神贯注以便获得暴击伤害增益。",
+      "vn": 1
+    },
+    {
+      "k": "ID_BLUDGE_SIG_SHORT_EXTRA",
+      "v": "雷震精通于古老的赛博坦武术-钢铠法，他需要全神贯注以便获得暴击伤害和能量值增益。",
+      "vn": 1
+    },
+    {
+      "k": "ID_BLUDGE_SIG_TITLE",
+      "v": "钢铠法",
+      "vn": 1
+    },
+    {
+      "k": "ID_BLUDGE_SIG_TITLE_HUD",
+      "v": "钢铠法",
+      "vn": 1
+    },
+    {
+      "k": "ID_BLUDGE_STUNSTEP",
+      "v": "当流血的敌人回避或躲避时将有[A48705FF]{0}%[-]几率被眩晕 [A48705FF]{2}[-]秒。",
+      "vn": 1
+    },
+    {
+      "k": "ID_IRONH_BURN",
+      "v": "[A48705FF]{0}%[-]几率在[A48705FF]{2}[-]秒内造成[A48705FF]{1}%[-]攻击的热损伤。",
+      "vn": 1
+    },
+    {
+      "k": "ID_IRONH_BURNCHANCE",
+      "v": "双重导弹攻击有[A48705FF]+{1}%[-]几率引起燃烧伤害。",
+      "vn": 1
+    },
+    {
+      "k": "ID_IRONH_BURN_HUD",
+      "v": "焚化",
+      "vn": 1
+    },
+    {
+      "k": "ID_IRONH_BURN_RANK_1",
+      "v": "[ffffffff]燃烧[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_IRONH_BURN_RANK_I",
+      "v": "[808080ff]引燃[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_IRONH_BURN_SHORT",
+      "v": "持续造成热损伤。",
+      "vn": 1
+    },
+    {
+      "k": "ID_IRONH_CRITCHANCEUP",
+      "v": "[A48705FF]+{1}%[-]暴击几率。",
+      "vn": 1
+    },
+    {
+      "k": "ID_IRONH_CRITDMG",
+      "v": "[A48705FF]{0}%[-]几率使暴击伤害增加[A48705FF]{1}%[-]。",
+      "vn": 1
+    },
+    {
+      "k": "ID_IRONH_CRITDMG_HUD",
+      "v": "暴击伤害增加",
+      "vn": 1
+    },
+    {
+      "k": "ID_IRONH_CRITDMG_RANK_1",
+      "v": "[ffffffff]暴击伤害增加[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_IRONH_CRITDMG_RANK_I",
+      "v": "[808080ff]暴击伤害强化[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_IRONH_CRITDMG_SHORT",
+      "v": "增加暴击伤害。",
+      "vn": 1
+    },
+    {
+      "k": "ID_IRONH_SIG_HUD",
+      "v": "装填核弹中...",
+      "vn": 1
+    },
+    {
+      "k": "ID_IRONH_SIG_LEVEL",
+      "v": "抹杀{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_IRONH_SIG_LONG",
+      "v": "铁皮拥有{0}％几率能使用他的特殊攻击造成[A48705FF] + {1}％[-]暴击伤害而抹杀敌人。在一次战斗中只能触发一次。",
+      "vn": 1
+    },
+    {
+      "k": "ID_IRONH_SIG_NUKED",
+      "v": "我会把你撕碎！",
+      "vn": 1
+    },
+    {
+      "k": "ID_IRONH_SIG_SHORT",
+      "v": "铁皮的特殊攻击有几率直接抹杀对手。在一次战斗中只能触发一次。",
+      "vn": 1
+    },
+    {
+      "k": "ID_IRONH_SIG_TITLE",
+      "v": "抹杀",
+      "vn": 1
+    },
+    {
+      "k": "ID_MEGAT_SIG_HUD",
+      "v": "威震天万岁！",
+      "vn": 1
+    },
+    {
+      "k": "ID_MEGAT_SIG_LEVEL",
+      "v": "威震天万岁！{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_MEGAT_SIG_LONG",
+      "v": "威震天总会回来的。当生命值降至{0}%以下时，威震天将在{2}秒内恢复最大生命值的[A48705FF]{1}%[-]。",
+      "vn": 1
+    },
+    {
+      "k": "ID_MEGAT_SIG_SHORT",
+      "v": "威震天总会回来的，在频临死亡时恢复生命值。",
+      "vn": 1
+    },
+    {
+      "k": "ID_MEGAT_SIG_TITLE",
+      "v": "威震天万岁！",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_EVADE",
+      "v": "幻影拥有{1}段规避充能，能够消耗一段充能来躲避来犯攻击。",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_EVADE_HUD",
+      "v": "规避",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_INVIS",
+      "v": "幻影以能量模式进入战斗，使得当对手激活特殊攻击时，他可获得一个护盾。护盾降低敌人[A48705FF]{0}%[-]的暴击伤害和[A48705FF]{1}%[-]的远程伤害，直到幻影被击倒。重新激活需冷却[A48705FF]{2}[-]秒。\n被敌人攻击击中时，幻影有一定几率重回这个模式。",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_INVIS_HUD",
+      "v": "隐形",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_INVIS_RANK_1",
+      "v": "[ffffffff]电力破坏1[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_INVIS_RANK_2",
+      "v": "[ffffffff]电力破坏2[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_INVIS_RANK_3",
+      "v": "[ffffffff]电力破坏3[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_INVIS_RANK_4",
+      "v": "[ffffffff]电力破坏4[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_INVIS_RANK_5",
+      "v": "[ffffffff]电力破坏5[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_INVIS_RANK_6",
+      "v": "[ffffffff]电力破坏6[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_INVIS_SHORT",
+      "v": "降低暴击和远程伤害。",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_PIERCE",
+      "v": "[A48705FF]{1}%[-]护甲穿透。",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_PIERCE_RANK_1",
+      "v": "[ffffffff]护甲穿透[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_PIERCE_RANK_I",
+      "v": "[808080ff]护甲穿透[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_PIERCE_SHORT",
+      "v": "忽略对手的护甲，造成更多伤害。",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_POWER_HUD",
+      "v": "能量过载",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_PWERATE",
+      "v": "每层[7E7E7E]Weakness[-]减益将减少对手[A48705FF]{1}%[-]的能量值。",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_PWERATE_NEW",
+      "v": "降低对手[A48705FF]{0}%[-]的力量流。",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_PWERATE_NEW2",
+      "v": "校准好电磁干扰，扰乱并降低对手[A48705FF]{0}%[-]的力量流。",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_PWERATE_RANK",
+      "v": "[ffffffff]能量减少[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_PWERATE_SHORT",
+      "v": "减少对手获取能量的能力。",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_PWUPINVIS",
+      "v": "一旦幻影进入战斗，他的电力破坏者装置就开始校准，使他的能量比率增加[A48705FF]{1}%[-]。敌方释放的特殊攻击将刷新该装置提供的加成效果，直到幻影被击倒。",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_PWUPINVISON_PAUSE",
+      "v": "护盾激活。降低对手的暴击和远程伤害直到幻影被击倒。",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_PWUPINVISOff_PAUSE",
+      "v": "增加能量比率，护盾重新充能。",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_PWUPINVIS_PAUSE",
+      "v": "当对手使用特殊攻击时增加能量值并激活一个护盾。",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_PWUPINVIS_PAUSETITLE",
+      "v": "电力破坏者",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_SHRUGOFF",
+      "v": "幻影在F1赛车形态下加速行驶能够摆脱远程攻击和燃烧减益。",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_SIG_LEVEL",
+      "v": "K.E.R.S.{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_SIG_LONG",
+      "v": "当正在激活特殊攻击时，动能回收装置将会产生以下增益：\n特殊1-投射速度提升[A48705FF]{2}[-]秒。\n特殊2-基础近战攻击变得无法格挡，持续[A48705FF]{2}[-]秒。\n特殊3-[A48705FF]+{1}%[-]攻击力，持续[A48705FF]{2}[-]秒。",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_SIG_SHORT",
+      "v": "可以从对手的特殊攻击中吸收能量的动能回收装置，当切换模式时将使用电动发电机组生成强大的增益。",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_SIG_TITLE",
+      "v": "K.E.R.S.",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_SP1PWBURN",
+      "v": "幻影进入破坏模式时，可使远程攻击有[A48705FF]{0}%[-]几率汲取[A48705FF]{1}%[-]能量。",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_SP1PWBURNSIG_PAUSE",
+      "v": "临时提高远程攻击的伤害和速度。",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_SP1PWBURNSIG_PAUSETITLE",
+      "v": "KERS -破坏",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_SP1PWBURN_PAUSE",
+      "v": "远程攻击将同时汲取对手的能量。",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_SP1PWBURN_PAUSETITLE",
+      "v": "破坏",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_SP3FRYUP",
+      "v": "幻影进入敏捷模式，当躲避或回避对手的攻击时获得[A48705FF]+{1}%[-]攻击，持续至战斗结束。",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_SP3FRYUPSIG_PAUSE",
+      "v": "临时增加攻击力。",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_SP3FRYUPSIG_PAUSETITLE",
+      "v": "KERS-敏捷",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_SP3FRYUP_HUD",
+      "v": "你能跟上吗？",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_SP3FRYUP_PAUSE",
+      "v": "当躲避或回避对手的攻击时获得一个永久的攻击增益。",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_SP3FRYUP_PAUSETITLE",
+      "v": "敏捷",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_WEAKNESSSIG_PAUSE",
+      "v": "近战攻击暂时无法被格挡。",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_WEAKNESSSIG_PAUSETITLE",
+      "v": "能量回收系统-丧失能力",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_WEAKNESS_LONG",
+      "v": "幻影进入失能模式时，他的近战攻击有[A48705FF]{0}%[-]几率施加一个[A48705FF]-{1}%[-]的攻击减益，持续[A48705FF]{2}[-]秒。（最多叠加15层）",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_WEAKNESS_PAUSE",
+      "v": "近战攻击将施加攻击性减益并眩晕对手。",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_WEAKNESS_PAUSETITLE",
+      "v": "丧失能力",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_WEAKNESS_RANK_1",
+      "v": "[808080ff]衰弱[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_WEAKNESS_RANK_I",
+      "v": "[808080ff]衰弱[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_WEAKNESS_SHORT",
+      "v": "减少目标的攻击力。",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIRAG_WEAKNSS_HUD",
+      "v": "弱点",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIXMA_BUFFGENERATOR_RANK_1",
+      "v": "[ffffffff]增益生成器 1[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIXMA_BUFFGENERATOR_RANK_2",
+      "v": "[73EC59ff]增益生成器 2[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIXMA_BUFFGENERATOR_RANK_3",
+      "v": "[F4AA62ff]增益生成器 3[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIXMA_BUFFGENERATOR_RANK_4",
+      "v": "[88E7F7ff]增益生成器 4[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIXMA_BUFFGENERATOR_RANK_5",
+      "v": "[FFFE87ff]增益生成器 5[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIXMA_BUFFGENERATOR_RANK_6",
+      "v": "[8B41ABff]增益生成器 6[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIXMA_BUFFMIXING_RANK_1",
+      "v": "[ffffffff]增益混合 1[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIXMA_BUFFMIXING_RANK_2",
+      "v": "[73EC59ff]增益混合 2[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIXMA_BUFFMIXING_RANK_3",
+      "v": "[F4AA62ff]增益混合 3[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIXMA_BUFFMIXING_RANK_4",
+      "v": "[88E7F7ff]增益混合 4[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIXMA_BUFFMIXING_RANK_5",
+      "v": "[FFFE87ff]增益混合 5[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIXMA_BUFFMIXING_RANK_6",
+      "v": "[8B41ABff]增益混合 6[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIXMA_BUFFMIXING_SHORT",
+      "v": "逐步交替获得特殊伤害、物理抗性和能力格挡buff增益。",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIXMA_MIXOLOGY_RANK_1",
+      "v": "[ffffffff]搅拌术 1[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIXMA_MIXOLOGY_RANK_2",
+      "v": "[73EC59ff]搅拌术 2[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIXMA_MIXOLOGY_RANK_3",
+      "v": "[F4AA62ff]搅拌术 3[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIXMA_MIXOLOGY_RANK_4",
+      "v": "[88E7F7ff]搅拌术 4[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIXMA_MIXOLOGY_RANK_5",
+      "v": "[FFFE87ff]搅拌术 5[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_MIXMA_MIXOLOGY_RANK_6",
+      "v": "[8B41ABff]搅拌术 6[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_OPTMUSGS_PLUSBLCK",
+      "v": "擎天柱保护队友的决心为每一名队友提供了[A48705FF]+{1}%[-]护甲以抵御近战攻击。",
+      "vn": 1
+    },
+    {
+      "k": "ID_OPTMUSGS_ROLLOUT_ATKUP",
+      "v": "出击将为每位小队成员增加[A48705FF]+{1}%[-]攻击力，持续[A48705FF]{2}[-]秒。",
+      "vn": 1
+    },
+    {
+      "k": "ID_OPTMUSGS_ROLLOUT_ATKUPSP2",
+      "v": "[A48705FF]+{1}%[-]攻击持续[A48705FF]{2}[-]秒，每名倒下的盟友将使擎天柱的攻击力增加[A48705FF]{1}%[-]。",
+      "vn": 1
+    },
+    {
+      "k": "ID_OPTMUSGS_ROLLOUT_POWERGAIN",
+      "v": "每次出击充能将在[A48705FF]{2}[-]秒内生成[A48705FF]{1}%[-]能量。",
+      "vn": 1
+    },
+    {
+      "k": "ID_OPTMUSGS_SIG_LEVEL",
+      "v": "突破口{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_OPTMUSGS_SIG_LONG",
+      "v": "攻击带有破甲的对手时，擎天柱的暴击将施加流血，在[A48705FF]{2}[-]秒内造成[A48705FF]{1}%[-]攻击力的伤害。",
+      "vn": 1
+    },
+    {
+      "k": "ID_OPTMUSGS_SIG_SHORT",
+      "v": "对手护甲瓦解时，擎天柱的暴击命中会导致流血。",
+      "vn": 1
+    },
+    {
+      "k": "ID_OPTMUSGS_SIG_TITLE",
+      "v": "突破口",
+      "vn": 1
+    },
+    {
+      "k": "ID_OPTMUSGS_SP1_ARMBREAK",
+      "v": "[A48705FF]{0}%[-]几率发动破甲，移除敌人护甲并降低[A48705FF]{1}%[-]护甲值，持续[A48705FF]{2}[-]秒。",
+      "vn": 1
+    },
+    {
+      "k": "ID_OPTMUSGS_SP2_ARMBREAK",
+      "v": "能量斧攻击有[A48705FF]{0}%[-] 几率发动破甲，移除敌人护甲并降低[A48705FF]{1}%[-]护甲值，持续[A48705FF]{2}[-]秒。",
+      "vn": 1
+    },
+    {
+      "k": "ID_OPTMUS_ABILITYDESC",
+      "v": "格挡进攻或回避时能使出击获得充能，并迅速施放一次攻击。在重击时最少需要3次充能才能释放一次出击。",
+      "vn": 1
+    },
+    {
+      "k": "ID_OPTMUS_ABILITYDESC_TITLE",
+      "v": "防守反击",
+      "vn": 1
+    },
+    {
+      "k": "ID_OPTMUS_ARMBRKDUR",
+      "v": "连击中的每一次打击都将使破甲效果持续[A48705FF]{1}%[-]。",
+      "vn": 1
+    },
+    {
+      "k": "ID_OPTMUS_ARMBRKVSARMORUP",
+      "v": "[A48705FF]+{1}%[-]机率以一个护甲buff增益造成对手护甲崩坏。",
+      "vn": 1
+    },
+    {
+      "k": "ID_OPTMUS_ARMUP",
+      "v": "当进入格挡姿态时，擎天柱会装备一个护甲增益，降低[A48705FF]{1}%[-]的攻击伤害，持续[A48705FF]{2}[-]秒。",
+      "vn": 1
+    },
+    {
+      "k": "ID_OPTMUS_ATKUP_HUD",
+      "v": "现在结束了！",
+      "vn": 1
+    },
+    {
+      "k": "ID_OPTMUS_ATKUP_SHORT",
+      "v": "临时增加攻击力。每个失去的盟友将额外增加攻击。",
+      "vn": 1
+    },
+    {
+      "k": "ID_OPTMUS_GAINCHARGEBLCK",
+      "v": "格挡连击中的首招或回避将获得[A48705FF]{2}[-]出击充能，并快速发动一次成功的攻击。",
+      "vn": 1
+    },
+    {
+      "k": "ID_OPTMUS_GAINCHARGESIDESTP",
+      "v": "回避时获得[A48705FF]{1}[-]出击充能，并快速发动一次成功的攻击。",
+      "vn": 1
+    },
+    {
+      "k": "ID_OPTMUS_ROLLOUT_HEAVY",
+      "v": "最少消耗[A48705FF]{2}[-]出击充能。",
+      "vn": 1
+    },
+    {
+      "k": "ID_OPTMUS_ROLLOUT_HUD",
+      "v": "出击！",
+      "vn": 1
+    },
+    {
+      "k": "ID_OPTMUS_ROLLOUT_SHORT",
+      "v": "3次充能被激活的情况下会出击重击。提高能量并临时增加攻击。",
+      "vn": 1
+    },
+    {
+      "k": "ID_OPTMUS_ROLLOUT_SP3_ATKUP",
+      "v": "最小消耗[A48705FF]{1}[-]层充能的出击。另外，如果擎天柱没有充能的话将立刻获取[A48705FF]{1}[-]充能。",
+      "vn": 1
+    },
+    {
+      "k": "ID_OPTMUS_ROLLOUT_SP3_POWERUP",
+      "v": "出击的能量增加的效果，在消耗4段充能及以上时提升[16982bff]{0}%[-]，消耗7段充能及以上时提升[16982bff]{1}%[-]。",
+      "vn": 1
+    },
+    {
+      "k": "ID_OPTMUS_SP1",
+      "v": "根据已损失的生命值该攻击最多造成[A48705FF]+{1}%[-]近战伤害。",
+      "vn": 1
+    },
+    {
+      "k": "ID_OPTMUS_SP3_ARMBRK",
+      "v": "施加一个永久的破甲，移除敌人护甲并降低[A48705FF]{1}%[-]护甲值。",
+      "vn": 1
+    },
+    {
+      "k": "ID_PROJUNBL_PAUSE",
+      "v": "该机器人的远程攻击可能将无法阻挡。",
+      "vn": 1
+    },
+    {
+      "k": "ID_PROWL_ATKUP_LONG",
+      "v": "每层近战提升充能将使近战攻击增加[A48705FF]{1}%[-]伤害，持续[A48705FF]{2}[-]秒。",
+      "vn": 1
+    },
+    {
+      "k": "ID_PROWL_ENGH",
+      "v": "[A48705FF]{0}%[-]几率自动躲避来临的攻击，持续[A48705FF]{2}[-]秒。",
+      "vn": 1
+    },
+    {
+      "k": "ID_PROWL_ENGH_HUD",
+      "v": "我受够了！！",
+      "vn": 1
+    },
+    {
+      "k": "ID_PROWL_FREEZE",
+      "v": "第一次施展远程连击时有[A48705FF]{0}%[-]几率眩晕对手[A48705FF]{2}[-]秒。如果警车正在为他的近战增益蓄力，则几率[A48705FF]+{1}%[-]。",
+      "vn": 1
+    },
+    {
+      "k": "ID_PROWL_FREEZE_HUD",
+      "v": "不许动!",
+      "vn": 1
+    },
+    {
+      "k": "ID_PROWL_SIG_LEVEL",
+      "v": "好警察{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_PROWL_SIG_LONG",
+      "v": "近战增益充能完毕后，每层近战增益将使警车获得[A48705FF]{1}%[-]能量。",
+      "vn": 1
+    },
+    {
+      "k": "ID_PROWL_SIG_SHORT",
+      "v": "好警察：在警车完成近战增益充能后，将根据他激活的近战增益的数量来获得一个能量的激增。",
+      "vn": 1
+    },
+    {
+      "k": "ID_PROWL_SIG_TITLE",
+      "v": "好警察",
+      "vn": 1
+    },
+    {
+      "k": "ID_PROWL_SURR",
+      "v": "警车尝试镇压对手。当冲突发生时，警车正为必然的战斗做好准备，每[A48705FF]{1}[-]秒获得一层近战增益充能，最多重叠[A48705FF]{2}[-]层。",
+      "vn": 1
+    },
+    {
+      "k": "ID_PROWL_SURRTRIGGER",
+      "v": "当警车对敌人倾泻攻击时，每层近战增益将增加[A48705FF]+{1}%[-]伤害，持续[A48705FF]{2}[-]秒。",
+      "vn": 1
+    },
+    {
+      "k": "ID_PROWL_SURR_HUD",
+      "v": "立刻投降！",
+      "vn": 1
+    },
+    {
+      "k": "ID_PROWL_SURR_SHORT",
+      "v": "警车正通过叠加近战增益充能为必然的战斗做好准备，最多叠至10层。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SIG_STARS_LEVEL",
+      "v": "破碎的梦{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_SIG_STARS_TITLE",
+      "v": "破碎的梦",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HEROESACTION_CLOSE_RECHARGED",
+      "v": "机器人已恢复",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HEROESACTION_CURRENTLY_USED",
+      "v": "使用中",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HEROESACTION_GOTO_ARENA",
+      "v": "前往竞技场",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HEROESACTION_HELP_REQUESTED",
+      "v": "求助已发送",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HEROESACTION_ON_AVE",
+      "v": "位于同盟任务",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HEROESACTION_ON_AWAY",
+      "v": "正在进行远距任务",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HEROESACTION_ON_BASE",
+      "v": "正在保卫基地",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HEROESACTION_ON_RAID",
+      "v": "正在进行突袭",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HEROESACTION_OUT_OF_STAMINA",
+      "v": "体力不足",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HEROESACTION_PVPHELP",
+      "v": "寻求帮助",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HEROESACTION_PVPHELP_DISABLED",
+      "v": "求助已经发送",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HEROESACTION_RECHARGES_IN",
+      "v": "恢复于：",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HEROESACTION_RECHARGE_CONFIRMATION_BODY",
+      "v": "花费以下资源恢复精力吗？",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HEROESACTION_RECHARGE_CONFIRMATION_TITLE",
+      "v": "恢复",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HEROESACTION_USE_ITEMS",
+      "v": "使用道具",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HEROES_BOTS",
+      "v": "机器人",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HEROES_FEATURED_CTALABEL",
+      "v": "马上取得！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HEROES_GETMORE_CTALABEL",
+      "v": "获得更多",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HEROES_NO_RELICS_INFORMATION",
+      "v": "你没有任何文物！通过不同模式中的杰出表现获取。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HEROES_NO_TOWERS_INFORMATION",
+      "v": "你还没有任何模块！从突袭商店或水晶中获取它们！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HEROES_RELICS",
+      "v": "遗迹",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HEROES_SUBTITLE_HEROES",
+      "v": "点击一个机器人来进行升级、锻造或者获得更多信息",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HEROES_SUBTITLE_NO_RELICS",
+      "v": "当文物被部署在基地中时将产生福利。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HEROES_SUBTITLE_NO_TOWERS",
+      "v": "模块将为基地防御者提供战斗增益。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HEROES_SUBTITLE_RELICS",
+      "v": "点击一个遗迹获得更多信息，或者售卖",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HEROES_SUBTITLE_TOWERS",
+      "v": "点击一个模块来进行升级、锻造或者获得更多信息",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HEROES_TITLE_HEROES",
+      "v": "我的变形金刚",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HEROES_TITLE_RELICS",
+      "v": "我的遗迹",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HEROES_TITLE_TOWERS",
+      "v": "我的模块",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HEROES_TOWERS",
+      "v": "模块",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_ATTACK_MINUS",
+      "v": "{0}[ff0000ff][b] - {1}[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_ATTACK_PLUS",
+      "v": "{0}[00c000ff][b] + {1}[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_BIO",
+      "v": "传记",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_CLASS_ALPHA",
+      "v": "阿尔法",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_CLASS_CHEMICAL",
+      "v": "科学系",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_CLASS_COSMIC",
+      "v": "变异系",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_CLASS_MUTANT",
+      "v": "神秘系",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_CLASS_MYSTIC",
+      "v": "神秘",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_CLASS_NONE",
+      "v": "基础",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_CLASS_TECH",
+      "v": "科技系",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_CLASS_TRAINED",
+      "v": "技巧",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_GENERAL_INFO",
+      "v": "将军",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_INFO_ATTACK",
+      "v": "攻击",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_INFO_ATTRIBUTES",
+      "v": "属性",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_INFO_BUFF_FORMAT",
+      "v": "{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_INFO_FACTION_FORMAT",
+      "v": "{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_INFO_FORGE_LEVEL",
+      "v": "锻造等级",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_INFO_HEALTH",
+      "v": "生命值",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_INFO_HERO_RARITY_FORMAT",
+      "v": "{0}-星",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_INFO_HERO_RARITY_PLURAL_FORMAT",
+      "v": "{0}-星",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_INFO_LEVEL",
+      "v": "等级",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_INFO_QUANTITY_COLORED",
+      "v": "[FFFFFFFF]{0}[FFFFFFB4]/{1}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_INFO_RANK",
+      "v": "级别",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_INFO_RANK_LEVEL",
+      "v": "级别{0}等级{1}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_INFO_TIER",
+      "v": "阶",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_INFO_TIER_FORMAT",
+      "v": "{0}阶",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_ITEM_WARNING_CURRENT_BOOST",
+      "v": "当前加成：{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_ITEM_WARNING_MULTI_DESCRIPTION",
+      "v": "部分选择的机器人已有激活的加成。\n将会被替换为新选择的加成。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_ITEM_WARNING_NEW_BOOST",
+      "v": "新的加成：{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_ITEM_WARNING_SINGLE_DESCRIPTION",
+      "v": "选择的机器人已有激活的加成。将会被新的加成取代。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_LEVEL_ABBREV",
+      "v": "等级{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SPECIAL_ATTACK_RANK_REQUIRED_FORMAT",
+      "v": "排名达到{0}以解锁特殊攻击。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SPECIAL_MOVES",
+      "v": "特殊攻击",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_AVENGERS_I",
+      "v": "复仇者等级1",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_AVENGERS_II",
+      "v": "复仇者等级2",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_AVENGERS_III",
+      "v": "复仇者等级3",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_BONUS",
+      "v": "协同奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_BONUS_CAPS",
+      "v": "协同奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_BUDDY_I",
+      "v": "朋友关系等级1",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_BUDDY_II",
+      "v": "朋友关系等级2",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_BUDDY_III",
+      "v": "朋友关系等级3",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_COSMIC_I",
+      "v": "宇宙君临等级1",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_COSMIC_II",
+      "v": "宇宙君临等级2",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_COSMIC_III",
+      "v": "宇宙君临等级3",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_DESC_ARMOR",
+      "v": "+{0}%护甲值",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_DESC_ATTACK",
+      "v": "+{0}%攻击力",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_DESC_COSMIC",
+      "v": "神秘系机器人狂怒持续时间+{0}%",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_DESC_COSMIC_NEW",
+      "v": "神秘系机器人增益持续时间+{0}%。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_DESC_CRITCHANCE",
+      "v": "+{0}%暴击率",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_DESC_CRITDAMAGE",
+      "v": "+{0}%暴击伤害",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_DESC_HEALTH",
+      "v": "+{0}%生命值",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_DESC_HFH",
+      "v": "+{0}%格挡熟练度和物理抗性",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_DESC_HIVEMIND",
+      "v": "基因记忆触发时间加快{0}秒。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_DESC_MANAGAIN",
+      "v": "+{0}%能量增加",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_DESC_MANAGAIN_NEW",
+      "v": "所有机器人在每次战斗开始时有{0}%能量",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_DESC_MUTANT",
+      "v": "变异系机器人获得特殊攻击伤害+{0}%",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_DESC_MYSTIC",
+      "v": "神秘系机器人获得+{0}%能量抗性",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_DESC_PERFECTBLOCK",
+      "v": "+{0}%完美格挡几率",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_DESC_PROFICIENCY",
+      "v": "+{0}%格挡熟练度",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_DESC_SCIENCE",
+      "v": "科学系机器人获得格挡熟练度+{0}%",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_DESC_SKILL",
+      "v": "技巧系机器人造成+{0}%流血伤害",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_DESC_STUN",
+      "v": "+{0}%眩晕几率",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_DESC_TECH",
+      "v": "科技系机器人护甲值提升持续时间+{0}%",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_DESC_TECH_NEW",
+      "v": "科技系机器人在战斗开始时获得3次护甲值提升充能，每次提升{0}%护甲值。每次机器人受到攻击时充能有可能会衰减。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_DESC_THUND",
+      "v": "承受的特殊伤害减少{0}%",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_EARTH_DEFENDER_I",
+      "v": "宇宙搭档等级1",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_EARTH_DEFENDER_II",
+      "v": "宇宙搭档等级2",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_EARTH_DEFENDER_III",
+      "v": "宇宙搭档等级3",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_ENEMY_I",
+      "v": "敌人关系等级1",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_ENEMY_II",
+      "v": "敌人关系等级2",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_ENEMY_III",
+      "v": "敌人关系等级3",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_FAMILY_I",
+      "v": "家人关系等级1",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_FAMILY_II",
+      "v": "家人关系等级2",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_FAMILY_III",
+      "v": "家人关系等级3",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_HFH",
+      "v": "雇佣英雄等级1",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_HFH_II",
+      "v": "雇佣英雄等级2",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_HFH_III",
+      "v": "雇佣英雄等级3",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_HIVEMIND_I",
+      "v": "集体智能等级1",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_HIVEMIND_II",
+      "v": "集体智能等级2",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_HIVEMIND_III",
+      "v": "集体智能等级3",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_IDOL_DESC",
+      "v": "+{0}%生命值和攻击力",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_IDOL_I",
+      "v": "崇拜对象等级1",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_IDOL_II",
+      "v": "崇拜对象等级2",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_IDOL_III",
+      "v": "崇拜对象等级3",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_ILLUMINATI",
+      "v": "先觉者等级1",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_ILLUMINATI_DESC",
+      "v": "={0}%技能命中率",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_ILLUMINATI_II",
+      "v": "先觉者等级2",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_ILLUMINATI_III",
+      "v": "先觉者等级3",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_INSEPARABLE",
+      "v": "难舍难分等级1",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_INSEPARABLE_DESC",
+      "v": "+{0}%特殊攻击3的伤害",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_INSEPARABLE_II",
+      "v": "难舍难分等级2",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_INSEPARABLE_III",
+      "v": "难舍难分等级3",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_LEADER_I",
+      "v": "领导力等级1",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_LEADER_II",
+      "v": "领导力等级2",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_LEADER_III",
+      "v": "领导力等级3",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_LEGALDEFENSE",
+      "v": "正当防卫等级1",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_LEGALDEFENSE_DESC",
+      "v": "+{0}%眩晕持续时间",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_LEGALDEFENSE_II",
+      "v": "正当防卫等级2",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_LEGALDEFENSE_III",
+      "v": "正当防卫等级3",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_MUTANT_I",
+      "v": "紧急变异等级1",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_MUTANT_II",
+      "v": "紧急变异等级2",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_MUTANT_III",
+      "v": "紧急变异等级3",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_MYSTIC_I",
+      "v": "神秘影响等级1",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_MYSTIC_II",
+      "v": "神秘影响等级2",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_MYSTIC_III",
+      "v": "神秘影响等级3",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_NEMESIS_I",
+      "v": "死敌关系等级1",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_NEMESIS_II",
+      "v": "死敌关系等级2",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_NEMESIS_III",
+      "v": "死敌关系等级3",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_RIVAL_I",
+      "v": "敌手等级1",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_RIVAL_II",
+      "v": "敌手等级2",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_RIVAL_III",
+      "v": "敌手等级3",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_ROMANCE_I",
+      "v": "情侣1",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_ROMANCE_II",
+      "v": "情侣2",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_ROMANCE_III",
+      "v": "情侣3",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_SCIENCE_I",
+      "v": "科学权威等级1",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_SCIENCE_II",
+      "v": "科学权威等级2",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_SCIENCE_III",
+      "v": "科学权威等级3",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_SKILL_I",
+      "v": "技巧控制等级1",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_SKILL_II",
+      "v": "技巧控制等级2",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_SKILL_III",
+      "v": "技巧控制等级3",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_TEAMMATES_I",
+      "v": "队友等级1",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_TEAMMATES_II",
+      "v": "队友等级2",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_TEAMMATES_III",
+      "v": "队友等级3",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_TECH_I",
+      "v": "科技优势等级1",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_TECH_II",
+      "v": "科技优势等级2",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_TECH_III",
+      "v": "科技优势等级3",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_THUND",
+      "v": "雷霆等级1",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_THUND_II",
+      "v": "雷霆等级2",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_SYNERGY_THUND_III",
+      "v": "雷霆等级3",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_TILE_GOLD_GENERATION",
+      "v": "黄金世代{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_TILE_LEVEL_FORMAT",
+      "v": "等级{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HERO_TILE_RANK_UP",
+      "v": "排名提升",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_COMMON_BASIC",
+      "v": "1阶基础系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_COMMON_BASIC_DESC",
+      "v": "该1阶基础系矿-13可用来升级机你的器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_COMMON_CHEMICAL",
+      "v": "1阶科学系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_COMMON_CHEMICAL_DESC",
+      "v": "该1阶科学系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_COMMON_COSMIC",
+      "v": "1阶宇宙系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_COMMON_COSMIC_DESC",
+      "v": "该1阶宇宙系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_COMMON_MUTANT",
+      "v": "1阶变异系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_COMMON_MUTANT_DESC",
+      "v": "该1阶变异系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_COMMON_MYSTIC",
+      "v": "1阶神秘系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_COMMON_MYSTIC_DESC",
+      "v": "该1阶神秘系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_COMMON_TECH",
+      "v": "1阶科技系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_COMMON_TECH_DESC",
+      "v": "该1阶科技系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_COMMON_TRAINED",
+      "v": "1阶技巧系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_COMMON_TRAINED_DESC",
+      "v": "该1阶技巧系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_EPIC_BASIC",
+      "v": "4阶基础系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_EPIC_BASIC_DESC",
+      "v": "该4阶基础系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_EPIC_CHEMICAL",
+      "v": "4阶科学系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_EPIC_CHEMICAL_DESC",
+      "v": "该4阶科学系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_EPIC_COSMIC",
+      "v": "4阶宇宙系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_EPIC_COSMIC_DESC",
+      "v": "该4阶宇宙系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_EPIC_MUTANT",
+      "v": "4阶变异系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_EPIC_MUTANT_DESC",
+      "v": "该4阶变异系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_EPIC_MYSTIC",
+      "v": "4阶神秘系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_EPIC_MYSTIC_DESC",
+      "v": "该4阶神秘系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_EPIC_TECH",
+      "v": "4阶科技系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_EPIC_TECH_DESC",
+      "v": "该4阶科技系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_EPIC_TRAINED",
+      "v": "4阶技巧系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_EPIC_TRAINED_DESC",
+      "v": "该4阶技巧系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_LEGENDARY_BASIC",
+      "v": "5阶基础系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_LEGENDARY_BASIC_DESC",
+      "v": "该5阶基础系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_LEGENDARY_CHEMICAL",
+      "v": "5阶科学系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_LEGENDARY_CHEMICAL_DESC",
+      "v": "该5阶科学系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_LEGENDARY_COSMIC",
+      "v": "5阶宇宙系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_LEGENDARY_COSMIC_DESC",
+      "v": "该5阶宇宙系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_LEGENDARY_MUTANT",
+      "v": "5阶变异系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_LEGENDARY_MUTANT_DESC",
+      "v": "该5阶变异系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_LEGENDARY_MYSTIC",
+      "v": "5阶神秘系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_LEGENDARY_MYSTIC_DESC",
+      "v": "该5阶神秘系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_LEGENDARY_TECH",
+      "v": "5阶科技系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_LEGENDARY_TECH_DESC",
+      "v": "该5阶科技系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_LEGENDARY_TRAINED",
+      "v": "5阶技巧系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_LEGENDARY_TRAINED_DESC",
+      "v": "该5阶技巧系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_RARE_BASIC",
+      "v": "3阶基础系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_RARE_BASIC_DESC",
+      "v": "该3阶基础系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_RARE_CHEMICAL",
+      "v": "3阶科学系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_RARE_CHEMICAL_DESC",
+      "v": "该3阶科学系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_RARE_COSMIC",
+      "v": "3阶宇宙系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_RARE_COSMIC_DESC",
+      "v": "该3阶宇宙系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_RARE_MUTANT",
+      "v": "3阶变异系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_RARE_MUTANT_DESC",
+      "v": "该3阶变异系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_RARE_MYSTIC",
+      "v": "3阶神秘系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_RARE_MYSTIC_DESC",
+      "v": "该3阶神秘系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_RARE_TECH",
+      "v": "3阶科技系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_RARE_TECH_DESC",
+      "v": "该3阶科技系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_RARE_TRAINED",
+      "v": "3阶技巧系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_RARE_TRAINED_DESC",
+      "v": "该3阶技巧系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_SIX_BASIC",
+      "v": "6阶基础系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_SIX_BASIC_DESC",
+      "v": "该6阶基础系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_TYPE_ENHANCE",
+      "v": "矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_TYPE_EVOLVE",
+      "v": "火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_UNCOMMON_BASIC",
+      "v": "2阶基础系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_UNCOMMON_BASIC_DESC",
+      "v": "该2阶基础系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_UNCOMMON_CHEMICAL",
+      "v": "2阶科学系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_UNCOMMON_CHEMICAL_DESC",
+      "v": "该2阶科学系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_UNCOMMON_COSMIC",
+      "v": "2阶宇宙系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_UNCOMMON_COSMIC_DESC",
+      "v": "该2阶宇宙系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_UNCOMMON_MUTANT",
+      "v": "2阶变异系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_UNCOMMON_MUTANT_DESC",
+      "v": "该2阶变异系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_UNCOMMON_MYSTIC",
+      "v": "2阶神秘系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_UNCOMMON_MYSTIC_DESC",
+      "v": "该2阶神秘系矿-13可用来升级机器人。完成任务、参与特殊活动或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_UNCOMMON_TECH",
+      "v": "2阶科技系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_UNCOMMON_TECH_DESC",
+      "v": "该2阶科技系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_UNCOMMON_TRAINED",
+      "v": "2阶技巧系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ISOGRAM_UNCOMMON_TRAINED_DESC",
+      "v": "该2阶技巧系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_BARRI_BACKFIRE",
+      "v": "[A48705FF]{0}%[-]几率施加逆火，持续[A48705FF]{2}[-]秒。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_BARRI_BACKFIREDMG",
+      "v": "带有逆火的对手使用特殊攻击时将受到[A48705FF]{1}%[-]攻击的震击伤害。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_BARRI_BACKFIREDMG_SHORT",
+      "v": "对手处于带有逆火效果时，激活特殊攻击将受到伤害。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_BARRI_BACKFIREDMG_SHORTPAUSE",
+      "v": "特殊攻击逆火，激活时将受到伤害。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_BARRI_BACKFIRE_SP3",
+      "v": "施加[A48705FF]{1}[-]层逆火，每层持续[A48705FF]{2}[-]秒。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_BARRI_MELEECRITDMG",
+      "v": "根据对手储存的能量，最高[A48705FF]+{1}%[-]暴击伤害。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_BARRI_PWSTEAL",
+      "v": "[A48705FF]{0}%[-]几率触发能量窃取，将对手[A48705FF]{1}%[-]的能量据为己用。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_BARRI_PWSTEAL_SHORT",
+      "v": "夺取对手的部分能量据为己用。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_BARRI_SIG_B_LONG",
+      "v": "现在逆火的效果可以叠加，它的持续时间增加了[A48705FF]{1}%[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_BARRI_SIG_B_SHORT",
+      "v": "现在逆火可叠加且持续时间加长。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_BARRI_SIG_LEVEL",
+      "v": "坏警察{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_BARRI_SIG_LONG",
+      "v": "路障的攻击将使对手产生延迟效应。当逆火的持续时间结束时将眩晕对手[A48705FF]{2}[-]秒。坏警察就要有个坏样子。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_BARRI_SIG_SHORT",
+      "v": "路障的攻击将使对手产生延迟效应。当逆火的持续时间结束时将眩晕对手。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_BARRI_SIG_TITLE",
+      "v": "坏警察",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_BLUDGE_ARMRENEW",
+      "v": "雷震变成坦克形态时将刷新护甲增加增益的持续时间。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_BLUDGE_BLADEDMG",
+      "v": "通过全神贯注于基础刀刃攻击，雷震能获得额外的能量。当受到敌方攻击时雷震将失去这些能量。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_BLUDGE_BLDCHANCE",
+      "v": "[A48705FF]+{1}%[-]几率在刀刃攻击暴击时施加流血。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_BLUDGE_CRITDMG",
+      "v": "当雷震的近战攻击落空时，他摧毁对手的渴望变得更强，下一次暴击命中时增加[A48705FF]+{1}%[-]暴击伤害。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_BLUDGE_PROTIP",
+      "v": "雷震能通过刀刃攻击获得额外的能量，但会在失去专注和受到攻击时失去它们。经常使用你的特殊攻击，并利用额外的机会造成特殊攻击流血。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_BLUDGE_SIG_B_LONG_EXTRA",
+      "v": "精通古老塞博坦武术－钢铠法的雷震在使用他的基本剑术进行攻击时，需要在{2}秒内不被击中，力量条才会增加[A48705FF]{1}%[-]。如果力量没有被使用，附加的力量会在雷震被击中时丧失。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_BLUDGE_SIG_B_SHORT_EXTRA",
+      "v": "精通古老塞博坦武术－钢铠法的雷震在使用他的基本剑术进行攻击时，需要高度集中才能获得附加力量。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_BLUDGE_SIG_LEVEL",
+      "v": "钢铠法{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_BLUDGE_SIG_LONG",
+      "v": "雷震精通于古老的赛博坦武术-钢铠法，[A48705FF]{2}[-]秒内未受到攻击，他将获得[A48705FF]+{1}%[-]暴击伤害增益。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_BLUDGE_SIG_LONG_EXTRA",
+      "v": "雷震精通于古老的赛博坦武术-钢铠法，如果在[A48705FF]{2}[-]秒内未受到攻击，他将获得一个[A48705FF]+{1}%[-]暴击伤害增益。雷震也能从基础剑术攻击中获取额外的能量。但当他受到敌方攻击时，雷震将失去未使用的额外能量。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_BLUDGE_SIG_SHORT",
+      "v": "雷震精通于古老的赛博坦武术-钢铠法，他需要全神贯注以便获得暴击伤害增益。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_BLUDGE_SIG_SHORT_EXTRA",
+      "v": "雷震精通于古老的赛博坦武术-钢铠法，他需要全神贯注以便获得暴击伤害和能量值增益。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_BLUDGE_SIG_TITLE",
+      "v": "钢铠法",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_BLUDGE_SIG_TITLE_HUD",
+      "v": "钢铠法",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_BLUDGE_STUNSTEP",
+      "v": "当流血的敌人回避或躲避时将有[A48705FF]{0}%[-]几率被眩晕 [A48705FF]{2}[-]秒。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_IRONH_BURN",
+      "v": "[A48705FF]{0}%[-]几率在[A48705FF]{2}[-]秒内造成[A48705FF]{1}%[-]攻击的热损伤。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_IRONH_BURNCHANCE",
+      "v": "双重导弹攻击有[A48705FF]+{1}%[-]几率引起燃烧伤害。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_IRONH_BURN_HUD",
+      "v": "焚化",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_IRONH_BURN_RANK_1",
+      "v": "[ffffffff]燃烧[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_IRONH_BURN_RANK_I",
+      "v": "[808080ff]引燃[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_IRONH_BURN_SHORT",
+      "v": "持续造成热损伤。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_IRONH_CRITCHANCEUP",
+      "v": "[A48705FF]+{1}%[-]暴击几率。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_IRONH_CRITDMG",
+      "v": "[A48705FF]{0}%[-]几率使暴击伤害增加[A48705FF]{1}%[-]。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_IRONH_CRITDMG_HUD",
+      "v": "暴击伤害增加",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_IRONH_CRITDMG_RANK_1",
+      "v": "[ffffffff]暴击伤害增加[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_IRONH_CRITDMG_RANK_I",
+      "v": "[808080ff]暴击伤害强化[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_IRONH_CRITDMG_SHORT",
+      "v": "增加暴击伤害。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_IRONH_SIG_HUD",
+      "v": "装填核弹中...",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_IRONH_SIG_LEVEL",
+      "v": "抹杀{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_IRONH_SIG_LONG",
+      "v": "铁皮拥有{0}％几率能使用他的特殊攻击造成[A48705FF] + {1}％[-]暴击伤害而抹杀敌人。在一次战斗中只能触发一次。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_IRONH_SIG_NUKED",
+      "v": "我会把你撕碎！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_IRONH_SIG_SHORT",
+      "v": "铁皮的特殊攻击有几率直接抹杀对手。在一次战斗中只能触发一次。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_IRONH_SIG_TITLE",
+      "v": "抹杀",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MEGAT_SIG_HUD",
+      "v": "威震天万岁！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MEGAT_SIG_LEVEL",
+      "v": "威震天万岁！{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MEGAT_SIG_LONG",
+      "v": "威震天总会回来的。当生命值降至{0}%以下时，威震天将在{2}秒内恢复最大生命值的[A48705FF]{1}%[-]。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MEGAT_SIG_SHORT",
+      "v": "威震天总会回来的，在频临死亡时恢复生命值。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MEGAT_SIG_TITLE",
+      "v": "威震天万岁！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_EVADE",
+      "v": "幻影拥有{1}段规避充能，能够消耗一段充能来躲避来犯攻击。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_EVADE_HUD",
+      "v": "规避",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_INVIS",
+      "v": "幻影以能量模式进入战斗，使得当对手激活特殊攻击时，他可获得一个护盾。护盾降低敌人[A48705FF]{0}%[-]的暴击伤害和[A48705FF]{1}%[-]的远程伤害，直到幻影被击倒。重新激活需冷却[A48705FF]{2}[-]秒。\n被敌人攻击击中时，幻影有一定几率重回这个模式。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_INVIS_HUD",
+      "v": "隐形",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_INVIS_RANK_1",
+      "v": "[ffffffff]电力破坏1[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_INVIS_RANK_2",
+      "v": "[ffffffff]电力破坏2[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_INVIS_RANK_3",
+      "v": "[ffffffff]电力破坏3[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_INVIS_RANK_4",
+      "v": "[ffffffff]电力破坏4[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_INVIS_RANK_5",
+      "v": "[ffffffff]电力破坏5[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_INVIS_RANK_6",
+      "v": "[ffffffff]电力破坏6[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_INVIS_SHORT",
+      "v": "降低暴击和远程伤害。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_PIERCE",
+      "v": "[A48705FF]{1}%[-]护甲穿透。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_PIERCE_RANK_1",
+      "v": "[ffffffff]护甲穿透[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_PIERCE_RANK_I",
+      "v": "[808080ff]护甲穿透[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_PIERCE_SHORT",
+      "v": "忽略对手的护甲，造成更多伤害。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_POWER_HUD",
+      "v": "能量过载",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_PWERATE",
+      "v": "每层[7E7E7E]Weakness[-]减益将减少对手[A48705FF]{1}%[-]的能量值。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_PWERATE_NEW",
+      "v": "降低对手[A48705FF]{0}%[-]的力量流。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_PWERATE_NEW2",
+      "v": "校准好电磁干扰，扰乱并降低对手[A48705FF]{0}%[-]的力量流。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_PWERATE_RANK",
+      "v": "[ffffffff]能量减少[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_PWERATE_SHORT",
+      "v": "减少对手获取能量的能力。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_PWUPINVIS",
+      "v": "一旦幻影进入战斗，他的电力破坏者装置就开始校准，使他的能量比率增加[A48705FF]{1}%[-]。敌方释放的特殊攻击将刷新该装置提供的加成效果，直到幻影被击倒。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_PWUPINVISON_PAUSE",
+      "v": "护盾激活。降低对手的暴击和远程伤害直到幻影被击倒。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_PWUPINVISOff_PAUSE",
+      "v": "增加能量比率，护盾重新充能。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_PWUPINVIS_PAUSE",
+      "v": "当对手使用特殊攻击时增加能量值并激活一个护盾。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_PWUPINVIS_PAUSETITLE",
+      "v": "电力破坏者",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_SHRUGOFF",
+      "v": "幻影在F1赛车形态下加速行驶能够摆脱远程攻击和燃烧减益。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_SIG_LEVEL",
+      "v": "K.E.R.S.{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_SIG_LONG",
+      "v": "当正在激活特殊攻击时，动能回收装置将会产生以下增益：\n特殊1-投射速度提升[A48705FF]{2}[-]秒。\n特殊2-基础近战攻击变得无法格挡，持续[A48705FF]{2}[-]秒。\n特殊3-[A48705FF]+{1}%[-]攻击力，持续[A48705FF]{2}[-]秒。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_SIG_SHORT",
+      "v": "可以从对手的特殊攻击中吸收能量的动能回收装置，当切换模式时将使用电动发电机组生成强大的增益。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_SIG_TITLE",
+      "v": "K.E.R.S.",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_SP1PWBURN",
+      "v": "幻影进入破坏模式时，可使远程攻击有[A48705FF]{0}%[-]几率汲取[A48705FF]{1}%[-]能量。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_SP1PWBURNSIG_PAUSE",
+      "v": "临时提高远程攻击的伤害和速度。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_SP1PWBURNSIG_PAUSETITLE",
+      "v": "KERS -破坏",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_SP1PWBURN_PAUSE",
+      "v": "远程攻击将同时汲取对手的能量。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_SP1PWBURN_PAUSETITLE",
+      "v": "破坏",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_SP3FRYUP",
+      "v": "幻影进入敏捷模式，当躲避或回避对手的攻击时获得[A48705FF]+{1}%[-]攻击，持续至战斗结束。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_SP3FRYUPSIG_PAUSE",
+      "v": "临时增加攻击力。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_SP3FRYUPSIG_PAUSETITLE",
+      "v": "KERS-敏捷",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_SP3FRYUP_HUD",
+      "v": "你能跟上吗？",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_SP3FRYUP_PAUSE",
+      "v": "当躲避或回避对手的攻击时获得一个永久的攻击增益。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_SP3FRYUP_PAUSETITLE",
+      "v": "敏捷",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_WEAKNESSSIG_PAUSE",
+      "v": "近战攻击暂时无法被格挡。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_WEAKNESSSIG_PAUSETITLE",
+      "v": "能量回收系统-丧失能力",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_WEAKNESS_LONG",
+      "v": "幻影进入失能模式时，他的近战攻击有[A48705FF]{0}%[-]几率施加一个[A48705FF]-{1}%[-]的攻击减益，持续[A48705FF]{2}[-]秒。（最多叠加15层）",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_WEAKNESS_PAUSE",
+      "v": "近战攻击将施加攻击性减益并眩晕对手。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_WEAKNESS_PAUSETITLE",
+      "v": "丧失能力",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_WEAKNESS_RANK_1",
+      "v": "[808080ff]衰弱[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_WEAKNESS_RANK_I",
+      "v": "[808080ff]衰弱[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_WEAKNESS_SHORT",
+      "v": "减少目标的攻击力。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIRAG_WEAKNSS_HUD",
+      "v": "弱点",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIXMA_BUFFGENERATOR_RANK_1",
+      "v": "[ffffffff]增益生成器 1[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIXMA_BUFFGENERATOR_RANK_2",
+      "v": "[73EC59ff]增益生成器 2[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIXMA_BUFFGENERATOR_RANK_3",
+      "v": "[F4AA62ff]增益生成器 3[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIXMA_BUFFGENERATOR_RANK_4",
+      "v": "[88E7F7ff]增益生成器 4[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIXMA_BUFFGENERATOR_RANK_5",
+      "v": "[FFFE87ff]增益生成器 5[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIXMA_BUFFGENERATOR_RANK_6",
+      "v": "[8B41ABff]增益生成器 6[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIXMA_BUFFMIXING_RANK_1",
+      "v": "[ffffffff]增益混合 1[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIXMA_BUFFMIXING_RANK_2",
+      "v": "[73EC59ff]增益混合 2[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIXMA_BUFFMIXING_RANK_3",
+      "v": "[F4AA62ff]增益混合 3[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIXMA_BUFFMIXING_RANK_4",
+      "v": "[88E7F7ff]增益混合 4[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIXMA_BUFFMIXING_RANK_5",
+      "v": "[FFFE87ff]增益混合 5[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIXMA_BUFFMIXING_RANK_6",
+      "v": "[8B41ABff]增益混合 6[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIXMA_BUFFMIXING_SHORT",
+      "v": "逐步交替获得特殊伤害、物理抗性和能力格挡buff增益。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIXMA_MIXOLOGY_RANK_1",
+      "v": "[ffffffff]搅拌术 1[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIXMA_MIXOLOGY_RANK_2",
+      "v": "[73EC59ff]搅拌术 2[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIXMA_MIXOLOGY_RANK_3",
+      "v": "[F4AA62ff]搅拌术 3[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIXMA_MIXOLOGY_RANK_4",
+      "v": "[88E7F7ff]搅拌术 4[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIXMA_MIXOLOGY_RANK_5",
+      "v": "[FFFE87ff]搅拌术 5[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_MIXMA_MIXOLOGY_RANK_6",
+      "v": "[8B41ABff]搅拌术 6[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_OPTMUSGS_PLUSBLCK",
+      "v": "擎天柱保护队友的决心为每一名队友提供了[A48705FF]+{1}%[-]护甲以抵御近战攻击。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_OPTMUSGS_ROLLOUT_ATKUP",
+      "v": "出击将为每位小队成员增加[A48705FF]+{1}%[-]攻击力，持续[A48705FF]{2}[-]秒。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_OPTMUSGS_ROLLOUT_ATKUPSP2",
+      "v": "[A48705FF]+{1}%[-]攻击持续[A48705FF]{2}[-]秒，每名倒下的盟友将使擎天柱的攻击力增加[A48705FF]{1}%[-]。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_OPTMUSGS_ROLLOUT_POWERGAIN",
+      "v": "每次出击充能将在[A48705FF]{2}[-]秒内生成[A48705FF]{1}%[-]能量。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_OPTMUSGS_SIG_LEVEL",
+      "v": "突破口{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_OPTMUSGS_SIG_LONG",
+      "v": "攻击带有破甲的对手时，擎天柱的暴击将施加流血，在[A48705FF]{2}[-]秒内造成[A48705FF]{1}%[-]攻击力的伤害。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_OPTMUSGS_SIG_SHORT",
+      "v": "对手护甲瓦解时，擎天柱的暴击命中会导致流血。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_OPTMUSGS_SIG_TITLE",
+      "v": "突破口",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_OPTMUSGS_SP1_ARMBREAK",
+      "v": "[A48705FF]{0}%[-]几率发动破甲，移除敌人护甲并降低[A48705FF]{1}%[-]护甲值，持续[A48705FF]{2}[-]秒。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_OPTMUSGS_SP2_ARMBREAK",
+      "v": "能量斧攻击有[A48705FF]{0}%[-] 几率发动破甲，移除敌人护甲并降低[A48705FF]{1}%[-]护甲值，持续[A48705FF]{2}[-]秒。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_OPTMUS_ABILITYDESC",
+      "v": "格挡进攻或回避时能使出击获得充能，并迅速施放一次攻击。在重击时最少需要3次充能才能释放一次出击。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_OPTMUS_ABILITYDESC_TITLE",
+      "v": "防守反击",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_OPTMUS_ARMBRKDUR",
+      "v": "连击中的每一次打击都将使破甲效果持续[A48705FF]{1}%[-]。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_OPTMUS_ARMBRKVSARMORUP",
+      "v": "[A48705FF]+{1}%[-]机率以一个护甲buff增益造成对手护甲崩坏。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_OPTMUS_ARMUP",
+      "v": "当进入格挡姿态时，擎天柱会装备一个护甲增益，降低[A48705FF]{1}%[-]的攻击伤害，持续[A48705FF]{2}[-]秒。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_OPTMUS_ATKUP_HUD",
+      "v": "现在结束了！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_OPTMUS_ATKUP_SHORT",
+      "v": "临时增加攻击力。每个失去的盟友将额外增加攻击。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_OPTMUS_GAINCHARGEBLCK",
+      "v": "格挡连击中的首招或回避将获得[A48705FF]{2}[-]出击充能，并快速发动一次成功的攻击。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_OPTMUS_GAINCHARGESIDESTP",
+      "v": "回避时获得[A48705FF]{1}[-]出击充能，并快速发动一次成功的攻击。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_OPTMUS_ROLLOUT_HEAVY",
+      "v": "最少消耗[A48705FF]{2}[-]出击充能。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_OPTMUS_ROLLOUT_HUD",
+      "v": "出击！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_OPTMUS_ROLLOUT_SHORT",
+      "v": "3次充能被激活的情况下会出击重击。提高能量并临时增加攻击。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_OPTMUS_ROLLOUT_SP3_ATKUP",
+      "v": "最小消耗[A48705FF]{1}[-]层充能的出击。另外，如果擎天柱没有充能的话将立刻获取[A48705FF]{1}[-]充能。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_OPTMUS_ROLLOUT_SP3_POWERUP",
+      "v": "出击的能量增加的效果，在消耗4段充能及以上时提升[16982bff]{0}%[-]，消耗7段充能及以上时提升[16982bff]{1}%[-]。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_OPTMUS_SP1",
+      "v": "根据已损失的生命值该攻击最多造成[A48705FF]+{1}%[-]近战伤害。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_OPTMUS_SP3_ARMBRK",
+      "v": "施加一个永久的破甲，移除敌人护甲并降低[A48705FF]{1}%[-]护甲值。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_PROJUNBL_PAUSE",
+      "v": "该机器人的远程攻击可能将无法阻挡。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_PROWL_ATKUP_LONG",
+      "v": "每层近战提升充能将使近战攻击增加[A48705FF]{1}%[-]伤害，持续[A48705FF]{2}[-]秒。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_PROWL_ENGH",
+      "v": "[A48705FF]{0}%[-]几率自动躲避来临的攻击，持续[A48705FF]{2}[-]秒。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_PROWL_ENGH_HUD",
+      "v": "我受够了！！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_PROWL_FREEZE",
+      "v": "第一次施展远程连击时有[A48705FF]{0}%[-]几率眩晕对手[A48705FF]{2}[-]秒。如果警车正在为他的近战增益蓄力，则几率[A48705FF]+{1}%[-]。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_PROWL_FREEZE_HUD",
+      "v": "不许动!",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_PROWL_SIG_LEVEL",
+      "v": "好警察{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_PROWL_SIG_LONG",
+      "v": "近战增益充能完毕后，每层近战增益将使警车获得[A48705FF]{1}%[-]能量。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_PROWL_SIG_SHORT",
+      "v": "好警察：在警车完成近战增益充能后，将根据他激活的近战增益的数量来获得一个能量的激增。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_PROWL_SIG_TITLE",
+      "v": "好警察",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_PROWL_SURR",
+      "v": "警车尝试镇压对手。当冲突发生时，警车正为必然的战斗做好准备，每[A48705FF]{1}[-]秒获得一层近战增益充能，最多重叠[A48705FF]{2}[-]层。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_PROWL_SURRTRIGGER",
+      "v": "当警车对敌人倾泻攻击时，每层近战增益将增加[A48705FF]+{1}%[-]伤害，持续[A48705FF]{2}[-]秒。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_PROWL_SURR_HUD",
+      "v": "立刻投降！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_PROWL_SURR_SHORT",
+      "v": "警车正通过叠加近战增益充能为必然的战斗做好准备，最多叠至10层。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SIG_STARS_LEVEL",
+      "v": "破碎的梦{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SIG_STARS_TITLE",
+      "v": "破碎的梦",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HEROESACTION_CLOSE_RECHARGED",
+      "v": "机器人已恢复",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HEROESACTION_CURRENTLY_USED",
+      "v": "使用中",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HEROESACTION_GOTO_ARENA",
+      "v": "前往竞技场",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HEROESACTION_HELP_REQUESTED",
+      "v": "求助已发送",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HEROESACTION_ON_AVE",
+      "v": "位于同盟任务",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HEROESACTION_ON_AWAY",
+      "v": "正在进行远距任务",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HEROESACTION_ON_BASE",
+      "v": "正在保卫基地",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HEROESACTION_ON_RAID",
+      "v": "正在进行突袭",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HEROESACTION_OUT_OF_STAMINA",
+      "v": "体力不足",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HEROESACTION_PVPHELP",
+      "v": "寻求帮助",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HEROESACTION_PVPHELP_DISABLED",
+      "v": "求助已经发送",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HEROESACTION_RECHARGES_IN",
+      "v": "恢复于：",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HEROESACTION_RECHARGE_CONFIRMATION_BODY",
+      "v": "花费以下资源恢复精力吗？",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HEROESACTION_RECHARGE_CONFIRMATION_TITLE",
+      "v": "恢复",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HEROESACTION_USE_ITEMS",
+      "v": "使用道具",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HEROES_BOTS",
+      "v": "机器人",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HEROES_FEATURED_CTALABEL",
+      "v": "马上取得！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HEROES_GETMORE_CTALABEL",
+      "v": "获得更多",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HEROES_NO_RELICS_INFORMATION",
+      "v": "你没有任何文物！通过不同模式中的杰出表现获取。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HEROES_NO_TOWERS_INFORMATION",
+      "v": "你还没有任何模块！从突袭商店或水晶中获取它们！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HEROES_RELICS",
+      "v": "遗迹",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HEROES_SUBTITLE_HEROES",
+      "v": "点击一个机器人来进行升级、锻造或者获得更多信息",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HEROES_SUBTITLE_NO_RELICS",
+      "v": "当文物被部署在基地中时将产生福利。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HEROES_SUBTITLE_NO_TOWERS",
+      "v": "模块将为基地防御者提供战斗增益。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HEROES_SUBTITLE_RELICS",
+      "v": "点击一个遗迹获得更多信息，或者售卖",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HEROES_SUBTITLE_TOWERS",
+      "v": "点击一个模块来进行升级、锻造或者获得更多信息",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HEROES_TITLE_HEROES",
+      "v": "我的变形金刚",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HEROES_TITLE_RELICS",
+      "v": "我的遗迹",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HEROES_TITLE_TOWERS",
+      "v": "我的模块",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HEROES_TOWERS",
+      "v": "模块",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_ATTACK_MINUS",
+      "v": "{0}[ff0000ff][b] - {1}[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_ATTACK_PLUS",
+      "v": "{0}[00c000ff][b] + {1}[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_BIO",
+      "v": "传记",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_CLASS_ALPHA",
+      "v": "阿尔法",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_CLASS_CHEMICAL",
+      "v": "科学系",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_CLASS_COSMIC",
+      "v": "变异系",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_CLASS_MUTANT",
+      "v": "神秘系",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_CLASS_MYSTIC",
+      "v": "神秘",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_CLASS_NONE",
+      "v": "基础",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_CLASS_TECH",
+      "v": "科技系",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_CLASS_TRAINED",
+      "v": "技巧",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_GENERAL_INFO",
+      "v": "将军",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_INFO_ATTACK",
+      "v": "攻击",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_INFO_ATTRIBUTES",
+      "v": "属性",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_INFO_BUFF_FORMAT",
+      "v": "{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_INFO_FACTION_FORMAT",
+      "v": "{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_INFO_FORGE_LEVEL",
+      "v": "锻造等级",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_INFO_HEALTH",
+      "v": "生命值",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_INFO_HERO_RARITY_FORMAT",
+      "v": "{0}-星",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_INFO_HERO_RARITY_PLURAL_FORMAT",
+      "v": "{0}-星",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_INFO_LEVEL",
+      "v": "等级",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_INFO_QUANTITY_COLORED",
+      "v": "[FFFFFFFF]{0}[FFFFFFB4]/{1}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_INFO_RANK",
+      "v": "级别",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_INFO_RANK_LEVEL",
+      "v": "级别{0}等级{1}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_INFO_TIER",
+      "v": "阶",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_INFO_TIER_FORMAT",
+      "v": "{0}阶",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_ITEM_WARNING_CURRENT_BOOST",
+      "v": "当前加成：{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_ITEM_WARNING_MULTI_DESCRIPTION",
+      "v": "部分选择的机器人已有激活的加成。\n将会被替换为新选择的加成。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_ITEM_WARNING_NEW_BOOST",
+      "v": "新的加成：{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_ITEM_WARNING_SINGLE_DESCRIPTION",
+      "v": "选择的机器人已有激活的加成。将会被新的加成取代。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_LEVEL_ABBREV",
+      "v": "等级{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SPECIAL_ATTACK_RANK_REQUIRED_FORMAT",
+      "v": "排名达到{0}以解锁特殊攻击。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SPECIAL_MOVES",
+      "v": "特殊攻击",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_AVENGERS_I",
+      "v": "复仇者等级1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_AVENGERS_II",
+      "v": "复仇者等级2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_AVENGERS_III",
+      "v": "复仇者等级3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_BONUS",
+      "v": "协同奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_BONUS_CAPS",
+      "v": "协同奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_BUDDY_I",
+      "v": "朋友关系等级1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_BUDDY_II",
+      "v": "朋友关系等级2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_BUDDY_III",
+      "v": "朋友关系等级3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_COSMIC_I",
+      "v": "宇宙君临等级1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_COSMIC_II",
+      "v": "宇宙君临等级2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_COSMIC_III",
+      "v": "宇宙君临等级3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_DESC_ARMOR",
+      "v": "+{0}%护甲值",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_DESC_ATTACK",
+      "v": "+{0}%攻击力",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_DESC_COSMIC",
+      "v": "神秘系机器人狂怒持续时间+{0}%",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_DESC_COSMIC_NEW",
+      "v": "神秘系机器人增益持续时间+{0}%。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_DESC_CRITCHANCE",
+      "v": "+{0}%暴击率",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_DESC_CRITDAMAGE",
+      "v": "+{0}%暴击伤害",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_DESC_HEALTH",
+      "v": "+{0}%生命值",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_DESC_HFH",
+      "v": "+{0}%格挡熟练度和物理抗性",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_DESC_HIVEMIND",
+      "v": "基因记忆触发时间加快{0}秒。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_DESC_MANAGAIN",
+      "v": "+{0}%能量增加",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_DESC_MANAGAIN_NEW",
+      "v": "所有机器人在每次战斗开始时有{0}%能量",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_DESC_MUTANT",
+      "v": "变异系机器人获得特殊攻击伤害+{0}%",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_DESC_MYSTIC",
+      "v": "神秘系机器人获得+{0}%能量抗性",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_DESC_PERFECTBLOCK",
+      "v": "+{0}%完美格挡几率",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_DESC_PROFICIENCY",
+      "v": "+{0}%格挡熟练度",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_DESC_SCIENCE",
+      "v": "科学系机器人获得格挡熟练度+{0}%",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_DESC_SKILL",
+      "v": "技巧系机器人造成+{0}%流血伤害",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_DESC_STUN",
+      "v": "+{0}%眩晕几率",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_DESC_TECH",
+      "v": "科技系机器人护甲值提升持续时间+{0}%",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_DESC_TECH_NEW",
+      "v": "科技系机器人在战斗开始时获得3次护甲值提升充能，每次提升{0}%护甲值。每次机器人受到攻击时充能有可能会衰减。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_DESC_THUND",
+      "v": "承受的特殊伤害减少{0}%",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_EARTH_DEFENDER_I",
+      "v": "宇宙搭档等级1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_EARTH_DEFENDER_II",
+      "v": "宇宙搭档等级2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_EARTH_DEFENDER_III",
+      "v": "宇宙搭档等级3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_ENEMY_I",
+      "v": "敌人关系等级1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_ENEMY_II",
+      "v": "敌人关系等级2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_ENEMY_III",
+      "v": "敌人关系等级3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_FAMILY_I",
+      "v": "家人关系等级1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_FAMILY_II",
+      "v": "家人关系等级2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_FAMILY_III",
+      "v": "家人关系等级3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_HFH",
+      "v": "雇佣英雄等级1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_HFH_II",
+      "v": "雇佣英雄等级2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_HFH_III",
+      "v": "雇佣英雄等级3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_HIVEMIND_I",
+      "v": "集体智能等级1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_HIVEMIND_II",
+      "v": "集体智能等级2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_HIVEMIND_III",
+      "v": "集体智能等级3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_IDOL_DESC",
+      "v": "+{0}%生命值和攻击力",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_IDOL_I",
+      "v": "崇拜对象等级1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_IDOL_II",
+      "v": "崇拜对象等级2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_IDOL_III",
+      "v": "崇拜对象等级3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_ILLUMINATI",
+      "v": "先觉者等级1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_ILLUMINATI_DESC",
+      "v": "={0}%技能命中率",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_ILLUMINATI_II",
+      "v": "先觉者等级2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_ILLUMINATI_III",
+      "v": "先觉者等级3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_INSEPARABLE",
+      "v": "难舍难分等级1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_INSEPARABLE_DESC",
+      "v": "+{0}%特殊攻击3的伤害",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_INSEPARABLE_II",
+      "v": "难舍难分等级2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_INSEPARABLE_III",
+      "v": "难舍难分等级3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_LEADER_I",
+      "v": "领导力等级1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_LEADER_II",
+      "v": "领导力等级2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_LEADER_III",
+      "v": "领导力等级3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_LEGALDEFENSE",
+      "v": "正当防卫等级1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_LEGALDEFENSE_DESC",
+      "v": "+{0}%眩晕持续时间",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_LEGALDEFENSE_II",
+      "v": "正当防卫等级2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_LEGALDEFENSE_III",
+      "v": "正当防卫等级3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_MUTANT_I",
+      "v": "紧急变异等级1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_MUTANT_II",
+      "v": "紧急变异等级2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_MUTANT_III",
+      "v": "紧急变异等级3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_MYSTIC_I",
+      "v": "神秘影响等级1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_MYSTIC_II",
+      "v": "神秘影响等级2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_MYSTIC_III",
+      "v": "神秘影响等级3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_NEMESIS_I",
+      "v": "死敌关系等级1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_NEMESIS_II",
+      "v": "死敌关系等级2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_NEMESIS_III",
+      "v": "死敌关系等级3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_RIVAL_I",
+      "v": "敌手等级1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_RIVAL_II",
+      "v": "敌手等级2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_RIVAL_III",
+      "v": "敌手等级3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_ROMANCE_I",
+      "v": "情侣1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_ROMANCE_II",
+      "v": "情侣2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_ROMANCE_III",
+      "v": "情侣3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_SCIENCE_I",
+      "v": "科学权威等级1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_SCIENCE_II",
+      "v": "科学权威等级2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_SCIENCE_III",
+      "v": "科学权威等级3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_SKILL_I",
+      "v": "技巧控制等级1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_SKILL_II",
+      "v": "技巧控制等级2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_SKILL_III",
+      "v": "技巧控制等级3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_TEAMMATES_I",
+      "v": "队友等级1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_TEAMMATES_II",
+      "v": "队友等级2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_TEAMMATES_III",
+      "v": "队友等级3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_TECH_I",
+      "v": "科技优势等级1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_TECH_II",
+      "v": "科技优势等级2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_TECH_III",
+      "v": "科技优势等级3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_THUND",
+      "v": "雷霆等级1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_THUND_II",
+      "v": "雷霆等级2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_SYNERGY_THUND_III",
+      "v": "雷霆等级3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_TILE_GOLD_GENERATION",
+      "v": "黄金世代{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_TILE_LEVEL_FORMAT",
+      "v": "等级{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HERO_TILE_RANK_UP",
+      "v": "排名提升",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_COMMON_BASIC",
+      "v": "1阶基础系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_COMMON_BASIC_DESC",
+      "v": "该1阶基础系矿-13可用来升级机你的器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_COMMON_CHEMICAL",
+      "v": "1阶科学系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_COMMON_CHEMICAL_DESC",
+      "v": "该1阶科学系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_COMMON_COSMIC",
+      "v": "1阶宇宙系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_COMMON_COSMIC_DESC",
+      "v": "该1阶宇宙系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_COMMON_MUTANT",
+      "v": "1阶变异系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_COMMON_MUTANT_DESC",
+      "v": "该1阶变异系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_COMMON_MYSTIC",
+      "v": "1阶神秘系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_COMMON_MYSTIC_DESC",
+      "v": "该1阶神秘系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_COMMON_TECH",
+      "v": "1阶科技系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_COMMON_TECH_DESC",
+      "v": "该1阶科技系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_COMMON_TRAINED",
+      "v": "1阶技巧系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_COMMON_TRAINED_DESC",
+      "v": "该1阶技巧系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_EPIC_BASIC",
+      "v": "4阶基础系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_EPIC_BASIC_DESC",
+      "v": "该4阶基础系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_EPIC_CHEMICAL",
+      "v": "4阶科学系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_EPIC_CHEMICAL_DESC",
+      "v": "该4阶科学系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_EPIC_COSMIC",
+      "v": "4阶宇宙系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_EPIC_COSMIC_DESC",
+      "v": "该4阶宇宙系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_EPIC_MUTANT",
+      "v": "4阶变异系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_EPIC_MUTANT_DESC",
+      "v": "该4阶变异系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_EPIC_MYSTIC",
+      "v": "4阶神秘系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_EPIC_MYSTIC_DESC",
+      "v": "该4阶神秘系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_EPIC_TECH",
+      "v": "4阶科技系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_EPIC_TECH_DESC",
+      "v": "该4阶科技系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_EPIC_TRAINED",
+      "v": "4阶技巧系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_EPIC_TRAINED_DESC",
+      "v": "该4阶技巧系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_LEGENDARY_BASIC",
+      "v": "5阶基础系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_LEGENDARY_BASIC_DESC",
+      "v": "该5阶基础系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_LEGENDARY_CHEMICAL",
+      "v": "5阶科学系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_LEGENDARY_CHEMICAL_DESC",
+      "v": "该5阶科学系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_LEGENDARY_COSMIC",
+      "v": "5阶宇宙系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_LEGENDARY_COSMIC_DESC",
+      "v": "该5阶宇宙系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_LEGENDARY_MUTANT",
+      "v": "5阶变异系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_LEGENDARY_MUTANT_DESC",
+      "v": "该5阶变异系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_LEGENDARY_MYSTIC",
+      "v": "5阶神秘系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_LEGENDARY_MYSTIC_DESC",
+      "v": "该5阶神秘系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_LEGENDARY_TECH",
+      "v": "5阶科技系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_LEGENDARY_TECH_DESC",
+      "v": "该5阶科技系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_LEGENDARY_TRAINED",
+      "v": "5阶技巧系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_LEGENDARY_TRAINED_DESC",
+      "v": "该5阶技巧系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_RARE_BASIC",
+      "v": "3阶基础系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_RARE_BASIC_DESC",
+      "v": "该3阶基础系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_RARE_CHEMICAL",
+      "v": "3阶科学系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_RARE_CHEMICAL_DESC",
+      "v": "该3阶科学系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_RARE_COSMIC",
+      "v": "3阶宇宙系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_RARE_COSMIC_DESC",
+      "v": "该3阶宇宙系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_RARE_MUTANT",
+      "v": "3阶变异系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_RARE_MUTANT_DESC",
+      "v": "该3阶变异系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_RARE_MYSTIC",
+      "v": "3阶神秘系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_RARE_MYSTIC_DESC",
+      "v": "该3阶神秘系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_RARE_TECH",
+      "v": "3阶科技系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_RARE_TECH_DESC",
+      "v": "该3阶科技系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_RARE_TRAINED",
+      "v": "3阶技巧系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_RARE_TRAINED_DESC",
+      "v": "该3阶技巧系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_SIX_BASIC",
+      "v": "6阶基础系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_SIX_BASIC_DESC",
+      "v": "该6阶基础系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_TYPE_ENHANCE",
+      "v": "矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_TYPE_EVOLVE",
+      "v": "火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_UNCOMMON_BASIC",
+      "v": "2阶基础系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_UNCOMMON_BASIC_DESC",
+      "v": "该2阶基础系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_UNCOMMON_CHEMICAL",
+      "v": "2阶科学系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_UNCOMMON_CHEMICAL_DESC",
+      "v": "该2阶科学系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_UNCOMMON_COSMIC",
+      "v": "2阶宇宙系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_UNCOMMON_COSMIC_DESC",
+      "v": "该2阶宇宙系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_UNCOMMON_MUTANT",
+      "v": "2阶变异系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_UNCOMMON_MUTANT_DESC",
+      "v": "该2阶变异系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_UNCOMMON_MYSTIC",
+      "v": "2阶神秘系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_UNCOMMON_MYSTIC_DESC",
+      "v": "该2阶神秘系矿-13可用来升级机器人。完成任务、参与特殊活动或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_UNCOMMON_TECH",
+      "v": "2阶科技系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_UNCOMMON_TECH_DESC",
+      "v": "该2阶科技系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_UNCOMMON_TRAINED",
+      "v": "2阶技巧系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ISOGRAM_UNCOMMON_TRAINED_DESC",
+      "v": "该2阶技巧系矿-13可用来升级你的机器人。可从任务、参与特殊事件或是打开水晶即可获得更多！",
+      "vn": 1
+    }
+  ]
+}

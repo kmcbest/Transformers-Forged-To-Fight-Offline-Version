@@ -1,0 +1,4215 @@
+{
+  "meta": {
+    "format": "sparx",
+    "language": "zh-CN",
+    "tagged": [
+      "alliances",
+      "client"
+    ],
+    "hash": "80594cd911a74600da2a6b4a0efc279c670f45d3",
+    "ts": 1524701737,
+    "string_count": 420
+  },
+  "strings": [
+    {
+      "k": "ID_AVE_ERROR_INSTANCE_FULL",
+      "v": "无法加入，因为此战斗小组已满员。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TEST",
+      "v": "",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_ALLIANCES_NAME",
+      "v": "名称",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_ALLIANCE_CREATED_POP_UP_TITLE",
+      "v": "同盟已建立！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_ALLIANCE_CREATE_CONFIRMATION_BODY",
+      "v": "你确定要创建[2F85B6FF]{0}[-] {1}？",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_ALLIANCE_CREATE_CONFIRMATION_TITLE",
+      "v": "建立同盟",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_ALLIANCE_LEAVE_CONFIRMATION_REWARDS",
+      "v": "确定要退出同盟？你将不会收到任何来自当前进行中事件的奖励！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_ALLIANCE_TYPE",
+      "v": "同盟类型",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_ALREADY_IN_ALLIANCE",
+      "v": "已加入同盟",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_ALREADY_IN_ALLIANCE_BODY",
+      "v": "此玩家已经加入其他同盟，他必须离开原先同盟才可接受请求！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_ALREADY_IN_ALLIANCE_JOIN_WARNING",
+      "v": "你已经加入过一个同盟了。加入该同盟你将自动退出当前同盟。\n\n确定你要加入[3F8BD6FF][{0}][-] {1}?",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_ALREADY_IN_ALLIANCE_REQUEST_WARNING",
+      "v": "你已经加入过一个同盟了。如果你的新申请被批准，你将自动退出当前同盟。\n\n确定你要加入[3F8BD6FF][{0}][-] {1}?",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_AVA_CANNOT_START_ENTITLEMENT_MESSAGE",
+      "v": "你至少需要达到等级{0}才可加入同盟战争。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_AVA_NOT_ENOUGH_MEMBERS_MESSAGE",
+      "v": "你至少需要{0}名成员才可加入{1}战斗小组。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_AVA_NOT_ENOUGH_MEMBERS_MESSAGE_SINGULAR",
+      "v": "你至少需要{0}名成员才可加入{1}战斗小组。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_AVE_CANNOT_START_COST_CHANGE",
+      "v": "你的同盟威望评分已变化，开始该任务的花费也已改变。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_AVE_CANNOT_START_ENTITLEMENT_MESSAGE",
+      "v": "你需要达到{0}级才能加入同盟任务。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_AVE_CANNOT_START_MESSAGE",
+      "v": "需要联盟领袖先开启事件。向同盟金库捐款以便你的领袖能够开启这个任务。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_AVE_CANNOT_START_NSF",
+      "v": "向同盟金库捐赠遗失的资源！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_AVE_FEATURE_DISABLED",
+      "v": "同盟任务即将到来！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_AVE_LEFT_MESSAGE",
+      "v": "你已经不在一个同盟。你将会被传回基地。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_AVE_LEFT_TITLE",
+      "v": "没有同盟",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_AVE_LOCK_WARNING",
+      "v": "任务开启后，同盟新成员将无法加入。\n\n你确定要开启吗？",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_AVE_ONLY_LEADERS_SELECT_QUEST_TOOLTIP",
+      "v": "只有领导人才能选择任务。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_AVE_START_CONFIRMATION",
+      "v": "你将使用同盟金库的资源。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_BLANK_ALLIANCE_NAME",
+      "v": "同盟名称未设置。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_BLANK_DESCRIPTION",
+      "v": "同盟描述未设置。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_BLANK_TAG",
+      "v": "同盟标签未设置。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_BUTTON_CREATE",
+      "v": "创建",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_BUTTON_CREATE_ALLIANCE",
+      "v": "创建同盟",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_BUTTON_EDIT",
+      "v": "编辑",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_BUTTON_HELP_ALL",
+      "v": "帮助所有",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_BUTTON_JOIN_ALLIANCE",
+      "v": "加入",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_BUTTON_LEAVE",
+      "v": "离开",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_BUTTON_LEAVE_ALLIANCE",
+      "v": "离开同盟",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_BUTTON_REQUEST_ALLIANCE",
+      "v": "请求",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_BUTTON_SAVE",
+      "v": "保存",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_BUTTON_SEARCH_ALLIANCE",
+      "v": "搜寻同盟",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_CREATED_DESCRIPTIVE_TEXT",
+      "v": "恭喜！\n现在去寻找其他指挥官来填补同盟任务和同盟事件排名以及更多吧！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_CTA_AVA",
+      "v": "同盟战争！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_CTA_AVA_COMING_SOON",
+      "v": "敬请期待！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_CTA_AVA_NOT_AVAILABLE",
+      "v": "目前没有可用的战争",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_CTA_AVA_PLACEMENT_ENDS_IN",
+      "v": "配置阶段结束于{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_CTA_AVA_READY",
+      "v": "和其他的同盟进行对战吧！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_CTA_AVA_WAR_ENDS_IN",
+      "v": "战争结束于{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_CTA_AVE",
+      "v": "同盟任务",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_CTA_AVE_COMING_SOON",
+      "v": "即将到来",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_CTA_AVE_ENDS_IN",
+      "v": "任务于{0}结束",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_CTA_AVE_NOT_AVAILABLE",
+      "v": "目前没有可进行的任务",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_CTA_AVE_READY",
+      "v": "和你的盟友开始进行协同任务吧！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_DESCRIPTION",
+      "v": "描述",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_DISABLED_FEATURE_MESSAGE",
+      "v": "该功能已临时禁用。请稍后尝试。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_DISABLED_FEATURE_TITLE",
+      "v": "临时禁用",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_DONATE_NO_ENTITLEMENT",
+      "v": "通过选择能量晶体包将能量晶体转换为同盟金库捐款来获得转换徽章。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_DONATE_USING_UNITS",
+      "v": "使用能量晶体",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_EMBLEM",
+      "v": "徽记",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_EVENTS",
+      "v": "同盟事件",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_EVENT_ICON",
+      "v": "",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_EXPIRED_INVITATION_BODY",
+      "v": "加入该同盟的邀请已过期。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_EXPIRED_INVITATION_TITLE",
+      "v": "邀请过期。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_FULL_BODY",
+      "v": "该同盟人数已满。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_FULL_TITLE",
+      "v": "满员",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_GENERAL_BENEFITS_EVENTS_HELP",
+      "v": "加入该同盟以访问该功能！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_GENERAL_BENEFITS_GENERAL_HELP_TEXT",
+      "v": "马上加入一个同盟以解锁新特色：",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_GENERAL_BENEFITS_HELP_TEXT",
+      "v": "选取一个名字用来进入同盟并且领取奖励：",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_GENERAL_BENEFITS_LIST1",
+      "v": "1个高等机器人水晶！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_GENERAL_BENEFITS_LIST2",
+      "v": "25个能量晶体！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_GENERAL_BENEFITS_LIST3",
+      "v": "1000块黄金！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_GENERAL_BENEFITS_LIST4",
+      "v": "解锁同盟活动和任务！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_GENERAL_BENEFITS_LIST5",
+      "v": "可以进入同盟聊天！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_GENERAL_BENEFITS_LIST6",
+      "v": "进入同盟事件和竞技场！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_GENERAL_BENEFITS_LOCKED",
+      "v": "指挥官达到等级{0}能解锁这个功能。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_GENERAL_BENEFITS_SECOND_TITLE",
+      "v": "组成团队共同作战！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_GENERAL_BENEFITS_TITLE",
+      "v": "领取你的同盟奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_GENERAL_CHATROOM_EMPTY",
+      "v": "没有近期活动。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_GENERAL_CHATROOM_ERROR",
+      "v": "不能使用聊天服务器。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_GENERAL_HELP_REJOIN_TITLE",
+      "v": "马上加入或创建一个同盟以解锁新特色",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_GENERAL_LEAVE_MY_ALLIANCE_BUTTON",
+      "v": "离开我的同盟",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_GENERAL_LEAVE_MY_ALLIANCE_WARNING",
+      "v": "你已经加入：\n{0}\n\n离开以后才能加入这个同盟。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_GENERAL_LEAVE_WARNING",
+      "v": "确定你要离开吗\n{0}?",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_GENERAL_PREVIOUSLY_KICKED",
+      "v": "你被开除了，必须申请才能加入。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_GENERAL_REJOIN_BENEFITS_LIST1",
+      "v": "可进入同盟聊天！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_GENERAL_REJOIN_BENEFITS_LIST2",
+      "v": "得到同盟成员的帮助！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_GENERAL_REJOIN_BENEFITS_LIST3",
+      "v": "解锁同盟水晶！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_GENERAL_REJOIN_BENEFITS_LIST4",
+      "v": "可进入同盟竞技场！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_GENERAL_REJOIN_BENEFITS_LIST5",
+      "v": "可加入同盟事件！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_GOTO_TREASURY",
+      "v": "前往金库",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_HELP_REQUEST_FORMAT",
+      "v": "请求{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_INFO",
+      "v": "同盟信息",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_INFO_DESC",
+      "v": "使用同盟描述让其他玩家了解你的同盟！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_INFO_INVALID_NAME_FORMAT",
+      "v": "请输入一个名称(最少{0}字符)。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_INFO_INVALID_TAG_AND_NAME_FORMAT",
+      "v": "请输入一个标签(最少{0}字符)和名称(最少{1}字符)。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_INFO_INVALID_TAG_FORMAT",
+      "v": "请输入一个标签(最少{0}字符)。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_INFO_NAME",
+      "v": "同盟的全称将显示在同盟页面和所有成员的指挥官资料中。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_INFO_TAG",
+      "v": "标签是同盟的简短标识。将在突袭、排行榜、聊天和其他情形下显示在同盟成员的指挥官名称前。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_INVALID_ALLIANCE",
+      "v": "你想查看的同盟已解散。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_INVALID_INPUT_SEARCH_POP_UP",
+      "v": "无效同盟名称或标签。请输入1-32个字符长度的名字或标签。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_INVALID_TAG",
+      "v": "标签包含无效字符。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_INVITATION_SENT",
+      "v": "加入同盟的邀请已发送。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_JOINED_POPUP_GOTO_ALLIANCE",
+      "v": "前往同盟",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_JOINED_POPUP_MESSAGE",
+      "v": "恭喜，你已经加入同盟！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_JOINED_POPUP_MESSAGE_ACCEPTED",
+      "v": "恭喜，你加入[2F85B6FF]{0}[-]的申请已被批准！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_JOINED_POPUP_TITLE",
+      "v": "已加入同盟",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_JOIN_REQUEST_ALREADY_ACCEPTED",
+      "v": "该指挥官已被接受。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_JOIN_REQUEST_ALREADY_DENIED",
+      "v": "该请求已过期。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_JOIN_REQUEST_DENIED",
+      "v": "你已拒绝该同盟加入申请。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_JOIN_REQUEST_DENIED_TITLE",
+      "v": "加入申请被拒",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_KICKED_POPUP_MESSAGE",
+      "v": "你已被你的同盟开除。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_KICKED_POPUP_TITLE",
+      "v": "开除",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_MEMBERS",
+      "v": "同盟成员",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_MEMBER_NOT_FOUND",
+      "v": "该指挥官已经不再是同盟成员了。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_MEMBER_NOT_FOUND_TITLE",
+      "v": "未找到成员",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_MEMBER_WITHDRAWN",
+      "v": "成员退出",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_MSG_PROFANITY_BODY",
+      "v": "同盟描述不允许带有侮辱性词汇！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_MSG_PROFANITY_TITLE",
+      "v": "无效的描述",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_MYHELP_REQUEST_FORMAT",
+      "v": "{0}请求{1}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_MYHELP_TITLE",
+      "v": "我的求助申请",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_NAME_PROFANITY_BODY",
+      "v": "同盟名称不允许带有侮辱性词汇！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_NAME_PROFANITY_TITLE",
+      "v": "无效的名称",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_NAME_TAKEN_BODY",
+      "v": "这个名字已经被其他同盟使用！请尝试其他名字。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_NAME_TAKEN_TITLE",
+      "v": "名称已使用",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_NEW_MEMBER_JOINED",
+      "v": "{0}已加入你的同盟。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_NEW_MEMBER_JOINED_TITLE",
+      "v": "新的同盟成员",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_NOT_FOUND_BODY",
+      "v": "该同盟已解散！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_NOT_FOUND_TITLE",
+      "v": "未找到同盟！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_NOT_SENIOR",
+      "v": "你的级别必须高于该指挥官才能执行此项操作。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_NOT_SENIOR_TITLE",
+      "v": "阶级不足",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_PENDING",
+      "v": "待定",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_PENDING_NONE",
+      "v": "没有待定的申请",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_PENDING_REQUEST",
+      "v": "待处理请求",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_PENDING_REQUESTS_INVITES_HEADER",
+      "v": "邀请",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_PENDING_REQUESTS_REQUESTS_HEADER",
+      "v": "申请",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_PENDING_SUBTITLE",
+      "v": "管理同盟的待定申请。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_PENDING_TITLE",
+      "v": "同盟待定的申请",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_PERMISSION_DENIED",
+      "v": "你必须达到更高级别才能执行此项操作。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_POWER",
+      "v": "同盟评分",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_POWER_FORMAT",
+      "v": "评分{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_PREVIEW_TABS_DISABLED",
+      "v": "你必须在这个同盟中才能查看这个标签。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_PRIVATE_ALLIANCE",
+      "v": "私人同盟",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_PRIVATE_ALLIANCE_BODY",
+      "v": "你只能通过被成员邀请才能加入该同盟。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_RANK_FULL_BODY",
+      "v": "已达到成员的最高级别。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_RANK_FULL_TITLE",
+      "v": "级别已满",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_REQUEST_ALREADY_JOINED_OTHER",
+      "v": "该玩家已加入另一个同盟。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_REQUEST_ALREADY_JOINED_OTHER_TITLE",
+      "v": "太迟了！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_REQUEST_EXPIRED",
+      "v": "请求已过期",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_REQUEST_EXPIRED_BODY",
+      "v": "该请求已过期。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_REQUEST_SENT",
+      "v": "加入同盟的请求已发送。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_RESTRICTION_ANY",
+      "v": "任何",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_RESTRICTION_BY_REQUEST",
+      "v": "通过请求",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_RESTRICTION_HEADER",
+      "v": "隐私",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_RESTRICTION_INVITE_ONLY",
+      "v": "仅限邀请",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_RESTRICTION_OPEN",
+      "v": "打开////1",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_RESTRICTION_PLAYER_AMOUNT_FORMAT",
+      "v": "[ffffffff]{0}[999999ff]/{1}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_SEARCH_FIELD_HEADER",
+      "v": "同盟的名称或标签",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_SEARCH_INSTRUCTIONS",
+      "v": "输入同盟的名称或标签进行查找",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_SEARCH_IN_PROGRESS",
+      "v": "查找中...",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_SEARCH_NAME_FIELD",
+      "v": "1 - 32",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_SEARCH_NO_ALLIANCES_FOUND",
+      "v": "未找到同盟",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_SEARCH_PANEL_HEADER",
+      "v": "通过标签或名称来查找同盟。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_SEARCH_QUICK_VIEW_REQUIREMENTS",
+      "v": "要求",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_SEARCH_QUICK_VIEW_TAG_AND_NAME_FORMAT",
+      "v": "[3F8BD6FF][{0}][-] {1}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_SEARCH_RECENT_NAME_FORMAT",
+      "v": "查找名称'{0}'结果",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_SEARCH_RECENT_TAG_FORMAT",
+      "v": "查找标签 '{0}'结果",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_SEARCH_RECOMMENDED",
+      "v": "推荐的同盟",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_SEARCH_TAG_FIELD",
+      "v": "1 - 5",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_TAB_ABOUT",
+      "v": "关于",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_TAB_BANK",
+      "v": "金库",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_TAB_GENERAL",
+      "v": "活动",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_TAB_HELP",
+      "v": "帮助",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_TAB_MANAGE",
+      "v": "管理",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_TAB_MEMBERS",
+      "v": "成员",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_TAB_PROGRESSION",
+      "v": "基地",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_TAG",
+      "v": "标签",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_TAG_NO_COLOR_FORMAT",
+      "v": "[{0}]",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_TAG_PROFANITY_BODY",
+      "v": "同盟标签不允许带有侮辱性词汇！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_TAG_PROFANITY_TITLE",
+      "v": "无效的标签",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_TAG_TAKEN_BODY",
+      "v": "这个标签已经被其他同盟使用！请尝试其他标签。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_TAG_TAKEN_TITLE",
+      "v": "标签已使用",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_TYPE_ALLIANCES_NAME",
+      "v": "输入同盟名称",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_VIEW",
+      "v": "查看",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCES_YOUR_JOIN_REQUEST_DENIED",
+      "v": "你加入该同盟的请求已被拒绝。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_ACTIVITY",
+      "v": "活动摘要",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_AVE_AVAILABLE_ITEMS",
+      "v": "有效道具",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_AVE_MAPREWARDS",
+      "v": "地图奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_AVE_NOEVENTS",
+      "v": "当前没有事件发生。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_AVE_PRESTIGE",
+      "v": "威望",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_BANK_DISPLAY_PRICE",
+      "v": "使用以下资源？",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_BANK_DONATION_CURRENT_GOAL",
+      "v": "当前目标",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_BANK_DONATION_MESSAGE",
+      "v": "向同盟金库捐赠以下资源？",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_BANK_ENERGON",
+      "v": "能量晶体",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_BANK_ENTITLEMENT",
+      "v": "转换徽章",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_BANK_ENTITLEMENT_DESC",
+      "v": "允许你将能量晶体转换为同盟金库捐款。1个能量晶体可转换成130块黄金。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_BANK_GOAL_DESCRIPTION",
+      "v": "捐助你的同盟以完成目标！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_BANK_INFO_DESCRIPTION",
+      "v": "捐赠的资源将会存储在金库中，用来开始同盟任务！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_BANK_NEARING_QUEST_FORMAT",
+      "v": "你已接近{0}.捐助你的同盟以完成目标！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_BANK_NEW_GOAL",
+      "v": "新目标",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_BANK_NOTHING_SELECTED",
+      "v": "你还没有选择任何资源向同盟捐赠。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_BANK_SET NEW GOAL",
+      "v": "设置新目标",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_BANK_TITLE",
+      "v": "平衡",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_BANK_TOP_CONTRIBUTIONS_BLURB",
+      "v": "最高捐赠者记录每周更新。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_BANK_TOP_DONATORS",
+      "v": "最高捐赠者",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_BATTLEGROUP_FULL_MESSAGE",
+      "v": "你所尝试加入的战斗小组以满。你只能选择加入其他的作战小组。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_BATTLEGROUP_INDEX_FORMAT",
+      "v": "战斗小队{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_BATTLEGROUP_INFO",
+      "v": "该同盟任务已分裂为{0}个战斗小队。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_BATTLEGROUP_LOCKED",
+      "v": "已锁定",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_BATTLEGROUP_STATUS_REPORT",
+      "v": "状态报告",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_BATTLEGROUP_TITLE",
+      "v": "选择一个战斗小队",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_BATTLEGROUP_UNLOCK_CONDITION",
+      "v": "该战斗小队将会在上一个小队拥有{0}名成员后解锁。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_BATTLEGROUP_UNLOCK_CONDITION_SINGULAR",
+      "v": "该战斗小队将会在上一个小队拥有{0}名成员后解锁。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_CANNOT_INVITE",
+      "v": "你没有邀请成员加入同盟的许可。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_CONSUMABLE_ASK",
+      "v": "请求",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_CONSUMABLE_AVAILABLE_FORMAT",
+      "v": "可用在: {0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_CONSUMABLE_COUNT_TEXT",
+      "v": "可申请",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_CONSUMABLE_DESCRIPTION",
+      "v": "向盟友请求能量！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_CONSUMABLE_DESCRIPTION_INTERVAL",
+      "v": "向同盟请求能量！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_CONSUMABLE_TITLE",
+      "v": "寻求帮助",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_CREATE_REQUIREMENTS",
+      "v": "要求 ",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_DESCRIPTION",
+      "v": "同盟简介",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_DONATION_ALLIANCEPOINTS",
+      "v": "你的忠诚度用完了。帮助你的同盟成员获取更多忠诚度。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_DONATION_ALLIANCEPOINTS_CTA",
+      "v": "帮助",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_DONATION_BATTLECHIPS",
+      "v": "你的竞技场货币用完了。进行竞技场比赛以获取更多竞技场货币！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_DONATION_BATTLECHIPS_CTA",
+      "v": "进行竞技比赛",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_DONATION_GOLD",
+      "v": "你的黄金用完了。进行任务以获取更多黄金。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_DONATION_NOTHING_SELECTED",
+      "v": "你还没有选择任何货币向同盟捐赠。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_EDIT_ALLIANCE_DESCRIPTION",
+      "v": "改变同盟的设置。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_EDIT_ALLIANCE_TITLE",
+      "v": "编辑同盟",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_EDIT_OBJECTIVE_DESCRIPTION",
+      "v": "同盟首领才能编辑同盟目标。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_EDIT_OBJECTIVE_TITLE",
+      "v": "编辑目标",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_EVENTS_DURATION_COMING_SOON_FORMAT",
+      "v": "{0}-日事件即将到来！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_EVENTS_DURATION_DAY_FORMAT",
+      "v": "{0}-日事件",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_EVENTS_DURATION_HOUR_FORMAT",
+      "v": "{0}-小时事件",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_EVENTS_DURATION_MINUTE_FORMAT",
+      "v": "{0}-分钟事件",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_EVENTS_MILESTONE_REWARDS",
+      "v": "里程碑奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_EVENTS_MINIMUM",
+      "v": "保留排名和里程碑的奖励资格。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_EVENTS_NOT_STARTED",
+      "v": "即将到来",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_EVENTS_PARTICIPATION",
+      "v": "参加同盟",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_EVENTS_TOP_MILESTONE_PRIZE",
+      "v": "最高里程碑奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_EVENTS_TOP_RANK_PRIZE",
+      "v": "最高排名奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_EVENTS_VIEW_RULES",
+      "v": "查看规则",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_EVENTS_WARNING_MEMBERSHIP",
+      "v": "太迟了！你未能及时加入同盟来贡献积分或挣得奖励。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_EVENTS_WARNING_POINTS",
+      "v": "你必须在事件中贡献分数才有资格获取排名和里程碑奖励。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_EVENT_ABOUT",
+      "v": "关于事件",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_EVENT_COMPLETED",
+      "v": "事件完成",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_EVENT_EVENT_SCORE",
+      "v": "事件点数",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_EVENT_HISTORY",
+      "v": "历史",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_EVENT_HISTORY_DESCRIPTION",
+      "v": "查看过去的成绩。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_EVENT_HISTORY_VIEW",
+      "v": "查看最近的事件成绩。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_EVENT_HOW_TO_GET_POINTS",
+      "v": "如何获取分数",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_GENERAL_EDIT_CHANGES_SAVED_BODY_POP_UP",
+      "v": "你的更改已保存。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_GENERAL_EDIT_CHANGES_SAVED_TITLE_POP_UP",
+      "v": "确定。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_HELP",
+      "v": "同盟帮助",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_HELP_BAR_TOOLTIP_MESSAGE",
+      "v": "帮助你的盟友以获取忠诚度，直到达到每日限制。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_HELP_BAR_TOOLTIP_TITLE",
+      "v": "日常黄金",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_HELP_DAILY_TIMER",
+      "v": "重置于{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_HELP_FORMAT",
+      "v": "帮助{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_HELP_HEADER",
+      "v": "同盟帮助",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_HELP_HELP_ALLIANCE",
+      "v": "每次帮助同盟成员时都能获得黄金！帮助可免费发送，可使盟友在竞技场中获得任务能量或者降低机器人活力的冷却时间！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_HELP_HELP_CTA",
+      "v": "帮助你的同盟成员赚取黄金！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_HELP_HERO_PORTRAIT",
+      "v": "帮助！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_HELP_MY_REQUESTS",
+      "v": "我的请求",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_HELP_MY_REQUESTS_FORMAT",
+      "v": "我的请求：{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_HELP_NEED_HELP_FORMAT",
+      "v": "需要{0}帮助",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_HELP_NEED_MEMBERS",
+      "v": "同盟中没有盟友能帮助你。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_HELP_NO_LOYALTY",
+      "v": "忠诚度不足！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_HELP_NO_REQUESTS",
+      "v": "没有求助请求",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_HELP_NO_REQUESTS_DESCRIPTION",
+      "v": "所有来自你盟友的求助请求将会出现在这里。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_HELP_PROGRESS_FORMAT",
+      "v": "[007CE4FF]{0}[-]/{1}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_HELP_PROGRESS_FORMAT_DAILY",
+      "v": "[5ad4ffB2]{0}[-]/{1}日常黄金",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_HELP_REASON_PVE",
+      "v": "任务能量！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_HELP_REASON_PVP",
+      "v": "减少体力的冷却时间！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_HELP_REASON_PVP_FORMAT",
+      "v": "活力冷却 {0}{1}！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_HELP_REQUESTS_FORMAT",
+      "v": "{0}请求",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_HELP_REQUESTS_FORMAT_SINGLE",
+      "v": "{0}请求",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_HELP_REQUEST_SENT",
+      "v": "寻求帮助的请求已发送！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_INFO_AVE_PRESTIGE",
+      "v": "同盟任务的难度评分。取决于每个成员的最强机器人。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_INFO_MEMBERS",
+      "v": "当前成员总数。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_INFO_PRESTIGE",
+      "v": "评分是指每个同盟成员相加的总评分。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_INFO_REQUIREMENTS",
+      "v": "你至少要达到{0}等级才能进入同盟。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_INFO_STATUS",
+      "v": "是否可以加入同盟，申请加入，或完全关闭。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_INFO_WAR_RATING",
+      "v": "战争评级是由你在同盟战争中的实力而决定的。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_JOIN",
+      "v": "加入同盟",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_JOINED",
+      "v": "同盟已加入",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_MEDAL_REQ",
+      "v": "{0} {1}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_MEMBERS",
+      "v": "成员",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_MEMBERS_ACTION_DEMOTE",
+      "v": "降职",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_MEMBERS_ACTION_KICK",
+      "v": "开除",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_MEMBERS_ACTION_PROMOTE",
+      "v": "晋升",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_MEMBERS_HEADER_LEADER",
+      "v": "领袖",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_MEMBERS_HEADER_LEADER_TOOLTIP",
+      "v": "领袖能够更改同盟设置和管理同盟成员。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_MEMBERS_HEADER_MEMBER",
+      "v": "成员",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_MEMBERS_HEADER_MEMBERS",
+      "v": "成员",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_MEMBERS_HEADER_MEMBERS_TOOLTIP",
+      "v": "成员之间可以相互帮助。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_MEMBERS_HEADER_OFFICERS",
+      "v": "官员",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_MEMBERS_HEADER_OFFICERS_TOOLTIP",
+      "v": "官员能够招募和开除成员。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_MEMBERS_KICK_CONFIRMATION",
+      "v": "确定要将此成员从同盟中开除？",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_MEMBERS_LEVEL_FORMAT",
+      "v": "等级{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_MEMBERS_POWER_FORMAT",
+      "v": "评分{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_MEMBERS_PROMOTE_TO_LEADER_CONFIRMATION",
+      "v": "确定将[00FF00]{0}[-]晋升为领袖? 你将成为官员!",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_MEMBERS_REQUESTS_HEADER",
+      "v": "审核中的加入请求",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_MEMBERS_SUBTITLE",
+      "v": "成员",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_MEMBER_REWARDS",
+      "v": "同盟成员奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_MEMBER_REWARDS_CLAIM",
+      "v": "从储藏室领取你的奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_MISSIONS_STARTS_IN",
+      "v": "任务开始倒数：",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_MISSION_STARTS_IN",
+      "v": "开始于：",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_MSG_DEFAULT_ADMIN",
+      "v": "在这里添加你的同盟介绍！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_MSG_DEFAULT_MEMBER",
+      "v": "作为同盟领袖你还未设置同盟简介。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_NO_RANK",
+      "v": "你的同盟在这次活动中没有排名。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_OBJECTIVES",
+      "v": "目标",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_PRESTIGE",
+      "v": "评分",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_PRESTIGE_REQ",
+      "v": "{0} {1}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_PRIVMSG_DEFAULT_ADMIN",
+      "v": "在这里设置同盟的日常目标！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_PRIVMSG_DEFAULT_MEMBER",
+      "v": "查阅同盟领袖设置的日常目标！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_PROMOTE_NEW_LEADER",
+      "v": "选举新领袖",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_RATING_FORMAT",
+      "v": "同盟评分{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_REQUIREMENTS",
+      "v": "要求",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_STATUS",
+      "v": "状态",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_WAR_RATING",
+      "v": "战争评分",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_WELCOME",
+      "v": "欢迎来到{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVA_TITLE",
+      "v": "同盟战争！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVESELECTION_EVENT_RATING",
+      "v": "威望",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVESELECTION_LEADERSHIP_NOT_STARTED",
+      "v": "领袖还未开启这个任务。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVESELECTION_MULTIPLIERFORMATTING",
+      "v": "{0}x",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVESELECTION_NOT_ENOUGH_TIME_DESC",
+      "v": "该活动就要结束了，你可能将无法及时完成它的同盟任务。你确定你仍然要开始活动吗？",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVESELECTION_QUEST_EXPIRED_HEADER",
+      "v": "该副本已过期",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVESELECTION_QUEST_EXPIRED_SPECTATE_ONLY",
+      "v": "返回同盟着陆页面",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVESELECTION_QUEST_EXPIRES_SOON",
+      "v": "任务即将过期，所以你不能参与。请等待下一个任务吧！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVESELECTION_QUEST_EXPIRING_SOON_HEADER",
+      "v": "任务即将过期",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVESELECTION_QUEST_EXPIRY_WARNING_FORMAT",
+      "v": "这项任务将结束于：",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_ADVANCE",
+      "v": "高级",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_ADVANCEDHELP_DESCRIPTION1",
+      "v": "如何进行同盟任务的额外信息",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_ADVANCEDHELP_TITLE1",
+      "v": "高级",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_ALL_CLAIMED",
+      "v": "全部已领取",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_BATTLEGROUP_INDEX_FORMAT",
+      "v": "战斗小组{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_BEGIN_TITLE",
+      "v": "开始同盟任务？",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_BRACKET",
+      "v": "归类",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_BRACKET_AV1",
+      "v": "大师",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_BRACKET_AV2",
+      "v": "钻石奖",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_BRACKET_AV3",
+      "v": "金牌奖",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_BRACKET_AV4",
+      "v": "银牌奖",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_BRACKET_AV5",
+      "v": "铜牌奖",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_BRACKET_DEFAULT",
+      "v": "未进入排名",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_CALCULATING",
+      "v": "计算中。。。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_CALCULATING_RESULTS",
+      "v": "正在计算排名结果",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_CHECK_BACK",
+      "v": "请稍后再来查看，指挥官！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_COMPLETED",
+      "v": "该事件已完成！点击关闭以退出。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_COMPLETED_TITLE",
+      "v": "事件完成！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_COMPLETION_AND_MASTERY_DESC",
+      "v": "根据总分数提供完成或探索奖励。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_COMPLETION_SUB_DESC",
+      "v": "完成 [FFFFFF66]全部奖励在得到[-][38A9FFFF]100%[-][FFFFFF66]分数后获得[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_CONGRATS_SEE_RESULT",
+      "v": "恭喜！看看你的同盟已取得的成绩。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_COOP_TITLE",
+      "v": "合作任务",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_COST",
+      "v": "花费",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_CURRENT",
+      "v": "当前",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_DIFFICULTY",
+      "v": "难度",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_DIFFICULTY_SKULL",
+      "v": "",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_DONATE",
+      "v": "捐赠",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_ENEMY_RATING",
+      "v": "敌人评分",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_ERROR_INSTANCE_FULL",
+      "v": "你来的太迟了！该事件已满，请选择另一个！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_EVENTSCORE",
+      "v": "事件分数",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_HAS_ENDED",
+      "v": "已结束",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_HELP_DESCRIPTION1",
+      "v": "领袖或一名官员选择地图和难易度，然后任务开始。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_HELP_DESCRIPTION1_ADV_1",
+      "v": "较高难度会给予更多的活动积分和地图奖励。\n\n同盟可根据难易度的颜色，了解任务是太简单还是太难。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_HELP_DESCRIPTION2",
+      "v": "同盟将被分成几个战斗小组来进行任务。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_HELP_DESCRIPTION22",
+      "v": "如果你怀疑同盟成员存在欺骗行为，请举报他们。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_HELP_DESCRIPTION2_ADV_1",
+      "v": "请谨慎选择战斗小组，因为确认后将无法更改。\n\n请确保较弱的战斗小组里面有较强成员的参与来平衡战力。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_HELP_DESCRIPTION3",
+      "v": "与敌人战斗挣得同盟活动积分。打败相关机器人来移除其他敌人之间的链接效果。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_HELP_DESCRIPTION3_ADV_1",
+      "v": "使用战略简介来了解已链接模块的目标。\n\n不要攻击已经有模块链接的敌人！先等盟友清除模块链接。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_HELP_DESCRIPTION4",
+      "v": "尽可能的赚取积分！为了活动结束时的排名奖励与其他同盟对抗吧。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_HELP_DESCRIPTION4_ADV_1",
+      "v": "完成对每个任务的100%探索，赚取额外奖励。\n\n选择较高的地图和难度设定来赚取更多活动积分。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_HELP_DESCRIPTION5",
+      "v": "在任务中和盟友合作！利用战略战术获取分数来换取更好的奖励！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_HELP_TITLE1",
+      "v": "开始",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_HELP_TITLE2",
+      "v": "战斗小组",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_HELP_TITLE22",
+      "v": "额外信息",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_HELP_TITLE3",
+      "v": "任务",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_HELP_TITLE4",
+      "v": "奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_HELP_TITLE5",
+      "v": "概述",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_HOW_CONTRIBUTORS",
+      "v": "通过给敌人造成伤害来获得更多分数！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_HOW_TO_PLACE_TITLE",
+      "v": "游戏说明",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_LOCAL_FINAL_TILE_BODY",
+      "v": "干得漂亮指挥官，你的机器人现在被释放出来了！在你等待任务时间结束的同时，在其他模式中使用他们吧。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_LOCAL_FINAL_TILE_TITLE",
+      "v": "任务完成",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_MAP_MASTERY_REWARDS",
+      "v": "探索奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_MAP_REWARDS",
+      "v": "地图奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_MASTERIES_AND_COMPLETION",
+      "v": "完成和探索",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_MASTERY_SUB_DESC",
+      "v": "探索 [FFFFFF66]在获得[-][38A9FFFF]100%[-][FFFFFF66]分数后解锁[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_MULTIPLE",
+      "v": "多个",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_MULTIPLIER",
+      "v": "倍数",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_NEW_TOTAL",
+      "v": "新的总计",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_NEXTMILESTONE",
+      "v": "下一个里程碑",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_NO_HISTORY",
+      "v": "没有可显示的历史",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_NO_RANK_MIN_SCORE_FORMAT",
+      "v": "至少需要{0}点事件点数来赚取排名奖励。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_PENDING_DESC",
+      "v": "同盟事件开始于：",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_PRESTIGE",
+      "v": "威望",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_RANK_REWARDS_TITLE",
+      "v": "奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_SCORE",
+      "v": "分数",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_SCORE_EARNED",
+      "v": "已获得分数",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_SELECTED_MAP",
+      "v": "选定地图",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_SELECTEVENT",
+      "v": "选择地图",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_SET_SUGGESTED",
+      "v": "推荐设定",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_SIMPLE",
+      "v": "简单",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_START",
+      "v": "开始",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_SUGGESTED",
+      "v": "推荐",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_SUGGESTED_MAP",
+      "v": "推荐地图",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_TITLE",
+      "v": "同盟任务",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_TREASURY_SPEND_WARNING",
+      "v": "[FFFFFFB4]你将使用这些设定开始一个同盟任务：[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_VIEW_DETAILS",
+      "v": "查看细节",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_VIEW_LATEST_QUEST_RESULTS",
+      "v": "查看最近任务成绩。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_VIEW_MAP",
+      "v": "观看",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVE_YOUR_ALLIANCE_PLACE",
+      "v": "你的同盟阵容",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVX_COMING_SOON",
+      "v": "同盟任务很快就要开始了！准备好你的队伍！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AVX_NO_AVX",
+      "v": "当前没有进行中的同盟事件。请稍后再来！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_BATTLE_CENTRE_DISABLED",
+      "v": "这里是你的突袭中心！不过，看起来他们似乎正在安装控制台。我们稍后再去参观。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_BATTLE_CENTRE_TITLE",
+      "v": "突袭中心",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_BUTTON_ALLIANCE",
+      "v": "同盟",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_BUTTON_JOIN_ALLIANCE",
+      "v": "寻找同盟",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_WHATEVER",
+      "v": "",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INFOTIP_AVE_SUGGESTED_DIFFICULTY_TOOLTIP",
+      "v": "为你的同盟推荐的地图难度",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_LOCK_ALLIANCE_TREASURY",
+      "v": "你需要至少达到等级{0}才能进入金库。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_POPUPS_AVE_OUTOFENERGY_CHECK_LATER",
+      "v": "等待期间，可以同时体验其他模式哦！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTBOARD_TIME_ENDED_BLURB",
+      "v": "计算中。。。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_VIEW_RECENT_AVE",
+      "v": "查看近期同盟任务结果",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_YOUR_ALLIANCE_RANK",
+      "v": "你的同盟排名：",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_AVE_ERROR_INSTANCE_FULL",
+      "v": "无法加入，因为此战斗小组已满员。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TEST",
+      "v": "",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_ALLIANCES_NAME",
+      "v": "名称",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_ALLIANCE_CREATED_POP_UP_TITLE",
+      "v": "同盟已建立！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_ALLIANCE_CREATE_CONFIRMATION_BODY",
+      "v": "你确定要创建[2F85B6FF]{0}[-] {1}？",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_ALLIANCE_CREATE_CONFIRMATION_TITLE",
+      "v": "建立同盟",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_ALLIANCE_LEAVE_CONFIRMATION_REWARDS",
+      "v": "确定要退出同盟？你将不会收到任何来自当前进行中事件的奖励！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_ALLIANCE_TYPE",
+      "v": "同盟类型",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_ALREADY_IN_ALLIANCE",
+      "v": "已加入同盟",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_ALREADY_IN_ALLIANCE_BODY",
+      "v": "此玩家已经加入其他同盟，他必须离开原先同盟才可接受请求！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_ALREADY_IN_ALLIANCE_JOIN_WARNING",
+      "v": "你已经加入过一个同盟了。加入该同盟你将自动退出当前同盟。\n\n确定你要加入[3F8BD6FF][{0}][-] {1}?",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_ALREADY_IN_ALLIANCE_REQUEST_WARNING",
+      "v": "你已经加入过一个同盟了。如果你的新申请被批准，你将自动退出当前同盟。\n\n确定你要加入[3F8BD6FF][{0}][-] {1}?",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_AVA_CANNOT_START_ENTITLEMENT_MESSAGE",
+      "v": "你至少需要达到等级{0}才可加入同盟战争。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_AVA_NOT_ENOUGH_MEMBERS_MESSAGE",
+      "v": "你至少需要{0}名成员才可加入{1}战斗小组。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_AVA_NOT_ENOUGH_MEMBERS_MESSAGE_SINGULAR",
+      "v": "你至少需要{0}名成员才可加入{1}战斗小组。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_AVE_CANNOT_START_COST_CHANGE",
+      "v": "你的同盟威望评分已变化，开始该任务的花费也已改变。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_AVE_CANNOT_START_ENTITLEMENT_MESSAGE",
+      "v": "你需要达到{0}级才能加入同盟任务。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_AVE_CANNOT_START_MESSAGE",
+      "v": "需要联盟领袖先开启事件。向同盟金库捐款以便你的领袖能够开启这个任务。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_AVE_CANNOT_START_NSF",
+      "v": "向同盟金库捐赠遗失的资源！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_AVE_FEATURE_DISABLED",
+      "v": "同盟任务即将到来！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_AVE_LEFT_MESSAGE",
+      "v": "你已经不在一个同盟。你将会被传回基地。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_AVE_LEFT_TITLE",
+      "v": "没有同盟",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_AVE_LOCK_WARNING",
+      "v": "任务开启后，同盟新成员将无法加入。\n\n你确定要开启吗？",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_AVE_ONLY_LEADERS_SELECT_QUEST_TOOLTIP",
+      "v": "只有领导人才能选择任务。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_AVE_START_CONFIRMATION",
+      "v": "你将使用同盟金库的资源。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_BLANK_ALLIANCE_NAME",
+      "v": "同盟名称未设置。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_BLANK_DESCRIPTION",
+      "v": "同盟描述未设置。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_BLANK_TAG",
+      "v": "同盟标签未设置。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_BUTTON_CREATE",
+      "v": "创建",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_BUTTON_CREATE_ALLIANCE",
+      "v": "创建同盟",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_BUTTON_EDIT",
+      "v": "编辑",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_BUTTON_HELP_ALL",
+      "v": "帮助所有",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_BUTTON_JOIN_ALLIANCE",
+      "v": "加入",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_BUTTON_LEAVE",
+      "v": "离开",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_BUTTON_LEAVE_ALLIANCE",
+      "v": "离开同盟",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_BUTTON_REQUEST_ALLIANCE",
+      "v": "请求",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_BUTTON_SAVE",
+      "v": "保存",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_BUTTON_SEARCH_ALLIANCE",
+      "v": "搜寻同盟",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_CREATED_DESCRIPTIVE_TEXT",
+      "v": "恭喜！\n现在去寻找其他指挥官来填补同盟任务和同盟事件排名以及更多吧！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_CTA_AVA",
+      "v": "同盟战争！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_CTA_AVA_COMING_SOON",
+      "v": "敬请期待！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_CTA_AVA_NOT_AVAILABLE",
+      "v": "目前没有可用的战争",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_CTA_AVA_PLACEMENT_ENDS_IN",
+      "v": "配置阶段结束于{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_CTA_AVA_READY",
+      "v": "和其他的同盟进行对战吧！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_CTA_AVA_WAR_ENDS_IN",
+      "v": "战争结束于{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_CTA_AVE",
+      "v": "同盟任务",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_CTA_AVE_COMING_SOON",
+      "v": "即将到来",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_CTA_AVE_ENDS_IN",
+      "v": "任务于{0}结束",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_CTA_AVE_NOT_AVAILABLE",
+      "v": "目前没有可进行的任务",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_CTA_AVE_READY",
+      "v": "和你的盟友开始进行协同任务吧！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_DESCRIPTION",
+      "v": "描述",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_DISABLED_FEATURE_MESSAGE",
+      "v": "该功能已临时禁用。请稍后尝试。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_DISABLED_FEATURE_TITLE",
+      "v": "临时禁用",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_DONATE_NO_ENTITLEMENT",
+      "v": "通过选择能量晶体包将能量晶体转换为同盟金库捐款来获得转换徽章。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_DONATE_USING_UNITS",
+      "v": "使用能量晶体",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_EMBLEM",
+      "v": "徽记",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_EVENTS",
+      "v": "同盟事件",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_EVENT_ICON",
+      "v": "",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_EXPIRED_INVITATION_BODY",
+      "v": "加入该同盟的邀请已过期。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_EXPIRED_INVITATION_TITLE",
+      "v": "邀请过期。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_FULL_BODY",
+      "v": "该同盟人数已满。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_FULL_TITLE",
+      "v": "满员",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_GENERAL_BENEFITS_EVENTS_HELP",
+      "v": "加入该同盟以访问该功能！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_GENERAL_BENEFITS_GENERAL_HELP_TEXT",
+      "v": "马上加入一个同盟以解锁新特色：",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_GENERAL_BENEFITS_HELP_TEXT",
+      "v": "选取一个名字用来进入同盟并且领取奖励：",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_GENERAL_BENEFITS_LIST1",
+      "v": "1个高等机器人水晶！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_GENERAL_BENEFITS_LIST2",
+      "v": "25个能量晶体！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_GENERAL_BENEFITS_LIST3",
+      "v": "1000块黄金！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_GENERAL_BENEFITS_LIST4",
+      "v": "解锁同盟活动和任务！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_GENERAL_BENEFITS_LIST5",
+      "v": "可以进入同盟聊天！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_GENERAL_BENEFITS_LIST6",
+      "v": "进入同盟事件和竞技场！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_GENERAL_BENEFITS_LOCKED",
+      "v": "指挥官达到等级{0}能解锁这个功能。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_GENERAL_BENEFITS_SECOND_TITLE",
+      "v": "组成团队共同作战！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_GENERAL_BENEFITS_TITLE",
+      "v": "领取你的同盟奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_GENERAL_CHATROOM_EMPTY",
+      "v": "没有近期活动。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_GENERAL_CHATROOM_ERROR",
+      "v": "不能使用聊天服务器。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_GENERAL_HELP_REJOIN_TITLE",
+      "v": "马上加入或创建一个同盟以解锁新特色",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_GENERAL_LEAVE_MY_ALLIANCE_BUTTON",
+      "v": "离开我的同盟",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_GENERAL_LEAVE_MY_ALLIANCE_WARNING",
+      "v": "你已经加入：\n{0}\n\n离开以后才能加入这个同盟。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_GENERAL_LEAVE_WARNING",
+      "v": "确定你要离开吗\n{0}?",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_GENERAL_PREVIOUSLY_KICKED",
+      "v": "你被开除了，必须申请才能加入。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_GENERAL_REJOIN_BENEFITS_LIST1",
+      "v": "可进入同盟聊天！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_GENERAL_REJOIN_BENEFITS_LIST2",
+      "v": "得到同盟成员的帮助！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_GENERAL_REJOIN_BENEFITS_LIST3",
+      "v": "解锁同盟水晶！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_GENERAL_REJOIN_BENEFITS_LIST4",
+      "v": "可进入同盟竞技场！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_GENERAL_REJOIN_BENEFITS_LIST5",
+      "v": "可加入同盟事件！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_GOTO_TREASURY",
+      "v": "前往金库",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_HELP_REQUEST_FORMAT",
+      "v": "请求{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_INFO",
+      "v": "同盟信息",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_INFO_DESC",
+      "v": "使用同盟描述让其他玩家了解你的同盟！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_INFO_INVALID_NAME_FORMAT",
+      "v": "请输入一个名称(最少{0}字符)。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_INFO_INVALID_TAG_AND_NAME_FORMAT",
+      "v": "请输入一个标签(最少{0}字符)和名称(最少{1}字符)。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_INFO_INVALID_TAG_FORMAT",
+      "v": "请输入一个标签(最少{0}字符)。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_INFO_NAME",
+      "v": "同盟的全称将显示在同盟页面和所有成员的指挥官资料中。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_INFO_TAG",
+      "v": "标签是同盟的简短标识。将在突袭、排行榜、聊天和其他情形下显示在同盟成员的指挥官名称前。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_INVALID_ALLIANCE",
+      "v": "你想查看的同盟已解散。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_INVALID_INPUT_SEARCH_POP_UP",
+      "v": "无效同盟名称或标签。请输入1-32个字符长度的名字或标签。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_INVALID_TAG",
+      "v": "标签包含无效字符。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_INVITATION_SENT",
+      "v": "加入同盟的邀请已发送。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_JOINED_POPUP_GOTO_ALLIANCE",
+      "v": "前往同盟",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_JOINED_POPUP_MESSAGE",
+      "v": "恭喜，你已经加入同盟！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_JOINED_POPUP_MESSAGE_ACCEPTED",
+      "v": "恭喜，你加入[2F85B6FF]{0}[-]的申请已被批准！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_JOINED_POPUP_TITLE",
+      "v": "已加入同盟",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_JOIN_REQUEST_ALREADY_ACCEPTED",
+      "v": "该指挥官已被接受。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_JOIN_REQUEST_ALREADY_DENIED",
+      "v": "该请求已过期。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_JOIN_REQUEST_DENIED",
+      "v": "你已拒绝该同盟加入申请。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_JOIN_REQUEST_DENIED_TITLE",
+      "v": "加入申请被拒",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_KICKED_POPUP_MESSAGE",
+      "v": "你已被你的同盟开除。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_KICKED_POPUP_TITLE",
+      "v": "开除",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_MEMBERS",
+      "v": "同盟成员",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_MEMBER_NOT_FOUND",
+      "v": "该指挥官已经不再是同盟成员了。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_MEMBER_NOT_FOUND_TITLE",
+      "v": "未找到成员",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_MEMBER_WITHDRAWN",
+      "v": "成员退出",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_MSG_PROFANITY_BODY",
+      "v": "同盟描述不允许带有侮辱性词汇！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_MSG_PROFANITY_TITLE",
+      "v": "无效的描述",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_MYHELP_REQUEST_FORMAT",
+      "v": "{0}请求{1}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_MYHELP_TITLE",
+      "v": "我的求助申请",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_NAME_PROFANITY_BODY",
+      "v": "同盟名称不允许带有侮辱性词汇！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_NAME_PROFANITY_TITLE",
+      "v": "无效的名称",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_NAME_TAKEN_BODY",
+      "v": "这个名字已经被其他同盟使用！请尝试其他名字。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_NAME_TAKEN_TITLE",
+      "v": "名称已使用",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_NEW_MEMBER_JOINED",
+      "v": "{0}已加入你的同盟。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_NEW_MEMBER_JOINED_TITLE",
+      "v": "新的同盟成员",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_NOT_FOUND_BODY",
+      "v": "该同盟已解散！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_NOT_FOUND_TITLE",
+      "v": "未找到同盟！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_NOT_SENIOR",
+      "v": "你的级别必须高于该指挥官才能执行此项操作。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_NOT_SENIOR_TITLE",
+      "v": "阶级不足",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_PENDING",
+      "v": "待定",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_PENDING_NONE",
+      "v": "没有待定的申请",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_PENDING_REQUEST",
+      "v": "待处理请求",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_PENDING_REQUESTS_INVITES_HEADER",
+      "v": "邀请",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_PENDING_REQUESTS_REQUESTS_HEADER",
+      "v": "申请",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_PENDING_SUBTITLE",
+      "v": "管理同盟的待定申请。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_PENDING_TITLE",
+      "v": "同盟待定的申请",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_PERMISSION_DENIED",
+      "v": "你必须达到更高级别才能执行此项操作。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_POWER",
+      "v": "同盟评分",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_POWER_FORMAT",
+      "v": "评分{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_PREVIEW_TABS_DISABLED",
+      "v": "你必须在这个同盟中才能查看这个标签。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_PRIVATE_ALLIANCE",
+      "v": "私人同盟",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_PRIVATE_ALLIANCE_BODY",
+      "v": "你只能通过被成员邀请才能加入该同盟。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_RANK_FULL_BODY",
+      "v": "已达到成员的最高级别。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_RANK_FULL_TITLE",
+      "v": "级别已满",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_REQUEST_ALREADY_JOINED_OTHER",
+      "v": "该玩家已加入另一个同盟。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_REQUEST_ALREADY_JOINED_OTHER_TITLE",
+      "v": "太迟了！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_REQUEST_EXPIRED",
+      "v": "请求已过期",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_REQUEST_EXPIRED_BODY",
+      "v": "该请求已过期。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_REQUEST_SENT",
+      "v": "加入同盟的请求已发送。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_RESTRICTION_ANY",
+      "v": "任何",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_RESTRICTION_BY_REQUEST",
+      "v": "通过请求",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_RESTRICTION_HEADER",
+      "v": "隐私",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_RESTRICTION_INVITE_ONLY",
+      "v": "仅限邀请",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_RESTRICTION_OPEN",
+      "v": "打开////1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_RESTRICTION_PLAYER_AMOUNT_FORMAT",
+      "v": "[ffffffff]{0}[999999ff]/{1}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_SEARCH_FIELD_HEADER",
+      "v": "同盟的名称或标签",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_SEARCH_INSTRUCTIONS",
+      "v": "输入同盟的名称或标签进行查找",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_SEARCH_IN_PROGRESS",
+      "v": "查找中...",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_SEARCH_NAME_FIELD",
+      "v": "1 - 32",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_SEARCH_NO_ALLIANCES_FOUND",
+      "v": "未找到同盟",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_SEARCH_PANEL_HEADER",
+      "v": "通过标签或名称来查找同盟。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_SEARCH_QUICK_VIEW_REQUIREMENTS",
+      "v": "要求",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_SEARCH_QUICK_VIEW_TAG_AND_NAME_FORMAT",
+      "v": "[3F8BD6FF][{0}][-] {1}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_SEARCH_RECENT_NAME_FORMAT",
+      "v": "查找名称'{0}'结果",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_SEARCH_RECENT_TAG_FORMAT",
+      "v": "查找标签 '{0}'结果",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_SEARCH_RECOMMENDED",
+      "v": "推荐的同盟",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_SEARCH_TAG_FIELD",
+      "v": "1 - 5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_TAB_ABOUT",
+      "v": "关于",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_TAB_BANK",
+      "v": "金库",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_TAB_GENERAL",
+      "v": "活动",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_TAB_HELP",
+      "v": "帮助",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_TAB_MANAGE",
+      "v": "管理",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_TAB_MEMBERS",
+      "v": "成员",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_TAB_PROGRESSION",
+      "v": "基地",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_TAG",
+      "v": "标签",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_TAG_NO_COLOR_FORMAT",
+      "v": "[{0}]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_TAG_PROFANITY_BODY",
+      "v": "同盟标签不允许带有侮辱性词汇！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_TAG_PROFANITY_TITLE",
+      "v": "无效的标签",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_TAG_TAKEN_BODY",
+      "v": "这个标签已经被其他同盟使用！请尝试其他标签。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_TAG_TAKEN_TITLE",
+      "v": "标签已使用",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_TYPE_ALLIANCES_NAME",
+      "v": "输入同盟名称",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_VIEW",
+      "v": "查看",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCES_YOUR_JOIN_REQUEST_DENIED",
+      "v": "你加入该同盟的请求已被拒绝。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_ACTIVITY",
+      "v": "活动摘要",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_AVE_AVAILABLE_ITEMS",
+      "v": "有效道具",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_AVE_MAPREWARDS",
+      "v": "地图奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_AVE_NOEVENTS",
+      "v": "当前没有事件发生。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_AVE_PRESTIGE",
+      "v": "威望",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_BANK_DISPLAY_PRICE",
+      "v": "使用以下资源？",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_BANK_DONATION_CURRENT_GOAL",
+      "v": "当前目标",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_BANK_DONATION_MESSAGE",
+      "v": "向同盟金库捐赠以下资源？",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_BANK_ENERGON",
+      "v": "能量晶体",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_BANK_ENTITLEMENT",
+      "v": "转换徽章",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_BANK_ENTITLEMENT_DESC",
+      "v": "允许你将能量晶体转换为同盟金库捐款。1个能量晶体可转换成130块黄金。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_BANK_GOAL_DESCRIPTION",
+      "v": "捐助你的同盟以完成目标！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_BANK_INFO_DESCRIPTION",
+      "v": "捐赠的资源将会存储在金库中，用来开始同盟任务！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_BANK_NEARING_QUEST_FORMAT",
+      "v": "你已接近{0}.捐助你的同盟以完成目标！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_BANK_NEW_GOAL",
+      "v": "新目标",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_BANK_NOTHING_SELECTED",
+      "v": "你还没有选择任何资源向同盟捐赠。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_BANK_SET NEW GOAL",
+      "v": "设置新目标",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_BANK_TITLE",
+      "v": "平衡",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_BANK_TOP_CONTRIBUTIONS_BLURB",
+      "v": "最高捐赠者记录每周更新。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_BANK_TOP_DONATORS",
+      "v": "最高捐赠者",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_BATTLEGROUP_FULL_MESSAGE",
+      "v": "你所尝试加入的战斗小组以满。你只能选择加入其他的作战小组。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_BATTLEGROUP_INDEX_FORMAT",
+      "v": "战斗小队{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_BATTLEGROUP_INFO",
+      "v": "该同盟任务已分裂为{0}个战斗小队。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_BATTLEGROUP_LOCKED",
+      "v": "已锁定",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_BATTLEGROUP_STATUS_REPORT",
+      "v": "状态报告",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_BATTLEGROUP_TITLE",
+      "v": "选择一个战斗小队",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_BATTLEGROUP_UNLOCK_CONDITION",
+      "v": "该战斗小队将会在上一个小队拥有{0}名成员后解锁。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_BATTLEGROUP_UNLOCK_CONDITION_SINGULAR",
+      "v": "该战斗小队将会在上一个小队拥有{0}名成员后解锁。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_CANNOT_INVITE",
+      "v": "你没有邀请成员加入同盟的许可。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_CONSUMABLE_ASK",
+      "v": "请求",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_CONSUMABLE_AVAILABLE_FORMAT",
+      "v": "可用在: {0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_CONSUMABLE_COUNT_TEXT",
+      "v": "可申请",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_CONSUMABLE_DESCRIPTION",
+      "v": "向盟友请求能量！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_CONSUMABLE_DESCRIPTION_INTERVAL",
+      "v": "向同盟请求能量！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_CONSUMABLE_TITLE",
+      "v": "寻求帮助",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_CREATE_REQUIREMENTS",
+      "v": "要求 ",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_DESCRIPTION",
+      "v": "同盟简介",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_DONATION_ALLIANCEPOINTS",
+      "v": "你的忠诚度用完了。帮助你的同盟成员获取更多忠诚度。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_DONATION_ALLIANCEPOINTS_CTA",
+      "v": "帮助",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_DONATION_BATTLECHIPS",
+      "v": "你的竞技场货币用完了。进行竞技场比赛以获取更多竞技场货币！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_DONATION_BATTLECHIPS_CTA",
+      "v": "进行竞技比赛",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_DONATION_GOLD",
+      "v": "你的黄金用完了。进行任务以获取更多黄金。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_DONATION_NOTHING_SELECTED",
+      "v": "你还没有选择任何货币向同盟捐赠。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_EDIT_ALLIANCE_DESCRIPTION",
+      "v": "改变同盟的设置。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_EDIT_ALLIANCE_TITLE",
+      "v": "编辑同盟",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_EDIT_OBJECTIVE_DESCRIPTION",
+      "v": "同盟首领才能编辑同盟目标。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_EDIT_OBJECTIVE_TITLE",
+      "v": "编辑目标",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_EVENTS_DURATION_COMING_SOON_FORMAT",
+      "v": "{0}-日事件即将到来！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_EVENTS_DURATION_DAY_FORMAT",
+      "v": "{0}-日事件",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_EVENTS_DURATION_HOUR_FORMAT",
+      "v": "{0}-小时事件",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_EVENTS_DURATION_MINUTE_FORMAT",
+      "v": "{0}-分钟事件",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_EVENTS_MILESTONE_REWARDS",
+      "v": "里程碑奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_EVENTS_MINIMUM",
+      "v": "保留排名和里程碑的奖励资格。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_EVENTS_NOT_STARTED",
+      "v": "即将到来",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_EVENTS_PARTICIPATION",
+      "v": "参加同盟",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_EVENTS_TOP_MILESTONE_PRIZE",
+      "v": "最高里程碑奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_EVENTS_TOP_RANK_PRIZE",
+      "v": "最高排名奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_EVENTS_VIEW_RULES",
+      "v": "查看规则",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_EVENTS_WARNING_MEMBERSHIP",
+      "v": "太迟了！你未能及时加入同盟来贡献积分或挣得奖励。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_EVENTS_WARNING_POINTS",
+      "v": "你必须在事件中贡献分数才有资格获取排名和里程碑奖励。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_EVENT_ABOUT",
+      "v": "关于事件",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_EVENT_COMPLETED",
+      "v": "事件完成",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_EVENT_EVENT_SCORE",
+      "v": "事件点数",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_EVENT_HISTORY",
+      "v": "历史",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_EVENT_HISTORY_DESCRIPTION",
+      "v": "查看过去的成绩。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_EVENT_HISTORY_VIEW",
+      "v": "查看最近的事件成绩。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_EVENT_HOW_TO_GET_POINTS",
+      "v": "如何获取分数",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_GENERAL_EDIT_CHANGES_SAVED_BODY_POP_UP",
+      "v": "你的更改已保存。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_GENERAL_EDIT_CHANGES_SAVED_TITLE_POP_UP",
+      "v": "确定。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_HELP",
+      "v": "同盟帮助",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_HELP_BAR_TOOLTIP_MESSAGE",
+      "v": "帮助你的盟友以获取忠诚度，直到达到每日限制。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_HELP_BAR_TOOLTIP_TITLE",
+      "v": "日常黄金",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_HELP_DAILY_TIMER",
+      "v": "重置于{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_HELP_FORMAT",
+      "v": "帮助{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_HELP_HEADER",
+      "v": "同盟帮助",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_HELP_HELP_ALLIANCE",
+      "v": "每次帮助同盟成员时都能获得黄金！帮助可免费发送，可使盟友在竞技场中获得任务能量或者降低机器人活力的冷却时间！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_HELP_HELP_CTA",
+      "v": "帮助你的同盟成员赚取黄金！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_HELP_HERO_PORTRAIT",
+      "v": "帮助！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_HELP_MY_REQUESTS",
+      "v": "我的请求",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_HELP_MY_REQUESTS_FORMAT",
+      "v": "我的请求：{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_HELP_NEED_HELP_FORMAT",
+      "v": "需要{0}帮助",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_HELP_NEED_MEMBERS",
+      "v": "同盟中没有盟友能帮助你。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_HELP_NO_LOYALTY",
+      "v": "忠诚度不足！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_HELP_NO_REQUESTS",
+      "v": "没有求助请求",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_HELP_NO_REQUESTS_DESCRIPTION",
+      "v": "所有来自你盟友的求助请求将会出现在这里。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_HELP_PROGRESS_FORMAT",
+      "v": "[007CE4FF]{0}[-]/{1}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_HELP_PROGRESS_FORMAT_DAILY",
+      "v": "[5ad4ffB2]{0}[-]/{1}日常黄金",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_HELP_REASON_PVE",
+      "v": "任务能量！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_HELP_REASON_PVP",
+      "v": "减少体力的冷却时间！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_HELP_REASON_PVP_FORMAT",
+      "v": "活力冷却 {0}{1}！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_HELP_REQUESTS_FORMAT",
+      "v": "{0}请求",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_HELP_REQUESTS_FORMAT_SINGLE",
+      "v": "{0}请求",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_HELP_REQUEST_SENT",
+      "v": "寻求帮助的请求已发送！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_INFO_AVE_PRESTIGE",
+      "v": "同盟任务的难度评分。取决于每个成员的最强机器人。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_INFO_MEMBERS",
+      "v": "当前成员总数。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_INFO_PRESTIGE",
+      "v": "评分是指每个同盟成员相加的总评分。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_INFO_REQUIREMENTS",
+      "v": "你至少要达到{0}等级才能进入同盟。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_INFO_STATUS",
+      "v": "是否可以加入同盟，申请加入，或完全关闭。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_INFO_WAR_RATING",
+      "v": "战争评级是由你在同盟战争中的实力而决定的。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_JOIN",
+      "v": "加入同盟",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_JOINED",
+      "v": "同盟已加入",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_MEDAL_REQ",
+      "v": "{0} {1}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_MEMBERS",
+      "v": "成员",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_MEMBERS_ACTION_DEMOTE",
+      "v": "降职",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_MEMBERS_ACTION_KICK",
+      "v": "开除",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_MEMBERS_ACTION_PROMOTE",
+      "v": "晋升",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_MEMBERS_HEADER_LEADER",
+      "v": "领袖",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_MEMBERS_HEADER_LEADER_TOOLTIP",
+      "v": "领袖能够更改同盟设置和管理同盟成员。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_MEMBERS_HEADER_MEMBER",
+      "v": "成员",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_MEMBERS_HEADER_MEMBERS",
+      "v": "成员",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_MEMBERS_HEADER_MEMBERS_TOOLTIP",
+      "v": "成员之间可以相互帮助。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_MEMBERS_HEADER_OFFICERS",
+      "v": "官员",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_MEMBERS_HEADER_OFFICERS_TOOLTIP",
+      "v": "官员能够招募和开除成员。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_MEMBERS_KICK_CONFIRMATION",
+      "v": "确定要将此成员从同盟中开除？",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_MEMBERS_LEVEL_FORMAT",
+      "v": "等级{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_MEMBERS_POWER_FORMAT",
+      "v": "评分{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_MEMBERS_PROMOTE_TO_LEADER_CONFIRMATION",
+      "v": "确定将[00FF00]{0}[-]晋升为领袖? 你将成为官员!",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_MEMBERS_REQUESTS_HEADER",
+      "v": "审核中的加入请求",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_MEMBERS_SUBTITLE",
+      "v": "成员",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_MEMBER_REWARDS",
+      "v": "同盟成员奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_MEMBER_REWARDS_CLAIM",
+      "v": "从储藏室领取你的奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_MISSIONS_STARTS_IN",
+      "v": "任务开始倒数：",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_MISSION_STARTS_IN",
+      "v": "开始于：",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_MSG_DEFAULT_ADMIN",
+      "v": "在这里添加你的同盟介绍！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_MSG_DEFAULT_MEMBER",
+      "v": "作为同盟领袖你还未设置同盟简介。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_NO_RANK",
+      "v": "你的同盟在这次活动中没有排名。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_OBJECTIVES",
+      "v": "目标",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_PRESTIGE",
+      "v": "评分",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_PRESTIGE_REQ",
+      "v": "{0} {1}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_PRIVMSG_DEFAULT_ADMIN",
+      "v": "在这里设置同盟的日常目标！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_PRIVMSG_DEFAULT_MEMBER",
+      "v": "查阅同盟领袖设置的日常目标！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_PROMOTE_NEW_LEADER",
+      "v": "选举新领袖",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_RATING_FORMAT",
+      "v": "同盟评分{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_REQUIREMENTS",
+      "v": "要求",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_STATUS",
+      "v": "状态",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_WAR_RATING",
+      "v": "战争评分",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_WELCOME",
+      "v": "欢迎来到{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVA_TITLE",
+      "v": "同盟战争！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVESELECTION_EVENT_RATING",
+      "v": "威望",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVESELECTION_LEADERSHIP_NOT_STARTED",
+      "v": "领袖还未开启这个任务。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVESELECTION_MULTIPLIERFORMATTING",
+      "v": "{0}x",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVESELECTION_NOT_ENOUGH_TIME_DESC",
+      "v": "该活动就要结束了，你可能将无法及时完成它的同盟任务。你确定你仍然要开始活动吗？",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVESELECTION_QUEST_EXPIRED_HEADER",
+      "v": "该副本已过期",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVESELECTION_QUEST_EXPIRED_SPECTATE_ONLY",
+      "v": "返回同盟着陆页面",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVESELECTION_QUEST_EXPIRES_SOON",
+      "v": "任务即将过期，所以你不能参与。请等待下一个任务吧！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVESELECTION_QUEST_EXPIRING_SOON_HEADER",
+      "v": "任务即将过期",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVESELECTION_QUEST_EXPIRY_WARNING_FORMAT",
+      "v": "这项任务将结束于：",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_ADVANCE",
+      "v": "高级",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_ADVANCEDHELP_DESCRIPTION1",
+      "v": "如何进行同盟任务的额外信息",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_ADVANCEDHELP_TITLE1",
+      "v": "高级",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_ALL_CLAIMED",
+      "v": "全部已领取",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_BATTLEGROUP_INDEX_FORMAT",
+      "v": "战斗小组{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_BEGIN_TITLE",
+      "v": "开始同盟任务？",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_BRACKET",
+      "v": "归类",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_BRACKET_AV1",
+      "v": "大师",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_BRACKET_AV2",
+      "v": "钻石奖",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_BRACKET_AV3",
+      "v": "金牌奖",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_BRACKET_AV4",
+      "v": "银牌奖",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_BRACKET_AV5",
+      "v": "铜牌奖",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_BRACKET_DEFAULT",
+      "v": "未进入排名",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_CALCULATING",
+      "v": "计算中。。。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_CALCULATING_RESULTS",
+      "v": "正在计算排名结果",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_CHECK_BACK",
+      "v": "请稍后再来查看，指挥官！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_COMPLETED",
+      "v": "该事件已完成！点击关闭以退出。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_COMPLETED_TITLE",
+      "v": "事件完成！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_COMPLETION_AND_MASTERY_DESC",
+      "v": "根据总分数提供完成或探索奖励。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_COMPLETION_SUB_DESC",
+      "v": "完成 [FFFFFF66]全部奖励在得到[-][38A9FFFF]100%[-][FFFFFF66]分数后获得[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_CONGRATS_SEE_RESULT",
+      "v": "恭喜！看看你的同盟已取得的成绩。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_COOP_TITLE",
+      "v": "合作任务",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_COST",
+      "v": "花费",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_CURRENT",
+      "v": "当前",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_DIFFICULTY",
+      "v": "难度",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_DIFFICULTY_SKULL",
+      "v": "",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_DONATE",
+      "v": "捐赠",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_ENEMY_RATING",
+      "v": "敌人评分",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_ERROR_INSTANCE_FULL",
+      "v": "你来的太迟了！该事件已满，请选择另一个！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_EVENTSCORE",
+      "v": "事件分数",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_HAS_ENDED",
+      "v": "已结束",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_HELP_DESCRIPTION1",
+      "v": "领袖或一名官员选择地图和难易度，然后任务开始。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_HELP_DESCRIPTION1_ADV_1",
+      "v": "较高难度会给予更多的活动积分和地图奖励。\n\n同盟可根据难易度的颜色，了解任务是太简单还是太难。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_HELP_DESCRIPTION2",
+      "v": "同盟将被分成几个战斗小组来进行任务。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_HELP_DESCRIPTION22",
+      "v": "如果你怀疑同盟成员存在欺骗行为，请举报他们。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_HELP_DESCRIPTION2_ADV_1",
+      "v": "请谨慎选择战斗小组，因为确认后将无法更改。\n\n请确保较弱的战斗小组里面有较强成员的参与来平衡战力。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_HELP_DESCRIPTION3",
+      "v": "与敌人战斗挣得同盟活动积分。打败相关机器人来移除其他敌人之间的链接效果。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_HELP_DESCRIPTION3_ADV_1",
+      "v": "使用战略简介来了解已链接模块的目标。\n\n不要攻击已经有模块链接的敌人！先等盟友清除模块链接。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_HELP_DESCRIPTION4",
+      "v": "尽可能的赚取积分！为了活动结束时的排名奖励与其他同盟对抗吧。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_HELP_DESCRIPTION4_ADV_1",
+      "v": "完成对每个任务的100%探索，赚取额外奖励。\n\n选择较高的地图和难度设定来赚取更多活动积分。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_HELP_DESCRIPTION5",
+      "v": "在任务中和盟友合作！利用战略战术获取分数来换取更好的奖励！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_HELP_TITLE1",
+      "v": "开始",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_HELP_TITLE2",
+      "v": "战斗小组",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_HELP_TITLE22",
+      "v": "额外信息",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_HELP_TITLE3",
+      "v": "任务",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_HELP_TITLE4",
+      "v": "奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_HELP_TITLE5",
+      "v": "概述",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_HOW_CONTRIBUTORS",
+      "v": "通过给敌人造成伤害来获得更多分数！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_HOW_TO_PLACE_TITLE",
+      "v": "游戏说明",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_LOCAL_FINAL_TILE_BODY",
+      "v": "干得漂亮指挥官，你的机器人现在被释放出来了！在你等待任务时间结束的同时，在其他模式中使用他们吧。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_LOCAL_FINAL_TILE_TITLE",
+      "v": "任务完成",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_MAP_MASTERY_REWARDS",
+      "v": "探索奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_MAP_REWARDS",
+      "v": "地图奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_MASTERIES_AND_COMPLETION",
+      "v": "完成和探索",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_MASTERY_SUB_DESC",
+      "v": "探索 [FFFFFF66]在获得[-][38A9FFFF]100%[-][FFFFFF66]分数后解锁[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_MULTIPLE",
+      "v": "多个",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_MULTIPLIER",
+      "v": "倍数",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_NEW_TOTAL",
+      "v": "新的总计",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_NEXTMILESTONE",
+      "v": "下一个里程碑",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_NO_HISTORY",
+      "v": "没有可显示的历史",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_NO_RANK_MIN_SCORE_FORMAT",
+      "v": "至少需要{0}点事件点数来赚取排名奖励。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_PENDING_DESC",
+      "v": "同盟事件开始于：",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_PRESTIGE",
+      "v": "威望",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_RANK_REWARDS_TITLE",
+      "v": "奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_SCORE",
+      "v": "分数",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_SCORE_EARNED",
+      "v": "已获得分数",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_SELECTED_MAP",
+      "v": "选定地图",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_SELECTEVENT",
+      "v": "选择地图",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_SET_SUGGESTED",
+      "v": "推荐设定",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_SIMPLE",
+      "v": "简单",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_START",
+      "v": "开始",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_SUGGESTED",
+      "v": "推荐",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_SUGGESTED_MAP",
+      "v": "推荐地图",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_TITLE",
+      "v": "同盟任务",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_TREASURY_SPEND_WARNING",
+      "v": "[FFFFFFB4]你将使用这些设定开始一个同盟任务：[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_VIEW_DETAILS",
+      "v": "查看细节",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_VIEW_LATEST_QUEST_RESULTS",
+      "v": "查看最近任务成绩。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_VIEW_MAP",
+      "v": "观看",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVE_YOUR_ALLIANCE_PLACE",
+      "v": "你的同盟阵容",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVX_COMING_SOON",
+      "v": "同盟任务很快就要开始了！准备好你的队伍！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AVX_NO_AVX",
+      "v": "当前没有进行中的同盟事件。请稍后再来！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_BATTLE_CENTRE_DISABLED",
+      "v": "这里是你的突袭中心！不过，看起来他们似乎正在安装控制台。我们稍后再去参观。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_BATTLE_CENTRE_TITLE",
+      "v": "突袭中心",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_BUTTON_ALLIANCE",
+      "v": "同盟",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_BUTTON_JOIN_ALLIANCE",
+      "v": "寻找同盟",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_WHATEVER",
+      "v": "",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INFOTIP_AVE_SUGGESTED_DIFFICULTY_TOOLTIP",
+      "v": "为你的同盟推荐的地图难度",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_LOCK_ALLIANCE_TREASURY",
+      "v": "你需要至少达到等级{0}才能进入金库。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_POPUPS_AVE_OUTOFENERGY_CHECK_LATER",
+      "v": "等待期间，可以同时体验其他模式哦！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTBOARD_TIME_ENDED_BLURB",
+      "v": "计算中。。。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_VIEW_RECENT_AVE",
+      "v": "查看近期同盟任务结果",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_YOUR_ALLIANCE_RANK",
+      "v": "你的同盟排名：",
+      "vn": 1
+    }
+  ]
+}

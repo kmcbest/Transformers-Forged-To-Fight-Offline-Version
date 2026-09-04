@@ -1,0 +1,2365 @@
+{
+  "meta": {
+    "format": "sparx",
+    "language": "zh-CN",
+    "tagged": [
+      "quests",
+      "client"
+    ],
+    "hash": "d05178f938fed95e5c4563cb0292244dbb1bafe1",
+    "ts": 1525815962,
+    "string_count": 235
+  },
+  "strings": [
+    {
+      "k": "ID_UI_ACTS_ACT_FORMAT",
+      "v": "第{0}幕",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ACTS_ACT_UNLOCKED",
+      "v": "解锁新的一幕！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ACTS_CHAPTER_FORMAT",
+      "v": "章节{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ACTS_CHAPTER_UNLOCKED",
+      "v": "章节已解锁！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ACTS_COMING_SOON",
+      "v": "即将到来",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ACTS_EVENT_QUESTS",
+      "v": "进行任务",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ACTS_PLAY_CINEMATIC",
+      "v": "电影视角",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ACTS_QUEST_FORMAT",
+      "v": "{0}. {1}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ACTS_QUEST_UNLOCKED",
+      "v": "任务已解锁！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ACTS_SELECT_ACT",
+      "v": "选择其中一幕",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ACTS_SELECT_CHAPTER",
+      "v": "选择一个章节",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ACTS_STORY_QUESTS",
+      "v": "故事任务",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ACTS_UNLOCK_CHAPTER_MESSAGE_FORMAT",
+      "v": "完成\n章节{0}解锁。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ACTS_UNLOCK_MESSAGE_FORMAT",
+      "v": "完成第{0}幕以解锁",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ACTS_UNLOCK_QUEST_MESSAGE",
+      "v": "完成上个任务以解锁。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ALLIANCE_NODE_INDEX_FORMAT",
+      "v": "位于此节点",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_BONUSLABEL",
+      "v": "额外奖励：",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_BOTWARNING_DESC",
+      "v": "在任务进行时你的机器人将变为不可用。\n确定你要派遣那些机器人吗？",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_BOTWARNING_TITLE",
+      "v": "开始任务",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_BUILDING_INFO_TOOLTIP",
+      "v": "该建筑通过频繁的使用获得了经验值和成长。该建筑的下一阶段将在等级{0}完成。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_CANCEL_DESC",
+      "v": "你真的想要召回你的机器人吗？任务将立刻失败并且任务消耗无法返还。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_CANCEL_TITLE",
+      "v": "确定吗？",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_CHANCE",
+      "v": "加成几率",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_CHANCE_HIGH",
+      "v": "高",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_CHANCE_IMPOSSIBLE",
+      "v": "不可能",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_CHANCE_LOW",
+      "v": "低",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_CHANCE_MEDIUM",
+      "v": "中",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_CHANCE_VERYHIGH",
+      "v": "非常高",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_CHASE",
+      "v": "加成",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_CHASED",
+      "v": "加成奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_COMPLETE",
+      "v": "任务完成！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_COST",
+      "v": "花费：",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_DISABLED",
+      "v": "远程任务暂时无法进行。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_DURATION_TITLE",
+      "v": "持续时间",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_EXPIRED",
+      "v": "已过期",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_EXPIRED_DESC",
+      "v": "糟糕，你错过了收集奖励的时间。请在任务完成后三天内领取奖励！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_FAIL",
+      "v": "失败！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_FAILED",
+      "v": "任务失败！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_GETBOTS",
+      "v": "获取更多机器人",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_GET_NEW_MISSIONS",
+      "v": "获取新任务",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_GUARANTEED",
+      "v": "有保障的",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_KILL_POPUP_BODY",
+      "v": "远距任务即将到来",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_KILL_POPUP_TITLE",
+      "v": "远距任务",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_MISSIONTIMER",
+      "v": "任务将在{0}结束",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_MISSIONTIMER_REWARDS",
+      "v": "奖励将在{0}到期",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_MISSION_ACTIVE",
+      "v": "任务进行中！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_MISSION_ACTIVE_DESC",
+      "v": "在任务结束后的三天内回来领取奖励！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_MISSION_INPROGRESS_TIMER",
+      "v": "任务正在进行：将于{0}完成",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_MISSION_STARTED",
+      "v": "任务已开始！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_NEW_MISSIONS",
+      "v": "新任务",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_NOBOTS_TITLE",
+      "v": "你需要更多的机器人以进行该任务！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_NOT_ENOUGH_BOTS_FORMAT",
+      "v": "你只选择了{0}个机器人。开始这个任务需要{1}个机器人。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_NO_MISSIONS",
+      "v": "你已经完成所有可进行的任务！将在下次更新时再次获得任务。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_NUMBOTS",
+      "v": "机器人：",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_PI",
+      "v": "评分：",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_PI_VALUE",
+      "v": "[FFFFFF]{0}[-][b1b3b3]/{1}[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_PRIZES_TITLE",
+      "v": "奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_PROGRESS",
+      "v": "{0}个任务已完成",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_PROGRESS_SINGLE",
+      "v": "{0}个任务已完成",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_RARITY_COMMON",
+      "v": "一般",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_RARITY_EPIC",
+      "v": "史诗",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_RARITY_FIELD",
+      "v": "稀有度",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_RARITY_LEGENDARY",
+      "v": "传奇",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_RARITY_RARE",
+      "v": "少有",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_RARITY_TITLE",
+      "v": "稀有度 :",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_RARITY_UNCOMMON",
+      "v": "罕见",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_RECOMMENDED",
+      "v": "推荐",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_REFRESH",
+      "v": "刷新",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_REFRESHWARNING_DESC",
+      "v": "这将取代剩余任务。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_REFRESHWARNING_TITLE",
+      "v": "获取新任务",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_REFRESH_DESC",
+      "v": "想要更好的奖励或者更多的任务选择？更新你的任务清单。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_REFRESH_REMINDER",
+      "v": "下一次更新在{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_REFRESH_REMINDER_OLD",
+      "v": "任务清单每{0}小时更新。下一次更新在{1}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_REFRESH_TIMER_INFO_TOOLTIP",
+      "v": "任务列表将在下次更新时全部刷新。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_REVEAL_RESULTS",
+      "v": "显示结果",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_REVEAL_RESULTS_TIMER",
+      "v": "还有{0}才显示结果",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_REVEAL_RESULTS_UNCLAIMED",
+      "v": "无人领取的奖励将会丢失",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_REWARD_DESC",
+      "v": "现在就领取你的奖励！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_SELECT_TEAM",
+      "v": "选中远征小队",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_START",
+      "v": "开始任务",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_SUCCESS",
+      "v": "成功！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_SUCCESS_RATE_TITLE",
+      "v": "几率",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_TITLE",
+      "v": "移动指挥部",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_TOOLTIP_HAS_ACTIVE_MISSIONS",
+      "v": "你有正在进行中的远距任务！待他们回来后再派遣新的。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_TOOLTIP_LOW_PI",
+      "v": "你仅有0%的几率获取奖励！尝试不同的先遣队任务。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_AWAYTEAM_TOOLTIP_SELECT_BOTS",
+      "v": "小队必须保持满员状态，你才能派遣他们进行先遣队任务。选择派遣更多的机器人！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_BUILDING_BATTLE_CENTER_LOCKED_RAIDS_TUTORIAL",
+      "v": "当我们从你的首次突袭中收集到情报后，[33effaff]{0}[-]的建造就会结束。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_BUILDING_FEATURE_LOCK",
+      "v": "该功能目前正在开发中，无法访问。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_BUILDING_FEATURE_LOCK_AWAY_TEAM",
+      "v": "远距任务即将到来！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_BUILDING_LEVEL",
+      "v": "等级{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_BUILDING_LEVEL_UP_INFO",
+      "v": "该建筑通过频繁的使用获得了经验值和成长。该建筑的下一阶段将在等级{0}完成。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_BUILDING_SOLD",
+      "v": "遗迹已出售",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_BUILDING_UNDER_CONSTRUCTION_BODY",
+      "v": "该[33effaff]{0}[-]建筑当前正在建造中。建设将在[33effaff]等级 {1}[-]完成。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_BUTTON_ATTACK",
+      "v": "攻击",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAPTER_FORMAT",
+      "v": "章节{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CURRENT_DAILY_QUEST",
+      "v": "类别：[-] {0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CURRENT_STORY_QUEST",
+      "v": "第{0}幕-第{1}章/任务{2}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CURRENT_STORY_QUEST_LONG",
+      "v": "第{0}幕\r\n第{1}章/任务{2}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_DAILY_NO_DAILY",
+      "v": "现在没有可进行的日常任务，请稍后再来！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_DAILY_QUEST_TITLE",
+      "v": "日常",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_DAILY_QUEST_TITLE_FULL",
+      "v": "日常任务",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_EVENTS_DISABLED",
+      "v": "事件当前已禁用。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_EVENTS_NO_CONTRIBUTIONS",
+      "v": "当前还没有同盟成员在该事件中作出贡献！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_EVENTS_POSSIBLE_REWARDS",
+      "v": "可能获得的奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_EVENTS_SCREEN_ALLIANCE_LOCKED_TITLE",
+      "v": "单人事件",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_EVENTS_SCREEN_ALL_MILESTONES",
+      "v": "100%完成里程碑",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_EVENTS_SCREEN_BUTTON_MORE",
+      "v": "更多",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_EVENTS_SCREEN_COMING_SOON",
+      "v": "事件即将到来！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_EVENTS_SCREEN_CONTRIBUTION",
+      "v": "贡献",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_EVENTS_SCREEN_NO_EVENTS",
+      "v": "没有可用事件。稍后再来查看！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_EVENTS_SCREEN_NO_MILESTONE_REWARDS",
+      "v": "无里程碑奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_EVENTS_SCREEN_NO_RANK_REWARDS",
+      "v": "无排名奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_EVENTS_SCREEN_TOP_MILESTONE",
+      "v": "最高里程碑",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_EVENTS_SCREEN_TOP_RANK",
+      "v": "最高排名",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_EVENTS_SCREEN_YOUR_RANK",
+      "v": "你的排名奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_EVENTS_SCREEN_YOUR_TOTAL_POINTS",
+      "v": "你的总分：",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_EVENTS_TYPE_DAILY",
+      "v": "日常任务",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_EVENTS_TYPE_EVENT_QUEST",
+      "v": "事件任务",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_EVENTS_TYPE_SPECIAL",
+      "v": "特殊任务",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_EVENT_NO_EVENT",
+      "v": "当前没有进行中的特殊事件。请稍后再来！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_EVENT_TITLE",
+      "v": "特殊",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_EVENT_TITLE_FULL",
+      "v": "特殊任务",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FIGHT_FIGHT",
+      "v": "战斗！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FIGHT_KO",
+      "v": "K.O.",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FIGHT_LANDING_AVA_DESCRIPTION",
+      "v": "完成合作同盟任务赢得系别火种、模组火种和其他珍贵奖励！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FIGHT_LANDING_AVA_TITLE",
+      "v": "同盟",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FIGHT_LANDING_AVE_DESCRIPTION",
+      "v": "完成合作同盟任务来赢得类别火种、模块火种和其他有价值的奖励！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FIGHT_LANDING_DAILY_QUESTS_DESCRIPTION",
+      "v": "完成这些简短的任务，获得类别火种、类别火种精华和类别矿石！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FIGHT_LANDING_EVENT_QUESTS_DESCRIPTION",
+      "v": "通过完成额外的故事任务了解新的机器人，并在限时重点任务及挑战任务中赢得独特奖励！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FIGHT_LANDING_LEVEL_LOCK",
+      "v": "你必须至少达到等级{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FIGHT_LANDING_NO_AVX_EVENT",
+      "v": "同盟任务即将到来！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FIGHT_LANDING_PVP_DESCRIPTION",
+      "v": "同其他玩家比拼来赢得宝贵的排名和里程碑奖励！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FIGHT_LANDING_PVP_TITLE",
+      "v": "对决",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FIGHT_LANDING_QUESTS_TITLE",
+      "v": "单人任务",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FIGHT_LANDING_RAIDS_DESCRIPTION",
+      "v": "进攻其他玩家！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FIGHT_LANDING_RAIDS_INFOTIP",
+      "v": "突袭玩家基地以赢取突袭货币，勋章以及更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FIGHT_LANDING_RATING_BREAKDOWN_CHAMPION",
+      "v": "机器人：{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FIGHT_LANDING_RATING_BREAKDOWN_MASTERY",
+      "v": "精通：+{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FIGHT_LANDING_RATING_BREAKDOWN_NODES",
+      "v": "节点：+{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FIGHT_LANDING_RATING_BREAKDOWN_OTHER",
+      "v": "加成：+{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FIGHT_LANDING_RATING_BREAKDOWN_SYNERGY",
+      "v": "协同：+{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FIGHT_LANDING_RATING_BREAKDOWN_TOWERS",
+      "v": "模块: +{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FIGHT_LANDING_STORY_QUESTS_DESCRIPTION",
+      "v": "获取经验值、黄金以及矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FIGHT_LANDING_STORY_QUESTS_TOOLTIP",
+      "v": "在破解新昆塔莎星之谜时获取经验值、能量晶体以及升级材料。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FIGHT_LANDING_TITLE",
+      "v": "选择一个战斗模式",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FIGHT_LANDING_VERSUS_DESCRIPTION",
+      "v": "通过与其他玩家竞争来赢得宝贵的排名和里程碑奖励，包括机器人、程序和其他！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FIGHT_READY",
+      "v": "准备",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FIGHT_TIMEOUT",
+      "v": "时间结束",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HITS",
+      "v": "攻击",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HUD_ATTACK_MOD",
+      "v": "攻击模块！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HUD_DEFENSE_MOD",
+      "v": "防御模块！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HUD_ENEMY_MOD",
+      "v": "敌方模块！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HUD_UTILITY_MOD",
+      "v": "通用模块！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HUD_WINS",
+      "v": "{0} 胜利!!",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTBOARD_AMBUSH",
+      "v": "埋伏",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTBOARD_PLAYERDONE",
+      "v": "任务完成",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTBOARD_QUIT_CONFIRM_BODY",
+      "v": "你确定要退出吗？你将失去本任务你收集到的所有道具和宝箱！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTBOARD_QUIT_CONFIRM_TITLE",
+      "v": "退出任务",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTBOARD_TIME_ENDED",
+      "v": "时间已过期",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTRESULTS_ACT_COMPLETE",
+      "v": "每幕完成奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTRESULTS_ACT_MASTERY",
+      "v": "每幕探索奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTRESULTS_ACT_REPLAY",
+      "v": "每幕重玩奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTRESULTS_CHAPTER_COMPLETE",
+      "v": "章节完成奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTRESULTS_CHAPTER_MASTERY",
+      "v": "章节探索奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTRESULTS_CHAPTER_REPLAY",
+      "v": "章节重玩奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTRESULTS_CHESTS",
+      "v": "宝箱结果",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTRESULTS_COMPLETE_HEADER",
+      "v": "任务完成！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTRESULTS_EXPLORED_PERCENT_FORMAT",
+      "v": "{0}% [b1b3b3]已探索[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTRESULTS_GACHA",
+      "v": "开启水晶",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTRESULTS_GOTO_QUESTS",
+      "v": "返回任务",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTRESULTS_NEXT_QUEST",
+      "v": "进行下一个",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTRESULTS_QUEST_COMPLETION",
+      "v": "任务完成奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTRESULTS_QUEST_MASTERY",
+      "v": "任务探索奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTRESULTS_QUEST_REPLAY",
+      "v": "任务重玩奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTRESULTS_QUEST_WITHHELD",
+      "v": "任务奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTRESULTS_REPLAY_QUEST",
+      "v": "重玩",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTRESULTS_UPGRADE",
+      "v": "升级机器人",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTSTORAGE_DESC",
+      "v": "完成该任务以获得这些道具！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTSTORAGE_TITLE",
+      "v": "任务储备",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTS_BACK_TO_CHAPTERS",
+      "v": "前往章节",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTS_COMING_SOON",
+      "v": "即将到来",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTS_ENEMIES",
+      "v": "敌人",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTS_ENEMY_CLASSES_DESCRIPTION",
+      "v": "遭遇战包含以下类别：",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTS_ENEMY_DESCRIPTION",
+      "v": "遭遇战包含以下类别：",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTS_ENERGY_PER_TILE",
+      "v": "{0}/节点",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTS_ENERGY_PER_TILE_FOOTER",
+      "v": "/节点",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTS_EXPIRED",
+      "v": "该任务已过期",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTS_GATES",
+      "v": "关卡",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTS_GATES_MISSING_REQUIREMENTS",
+      "v": "{0}{1}\n",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTS_GATES_MISSING_REQUIREMENTS_DESCRIPTION",
+      "v": "以下要求尚未达成，不足以解锁所有类别门槛并完整探索整个任务。\n\n{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTS_GATES_MISSING_REQUIREMENTS_TITLE",
+      "v": "任务关卡需求不符",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTS_GATE_WARNING",
+      "v": "关卡警告",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTS_GATE_WARNING_DESCRIPTION",
+      "v": "一些路线需要满足条件后才能解锁。检查要求并探索锁定的任务路线！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTS_INFO_BOSS",
+      "v": "BOSS",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTS_INFO_ENEMY_GATE_INFO",
+      "v": "遭遇战",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTS_MISSION_NUMBER",
+      "v": "任务{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTS_PREVIEW",
+      "v": "预览",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTS_QUEST_TITLE_FORMAT",
+      "v": "[FFFFFFFF]{0}[FFFFFF55]{1}[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTS_RECOMMENDED",
+      "v": "推荐",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTS_RECOMMENDED_TEAM_RATING",
+      "v": "推荐小队评分",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTS_TILES_EXPLORED",
+      "v": "已探索",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTS_TITLE",
+      "v": "选择一个任务",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTS_TOTAL",
+      "v": "总计",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTS_TOTAL_TEAM_RATING",
+      "v": "小队评分合计",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTS_UNKNOWN_ERROR",
+      "v": "发生了一个未知错误。请稍后再试。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTS_UNOPENED_GACHA_MESSAGE",
+      "v": "你还有未开启的水晶。\n想要现在开启它们吗？",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTS_UNOPENED_GACHA_TITLE",
+      "v": "未开启的水晶",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTS_UPGRADE_MATERIALS_MESSAGE",
+      "v": "你有未使用的矿-13。\n你想现在升级机器人吗？",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUESTS_UPGRADE_MATERIALS_TITLE",
+      "v": "可用矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUEST_COMPLETION_REWARDS",
+      "v": "完成奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUEST_MASTERY_REWARDS",
+      "v": "探索奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUEST_OVERALL_REWARDS",
+      "v": "一幕的奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUEST_RESULTS_BASE_ALLIANCE_NEEDS_HELP",
+      "v": "你的同盟需要帮助",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUEST_RESULTS_BASE_AWAY_TEAM_RETURNED",
+      "v": "小队已返回",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUEST_RESULTS_BASE_AWAY_TEAM_RETURNING",
+      "v": "小队返回在{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUEST_RESULTS_BASE_CRYSTALS_READY",
+      "v": "可领取水晶",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUEST_RESULTS_BASE_GOLD_READY",
+      "v": "有可拾取的黄金",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUEST_RESULTS_BASE_RAIDED",
+      "v": "你已被攻击",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_QUEST_RESULTS_EXPLORED_PERCENT_FORMAT",
+      "v": "[ffffffff]{0}%[-]已探索",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_RAID_TITLE",
+      "v": "突袭",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_RAID_TITLE_VERB",
+      "v": "突袭！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORY_MISSIONS_DESCRIPTION_GENERIC",
+      "v": "在破解新昆塔莎星之谜时获取经验值、能量晶体以及升级材料。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORY_NO_STORY",
+      "v": "现在没有可进行的故事任务，请稍后再来！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORY_QUEST_TITLE",
+      "v": "故事",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORY_QUEST_TITLE_FULL",
+      "v": "故事任务",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STREAK_0",
+      "v": "不错！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STREAK_1",
+      "v": "好样的！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STREAK_2",
+      "v": "太棒了！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STREAK_3",
+      "v": "超好！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STREAK_4",
+      "v": "非凡！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STREAK_5",
+      "v": "优！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STREAK_6",
+      "v": "挺好！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STREAK_7",
+      "v": "绝好！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STREAK_8",
+      "v": "震撼！！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STREAK_9",
+      "v": "毁天灭地！！！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ACTS_ACT_FORMAT",
+      "v": "第{0}幕",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ACTS_ACT_UNLOCKED",
+      "v": "解锁新的一幕！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ACTS_CHAPTER_FORMAT",
+      "v": "章节{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ACTS_CHAPTER_UNLOCKED",
+      "v": "章节已解锁！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ACTS_COMING_SOON",
+      "v": "即将到来",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ACTS_EVENT_QUESTS",
+      "v": "进行任务",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ACTS_PLAY_CINEMATIC",
+      "v": "电影视角",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ACTS_QUEST_FORMAT",
+      "v": "{0}. {1}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ACTS_QUEST_UNLOCKED",
+      "v": "任务已解锁！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ACTS_SELECT_ACT",
+      "v": "选择其中一幕",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ACTS_SELECT_CHAPTER",
+      "v": "选择一个章节",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ACTS_STORY_QUESTS",
+      "v": "故事任务",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ACTS_UNLOCK_CHAPTER_MESSAGE_FORMAT",
+      "v": "完成\n章节{0}解锁。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ACTS_UNLOCK_MESSAGE_FORMAT",
+      "v": "完成第{0}幕以解锁",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ACTS_UNLOCK_QUEST_MESSAGE",
+      "v": "完成上个任务以解锁。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ALLIANCE_NODE_INDEX_FORMAT",
+      "v": "位于此节点",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_BONUSLABEL",
+      "v": "额外奖励：",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_BOTWARNING_DESC",
+      "v": "在任务进行时你的机器人将变为不可用。\n确定你要派遣那些机器人吗？",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_BOTWARNING_TITLE",
+      "v": "开始任务",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_BUILDING_INFO_TOOLTIP",
+      "v": "该建筑通过频繁的使用获得了经验值和成长。该建筑的下一阶段将在等级{0}完成。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_CANCEL_DESC",
+      "v": "你真的想要召回你的机器人吗？任务将立刻失败并且任务消耗无法返还。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_CANCEL_TITLE",
+      "v": "确定吗？",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_CHANCE",
+      "v": "加成几率",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_CHANCE_HIGH",
+      "v": "高",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_CHANCE_IMPOSSIBLE",
+      "v": "不可能",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_CHANCE_LOW",
+      "v": "低",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_CHANCE_MEDIUM",
+      "v": "中",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_CHANCE_VERYHIGH",
+      "v": "非常高",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_CHASE",
+      "v": "加成",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_CHASED",
+      "v": "加成奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_COMPLETE",
+      "v": "任务完成！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_COST",
+      "v": "花费：",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_DISABLED",
+      "v": "远程任务暂时无法进行。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_DURATION_TITLE",
+      "v": "持续时间",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_EXPIRED",
+      "v": "已过期",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_EXPIRED_DESC",
+      "v": "糟糕，你错过了收集奖励的时间。请在任务完成后三天内领取奖励！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_FAIL",
+      "v": "失败！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_FAILED",
+      "v": "任务失败！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_GETBOTS",
+      "v": "获取更多机器人",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_GET_NEW_MISSIONS",
+      "v": "获取新任务",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_GUARANTEED",
+      "v": "有保障的",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_KILL_POPUP_BODY",
+      "v": "远距任务即将到来",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_KILL_POPUP_TITLE",
+      "v": "远距任务",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_MISSIONTIMER",
+      "v": "任务将在{0}结束",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_MISSIONTIMER_REWARDS",
+      "v": "奖励将在{0}到期",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_MISSION_ACTIVE",
+      "v": "任务进行中！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_MISSION_ACTIVE_DESC",
+      "v": "在任务结束后的三天内回来领取奖励！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_MISSION_INPROGRESS_TIMER",
+      "v": "任务正在进行：将于{0}完成",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_MISSION_STARTED",
+      "v": "任务已开始！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_NEW_MISSIONS",
+      "v": "新任务",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_NOBOTS_TITLE",
+      "v": "你需要更多的机器人以进行该任务！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_NOT_ENOUGH_BOTS_FORMAT",
+      "v": "你只选择了{0}个机器人。开始这个任务需要{1}个机器人。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_NO_MISSIONS",
+      "v": "你已经完成所有可进行的任务！将在下次更新时再次获得任务。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_NUMBOTS",
+      "v": "机器人：",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_PI",
+      "v": "评分：",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_PI_VALUE",
+      "v": "[FFFFFF]{0}[-][b1b3b3]/{1}[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_PRIZES_TITLE",
+      "v": "奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_PROGRESS",
+      "v": "{0}个任务已完成",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_PROGRESS_SINGLE",
+      "v": "{0}个任务已完成",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_RARITY_COMMON",
+      "v": "一般",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_RARITY_EPIC",
+      "v": "史诗",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_RARITY_FIELD",
+      "v": "稀有度",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_RARITY_LEGENDARY",
+      "v": "传奇",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_RARITY_RARE",
+      "v": "少有",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_RARITY_TITLE",
+      "v": "稀有度 :",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_RARITY_UNCOMMON",
+      "v": "罕见",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_RECOMMENDED",
+      "v": "推荐",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_REFRESH",
+      "v": "刷新",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_REFRESHWARNING_DESC",
+      "v": "这将取代剩余任务。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_REFRESHWARNING_TITLE",
+      "v": "获取新任务",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_REFRESH_DESC",
+      "v": "想要更好的奖励或者更多的任务选择？更新你的任务清单。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_REFRESH_REMINDER",
+      "v": "下一次更新在{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_REFRESH_REMINDER_OLD",
+      "v": "任务清单每{0}小时更新。下一次更新在{1}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_REFRESH_TIMER_INFO_TOOLTIP",
+      "v": "任务列表将在下次更新时全部刷新。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_REVEAL_RESULTS",
+      "v": "显示结果",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_REVEAL_RESULTS_TIMER",
+      "v": "还有{0}才显示结果",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_REVEAL_RESULTS_UNCLAIMED",
+      "v": "无人领取的奖励将会丢失",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_REWARD_DESC",
+      "v": "现在就领取你的奖励！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_SELECT_TEAM",
+      "v": "选中远征小队",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_START",
+      "v": "开始任务",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_SUCCESS",
+      "v": "成功！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_SUCCESS_RATE_TITLE",
+      "v": "几率",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_TITLE",
+      "v": "移动指挥部",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_TOOLTIP_HAS_ACTIVE_MISSIONS",
+      "v": "你有正在进行中的远距任务！待他们回来后再派遣新的。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_TOOLTIP_LOW_PI",
+      "v": "你仅有0%的几率获取奖励！尝试不同的先遣队任务。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_AWAYTEAM_TOOLTIP_SELECT_BOTS",
+      "v": "小队必须保持满员状态，你才能派遣他们进行先遣队任务。选择派遣更多的机器人！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_BUILDING_BATTLE_CENTER_LOCKED_RAIDS_TUTORIAL",
+      "v": "当我们从你的首次突袭中收集到情报后，[33effaff]{0}[-]的建造就会结束。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_BUILDING_FEATURE_LOCK",
+      "v": "该功能目前正在开发中，无法访问。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_BUILDING_FEATURE_LOCK_AWAY_TEAM",
+      "v": "远距任务即将到来！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_BUILDING_LEVEL",
+      "v": "等级{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_BUILDING_LEVEL_UP_INFO",
+      "v": "该建筑通过频繁的使用获得了经验值和成长。该建筑的下一阶段将在等级{0}完成。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_BUILDING_SOLD",
+      "v": "遗迹已出售",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_BUILDING_UNDER_CONSTRUCTION_BODY",
+      "v": "该[33effaff]{0}[-]建筑当前正在建造中。建设将在[33effaff]等级 {1}[-]完成。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_BUTTON_ATTACK",
+      "v": "攻击",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAPTER_FORMAT",
+      "v": "章节{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CURRENT_DAILY_QUEST",
+      "v": "类别：[-] {0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CURRENT_STORY_QUEST",
+      "v": "第{0}幕-第{1}章/任务{2}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CURRENT_STORY_QUEST_LONG",
+      "v": "第{0}幕\r\n第{1}章/任务{2}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_DAILY_NO_DAILY",
+      "v": "现在没有可进行的日常任务，请稍后再来！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_DAILY_QUEST_TITLE",
+      "v": "日常",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_DAILY_QUEST_TITLE_FULL",
+      "v": "日常任务",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_EVENTS_DISABLED",
+      "v": "事件当前已禁用。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_EVENTS_NO_CONTRIBUTIONS",
+      "v": "当前还没有同盟成员在该事件中作出贡献！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_EVENTS_POSSIBLE_REWARDS",
+      "v": "可能获得的奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_EVENTS_SCREEN_ALLIANCE_LOCKED_TITLE",
+      "v": "单人事件",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_EVENTS_SCREEN_ALL_MILESTONES",
+      "v": "100%完成里程碑",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_EVENTS_SCREEN_BUTTON_MORE",
+      "v": "更多",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_EVENTS_SCREEN_COMING_SOON",
+      "v": "事件即将到来！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_EVENTS_SCREEN_CONTRIBUTION",
+      "v": "贡献",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_EVENTS_SCREEN_NO_EVENTS",
+      "v": "没有可用事件。稍后再来查看！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_EVENTS_SCREEN_NO_MILESTONE_REWARDS",
+      "v": "无里程碑奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_EVENTS_SCREEN_NO_RANK_REWARDS",
+      "v": "无排名奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_EVENTS_SCREEN_TOP_MILESTONE",
+      "v": "最高里程碑",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_EVENTS_SCREEN_TOP_RANK",
+      "v": "最高排名",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_EVENTS_SCREEN_YOUR_RANK",
+      "v": "你的排名奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_EVENTS_SCREEN_YOUR_TOTAL_POINTS",
+      "v": "你的总分：",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_EVENTS_TYPE_DAILY",
+      "v": "日常任务",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_EVENTS_TYPE_EVENT_QUEST",
+      "v": "事件任务",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_EVENTS_TYPE_SPECIAL",
+      "v": "特殊任务",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_EVENT_NO_EVENT",
+      "v": "当前没有进行中的特殊事件。请稍后再来！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_EVENT_TITLE",
+      "v": "特殊",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_EVENT_TITLE_FULL",
+      "v": "特殊任务",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FIGHT_FIGHT",
+      "v": "战斗！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FIGHT_KO",
+      "v": "K.O.",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FIGHT_LANDING_AVA_DESCRIPTION",
+      "v": "完成合作同盟任务赢得系别火种、模组火种和其他珍贵奖励！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FIGHT_LANDING_AVA_TITLE",
+      "v": "同盟",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FIGHT_LANDING_AVE_DESCRIPTION",
+      "v": "完成合作同盟任务来赢得类别火种、模块火种和其他有价值的奖励！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FIGHT_LANDING_DAILY_QUESTS_DESCRIPTION",
+      "v": "完成这些简短的任务，获得类别火种、类别火种精华和类别矿石！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FIGHT_LANDING_EVENT_QUESTS_DESCRIPTION",
+      "v": "通过完成额外的故事任务了解新的机器人，并在限时重点任务及挑战任务中赢得独特奖励！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FIGHT_LANDING_LEVEL_LOCK",
+      "v": "你必须至少达到等级{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FIGHT_LANDING_NO_AVX_EVENT",
+      "v": "同盟任务即将到来！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FIGHT_LANDING_PVP_DESCRIPTION",
+      "v": "同其他玩家比拼来赢得宝贵的排名和里程碑奖励！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FIGHT_LANDING_PVP_TITLE",
+      "v": "对决",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FIGHT_LANDING_QUESTS_TITLE",
+      "v": "单人任务",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FIGHT_LANDING_RAIDS_DESCRIPTION",
+      "v": "进攻其他玩家！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FIGHT_LANDING_RAIDS_INFOTIP",
+      "v": "突袭玩家基地以赢取突袭货币，勋章以及更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FIGHT_LANDING_RATING_BREAKDOWN_CHAMPION",
+      "v": "机器人：{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FIGHT_LANDING_RATING_BREAKDOWN_MASTERY",
+      "v": "精通：+{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FIGHT_LANDING_RATING_BREAKDOWN_NODES",
+      "v": "节点：+{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FIGHT_LANDING_RATING_BREAKDOWN_OTHER",
+      "v": "加成：+{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FIGHT_LANDING_RATING_BREAKDOWN_SYNERGY",
+      "v": "协同：+{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FIGHT_LANDING_RATING_BREAKDOWN_TOWERS",
+      "v": "模块: +{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FIGHT_LANDING_STORY_QUESTS_DESCRIPTION",
+      "v": "获取经验值、黄金以及矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FIGHT_LANDING_STORY_QUESTS_TOOLTIP",
+      "v": "在破解新昆塔莎星之谜时获取经验值、能量晶体以及升级材料。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FIGHT_LANDING_TITLE",
+      "v": "选择一个战斗模式",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FIGHT_LANDING_VERSUS_DESCRIPTION",
+      "v": "通过与其他玩家竞争来赢得宝贵的排名和里程碑奖励，包括机器人、程序和其他！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FIGHT_READY",
+      "v": "准备",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FIGHT_TIMEOUT",
+      "v": "时间结束",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HITS",
+      "v": "攻击",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HUD_ATTACK_MOD",
+      "v": "攻击模块！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HUD_DEFENSE_MOD",
+      "v": "防御模块！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HUD_ENEMY_MOD",
+      "v": "敌方模块！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HUD_UTILITY_MOD",
+      "v": "通用模块！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HUD_WINS",
+      "v": "{0} 胜利!!",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTBOARD_AMBUSH",
+      "v": "埋伏",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTBOARD_PLAYERDONE",
+      "v": "任务完成",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTBOARD_QUIT_CONFIRM_BODY",
+      "v": "你确定要退出吗？你将失去本任务你收集到的所有道具和宝箱！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTBOARD_QUIT_CONFIRM_TITLE",
+      "v": "退出任务",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTBOARD_TIME_ENDED",
+      "v": "时间已过期",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTRESULTS_ACT_COMPLETE",
+      "v": "每幕完成奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTRESULTS_ACT_MASTERY",
+      "v": "每幕探索奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTRESULTS_ACT_REPLAY",
+      "v": "每幕重玩奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTRESULTS_CHAPTER_COMPLETE",
+      "v": "章节完成奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTRESULTS_CHAPTER_MASTERY",
+      "v": "章节探索奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTRESULTS_CHAPTER_REPLAY",
+      "v": "章节重玩奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTRESULTS_CHESTS",
+      "v": "宝箱结果",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTRESULTS_COMPLETE_HEADER",
+      "v": "任务完成！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTRESULTS_EXPLORED_PERCENT_FORMAT",
+      "v": "{0}% [b1b3b3]已探索[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTRESULTS_GACHA",
+      "v": "开启水晶",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTRESULTS_GOTO_QUESTS",
+      "v": "返回任务",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTRESULTS_NEXT_QUEST",
+      "v": "进行下一个",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTRESULTS_QUEST_COMPLETION",
+      "v": "任务完成奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTRESULTS_QUEST_MASTERY",
+      "v": "任务探索奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTRESULTS_QUEST_REPLAY",
+      "v": "任务重玩奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTRESULTS_QUEST_WITHHELD",
+      "v": "任务奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTRESULTS_REPLAY_QUEST",
+      "v": "重玩",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTRESULTS_UPGRADE",
+      "v": "升级机器人",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTSTORAGE_DESC",
+      "v": "完成该任务以获得这些道具！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTSTORAGE_TITLE",
+      "v": "任务储备",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTS_BACK_TO_CHAPTERS",
+      "v": "前往章节",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTS_COMING_SOON",
+      "v": "即将到来",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTS_ENEMIES",
+      "v": "敌人",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTS_ENEMY_CLASSES_DESCRIPTION",
+      "v": "遭遇战包含以下类别：",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTS_ENEMY_DESCRIPTION",
+      "v": "遭遇战包含以下类别：",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTS_ENERGY_PER_TILE",
+      "v": "{0}/节点",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTS_ENERGY_PER_TILE_FOOTER",
+      "v": "/节点",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTS_EXPIRED",
+      "v": "该任务已过期",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTS_GATES",
+      "v": "关卡",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTS_GATES_MISSING_REQUIREMENTS",
+      "v": "{0}{1}\n",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTS_GATES_MISSING_REQUIREMENTS_DESCRIPTION",
+      "v": "以下要求尚未达成，不足以解锁所有类别门槛并完整探索整个任务。\n\n{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTS_GATES_MISSING_REQUIREMENTS_TITLE",
+      "v": "任务关卡需求不符",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTS_GATE_WARNING",
+      "v": "关卡警告",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTS_GATE_WARNING_DESCRIPTION",
+      "v": "一些路线需要满足条件后才能解锁。检查要求并探索锁定的任务路线！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTS_INFO_BOSS",
+      "v": "BOSS",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTS_INFO_ENEMY_GATE_INFO",
+      "v": "遭遇战",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTS_MISSION_NUMBER",
+      "v": "任务{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTS_PREVIEW",
+      "v": "预览",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTS_QUEST_TITLE_FORMAT",
+      "v": "[FFFFFFFF]{0}[FFFFFF55]{1}[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTS_RECOMMENDED",
+      "v": "推荐",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTS_RECOMMENDED_TEAM_RATING",
+      "v": "推荐小队评分",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTS_TILES_EXPLORED",
+      "v": "已探索",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTS_TITLE",
+      "v": "选择一个任务",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTS_TOTAL",
+      "v": "总计",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTS_TOTAL_TEAM_RATING",
+      "v": "小队评分合计",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTS_UNKNOWN_ERROR",
+      "v": "发生了一个未知错误。请稍后再试。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTS_UNOPENED_GACHA_MESSAGE",
+      "v": "你还有未开启的水晶。\n想要现在开启它们吗？",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTS_UNOPENED_GACHA_TITLE",
+      "v": "未开启的水晶",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTS_UPGRADE_MATERIALS_MESSAGE",
+      "v": "你有未使用的矿-13。\n你想现在升级机器人吗？",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUESTS_UPGRADE_MATERIALS_TITLE",
+      "v": "可用矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUEST_COMPLETION_REWARDS",
+      "v": "完成奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUEST_MASTERY_REWARDS",
+      "v": "探索奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUEST_OVERALL_REWARDS",
+      "v": "一幕的奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUEST_RESULTS_BASE_ALLIANCE_NEEDS_HELP",
+      "v": "你的同盟需要帮助",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUEST_RESULTS_BASE_AWAY_TEAM_RETURNED",
+      "v": "小队已返回",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUEST_RESULTS_BASE_AWAY_TEAM_RETURNING",
+      "v": "小队返回在{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUEST_RESULTS_BASE_CRYSTALS_READY",
+      "v": "可领取水晶",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUEST_RESULTS_BASE_GOLD_READY",
+      "v": "有可拾取的黄金",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUEST_RESULTS_BASE_RAIDED",
+      "v": "你已被攻击",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_QUEST_RESULTS_EXPLORED_PERCENT_FORMAT",
+      "v": "[ffffffff]{0}%[-]已探索",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_RAID_TITLE",
+      "v": "突袭",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_RAID_TITLE_VERB",
+      "v": "突袭！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORY_MISSIONS_DESCRIPTION_GENERIC",
+      "v": "在破解新昆塔莎星之谜时获取经验值、能量晶体以及升级材料。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORY_NO_STORY",
+      "v": "现在没有可进行的故事任务，请稍后再来！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORY_QUEST_TITLE",
+      "v": "故事",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORY_QUEST_TITLE_FULL",
+      "v": "故事任务",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STREAK_0",
+      "v": "不错！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STREAK_1",
+      "v": "好样的！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STREAK_2",
+      "v": "太棒了！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STREAK_3",
+      "v": "超好！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STREAK_4",
+      "v": "非凡！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STREAK_5",
+      "v": "优！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STREAK_6",
+      "v": "挺好！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STREAK_7",
+      "v": "绝好！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STREAK_8",
+      "v": "震撼！！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STREAK_9",
+      "v": "毁天灭地！！！",
+      "vn": 1
+    }
+  ]
+}

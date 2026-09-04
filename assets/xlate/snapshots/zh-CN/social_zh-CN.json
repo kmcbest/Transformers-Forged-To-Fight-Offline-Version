@@ -1,0 +1,1545 @@
+{
+  "meta": {
+    "format": "sparx",
+    "language": "zh-CN",
+    "tagged": [
+      "social",
+      "client"
+    ],
+    "hash": "bc6168de3a1eccc07272502de7786029383ece6d",
+    "ts": 1525913707,
+    "string_count": 153
+  },
+  "strings": [
+    {
+      "k": "ID_UI_CHATNAME_CONFIRM_BODY",
+      "v": "请注意！\n账户创建后将无法更改用户名。\n\n确定使用[00FF00]{0}[-]?",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_AVA_CTA",
+      "v": "你的同盟需要你！返回至同盟战争。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_AVA_JOINED_CTA",
+      "v": "你的同盟需要你！返回至同盟任务。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_AVE_CONTINUE_CTA",
+      "v": "你的盟友需要你！返回你的同盟任务。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_AVE_CTA",
+      "v": "你的盟友需要你！加入同盟任务。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_AVE_CTA_BUTTON",
+      "v": "同盟任务",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_BANNED_TIMER",
+      "v": "你被禁言了。聊天将在{0}恢复。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_CHANNEL_ALLIANCE",
+      "v": "同盟",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_CHANNEL_AVA",
+      "v": "军团",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_CHANNEL_AVE",
+      "v": "作战小队",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_CHANNEL_DEFAULT",
+      "v": "聊天",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_CHANNEL_GLOBAL",
+      "v": "全球",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_CHANNEL_WAR_ROOM",
+      "v": "作战室",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_DESCRIPTION_WAR_ROOM",
+      "v": "这里是一个开放的聊天室，你可以和你的对手在这里进行聊天。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_ENTERTEXT",
+      "v": "在此输入文字",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_FIND_ALLIANCE",
+      "v": "转到同盟",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_IGNORE",
+      "v": "忽略",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_JOIN_ALLIANCE",
+      "v": "加入一个同盟进行同盟聊天！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_NOMESSAGES_WAR_ROOM",
+      "v": "你可以在这里与你的对手开始进行对话。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_NONAME",
+      "v": "名字必须在3至15个字符之间",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_NOW",
+      "v": "现在",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_REPORT",
+      "v": "举报用户",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_REPORTED_BODY",
+      "v": "该用户的行为已上报\n至游戏团队。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_REPORTED_TITLE",
+      "v": "用户已举报",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_REPORT_ISSUE",
+      "v": "报告问题",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_SEND",
+      "v": "发送",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_SETTINGS_ENABLE",
+      "v": "要使聊天可用，请转入设置。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_TRANSLATED_FROM_LANG_ARABIC",
+      "v": "العربية",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_TRANSLATED_FROM_LANG_DE",
+      "v": "Deutsch",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_TRANSLATED_FROM_LANG_EN",
+      "v": "English",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_TRANSLATED_FROM_LANG_ES",
+      "v": "español",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_TRANSLATED_FROM_LANG_FR",
+      "v": "Français",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_TRANSLATED_FROM_LANG_INDONESIAN",
+      "v": "Indonesia",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_TRANSLATED_FROM_LANG_IT",
+      "v": "italiano",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_TRANSLATED_FROM_LANG_JA",
+      "v": "日本语",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_TRANSLATED_FROM_LANG_KO",
+      "v": "한국어",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_TRANSLATED_FROM_LANG_NL",
+      "v": "Nederlands",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_TRANSLATED_FROM_LANG_NO",
+      "v": "Norsk",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_TRANSLATED_FROM_LANG_PT",
+      "v": "Português do Brasil",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_TRANSLATED_FROM_LANG_RU",
+      "v": "русский",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_TRANSLATED_FROM_LANG_THAI",
+      "v": "ไทย",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_TRANSLATED_FROM_LANG_TR",
+      "v": "Türkçe",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_TRANSLATED_FROM_LANG_ZH-CN",
+      "v": "简体中文",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_TRANSLATED_FROM_LANG_ZH-TW",
+      "v": "繁体中文",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_TS",
+      "v": "{0}之前",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_VIEW_PROFILE",
+      "v": "查看信息",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_WELCOME",
+      "v": "欢迎加入战斗！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CHAT_WELCOME_BACK",
+      "v": "欢迎回来，{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FRIENDS",
+      "v": "好友",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FRIENDS_4EVER_ALONE",
+      "v": "你还没有添加任何的联系人！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FRIENDS_ADD",
+      "v": "添加好友",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FRIENDS_ALREADY",
+      "v": "已经是好友了",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FRIENDS_CONTACTS",
+      "v": "联系人",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FRIENDS_EMPTY_BLOCKED",
+      "v": "没有屏蔽的用户。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FRIENDS_EMPTY_LIST",
+      "v": "当前清单为空。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FRIENDS_EMPTY_SEARCH",
+      "v": "没有可显示的查找结果。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FRIENDS_ERR_MAXFRIENDS_LOCAL",
+      "v": "你的好友数量已达上限。想要添加更多，请移除一部分联系人。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FRIENDS_ERR_MAXFRIENDS_LOCAL_TITLE",
+      "v": "列表已满",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FRIENDS_ERR_MAXFRIENDS_REMOTE",
+      "v": "这个指挥官的好友太多了，无法再接受更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FRIENDS_ERR_MAXFRIENDS_REMOTE_TITLE",
+      "v": "对方列表已满",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FRIENDS_ERR_REMOVED",
+      "v": "该用户已将你移出好友清单。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FRIENDS_FILTER",
+      "v": "查找联系人",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FRIENDS_FILTER_FAIL",
+      "v": "未找到联系人。请重新查找。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FRIENDS_IGNORE_ALL",
+      "v": "隐藏所有请求",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FRIENDS_NO_REQUESTS",
+      "v": "你没有未处理的好友请求。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FRIENDS_REJECT_CONFIRM",
+      "v": "你要拒绝这个好友请求吗？",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FRIENDS_REMOVE",
+      "v": "删除好友",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FRIENDS_REMOVE_CONFIRM",
+      "v": "你要将该好友从联系人名单中移除吗？",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FRIENDS_REQUESTS",
+      "v": "请求",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FRIENDS_REQUESTS_EXT",
+      "v": "好友请求",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FRIENDS_REQUEST_SENT",
+      "v": "你的好友请求已发送。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FRIENDS_REQUEST_SENT_SHORT",
+      "v": "已发送请求",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FRIENDS_SEARCH",
+      "v": "查找",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FRIENDS_SEARCH_DEFAULT",
+      "v": "查找其他的指挥官。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FRIENDS_SEARCH_ERROR",
+      "v": "查找失败",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FRIENDS_SEARCH_INVALID",
+      "v": "请确认输入的名字至少有3个字符。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FRIENDS_SEARCH_NO_RESULTS",
+      "v": "未找到用户。请重新查找。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FRIENDS_SEARCH_PROMPT",
+      "v": "查找用户",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FRIENDS_UNBLOCK_FRIEND",
+      "v": "你的好友当前被屏蔽了，因此他们的消息无法显示在聊天中。你想现在解除屏蔽吗？",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INBOX_BLUEPRINTS_TOOLTIP",
+      "v": "全部领取将获得最近即将到期的矿-13，补充你的矿-13库存。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INBOX_CATALYSTS_INFO_TEXT",
+      "v": "在过期之前领取你的火种！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INBOX_CATALYSTS_TOOLTIP",
+      "v": "全部领取将获得最近即将到期的火种，补充你的火种库存。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INBOX_CATALYST_STORAGE_FULL",
+      "v": "你的火种已达到最大容量。使用它提升机器人级别，然后再回来领取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INBOX_CLAIM_ALL",
+      "v": "领取上限",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INBOX_EXPIRING_SOON",
+      "v": "{0}即将到期",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INBOX_GOTO",
+      "v": "前往储藏室",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INBOX_GOTO_CLAIM",
+      "v": "在储藏室领取",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INBOX_ITEMS_INFO_TEXT",
+      "v": "在过期之前领取你的道具！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INBOX_ITEMS_TOOLTIP",
+      "v": "全部领取将获得最近即将到期的道具，补充你的道具库存。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INBOX_NO_CATALYSTS",
+      "v": "当前没有库存的火种。一旦你的火种超出火种的最大容量，\n额外的部分将被储存在这里。\n你可以从副本商店，日常任务和同盟任务中获取它们！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INBOX_NO_ITEMS",
+      "v": "当前没有库存的道具。\n一旦你的道具超出容量，额外的部分将被储存在这里。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INBOX_NO_REWARDS",
+      "v": "当前没有库存奖励。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INBOX_NO_UPGRADE_ITEMS",
+      "v": "当前没有库存的矿-13。\n一旦你的矿-13库存已满，额外的部分将被储存在这里。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INBOX_SELECTIONS_REMAINING",
+      "v": "{0}剩余选择",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INBOX_SELL_BLUEPRINTS",
+      "v": "出售存货",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INBOX_STORAGE_FULL",
+      "v": "你已经无法储存更多矿-13。使用它去升级你的机器人，然后再回来领取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INBOX_TITLE",
+      "v": "储藏室",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INBOX_TOTAL",
+      "v": "{0}总计",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MAIL",
+      "v": "邮件",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MAIL_ALL_CLAIMED",
+      "v": "领取全部奖励！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MAIL_BACK",
+      "v": "返回清单",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MAIL_CLAIMED",
+      "v": "道具领取",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MAIL_DELETE",
+      "v": "删除",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MAIL_DESELECT_ALL",
+      "v": "全部取消({0})",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MAIL_DISABLED",
+      "v": "邮件临时禁用。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MAIL_EMPTY_READ",
+      "v": "没有已读消息",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MAIL_EMPTY_UNREAD",
+      "v": "没有未读消息",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MAIL_ERR_GIFTS",
+      "v": "部分已选择的信息中还有未领取的礼物，它们将继续留在邮箱中。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MAIL_GOTO_URL",
+      "v": "点击前往！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MAIL_MARK_READ",
+      "v": "标记已读",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MAIL_NEXT",
+      "v": "下一个",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MAIL_PREV",
+      "v": "上一个",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MAIL_READ",
+      "v": "已读的",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MAIL_SELECT_MAX",
+      "v": "选择上限({0})",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MAIL_TITLE",
+      "v": "邮件",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MAIL_TOTAL",
+      "v": "总计{0}个",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MAIL_UNOPENED",
+      "v": "{0}未打开",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MAIL_UNREAD",
+      "v": "未读的",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MAIL_WARN_DELETE",
+      "v": "你确定要删除选中消息？删除后将无法复原。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_NAME_CONFIRM",
+      "v": "确认玩家名称",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_NAME_CONFIRM_BODY",
+      "v": "请注意！\n提交过后将无法更改名称。\n\n确定使用[00FF00]{0}[-]?",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_NAME_DESCRIPTION",
+      "v": "选择一个名称来进入同盟、突袭、聊天以及其他功能！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_NAME_ERROR_DEFAULT",
+      "v": "",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_NAME_ERROR_MINMAX",
+      "v": "名称必须在{0}至{1}字符之间",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_NAME_INFO",
+      "v": "输入名字",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_NAME_TITLE",
+      "v": "选择玩家名称",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PROFILE_ACTIVEBOOSTS",
+      "v": "激活加成",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PROFILE_BOOSTS",
+      "v": "加成",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PROFILE_BOOSTS_DISABLED",
+      "v": "加成当前已禁用。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PROFILE_BOOSTS_OTHER_PLAYER",
+      "v": "无法查看其他玩家激活的加成。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PROFILE_BOTRATING",
+      "v": "总评分：",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PROFILE_DEFENSERATING",
+      "v": "防御者评分：",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PROFILE_GOTOALLIANCE",
+      "v": "加入同盟",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PROFILE_INFO_RANK",
+      "v": "阶{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PROFILE_MASTERY",
+      "v": "精通",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PROFILE_MEDAL_COUNT",
+      "v": "x{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PROFILE_NOACTIVEBOOSTS",
+      "v": "你没有活性加成。在库存道具页面激活加成！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PROFILE_NOACTIVEBOOSTS_OTHER",
+      "v": "该玩家尚未激活加成。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PROFILE_OVERVIEW",
+      "v": "概述",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PROFILE_OVERVIEW_LEVEL",
+      "v": "等级：",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PROFILE_OVERVIEW_RAND_LEVEL_PROPORTION",
+      "v": "{0}/{1}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PROFILE_OVERVIEW_RANK",
+      "v": "阶：",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PROFILE_SELECT_NAME",
+      "v": "选择你的名称",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PROFILE_STATS",
+      "v": "数据",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PROFILE_STATS_PVP",
+      "v": "竞技场",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PROFILE_STATS_QUESTS",
+      "v": "任务",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PROFILE_TITLE",
+      "v": "指挥官简介",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PROFILE_TOPBOTS",
+      "v": "最佳机器人",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PROFILE_TOPDRONES",
+      "v": "最佳模块",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PROFILE_TOPRELICS",
+      "v": "最佳遗迹",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PROFILE_TOTALBOTS",
+      "v": "机器人总数：",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PROFILE_WHYJOIN",
+      "v": "加入同盟并一起畅玩独家游戏模式吧！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PROFILE_WHYJOIN_REWARDS",
+      "v": "加入同盟，一起畅玩独家游戏模式并赚取奖励！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHATNAME_CONFIRM_BODY",
+      "v": "请注意！\n账户创建后将无法更改用户名。\n\n确定使用[00FF00]{0}[-]?",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_AVA_CTA",
+      "v": "你的同盟需要你！返回至同盟战争。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_AVA_JOINED_CTA",
+      "v": "你的同盟需要你！返回至同盟任务。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_AVE_CONTINUE_CTA",
+      "v": "你的盟友需要你！返回你的同盟任务。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_AVE_CTA",
+      "v": "你的盟友需要你！加入同盟任务。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_AVE_CTA_BUTTON",
+      "v": "同盟任务",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_BANNED_TIMER",
+      "v": "你被禁言了。聊天将在{0}恢复。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_CHANNEL_ALLIANCE",
+      "v": "同盟",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_CHANNEL_AVA",
+      "v": "军团",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_CHANNEL_AVE",
+      "v": "作战小队",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_CHANNEL_DEFAULT",
+      "v": "聊天",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_CHANNEL_GLOBAL",
+      "v": "全球",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_CHANNEL_WAR_ROOM",
+      "v": "作战室",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_DESCRIPTION_WAR_ROOM",
+      "v": "这里是一个开放的聊天室，你可以和你的对手在这里进行聊天。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_ENTERTEXT",
+      "v": "在此输入文字",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_FIND_ALLIANCE",
+      "v": "转到同盟",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_IGNORE",
+      "v": "忽略",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_JOIN_ALLIANCE",
+      "v": "加入一个同盟进行同盟聊天！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_NOMESSAGES_WAR_ROOM",
+      "v": "你可以在这里与你的对手开始进行对话。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_NONAME",
+      "v": "名字必须在3至15个字符之间",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_NOW",
+      "v": "现在",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_REPORT",
+      "v": "举报用户",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_REPORTED_BODY",
+      "v": "该用户的行为已上报\n至游戏团队。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_REPORTED_TITLE",
+      "v": "用户已举报",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_REPORT_ISSUE",
+      "v": "报告问题",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_SEND",
+      "v": "发送",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_SETTINGS_ENABLE",
+      "v": "要使聊天可用，请转入设置。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_TRANSLATED_FROM_LANG_ARABIC",
+      "v": "العربية",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_TRANSLATED_FROM_LANG_DE",
+      "v": "Deutsch",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_TRANSLATED_FROM_LANG_EN",
+      "v": "English",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_TRANSLATED_FROM_LANG_ES",
+      "v": "español",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_TRANSLATED_FROM_LANG_FR",
+      "v": "Français",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_TRANSLATED_FROM_LANG_INDONESIAN",
+      "v": "Indonesia",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_TRANSLATED_FROM_LANG_IT",
+      "v": "italiano",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_TRANSLATED_FROM_LANG_JA",
+      "v": "日本语",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_TRANSLATED_FROM_LANG_KO",
+      "v": "한국어",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_TRANSLATED_FROM_LANG_NL",
+      "v": "Nederlands",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_TRANSLATED_FROM_LANG_NO",
+      "v": "Norsk",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_TRANSLATED_FROM_LANG_PT",
+      "v": "Português do Brasil",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_TRANSLATED_FROM_LANG_RU",
+      "v": "русский",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_TRANSLATED_FROM_LANG_THAI",
+      "v": "ไทย",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_TRANSLATED_FROM_LANG_TR",
+      "v": "Türkçe",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_TRANSLATED_FROM_LANG_ZH-CN",
+      "v": "简体中文",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_TRANSLATED_FROM_LANG_ZH-TW",
+      "v": "繁体中文",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_TS",
+      "v": "{0}之前",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_VIEW_PROFILE",
+      "v": "查看信息",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_WELCOME",
+      "v": "欢迎加入战斗！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CHAT_WELCOME_BACK",
+      "v": "欢迎回来，{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FRIENDS",
+      "v": "好友",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FRIENDS_4EVER_ALONE",
+      "v": "你还没有添加任何的联系人！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FRIENDS_ADD",
+      "v": "添加好友",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FRIENDS_ALREADY",
+      "v": "已经是好友了",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FRIENDS_CONTACTS",
+      "v": "联系人",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FRIENDS_EMPTY_BLOCKED",
+      "v": "没有屏蔽的用户。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FRIENDS_EMPTY_LIST",
+      "v": "当前清单为空。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FRIENDS_EMPTY_SEARCH",
+      "v": "没有可显示的查找结果。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FRIENDS_ERR_MAXFRIENDS_LOCAL",
+      "v": "你的好友数量已达上限。想要添加更多，请移除一部分联系人。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FRIENDS_ERR_MAXFRIENDS_LOCAL_TITLE",
+      "v": "列表已满",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FRIENDS_ERR_MAXFRIENDS_REMOTE",
+      "v": "这个指挥官的好友太多了，无法再接受更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FRIENDS_ERR_MAXFRIENDS_REMOTE_TITLE",
+      "v": "对方列表已满",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FRIENDS_ERR_REMOVED",
+      "v": "该用户已将你移出好友清单。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FRIENDS_FILTER",
+      "v": "查找联系人",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FRIENDS_FILTER_FAIL",
+      "v": "未找到联系人。请重新查找。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FRIENDS_IGNORE_ALL",
+      "v": "隐藏所有请求",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FRIENDS_NO_REQUESTS",
+      "v": "你没有未处理的好友请求。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FRIENDS_REJECT_CONFIRM",
+      "v": "你要拒绝这个好友请求吗？",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FRIENDS_REMOVE",
+      "v": "删除好友",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FRIENDS_REMOVE_CONFIRM",
+      "v": "你要将该好友从联系人名单中移除吗？",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FRIENDS_REQUESTS",
+      "v": "请求",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FRIENDS_REQUESTS_EXT",
+      "v": "好友请求",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FRIENDS_REQUEST_SENT",
+      "v": "你的好友请求已发送。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FRIENDS_REQUEST_SENT_SHORT",
+      "v": "已发送请求",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FRIENDS_SEARCH",
+      "v": "查找",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FRIENDS_SEARCH_DEFAULT",
+      "v": "查找其他的指挥官。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FRIENDS_SEARCH_ERROR",
+      "v": "查找失败",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FRIENDS_SEARCH_INVALID",
+      "v": "请确认输入的名字至少有3个字符。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FRIENDS_SEARCH_NO_RESULTS",
+      "v": "未找到用户。请重新查找。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FRIENDS_SEARCH_PROMPT",
+      "v": "查找用户",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FRIENDS_UNBLOCK_FRIEND",
+      "v": "你的好友当前被屏蔽了，因此他们的消息无法显示在聊天中。你想现在解除屏蔽吗？",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INBOX_BLUEPRINTS_TOOLTIP",
+      "v": "全部领取将获得最近即将到期的矿-13，补充你的矿-13库存。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INBOX_CATALYSTS_INFO_TEXT",
+      "v": "在过期之前领取你的火种！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INBOX_CATALYSTS_TOOLTIP",
+      "v": "全部领取将获得最近即将到期的火种，补充你的火种库存。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INBOX_CATALYST_STORAGE_FULL",
+      "v": "你的火种已达到最大容量。使用它提升机器人级别，然后再回来领取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INBOX_CLAIM_ALL",
+      "v": "领取上限",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INBOX_EXPIRING_SOON",
+      "v": "{0}即将到期",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INBOX_GOTO",
+      "v": "前往储藏室",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INBOX_GOTO_CLAIM",
+      "v": "在储藏室领取",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INBOX_ITEMS_INFO_TEXT",
+      "v": "在过期之前领取你的道具！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INBOX_ITEMS_TOOLTIP",
+      "v": "全部领取将获得最近即将到期的道具，补充你的道具库存。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INBOX_NO_CATALYSTS",
+      "v": "当前没有库存的火种。一旦你的火种超出火种的最大容量，\n额外的部分将被储存在这里。\n你可以从副本商店，日常任务和同盟任务中获取它们！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INBOX_NO_ITEMS",
+      "v": "当前没有库存的道具。\n一旦你的道具超出容量，额外的部分将被储存在这里。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INBOX_NO_REWARDS",
+      "v": "当前没有库存奖励。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INBOX_NO_UPGRADE_ITEMS",
+      "v": "当前没有库存的矿-13。\n一旦你的矿-13库存已满，额外的部分将被储存在这里。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INBOX_SELECTIONS_REMAINING",
+      "v": "{0}剩余选择",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INBOX_SELL_BLUEPRINTS",
+      "v": "出售存货",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INBOX_STORAGE_FULL",
+      "v": "你已经无法储存更多矿-13。使用它去升级你的机器人，然后再回来领取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INBOX_TITLE",
+      "v": "储藏室",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INBOX_TOTAL",
+      "v": "{0}总计",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MAIL",
+      "v": "邮件",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MAIL_ALL_CLAIMED",
+      "v": "领取全部奖励！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MAIL_BACK",
+      "v": "返回清单",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MAIL_CLAIMED",
+      "v": "道具领取",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MAIL_DELETE",
+      "v": "删除",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MAIL_DESELECT_ALL",
+      "v": "全部取消({0})",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MAIL_DISABLED",
+      "v": "邮件临时禁用。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MAIL_EMPTY_READ",
+      "v": "没有已读消息",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MAIL_EMPTY_UNREAD",
+      "v": "没有未读消息",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MAIL_ERR_GIFTS",
+      "v": "部分已选择的信息中还有未领取的礼物，它们将继续留在邮箱中。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MAIL_GOTO_URL",
+      "v": "点击前往！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MAIL_MARK_READ",
+      "v": "标记已读",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MAIL_NEXT",
+      "v": "下一个",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MAIL_PREV",
+      "v": "上一个",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MAIL_READ",
+      "v": "已读的",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MAIL_SELECT_MAX",
+      "v": "选择上限({0})",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MAIL_TITLE",
+      "v": "邮件",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MAIL_TOTAL",
+      "v": "总计{0}个",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MAIL_UNOPENED",
+      "v": "{0}未打开",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MAIL_UNREAD",
+      "v": "未读的",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MAIL_WARN_DELETE",
+      "v": "你确定要删除选中消息？删除后将无法复原。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_NAME_CONFIRM",
+      "v": "确认玩家名称",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_NAME_CONFIRM_BODY",
+      "v": "请注意！\n提交过后将无法更改名称。\n\n确定使用[00FF00]{0}[-]?",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_NAME_DESCRIPTION",
+      "v": "选择一个名称来进入同盟、突袭、聊天以及其他功能！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_NAME_ERROR_DEFAULT",
+      "v": "",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_NAME_ERROR_MINMAX",
+      "v": "名称必须在{0}至{1}字符之间",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_NAME_INFO",
+      "v": "输入名字",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_NAME_TITLE",
+      "v": "选择玩家名称",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PROFILE_ACTIVEBOOSTS",
+      "v": "激活加成",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PROFILE_BOOSTS",
+      "v": "加成",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PROFILE_BOOSTS_DISABLED",
+      "v": "加成当前已禁用。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PROFILE_BOOSTS_OTHER_PLAYER",
+      "v": "无法查看其他玩家激活的加成。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PROFILE_BOTRATING",
+      "v": "总评分：",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PROFILE_DEFENSERATING",
+      "v": "防御者评分：",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PROFILE_GOTOALLIANCE",
+      "v": "加入同盟",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PROFILE_INFO_RANK",
+      "v": "阶{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PROFILE_MASTERY",
+      "v": "精通",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PROFILE_MEDAL_COUNT",
+      "v": "x{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PROFILE_NOACTIVEBOOSTS",
+      "v": "你没有活性加成。在库存道具页面激活加成！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PROFILE_NOACTIVEBOOSTS_OTHER",
+      "v": "该玩家尚未激活加成。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PROFILE_OVERVIEW",
+      "v": "概述",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PROFILE_OVERVIEW_LEVEL",
+      "v": "等级：",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PROFILE_OVERVIEW_RAND_LEVEL_PROPORTION",
+      "v": "{0}/{1}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PROFILE_OVERVIEW_RANK",
+      "v": "阶：",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PROFILE_SELECT_NAME",
+      "v": "选择你的名称",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PROFILE_STATS",
+      "v": "数据",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PROFILE_STATS_PVP",
+      "v": "竞技场",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PROFILE_STATS_QUESTS",
+      "v": "任务",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PROFILE_TITLE",
+      "v": "指挥官简介",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PROFILE_TOPBOTS",
+      "v": "最佳机器人",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PROFILE_TOPDRONES",
+      "v": "最佳模块",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PROFILE_TOPRELICS",
+      "v": "最佳遗迹",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PROFILE_TOTALBOTS",
+      "v": "机器人总数：",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PROFILE_WHYJOIN",
+      "v": "加入同盟并一起畅玩独家游戏模式吧！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PROFILE_WHYJOIN_REWARDS",
+      "v": "加入同盟，一起畅玩独家游戏模式并赚取奖励！",
+      "vn": 1
+    }
+  ]
+}

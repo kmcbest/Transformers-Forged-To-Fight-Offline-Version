@@ -1,0 +1,2925 @@
+{
+  "meta": {
+    "format": "sparx",
+    "language": "zh-CN",
+    "tagged": [
+      "pvp",
+      "client"
+    ],
+    "hash": "99a36ac9bd42037fc662af9779042c931fd57bd8",
+    "ts": 1522189190,
+    "string_count": 291
+  },
+  "strings": [
+    {
+      "k": "ID_UI_PVPRAID_ATTACKER_BONUS",
+      "v": "胜利",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_ATTACKER_FAIL",
+      "v": "攻击失败",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_ATTACKER_REVENGE_FAIL",
+      "v": "复仇失败",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_ATTACKER_REVENGE_SUCCESS",
+      "v": "复仇成功",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_ATTACKER_SUCCESS",
+      "v": "攻击成功",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_ATTACKER_TITLE",
+      "v": "进攻",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_ATTACK_TAB",
+      "v": "进攻",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_BANTER_HEADER_MSG",
+      "v": "做得好，指挥官。选择一条消息发送给{0}{1}。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_BANTER_OPTION_0",
+      "v": "太简单了！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_BANTER_OPTION_1",
+      "v": "漂亮的防守！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_BANTER_OPTION_2",
+      "v": "还不够好。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_BANTER_OPTION_3",
+      "v": "还不差。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_BANTER_OPTION_4",
+      "v": "来找我复仇啊！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_BANTER_OPTION_5",
+      "v": "差一点！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_BANTER_OPTION_6",
+      "v": "嗯...",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_BANTER_OPTION_7",
+      "v": "困...",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_BANTER_TITLE",
+      "v": "开玩笑",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_BOTS_DOWN_FORMAT",
+      "v": "击倒{0}个机器人",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_CHIPS_STOLEN",
+      "v": "窃取",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_CHOOSE_ONE",
+      "v": "你的突袭入场券不足！入场券更新已超时。稍后再试或使用以下选项立刻开始突袭：",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_CLAIM_DEFENSE_CHIPS",
+      "v": "已收到突袭货币加成！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_CLASSES",
+      "v": "防御者类别",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_COMEBACK",
+      "v": "经常回来看看，成功防御也能获取突袭货币！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_COME_BACK",
+      "v": "在防御中你每击败一个机器人都将给你带来奖励！经常回来领取它们吧！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_CONFIRM_TITLE",
+      "v": "确认突袭对手",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_COOLDOWN_RECHARGE",
+      "v": "购买防御者恢复",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_CURRENTLEVEL_INFO",
+      "v": "经常使用该建筑可获得经验值和成长。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_DEADTEAM_CHOICE_DESC",
+      "v": "你的队伍已全军覆没！\n复活你的机器人继续战斗！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_DEADTEAM_FORCEQUIT_DESC",
+      "v": "你的小队已全军覆没！你的复活也没有了。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_DEADTEAM_QUITCHECK_DESC",
+      "v": "确定要退出吗？",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_DEADTEAM_TITLE",
+      "v": "全军覆没！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_DEFENDER_COOLDOWN",
+      "v": "机器人参与防御的冷却时间。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_DEFENDER_FAIL",
+      "v": "防守失败",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_DEFENDER_RATING",
+      "v": "防御者评分",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_DEFENDER_RATING_FORMAT",
+      "v": "防御者评分{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_DEFENDER_REVENGE_FAIL",
+      "v": "防守失败",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_DEFENDER_REVENGE_SUCCESS",
+      "v": "防守成功",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_DEFENDER_SUCCESS",
+      "v": "防守成功",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_DEFENDER_TITLE",
+      "v": "防守",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_DEFENSE_TAB",
+      "v": "防御",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_DISABLED_DESC",
+      "v": "该模式暂时禁用。入场券已返还！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_DISABLED_TITLE",
+      "v": "已无法突袭",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_ERROR_GETTING_OPPONENT",
+      "v": "寻找对手时发生错误，请稍后再试。如果此问题仍然存在，请与支持小组联系。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_ERROR_GETTING_OPPONENT_TITLE",
+      "v": "寻找对手时发生错误",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_FAILED_LOSS",
+      "v": "已失败",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_FAILED_TIME",
+      "v": "时间已到",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_FIGHTLOG_TITLE",
+      "v": "突袭记录",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_FIND_NEW",
+      "v": "寻找新的对手",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_FIND_NEW_DESC",
+      "v": "寻找新的对手将产生以下花费：",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_FIND_NEW_SINGLE",
+      "v": "寻找新的对手",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_FIND_NEW_SINGLE_DESC",
+      "v": "寻找一个新对手将产生以下花费：",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_GOTO_BASE",
+      "v": "前往基地",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_GOTO_CRYSTALS",
+      "v": "前往突袭商店",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_LACKING_BOTS_DESC",
+      "v": "可用于突袭的机器人少于{0}。其他的机器人都在任务或基地防御中。还要继续吗？",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_LACKING_BOTS_TITLE",
+      "v": "可用的机器人",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_LEAVING_RAID",
+      "v": "你确定要离开吗？你将失去你的对手并且得不到任何返还。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_LEVELLOCKED_FORMAT",
+      "v": "指挥官达到等级{0}解锁突袭！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_LOOT",
+      "v": "掠夺",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_MEDALS_LOSS",
+      "v": "勋章",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_MEDALS_WON",
+      "v": "勋章",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_MORE_DETAILS",
+      "v": "更多细节",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_NEW_OPPONENT",
+      "v": "新对手",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_NOBOSS_DESC",
+      "v": "你必须在最终节点上部署一个机器人才能进行突袭！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_NOBOSS_TITLE",
+      "v": "部署防御者",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_NO_ATTACK_BOTS",
+      "v": "没有选中机器人",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_NO_DEFENSE_BOTS",
+      "v": "没有可攻击机器人",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_NO_EVENT",
+      "v": "当前没有进行中的突袭事件。请稍后再来！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_NO_REPORTS",
+      "v": "没有报告",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_OPPONENT_REVIEW",
+      "v": "对手预览",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_OUT_OF_TICKETS",
+      "v": "你的突袭入场券不足！获得下一张入场券于{0}。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_OVERRIDING_SHIELD_FORMAT",
+      "v": "当前护盾还剩{0}。激活新的护盾将覆盖当前的护盾。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_POTENTIAL_LOOT",
+      "v": "掠夺",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_QUIT_CONFIRM_BODY",
+      "v": "你确定要退出吗？",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_QUIT_CONFIRM_TITLE",
+      "v": "退出突袭？",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_QUIT_RAID",
+      "v": "退出突袭",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_RAID",
+      "v": "突袭",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_RAIDS_DISABLED",
+      "v": "突袭暂时禁用。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_RAID_EXPIRES_IN",
+      "v": "突袭结束于",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_RAID_IN_PROGRESS_DESC",
+      "v": "当前正在进行突袭，无法对玩家进行复仇。在复仇之前完成此次突袭！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_RAID_IN_PROGRESS_TITLE",
+      "v": "突袭正在进行中",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_RAID_MORE",
+      "v": "突袭更多",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_RAN_OUT_REVENGE_TIME",
+      "v": "你的复仇时间已耗尽...",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_READY_TO_ATTACK",
+      "v": "准备好进攻{0}的基地了吗？",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_REFRESH",
+      "v": "更新",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_REPORT_DETAILS",
+      "v": "报告详情",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_RESULTS",
+      "v": "结果：",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_RESULTS_BONUS_TOOLTIP",
+      "v": "这些是你突袭胜利的额外奖励。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_RESULTS_NOCHANGE",
+      "v": "结果：未改变",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_RESULTS_TOOLTIP",
+      "v": "这是你获得的奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_RESULTS_TOOLTIP_MEDALS",
+      "v": "勋章的不同取决于突袭的难度和成绩。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_RESULTS_TOOLTIP_STOLEN",
+      "v": "从对手手中窃取的突袭货币数量。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_RESULTS_TOOLTIP_VICTORY",
+      "v": "打败防御者赚取的突袭货币数量。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_RESULT_BONUS_REWARDS",
+      "v": "额外奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_RESULT_REWARDS",
+      "v": "总计",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_REVENGE_BUTTON",
+      "v": "复仇",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_REVENGE_SHIELDED_DESC",
+      "v": "你的对手当前不能被突袭！你的突袭门票已被退还。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_REVENGE_SHIELDED_TITLE",
+      "v": "无效对手",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_RUNOUT_MESSAGE",
+      "v": "选择对手已超时。\n立刻寻找新的对手！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_SELECTOPPONENT_EXPIRED",
+      "v": "你等待的时间太久了！匹配已失效！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_SELECT_OPPONENT",
+      "v": "你确定要开始这场突袭吗？",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_SELECT_TITLE",
+      "v": "选择一个突袭目标",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_SENT_MESSAGE",
+      "v": "发送消息{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_SHIELD_STORE_LEVELLOCKED_FORMAT",
+      "v": "达到等级{0}并且完成一场突袭来解锁护盾。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_STARTCOST_DESC",
+      "v": "启动突袭将花费以下：",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_STARTCOST_TITLE",
+      "v": "开始突袭",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_STORE_BUTTON",
+      "v": "在突袭商店中花费你的突袭货币！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_STORE_LEVELLOCKED_FORMAT",
+      "v": "达到等级{0}并且完成一场突袭来解锁突袭商店。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_SUCCESS",
+      "v": "成功",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_TEAM_RATING_FORMAT",
+      "v": "小队评分{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_TIMESINCE",
+      "v": "{0}分钟之前",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_TIMES_UP",
+      "v": "时间到！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_TIME_OUT",
+      "v": "时间到",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_TIME_REMAINING",
+      "v": "{0}剩余",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_TOP_DEFENDER",
+      "v": "顶级防御者",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_UNKNOWN_ERROR",
+      "v": "发生了一个未知错误。请立刻重试。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_UPGRADE_BUTTON",
+      "v": "升级机器人和模块来强化你的基地！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_USESHIELDS_BUTTON",
+      "v": "使用护盾保护你的基地以抵御攻击者！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_USESHIELDS_BUTTON_ACTIVE",
+      "v": "护盾激活：\n{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_USESHIELDS_BUTTON_ACTIVE_EXPIRING",
+      "v": "护盾激活：\n[dd0000]{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_USESHIELDS_BUTTON_INV",
+      "v": "使用护盾使你的基地免受攻击！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_USESHIELDS_BUTTON_STORE",
+      "v": "获得护盾使你的基地免受攻击！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_VOIDING_SHIELD",
+      "v": "突袭将移除你当前的护盾，允许其他玩家进攻你。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_VOIDING_SHIELD_FORMAT",
+      "v": "突袭将移除你当前的护盾，允许其他玩家进攻你。当前护盾还剩{0}。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPRAID_WAITING_FOR_DATA",
+      "v": "寻找对手...",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVPSTAMINA_RECHARGE_SINGLE",
+      "v": "充能1",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ACHIEVEMENTS_ACHIEVED",
+      "v": "已取得！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ACHIEVEMENTS_ALLIANCE_RANK",
+      "v": "同盟排名",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ACHIEVEMENTS_CLAIMED",
+      "v": "已领取！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ACHIEVEMENTS_RANK_FORMAT",
+      "v": "排名{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ACHIEVEMENTS_RANK_PLURAL_FORMAT",
+      "v": "排名{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ACHIEVEMENTS_YOUR_RANK",
+      "v": "你的排名",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENAS_EMPTY_COMPLETED_ARENAS",
+      "v": "目前没有已完成的竞技比赛。竞技场关闭后再来查看比赛结果和获取奖励。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENAS_HEADER",
+      "v": "前往竞技场",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENAS_TAB",
+      "v": "激活竞技比赛",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENAS_TAB_COMPLETE",
+      "v": "已完成竞技比赛",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_ALLIANCE_PARTICIPATION",
+      "v": "参与",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_ALLIANCE_QUEST_REWARDS_MILESTONE_DESC",
+      "v": "达到指定的分数可赢得以下里程碑奖励：",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_ALLIANCE_QUEST_REWARDS_RANK_DESC",
+      "v": "最终的排行榜上榜者可赢得以下排名奖励：",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_ALLIANCE_REWARDS_MILESTONE_DESC",
+      "v": "达到指定的同盟分数可赢得以下里程碑奖励：",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_ALLIANCE_REWARDS_RANK_DESC",
+      "v": "最终的同盟排行榜上榜者可赢得以下同盟排名奖励：",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_ALLIANCE_WARNING",
+      "v": "同盟竞技场仅限于已加入同盟的玩家使用。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_CALCULATING",
+      "v": "竞技比赛已完结。\n\n最终结果正在计算中。请稍后再来。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_ENDED",
+      "v": "已完结",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_ENDED_DESC",
+      "v": "竞技比赛已完结。领取你的奖励！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_ENDED_DESC_NO_REWARDS",
+      "v": "竞技比赛已完结。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_FINISH_MATCH",
+      "v": "取消",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_HERO_FILTER",
+      "v": "机器人需求",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_INFO",
+      "v": "竞技场信息",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_LEADERBOARD",
+      "v": "排行榜",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_LEADERBOARD_PENDING",
+      "v": "最终数据正在统计中。请稍后再来。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_LEADERBOARD_PERCENT",
+      "v": "排名{0}-{1}%",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_LEADERBOARD_RANK",
+      "v": "排名",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_LEADERBOARD_RANK_VALUE",
+      "v": "{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_LEADERBOARD_RANK_VALUE_PERCENT",
+      "v": "{0}-{1}%",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_LOCKED_CURRENT_TEAM_SIZE",
+      "v": "当前小队规模：",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_LOCKED_DESCRIPTION",
+      "v": "未达到竞技比赛要求。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_LOCKED_GET_HEROES",
+      "v": "获取机器人",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_LOCKED_GET_HEROES_DESC",
+      "v": "访问太空桥以获得更多机器人！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_LOCKED_HEROES_DESC",
+      "v": "未拥有足够数量或可用的机器人：需要{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_LOCKED_REQUIRED_TEAM_SIZE",
+      "v": "需求小队规模：{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_LOCKED_TEAM_SIZE_DESC",
+      "v": "获得经验值升级来解锁更多的小队空位。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_LOCKED_TEAM_SIZE_LOCK_DESC",
+      "v": "解锁更多的小队空位以进入该竞技场！获得经验值升级来解锁空位。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_NO_FILTER",
+      "v": "没有要求",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_NO_PVP",
+      "v": "当前没有进行中的竞技比赛。请稍后再来！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_PENDING",
+      "v": "即将到来",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_PENDING_TOOLTIP",
+      "v": "该竞技场还未开始。稍后再回来进入！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_QUIT_DESCRIPTION",
+      "v": "你确定要退出\n [4bb4feff]{0}[-]?\n\n[FFFFFFA0]你将失去系列奖励。[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_QUIT_FIGHT1",
+      "v": "战斗1",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_QUIT_FIGHT2",
+      "v": "战斗2",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_QUIT_FIGHT3",
+      "v": "战斗3",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_REQUIREMENTS_DELIMITER",
+      "v": ",",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_REQUIREMENTS_NOT_MET",
+      "v": "你没有达到进入竞技场的条件。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_REWARDS_EVENT_POINTS",
+      "v": "[FFFFFFA0]当前分数：[-] [FFFFFFFF]{0}[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_REWARDS_MILESTONE_DESC",
+      "v": "达到指定的分数可赢得以下里程碑奖励：",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_REWARDS_RANK_DESC",
+      "v": "最终的排行榜上榜者可获以下排名奖励：",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_SCORE_MULTIPLIER",
+      "v": "得分倍数",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_SCORE_MULTIPLIER_FINAL",
+      "v": "最佳倍数",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_SCORE_POINTS",
+      "v": "当前得分",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_SCORE_PROGRESS",
+      "v": "进展",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_SCORE_PROGRESS_FINAL",
+      "v": "最终数据",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_SCORE_WIN_STREAK",
+      "v": "连胜",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_SCORE_WIN_STREAK_FINAL",
+      "v": "最佳连胜",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_UNLOCK",
+      "v": "解锁",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ARENA_UNLOCKED",
+      "v": "竞技场已解锁！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_BATTLES_LOST",
+      "v": "战斗失败",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_BATTLES_WON",
+      "v": "战斗胜利",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_BOT_REQUIREMENTS",
+      "v": "机器人稀有度要求",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_BUTTON_QUIT",
+      "v": "退出",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_CHEST_UPGRADED",
+      "v": "宝箱升级！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_CLASS_REQUIREMENTS",
+      "v": "机器人类别要求",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_COLLECT_ALL",
+      "v": "领取所有奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_DIFFICULTY_EASY",
+      "v": "容易",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_DIFFICULTY_HARD",
+      "v": "困难",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_DIFFICULTY_MEDIUM",
+      "v": "普通",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ERROR_NO_ARENAS",
+      "v": "无法找到竞技场",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_ERROR_POPUP",
+      "v": "似乎网络出了问题！请立即重试。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_FIGHT_STARTS_IN",
+      "v": "战斗开始于",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_FIGHT_TITLE",
+      "v": "对战#{0} - {1}点数",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_FIND_FIND_MATCH",
+      "v": "寻找比赛",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_FIND_NEW_MATCH",
+      "v": "寻找新比赛",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_HERO_SELECT",
+      "v": "更换机器人",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_IN_PROGRESS",
+      "v": "正在进行中...",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_LEADERBOARD",
+      "v": "排行榜",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_LOCKIN",
+      "v": "锁定",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_LONGEST_WIN_STREAK",
+      "v": "最佳连胜",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_MATCHUP_ARENA_NOT_RUNNING",
+      "v": "此竞技场已过期",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_MATCHUP_ARENA_POINTS",
+      "v": "竞技场点数",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_MATCHUP_BACK_TO_MATCHES",
+      "v": "返回比赛",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_MATCHUP_BONUS_MULTIPLIER",
+      "v": "得分倍数",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_MATCHUP_CLAIM",
+      "v": "领取奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_MATCHUP_CURRENT_POINTS",
+      "v": "当前得分",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_MATCHUP_EMPTY_PLAYER_NAME",
+      "v": "无名称",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_MATCHUP_FIGHT_WINS",
+      "v": "[FFFFFF]{0}[-][b1b3b3]/{1}[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_MATCHUP_FINAL_FIGHT",
+      "v": "最后一战！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_MATCHUP_LINEUP_CONTINUE_ERROR",
+      "v": "你必须设置匹配阵容才能继续。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_MATCHUP_NEXT_FIGHT",
+      "v": "下一轮",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_MATCHUP_NEXT_FIGHT_INDEX_PREFIX",
+      "v": "{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_MATCHUP_NEXT_FIGHT_PTS",
+      "v": "得分",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_MATCHUP_NEXT_FIGHT_PTS_FORMAT",
+      "v": "{0}得分",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_MATCHUP_NEXT_FIGHT_PTS_FORMAT_PLUS",
+      "v": "{0}得分+",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_MATCHUP_NEXT_MILESTONE_POINTS",
+      "v": "下一个里程碑",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_MATCHUP_REWARDS_CLAIMED",
+      "v": "系列比赛奖励已领取。点击寻找新的比赛按钮寻找新的对手。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_MATCHUP_SERIES_DEFEAT",
+      "v": "系列比赛已失败！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_MATCHUP_SERIES_MULTIPLIER_BONUS_FORMAT",
+      "v": "加成倍数x{0}!",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_MATCHUP_SERIES_MULTIPLIER_LOST",
+      "v": "失去加成倍数！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_MATCHUP_SERIES_REWARDS",
+      "v": "系列比赛奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_MATCHUP_SERIES_VICTORY",
+      "v": "系列比赛已获胜！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_MATCHUP_SERIES_VICTORY_QUALITY_ONE",
+      "v": "难以置信！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_MATCHUP_SERIES_VICTORY_QUALITY_PERFECT",
+      "v": "完美！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_MATCHUP_SERIES_VICTORY_QUALITY_TWO",
+      "v": "精彩！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_MATCHUP_TITLE_ACHIEVEMENTS",
+      "v": "系列比赛-成就",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_MATCHUP_TITLE_CLAIM_REWARDS",
+      "v": "系列比赛-奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_MATCHUP_TITLE_LINEUP",
+      "v": "选择你的匹配对手",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_MATCHUP_TITLE_REWARDING",
+      "v": "系列比赛结果",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_MATCHUP_TITLE_SELECT_OPPONENT",
+      "v": "选择你的对手",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_MATCHUP_TITLE_SERIES_MATCH",
+      "v": "系列比赛",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_MATCHUP_WIN_STREAK",
+      "v": "连胜",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_MILESTONES",
+      "v": "里程碑",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_MILESTONES_CLAIM",
+      "v": "领取",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_MILESTONES_COMPLETE",
+      "v": "已取得所有里程碑！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_MILESTONES_CURRENT",
+      "v": "{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_MILESTONES_NEXT",
+      "v": "下一个里程碑",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_MILESTONES_PROGRESS",
+      "v": "[FFFFFFFF]{0}[-][FFFFFF99]/{1}[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_MILESTONES_REACHED",
+      "v": "里程碑已达成！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_MILESTONE_FINAL",
+      "v": "最终里程碑",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_MILESTONE_REWARDS",
+      "v": "里程碑",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_MULTIVERSEARENA_TICKET",
+      "v": "竞技场入场券",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_NEXT_TIER_ACHIEVED",
+      "v": "已取得{0}阶！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_NO_SERIES_REWARDS",
+      "v": "无系列比赛奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_PLACEMENT",
+      "v": "你的位置",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_PLAYER_SCORE",
+      "v": "玩家得分",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_POPUP_CURRENCY_BODY",
+      "v": "花费以下资源寻找新的对手？",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_POPUP_CURRENCY_TITLE",
+      "v": "确认",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_PTS_TOTAL_FORMAT",
+      "v": "{0}/{1}得分",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_QUICKMATCH",
+      "v": "快速比赛",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_QUIT_CONFIRMATION",
+      "v": "你将失去当前的连胜。确认想要退出？",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_QUIT_CONFIRMATION_LOSE_OPPONENT",
+      "v": "你将输给当前对手，并失去连胜纪录和连胜积分加成倍数。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_QUIT_CONFIRMATION_LOSE_OPPONENTS",
+      "v": "你将输给当前对手，并失去连胜纪录和连胜积分加成倍数。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_QUIT_CONFIRMATION_LOSE_OPPONENTS_AND_MULTIPLIER",
+      "v": "你将输给当前对手，并失去连胜纪录和连胜积分加成倍数。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_QUIT_CONFIRMATION_LOSE_OPPONENT_AND_MULTIPLIER",
+      "v": "你将输给当前对手，并失去连胜纪录和连胜积分加成倍数。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_QUIT_CONFIRMATION_TITLE",
+      "v": "退出竞技场？",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_RANKS",
+      "v": "排名",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_RANK_PERCENT",
+      "v": "排名{0}-{1}%",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_RANK_PERCENT_SHORT",
+      "v": "[FFFFFFFF]{0}[-][FFFFFF99]/{1}[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_RANK_REWARDS",
+      "v": "排名奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_RANK_REWARDS_LOCKED",
+      "v": "排名奖励已锁定",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_RANK_REWARDS_LOCKED_DESC",
+      "v": "你必须达到指定条件以解锁排名奖励。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_RANK_REWARDS_LOCKED_WARNING",
+      "v": "达到{0}分数以解锁排名奖励。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_RANK_REWARDS_PERCENTAGE_DISCLAIMER",
+      "v": "玩家将收到与其资格匹配的最高奖励中的排名奖励。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_RANK_TOOLTIP_MESSAGE",
+      "v": "该竞技场的排名奖励有最低分数要求！点击下方查看细节获取更多信息。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_RANK_TOP_RANK",
+      "v": "最高排名",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_RANK_UNLOCK",
+      "v": "解锁排名奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_REQUIREMENTS",
+      "v": "要求",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_RESULTS_CONTINUE_SERIES",
+      "v": "进行下一个比赛",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_RESULTS_SELECT_ARENA",
+      "v": "返回竞技场",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_RESULTS_TITLE",
+      "v": "比赛结果",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_RESULTS_TOOLTIP_SERIES_OVER",
+      "v": "竞技系列比赛已结束",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_SCORE_BOOST_BONUS",
+      "v": "竞技场加成!\nx{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_SEARCHING",
+      "v": "搜索中...",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_SEARCH_RANK",
+      "v": "搜索排名",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_SERIES_COMPLETE_BODY",
+      "v": "点击寻找新的比赛以寻找新的匹配比赛。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_SERIES_COMPLETE_TITLE",
+      "v": "匹配比赛完成！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_TITLE",
+      "v": "竞技场",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_TOP_PLAYERS",
+      "v": "顶尖玩家",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_TOURNAMENT_WINNERS",
+      "v": "锦标赛获胜者",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_UNCLAIMED_REWARDS",
+      "v": "你有可领取的排名和里程碑奖励！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_VIEW_LEADERBOARD",
+      "v": "查看排行榜",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_WIN_RATIO",
+      "v": "获胜率",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PVP_YOU_WILL_NEED_THE_FOLLOWING",
+      "v": "你必须达到以下条件和/或至少有3个机器人达到以下条件才能解锁这个竞技场：",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SHIELD_ATTACK_IN_PROCESS",
+      "v": "你正在被突袭！你的护盾将会被激活，但是它不能阻止正在进行中的突袭。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_ATTACKER_BONUS",
+      "v": "胜利",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_ATTACKER_FAIL",
+      "v": "攻击失败",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_ATTACKER_REVENGE_FAIL",
+      "v": "复仇失败",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_ATTACKER_REVENGE_SUCCESS",
+      "v": "复仇成功",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_ATTACKER_SUCCESS",
+      "v": "攻击成功",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_ATTACKER_TITLE",
+      "v": "进攻",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_ATTACK_TAB",
+      "v": "进攻",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_BANTER_HEADER_MSG",
+      "v": "做得好，指挥官。选择一条消息发送给{0}{1}。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_BANTER_OPTION_0",
+      "v": "太简单了！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_BANTER_OPTION_1",
+      "v": "漂亮的防守！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_BANTER_OPTION_2",
+      "v": "还不够好。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_BANTER_OPTION_3",
+      "v": "还不差。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_BANTER_OPTION_4",
+      "v": "来找我复仇啊！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_BANTER_OPTION_5",
+      "v": "差一点！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_BANTER_OPTION_6",
+      "v": "嗯...",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_BANTER_OPTION_7",
+      "v": "困...",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_BANTER_TITLE",
+      "v": "开玩笑",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_BOTS_DOWN_FORMAT",
+      "v": "击倒{0}个机器人",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_CHIPS_STOLEN",
+      "v": "窃取",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_CHOOSE_ONE",
+      "v": "你的突袭入场券不足！入场券更新已超时。稍后再试或使用以下选项立刻开始突袭：",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_CLAIM_DEFENSE_CHIPS",
+      "v": "已收到突袭货币加成！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_CLASSES",
+      "v": "防御者类别",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_COMEBACK",
+      "v": "经常回来看看，成功防御也能获取突袭货币！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_COME_BACK",
+      "v": "在防御中你每击败一个机器人都将给你带来奖励！经常回来领取它们吧！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_CONFIRM_TITLE",
+      "v": "确认突袭对手",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_COOLDOWN_RECHARGE",
+      "v": "购买防御者恢复",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_CURRENTLEVEL_INFO",
+      "v": "经常使用该建筑可获得经验值和成长。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_DEADTEAM_CHOICE_DESC",
+      "v": "你的队伍已全军覆没！\n复活你的机器人继续战斗！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_DEADTEAM_FORCEQUIT_DESC",
+      "v": "你的小队已全军覆没！你的复活也没有了。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_DEADTEAM_QUITCHECK_DESC",
+      "v": "确定要退出吗？",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_DEADTEAM_TITLE",
+      "v": "全军覆没！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_DEFENDER_COOLDOWN",
+      "v": "机器人参与防御的冷却时间。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_DEFENDER_FAIL",
+      "v": "防守失败",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_DEFENDER_RATING",
+      "v": "防御者评分",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_DEFENDER_RATING_FORMAT",
+      "v": "防御者评分{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_DEFENDER_REVENGE_FAIL",
+      "v": "防守失败",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_DEFENDER_REVENGE_SUCCESS",
+      "v": "防守成功",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_DEFENDER_SUCCESS",
+      "v": "防守成功",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_DEFENDER_TITLE",
+      "v": "防守",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_DEFENSE_TAB",
+      "v": "防御",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_DISABLED_DESC",
+      "v": "该模式暂时禁用。入场券已返还！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_DISABLED_TITLE",
+      "v": "已无法突袭",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_ERROR_GETTING_OPPONENT",
+      "v": "寻找对手时发生错误，请稍后再试。如果此问题仍然存在，请与支持小组联系。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_ERROR_GETTING_OPPONENT_TITLE",
+      "v": "寻找对手时发生错误",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_FAILED_LOSS",
+      "v": "已失败",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_FAILED_TIME",
+      "v": "时间已到",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_FIGHTLOG_TITLE",
+      "v": "突袭记录",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_FIND_NEW",
+      "v": "寻找新的对手",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_FIND_NEW_DESC",
+      "v": "寻找新的对手将产生以下花费：",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_FIND_NEW_SINGLE",
+      "v": "寻找新的对手",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_FIND_NEW_SINGLE_DESC",
+      "v": "寻找一个新对手将产生以下花费：",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_GOTO_BASE",
+      "v": "前往基地",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_GOTO_CRYSTALS",
+      "v": "前往突袭商店",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_LACKING_BOTS_DESC",
+      "v": "可用于突袭的机器人少于{0}。其他的机器人都在任务或基地防御中。还要继续吗？",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_LACKING_BOTS_TITLE",
+      "v": "可用的机器人",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_LEAVING_RAID",
+      "v": "你确定要离开吗？你将失去你的对手并且得不到任何返还。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_LEVELLOCKED_FORMAT",
+      "v": "指挥官达到等级{0}解锁突袭！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_LOOT",
+      "v": "掠夺",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_MEDALS_LOSS",
+      "v": "勋章",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_MEDALS_WON",
+      "v": "勋章",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_MORE_DETAILS",
+      "v": "更多细节",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_NEW_OPPONENT",
+      "v": "新对手",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_NOBOSS_DESC",
+      "v": "你必须在最终节点上部署一个机器人才能进行突袭！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_NOBOSS_TITLE",
+      "v": "部署防御者",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_NO_ATTACK_BOTS",
+      "v": "没有选中机器人",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_NO_DEFENSE_BOTS",
+      "v": "没有可攻击机器人",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_NO_EVENT",
+      "v": "当前没有进行中的突袭事件。请稍后再来！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_NO_REPORTS",
+      "v": "没有报告",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_OPPONENT_REVIEW",
+      "v": "对手预览",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_OUT_OF_TICKETS",
+      "v": "你的突袭入场券不足！获得下一张入场券于{0}。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_OVERRIDING_SHIELD_FORMAT",
+      "v": "当前护盾还剩{0}。激活新的护盾将覆盖当前的护盾。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_POTENTIAL_LOOT",
+      "v": "掠夺",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_QUIT_CONFIRM_BODY",
+      "v": "你确定要退出吗？",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_QUIT_CONFIRM_TITLE",
+      "v": "退出突袭？",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_QUIT_RAID",
+      "v": "退出突袭",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_RAID",
+      "v": "突袭",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_RAIDS_DISABLED",
+      "v": "突袭暂时禁用。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_RAID_EXPIRES_IN",
+      "v": "突袭结束于",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_RAID_IN_PROGRESS_DESC",
+      "v": "当前正在进行突袭，无法对玩家进行复仇。在复仇之前完成此次突袭！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_RAID_IN_PROGRESS_TITLE",
+      "v": "突袭正在进行中",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_RAID_MORE",
+      "v": "突袭更多",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_RAN_OUT_REVENGE_TIME",
+      "v": "你的复仇时间已耗尽...",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_READY_TO_ATTACK",
+      "v": "准备好进攻{0}的基地了吗？",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_REFRESH",
+      "v": "更新",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_REPORT_DETAILS",
+      "v": "报告详情",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_RESULTS",
+      "v": "结果：",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_RESULTS_BONUS_TOOLTIP",
+      "v": "这些是你突袭胜利的额外奖励。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_RESULTS_NOCHANGE",
+      "v": "结果：未改变",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_RESULTS_TOOLTIP",
+      "v": "这是你获得的奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_RESULTS_TOOLTIP_MEDALS",
+      "v": "勋章的不同取决于突袭的难度和成绩。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_RESULTS_TOOLTIP_STOLEN",
+      "v": "从对手手中窃取的突袭货币数量。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_RESULTS_TOOLTIP_VICTORY",
+      "v": "打败防御者赚取的突袭货币数量。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_RESULT_BONUS_REWARDS",
+      "v": "额外奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_RESULT_REWARDS",
+      "v": "总计",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_REVENGE_BUTTON",
+      "v": "复仇",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_REVENGE_SHIELDED_DESC",
+      "v": "你的对手当前不能被突袭！你的突袭门票已被退还。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_REVENGE_SHIELDED_TITLE",
+      "v": "无效对手",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_RUNOUT_MESSAGE",
+      "v": "选择对手已超时。\n立刻寻找新的对手！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_SELECTOPPONENT_EXPIRED",
+      "v": "你等待的时间太久了！匹配已失效！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_SELECT_OPPONENT",
+      "v": "你确定要开始这场突袭吗？",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_SELECT_TITLE",
+      "v": "选择一个突袭目标",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_SENT_MESSAGE",
+      "v": "发送消息{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_SHIELD_STORE_LEVELLOCKED_FORMAT",
+      "v": "达到等级{0}并且完成一场突袭来解锁护盾。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_STARTCOST_DESC",
+      "v": "启动突袭将花费以下：",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_STARTCOST_TITLE",
+      "v": "开始突袭",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_STORE_BUTTON",
+      "v": "在突袭商店中花费你的突袭货币！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_STORE_LEVELLOCKED_FORMAT",
+      "v": "达到等级{0}并且完成一场突袭来解锁突袭商店。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_SUCCESS",
+      "v": "成功",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_TEAM_RATING_FORMAT",
+      "v": "小队评分{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_TIMESINCE",
+      "v": "{0}分钟之前",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_TIMES_UP",
+      "v": "时间到！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_TIME_OUT",
+      "v": "时间到",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_TIME_REMAINING",
+      "v": "{0}剩余",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_TOP_DEFENDER",
+      "v": "顶级防御者",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_UNKNOWN_ERROR",
+      "v": "发生了一个未知错误。请立刻重试。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_UPGRADE_BUTTON",
+      "v": "升级机器人和模块来强化你的基地！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_USESHIELDS_BUTTON",
+      "v": "使用护盾保护你的基地以抵御攻击者！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_USESHIELDS_BUTTON_ACTIVE",
+      "v": "护盾激活：\n{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_USESHIELDS_BUTTON_ACTIVE_EXPIRING",
+      "v": "护盾激活：\n[dd0000]{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_USESHIELDS_BUTTON_INV",
+      "v": "使用护盾使你的基地免受攻击！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_USESHIELDS_BUTTON_STORE",
+      "v": "获得护盾使你的基地免受攻击！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_VOIDING_SHIELD",
+      "v": "突袭将移除你当前的护盾，允许其他玩家进攻你。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_VOIDING_SHIELD_FORMAT",
+      "v": "突袭将移除你当前的护盾，允许其他玩家进攻你。当前护盾还剩{0}。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPRAID_WAITING_FOR_DATA",
+      "v": "寻找对手...",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVPSTAMINA_RECHARGE_SINGLE",
+      "v": "充能1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ACHIEVEMENTS_ACHIEVED",
+      "v": "已取得！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ACHIEVEMENTS_ALLIANCE_RANK",
+      "v": "同盟排名",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ACHIEVEMENTS_CLAIMED",
+      "v": "已领取！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ACHIEVEMENTS_RANK_FORMAT",
+      "v": "排名{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ACHIEVEMENTS_RANK_PLURAL_FORMAT",
+      "v": "排名{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ACHIEVEMENTS_YOUR_RANK",
+      "v": "你的排名",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENAS_EMPTY_COMPLETED_ARENAS",
+      "v": "目前没有已完成的竞技比赛。竞技场关闭后再来查看比赛结果和获取奖励。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENAS_HEADER",
+      "v": "前往竞技场",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENAS_TAB",
+      "v": "激活竞技比赛",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENAS_TAB_COMPLETE",
+      "v": "已完成竞技比赛",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_ALLIANCE_PARTICIPATION",
+      "v": "参与",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_ALLIANCE_QUEST_REWARDS_MILESTONE_DESC",
+      "v": "达到指定的分数可赢得以下里程碑奖励：",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_ALLIANCE_QUEST_REWARDS_RANK_DESC",
+      "v": "最终的排行榜上榜者可赢得以下排名奖励：",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_ALLIANCE_REWARDS_MILESTONE_DESC",
+      "v": "达到指定的同盟分数可赢得以下里程碑奖励：",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_ALLIANCE_REWARDS_RANK_DESC",
+      "v": "最终的同盟排行榜上榜者可赢得以下同盟排名奖励：",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_ALLIANCE_WARNING",
+      "v": "同盟竞技场仅限于已加入同盟的玩家使用。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_CALCULATING",
+      "v": "竞技比赛已完结。\n\n最终结果正在计算中。请稍后再来。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_ENDED",
+      "v": "已完结",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_ENDED_DESC",
+      "v": "竞技比赛已完结。领取你的奖励！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_ENDED_DESC_NO_REWARDS",
+      "v": "竞技比赛已完结。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_FINISH_MATCH",
+      "v": "取消",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_HERO_FILTER",
+      "v": "机器人需求",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_INFO",
+      "v": "竞技场信息",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_LEADERBOARD",
+      "v": "排行榜",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_LEADERBOARD_PENDING",
+      "v": "最终数据正在统计中。请稍后再来。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_LEADERBOARD_PERCENT",
+      "v": "排名{0}-{1}%",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_LEADERBOARD_RANK",
+      "v": "排名",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_LEADERBOARD_RANK_VALUE",
+      "v": "{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_LEADERBOARD_RANK_VALUE_PERCENT",
+      "v": "{0}-{1}%",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_LOCKED_CURRENT_TEAM_SIZE",
+      "v": "当前小队规模：",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_LOCKED_DESCRIPTION",
+      "v": "未达到竞技比赛要求。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_LOCKED_GET_HEROES",
+      "v": "获取机器人",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_LOCKED_GET_HEROES_DESC",
+      "v": "访问太空桥以获得更多机器人！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_LOCKED_HEROES_DESC",
+      "v": "未拥有足够数量或可用的机器人：需要{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_LOCKED_REQUIRED_TEAM_SIZE",
+      "v": "需求小队规模：{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_LOCKED_TEAM_SIZE_DESC",
+      "v": "获得经验值升级来解锁更多的小队空位。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_LOCKED_TEAM_SIZE_LOCK_DESC",
+      "v": "解锁更多的小队空位以进入该竞技场！获得经验值升级来解锁空位。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_NO_FILTER",
+      "v": "没有要求",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_NO_PVP",
+      "v": "当前没有进行中的竞技比赛。请稍后再来！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_PENDING",
+      "v": "即将到来",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_PENDING_TOOLTIP",
+      "v": "该竞技场还未开始。稍后再回来进入！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_QUIT_DESCRIPTION",
+      "v": "你确定要退出\n [4bb4feff]{0}[-]?\n\n[FFFFFFA0]你将失去系列奖励。[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_QUIT_FIGHT1",
+      "v": "战斗1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_QUIT_FIGHT2",
+      "v": "战斗2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_QUIT_FIGHT3",
+      "v": "战斗3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_REQUIREMENTS_DELIMITER",
+      "v": ",",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_REQUIREMENTS_NOT_MET",
+      "v": "你没有达到进入竞技场的条件。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_REWARDS_EVENT_POINTS",
+      "v": "[FFFFFFA0]当前分数：[-] [FFFFFFFF]{0}[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_REWARDS_MILESTONE_DESC",
+      "v": "达到指定的分数可赢得以下里程碑奖励：",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_REWARDS_RANK_DESC",
+      "v": "最终的排行榜上榜者可获以下排名奖励：",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_SCORE_MULTIPLIER",
+      "v": "得分倍数",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_SCORE_MULTIPLIER_FINAL",
+      "v": "最佳倍数",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_SCORE_POINTS",
+      "v": "当前得分",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_SCORE_PROGRESS",
+      "v": "进展",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_SCORE_PROGRESS_FINAL",
+      "v": "最终数据",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_SCORE_WIN_STREAK",
+      "v": "连胜",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_SCORE_WIN_STREAK_FINAL",
+      "v": "最佳连胜",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_UNLOCK",
+      "v": "解锁",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ARENA_UNLOCKED",
+      "v": "竞技场已解锁！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_BATTLES_LOST",
+      "v": "战斗失败",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_BATTLES_WON",
+      "v": "战斗胜利",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_BOT_REQUIREMENTS",
+      "v": "机器人稀有度要求",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_BUTTON_QUIT",
+      "v": "退出",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_CHEST_UPGRADED",
+      "v": "宝箱升级！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_CLASS_REQUIREMENTS",
+      "v": "机器人类别要求",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_COLLECT_ALL",
+      "v": "领取所有奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_DIFFICULTY_EASY",
+      "v": "容易",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_DIFFICULTY_HARD",
+      "v": "困难",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_DIFFICULTY_MEDIUM",
+      "v": "普通",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ERROR_NO_ARENAS",
+      "v": "无法找到竞技场",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_ERROR_POPUP",
+      "v": "似乎网络出了问题！请立即重试。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_FIGHT_STARTS_IN",
+      "v": "战斗开始于",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_FIGHT_TITLE",
+      "v": "对战#{0} - {1}点数",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_FIND_FIND_MATCH",
+      "v": "寻找比赛",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_FIND_NEW_MATCH",
+      "v": "寻找新比赛",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_HERO_SELECT",
+      "v": "更换机器人",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_IN_PROGRESS",
+      "v": "正在进行中...",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_LEADERBOARD",
+      "v": "排行榜",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_LOCKIN",
+      "v": "锁定",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_LONGEST_WIN_STREAK",
+      "v": "最佳连胜",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_MATCHUP_ARENA_NOT_RUNNING",
+      "v": "此竞技场已过期",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_MATCHUP_ARENA_POINTS",
+      "v": "竞技场点数",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_MATCHUP_BACK_TO_MATCHES",
+      "v": "返回比赛",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_MATCHUP_BONUS_MULTIPLIER",
+      "v": "得分倍数",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_MATCHUP_CLAIM",
+      "v": "领取奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_MATCHUP_CURRENT_POINTS",
+      "v": "当前得分",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_MATCHUP_EMPTY_PLAYER_NAME",
+      "v": "无名称",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_MATCHUP_FIGHT_WINS",
+      "v": "[FFFFFF]{0}[-][b1b3b3]/{1}[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_MATCHUP_FINAL_FIGHT",
+      "v": "最后一战！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_MATCHUP_LINEUP_CONTINUE_ERROR",
+      "v": "你必须设置匹配阵容才能继续。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_MATCHUP_NEXT_FIGHT",
+      "v": "下一轮",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_MATCHUP_NEXT_FIGHT_INDEX_PREFIX",
+      "v": "{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_MATCHUP_NEXT_FIGHT_PTS",
+      "v": "得分",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_MATCHUP_NEXT_FIGHT_PTS_FORMAT",
+      "v": "{0}得分",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_MATCHUP_NEXT_FIGHT_PTS_FORMAT_PLUS",
+      "v": "{0}得分+",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_MATCHUP_NEXT_MILESTONE_POINTS",
+      "v": "下一个里程碑",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_MATCHUP_REWARDS_CLAIMED",
+      "v": "系列比赛奖励已领取。点击寻找新的比赛按钮寻找新的对手。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_MATCHUP_SERIES_DEFEAT",
+      "v": "系列比赛已失败！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_MATCHUP_SERIES_MULTIPLIER_BONUS_FORMAT",
+      "v": "加成倍数x{0}!",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_MATCHUP_SERIES_MULTIPLIER_LOST",
+      "v": "失去加成倍数！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_MATCHUP_SERIES_REWARDS",
+      "v": "系列比赛奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_MATCHUP_SERIES_VICTORY",
+      "v": "系列比赛已获胜！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_MATCHUP_SERIES_VICTORY_QUALITY_ONE",
+      "v": "难以置信！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_MATCHUP_SERIES_VICTORY_QUALITY_PERFECT",
+      "v": "完美！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_MATCHUP_SERIES_VICTORY_QUALITY_TWO",
+      "v": "精彩！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_MATCHUP_TITLE_ACHIEVEMENTS",
+      "v": "系列比赛-成就",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_MATCHUP_TITLE_CLAIM_REWARDS",
+      "v": "系列比赛-奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_MATCHUP_TITLE_LINEUP",
+      "v": "选择你的匹配对手",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_MATCHUP_TITLE_REWARDING",
+      "v": "系列比赛结果",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_MATCHUP_TITLE_SELECT_OPPONENT",
+      "v": "选择你的对手",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_MATCHUP_TITLE_SERIES_MATCH",
+      "v": "系列比赛",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_MATCHUP_WIN_STREAK",
+      "v": "连胜",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_MILESTONES",
+      "v": "里程碑",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_MILESTONES_CLAIM",
+      "v": "领取",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_MILESTONES_COMPLETE",
+      "v": "已取得所有里程碑！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_MILESTONES_CURRENT",
+      "v": "{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_MILESTONES_NEXT",
+      "v": "下一个里程碑",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_MILESTONES_PROGRESS",
+      "v": "[FFFFFFFF]{0}[-][FFFFFF99]/{1}[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_MILESTONES_REACHED",
+      "v": "里程碑已达成！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_MILESTONE_FINAL",
+      "v": "最终里程碑",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_MILESTONE_REWARDS",
+      "v": "里程碑",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_MULTIVERSEARENA_TICKET",
+      "v": "竞技场入场券",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_NEXT_TIER_ACHIEVED",
+      "v": "已取得{0}阶！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_NO_SERIES_REWARDS",
+      "v": "无系列比赛奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_PLACEMENT",
+      "v": "你的位置",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_PLAYER_SCORE",
+      "v": "玩家得分",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_POPUP_CURRENCY_BODY",
+      "v": "花费以下资源寻找新的对手？",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_POPUP_CURRENCY_TITLE",
+      "v": "确认",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_PTS_TOTAL_FORMAT",
+      "v": "{0}/{1}得分",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_QUICKMATCH",
+      "v": "快速比赛",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_QUIT_CONFIRMATION",
+      "v": "你将失去当前的连胜。确认想要退出？",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_QUIT_CONFIRMATION_LOSE_OPPONENT",
+      "v": "你将输给当前对手，并失去连胜纪录和连胜积分加成倍数。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_QUIT_CONFIRMATION_LOSE_OPPONENTS",
+      "v": "你将输给当前对手，并失去连胜纪录和连胜积分加成倍数。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_QUIT_CONFIRMATION_LOSE_OPPONENTS_AND_MULTIPLIER",
+      "v": "你将输给当前对手，并失去连胜纪录和连胜积分加成倍数。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_QUIT_CONFIRMATION_LOSE_OPPONENT_AND_MULTIPLIER",
+      "v": "你将输给当前对手，并失去连胜纪录和连胜积分加成倍数。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_QUIT_CONFIRMATION_TITLE",
+      "v": "退出竞技场？",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_RANKS",
+      "v": "排名",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_RANK_PERCENT",
+      "v": "排名{0}-{1}%",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_RANK_PERCENT_SHORT",
+      "v": "[FFFFFFFF]{0}[-][FFFFFF99]/{1}[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_RANK_REWARDS",
+      "v": "排名奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_RANK_REWARDS_LOCKED",
+      "v": "排名奖励已锁定",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_RANK_REWARDS_LOCKED_DESC",
+      "v": "你必须达到指定条件以解锁排名奖励。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_RANK_REWARDS_LOCKED_WARNING",
+      "v": "达到{0}分数以解锁排名奖励。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_RANK_REWARDS_PERCENTAGE_DISCLAIMER",
+      "v": "玩家将收到与其资格匹配的最高奖励中的排名奖励。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_RANK_TOOLTIP_MESSAGE",
+      "v": "该竞技场的排名奖励有最低分数要求！点击下方查看细节获取更多信息。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_RANK_TOP_RANK",
+      "v": "最高排名",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_RANK_UNLOCK",
+      "v": "解锁排名奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_REQUIREMENTS",
+      "v": "要求",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_RESULTS_CONTINUE_SERIES",
+      "v": "进行下一个比赛",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_RESULTS_SELECT_ARENA",
+      "v": "返回竞技场",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_RESULTS_TITLE",
+      "v": "比赛结果",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_RESULTS_TOOLTIP_SERIES_OVER",
+      "v": "竞技系列比赛已结束",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_SCORE_BOOST_BONUS",
+      "v": "竞技场加成!\nx{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_SEARCHING",
+      "v": "搜索中...",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_SEARCH_RANK",
+      "v": "搜索排名",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_SERIES_COMPLETE_BODY",
+      "v": "点击寻找新的比赛以寻找新的匹配比赛。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_SERIES_COMPLETE_TITLE",
+      "v": "匹配比赛完成！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_TITLE",
+      "v": "竞技场",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_TOP_PLAYERS",
+      "v": "顶尖玩家",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_TOURNAMENT_WINNERS",
+      "v": "锦标赛获胜者",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_UNCLAIMED_REWARDS",
+      "v": "你有可领取的排名和里程碑奖励！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_VIEW_LEADERBOARD",
+      "v": "查看排行榜",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_WIN_RATIO",
+      "v": "获胜率",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PVP_YOU_WILL_NEED_THE_FOLLOWING",
+      "v": "你必须达到以下条件和/或至少有3个机器人达到以下条件才能解锁这个竞技场：",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SHIELD_ATTACK_IN_PROCESS",
+      "v": "你正在被突袭！你的护盾将会被激活，但是它不能阻止正在进行中的突袭。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ore",
+      "v": "",
+      "vn": 1
+    },
+    {
+      "k": "ore",
+      "v": "",
+      "vn": 1
+    }
+  ]
+}

@@ -1,0 +1,7545 @@
+{
+  "meta": {
+    "format": "sparx",
+    "language": "zh-CN",
+    "tagged": [
+      "synergies",
+      "client"
+    ],
+    "hash": "8fddb5d7a88787a31d49036496635095bbbe9d4e",
+    "ts": 1543449105,
+    "string_count": 753
+  },
+  "strings": [
+    {
+      "k": "D_STAT_SYN_JETFIREDRAIN_DESC",
+      "v": "每当震荡波获得6个或更多能量充能时，他将修复{0}%生命值。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SB_JAZZ_LUIT",
+      "v": "每当爵士避开对手的所有特殊攻击命中时，他都会获得一个攻击增益，可增加他{0}%的攻击评分，持续到战斗结束。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SB_OPTIMUS_LUIT",
+      "v": "擎天柱获得{0}%的攻击力和护甲，并且他的中尉将获得独特能力。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SB_PROWL_LUIT",
+      "v": "如果警车汲取对手的能量至他们最大能量的0%，他有{0}%几率眩晕对手，持续2.5秒。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SB_STAT_CHOAS_SHORT",
+      "v": "增加特殊伤害和暴击伤害。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SB_STAT_CHOAS_TITLE",
+      "v": "混沌之手",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_BRAINGAIN_HUD",
+      "v": "脑力增加",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_BRAWLEAD",
+      "v": "斗士系领袖",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_CLASSCOMP",
+      "v": "众志成城",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_DEMOLEAD",
+      "v": "爆破系领袖",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_GENCOMP",
+      "v": "英雄",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_LEAD",
+      "v": "领导力5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_OVRPWR",
+      "v": "压倒",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SCOULEAD",
+      "v": "侦查系领袖",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYNERGY_GRIMLOCK_LONG",
+      "v": "在格挡时+{0}%护甲",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYNERGY_GRIMLOCK_R1",
+      "v": "超重Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYNERGY_GRIMLOCK_R2",
+      "v": "超重Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYNERGY_GRIMLOCK_R3",
+      "v": "超重Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYNERGY_GRIMLOCK_R4",
+      "v": "超重Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYNERGY_GRIMLOCK_R5",
+      "v": "超重Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYNERGY_PROWL_LONG",
+      "v": "恰到好处的格挡将给对手造成{0}%攻击的物理伤害。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYNERGY_PROWL_R1",
+      "v": "军事家Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYNERGY_PROWL_R2",
+      "v": "军事家Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYNERGY_PROWL_R3",
+      "v": "军事家Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYNERGY_PROWL_R4",
+      "v": "军事家Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYNERGY_PROWL_R5",
+      "v": "军事家Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYNERGY_RATCHET_LONG",
+      "v": "在战斗开始时恢复{0}%最大生命值。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYNERGY_RATCHET_R1",
+      "v": "医疗支持Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYNERGY_RATCHET_R2",
+      "v": "医疗支持Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYNERGY_RATCHET_R3",
+      "v": "医疗支持Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYNERGY_RATCHET_R4",
+      "v": "医疗支持Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYNERGY_RATCHET_R5",
+      "v": "医疗支持Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYNERGY_ULTRAM_LONG",
+      "v": "10次或更多连击会造成+{0}%的护甲穿透效果",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYNERGY_ULTRAM_R1",
+      "v": "公正的指挥官Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYNERGY_ULTRAM_R2",
+      "v": "公正的指挥官Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYNERGY_ULTRAM_R3",
+      "v": "公正的指挥官Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYNERGY_ULTRAM_R4",
+      "v": "公正的指挥官Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYNERGY_ULTRAM_R5",
+      "v": "公正的指挥官Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ALLIES_1",
+      "v": "盟友1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ALLIES_2",
+      "v": "盟友2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ALLIES_3",
+      "v": "盟友3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ALLIES_4",
+      "v": "盟友 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ALLIES_5",
+      "v": "盟友5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ALLIES_BONEC_DESC",
+      "v": "路障从友情中获得激励，得到+{0}%生命值。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ALLIES_GRIND_DESC",
+      "v": "碎骨魔从友情中获得激励，得到+{0}%生命值。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ALLIES_IRONH_DESC",
+      "v": "救护车和大黄蜂从友情中获得激励，得到+{0}%生命值。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ALLIES_LONG",
+      "v": "+{0}%护甲。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ALLIES_WINDBLADE_DESC",
+      "v": "铁皮从友情中获得激励，得到+{0}%生命值。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_AR",
+      "v": "‘+{0}护甲等级",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ATK",
+      "v": "‘+{0}攻击等级",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_AUTOBOT MECHANIC_1",
+      "v": "汽车人机械师Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_AUTOBOT MECHANIC_2",
+      "v": "汽车人机械师Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_AUTOBOT MECHANIC_3",
+      "v": "汽车人机械师Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_AUTOBOT MECHANIC_4",
+      "v": "汽车人机械师Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_AUTOBOTS_1",
+      "v": "汽车人Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_AUTOBOTS_2",
+      "v": "汽车人Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_AUTOBOTS_3",
+      "v": "汽车人Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_AUTOBOTS_4",
+      "v": "汽车人Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_AUTOBOTS_5",
+      "v": "汽车人Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_AUTOBOT_MECHANIC_5",
+      "v": "汽车人机械师Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_AUTOMECH1",
+      "v": "每10秒修复受损机器人+{0}生命值。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_AUTOMECH2",
+      "v": "在战斗开始时修复受损机器人+{0}生命值。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BAD COP_1",
+      "v": "坏警察Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BAD COP_2",
+      "v": "坏警察Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BAD COP_3",
+      "v": "坏警察Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BAD COP_4",
+      "v": "坏警察Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BAD_COP_5",
+      "v": "坏警察Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BEAST_PURIFICATION_1",
+      "v": "野兽净化1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BEAST_PURIFICATION_2",
+      "v": "野兽净化2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BEAST_PURIFICATION_3",
+      "v": "野兽净化3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BEAST_PURIFICATION_LONG",
+      "v": "[64acff]重击：[-]当有两个或者两个以上的其他超能勇士机器人与猩猩队长进行组队时，在5秒内超能勇士角色将获得+{0}%的攻击力，并且可以净化伤害减益。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BIA_1",
+      "v": "手足兄弟1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BIA_2",
+      "v": "手足兄弟2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BIA_3",
+      "v": "手足兄弟3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BIA_4",
+      "v": "手足兄弟4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BIA_5",
+      "v": "兄弟连5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BIA_DESC",
+      "v": "完成基本近战连招时，铁皮和救护车将在2秒内获得{0}%能量条。此外，他们将在故事任务和事件任务中造成+6%近战伤害。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BIA_DESC2",
+      "v": "完成基本近战连招时，铁皮和救护车将在2秒内获得{0}%能量条。此外，他们将在故事任务和事件任务中造成+7%近战伤害。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BIA_DESC3",
+      "v": "完成基本近战连招时，铁皮和救护车将在2秒内获得{0}%能量条。此外，他们将在故事任务和事件任务中造成+9%近战伤害。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BIA_LONG_DESC",
+      "v": "汽车人获得+{0}%护甲，并在单人任务中+4%的近战伤害。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BIA_LONG_DESC_2",
+      "v": "汽车人获得+{0}%护甲，并在单人任务中+6%的近战伤害。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BIA_LONG_DESC_3",
+      "v": "汽车人获得+{0}%护甲，并在单人任务中+8%的近战伤害。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BRAINDRAIN_1",
+      "v": "脑力汲取1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BRAINDRAIN_2",
+      "v": "脑力汲取2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BRAINDRAIN_3",
+      "v": "脑力汲取3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BRAINDRAIN_4",
+      "v": "脑力汲取4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BRAINDRAIN_5",
+      "v": "脑力汲取5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BRAINDRAIN_LONG_BLKPROF",
+      "v": "对抗基础远程攻击时，震荡波将获得+{0}%的格挡精通。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BRAINDRAIN_LONG_FASTERCHARGE",
+      "v": "震荡波产生能量充能的速度+{0}%。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BRAINDRAIN_LONG_LONGERCHARGE",
+      "v": "震荡波的能量充能持续时间+{0}%。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BRAINDRAIN_LONG_LONGSHOCK",
+      "v": "震荡波的震击持续时间+{0}%。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BRAINDRAIN_LONG_MIRAGE",
+      "v": "震荡波的特殊技2有{0}%几率眩晕对手，持续2.5秒。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BRAINDRAIN_LONG_MOREDRAIN",
+      "v": "从被震击的对手中，震荡波汲取能量+{0}%。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BRAINDRAIN_LONG_MOREPOWER",
+      "v": "从他的能量充能中，震荡波产生的能量+{0}%。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BRAINDRAIN_LONG_MORESHOCK",
+      "v": "震荡波的震击造成的伤害+{0}%。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BRAINDRAIN_LONG_RATCHET",
+      "v": "基于震荡波启动中的能量充能数量，每个都会在每秒产生一格能量槽{0}%的能量。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BRAINDRAIN_LONG_RHINOX",
+      "v": "震荡波在战斗开始时和每25秒会产生{0}个能量充能。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BRAINDRAIN_LONG_SOUNDWAVE",
+      "v": "基于敌方机器人启动中的震击减益的数量，震荡波每秒汲取对手能量条{0}%的能量。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BRAINDRAIN_LONG_STUN",
+      "v": "当同时施加3个或更多震击时，震荡波有{0}%几率施加眩晕，持续2.5秒。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BRAINGAIN_1",
+      "v": "脑力增加1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BRAINGAIN_2",
+      "v": "脑力增加2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BRAINGAIN_3",
+      "v": "脑力增加3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BRAINGAIN_4",
+      "v": "脑力增加4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BRAINGAIN_5",
+      "v": "脑力增加5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BRAINGAIN_LONG",
+      "v": "对抗爆破系机器人时，攻击评分增加{0}%。\r\n震荡波仅在队伍中所有机器人都有这个协同作用时才可享受此增益。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BRAW",
+      "v": "斗士系队友被施加减益时增加+{0}%命中率。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BRAWLER LEADERSHIP_1",
+      "v": "斗士领袖Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BRAWLER LEADERSHIP_2",
+      "v": "斗士领袖Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BRAWLER LEADERSHIP_3",
+      "v": "斗士领袖Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BRAWLER LEADERSHIP_4",
+      "v": "斗士领袖Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_BRAWLER_LEADERSHIP_5",
+      "v": "斗士系领袖Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_CALCULATED_1",
+      "v": "老谋深算Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_CALCULATED_2",
+      "v": "老谋深算Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_CALCULATED_3",
+      "v": "老谋深算Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_CALCULATED_4",
+      "v": "老谋深算Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_CALCULATED_5",
+      "v": "老谋深算Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_CD",
+      "v": "‘+{0}%暴击伤害",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_CHAOS_DESC",
+      "v": "所有霸天虎的特殊攻击可获得{0}%特殊攻击伤害和{0}%暴击伤害。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_CHAOS_DESC_1",
+      "v": "所有你队伍中的霸天虎在与霸天虎战斗时获得+1%护甲，当与汽车人战斗时+{0}%能量功率。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_CHAOS_DESC_2",
+      "v": "所有你队伍中的霸天虎在与霸天虎战斗时获得+2%护甲，当与汽车人战斗时+{0}%能量功率。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_CHAOS_DESC_3",
+      "v": "所有你队伍中的霸天虎在与霸天虎战斗时获得+3%护甲，当与汽车人战斗时+{0}%能量功率。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_CHAOS_DESC_4",
+      "v": "所有你队伍中的霸天虎在与霸天虎战斗时获得+5%护甲，当与汽车人战斗时+{0}%能量功率。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_CHAOS_TITLE_1",
+      "v": "混沌之手1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_CHAOS_TITLE_2",
+      "v": "混沌之手2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_CHAOS_TITLE_3",
+      "v": "混沌之手3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_CHAOS_TITLE_4",
+      "v": "混沌之手4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_CHAOS_TITLE_5",
+      "v": "混沌之手5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_CHIEFOFFICER_1",
+      "v": "首席长官1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_CHIEFOFFICER_2",
+      "v": "首席长官2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_CHIEFOFFICER_3",
+      "v": "首席长官3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_CHIEFOFFICER_4",
+      "v": "首席长官4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_CHIEFOFFICER_5",
+      "v": "首席长官5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_CHIEFOFFICER_STARS_DESC",
+      "v": "所有机器人获得+{0}%攻击力。霸天虎在突袭中额外获得2%攻击力。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_CHIEFOFFICER_STARS_DESC2",
+      "v": "所有机器人获得+{0}%攻击力。霸天虎在突袭中额外获得4%攻击力。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_CHIEFOFFICER_STARS_DESC3",
+      "v": "所有机器人获得+{0}%攻击力。霸天虎在突袭中额外获得6%攻击力。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_CHIEFOFFICER_ULTRA_DESC",
+      "v": "所有机器人获得+{0}%生命值。汽车人在故事任务和事件任务中额外获得6%护甲。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_CHIEFOFFICER_ULTRA_DESC2",
+      "v": "所有机器人获得+{0}%生命值。汽车人在故事任务和事件任务中额外获得8%护甲。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_CHIEFOFFICER_ULTRA_DESC3",
+      "v": "所有机器人获得+{0}%生命值。汽车人在故事任务和事件任务中额外获得10%护甲。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_CLASS",
+      "v": "+{0}%所有队友的各类别能力",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_CLASSCOMP_DESC",
+      "v": "对于出现在队伍中的每个不同类别的机器人，攻击力都+{0}%。对于队伍中每个相同阵营的机器人，护甲都+{0}%。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_CODE12_2",
+      "v": "代码12：鲁莽驾驶2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_CODE12_3",
+      "v": "代码12：鲁莽驾驶3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_CODE12_4",
+      "v": "代码12：鲁莽驾驶4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_CODE12_5",
+      "v": "代码12：鲁莽驾驶5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_CODE12_LONG_DESC",
+      "v": "使用重击时+{0}%攻击增益，持续3秒。叠加那些增益时将会刷新整个堆叠的持续时间",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_COMBINERS_1",
+      "v": "组合金刚Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_COMBINERS_2",
+      "v": "组合金刚Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_COMBINERS_3",
+      "v": "组合金刚Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_COMBINERS_4",
+      "v": "组合金刚Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_COMBINERS_5",
+      "v": "合体金刚Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_COMM_1",
+      "v": "指挥官Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_COMM_2",
+      "v": "指挥官Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_COMM_3",
+      "v": "指挥官Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_COMM_DESC",
+      "v": "每一名存活的小队成员都将使所有变形金刚获得+{0}%生命值。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_COMM_I",
+      "v": "指挥官Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_COMM_II",
+      "v": "指挥官Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_COMM_III",
+      "v": "指挥官Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_CONCUSSIVE",
+      "v": "‘+{0}%震荡抗性",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_CR",
+      "v": "‘+{0}暴击几率",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_DECEPTICONS_1",
+      "v": "霸天虎Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_DECEPTICONS_2",
+      "v": "霸天虎Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_DECEPTICONS_3",
+      "v": "霸天虎Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_DECEPTICONS_4",
+      "v": "霸天虎Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_DECEPTICONS_5",
+      "v": "霸天虎Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_DEMO",
+      "v": "爆破系队友在接下来两次特殊攻击时有+{0}%。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_DEMOLITIONS LEADERSHIP_1",
+      "v": "爆破领袖Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_DEMOLITIONS LEADERSHIP_2",
+      "v": "爆破领袖Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_DEMOLITIONS LEADERSHIP_3",
+      "v": "爆破领袖Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_DEMOLITIONS LEADERSHIP_4",
+      "v": "爆破领袖Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_DINOBOTS_1",
+      "v": "机器恐龙Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_DINOBOTS_2",
+      "v": "机器恐龙Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_DINOBOTS_3",
+      "v": "机器恐龙Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_DINOBOTS_4",
+      "v": "机器恐龙Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_DINOBOTS_5",
+      "v": "机械恐龙Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ENCORE_DESC_1",
+      "v": "使用特殊攻击后获得一个能量槽{0}%的能量。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ENCORE_HUD",
+      "v": "再来一次！",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ENCORE_TITLE_1",
+      "v": "再来一次1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ENCORE_TITLE_2",
+      "v": "再来一次2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ENCORE_TITLE_3",
+      "v": "再来一次3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ENCORE_TITLE_4",
+      "v": "再来一次4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ENCORE_TITLE_5",
+      "v": "再来一次5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ENEMIES_1",
+      "v": "敌人Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ENEMIES_2",
+      "v": "敌人Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ENEMIES_3",
+      "v": "敌人Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ENEMIES_4",
+      "v": "敌人Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ENEMIES_5",
+      "v": "敌人Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ENEMY_1",
+      "v": "敌人 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ENEMY_2",
+      "v": "敌人 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ENEMY_3",
+      "v": "敌人 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ENEMY_4",
+      "v": "敌人 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ENEMY_5",
+      "v": "敌人5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ENEMY_BARRI_DESC",
+      "v": "大黄蜂从友情中获得激励，获得+{0}%攻击等级。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ENEMY_BUMBLE_DESC",
+      "v": "路障从友情中获得激励，获得+{0}%攻击等级。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ENEMY_GRIND_DESC",
+      "v": "擎天柱从友情中获得激励，获得+{0}%攻击等级。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ENEMY_MIXMA_DESC",
+      "v": "擎天柱(电影1)从友情中获得激励，获得+{0}%攻击评分。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ENEMY_OPTIMUS_DESC",
+      "v": "雷震从友情中获得激励，获得+{0}%攻击等级。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ENEMY_OPTIMUS_UPDT_DESC",
+      "v": "雷震和汽车大师从友情中获得激励，获得+{0}%攻击等级。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ENFORCERS_1",
+      "v": "执行者1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ENFORCERS_2",
+      "v": "执行者2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ENFORCERS_3",
+      "v": "执行者3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ENFORCERS_4",
+      "v": "执行者4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ENFORCERS_5",
+      "v": "执行者5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ENFORCERS_DESC",
+      "v": "减益持续时间增加{0}%且不能被净化。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_EXPWEAPON_1",
+      "v": "爆破武器Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_EXPWEAPON_2",
+      "v": "爆破武器Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_EXPWEAPON_3",
+      "v": "爆破武器Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_EXPWEAPON_DESC",
+      "v": "所有变形金刚造成+{0}%爆破伤害。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_EXPWEAPON_I",
+      "v": "爆炸武器Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_EXPWEAPON_II",
+      "v": "爆炸武器Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_EXPWEAPON_III",
+      "v": "爆炸武器Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_FACTCOMP_DESC",
+      "v": "对于队伍中每个相同阵营的机器人，攻击力都+{0}%。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_FALLEN_DESC_1",
+      "v": "所有你队伍中的霸天虎在与霸天虎战斗时获得+1%护甲，当与汽车人战斗时+{0}%能量功率。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_FALLEN_DESC_2",
+      "v": "所有你队伍中的霸天虎在与霸天虎战斗时获得+2%护甲，当与汽车人战斗时+{0}%能量功率。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_FALLEN_DESC_3",
+      "v": "所有你队伍中的霸天虎在与霸天虎战斗时获得+3%护甲，当与汽车人战斗时+{0}%能量功率。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_FALLEN_DESC_4",
+      "v": "所有你队伍中的霸天虎在与霸天虎战斗时获得+5%护甲，当与汽车人战斗时+{0}%能量功率。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_FALLEN_TITLE_1",
+      "v": "堕落金刚1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_FALLEN_TITLE_2",
+      "v": "堕落金刚2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_FALLEN_TITLE_3",
+      "v": "堕落金刚3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_FALLEN_TITLE_4",
+      "v": "堕落金刚4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_FALLEN_TITLE_5",
+      "v": "堕落金刚5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_FAMILY_1",
+      "v": "家人Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_FAMILY_2",
+      "v": "家人Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_FAMILY_3",
+      "v": "家人Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_FAMILY_4",
+      "v": "家人Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_FAMILY_5",
+      "v": "家人Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_FEMME FATALES_1",
+      "v": "蛇蝎美人Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_FEMME FATALES_2",
+      "v": "蛇蝎美人Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_FEMME FATALES_3",
+      "v": "蛇蝎美人Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_FEMME FATALES_4",
+      "v": "蛇蝎美人Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_FEMME_FATALES_5",
+      "v": "蛇蝎美人Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_FORGEDTOLEAD_1",
+      "v": "万炼为将1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_FORGEDTOLEAD_2",
+      "v": "万炼为将2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_FORGEDTOLEAD_3",
+      "v": "万炼为将3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_FORGEDTOLEAD_4",
+      "v": "万炼为将4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_FORGEDTOLEAD_5",
+      "v": "万炼为将Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_FORGEDTOLEAD_DESC",
+      "v": "每个威震天的小兵会提供给他一个独特能力。相应的，威震天会向每个机器人提供+{0}%护甲。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_FORGEDTOSERVE_1",
+      "v": "千炼为侍1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_FORGEDTOSERVE_2",
+      "v": "千炼为侍2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_FORGEDTOSERVE_3",
+      "v": "千炼为侍3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_FORGEDTOSERVE_4",
+      "v": "千炼为侍4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_FORGEDTOSERVE_5",
+      "v": "千炼为侍5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_FORGEDTOSERVE_A_DESC",
+      "v": "威震天的攻击命中时有+{0}%几率施放一个额外削弱充能。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_FORGEDTOSERVE_B_DESC",
+      "v": "当削弱充能积累到20个时，威震天有{0}%几率眩晕对手。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_FORGEDTOSERVE_C_DESC",
+      "v": "威震天开始战斗时，有{0}%几率变得不可阻挡。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_FRIENDS_1",
+      "v": "好友Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_FRIENDS_2",
+      "v": "好友Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_FRIENDS_3",
+      "v": "好友Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_FRIENDS_4",
+      "v": "好友Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_FRIENDS_5",
+      "v": "好友Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_GENL_1",
+      "v": "激光器Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_GENL_2",
+      "v": "激光器Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_GENL_3",
+      "v": "激光器Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_GENL_DESC",
+      "v": "所有变形金刚获得+{0}%远程攻击。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_GENL_I",
+      "v": "世代激光Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_GENL_II",
+      "v": "世代激光Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_GENL_III",
+      "v": "世代激光Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_GOOD COP_1",
+      "v": "好警察Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_GOOD COP_2",
+      "v": "好警察Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_GOOD COP_3",
+      "v": "好警察Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_GOOD COP_4",
+      "v": "好警察Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_GOOD_COP_5",
+      "v": "好警察Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_GUILTY CONSCIENCE_1",
+      "v": "问心有愧Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_GUILTY CONSCIENCE_2",
+      "v": "问心有愧Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_GUILTY CONSCIENCE_3",
+      "v": "问心有愧Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_GUILTY CONSCIENCE_4",
+      "v": "问心有愧Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_GUILTY_CONSCIENCE_5",
+      "v": "问心有愧Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_HEAVY_1",
+      "v": "超重Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_HEAVY_2",
+      "v": "超重Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_HEAVY_3",
+      "v": "超重Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_HEAVY_DESC",
+      "v": "所有变形金刚获得+{0}%近战攻击。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_HEAVY_I",
+      "v": "重型机器人Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_HEAVY_II",
+      "v": "重型机器人Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_HEAVY_III",
+      "v": "重型机器人Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_HOME FIELD ADVANTAGE_1",
+      "v": "主场优势Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_HOME FIELD ADVANTAGE_2",
+      "v": "主场优势Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_HOME FIELD ADVANTAGE_3",
+      "v": "主场优势Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_HOME FIELD ADVANTAGE_4",
+      "v": "主场优势Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_HOME_FIELD_ADVANTAGE_5",
+      "v": "主场优势Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_HP",
+      "v": "‘+{0}生命值",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_HUNT_1",
+      "v": "狩猎1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_HUNT_2",
+      "v": "狩猎2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_HUNT_3",
+      "v": "狩猎3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_HUNT_4",
+      "v": "搜索过程 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_HUNT_5",
+      "v": "搜索过程5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_HUNT_DESC",
+      "v": "使大黄蜂在面对战士系类别的敌人时有{0}%几率躲避特殊攻击。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_IMOVOBJ_1",
+      "v": "稳固如山1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_IMOVOBJ_2",
+      "v": "稳固如山2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_IMOVOBJ_3",
+      "v": "稳固如山3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_IMOVOBJ_4",
+      "v": "稳固如山4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_IMOVOBJ_5",
+      "v": "稳固如山5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_IMOVOBJ_DESC",
+      "v": "在特殊攻击的最后一击后，汽车大师有{0}%几率眩晕对手，持续2.5秒。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_INCREDULOUS_1",
+      "v": "难以置信Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_INCREDULOUS_2",
+      "v": "难以置信Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_INCREDULOUS_3",
+      "v": "难以置信Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_INCREDULOUS_4",
+      "v": "难以置信Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_INCREDULOUS_5",
+      "v": "难以置信Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_INSECTALT_DESC",
+      "v": "有{0}%几率在被远程攻击击中后，2秒内规避近战攻击。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_INSECTREF_DESC",
+      "v": "{0}%几率规避特殊攻击首击后的每一击。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_INSECTS_1",
+      "v": "昆虫感官1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_INSECTS_2",
+      "v": "昆虫感官2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_INSECTS_3",
+      "v": "昆虫感官3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_INSECTS_4",
+      "v": "昆虫感官4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_INSECTS_5",
+      "v": "昆虫感官5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_INSECT_DESC",
+      "v": "有{0}%几率在对手回避一个冲刺攻击后规避近战攻击，持续1.5秒。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_IRON HIDES_1",
+      "v": "铁皮Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_IRON HIDES_2",
+      "v": "铁皮Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_IRON HIDES_3",
+      "v": "铁皮Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_IRON HIDES_4",
+      "v": "铁皮Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_IRON_HIDES_5",
+      "v": "铁皮Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_JETFIREDRAIN_DESC",
+      "v": "每当震荡波获得6个或更多能量充能时，他将修复{0}%生命值。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_JETFIREFRIENDS_DESC",
+      "v": "对基础近战攻击激活招架护盾，将有{0}%几率眩晕对手2秒。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_LEADERSHIP_1",
+      "v": "领袖Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_LEADERSHIP_2",
+      "v": "领袖Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_LEADERSHIP_3",
+      "v": "领袖Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_LEADERSHIP_4",
+      "v": "领袖Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_LEADERSHIP_5",
+      "v": "领袖Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_LEAD_BRAW_DESC_ALT",
+      "v": "如团队的领导力明灯，所有较低阶队友获得+{0}%攻击评分。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_LEAD_DEMO_DESC_ALT",
+      "v": "如团队的领导力明灯，所有较低阶队友获得+{0}%特殊伤害。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_LEAD_NULL_DESC_ALT",
+      "v": "如提防反叛的卫士，所有较低阶队友获得+{0}%驱散抗性。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_LEAD_SCOU_DESC_ALT",
+      "v": "如团队的领导力明灯，所有较低阶队友获得+{0}%暴击评分。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_LEAD_TACT_DESC_ALT",
+      "v": "如团队的领导力明灯，所有较低阶队友获得+{0}%护甲评分。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_LEAD_TECH_DESC_ALT",
+      "v": "如团队的领导力明灯，所有较低阶队友获得+{0}%能量功率。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_LEAD_WARR_DESC_ALT",
+      "v": "如团队的领导力明灯，所有较低阶队友获得+{0}%暴击伤害。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_LEFT_1",
+      "v": "左手1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_LEFT_2",
+      "v": "左手2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_LEFT_3",
+      "v": "左手3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_LEFT_4",
+      "v": "左手4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_LEFT_5",
+      "v": "左手5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_LEFT_DESC",
+      "v": "威震天获得20%几率向敌人施加力量功率减益，降低对手{0}%的力量功率，持续10秒。此减益或会融合在对手身上。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_LOGICAL_1",
+      "v": "合乎逻辑Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_LOGICAL_2",
+      "v": "合乎逻辑Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_LOGICAL_3",
+      "v": "合乎逻辑Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_LOGICAL_4",
+      "v": "合乎逻辑Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_LOGICAL_5",
+      "v": "合乎逻辑Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_LUIT",
+      "v": "",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_LUIT_1",
+      "v": "中尉1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_LUIT_2",
+      "v": "中尉2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_LUIT_3",
+      "v": "中尉3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_LUIT_4",
+      "v": "中尉4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_LUIT_5",
+      "v": "中尉5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_LUIT_DESC",
+      "v": "威震天获得新能力，且他的中尉获得+{0}%护甲和+{0}%攻击评分。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_LVNWPN_2",
+      "v": "活体武器2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_LVNWPN_3",
+      "v": "活体武器3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_LVNWPN_4",
+      "v": "活体武器4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_LVNWPN_5",
+      "v": "活体武器5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_MASTERMINDS_1",
+      "v": "犯罪大师Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_MASTERMINDS_2",
+      "v": "犯罪大师Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_MASTERMINDS_3",
+      "v": "犯罪大师Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_MASTERMINDS_4",
+      "v": "犯罪大师Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_MASTERMINDS_5",
+      "v": "犯罪大师Lv. 5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_MAXIMALS_1",
+      "v": "最大化Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_MAXIMALS_2",
+      "v": "最大化Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_MAXIMALS_3",
+      "v": "最大化Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_MAXIMALS_4",
+      "v": "最大化Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_MAXIMALS_5",
+      "v": "巨无霸Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_MEDIC_1",
+      "v": "医疗支持1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_MEDIC_2",
+      "v": "医疗支持2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_MEDIC_3",
+      "v": "医疗支持3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_MEDIC_4",
+      "v": "医疗支持 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_MEDIC_5",
+      "v": "医疗支持5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_MEDIC_DESC",
+      "v": "大黄蜂和铁皮在开始战斗时恢复{0}%基础生命值。此外，在突袭中恢复效果+3%。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_MEDIC_DESC2",
+      "v": "大黄蜂和铁皮在开始战斗时恢复{0}%基础生命值。此外，在突袭中恢复效果+4%。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_MEDIC_DESC3",
+      "v": "大黄蜂和铁皮在开始战斗时恢复{0}%基础生命值。此外，在突袭中恢复效果+5%。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_MEDIC_LONG_DESC_1",
+      "v": "开始战斗时修复{0}%基础生命值。此外在突袭中额外修复+3%。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_MEDIC_LONG_DESC_2",
+      "v": "开始战斗时修复{0}%基础生命值。此外在突袭中额外修复+4%。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_MEDIC_LONG_DESC_3",
+      "v": "开始战斗时修复{0}%基础生命值。此外在突袭中额外修复+5%。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_MEDOFFICER_1",
+      "v": "首席医务官1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_MEDOFFICER_2",
+      "v": "首席医务官2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_MEDOFFICER_3",
+      "v": "首席医务官3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_MEDOFFICER_4",
+      "v": "首席医务官 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_MEDOFFICER_5",
+      "v": "首席医务官5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_MEDOFFICER_DESC",
+      "v": "当擎天柱释放出击时，基于损失的生命值，最高有60%的几率恢复{0}的生命值，该效果将取代获得攻击增益的能力。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_MEDOFFICER_DESC2",
+      "v": "当擎天柱释放出击时，基于损失的生命值，最高有100%的几率恢复{0}%基础生命值，该效果将取代获得攻击增益的能力。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_MEDOFFICER_LONG_DESC",
+      "v": "基于损失的生命值，最高有100%的几率修复{0}%基础生命值，该效果将取代出击时获得攻击增益的能力。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_MEGALOMANIA_1",
+      "v": "狂妄自大Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_MEGALOMANIA_2",
+      "v": "狂妄自大Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_MEGALOMANIA_3",
+      "v": "狂妄自大Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_MEGALOMANIA_4",
+      "v": "狂妄自大Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_MEGALOMANIA_5",
+      "v": "狂妄自大Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_MENTOR_1",
+      "v": "良师益友Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_MENTOR_2",
+      "v": "良师益友Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_MENTOR_3",
+      "v": "良师益友Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_MENTOR_4",
+      "v": "良师益友Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_MENTOR_5",
+      "v": "良师益友Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NEMESIS_1",
+      "v": "复仇女神Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NEMESIS_2",
+      "v": "复仇女神Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NEMESIS_3",
+      "v": "复仇女神Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NEMESIS_4",
+      "v": "复仇女神Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NEMESIS_5",
+      "v": "复仇女神Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_LEAD_BRAW_DESC_ALT",
+      "v": "如果此机器人是队伍中最强的，所有机器人获得+{0}%攻击评分",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_LEAD_DEMO_DESC_ALT",
+      "v": "如果此机器人是队伍中最强的，所有机器人获得+{0}%特殊伤害",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_LEAD_NULL_DESC_ALT",
+      "v": "如果此机器人是队伍中最强的，所有机器人获得+{0}%驱散抗性。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_LEAD_SCOU_DESC_ALT",
+      "v": "如果此机器人是队伍中最强的，所有机器人获得+{0}%暴击评分",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_LEAD_TACT_DESC_ALT",
+      "v": "如果此机器人是队伍中最强的，所有机器人获得+{0}%护甲评分",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_LEAD_TECH_DESC_ALT",
+      "v": "如果此机器人是队伍中最强的，所有机器人获得+{0}%能量功率",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_LEAD_WARR_DESC_ALT",
+      "v": "如果此机器人是队伍中最强的，所有机器人获得+{0}%暴击伤害",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_ALL_1",
+      "v": "鲨鱼狂暴1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_ALL_2",
+      "v": "鲨鱼狂暴2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_ALL_3",
+      "v": "鲨鱼狂暴3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_ALL_4",
+      "v": "鲨鱼狂暴4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_ALL_5",
+      "v": "鲨鱼狂暴5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_ALL_DESC",
+      "v": "如果你的整个队伍都由饿鲨组成，所有饿鲨在使用特殊攻击3时将为你的团队中每个存活的机器人修复{0}％生命值。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_BRAW_1",
+      "v": "斗士系狂暴1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_BRAW_2",
+      "v": "斗士系狂暴2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_BRAW_3",
+      "v": "斗士系狂暴3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_BRAW_4",
+      "v": "斗士系狂暴4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_BRAW_5",
+      "v": "斗士系狂暴5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_BRAW_DESC",
+      "v": "所有饿鲨获得+{0}%攻击评分",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_DEMO_1",
+      "v": "爆破系狂暴1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_DEMO_2",
+      "v": "爆破系狂暴2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_DEMO_3",
+      "v": "爆破系狂暴3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_DEMO_4",
+      "v": "爆破系狂暴4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_DEMO_5",
+      "v": "爆破系狂暴5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_DEMO_DESC",
+      "v": "所有饿鲨获得+{0}%特殊伤害。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_GOLD_1",
+      "v": "黄金狂暴1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_GOLD_2",
+      "v": "黄金狂暴2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_GOLD_3",
+      "v": "黄金狂暴3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_GOLD_4",
+      "v": "黄金狂暴4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_GOLD_5",
+      "v": "黄金狂暴5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_GOLD_DESC",
+      "v": "所有饿鲨每秒恢复{0}生命值。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_SCOU_1",
+      "v": "侦查系狂暴1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_SCOU_2",
+      "v": "侦查系狂暴2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_SCOU_3",
+      "v": "侦查系狂暴3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_SCOU_4",
+      "v": "侦查系狂暴4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_SCOU_5",
+      "v": "侦查系狂暴5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_SCOU_DESC",
+      "v": "所有饿鲨获得+{0}%暴击评分",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_TACT_1",
+      "v": "战术系狂暴1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_TACT_2",
+      "v": "战术系狂暴2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_TACT_3",
+      "v": "战术系狂暴3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_TACT_4",
+      "v": "战术系狂暴4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_TACT_5",
+      "v": "战术系狂暴5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_TACT_DESC",
+      "v": "所有饿鲨获得+{0}%护甲评分",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_TECH_1",
+      "v": "科技系狂暴1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_TECH_2",
+      "v": "科技系狂暴2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_TECH_3",
+      "v": "科技系狂暴3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_TECH_4",
+      "v": "科技系狂暴4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_TECH_5",
+      "v": "科技系狂暴5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_TECH_DESC",
+      "v": "所有饿鲨获得+{0}%能量功率",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_WARR_1",
+      "v": "战士系狂暴1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_WARR_2",
+      "v": "战士系狂暴2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_WARR_3",
+      "v": "战士系狂暴3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_WARR_4",
+      "v": "战士系狂暴4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_WARR_5",
+      "v": "战士系狂暴5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_NPC_SHARK_WARR_DESC",
+      "v": "所有饿鲨获得+{0}%暴击伤害",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_OLDFRIENDS_1",
+      "v": "老朋友1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_OLDFRIENDS_2",
+      "v": "老朋友2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_OLDFRIENDS_3",
+      "v": "老朋友3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_OLDFRIENDS_4",
+      "v": "老朋友4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_OLDFRIENDS_5",
+      "v": "老友5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_OLDFRIENDS_DESC",
+      "v": "擎天柱从铁皮的减益效果堆叠中获益，赋予他对流血的敌人发动重击时能触发流血效果的能力，在3秒内造成{0}%攻击。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_OLDFRIENDS_LONG_DESC",
+      "v": "向对手施加流血时，{0}%几率造成一个附加的流血叠加。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_OREONE_1",
+      "v": "万众一心1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_OREONE_2",
+      "v": "万众一心2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_OREONE_3",
+      "v": "万众一心3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_OREONE_4",
+      "v": "万众一心 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_OREONE_5",
+      "v": "万众一心5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_OREONE_DESC",
+      "v": "汽车人在战斗开始时获得+{0}%攻击评分。此外，在突袭中减益效果将多造成+10%的伤害。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_OREONE_DESC2",
+      "v": "汽车人在战斗开始时获得+{0}%攻击评分。此外，在突袭中减益效果将多造成+13%的伤害。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_OREONE_DESC3",
+      "v": "汽车人在战斗开始时获得+{0}%攻击评分。此外，在突袭中减益效果将多造成+16%的伤害。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_OREONE_LONG_DESC",
+      "v": "汽车人的攻击评分+{0}%，在突袭中汽车人的减益伤害+6%。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_OREONE_LONG_DESC_2",
+      "v": "汽车人的攻击评分+{0}%，在突袭中汽车人的减益伤害+8%。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_OREONE_LONG_DESC_3",
+      "v": "汽车人的攻击评分+{0}%，在突袭中汽车人的减益伤害+12%。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_OUTLAWS_1",
+      "v": "法外狂徒1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_OUTLAWS_2",
+      "v": "法外狂徒2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_OUTLAWS_3",
+      "v": "法外狂徒3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_OUTLAWS_4",
+      "v": "法外狂徒4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_OUTLAWS_5",
+      "v": "亡命之徒5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_OUTLAWS_BARR_DESC",
+      "v": "碾碎器的首次重型远程攻击将造成持续{0}秒的能量锁。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_OUTLAWS_GRIND_DESC",
+      "v": "路障的首次重型远程攻击将造成持续{0}秒的能量锁。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_OUTLAWS_LONG_DESC",
+      "v": "首次重击命中时有100%几率使对手遭受能量锁定，持续{0}秒。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_OVRPWCOUNT_DESC",
+      "v": "这个机器人有{0}%几率压倒对手，在对手基础攻击连击时允许此机器人激活一个特殊攻击。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_OVRPWRESIST_DESC",
+      "v": "{0}%几率完全抵抗低阶机器人的基础攻击伤害。对手每比自己低一个阶层，这个几率增加5%。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_PD",
+      "v": "‘+{0}%投射伤害",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_POSSESED_1",
+      "v": "红蜘蛛的支配1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_POSSESED_2",
+      "v": "红蜘蛛的支配2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_POSSESED_3",
+      "v": "红蜘蛛的支配3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_POSSESED_4",
+      "v": "红蜘蛛的支配4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_POSSESED_5",
+      "v": "红蜘蛛的支配5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_POSSESED_LONG",
+      "v": "重击和特殊技2投射时有[A48705FF]{0}%[-]几率驱散护甲增益。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_PREDACONS_1",
+      "v": "巨狰狞Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_PREDACONS_2",
+      "v": "巨狰狞Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_PREDACONS_3",
+      "v": "巨狰狞Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_PREDACONS_4",
+      "v": "巨狰狞Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_PREDACONS_5",
+      "v": "原始兽Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_PRIME_1",
+      "v": "主要的Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_PRIME_2",
+      "v": "主要的Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_PRIME_3",
+      "v": "主要的Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_PRIME_4",
+      "v": "主要的Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_PRIME_5",
+      "v": "领袖之证Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_PROTECTOR_1",
+      "v": "防御者Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_PROTECTOR_2",
+      "v": "防御者Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_PROTECTOR_3",
+      "v": "防御者Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_PROTECTOR_4",
+      "v": "防御者Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_PROTECTOR_5",
+      "v": "防御者Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_PWRSTRT",
+      "v": "开始战斗时带有{1}%能量。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_RACINGRIVALS_1",
+      "v": "赛车对手2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_RACINGRIVALS_2",
+      "v": "赛车对手3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_RACINGRIVALS_3",
+      "v": "赛车对手5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_RACINGRIVALS_LONG_DESC",
+      "v": "+{0}%暴击伤害。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_RIGHT_1",
+      "v": "右手1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_RIGHT_2",
+      "v": "右手2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_RIGHT_3",
+      "v": "右手3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_RIGHT_4",
+      "v": "右手4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_RIGHT_5",
+      "v": "右手5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_RIGHT_DESC",
+      "v": "威震天的特殊攻击有{0}%几率使敌人眩晕2秒。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_RIVALS_1",
+      "v": "竞争者Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_RIVALS_2",
+      "v": "竞争者Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_RIVALS_3",
+      "v": "竞争者Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_RIVALS_4",
+      "v": "竞争者Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_RIVALS_5",
+      "v": "竞争者Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ROLEMODEL_1",
+      "v": "偶像1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ROLEMODEL_2",
+      "v": "偶像2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ROLEMODEL_3",
+      "v": "偶像3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ROLEMODEL_4",
+      "v": "偶像4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ROLEMODEL_5",
+      "v": "偶像5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ROMANCE_1",
+      "v": "情侣1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ROMANCE_2",
+      "v": "情侣2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ROMANCE_3",
+      "v": "情侣3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ROMANCE_4",
+      "v": "情侣4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ROMANCE_5",
+      "v": "情侣5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ROMANCE_DESC",
+      "v": "开始战斗时风刃获得{0}%能量条。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_ROMANCE_LONG_DESC",
+      "v": "开始战斗时授予{0}%能量条。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_RSTDMGCONC",
+      "v": "‘+{0}%震荡抗性和震荡伤害",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_RSTDMGEXPLO",
+      "v": "‘+{0}%爆炸抗性和爆炸伤害",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_RSTDMGHEAT",
+      "v": "‘+{0}%热抗性和热伤害",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_RSTDMGPHYS",
+      "v": "‘+{0}%物理抗性和物理伤害",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_RSTDMGPROJ",
+      "v": "‘+{0}%投射伤害和投射抗性",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_RSTDMGSHOCK",
+      "v": "‘+{0}%震击抗性和震击伤害",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_RSTDMGSLASH",
+      "v": "‘+{0}%挥砍伤害和挥砍抗性",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_RSTEXPL",
+      "v": "‘+{0}%爆炸抗性",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_RSTHEAT",
+      "v": "‘+{0}%热抗性",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_RSTSHK",
+      "v": "‘+{0}%震击抗性",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SCIENTISTS_1",
+      "v": "科学家Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SCIENTISTS_2",
+      "v": "科学家Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SCIENTISTS_3",
+      "v": "科学家Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SCIENTISTS_4",
+      "v": "科学家Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SCIENTISTS_5",
+      "v": "科学家Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SCI_1",
+      "v": "升级1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SCI_2",
+      "v": "升级2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SCI_3",
+      "v": "升级3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SCI_4",
+      "v": "升级4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SCI_5",
+      "v": "升级5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SCOUT LEADERSHIP_1",
+      "v": "侦查领袖Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SCOUT LEADERSHIP_2",
+      "v": "侦查领袖Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SCOUT LEADERSHIP_3",
+      "v": "侦查领袖Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SCOUT LEADERSHIP_4",
+      "v": "侦查领袖Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SCOUT_LEADERSHIP_5",
+      "v": "侦查系领袖Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SD",
+      "v": "‘+{0}%特殊伤害",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SEEKERS_1",
+      "v": "红蜘蛛的游击军1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SEEKERS_2",
+      "v": "红蜘蛛的游击军2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SEEKERS_3",
+      "v": "红蜘蛛的游击军3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SEEKERS_4",
+      "v": "红蜘蛛的游击军4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SEEKERS_5",
+      "v": "红蜘蛛的追随者5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SEEKERS_DESC",
+      "v": "所有霸天虎的远程攻击+{0}%伤害和50%护甲穿刺。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SEEKERS_DESC_1",
+      "v": "所有霸天虎的远程攻击+{0}%伤害和10%护甲穿刺。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SEEKERS_DESC_2",
+      "v": "所有霸天虎的远程攻击+{0}%伤害和20%护甲穿刺。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SEEKERS_DESC_3",
+      "v": "所有霸天虎的远程攻击+{0}%伤害和30%护甲穿刺。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SEEKERS_DESC_4",
+      "v": "所有霸天虎的远程攻击+{0}%伤害和75%护甲穿刺。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SENSEI_5",
+      "v": "老师5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SHARPSHOOT_1",
+      "v": "精准射击者1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SHARPSHOOT_2",
+      "v": "精准射击者2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SHARPSHOOT_3",
+      "v": "精准射击者3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SHARPSHOOT_4",
+      "v": "精准射击者4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SHARPSHOOT_5",
+      "v": "精准射击者5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SHARPSHOOT_DESC",
+      "v": "远程攻击+{0}%暴击几率。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SHIELDM_1",
+      "v": "护盾大师1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SHIELDM_2",
+      "v": "护盾大师2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SHIELDM_3",
+      "v": "护盾大师3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SHIELDM_4",
+      "v": "护盾大师4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SHIELDM_5",
+      "v": "护盾大师5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SHIELDM_DESC",
+      "v": "对近战攻击的适时格挡可+{0}%的格挡精通。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SHIELDM_DESC_ALT",
+      "v": "对抗近战攻击的适时格挡可+10%格挡精通，并汲取相当于对手{0}%的最大能量。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SHIELDSM_3",
+      "v": "护盾大师3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SHIELDSM_4",
+      "v": "护盾大师4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SHIELDSM_5",
+      "v": "护盾大师5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SHIELDSM_DESC",
+      "v": "对近战攻击的适时格挡可+50%格挡精通，并立即汲取对手能量的{0}%。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SLASH",
+      "v": "‘+{0}%挥砍伤害",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SNIPERS_1",
+      "v": "狙击手Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SNIPERS_2",
+      "v": "狙击手Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SNIPERS_3",
+      "v": "狙击手Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SNIPERS_4",
+      "v": "狙击手Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SNIPERS_5",
+      "v": "狙击手Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SPEEDC_1",
+      "v": "急速追逐1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SPEEDC_2",
+      "v": "急速追逐2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SPEEDC_3",
+      "v": "急速追逐3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SPEEDC_4",
+      "v": "急速追逐4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SPEEDC_5",
+      "v": "追求速度者5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SPEEDC_LONG_DESC",
+      "v": "躲避对手的攻击将使下次命中时攻击力+{0}%。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SPEEDC_MIR_DESC",
+      "v": "躲避或回避对手的攻击将使横炮和大黄蜂的下一次打击获得+{0}%攻击。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SPEEDC_MIR_DESC2",
+      "v": "躲避或回避对手的攻击将使横炮和大黄蜂的下一次打击获得+{0}%攻击。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SPEEDC_MIR_DESC3",
+      "v": "躲避或回避对手的攻击将使横炮和大黄蜂的下一次打击获得+{0}%攻击。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SPEEDC_SIDES_DESC",
+      "v": "躲避或回避对手的攻击将使幻影和大黄蜂的下一次打击获得+{0}%攻击。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SPEEDC_SIDES_DESC2",
+      "v": "躲避或回避对手的攻击将使幻影和大黄蜂的下一次打击获得+{0}%攻击。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SPEEDC_SIDES_DESC3",
+      "v": "躲避或回避对手的攻击将使幻影和大黄蜂的下一次打击获得+{0}%攻击。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SPY_1",
+      "v": "间谍专家1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SPY_2",
+      "v": "间谍专家2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SPY_3",
+      "v": "间谍专家3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SPY_4",
+      "v": "间谍专家 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SPY_5",
+      "v": "间谍专家5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SPY_DESC",
+      "v": "幻影的特殊2和3触发敌方能力的几率降低{0}%。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SPY_LONG_DESC",
+      "v": "当使用特殊攻击2或3命中时，对手触发能力的几率减少{0}%。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_STARSCHEME_3",
+      "v": "红蜘蛛的诡计3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_STARSCHEME_4",
+      "v": "红蜘蛛的诡计4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_STARSCHEME_5",
+      "v": "红蜘蛛的诡计5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_STARSCHEME_LONG",
+      "v": "你队伍中的霸天虎在启动一个特殊攻击时，可以受益于红蜘蛛的诡计中的其中一个。每个诡计只能被激活一次。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_STARSCHEME_TXT",
+      "v": "红蜘蛛的诡计",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_STARSFRIENDS_DESC",
+      "v": "向后冲刺时红蜘蛛有100%的几率规避远程攻击。当这种情况发生时，红蜘蛛将获得{0}%暴击伤害增益，持续6秒。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_STEALTH_1",
+      "v": "潜行Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_STEALTH_2",
+      "v": "潜行Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_STEALTH_3",
+      "v": "潜行Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_STEALTH_4",
+      "v": "潜行Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_STEALTH_5",
+      "v": "潜行Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_STUDENT_1",
+      "v": "学生Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_STUDENT_2",
+      "v": "学生Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_STUDENT_3",
+      "v": "学生Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_STUDENT_4",
+      "v": "学生Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_STUDENT_5",
+      "v": "学生Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SUBTERFUGE_1",
+      "v": "诡计Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SUBTERFUGE_2",
+      "v": "诡计Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SUBTERFUGE_3",
+      "v": "诡计Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SUBTERFUGE_4",
+      "v": "诡计Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SUBTERFUGE_5",
+      "v": "诡计Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SWORDMASTERS_1",
+      "v": "剑圣Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SWORDMASTERS_2",
+      "v": "剑圣Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SWORDMASTERS_3",
+      "v": "剑圣Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SWORDMASTERS_4",
+      "v": "剑圣Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SWORDMASTERS_5",
+      "v": "剑圣Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SWORDSM_1",
+      "v": "剑圣1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SWORDSM_2",
+      "v": "剑圣2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SWORDSM_3",
+      "v": "剑圣3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SWORDSM_4",
+      "v": "剑圣 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SWORDSM_5",
+      "v": "剑圣5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SWORDSM_BLUDGE_DESC",
+      "v": "每次未暴击的剑刃攻击使雷震的暴击伤害增加+{0}%，直到下一次剑刃攻击触发暴击为止。在故事任务和事件任务中剑刃攻击能多触发10%的暴击打击。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SWORDSM_BLUDGE_DESC2",
+      "v": "每次未暴击的剑刃攻击使雷震的暴击伤害增加+{0}%，直到下一次剑刃攻击触发暴击为止。在故事任务和事件任务中剑刃攻击能多触发13%的暴击打击。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SWORDSM_BLUDGE_DESC3",
+      "v": "每次未暴击的剑刃攻击使雷震的暴击伤害增加+{0}%，直到下一次剑刃攻击触发暴击为止。在故事任务和事件任务中剑刃攻击能多触发16%的暴击打击。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SWORDSM_RAIDS_DESC_1",
+      "v": "每次未暴击的剑刃攻击使暴击伤害+{0}%，直到下一次剑刃攻击触发暴击为止并且剑刃攻击在突击战中造成多于6%的暴击命中。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SWORDSM_RAIDS_DESC_2",
+      "v": "每次未暴击的剑刃攻击使暴击伤害+{0}%，直到下一次剑刃攻击触发暴击为止并且剑刃攻击在突击战中造成多于8%的暴击命中。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SWORDSM_RAIDS_DESC_3",
+      "v": "每次未暴击的剑刃攻击使暴击伤害+{0}%，直到下一次剑刃攻击触发暴击为止。突袭中触发暴击几率+12%。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SWORDSM_STORY_LONG_DESC",
+      "v": "对于每次不是暴击命中的剑击，+{0}%暴击伤害直到下次暴击命中。对抗暴击抵抗增益启动中的对手或者在剑圣机器人有启动中的暴击几率减益时不进行命中计算。在单人任务中+6%的暴击命中。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SWORDSM_STORY_LONG_DESC_2",
+      "v": "对于每次不是暴击命中的剑击，+{0}%暴击伤害直到下次暴击命中。对抗暴击抵抗增益启动中的对手或者在剑圣机器人有启动中的暴击几率减益时不进行命中计算。在单人任务中+8%的暴击命中。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SWORDSM_STORY_LONG_DESC_3",
+      "v": "对于每次不是暴击命中的剑击，+{0}%暴击伤害直到下次暴击命中。对抗暴击抵抗增益启动中的对手或者在剑圣机器人有启动中的暴击几率减益时不进行命中计算。在单人任务中+12%的暴击命中。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SWORDSM_WIND_DESC",
+      "v": "每次未暴击的剑刃攻击使雷震的暴击伤害增加+{0}%，直到下一次剑刃攻击触发暴击为止。在突袭中剑刃攻击能多触发10%的暴击打击。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SWORDSM_WIND_DESC2",
+      "v": "每次未暴击的剑刃攻击使雷震的暴击伤害增加+{0}%，直到下一次剑刃攻击触发暴击为止。在突袭中剑刃攻击能多触发13%的暴击打击。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SWORDSM_WIND_DESC3",
+      "v": "每次未暴击的剑刃攻击使雷震的暴击伤害增加+{0}%，直到下一次剑刃攻击触发暴击为止。在突袭中剑刃攻击能多触发16%的暴击打击。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SYCOPHANTS_1",
+      "v": "奉承者Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SYCOPHANTS_2",
+      "v": "奉承者Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SYCOPHANTS_3",
+      "v": "奉承者Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SYCOPHANTS_4",
+      "v": "奉承者Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_SYCOPHANTS_5",
+      "v": "奉承者Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_TACT",
+      "v": "战术系队友在10层或10层以上组合时获得+{0}%命中率。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_TACTICIAN LEADERSHIP_1",
+      "v": "战术领袖Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_TACTICIAN LEADERSHIP_2",
+      "v": "战术领袖Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_TACTICIAN LEADERSHIP_3",
+      "v": "战术领袖Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_TACTICIAN LEADERSHIP_4",
+      "v": "战术领袖Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_TACTICIAN_LEADERSHIP_5",
+      "v": "战术系领袖Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_TAIO_1",
+      "v": "统领万物1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_TAIO_2",
+      "v": "统领万物2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_TAIO_3",
+      "v": "统领万物3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_TAIO_4",
+      "v": "统领万物4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_TAIO_5",
+      "v": "统领万物5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_TAIO_DESC",
+      "v": "所有霸天虎在对抗汽车人时获得+{0}%攻击评分。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_TAIO_DESC_2",
+      "v": "霸天虎的攻击评分+{0}%。在突袭中霸天虎的减益伤害+8%。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_TAIO_DESC_3",
+      "v": "霸天虎的攻击评分+{0}%。在突袭中霸天虎的减益伤害+12%。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_TEAMMATE_1",
+      "v": "队友Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_TEAMMATE_2",
+      "v": "队友Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_TEAMMATE_3",
+      "v": "队友Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_TEAMMATE_4",
+      "v": "队友Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_TEAMMATE_5",
+      "v": "队友Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_TECH",
+      "v": "使所有科技系队友装备护盾，受到下一次特殊攻击的伤害降低{0}% 。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_TECH LEADERSHIP_1",
+      "v": "科技领袖Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_TECH LEADERSHIP_2",
+      "v": "科技领袖Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_TECH LEADERSHIP_3",
+      "v": "科技领袖Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_TECH LEADERSHIP_4",
+      "v": "科技领袖Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_TECHSAVVY_1",
+      "v": "扩大护盾 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_TECHSAVVY_2",
+      "v": "扩大护盾 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_TECHSAVVY_3",
+      "v": "扩大护盾 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_TECHSAVVY_4",
+      "v": "扩大护盾 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_TECHSAVVY_5",
+      "v": "扩大护盾5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_TECHSAVVY_DESC",
+      "v": "盾护时，扩大护盾将赋予幻影和犀牛+{0}%的伤害削减。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_TECHSAVVY_LONG_DESC",
+      "v": "在有护盾保护时将降低+{0}%伤害。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_TECH_LEADERSHIP_5",
+      "v": "科技系领袖Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_TRIGRATE",
+      "v": "攻击有{0}%几率不触发敌人的能力。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_UNSTFRC_1",
+      "v": "不可阻挡的力量1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_UNSTFRC_2",
+      "v": "不可阻挡的力量2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_UNSTFRC_3",
+      "v": "不可阻挡的力量3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_UNSTFRC_4",
+      "v": "不可阻挡的力量4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_UNSTFRC_5",
+      "v": "不可阻挡的力量5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_UNSTFRC_DESC",
+      "v": "在特殊攻击的最后一击后，喷气机有{0}%几率在3秒内获得不可阻挡。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_VETARMOR_1",
+      "v": "陆军老兵Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_VETARMOR_2",
+      "v": "陆军老兵Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_VETARMOR_3",
+      "v": "陆军老兵Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_VETARMOR_DESC",
+      "v": "所有变形金刚获得+{0}%护甲。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_VETARMOR_I",
+      "v": "军队老兵Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_VETARMOR_II",
+      "v": "军队老兵Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_VETARMOR_III",
+      "v": "军队老兵Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_VETERANS_1",
+      "v": "老兵Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_VETERANS_2",
+      "v": "老兵Lv.2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_VETERANS_3",
+      "v": "老兵Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_VETERANS_4",
+      "v": "老兵Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_VETERANS_5",
+      "v": "老兵Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_WARR",
+      "v": "面对你的战士系队友时，敌方有{0}%几率无法触发规避能力。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_WARRIOR LEADERSHIP_1",
+      "v": "战士领袖Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_WARRIOR LEADERSHIP_2",
+      "v": "战士领袖Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_WARRIOR LEADERSHIP_3",
+      "v": "战士领袖Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_WARRIOR LEADERSHIP_4",
+      "v": "战士领袖Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_WARRIOR_LEADERSHIP_5",
+      "v": "战士系领袖Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_WEAPONMASTERS_1",
+      "v": "武器大师Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_WEAPONMASTERS_2",
+      "v": "武器大师Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_WEAPONMASTERS_3",
+      "v": "武器大师Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_WEAPONMASTERS_4",
+      "v": "武器大师Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_WEAPONMASTERS_5",
+      "v": "武器大师Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_WEAPONSMITH_1",
+      "v": "武器匠 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_WEAPONSMITH_2",
+      "v": "武器匠 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_WEAPONSMITH_3",
+      "v": "武器匠 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_WEAPONSMITH_4",
+      "v": "武器匠 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_WEAPONSMITH_5",
+      "v": "武器匠5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_WEAPONSP_1",
+      "v": "武器专家 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_WEAPONSP_2",
+      "v": "武器专家 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_WEAPONSP_3",
+      "v": "武器专家 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_WEAPONSP_4",
+      "v": "武器专家 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_WEAPONSP_5",
+      "v": "武器专家5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_WEAPONSP_IRONH_RHINO_DESC2",
+      "v": "铁皮和犀牛的伤害性debuffs减益持续时间+{0}%。此外，同盟任务中的命中率提升+6%。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_WEAPONSP_LONG_DESC",
+      "v": "+{0}%几率在重击时更容易造成暴击。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_WEAPONSP_LONG_DESC_1",
+      "v": "+{0}%伤害减益持续时间。同盟任务中攻击评分+2%。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_WEAPONSP_LONG_DESC_2",
+      "v": "+{0}%伤害减益持续时间。同盟任务中攻击评分+4%。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_WEAPONSP_LONG_DESC_3",
+      "v": "+{0}%伤害减益持续时间。同盟任务中攻击评分+6%。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_WEAPONSP_MIXMA_DESC",
+      "v": "+{0}%几率重击会成为暴击",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_WEAPONSP_MIXMA_DESC2",
+      "v": "搅拌者的伤害性debuffs减益持续时间+{0}%。此外，同盟任务中的攻击评分提升+6%。",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_WRECKERS_1",
+      "v": "破坏者Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_WRECKERS_2",
+      "v": "破坏者Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_WRECKERS_3",
+      "v": "破坏者Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_WRECKERS_4",
+      "v": "破坏者Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_SYN_WRECKERS_5",
+      "v": "肇事者Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_TACTLEAD",
+      "v": "战术系领袖",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_TECHLEAD",
+      "v": "科技系领袖",
+      "vn": 1
+    },
+    {
+      "k": "ID_STAT_WARRLEAD",
+      "v": "战士系领袖",
+      "vn": 1
+    },
+    {
+      "k": "ID_SYN_ENEMY_LONG_DESC",
+      "v": "+{0}%攻击评分。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SYN_LVNWPN_LONG_DESC",
+      "v": "重击和特殊攻击3增加{0}%的伤害。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SYN_RHINO_WASP_DESC",
+      "v": "对遇到巨无霸感到不爽，黄蜂勇士获得+{0}%攻击评分。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SYN_SKYASLT_1",
+      "v": "空袭 1",
+      "vn": 1
+    },
+    {
+      "k": "ID_SYN_SKYASLT_2",
+      "v": "空袭 2",
+      "vn": 1
+    },
+    {
+      "k": "ID_SYN_SKYASLT_3",
+      "v": "空袭 3",
+      "vn": 1
+    },
+    {
+      "k": "ID_SYN_SKYASLT_4",
+      "v": "空袭 4",
+      "vn": 1
+    },
+    {
+      "k": "ID_SYN_SKYASLT_5",
+      "v": "空袭5",
+      "vn": 1
+    },
+    {
+      "k": "ID_SYN_SKYASSAULT_LONG_DESC",
+      "v": "+{0}%反规避。\n",
+      "vn": 1
+    },
+    {
+      "k": "ID_SYN_WASP_RHINO_DESC",
+      "v": "恼怒自己遇到了猪队友，犀牛获得+{0}%攻击评分。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SYN_WASP_WINDBLD_DESC",
+      "v": "提供空中追踪辅助，风刃的对手较平常多+{0}%更不容易躲避。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SYN_WINDBLD_WASP_DESC",
+      "v": "提供空中追踪辅助，黄蜂勇士的对手较平常多+{0}%更不容易躲避。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SYNERGY_BOT_ALREADY_ACTIVE_INCOMING",
+      "v": "这个机器人已在你的队伍中，并且他们的协同奖励用已被激活。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SYNERGY_INCOMING_TITLE_FORMAT",
+      "v": "受到的奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SYNERGY_MORE_INFO",
+      "v": "选择一个机器人以获取更多信息。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SYNERGY_OUTGOING_TITLE_FORMAT",
+      "v": "可提供奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SYNERGY_VALUE_TOTAL_FORMAT",
+      "v": "{0}[FFFFFF80]/{1}",
+      "vn": 1
+    },
+    {
+      "k": "MS_D_STAT_SYN_JETFIREDRAIN_DESC",
+      "v": "每当震荡波获得6个或更多能量充能时，他将修复{0}%生命值。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SB_JAZZ_LUIT",
+      "v": "每当爵士避开对手的所有特殊攻击命中时，他都会获得一个攻击增益，可增加他{0}%的攻击评分，持续到战斗结束。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SB_OPTIMUS_LUIT",
+      "v": "擎天柱获得{0}%的攻击力和护甲，并且他的中尉将获得独特能力。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SB_PROWL_LUIT",
+      "v": "如果警车汲取对手的能量至他们最大能量的0%，他有{0}%几率眩晕对手，持续2.5秒。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SB_STAT_CHOAS_SHORT",
+      "v": "增加特殊伤害和暴击伤害。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SB_STAT_CHOAS_TITLE",
+      "v": "混沌之手",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_BRAINGAIN_HUD",
+      "v": "脑力增加",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_BRAWLEAD",
+      "v": "斗士系领袖",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_CLASSCOMP",
+      "v": "众志成城",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_DEMOLEAD",
+      "v": "爆破系领袖",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_GENCOMP",
+      "v": "英雄",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_LEAD",
+      "v": "领导力5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_OVRPWR",
+      "v": "压倒",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SCOULEAD",
+      "v": "侦查系领袖",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYNERGY_GRIMLOCK_LONG",
+      "v": "在格挡时+{0}%护甲",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYNERGY_GRIMLOCK_R1",
+      "v": "超重Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYNERGY_GRIMLOCK_R2",
+      "v": "超重Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYNERGY_GRIMLOCK_R3",
+      "v": "超重Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYNERGY_GRIMLOCK_R4",
+      "v": "超重Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYNERGY_GRIMLOCK_R5",
+      "v": "超重Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYNERGY_PROWL_LONG",
+      "v": "恰到好处的格挡将给对手造成{0}%攻击的物理伤害。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYNERGY_PROWL_R1",
+      "v": "军事家Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYNERGY_PROWL_R2",
+      "v": "军事家Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYNERGY_PROWL_R3",
+      "v": "军事家Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYNERGY_PROWL_R4",
+      "v": "军事家Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYNERGY_PROWL_R5",
+      "v": "军事家Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYNERGY_RATCHET_LONG",
+      "v": "在战斗开始时恢复{0}%最大生命值。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYNERGY_RATCHET_R1",
+      "v": "医疗支持Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYNERGY_RATCHET_R2",
+      "v": "医疗支持Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYNERGY_RATCHET_R3",
+      "v": "医疗支持Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYNERGY_RATCHET_R4",
+      "v": "医疗支持Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYNERGY_RATCHET_R5",
+      "v": "医疗支持Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYNERGY_ULTRAM_LONG",
+      "v": "10次或更多连击会造成+{0}%的护甲穿透效果",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYNERGY_ULTRAM_R1",
+      "v": "公正的指挥官Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYNERGY_ULTRAM_R2",
+      "v": "公正的指挥官Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYNERGY_ULTRAM_R3",
+      "v": "公正的指挥官Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYNERGY_ULTRAM_R4",
+      "v": "公正的指挥官Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYNERGY_ULTRAM_R5",
+      "v": "公正的指挥官Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ALLIES_1",
+      "v": "盟友1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ALLIES_2",
+      "v": "盟友2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ALLIES_3",
+      "v": "盟友3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ALLIES_4",
+      "v": "盟友 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ALLIES_5",
+      "v": "盟友5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ALLIES_BONEC_DESC",
+      "v": "路障从友情中获得激励，得到+{0}%生命值。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ALLIES_GRIND_DESC",
+      "v": "碎骨魔从友情中获得激励，得到+{0}%生命值。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ALLIES_IRONH_DESC",
+      "v": "救护车和大黄蜂从友情中获得激励，得到+{0}%生命值。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ALLIES_LONG",
+      "v": "+{0}%护甲。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ALLIES_WINDBLADE_DESC",
+      "v": "铁皮从友情中获得激励，得到+{0}%生命值。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_AR",
+      "v": "‘+{0}护甲等级",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ATK",
+      "v": "‘+{0}攻击等级",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_AUTOBOT MECHANIC_1",
+      "v": "汽车人机械师Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_AUTOBOT MECHANIC_2",
+      "v": "汽车人机械师Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_AUTOBOT MECHANIC_3",
+      "v": "汽车人机械师Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_AUTOBOT MECHANIC_4",
+      "v": "汽车人机械师Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_AUTOBOTS_1",
+      "v": "汽车人Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_AUTOBOTS_2",
+      "v": "汽车人Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_AUTOBOTS_3",
+      "v": "汽车人Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_AUTOBOTS_4",
+      "v": "汽车人Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_AUTOBOTS_5",
+      "v": "汽车人Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_AUTOBOT_MECHANIC_5",
+      "v": "汽车人机械师Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_AUTOMECH1",
+      "v": "每10秒修复受损机器人+{0}生命值。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_AUTOMECH2",
+      "v": "在战斗开始时修复受损机器人+{0}生命值。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BAD COP_1",
+      "v": "坏警察Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BAD COP_2",
+      "v": "坏警察Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BAD COP_3",
+      "v": "坏警察Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BAD COP_4",
+      "v": "坏警察Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BAD_COP_5",
+      "v": "坏警察Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BEAST_PURIFICATION_1",
+      "v": "野兽净化1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BEAST_PURIFICATION_2",
+      "v": "野兽净化2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BEAST_PURIFICATION_3",
+      "v": "野兽净化3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BEAST_PURIFICATION_LONG",
+      "v": "[64acff]重击：[-]当有两个或者两个以上的其他超能勇士机器人与猩猩队长进行组队时，在5秒内超能勇士角色将获得+{0}%的攻击力，并且可以净化伤害减益。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BIA_1",
+      "v": "手足兄弟1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BIA_2",
+      "v": "手足兄弟2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BIA_3",
+      "v": "手足兄弟3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BIA_4",
+      "v": "手足兄弟4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BIA_5",
+      "v": "兄弟连5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BIA_DESC",
+      "v": "完成基本近战连招时，铁皮和救护车将在2秒内获得{0}%能量条。此外，他们将在故事任务和事件任务中造成+6%近战伤害。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BIA_DESC2",
+      "v": "完成基本近战连招时，铁皮和救护车将在2秒内获得{0}%能量条。此外，他们将在故事任务和事件任务中造成+7%近战伤害。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BIA_DESC3",
+      "v": "完成基本近战连招时，铁皮和救护车将在2秒内获得{0}%能量条。此外，他们将在故事任务和事件任务中造成+9%近战伤害。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BIA_LONG_DESC",
+      "v": "汽车人获得+{0}%护甲，并在单人任务中+4%的近战伤害。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BIA_LONG_DESC_2",
+      "v": "汽车人获得+{0}%护甲，并在单人任务中+6%的近战伤害。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BIA_LONG_DESC_3",
+      "v": "汽车人获得+{0}%护甲，并在单人任务中+8%的近战伤害。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BRAINDRAIN_1",
+      "v": "脑力汲取1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BRAINDRAIN_2",
+      "v": "脑力汲取2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BRAINDRAIN_3",
+      "v": "脑力汲取3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BRAINDRAIN_4",
+      "v": "脑力汲取4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BRAINDRAIN_5",
+      "v": "脑力汲取5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BRAINDRAIN_LONG_BLKPROF",
+      "v": "对抗基础远程攻击时，震荡波将获得+{0}%的格挡精通。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BRAINDRAIN_LONG_FASTERCHARGE",
+      "v": "震荡波产生能量充能的速度+{0}%。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BRAINDRAIN_LONG_LONGERCHARGE",
+      "v": "震荡波的能量充能持续时间+{0}%。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BRAINDRAIN_LONG_LONGSHOCK",
+      "v": "震荡波的震击持续时间+{0}%。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BRAINDRAIN_LONG_MIRAGE",
+      "v": "震荡波的特殊技2有{0}%几率眩晕对手，持续2.5秒。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BRAINDRAIN_LONG_MOREDRAIN",
+      "v": "从被震击的对手中，震荡波汲取能量+{0}%。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BRAINDRAIN_LONG_MOREPOWER",
+      "v": "从他的能量充能中，震荡波产生的能量+{0}%。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BRAINDRAIN_LONG_MORESHOCK",
+      "v": "震荡波的震击造成的伤害+{0}%。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BRAINDRAIN_LONG_RATCHET",
+      "v": "基于震荡波启动中的能量充能数量，每个都会在每秒产生一格能量槽{0}%的能量。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BRAINDRAIN_LONG_RHINOX",
+      "v": "震荡波在战斗开始时和每25秒会产生{0}个能量充能。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BRAINDRAIN_LONG_SOUNDWAVE",
+      "v": "基于敌方机器人启动中的震击减益的数量，震荡波每秒汲取对手能量条{0}%的能量。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BRAINDRAIN_LONG_STUN",
+      "v": "当同时施加3个或更多震击时，震荡波有{0}%几率施加眩晕，持续2.5秒。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BRAINGAIN_1",
+      "v": "脑力增加1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BRAINGAIN_2",
+      "v": "脑力增加2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BRAINGAIN_3",
+      "v": "脑力增加3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BRAINGAIN_4",
+      "v": "脑力增加4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BRAINGAIN_5",
+      "v": "脑力增加5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BRAINGAIN_LONG",
+      "v": "对抗爆破系机器人时，攻击评分增加{0}%。\r\n震荡波仅在队伍中所有机器人都有这个协同作用时才可享受此增益。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BRAW",
+      "v": "斗士系队友被施加减益时增加+{0}%命中率。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BRAWLER LEADERSHIP_1",
+      "v": "斗士领袖Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BRAWLER LEADERSHIP_2",
+      "v": "斗士领袖Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BRAWLER LEADERSHIP_3",
+      "v": "斗士领袖Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BRAWLER LEADERSHIP_4",
+      "v": "斗士领袖Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_BRAWLER_LEADERSHIP_5",
+      "v": "斗士系领袖Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_CALCULATED_1",
+      "v": "老谋深算Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_CALCULATED_2",
+      "v": "老谋深算Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_CALCULATED_3",
+      "v": "老谋深算Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_CALCULATED_4",
+      "v": "老谋深算Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_CALCULATED_5",
+      "v": "老谋深算Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_CD",
+      "v": "‘+{0}%暴击伤害",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_CHAOS_DESC",
+      "v": "所有霸天虎的特殊攻击可获得{0}%特殊攻击伤害和{0}%暴击伤害。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_CHAOS_DESC_1",
+      "v": "所有你队伍中的霸天虎在与霸天虎战斗时获得+1%护甲，当与汽车人战斗时+{0}%能量功率。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_CHAOS_DESC_2",
+      "v": "所有你队伍中的霸天虎在与霸天虎战斗时获得+2%护甲，当与汽车人战斗时+{0}%能量功率。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_CHAOS_DESC_3",
+      "v": "所有你队伍中的霸天虎在与霸天虎战斗时获得+3%护甲，当与汽车人战斗时+{0}%能量功率。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_CHAOS_DESC_4",
+      "v": "所有你队伍中的霸天虎在与霸天虎战斗时获得+5%护甲，当与汽车人战斗时+{0}%能量功率。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_CHAOS_TITLE_1",
+      "v": "混沌之手1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_CHAOS_TITLE_2",
+      "v": "混沌之手2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_CHAOS_TITLE_3",
+      "v": "混沌之手3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_CHAOS_TITLE_4",
+      "v": "混沌之手4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_CHAOS_TITLE_5",
+      "v": "混沌之手5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_CHIEFOFFICER_1",
+      "v": "首席长官1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_CHIEFOFFICER_2",
+      "v": "首席长官2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_CHIEFOFFICER_3",
+      "v": "首席长官3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_CHIEFOFFICER_4",
+      "v": "首席长官4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_CHIEFOFFICER_5",
+      "v": "首席长官5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_CHIEFOFFICER_STARS_DESC",
+      "v": "所有机器人获得+{0}%攻击力。霸天虎在突袭中额外获得2%攻击力。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_CHIEFOFFICER_STARS_DESC2",
+      "v": "所有机器人获得+{0}%攻击力。霸天虎在突袭中额外获得4%攻击力。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_CHIEFOFFICER_STARS_DESC3",
+      "v": "所有机器人获得+{0}%攻击力。霸天虎在突袭中额外获得6%攻击力。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_CHIEFOFFICER_ULTRA_DESC",
+      "v": "所有机器人获得+{0}%生命值。汽车人在故事任务和事件任务中额外获得6%护甲。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_CHIEFOFFICER_ULTRA_DESC2",
+      "v": "所有机器人获得+{0}%生命值。汽车人在故事任务和事件任务中额外获得8%护甲。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_CHIEFOFFICER_ULTRA_DESC3",
+      "v": "所有机器人获得+{0}%生命值。汽车人在故事任务和事件任务中额外获得10%护甲。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_CLASS",
+      "v": "+{0}%所有队友的各类别能力",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_CLASSCOMP_DESC",
+      "v": "对于出现在队伍中的每个不同类别的机器人，攻击力都+{0}%。对于队伍中每个相同阵营的机器人，护甲都+{0}%。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_CODE12_2",
+      "v": "代码12：鲁莽驾驶2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_CODE12_3",
+      "v": "代码12：鲁莽驾驶3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_CODE12_4",
+      "v": "代码12：鲁莽驾驶4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_CODE12_5",
+      "v": "代码12：鲁莽驾驶5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_CODE12_LONG_DESC",
+      "v": "使用重击时+{0}%攻击增益，持续3秒。叠加那些增益时将会刷新整个堆叠的持续时间",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_COMBINERS_1",
+      "v": "组合金刚Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_COMBINERS_2",
+      "v": "组合金刚Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_COMBINERS_3",
+      "v": "组合金刚Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_COMBINERS_4",
+      "v": "组合金刚Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_COMBINERS_5",
+      "v": "合体金刚Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_COMM_1",
+      "v": "指挥官Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_COMM_2",
+      "v": "指挥官Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_COMM_3",
+      "v": "指挥官Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_COMM_DESC",
+      "v": "每一名存活的小队成员都将使所有变形金刚获得+{0}%生命值。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_COMM_I",
+      "v": "指挥官Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_COMM_II",
+      "v": "指挥官Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_COMM_III",
+      "v": "指挥官Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_CONCUSSIVE",
+      "v": "‘+{0}%震荡抗性",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_CR",
+      "v": "‘+{0}暴击几率",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_DECEPTICONS_1",
+      "v": "霸天虎Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_DECEPTICONS_2",
+      "v": "霸天虎Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_DECEPTICONS_3",
+      "v": "霸天虎Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_DECEPTICONS_4",
+      "v": "霸天虎Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_DECEPTICONS_5",
+      "v": "霸天虎Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_DEMO",
+      "v": "爆破系队友在接下来两次特殊攻击时有+{0}%。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_DEMOLITIONS LEADERSHIP_1",
+      "v": "爆破领袖Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_DEMOLITIONS LEADERSHIP_2",
+      "v": "爆破领袖Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_DEMOLITIONS LEADERSHIP_3",
+      "v": "爆破领袖Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_DEMOLITIONS LEADERSHIP_4",
+      "v": "爆破领袖Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_DINOBOTS_1",
+      "v": "机器恐龙Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_DINOBOTS_2",
+      "v": "机器恐龙Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_DINOBOTS_3",
+      "v": "机器恐龙Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_DINOBOTS_4",
+      "v": "机器恐龙Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_DINOBOTS_5",
+      "v": "机械恐龙Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ENCORE_DESC_1",
+      "v": "使用特殊攻击后获得一个能量槽{0}%的能量。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ENCORE_HUD",
+      "v": "再来一次！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ENCORE_TITLE_1",
+      "v": "再来一次1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ENCORE_TITLE_2",
+      "v": "再来一次2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ENCORE_TITLE_3",
+      "v": "再来一次3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ENCORE_TITLE_4",
+      "v": "再来一次4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ENCORE_TITLE_5",
+      "v": "再来一次5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ENEMIES_1",
+      "v": "敌人Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ENEMIES_2",
+      "v": "敌人Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ENEMIES_3",
+      "v": "敌人Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ENEMIES_4",
+      "v": "敌人Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ENEMIES_5",
+      "v": "敌人Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ENEMY_1",
+      "v": "敌人 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ENEMY_2",
+      "v": "敌人 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ENEMY_3",
+      "v": "敌人 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ENEMY_4",
+      "v": "敌人 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ENEMY_5",
+      "v": "敌人5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ENEMY_BARRI_DESC",
+      "v": "大黄蜂从友情中获得激励，获得+{0}%攻击等级。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ENEMY_BUMBLE_DESC",
+      "v": "路障从友情中获得激励，获得+{0}%攻击等级。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ENEMY_GRIND_DESC",
+      "v": "擎天柱从友情中获得激励，获得+{0}%攻击等级。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ENEMY_MIXMA_DESC",
+      "v": "擎天柱(电影1)从友情中获得激励，获得+{0}%攻击评分。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ENEMY_OPTIMUS_DESC",
+      "v": "雷震从友情中获得激励，获得+{0}%攻击等级。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ENEMY_OPTIMUS_UPDT_DESC",
+      "v": "雷震和汽车大师从友情中获得激励，获得+{0}%攻击等级。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ENFORCERS_1",
+      "v": "执行者1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ENFORCERS_2",
+      "v": "执行者2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ENFORCERS_3",
+      "v": "执行者3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ENFORCERS_4",
+      "v": "执行者4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ENFORCERS_5",
+      "v": "执行者5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ENFORCERS_DESC",
+      "v": "减益持续时间增加{0}%且不能被净化。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_EXPWEAPON_1",
+      "v": "爆破武器Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_EXPWEAPON_2",
+      "v": "爆破武器Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_EXPWEAPON_3",
+      "v": "爆破武器Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_EXPWEAPON_DESC",
+      "v": "所有变形金刚造成+{0}%爆破伤害。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_EXPWEAPON_I",
+      "v": "爆炸武器Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_EXPWEAPON_II",
+      "v": "爆炸武器Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_EXPWEAPON_III",
+      "v": "爆炸武器Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_FACTCOMP_DESC",
+      "v": "对于队伍中每个相同阵营的机器人，攻击力都+{0}%。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_FALLEN_DESC_1",
+      "v": "所有你队伍中的霸天虎在与霸天虎战斗时获得+1%护甲，当与汽车人战斗时+{0}%能量功率。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_FALLEN_DESC_2",
+      "v": "所有你队伍中的霸天虎在与霸天虎战斗时获得+2%护甲，当与汽车人战斗时+{0}%能量功率。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_FALLEN_DESC_3",
+      "v": "所有你队伍中的霸天虎在与霸天虎战斗时获得+3%护甲，当与汽车人战斗时+{0}%能量功率。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_FALLEN_DESC_4",
+      "v": "所有你队伍中的霸天虎在与霸天虎战斗时获得+5%护甲，当与汽车人战斗时+{0}%能量功率。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_FALLEN_TITLE_1",
+      "v": "堕落金刚1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_FALLEN_TITLE_2",
+      "v": "堕落金刚2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_FALLEN_TITLE_3",
+      "v": "堕落金刚3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_FALLEN_TITLE_4",
+      "v": "堕落金刚4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_FALLEN_TITLE_5",
+      "v": "堕落金刚5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_FAMILY_1",
+      "v": "家人Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_FAMILY_2",
+      "v": "家人Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_FAMILY_3",
+      "v": "家人Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_FAMILY_4",
+      "v": "家人Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_FAMILY_5",
+      "v": "家人Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_FEMME FATALES_1",
+      "v": "蛇蝎美人Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_FEMME FATALES_2",
+      "v": "蛇蝎美人Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_FEMME FATALES_3",
+      "v": "蛇蝎美人Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_FEMME FATALES_4",
+      "v": "蛇蝎美人Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_FEMME_FATALES_5",
+      "v": "蛇蝎美人Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_FORGEDTOLEAD_1",
+      "v": "万炼为将1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_FORGEDTOLEAD_2",
+      "v": "万炼为将2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_FORGEDTOLEAD_3",
+      "v": "万炼为将3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_FORGEDTOLEAD_4",
+      "v": "万炼为将4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_FORGEDTOLEAD_5",
+      "v": "万炼为将Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_FORGEDTOLEAD_DESC",
+      "v": "每个威震天的小兵会提供给他一个独特能力。相应的，威震天会向每个机器人提供+{0}%护甲。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_FORGEDTOSERVE_1",
+      "v": "千炼为侍1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_FORGEDTOSERVE_2",
+      "v": "千炼为侍2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_FORGEDTOSERVE_3",
+      "v": "千炼为侍3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_FORGEDTOSERVE_4",
+      "v": "千炼为侍4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_FORGEDTOSERVE_5",
+      "v": "千炼为侍5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_FORGEDTOSERVE_A_DESC",
+      "v": "威震天的攻击命中时有+{0}%几率施放一个额外削弱充能。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_FORGEDTOSERVE_B_DESC",
+      "v": "当削弱充能积累到20个时，威震天有{0}%几率眩晕对手。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_FORGEDTOSERVE_C_DESC",
+      "v": "威震天开始战斗时，有{0}%几率变得不可阻挡。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_FRIENDS_1",
+      "v": "好友Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_FRIENDS_2",
+      "v": "好友Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_FRIENDS_3",
+      "v": "好友Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_FRIENDS_4",
+      "v": "好友Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_FRIENDS_5",
+      "v": "好友Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_GENL_1",
+      "v": "激光器Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_GENL_2",
+      "v": "激光器Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_GENL_3",
+      "v": "激光器Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_GENL_DESC",
+      "v": "所有变形金刚获得+{0}%远程攻击。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_GENL_I",
+      "v": "世代激光Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_GENL_II",
+      "v": "世代激光Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_GENL_III",
+      "v": "世代激光Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_GOOD COP_1",
+      "v": "好警察Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_GOOD COP_2",
+      "v": "好警察Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_GOOD COP_3",
+      "v": "好警察Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_GOOD COP_4",
+      "v": "好警察Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_GOOD_COP_5",
+      "v": "好警察Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_GUILTY CONSCIENCE_1",
+      "v": "问心有愧Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_GUILTY CONSCIENCE_2",
+      "v": "问心有愧Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_GUILTY CONSCIENCE_3",
+      "v": "问心有愧Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_GUILTY CONSCIENCE_4",
+      "v": "问心有愧Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_GUILTY_CONSCIENCE_5",
+      "v": "问心有愧Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_HEAVY_1",
+      "v": "超重Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_HEAVY_2",
+      "v": "超重Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_HEAVY_3",
+      "v": "超重Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_HEAVY_DESC",
+      "v": "所有变形金刚获得+{0}%近战攻击。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_HEAVY_I",
+      "v": "重型机器人Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_HEAVY_II",
+      "v": "重型机器人Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_HEAVY_III",
+      "v": "重型机器人Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_HOME FIELD ADVANTAGE_1",
+      "v": "主场优势Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_HOME FIELD ADVANTAGE_2",
+      "v": "主场优势Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_HOME FIELD ADVANTAGE_3",
+      "v": "主场优势Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_HOME FIELD ADVANTAGE_4",
+      "v": "主场优势Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_HOME_FIELD_ADVANTAGE_5",
+      "v": "主场优势Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_HP",
+      "v": "‘+{0}生命值",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_HUNT_1",
+      "v": "狩猎1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_HUNT_2",
+      "v": "狩猎2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_HUNT_3",
+      "v": "狩猎3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_HUNT_4",
+      "v": "搜索过程 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_HUNT_5",
+      "v": "搜索过程5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_HUNT_DESC",
+      "v": "使大黄蜂在面对战士系类别的敌人时有{0}%几率躲避特殊攻击。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_IMOVOBJ_1",
+      "v": "稳固如山1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_IMOVOBJ_2",
+      "v": "稳固如山2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_IMOVOBJ_3",
+      "v": "稳固如山3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_IMOVOBJ_4",
+      "v": "稳固如山4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_IMOVOBJ_5",
+      "v": "稳固如山5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_IMOVOBJ_DESC",
+      "v": "在特殊攻击的最后一击后，汽车大师有{0}%几率眩晕对手，持续2.5秒。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_INCREDULOUS_1",
+      "v": "难以置信Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_INCREDULOUS_2",
+      "v": "难以置信Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_INCREDULOUS_3",
+      "v": "难以置信Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_INCREDULOUS_4",
+      "v": "难以置信Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_INCREDULOUS_5",
+      "v": "难以置信Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_INSECTALT_DESC",
+      "v": "有{0}%几率在被远程攻击击中后，2秒内规避近战攻击。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_INSECTREF_DESC",
+      "v": "{0}%几率规避特殊攻击首击后的每一击。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_INSECTS_1",
+      "v": "昆虫感官1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_INSECTS_2",
+      "v": "昆虫感官2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_INSECTS_3",
+      "v": "昆虫感官3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_INSECTS_4",
+      "v": "昆虫感官4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_INSECTS_5",
+      "v": "昆虫感官5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_INSECT_DESC",
+      "v": "有{0}%几率在对手回避一个冲刺攻击后规避近战攻击，持续1.5秒。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_IRON HIDES_1",
+      "v": "铁皮Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_IRON HIDES_2",
+      "v": "铁皮Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_IRON HIDES_3",
+      "v": "铁皮Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_IRON HIDES_4",
+      "v": "铁皮Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_IRON_HIDES_5",
+      "v": "铁皮Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_JETFIREDRAIN_DESC",
+      "v": "每当震荡波获得6个或更多能量充能时，他将修复{0}%生命值。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_JETFIREFRIENDS_DESC",
+      "v": "对基础近战攻击激活招架护盾，将有{0}%几率眩晕对手2秒。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_LEADERSHIP_1",
+      "v": "领袖Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_LEADERSHIP_2",
+      "v": "领袖Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_LEADERSHIP_3",
+      "v": "领袖Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_LEADERSHIP_4",
+      "v": "领袖Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_LEADERSHIP_5",
+      "v": "领袖Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_LEAD_BRAW_DESC_ALT",
+      "v": "如团队的领导力明灯，所有较低阶队友获得+{0}%攻击评分。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_LEAD_DEMO_DESC_ALT",
+      "v": "如团队的领导力明灯，所有较低阶队友获得+{0}%特殊伤害。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_LEAD_NULL_DESC_ALT",
+      "v": "如提防反叛的卫士，所有较低阶队友获得+{0}%驱散抗性。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_LEAD_SCOU_DESC_ALT",
+      "v": "如团队的领导力明灯，所有较低阶队友获得+{0}%暴击评分。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_LEAD_TACT_DESC_ALT",
+      "v": "如团队的领导力明灯，所有较低阶队友获得+{0}%护甲评分。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_LEAD_TECH_DESC_ALT",
+      "v": "如团队的领导力明灯，所有较低阶队友获得+{0}%能量功率。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_LEAD_WARR_DESC_ALT",
+      "v": "如团队的领导力明灯，所有较低阶队友获得+{0}%暴击伤害。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_LEFT_1",
+      "v": "左手1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_LEFT_2",
+      "v": "左手2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_LEFT_3",
+      "v": "左手3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_LEFT_4",
+      "v": "左手4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_LEFT_5",
+      "v": "左手5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_LEFT_DESC",
+      "v": "威震天获得20%几率向敌人施加力量功率减益，降低对手{0}%的力量功率，持续10秒。此减益或会融合在对手身上。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_LOGICAL_1",
+      "v": "合乎逻辑Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_LOGICAL_2",
+      "v": "合乎逻辑Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_LOGICAL_3",
+      "v": "合乎逻辑Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_LOGICAL_4",
+      "v": "合乎逻辑Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_LOGICAL_5",
+      "v": "合乎逻辑Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_LUIT",
+      "v": "",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_LUIT_1",
+      "v": "中尉1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_LUIT_2",
+      "v": "中尉2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_LUIT_3",
+      "v": "中尉3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_LUIT_4",
+      "v": "中尉4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_LUIT_5",
+      "v": "中尉5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_LUIT_DESC",
+      "v": "威震天获得新能力，且他的中尉获得+{0}%护甲和+{0}%攻击评分。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_LVNWPN_2",
+      "v": "活体武器2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_LVNWPN_3",
+      "v": "活体武器3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_LVNWPN_4",
+      "v": "活体武器4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_LVNWPN_5",
+      "v": "活体武器5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_MASTERMINDS_1",
+      "v": "犯罪大师Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_MASTERMINDS_2",
+      "v": "犯罪大师Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_MASTERMINDS_3",
+      "v": "犯罪大师Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_MASTERMINDS_4",
+      "v": "犯罪大师Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_MASTERMINDS_5",
+      "v": "犯罪大师Lv. 5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_MAXIMALS_1",
+      "v": "最大化Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_MAXIMALS_2",
+      "v": "最大化Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_MAXIMALS_3",
+      "v": "最大化Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_MAXIMALS_4",
+      "v": "最大化Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_MAXIMALS_5",
+      "v": "巨无霸Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_MEDIC_1",
+      "v": "医疗支持1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_MEDIC_2",
+      "v": "医疗支持2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_MEDIC_3",
+      "v": "医疗支持3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_MEDIC_4",
+      "v": "医疗支持 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_MEDIC_5",
+      "v": "医疗支持5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_MEDIC_DESC",
+      "v": "大黄蜂和铁皮在开始战斗时恢复{0}%基础生命值。此外，在突袭中恢复效果+3%。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_MEDIC_DESC2",
+      "v": "大黄蜂和铁皮在开始战斗时恢复{0}%基础生命值。此外，在突袭中恢复效果+4%。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_MEDIC_DESC3",
+      "v": "大黄蜂和铁皮在开始战斗时恢复{0}%基础生命值。此外，在突袭中恢复效果+5%。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_MEDIC_LONG_DESC_1",
+      "v": "开始战斗时修复{0}%基础生命值。此外在突袭中额外修复+3%。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_MEDIC_LONG_DESC_2",
+      "v": "开始战斗时修复{0}%基础生命值。此外在突袭中额外修复+4%。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_MEDIC_LONG_DESC_3",
+      "v": "开始战斗时修复{0}%基础生命值。此外在突袭中额外修复+5%。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_MEDOFFICER_1",
+      "v": "首席医务官1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_MEDOFFICER_2",
+      "v": "首席医务官2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_MEDOFFICER_3",
+      "v": "首席医务官3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_MEDOFFICER_4",
+      "v": "首席医务官 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_MEDOFFICER_5",
+      "v": "首席医务官5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_MEDOFFICER_DESC",
+      "v": "当擎天柱释放出击时，基于损失的生命值，最高有60%的几率恢复{0}的生命值，该效果将取代获得攻击增益的能力。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_MEDOFFICER_DESC2",
+      "v": "当擎天柱释放出击时，基于损失的生命值，最高有100%的几率恢复{0}%基础生命值，该效果将取代获得攻击增益的能力。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_MEDOFFICER_LONG_DESC",
+      "v": "基于损失的生命值，最高有100%的几率修复{0}%基础生命值，该效果将取代出击时获得攻击增益的能力。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_MEGALOMANIA_1",
+      "v": "狂妄自大Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_MEGALOMANIA_2",
+      "v": "狂妄自大Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_MEGALOMANIA_3",
+      "v": "狂妄自大Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_MEGALOMANIA_4",
+      "v": "狂妄自大Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_MEGALOMANIA_5",
+      "v": "狂妄自大Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_MENTOR_1",
+      "v": "良师益友Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_MENTOR_2",
+      "v": "良师益友Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_MENTOR_3",
+      "v": "良师益友Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_MENTOR_4",
+      "v": "良师益友Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_MENTOR_5",
+      "v": "良师益友Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NEMESIS_1",
+      "v": "复仇女神Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NEMESIS_2",
+      "v": "复仇女神Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NEMESIS_3",
+      "v": "复仇女神Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NEMESIS_4",
+      "v": "复仇女神Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NEMESIS_5",
+      "v": "复仇女神Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_LEAD_BRAW_DESC_ALT",
+      "v": "如果此机器人是队伍中最强的，所有机器人获得+{0}%攻击评分",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_LEAD_DEMO_DESC_ALT",
+      "v": "如果此机器人是队伍中最强的，所有机器人获得+{0}%特殊伤害",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_LEAD_NULL_DESC_ALT",
+      "v": "如果此机器人是队伍中最强的，所有机器人获得+{0}%驱散抗性。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_LEAD_SCOU_DESC_ALT",
+      "v": "如果此机器人是队伍中最强的，所有机器人获得+{0}%暴击评分",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_LEAD_TACT_DESC_ALT",
+      "v": "如果此机器人是队伍中最强的，所有机器人获得+{0}%护甲评分",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_LEAD_TECH_DESC_ALT",
+      "v": "如果此机器人是队伍中最强的，所有机器人获得+{0}%能量功率",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_LEAD_WARR_DESC_ALT",
+      "v": "如果此机器人是队伍中最强的，所有机器人获得+{0}%暴击伤害",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_ALL_1",
+      "v": "鲨鱼狂暴1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_ALL_2",
+      "v": "鲨鱼狂暴2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_ALL_3",
+      "v": "鲨鱼狂暴3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_ALL_4",
+      "v": "鲨鱼狂暴4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_ALL_5",
+      "v": "鲨鱼狂暴5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_ALL_DESC",
+      "v": "如果你的整个队伍都由饿鲨组成，所有饿鲨在使用特殊攻击3时将为你的团队中每个存活的机器人修复{0}％生命值。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_BRAW_1",
+      "v": "斗士系狂暴1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_BRAW_2",
+      "v": "斗士系狂暴2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_BRAW_3",
+      "v": "斗士系狂暴3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_BRAW_4",
+      "v": "斗士系狂暴4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_BRAW_5",
+      "v": "斗士系狂暴5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_BRAW_DESC",
+      "v": "所有饿鲨获得+{0}%攻击评分",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_DEMO_1",
+      "v": "爆破系狂暴1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_DEMO_2",
+      "v": "爆破系狂暴2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_DEMO_3",
+      "v": "爆破系狂暴3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_DEMO_4",
+      "v": "爆破系狂暴4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_DEMO_5",
+      "v": "爆破系狂暴5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_DEMO_DESC",
+      "v": "所有饿鲨获得+{0}%特殊伤害。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_GOLD_1",
+      "v": "黄金狂暴1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_GOLD_2",
+      "v": "黄金狂暴2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_GOLD_3",
+      "v": "黄金狂暴3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_GOLD_4",
+      "v": "黄金狂暴4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_GOLD_5",
+      "v": "黄金狂暴5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_GOLD_DESC",
+      "v": "所有饿鲨每秒恢复{0}生命值。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_SCOU_1",
+      "v": "侦查系狂暴1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_SCOU_2",
+      "v": "侦查系狂暴2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_SCOU_3",
+      "v": "侦查系狂暴3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_SCOU_4",
+      "v": "侦查系狂暴4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_SCOU_5",
+      "v": "侦查系狂暴5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_SCOU_DESC",
+      "v": "所有饿鲨获得+{0}%暴击评分",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_TACT_1",
+      "v": "战术系狂暴1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_TACT_2",
+      "v": "战术系狂暴2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_TACT_3",
+      "v": "战术系狂暴3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_TACT_4",
+      "v": "战术系狂暴4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_TACT_5",
+      "v": "战术系狂暴5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_TACT_DESC",
+      "v": "所有饿鲨获得+{0}%护甲评分",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_TECH_1",
+      "v": "科技系狂暴1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_TECH_2",
+      "v": "科技系狂暴2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_TECH_3",
+      "v": "科技系狂暴3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_TECH_4",
+      "v": "科技系狂暴4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_TECH_5",
+      "v": "科技系狂暴5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_TECH_DESC",
+      "v": "所有饿鲨获得+{0}%能量功率",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_WARR_1",
+      "v": "战士系狂暴1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_WARR_2",
+      "v": "战士系狂暴2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_WARR_3",
+      "v": "战士系狂暴3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_WARR_4",
+      "v": "战士系狂暴4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_WARR_5",
+      "v": "战士系狂暴5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_NPC_SHARK_WARR_DESC",
+      "v": "所有饿鲨获得+{0}%暴击伤害",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_OLDFRIENDS_1",
+      "v": "老朋友1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_OLDFRIENDS_2",
+      "v": "老朋友2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_OLDFRIENDS_3",
+      "v": "老朋友3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_OLDFRIENDS_4",
+      "v": "老朋友4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_OLDFRIENDS_5",
+      "v": "老友5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_OLDFRIENDS_DESC",
+      "v": "擎天柱从铁皮的减益效果堆叠中获益，赋予他对流血的敌人发动重击时能触发流血效果的能力，在3秒内造成{0}%攻击。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_OLDFRIENDS_LONG_DESC",
+      "v": "向对手施加流血时，{0}%几率造成一个附加的流血叠加。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_OREONE_1",
+      "v": "万众一心1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_OREONE_2",
+      "v": "万众一心2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_OREONE_3",
+      "v": "万众一心3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_OREONE_4",
+      "v": "万众一心 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_OREONE_5",
+      "v": "万众一心5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_OREONE_DESC",
+      "v": "汽车人在战斗开始时获得+{0}%攻击评分。此外，在突袭中减益效果将多造成+10%的伤害。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_OREONE_DESC2",
+      "v": "汽车人在战斗开始时获得+{0}%攻击评分。此外，在突袭中减益效果将多造成+13%的伤害。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_OREONE_DESC3",
+      "v": "汽车人在战斗开始时获得+{0}%攻击评分。此外，在突袭中减益效果将多造成+16%的伤害。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_OREONE_LONG_DESC",
+      "v": "汽车人的攻击评分+{0}%，在突袭中汽车人的减益伤害+6%。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_OREONE_LONG_DESC_2",
+      "v": "汽车人的攻击评分+{0}%，在突袭中汽车人的减益伤害+8%。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_OREONE_LONG_DESC_3",
+      "v": "汽车人的攻击评分+{0}%，在突袭中汽车人的减益伤害+12%。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_OUTLAWS_1",
+      "v": "法外狂徒1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_OUTLAWS_2",
+      "v": "法外狂徒2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_OUTLAWS_3",
+      "v": "法外狂徒3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_OUTLAWS_4",
+      "v": "法外狂徒4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_OUTLAWS_5",
+      "v": "亡命之徒5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_OUTLAWS_BARR_DESC",
+      "v": "碾碎器的首次重型远程攻击将造成持续{0}秒的能量锁。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_OUTLAWS_GRIND_DESC",
+      "v": "路障的首次重型远程攻击将造成持续{0}秒的能量锁。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_OUTLAWS_LONG_DESC",
+      "v": "首次重击命中时有100%几率使对手遭受能量锁定，持续{0}秒。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_OVRPWCOUNT_DESC",
+      "v": "这个机器人有{0}%几率压倒对手，在对手基础攻击连击时允许此机器人激活一个特殊攻击。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_OVRPWRESIST_DESC",
+      "v": "{0}%几率完全抵抗低阶机器人的基础攻击伤害。对手每比自己低一个阶层，这个几率增加5%。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_PD",
+      "v": "‘+{0}%投射伤害",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_POSSESED_1",
+      "v": "红蜘蛛的支配1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_POSSESED_2",
+      "v": "红蜘蛛的支配2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_POSSESED_3",
+      "v": "红蜘蛛的支配3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_POSSESED_4",
+      "v": "红蜘蛛的支配4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_POSSESED_5",
+      "v": "红蜘蛛的支配5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_POSSESED_LONG",
+      "v": "重击和特殊技2投射时有[A48705FF]{0}%[-]几率驱散护甲增益。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_PREDACONS_1",
+      "v": "巨狰狞Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_PREDACONS_2",
+      "v": "巨狰狞Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_PREDACONS_3",
+      "v": "巨狰狞Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_PREDACONS_4",
+      "v": "巨狰狞Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_PREDACONS_5",
+      "v": "原始兽Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_PRIME_1",
+      "v": "主要的Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_PRIME_2",
+      "v": "主要的Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_PRIME_3",
+      "v": "主要的Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_PRIME_4",
+      "v": "主要的Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_PRIME_5",
+      "v": "领袖之证Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_PROTECTOR_1",
+      "v": "防御者Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_PROTECTOR_2",
+      "v": "防御者Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_PROTECTOR_3",
+      "v": "防御者Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_PROTECTOR_4",
+      "v": "防御者Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_PROTECTOR_5",
+      "v": "防御者Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_PWRSTRT",
+      "v": "开始战斗时带有{1}%能量。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_RACINGRIVALS_1",
+      "v": "赛车对手2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_RACINGRIVALS_2",
+      "v": "赛车对手3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_RACINGRIVALS_3",
+      "v": "赛车对手5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_RACINGRIVALS_LONG_DESC",
+      "v": "+{0}%暴击伤害。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_RIGHT_1",
+      "v": "右手1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_RIGHT_2",
+      "v": "右手2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_RIGHT_3",
+      "v": "右手3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_RIGHT_4",
+      "v": "右手4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_RIGHT_5",
+      "v": "右手5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_RIGHT_DESC",
+      "v": "威震天的特殊攻击有{0}%几率使敌人眩晕2秒。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_RIVALS_1",
+      "v": "竞争者Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_RIVALS_2",
+      "v": "竞争者Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_RIVALS_3",
+      "v": "竞争者Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_RIVALS_4",
+      "v": "竞争者Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_RIVALS_5",
+      "v": "竞争者Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ROLEMODEL_1",
+      "v": "偶像1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ROLEMODEL_2",
+      "v": "偶像2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ROLEMODEL_3",
+      "v": "偶像3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ROLEMODEL_4",
+      "v": "偶像4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ROLEMODEL_5",
+      "v": "偶像5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ROMANCE_1",
+      "v": "情侣1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ROMANCE_2",
+      "v": "情侣2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ROMANCE_3",
+      "v": "情侣3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ROMANCE_4",
+      "v": "情侣4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ROMANCE_5",
+      "v": "情侣5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ROMANCE_DESC",
+      "v": "开始战斗时风刃获得{0}%能量条。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_ROMANCE_LONG_DESC",
+      "v": "开始战斗时授予{0}%能量条。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_RSTDMGCONC",
+      "v": "‘+{0}%震荡抗性和震荡伤害",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_RSTDMGEXPLO",
+      "v": "‘+{0}%爆炸抗性和爆炸伤害",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_RSTDMGHEAT",
+      "v": "‘+{0}%热抗性和热伤害",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_RSTDMGPHYS",
+      "v": "‘+{0}%物理抗性和物理伤害",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_RSTDMGPROJ",
+      "v": "‘+{0}%投射伤害和投射抗性",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_RSTDMGSHOCK",
+      "v": "‘+{0}%震击抗性和震击伤害",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_RSTDMGSLASH",
+      "v": "‘+{0}%挥砍伤害和挥砍抗性",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_RSTEXPL",
+      "v": "‘+{0}%爆炸抗性",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_RSTHEAT",
+      "v": "‘+{0}%热抗性",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_RSTSHK",
+      "v": "‘+{0}%震击抗性",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SCIENTISTS_1",
+      "v": "科学家Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SCIENTISTS_2",
+      "v": "科学家Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SCIENTISTS_3",
+      "v": "科学家Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SCIENTISTS_4",
+      "v": "科学家Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SCIENTISTS_5",
+      "v": "科学家Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SCI_1",
+      "v": "升级1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SCI_2",
+      "v": "升级2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SCI_3",
+      "v": "升级3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SCI_4",
+      "v": "升级4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SCI_5",
+      "v": "升级5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SCOUT LEADERSHIP_1",
+      "v": "侦查领袖Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SCOUT LEADERSHIP_2",
+      "v": "侦查领袖Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SCOUT LEADERSHIP_3",
+      "v": "侦查领袖Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SCOUT LEADERSHIP_4",
+      "v": "侦查领袖Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SCOUT_LEADERSHIP_5",
+      "v": "侦查系领袖Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SD",
+      "v": "‘+{0}%特殊伤害",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SEEKERS_1",
+      "v": "红蜘蛛的游击军1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SEEKERS_2",
+      "v": "红蜘蛛的游击军2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SEEKERS_3",
+      "v": "红蜘蛛的游击军3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SEEKERS_4",
+      "v": "红蜘蛛的游击军4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SEEKERS_5",
+      "v": "红蜘蛛的追随者5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SEEKERS_DESC",
+      "v": "所有霸天虎的远程攻击+{0}%伤害和50%护甲穿刺。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SEEKERS_DESC_1",
+      "v": "所有霸天虎的远程攻击+{0}%伤害和10%护甲穿刺。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SEEKERS_DESC_2",
+      "v": "所有霸天虎的远程攻击+{0}%伤害和20%护甲穿刺。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SEEKERS_DESC_3",
+      "v": "所有霸天虎的远程攻击+{0}%伤害和30%护甲穿刺。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SEEKERS_DESC_4",
+      "v": "所有霸天虎的远程攻击+{0}%伤害和75%护甲穿刺。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SENSEI_5",
+      "v": "老师5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SHARPSHOOT_1",
+      "v": "精准射击者1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SHARPSHOOT_2",
+      "v": "精准射击者2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SHARPSHOOT_3",
+      "v": "精准射击者3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SHARPSHOOT_4",
+      "v": "精准射击者4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SHARPSHOOT_5",
+      "v": "精准射击者5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SHARPSHOOT_DESC",
+      "v": "远程攻击+{0}%暴击几率。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SHIELDM_1",
+      "v": "护盾大师1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SHIELDM_2",
+      "v": "护盾大师2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SHIELDM_3",
+      "v": "护盾大师3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SHIELDM_4",
+      "v": "护盾大师4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SHIELDM_5",
+      "v": "护盾大师5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SHIELDM_DESC",
+      "v": "对近战攻击的适时格挡可+{0}%的格挡精通。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SHIELDM_DESC_ALT",
+      "v": "对抗近战攻击的适时格挡可+10%格挡精通，并汲取相当于对手{0}%的最大能量。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SHIELDSM_3",
+      "v": "护盾大师3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SHIELDSM_4",
+      "v": "护盾大师4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SHIELDSM_5",
+      "v": "护盾大师5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SHIELDSM_DESC",
+      "v": "对近战攻击的适时格挡可+50%格挡精通，并立即汲取对手能量的{0}%。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SLASH",
+      "v": "‘+{0}%挥砍伤害",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SNIPERS_1",
+      "v": "狙击手Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SNIPERS_2",
+      "v": "狙击手Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SNIPERS_3",
+      "v": "狙击手Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SNIPERS_4",
+      "v": "狙击手Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SNIPERS_5",
+      "v": "狙击手Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SPEEDC_1",
+      "v": "急速追逐1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SPEEDC_2",
+      "v": "急速追逐2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SPEEDC_3",
+      "v": "急速追逐3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SPEEDC_4",
+      "v": "急速追逐4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SPEEDC_5",
+      "v": "追求速度者5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SPEEDC_LONG_DESC",
+      "v": "躲避对手的攻击将使下次命中时攻击力+{0}%。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SPEEDC_MIR_DESC",
+      "v": "躲避或回避对手的攻击将使横炮和大黄蜂的下一次打击获得+{0}%攻击。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SPEEDC_MIR_DESC2",
+      "v": "躲避或回避对手的攻击将使横炮和大黄蜂的下一次打击获得+{0}%攻击。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SPEEDC_MIR_DESC3",
+      "v": "躲避或回避对手的攻击将使横炮和大黄蜂的下一次打击获得+{0}%攻击。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SPEEDC_SIDES_DESC",
+      "v": "躲避或回避对手的攻击将使幻影和大黄蜂的下一次打击获得+{0}%攻击。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SPEEDC_SIDES_DESC2",
+      "v": "躲避或回避对手的攻击将使幻影和大黄蜂的下一次打击获得+{0}%攻击。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SPEEDC_SIDES_DESC3",
+      "v": "躲避或回避对手的攻击将使幻影和大黄蜂的下一次打击获得+{0}%攻击。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SPY_1",
+      "v": "间谍专家1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SPY_2",
+      "v": "间谍专家2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SPY_3",
+      "v": "间谍专家3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SPY_4",
+      "v": "间谍专家 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SPY_5",
+      "v": "间谍专家5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SPY_DESC",
+      "v": "幻影的特殊2和3触发敌方能力的几率降低{0}%。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SPY_LONG_DESC",
+      "v": "当使用特殊攻击2或3命中时，对手触发能力的几率减少{0}%。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_STARSCHEME_3",
+      "v": "红蜘蛛的诡计3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_STARSCHEME_4",
+      "v": "红蜘蛛的诡计4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_STARSCHEME_5",
+      "v": "红蜘蛛的诡计5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_STARSCHEME_LONG",
+      "v": "你队伍中的霸天虎在启动一个特殊攻击时，可以受益于红蜘蛛的诡计中的其中一个。每个诡计只能被激活一次。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_STARSCHEME_TXT",
+      "v": "红蜘蛛的诡计",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_STARSFRIENDS_DESC",
+      "v": "向后冲刺时红蜘蛛有100%的几率规避远程攻击。当这种情况发生时，红蜘蛛将获得{0}%暴击伤害增益，持续6秒。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_STEALTH_1",
+      "v": "潜行Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_STEALTH_2",
+      "v": "潜行Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_STEALTH_3",
+      "v": "潜行Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_STEALTH_4",
+      "v": "潜行Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_STEALTH_5",
+      "v": "潜行Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_STUDENT_1",
+      "v": "学生Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_STUDENT_2",
+      "v": "学生Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_STUDENT_3",
+      "v": "学生Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_STUDENT_4",
+      "v": "学生Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_STUDENT_5",
+      "v": "学生Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SUBTERFUGE_1",
+      "v": "诡计Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SUBTERFUGE_2",
+      "v": "诡计Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SUBTERFUGE_3",
+      "v": "诡计Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SUBTERFUGE_4",
+      "v": "诡计Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SUBTERFUGE_5",
+      "v": "诡计Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SWORDMASTERS_1",
+      "v": "剑圣Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SWORDMASTERS_2",
+      "v": "剑圣Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SWORDMASTERS_3",
+      "v": "剑圣Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SWORDMASTERS_4",
+      "v": "剑圣Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SWORDMASTERS_5",
+      "v": "剑圣Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SWORDSM_1",
+      "v": "剑圣1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SWORDSM_2",
+      "v": "剑圣2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SWORDSM_3",
+      "v": "剑圣3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SWORDSM_4",
+      "v": "剑圣 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SWORDSM_5",
+      "v": "剑圣5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SWORDSM_BLUDGE_DESC",
+      "v": "每次未暴击的剑刃攻击使雷震的暴击伤害增加+{0}%，直到下一次剑刃攻击触发暴击为止。在故事任务和事件任务中剑刃攻击能多触发10%的暴击打击。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SWORDSM_BLUDGE_DESC2",
+      "v": "每次未暴击的剑刃攻击使雷震的暴击伤害增加+{0}%，直到下一次剑刃攻击触发暴击为止。在故事任务和事件任务中剑刃攻击能多触发13%的暴击打击。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SWORDSM_BLUDGE_DESC3",
+      "v": "每次未暴击的剑刃攻击使雷震的暴击伤害增加+{0}%，直到下一次剑刃攻击触发暴击为止。在故事任务和事件任务中剑刃攻击能多触发16%的暴击打击。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SWORDSM_RAIDS_DESC_1",
+      "v": "每次未暴击的剑刃攻击使暴击伤害+{0}%，直到下一次剑刃攻击触发暴击为止并且剑刃攻击在突击战中造成多于6%的暴击命中。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SWORDSM_RAIDS_DESC_2",
+      "v": "每次未暴击的剑刃攻击使暴击伤害+{0}%，直到下一次剑刃攻击触发暴击为止并且剑刃攻击在突击战中造成多于8%的暴击命中。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SWORDSM_RAIDS_DESC_3",
+      "v": "每次未暴击的剑刃攻击使暴击伤害+{0}%，直到下一次剑刃攻击触发暴击为止。突袭中触发暴击几率+12%。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SWORDSM_STORY_LONG_DESC",
+      "v": "对于每次不是暴击命中的剑击，+{0}%暴击伤害直到下次暴击命中。对抗暴击抵抗增益启动中的对手或者在剑圣机器人有启动中的暴击几率减益时不进行命中计算。在单人任务中+6%的暴击命中。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SWORDSM_STORY_LONG_DESC_2",
+      "v": "对于每次不是暴击命中的剑击，+{0}%暴击伤害直到下次暴击命中。对抗暴击抵抗增益启动中的对手或者在剑圣机器人有启动中的暴击几率减益时不进行命中计算。在单人任务中+8%的暴击命中。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SWORDSM_STORY_LONG_DESC_3",
+      "v": "对于每次不是暴击命中的剑击，+{0}%暴击伤害直到下次暴击命中。对抗暴击抵抗增益启动中的对手或者在剑圣机器人有启动中的暴击几率减益时不进行命中计算。在单人任务中+12%的暴击命中。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SWORDSM_WIND_DESC",
+      "v": "每次未暴击的剑刃攻击使雷震的暴击伤害增加+{0}%，直到下一次剑刃攻击触发暴击为止。在突袭中剑刃攻击能多触发10%的暴击打击。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SWORDSM_WIND_DESC2",
+      "v": "每次未暴击的剑刃攻击使雷震的暴击伤害增加+{0}%，直到下一次剑刃攻击触发暴击为止。在突袭中剑刃攻击能多触发13%的暴击打击。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SWORDSM_WIND_DESC3",
+      "v": "每次未暴击的剑刃攻击使雷震的暴击伤害增加+{0}%，直到下一次剑刃攻击触发暴击为止。在突袭中剑刃攻击能多触发16%的暴击打击。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SYCOPHANTS_1",
+      "v": "奉承者Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SYCOPHANTS_2",
+      "v": "奉承者Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SYCOPHANTS_3",
+      "v": "奉承者Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SYCOPHANTS_4",
+      "v": "奉承者Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_SYCOPHANTS_5",
+      "v": "奉承者Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_TACT",
+      "v": "战术系队友在10层或10层以上组合时获得+{0}%命中率。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_TACTICIAN LEADERSHIP_1",
+      "v": "战术领袖Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_TACTICIAN LEADERSHIP_2",
+      "v": "战术领袖Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_TACTICIAN LEADERSHIP_3",
+      "v": "战术领袖Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_TACTICIAN LEADERSHIP_4",
+      "v": "战术领袖Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_TACTICIAN_LEADERSHIP_5",
+      "v": "战术系领袖Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_TAIO_1",
+      "v": "统领万物1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_TAIO_2",
+      "v": "统领万物2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_TAIO_3",
+      "v": "统领万物3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_TAIO_4",
+      "v": "统领万物4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_TAIO_5",
+      "v": "统领万物5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_TAIO_DESC",
+      "v": "所有霸天虎在对抗汽车人时获得+{0}%攻击评分。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_TAIO_DESC_2",
+      "v": "霸天虎的攻击评分+{0}%。在突袭中霸天虎的减益伤害+8%。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_TAIO_DESC_3",
+      "v": "霸天虎的攻击评分+{0}%。在突袭中霸天虎的减益伤害+12%。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_TEAMMATE_1",
+      "v": "队友Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_TEAMMATE_2",
+      "v": "队友Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_TEAMMATE_3",
+      "v": "队友Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_TEAMMATE_4",
+      "v": "队友Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_TEAMMATE_5",
+      "v": "队友Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_TECH",
+      "v": "使所有科技系队友装备护盾，受到下一次特殊攻击的伤害降低{0}% 。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_TECH LEADERSHIP_1",
+      "v": "科技领袖Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_TECH LEADERSHIP_2",
+      "v": "科技领袖Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_TECH LEADERSHIP_3",
+      "v": "科技领袖Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_TECH LEADERSHIP_4",
+      "v": "科技领袖Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_TECHSAVVY_1",
+      "v": "扩大护盾 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_TECHSAVVY_2",
+      "v": "扩大护盾 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_TECHSAVVY_3",
+      "v": "扩大护盾 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_TECHSAVVY_4",
+      "v": "扩大护盾 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_TECHSAVVY_5",
+      "v": "扩大护盾5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_TECHSAVVY_DESC",
+      "v": "盾护时，扩大护盾将赋予幻影和犀牛+{0}%的伤害削减。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_TECHSAVVY_LONG_DESC",
+      "v": "在有护盾保护时将降低+{0}%伤害。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_TECH_LEADERSHIP_5",
+      "v": "科技系领袖Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_TRIGRATE",
+      "v": "攻击有{0}%几率不触发敌人的能力。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_UNSTFRC_1",
+      "v": "不可阻挡的力量1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_UNSTFRC_2",
+      "v": "不可阻挡的力量2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_UNSTFRC_3",
+      "v": "不可阻挡的力量3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_UNSTFRC_4",
+      "v": "不可阻挡的力量4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_UNSTFRC_5",
+      "v": "不可阻挡的力量5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_UNSTFRC_DESC",
+      "v": "在特殊攻击的最后一击后，喷气机有{0}%几率在3秒内获得不可阻挡。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_VETARMOR_1",
+      "v": "陆军老兵Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_VETARMOR_2",
+      "v": "陆军老兵Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_VETARMOR_3",
+      "v": "陆军老兵Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_VETARMOR_DESC",
+      "v": "所有变形金刚获得+{0}%护甲。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_VETARMOR_I",
+      "v": "军队老兵Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_VETARMOR_II",
+      "v": "军队老兵Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_VETARMOR_III",
+      "v": "军队老兵Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_VETERANS_1",
+      "v": "老兵Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_VETERANS_2",
+      "v": "老兵Lv.2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_VETERANS_3",
+      "v": "老兵Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_VETERANS_4",
+      "v": "老兵Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_VETERANS_5",
+      "v": "老兵Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_WARR",
+      "v": "面对你的战士系队友时，敌方有{0}%几率无法触发规避能力。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_WARRIOR LEADERSHIP_1",
+      "v": "战士领袖Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_WARRIOR LEADERSHIP_2",
+      "v": "战士领袖Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_WARRIOR LEADERSHIP_3",
+      "v": "战士领袖Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_WARRIOR LEADERSHIP_4",
+      "v": "战士领袖Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_WARRIOR_LEADERSHIP_5",
+      "v": "战士系领袖Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_WEAPONMASTERS_1",
+      "v": "武器大师Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_WEAPONMASTERS_2",
+      "v": "武器大师Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_WEAPONMASTERS_3",
+      "v": "武器大师Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_WEAPONMASTERS_4",
+      "v": "武器大师Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_WEAPONMASTERS_5",
+      "v": "武器大师Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_WEAPONSMITH_1",
+      "v": "武器匠 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_WEAPONSMITH_2",
+      "v": "武器匠 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_WEAPONSMITH_3",
+      "v": "武器匠 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_WEAPONSMITH_4",
+      "v": "武器匠 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_WEAPONSMITH_5",
+      "v": "武器匠5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_WEAPONSP_1",
+      "v": "武器专家 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_WEAPONSP_2",
+      "v": "武器专家 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_WEAPONSP_3",
+      "v": "武器专家 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_WEAPONSP_4",
+      "v": "武器专家 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_WEAPONSP_5",
+      "v": "武器专家5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_WEAPONSP_IRONH_RHINO_DESC2",
+      "v": "铁皮和犀牛的伤害性debuffs减益持续时间+{0}%。此外，同盟任务中的命中率提升+6%。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_WEAPONSP_LONG_DESC",
+      "v": "+{0}%几率在重击时更容易造成暴击。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_WEAPONSP_LONG_DESC_1",
+      "v": "+{0}%伤害减益持续时间。同盟任务中攻击评分+2%。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_WEAPONSP_LONG_DESC_2",
+      "v": "+{0}%伤害减益持续时间。同盟任务中攻击评分+4%。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_WEAPONSP_LONG_DESC_3",
+      "v": "+{0}%伤害减益持续时间。同盟任务中攻击评分+6%。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_WEAPONSP_MIXMA_DESC",
+      "v": "+{0}%几率重击会成为暴击",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_WEAPONSP_MIXMA_DESC2",
+      "v": "搅拌者的伤害性debuffs减益持续时间+{0}%。此外，同盟任务中的攻击评分提升+6%。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_WRECKERS_1",
+      "v": "破坏者Lv. 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_WRECKERS_2",
+      "v": "破坏者Lv. 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_WRECKERS_3",
+      "v": "破坏者Lv. 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_WRECKERS_4",
+      "v": "破坏者Lv. 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_SYN_WRECKERS_5",
+      "v": "肇事者Lv.5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_TACTLEAD",
+      "v": "战术系领袖",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_TECHLEAD",
+      "v": "科技系领袖",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_STAT_WARRLEAD",
+      "v": "战士系领袖",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SYN_ENEMY_LONG_DESC",
+      "v": "+{0}%攻击评分。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SYN_LVNWPN_LONG_DESC",
+      "v": "重击和特殊攻击3增加{0}%的伤害。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SYN_RHINO_WASP_DESC",
+      "v": "对遇到巨无霸感到不爽，黄蜂勇士获得+{0}%攻击评分。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SYN_SKYASLT_1",
+      "v": "空袭 1",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SYN_SKYASLT_2",
+      "v": "空袭 2",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SYN_SKYASLT_3",
+      "v": "空袭 3",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SYN_SKYASLT_4",
+      "v": "空袭 4",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SYN_SKYASLT_5",
+      "v": "空袭5",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SYN_SKYASSAULT_LONG_DESC",
+      "v": "+{0}%反规避。\n",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SYN_WASP_RHINO_DESC",
+      "v": "恼怒自己遇到了猪队友，犀牛获得+{0}%攻击评分。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SYN_WASP_WINDBLD_DESC",
+      "v": "提供空中追踪辅助，风刃的对手较平常多+{0}%更不容易躲避。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SYN_WINDBLD_WASP_DESC",
+      "v": "提供空中追踪辅助，黄蜂勇士的对手较平常多+{0}%更不容易躲避。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SYNERGY_BOT_ALREADY_ACTIVE_INCOMING",
+      "v": "这个机器人已在你的队伍中，并且他们的协同奖励用已被激活。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SYNERGY_INCOMING_TITLE_FORMAT",
+      "v": "受到的奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SYNERGY_MORE_INFO",
+      "v": "选择一个机器人以获取更多信息。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SYNERGY_OUTGOING_TITLE_FORMAT",
+      "v": "可提供奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SYNERGY_VALUE_TOTAL_FORMAT",
+      "v": "{0}[FFFFFF80]/{1}",
+      "vn": 1
+    }
+  ]
+}

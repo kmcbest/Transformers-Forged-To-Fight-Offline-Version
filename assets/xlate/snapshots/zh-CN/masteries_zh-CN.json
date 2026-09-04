@@ -1,0 +1,805 @@
+{
+  "meta": {
+    "format": "sparx",
+    "language": "zh-CN",
+    "tagged": [
+      "masteries",
+      "client"
+    ],
+    "hash": "d96cb610d906a55acd744b02b35e8a6e87f7b4b0",
+    "ts": 1517433346,
+    "string_count": 79
+  },
+  "strings": [
+    {
+      "k": "ID_UI_MASTERIES",
+      "v": "精通",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_ARE_YOU_SURE_CONFIRMATION_DESCRIPTION",
+      "v": "你确定么？",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_BONUS",
+      "v": "加成",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_BOOST_BOOST_PERCENTAGE",
+      "v": "+{0} & +{1}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_DEFENSE_BOOST",
+      "v": "防御加成",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_DEFENSE_FORMAT",
+      "v": "防御（{0}）",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_FORCE_RESPEC_CONTINUE",
+      "v": "继续进行精通",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_FORCE_RESPEC_MESSAGE",
+      "v": "指挥官精通已获得重大改善。不幸的是，这些改善要求所有用户重置他们的点数。我们已经将你在精通树中花费的货币、道具和精通点数通过邮件100%返还给你。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_FREE_REMAINING",
+      "v": "免费剩余：{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_HUD_COURAGE",
+      "v": "勇气",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_HUD_DOUBLE_EDGE",
+      "v": "双刃剑",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_HUD_RECOIL",
+      "v": "后座力",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_HUD_RESONATE",
+      "v": "共鸣",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_LEVEL_LOCKED",
+      "v": "你需要至少要达到等级{0}才可以进入精通。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_LOCKED",
+      "v": "强大的新精通在更高的指挥官等级翘首以待。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_MAINTENANCE",
+      "v": "当前处于维护中，指挥官精通暂时不可用。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_MAINTENANCE_TITLE",
+      "v": "维护",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_MASTERED",
+      "v": "已掌握",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_MASTERY",
+      "v": "精通",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_MASTERY_UNLOCKED",
+      "v": "精通解锁！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_NEXT_RANK",
+      "v": "下一排名",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_OFFENSE_BOOST",
+      "v": "进攻加成",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_OFFENSE_FORMAT",
+      "v": "进攻（{0}）",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_POINTS",
+      "v": "剩余点数：{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_PT",
+      "v": "精通点数",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_PURCHASE_PREVIOUS_RANK",
+      "v": "首先购买前一个排名。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_RANK_ACQUIRED",
+      "v": "排名{0}已激活",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_RANK_FORMAT",
+      "v": "[949494FF]排名[-]{0} [949494FF]/ {1}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_RANK_FORMAT_MAX_COLORED",
+      "v": "[00FF00FF]{0} / {1}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_RANK_FORMAT_PURCHASED_COLORED",
+      "v": "[FFFFFFFF]{0} / {1}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_RANK_FORMAT_UNCOLORED",
+      "v": "排名{0} / {1}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_RANK_FORMAT_UNPURCHASED_COLORED",
+      "v": "[CCCCCCFF]{0} / {1}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_RANK_MAX_FORMAT",
+      "v": "[949494FF]最大排名[-]{0} [949494FF]/ {1}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_RANK_MAX_FORMAT_UNCOLORED",
+      "v": "最大排名{0} / {1}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_RANK_NUMBER_FORMAT",
+      "v": "排名{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_RANK_NUMBER_FORMAT_CURRENT",
+      "v": "排名{0} ✓",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_RANK_UNLOCKED",
+      "v": "排名已解锁！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_RANK_UP",
+      "v": "激活",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_RECOVER",
+      "v": "重置点数",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_RECOVER_AVAILABLE",
+      "v": "还有[06a4e0ff]{0}[-]次免费重置机会。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_RECOVER_DEFENSE",
+      "v": "重置所有防御点数",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_RECOVER_DISABLED_NO_INVESTMENT",
+      "v": "在此种类下你没有点数可重置。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_RECOVER_FREE",
+      "v": "免费",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_RECOVER_MESSAGE_DESCRIPTION",
+      "v": "所有点数复原",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_RECOVER_MESSAGE_DESCRIPTION_DEFENSE",
+      "v": "所有防御点数复原",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_RECOVER_MESSAGE_DESCRIPTION_OFFENSE",
+      "v": "所有进攻点数复原",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_RECOVER_MESSAGE_TITLE",
+      "v": "成功重置！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_RECOVER_OFFENSE",
+      "v": "重置所有进攻点数",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_RECOVER_PT",
+      "v": "可供重置的点数",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_REQ_CLASS",
+      "v": "已花费{0} {1}点数",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_REQ_ITEM",
+      "v": "{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_REQ_LVL",
+      "v": "指挥官等级{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_REQ_MET",
+      "v": "[00b22aFF]{0}✓",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_REQ_MET_FRACTION_FORMAT",
+      "v": "要求（{0}/{1}达成）",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_REQ_NODE",
+      "v": "{0}排名{1}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_REQ_NOT_MET",
+      "v": "[ff0000FF]{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_REQ_NOT_MET_APPLY",
+      "v": "你需要先达成所有要求来解锁，才可以激活这个排名！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_REQ_NOT_MET_RANK_UP",
+      "v": "排名提升要求未达成。\n{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_REQ_NOT_MET_TITLE",
+      "v": "现在还不行！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_REQ_NOT_MET_UNLOCK",
+      "v": "解锁要求未达成。\n{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_RESPEC_CURRENCY_DISCLAIMER",
+      "v": "用作解锁或者激活的货币未复原。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_RESPEC_LATER",
+      "v": "稍后再说",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_RESPEC_NOTYET",
+      "v": "还没有",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_RESPEC_WARN",
+      "v": "用来激活的货币不会返还，但所有已解锁的精通会保留在解锁状态。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_SKILL_POINTS",
+      "v": "{0}点",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_SKILL_POINTS_LONG",
+      "v": "[-]{0}剩余点数",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_SKILL_POINTS_LONG_NONE",
+      "v": "[FF0000FF]{0}点数[FFFFFFFF]可用",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_SKILL_POINT_LONG",
+      "v": "[-]{0}点数可用",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_SOON",
+      "v": "敬请期待",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_SOON_BODY",
+      "v": "这个新功能很快就会来！感谢你的耐心等候。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_SPEND_FRACTION_FORMAT",
+      "v": "{0} / {1}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_UNLOCK_COST_TITLE",
+      "v": "解锁成本",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_UNLOCK_EXCLAMATION",
+      "v": "解锁",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_UNLOCK_NOW_EXCLAMATION",
+      "v": "马上解锁！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_WARNING_HARD",
+      "v": "你有未花费的精通点数，这将对你的战斗效力产生负面影响。你想要现在花费它们吗？",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERIES_WARNING_SOFT",
+      "v": "你有未花费的精通点数。马上获得新能量！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERY_CTA_BUTTON",
+      "v": "前往精通",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERY_CTA_TITLE",
+      "v": "精通核心-提升指挥官技能",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MASTERY_TITLE",
+      "v": "精通商店",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES",
+      "v": "精通",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_ARE_YOU_SURE_CONFIRMATION_DESCRIPTION",
+      "v": "你确定么？",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_BONUS",
+      "v": "加成",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_BOOST_BOOST_PERCENTAGE",
+      "v": "+{0} & +{1}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_DEFENSE_BOOST",
+      "v": "防御加成",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_DEFENSE_FORMAT",
+      "v": "防御（{0}）",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_FORCE_RESPEC_CONTINUE",
+      "v": "继续进行精通",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_FORCE_RESPEC_MESSAGE",
+      "v": "指挥官精通已获得重大改善。不幸的是，这些改善要求所有用户重置他们的点数。我们已经将你在精通树中花费的货币、道具和精通点数通过邮件100%返还给你。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_FREE_REMAINING",
+      "v": "免费剩余：{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_HUD_COURAGE",
+      "v": "勇气",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_HUD_DOUBLE_EDGE",
+      "v": "双刃剑",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_HUD_RECOIL",
+      "v": "后座力",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_HUD_RESONATE",
+      "v": "共鸣",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_LEVEL_LOCKED",
+      "v": "你需要至少要达到等级{0}才可以进入精通。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_LOCKED",
+      "v": "强大的新精通在更高的指挥官等级翘首以待。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_MAINTENANCE",
+      "v": "当前处于维护中，指挥官精通暂时不可用。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_MAINTENANCE_TITLE",
+      "v": "维护",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_MASTERED",
+      "v": "已掌握",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_MASTERY",
+      "v": "精通",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_MASTERY_UNLOCKED",
+      "v": "精通解锁！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_NEXT_RANK",
+      "v": "下一排名",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_OFFENSE_BOOST",
+      "v": "进攻加成",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_OFFENSE_FORMAT",
+      "v": "进攻（{0}）",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_POINTS",
+      "v": "剩余点数：{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_PT",
+      "v": "精通点数",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_PURCHASE_PREVIOUS_RANK",
+      "v": "首先购买前一个排名。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_RANK_ACQUIRED",
+      "v": "排名{0}已激活",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_RANK_FORMAT",
+      "v": "[949494FF]排名[-]{0} [949494FF]/ {1}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_RANK_FORMAT_MAX_COLORED",
+      "v": "[00FF00FF]{0} / {1}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_RANK_FORMAT_PURCHASED_COLORED",
+      "v": "[FFFFFFFF]{0} / {1}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_RANK_FORMAT_UNCOLORED",
+      "v": "排名{0} / {1}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_RANK_FORMAT_UNPURCHASED_COLORED",
+      "v": "[CCCCCCFF]{0} / {1}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_RANK_MAX_FORMAT",
+      "v": "[949494FF]最大排名[-]{0} [949494FF]/ {1}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_RANK_MAX_FORMAT_UNCOLORED",
+      "v": "最大排名{0} / {1}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_RANK_NUMBER_FORMAT",
+      "v": "排名{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_RANK_NUMBER_FORMAT_CURRENT",
+      "v": "排名{0} ✓",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_RANK_UNLOCKED",
+      "v": "排名已解锁！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_RANK_UP",
+      "v": "激活",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_RECOVER",
+      "v": "重置点数",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_RECOVER_AVAILABLE",
+      "v": "还有[06a4e0ff]{0}[-]次免费重置机会。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_RECOVER_DEFENSE",
+      "v": "重置所有防御点数",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_RECOVER_DISABLED_NO_INVESTMENT",
+      "v": "在此种类下你没有点数可重置。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_RECOVER_FREE",
+      "v": "免费",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_RECOVER_MESSAGE_DESCRIPTION",
+      "v": "所有点数复原",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_RECOVER_MESSAGE_DESCRIPTION_DEFENSE",
+      "v": "所有防御点数复原",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_RECOVER_MESSAGE_DESCRIPTION_OFFENSE",
+      "v": "所有进攻点数复原",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_RECOVER_MESSAGE_TITLE",
+      "v": "成功重置！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_RECOVER_OFFENSE",
+      "v": "重置所有进攻点数",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_RECOVER_PT",
+      "v": "可供重置的点数",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_REQ_CLASS",
+      "v": "已花费{0} {1}点数",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_REQ_ITEM",
+      "v": "{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_REQ_LVL",
+      "v": "指挥官等级{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_REQ_MET",
+      "v": "[00b22aFF]{0}✓",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_REQ_MET_FRACTION_FORMAT",
+      "v": "要求（{0}/{1}达成）",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_REQ_NODE",
+      "v": "{0}排名{1}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_REQ_NOT_MET",
+      "v": "[ff0000FF]{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_REQ_NOT_MET_APPLY",
+      "v": "你需要先达成所有要求来解锁，才可以激活这个排名！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_REQ_NOT_MET_RANK_UP",
+      "v": "排名提升要求未达成。\n{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_REQ_NOT_MET_TITLE",
+      "v": "现在还不行！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_REQ_NOT_MET_UNLOCK",
+      "v": "解锁要求未达成。\n{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_RESPEC_CURRENCY_DISCLAIMER",
+      "v": "用作解锁或者激活的货币未复原。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_RESPEC_LATER",
+      "v": "稍后再说",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_RESPEC_NOTYET",
+      "v": "还没有",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_RESPEC_WARN",
+      "v": "用来激活的货币不会返还，但所有已解锁的精通会保留在解锁状态。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_SKILL_POINTS",
+      "v": "{0}点",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_SKILL_POINTS_LONG",
+      "v": "[-]{0}剩余点数",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_SKILL_POINTS_LONG_NONE",
+      "v": "[FF0000FF]{0}点数[FFFFFFFF]可用",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_SKILL_POINT_LONG",
+      "v": "[-]{0}点数可用",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_SOON",
+      "v": "敬请期待",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_SOON_BODY",
+      "v": "这个新功能很快就会来！感谢你的耐心等候。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_SPEND_FRACTION_FORMAT",
+      "v": "{0} / {1}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_UNLOCK_COST_TITLE",
+      "v": "解锁成本",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_UNLOCK_EXCLAMATION",
+      "v": "解锁",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_UNLOCK_NOW_EXCLAMATION",
+      "v": "马上解锁！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_WARNING_HARD",
+      "v": "你有未花费的精通点数，这将对你的战斗效力产生负面影响。你想要现在花费它们吗？",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERIES_WARNING_SOFT",
+      "v": "你有未花费的精通点数。马上获得新能量！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERY_CTA_BUTTON",
+      "v": "前往精通",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERY_CTA_TITLE",
+      "v": "精通核心-提升指挥官技能",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MASTERY_TITLE",
+      "v": "精通商店",
+      "vn": 1
+    }
+  ]
+}

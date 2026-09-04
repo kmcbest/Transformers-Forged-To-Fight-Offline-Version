@@ -1,0 +1,4105 @@
+{
+  "meta": {
+    "format": "sparx",
+    "language": "zh-CN",
+    "tagged": [
+      "items",
+      "client"
+    ],
+    "hash": "558173a5c4330ff22e7cbf59671f2bac8374ef0b",
+    "ts": 1520454275,
+    "string_count": 409
+  },
+  "strings": [
+    {
+      "k": "D_UI_ITEMUSE_BOTSELECT_NO_MORE_BOT",
+      "v": "",
+      "vn": 1
+    },
+    {
+      "k": "ID_REDEEMER_HARD",
+      "v": "能量晶体",
+      "vn": 1
+    },
+    {
+      "k": "ID_REDEEMER_SOFT",
+      "v": "黄金",
+      "vn": 1
+    },
+    {
+      "k": "ID_REDEEMER_XP",
+      "v": "经验值",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_BLUEPRINTS_BLUEPRINT",
+      "v": "矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_BLUEPRINTS_GOTO_SELL_CHAMPIONS",
+      "v": "出售机器人",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_BLUEPRINTS_NO_BLUEPRINTS_STASH",
+      "v": "你有未领取的矿-13在你的储藏室.现在就去领取!",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_BLUEPRINTS_SELECT_ALL",
+      "v": "全选",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_BLUEPRINTS_SELL",
+      "v": "{0}矿-13出售了以获得{1}黄金",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_BLUEPRINTS_TOTAL_FORMAT",
+      "v": "[4BB4FEFF]{0}[-] / {1}容量",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_COMMON_CHEMICAL",
+      "v": "1阶科学系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_COMMON_CHEMICAL_DESC",
+      "v": "需要一个1阶科学系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_COMMON_COSMIC",
+      "v": "1阶宇宙系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_COMMON_COSMIC_DESC",
+      "v": "需要一个1阶宇宙系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_COMMON_EVENT",
+      "v": "1阶阿尔法火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_COMMON_EVENT_DESC",
+      "v": "需要一个1阶阿尔法火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_COMMON_GENERIC",
+      "v": "1阶基础火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_COMMON_GENERIC_DESC",
+      "v": "需要一个1阶基础火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_COMMON_MUTANT",
+      "v": "1阶变异系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_COMMON_MUTANT_DESC",
+      "v": "需要一个1阶变异系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_COMMON_MYSTIC",
+      "v": "1阶神秘系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_COMMON_MYSTIC_DESC",
+      "v": "需要一个1阶神秘系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_COMMON_TECH",
+      "v": "1阶科技系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_COMMON_TECH_DESC",
+      "v": "需要一个1科技系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_COMMON_TRAINED",
+      "v": "1阶技巧系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_COMMON_TRAINED_DESC",
+      "v": "需要一个1阶技巧系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_EPIC_CHEMICAL",
+      "v": "4阶科学系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_EPIC_CHEMICAL_DESC",
+      "v": "需要一个4阶科学系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_EPIC_COSMIC",
+      "v": "4阶宇宙系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_EPIC_COSMIC_DESC",
+      "v": "需要一个4阶宇宙系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_EPIC_EVENT",
+      "v": "4阶阿尔法火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_EPIC_EVENT_DESC",
+      "v": "需要一个4阶阿尔法火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_EPIC_GENERIC",
+      "v": "4阶基础火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_EPIC_GENERIC_DESC",
+      "v": "需要一个4阶基础火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_EPIC_MUTANT",
+      "v": "4阶变异系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_EPIC_MUTANT_DESC",
+      "v": "需要一个4阶变异系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_EPIC_MYSTIC",
+      "v": "4阶神秘系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_EPIC_MYSTIC_DESC",
+      "v": "需要一个4阶神秘系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_EPIC_TECH",
+      "v": "4阶科技系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_EPIC_TECH_DESC",
+      "v": "需要一个4阶科技系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_EPIC_TRAINED",
+      "v": "4阶技巧系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_EPIC_TRAINED_DESC",
+      "v": "需要一个4阶技巧系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_INVENTORY_COMING_SOON",
+      "v": "即将到来",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_INVENTORY_CONVERSION_DESCRIPTION",
+      "v": "{0} 火种精华已使用",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_INVENTORY_CONVERSION_TITLE",
+      "v": "火种已塑造",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_INVENTORY_CONVERSION_TITLE_PLURAL",
+      "v": "{0}火种已塑造",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_INVENTORY_CONVERSION_VALUE_DESCRIPTION",
+      "v": "转换价值",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_INVENTORY_FRAGMENTS_DISABLED",
+      "v": "没有对该火种可用的精华。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_INVENTORY_FRAGMENTS_RECEIVED",
+      "v": "{0} {1} 精华已获取。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_INVENTORY_NONE_STASH",
+      "v": "在储藏室中你有未领取的火种，现在就去领取!",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_INVENTORY_WARNING",
+      "v": "当你的机器人和模块升到最高等级，可以用火种来提升他们的级别！请小心你的出售物件！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_LEGENDARY_CHEMICAL",
+      "v": "5阶科学系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_LEGENDARY_CHEMICAL_DESC",
+      "v": "需要一个5阶科学系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_LEGENDARY_COSMIC",
+      "v": "xue",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_LEGENDARY_COSMIC_DESC",
+      "v": "需要一个4阶宇宙系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_LEGENDARY_EVENT",
+      "v": "5阶阿尔法系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_LEGENDARY_EVENT_DESC",
+      "v": "需要一个5阶阿尔法系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_LEGENDARY_GENERIC",
+      "v": "5阶基础火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_LEGENDARY_GENERIC_DESC",
+      "v": "需要一个5阶基础火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_LEGENDARY_MUTANT",
+      "v": "5阶变异系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_LEGENDARY_MUTANT_DESC",
+      "v": "需要一个5阶变异系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_LEGENDARY_MYSTIC",
+      "v": "5阶神秘系",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_LEGENDARY_MYSTIC_DESC",
+      "v": "需要一个5阶神秘系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_LEGENDARY_TECH",
+      "v": "5阶科技系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_LEGENDARY_TECH_DESC",
+      "v": "需要一个5阶宇宙系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_LEGENDARY_TRAINED",
+      "v": "5阶技巧系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_LEGENDARY_TRAINED_DESC",
+      "v": "需要一个5阶技巧系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_RARE_CHEMICAL",
+      "v": "3阶科学系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_RARE_CHEMICAL_DESC",
+      "v": "需要一个3阶科学系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_RARE_COSMIC",
+      "v": "3阶宇宙系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_RARE_COSMIC_DESC",
+      "v": "需要一个3阶宇宙系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_RARE_EVENT",
+      "v": "3阶阿尔法火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_RARE_EVENT_DESC",
+      "v": "需要一个3阶阿尔法火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_RARE_GENERIC",
+      "v": "3阶基础火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_RARE_GENERIC_DESC",
+      "v": "需要一个3阶基础火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_RARE_MUTANT",
+      "v": "3阶变异系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_RARE_MUTANT_DESC",
+      "v": "需要一个3阶变异系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_RARE_MYSTIC",
+      "v": "3阶神秘系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_RARE_MYSTIC_DESC",
+      "v": "需要一个3阶神秘系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_RARE_TECH",
+      "v": "3阶科技系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_RARE_TECH_DESC",
+      "v": "需要一个3阶科技系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_RARE_TRAINED",
+      "v": "3阶技巧系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_RARE_TRAINED_DESC",
+      "v": "需要一个3阶技巧系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_UNCOMMON_CHEMICAL",
+      "v": "2阶科学系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_UNCOMMON_CHEMICAL_DESC",
+      "v": "需要一个2阶科学系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_UNCOMMON_COSMIC",
+      "v": "2阶宇宙系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_UNCOMMON_COSMIC_DESC",
+      "v": "需要一个2阶首领系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_UNCOMMON_EVENT",
+      "v": "2阶阿尔法火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_UNCOMMON_EVENT_DESC",
+      "v": "需要一个2阶阿尔法火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_UNCOMMON_GENERIC",
+      "v": "2阶基础火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_UNCOMMON_GENERIC_DESC",
+      "v": "需要一个2阶基础火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_UNCOMMON_MUTANT",
+      "v": "2阶变异系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_UNCOMMON_MUTANT_DESC",
+      "v": "需要一个2阶变异系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_UNCOMMON_MYSTIC",
+      "v": "2阶神秘系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_UNCOMMON_MYSTIC_DESC",
+      "v": "需要一个2阶神秘系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_UNCOMMON_TECH",
+      "v": "2阶科技系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_UNCOMMON_TECH_DESC",
+      "v": "需要一个2阶科技系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_UNCOMMON_TRAINED",
+      "v": "2阶技巧系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATALYST_UNCOMMON_TRAINED_DESC",
+      "v": "需要一个2阶技巧系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CATFRAG_NAME_FORMAT",
+      "v": "{0}阶{1}火种精华",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CONSUMABLEPOPUP_NO_ITEMS",
+      "v": "无可用道具。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CONSUMABLEPOPUP_TITLE_HEAL",
+      "v": "修复你的机器人",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CONSUMABLEPOPUP_TITLE_REVIVE",
+      "v": "修复你的机器人",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CONSUMABLES_ONLY_ONE_REVIVE",
+      "v": "你一次只能使用一个复活。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CONSUMABLES_TAB_SINGLE_CHAMPION",
+      "v": "单独的机器人",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CONSUMABLES_TAB_TEAM",
+      "v": "小队",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CONSUMABLE_NO_ENERGY",
+      "v": "能量不足",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CONSUMABLE_PURCHASECONFIRMED",
+      "v": "购买已确认",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CONSUMABLE_USE_CONFIRMED",
+      "v": "道具已使用",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_DESCRIPTION_ORE_T1",
+      "v": "矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_DESCRIPTION_ORE_T2",
+      "v": "矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_DESCRIPTION_ORE_T3",
+      "v": "矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_DESCRIPTION_ORE_T4",
+      "v": "矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_DESCRIPTION_ORE_T5",
+      "v": "矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_DESCRIPTION_QUEST_CRYSTAL_1",
+      "v": "1阶任务水晶包含较少的奖励！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_EMI",
+      "v": "驱散",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_EMI_DESC",
+      "v": "在特殊攻击下给予一个100%几率来驱散。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ENERGYSUMMARY_ENERGYUSED",
+      "v": "-{0}能量",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ENERGYSUMMARY_GETMORE",
+      "v": "获取更多",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ENERGYSUMMARY_OWNEDFORMAT",
+      "v": "[009CDEFF]已拥有：{0}[-]/{1}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ENERGYSUMMARY_OWNEDFORMAT_NOLIMIT",
+      "v": "[009CDEFF]所有者：{0}[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ENERGYSUMMARY_OWNEDFORMAT_NOLIMIT_ZERO",
+      "v": "[009CDEFF]所有者：[-] {0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ENERGYSUMMARY_OWNEDFORMAT_ZERO",
+      "v": "[009CDEFF]已拥有：[-] {0}/{1}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ENERGYSUMMARY_TITLE",
+      "v": "能量",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ENERGYSUMMARY_TITLE_AVA-ENERGY",
+      "v": "战争能量",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ENERGYSUMMARY_TITLE_AVE-ENERGY",
+      "v": "同盟能量",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ENERGYSUMMARY_TITLE_PVE-ENERGY",
+      "v": "任务能量",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ENERGYSUMMARY_TITLE_RT",
+      "v": "突袭入场券",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ENERGYSUMMARY_USEITEM",
+      "v": "使用",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FLASH_LIMITED_TIME_OFFER",
+      "v": "限时优惠",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FLASH_OFFER",
+      "v": "快闪优惠",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FLASH_ONE_TIME_OFFER",
+      "v": "一次性优惠",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FLASH_SALE_ALSO_INCLUDED",
+      "v": "同时包含...",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FLASH_SALE_ARE_YOU_SURE_CONFIRMATION_DESCRIPTION",
+      "v": "你确定要购买该优惠？",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FLASH_SALE_DISMISS_LIMITED_TIME",
+      "v": "限时优惠。\n你能在基地中再次发现它。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FLASH_SALE_DISMISS_ONE_TIME",
+      "v": "一次性优惠。关闭弹窗后，你将无法再次购买。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FLASH_SALE_ONE_TIMER_OFFER_TIMER",
+      "v": "一次性优惠！\n勿失良机！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FLASH_SALE_TOP_VALUED",
+      "v": "最高价值！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GACHA_ADD_MORE",
+      "v": "添加更多",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GACHA_AUTO",
+      "v": "自动",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GACHA_BONUS_FOUND",
+      "v": "发现加成{0}!",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GACHA_CRYSTAL_CLAIM",
+      "v": "领取",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GACHA_CRYSTAL_OPEN",
+      "v": "打开",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GACHA_DROP_CRYSTAL",
+      "v": "拖拽水晶至此",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GACHA_DUPLICATE_CHAMPION",
+      "v": "重复的机器人",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GACHA_GOTO",
+      "v": "获得水晶",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GACHA_ITEM_FOUND",
+      "v": "发现道具",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GACHA_LIMIT",
+      "v": "已开启{0}/{1}个日常高等水晶",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GACHA_SKIP",
+      "v": "开启{0}水晶",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GACHA_SKIP_PLURAL",
+      "v": "开启{0}水晶",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GACHA_SUMMARY_DUPLICATE",
+      "v": "[FFFFFF99]{0}[-] 重复",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GACHA_SUMMARY_DUPLICATES",
+      "v": "[FFFFFF99]{0}[-] 重复",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GACHA_SUMMARY_NEW",
+      "v": "[FFFFFF99]{0}[-] 新的",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GACHA_SUMMARY_OPENED",
+      "v": "{0} 水晶已打开",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GACHA_SUMMARY_OPENED_SINGULAR",
+      "v": "{0} 水晶已打开",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GACHA_SUMMARY_OPEN_MORE",
+      "v": "打开更多",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GACHA_SUMMARY_SIGNATURE_AWAKE",
+      "v": "能力觉醒！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GACHA_SUMMARY_SIGNATURE_MAX",
+      "v": "达到最高等级！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GACHA_SUMMARY_SIGNATURE_UP",
+      "v": "能力提升！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GACHA_TAP_TO_STOP",
+      "v": "点击任意地点停止",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GACHA_TITLE",
+      "v": "水晶处理器",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GACHA_UPGRADE_ITEM_FOUND",
+      "v": "升级道具",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GACHA_WAIT",
+      "v": "激活太空桥...",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GACHA_WON_CHAMPION",
+      "v": "恭喜!发现\n机器人!",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GET_CRYSTAL",
+      "v": "获得{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GIFTS_NONE",
+      "v": "未发现可选中分类的道具",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GIFTS_NONE_SELECTED",
+      "v": "当前未选中道具",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GIFTS_SELECT",
+      "v": "选择礼物",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GIFTS_SELECT_STEP",
+      "v": "步骤1：选择礼物",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GIFTS_SEND",
+      "v": "礼物",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GIFT_CONFIRM",
+      "v": "发送礼物",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GIFT_CONFIRM_FORMAT",
+      "v": "[a5a5a5]你送出了[ffffff]{0}[-] to [ffffff]{1}[-]!当他们登陆时将获得邮件提示[-]。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GIFT_CONFIRM_ITEMS_FORMAT",
+      "v": "{0} 件道具",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GIFT_CONFIRM_ITEM_FORMAT",
+      "v": "1件道具",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GIFT_CONFIRM_TITLE",
+      "v": "礼物已发送！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GIFT_CONFIRM_USERS_FORMAT",
+      "v": "{0} 个用户",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GIFT_ENTITLEMENT",
+      "v": "馈赠徽章",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GIFT_ENTITLEMENT_DESC",
+      "v": "允许你向其他玩家赠送礼物。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GIFT_ERROR_ENTITLEMENT",
+      "v": "通过向好友发送能量晶体包获得馈赠徽章！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GIFT_ERROR_GENERAL",
+      "v": "交易处理过程中出现故障。请重试。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GIFT_ERROR_RECIPIENTS",
+      "v": "你没有可以发送礼物的好友或盟友。需要现在寻找好友吗？",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GIFT_ERROR_SEND_FAILED_MULTIPLE",
+      "v": "无法给以下玩家发送礼物：{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GIFT_NOTIFICATION",
+      "v": "你获得了一个礼物！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GIFT_NOTIFICATION_FROMUSER_FORMAT",
+      "v": "{0}给你发送了礼物！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GIFT_RECIPIENTS_SUBTITLE",
+      "v": "给你的好友或盟友发送礼物。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GIFT_RECIPIENTS_TITLE",
+      "v": "步骤2：选择收件人",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GIFT_USER_GROUP_TITLE_FORMAT",
+      "v": "{0} ({1} / {2})",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_GOLD_FORMAT",
+      "v": "{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HARDCURRENCY_CANCELPURCHASEBODY",
+      "v": "你的交易已被取消。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HARDCURRENCY_CANCELPURCHASETITLE",
+      "v": "交易被取消",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_HARDCURRENCY_FAILPURCHASETITLE",
+      "v": "交易未完成",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INVENTORY_AWAKENING_STONE_USED_MESSAGE",
+      "v": "能力觉醒！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INVENTORY_BLUEPRINTS",
+      "v": "矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INVENTORY_CATALYSTS",
+      "v": "火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INVENTORY_CATALYSTS_DESCRIPTION",
+      "v": "用来提升你的机器人和模块的级别",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INVENTORY_CATFRAG",
+      "v": "火种精华",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INVENTORY_CTA_SPARKS",
+      "v": "获得更多的火种！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INVENTORY_EXO_TOOLTIP",
+      "v": "使用矿-13升级你的机器人，让它们更强大！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INVENTORY_FOR",
+      "v": "为了",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INVENTORY_GET_MORE_BLUEPRINTS",
+      "v": "从任务和水晶中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INVENTORY_GET_MORE_ITEMS",
+      "v": "从任务和商店中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INVENTORY_GET_MORE_PROGRAMS",
+      "v": "",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INVENTORY_HEADER_ITEMS",
+      "v": "道具：",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INVENTORY_HEADER_SPARKS",
+      "v": "火种：",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INVENTORY_ISO_DESCRIPTION",
+      "v": "选择道具出售",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INVENTORY_ITEMS",
+      "v": "道具",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INVENTORY_ITEMS_DESCRIPTION",
+      "v": "点击道具以使用、出售或获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INVENTORY_ITEMS_STASH",
+      "v": "你有未领取的道具 在你的储藏室。\n\n[FFFFFF]现在就去领取！[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INVENTORY_ITEMS_TOOLTIP",
+      "v": "在任务和突袭中使用该道具可以援助你的机器人！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INVENTORY_ITEM_CANT_BE_USED",
+      "v": "你当前没有可以使用该道具的机器人。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INVENTORY_ITEM_CANT_BE_USED_FORMAT",
+      "v": "你当前没有可以添加{0}的机器人。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INVENTORY_NO_ITEMS",
+      "v": "道具已用完。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INVENTORY_NO_PROGRAMS",
+      "v": "你没有可用的觉醒或招牌能力相关道具。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INVENTORY_NO_SPARKS",
+      "v": "火种已用完。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INVENTORY_PROGRAMS_DESCRIPTION",
+      "v": "用来觉醒和升级机器人强大的招牌能力",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INVENTORY_PROGRAMS_TOOLTIP",
+      "v": "招牌能力也可通过得到重复机器人进行觉醒和加强。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INVENTORY_PVP_BOOST_USED_MESSAGE",
+      "v": "已获得pvp分数加成！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INVENTORY_QUANTITY",
+      "v": "{0}/{1}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INVENTORY_QUANTITY_COLORED",
+      "v": "[FFFFFFFF]{0}[FFFFFF40]/{1}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INVENTORY_QUANTITY_FULL",
+      "v": "[BA0C2F]{0}/{1}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INVENTORY_REMAINING",
+      "v": "{0} 剩余",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INVENTORY_SELECT_AN_ITEM_TO_USE",
+      "v": "选择一个道具使用",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INVENTORY_SIGNATURE_STONE_USED",
+      "v": "招牌能力等级提升！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INVENTORY_SPARK_TOOLTIP",
+      "v": "使用火种来提升你机器人和模块的阶级，让他们变的更强！收集碎片来组合成一个完整火种！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INVENTORY_YOU_DO_NOT_HAVE_ANY_BOOSTS",
+      "v": "你当前没有可用的加成。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_INVENTORY_YOU_DO_NOT_HAVE_ANY_ITEMS",
+      "v": "[FFFFFF99]你此刻没有任何可用道具。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ITEMUSE_CHAMPIONSELECT_NO_MORE_BOTS",
+      "v": "",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ITEMUSE_CHAMPIONSELECT_NO_MORE_CHAMPIONS",
+      "v": "没有可用于此道具的机器人。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ITEMUSE_CHAMPIONSELECT_NO_MORE_ITEM_FORMAT",
+      "v": "没有更多的可用{0}。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ITEMUSE_CHOOSE_A_CHAMPION",
+      "v": "选择一个机器人",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ITEMUSE_CHOOSE_A_CHAMPION_NO_SELECTION",
+      "v": "未选机器人",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ITEMUSE_CHOOSE_A_CHAMPION_SIGLEVEL",
+      "v": "等级{0} 至 [00A232FF]{1}[-]/100",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ITEMUSE_CHOOSE_A_CHAMPION_SIGLEVELLINE",
+      "v": "等级{0} 至 {1} /100",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ITEMUSE_CHOOSE_QUANTITY",
+      "v": "选择数量",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ITEMUSE_CONFIRMATION",
+      "v": "确认",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ITEMUSE_INFO",
+      "v": "只有可以使用该道具的机器人才会显示在本名单上",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ITEMUSE_OVERRIDE_BODY",
+      "v": "你的机器人还拥有有效的加成\n点击覆盖将覆盖当前的加成。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ITEMUSE_OVERRIDE_ITEM_TEXT",
+      "v": "机器人有效的[FFFFFFFF]{0}[-]\n使用[FFFFFFFF]{1}[-]覆盖?",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ITEMUSE_OVERRIDE_WARNING",
+      "v": "你的机器人还拥有有效的加成\n点击覆盖将覆盖当前的加成。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ITEMUSE_PVP_WARNING",
+      "v": "在竞技场中无法使用PVP加成。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ITEMUSE_REMAINING",
+      "v": "剩余{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ITEMUSE_YOU_ARE_ABOUT_TO_USE",
+      "v": "你将使用{0}在",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ITEM_POPUP_BUTTON_GET_MORE",
+      "v": "获得更多",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ITEM_POPUP_TITLE",
+      "v": "道具选择",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MPC_CARDS",
+      "v": "卡片",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MYITEMS_INFOPOPUP_HERO_WARNING",
+      "v": "该加成无法使用在你当前的机器人上。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MYITEMS_INFOPOPUP_PVE_ENERGY_WARNING",
+      "v": "你的任务能量已经充满。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MYITEMS_INFOPOPUP_PVP_WARNING",
+      "v": "该加成只能在机器人进入竞技场前使用。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MYSTERY_DESC",
+      "v": "此物品在你达成必要的登陆要求前会一直隐藏",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_NB_GETHEROES",
+      "v": "获得水晶",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_NSF_AP",
+      "v": "忠诚度不足",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_NSF_AP_LOCATION",
+      "v": "加入一个同盟以获得更多忠诚度！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_NSF_COMMON",
+      "v": "资源不足。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_NSF_DESCRIPTION",
+      "v": "你仍需要以下物品以继续：",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_NSF_HC",
+      "v": "能量晶体不足",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_NSF_HC_LOCATION",
+      "v": "前往商店获取更多能量晶体！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_NSF_PVP_CUR",
+      "v": "竞技场货币不足",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_NSF_PVP_CUR_LOCATION",
+      "v": "加入一个竞技比赛以获取更多竞技场货币！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_NSF_RAID_CUR_LOCATION",
+      "v": "突袭其他玩家以获得突袭货币！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_NSF_SC",
+      "v": "黄金不足",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_NSF_SC_LOCATION",
+      "v": "完成任务，赢取更多黄金！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_NSF_SC_LOCATION_BASE",
+      "v": "访问你的基地收集更多黄金！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_NSF_SHARDS_DESCRIPTION",
+      "v": "你的水晶碎片不足，无法继续。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_NSF_SP",
+      "v": "你没有足够的精通点数。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_NSF_SP_FULL",
+      "v": "你没有足够的精通点数。提升指挥官等级来赚取更多精通点数！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_NSF_SP_LOCATION",
+      "v": "提升指挥官等级来赚取更多精通点数！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_NSF_TITLE",
+      "v": "存款不足",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PURCHASE_ARE_YOU_SURE_CONFIRMATION_DESCRIPTION",
+      "v": "确认要购买吗？",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_REDEEMER_CHEST_DESC",
+      "v": "宝箱内容将在完成一个任务后公布！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_REDEEMER_CHEST_NAME",
+      "v": "宝箱",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_REDEEMER_DESC_BOTS_PREMIUM_SHARD",
+      "v": "利用碎片组成高级机器人水晶！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_REDEEMER_DESC_CHEST_01",
+      "v": "宝箱内容将在任务完成后公布！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_REDEEMER_DESC_CHEST_02",
+      "v": "宝箱内容将在任务完成后公布！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_REDEEMER_DESC_CHEST_03",
+      "v": "宝箱内容将在任务完成后公布！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_REDEEMER_DESC_CHEST_04",
+      "v": "宝箱内容将在任务完成后公布！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_REDEEMER_DESC_LESSER_ASCENDANT_CRYSTAL",
+      "v": "少量优越的水晶",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_REDEEMER_EVENTPOINTS",
+      "v": "事件点数",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_REDEEMER_GACHA_FRAGMENT_DESC",
+      "v": "利用碎片组成完整的水晶",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_REDEEMER_MANY",
+      "v": "许多",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_REDEEMER_NAME_CHEST_01",
+      "v": "宝箱[1阶]",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_REDEEMER_NAME_CHEST_02",
+      "v": "宝箱[2阶]",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_REDEEMER_NAME_CHEST_03",
+      "v": "宝箱[3阶]",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_REDEEMER_NAME_CHEST_04",
+      "v": "宝箱[4阶]",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_REDEEMER_NAME_LESSER_ASCENDANT_CRYSTAL",
+      "v": "少量优越的水晶",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_REDEEMER_NAME_QUEST_CRYSTAL_1",
+      "v": "1阶任务水晶",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_REDEEMER_XP",
+      "v": "经验值",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_RESOURCESUMMARY_TITLE",
+      "v": "资源",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_REWARDS",
+      "v": "奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_REWARDS_CLAIM",
+      "v": "领取",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_REWARDS_COMPLETION",
+      "v": "完成奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_REWARDS_EXPLORATION",
+      "v": "探索奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_REWARDS_NEXT_MILESTONE",
+      "v": "下一个里程碑",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_REWARDS_NO_ITEMS",
+      "v": "无道具！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_REWARDS_NO_REWARDS",
+      "v": "无奖励！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_REWARDS_NO_REWARDS_CHESTS",
+      "v": "无宝箱！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_REWARDS_NO_REWARDS_HEROES",
+      "v": "无机器人奖励！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_REWARDS_NO_REWARDS_ITEMS",
+      "v": "无道具奖励！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_REWARDS_NO_REWARDS_RESOURCES",
+      "v": "无资源奖励！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_REWARDS_NO_REWARDS_UNLOCKS",
+      "v": "无法开启！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_REWARDS_POTENTIAL",
+      "v": "隐藏奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_REWARDS_RANK_UNLOCKED",
+      "v": "排名奖励已解锁！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_REWARDS_UNLOCKED_FEATURES",
+      "v": "解锁功能",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_REWARDS_USER_MILESTONE",
+      "v": "当前奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_REWARDS_USER_MILESTONE_ALREADY_AWARDED_DESC",
+      "v": "你已经在其他同盟赢到过此里程碑。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_REWARDS_USER_MILESTONE_NOT_AVAILABLE_DESC",
+      "v": "你无法领取此里程碑因为你没有贡献或者因为你没有及时加入同盟。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_REWARDS_VIEW",
+      "v": "查看奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ROBOT",
+      "v": "能量生成器",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ROBOT2",
+      "v": "破甲",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ROBOT_DESC",
+      "v": "能量生成速度提升20%，且使用特殊攻击有60%的几率造成持续7秒的破甲。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SELL_CONFIRMATION",
+      "v": "确认",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SELL_HERO_TITLE",
+      "v": "出售机器人",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SELL_ITEM_CONFIRM_TITLE_FORMAT",
+      "v": "{0}x {1}已出售",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SHARDS_COLLECTED",
+      "v": "共收集{0}碎片",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPLASH_TITLE",
+      "v": "变形金刚：百炼为战",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STASH_CLAIMABLE",
+      "v": "{0}可获取的",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STASH_CLAIMABLE_CTA",
+      "v": "可获取的",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STASH_ITEMS_MAXCAPACITY_WARNING",
+      "v": "所有道具已达到库存可容纳的最大值。出售一些不需要的道具腾出空间。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STASH_NO_ITEMS_DESCRIPTION",
+      "v": "从商店中获取更多的道具！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STASH_NO_ITEMS_TITLE",
+      "v": "一旦你的道具达到最大容量，额外的道具将储存在这里。当前没有储存的道具。\n\n从商店中获取更多的道具！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STASH_NO_ORE_DESCRIPTION",
+      "v": "从任务水晶中和获取更多的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STASH_NO_ORE_TITLE",
+      "v": "一旦你的矿-13库存已满，额外的矿-13将储存在这里。当前没有储存的矿-13。\n\n从任务和水晶中获取更多的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STASH_NO_SPARKS_DESCRIPTION",
+      "v": "从日常任务和突袭中获取更多的火种。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STASH_NO_SPARKS_TITLE",
+      "v": "一旦你的火种达到最大容量，额外的火种将储存在这里。当前没有储存的火种。\n\n从日常任务和突击中获取更多的火种！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STASH_POPUP_DESCRIPTION",
+      "v": "当你的库存容量不足时，奖励和道具将被储存在这里。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STASH_POPUP_TITLE",
+      "v": "储藏室",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STASH_SPARKS_HEADER_CTA",
+      "v": "在火种过期前要领取！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_ACTIVATE",
+      "v": "已激活{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_BEST_VALUE",
+      "v": "最佳价值",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_BONUS_OFFER",
+      "v": "奖励优惠",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_BOOSTS",
+      "v": "加成",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_BUY",
+      "v": "购买",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_BUYNOW",
+      "v": "现在获取",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_CATALYST_SPACE_WARNING",
+      "v": "该道具已达到库存的最大容量。额外的道具都将被送至你的储藏室。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_CONSUMABLES",
+      "v": "道具",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_CONSUMABLES_TITLE",
+      "v": "道具商店",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_CURRENCY",
+      "v": "能量晶体",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_DEAL_ENDS_FORMAT",
+      "v": "交易结束于：{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_EMPTY_BOX_TEXT",
+      "v": "查找更多其他类别的道具。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_EMPTY_CATEGORY",
+      "v": "{0}当前已空。\n请及时查看！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_EXPIRED",
+      "v": "已过期",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_FEATURED",
+      "v": "特色",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_GACHA_BONUS",
+      "v": "X{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_GACHA_BUY_GOLD",
+      "v": "获取能量晶体",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_GACHA_CRYSTALS_AVAILABLE_MAX",
+      "v": "今天最多能购买{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_GACHA_CRYSTALS_AVAILABLE_TODAY",
+      "v": "[4bb4feff]{0}[-][b0b0b0ff]/{1} 可用水晶[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_GACHA_CRYSTAL_PACK",
+      "v": "1个水晶",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_GACHA_CRYSTAL_PACK_FORMAT",
+      "v": "{0}个水晶",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_GACHA_CRYSTAL_WARNING",
+      "v": "你有{0}个未开启的水晶",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_GACHA_CRYSTAL_WARNING_PLURAL",
+      "v": "你有{0}个未开启的水晶",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_GACHA_DISCOUNT",
+      "v": "{0}%\n折扣",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_GACHA_EMPTY_CATEGORY",
+      "v": "无可用水晶",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_GACHA_FREE_CRYSTAL_NOW",
+      "v": "现在可获得新的水晶！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_GACHA_FREE_CRYSTAL_TIMER",
+      "v": "下个可获得的水晶在",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_GACHA_FREE_CRYSTAL_TIMER_FORMAT",
+      "v": "下个可用于{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_GACHA_FREE_CRYSTAL_TIMER_PLURAL",
+      "v": "可获得的新水晶在[0db704]{0}[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_GACHA_MORE_IN_STORE",
+      "v": "在商店中开启更多的水晶！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_GACHA_NEED_MORE_GOLD",
+      "v": "你需要更多的能量晶体！\n前往能量晶体商店获取更多。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_GACHA_SHARDS_OWNED_ENOUGH",
+      "v": "已拥有：{0}/{1}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_GACHA_SHARDS_OWNED_NOT_ENOUGH",
+      "v": "已拥有[ba0c2f]{0}[-]/{1}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_GACHA_TAB_BASIC",
+      "v": "基础的水晶",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_GACHA_TAB_SPECIAL",
+      "v": "特殊",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_GACHA_TITLE",
+      "v": "水晶",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_GACHA_TITLE_SHARDS",
+      "v": "碎片水晶",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_GACHA_TITLE_SPECIAL_SHARDS",
+      "v": "特殊的碎片水晶",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_GACHA_TOP_PRIZE",
+      "v": "最高奖赏",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_GETNOW",
+      "v": "现在获取",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_GET_BOOSTS",
+      "v": "获得加成",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_GET_POTIONS",
+      "v": "获得药剂",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_GOLD",
+      "v": "黄金",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_HEROES",
+      "v": "水晶",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_LIMIT",
+      "v": "已持有{0}，持有上限{1}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_LIMIT_RESET",
+      "v": "限制重置于",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_LOYALTY",
+      "v": "忠诚度",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_MASTERY",
+      "v": "精通",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_MAX_CAPACITY_WARNING",
+      "v": "该道具已达到库存的最大容量。额外的道具都将被送至你的储藏室。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_MAX_CAPACITY_WARNING_BUNDLES",
+      "v": "部分道具已达到本组合的最大容量。额外的道具都将被送至你的储藏室。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_MOST_POPULAR",
+      "v": "最受欢迎",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_NUMBER_ITEMS",
+      "v": "道具数量：",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_OWN",
+      "v": "拥有 {0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_OWNED",
+      "v": "已拥有",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_OWNED_ANIM_FORMAT",
+      "v": "[4BB4FEFF]所有者：[b0b0b0]{0}[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_OWNED_FORMAT",
+      "v": "[4BB4FEFF]已拥有：{0}[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_OWNED_MAX_CAPACITY",
+      "v": "[c21413ff]已拥有：{0}/{1}[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_OWNED_NO_COLOR",
+      "v": "已拥有：{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_OWNED_WITH_MAX_ANIM_FORMAT",
+      "v": "[4BB4FEFF]已拥有：[b0b0b0]{0}[b0b0b0]/{1}[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_OWNED_WITH_MAX_FORMAT",
+      "v": "[4BB4FEFF]已拥有：{0}[b0b0b0]/{1}[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_OWNED_WITH_MAX_NO_COLOR",
+      "v": "已拥有：{0}/{1}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_PART_OF_BUNDLE",
+      "v": "组合的部件",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_PERCENTAGE_OFF",
+      "v": "{0}% 折扣",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_POTIONS",
+      "v": "修复组件",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_PROGRAMS",
+      "v": "程序",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_PURCHASED_QUANTITY",
+      "v": "{1}x{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_PURCHASE_CAPACITY_WARNING",
+      "v": "该道具即将达到库存的最大容量。额外的道具都将被送至你的储藏室。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_PURCHASE_LIMIT",
+      "v": "购买限制{0}[009CDEFF]/{1}[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_PURCHASE_LIMIT_WARNING",
+      "v": "啊哦！你已经达到购买该道具的上限。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_PURCHASE_REQUIREMENTS",
+      "v": "购买要求",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_QUANTITY_FORMAT",
+      "v": "{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_QUANTITY_WITH_MAX_FORMAT",
+      "v": "{0}[b0b0b0]/{1}[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_QUANTITY_WITH_MAX_MAXED_FORMAT",
+      "v": "[c21413]{0}/{1}[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_SALE_ENDS_FORMAT",
+      "v": "销售结束于： {0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_TITLE",
+      "v": "立即获取",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_USE",
+      "v": "使用",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_USED_FORMAT",
+      "v": "{0}已使用",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_VIP",
+      "v": "VIP",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_STORE_VS",
+      "v": "突袭",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_USEITEM_TITLE",
+      "v": "使用道具",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_WITHHELD_FOOTER",
+      "v": "完成该任务以接收这些新道具！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_WITHHELD_TITLE",
+      "v": "任务储备",
+      "vn": 1
+    },
+    {
+      "k": "Id_UI_INVENTORY_NO_PROGRAMS",
+      "v": "",
+      "vn": 1
+    },
+    {
+      "k": "MS_D_UI_ITEMUSE_BOTSELECT_NO_MORE_BOT",
+      "v": "",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_REDEEMER_HARD",
+      "v": "能量晶体",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_REDEEMER_SOFT",
+      "v": "黄金",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_REDEEMER_XP",
+      "v": "经验值",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_BLUEPRINTS_BLUEPRINT",
+      "v": "矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_BLUEPRINTS_GOTO_SELL_CHAMPIONS",
+      "v": "出售机器人",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_BLUEPRINTS_NO_BLUEPRINTS_STASH",
+      "v": "你有未领取的矿-13在你的储藏室.现在就去领取!",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_BLUEPRINTS_SELECT_ALL",
+      "v": "全选",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_BLUEPRINTS_SELL",
+      "v": "{0}矿-13出售了以获得{1}黄金",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_BLUEPRINTS_TOTAL_FORMAT",
+      "v": "[4BB4FEFF]{0}[-] / {1}容量",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_COMMON_CHEMICAL",
+      "v": "1阶科学系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_COMMON_CHEMICAL_DESC",
+      "v": "需要一个1阶科学系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_COMMON_COSMIC",
+      "v": "1阶宇宙系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_COMMON_COSMIC_DESC",
+      "v": "需要一个1阶宇宙系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_COMMON_EVENT",
+      "v": "1阶阿尔法火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_COMMON_EVENT_DESC",
+      "v": "需要一个1阶阿尔法火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_COMMON_GENERIC",
+      "v": "1阶基础火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_COMMON_GENERIC_DESC",
+      "v": "需要一个1阶基础火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_COMMON_MUTANT",
+      "v": "1阶变异系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_COMMON_MUTANT_DESC",
+      "v": "需要一个1阶变异系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_COMMON_MYSTIC",
+      "v": "1阶神秘系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_COMMON_MYSTIC_DESC",
+      "v": "需要一个1阶神秘系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_COMMON_TECH",
+      "v": "1阶科技系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_COMMON_TECH_DESC",
+      "v": "需要一个1科技系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_COMMON_TRAINED",
+      "v": "1阶技巧系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_COMMON_TRAINED_DESC",
+      "v": "需要一个1阶技巧系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_EPIC_CHEMICAL",
+      "v": "4阶科学系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_EPIC_CHEMICAL_DESC",
+      "v": "需要一个4阶科学系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_EPIC_COSMIC",
+      "v": "4阶宇宙系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_EPIC_COSMIC_DESC",
+      "v": "需要一个4阶宇宙系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_EPIC_EVENT",
+      "v": "4阶阿尔法火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_EPIC_EVENT_DESC",
+      "v": "需要一个4阶阿尔法火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_EPIC_GENERIC",
+      "v": "4阶基础火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_EPIC_GENERIC_DESC",
+      "v": "需要一个4阶基础火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_EPIC_MUTANT",
+      "v": "4阶变异系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_EPIC_MUTANT_DESC",
+      "v": "需要一个4阶变异系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_EPIC_MYSTIC",
+      "v": "4阶神秘系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_EPIC_MYSTIC_DESC",
+      "v": "需要一个4阶神秘系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_EPIC_TECH",
+      "v": "4阶科技系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_EPIC_TECH_DESC",
+      "v": "需要一个4阶科技系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_EPIC_TRAINED",
+      "v": "4阶技巧系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_EPIC_TRAINED_DESC",
+      "v": "需要一个4阶技巧系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_INVENTORY_COMING_SOON",
+      "v": "即将到来",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_INVENTORY_CONVERSION_DESCRIPTION",
+      "v": "{0} 火种精华已使用",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_INVENTORY_CONVERSION_TITLE",
+      "v": "火种已塑造",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_INVENTORY_CONVERSION_TITLE_PLURAL",
+      "v": "{0}火种已塑造",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_INVENTORY_CONVERSION_VALUE_DESCRIPTION",
+      "v": "转换价值",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_INVENTORY_FRAGMENTS_DISABLED",
+      "v": "没有对该火种可用的精华。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_INVENTORY_FRAGMENTS_RECEIVED",
+      "v": "{0} {1} 精华已获取。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_INVENTORY_NONE_STASH",
+      "v": "在储藏室中你有未领取的火种，现在就去领取!",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_INVENTORY_WARNING",
+      "v": "当你的机器人和模块升到最高等级，可以用火种来提升他们的级别！请小心你的出售物件！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_LEGENDARY_CHEMICAL",
+      "v": "5阶科学系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_LEGENDARY_CHEMICAL_DESC",
+      "v": "需要一个5阶科学系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_LEGENDARY_COSMIC",
+      "v": "xue",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_LEGENDARY_COSMIC_DESC",
+      "v": "需要一个4阶宇宙系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_LEGENDARY_EVENT",
+      "v": "5阶阿尔法系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_LEGENDARY_EVENT_DESC",
+      "v": "需要一个5阶阿尔法系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_LEGENDARY_GENERIC",
+      "v": "5阶基础火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_LEGENDARY_GENERIC_DESC",
+      "v": "需要一个5阶基础火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_LEGENDARY_MUTANT",
+      "v": "5阶变异系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_LEGENDARY_MUTANT_DESC",
+      "v": "需要一个5阶变异系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_LEGENDARY_MYSTIC",
+      "v": "5阶神秘系",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_LEGENDARY_MYSTIC_DESC",
+      "v": "需要一个5阶神秘系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_LEGENDARY_TECH",
+      "v": "5阶科技系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_LEGENDARY_TECH_DESC",
+      "v": "需要一个5阶宇宙系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_LEGENDARY_TRAINED",
+      "v": "5阶技巧系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_LEGENDARY_TRAINED_DESC",
+      "v": "需要一个5阶技巧系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_RARE_CHEMICAL",
+      "v": "3阶科学系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_RARE_CHEMICAL_DESC",
+      "v": "需要一个3阶科学系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_RARE_COSMIC",
+      "v": "3阶宇宙系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_RARE_COSMIC_DESC",
+      "v": "需要一个3阶宇宙系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_RARE_EVENT",
+      "v": "3阶阿尔法火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_RARE_EVENT_DESC",
+      "v": "需要一个3阶阿尔法火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_RARE_GENERIC",
+      "v": "3阶基础火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_RARE_GENERIC_DESC",
+      "v": "需要一个3阶基础火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_RARE_MUTANT",
+      "v": "3阶变异系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_RARE_MUTANT_DESC",
+      "v": "需要一个3阶变异系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_RARE_MYSTIC",
+      "v": "3阶神秘系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_RARE_MYSTIC_DESC",
+      "v": "需要一个3阶神秘系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_RARE_TECH",
+      "v": "3阶科技系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_RARE_TECH_DESC",
+      "v": "需要一个3阶科技系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_RARE_TRAINED",
+      "v": "3阶技巧系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_RARE_TRAINED_DESC",
+      "v": "需要一个3阶技巧系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_UNCOMMON_CHEMICAL",
+      "v": "2阶科学系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_UNCOMMON_CHEMICAL_DESC",
+      "v": "需要一个2阶科学系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_UNCOMMON_COSMIC",
+      "v": "2阶宇宙系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_UNCOMMON_COSMIC_DESC",
+      "v": "需要一个2阶首领系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_UNCOMMON_EVENT",
+      "v": "2阶阿尔法火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_UNCOMMON_EVENT_DESC",
+      "v": "需要一个2阶阿尔法火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_UNCOMMON_GENERIC",
+      "v": "2阶基础火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_UNCOMMON_GENERIC_DESC",
+      "v": "需要一个2阶基础火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_UNCOMMON_MUTANT",
+      "v": "2阶变异系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_UNCOMMON_MUTANT_DESC",
+      "v": "需要一个2阶变异系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_UNCOMMON_MYSTIC",
+      "v": "2阶神秘系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_UNCOMMON_MYSTIC_DESC",
+      "v": "需要一个2阶神秘系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_UNCOMMON_TECH",
+      "v": "2阶科技系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_UNCOMMON_TECH_DESC",
+      "v": "需要一个2阶科技系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_UNCOMMON_TRAINED",
+      "v": "2阶技巧系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATALYST_UNCOMMON_TRAINED_DESC",
+      "v": "需要一个2阶技巧系火种来升阶你的机器人。在特殊事件中可以找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CATFRAG_NAME_FORMAT",
+      "v": "{0}阶{1}火种精华",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CONSUMABLEPOPUP_NO_ITEMS",
+      "v": "无可用道具。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CONSUMABLEPOPUP_TITLE_HEAL",
+      "v": "修复你的机器人",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CONSUMABLEPOPUP_TITLE_REVIVE",
+      "v": "修复你的机器人",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CONSUMABLES_ONLY_ONE_REVIVE",
+      "v": "你一次只能使用一个复活。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CONSUMABLES_TAB_SINGLE_CHAMPION",
+      "v": "单独的机器人",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CONSUMABLES_TAB_TEAM",
+      "v": "小队",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CONSUMABLE_NO_ENERGY",
+      "v": "能量不足",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CONSUMABLE_PURCHASECONFIRMED",
+      "v": "购买已确认",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CONSUMABLE_USE_CONFIRMED",
+      "v": "道具已使用",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_DESCRIPTION_ORE_T1",
+      "v": "矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_DESCRIPTION_ORE_T2",
+      "v": "矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_DESCRIPTION_ORE_T3",
+      "v": "矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_DESCRIPTION_ORE_T4",
+      "v": "矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_DESCRIPTION_ORE_T5",
+      "v": "矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_DESCRIPTION_QUEST_CRYSTAL_1",
+      "v": "1阶任务水晶包含较少的奖励！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_EMI",
+      "v": "驱散",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_EMI_DESC",
+      "v": "在特殊攻击下给予一个100%几率来驱散。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ENERGYSUMMARY_ENERGYUSED",
+      "v": "-{0}能量",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ENERGYSUMMARY_GETMORE",
+      "v": "获取更多",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ENERGYSUMMARY_OWNEDFORMAT",
+      "v": "[009CDEFF]已拥有：{0}[-]/{1}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ENERGYSUMMARY_OWNEDFORMAT_NOLIMIT",
+      "v": "[009CDEFF]所有者：{0}[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ENERGYSUMMARY_OWNEDFORMAT_NOLIMIT_ZERO",
+      "v": "[009CDEFF]所有者：[-] {0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ENERGYSUMMARY_OWNEDFORMAT_ZERO",
+      "v": "[009CDEFF]已拥有：[-] {0}/{1}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ENERGYSUMMARY_TITLE",
+      "v": "能量",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ENERGYSUMMARY_TITLE_AVA-ENERGY",
+      "v": "战争能量",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ENERGYSUMMARY_TITLE_AVE-ENERGY",
+      "v": "同盟能量",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ENERGYSUMMARY_TITLE_PVE-ENERGY",
+      "v": "任务能量",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ENERGYSUMMARY_TITLE_RT",
+      "v": "突袭入场券",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ENERGYSUMMARY_USEITEM",
+      "v": "使用",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FLASH_LIMITED_TIME_OFFER",
+      "v": "限时优惠",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FLASH_OFFER",
+      "v": "快闪优惠",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FLASH_ONE_TIME_OFFER",
+      "v": "一次性优惠",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FLASH_SALE_ALSO_INCLUDED",
+      "v": "同时包含...",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FLASH_SALE_ARE_YOU_SURE_CONFIRMATION_DESCRIPTION",
+      "v": "你确定要购买该优惠？",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FLASH_SALE_DISMISS_LIMITED_TIME",
+      "v": "限时优惠。\n你能在基地中再次发现它。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FLASH_SALE_DISMISS_ONE_TIME",
+      "v": "一次性优惠。关闭弹窗后，你将无法再次购买。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FLASH_SALE_ONE_TIMER_OFFER_TIMER",
+      "v": "一次性优惠！\n勿失良机！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FLASH_SALE_TOP_VALUED",
+      "v": "最高价值！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GACHA_ADD_MORE",
+      "v": "添加更多",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GACHA_AUTO",
+      "v": "自动",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GACHA_BONUS_FOUND",
+      "v": "发现加成{0}!",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GACHA_CRYSTAL_CLAIM",
+      "v": "领取",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GACHA_CRYSTAL_OPEN",
+      "v": "打开",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GACHA_DROP_CRYSTAL",
+      "v": "拖拽水晶至此",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GACHA_DUPLICATE_CHAMPION",
+      "v": "重复的机器人",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GACHA_GOTO",
+      "v": "获得水晶",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GACHA_ITEM_FOUND",
+      "v": "发现道具",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GACHA_LIMIT",
+      "v": "已开启{0}/{1}个日常高等水晶",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GACHA_SKIP",
+      "v": "开启{0}水晶",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GACHA_SKIP_PLURAL",
+      "v": "开启{0}水晶",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GACHA_SUMMARY_DUPLICATE",
+      "v": "[FFFFFF99]{0}[-] 重复",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GACHA_SUMMARY_DUPLICATES",
+      "v": "[FFFFFF99]{0}[-] 重复",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GACHA_SUMMARY_NEW",
+      "v": "[FFFFFF99]{0}[-] 新的",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GACHA_SUMMARY_OPENED",
+      "v": "{0} 水晶已打开",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GACHA_SUMMARY_OPENED_SINGULAR",
+      "v": "{0} 水晶已打开",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GACHA_SUMMARY_OPEN_MORE",
+      "v": "打开更多",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GACHA_SUMMARY_SIGNATURE_AWAKE",
+      "v": "能力觉醒！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GACHA_SUMMARY_SIGNATURE_MAX",
+      "v": "达到最高等级！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GACHA_SUMMARY_SIGNATURE_UP",
+      "v": "能力提升！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GACHA_TAP_TO_STOP",
+      "v": "点击任意地点停止",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GACHA_TITLE",
+      "v": "水晶处理器",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GACHA_UPGRADE_ITEM_FOUND",
+      "v": "升级道具",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GACHA_WAIT",
+      "v": "激活太空桥...",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GACHA_WON_CHAMPION",
+      "v": "恭喜!发现\n机器人!",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GET_CRYSTAL",
+      "v": "获得{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GIFTS_NONE",
+      "v": "未发现可选中分类的道具",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GIFTS_NONE_SELECTED",
+      "v": "当前未选中道具",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GIFTS_SELECT",
+      "v": "选择礼物",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GIFTS_SELECT_STEP",
+      "v": "步骤1：选择礼物",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GIFTS_SEND",
+      "v": "礼物",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GIFT_CONFIRM",
+      "v": "发送礼物",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GIFT_CONFIRM_FORMAT",
+      "v": "[a5a5a5]你送出了[ffffff]{0}[-] to [ffffff]{1}[-]!当他们登陆时将获得邮件提示[-]。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GIFT_CONFIRM_ITEMS_FORMAT",
+      "v": "{0} 件道具",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GIFT_CONFIRM_ITEM_FORMAT",
+      "v": "1件道具",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GIFT_CONFIRM_TITLE",
+      "v": "礼物已发送！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GIFT_CONFIRM_USERS_FORMAT",
+      "v": "{0} 个用户",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GIFT_ENTITLEMENT",
+      "v": "馈赠徽章",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GIFT_ENTITLEMENT_DESC",
+      "v": "允许你向其他玩家赠送礼物。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GIFT_ERROR_ENTITLEMENT",
+      "v": "通过向好友发送能量晶体包获得馈赠徽章！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GIFT_ERROR_GENERAL",
+      "v": "交易处理过程中出现故障。请重试。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GIFT_ERROR_RECIPIENTS",
+      "v": "你没有可以发送礼物的好友或盟友。需要现在寻找好友吗？",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GIFT_ERROR_SEND_FAILED_MULTIPLE",
+      "v": "无法给以下玩家发送礼物：{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GIFT_NOTIFICATION",
+      "v": "你获得了一个礼物！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GIFT_NOTIFICATION_FROMUSER_FORMAT",
+      "v": "{0}给你发送了礼物！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GIFT_RECIPIENTS_SUBTITLE",
+      "v": "给你的好友或盟友发送礼物。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GIFT_RECIPIENTS_TITLE",
+      "v": "步骤2：选择收件人",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GIFT_USER_GROUP_TITLE_FORMAT",
+      "v": "{0} ({1} / {2})",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_GOLD_FORMAT",
+      "v": "{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HARDCURRENCY_CANCELPURCHASEBODY",
+      "v": "你的交易已被取消。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HARDCURRENCY_CANCELPURCHASETITLE",
+      "v": "交易被取消",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_HARDCURRENCY_FAILPURCHASETITLE",
+      "v": "交易未完成",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INVENTORY_AWAKENING_STONE_USED_MESSAGE",
+      "v": "能力觉醒！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INVENTORY_BLUEPRINTS",
+      "v": "矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INVENTORY_CATALYSTS",
+      "v": "火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INVENTORY_CATALYSTS_DESCRIPTION",
+      "v": "用来提升你的机器人和模块的级别",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INVENTORY_CATFRAG",
+      "v": "火种精华",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INVENTORY_CTA_SPARKS",
+      "v": "获得更多的火种！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INVENTORY_EXO_TOOLTIP",
+      "v": "使用矿-13升级你的机器人，让它们更强大！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INVENTORY_FOR",
+      "v": "为了",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INVENTORY_GET_MORE_BLUEPRINTS",
+      "v": "从任务和水晶中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INVENTORY_GET_MORE_ITEMS",
+      "v": "从任务和商店中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INVENTORY_GET_MORE_PROGRAMS",
+      "v": "",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INVENTORY_HEADER_ITEMS",
+      "v": "道具：",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INVENTORY_HEADER_SPARKS",
+      "v": "火种：",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INVENTORY_ISO_DESCRIPTION",
+      "v": "选择道具出售",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INVENTORY_ITEMS",
+      "v": "道具",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INVENTORY_ITEMS_DESCRIPTION",
+      "v": "点击道具以使用、出售或获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INVENTORY_ITEMS_STASH",
+      "v": "你有未领取的道具 在你的储藏室。\n\n[FFFFFF]现在就去领取！[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INVENTORY_ITEMS_TOOLTIP",
+      "v": "在任务和突袭中使用该道具可以援助你的机器人！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INVENTORY_ITEM_CANT_BE_USED",
+      "v": "你当前没有可以使用该道具的机器人。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INVENTORY_ITEM_CANT_BE_USED_FORMAT",
+      "v": "你当前没有可以添加{0}的机器人。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INVENTORY_NO_ITEMS",
+      "v": "道具已用完。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INVENTORY_NO_PROGRAMS",
+      "v": "你没有可用的觉醒或招牌能力相关道具。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INVENTORY_NO_SPARKS",
+      "v": "火种已用完。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INVENTORY_PROGRAMS_DESCRIPTION",
+      "v": "用来觉醒和升级机器人强大的招牌能力",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INVENTORY_PROGRAMS_TOOLTIP",
+      "v": "招牌能力也可通过得到重复机器人进行觉醒和加强。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INVENTORY_PVP_BOOST_USED_MESSAGE",
+      "v": "已获得pvp分数加成！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INVENTORY_QUANTITY",
+      "v": "{0}/{1}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INVENTORY_QUANTITY_COLORED",
+      "v": "[FFFFFFFF]{0}[FFFFFF40]/{1}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INVENTORY_QUANTITY_FULL",
+      "v": "[BA0C2F]{0}/{1}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INVENTORY_REMAINING",
+      "v": "{0} 剩余",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INVENTORY_SELECT_AN_ITEM_TO_USE",
+      "v": "选择一个道具使用",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INVENTORY_SIGNATURE_STONE_USED",
+      "v": "招牌能力等级提升！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INVENTORY_SPARK_TOOLTIP",
+      "v": "使用火种来提升你机器人和模块的阶级，让他们变的更强！收集碎片来组合成一个完整火种！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INVENTORY_YOU_DO_NOT_HAVE_ANY_BOOSTS",
+      "v": "你当前没有可用的加成。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_INVENTORY_YOU_DO_NOT_HAVE_ANY_ITEMS",
+      "v": "[FFFFFF99]你此刻没有任何可用道具。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ITEMUSE_CHAMPIONSELECT_NO_MORE_BOTS",
+      "v": "",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ITEMUSE_CHAMPIONSELECT_NO_MORE_CHAMPIONS",
+      "v": "没有可用于此道具的机器人。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ITEMUSE_CHAMPIONSELECT_NO_MORE_ITEM_FORMAT",
+      "v": "没有更多的可用{0}。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ITEMUSE_CHOOSE_A_CHAMPION",
+      "v": "选择一个机器人",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ITEMUSE_CHOOSE_A_CHAMPION_NO_SELECTION",
+      "v": "未选机器人",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ITEMUSE_CHOOSE_A_CHAMPION_SIGLEVEL",
+      "v": "等级{0} 至 [00A232FF]{1}[-]/100",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ITEMUSE_CHOOSE_A_CHAMPION_SIGLEVELLINE",
+      "v": "等级{0} 至 {1} /100",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ITEMUSE_CHOOSE_QUANTITY",
+      "v": "选择数量",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ITEMUSE_CONFIRMATION",
+      "v": "确认",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ITEMUSE_INFO",
+      "v": "只有可以使用该道具的机器人才会显示在本名单上",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ITEMUSE_OVERRIDE_BODY",
+      "v": "你的机器人还拥有有效的加成\n点击覆盖将覆盖当前的加成。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ITEMUSE_OVERRIDE_ITEM_TEXT",
+      "v": "机器人有效的[FFFFFFFF]{0}[-]\n使用[FFFFFFFF]{1}[-]覆盖?",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ITEMUSE_OVERRIDE_WARNING",
+      "v": "你的机器人还拥有有效的加成\n点击覆盖将覆盖当前的加成。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ITEMUSE_PVP_WARNING",
+      "v": "在竞技场中无法使用PVP加成。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ITEMUSE_REMAINING",
+      "v": "剩余{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ITEMUSE_YOU_ARE_ABOUT_TO_USE",
+      "v": "你将使用{0}在",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ITEM_POPUP_BUTTON_GET_MORE",
+      "v": "获得更多",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ITEM_POPUP_TITLE",
+      "v": "道具选择",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MPC_CARDS",
+      "v": "卡片",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MYITEMS_INFOPOPUP_HERO_WARNING",
+      "v": "该加成无法使用在你当前的机器人上。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MYITEMS_INFOPOPUP_PVE_ENERGY_WARNING",
+      "v": "你的任务能量已经充满。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MYITEMS_INFOPOPUP_PVP_WARNING",
+      "v": "该加成只能在机器人进入竞技场前使用。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MYSTERY_DESC",
+      "v": "此物品在你达成必要的登陆要求前会一直隐藏",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_NB_GETHEROES",
+      "v": "获得水晶",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_NSF_AP",
+      "v": "忠诚度不足",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_NSF_AP_LOCATION",
+      "v": "加入一个同盟以获得更多忠诚度！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_NSF_COMMON",
+      "v": "资源不足。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_NSF_DESCRIPTION",
+      "v": "你仍需要以下物品以继续：",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_NSF_HC",
+      "v": "能量晶体不足",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_NSF_HC_LOCATION",
+      "v": "前往商店获取更多能量晶体！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_NSF_PVP_CUR",
+      "v": "竞技场货币不足",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_NSF_PVP_CUR_LOCATION",
+      "v": "加入一个竞技比赛以获取更多竞技场货币！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_NSF_RAID_CUR_LOCATION",
+      "v": "突袭其他玩家以获得突袭货币！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_NSF_SC",
+      "v": "黄金不足",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_NSF_SC_LOCATION",
+      "v": "完成任务，赢取更多黄金！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_NSF_SC_LOCATION_BASE",
+      "v": "访问你的基地收集更多黄金！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_NSF_SHARDS_DESCRIPTION",
+      "v": "你的水晶碎片不足，无法继续。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_NSF_SP",
+      "v": "你没有足够的精通点数。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_NSF_SP_FULL",
+      "v": "你没有足够的精通点数。提升指挥官等级来赚取更多精通点数！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_NSF_SP_LOCATION",
+      "v": "提升指挥官等级来赚取更多精通点数！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_NSF_TITLE",
+      "v": "存款不足",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PURCHASE_ARE_YOU_SURE_CONFIRMATION_DESCRIPTION",
+      "v": "确认要购买吗？",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_REDEEMER_CHEST_DESC",
+      "v": "宝箱内容将在完成一个任务后公布！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_REDEEMER_CHEST_NAME",
+      "v": "宝箱",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_REDEEMER_DESC_BOTS_PREMIUM_SHARD",
+      "v": "利用碎片组成高级机器人水晶！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_REDEEMER_DESC_CHEST_01",
+      "v": "宝箱内容将在任务完成后公布！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_REDEEMER_DESC_CHEST_02",
+      "v": "宝箱内容将在任务完成后公布！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_REDEEMER_DESC_CHEST_03",
+      "v": "宝箱内容将在任务完成后公布！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_REDEEMER_DESC_CHEST_04",
+      "v": "宝箱内容将在任务完成后公布！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_REDEEMER_DESC_LESSER_ASCENDANT_CRYSTAL",
+      "v": "少量优越的水晶",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_REDEEMER_EVENTPOINTS",
+      "v": "事件点数",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_REDEEMER_GACHA_FRAGMENT_DESC",
+      "v": "利用碎片组成完整的水晶",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_REDEEMER_MANY",
+      "v": "许多",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_REDEEMER_NAME_CHEST_01",
+      "v": "宝箱[1阶]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_REDEEMER_NAME_CHEST_02",
+      "v": "宝箱[2阶]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_REDEEMER_NAME_CHEST_03",
+      "v": "宝箱[3阶]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_REDEEMER_NAME_CHEST_04",
+      "v": "宝箱[4阶]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_REDEEMER_NAME_LESSER_ASCENDANT_CRYSTAL",
+      "v": "少量优越的水晶",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_REDEEMER_NAME_QUEST_CRYSTAL_1",
+      "v": "1阶任务水晶",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_REDEEMER_XP",
+      "v": "经验值",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_RESOURCESUMMARY_TITLE",
+      "v": "资源",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_REWARDS",
+      "v": "奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_REWARDS_CLAIM",
+      "v": "领取",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_REWARDS_COMPLETION",
+      "v": "完成奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_REWARDS_EXPLORATION",
+      "v": "探索奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_REWARDS_NEXT_MILESTONE",
+      "v": "下一个里程碑",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_REWARDS_NO_ITEMS",
+      "v": "无道具！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_REWARDS_NO_REWARDS",
+      "v": "无奖励！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_REWARDS_NO_REWARDS_CHESTS",
+      "v": "无宝箱！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_REWARDS_NO_REWARDS_HEROES",
+      "v": "无机器人奖励！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_REWARDS_NO_REWARDS_ITEMS",
+      "v": "无道具奖励！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_REWARDS_NO_REWARDS_RESOURCES",
+      "v": "无资源奖励！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_REWARDS_NO_REWARDS_UNLOCKS",
+      "v": "无法开启！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_REWARDS_POTENTIAL",
+      "v": "隐藏奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_REWARDS_RANK_UNLOCKED",
+      "v": "排名奖励已解锁！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_REWARDS_UNLOCKED_FEATURES",
+      "v": "解锁功能",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_REWARDS_USER_MILESTONE",
+      "v": "当前奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_REWARDS_USER_MILESTONE_ALREADY_AWARDED_DESC",
+      "v": "你已经在其他同盟赢到过此里程碑。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_REWARDS_USER_MILESTONE_NOT_AVAILABLE_DESC",
+      "v": "你无法领取此里程碑因为你没有贡献或者因为你没有及时加入同盟。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_REWARDS_VIEW",
+      "v": "查看奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ROBOT",
+      "v": "能量生成器",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ROBOT2",
+      "v": "破甲",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ROBOT_DESC",
+      "v": "能量生成速度提升20%，且使用特殊攻击有60%的几率造成持续7秒的破甲。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SELL_CONFIRMATION",
+      "v": "确认",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SELL_HERO_TITLE",
+      "v": "出售机器人",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SELL_ITEM_CONFIRM_TITLE_FORMAT",
+      "v": "{0}x {1}已出售",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SHARDS_COLLECTED",
+      "v": "共收集{0}碎片",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPLASH_TITLE",
+      "v": "变形金刚：百炼为战",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STASH_CLAIMABLE",
+      "v": "{0}可获取的",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STASH_CLAIMABLE_CTA",
+      "v": "可获取的",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STASH_ITEMS_MAXCAPACITY_WARNING",
+      "v": "所有道具已达到库存可容纳的最大值。出售一些不需要的道具腾出空间。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STASH_NO_ITEMS_DESCRIPTION",
+      "v": "从商店中获取更多的道具！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STASH_NO_ITEMS_TITLE",
+      "v": "一旦你的道具达到最大容量，额外的道具将储存在这里。当前没有储存的道具。\n\n从商店中获取更多的道具！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STASH_NO_ORE_DESCRIPTION",
+      "v": "从任务水晶中和获取更多的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STASH_NO_ORE_TITLE",
+      "v": "一旦你的矿-13库存已满，额外的矿-13将储存在这里。当前没有储存的矿-13。\n\n从任务和水晶中获取更多的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STASH_NO_SPARKS_DESCRIPTION",
+      "v": "从日常任务和突袭中获取更多的火种。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STASH_NO_SPARKS_TITLE",
+      "v": "一旦你的火种达到最大容量，额外的火种将储存在这里。当前没有储存的火种。\n\n从日常任务和突击中获取更多的火种！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STASH_POPUP_DESCRIPTION",
+      "v": "当你的库存容量不足时，奖励和道具将被储存在这里。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STASH_POPUP_TITLE",
+      "v": "储藏室",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STASH_SPARKS_HEADER_CTA",
+      "v": "在火种过期前要领取！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_ACTIVATE",
+      "v": "已激活{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_BEST_VALUE",
+      "v": "最佳价值",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_BONUS_OFFER",
+      "v": "奖励优惠",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_BOOSTS",
+      "v": "加成",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_BUY",
+      "v": "购买",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_BUYNOW",
+      "v": "现在获取",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_CATALYST_SPACE_WARNING",
+      "v": "该道具已达到库存的最大容量。额外的道具都将被送至你的储藏室。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_CONSUMABLES",
+      "v": "道具",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_CONSUMABLES_TITLE",
+      "v": "道具商店",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_CURRENCY",
+      "v": "能量晶体",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_DEAL_ENDS_FORMAT",
+      "v": "交易结束于：{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_EMPTY_BOX_TEXT",
+      "v": "查找更多其他类别的道具。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_EMPTY_CATEGORY",
+      "v": "{0}当前已空。\n请及时查看！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_EXPIRED",
+      "v": "已过期",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_FEATURED",
+      "v": "特色",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_GACHA_BONUS",
+      "v": "X{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_GACHA_BUY_GOLD",
+      "v": "获取能量晶体",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_GACHA_CRYSTALS_AVAILABLE_MAX",
+      "v": "今天最多能购买{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_GACHA_CRYSTALS_AVAILABLE_TODAY",
+      "v": "[4bb4feff]{0}[-][b0b0b0ff]/{1} 可用水晶[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_GACHA_CRYSTAL_PACK",
+      "v": "1个水晶",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_GACHA_CRYSTAL_PACK_FORMAT",
+      "v": "{0}个水晶",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_GACHA_CRYSTAL_WARNING",
+      "v": "你有{0}个未开启的水晶",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_GACHA_CRYSTAL_WARNING_PLURAL",
+      "v": "你有{0}个未开启的水晶",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_GACHA_DISCOUNT",
+      "v": "{0}%\n折扣",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_GACHA_EMPTY_CATEGORY",
+      "v": "无可用水晶",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_GACHA_FREE_CRYSTAL_NOW",
+      "v": "现在可获得新的水晶！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_GACHA_FREE_CRYSTAL_TIMER",
+      "v": "下个可获得的水晶在",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_GACHA_FREE_CRYSTAL_TIMER_FORMAT",
+      "v": "下个可用于{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_GACHA_FREE_CRYSTAL_TIMER_PLURAL",
+      "v": "可获得的新水晶在[0db704]{0}[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_GACHA_MORE_IN_STORE",
+      "v": "在商店中开启更多的水晶！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_GACHA_NEED_MORE_GOLD",
+      "v": "你需要更多的能量晶体！\n前往能量晶体商店获取更多。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_GACHA_SHARDS_OWNED_ENOUGH",
+      "v": "已拥有：{0}/{1}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_GACHA_SHARDS_OWNED_NOT_ENOUGH",
+      "v": "已拥有[ba0c2f]{0}[-]/{1}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_GACHA_TAB_BASIC",
+      "v": "基础的水晶",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_GACHA_TAB_SPECIAL",
+      "v": "特殊",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_GACHA_TITLE",
+      "v": "水晶",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_GACHA_TITLE_SHARDS",
+      "v": "碎片水晶",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_GACHA_TITLE_SPECIAL_SHARDS",
+      "v": "特殊的碎片水晶",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_GACHA_TOP_PRIZE",
+      "v": "最高奖赏",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_GETNOW",
+      "v": "现在获取",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_GET_BOOSTS",
+      "v": "获得加成",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_GET_POTIONS",
+      "v": "获得药剂",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_GOLD",
+      "v": "黄金",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_HEROES",
+      "v": "水晶",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_LIMIT",
+      "v": "已持有{0}，持有上限{1}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_LIMIT_RESET",
+      "v": "限制重置于",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_LOYALTY",
+      "v": "忠诚度",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_MASTERY",
+      "v": "精通",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_MAX_CAPACITY_WARNING",
+      "v": "该道具已达到库存的最大容量。额外的道具都将被送至你的储藏室。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_MAX_CAPACITY_WARNING_BUNDLES",
+      "v": "部分道具已达到本组合的最大容量。额外的道具都将被送至你的储藏室。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_MOST_POPULAR",
+      "v": "最受欢迎",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_NUMBER_ITEMS",
+      "v": "道具数量：",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_OWN",
+      "v": "拥有 {0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_OWNED",
+      "v": "已拥有",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_OWNED_ANIM_FORMAT",
+      "v": "[4BB4FEFF]所有者：[b0b0b0]{0}[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_OWNED_FORMAT",
+      "v": "[4BB4FEFF]已拥有：{0}[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_OWNED_MAX_CAPACITY",
+      "v": "[c21413ff]已拥有：{0}/{1}[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_OWNED_NO_COLOR",
+      "v": "已拥有：{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_OWNED_WITH_MAX_ANIM_FORMAT",
+      "v": "[4BB4FEFF]已拥有：[b0b0b0]{0}[b0b0b0]/{1}[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_OWNED_WITH_MAX_FORMAT",
+      "v": "[4BB4FEFF]已拥有：{0}[b0b0b0]/{1}[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_OWNED_WITH_MAX_NO_COLOR",
+      "v": "已拥有：{0}/{1}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_PART_OF_BUNDLE",
+      "v": "组合的部件",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_PERCENTAGE_OFF",
+      "v": "{0}% 折扣",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_POTIONS",
+      "v": "修复组件",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_PROGRAMS",
+      "v": "程序",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_PURCHASED_QUANTITY",
+      "v": "{1}x{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_PURCHASE_CAPACITY_WARNING",
+      "v": "该道具即将达到库存的最大容量。额外的道具都将被送至你的储藏室。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_PURCHASE_LIMIT",
+      "v": "购买限制{0}[009CDEFF]/{1}[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_PURCHASE_LIMIT_WARNING",
+      "v": "啊哦！你已经达到购买该道具的上限。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_PURCHASE_REQUIREMENTS",
+      "v": "购买要求",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_QUANTITY_FORMAT",
+      "v": "{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_QUANTITY_WITH_MAX_FORMAT",
+      "v": "{0}[b0b0b0]/{1}[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_QUANTITY_WITH_MAX_MAXED_FORMAT",
+      "v": "[c21413]{0}/{1}[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_SALE_ENDS_FORMAT",
+      "v": "销售结束于： {0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_TITLE",
+      "v": "立即获取",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_USE",
+      "v": "使用",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_USED_FORMAT",
+      "v": "{0}已使用",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_VIP",
+      "v": "VIP",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_STORE_VS",
+      "v": "突袭",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_USEITEM_TITLE",
+      "v": "使用道具",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_WITHHELD_FOOTER",
+      "v": "完成该任务以接收这些新道具！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_WITHHELD_TITLE",
+      "v": "任务储备",
+      "vn": 1
+    },
+    {
+      "k": "MS_Id_UI_INVENTORY_NO_PROGRAMS",
+      "v": "",
+      "vn": 1
+    }
+  ]
+}

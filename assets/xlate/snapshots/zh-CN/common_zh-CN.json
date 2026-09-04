@@ -1,0 +1,4045 @@
+{
+  "meta": {
+    "format": "sparx",
+    "language": "zh-CN",
+    "tagged": [
+      "common",
+      "client"
+    ],
+    "hash": "08f0e976973f867098e3087012422ed0a873a099",
+    "ts": 1543449102,
+    "string_count": 403
+  },
+  "strings": [
+    {
+      "k": "ID_UI_BOTEXCLUSIVITY_WARNING_AVE_1",
+      "v": "当这些机器人在任务中时，你无法在其他模式下使用它们。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_BOTEXCLUSIVITY_WARNING_AVE_2",
+      "v": "在你完成地图或任务时间过期后你可以继续使用这些机器人。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMING_SOON",
+      "v": "即将到来",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_ACCEPT",
+      "v": "接受",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_BACK",
+      "v": "返回",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_BADGE_NEW",
+      "v": "",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_BADGE_URGENT",
+      "v": "",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_BAD_JOB",
+      "v": "继续战斗，指挥官！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_BUFFS",
+      "v": "增益",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_CANCEL",
+      "v": "取消",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_CLAIM",
+      "v": "领取",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_CLOSE",
+      "v": "关闭",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_COMING_SOON_FORMAT",
+      "v": "{0} 即将到来",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_COMPLETE",
+      "v": "已完成",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_COMPLETED",
+      "v": "已完成",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_COMPLETION",
+      "v": "完成",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_CONFIRM",
+      "v": "确认",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_CONFIRMATION",
+      "v": "确认",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_CONGRATS",
+      "v": "恭喜！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_CONTINUE",
+      "v": "继续",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_COST",
+      "v": "花费",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_DAY_FORMAT",
+      "v": "{0} 天",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_DEFEATS",
+      "v": "击败",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_DEMOTED_TO",
+      "v": "你被降级至",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_DIFFICULTY",
+      "v": "难度",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_DONATE",
+      "v": "捐赠",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_DONE",
+      "v": "完成",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_ENTER",
+      "v": "进入",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_ERROR",
+      "v": "错误",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_EXIT",
+      "v": "退出",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_EXPIRED",
+      "v": "已过期",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_FINISHED_FORMAT",
+      "v": "{0} 已完成",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_FOR",
+      "v": "为了",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_FORGE",
+      "v": "锻造",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_FULL",
+      "v": "全部",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_GET_MORE",
+      "v": "获得更多",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_GO",
+      "v": "前往",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_GOOD_JOB",
+      "v": "保持良好表现！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_GOOD_JOB_COMMANDER",
+      "v": "恭喜，指挥官！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_GOTO_ALLIANCE",
+      "v": "前往同盟",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_GOTO_ARENA",
+      "v": "前往竞技场",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_GOTO_BASE",
+      "v": "前往基地",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_GOTO_INVENTORY",
+      "v": "前往库存",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_GOTO_MASTERIES",
+      "v": "前往精通",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_GOTO_QUEST",
+      "v": "前往任务",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_GOTO_STORE",
+      "v": "前往商店",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_GO_BACK",
+      "v": "后退",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_GUARANTEED",
+      "v": "有保障的奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_HIDDEN_VALUE",
+      "v": "???",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_HISTORY",
+      "v": "历史",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_INFO",
+      "v": "信息",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_INVITE",
+      "v": "邀请",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_INVITE_SENT",
+      "v": "邀请已发送",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_JOIN",
+      "v": "加入",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_LATER",
+      "v": "稍后",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_LEADERBOARD",
+      "v": "排行榜",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_LEVELUP",
+      "v": "升级！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_LEVEL_FORMAT",
+      "v": "等级{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_LIMITED_TIME_OFFER",
+      "v": "限时提供！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_LOSS",
+      "v": "失败",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_LOYALTY_BOOST",
+      "v": "忠诚度加成",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_MAX",
+      "v": "最大",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_MILESTONE",
+      "v": "里程碑",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_MULTIPLIER",
+      "v": "{0}x",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_NEVER_SHOW_AGAIN",
+      "v": "不再显示。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_NEVER_SHOW_WARNING_AGAIN",
+      "v": "不再显示该警告。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_NEW",
+      "v": "新的",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_NO",
+      "v": "否",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_NOT_AVAILABLE",
+      "v": "不可用",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_NO_CHESTS",
+      "v": "没有宝箱！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_NO_REWARDS",
+      "v": "没有奖励！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_OK",
+      "v": "好的",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_ONGOING",
+      "v": "进行中",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_ONGOING_FORMAT",
+      "v": "{0} 进行中",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_OR",
+      "v": "或者",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_OVERALL",
+      "v": "整体",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_OVERRIDE",
+      "v": "覆盖",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_PERCENTAGE_FORMAT",
+      "v": "{0}%",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_PLAYER_LEVEL",
+      "v": "指挥官等级：{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_PLUS_FORMAT",
+      "v": "+{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_PLUS_PERCENTAGE_FORMAT",
+      "v": "+{0}%",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_POINTS_FORMAT",
+      "v": "{0}得分",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_POINTS_FORMAT_BLUE",
+      "v": "[009CDEFF]{0}[-] [808080]得分",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_POINTS_FORMAT_GREY",
+      "v": "{0} [808080]得分",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_POINTS_FORMAT_WHITE",
+      "v": "{0}得分",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_PROMOTED_TO",
+      "v": "你被晋升至",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_PTS",
+      "v": "得分",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_PURCHASE",
+      "v": "购买",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_QUIT",
+      "v": "退出",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_RANK",
+      "v": "排名",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_REMAINING",
+      "v": "剩余",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_REMAINING_TIME",
+      "v": "剩余时间",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_REMAINING_VALUE",
+      "v": "{0} 剩余",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_REPLACE",
+      "v": "替换",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_REQUEST_SENT",
+      "v": "请求已发送",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_RESET",
+      "v": "重置",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_SALE",
+      "v": "出售",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_SAVE",
+      "v": "保存",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_SELECT",
+      "v": "选择",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_SELL",
+      "v": "出售",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_SELL_ITEMS",
+      "v": "出售道具",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_SEND",
+      "v": "发送",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_SKIP",
+      "v": "跳过",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_SOUNDS_GOOD",
+      "v": "听起来不错",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_SP_UNLOCK_HOWTO",
+      "v": "提升你的机器人级别来解锁特殊攻击！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_START",
+      "v": "开始",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_SUGGESTED",
+      "v": "推荐",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_SUMMARY",
+      "v": "总结",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_TAP_ANYWHERE",
+      "v": "点击任意处继续",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_TIME_REMAINING",
+      "v": "{0}剩余",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_TOP",
+      "v": "最高",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_TOP_CONTRIBUTORS",
+      "v": "最高贡献者",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_TOTAL",
+      "v": "总计",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_TOTAL_FORMAT",
+      "v": "共{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_UPGRADE",
+      "v": "升级",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_USE",
+      "v": "使用",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_VALUE_TOTAL_FORMAT",
+      "v": "{0}/{1}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_VIEW",
+      "v": "查看",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_VIEW_ALL",
+      "v": "查看全部",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_VIEW_DETAILS",
+      "v": "查看细节",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_VIEW_HISTORY",
+      "v": "查看历史",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_WARNING",
+      "v": "警告",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_WELCOME_USER",
+      "v": "欢迎！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_WELCOME_USER_NAME",
+      "v": "欢迎 {0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_WIN",
+      "v": "胜利",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_WON",
+      "v": "获胜",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_YES",
+      "v": "是",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_YOUR_PROGRESS",
+      "v": "你的进展",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_COMMON_YOUR_REWARDS",
+      "v": "你的奖励",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_CONGRATULATIONS",
+      "v": "恭喜！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ERROR",
+      "v": "发生了一个错误。请稍后尝试！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ERROR_TITLE",
+      "v": "错误",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_ACTION",
+      "v": "锻造",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_CHAMPION_RARITY_TITLE",
+      "v": "确定",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_CHAMPION_RARITY_WARNING",
+      "v": "你正要在锻造中消耗罕见机器人。这些功能强大的机器人可以在任务、竞技场等方面都很有用。 \n\n你确定想继续吗?",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_CHAMPION_RARITY_WARNING_MOD",
+      "v": "你正要在锻造中消耗罕见模块。这些功能强大的模块可以在基地防御方面非常有用。\r\n \r\n你确定想继续吗?",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_CHAMPION_REQUIRED_FOR_BONUS_LEVEL",
+      "v": "需要{0}{1}才能进行进一步锻造。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_CHAMPION_REQUIRED_MORE_BOTS",
+      "v": "通过收集更多的机器人来开启锻造功能。从水晶中得到更多机器人吧！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_CHAMPION_REQUIRED_MORE_MODS",
+      "v": "通过收集更多的模块来开启锻造功能。从水晶中得到更多机器人吧！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_DISABLED_TOOLTIP_ACTIVETEAM",
+      "v": "这和个机器人正在进行一个任务或突袭中，所以不能被锻造。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_DISABLED_TOOLTIP_ACTIVETEAM_AVE",
+      "v": "锻造前得将机器人从当前同盟任务中释放出来。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_DISABLED_TOOLTIP_ACTIVETEAM_AWAY",
+      "v": "锻造前得将机器人从当前远距任务中释放出来。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_DISABLED_TOOLTIP_ACTIVETEAM_BASE",
+      "v": "锻造前得将机器人从基地防御中释放出来。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_DISABLED_TOOLTIP_ACTIVETEAM_BASE_MOD",
+      "v": "锻造前得将模块从基地防御中释放出来。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_DISABLED_TOOLTIP_ACTIVETEAM_DEFAULT",
+      "v": "锻造前得将机器人从当前任务中释放出来。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_DISABLED_TOOLTIP_ACTIVETEAM_DEFAULT_MOD",
+      "v": "锻造前得将模块从基地中释放出来。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_DISABLED_TOOLTIP_ACTIVETEAM_PVE",
+      "v": "锻造前得将机器人从当前故事任务中释放出来。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_DISABLED_TOOLTIP_ACTIVETEAM_PVP",
+      "v": "锻造前得将机器人从当前竞技场中释放出来。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_DISABLED_TOOLTIP_ACTIVETEAM_RAID",
+      "v": "锻造前得将机器人从当前突袭中释放出来。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_DISABLED_TOOLTIP_ACTIVETEAM_RAID_MOD",
+      "v": "锻造前得将模块从当前突袭中释放出来。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_DISABLED_TOOLTIP_LEVEL_CAP",
+      "v": "恭喜！该机器人已达到最大锻造等级。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_DISABLED_TOOLTIP_LEVEL_CAP_MOD",
+      "v": "恭喜！该模块已达到最大锻造等级。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_DISABLED_TOOLTIP_MAX_SELECTED",
+      "v": "你必须在库存中保持至少{0}个机器人。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_DISABLED_TOOLTIP_MAX_SELECTED_MOD",
+      "v": "你必须在库存中保持至少{0}个模块。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_KILL_TOOLTIP",
+      "v": "锻造当前已禁用。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_LEVELUP",
+      "v": "升级！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_LEVEL_TITLE",
+      "v": "锻造等级",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_MAXED",
+      "v": "最高等级！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_MAX_SELECTED",
+      "v": "没有可用的机器人",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_MAX_SELECTED_MOD",
+      "v": "没有可用的模块",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_NONE_SELECTED",
+      "v": "选择机器人",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_NONE_SELECTED_MOD",
+      "v": "选择模块",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_NO_ITEMS",
+      "v": "没有可锻造的机器人！从水晶或竞技场中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_NO_ITEMS_CTA",
+      "v": "获取机器人",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_NO_ITEMS_CTA_MOD",
+      "v": "获取模块",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_NO_ITEMS_MOD",
+      "v": "你没有锻造模块！从水晶和竞技场中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_NUM_CONSUMED_PLURAL",
+      "v": "已锻造{0}个机器人",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_NUM_CONSUMED_PLURAL_MOD",
+      "v": "已锻造{0}个模块！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_NUM_CONSUMED_SINGULAR",
+      "v": "已锻造{0}个机器人！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_NUM_CONSUMED_SINGULAR_MOD",
+      "v": "已锻造{0}个模块！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_NUM_SELECTED",
+      "v": "{0}个机器人已选择",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_NUM_SELECTED_MOD",
+      "v": "{0}个模块已选择",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_ONE_SELECTED",
+      "v": "已选择1个机器人",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_ONE_SELECTED_MOD",
+      "v": "已选择1个模块",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_RANKUP",
+      "v": "升阶！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_REWARD_ITEMS",
+      "v": "接收道具加成",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_SPECIAL_REWARD_TITLE_PLURAL",
+      "v": "发现特殊道具",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_SPECIAL_REWARD_TITLE_SINGULAR",
+      "v": "发现特殊道具",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_TITLE",
+      "v": "锻造机器人",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_TITLE_MOD",
+      "v": "锻造模块",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FORGE_XP_TITLE",
+      "v": "锻造经验值",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_LASER",
+      "v": "射弹强化",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_LASER_DESC",
+      "v": "提升远程轻击伤害100%。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_LEGAL_BODY",
+      "v": "变形金刚是Hasbro公司的注册商标 并已获得使用许可。\r\n © 2019 Hasbro。\r\n保留一切权利。Hasbro 版权所有。\r\n变形金刚:百炼为战软件 © 2019 Kabam，Inc。\r\n由Kabam开发。版权所有。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_LEGAL_TITLE",
+      "v": "法律条款",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_LOADING",
+      "v": "加载中...",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_MPC_DAY_ONE_REWARDS",
+      "v": "第一天奖励已准备好！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_OBJECTIVES",
+      "v": "目标",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ODRERROR_LOWSPACEWARNING",
+      "v": "[00b4ff]《变形金刚：百炼为战》[-]需要下载额外 {0}MB 数据保障最佳游戏性能。\n\n请尽快清理一些空间。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ODRERROR_LOWSPACEWARNING_TITLE",
+      "v": "检测到低存储空间",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ODR_HINT_0",
+      "v": "校正太空桥坐标...",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ODR_HINT_1",
+      "v": "倒带声波的磁带...",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ODR_HINT_10",
+      "v": "喂养饿鲨...",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ODR_HINT_11",
+      "v": "呼叫所有汽车人...",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ODR_HINT_12",
+      "v": "移除零射线电池...",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ODR_HINT_13",
+      "v": "清理铁皮脚上泄露的润滑油...",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ODR_HINT_14",
+      "v": "航行于锈海之上...",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ODR_HINT_15",
+      "v": "航行于锈海之上...",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ODR_HINT_2",
+      "v": "抛光横炮的油漆...",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ODR_HINT_3",
+      "v": "打磨风刃的剑...",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ODR_HINT_4",
+      "v": "破坏霸天虎的T-齿轮...",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ODR_HINT_5",
+      "v": "修复大黄蜂的声音处理器...",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ODR_HINT_6",
+      "v": "确保众生自由无处不在...",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ODR_HINT_7",
+      "v": "给钢锁讲战争故事...",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ODR_HINT_8",
+      "v": "填满擎天柱的燃油泵...",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ODR_HINT_9",
+      "v": "扰乱红蜘蛛的加冕仪式...",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ODR_NOWIFI_BODY",
+      "v": "变形金刚：百炼为战将通过移动网络下载额外的文件以达到最佳的游戏性。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ODR_NOWIFI_TITLE",
+      "v": "进入战斗！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_OK",
+      "v": "好的",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T1_BASIC",
+      "v": "1阶基础矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T1_BASIC_DESC",
+      "v": "使用矿-13提升你的机器人等级并让他们更强大！在任务、特殊事件或水晶中找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T1_BRAW",
+      "v": "1阶斗士系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T1_BRAW_DESC",
+      "v": "升级斗士系机器人时使用特殊的矿-13以获取奖励。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T1_DEMO",
+      "v": "1阶爆破系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T1_DEMO_DESC",
+      "v": "升级爆破系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T1_SCOU",
+      "v": "1阶侦察系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T1_SCOU_DESC",
+      "v": "升级侦察系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T1_TACT",
+      "v": "1阶级战术系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T1_TACT_DESC",
+      "v": "升级战术系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T1_TECH",
+      "v": "1阶科技系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T1_TECH_DESC",
+      "v": "升级科技系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T1_WARR",
+      "v": "1阶战士系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T1_WARR_DESC",
+      "v": "升级战士系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T2_BASIC",
+      "v": "2阶基础矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T2_BASIC_DESC",
+      "v": "使用矿-13提升你的机器人等级并让他们更强大！在任务、特殊事件或水晶中找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T2_BRAW",
+      "v": "2阶斗士系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T2_BRAW_DESC",
+      "v": "升级斗士系机器人时使用特殊的矿-13以获取奖励。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T2_DEMO",
+      "v": "2阶爆破系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T2_DEMO_DESC",
+      "v": "升级爆破系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T2_SCOU",
+      "v": "2阶侦察系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T2_SCOU_DESC",
+      "v": "升级侦察系机器人时使用特殊的矿-13以获取奖励。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T2_TACT",
+      "v": "2阶级战术系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T2_TACT_DESC",
+      "v": "升级战术系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T2_TECH",
+      "v": "2阶科技系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T2_TECH_DESC",
+      "v": "升级科技系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T2_WARR",
+      "v": "2阶战士系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T2_WARR_DESC",
+      "v": "升级战士系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T3_BASIC",
+      "v": "3阶基础矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T3_BASIC_DESC",
+      "v": "使用矿-13提升你的机器人等级并让他们更强大！在任务、特殊事件或水晶中找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T3_BRAW",
+      "v": "3阶斗士系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T3_BRAW_DESC",
+      "v": "升级斗士系机器人时使用特殊的矿-13以获取奖励。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T3_DEMO",
+      "v": "3阶爆破系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T3_DEMO_DESC",
+      "v": "升级爆破系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T3_SCOU",
+      "v": "3阶侦察系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T3_SCOU_DESC",
+      "v": "升级侦察系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T3_TACT",
+      "v": "3阶级战术系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T3_TACT_DESC",
+      "v": "升级战术系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T3_TECH",
+      "v": "3阶科技系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T3_TECH_DESC",
+      "v": "升级科技系机器人时使用特殊的矿-13以获取奖励。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T3_WARR",
+      "v": "3阶战士系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T3_WARR_DESC",
+      "v": "升级战士系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T4_BASIC",
+      "v": "4阶基础矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T4_BASIC_DESC",
+      "v": "使用矿-13提升你的机器人等级并让他们更强大！在任务、特殊事件或水晶中找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T4_BRAW",
+      "v": "4阶斗士系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T4_BRAW_DESC",
+      "v": "升级斗士系机器人时使用特殊的矿-13以获取奖励。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T4_DEMO",
+      "v": "4阶爆破系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T4_DEMO_DESC",
+      "v": "升级爆破系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T4_SCOU",
+      "v": "4阶侦察系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T4_SCOU_DESC",
+      "v": "升级侦察系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T4_TACT",
+      "v": "4阶级战术系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T4_TACT_DESC",
+      "v": "升级战术系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T4_TECH",
+      "v": "4阶科技系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T4_TECH_DESC",
+      "v": "升级科技系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T4_WARR",
+      "v": "4阶战士系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T4_WARR_DESC",
+      "v": "升级战士系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T5_BASIC",
+      "v": "5阶基础矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T5_BASIC_DESC",
+      "v": "使用矿-13提升你的机器人等级并让他们更强大！在任务、特殊事件或水晶中找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T5_BRAW",
+      "v": "5阶斗士系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T5_BRAW_DESC",
+      "v": "升级斗士系机器人时使用特殊的矿-13以获取奖励。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T5_DEMO",
+      "v": "5阶爆破系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T5_DEMO_DESC",
+      "v": "升级爆破系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T5_SCOU",
+      "v": "5阶侦察系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T5_SCOU_DESC",
+      "v": "升级侦察系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T5_TACT",
+      "v": "5阶级战术系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T5_TACT_DESC",
+      "v": "升级战术系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T5_TECH",
+      "v": "5阶科技系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T5_TECH_DESC",
+      "v": "升级科技系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T5_WARR",
+      "v": "5阶战士系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T5_WARR_DESC",
+      "v": "升级战士系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T6_BASIC",
+      "v": "6阶基础矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_T6_BASIC_DESC",
+      "v": "使用矿-13提升你的机器人等级并让他们更强大！在任务、特殊事件或水晶中找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_ORE_TYPE_ENHANCE",
+      "v": "矿-13",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PAYMENTS_ENERGON_STORE_TITLE",
+      "v": "能量晶体商店",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PAYMENTS_FAIL_PURCHASE_BODY",
+      "v": "无法处理您的交易。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PAYMENTS_FAIL_PURCHASE_TITLE",
+      "v": "交易未完成",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PAYMENTS_HARD_CURRENCY_VALUE_FORMAT",
+      "v": "{0}",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PAYMENTS_SUCCESS_PURCHASE_BODY",
+      "v": "您的交易已处理。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PAYMENTS_SUCCESS_PURCHASE_TITLE",
+      "v": "交易完成",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PAYMENTS_SUCCESS_PURCHASE_TITLE_MPC",
+      "v": "卡片已购买！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PAYMENTS_TERMS_OF_SERVICE",
+      "v": "所有购买均需遵守服务条款",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PAYMENTS_TITLE",
+      "v": "立即获取",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_PAYOUT_NO_ITEMS",
+      "v": "目前没有可出售的商品。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T1_BRAW",
+      "v": "T1斗士系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T1_BRAW_DESC",
+      "v": "使用斗士系火种来升阶你的斗士系机器人。在周一日常任务或同盟任务中找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T1_DEF",
+      "v": "T1防御型火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T1_DEMO",
+      "v": "T1爆破系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T1_DEMO_DESC",
+      "v": "使用爆破系火种来升阶你的爆破系机器人。在周五日常任务或同盟任务中找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T1_EVENT",
+      "v": "T1阿尔法火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T1_EVENT_DESC",
+      "v": "使用阿尔法火种提升你的机器人和模块级别。加入特殊事件或从突袭商店中获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T1_GENERIC",
+      "v": "T1基础火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T1_GENERIC_DESC",
+      "v": "使用基础火种提升你的机器人和模块级别。从突袭商店中获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T1_MOD_DEF_DESC",
+      "v": "使用防御型火种提升你的防御型模块。加入同盟任务或事件中以获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T1_MOD_OFF_DESC",
+      "v": "使用防御型火种提升你的进攻型模块。加入同盟任务或事件中以获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T1_MOD_UTL_DESC",
+      "v": "使用通用型火种提升你的通用型模块。加入同盟任务或事件中以获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T1_OFF",
+      "v": "T1进攻型火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T1_SCOU",
+      "v": "T1侦察系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T1_SCOU_DESC",
+      "v": "使用侦查系火种来升阶你的侦查系机器人。在周三日常任务或同盟任务中找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T1_TACT",
+      "v": "T1战术系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T1_TACT_DESC",
+      "v": "使用战术系火种来升阶你的战术系机器人。在周六日常任务或同盟任务中找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T1_TECH",
+      "v": "T1科技系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T1_TECH_DESC",
+      "v": "使用科技系火种来升阶你的科技系机器人。在周四日常任务或同盟任务中找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T1_UTL",
+      "v": "T1通用型火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T1_WARR",
+      "v": "T1战士系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T1_WARR_DESC",
+      "v": "使用战士系火种来升阶你的战士系机器人。在周二日常任务或同盟任务中找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T2_BRAW",
+      "v": "T2斗士系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T2_BRAW_DESC",
+      "v": "使用斗士系火种提升你的斗士系机器人级别。从日常任务或同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T2_DEF",
+      "v": "T2防御型火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T2_DEMO",
+      "v": "T2爆破系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T2_DEMO_DESC",
+      "v": "使用爆破系火种提升你的爆破系机器人级别。从日常任务或同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T2_EVENT",
+      "v": "T2阿尔法火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T2_EVENT_DESC",
+      "v": "使用阿尔法火种提升你的机器人和模块级别。加入特殊事件或从突袭商店中获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T2_GENERIC",
+      "v": "T2基础火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T2_GENERIC_DESC",
+      "v": "使用基础火种提升你的机器人和模块级别。从突袭商店中获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T2_MOD_DEF_DESC",
+      "v": "使用防御型火种提升你的防御型模块。加入同盟任务或事件中以获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T2_MOD_OFF_DESC",
+      "v": "使用防御型火种提升你的进攻型模块。加入同盟任务或事件中以获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T2_MOD_UTL_DESC",
+      "v": "使用通用型火种提升你的通用型模块。加入同盟任务或事件中以获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T2_OFF",
+      "v": "T2进攻型火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T2_SCOU",
+      "v": "T2侦察系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T2_SCOU_DESC",
+      "v": "使用侦察系火种提升你的侦察系机器人级别。从日常任务或同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T2_TACT",
+      "v": "T2战术系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T2_TACT_DESC",
+      "v": "使用战术系火种提升你的战术系机器人级别。从日常任务或同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T2_TECH",
+      "v": "T2科技系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T2_TECH_DESC",
+      "v": "使用科技系火种提升你的科技系机器人级别。从日常任务和同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T2_UTL",
+      "v": "T2通用型火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T2_WARR",
+      "v": "T2战士系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T2_WARR_DESC",
+      "v": "使用战士系火种提升你的战士系机器人级别。从日常任务和同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T3_BRAW",
+      "v": "T3斗士系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T3_BRAW_DESC",
+      "v": "使用斗士系火种提升你的斗士系机器人级别。从日常任务或同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T3_DEF",
+      "v": "T3防御型火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T3_DEMO",
+      "v": "T3爆破系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T3_DEMO_DESC",
+      "v": "使用爆破系火种提升你的爆破系机器人级别。从日常任务或同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T3_EVENT",
+      "v": "T3阿尔法火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T3_EVENT_DESC",
+      "v": "使用阿尔法火种提升你的机器人和模块级别。加入特殊事件或从突袭商店中获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T3_GENERIC",
+      "v": "T3基础火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T3_GENERIC_DESC",
+      "v": "使用基础火种提升你的机器人和模块级别。从突袭商店中获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T3_MOD_DEF_DESC",
+      "v": "使用防御型火种提升你的防御型模块。加入同盟任务或事件中以获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T3_MOD_OFF_DESC",
+      "v": "使用防御型火种提升你的进攻型模块。加入同盟任务或事件中以获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T3_MOD_UTL_DESC",
+      "v": "使用通用型火种提升你的通用型模块。加入同盟任务或事件中以获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T3_OFF",
+      "v": "T3进攻型火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T3_SCOU",
+      "v": "T3侦察系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T3_SCOU_DESC",
+      "v": "使用侦察系火种提升你的侦察系机器人级别。从日常任务或同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T3_TACT",
+      "v": "T3战术系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T3_TACT_DESC",
+      "v": "使用战术系火种提升你的战术系机器人级别。从日常任务或同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T3_TECH",
+      "v": "T3科技系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T3_TECH_DESC",
+      "v": "使用科技系火种提升你的高科技机器人级别。从日常任务或同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T3_UTL",
+      "v": "T3通用型火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T3_WARR",
+      "v": "T3战士系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T3_WARR_DESC",
+      "v": "使用战士系火种提升你的战士系机器人级别。从日常任务或同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T4_BRAW",
+      "v": "T4斗士系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T4_BRAW_DESC",
+      "v": "使用斗士系火种提升你的斗士系机器人级别。从同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T4_DEF",
+      "v": "T4防御型火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T4_DEMO",
+      "v": "T4爆破系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T4_DEMO_DESC",
+      "v": "使用爆破系火种提升你的爆破系机器人级别。从同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T4_EVENT",
+      "v": "T4阿尔法火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T4_EVENT_DESC",
+      "v": "使用阿尔法火种提升你的机器人和模块级别。加入特殊事件或从突袭商店中获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T4_GENERIC",
+      "v": "T4基础火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T4_GENERIC_DESC",
+      "v": "使用基础火种提升你的机器人和模块级别。从突袭商店中获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T4_MOD_DEF_DESC",
+      "v": "使用防御型火种提升你的防御型模块。加入同盟任务或事件中以获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T4_MOD_OFF_DESC",
+      "v": "使用防御型火种提升你的进攻型模块。加入同盟任务或事件中以获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T4_MOD_UTL_DESC",
+      "v": "使用通用型火种提升你的通用型模块。加入同盟任务或事件中以获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T4_OFF",
+      "v": "T4进攻型火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T4_SCOU",
+      "v": "T4侦察系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T4_SCOU_DESC",
+      "v": "使用侦察系火种提升你的侦察系机器人级别。从同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T4_TACT",
+      "v": "T4战术系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T4_TACT_DESC",
+      "v": "使用战术系火种提升你的战术系机器人级别。从同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T4_TECH",
+      "v": "T4科技系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T4_TECH_DESC",
+      "v": "使用科技系火种提升你的科技系机器人级别。从同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T4_UTL",
+      "v": "T4通用型火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T4_WARR",
+      "v": "T4战士系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T4_WARR_DESC",
+      "v": "使用战士系火种提升你的战士机系器人级别。从同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T5_BRAW",
+      "v": "T5斗士系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T5_BRAW_DESC",
+      "v": "使用斗士系火种提升你的斗士系机器人级别。从同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T5_DEF",
+      "v": "T5防御型火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T5_DEMO",
+      "v": "T5爆破系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T5_DEMO_DESC",
+      "v": "使用爆破系火种提升你的爆破系机器人级别。从同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T5_EVENT",
+      "v": "T5阿尔法火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T5_EVENT_DESC",
+      "v": "使用阿尔法火种提升你的机器人和模块级别。加入特殊事件或从突袭商店中获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T5_GENERIC",
+      "v": "T5基础火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T5_GENERIC_DESC",
+      "v": "使用基础火种提升你的机器人和模块级别。从突袭商店中获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T5_MOD_DEF_DESC",
+      "v": "使用防御型火种提升你的防御型模块。加入同盟任务或事件中以获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T5_MOD_OFF_DESC",
+      "v": "使用防御型火种提升你的进攻型模块。加入同盟任务或事件中以获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T5_MOD_UTL_DESC",
+      "v": "使用通用型火种提升你的通用型模块。加入同盟任务或事件中以获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T5_OFF",
+      "v": "T5进攻型火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T5_SCOU",
+      "v": "T5侦察系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T5_SCOU_DESC",
+      "v": "使用侦察系火种提升你的侦察系机器人级别。从同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T5_TACT",
+      "v": "T5战术系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T5_TACT_DESC",
+      "v": "使用战术系火种提升你的战术系机器人级别。从同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T5_TECH",
+      "v": "T5科技系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T5_TECH_DESC",
+      "v": "使用科技系火种提升你的科技系机器人级别。从同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T5_UTL",
+      "v": "T5通用型火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T5_WARR",
+      "v": "T5战士系火种",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_SPK_T5_WARR_DESC",
+      "v": "使用战士系火种提升你的战士系机器人级别。从同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_UPGRADE_FORGE_INFO",
+      "v": "锻造消耗低阶机器人和模块来为更高阶的机器人提升攻击力、生命值和类别加成。基于阶、等级和招牌能力等级，也将奖励矿、黄金和水晶碎片。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_BOTEXCLUSIVITY_WARNING_AVE_1",
+      "v": "当这些机器人在任务中时，你无法在其他模式下使用它们。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_BOTEXCLUSIVITY_WARNING_AVE_2",
+      "v": "在你完成地图或任务时间过期后你可以继续使用这些机器人。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMING_SOON",
+      "v": "即将到来",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_ACCEPT",
+      "v": "接受",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_BACK",
+      "v": "返回",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_BADGE_NEW",
+      "v": "",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_BADGE_URGENT",
+      "v": "",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_BAD_JOB",
+      "v": "继续战斗，指挥官！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_BUFFS",
+      "v": "增益",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_CANCEL",
+      "v": "取消",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_CLAIM",
+      "v": "领取",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_CLOSE",
+      "v": "关闭",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_COMING_SOON_FORMAT",
+      "v": "{0} 即将到来",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_COMPLETE",
+      "v": "已完成",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_COMPLETED",
+      "v": "已完成",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_COMPLETION",
+      "v": "完成",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_CONFIRM",
+      "v": "确认",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_CONFIRMATION",
+      "v": "确认",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_CONGRATS",
+      "v": "恭喜！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_CONTINUE",
+      "v": "继续",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_COST",
+      "v": "花费",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_DAY_FORMAT",
+      "v": "{0} 天",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_DEFEATS",
+      "v": "击败",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_DEMOTED_TO",
+      "v": "你被降级至",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_DIFFICULTY",
+      "v": "难度",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_DONATE",
+      "v": "捐赠",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_DONE",
+      "v": "完成",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_ENTER",
+      "v": "进入",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_ERROR",
+      "v": "错误",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_EXIT",
+      "v": "退出",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_EXPIRED",
+      "v": "已过期",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_FINISHED_FORMAT",
+      "v": "{0} 已完成",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_FOR",
+      "v": "为了",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_FORGE",
+      "v": "锻造",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_FULL",
+      "v": "全部",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_GET_MORE",
+      "v": "获得更多",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_GO",
+      "v": "前往",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_GOOD_JOB",
+      "v": "保持良好表现！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_GOOD_JOB_COMMANDER",
+      "v": "恭喜，指挥官！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_GOTO_ALLIANCE",
+      "v": "前往同盟",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_GOTO_ARENA",
+      "v": "前往竞技场",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_GOTO_BASE",
+      "v": "前往基地",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_GOTO_INVENTORY",
+      "v": "前往库存",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_GOTO_MASTERIES",
+      "v": "前往精通",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_GOTO_QUEST",
+      "v": "前往任务",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_GOTO_STORE",
+      "v": "前往商店",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_GO_BACK",
+      "v": "后退",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_GUARANTEED",
+      "v": "有保障的奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_HIDDEN_VALUE",
+      "v": "???",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_HISTORY",
+      "v": "历史",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_INFO",
+      "v": "信息",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_INVITE",
+      "v": "邀请",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_INVITE_SENT",
+      "v": "邀请已发送",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_JOIN",
+      "v": "加入",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_LATER",
+      "v": "稍后",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_LEADERBOARD",
+      "v": "排行榜",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_LEVELUP",
+      "v": "升级！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_LEVEL_FORMAT",
+      "v": "等级{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_LIMITED_TIME_OFFER",
+      "v": "限时提供！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_LOSS",
+      "v": "失败",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_LOYALTY_BOOST",
+      "v": "忠诚度加成",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_MAX",
+      "v": "最大",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_MILESTONE",
+      "v": "里程碑",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_MULTIPLIER",
+      "v": "{0}x",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_NEVER_SHOW_AGAIN",
+      "v": "不再显示。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_NEVER_SHOW_WARNING_AGAIN",
+      "v": "不再显示该警告。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_NEW",
+      "v": "新的",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_NO",
+      "v": "否",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_NOT_AVAILABLE",
+      "v": "不可用",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_NO_CHESTS",
+      "v": "没有宝箱！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_NO_REWARDS",
+      "v": "没有奖励！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_OK",
+      "v": "好的",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_ONGOING",
+      "v": "进行中",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_ONGOING_FORMAT",
+      "v": "{0} 进行中",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_OR",
+      "v": "或者",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_OVERALL",
+      "v": "整体",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_OVERRIDE",
+      "v": "覆盖",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_PERCENTAGE_FORMAT",
+      "v": "{0}%",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_PLAYER_LEVEL",
+      "v": "指挥官等级：{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_PLUS_FORMAT",
+      "v": "+{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_PLUS_PERCENTAGE_FORMAT",
+      "v": "+{0}%",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_POINTS_FORMAT",
+      "v": "{0}得分",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_POINTS_FORMAT_BLUE",
+      "v": "[009CDEFF]{0}[-] [808080]得分",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_POINTS_FORMAT_GREY",
+      "v": "{0} [808080]得分",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_POINTS_FORMAT_WHITE",
+      "v": "{0}得分",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_PROMOTED_TO",
+      "v": "你被晋升至",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_PTS",
+      "v": "得分",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_PURCHASE",
+      "v": "购买",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_QUIT",
+      "v": "退出",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_RANK",
+      "v": "排名",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_REMAINING",
+      "v": "剩余",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_REMAINING_TIME",
+      "v": "剩余时间",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_REMAINING_VALUE",
+      "v": "{0} 剩余",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_REPLACE",
+      "v": "替换",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_REQUEST_SENT",
+      "v": "请求已发送",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_RESET",
+      "v": "重置",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_SALE",
+      "v": "出售",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_SAVE",
+      "v": "保存",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_SELECT",
+      "v": "选择",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_SELL",
+      "v": "出售",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_SELL_ITEMS",
+      "v": "出售道具",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_SEND",
+      "v": "发送",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_SKIP",
+      "v": "跳过",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_SOUNDS_GOOD",
+      "v": "听起来不错",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_SP_UNLOCK_HOWTO",
+      "v": "提升你的机器人级别来解锁特殊攻击！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_START",
+      "v": "开始",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_SUGGESTED",
+      "v": "推荐",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_SUMMARY",
+      "v": "总结",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_TAP_ANYWHERE",
+      "v": "点击任意处继续",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_TIME_REMAINING",
+      "v": "{0}剩余",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_TOP",
+      "v": "最高",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_TOP_CONTRIBUTORS",
+      "v": "最高贡献者",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_TOTAL",
+      "v": "总计",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_TOTAL_FORMAT",
+      "v": "共{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_UPGRADE",
+      "v": "升级",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_USE",
+      "v": "使用",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_VALUE_TOTAL_FORMAT",
+      "v": "{0}/{1}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_VIEW",
+      "v": "查看",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_VIEW_ALL",
+      "v": "查看全部",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_VIEW_DETAILS",
+      "v": "查看细节",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_VIEW_HISTORY",
+      "v": "查看历史",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_WARNING",
+      "v": "警告",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_WELCOME_USER",
+      "v": "欢迎！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_WELCOME_USER_NAME",
+      "v": "欢迎 {0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_WIN",
+      "v": "胜利",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_WON",
+      "v": "获胜",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_YES",
+      "v": "是",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_YOUR_PROGRESS",
+      "v": "你的进展",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_COMMON_YOUR_REWARDS",
+      "v": "你的奖励",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_CONGRATULATIONS",
+      "v": "恭喜！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ERROR",
+      "v": "发生了一个错误。请稍后尝试！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ERROR_TITLE",
+      "v": "错误",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_ACTION",
+      "v": "锻造",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_CHAMPION_RARITY_TITLE",
+      "v": "确定",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_CHAMPION_RARITY_WARNING",
+      "v": "你正要在锻造中消耗罕见机器人。这些功能强大的机器人可以在任务、竞技场等方面都很有用。 \n\n你确定想继续吗?",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_CHAMPION_RARITY_WARNING_MOD",
+      "v": "你正要在锻造中消耗罕见模块。这些功能强大的模块可以在基地防御方面非常有用。\r\n \r\n你确定想继续吗?",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_CHAMPION_REQUIRED_FOR_BONUS_LEVEL",
+      "v": "需要{0}{1}才能进行进一步锻造。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_CHAMPION_REQUIRED_MORE_BOTS",
+      "v": "通过收集更多的机器人来开启锻造功能。从水晶中得到更多机器人吧！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_CHAMPION_REQUIRED_MORE_MODS",
+      "v": "通过收集更多的模块来开启锻造功能。从水晶中得到更多机器人吧！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_DISABLED_TOOLTIP_ACTIVETEAM",
+      "v": "这和个机器人正在进行一个任务或突袭中，所以不能被锻造。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_DISABLED_TOOLTIP_ACTIVETEAM_AVE",
+      "v": "锻造前得将机器人从当前同盟任务中释放出来。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_DISABLED_TOOLTIP_ACTIVETEAM_AWAY",
+      "v": "锻造前得将机器人从当前远距任务中释放出来。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_DISABLED_TOOLTIP_ACTIVETEAM_BASE",
+      "v": "锻造前得将机器人从基地防御中释放出来。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_DISABLED_TOOLTIP_ACTIVETEAM_BASE_MOD",
+      "v": "锻造前得将模块从基地防御中释放出来。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_DISABLED_TOOLTIP_ACTIVETEAM_DEFAULT",
+      "v": "锻造前得将机器人从当前任务中释放出来。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_DISABLED_TOOLTIP_ACTIVETEAM_DEFAULT_MOD",
+      "v": "锻造前得将模块从基地中释放出来。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_DISABLED_TOOLTIP_ACTIVETEAM_PVE",
+      "v": "锻造前得将机器人从当前故事任务中释放出来。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_DISABLED_TOOLTIP_ACTIVETEAM_PVP",
+      "v": "锻造前得将机器人从当前竞技场中释放出来。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_DISABLED_TOOLTIP_ACTIVETEAM_RAID",
+      "v": "锻造前得将机器人从当前突袭中释放出来。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_DISABLED_TOOLTIP_ACTIVETEAM_RAID_MOD",
+      "v": "锻造前得将模块从当前突袭中释放出来。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_DISABLED_TOOLTIP_LEVEL_CAP",
+      "v": "恭喜！该机器人已达到最大锻造等级。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_DISABLED_TOOLTIP_LEVEL_CAP_MOD",
+      "v": "恭喜！该模块已达到最大锻造等级。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_DISABLED_TOOLTIP_MAX_SELECTED",
+      "v": "你必须在库存中保持至少{0}个机器人。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_DISABLED_TOOLTIP_MAX_SELECTED_MOD",
+      "v": "你必须在库存中保持至少{0}个模块。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_KILL_TOOLTIP",
+      "v": "锻造当前已禁用。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_LEVELUP",
+      "v": "升级！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_LEVEL_TITLE",
+      "v": "锻造等级",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_MAXED",
+      "v": "最高等级！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_MAX_SELECTED",
+      "v": "没有可用的机器人",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_MAX_SELECTED_MOD",
+      "v": "没有可用的模块",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_NONE_SELECTED",
+      "v": "选择机器人",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_NONE_SELECTED_MOD",
+      "v": "选择模块",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_NO_ITEMS",
+      "v": "没有可锻造的机器人！从水晶或竞技场中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_NO_ITEMS_CTA",
+      "v": "获取机器人",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_NO_ITEMS_CTA_MOD",
+      "v": "获取模块",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_NO_ITEMS_MOD",
+      "v": "你没有锻造模块！从水晶和竞技场中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_NUM_CONSUMED_PLURAL",
+      "v": "已锻造{0}个机器人",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_NUM_CONSUMED_PLURAL_MOD",
+      "v": "已锻造{0}个模块！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_NUM_CONSUMED_SINGULAR",
+      "v": "已锻造{0}个机器人！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_NUM_CONSUMED_SINGULAR_MOD",
+      "v": "已锻造{0}个模块！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_NUM_SELECTED",
+      "v": "{0}个机器人已选择",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_NUM_SELECTED_MOD",
+      "v": "{0}个模块已选择",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_ONE_SELECTED",
+      "v": "已选择1个机器人",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_ONE_SELECTED_MOD",
+      "v": "已选择1个模块",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_RANKUP",
+      "v": "升阶！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_REWARD_ITEMS",
+      "v": "接收道具加成",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_SPECIAL_REWARD_TITLE_PLURAL",
+      "v": "发现特殊道具",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_SPECIAL_REWARD_TITLE_SINGULAR",
+      "v": "发现特殊道具",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_TITLE",
+      "v": "锻造机器人",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_TITLE_MOD",
+      "v": "锻造模块",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FORGE_XP_TITLE",
+      "v": "锻造经验值",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_LASER",
+      "v": "射弹强化",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_LASER_DESC",
+      "v": "提升远程轻击伤害100%。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_LEGAL_BODY",
+      "v": "变形金刚是Hasbro公司的注册商标 并已获得使用许可。\r\n © 2019 Hasbro。\r\n保留一切权利。Hasbro 版权所有。\r\n变形金刚:百炼为战软件 © 2019 Kabam，Inc。\r\n由Kabam开发。版权所有。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_LEGAL_TITLE",
+      "v": "法律条款",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_LOADING",
+      "v": "加载中...",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_MPC_DAY_ONE_REWARDS",
+      "v": "第一天奖励已准备好！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_OBJECTIVES",
+      "v": "目标",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ODRERROR_LOWSPACEWARNING",
+      "v": "[00b4ff]《变形金刚：百炼为战》[-]需要下载额外 {0}MB 数据保障最佳游戏性能。\n\n请尽快清理一些空间。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ODRERROR_LOWSPACEWARNING_TITLE",
+      "v": "检测到低存储空间",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ODR_HINT_0",
+      "v": "校正太空桥坐标...",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ODR_HINT_1",
+      "v": "倒带声波的磁带...",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ODR_HINT_10",
+      "v": "喂养饿鲨...",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ODR_HINT_11",
+      "v": "呼叫所有汽车人...",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ODR_HINT_12",
+      "v": "移除零射线电池...",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ODR_HINT_13",
+      "v": "清理铁皮脚上泄露的润滑油...",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ODR_HINT_14",
+      "v": "航行于锈海之上...",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ODR_HINT_15",
+      "v": "航行于锈海之上...",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ODR_HINT_2",
+      "v": "抛光横炮的油漆...",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ODR_HINT_3",
+      "v": "打磨风刃的剑...",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ODR_HINT_4",
+      "v": "破坏霸天虎的T-齿轮...",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ODR_HINT_5",
+      "v": "修复大黄蜂的声音处理器...",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ODR_HINT_6",
+      "v": "确保众生自由无处不在...",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ODR_HINT_7",
+      "v": "给钢锁讲战争故事...",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ODR_HINT_8",
+      "v": "填满擎天柱的燃油泵...",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ODR_HINT_9",
+      "v": "扰乱红蜘蛛的加冕仪式...",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ODR_NOWIFI_BODY",
+      "v": "变形金刚：百炼为战将通过移动网络下载额外的文件以达到最佳的游戏性。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ODR_NOWIFI_TITLE",
+      "v": "进入战斗！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_OK",
+      "v": "好的",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T1_BASIC",
+      "v": "1阶基础矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T1_BASIC_DESC",
+      "v": "使用矿-13提升你的机器人等级并让他们更强大！在任务、特殊事件或水晶中找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T1_BRAW",
+      "v": "1阶斗士系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T1_BRAW_DESC",
+      "v": "升级斗士系机器人时使用特殊的矿-13以获取奖励。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T1_DEMO",
+      "v": "1阶爆破系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T1_DEMO_DESC",
+      "v": "升级爆破系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T1_SCOU",
+      "v": "1阶侦察系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T1_SCOU_DESC",
+      "v": "升级侦察系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T1_TACT",
+      "v": "1阶级战术系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T1_TACT_DESC",
+      "v": "升级战术系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T1_TECH",
+      "v": "1阶科技系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T1_TECH_DESC",
+      "v": "升级科技系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T1_WARR",
+      "v": "1阶战士系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T1_WARR_DESC",
+      "v": "升级战士系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T2_BASIC",
+      "v": "2阶基础矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T2_BASIC_DESC",
+      "v": "使用矿-13提升你的机器人等级并让他们更强大！在任务、特殊事件或水晶中找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T2_BRAW",
+      "v": "2阶斗士系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T2_BRAW_DESC",
+      "v": "升级斗士系机器人时使用特殊的矿-13以获取奖励。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T2_DEMO",
+      "v": "2阶爆破系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T2_DEMO_DESC",
+      "v": "升级爆破系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T2_SCOU",
+      "v": "2阶侦察系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T2_SCOU_DESC",
+      "v": "升级侦察系机器人时使用特殊的矿-13以获取奖励。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T2_TACT",
+      "v": "2阶级战术系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T2_TACT_DESC",
+      "v": "升级战术系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T2_TECH",
+      "v": "2阶科技系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T2_TECH_DESC",
+      "v": "升级科技系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T2_WARR",
+      "v": "2阶战士系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T2_WARR_DESC",
+      "v": "升级战士系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T3_BASIC",
+      "v": "3阶基础矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T3_BASIC_DESC",
+      "v": "使用矿-13提升你的机器人等级并让他们更强大！在任务、特殊事件或水晶中找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T3_BRAW",
+      "v": "3阶斗士系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T3_BRAW_DESC",
+      "v": "升级斗士系机器人时使用特殊的矿-13以获取奖励。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T3_DEMO",
+      "v": "3阶爆破系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T3_DEMO_DESC",
+      "v": "升级爆破系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T3_SCOU",
+      "v": "3阶侦察系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T3_SCOU_DESC",
+      "v": "升级侦察系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T3_TACT",
+      "v": "3阶级战术系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T3_TACT_DESC",
+      "v": "升级战术系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T3_TECH",
+      "v": "3阶科技系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T3_TECH_DESC",
+      "v": "升级科技系机器人时使用特殊的矿-13以获取奖励。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T3_WARR",
+      "v": "3阶战士系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T3_WARR_DESC",
+      "v": "升级战士系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T4_BASIC",
+      "v": "4阶基础矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T4_BASIC_DESC",
+      "v": "使用矿-13提升你的机器人等级并让他们更强大！在任务、特殊事件或水晶中找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T4_BRAW",
+      "v": "4阶斗士系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T4_BRAW_DESC",
+      "v": "升级斗士系机器人时使用特殊的矿-13以获取奖励。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T4_DEMO",
+      "v": "4阶爆破系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T4_DEMO_DESC",
+      "v": "升级爆破系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T4_SCOU",
+      "v": "4阶侦察系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T4_SCOU_DESC",
+      "v": "升级侦察系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T4_TACT",
+      "v": "4阶级战术系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T4_TACT_DESC",
+      "v": "升级战术系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T4_TECH",
+      "v": "4阶科技系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T4_TECH_DESC",
+      "v": "升级科技系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T4_WARR",
+      "v": "4阶战士系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T4_WARR_DESC",
+      "v": "升级战士系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T5_BASIC",
+      "v": "5阶基础矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T5_BASIC_DESC",
+      "v": "使用矿-13提升你的机器人等级并让他们更强大！在任务、特殊事件或水晶中找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T5_BRAW",
+      "v": "5阶斗士系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T5_BRAW_DESC",
+      "v": "升级斗士系机器人时使用特殊的矿-13以获取奖励。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T5_DEMO",
+      "v": "5阶爆破系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T5_DEMO_DESC",
+      "v": "升级爆破系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T5_SCOU",
+      "v": "5阶侦察系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T5_SCOU_DESC",
+      "v": "升级侦察系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T5_TACT",
+      "v": "5阶级战术系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T5_TACT_DESC",
+      "v": "升级战术系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T5_TECH",
+      "v": "5阶科技系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T5_TECH_DESC",
+      "v": "升级科技系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T5_WARR",
+      "v": "5阶战士系矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T5_WARR_DESC",
+      "v": "升级战士系机器人时使用特殊的矿-13以获取加成。在任务、特殊事件或水晶中找到更多该类别的矿-13！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T6_BASIC",
+      "v": "6阶基础矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_T6_BASIC_DESC",
+      "v": "使用矿-13提升你的机器人等级并让他们更强大！在任务、特殊事件或水晶中找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_ORE_TYPE_ENHANCE",
+      "v": "矿-13",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PAYMENTS_ENERGON_STORE_TITLE",
+      "v": "能量晶体商店",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PAYMENTS_FAIL_PURCHASE_BODY",
+      "v": "无法处理您的交易。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PAYMENTS_FAIL_PURCHASE_TITLE",
+      "v": "交易未完成",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PAYMENTS_HARD_CURRENCY_VALUE_FORMAT",
+      "v": "{0}",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PAYMENTS_SUCCESS_PURCHASE_BODY",
+      "v": "您的交易已处理。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PAYMENTS_SUCCESS_PURCHASE_TITLE",
+      "v": "交易完成",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PAYMENTS_SUCCESS_PURCHASE_TITLE_MPC",
+      "v": "卡片已购买！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PAYMENTS_TERMS_OF_SERVICE",
+      "v": "所有购买均需遵守服务条款",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PAYMENTS_TITLE",
+      "v": "立即获取",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_PAYOUT_NO_ITEMS",
+      "v": "目前没有可出售的商品。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T1_BRAW",
+      "v": "T1斗士系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T1_BRAW_DESC",
+      "v": "使用斗士系火种来升阶你的斗士系机器人。在周一日常任务或同盟任务中找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T1_DEF",
+      "v": "T1防御型火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T1_DEMO",
+      "v": "T1爆破系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T1_DEMO_DESC",
+      "v": "使用爆破系火种来升阶你的爆破系机器人。在周五日常任务或同盟任务中找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T1_EVENT",
+      "v": "T1阿尔法火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T1_EVENT_DESC",
+      "v": "使用阿尔法火种提升你的机器人和模块级别。加入特殊事件或从突袭商店中获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T1_GENERIC",
+      "v": "T1基础火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T1_GENERIC_DESC",
+      "v": "使用基础火种提升你的机器人和模块级别。从突袭商店中获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T1_MOD_DEF_DESC",
+      "v": "使用防御型火种提升你的防御型模块。加入同盟任务或事件中以获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T1_MOD_OFF_DESC",
+      "v": "使用防御型火种提升你的进攻型模块。加入同盟任务或事件中以获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T1_MOD_UTL_DESC",
+      "v": "使用通用型火种提升你的通用型模块。加入同盟任务或事件中以获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T1_OFF",
+      "v": "T1进攻型火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T1_SCOU",
+      "v": "T1侦察系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T1_SCOU_DESC",
+      "v": "使用侦查系火种来升阶你的侦查系机器人。在周三日常任务或同盟任务中找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T1_TACT",
+      "v": "T1战术系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T1_TACT_DESC",
+      "v": "使用战术系火种来升阶你的战术系机器人。在周六日常任务或同盟任务中找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T1_TECH",
+      "v": "T1科技系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T1_TECH_DESC",
+      "v": "使用科技系火种来升阶你的科技系机器人。在周四日常任务或同盟任务中找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T1_UTL",
+      "v": "T1通用型火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T1_WARR",
+      "v": "T1战士系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T1_WARR_DESC",
+      "v": "使用战士系火种来升阶你的战士系机器人。在周二日常任务或同盟任务中找到更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T2_BRAW",
+      "v": "T2斗士系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T2_BRAW_DESC",
+      "v": "使用斗士系火种提升你的斗士系机器人级别。从日常任务或同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T2_DEF",
+      "v": "T2防御型火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T2_DEMO",
+      "v": "T2爆破系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T2_DEMO_DESC",
+      "v": "使用爆破系火种提升你的爆破系机器人级别。从日常任务或同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T2_EVENT",
+      "v": "T2阿尔法火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T2_EVENT_DESC",
+      "v": "使用阿尔法火种提升你的机器人和模块级别。加入特殊事件或从突袭商店中获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T2_GENERIC",
+      "v": "T2基础火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T2_GENERIC_DESC",
+      "v": "使用基础火种提升你的机器人和模块级别。从突袭商店中获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T2_MOD_DEF_DESC",
+      "v": "使用防御型火种提升你的防御型模块。加入同盟任务或事件中以获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T2_MOD_OFF_DESC",
+      "v": "使用防御型火种提升你的进攻型模块。加入同盟任务或事件中以获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T2_MOD_UTL_DESC",
+      "v": "使用通用型火种提升你的通用型模块。加入同盟任务或事件中以获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T2_OFF",
+      "v": "T2进攻型火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T2_SCOU",
+      "v": "T2侦察系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T2_SCOU_DESC",
+      "v": "使用侦察系火种提升你的侦察系机器人级别。从日常任务或同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T2_TACT",
+      "v": "T2战术系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T2_TACT_DESC",
+      "v": "使用战术系火种提升你的战术系机器人级别。从日常任务或同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T2_TECH",
+      "v": "T2科技系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T2_TECH_DESC",
+      "v": "使用科技系火种提升你的科技系机器人级别。从日常任务和同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T2_UTL",
+      "v": "T2通用型火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T2_WARR",
+      "v": "T2战士系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T2_WARR_DESC",
+      "v": "使用战士系火种提升你的战士系机器人级别。从日常任务和同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T3_BRAW",
+      "v": "T3斗士系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T3_BRAW_DESC",
+      "v": "使用斗士系火种提升你的斗士系机器人级别。从日常任务或同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T3_DEF",
+      "v": "T3防御型火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T3_DEMO",
+      "v": "T3爆破系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T3_DEMO_DESC",
+      "v": "使用爆破系火种提升你的爆破系机器人级别。从日常任务或同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T3_EVENT",
+      "v": "T3阿尔法火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T3_EVENT_DESC",
+      "v": "使用阿尔法火种提升你的机器人和模块级别。加入特殊事件或从突袭商店中获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T3_GENERIC",
+      "v": "T3基础火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T3_GENERIC_DESC",
+      "v": "使用基础火种提升你的机器人和模块级别。从突袭商店中获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T3_MOD_DEF_DESC",
+      "v": "使用防御型火种提升你的防御型模块。加入同盟任务或事件中以获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T3_MOD_OFF_DESC",
+      "v": "使用防御型火种提升你的进攻型模块。加入同盟任务或事件中以获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T3_MOD_UTL_DESC",
+      "v": "使用通用型火种提升你的通用型模块。加入同盟任务或事件中以获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T3_OFF",
+      "v": "T3进攻型火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T3_SCOU",
+      "v": "T3侦察系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T3_SCOU_DESC",
+      "v": "使用侦察系火种提升你的侦察系机器人级别。从日常任务或同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T3_TACT",
+      "v": "T3战术系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T3_TACT_DESC",
+      "v": "使用战术系火种提升你的战术系机器人级别。从日常任务或同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T3_TECH",
+      "v": "T3科技系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T3_TECH_DESC",
+      "v": "使用科技系火种提升你的高科技机器人级别。从日常任务或同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T3_UTL",
+      "v": "T3通用型火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T3_WARR",
+      "v": "T3战士系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T3_WARR_DESC",
+      "v": "使用战士系火种提升你的战士系机器人级别。从日常任务或同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T4_BRAW",
+      "v": "T4斗士系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T4_BRAW_DESC",
+      "v": "使用斗士系火种提升你的斗士系机器人级别。从同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T4_DEF",
+      "v": "T4防御型火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T4_DEMO",
+      "v": "T4爆破系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T4_DEMO_DESC",
+      "v": "使用爆破系火种提升你的爆破系机器人级别。从同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T4_EVENT",
+      "v": "T4阿尔法火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T4_EVENT_DESC",
+      "v": "使用阿尔法火种提升你的机器人和模块级别。加入特殊事件或从突袭商店中获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T4_GENERIC",
+      "v": "T4基础火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T4_GENERIC_DESC",
+      "v": "使用基础火种提升你的机器人和模块级别。从突袭商店中获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T4_MOD_DEF_DESC",
+      "v": "使用防御型火种提升你的防御型模块。加入同盟任务或事件中以获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T4_MOD_OFF_DESC",
+      "v": "使用防御型火种提升你的进攻型模块。加入同盟任务或事件中以获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T4_MOD_UTL_DESC",
+      "v": "使用通用型火种提升你的通用型模块。加入同盟任务或事件中以获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T4_OFF",
+      "v": "T4进攻型火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T4_SCOU",
+      "v": "T4侦察系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T4_SCOU_DESC",
+      "v": "使用侦察系火种提升你的侦察系机器人级别。从同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T4_TACT",
+      "v": "T4战术系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T4_TACT_DESC",
+      "v": "使用战术系火种提升你的战术系机器人级别。从同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T4_TECH",
+      "v": "T4科技系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T4_TECH_DESC",
+      "v": "使用科技系火种提升你的科技系机器人级别。从同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T4_UTL",
+      "v": "T4通用型火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T4_WARR",
+      "v": "T4战士系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T4_WARR_DESC",
+      "v": "使用战士系火种提升你的战士机系器人级别。从同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T5_BRAW",
+      "v": "T5斗士系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T5_BRAW_DESC",
+      "v": "使用斗士系火种提升你的斗士系机器人级别。从同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T5_DEF",
+      "v": "T5防御型火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T5_DEMO",
+      "v": "T5爆破系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T5_DEMO_DESC",
+      "v": "使用爆破系火种提升你的爆破系机器人级别。从同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T5_EVENT",
+      "v": "T5阿尔法火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T5_EVENT_DESC",
+      "v": "使用阿尔法火种提升你的机器人和模块级别。加入特殊事件或从突袭商店中获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T5_GENERIC",
+      "v": "T5基础火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T5_GENERIC_DESC",
+      "v": "使用基础火种提升你的机器人和模块级别。从突袭商店中获得更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T5_MOD_DEF_DESC",
+      "v": "使用防御型火种提升你的防御型模块。加入同盟任务或事件中以获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T5_MOD_OFF_DESC",
+      "v": "使用防御型火种提升你的进攻型模块。加入同盟任务或事件中以获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T5_MOD_UTL_DESC",
+      "v": "使用通用型火种提升你的通用型模块。加入同盟任务或事件中以获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T5_OFF",
+      "v": "T5进攻型火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T5_SCOU",
+      "v": "T5侦察系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T5_SCOU_DESC",
+      "v": "使用侦察系火种提升你的侦察系机器人级别。从同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T5_TACT",
+      "v": "T5战术系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T5_TACT_DESC",
+      "v": "使用战术系火种提升你的战术系机器人级别。从同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T5_TECH",
+      "v": "T5科技系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T5_TECH_DESC",
+      "v": "使用科技系火种提升你的科技系机器人级别。从同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T5_UTL",
+      "v": "T5通用型火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T5_WARR",
+      "v": "T5战士系火种",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_SPK_T5_WARR_DESC",
+      "v": "使用战士系火种提升你的战士系机器人级别。从同盟任务中获取更多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_UPGRADE_FORGE_INFO",
+      "v": "锻造消耗低阶机器人和模块来为更高阶的机器人提升攻击力、生命值和类别加成。基于阶、等级和招牌能力等级，也将奖励矿、黄金和水晶碎片。",
+      "vn": 1
+    }
+  ]
+}

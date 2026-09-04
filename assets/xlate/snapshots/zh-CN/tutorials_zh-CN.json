@@ -1,0 +1,1565 @@
+{
+  "meta": {
+    "format": "sparx",
+    "language": "zh-CN",
+    "tagged": [
+      "tutorials",
+      "client"
+    ],
+    "hash": "8e6cbece734aea2c86695e1150dfaf6a1c0af614",
+    "ts": 1525389815,
+    "string_count": 155
+  },
+  "strings": [
+    {
+      "k": "ID_TUT_ALLIANCEHELP_DIALOG_0_0",
+      "v": "来的正好！有了这个新建筑的扫描仪，我们还发现了其他被困在这个星球上的人类，应能与其缔结同盟。帮助他们可使我们赚取黄金来助力升级!",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_ALLIANCEHELP_PROMPT",
+      "v": "当你收到其他指挥官的协助请求时，它们将显示在这里！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_ALLIANCEHELP_UNLOCKED",
+      "v": "同盟指挥部已解锁！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_ALLIANCE_EVENTS_1",
+      "v": "你的新同盟准许你加入[FFBA00FF]同盟活动[-]并一起并肩作战！这些特殊目标只在一定时间内有效。\n和你的同盟成员一起达成这些目标，赚取里程碑和排名奖励！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_ALLIANCE_EVENTS_1_ALT",
+      "v": "你可以通过径向菜单访问同盟活动信息。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_ALLIANCE_EVENTS_2",
+      "v": "[FFBA00FF]同盟活动[-]开启了！帮助你的同盟达成[FFBA00FF]活动里程碑[-]，就能为你自己和你同盟的指挥官挣得[FFBA00FF]奖励[-]。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_ARENA",
+      "v": "[FFBA00FF]竞技场解锁！[-]角逐来获得[FFBA00FF]黄金[-]、[FFBA00FF]能量晶体[-]和[FFBA00FF]事件奖励！[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_ARENACHIPS",
+      "v": "使用[FFBA00FF]竞技场货币[-]来从太空桥中兑换[FFBA00FF]竞技场水晶[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_ARENACHIPS_V2",
+      "v": "使用[FFBA00FF]竞技场货币[-]来从太空桥中兑换[FFBA00FF]竞技场水晶[-]。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_AUTOFIGHT",
+      "v": "指挥官，我开发出了一套新算法来在战斗中控制你的机器人。虽然此算法能接管你的指令，但是未必能像直接控制比赛那样达到最优效果。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_AUTOFIGHT_2",
+      "v": "你可以随时切回手动控制。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_AWAYTEAMS_DIALOG_0_0",
+      "v": "太好了！我们的移动指挥部完工了。有了这个建筑，我们就能派遣空闲的机器人参与远离任务中寻找额外的资源了。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_AWAYTEAMS_PROMPT",
+      "v": "选择一项任务并部署机器人参与其中。机器人能力越强，他们可能带回的资源就越多。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_AWAYTEAMS_UNLOCKED",
+      "v": "移动指挥部已解锁！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_BASE_COLLECT_SUBTITLE",
+      "v": "并且用你的机器人再生资源！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_BASE_COLLECT_TITLE",
+      "v": "收集",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_BASE_DEFEND_SUBTITLE",
+      "v": "使用你的基地抵御其他玩家！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_BASE_DEFEND_TITLE",
+      "v": "保卫",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_BASE_DIALOG_0_0",
+      "v": "这片与现实冲突，并且还存在着发狂的塞伯坦人的土地不是个安全的地方。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_BASE_DIALOG_0_1",
+      "v": "我们必须收集资源修复我们的飞船，壮大我们的部队，并且增强我们的基地...才能生存下去。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_BASE_FINAL_PROMPT",
+      "v": "战斗已经打响了指挥官。祝你好运！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_BASE_GROW_SUBTITLE",
+      "v": "你的基地将随着指挥官等级增加而提升",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_BASE_GROW_TITLE",
+      "v": "成长",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_BASE_INTRO_ALT_0",
+      "v": "他看上去就像是个霸天虎。但是，显像一号没在他身上检测出任何威胁。究竟是因为领袖矩阵还是因为这个扭曲的星球呢？",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_BASE_INTRO_ALT_1",
+      "v": "如果他对于指挥官来说不是威胁，那么他也许会是在这个堕落地方生存的难得盟友。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_BASE_INTRO_ALT_2",
+      "v": "方舟进入了紧急状态。我们要利用这个坠毁地点着手建立基地。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_BASE_INTRO_ALT_3",
+      "v": "汽车人和霸天虎皆堕落不堪……威震天定是幕后黑手。让我们找到他！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_BASE_INTRO_DIALOG_0_0",
+      "v": "方舟进入了紧急状态。我们必须建立作战基地以防被攻击。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_BASE_INTRO_DIALOG_0_1",
+      "v": "环形坑周围的高墙构成了良好的防御，但是我们仍然需要做一些加强。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_BASE_INTRO_DIALOG_0_2",
+      "v": "指挥官，让我们试试用水晶提炼厂提炼出的水晶召唤更多支援吧。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_BASE_POST_GACHA_DIALOG_0_0",
+      "v": "...噢，我浑身的零件都在疼...我这是在哪？",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_BASE_POST_GACHA_DIALOG_0_1",
+      "v": "他看上去就象是个霸天虎。但是，显像一号没在他身上检测出任何威胁。究竟是因为领袖矩阵还是因为这个扭曲的星球呢？",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_BASE_POST_GACHA_DIALOG_0_2",
+      "v": "如果他对于指挥官来说不是威胁，那么也许会是逃离这个地方有价值的盟友。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_BASE_POST_GACHA_DIALOG_0_3",
+      "v": "我们还有许多问题尚未得到解答，这片与现实相互冲突的土地绝不是我们的安身之所。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_BASE_POST_GACHA_DIALOG_0_4",
+      "v": "对。如果我们要在滞留的这段时间生存下去，我们就必须壮大团队来收集资源，增强我们的军队和基地。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_BASE_POST_GACHA_DIALOG_0_5",
+      "v": "指挥官，我们都指望你了！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_BASE_REWARD_PROMPT",
+      "v": " [FFFFFFA0]点选[FFBA00FF]战斗[-]，完成第1章并保证获得一个[FFBA00FF]2星机器人水晶！[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_BATTLECENTER_DIALOG_0_0",
+      "v": "很高兴你能来这里，指挥官。我们最新的建筑叫做突袭中心。当世界上其他的指挥官企图突袭我们的基地时它会给你提醒！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_BATTLECENTER_UNLOCKED",
+      "v": "突袭中心已解锁",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_BATTLECHIPS",
+      "v": "使用[FFBA00FF]战斗货币[-]在空间桥或者通过解锁新竞技场，来兑换[FFBA00FF]竞技场水晶[-] ！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_BATTLE_CENTER_PROMPT",
+      "v": "经常访问突袭中心以获得突袭报告，进行复仇或查看你在对抗其他指挥官时的排名！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_BOTCRYSTAL",
+      "v": "这是个[FFBA00FF]机器人水晶[-]！从[FFBA00FF]水晶[-]屏幕打开它，让你的机器人收集再添一员吧！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_BOTGATES",
+      "v": "指挥官，在你旁边有一道[FFBA00FF]机器人门槛[-] 。你的小队需要特定的机器人，才能将门槛打开。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_BOT_DUPED",
+      "v": "招牌能力已觉醒。从水晶中收集重复的机器人来让那个机器人的招牌能力觉醒并得到强化！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_BOT_PLACEMENT_0_0",
+      "v": "好消息，指挥官！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_BOT_PLACEMENT_0_1",
+      "v": "显像一号发现坠毁地点附近的土壤内含有丰富的资源。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_BOT_PLACEMENT_0_2",
+      "v": "如果你指派一个机器人进行基地防御，即便你离开或进行任务时他们也能收集资源！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_BOT_PLACEMENT_0_3",
+      "v": "轻触你基地内的节点并指派一名机器人，\n开始[FFBA00FF]生产黄金[-]！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_BOT_PLACEMENT_0_4",
+      "v": "此节点正在生产黄金中，请在完成后回来收集资源！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_CLASSGATES",
+      "v": "指挥官，你的旁边有一个[FFBA00FF]机器人门槛[-]。它们还不能被打开，除非你现在的小分队有符合条件的机器人！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_CLASS_ADVANTAGE",
+      "v": "每种[FFBA00FF]类别机器人[-]相对于其他类别机器人会有[FFBA00FF]优势[-][00FF00FF][-]。这一优势会给机器人带来[FFBA00FF]额外的攻击力！[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_CRYSTALS_INTRO",
+      "v": "这里是飞船的太空桥。\n在这里你可以获得[FFBA00FF]水晶[-]并且使用它们获得新的[FFBA00FF]变形金刚角色[-]!",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_CRYSTALS_OUTRO",
+      "v": "太好了！现在{0}在这里了，我们去追赶擎天柱吧！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_DAILY_MISSIONS",
+      "v": "[FFBA00FF]日常任务已解锁！[-]\n从这些限时任务中收集火种和火种精华！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_DEFEATED_RESTART_BODY",
+      "v": "别放弃！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_DEFEATED_RESTART_TITLE",
+      "v": "重试",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_FIGHT2_DIALOG_0_0",
+      "v": "显像一号表示这个霸天虎名字叫做碾碎者，但他不像我遇到过的任何霸天虎。他就像来自另一个世界，看来前方险阻重重。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_FIGHT_1_ALT_0",
+      "v": "显像一号数据库中没有这个星球的坐标记录。但是危机明显正在逼近我们，我建议继续前进。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_FIGHT_BLOCK",
+      "v": "格挡",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_FIGHT_DASH",
+      "v": "冲刺",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_FIGHT_DEFEAT_OPPONENT",
+      "v": "现在，用你所学到的一切\n来[FFBA00FF]抵御[-][FFFFFFFF]红蜘蛛！[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_FIGHT_DIALOG_0_0",
+      "v": "红蜘蛛...在这里？恐怕其他霸天虎随后就会赶来，但是我们究竟在哪？",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_FIGHT_DIALOG_0_1",
+      "v": "这个星球的坐标未在显像一号的数据库中注册。但是，目前的危险是显而易见的。我建议尽快呼叫支援，擎天柱。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_FIGHT_DODGE",
+      "v": "躲闪",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_FIGHT_HEAVY_ATTACK",
+      "v": "重击",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_FIGHT_HOLDDEVICE",
+      "v": "最好使用双手操作!",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_FIGHT_LEARN_ADVANCED",
+      "v": "是展示高超的战斗技术的时候了！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_FIGHT_LEARN_BASICS",
+      "v": "要想在战斗中存活下来，你必须先学习\n基本的作战技巧。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_FIGHT_LEARN_DASH",
+      "v": "很好！现在[FFBA00FF]冲刺[-]向前，在其准备好时使用[FFBA00FF]特殊攻击[-]！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_FIGHT_LEARN_RANGED",
+      "v": "现在你还有一些距离，\n使用[FFBA00FF]远程[-]武器进攻。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_FIGHT_LEARN_SIDESTEP",
+      "v": "你的对手正在发射飞弹。使用[FFBA00FF]回避[-]躲避他们的射击。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_FIGHT_LIGHT_ATTACK",
+      "v": "轻击",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_FIGHT_MEDIUM_ATTACK",
+      "v": "普通攻击",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_FIGHT_ONLEFT",
+      "v": "左侧",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_FIGHT_ONRIGHT",
+      "v": "右侧",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_FIGHT_OPPONENT_BLOCKING",
+      "v": "你的对手正在[FFBA00FF]格挡！[-]\n改变的你进攻方式通过[FFBA00FF]重击突破格挡！[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_FIGHT_PRESS_HOLD",
+      "v": "长按",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_FIGHT_RANGE_ATTACK",
+      "v": "远程攻击",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_FIGHT_RANGE_SIDESTEP",
+      "v": "回避",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_FIGHT_SPECIAL_READY",
+      "v": "你已获得足够[FFBA00FF]能量[-]来释放一个终极[FFBA00FF]特殊攻击！[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_FIGHT_SWIPE",
+      "v": "滑动",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_FIGHT_SWIPE_LEFT",
+      "v": "向左滑动！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_FIGHT_SWIPE_RIGHT",
+      "v": "向右滑动！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_FIGHT_SWIPE_UP_OR_DOWN",
+      "v": "向上或向下",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_FIGHT_TAP",
+      "v": "点击！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_FORGE_BOT_1",
+      "v": "熔铸低阶机器人来提升你的高阶机器人的锻造等级。锻造等级将永久的增加生命值、攻击力和类别力量，使你的类别奖励更强大！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_FORGE_BOT_2",
+      "v": "你还可以从熔铸的机器人中获取道具奖励，如矿石或黄金。他们的阶层、级别和等级越高，产出的道具越多！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_FORGE_MOD_1",
+      "v": "熔铸低阶模块来提升你的高阶模块的锻造等级。锻造等级将永久的增加生命值、攻击力和类别力量属性，这些效果将应用在你的基地防御者上！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_GACHA_INTRO",
+      "v": "用[FFBA00FF]能量晶体[-]来换取[FFBA00FF]机器人水晶[-]以增加你的机器人收藏!",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_GACHA_OUTRO",
+      "v": "通过完成[FFBA00FF]故事任务[-]来获得[FFBA00FF]能量晶体。[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_GOLD_COLLECTION_0_0",
+      "v": "你的黄金已准备好！[FFBA00FF]点击[-]机器人来收集它们。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_GOLD_COLLECTION_0_1",
+      "v": "真棒！常回来看看，你可以使用更加稀有的机器人来获取更多的黄金！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_LINE_STYLE_CURRENT",
+      "v": "当前副本路线",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_LINE_STYLE_EXPLORED",
+      "v": "已全部探索",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_LINE_STYLE_PARTIAL",
+      "v": "已部分探索",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_LINE_STYLE_PROMPT",
+      "v": "指挥官，我们已侦测该区域并且发现了未探索的路径。我已经上传到你的HUD上来显示未探索，部分探索和完全探索的路径。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_LINE_STYLE_TITLE",
+      "v": "探索中",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_LINE_STYLE_UNEXPLORED",
+      "v": "未探索",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_LINKEDNODES",
+      "v": "侦测到[FFBA00FF]链接节点[-] ！敌人的机器人可以提供强力的模块给他们的同伙。打败他们来破坏模块！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_LINKEDNODES_TITLE",
+      "v": "链接节点",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_LOADING_SPACE_BRIDGE",
+      "v": "飞船的太空桥仍然完好。虽然这很冒险，但是我们需要使用仅剩的能量晶体传送增援部队。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_MASTERY_POINT_INTRO",
+      "v": "欢迎来到精通，指挥官！\r\n[F9AA00FF]激活精通[-]来对你的所有机器人施加一个永久的福利。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_MASTERY_POINT_RECEIVED",
+      "v": "你赚取了首个[F9AA00FF]精通点数[-]！前往[F9AA00FF]精通界面[-]来对你的所有机器人施加一个永久的加成。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_MODS",
+      "v": "你发现了一个模块！把模块放置在一个节点上来强化它。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_MODS_PLACED",
+      "v": "模块将在战斗中极大的帮助你的防守机器人！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_MOD_DUPED",
+      "v": "模块招牌能力觉醒。从水晶中收集重复的模块来觉醒和加强模块的独有招牌能力！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_NAV_BUTTON_LOCKED",
+      "v": "在教程完成之前不可用。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_OBJECTIVE_TIP_00",
+      "v": "[FFBA00FF]目标：[-]了解战斗基础知识并击败红蜘蛛！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_OBJECTIVE_TIP_01",
+      "v": "[FFBA00FF]目标：[-]加强你的战斗技能来击败碾碎器！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_OBJECTIVE_TIP_02",
+      "v": "通过施加和受到伤害来增加特殊攻击能量条。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_OBJECTIVE_TIP_03",
+      "v": "[FFBA00FF]目标：[-]大黄蜂充满了敌意。使用所有的技能来保护自己！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_OBJECTIVE_TIP_04",
+      "v": "完成任务将会奖励资源来加强你的机器人！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_OBJECTIVE_TIP_05",
+      "v": "[FFBA00FF]目标：[-]在即将到来的战役前升级擎天柱来增加他的攻击力和生命值。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_OBJECTIVE_TIP_06",
+      "v": "[FFBA00FF]目标：[-]在太空桥开启机器人水晶来壮大你的机器人收集。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_OBJECTIVE_TIP_07",
+      "v": "[FFBA00FF]目标：[-]设置一个基地，并完成故事任务来收集和升级机器人！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_OBJECTIVE_TIP_08",
+      "v": "[FFBA00FF]目标：[-]完成第1章所有6个任务来获得一个全新的2-星机器人！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_OBJECTIVE_TIP_09",
+      "v": "每个机器人的类别种类都会强于或者弱于另一个类别。请明智地选择匹配。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_OBJECTIVE_TIP_10",
+      "v": "对手将变得越来越棘手。在任务之间来升级你的机器人，以备不时之需！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_ONESHOT",
+      "v": "[FFBA00FF]特殊任务已解锁！[-]\n征服这些限时事件并获取稀有且有益的奖励！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_PRE_QUEST_LOAD",
+      "v": "在附近监测到两个敌人。\n正在计算当前任务的最佳路径。\n正在获取所需数据。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_QUEST_DIALOG_0_1",
+      "v": "头儿！发生了什么？我们在哪？",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_RAID_PROMPT_0",
+      "v": "[FFBA00FF]突袭已解锁！[-]\n打垮世界上别的指挥官并收集强大的升级道具！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_RANKUP_1",
+      "v": "当你把一个机器人[FFBA00FF]升级[-]到最高等级时，\n就能用[FFBA00FF]黄金[-]和[FFBA00FF]火种[-]替他[FFBA00FF]升阶！[-]\n\n现在这里就有一些[FFBA00FF]火种[-]和[FFBA00FF]黄金[-]，助你替{0}升阶！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_RANKUP_2",
+      "v": "[FFBA00FF]{0}[-]现在变得更强并有了一个新的[FFBA00FF]特殊攻击！[-]\n\n如想替更多机器人[FFBA00FF]提升级别[-]，从[FFBA00FF]日常任务[-]和[FFBA00FF]突袭商店[-]取得[FFBA00FF]火种[-]吧！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_RANKUP_3",
+      "v": "现在你又可以[FFBA00FF]升级[-]你的机器人，来增强他们的实力了！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_RANKUP_POPUP_MESSAGE",
+      "v": "使用这些替你的机器人提升级别",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_RANKUP_POPUP_TITLE",
+      "v": "已赋予资源",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_REDEEMER_GOLD_ORE",
+      "v": "将[FFBA00FF]黄金[-]和[FFBA00FF]矿-13[-]注入机器人体内将[FFBA00FF]提升[-]他们的等级！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_REDEEMER_XP",
+      "v": "[FFBA00FF]经验值[-]可以增加你的[FFBA00FF]指挥官等级[-]，获得奖励并解锁新的功能！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_RELIC_1",
+      "v": "你找到了一个[FFBA00FF]遗迹！[-] 将遗迹放置在你的基地来获利并以此炫耀你的成就！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_SECONDS",
+      "v": "{0}秒",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_SHIELD_1",
+      "v": "没突袭券了，指挥官。现在是部署一个[FFBA00FF]护盾[-]的理想时间。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_SHIELD_2",
+      "v": "[FFBA00FF]护盾[-]可以在不同的时间段从[FFBA00FF]商店[-]得到。你的[FFBA00FF]库存[-]有一个额外的护盾，请在需要时用到它。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_SPARK_FRAGS",
+      "v": "你找到了[FFBA00FF]火种精华！[-]收集足够的火种精华以组成一个完整的[FFBA00FF]火种[-]，并可在[FFBA00FF]升级页面中[-]帮你的机器人 [FFBA00FF]升阶。[-]",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_SPARK_RAIDCHIPS",
+      "v": "通过窃取其他玩家的基地来获取[FFBA00FF]突袭货币[-]，并用它在[FFBA00FF]突袭商店[-]中购买稀有道具。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_SPARK_STORE",
+      "v": "这是[FFBA00FF]突袭商店[-]。在这里你能花费[FFBA00FF]突袭货币[-]换取[FFBA00FF]火种[-]或其他贵重的道具。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_SPECIALATTACK_NOTIF",
+      "v": "特殊攻击准备完成！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_STASH_1",
+      "v": "你的[FFBA00FF]储藏室[-]有好东西等着你认领！",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_STASH_2",
+      "v": "这里是 [FFBA00FF]储藏室。[-]在限定时间内，未领取的奖励和超过容量上限的物品将会存储在这里。记得在过期前领取或者将它们售出。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_TREASURY_1",
+      "v": "[FFBA00FF]同盟金库[-]存储着捐赠资源。捐赠黄金或者战斗货币-或直接将能量晶体转化成资源。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_TREASURY_2",
+      "v": "没人能从金库直接取出资源。官员和领袖使用这些资源支付同盟任务开始时的费用。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_UPGRADE_BOTS_SCREEN",
+      "v": "现在[FFBA00FF]升级[-]擎天柱!升级来强化你的机器人。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_UPGRADE_FINISHED",
+      "v": "赢得战斗将会提供给我们额外的矿-13和黄金，来升级我们的机器人。让我们立即取得一个额外机器人吧。",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_UPGRADE_LEVELED_UP",
+      "v": "太棒了！当你获得更多[FFBA00FF]矿-13[-]和[FFBA00FF]黄金[-]来 [FFBA00FF]升级[-]你的机器人时再回到这个界面上来!",
+      "vn": 1
+    },
+    {
+      "k": "ID_TUT_UPGRADE_RESOURCES",
+      "v": "让我们来使用这些[FFBA00FF]黄金[-]和[FFBA00FF]矿-13[-]来[FFBA00FF]升级[-]擎天柱。",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FTE_BLOCK",
+      "v": "格挡",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FTE_HOLD_LEFT",
+      "v": "长按左边",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FTE_HOLD_RIGHT",
+      "v": "长按右边",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FTE_MISSION",
+      "v": "教学任务",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FTE_SWIPE_LEFT",
+      "v": "向左滑动",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FTE_SWIPE_RIGHT",
+      "v": "向右滑动",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FTE_SWIPE_UP_DOWN",
+      "v": "向上或向下滑动",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_FTE_TAP_RIGHT",
+      "v": "轻触右边",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_TUTORIAL_FREE_BOOST_DESC",
+      "v": "激活加成来临时性加强你的机器人或者增加你的奖励！",
+      "vn": 1
+    },
+    {
+      "k": "ID_UI_TUTORIAL_FREE_BOOST_HEADING",
+      "v": "当前有可用的免费加成",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_ALLIANCEHELP_DIALOG_0_0",
+      "v": "来的正好！有了这个新建筑的扫描仪，我们还发现了其他被困在这个星球上的人类，应能与其缔结同盟。帮助他们可使我们赚取黄金来助力升级!",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_ALLIANCEHELP_PROMPT",
+      "v": "当你收到其他指挥官的协助请求时，它们将显示在这里！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_ALLIANCEHELP_UNLOCKED",
+      "v": "同盟指挥部已解锁！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_ALLIANCE_EVENTS_1",
+      "v": "你的新同盟准许你加入[FFBA00FF]同盟活动[-]并一起并肩作战！这些特殊目标只在一定时间内有效。\n和你的同盟成员一起达成这些目标，赚取里程碑和排名奖励！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_ALLIANCE_EVENTS_1_ALT",
+      "v": "你可以通过径向菜单访问同盟活动信息。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_ALLIANCE_EVENTS_2",
+      "v": "[FFBA00FF]同盟活动[-]开启了！帮助你的同盟达成[FFBA00FF]活动里程碑[-]，就能为你自己和你同盟的指挥官挣得[FFBA00FF]奖励[-]。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_ARENA",
+      "v": "[FFBA00FF]竞技场解锁！[-]角逐来获得[FFBA00FF]黄金[-]、[FFBA00FF]能量晶体[-]和[FFBA00FF]事件奖励！[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_ARENACHIPS",
+      "v": "使用[FFBA00FF]竞技场货币[-]来从太空桥中兑换[FFBA00FF]竞技场水晶[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_ARENACHIPS_V2",
+      "v": "使用[FFBA00FF]竞技场货币[-]来从太空桥中兑换[FFBA00FF]竞技场水晶[-]。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_AUTOFIGHT",
+      "v": "指挥官，我开发出了一套新算法来在战斗中控制你的机器人。虽然此算法能接管你的指令，但是未必能像直接控制比赛那样达到最优效果。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_AUTOFIGHT_2",
+      "v": "你可以随时切回手动控制。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_AWAYTEAMS_DIALOG_0_0",
+      "v": "太好了！我们的移动指挥部完工了。有了这个建筑，我们就能派遣空闲的机器人参与远离任务中寻找额外的资源了。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_AWAYTEAMS_PROMPT",
+      "v": "选择一项任务并部署机器人参与其中。机器人能力越强，他们可能带回的资源就越多。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_AWAYTEAMS_UNLOCKED",
+      "v": "移动指挥部已解锁！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_BASE_COLLECT_SUBTITLE",
+      "v": "并且用你的机器人再生资源！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_BASE_COLLECT_TITLE",
+      "v": "收集",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_BASE_DEFEND_SUBTITLE",
+      "v": "使用你的基地抵御其他玩家！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_BASE_DEFEND_TITLE",
+      "v": "保卫",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_BASE_DIALOG_0_0",
+      "v": "这片与现实冲突，并且还存在着发狂的塞伯坦人的土地不是个安全的地方。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_BASE_DIALOG_0_1",
+      "v": "我们必须收集资源修复我们的飞船，壮大我们的部队，并且增强我们的基地...才能生存下去。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_BASE_FINAL_PROMPT",
+      "v": "战斗已经打响了指挥官。祝你好运！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_BASE_GROW_SUBTITLE",
+      "v": "你的基地将随着指挥官等级增加而提升",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_BASE_GROW_TITLE",
+      "v": "成长",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_BASE_INTRO_ALT_0",
+      "v": "他看上去就像是个霸天虎。但是，显像一号没在他身上检测出任何威胁。究竟是因为领袖矩阵还是因为这个扭曲的星球呢？",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_BASE_INTRO_ALT_1",
+      "v": "如果他对于指挥官来说不是威胁，那么他也许会是在这个堕落地方生存的难得盟友。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_BASE_INTRO_ALT_2",
+      "v": "方舟进入了紧急状态。我们要利用这个坠毁地点着手建立基地。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_BASE_INTRO_ALT_3",
+      "v": "汽车人和霸天虎皆堕落不堪……威震天定是幕后黑手。让我们找到他！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_BASE_INTRO_DIALOG_0_0",
+      "v": "方舟进入了紧急状态。我们必须建立作战基地以防被攻击。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_BASE_INTRO_DIALOG_0_1",
+      "v": "环形坑周围的高墙构成了良好的防御，但是我们仍然需要做一些加强。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_BASE_INTRO_DIALOG_0_2",
+      "v": "指挥官，让我们试试用水晶提炼厂提炼出的水晶召唤更多支援吧。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_BASE_POST_GACHA_DIALOG_0_0",
+      "v": "...噢，我浑身的零件都在疼...我这是在哪？",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_BASE_POST_GACHA_DIALOG_0_1",
+      "v": "他看上去就象是个霸天虎。但是，显像一号没在他身上检测出任何威胁。究竟是因为领袖矩阵还是因为这个扭曲的星球呢？",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_BASE_POST_GACHA_DIALOG_0_2",
+      "v": "如果他对于指挥官来说不是威胁，那么也许会是逃离这个地方有价值的盟友。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_BASE_POST_GACHA_DIALOG_0_3",
+      "v": "我们还有许多问题尚未得到解答，这片与现实相互冲突的土地绝不是我们的安身之所。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_BASE_POST_GACHA_DIALOG_0_4",
+      "v": "对。如果我们要在滞留的这段时间生存下去，我们就必须壮大团队来收集资源，增强我们的军队和基地。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_BASE_POST_GACHA_DIALOG_0_5",
+      "v": "指挥官，我们都指望你了！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_BASE_REWARD_PROMPT",
+      "v": " [FFFFFFA0]点选[FFBA00FF]战斗[-]，完成第1章并保证获得一个[FFBA00FF]2星机器人水晶！[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_BATTLECENTER_DIALOG_0_0",
+      "v": "很高兴你能来这里，指挥官。我们最新的建筑叫做突袭中心。当世界上其他的指挥官企图突袭我们的基地时它会给你提醒！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_BATTLECENTER_UNLOCKED",
+      "v": "突袭中心已解锁",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_BATTLECHIPS",
+      "v": "使用[FFBA00FF]战斗货币[-]在空间桥或者通过解锁新竞技场，来兑换[FFBA00FF]竞技场水晶[-] ！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_BATTLE_CENTER_PROMPT",
+      "v": "经常访问突袭中心以获得突袭报告，进行复仇或查看你在对抗其他指挥官时的排名！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_BOTCRYSTAL",
+      "v": "这是个[FFBA00FF]机器人水晶[-]！从[FFBA00FF]水晶[-]屏幕打开它，让你的机器人收集再添一员吧！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_BOTGATES",
+      "v": "指挥官，在你旁边有一道[FFBA00FF]机器人门槛[-] 。你的小队需要特定的机器人，才能将门槛打开。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_BOT_DUPED",
+      "v": "招牌能力已觉醒。从水晶中收集重复的机器人来让那个机器人的招牌能力觉醒并得到强化！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_BOT_PLACEMENT_0_0",
+      "v": "好消息，指挥官！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_BOT_PLACEMENT_0_1",
+      "v": "显像一号发现坠毁地点附近的土壤内含有丰富的资源。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_BOT_PLACEMENT_0_2",
+      "v": "如果你指派一个机器人进行基地防御，即便你离开或进行任务时他们也能收集资源！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_BOT_PLACEMENT_0_3",
+      "v": "轻触你基地内的节点并指派一名机器人，\n开始[FFBA00FF]生产黄金[-]！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_BOT_PLACEMENT_0_4",
+      "v": "此节点正在生产黄金中，请在完成后回来收集资源！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_CLASSGATES",
+      "v": "指挥官，你的旁边有一个[FFBA00FF]机器人门槛[-]。它们还不能被打开，除非你现在的小分队有符合条件的机器人！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_CLASS_ADVANTAGE",
+      "v": "每种[FFBA00FF]类别机器人[-]相对于其他类别机器人会有[FFBA00FF]优势[-][00FF00FF][-]。这一优势会给机器人带来[FFBA00FF]额外的攻击力！[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_CRYSTALS_INTRO",
+      "v": "这里是飞船的太空桥。\n在这里你可以获得[FFBA00FF]水晶[-]并且使用它们获得新的[FFBA00FF]变形金刚角色[-]!",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_CRYSTALS_OUTRO",
+      "v": "太好了！现在{0}在这里了，我们去追赶擎天柱吧！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_DAILY_MISSIONS",
+      "v": "[FFBA00FF]日常任务已解锁！[-]\n从这些限时任务中收集火种和火种精华！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_DEFEATED_RESTART_BODY",
+      "v": "别放弃！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_DEFEATED_RESTART_TITLE",
+      "v": "重试",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_FIGHT2_DIALOG_0_0",
+      "v": "显像一号表示这个霸天虎名字叫做碾碎者，但他不像我遇到过的任何霸天虎。他就像来自另一个世界，看来前方险阻重重。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_FIGHT_1_ALT_0",
+      "v": "显像一号数据库中没有这个星球的坐标记录。但是危机明显正在逼近我们，我建议继续前进。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_FIGHT_BLOCK",
+      "v": "格挡",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_FIGHT_DASH",
+      "v": "冲刺",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_FIGHT_DEFEAT_OPPONENT",
+      "v": "现在，用你所学到的一切\n来[FFBA00FF]抵御[-][FFFFFFFF]红蜘蛛！[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_FIGHT_DIALOG_0_0",
+      "v": "红蜘蛛...在这里？恐怕其他霸天虎随后就会赶来，但是我们究竟在哪？",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_FIGHT_DIALOG_0_1",
+      "v": "这个星球的坐标未在显像一号的数据库中注册。但是，目前的危险是显而易见的。我建议尽快呼叫支援，擎天柱。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_FIGHT_DODGE",
+      "v": "躲闪",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_FIGHT_HEAVY_ATTACK",
+      "v": "重击",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_FIGHT_HOLDDEVICE",
+      "v": "最好使用双手操作!",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_FIGHT_LEARN_ADVANCED",
+      "v": "是展示高超的战斗技术的时候了！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_FIGHT_LEARN_BASICS",
+      "v": "要想在战斗中存活下来，你必须先学习\n基本的作战技巧。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_FIGHT_LEARN_DASH",
+      "v": "很好！现在[FFBA00FF]冲刺[-]向前，在其准备好时使用[FFBA00FF]特殊攻击[-]！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_FIGHT_LEARN_RANGED",
+      "v": "现在你还有一些距离，\n使用[FFBA00FF]远程[-]武器进攻。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_FIGHT_LEARN_SIDESTEP",
+      "v": "你的对手正在发射飞弹。使用[FFBA00FF]回避[-]躲避他们的射击。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_FIGHT_LIGHT_ATTACK",
+      "v": "轻击",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_FIGHT_MEDIUM_ATTACK",
+      "v": "普通攻击",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_FIGHT_ONLEFT",
+      "v": "左侧",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_FIGHT_ONRIGHT",
+      "v": "右侧",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_FIGHT_OPPONENT_BLOCKING",
+      "v": "你的对手正在[FFBA00FF]格挡！[-]\n改变的你进攻方式通过[FFBA00FF]重击突破格挡！[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_FIGHT_PRESS_HOLD",
+      "v": "长按",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_FIGHT_RANGE_ATTACK",
+      "v": "远程攻击",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_FIGHT_RANGE_SIDESTEP",
+      "v": "回避",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_FIGHT_SPECIAL_READY",
+      "v": "你已获得足够[FFBA00FF]能量[-]来释放一个终极[FFBA00FF]特殊攻击！[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_FIGHT_SWIPE",
+      "v": "滑动",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_FIGHT_SWIPE_LEFT",
+      "v": "向左滑动！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_FIGHT_SWIPE_RIGHT",
+      "v": "向右滑动！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_FIGHT_SWIPE_UP_OR_DOWN",
+      "v": "向上或向下",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_FIGHT_TAP",
+      "v": "点击！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_FORGE_BOT_1",
+      "v": "熔铸低阶机器人来提升你的高阶机器人的锻造等级。锻造等级将永久的增加生命值、攻击力和类别力量，使你的类别奖励更强大！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_FORGE_BOT_2",
+      "v": "你还可以从熔铸的机器人中获取道具奖励，如矿石或黄金。他们的阶层、级别和等级越高，产出的道具越多！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_FORGE_MOD_1",
+      "v": "熔铸低阶模块来提升你的高阶模块的锻造等级。锻造等级将永久的增加生命值、攻击力和类别力量属性，这些效果将应用在你的基地防御者上！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_GACHA_INTRO",
+      "v": "用[FFBA00FF]能量晶体[-]来换取[FFBA00FF]机器人水晶[-]以增加你的机器人收藏!",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_GACHA_OUTRO",
+      "v": "通过完成[FFBA00FF]故事任务[-]来获得[FFBA00FF]能量晶体。[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_GOLD_COLLECTION_0_0",
+      "v": "你的黄金已准备好！[FFBA00FF]点击[-]机器人来收集它们。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_GOLD_COLLECTION_0_1",
+      "v": "真棒！常回来看看，你可以使用更加稀有的机器人来获取更多的黄金！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_LINE_STYLE_CURRENT",
+      "v": "当前副本路线",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_LINE_STYLE_EXPLORED",
+      "v": "已全部探索",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_LINE_STYLE_PARTIAL",
+      "v": "已部分探索",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_LINE_STYLE_PROMPT",
+      "v": "指挥官，我们已侦测该区域并且发现了未探索的路径。我已经上传到你的HUD上来显示未探索，部分探索和完全探索的路径。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_LINE_STYLE_TITLE",
+      "v": "探索中",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_LINE_STYLE_UNEXPLORED",
+      "v": "未探索",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_LINKEDNODES",
+      "v": "侦测到[FFBA00FF]链接节点[-] ！敌人的机器人可以提供强力的模块给他们的同伙。打败他们来破坏模块！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_LINKEDNODES_TITLE",
+      "v": "链接节点",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_LOADING_SPACE_BRIDGE",
+      "v": "飞船的太空桥仍然完好。虽然这很冒险，但是我们需要使用仅剩的能量晶体传送增援部队。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_MASTERY_POINT_INTRO",
+      "v": "欢迎来到精通，指挥官！\r\n[F9AA00FF]激活精通[-]来对你的所有机器人施加一个永久的福利。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_MASTERY_POINT_RECEIVED",
+      "v": "你赚取了首个[F9AA00FF]精通点数[-]！前往[F9AA00FF]精通界面[-]来对你的所有机器人施加一个永久的加成。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_MODS",
+      "v": "你发现了一个模块！把模块放置在一个节点上来强化它。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_MODS_PLACED",
+      "v": "模块将在战斗中极大的帮助你的防守机器人！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_MOD_DUPED",
+      "v": "模块招牌能力觉醒。从水晶中收集重复的模块来觉醒和加强模块的独有招牌能力！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_NAV_BUTTON_LOCKED",
+      "v": "在教程完成之前不可用。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_OBJECTIVE_TIP_00",
+      "v": "[FFBA00FF]目标：[-]了解战斗基础知识并击败红蜘蛛！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_OBJECTIVE_TIP_01",
+      "v": "[FFBA00FF]目标：[-]加强你的战斗技能来击败碾碎器！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_OBJECTIVE_TIP_02",
+      "v": "通过施加和受到伤害来增加特殊攻击能量条。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_OBJECTIVE_TIP_03",
+      "v": "[FFBA00FF]目标：[-]大黄蜂充满了敌意。使用所有的技能来保护自己！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_OBJECTIVE_TIP_04",
+      "v": "完成任务将会奖励资源来加强你的机器人！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_OBJECTIVE_TIP_05",
+      "v": "[FFBA00FF]目标：[-]在即将到来的战役前升级擎天柱来增加他的攻击力和生命值。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_OBJECTIVE_TIP_06",
+      "v": "[FFBA00FF]目标：[-]在太空桥开启机器人水晶来壮大你的机器人收集。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_OBJECTIVE_TIP_07",
+      "v": "[FFBA00FF]目标：[-]设置一个基地，并完成故事任务来收集和升级机器人！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_OBJECTIVE_TIP_08",
+      "v": "[FFBA00FF]目标：[-]完成第1章所有6个任务来获得一个全新的2-星机器人！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_OBJECTIVE_TIP_09",
+      "v": "每个机器人的类别种类都会强于或者弱于另一个类别。请明智地选择匹配。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_OBJECTIVE_TIP_10",
+      "v": "对手将变得越来越棘手。在任务之间来升级你的机器人，以备不时之需！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_ONESHOT",
+      "v": "[FFBA00FF]特殊任务已解锁！[-]\n征服这些限时事件并获取稀有且有益的奖励！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_PRE_QUEST_LOAD",
+      "v": "在附近监测到两个敌人。\n正在计算当前任务的最佳路径。\n正在获取所需数据。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_QUEST_DIALOG_0_1",
+      "v": "头儿！发生了什么？我们在哪？",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_RAID_PROMPT_0",
+      "v": "[FFBA00FF]突袭已解锁！[-]\n打垮世界上别的指挥官并收集强大的升级道具！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_RANKUP_1",
+      "v": "当你把一个机器人[FFBA00FF]升级[-]到最高等级时，\n就能用[FFBA00FF]黄金[-]和[FFBA00FF]火种[-]替他[FFBA00FF]升阶！[-]\n\n现在这里就有一些[FFBA00FF]火种[-]和[FFBA00FF]黄金[-]，助你替{0}升阶！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_RANKUP_2",
+      "v": "[FFBA00FF]{0}[-]现在变得更强并有了一个新的[FFBA00FF]特殊攻击！[-]\n\n如想替更多机器人[FFBA00FF]提升级别[-]，从[FFBA00FF]日常任务[-]和[FFBA00FF]突袭商店[-]取得[FFBA00FF]火种[-]吧！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_RANKUP_3",
+      "v": "现在你又可以[FFBA00FF]升级[-]你的机器人，来增强他们的实力了！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_RANKUP_POPUP_MESSAGE",
+      "v": "使用这些替你的机器人提升级别",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_RANKUP_POPUP_TITLE",
+      "v": "已赋予资源",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_REDEEMER_GOLD_ORE",
+      "v": "将[FFBA00FF]黄金[-]和[FFBA00FF]矿-13[-]注入机器人体内将[FFBA00FF]提升[-]他们的等级！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_REDEEMER_XP",
+      "v": "[FFBA00FF]经验值[-]可以增加你的[FFBA00FF]指挥官等级[-]，获得奖励并解锁新的功能！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_RELIC_1",
+      "v": "你找到了一个[FFBA00FF]遗迹！[-] 将遗迹放置在你的基地来获利并以此炫耀你的成就！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_SECONDS",
+      "v": "{0}秒",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_SHIELD_1",
+      "v": "没突袭券了，指挥官。现在是部署一个[FFBA00FF]护盾[-]的理想时间。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_SHIELD_2",
+      "v": "[FFBA00FF]护盾[-]可以在不同的时间段从[FFBA00FF]商店[-]得到。你的[FFBA00FF]库存[-]有一个额外的护盾，请在需要时用到它。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_SPARK_FRAGS",
+      "v": "你找到了[FFBA00FF]火种精华！[-]收集足够的火种精华以组成一个完整的[FFBA00FF]火种[-]，并可在[FFBA00FF]升级页面中[-]帮你的机器人 [FFBA00FF]升阶。[-]",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_SPARK_RAIDCHIPS",
+      "v": "通过窃取其他玩家的基地来获取[FFBA00FF]突袭货币[-]，并用它在[FFBA00FF]突袭商店[-]中购买稀有道具。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_SPARK_STORE",
+      "v": "这是[FFBA00FF]突袭商店[-]。在这里你能花费[FFBA00FF]突袭货币[-]换取[FFBA00FF]火种[-]或其他贵重的道具。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_SPECIALATTACK_NOTIF",
+      "v": "特殊攻击准备完成！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_STASH_1",
+      "v": "你的[FFBA00FF]储藏室[-]有好东西等着你认领！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_STASH_2",
+      "v": "这里是 [FFBA00FF]储藏室。[-]在限定时间内，未领取的奖励和超过容量上限的物品将会存储在这里。记得在过期前领取或者将它们售出。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_TREASURY_1",
+      "v": "[FFBA00FF]同盟金库[-]存储着捐赠资源。捐赠黄金或者战斗货币-或直接将能量晶体转化成资源。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_TREASURY_2",
+      "v": "没人能从金库直接取出资源。官员和领袖使用这些资源支付同盟任务开始时的费用。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_UPGRADE_BOTS_SCREEN",
+      "v": "现在[FFBA00FF]升级[-]擎天柱!升级来强化你的机器人。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_UPGRADE_FINISHED",
+      "v": "赢得战斗将会提供给我们额外的矿-13和黄金，来升级我们的机器人。让我们立即取得一个额外机器人吧。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_UPGRADE_LEVELED_UP",
+      "v": "太棒了！当你获得更多[FFBA00FF]矿-13[-]和[FFBA00FF]黄金[-]来 [FFBA00FF]升级[-]你的机器人时再回到这个界面上来!",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_TUT_UPGRADE_RESOURCES",
+      "v": "让我们来使用这些[FFBA00FF]黄金[-]和[FFBA00FF]矿-13[-]来[FFBA00FF]升级[-]擎天柱。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FTE_BLOCK",
+      "v": "格挡",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FTE_HOLD_LEFT",
+      "v": "长按左边",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FTE_HOLD_RIGHT",
+      "v": "长按右边",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FTE_MISSION",
+      "v": "教学任务",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FTE_SWIPE_LEFT",
+      "v": "向左滑动",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FTE_SWIPE_RIGHT",
+      "v": "向右滑动",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FTE_SWIPE_UP_DOWN",
+      "v": "向上或向下滑动",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_FTE_TAP_RIGHT",
+      "v": "轻触右边",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_TUTORIAL_FREE_BOOST_DESC",
+      "v": "激活加成来临时性加强你的机器人或者增加你的奖励！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_UI_TUTORIAL_FREE_BOOST_HEADING",
+      "v": "当前有可用的免费加成",
+      "vn": 1
+    }
+  ]
+}

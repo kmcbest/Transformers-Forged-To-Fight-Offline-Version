@@ -1,0 +1,6105 @@
+{
+  "meta": {
+    "format": "sparx",
+    "language": "zh-CN",
+    "tagged": [
+      "special_attacks",
+      "client"
+    ],
+    "hash": "c5db847c97b5d0937366b082b5e868c31adc9127",
+    "ts": 1540571994,
+    "string_count": 351
+  },
+  "strings": [
+    {
+      "k": "ID_SPECIAL_ATTACK_ARCEE_GS_0",
+      "v": "技巧射击",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_ARCEE_GS_1",
+      "v": "黑寡妇",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_ARCEE_GS_2",
+      "v": "狙击",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_BARRICADE_CIN_0",
+      "v": "惩罚",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_BARRICADE_CIN_1",
+      "v": "镇压",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_BARRICADE_CIN_2",
+      "v": "派遣",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_BARRI_C_0",
+      "v": "惩罚",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_BARRI_C_1",
+      "v": "镇压",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_BARRI_C_2",
+      "v": "派遣",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_BLASTER_GS_0",
+      "v": "功放",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_BLASTER_GS_1",
+      "v": "钢钳",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_BLASTER_GS_2",
+      "v": "说唱选手",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_BLASTR_GS_0",
+      "v": "功放",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_BLASTR_GS_1",
+      "v": "钢钳",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_BLASTR_GS_2",
+      "v": "说唱选手",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_BLUDGEON_GS_0",
+      "v": "剑之道",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_BLUDGEON_GS_1",
+      "v": "畸变",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_BLUDGEON_GS_2",
+      "v": "练习射击",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_BLUDGE_GS_0",
+      "v": "剑之道",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_BLUDGE_GS_1",
+      "v": "畸变",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_BLUDGE_GS_2",
+      "v": "练习射击",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_BONECRUSHER_CIN_0",
+      "v": "蝎尾痛螫",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_BONECRUSHER_CIN_1",
+      "v": "厌恶",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_BONECRUSHER_CIN_2",
+      "v": "杀无赦！",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_BONEC_C_0",
+      "v": "蝎尾痛螫",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_BONEC_C_1",
+      "v": "厌恶",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_BONEC_C_2",
+      "v": "杀无赦！",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_BUMBLEBEE_CIN_0",
+      "v": "速踢",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_BUMBLEBEE_CIN_1",
+      "v": "漏洞射击",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_BUMBLEBEE_CIN_2",
+      "v": "炮弹冲击波",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_BUMBLEBEE_GS_0",
+      "v": "黄金猛踢",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_BUMBLEBEE_GS_1",
+      "v": "能量拥堵",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_BUMBLEBEE_GS_2",
+      "v": "驰骋之旅",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_BUMBL_C_0",
+      "v": "速踢",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_BUMBL_C_1",
+      "v": "漏洞射击",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_BUMBL_C_2",
+      "v": "炮弹冲击波",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_BUMBL_GS_0",
+      "v": "黄金猛踢",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_BUMBL_GS_1",
+      "v": "能量拥堵",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_BUMBL_GS_2",
+      "v": "驰骋之旅",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_CHEETOR_BW_0",
+      "v": "变形金属创伤",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_CHEETOR_BW_1",
+      "v": "类星体爆破",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_CHEETOR_BW_2",
+      "v": "巨无霸过载",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_CYCLONUS_GS_0",
+      "v": "宇宙边缘",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_CYCLONUS_GS_1",
+      "v": "银河枪",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_CYCLONUS_GS_2",
+      "v": "星际航行",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_CYCLON_GS_0",
+      "v": "宇宙边缘",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_CYCLON_GS_1",
+      "v": "银河枪",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_CYCLON_GS_2",
+      "v": "星际航行",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_ARCEE_GS_0",
+      "v": "阿尔茜有个值得炫耀的天赋：在空中倒挂时攻击从不落空。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_ARCEE_GS_1",
+      "v": "无与伦比的优雅三斩！",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_ARCEE_GS_2",
+      "v": "当她瞄准你时，跑是没用的。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_BARRICADE_CIN_0",
+      "v": "你有权保持沉默。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_BARRICADE_CIN_1",
+      "v": "使用电击制服对手。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_BARRICADE_CIN_2",
+      "v": "用双节棍制服你的对手...就是这样。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_BARRI_C_0",
+      "v": "你有权保持沉默。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_BARRI_C_1",
+      "v": "使用电击制服对手。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_BARRI_C_2",
+      "v": "用双节棍制服你的对手...就是这样。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_BLASTER_GS_0",
+      "v": "调高音量，启动节拍。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_BLASTER_GS_1",
+      "v": "录音机的麦可不是唯一会咆哮的东西。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_BLASTER_GS_2",
+      "v": "命中接踵而至。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_BLASTR_GS_0",
+      "v": "调高音量，启动节拍。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_BLASTR_GS_1",
+      "v": "录音机的麦可不是唯一会咆哮的东西。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_BLASTR_GS_2",
+      "v": "命中接踵而至。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_BLUDGEON_GS_0",
+      "v": "雷震从一个隐蔽位置跳进甲板舱，并拔出了隐藏的利刃。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_BLUDGEON_GS_1",
+      "v": "那些畏惧面对钢铠法的人永远无法取胜。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_BLUDGEON_GS_2",
+      "v": "塞伯坦最致命的一轮射击。拉！",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_BLUDGE_GS_0",
+      "v": "雷震从一个隐蔽位置跳进甲板舱，并拔出了隐藏的利刃。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_BLUDGE_GS_1",
+      "v": "那些畏惧面对钢铠法的人永远无法取胜。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_BLUDGE_GS_2",
+      "v": "塞伯坦最致命的一轮射击。拉！",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_BONECRUSHER_CIN_0",
+      "v": "副作用可能包括疼痛、感觉异常和猝死。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_BONECRUSHER_CIN_1",
+      "v": "一次由利爪和憎恨构成的野蛮旋转。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_BONECRUSHER_CIN_2",
+      "v": "撤退毫无荣誉可言。我们将战至粉身碎骨。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_BONEC_C_0",
+      "v": "副作用可能包括疼痛、感觉异常和猝死。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_BONEC_C_1",
+      "v": "一次由利爪和憎恨构成的野蛮旋转。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_BONEC_C_2",
+      "v": "撤退毫无荣誉可言。我们将战至粉身碎骨。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_BUMBLEBEE_CIN_0",
+      "v": "他也许像蝴蝶一样翩翩飞舞，但他的螫刺就像大黄蜂一般锐利。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_BUMBLEBEE_CIN_1",
+      "v": "当发动攻击和敌人爆炸时，你依然能从他眼里看见像年轻人那样的兴奋劲。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_BUMBLEBEE_CIN_2",
+      "v": "他近距离的一发上勾拳，造就了敌人生命中最后的体验。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_BUMBLEBEE_GS_0",
+      "v": "大黄蜂使出一招旋风踢。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_BUMBLEBEE_GS_1",
+      "v": "大黄蜂在打倒敌人前，用手枪过载轰炸他们的系统。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_BUMBLEBEE_GS_2",
+      "v": "大黄蜂的轮式战斗与他对远程攻击的狂热相得益彰。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_BUMBL_C_0",
+      "v": "他也许像蝴蝶一样翩翩飞舞，但他的螫刺就像大黄蜂一般锐利。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_BUMBL_C_1",
+      "v": "当发动攻击和敌人爆炸时，你依然能从他眼里看见像年轻人那样的兴奋劲。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_BUMBL_C_2",
+      "v": "他近距离的一发上勾拳，造就了敌人生命中最后的体验。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_BUMBL_GS_0",
+      "v": "大黄蜂使出一招旋风踢。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_BUMBL_GS_1",
+      "v": "大黄蜂在打倒敌人前，用手枪过载轰炸他们的系统。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_BUMBL_GS_2",
+      "v": "大黄蜂的轮式战斗与他对远程攻击的狂热相得益彰。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_CHEETOR_BW_0",
+      "v": "黄豹为对手送上最后一程。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_CHEETOR_BW_1",
+      "v": "爆破提升至全功率。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_CHEETOR_BW_2",
+      "v": "比曲速子弹还快。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_CYCLONUS_GS_0",
+      "v": "唯一能与此刀刃匹敌的就只有星辰剑。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_CYCLONUS_GS_1",
+      "v": "宇宙级爆炸。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_CYCLONUS_GS_2",
+      "v": "狂飙通过精确计算穿过对手正中心。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_CYCLON_GS_0",
+      "v": "唯一能与此刀刃匹敌的就只有星辰剑。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_CYCLON_GS_1",
+      "v": "宇宙级爆炸。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_CYCLON_GS_2",
+      "v": "狂飙通过精确计算穿过对手正中心。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_DINOBOT_BW_0",
+      "v": "恐龙勇士和他的对手抛向空中。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_DINOBOT_BW_1",
+      "v": "恐龙勇士对他的对手毫不心慈手软。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_DINOBOT_BW_2",
+      "v": "恐龙勇士以兽性的愤怒了结他的对手。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_DINOB_BW_0",
+      "v": "恐龙勇士和他的对手抛向空中。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_DINOB_BW_1",
+      "v": "恐龙勇士对他的对手毫不心慈手软。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_DINOB_BW_2",
+      "v": "恐龙勇士以兽性的愤怒了结他的对手。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_DINOB_GS_0",
+      "v": "恐龙勇士和他的对手被抛向空中。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_DINOB_GS_1",
+      "v": "恐龙勇士对他的对手毫不心慈手软。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_DINOB_GS_2",
+      "v": "恐龙勇士以兽性的愤怒了结他的对手。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_DRIFT_CIN_0",
+      "v": "战斗狂热...",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_DRIFT_CIN_1",
+      "v": "...远古神剑带出的疾风...",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_DRIFT_CIN_2",
+      "v": "...敌人已被征服。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_DRIFT_C_0",
+      "v": "战斗狂热...",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_DRIFT_C_1",
+      "v": "...远古神剑带出的疾风...",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_DRIFT_C_2",
+      "v": "...敌人已被征服。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_GALVATRON_GS_0",
+      "v": "经过精心设计的能量晶链锤，面对即便是最强悍机器人的防御也可完美粉碎。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_GALVATRON_GS_1",
+      "v": "威震天在他的聚合炮上开启了暴力设定。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_GALVATRON_GS_2",
+      "v": "杀红眼的威震天对敌人造成的巨大伤害没有上限。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_GRIMLOCK_GS_0",
+      "v": "一次力量与魔剑的并体攻击。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_GRIMLOCK_GS_1",
+      "v": "一次恐怖的地面扫击造成的震颤波从地面传到了敌人身上。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_GRIMLOCK_GS_2",
+      "v": "我钢锁不傻，我是王！",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_GRIML_GS_0",
+      "v": "一次力量与魔剑的并体攻击。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_GRIML_GS_1",
+      "v": "一次恐怖的地面扫击造成的震颤波从地面传到了敌人身上。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_GRIML_GS_2",
+      "v": "我钢锁不傻，我是王！",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_GRINDOR_CIN_0",
+      "v": "战争记忆触发了一次物理冲击，对对手造成了打击。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_GRINDOR_CIN_1",
+      "v": "旋转的刀锋不断切割对手的身体，提升他们的空中作战能力。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_GRINDOR_CIN_2",
+      "v": "把重力作为副驾驶，碾碎器带领他的对手体验高空冒险之旅。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_GRIND_C_ROTF_0",
+      "v": "战争记忆触发了一次物理冲击，对对手造成了打击。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_GRIND_C_ROTF_1",
+      "v": "旋转的刀锋不断切割对手的身体，提升他们的空中作战能力。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_GRIND_C_ROTF_2",
+      "v": "把重力作为副驾驶，碾碎器带领他的对手体验高空冒险之旅。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_HOTROD_CIN_0",
+      "v": "一阵空中飞踢击倒对手。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_HOTROD_CIN_1",
+      "v": "使出一连串杂技踢击，最后以一记时间泡泡枪终结。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_HOTROD_CIN_2",
+      "v": "一击必杀。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_HOTRO_C_0",
+      "v": "一阵空中飞踢击倒对手。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_HOTRO_C_1",
+      "v": "使出一连串杂技踢击，最后以一记时间泡泡枪终结。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_HOTRO_C_2",
+      "v": "一击必杀。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_HOUND_CIN_0",
+      "v": "男子汉来咯！",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_HOUND_CIN_1",
+      "v": "用海军旋转加农炮打洞什么的就太棒了。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_HOUND_CIN_2",
+      "v": "战斗到弹药耗尽那一刻！",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_HOUND_C_0",
+      "v": "男子汉来咯！",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_HOUND_C_1",
+      "v": "用海军旋转加农炮打洞什么的就太棒了。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_HOUND_C_2",
+      "v": "战斗到弹药耗尽那一刻！",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_IRONHIDE_CIN_0",
+      "v": "他爱显摆他的加农炮。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_IRONHIDE_CIN_1",
+      "v": "要是你把武器对准他，他会把你劈成两半。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_IRONHIDE_CIN_2",
+      "v": "消灭一切。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_IRONHIDE_GS_0",
+      "v": "他爱显摆他的加农炮。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_IRONHIDE_GS_1",
+      "v": "要是你把武器对准他，他会把你劈成两半。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_IRONHIDE_GS_2",
+      "v": "消灭一切。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_IRONH_C_ROTF_0",
+      "v": "他爱显摆他的加农炮。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_IRONH_C_ROTF_1",
+      "v": "要是你把武器对准他，他会把你劈成两半。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_IRONH_C_ROTF_2",
+      "v": "消灭一切。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_JAZZ_GS_0",
+      "v": "爵士使他的计划付诸实施。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_JAZZ_GS_1",
+      "v": "混乱比比皆是。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_JAZZ_GS_2",
+      "v": "压倒性的力量，潇洒兼具。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_JETFIRE_GS_0",
+      "v": "“裂解机是经常被误解的设备，请允许我展示它们的理想用途。”",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_JETFIRE_GS_1",
+      "v": "“在最好的情况下，深空旅行需要强大的防御系统。”",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_JETFIRE_GS_2",
+      "v": "“通过将引擎产生的杂散离子转移到裂解炮上，我发明了一种方法，可以向敌人的系统传送强大的电磁震击。”",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_KICKBACK_GS_0",
+      "v": "反冲使用一个震击爆炸，化羞辱为伤害。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_KICKBACK_GS_1",
+      "v": "那些翅膀可不是摆设。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_KICKBACK_GS_2",
+      "v": "希望？反冲表示不存在的。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_KICKB_GS_0",
+      "v": "反冲使用一个震击爆炸，化羞辱为伤害。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_KICKB_GS_1",
+      "v": "那些翅膀可不是摆设。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_KICKB_GS_2",
+      "v": "希望？反冲表示不存在的。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_MEGATRONUS_GS_0",
+      "v": "无限之力助燃无限之怒。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_MEGATRONUS_GS_1",
+      "v": "绝对领袖",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_MEGATRONUS_GS_2",
+      "v": "你的死期到了。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_MEGATRON_CIN_0",
+      "v": "对手被降级成无足轻重的走卒。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_MEGATRON_CIN_1",
+      "v": "通过征服达到统一。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_MEGATRON_CIN_2",
+      "v": "屈服于他的力量可活。跟他作对等于找死。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_MEGATRON_GS_0",
+      "v": "经过精心设计的能量晶链锤，面对即便是最强悍机器人的防御也可完美粉碎。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_MEGATRON_GS_1",
+      "v": "威震天在他的聚合炮上开启了暴力设定。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_MEGATRON_GS_2",
+      "v": "杀红眼的威震天对敌人造成的巨大伤害没有上限。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_MEGATRO_GS_0",
+      "v": "无限之力助燃无限之怒。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_MEGATRO_GS_1",
+      "v": "绝对领袖",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_MEGATRO_GS_2",
+      "v": "你的死期到了。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_MEGAT_C_0",
+      "v": "对手被降级成无足轻重的走卒。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_MEGAT_C_1",
+      "v": "通过征服达到统一。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_MEGAT_C_2",
+      "v": "屈服于他的力量可活。跟他作对等于找死。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_MEGAT_GS_0",
+      "v": "经过精心设计的能量晶链锤，面对即便是最强悍机器人的防御也可完美粉碎。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_MEGAT_GS_1",
+      "v": "威震天在他的聚合炮上开启了暴力设定。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_MEGAT_GS_2",
+      "v": "杀红眼的威震天对敌人造成的巨大伤害没有上限。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_MIRAGE_GS_0",
+      "v": "一次针对敌人核心车库制造爆炸的简短热身。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_MIRAGE_GS_1",
+      "v": "一次通过科技和伪装来维持新鲜的外观的秘密行动。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_MIRAGE_GS_2",
+      "v": "幻影总能给对手带来惊讶，要么是挑战惯性思维，要么是强力引入200MPH俱乐部。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_MIRAG_GS_0",
+      "v": "一次针对敌人核心车库制造爆炸的简短热身。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_MIRAG_GS_1",
+      "v": "一次通过科技和伪装来维持新鲜的外观的秘密行动。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_MIRAG_GS_2",
+      "v": "幻影总能给对手带来惊讶，要么是挑战惯性思维，要么是强力引入200MPH俱乐部。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_MIXMASTER_CIN_0",
+      "v": "一份狂怒和两份不可预测性造就了一次强袭猛攻。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_MIXMASTER_CIN_1",
+      "v": "搅拌者将它提升了一个等级然后……梆！",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_MIXMASTER_CIN_2",
+      "v": "搅拌者从底盘追逐中缓了缓，来认真对待他的对手。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_MIXMA_C_ROTF_0",
+      "v": "一份狂怒和两份不可预测性造就了一次强袭猛攻。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_MIXMA_C_ROTF_1",
+      "v": "搅拌者将它提升了一个等级然后……梆！",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_MIXMA_C_ROTF_2",
+      "v": "搅拌者从底盘追逐中缓了缓，来认真对待他的对手。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_MIXMA_GS_0",
+      "v": "一份狂怒和两份不可预测性造就了一次强袭猛攻。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_MIXMA_GS_1",
+      "v": "搅拌者将它提升了一个等级然后...梆！",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_MIXMA_GS_2",
+      "v": "搅拌者从底盘追逐中缓了缓，来认真对待他的对手。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_MOTORMASTER_GS_0",
+      "v": "一次空间金属能量爆炸让对手成了一堆废铁。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_MOTORMASTER_GS_1",
+      "v": "一辆开到最大功率并且渴望收割生命的高级工具车。瞬间治好所有路怒。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_MOTORMASTER_GS_2",
+      "v": "他同时具备无坚不摧的力量和稳固如山的防御。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_MOTORM_GS_0",
+      "v": "一次空间金属能量爆炸让对手成了一堆废铁。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_MOTORM_GS_1",
+      "v": "一辆开到最大功率并且渴望收割生命的高级工具车。瞬间治好所有路怒。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_MOTORM_GS_2",
+      "v": "他同时具备无坚不摧的力量和稳固如山的防御。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_NPC_SHARK_BRAW_0",
+      "v": "一个物理爆发令对手付出代价。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_NPC_SHARK_DEMO_0",
+      "v": "他爱显摆他的鳍大炮。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_NPC_SHARK_DEMO_1",
+      "v": "一起进食以达团结。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_NPC_SHARK_GOLD2_0",
+      "v": "乱拳打死老师傅。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_NPC_SHARK_GOLD2_1",
+      "v": "锁定，上膛，他发动了一次快速射击。小心！",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_NPC_SHARK_GOLD_0",
+      "v": "乱拳打死老师傅。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_NPC_SHARK_GOLD_1",
+      "v": "锁定，上膛，他发动了一次快速射击。小心！",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_NPC_SHARK_SCOU_0",
+      "v": "乱拳打死老师傅。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_NPC_SHARK_SCOU_1",
+      "v": "锁定，上膛，他发动了一次快速射击。小心！",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_NPC_SHARK_TACT_0",
+      "v": "浮游如蝶舞，撕咬似狂鲨。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_NPC_SHARK_TACT_1",
+      "v": "在锐利的能量斩击面前说再见吧。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_NPC_SHARK_TECH_0",
+      "v": "一次针对敌人核心车库制造爆炸的简短热身。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_NPC_SHARK_TECH_1",
+      "v": "一次通过科技和伪装来维持新鲜的外观的秘密行动。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_NPC_SHARK_WARR_0",
+      "v": "饿鲨从蛰伏的位置大弧度跃起，露出隐藏的利刃。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_NPC_SHARK_WARR_1",
+      "v": "起舞弄剑影。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_OPRIMAL_BW_0",
+      "v": "猩猩队长跃向空中向他的敌人展示正义。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_OPRIMAL_BW_1",
+      "v": "最快的和平之路，就是尽快结束战争。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_OPRIMAL_BW_2",
+      "v": "当与原始兽打交道时，有时野蛮是最好的选择。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_OPTIMUSPRIMAL_BW_0",
+      "v": "猩猩队长跃向空中向他的敌人展示正义。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_OPTIMUSPRIMAL_BW_1",
+      "v": "最快的和平之路，就是尽快结束战争。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_OPTIMUSPRIMAL_BW_2",
+      "v": "当与原始兽打交道时，有时野蛮是最好的选择。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_OPTIMUSPRIME_CIN_0",
+      "v": "两把剑给对手造成了双倍麻烦。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_OPTIMUSPRIME_CIN_1",
+      "v": "你必须克服一套强大又野蛮的剑刃连击，才能同擎天柱进行较量。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_OPTIMUSPRIME_CIN_2",
+      "v": "合则生，分则死。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_OPTIMUSPRIME_GS_0",
+      "v": "擎天柱使用能量斧对他的对手发动了一次致命旋转。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_OPTIMUSPRIME_GS_1",
+      "v": "在锐利的能量斩击面前说再见吧。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_OPTIMUSPRIME_GS_2",
+      "v": "不是你死就是我亡。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_OPTIMUS_CIN_0",
+      "v": "两把剑给对手造成了双倍麻烦。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_OPTIMUS_CIN_1",
+      "v": "你必须克服一套强大又野蛮的剑刃连击，才能同擎天柱进行较量。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_OPTIMUS_CIN_2",
+      "v": "合则生，分则死。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_OPTIMUS_C_TF_0",
+      "v": "两把剑给对手造成了双倍麻烦。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_OPTIMUS_C_TF_1",
+      "v": "你必须克服一套强大又野蛮的剑刃连击，才能同擎天柱进行较量。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_OPTIMUS_C_TF_2",
+      "v": "合则生，分则死。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_OPTIMUS_GS_0",
+      "v": "擎天柱使用能量斧对他的对手发动了一次致命旋转。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_OPTIMUS_GS_1",
+      "v": "在锐利的能量斩击面前说再见吧。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_OPTIMUS_GS_2",
+      "v": "不是你死就是我亡。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_PROWL_GS_0",
+      "v": "他的短保险丝及他们的短路。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_PROWL_GS_1",
+      "v": "锁定，加载，他发动了一次快速射击。小心！",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_PROWL_GS_2",
+      "v": "乘坐载有霰弹枪的警车绝对是一生唯一的体验。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_RAMJET_GS_0",
+      "v": "喷气机从他的胸腔中释放出一大堆火箭。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_RAMJET_GS_1",
+      "v": "突然冲击后爆发出的热量保证让对手头晕目眩。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_RAMJET_GS_2",
+      "v": "你可以逃走，但是你无法躲避喷气机的放手一搏。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_RATCHET_GS_0",
+      "v": "事半功倍。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_RATCHET_GS_1",
+      "v": "先帮自己再帮别人吧。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_RATCHET_GS_2",
+      "v": "救护车扫描他的目标以查清他们的要害...和弱点。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_RATCH_GS_0",
+      "v": "事半功倍。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_RATCH_GS_1",
+      "v": "先帮自己再帮别人吧。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_RATCH_GS_2",
+      "v": "救护车扫描他的目标以查清他们的要害...和弱点。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_RHINOX_GS_0",
+      "v": "一次明智的、深思熟虑的点拨才是解决争论的最好方法。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_RHINOX_GS_1",
+      "v": "有时候只有发动战争才能生存下来。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_RHINOX_GS_2",
+      "v": "才智过人但心胸狭隘也不能解决问题。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_RHINO_BW_0",
+      "v": "一次明智的、深思熟虑的点拨才是解决争论的最好方法。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_RHINO_BW_1",
+      "v": "有时候只有发动战争才能生存下来。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_RHINO_BW_2",
+      "v": "才智过人但心胸狭隘也不能解决问题。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_RODIMUSPRIME_GS_0",
+      "v": "一阵空中飞踢击倒对手。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_RODIMUSPRIME_GS_1",
+      "v": "使出一连串杂技踢击，最后以一记时间泡泡枪终结。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_RODIMUSPRIME_GS_2",
+      "v": "一击必杀。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SCORPONOK_BW_0",
+      "v": "电子蜂的毒素恶毒地攻击敌人的神经脉络。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SCORPONOK_BW_1",
+      "v": "萨克巨人擅长强加乱入元素。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SCORPONOK_BW_2",
+      "v": "萨克巨人带来的的原始灾难不会停止。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SCORPO_BW_0",
+      "v": "电子蜂的毒素恶毒地攻击敌人的神经脉络。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SCORPO_BW_1",
+      "v": "萨克巨人擅长强加乱入元素。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SCORPO_BW_2",
+      "v": "萨克巨人带来的的原始灾难不会停止。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SHARKTICON_GS_0",
+      "v": "一个物理爆发令对手付出代价。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SHARKTICON_GS_1",
+      "v": "来自这个斗士系饿鲨不可阻挡的连击。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SHARKTICON_GS_2",
+      "v": "这些鲨鱼在陆地上同样致命。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_BRAW_0",
+      "v": "一个物理爆发令对手付出代价。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_BRAW_1",
+      "v": "来自这个斗士系饿鲨不可阻挡的连击。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_BRAW_2",
+      "v": "这些鲨鱼在陆地上同样致命。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_DEMO_0",
+      "v": "他爱显摆他的鳍大炮。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_DEMO_1",
+      "v": "一起进食以达团结。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_DEMO_2",
+      "v": "这些鲨鱼在陆地上同样致命。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_GOLD2_0",
+      "v": "乱拳打死老师傅。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_GOLD2_1",
+      "v": "锁定，上膛，他发动了一次快速射击。小心！",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_GOLD2_2",
+      "v": "这些鲨鱼在陆地上同样致命。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_GOLD_0",
+      "v": "乱拳打死老师傅。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_GOLD_1",
+      "v": "锁定，上膛，他发动了一次快速射击。小心！",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_GOLD_2",
+      "v": "这些鲨鱼在陆地上同样致命。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_SCOU_0",
+      "v": "乱拳打死老师傅。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_SCOU_1",
+      "v": "锁定，上膛，他发动了一次快速射击。小心！",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_SCOU_2",
+      "v": "这些鲨鱼在陆地上同样致命。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_TACT_0",
+      "v": "浮游如蝶舞，撕咬似狂鲨。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_TACT_1",
+      "v": "在锐利的能量斩击面前说再见吧。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_TACT_2",
+      "v": "这些鲨鱼在陆地上同样致命。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_TECH_0",
+      "v": "一次针对敌人核心车库制造爆炸的简短热身。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_TECH_1",
+      "v": "一次通过科技和伪装来维持新鲜的外观的秘密行动。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_TECH_2",
+      "v": "这些鲨鱼在陆地上同样致命。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_WARR_0",
+      "v": "饿鲨从蛰伏的位置大弧度跃起，露出隐藏的利刃。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_WARR_1",
+      "v": "起舞弄剑影。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_WARR_2",
+      "v": "这些鲨鱼在陆地上同样致命。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SHOCKWAVE_GS_0",
+      "v": "逻辑推论，当机器人大脑的微芯片直接受到表面冲击时将会炸开。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SHOCKWAVE_GS_1",
+      "v": "当你受到打击时，你会感觉身上的每个分子以光速发生爆炸。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SHOCKWAVE_GS_2",
+      "v": "跟一把大枪，一把小枪，还有一把瞄准你大脑模块的枪打个招呼吧。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SHOCK_C_0",
+      "v": "逻辑推论，当机器人大脑的微芯片直接受到表面冲击时将会炸开。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SHOCK_C_1",
+      "v": "当你受到打击时，你会感觉身上的每个分子以光速发生爆炸。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SHOCK_C_2",
+      "v": "跟一把大枪，一把小枪，还有一把瞄准你大脑模块的枪打个招呼吧。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SIDESWIPE_GS_0",
+      "v": "一串花拳绣腿固然好看，但一记速踢更中用",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SIDESWIPE_GS_1",
+      "v": "用一次潇洒的肩部加农炮射击改写剧本。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SIDESWIPE_GS_2",
+      "v": "用你的风格让对手念念不忘。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SIDES_GS_0",
+      "v": "一串花拳绣腿固然好看，但一记速踢更中用",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SIDES_GS_1",
+      "v": "用一次潇洒的肩部加农炮射击改写剧本。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SIDES_GS_2",
+      "v": "用你的风格让对手念念不忘。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SKYWARP_GS_0",
+      "v": "奉承者的最后复仇",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SKYWARP_GS_1",
+      "v": "他瞄准你了！",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SKYWARP_GS_2",
+      "v": "消灭掉敌人，才能做到征服。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SOUNDWAVE_GS_0",
+      "v": "听听这个你的耳朵会燃起来。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SOUNDWAVE_GS_1",
+      "v": "机器狗。备战。发射！",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SOUNDWAVE_GS_2",
+      "v": "用终极合体将它提升至11，激光鸟和机器狗的功能将会发挥出来。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SOUND_GS_0",
+      "v": "听听这个你的耳朵会燃起来。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SOUND_GS_1",
+      "v": "机器狗。备战。发射！",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SOUND_GS_2",
+      "v": "用终极合体将它提升至11，激光鸟和机器狗的功能将会发挥出来。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_STARSCREAM_GS_0",
+      "v": "奉承者的最后复仇",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_STARSCREAM_GS_1",
+      "v": "他瞄准你了！",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_STARSCREAM_GS_2",
+      "v": "消灭掉敌人，才能做到征服。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_STARS_GS_0",
+      "v": "奉承者的最后复仇",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_STARS_GS_1",
+      "v": "他瞄准你了！",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_STARS_GS_2",
+      "v": "消灭掉敌人，才能做到征服。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SUNSTREAKER_GS_0",
+      "v": "一串花拳绣腿固然好看，但一记速踢更中用",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SUNSTREAKER_GS_1",
+      "v": "用一次潇洒的肩部加农炮射击改写剧本。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_SUNSTREAKER_GS_2",
+      "v": "用你的风格让对手念念不忘。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_TANTRUM_GS_0",
+      "v": "野牛总是很鲁莽。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_TANTRUM_GS_1",
+      "v": "准备好牛躯一震吧。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_TANTRUM_GS_2",
+      "v": "不屈不挠，无法阻挡，并且完全不可阻挡。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_THUNDERCRACKER_GS_0",
+      "v": "奉承者的最后复仇",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_THUNDERCRACKER_GS_1",
+      "v": "他瞄准你了！",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_THUNDERCRACKER_GS_2",
+      "v": "消灭掉敌人，才能做到征服。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_ULTRAMAGNUS_GS_0",
+      "v": "当锤子落下时，判决已经生效。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_ULTRAMAGNUS_GS_1",
+      "v": "遵守规则或者承受后果。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_ULTRAMAGNUS_GS_2",
+      "v": "毫不犹豫的献身是一个职业士兵的最大荣耀。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_ULTRAM_GS_0",
+      "v": "当锤子落下时，判决已经生效。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_ULTRAM_GS_1",
+      "v": "遵守规则或者承受后果。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_ULTRAM_GS_2",
+      "v": "毫不犹豫的献身是一个职业士兵的最大荣耀。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_WASPINATOR_GS_0",
+      "v": "黄蜂勇士的光学传感器超载了！",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_WASPINATOR_GS_1",
+      "v": "黄蜂勇士一记飞踢转而用枪。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_WASPINATOR_GS_2",
+      "v": "现在黄蜂勇士有了巨型炸弹！现在黄蜂勇士是最强的原始兽！",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_WASP_BW_0",
+      "v": "黄蜂勇士的光学传感器超载了！",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_WASP_BW_1",
+      "v": "黄蜂勇士一记飞踢转而用枪。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_WASP_BW_2",
+      "v": "现在黄蜂勇士有了巨型炸弹！现在黄蜂勇士是最强的原始兽！",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_WHEELJACK_GS_0",
+      "v": "千斤顶对他的最新发明进行了测试。绝无可能出状况的。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_WHEELJACK_GS_1",
+      "v": "一些修改需要谨慎。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_WHEELJACK_GS_2",
+      "v": "所有的结果都符合成功的关键指标。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_WHEELJ_GS_0",
+      "v": "千斤顶对他的最新发明进行了测试。绝无可能出状况的。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_WHEELJ_GS_1",
+      "v": "一些修改需要谨慎。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_WHEELJ_GS_2",
+      "v": "所有的结果都符合成功的关键指标。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_WINDBLADE_GS_0",
+      "v": "对敌人进行地面扫击观察而让他们受到冲击的实验。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_WINDBLADE_GS_1",
+      "v": "他们会目瞪口呆，然后受到剑刃攻击。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_WINDBLADE_GS_2",
+      "v": "把他们打得四分五裂。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_WINDB_GS_0",
+      "v": "对敌人进行地面扫击观察而让他们受到冲击的实验。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_WINDB_GS_1",
+      "v": "他们会目瞪口呆，然后受到剑刃攻击。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DESCRIPTION_WINDB_GS_2",
+      "v": "把他们打得四分五裂。",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DINOBOT_BW_0",
+      "v": "三叠纪动荡",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DINOBOT_BW_1",
+      "v": "侏罗纪正义",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DINOBOT_BW_2",
+      "v": "白垩纪大屠杀",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DINOB_BW_0",
+      "v": "三叠纪动荡",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DINOB_BW_1",
+      "v": "侏罗纪正义",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DINOB_BW_2",
+      "v": "白垩纪大屠杀",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DINOB_GS_0",
+      "v": "三叠纪动荡",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DINOB_GS_1",
+      "v": "侏罗纪正义",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DINOB_GS_2",
+      "v": "白垩纪大屠杀",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DRIFT_CIN_0",
+      "v": "英勇",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DRIFT_CIN_1",
+      "v": "训诫",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DRIFT_CIN_2",
+      "v": "尊重",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DRIFT_C_0",
+      "v": "英勇",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DRIFT_C_1",
+      "v": "训诫",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_DRIFT_C_2",
+      "v": "尊重",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_GALVATRON_GS_0",
+      "v": "能量晶体碰撞",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_GALVATRON_GS_1",
+      "v": "原子弹头",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_GALVATRON_GS_2",
+      "v": "小菜一碟",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_GRIMLOCK_GS_0",
+      "v": "恐龙战队",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_GRIMLOCK_GS_1",
+      "v": "震颤",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_GRIMLOCK_GS_2",
+      "v": "国王！",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_GRIML_GS_0",
+      "v": "恐龙战队",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_GRIML_GS_1",
+      "v": "震颤",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_GRIML_GS_2",
+      "v": "国王！",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_GRINDOR_CIN_0",
+      "v": "物理治疗",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_GRINDOR_CIN_1",
+      "v": "愤怒旋转",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_GRINDOR_CIN_2",
+      "v": "俯冲",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_GRIND_C_ROTF_0",
+      "v": "物理治疗",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_GRIND_C_ROTF_1",
+      "v": "愤怒旋转",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_GRIND_C_ROTF_2",
+      "v": "俯冲",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_HOTROD_CIN_0",
+      "v": "惩罚回旋",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_HOTROD_CIN_1",
+      "v": "时间篡改",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_HOTROD_CIN_2",
+      "v": "时间泡泡爆破",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_HOTRO_C_0",
+      "v": "惩罚回旋",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_HOTRO_C_1",
+      "v": "时间篡改",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_HOTRO_C_2",
+      "v": "时间泡泡爆破",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_HOUND_CIN_0",
+      "v": "雷声滚滚",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_HOUND_CIN_1",
+      "v": "保险栓解除",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_HOUND_CIN_2",
+      "v": "纯汽车人",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_HOUND_C_0",
+      "v": "雷声滚滚",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_HOUND_C_1",
+      "v": "保险栓解除",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_HOUND_C_2",
+      "v": "纯汽车人",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_IRONHIDE_CIN_0",
+      "v": "感觉走运",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_IRONHIDE_CIN_1",
+      "v": "打破僵持",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_IRONHIDE_CIN_2",
+      "v": "全金属军械库",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_IRONHIDE_GS_0",
+      "v": "感觉走运",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_IRONHIDE_GS_1",
+      "v": "打破僵持",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_IRONHIDE_GS_2",
+      "v": "全金属军械库",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_IRONH_C_ROTF_0",
+      "v": "感觉走运",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_IRONH_C_ROTF_1",
+      "v": "打破僵持",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_IRONH_C_ROTF_2",
+      "v": "全金属军械库",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_JAZZ_GS_0",
+      "v": "旋风踢",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_JAZZ_GS_1",
+      "v": "炫目展示",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_JAZZ_GS_2",
+      "v": "搏击节奏",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_JETFIRE_GS_0",
+      "v": "武器全功率",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_JETFIRE_GS_1",
+      "v": "强化护盾",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_JETFIRE_GS_2",
+      "v": "意志之火",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_KICKBACK_GS_0",
+      "v": "震击伤口",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_KICKBACK_GS_1",
+      "v": "划破",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_KICKBACK_GS_2",
+      "v": "需要投喂",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_KICKB_GS_0",
+      "v": "震击伤口",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_KICKB_GS_1",
+      "v": "划破",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_KICKB_GS_2",
+      "v": "需要投喂",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_MEGATRONUS_GS_0",
+      "v": "权力掌握",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_MEGATRONUS_GS_1",
+      "v": "不可估量",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_MEGATRONUS_GS_2",
+      "v": "真正的领袖",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_MEGATRON_CIN_0",
+      "v": "压制",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_MEGATRON_CIN_1",
+      "v": "和平与暴政",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_MEGATRON_CIN_2",
+      "v": "黑暗赦免",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_MEGATRON_GS_0",
+      "v": "能量晶体碰撞",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_MEGATRON_GS_1",
+      "v": "原子弹头",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_MEGATRON_GS_2",
+      "v": "小菜一碟",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_MEGATRO_GS_0",
+      "v": "权力掌握",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_MEGATRO_GS_1",
+      "v": "不可估量",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_MEGATRO_GS_2",
+      "v": "真正的领袖",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_MEGAT_C_0",
+      "v": "压制",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_MEGAT_C_1",
+      "v": "和平与暴政",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_MEGAT_C_2",
+      "v": "黑暗赦免",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_MEGAT_GS_0",
+      "v": "能量晶体碰撞",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_MEGAT_GS_1",
+      "v": "原子弹头",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_MEGAT_GS_2",
+      "v": "小菜一碟",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_MIRAGE_GS_0",
+      "v": "抢跑",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_MIRAGE_GS_1",
+      "v": "掌法和拳法",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_MIRAGE_GS_2",
+      "v": "借口",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_MIRAG_GS_0",
+      "v": "抢跑",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_MIRAG_GS_1",
+      "v": "掌法和拳法",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_MIRAG_GS_2",
+      "v": "借口",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_MIXMASTER_CIN_0",
+      "v": "后患无穷",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_MIXMASTER_CIN_1",
+      "v": "混合",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_MIXMASTER_CIN_2",
+      "v": "着手毁坏",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_MIXMA_C_ROTF_0",
+      "v": "后患无穷",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_MIXMA_C_ROTF_1",
+      "v": "混合",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_MIXMA_C_ROTF_2",
+      "v": "着手毁坏",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_MIXMA_GS_0",
+      "v": "后患无穷",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_MIXMA_GS_1",
+      "v": "混合",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_MIXMA_GS_2",
+      "v": "着手毁坏",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_MOTORMASTER_GS_0",
+      "v": "离子刀",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_MOTORMASTER_GS_1",
+      "v": "大师工艺",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_MOTORMASTER_GS_2",
+      "v": "路的尽头",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_MOTORM_GS_0",
+      "v": "离子刀",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_MOTORM_GS_1",
+      "v": "大师工艺",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_MOTORM_GS_2",
+      "v": "路的尽头",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_NPC_SHARK_BRAW_0",
+      "v": "鲨鱼疗法",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_NPC_SHARK_BRAW_1",
+      "v": "不可阻挡的狂暴",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_NPC_SHARK_BRAW_2",
+      "v": "饿鲨来袭",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_NPC_SHARK_DEMO_0",
+      "v": "牙齿倍儿棒",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_NPC_SHARK_DEMO_1",
+      "v": "和平、暴政和用餐时间",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_NPC_SHARK_DEMO_2",
+      "v": "饿鲨来袭",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_NPC_SHARK_GOLD2_0",
+      "v": "大摇大摆的饿鲨-1000",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_NPC_SHARK_GOLD2_1",
+      "v": "饿鲨-1000枪手鱼",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_NPC_SHARK_GOLD2_2",
+      "v": "饿鲨-1000来袭",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_NPC_SHARK_GOLD_0",
+      "v": "大摇大摆的黄金鲨鱼",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_NPC_SHARK_GOLD_1",
+      "v": "黄金枪手鱼",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_NPC_SHARK_GOLD_2",
+      "v": "黄金鲨鱼攻击",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_NPC_SHARK_SCOU_0",
+      "v": "大摇大摆的鲨鱼",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_NPC_SHARK_SCOU_1",
+      "v": "枪手鱼",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_NPC_SHARK_SCOU_2",
+      "v": "饿鲨来袭",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_NPC_SHARK_TACT_0",
+      "v": "甩鳍",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_NPC_SHARK_TACT_1",
+      "v": "猛力一砍",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_NPC_SHARK_TACT_2",
+      "v": "饿鲨来袭",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_NPC_SHARK_TECH_0",
+      "v": "鲨鱼爆炸",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_NPC_SHARK_TECH_1",
+      "v": "指如疾风，鳍如闪电",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_NPC_SHARK_TECH_2",
+      "v": "饿鲨来袭",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_NPC_SHARK_WARR_0",
+      "v": "鲨鱼之道",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_NPC_SHARK_WARR_1",
+      "v": "鲨鱼舞",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_NPC_SHARK_WARR_2",
+      "v": "饿鲨来袭",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_OPRIMAL_BW_0",
+      "v": "丛林的法则",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_OPRIMAL_BW_1",
+      "v": "野兽勇士",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_OPRIMAL_BW_2",
+      "v": "大猩猩的战争",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_OPTIMUSPRIMAL_BW_0",
+      "v": "丛林的法则",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_OPTIMUSPRIMAL_BW_1",
+      "v": "野兽勇士",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_OPTIMUSPRIMAL_BW_2",
+      "v": "大猩猩的战争",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_OPTIMUSPRIME_CIN_0",
+      "v": "守护者猛击",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_OPTIMUSPRIME_CIN_1",
+      "v": "我会把你们统统消灭！",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_OPTIMUSPRIME_CIN_2",
+      "v": "汽车人的力量",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_OPTIMUSPRIME_GS_0",
+      "v": "能量切割",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_OPTIMUSPRIME_GS_1",
+      "v": "斧击",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_OPTIMUSPRIME_GS_2",
+      "v": "不计代价",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_OPTIMUS_CIN_0",
+      "v": "守护者猛击",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_OPTIMUS_CIN_1",
+      "v": "我会把你们统统消灭！",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_OPTIMUS_CIN_2",
+      "v": "汽车人的力量",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_OPTIMUS_C_TF_0",
+      "v": "守护者猛击",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_OPTIMUS_C_TF_1",
+      "v": "我会把你们统统消灭！",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_OPTIMUS_C_TF_2",
+      "v": "汽车人的力量",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_OPTIMUS_GS_0",
+      "v": "能量切割",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_OPTIMUS_GS_1",
+      "v": "斧击",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_OPTIMUS_GS_2",
+      "v": "不计代价",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_PROWL_GS_0",
+      "v": "短路",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_PROWL_GS_1",
+      "v": "枪手",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_PROWL_GS_2",
+      "v": "运输护卫",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_RAMJET_GS_0",
+      "v": "导弹齐发",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_RAMJET_GS_1",
+      "v": "火箭爆破",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_RAMJET_GS_2",
+      "v": "潜水炸弹",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_RATCHET_GS_0",
+      "v": "拧紧扳手",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_RATCHET_GS_1",
+      "v": "应急响应",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_RATCHET_GS_2",
+      "v": "诊断扫描",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_RATCH_GS_0",
+      "v": "拧紧扳手",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_RATCH_GS_1",
+      "v": "应急响应",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_RATCH_GS_2",
+      "v": "诊断扫描",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_RHINOX_GS_0",
+      "v": "戈尔战术",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_RHINOX_GS_1",
+      "v": "末日之机关炮",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_RHINOX_GS_2",
+      "v": "猛虎出笼",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_RHINO_BW_0",
+      "v": "戈尔战术",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_RHINO_BW_1",
+      "v": "末日之机关炮",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_RHINO_BW_2",
+      "v": "猛虎出笼",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_RODIMUSPRIME_GS_0",
+      "v": "惩罚回旋",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_RODIMUSPRIME_GS_1",
+      "v": "时间篡改",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_RODIMUSPRIME_GS_2",
+      "v": "时间泡泡爆破",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SCORPONOK_BW_0",
+      "v": "目眩和毁坏",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SCORPONOK_BW_1",
+      "v": "隧道恐怖",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SCORPONOK_BW_2",
+      "v": "原始兽迫害",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SCORPO_BW_0",
+      "v": "目眩和毁坏",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SCORPO_BW_1",
+      "v": "隧道恐怖",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SCORPO_BW_2",
+      "v": "原始兽迫害",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SHARKTICON_GS_0",
+      "v": "鲨鱼疗法",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SHARKTICON_GS_1",
+      "v": "不可阻挡的狂暴",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SHARKTICON_GS_2",
+      "v": "饿鲨来袭",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SHARK_BRAW_0",
+      "v": "鲨鱼疗法",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SHARK_BRAW_1",
+      "v": "不可阻挡的狂暴",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SHARK_BRAW_2",
+      "v": "饿鲨来袭",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SHARK_DEMO_0",
+      "v": "牙齿倍儿棒",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SHARK_DEMO_1",
+      "v": "和平、暴政和用餐时间",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SHARK_DEMO_2",
+      "v": "饿鲨来袭",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SHARK_GOLD2_0",
+      "v": "大摇大摆的饿鲨-1000",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SHARK_GOLD2_1",
+      "v": "饿鲨-1000枪手鱼",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SHARK_GOLD2_2",
+      "v": "饿鲨-1000来袭",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SHARK_GOLD_0",
+      "v": "大摇大摆的黄金鲨鱼",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SHARK_GOLD_1",
+      "v": "黄金枪手鱼",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SHARK_GOLD_2",
+      "v": "黄金鲨鱼攻击",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SHARK_SCOU_0",
+      "v": "大摇大摆的鲨鱼",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SHARK_SCOU_1",
+      "v": "枪手鱼",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SHARK_SCOU_2",
+      "v": "饿鲨来袭",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SHARK_TACT_0",
+      "v": "甩鳍",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SHARK_TACT_1",
+      "v": "猛力一砍",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SHARK_TACT_2",
+      "v": "饿鲨来袭",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SHARK_TECH_0",
+      "v": "鲨鱼爆炸",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SHARK_TECH_1",
+      "v": "指如疾风，鳍如闪电",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SHARK_TECH_2",
+      "v": "饿鲨来袭",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SHARK_WARR_0",
+      "v": "鲨鱼之道",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SHARK_WARR_1",
+      "v": "鲨鱼舞",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SHARK_WARR_2",
+      "v": "饿鲨来袭",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SHOCKWAVE_GS_0",
+      "v": "震荡波",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SHOCKWAVE_GS_1",
+      "v": "激光扫描",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SHOCKWAVE_GS_2",
+      "v": "小朋友",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SHOCK_C_0",
+      "v": "震荡波",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SHOCK_C_1",
+      "v": "激光扫描",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SHOCK_C_2",
+      "v": "小朋友",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SIDESWIPE_GS_0",
+      "v": "招摇",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SIDESWIPE_GS_1",
+      "v": "返校大作战",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SIDESWIPE_GS_2",
+      "v": "霹雳舞对决",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SIDES_GS_0",
+      "v": "招摇",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SIDES_GS_1",
+      "v": "返校大作战",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SIDES_GS_2",
+      "v": "霹雳舞对决",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SKYWARP_GS_0",
+      "v": "空中优势组合",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SKYWARP_GS_1",
+      "v": "狡猾的背叛",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SKYWARP_GS_2",
+      "v": "零射线遗忘",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SOUNDWAVE_GS_0",
+      "v": "音波炮",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SOUNDWAVE_GS_1",
+      "v": "机器狗",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SOUNDWAVE_GS_2",
+      "v": "喷射",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SOUND_GS_0",
+      "v": "音波炮",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SOUND_GS_1",
+      "v": "机器狗",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SOUND_GS_2",
+      "v": "喷射",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_STARSCREAM_GS_0",
+      "v": "空中优势组合",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_STARSCREAM_GS_1",
+      "v": "狡猾的背叛",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_STARSCREAM_GS_2",
+      "v": "零射线遗忘",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_STARS_GS_0",
+      "v": "空中优势组合",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_STARS_GS_1",
+      "v": "狡猾的背叛",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_STARS_GS_2",
+      "v": "零射线遗忘",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SUNSTREAKER_GS_0",
+      "v": "招摇",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SUNSTREAKER_GS_1",
+      "v": "返校大作战",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_SUNSTREAKER_GS_2",
+      "v": "霹雳舞对决",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_TANTRUM_GS_0",
+      "v": "喷火器",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_TANTRUM_GS_1",
+      "v": "电能剑",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_TANTRUM_GS_2",
+      "v": "横冲直撞",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_THUNDERCRACKER_GS_0",
+      "v": "空中优势组合",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_THUNDERCRACKER_GS_1",
+      "v": "狡猾的背叛",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_THUNDERCRACKER_GS_2",
+      "v": "零射线遗忘",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_ULTRAMAGNUS_GS_0",
+      "v": "搥碎",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_ULTRAMAGNUS_GS_1",
+      "v": "我为人人",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_ULTRAMAGNUS_GS_2",
+      "v": "代表作",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_ULTRAM_GS_0",
+      "v": "搥碎",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_ULTRAM_GS_1",
+      "v": "我为人人",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_ULTRAM_GS_2",
+      "v": "代表作",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_WASPINATOR_GS_0",
+      "v": "雷射眼",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_WASPINATOR_GS_1",
+      "v": "不稳定叮刺",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_WASPINATOR_GS_2",
+      "v": "核惊喜",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_WASP_BW_0",
+      "v": "雷射眼",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_WASP_BW_1",
+      "v": "不稳定叮刺",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_WASP_BW_2",
+      "v": "核惊喜",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_WHEELJACK_GS_0",
+      "v": "原型",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_WHEELJACK_GS_1",
+      "v": "迭代",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_WHEELJACK_GS_2",
+      "v": "完美",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_WHEELJ_GS_0",
+      "v": "原型",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_WHEELJ_GS_1",
+      "v": "迭代",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_WHEELJ_GS_2",
+      "v": "完美",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_WINDBLADE_GS_0",
+      "v": "电路限制器",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_WINDBLADE_GS_1",
+      "v": "剑舞",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_WINDBLADE_GS_2",
+      "v": "空中扫射",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_WINDB_GS_0",
+      "v": "电路限制器",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_WINDB_GS_1",
+      "v": "剑舞",
+      "vn": 1
+    },
+    {
+      "k": "ID_SPECIAL_ATTACK_WINDB_GS_2",
+      "v": "空中扫射",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_ARCEE_GS_0",
+      "v": "技巧射击",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_ARCEE_GS_1",
+      "v": "黑寡妇",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_ARCEE_GS_2",
+      "v": "狙击",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_BARRICADE_CIN_0",
+      "v": "惩罚",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_BARRICADE_CIN_1",
+      "v": "镇压",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_BARRICADE_CIN_2",
+      "v": "派遣",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_BARRI_C_0",
+      "v": "惩罚",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_BARRI_C_1",
+      "v": "镇压",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_BARRI_C_2",
+      "v": "派遣",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_BLASTER_GS_0",
+      "v": "功放",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_BLASTER_GS_1",
+      "v": "钢钳",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_BLASTER_GS_2",
+      "v": "说唱选手",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_BLASTR_GS_0",
+      "v": "功放",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_BLASTR_GS_1",
+      "v": "钢钳",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_BLASTR_GS_2",
+      "v": "说唱选手",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_BLUDGEON_GS_0",
+      "v": "剑之道",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_BLUDGEON_GS_1",
+      "v": "畸变",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_BLUDGEON_GS_2",
+      "v": "练习射击",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_BLUDGE_GS_0",
+      "v": "剑之道",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_BLUDGE_GS_1",
+      "v": "畸变",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_BLUDGE_GS_2",
+      "v": "练习射击",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_BONECRUSHER_CIN_0",
+      "v": "蝎尾痛螫",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_BONECRUSHER_CIN_1",
+      "v": "厌恶",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_BONECRUSHER_CIN_2",
+      "v": "杀无赦！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_BONEC_C_0",
+      "v": "蝎尾痛螫",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_BONEC_C_1",
+      "v": "厌恶",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_BONEC_C_2",
+      "v": "杀无赦！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_BUMBLEBEE_CIN_0",
+      "v": "速踢",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_BUMBLEBEE_CIN_1",
+      "v": "漏洞射击",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_BUMBLEBEE_CIN_2",
+      "v": "炮弹冲击波",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_BUMBLEBEE_GS_0",
+      "v": "黄金猛踢",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_BUMBLEBEE_GS_1",
+      "v": "能量拥堵",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_BUMBLEBEE_GS_2",
+      "v": "驰骋之旅",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_BUMBL_C_0",
+      "v": "速踢",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_BUMBL_C_1",
+      "v": "漏洞射击",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_BUMBL_C_2",
+      "v": "炮弹冲击波",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_BUMBL_GS_0",
+      "v": "黄金猛踢",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_BUMBL_GS_1",
+      "v": "能量拥堵",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_BUMBL_GS_2",
+      "v": "驰骋之旅",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_CHEETOR_BW_0",
+      "v": "变形金属创伤",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_CHEETOR_BW_1",
+      "v": "类星体爆破",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_CHEETOR_BW_2",
+      "v": "巨无霸过载",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_CYCLONUS_GS_0",
+      "v": "宇宙边缘",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_CYCLONUS_GS_1",
+      "v": "银河枪",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_CYCLONUS_GS_2",
+      "v": "星际航行",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_CYCLON_GS_0",
+      "v": "宇宙边缘",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_CYCLON_GS_1",
+      "v": "银河枪",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_CYCLON_GS_2",
+      "v": "星际航行",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_ARCEE_GS_0",
+      "v": "阿尔茜有个值得炫耀的天赋：在空中倒挂时攻击从不落空。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_ARCEE_GS_1",
+      "v": "无与伦比的优雅三斩！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_ARCEE_GS_2",
+      "v": "当她瞄准你时，跑是没用的。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_BARRICADE_CIN_0",
+      "v": "你有权保持沉默。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_BARRICADE_CIN_1",
+      "v": "使用电击制服对手。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_BARRICADE_CIN_2",
+      "v": "用双节棍制服你的对手...就是这样。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_BARRI_C_0",
+      "v": "你有权保持沉默。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_BARRI_C_1",
+      "v": "使用电击制服对手。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_BARRI_C_2",
+      "v": "用双节棍制服你的对手...就是这样。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_BLASTER_GS_0",
+      "v": "调高音量，启动节拍。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_BLASTER_GS_1",
+      "v": "录音机的麦可不是唯一会咆哮的东西。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_BLASTER_GS_2",
+      "v": "命中接踵而至。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_BLASTR_GS_0",
+      "v": "调高音量，启动节拍。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_BLASTR_GS_1",
+      "v": "录音机的麦可不是唯一会咆哮的东西。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_BLASTR_GS_2",
+      "v": "命中接踵而至。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_BLUDGEON_GS_0",
+      "v": "雷震从一个隐蔽位置跳进甲板舱，并拔出了隐藏的利刃。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_BLUDGEON_GS_1",
+      "v": "那些畏惧面对钢铠法的人永远无法取胜。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_BLUDGEON_GS_2",
+      "v": "塞伯坦最致命的一轮射击。拉！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_BLUDGE_GS_0",
+      "v": "雷震从一个隐蔽位置跳进甲板舱，并拔出了隐藏的利刃。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_BLUDGE_GS_1",
+      "v": "那些畏惧面对钢铠法的人永远无法取胜。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_BLUDGE_GS_2",
+      "v": "塞伯坦最致命的一轮射击。拉！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_BONECRUSHER_CIN_0",
+      "v": "副作用可能包括疼痛、感觉异常和猝死。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_BONECRUSHER_CIN_1",
+      "v": "一次由利爪和憎恨构成的野蛮旋转。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_BONECRUSHER_CIN_2",
+      "v": "撤退毫无荣誉可言。我们将战至粉身碎骨。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_BONEC_C_0",
+      "v": "副作用可能包括疼痛、感觉异常和猝死。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_BONEC_C_1",
+      "v": "一次由利爪和憎恨构成的野蛮旋转。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_BONEC_C_2",
+      "v": "撤退毫无荣誉可言。我们将战至粉身碎骨。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_BUMBLEBEE_CIN_0",
+      "v": "他也许像蝴蝶一样翩翩飞舞，但他的螫刺就像大黄蜂一般锐利。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_BUMBLEBEE_CIN_1",
+      "v": "当发动攻击和敌人爆炸时，你依然能从他眼里看见像年轻人那样的兴奋劲。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_BUMBLEBEE_CIN_2",
+      "v": "他近距离的一发上勾拳，造就了敌人生命中最后的体验。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_BUMBLEBEE_GS_0",
+      "v": "大黄蜂使出一招旋风踢。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_BUMBLEBEE_GS_1",
+      "v": "大黄蜂在打倒敌人前，用手枪过载轰炸他们的系统。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_BUMBLEBEE_GS_2",
+      "v": "大黄蜂的轮式战斗与他对远程攻击的狂热相得益彰。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_BUMBL_C_0",
+      "v": "他也许像蝴蝶一样翩翩飞舞，但他的螫刺就像大黄蜂一般锐利。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_BUMBL_C_1",
+      "v": "当发动攻击和敌人爆炸时，你依然能从他眼里看见像年轻人那样的兴奋劲。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_BUMBL_C_2",
+      "v": "他近距离的一发上勾拳，造就了敌人生命中最后的体验。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_BUMBL_GS_0",
+      "v": "大黄蜂使出一招旋风踢。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_BUMBL_GS_1",
+      "v": "大黄蜂在打倒敌人前，用手枪过载轰炸他们的系统。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_BUMBL_GS_2",
+      "v": "大黄蜂的轮式战斗与他对远程攻击的狂热相得益彰。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_CHEETOR_BW_0",
+      "v": "黄豹为对手送上最后一程。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_CHEETOR_BW_1",
+      "v": "爆破提升至全功率。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_CHEETOR_BW_2",
+      "v": "比曲速子弹还快。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_CYCLONUS_GS_0",
+      "v": "唯一能与此刀刃匹敌的就只有星辰剑。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_CYCLONUS_GS_1",
+      "v": "宇宙级爆炸。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_CYCLONUS_GS_2",
+      "v": "狂飙通过精确计算穿过对手正中心。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_CYCLON_GS_0",
+      "v": "唯一能与此刀刃匹敌的就只有星辰剑。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_CYCLON_GS_1",
+      "v": "宇宙级爆炸。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_CYCLON_GS_2",
+      "v": "狂飙通过精确计算穿过对手正中心。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_DINOBOT_BW_0",
+      "v": "恐龙勇士和他的对手抛向空中。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_DINOBOT_BW_1",
+      "v": "恐龙勇士对他的对手毫不心慈手软。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_DINOBOT_BW_2",
+      "v": "恐龙勇士以兽性的愤怒了结他的对手。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_DINOB_BW_0",
+      "v": "恐龙勇士和他的对手抛向空中。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_DINOB_BW_1",
+      "v": "恐龙勇士对他的对手毫不心慈手软。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_DINOB_BW_2",
+      "v": "恐龙勇士以兽性的愤怒了结他的对手。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_DINOB_GS_0",
+      "v": "恐龙勇士和他的对手被抛向空中。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_DINOB_GS_1",
+      "v": "恐龙勇士对他的对手毫不心慈手软。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_DINOB_GS_2",
+      "v": "恐龙勇士以兽性的愤怒了结他的对手。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_DRIFT_CIN_0",
+      "v": "战斗狂热...",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_DRIFT_CIN_1",
+      "v": "...远古神剑带出的疾风...",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_DRIFT_CIN_2",
+      "v": "...敌人已被征服。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_DRIFT_C_0",
+      "v": "战斗狂热...",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_DRIFT_C_1",
+      "v": "...远古神剑带出的疾风...",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_DRIFT_C_2",
+      "v": "...敌人已被征服。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_GALVATRON_GS_0",
+      "v": "经过精心设计的能量晶链锤，面对即便是最强悍机器人的防御也可完美粉碎。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_GALVATRON_GS_1",
+      "v": "威震天在他的聚合炮上开启了暴力设定。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_GALVATRON_GS_2",
+      "v": "杀红眼的威震天对敌人造成的巨大伤害没有上限。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_GRIMLOCK_GS_0",
+      "v": "一次力量与魔剑的并体攻击。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_GRIMLOCK_GS_1",
+      "v": "一次恐怖的地面扫击造成的震颤波从地面传到了敌人身上。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_GRIMLOCK_GS_2",
+      "v": "我钢锁不傻，我是王！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_GRIML_GS_0",
+      "v": "一次力量与魔剑的并体攻击。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_GRIML_GS_1",
+      "v": "一次恐怖的地面扫击造成的震颤波从地面传到了敌人身上。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_GRIML_GS_2",
+      "v": "我钢锁不傻，我是王！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_GRINDOR_CIN_0",
+      "v": "战争记忆触发了一次物理冲击，对对手造成了打击。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_GRINDOR_CIN_1",
+      "v": "旋转的刀锋不断切割对手的身体，提升他们的空中作战能力。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_GRINDOR_CIN_2",
+      "v": "把重力作为副驾驶，碾碎器带领他的对手体验高空冒险之旅。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_GRIND_C_ROTF_0",
+      "v": "战争记忆触发了一次物理冲击，对对手造成了打击。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_GRIND_C_ROTF_1",
+      "v": "旋转的刀锋不断切割对手的身体，提升他们的空中作战能力。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_GRIND_C_ROTF_2",
+      "v": "把重力作为副驾驶，碾碎器带领他的对手体验高空冒险之旅。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_HOTROD_CIN_0",
+      "v": "一阵空中飞踢击倒对手。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_HOTROD_CIN_1",
+      "v": "使出一连串杂技踢击，最后以一记时间泡泡枪终结。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_HOTROD_CIN_2",
+      "v": "一击必杀。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_HOTRO_C_0",
+      "v": "一阵空中飞踢击倒对手。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_HOTRO_C_1",
+      "v": "使出一连串杂技踢击，最后以一记时间泡泡枪终结。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_HOTRO_C_2",
+      "v": "一击必杀。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_HOUND_CIN_0",
+      "v": "男子汉来咯！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_HOUND_CIN_1",
+      "v": "用海军旋转加农炮打洞什么的就太棒了。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_HOUND_CIN_2",
+      "v": "战斗到弹药耗尽那一刻！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_HOUND_C_0",
+      "v": "男子汉来咯！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_HOUND_C_1",
+      "v": "用海军旋转加农炮打洞什么的就太棒了。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_HOUND_C_2",
+      "v": "战斗到弹药耗尽那一刻！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_IRONHIDE_CIN_0",
+      "v": "他爱显摆他的加农炮。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_IRONHIDE_CIN_1",
+      "v": "要是你把武器对准他，他会把你劈成两半。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_IRONHIDE_CIN_2",
+      "v": "消灭一切。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_IRONHIDE_GS_0",
+      "v": "他爱显摆他的加农炮。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_IRONHIDE_GS_1",
+      "v": "要是你把武器对准他，他会把你劈成两半。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_IRONHIDE_GS_2",
+      "v": "消灭一切。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_IRONH_C_ROTF_0",
+      "v": "他爱显摆他的加农炮。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_IRONH_C_ROTF_1",
+      "v": "要是你把武器对准他，他会把你劈成两半。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_IRONH_C_ROTF_2",
+      "v": "消灭一切。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_JAZZ_GS_0",
+      "v": "爵士使他的计划付诸实施。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_JAZZ_GS_1",
+      "v": "混乱比比皆是。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_JAZZ_GS_2",
+      "v": "压倒性的力量，潇洒兼具。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_JETFIRE_GS_0",
+      "v": "“裂解机是经常被误解的设备，请允许我展示它们的理想用途。”",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_JETFIRE_GS_1",
+      "v": "“在最好的情况下，深空旅行需要强大的防御系统。”",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_JETFIRE_GS_2",
+      "v": "“通过将引擎产生的杂散离子转移到裂解炮上，我发明了一种方法，可以向敌人的系统传送强大的电磁震击。”",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_KICKBACK_GS_0",
+      "v": "反冲使用一个震击爆炸，化羞辱为伤害。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_KICKBACK_GS_1",
+      "v": "那些翅膀可不是摆设。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_KICKBACK_GS_2",
+      "v": "希望？反冲表示不存在的。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_KICKB_GS_0",
+      "v": "反冲使用一个震击爆炸，化羞辱为伤害。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_KICKB_GS_1",
+      "v": "那些翅膀可不是摆设。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_KICKB_GS_2",
+      "v": "希望？反冲表示不存在的。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_MEGATRONUS_GS_0",
+      "v": "无限之力助燃无限之怒。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_MEGATRONUS_GS_1",
+      "v": "绝对领袖",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_MEGATRONUS_GS_2",
+      "v": "你的死期到了。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_MEGATRON_CIN_0",
+      "v": "对手被降级成无足轻重的走卒。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_MEGATRON_CIN_1",
+      "v": "通过征服达到统一。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_MEGATRON_CIN_2",
+      "v": "屈服于他的力量可活。跟他作对等于找死。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_MEGATRON_GS_0",
+      "v": "经过精心设计的能量晶链锤，面对即便是最强悍机器人的防御也可完美粉碎。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_MEGATRON_GS_1",
+      "v": "威震天在他的聚合炮上开启了暴力设定。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_MEGATRON_GS_2",
+      "v": "杀红眼的威震天对敌人造成的巨大伤害没有上限。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_MEGATRO_GS_0",
+      "v": "无限之力助燃无限之怒。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_MEGATRO_GS_1",
+      "v": "绝对领袖",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_MEGATRO_GS_2",
+      "v": "你的死期到了。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_MEGAT_C_0",
+      "v": "对手被降级成无足轻重的走卒。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_MEGAT_C_1",
+      "v": "通过征服达到统一。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_MEGAT_C_2",
+      "v": "屈服于他的力量可活。跟他作对等于找死。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_MEGAT_GS_0",
+      "v": "经过精心设计的能量晶链锤，面对即便是最强悍机器人的防御也可完美粉碎。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_MEGAT_GS_1",
+      "v": "威震天在他的聚合炮上开启了暴力设定。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_MEGAT_GS_2",
+      "v": "杀红眼的威震天对敌人造成的巨大伤害没有上限。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_MIRAGE_GS_0",
+      "v": "一次针对敌人核心车库制造爆炸的简短热身。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_MIRAGE_GS_1",
+      "v": "一次通过科技和伪装来维持新鲜的外观的秘密行动。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_MIRAGE_GS_2",
+      "v": "幻影总能给对手带来惊讶，要么是挑战惯性思维，要么是强力引入200MPH俱乐部。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_MIRAG_GS_0",
+      "v": "一次针对敌人核心车库制造爆炸的简短热身。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_MIRAG_GS_1",
+      "v": "一次通过科技和伪装来维持新鲜的外观的秘密行动。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_MIRAG_GS_2",
+      "v": "幻影总能给对手带来惊讶，要么是挑战惯性思维，要么是强力引入200MPH俱乐部。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_MIXMASTER_CIN_0",
+      "v": "一份狂怒和两份不可预测性造就了一次强袭猛攻。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_MIXMASTER_CIN_1",
+      "v": "搅拌者将它提升了一个等级然后……梆！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_MIXMASTER_CIN_2",
+      "v": "搅拌者从底盘追逐中缓了缓，来认真对待他的对手。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_MIXMA_C_ROTF_0",
+      "v": "一份狂怒和两份不可预测性造就了一次强袭猛攻。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_MIXMA_C_ROTF_1",
+      "v": "搅拌者将它提升了一个等级然后……梆！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_MIXMA_C_ROTF_2",
+      "v": "搅拌者从底盘追逐中缓了缓，来认真对待他的对手。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_MIXMA_GS_0",
+      "v": "一份狂怒和两份不可预测性造就了一次强袭猛攻。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_MIXMA_GS_1",
+      "v": "搅拌者将它提升了一个等级然后...梆！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_MIXMA_GS_2",
+      "v": "搅拌者从底盘追逐中缓了缓，来认真对待他的对手。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_MOTORMASTER_GS_0",
+      "v": "一次空间金属能量爆炸让对手成了一堆废铁。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_MOTORMASTER_GS_1",
+      "v": "一辆开到最大功率并且渴望收割生命的高级工具车。瞬间治好所有路怒。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_MOTORMASTER_GS_2",
+      "v": "他同时具备无坚不摧的力量和稳固如山的防御。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_MOTORM_GS_0",
+      "v": "一次空间金属能量爆炸让对手成了一堆废铁。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_MOTORM_GS_1",
+      "v": "一辆开到最大功率并且渴望收割生命的高级工具车。瞬间治好所有路怒。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_MOTORM_GS_2",
+      "v": "他同时具备无坚不摧的力量和稳固如山的防御。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_NPC_SHARK_BRAW_0",
+      "v": "一个物理爆发令对手付出代价。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_NPC_SHARK_DEMO_0",
+      "v": "他爱显摆他的鳍大炮。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_NPC_SHARK_DEMO_1",
+      "v": "一起进食以达团结。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_NPC_SHARK_GOLD2_0",
+      "v": "乱拳打死老师傅。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_NPC_SHARK_GOLD2_1",
+      "v": "锁定，上膛，他发动了一次快速射击。小心！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_NPC_SHARK_GOLD_0",
+      "v": "乱拳打死老师傅。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_NPC_SHARK_GOLD_1",
+      "v": "锁定，上膛，他发动了一次快速射击。小心！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_NPC_SHARK_SCOU_0",
+      "v": "乱拳打死老师傅。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_NPC_SHARK_SCOU_1",
+      "v": "锁定，上膛，他发动了一次快速射击。小心！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_NPC_SHARK_TACT_0",
+      "v": "浮游如蝶舞，撕咬似狂鲨。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_NPC_SHARK_TACT_1",
+      "v": "在锐利的能量斩击面前说再见吧。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_NPC_SHARK_TECH_0",
+      "v": "一次针对敌人核心车库制造爆炸的简短热身。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_NPC_SHARK_TECH_1",
+      "v": "一次通过科技和伪装来维持新鲜的外观的秘密行动。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_NPC_SHARK_WARR_0",
+      "v": "饿鲨从蛰伏的位置大弧度跃起，露出隐藏的利刃。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_NPC_SHARK_WARR_1",
+      "v": "起舞弄剑影。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_OPRIMAL_BW_0",
+      "v": "猩猩队长跃向空中向他的敌人展示正义。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_OPRIMAL_BW_1",
+      "v": "最快的和平之路，就是尽快结束战争。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_OPRIMAL_BW_2",
+      "v": "当与原始兽打交道时，有时野蛮是最好的选择。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_OPTIMUSPRIMAL_BW_0",
+      "v": "猩猩队长跃向空中向他的敌人展示正义。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_OPTIMUSPRIMAL_BW_1",
+      "v": "最快的和平之路，就是尽快结束战争。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_OPTIMUSPRIMAL_BW_2",
+      "v": "当与原始兽打交道时，有时野蛮是最好的选择。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_OPTIMUSPRIME_CIN_0",
+      "v": "两把剑给对手造成了双倍麻烦。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_OPTIMUSPRIME_CIN_1",
+      "v": "你必须克服一套强大又野蛮的剑刃连击，才能同擎天柱进行较量。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_OPTIMUSPRIME_CIN_2",
+      "v": "合则生，分则死。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_OPTIMUSPRIME_GS_0",
+      "v": "擎天柱使用能量斧对他的对手发动了一次致命旋转。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_OPTIMUSPRIME_GS_1",
+      "v": "在锐利的能量斩击面前说再见吧。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_OPTIMUSPRIME_GS_2",
+      "v": "不是你死就是我亡。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_OPTIMUS_CIN_0",
+      "v": "两把剑给对手造成了双倍麻烦。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_OPTIMUS_CIN_1",
+      "v": "你必须克服一套强大又野蛮的剑刃连击，才能同擎天柱进行较量。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_OPTIMUS_CIN_2",
+      "v": "合则生，分则死。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_OPTIMUS_C_TF_0",
+      "v": "两把剑给对手造成了双倍麻烦。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_OPTIMUS_C_TF_1",
+      "v": "你必须克服一套强大又野蛮的剑刃连击，才能同擎天柱进行较量。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_OPTIMUS_C_TF_2",
+      "v": "合则生，分则死。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_OPTIMUS_GS_0",
+      "v": "擎天柱使用能量斧对他的对手发动了一次致命旋转。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_OPTIMUS_GS_1",
+      "v": "在锐利的能量斩击面前说再见吧。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_OPTIMUS_GS_2",
+      "v": "不是你死就是我亡。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_PROWL_GS_0",
+      "v": "他的短保险丝及他们的短路。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_PROWL_GS_1",
+      "v": "锁定，加载，他发动了一次快速射击。小心！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_PROWL_GS_2",
+      "v": "乘坐载有霰弹枪的警车绝对是一生唯一的体验。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_RAMJET_GS_0",
+      "v": "喷气机从他的胸腔中释放出一大堆火箭。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_RAMJET_GS_1",
+      "v": "突然冲击后爆发出的热量保证让对手头晕目眩。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_RAMJET_GS_2",
+      "v": "你可以逃走，但是你无法躲避喷气机的放手一搏。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_RATCHET_GS_0",
+      "v": "事半功倍。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_RATCHET_GS_1",
+      "v": "先帮自己再帮别人吧。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_RATCHET_GS_2",
+      "v": "救护车扫描他的目标以查清他们的要害...和弱点。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_RATCH_GS_0",
+      "v": "事半功倍。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_RATCH_GS_1",
+      "v": "先帮自己再帮别人吧。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_RATCH_GS_2",
+      "v": "救护车扫描他的目标以查清他们的要害...和弱点。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_RHINOX_GS_0",
+      "v": "一次明智的、深思熟虑的点拨才是解决争论的最好方法。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_RHINOX_GS_1",
+      "v": "有时候只有发动战争才能生存下来。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_RHINOX_GS_2",
+      "v": "才智过人但心胸狭隘也不能解决问题。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_RHINO_BW_0",
+      "v": "一次明智的、深思熟虑的点拨才是解决争论的最好方法。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_RHINO_BW_1",
+      "v": "有时候只有发动战争才能生存下来。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_RHINO_BW_2",
+      "v": "才智过人但心胸狭隘也不能解决问题。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_RODIMUSPRIME_GS_0",
+      "v": "一阵空中飞踢击倒对手。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_RODIMUSPRIME_GS_1",
+      "v": "使出一连串杂技踢击，最后以一记时间泡泡枪终结。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_RODIMUSPRIME_GS_2",
+      "v": "一击必杀。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SCORPONOK_BW_0",
+      "v": "电子蜂的毒素恶毒地攻击敌人的神经脉络。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SCORPONOK_BW_1",
+      "v": "萨克巨人擅长强加乱入元素。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SCORPONOK_BW_2",
+      "v": "萨克巨人带来的的原始灾难不会停止。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SCORPO_BW_0",
+      "v": "电子蜂的毒素恶毒地攻击敌人的神经脉络。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SCORPO_BW_1",
+      "v": "萨克巨人擅长强加乱入元素。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SCORPO_BW_2",
+      "v": "萨克巨人带来的的原始灾难不会停止。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SHARKTICON_GS_0",
+      "v": "一个物理爆发令对手付出代价。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SHARKTICON_GS_1",
+      "v": "来自这个斗士系饿鲨不可阻挡的连击。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SHARKTICON_GS_2",
+      "v": "这些鲨鱼在陆地上同样致命。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_BRAW_0",
+      "v": "一个物理爆发令对手付出代价。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_BRAW_1",
+      "v": "来自这个斗士系饿鲨不可阻挡的连击。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_BRAW_2",
+      "v": "这些鲨鱼在陆地上同样致命。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_DEMO_0",
+      "v": "他爱显摆他的鳍大炮。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_DEMO_1",
+      "v": "一起进食以达团结。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_DEMO_2",
+      "v": "这些鲨鱼在陆地上同样致命。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_GOLD2_0",
+      "v": "乱拳打死老师傅。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_GOLD2_1",
+      "v": "锁定，上膛，他发动了一次快速射击。小心！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_GOLD2_2",
+      "v": "这些鲨鱼在陆地上同样致命。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_GOLD_0",
+      "v": "乱拳打死老师傅。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_GOLD_1",
+      "v": "锁定，上膛，他发动了一次快速射击。小心！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_GOLD_2",
+      "v": "这些鲨鱼在陆地上同样致命。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_SCOU_0",
+      "v": "乱拳打死老师傅。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_SCOU_1",
+      "v": "锁定，上膛，他发动了一次快速射击。小心！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_SCOU_2",
+      "v": "这些鲨鱼在陆地上同样致命。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_TACT_0",
+      "v": "浮游如蝶舞，撕咬似狂鲨。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_TACT_1",
+      "v": "在锐利的能量斩击面前说再见吧。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_TACT_2",
+      "v": "这些鲨鱼在陆地上同样致命。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_TECH_0",
+      "v": "一次针对敌人核心车库制造爆炸的简短热身。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_TECH_1",
+      "v": "一次通过科技和伪装来维持新鲜的外观的秘密行动。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_TECH_2",
+      "v": "这些鲨鱼在陆地上同样致命。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_WARR_0",
+      "v": "饿鲨从蛰伏的位置大弧度跃起，露出隐藏的利刃。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_WARR_1",
+      "v": "起舞弄剑影。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SHARK_WARR_2",
+      "v": "这些鲨鱼在陆地上同样致命。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SHOCKWAVE_GS_0",
+      "v": "逻辑推论，当机器人大脑的微芯片直接受到表面冲击时将会炸开。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SHOCKWAVE_GS_1",
+      "v": "当你受到打击时，你会感觉身上的每个分子以光速发生爆炸。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SHOCKWAVE_GS_2",
+      "v": "跟一把大枪，一把小枪，还有一把瞄准你大脑模块的枪打个招呼吧。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SHOCK_C_0",
+      "v": "逻辑推论，当机器人大脑的微芯片直接受到表面冲击时将会炸开。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SHOCK_C_1",
+      "v": "当你受到打击时，你会感觉身上的每个分子以光速发生爆炸。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SHOCK_C_2",
+      "v": "跟一把大枪，一把小枪，还有一把瞄准你大脑模块的枪打个招呼吧。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SIDESWIPE_GS_0",
+      "v": "一串花拳绣腿固然好看，但一记速踢更中用",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SIDESWIPE_GS_1",
+      "v": "用一次潇洒的肩部加农炮射击改写剧本。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SIDESWIPE_GS_2",
+      "v": "用你的风格让对手念念不忘。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SIDES_GS_0",
+      "v": "一串花拳绣腿固然好看，但一记速踢更中用",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SIDES_GS_1",
+      "v": "用一次潇洒的肩部加农炮射击改写剧本。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SIDES_GS_2",
+      "v": "用你的风格让对手念念不忘。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SKYWARP_GS_0",
+      "v": "奉承者的最后复仇",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SKYWARP_GS_1",
+      "v": "他瞄准你了！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SKYWARP_GS_2",
+      "v": "消灭掉敌人，才能做到征服。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SOUNDWAVE_GS_0",
+      "v": "听听这个你的耳朵会燃起来。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SOUNDWAVE_GS_1",
+      "v": "机器狗。备战。发射！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SOUNDWAVE_GS_2",
+      "v": "用终极合体将它提升至11，激光鸟和机器狗的功能将会发挥出来。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SOUND_GS_0",
+      "v": "听听这个你的耳朵会燃起来。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SOUND_GS_1",
+      "v": "机器狗。备战。发射！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SOUND_GS_2",
+      "v": "用终极合体将它提升至11，激光鸟和机器狗的功能将会发挥出来。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_STARSCREAM_GS_0",
+      "v": "奉承者的最后复仇",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_STARSCREAM_GS_1",
+      "v": "他瞄准你了！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_STARSCREAM_GS_2",
+      "v": "消灭掉敌人，才能做到征服。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_STARS_GS_0",
+      "v": "奉承者的最后复仇",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_STARS_GS_1",
+      "v": "他瞄准你了！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_STARS_GS_2",
+      "v": "消灭掉敌人，才能做到征服。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SUNSTREAKER_GS_0",
+      "v": "一串花拳绣腿固然好看，但一记速踢更中用",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SUNSTREAKER_GS_1",
+      "v": "用一次潇洒的肩部加农炮射击改写剧本。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_SUNSTREAKER_GS_2",
+      "v": "用你的风格让对手念念不忘。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_TANTRUM_GS_0",
+      "v": "野牛总是很鲁莽。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_TANTRUM_GS_1",
+      "v": "准备好牛躯一震吧。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_TANTRUM_GS_2",
+      "v": "不屈不挠，无法阻挡，并且完全不可阻挡。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_THUNDERCRACKER_GS_0",
+      "v": "奉承者的最后复仇",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_THUNDERCRACKER_GS_1",
+      "v": "他瞄准你了！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_THUNDERCRACKER_GS_2",
+      "v": "消灭掉敌人，才能做到征服。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_ULTRAMAGNUS_GS_0",
+      "v": "当锤子落下时，判决已经生效。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_ULTRAMAGNUS_GS_1",
+      "v": "遵守规则或者承受后果。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_ULTRAMAGNUS_GS_2",
+      "v": "毫不犹豫的献身是一个职业士兵的最大荣耀。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_ULTRAM_GS_0",
+      "v": "当锤子落下时，判决已经生效。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_ULTRAM_GS_1",
+      "v": "遵守规则或者承受后果。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_ULTRAM_GS_2",
+      "v": "毫不犹豫的献身是一个职业士兵的最大荣耀。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_WASPINATOR_GS_0",
+      "v": "黄蜂勇士的光学传感器超载了！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_WASPINATOR_GS_1",
+      "v": "黄蜂勇士一记飞踢转而用枪。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_WASPINATOR_GS_2",
+      "v": "现在黄蜂勇士有了巨型炸弹！现在黄蜂勇士是最强的原始兽！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_WASP_BW_0",
+      "v": "黄蜂勇士的光学传感器超载了！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_WASP_BW_1",
+      "v": "黄蜂勇士一记飞踢转而用枪。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_WASP_BW_2",
+      "v": "现在黄蜂勇士有了巨型炸弹！现在黄蜂勇士是最强的原始兽！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_WHEELJACK_GS_0",
+      "v": "千斤顶对他的最新发明进行了测试。绝无可能出状况的。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_WHEELJACK_GS_1",
+      "v": "一些修改需要谨慎。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_WHEELJACK_GS_2",
+      "v": "所有的结果都符合成功的关键指标。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_WHEELJ_GS_0",
+      "v": "千斤顶对他的最新发明进行了测试。绝无可能出状况的。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_WHEELJ_GS_1",
+      "v": "一些修改需要谨慎。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_WHEELJ_GS_2",
+      "v": "所有的结果都符合成功的关键指标。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_WINDBLADE_GS_0",
+      "v": "对敌人进行地面扫击观察而让他们受到冲击的实验。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_WINDBLADE_GS_1",
+      "v": "他们会目瞪口呆，然后受到剑刃攻击。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_WINDBLADE_GS_2",
+      "v": "把他们打得四分五裂。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_WINDB_GS_0",
+      "v": "对敌人进行地面扫击观察而让他们受到冲击的实验。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_WINDB_GS_1",
+      "v": "他们会目瞪口呆，然后受到剑刃攻击。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DESCRIPTION_WINDB_GS_2",
+      "v": "把他们打得四分五裂。",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DINOBOT_BW_0",
+      "v": "三叠纪动荡",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DINOBOT_BW_1",
+      "v": "侏罗纪正义",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DINOBOT_BW_2",
+      "v": "白垩纪大屠杀",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DINOB_BW_0",
+      "v": "三叠纪动荡",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DINOB_BW_1",
+      "v": "侏罗纪正义",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DINOB_BW_2",
+      "v": "白垩纪大屠杀",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DINOB_GS_0",
+      "v": "三叠纪动荡",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DINOB_GS_1",
+      "v": "侏罗纪正义",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DINOB_GS_2",
+      "v": "白垩纪大屠杀",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DRIFT_CIN_0",
+      "v": "英勇",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DRIFT_CIN_1",
+      "v": "训诫",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DRIFT_CIN_2",
+      "v": "尊重",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DRIFT_C_0",
+      "v": "英勇",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DRIFT_C_1",
+      "v": "训诫",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_DRIFT_C_2",
+      "v": "尊重",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_GALVATRON_GS_0",
+      "v": "能量晶体碰撞",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_GALVATRON_GS_1",
+      "v": "原子弹头",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_GALVATRON_GS_2",
+      "v": "小菜一碟",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_GRIMLOCK_GS_0",
+      "v": "恐龙战队",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_GRIMLOCK_GS_1",
+      "v": "震颤",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_GRIMLOCK_GS_2",
+      "v": "国王！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_GRIML_GS_0",
+      "v": "恐龙战队",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_GRIML_GS_1",
+      "v": "震颤",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_GRIML_GS_2",
+      "v": "国王！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_GRINDOR_CIN_0",
+      "v": "物理治疗",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_GRINDOR_CIN_1",
+      "v": "愤怒旋转",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_GRINDOR_CIN_2",
+      "v": "俯冲",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_GRIND_C_ROTF_0",
+      "v": "物理治疗",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_GRIND_C_ROTF_1",
+      "v": "愤怒旋转",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_GRIND_C_ROTF_2",
+      "v": "俯冲",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_HOTROD_CIN_0",
+      "v": "惩罚回旋",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_HOTROD_CIN_1",
+      "v": "时间篡改",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_HOTROD_CIN_2",
+      "v": "时间泡泡爆破",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_HOTRO_C_0",
+      "v": "惩罚回旋",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_HOTRO_C_1",
+      "v": "时间篡改",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_HOTRO_C_2",
+      "v": "时间泡泡爆破",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_HOUND_CIN_0",
+      "v": "雷声滚滚",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_HOUND_CIN_1",
+      "v": "保险栓解除",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_HOUND_CIN_2",
+      "v": "纯汽车人",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_HOUND_C_0",
+      "v": "雷声滚滚",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_HOUND_C_1",
+      "v": "保险栓解除",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_HOUND_C_2",
+      "v": "纯汽车人",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_IRONHIDE_CIN_0",
+      "v": "感觉走运",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_IRONHIDE_CIN_1",
+      "v": "打破僵持",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_IRONHIDE_CIN_2",
+      "v": "全金属军械库",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_IRONHIDE_GS_0",
+      "v": "感觉走运",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_IRONHIDE_GS_1",
+      "v": "打破僵持",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_IRONHIDE_GS_2",
+      "v": "全金属军械库",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_IRONH_C_ROTF_0",
+      "v": "感觉走运",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_IRONH_C_ROTF_1",
+      "v": "打破僵持",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_IRONH_C_ROTF_2",
+      "v": "全金属军械库",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_JAZZ_GS_0",
+      "v": "旋风踢",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_JAZZ_GS_1",
+      "v": "炫目展示",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_JAZZ_GS_2",
+      "v": "搏击节奏",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_JETFIRE_GS_0",
+      "v": "武器全功率",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_JETFIRE_GS_1",
+      "v": "强化护盾",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_JETFIRE_GS_2",
+      "v": "意志之火",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_KICKBACK_GS_0",
+      "v": "震击伤口",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_KICKBACK_GS_1",
+      "v": "划破",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_KICKBACK_GS_2",
+      "v": "需要投喂",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_KICKB_GS_0",
+      "v": "震击伤口",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_KICKB_GS_1",
+      "v": "划破",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_KICKB_GS_2",
+      "v": "需要投喂",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_MEGATRONUS_GS_0",
+      "v": "权力掌握",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_MEGATRONUS_GS_1",
+      "v": "不可估量",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_MEGATRONUS_GS_2",
+      "v": "真正的领袖",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_MEGATRON_CIN_0",
+      "v": "压制",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_MEGATRON_CIN_1",
+      "v": "和平与暴政",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_MEGATRON_CIN_2",
+      "v": "黑暗赦免",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_MEGATRON_GS_0",
+      "v": "能量晶体碰撞",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_MEGATRON_GS_1",
+      "v": "原子弹头",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_MEGATRON_GS_2",
+      "v": "小菜一碟",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_MEGATRO_GS_0",
+      "v": "权力掌握",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_MEGATRO_GS_1",
+      "v": "不可估量",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_MEGATRO_GS_2",
+      "v": "真正的领袖",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_MEGAT_C_0",
+      "v": "压制",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_MEGAT_C_1",
+      "v": "和平与暴政",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_MEGAT_C_2",
+      "v": "黑暗赦免",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_MEGAT_GS_0",
+      "v": "能量晶体碰撞",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_MEGAT_GS_1",
+      "v": "原子弹头",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_MEGAT_GS_2",
+      "v": "小菜一碟",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_MIRAGE_GS_0",
+      "v": "抢跑",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_MIRAGE_GS_1",
+      "v": "掌法和拳法",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_MIRAGE_GS_2",
+      "v": "借口",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_MIRAG_GS_0",
+      "v": "抢跑",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_MIRAG_GS_1",
+      "v": "掌法和拳法",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_MIRAG_GS_2",
+      "v": "借口",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_MIXMASTER_CIN_0",
+      "v": "后患无穷",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_MIXMASTER_CIN_1",
+      "v": "混合",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_MIXMASTER_CIN_2",
+      "v": "着手毁坏",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_MIXMA_C_ROTF_0",
+      "v": "后患无穷",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_MIXMA_C_ROTF_1",
+      "v": "混合",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_MIXMA_C_ROTF_2",
+      "v": "着手毁坏",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_MIXMA_GS_0",
+      "v": "后患无穷",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_MIXMA_GS_1",
+      "v": "混合",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_MIXMA_GS_2",
+      "v": "着手毁坏",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_MOTORMASTER_GS_0",
+      "v": "离子刀",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_MOTORMASTER_GS_1",
+      "v": "大师工艺",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_MOTORMASTER_GS_2",
+      "v": "路的尽头",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_MOTORM_GS_0",
+      "v": "离子刀",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_MOTORM_GS_1",
+      "v": "大师工艺",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_MOTORM_GS_2",
+      "v": "路的尽头",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_NPC_SHARK_BRAW_0",
+      "v": "鲨鱼疗法",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_NPC_SHARK_BRAW_1",
+      "v": "不可阻挡的狂暴",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_NPC_SHARK_BRAW_2",
+      "v": "饿鲨来袭",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_NPC_SHARK_DEMO_0",
+      "v": "牙齿倍儿棒",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_NPC_SHARK_DEMO_1",
+      "v": "和平、暴政和用餐时间",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_NPC_SHARK_DEMO_2",
+      "v": "饿鲨来袭",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_NPC_SHARK_GOLD2_0",
+      "v": "大摇大摆的饿鲨-1000",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_NPC_SHARK_GOLD2_1",
+      "v": "饿鲨-1000枪手鱼",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_NPC_SHARK_GOLD2_2",
+      "v": "饿鲨-1000来袭",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_NPC_SHARK_GOLD_0",
+      "v": "大摇大摆的黄金鲨鱼",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_NPC_SHARK_GOLD_1",
+      "v": "黄金枪手鱼",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_NPC_SHARK_GOLD_2",
+      "v": "黄金鲨鱼攻击",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_NPC_SHARK_SCOU_0",
+      "v": "大摇大摆的鲨鱼",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_NPC_SHARK_SCOU_1",
+      "v": "枪手鱼",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_NPC_SHARK_SCOU_2",
+      "v": "饿鲨来袭",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_NPC_SHARK_TACT_0",
+      "v": "甩鳍",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_NPC_SHARK_TACT_1",
+      "v": "猛力一砍",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_NPC_SHARK_TACT_2",
+      "v": "饿鲨来袭",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_NPC_SHARK_TECH_0",
+      "v": "鲨鱼爆炸",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_NPC_SHARK_TECH_1",
+      "v": "指如疾风，鳍如闪电",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_NPC_SHARK_TECH_2",
+      "v": "饿鲨来袭",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_NPC_SHARK_WARR_0",
+      "v": "鲨鱼之道",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_NPC_SHARK_WARR_1",
+      "v": "鲨鱼舞",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_NPC_SHARK_WARR_2",
+      "v": "饿鲨来袭",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_OPRIMAL_BW_0",
+      "v": "丛林的法则",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_OPRIMAL_BW_1",
+      "v": "野兽勇士",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_OPRIMAL_BW_2",
+      "v": "大猩猩的战争",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_OPTIMUSPRIMAL_BW_0",
+      "v": "丛林的法则",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_OPTIMUSPRIMAL_BW_1",
+      "v": "野兽勇士",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_OPTIMUSPRIMAL_BW_2",
+      "v": "大猩猩的战争",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_OPTIMUSPRIME_CIN_0",
+      "v": "守护者猛击",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_OPTIMUSPRIME_CIN_1",
+      "v": "我会把你们统统消灭！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_OPTIMUSPRIME_CIN_2",
+      "v": "汽车人的力量",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_OPTIMUSPRIME_GS_0",
+      "v": "能量切割",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_OPTIMUSPRIME_GS_1",
+      "v": "斧击",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_OPTIMUSPRIME_GS_2",
+      "v": "不计代价",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_OPTIMUS_CIN_0",
+      "v": "守护者猛击",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_OPTIMUS_CIN_1",
+      "v": "我会把你们统统消灭！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_OPTIMUS_CIN_2",
+      "v": "汽车人的力量",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_OPTIMUS_C_TF_0",
+      "v": "守护者猛击",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_OPTIMUS_C_TF_1",
+      "v": "我会把你们统统消灭！",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_OPTIMUS_C_TF_2",
+      "v": "汽车人的力量",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_OPTIMUS_GS_0",
+      "v": "能量切割",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_OPTIMUS_GS_1",
+      "v": "斧击",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_OPTIMUS_GS_2",
+      "v": "不计代价",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_PROWL_GS_0",
+      "v": "短路",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_PROWL_GS_1",
+      "v": "枪手",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_PROWL_GS_2",
+      "v": "运输护卫",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_RAMJET_GS_0",
+      "v": "导弹齐发",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_RAMJET_GS_1",
+      "v": "火箭爆破",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_RAMJET_GS_2",
+      "v": "潜水炸弹",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_RATCHET_GS_0",
+      "v": "拧紧扳手",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_RATCHET_GS_1",
+      "v": "应急响应",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_RATCHET_GS_2",
+      "v": "诊断扫描",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_RATCH_GS_0",
+      "v": "拧紧扳手",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_RATCH_GS_1",
+      "v": "应急响应",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_RATCH_GS_2",
+      "v": "诊断扫描",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_RHINOX_GS_0",
+      "v": "戈尔战术",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_RHINOX_GS_1",
+      "v": "末日之机关炮",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_RHINOX_GS_2",
+      "v": "猛虎出笼",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_RHINO_BW_0",
+      "v": "戈尔战术",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_RHINO_BW_1",
+      "v": "末日之机关炮",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_RHINO_BW_2",
+      "v": "猛虎出笼",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_RODIMUSPRIME_GS_0",
+      "v": "惩罚回旋",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_RODIMUSPRIME_GS_1",
+      "v": "时间篡改",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_RODIMUSPRIME_GS_2",
+      "v": "时间泡泡爆破",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SCORPONOK_BW_0",
+      "v": "目眩和毁坏",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SCORPONOK_BW_1",
+      "v": "隧道恐怖",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SCORPONOK_BW_2",
+      "v": "原始兽迫害",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SCORPO_BW_0",
+      "v": "目眩和毁坏",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SCORPO_BW_1",
+      "v": "隧道恐怖",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SCORPO_BW_2",
+      "v": "原始兽迫害",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SHARKTICON_GS_0",
+      "v": "鲨鱼疗法",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SHARKTICON_GS_1",
+      "v": "不可阻挡的狂暴",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SHARKTICON_GS_2",
+      "v": "饿鲨来袭",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SHARK_BRAW_0",
+      "v": "鲨鱼疗法",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SHARK_BRAW_1",
+      "v": "不可阻挡的狂暴",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SHARK_BRAW_2",
+      "v": "饿鲨来袭",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SHARK_DEMO_0",
+      "v": "牙齿倍儿棒",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SHARK_DEMO_1",
+      "v": "和平、暴政和用餐时间",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SHARK_DEMO_2",
+      "v": "饿鲨来袭",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SHARK_GOLD2_0",
+      "v": "大摇大摆的饿鲨-1000",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SHARK_GOLD2_1",
+      "v": "饿鲨-1000枪手鱼",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SHARK_GOLD2_2",
+      "v": "饿鲨-1000来袭",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SHARK_GOLD_0",
+      "v": "大摇大摆的黄金鲨鱼",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SHARK_GOLD_1",
+      "v": "黄金枪手鱼",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SHARK_GOLD_2",
+      "v": "黄金鲨鱼攻击",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SHARK_SCOU_0",
+      "v": "大摇大摆的鲨鱼",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SHARK_SCOU_1",
+      "v": "枪手鱼",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SHARK_SCOU_2",
+      "v": "饿鲨来袭",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SHARK_TACT_0",
+      "v": "甩鳍",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SHARK_TACT_1",
+      "v": "猛力一砍",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SHARK_TACT_2",
+      "v": "饿鲨来袭",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SHARK_TECH_0",
+      "v": "鲨鱼爆炸",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SHARK_TECH_1",
+      "v": "指如疾风，鳍如闪电",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SHARK_TECH_2",
+      "v": "饿鲨来袭",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SHARK_WARR_0",
+      "v": "鲨鱼之道",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SHARK_WARR_1",
+      "v": "鲨鱼舞",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SHARK_WARR_2",
+      "v": "饿鲨来袭",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SHOCKWAVE_GS_0",
+      "v": "震荡波",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SHOCKWAVE_GS_1",
+      "v": "激光扫描",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SHOCKWAVE_GS_2",
+      "v": "小朋友",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SHOCK_C_0",
+      "v": "震荡波",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SHOCK_C_1",
+      "v": "激光扫描",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SHOCK_C_2",
+      "v": "小朋友",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SIDESWIPE_GS_0",
+      "v": "招摇",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SIDESWIPE_GS_1",
+      "v": "返校大作战",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SIDESWIPE_GS_2",
+      "v": "霹雳舞对决",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SIDES_GS_0",
+      "v": "招摇",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SIDES_GS_1",
+      "v": "返校大作战",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SIDES_GS_2",
+      "v": "霹雳舞对决",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SKYWARP_GS_0",
+      "v": "空中优势组合",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SKYWARP_GS_1",
+      "v": "狡猾的背叛",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SKYWARP_GS_2",
+      "v": "零射线遗忘",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SOUNDWAVE_GS_0",
+      "v": "音波炮",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SOUNDWAVE_GS_1",
+      "v": "机器狗",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SOUNDWAVE_GS_2",
+      "v": "喷射",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SOUND_GS_0",
+      "v": "音波炮",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SOUND_GS_1",
+      "v": "机器狗",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SOUND_GS_2",
+      "v": "喷射",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_STARSCREAM_GS_0",
+      "v": "空中优势组合",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_STARSCREAM_GS_1",
+      "v": "狡猾的背叛",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_STARSCREAM_GS_2",
+      "v": "零射线遗忘",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_STARS_GS_0",
+      "v": "空中优势组合",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_STARS_GS_1",
+      "v": "狡猾的背叛",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_STARS_GS_2",
+      "v": "零射线遗忘",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SUNSTREAKER_GS_0",
+      "v": "招摇",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SUNSTREAKER_GS_1",
+      "v": "返校大作战",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_SUNSTREAKER_GS_2",
+      "v": "霹雳舞对决",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_TANTRUM_GS_0",
+      "v": "喷火器",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_TANTRUM_GS_1",
+      "v": "电能剑",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_TANTRUM_GS_2",
+      "v": "横冲直撞",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_THUNDERCRACKER_GS_0",
+      "v": "空中优势组合",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_THUNDERCRACKER_GS_1",
+      "v": "狡猾的背叛",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_THUNDERCRACKER_GS_2",
+      "v": "零射线遗忘",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_ULTRAMAGNUS_GS_0",
+      "v": "搥碎",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_ULTRAMAGNUS_GS_1",
+      "v": "我为人人",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_ULTRAMAGNUS_GS_2",
+      "v": "代表作",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_ULTRAM_GS_0",
+      "v": "搥碎",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_ULTRAM_GS_1",
+      "v": "我为人人",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_ULTRAM_GS_2",
+      "v": "代表作",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_WASPINATOR_GS_0",
+      "v": "雷射眼",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_WASPINATOR_GS_1",
+      "v": "不稳定叮刺",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_WASPINATOR_GS_2",
+      "v": "核惊喜",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_WASP_BW_0",
+      "v": "雷射眼",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_WASP_BW_1",
+      "v": "不稳定叮刺",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_WASP_BW_2",
+      "v": "核惊喜",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_WHEELJACK_GS_0",
+      "v": "原型",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_WHEELJACK_GS_1",
+      "v": "迭代",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_WHEELJACK_GS_2",
+      "v": "完美",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_WHEELJ_GS_0",
+      "v": "原型",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_WHEELJ_GS_1",
+      "v": "迭代",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_WHEELJ_GS_2",
+      "v": "完美",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_WINDBLADE_GS_0",
+      "v": "电路限制器",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_WINDBLADE_GS_1",
+      "v": "剑舞",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_WINDBLADE_GS_2",
+      "v": "空中扫射",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_WINDB_GS_0",
+      "v": "电路限制器",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_WINDB_GS_1",
+      "v": "剑舞",
+      "vn": 1
+    },
+    {
+      "k": "MS_ID_SPECIAL_ATTACK_WINDB_GS_2",
+      "v": "空中扫射",
+      "vn": 1
+    }
+  ]
+}

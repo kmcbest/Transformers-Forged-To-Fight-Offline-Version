@@ -534,6 +534,7 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x117AB6C, "APPLYDMG",           2, 0 }, // 159 PlayerController.ApplyDamage -> reset attack chain on taking damage
     { 0x1173B28, "BLOCKENTER",         2, 0 }, // 160 PlayerBlockState.OnEnter -> reset attack chain on entering block
     { 0xC16688,  "GET_MAP_ASSET_ID",   2, 0 }, // 161 BCGBlueprintBase.get_MapAssetID -> resolve to real portrait resource name
+    { 0x127F794, "LOCALIZE",           2, 0 }, // 162 Localization.Get
 };
 #define NH (int)(sizeof(H)/sizeof(H[0]))
 
@@ -4008,6 +4009,24 @@ void* hook_161(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     return r;
 }
 
+#include "special_attacks_zh.h"
+
+void* hook_162(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7) {
+    void* r = H[162].orig(a0,a1,a2,a3,a4,a5,a6,a7);
+    if (!g_strnew || !a0) return r;
+    char k[128];
+    if (read_str(a0, k, sizeof(k)) && k[0]) {
+        if (strncmp(k, "ID_SPECIAL_", 11) == 0 || strncmp(k, "MS_ID_SPECIAL_", 14) == 0) {
+            const char* tr = lookup_special_attack_zh(k);
+            if (tr) {
+                LOG("LOCALIZE sp: %s -> %s", k, tr);
+                return g_strnew(tr);
+            }
+        }
+    }
+    return r;
+}
+
 static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hook_7,hook_8,
     hook_9,hook_10,hook_11,hook_12,hook_13,hook_14,hook_15,hook_16,hook_17,hook_18,hook_19,hook_20,hook_21,
     hook_22,hook_23,hook_24,hook_25,hook_26,hook_27,hook_28,hook_29,hook_30,
@@ -4025,7 +4044,7 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     hook_138,hook_139,hook_140,hook_141,hook_142,hook_143,hook_144,
     hook_145,hook_146,hook_147,hook_148,hook_149,hook_150,hook_151,
     hook_152,hook_153,hook_154,hook_155,hook_156,hook_157,hook_158,
-    hook_159,hook_160,hook_161 };
+    hook_159,hook_160,hook_161,hook_162 };
 
 static void write_jump(uint8_t* dst, void* target){
     uint32_t* p = (uint32_t*)dst;

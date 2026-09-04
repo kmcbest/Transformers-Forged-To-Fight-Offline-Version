@@ -44,3 +44,4 @@ tools/apk_asset_index.json
 
 gamecache/vungle_cache/
 gamecache/Unity/
+*.assetbundle
