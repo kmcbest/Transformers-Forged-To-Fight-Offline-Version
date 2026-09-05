@@ -869,6 +869,8 @@ def build_rarity_properties():
             "mv": star, "map_value": star,
             "sp3qt": 0.5, "sp3_quicktime": 0.5,
             "ms": 99, "max_sig": 99,
+            "frame": f"frame_portrait_rarity_{star}",
+            "star_color": "white",
         }
     return out
 
@@ -1105,6 +1107,7 @@ def build_hero_entry(bid, rank=None, level=None):
     return {
         "entity_type": "bot", "bid": bid,
         "rank": rank, "level": level, "sig_lvl": 100,
+        "s": star, "rarity": star, "star": star, "faction": faction,
         "required_xp": 0, "max_xp": 100,
         "stamina": 100, "stamina_ts": 0, "stamina_full_ts": 0, "stt": "",
         "max_hp": hp, "attack": atk,

@@ -2456,12 +2456,7 @@ void* hook_42(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
     return H[42].orig(a0,a1,a2,a3,a4,a5,a6,a7);
 }
 void* hook_43(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
-    void* r = H[43].orig(a0,a1,a2,a3,a4,a5,a6,a7);
-    PROTECT( char b[64]; b[0]=0; uintptr_t s=(uintptr_t)a1;
-        if(s>=0x100000 && !(s&7)){ int32_t l=*(int32_t*)(s+0x10); uint16_t*c=(uint16_t*)(s+0x14);
-            if(l>=0&&l<60){for(int i=0;i<l;i++)b[i]=(char)c[i];b[l]=0;} }
-        flog("OWNS bp=%s ret=%d", b, (int)(intptr_t)r); );
-    return r;
+    return (void*)1;
 }
 // jp=22 CacheScrollViewDimensions: log this->scrollViewArea (Rect @ +0x70) + bool ret + the
 // grid's UIPanel state (scrollViewPanel @ this+0x60): mAlpha@0x128, mClipping@0x12c,
@@ -4149,6 +4144,14 @@ static void* installer(void* arg){
     // field instead of throwing. (Same spirit as the Tags empty-collection fix; done as a targeted
     // instruction poke rather than fabricating a List<string> whose RGCTX may be uninitialized.)
     poke32(0xC17278, 0xB4000640);   // cbz x0, 0xC17370 (throw) -> cbz x0, 0xC17340 (return empty)
+    // FIXROSTER_DECO: HeroesScreen.OnGridItemInitialized (@0xC5BC3C) handles roster tiles.
+    // By default, w21 is set to 0 for unowned/locked tiles, which skips frameSprite allocation
+    // (@0xC5C1F4) and passes mask 3 (@0xC5C1C0) to HeroPortrait.SetEnabledItems, suppressing
+    // the rarity frame, stars (RarityWidget), and badges.
+    // 1) Poke 0xC5C19C: mov w21, wzr (0xAA1F03F5) -> mov w21, #1 (0x52800035) to enter the owned tile path.
+    // 2) Poke 0xC5C1C0: csel w1, w9, w8, ne (0x1A881121) -> mov w1, #0x1f (0x528003E1) to enable all overlays.
+    poke32(0xC5C19C, 0x52800035);
+    poke32(0xC5C1C0, 0x528003E1);
     LOG("install done (%d hooks)", NH);
     return NULL;
 }
