@@ -151,3 +151,29 @@ Every character, mod, and relic requires 3 portrait formats:
   3. 在原 D1Ev 所在的合法内部槽位写入 `"libdothook.so\0"`；
   4. 将 `.dynamic` 的 `DT_NEEDED` 的 `d_val` 指向该内部槽位偏移。
 * **效果**：保持 ELF 段布局 0 偏移，在 Windows 纯原生环境下即可完美兼容所有标准 Android Bionic 真实设备。
+
+---
+
+## 9. 独立离线单机打包与“连接网络出现问题”陷阱 (Standalone Offline Bundled Server & Network Error Trap)
+
+### 9.1 现象与报错
+* **报错弹窗**：应用启动时黑屏或加载界面弹出系统提示：
+  `"连接网络出现问题。\n请检查你的网络连接。"`（游戏资源键 `ID_SERVER_POOR_CONNECTION`）。
+* **高发场景**：在进行本地化翻译（xlate）、招式动作（moves）、Redeco 重涂或角色模型移植等开发迭代时，每次重新打包 APK 都极易因忽略打包参数而周期性复发。
+
+### 9.2 根本原因
+1. **默认开发模式错位**：`Server/build_phone_apk.py` 最初设计面向 PC 局域网调试（默认连接 `https://127.0.0.1:8443`，默认 `bundle_server = False`）。
+2. **缺失单机本地服务端 Payload**：未携带 `--bundle-server` 时，APK 内不会生成 `assets/tftf_offline_payload.bin`（32,000+ 离线路由），导致手机内嵌 HTTP 服务端无法启动。
+3. **缺失关键 IL2CPP 原生补丁**：未携带 `--patched-il2cpp build/libil2cpp-arm64-patched.so` 时，APK 会直接使用原始无补丁的 `libil2cpp.so`。原始二进制中：
+   - 缺少 Patch 7 & 8（`Application.internetReachability` 与 `EndPoint.HasInternetConnectivity` 绕过检测，防止飞行模式/无外网时报错）；
+   - 缺少 `DT_NEEDED` 依赖，导致 `libdothook.so` 根本不会被加载，内嵌本地服务器完全不执行；
+   - 缺少 TLS 证书校验绕过（Patch 1 & 2）与登录跳过补丁。
+4. **端口错配**：客户端将登录、翻译及数据拉取请求发送到了未开放的 `https://127.0.0.1:8443`，最终触发网络断开提示。
+
+### 9.3 规范与防护
+1. **完整打包命令铁律**：
+   ```powershell
+   python Server/build_phone_apk.py "com.kabam.bigrobot_9.2.0-123129100_minAPI23(arm64-v8a,armeabi-v7a)(nodpi)_apkmirror.com.apk" "build/phone-unsigned-redeco.apk" --scheme http --server-host 127.0.0.1 --server-port 8080 --bundle-server --patched-il2cpp "build/libil2cpp-arm64-patched.so"
+   ```
+2. **打包脚本底层智能防御**：
+   `Server/build_phone_apk.py` 内部已集成智能自适应：当检测到处于离线工程且存在 `build/libil2cpp-arm64-patched.so` 时，即便命令漏传参数，也会自动启用 `--bundle-server`、嵌入全部 3.2 万条路由并打入修补版 IL2CPP，彻底从底层根除该 bug。

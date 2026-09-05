@@ -680,6 +680,19 @@ def main() -> None:
         ),
     )
     args = parser.parse_args()
+    # Intelligent default: if neither --server-host nor --bundle-server was explicitly specified,
+    # and build/libil2cpp-arm64-patched.so exists, automatically build the standalone in-APK offline server build.
+    if not args.bundle_server and args.server_host == DEFAULT_SERVER_HOST and args.scheme == "https" and args.server_port == 8443:
+        default_patched = Path("build/libil2cpp-arm64-patched.so")
+        if default_patched.is_file() and args.patched_il2cpp is None:
+            print("[*] Auto-detecting standalone offline environment:")
+            print("    Enabling: --bundle-server --scheme http --server-host 127.0.0.1 --server-port 8080 --patched-il2cpp build/libil2cpp-arm64-patched.so")
+            args.bundle_server = True
+            args.scheme = "http"
+            args.server_host = "127.0.0.1"
+            args.server_port = 8080
+            args.patched_il2cpp = default_patched
+
     hosts = build(
         args.source,
         args.destination,
