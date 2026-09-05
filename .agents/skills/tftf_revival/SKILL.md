@@ -125,6 +125,29 @@ Every character, mod, and relic requires 3 portrait formats:
 ### 7.1 官方武器标准挂点 `RightProp`
 * 在所有 TFTF 金刚手部骨骼树中，`RightHand` 下方均存在官方预设的 **`RightProp`** 节点（例如坐标 `(-0.588, 0.510, 0.047)`），此点恰好为握拳时的**手心中心空洞**。
 * **铁律**：
-  1. 将武器网格的 `RootBone` 与 `m_Bones[0]` 直接绑定至 **`RightProp`**；
-  2. 将网格的 `BindPose[0]` 设为标准单位矩阵（`Matrix4x4.identity`）；
-  3. 确保网格的 `Stream 2` 携带完整的 `Channel[12]`（BoneWeight = 1.0）与 `Channel[13]`（BoneIndex = 0），即可实现武器与手心 100% 贴合，彻底避免位移漂移与隐形。
+   1. 将武器网格的 `RootBone` 与 `m_Bones[0]` 直接绑定至 **`RightProp`**；
+   2. 将网格的 `BindPose[0]` 设为标准单位矩阵（`Matrix4x4.identity`）；
+   3. 确保网格的 `Stream 2` 携带完整的 `Channel[12]`（BoneWeight = 1.0）与 `Channel[13]`（BoneIndex = 0），即可实现武器与手心 100% 贴合，彻底避免位移漂移与隐形。
+
+---
+
+## 8. Android 官方 Bionic 动态链接器与 DT_NEEDED 注入陷阱 (Bionic Linker Crash)
+
+### 8.1 现象与报错
+* **崩溃现象**：应用启动瞬间闪退（SIGABRT / Signal 6）。
+* **Logcat 标志性报错**：
+  ```text
+  F libc : bionic/linker/linker_phdr.cpp:183: get_string CHECK 'index < strtab_size_' failed
+  Abort message: 'bionic/linker/linker_phdr.cpp:183: get_string CHECK 'index < strtab_size_' failed'
+  ```
+* **根本原因**：
+  原版 `--needed byte` 机制将 `"libdothook.so"` 写入了 0x7D3034 的零空洞（Zero Cave），并在 `.dynamic` 的 `DT_NEEDED` 处填入了该偏移 `0x7BFE5C`。在 LDPlayer 等第三方模拟器中链接器较宽松可以启动，但在**所有真实物理机（小米、vivo、华为、三星等）及 Google 官方标准模拟器**中，Bionic 的 `linker64` 严格校验 `d_val < strtab_size_`（原版 `strtab_size_` 仅为 `0x19C8A`），因越界直接导致 SIGABRT 闪退。
+
+### 8.2 解决方案（In-Place 字符串槽位重定向置换）
+* **铁律**：绝对不能将 `DT_NEEDED` 指向超出 `.dynstr` 声明大小之外的地址。
+* **做法**：
+  1. 在 ARM64 的 `.dynstr` 内部寻找完全等价且未被 relocation 引用的导出别名符号（如 `_ZNSt6__ndk17codecvtIDsc9mbstate_tED1Ev` 与 `D2Ev`，槽位空间 39 字节 $\ge$ 14 字节）；
+  2. 将 D1Ev 的 `st_name` 重定向至 D2Ev；
+  3. 在原 D1Ev 所在的合法内部槽位写入 `"libdothook.so\0"`；
+  4. 将 `.dynamic` 的 `DT_NEEDED` 的 `d_val` 指向该内部槽位偏移。
+* **效果**：保持 ELF 段布局 0 偏移，在 Windows 纯原生环境下即可完美兼容所有标准 Android Bionic 真实设备。

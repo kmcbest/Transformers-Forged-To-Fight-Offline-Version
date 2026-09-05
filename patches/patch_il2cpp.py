@@ -129,6 +129,142 @@ def inject_needed_patchelf(path):
     subprocess.run([exe, "--add-needed", "libdothook.so", path], check=True)
 
 
+def _elf64_sections(blob):
+    """Return ELF64 section headers without external dependencies."""
+    if blob[:4] != b"\x7fELF" or blob[4] != 2 or blob[5] != 1:
+        raise ValueError("in-place dependency injection needs a little-endian ELF64 library")
+    shoff = struct.unpack_from("<Q", blob, 0x28)[0]
+    shentsize, shnum = struct.unpack_from("<HH", blob, 0x3A)
+    if shentsize < 64 or not shoff or not shnum:
+        raise ValueError("ELF64 section headers are missing")
+    if shoff + shentsize * shnum > len(blob):
+        raise ValueError("ELF64 section header table is outside the file")
+    sections = []
+    for index in range(shnum):
+        off = shoff + index * shentsize
+        fields = struct.unpack_from("<IIQQQQIIQQ", blob, off)
+        sections.append({
+            "index": index,
+            "type": fields[1],
+            "offset": fields[4],
+            "size": fields[5],
+            "link": fields[6],
+            "entsize": fields[9],
+        })
+    return sections
+
+
+def inject_needed_arm64_inplace(blob):
+    """Add libdothook.so to the shipped ARM64 library without layout shift or Bionic strtab violation.
+
+    The stock Bionic linker (Android standard libc) enforces index < strtab_size_,
+    crashing with 'get_string CHECK failed' if DT_NEEDED points to a cave beyond .dynstr.
+    This strict in-place injector reclaims a duplicate alias string slot entirely inside .dynstr:
+      - _ZNSt6__ndk17codecvtIDsc9mbstate_tED1Ev and D2Ev are duplicate exported destructor aliases
+      - Repoint D1Ev's st_name to D2Ev, then reuse its 39-byte .dynstr slot for 'libdothook.so\\0'
+      - Turn the first spare DT_NULL in .dynamic into DT_NEEDED pointing to the reclaimed slot.
+    """
+    sections = _elf64_sections(blob)
+    dynsyms = [s for s in sections if s["type"] == 11]  # SHT_DYNSYM
+    dynamics = [s for s in sections if s["type"] == 6]  # SHT_DYNAMIC
+    if len(dynsyms) != 1 or len(dynamics) != 1:
+        raise ValueError("expected exactly one ELF64 .dynsym and .dynamic section")
+    dynsym = dynsyms[0]
+    dynamic = dynamics[0]
+    if dynsym["entsize"] != 24 or dynamic["entsize"] != 16:
+        raise ValueError("unexpected ELF64 dynamic table entry size")
+    if not 0 <= dynsym["link"] < len(sections):
+        raise ValueError("ELF64 .dynsym has an invalid string-table link")
+    dynstr = sections[dynsym["link"]]
+    str_start = dynstr["offset"]
+    str_limit = str_start + dynstr["size"]
+    if str_limit > len(blob):
+        raise ValueError("ELF64 dynamic string table is outside the file")
+
+    dependency = b"libdothook.so"
+    dynamic_end = dynamic["offset"] + dynamic["size"]
+    for off in range(dynamic["offset"], dynamic_end, dynamic["entsize"]):
+        if off + 16 > len(blob):
+            raise ValueError("ELF64 dynamic table is outside the file")
+        tag, value = struct.unpack_from("<QQ", blob, off)
+        if tag == 0:
+            break
+        if tag == 1:  # DT_NEEDED
+            if value >= dynstr["size"]:
+                continue
+            if _elf_cstring(blob, str_start + value, str_limit) == dependency:
+                return False
+
+    wanted_names = {
+        b"_ZNSt6__ndk17codecvtIDsc9mbstate_tED1Ev": None,
+        b"_ZNSt6__ndk17codecvtIDsc9mbstate_tED2Ev": None
+    }
+    symbol_count = dynsym["size"] // dynsym["entsize"]
+    for index in range(symbol_count):
+        off = dynsym["offset"] + index * dynsym["entsize"]
+        if off + 24 > len(blob):
+            raise ValueError("ELF64 dynamic symbol table is outside the file")
+        st_name, st_info, st_other, st_shndx, st_value, st_size = struct.unpack_from("<IBBHQQ", blob, off)
+        if st_name >= dynstr["size"]:
+            continue
+        name = _elf_cstring(blob, str_start + st_name, str_limit)
+        if name in wanted_names and wanted_names[name] is None:
+            wanted_names[name] = {
+                "index": index,
+                "entry_offset": off,
+                "name_offset": st_name,
+                "value": st_value,
+                "size": st_size,
+                "type": st_info & 0xF,
+                "section": st_shndx,
+            }
+
+    donor = wanted_names[b"_ZNSt6__ndk17codecvtIDsc9mbstate_tED1Ev"]
+    alias = wanted_names[b"_ZNSt6__ndk17codecvtIDsc9mbstate_tED2Ev"]
+    if donor is None or alias is None:
+        raise ValueError("expected ARM64 alias symbols were not found; is this the 9.2.0 library?")
+    comparable = ("value", "size", "type", "section")
+    if any(donor[key] != alias[key] for key in comparable) or donor["section"] == 0:
+        raise ValueError("ARM64 alias symbols no longer describe the same defined function")
+
+    # Verify no relocation references donor symbol index
+    for rel in (s for s in sections if s["type"] == 4):  # SHT_RELA
+        entsize = rel["entsize"] or 24
+        for off in range(rel["offset"], rel["offset"] + rel["size"], entsize):
+            if off + entsize > len(blob):
+                raise ValueError("ELF64 relocation table is outside the file")
+            info = struct.unpack_from("<Q", blob, off + 8)[0]
+            if (info >> 32) == donor["index"]:
+                raise ValueError("the ARM64 donor alias is referenced by a relocation")
+
+    old_name = b"_ZNSt6__ndk17codecvtIDsc9mbstate_tED1Ev"
+    old_slot = str_start + donor["name_offset"]
+    if _elf_cstring(blob, old_slot, str_limit) != old_name:
+        raise ValueError("ARM64 donor string changed unexpectedly")
+    if len(dependency) > len(old_name):
+        raise ValueError("ARM64 donor string slot is too short")
+
+    first_null = None
+    for off in range(dynamic["offset"], dynamic_end, dynamic["entsize"]):
+        if off + 16 > len(blob):
+            raise ValueError("ELF64 dynamic table is outside the file")
+        tag, value = struct.unpack_from("<QQ", blob, off)
+        if tag == 0:
+            first_null = off
+            break
+    if first_null is None or first_null + 32 > dynamic_end:
+        raise ValueError("ELF64 .dynamic has no spare entry for DT_NEEDED")
+    if struct.unpack_from("<QQ", blob, first_null + 16) != (0, 0):
+        raise ValueError("ELF64 .dynamic has no terminating DT_NULL after the spare entry")
+
+    struct.pack_into("<I", blob, donor["entry_offset"], alias["name_offset"])
+    blob[old_slot:old_slot + len(old_name) + 1] = (
+        dependency + b"\0" * (len(old_name) + 1 - len(dependency))
+    )
+    struct.pack_into("<QQ", blob, first_null, 1, donor["name_offset"])
+    return True
+
+
 def _elf32_sections(blob):
     """Return ELF32 section headers without depending on pyelftools.
 
@@ -293,8 +429,6 @@ def inject_needed_armv7_inplace(blob):
 def default_needed_mode(abi, host_os=None):
     """Select a platform default while keeping both injectors available."""
     host_os = os.name if host_os is None else host_os
-    if abi == ARM64:
-        return "byte"
     return "inplace" if host_os == "nt" else "patchelf"
 
 
@@ -309,8 +443,8 @@ def main():
                     help="write the patched copy (default is verify-only)")
     ap.add_argument("--needed", choices=["byte", "inplace", "patchelf", "none"], default=None,
                     help="how to add the DT_NEEDED libdothook.so entry "
-                         "(default: byte for arm64-v8a; in-place on Windows and "
-                         "patchelf elsewhere for armeabi-v7a)")
+                         "(default: in-place on Windows and "
+                         "patchelf elsewhere)")
     ap.add_argument("-o", "--out", default=None,
                     help="output path (default: <input>.patched.so)")
     args = ap.parse_args()
@@ -318,8 +452,6 @@ def main():
     needed = args.needed or default_needed_mode(args.abi)
     if needed == "byte" and args.abi != ARM64:
         sys.exit("[!] --needed byte is arm64-only (the cave offsets are specific to that binary)")
-    if needed == "inplace" and args.abi != ARMV7:
-        sys.exit("[!] --needed inplace is armeabi-v7a-only")
 
     targets = TARGETS[args.abi]
     md = capstone.Cs(*DISASM[args.abi])
@@ -355,11 +487,14 @@ def main():
         print("[+] re-injected DT_NEEDED libdothook.so (byte cave)")
     elif needed == "inplace":
         try:
-            changed = inject_needed_armv7_inplace(blob)
+            if args.abi == ARM64:
+                changed = inject_needed_arm64_inplace(blob)
+            else:
+                changed = inject_needed_armv7_inplace(blob)
         except ValueError as exc:
-            sys.exit(f"[!] ARMv7 in-place DT_NEEDED injection failed: {exc}")
+            sys.exit(f"[!] {args.abi} in-place DT_NEEDED injection failed: {exc}")
         if changed:
-            print("[+] added DT_NEEDED libdothook.so (ARMv7 in-place, no layout shift)")
+            print(f"[+] added DT_NEEDED libdothook.so ({args.abi} in-place, no layout shift, valid Bionic strtab)")
         else:
             print("[i] DT_NEEDED libdothook.so already present")
     with open(out, "wb") as f:
