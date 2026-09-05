@@ -35,7 +35,10 @@ def main():
     print(f"Target APK: {output_apk_path}")
 
     # 1. Compile native hook
-    clang = ROOT / "toolchain" / "android-ndk-r26d" / "toolchains" / "llvm" / "prebuilt" / "windows-x86_64" / "bin" / "aarch64-linux-android28-clang.cmd"
+    ndk_dir = ROOT / "toolchain" / "android-ndk-r26b"
+    if not ndk_dir.exists():
+        ndk_dir = ROOT / "toolchain" / "android-ndk-r26d"
+    clang = ndk_dir / "toolchains" / "llvm" / "prebuilt" / "windows-x86_64" / "bin" / "aarch64-linux-android28-clang.cmd"
     hook_so = ROOT / "tools" / "nativehook" / "libdothook.so"
     hook_c = ROOT / "tools" / "nativehook" / "hook.c"
     inapk_server_c = ROOT / "tools" / "nativehook" / "inapk_server.c"
@@ -72,7 +75,11 @@ def main():
     # 4. Zipalign
     print("\n[4/5] Aligning APK (zipalign)...")
     aligned_apk = BUILD_DIR / "phone-aligned.apk"
-    zipalign = ROOT / "toolchain" / "android-13" / "zipalign.exe"
+    build_tools = list((ROOT / "toolchain").glob("**/zipalign.exe"))
+    if build_tools:
+        zipalign = build_tools[0]
+    else:
+        zipalign = ROOT / "toolchain" / "android-sdk" / "build-tools" / "34.0.0" / "zipalign.exe"
     subprocess.run([
         str(zipalign), "-f", "-p", "4",
         str(unsigned_apk), str(aligned_apk)
@@ -80,12 +87,24 @@ def main():
 
     # 5. Sign with apksigner
     print("\n[5/5] Signing APK (apksigner)...")
-    apksigner = ROOT / "toolchain" / "android-13" / "apksigner.bat"
+    apksigner_list = list((ROOT / "toolchain").glob("**/apksigner.bat"))
+    if apksigner_list:
+        apksigner = apksigner_list[0]
+    else:
+        apksigner = ROOT / "toolchain" / "android-sdk" / "build-tools" / "34.0.0" / "apksigner.bat"
     keystore = BUILD_DIR / "debug.keystore"
-    java_home = "C:\\Program Files\\Microsoft\\jdk-17.0.20.8-hotspot"
     env = os.environ.copy()
-    env["JAVA_HOME"] = java_home
-    env["PATH"] = f"{java_home}\\bin;{env.get('PATH', '')}"
+    if "JAVA_HOME" not in env:
+        # Check default Microsoft / Oracle JDK paths if needed
+        jdk_candidates = [
+            Path("C:/Program Files/Microsoft/jdk-17.0.20.8-hotspot"),
+            Path("C:/Program Files/Java/jdk-17"),
+        ]
+        for cand in jdk_candidates:
+            if cand.exists():
+                env["JAVA_HOME"] = str(cand)
+                env["PATH"] = f"{cand}\\bin;{env.get('PATH', '')}"
+                break
 
     subprocess.run([
         str(apksigner), "sign",
@@ -94,6 +113,15 @@ def main():
         "--out", str(output_apk_path),
         str(aligned_apk)
     ], check=True, cwd=ROOT, env=env)
+
+    # 6. Clean up temporary unsigned and aligned APKs
+    print("\n[6/6] Cleaning up temporary APK files...")
+    unsigned_apk.unlink(missing_ok=True)
+    aligned_apk.unlink(missing_ok=True)
+    for p in BUILD_DIR.glob("*unsigned*.apk"):
+        p.unlink(missing_ok=True)
+    for p in BUILD_DIR.glob("*aligned*.apk"):
+        p.unlink(missing_ok=True)
 
     print(f"\n[OK] Successfully generated: {output_apk_path} ({output_apk_path.stat().st_size / (1024*1024):.2f} MB)")
 
