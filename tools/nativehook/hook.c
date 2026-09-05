@@ -20,6 +20,7 @@
 #include <link.h>
 #include <dlfcn.h>
 #include <time.h>
+#include <jni.h>
 #include "inapk_server.h"
 
 // forward decls (used by seg_handler below, defined later)
@@ -199,14 +200,14 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0xC584CC,  "OWNS",      8, 0 }, // 43 HeroesScreen.userOwnsBot(this,bp) -> bp + bool ret
     // ---- texture-load diagnostics (2026-07-15 session 3): is the portrait a static
     //      path-texture load (that fails offline) or a live camera render? ----
-    { 0xE910DC, "TEXPATH",  30, 0 }, // 44 HeroPortrait.LoadTexture(this,path) -> log path string (a1)
+    { 0xE910DC, "TEXPATH",  2000, 0 }, // 44 HeroPortrait.LoadTexture(this,path) -> log path string (a1)
     { 0xC21AC4, "==HEROBASE==",2, 0 }, // 45 BCGHeroBase..ctor(IDictionary) marker (brackets its fast-dot keys; drives the login `heroes` map). Author that map -> mHeroBase resolves -> tiles render.
-    { 0xE916B4, "TEXDONE",  31, 0 }, // 46 HeroPortrait.OnHeroTextureLoaded -> did it fire? path set? loaded flag
+    { 0xE916B4, "TEXDONE",  2000, 0 }, // 46 HeroPortrait.OnHeroTextureLoaded -> did it fire? path set? loaded flag
     { 0xC58598, "SHOWGRID",  2, 0 }, // 47 HeroesScreen.ShowGridContainer (marker)
     { 0xC59EE4, "ANIMNEW",   2, 0 }, // 48 HeroesScreen.AnimateNewEntities (grid reveal tween)
     { 0xC59E90, "INTRODONE", 2, 0 }, // 49 HeroesScreen.OnIntroTransitionComplete (marker)
-    { 0x1991FD0,"SETPATH",  30, 0 }, // 50 UITextureRef.set_baseTexturePath(this,value) -> log value (a1)
-    { 0x1992610,"UITLOAD",   2, 0 }, // 51 UITextureRef.LoadTexture(paths) (marker)
+    { 0x1991FD0,"SETPATH",  2000, 0 }, // 50 UITextureRef.set_baseTexturePath(this,value) -> log value (a1)
+    { 0x1992610,"UITLOAD",  2000, 0 }, // 51 UITextureRef.LoadTexture(paths) (marker)
     { 0x14641FC,"FDS2",     34, 0 }, // 52 EB.Fast.Dot.String(name,altPath,data,def) -> log both JSONPath keys
     // ---- BCGHeroBase ctor field readers (2026-07-15 session 4): the 3 fast-dot
     //      variants the ctor uses that weren't otherwise hooked. jp=1 -> log key at
@@ -524,6 +525,7 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x1BF0D10, "TUTUIHOOKCLICK", 2, 0 }, // 149 TutorialUIHook.Clicked -> suppress tutorial click crash
     { 0x1174300, "PCSPECIAL", 2, 0 }, // 150 PlayerController.SpecialAttack(int index)
     { 0x1179AF4, "PCACTION",  2, 0 }, // 151 PlayerController.Action(int action)
+    { 0xFF0620,  "HUDENTER",  2, 0 }, // 152 HudScreen.WindowEnter -> capture live g_hud_screen
 };
 #define NH (int)(sizeof(H)/sizeof(H[0]))
 
@@ -593,6 +595,10 @@ static void* g_p0_attr = NULL;
 static void* g_p1_attr = NULL;
 static void* g_p0_controller = NULL;
 static void* g_p1_controller = NULL;
+static void* g_hud_screen = NULL;
+static float g_p0_max_hp = 0.0f;
+static float g_p1_max_hp = 0.0f;
+static float g_p1_live_hp = 0.0f;
 static int load_skill_rule_from_payload(const char* bot_id, CombatSkillRule* out_rule);
 static void trigger_combat_skill(const char* trigger_event);
 static void combat_skill_pump(void);
@@ -2351,6 +2357,8 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
         } else {
             g_p1_attr = a0;
             g_p1_controller = a1;
+            g_p1_max_hp = 0.0f;
+            g_p1_live_hp = 0.0f;
             flog("FIXFIGHT P1 init: ctrl=%p p1_attr=%p id1=%s (preserving P0 %s rule, p0_attr=%p)",
                  g_p1_controller, g_p1_attr, id1, g_current_fighter_rule.bid, g_p0_attr);
         }
@@ -3663,6 +3671,106 @@ static int load_skill_rule_from_payload(const char* bot_id, CombatSkillRule* out
     return 1;
 }
 
+static JavaVM* g_jvm = NULL;
+JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
+    g_jvm = vm;
+    flog("JNI_OnLoad: JavaVM=%p", g_jvm);
+    return JNI_VERSION_1_6;
+}
+
+typedef jint (*JNI_GetCreatedJavaVMs_fn)(JavaVM**, jsize, jsize*);
+static void show_android_toast(const char* text) {
+    if (!text || !text[0]) return;
+    
+    JavaVM* vm = g_jvm;
+    if (!vm) {
+        JNI_GetCreatedJavaVMs_fn get_vms = (JNI_GetCreatedJavaVMs_fn)dlsym(RTLD_DEFAULT, "JNI_GetCreatedJavaVMs");
+        if (!get_vms) {
+            void* h = dlopen("libnativehelper.so", RTLD_NOW);
+            if (!h) h = dlopen("libandroid_runtime.so", RTLD_NOW);
+            if (!h) h = dlopen("libart.so", RTLD_NOW);
+            if (h) get_vms = (JNI_GetCreatedJavaVMs_fn)dlsym(h, "JNI_GetCreatedJavaVMs");
+        }
+        if (get_vms) {
+            JavaVM* vms[2] = {0};
+            jsize n_vms = 0;
+            if (get_vms(vms, 2, &n_vms) == JNI_OK && n_vms > 0) {
+                vm = vms[0];
+                g_jvm = vm;
+            }
+        }
+    }
+    if (!vm) {
+        flog("TOAST: JavaVM not available");
+        return;
+    }
+    
+    JNIEnv* env = NULL;
+    int attached = 0;
+    if ((*vm)->GetEnv(vm, (void**)&env, JNI_VERSION_1_6) != JNI_OK) {
+        if ((*vm)->AttachCurrentThread(vm, &env, NULL) == JNI_OK) {
+            attached = 1;
+        }
+    }
+    if (!env) {
+        flog("TOAST: failed to get JNIEnv");
+        return;
+    }
+    
+    jclass looper_cls = (*env)->FindClass(env, "android/os/Looper");
+    if (looper_cls) {
+        jmethodID my_looper_m = (*env)->GetStaticMethodID(env, looper_cls, "myLooper", "()Landroid/os/Looper;");
+        jobject my_lp = my_looper_m ? (*env)->CallStaticObjectMethod(env, looper_cls, my_looper_m) : NULL;
+        if (!my_lp) {
+            jmethodID prepare_m = (*env)->GetStaticMethodID(env, looper_cls, "prepare", "()V");
+            if (prepare_m) {
+                (*env)->CallStaticVoidMethod(env, looper_cls, prepare_m);
+                if ((*env)->ExceptionOccurred(env)) {
+                    (*env)->ExceptionClear(env);
+                }
+            }
+        }
+    }
+    if ((*env)->ExceptionOccurred(env)) (*env)->ExceptionClear(env);
+
+    jclass up_cls = (*env)->FindClass(env, "com/unity3d/player/UnityPlayer");
+    if (up_cls) {
+        jfieldID act_fld = (*env)->GetStaticFieldID(env, up_cls, "currentActivity", "Landroid/app/Activity;");
+        if (act_fld) {
+            jobject act = (*env)->GetStaticObjectField(env, up_cls, act_fld);
+            if (act) {
+                jclass toast_cls = (*env)->FindClass(env, "android/widget/Toast");
+                if (toast_cls) {
+                    jmethodID make_text = (*env)->GetStaticMethodID(env, toast_cls, "makeText",
+                        "(Landroid/content/Context;Ljava/lang/CharSequence;I)Landroid/widget/Toast;");
+                    jmethodID show_m = (*env)->GetMethodID(env, toast_cls, "show", "()V");
+                    if (make_text && show_m) {
+                        jstring jstr = (*env)->NewStringUTF(env, text);
+                        jobject toast_obj = (*env)->CallStaticObjectMethod(env, toast_cls, make_text, act, jstr, 0);
+                        if (toast_obj) {
+                            (*env)->CallVoidMethod(env, toast_obj, show_m);
+                            flog("TOAST SUCCESS: %s", text);
+                        }
+                    }
+                }
+            } else {
+                flog("TOAST: currentActivity is null");
+            }
+        } else {
+            flog("TOAST: currentActivity field not found");
+        }
+    } else {
+        flog("TOAST: UnityPlayer class not found");
+    }
+    
+    if ((*env)->ExceptionOccurred(env)) {
+        (*env)->ExceptionClear(env);
+    }
+    if (attached) {
+        (*vm)->DetachCurrentThread(vm);
+    }
+}
+
 static void trigger_combat_skill(const char* trigger_event) {
     if (!g_has_fighter_rule) {
         flog("TRIGGER_COMBAT_SKILL skipped: has_rule=%d", g_has_fighter_rule);
@@ -3683,10 +3791,30 @@ static void trigger_combat_skill(const char* trigger_event) {
     g_active_effect.target_attr = g_p1_attr;
     g_active_effect.self_attr = g_p0_attr;
     
-    flog("COMBAT_SKILL TRIGGERED [%s] on %s: effect=%s total_ratio=%.2f (%.1f dmg x %d ticks, interval=%.2fs) p1_ctrl=%p",
+    flog("COMBAT_SKILL TRIGGERED [%s] on %s: effect=%s total_ratio=%.2f (%.1f dmg x %d ticks, interval=%.2fs) p1_ctrl=%p hud=%p",
          trigger_event, g_current_fighter_rule.bid, g_current_fighter_rule.type,
          g_current_fighter_rule.ratio, g_active_effect.dmg_per_tick,
-         g_active_effect.ticks_left, g_current_fighter_rule.interval, g_p1_controller);
+         g_active_effect.ticks_left, g_current_fighter_rule.interval, g_p1_controller, g_hud_screen);
+
+    char toast_buf[160];
+    snprintf(toast_buf, sizeof(toast_buf), "[TFTF Hook] %s S-Skill: BLEED \xEE\x90\x94 Activated (%.1fs, %d ticks)!",
+             g_current_fighter_rule.bid, g_current_fighter_rule.duration, g_current_fighter_rule.ticks);
+    show_android_toast(toast_buf);
+
+    if (obj_ok(g_p1_controller) && g_base) {
+        // 1. Notify opponent controller of Buff/Debuff addition (triggers native buff grid & HUD state)
+        ((void(*)(void*, void*, void*))(g_base + 0x1179D78))(g_p1_controller, NULL, NULL);
+    }
+
+    if (obj_ok(g_hud_screen) && g_base) {
+        void* health_bars = *(void**)((uintptr_t)g_hud_screen + 0x120);
+        if (obj_ok(health_bars)) {
+            void* p1_bar = *(void**)((uintptr_t)health_bars + 0x28);
+            if (obj_ok(p1_bar)) {
+                ((void(*)(void*, void*))(g_base + 0xFEA7D0))(p1_bar, NULL);
+            }
+        }
+    }
 }
 
 static void combat_skill_pump(void) {
@@ -3696,25 +3824,58 @@ static void combat_skill_pump(void) {
     
     void* target_attr = g_p1_attr;
     if (obj_ok(target_attr) && g_base) {
+        float cur_hp = ((float(*)(void*, void*))(g_base + 0xDAC758))(target_attr, NULL);
+        if (g_p1_max_hp <= 0.0f || cur_hp > g_p1_max_hp) {
+            g_p1_max_hp = cur_hp;
+        }
+        if (g_p1_live_hp <= 0.0f || g_p1_live_hp > g_p1_max_hp) {
+            g_p1_live_hp = (cur_hp > 0.0f) ? cur_hp : g_p1_max_hp;
+        }
+        
+        float prev_hp = g_p1_live_hp;
+        g_p1_live_hp -= g_active_effect.dmg_per_tick;
+        if (g_p1_live_hp < 0.0f) g_p1_live_hp = 0.0f;
+        float new_hp = g_p1_live_hp;
+        
+        // 1. Direct attribute mutation
         void* hp_attr = *(void**)((uintptr_t)target_attr + 0x78);
         if (obj_ok(hp_attr)) {
-            float cur_hp = *(float*)((uintptr_t)hp_attr + 0x28);
-            float new_hp = cur_hp - g_active_effect.dmg_per_tick;
-            if (new_hp < 0.0f) new_hp = 0.0f;
-            
-            // 1. Set raw float field
             *(float*)((uintptr_t)hp_attr + 0x28) = new_hp;
-            
-            // 2. Call PlayerAttributes.set_Health
-            ((void(*)(void*, float, void*))(g_base + 0xDAC774))(target_attr, new_hp, NULL);
-            
-            int tick_num = g_active_effect.rule.ticks - g_active_effect.ticks_left + 1;
-            flog("COMBAT_SKILL TICK: %s tick %d/%d -%.1f HP (%.1f -> %.1f) on target=%p",
-                 g_active_effect.rule.type,
-                 tick_num,
-                 g_active_effect.rule.ticks,
-                 g_active_effect.dmg_per_tick, cur_hp, new_hp, target_attr);
         }
+        
+        // 2. Notify PlayerController
+        if (obj_ok(g_p1_controller) && obj_ok(hp_attr)) {
+            ((void(*)(void*, void*, void*))(g_base + 0x1179840))(g_p1_controller, hp_attr, NULL);
+        }
+        
+        // 3. Update live in-game HUD health bar and flash safely
+        if (obj_ok(g_hud_screen)) {
+            void* health_bars = *(void**)((uintptr_t)g_hud_screen + 0x120);
+            if (obj_ok(health_bars)) {
+                void* p1_bar = *(void**)((uintptr_t)health_bars + 0x28);
+                if (obj_ok(p1_bar)) {
+                    float pct = (g_p1_max_hp > 0.0f) ? (new_hp / g_p1_max_hp) : 0.0f;
+                    if (pct < 0.0f) pct = 0.0f;
+                    if (pct > 1.0f) pct = 1.0f;
+                    // A. Directly update opponent health bar fill amount: HudHealthBar.SetNormalizedAmount(float pct) @0xFEA88C
+                    ((void(*)(void*, float, void*))(g_base + 0xFEA88C))(p1_bar, pct, NULL);
+                    // B. Directly flash opponent health bar: HudHealthBar.Flash() @0xFEA7D0
+                    ((void(*)(void*, void*))(g_base + 0xFEA7D0))(p1_bar, NULL);
+                }
+            }
+        }
+        
+        int tick_num = g_active_effect.rule.ticks - g_active_effect.ticks_left + 1;
+        flog("COMBAT_SKILL TICK: %s tick %d/%d -%.1f HP (%.1f -> %.1f, max=%.1f) on target=%p (hud=%p, p1_ctrl=%p)",
+             g_active_effect.rule.type,
+             tick_num,
+             g_active_effect.rule.ticks,
+             g_active_effect.dmg_per_tick, prev_hp, new_hp, g_p1_max_hp, target_attr, g_hud_screen, g_p1_controller);
+
+        char tick_toast[128];
+        snprintf(tick_toast, sizeof(tick_toast), "\xEE\x90\x94 [BLEED -%.0f] %d/%d (HP: %.0f -> %.0f)",
+                 g_active_effect.dmg_per_tick, tick_num, g_active_effect.rule.ticks, prev_hp, new_hp);
+        show_android_toast(tick_toast);
     }
     
     g_active_effect.ticks_left--;
@@ -3823,7 +3984,7 @@ void* hook_150(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
     flog("SPECIAL_ATTACK index=%d called on controller=%p (p0=%p, is_p0=%d, bot=%s)",
          index, self, g_p0_controller, (self == g_p0_controller), g_current_fighter_rule.bid);
     PROTECT({
-        if (self == g_p0_controller || g_p0_controller == NULL) {
+        if (self == g_p0_controller && obj_ok(g_p0_controller)) {
             trigger_combat_skill("on_special");
         }
     });
@@ -3835,12 +3996,16 @@ void* hook_151(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
         flog("PLAYER_ACTION action=%d on controller=%p (p0=%p, is_p0=%d)",
              action, self, g_p0_controller, (self == g_p0_controller));
     }
+    return H[151].orig(self, a1, a2, a3, a4, a5, a6, a7);
+}
+void* hook_152(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     PROTECT({
-        if ((self == g_p0_controller || g_p0_controller == NULL) && (action == 6 || action == 7 || action == 8)) {
-            trigger_combat_skill("on_special");
+        if (obj_ok(a0) && g_hud_screen != a0) {
+            g_hud_screen = a0;
+            flog("HUDSCREEN LIVE CAPTURED: %p", g_hud_screen);
         }
     });
-    return H[151].orig(self, a1, a2, a3, a4, a5, a6, a7);
+    return H[152].orig(a0, a1, a2, a3, a4, a5, a6, a7);
 }
 static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hook_7,hook_8,
     hook_9,hook_10,hook_11,hook_12,hook_13,hook_14,hook_15,hook_16,hook_17,hook_18,hook_19,hook_20,hook_21,
@@ -3857,7 +4022,7 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     hook_115,hook_116,hook_117,hook_118,hook_119,hook_120,hook_121,hook_122,hook_123,hook_124,hook_125,hook_126,hook_127,
     hook_128,hook_129,hook_130,hook_131,hook_132,hook_133,hook_134,hook_135,hook_136,hook_137,
     hook_138,hook_139,hook_140,hook_141,hook_142,hook_143,hook_144,
-    hook_145,hook_146,hook_147,hook_148,hook_149,hook_150,hook_151 };
+    hook_145,hook_146,hook_147,hook_148,hook_149,hook_150,hook_151,hook_152 };
 
 static void write_jump(uint8_t* dst, void* target){
     uint32_t* p = (uint32_t*)dst;

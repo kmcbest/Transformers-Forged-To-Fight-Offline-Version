@@ -255,6 +255,13 @@ def build_entries(listen_port: int = 8080) -> dict[str, bytes]:
 
     add("@grouprefresh:missionsconfig", _envelope({"updates": [gamedata.build_missions_autorefresh_update()]}))
     add("@grouprefresh:", _envelope({"updates": []}))
+    # Exact xlate snapshot routes
+    for x_path in sorted(Path("assets/xlate/snapshots").rglob("*.json")):
+        rel_url = "/" + str(x_path.relative_to(Path("assets"))).replace("\\", "/")
+        x_bytes = x_path.read_bytes()
+        add(f"GET {rel_url}", x_bytes)
+        if rel_url.endswith(".json"):
+            add(f"GET {rel_url[:-5]}", x_bytes)
     add("@tutorial:blocked", "\n".join(sorted(fakeserver.BLOCK_TUTORIALS)).encode())
     add("@tutorial:live", "\n".join(sorted(fakeserver.LIVE_TUTORIALS)).encode())
     for key, body in _tutorial_templates().items():
@@ -264,9 +271,10 @@ def build_entries(listen_port: int = 8080) -> dict[str, bytes]:
     add("@logindata:zh", _envelope(gamedata.build_login_data(lang="zh")))
     add("@herodata:open", b'{"error":null,"result":[')
     add("@herodata:close", b"]}")
-    for bid in sorted(gamedata.OWNED):
+    all_owned = sorted(set(gamedata.OWNED) | {m["id"] for m in gamedata._load_mods()} | {r["id"] for r in gamedata._load_relics()})
+    for bid in all_owned:
         for rank in range(1, 6):
-            for level in range(1, 31):
+            for level in range(1, 51):
                 add(f"@hero:{bid}:{rank}:{level}", _hero_detail(bid, rank, level))
     add("@hero:*:1:1", _hero_detail("__unknown_bid__", 1, 1))
 
@@ -284,6 +292,7 @@ def build_entries(listen_port: int = 8080) -> dict[str, bytes]:
     add("@userdata:template", _user_data_template())
     for bid in sorted(set(gamedata.OWNED) | set(gamedata.DEFAULT_TEAM)):
         add(f"@savedteam:hero:{bid}", json.dumps(gamedata.build_hero_entry(bid), separators=(",", ":")).encode())
+    add("@combat_skill_rules", json.dumps(gamedata.build_combat_skill_rules(), separators=(",", ":")).encode())
 
     return entries
 

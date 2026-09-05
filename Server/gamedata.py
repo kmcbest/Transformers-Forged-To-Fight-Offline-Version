@@ -92,18 +92,22 @@ ROSTER = {
     "mirage_gs_deluxe2016":         ("autobot",    "tech", 5),
     "optimusprimal_bw_mp32":        ("autobot",    "braw", 5),
     "optimusprime_cin_tf":          ("autobot",    "braw", 5),
+    "optimusprime_sg_voyager2015":  ("autobot",    "braw", 5),
     "prowl_gs_deluxe2016":          ("autobot",    "scou", 5),
     "ratchet_gs_kabam":             ("autobot",    "tech", 5),
     "rhinox_gs_voyager2014":        ("autobot",    "tech", 5),
     "rodimusprime_gs_mp09":         ("autobot",    "tact", 5),
     "sideswipe_gs":                 ("autobot",    "scou", 5),
+    "starsaber_gs_leader2014":      ("autobot",    "tact", 5),
     "sunstreaker_gs_deluxe2008":    ("autobot",    "braw", 5),
     "ultramagnus_gs_leader":        ("autobot",    "tact", 5),
     "wheeljack_gs_mp20":            ("autobot",    "tech", 5),
-    "windblade_gs":                 ("autobot",    "warr", 5),
+    "windblade_gs":                 ("autobot",    "scou", 5),
 
     # --- Decepticons ---
+    "acidstorm_gs_leader2015":      ("decepticon", "tech", 5),
     "barricade_cin_dotm":           ("decepticon", "scou", 5),
+    "bitstream_gs_leader2015":      ("decepticon", "tech", 5),
     "bludgeon_gs_rd20":             ("decepticon", "warr", 5),
     "bonecrusher_cin_rotf":         ("decepticon", "warr", 5),
     "cyclonus_gs_uw06":             ("decepticon", "tact", 5),
@@ -111,6 +115,8 @@ ROSTER = {
     "dirge_gs_deluxe2008":          ("decepticon", "warr", 5),
     "galvatron_gs_voyager2016":     ("decepticon", "demo", 5),
     "grindor_cin_rotf":             ("decepticon", "braw", 5),
+    "hotlink_gs_leader2015":        ("decepticon", "braw", 5),
+    "ionstorm_gs_leader2015":       ("decepticon", "tact", 5),
     "kickback_gs_kabam":            ("decepticon", "scou", 5),
     "megatron_cin_rotf":            ("decepticon", "demo", 5),
     "megatron_gs_leader2015":       ("decepticon", "tact", 5),
@@ -119,6 +125,7 @@ ROSTER = {
     "motormaster_gs_voyager2015":   ("decepticon", "braw", 5),
     "necrotronus_gs_kabam":         ("decepticon", "warr", 5),
     "nemesisprime_gs_voyager2015":  ("decepticon", "tact", 5),
+    "novastorm_gs_leader2015":      ("decepticon", "demo", 5),
     "ramjet_gs_deluxe2008":         ("decepticon", "demo", 5),
     "scorponok_bw_kabam":           ("decepticon", "warr", 5),
     "shockwave_gs":                 ("decepticon", "tech", 5),
@@ -126,7 +133,9 @@ ROSTER = {
     "slipstream_gs":                ("decepticon", "scou", 5),
     "soundblaster_gs_mp13b":        ("decepticon", "demo", 5),
     "soundwave_gs":                 ("decepticon", "tech", 5),
+    "sunstorm_gs_leader2015":       ("decepticon", "warr", 5),
     "thundercracker_gs_leader2015": ("decepticon", "braw", 5),
+    "thrust_gs_deluxe2008":         ("decepticon", "scou", 5),
     "tantrum_gs_kabam":             ("decepticon", "braw", 5),
     "waspinator_gs_deluxe":         ("decepticon", "demo", 5),
 
@@ -139,6 +148,23 @@ ROSTER = {
     "sharkticon_gs_tech":           ("decepticon", "tech", 1),
     "sharkticon_gs_warrior":        ("decepticon", "warr", 1),
 }
+
+# ==================== UNIVERSAL COMBAT SKILL RULES ====================
+# Authors all dynamic passive/active skill effects. Hot-reloaded via payload!
+COMBAT_SKILL_RULES = {
+    "arcee_gs_deluxe2014": {
+        "trigger": "on_special",   # Trigger: on_special (S1/S2/S3), on_hit, on_crit
+        "type": "bleed",           # Effect type: bleed, burn, fury, armor_break
+        "duration": 4.0,           # Total effect duration in seconds
+        "interval": 0.5,           # Tick rate interval in seconds
+        "ratio": 1.0,              # Total damage ratio: 1.0 = 100% attack damage
+    },
+}
+
+
+def build_combat_skill_rules():
+    return COMBAT_SKILL_RULES
+
 
 # Which bots the offline player owns at boot. For a preservation sandbox we grant the
 # ENTIRE roster so every screen (roster grid, hero details, team select) has content.
@@ -160,23 +186,22 @@ _CLASS_MOD = {
 
 # Star rarity base line (level 1, rank 1). Original.
 _STAR_BASE = {
-    1: (2200, 210),
-    2: (3400, 300),
-    3: (5200, 430),
-    4: (7800, 610),
-    5: (11500, 850),
+    1: (12000, 700),
+    2: (18000, 1000),
+    3: (26000, 1400),
+    4: (34000, 1800),
+    5: (42000, 2300),
 }
 
 
 def base_stats(bid, rank=1, level=1):
     """Authored HP/attack for a bot at a given rank/level. Pure, deterministic,
-    and original. Higher rank and level scale monotonically so upgrades feel real."""
-    faction, klass, star = ROSTER.get(bid, ("decepticon", "tact", 1))
-    hp0, atk0 = _STAR_BASE.get(star, _STAR_BASE[1])
+    and original. Scaled so enemy encounters and player squad are evenly matched."""
+    faction, klass, star = ROSTER.get(bid, ("decepticon", "tact", 5))
+    hp0, atk0 = _STAR_BASE.get(star, _STAR_BASE[5])
     hpm, atkm = _CLASS_MOD.get(klass, (1.0, 1.0))
-    # rank multiplies, level adds a per-level slice (~9% of base per 10 levels).
-    rank_mult = 1.0 + 0.35 * (max(1, rank) - 1)
-    level_add = (max(1, level) - 1) / 100.0
+    rank_mult = 1.0 + 0.05 * (max(1, rank) - 1)
+    level_add = (max(1, level) - 1) / 500.0
     hp = int(hp0 * hpm * rank_mult * (1.0 + level_add))
     atk = int(atk0 * atkm * rank_mult * (1.0 + level_add))
     return hp, atk
@@ -220,11 +245,39 @@ def special_damage_ratios(bid, star):
 
 
 # ---------------------------------------------------------------------------
+# Defense Modules (MODS) catalog loader
+# ---------------------------------------------------------------------------
+def _load_mods():
+    mpath = os.path.join(HERE, "mods_catalog.json")
+    if os.path.exists(mpath):
+        try:
+            with open(mpath, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return []
+
+
+# ---------------------------------------------------------------------------
+# Relics catalog loader
+# ---------------------------------------------------------------------------
+def _load_relics():
+    rpath = os.path.join(HERE, "relics_catalog.json")
+    if os.path.exists(rpath):
+        try:
+            with open(rpath, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return []
+
+
+# ---------------------------------------------------------------------------
 # JSON builders -- emit the exact proven shapes from Server/responses/.
 # ---------------------------------------------------------------------------
 def build_blueprints(lang="en"):
     """`blueprints` map for getLoginData. Same keys as the working response:
-    id, et(entity type -- MUST be 'bot' for the roster to populate), s1/s2/s3
+    id, et(entity type -- 'bot' for characters, 'mod' for defense modules), s1/s2/s3
     (special-attack damage ratios), msa (max special attacks), ab (attack bonus),
     plus the gg/mfl/nfr/fcpg/fhpag fields the client reads.
 
@@ -241,28 +294,52 @@ def build_blueprints(lang="en"):
         out[bid] = {
             "id": bid, "et": "bot",
             "c": bid, "r": star, "a": faction,
-            # cl/class (-> BCGBlueprintBase.HeroClass, CharacterMetaData.Class enum:
-            # braw=1 tact=2 scou=4 demo=8 warr=16 tech=32). SetScreenType filters the
-            # roster by a class bitmask reading this; a bot with no class defaults to
-            # none=0 and drops out of the filtered list.
             "cl": klass,
-            # FriendlyName / FriendlyNameShort -- non-null so SetScreenType's tile setup
-            # doesn't deref a null name (see display_name).
             "name": name, "name_s": name,
-            # m/mdl -> BCGBlueprintBase.ModelID (_modelID@0x40). This is the field the combat
-            # actor loader (CharacterWorldLoader.LoadActor(blueprint)) uses to mount the 3D
-            # mesh bundle. It was NEVER emitted here, so every fighter loaded the generic
-            # placeholder mech. Author the full-bid model id (see model_id) so the player's
-            # Optimus and each enemy render their real character mesh. i/img keeps the SHORT
-            # portrait base; ma/map_asset mirrors the model id for the questboard marker.
             "m": model_id(bid), "mdl": model_id(bid),
             "i": art_base(bid), "img": art_base(bid),
             "ma": model_id(bid), "map_asset": model_id(bid),
-            # s1/s2/s3: transform/special-attack damage ratios (see
-            # special_damage_ratios). Above every normal-attack percent so a transform
-            # out-damages punches and kicks.
             "s1": s1, "s2": s2, "s3": s3,
             "msa": max_special_attacks(bid, star),
+            "ab": 100.0, "gg": 1, "mfl": 0, "nfr": 0,
+            "fcpg": "", "fhpag": "",
+        }
+    for m in _load_mods():
+        mid = m["id"]
+        star = m.get("default_star", 5)
+        klass = m.get("class_affinity", "tech")
+        mdl = m.get("model_id", mid)
+        base = art_base(mid)
+        name = m.get("name_zh" if lang == "zh" else "name_en", m.get("name_en", mid))
+        out[mid] = {
+            "id": mid, "et": "tower",
+            "c": mid, "r": star, "a": "autobot",
+            "cl": "",
+            "name": name, "name_s": name,
+            "m": mdl, "mdl": mdl,
+            "i": base, "img": base,
+            "ma": mdl, "map_asset": mdl,
+            "s1": 1.0, "s2": 1.0, "s3": 1.0,
+            "msa": 0,
+            "ab": 100.0, "gg": 1, "mfl": 0, "nfr": 0,
+            "fcpg": "", "fhpag": "",
+        }
+    for r in _load_relics():
+        rid = r["id"]
+        star = r.get("default_star", 5)
+        mdl = r.get("model_id", rid)
+        base = art_base(rid)
+        name = r.get("name_zh" if lang == "zh" else "name_en", r.get("name_en", rid))
+        out[rid] = {
+            "id": rid, "et": "relic",
+            "c": rid, "r": star, "a": "autobot",
+            "cl": "",
+            "name": name, "name_s": name,
+            "m": mdl, "mdl": mdl,
+            "i": base, "img": base,
+            "ma": mdl, "map_asset": mdl,
+            "s1": 1.0, "s2": 1.0, "s3": 1.0,
+            "msa": 0,
             "ab": 100.0, "gg": 1, "mfl": 0, "nfr": 0,
             "fcpg": "", "fhpag": "",
         }
@@ -293,23 +370,30 @@ _ART_BASE = {
     "mirage_gs_deluxe2016": "mirag_gs",
     "optimusprimal_bw_mp32": "oprimal_bw",
     "optimusprime_cin_tf": "optimus_c_tf",
+    "optimusprime_sg_voyager2015": "optimus_sg",
     "ratchet_gs_kabam": "ratch_gs",
     "rhinox_gs_voyager2014": "rhino_bw",  # Only the Beast Wars-styled art ships.
     "rodimusprime_gs_mp09": "rodimus_gs",
     "sideswipe_gs": "sides_gs",
+    "starsaber_gs_leader2014": "starsaber",
     "sunstreaker_gs_deluxe2008": "sunstreak_gs",
     "ultramagnus_gs_leader": "ultram_gs",
     "wheeljack_gs_mp20": "wheelj_gs",
     "windblade_gs": "windb_gs",
 
     # --- Decepticons ---
+    "acidstorm_gs_leader2015": "acidstorm",
     "barricade_cin_dotm": "barri_c",
+    "bitstream_gs_leader2015": "bitstream",
     "bludgeon_gs_rd20": "bludge_gs",
     "bonecrusher_cin_rotf": "bonec_c",
     # The misspelled clyclon_gs is large-only; use the correctly spelled paired art.
     "cyclonus_gs_uw06": "cyclon_gs",
     "deadend_gs_deluxe2015": "deadend_gs",
+    "dirge_gs_deluxe2008": "dirge_gs",
     "grindor_cin_rotf": "grind_c_rotf",
+    "hotlink_gs_leader2015": "hotlink",
+    "ionstorm_gs_leader2015": "ionstorm",
     "kickback_gs_kabam": "kickb_gs",
     "megatron_cin_rotf": "megat_c",
     "megatron_gs_leader2015": "megat_gs",
@@ -318,10 +402,14 @@ _ART_BASE = {
     "motormaster_gs_voyager2015": "motorm_gs",
     "necrotronus_gs_kabam": "necrotro_gs",
     "nemesisprime_gs_voyager2015": "nemesis_p",
+    "novastorm_gs_leader2015": "novastorm",
+    "ramjet_gs_deluxe2008": "ramjet_gs",
     "shockwave_gs": "shock_c",
     "soundblaster_gs_mp13b": "soundblast_gs",
     "soundwave_gs": "sound_gs",
+    "sunstorm_gs_leader2015": "sunstorm",
     "thundercracker_gs_leader2015": "thunder_gs",
+    "thrust_gs_deluxe2008": "thrust",
     "waspinator_gs_deluxe": "wasp_bw",  # Only the Beast Wars-styled art ships.
 
     # --- Sharkticon NPC variants ---
@@ -334,6 +422,65 @@ _ART_BASE = {
     "sharkticon_gs_tactician": "npc_shark_tact",
     "sharkticon_gs_tech": "npc_shark_tech",
     "sharkticon_gs_warrior": "npc_shark_warr",
+
+    # --- Defense Modules (MODS) official shipped portraits ---
+    "mods_primemodule_01": "primemodule",
+    "mods_harmaccelerator_01": "harm",
+    "mods_EMImodule_01": "emi",
+    "mods_repairmodule_01": "repair",
+    "mods_strangerefractor_01": "strangerefractor",
+    "mods_superconductor_1000": "superconductor",
+    "mods_superconductor_2000": "superconductor",
+    "mods_paralyzer_01": "paralyzer",
+    "mods_laserguidance_01": "laserguidance",
+    "mods_nightbirdsmark_01": "nightbirdsmark",
+    "mods_brawlersfury_01": "brawlersfury",
+    "mods_demolitionscache_01": "democache",
+    "mods_exofilter_01": "exofilter",
+    "mods_fluxincapacitator_01": "flux",
+    "mods_robotresource_01": "robotresource",
+    "mods_scoutssentry_01": "scoutssentry",
+    "mods_security_01": "security",
+    "mods_tacticianstrick_02": "tacticianstrick",
+    "mods_techconsole_01": "techconsole",
+    "mods_warriorscall": "warriorscall",
+    "mods_generic_off_01": "gen_off",
+    "mods_generic_def_01": "gen_def",
+    "mods_generic_utl_01": "gen_utl",
+    "mods_attack_01": "attack",
+    "mods_health_01": "health",
+
+    # --- Relics official shipped portraits ---
+    "relic_immobilizer": "immobilizer",
+    "relic_allspark": "allspark",
+    "relic_covenant_primus": "covenant_primus",
+    "relic_matrix_of_leadership": "matrix_of_leadership",
+    "relic_origin_matrix": "origin_matrix",
+    "relic_ancienthead": "ancienthead",
+    "relic_solus_forge": "solus_forge",
+    "relic_dark_energon_crystal": "dark_energon_crystal",
+    "relic_unstable_energon_crystal": "unstable_energon_crystal",
+    "relic_stasis_generator": "stasis_generator",
+    "relic_cloaking_field": "cloaking_field",
+    "relic_fallen_titan_hand": "fallen_titan_hand",
+    "relic_ancient_tablet": "ancient_tablet",
+    "relic_goldendisk": "goldendisk",
+    "relic_shattered_disk": "shattered_disk_t4",
+    "relic_statue_op": "statue_op_c",
+    "relic_statue_megatron": "statue_megatron",
+    "relic_statue_hotrod": "statue_hotrod",
+    "relic_statue_solus": "statue_solus_g",
+    "relic_jazz": "relic_jazz_t4",
+    "relic_optimus_primal": "relic_optimus_primal_t4",
+    "relic_megatron": "relic_megatron_t4",
+    "relic_bumblebee": "relic_bumblebee_t4",
+    "relic_blaster": "relic_blaster_t4",
+    "relic_cheetor": "relic_cheetor_t4",
+    "relic_hound": "relic_hound_t4",
+    "relic_galvatron": "relic_galvatron_t4",
+    "relic_kickback": "relic_kickback_t4",
+    "relic_alliance_victory": "relic_ave_t4",
+    "relic_raid_champion": "relic_raid_t4",
 }
 
 
@@ -346,6 +493,18 @@ def art_base(bid):
     The two-token derivation below is only a fallback that happens to be right for 12
     roster bots, so all irregular shipped names are explicitly recorded in _ART_BASE.
     """
+    if not hasattr(art_base, "_mapping"):
+        mapping_file = os.path.join(os.path.dirname(__file__), "bot_portrait_mapping.json")
+        if os.path.exists(mapping_file):
+            try:
+                with open(mapping_file, "r", encoding="utf-8", errors="ignore") as f:
+                    art_base._mapping = json.load(f)
+            except Exception:
+                art_base._mapping = {}
+        else:
+            art_base._mapping = {}
+    if getattr(art_base, "_mapping", None) and bid in art_base._mapping and art_base._mapping[bid]:
+        return art_base._mapping[bid]
     if bid in _ART_BASE:
         return _ART_BASE[bid]
     parts = bid.split("_")
@@ -406,11 +565,13 @@ _BOT_NAMES = {
     "mirage_gs_deluxe2016": "Mirage",
     "optimusprimal_bw_mp32": "Optimus Primal",
     "optimusprime_cin_tf": "Optimus Prime (MV1)",
+    "optimusprime_sg_voyager2015": "SG Optimus Prime",
     "prowl_gs_deluxe2016": "Prowl",
     "ratchet_gs_kabam": "Ratchet",
     "rhinox_gs_voyager2014": "Rhinox",
     "rodimusprime_gs_mp09": "Rodimus Prime",
     "sideswipe_gs": "Sideswipe",
+    "starsaber_gs_leader2014": "Star Saber",
     "sunstreaker_gs_deluxe2008": "Sunstreaker",
     "ultramagnus_gs_leader": "Ultra Magnus",
     "wheeljack_gs_mp20": "Wheeljack",
@@ -513,6 +674,34 @@ def build_characters(lang="en"):
             "m": model_id(bid), "mdl": model_id(bid),
             "ma": model_id(bid), "map_asset": model_id(bid),
             "hc": faction, "hero_colour": faction,
+        }
+    for m in _load_mods():
+        mid = m["id"]
+        mdl = m.get("model_id", mid)
+        base = art_base(mid)
+        name = m.get("name_zh" if lang == "zh" else "name_en", m.get("name_en", mid))
+        out[mid] = {
+            "id": mid,
+            "name": name, "name_s": name,
+            "sg": "", "gen": "autobot", "aip": "", "sps": "",
+            "i": base, "img": base,
+            "m": mdl, "mdl": mdl,
+            "ma": mdl, "map_asset": mdl,
+            "hc": "autobot", "hero_colour": "autobot",
+        }
+    for r in _load_relics():
+        rid = r["id"]
+        mdl = r.get("model_id", rid)
+        base = art_base(rid)
+        name = r.get("name_zh" if lang == "zh" else "name_en", r.get("name_en", rid))
+        out[rid] = {
+            "id": rid,
+            "name": name, "name_s": name,
+            "sg": "", "gen": "autobot", "aip": "", "sps": "",
+            "i": base, "img": base,
+            "m": mdl, "mdl": mdl,
+            "ma": mdl, "map_asset": mdl,
+            "hc": "autobot", "hero_colour": "autobot",
         }
     return out
 
@@ -699,8 +888,9 @@ def build_rarity_properties():
 def build_hero_base(bid, rank=1):
     """One BCGHeroBase record for login `heroes[bid][rank]`. Deterministic/original,
     reusing the same authored stat curve as the owned-hero + blueprint builders."""
-    faction, klass, star = ROSTER.get(bid, ("decepticon", "tact", 1))
-    hp, atk = base_stats(bid, rank, 1)
+    faction, klass, star = ROSTER.get(bid, ("decepticon", "tact", 5))
+    level = max(1, rank * 10)
+    hp, atk = base_stats(bid, rank, level)
     rating = (hp + atk) // 20
     return {
         "id": bid, "r": rank, "m": star, "s": star,
@@ -710,7 +900,7 @@ def build_hero_base(bid, rank=1):
         "rating": rating,
         "rating_hp": hp // 2, "rating_attack": atk // 2,
         "rating_hp_base": hp // 2, "rating_attack_base": atk // 2,
-        "ab": 0,
+        "ab": 1,
         # combat-tuning floats: sensible neutral values (roster view doesn't need real balance)
         "hp": float(hp), "armor": 0.0, "crit_chance": 0.05, "crit_damage": 1.5,
         "perfect_block_chance": 0.1, "block_proficiency": 0.75, "mana_gain": _MANA_GAIN_RATE,
@@ -719,7 +909,9 @@ def build_hero_base(bid, rank=1):
         "ap": 0.0, "bp": 0.0, "il": 0.0, "il2": 0.0, "il3": 0.0, "is4": 0.0,
         "eg": 0.0, "fg": 0.0, "ar": 0.0, "hr": 0.0, "hm": 0.0, "am": 0.0,
         "hrhp": 0.0, "hra": 0.0,
-        "stat_mods": [], "sig_mods": [], "buff_mods": [],
+        "stat_mods": ["arcee_s_bleed"] if bid == "arcee_gs_deluxe2014" else [],
+        "sig_mods": [],
+        "buff_mods": ["arcee_s_bleed"] if bid == "arcee_gs_deluxe2014" else [],
         "i": [], "i2": [], "i3": [], "i4": [],
     }
 
@@ -728,11 +920,62 @@ def build_heroes():
     """Login-data top-level `heroes` map = BCGManager._baseHeroData (BCGHeroBaseDict:
     Dictionary<string blueprintId, Dictionary<int rank, BCGHeroBase>>). HeroData..ctor
     resolves mHeroBase from this per (blueprint,rank); mHeroBase != null => mValid =>
-    the BOTS tile draws its rarity frame / rating / portrait. Owned heroes are served at
-    rank 1 (see build_hero_entry), so one rank-1 BCGHeroBase per owned bot is what the
-    roster looks up. Rank keys are strings in JSON; the client converts them to the int
-    keys of Dictionary<int,BCGHeroBase> (verified live: string "1" resolved fine)."""
-    return {bid: {"1": build_hero_base(bid, 1)} for bid in OWNED}
+    the BOTS tile draws its rarity frame / rating / portrait. Provides ranks 1..5."""
+    out = {}
+    for bid in OWNED:
+        faction, klass, star = ROSTER.get(bid, ("decepticon", "tact", 5))
+        out[bid] = {str(r): build_hero_base(bid, r) for r in range(1, max(2, star + 1))}
+    for m in _load_mods():
+        mid = m["id"]
+        star = m.get("default_star", 5)
+        hp0, atk0 = _STAR_BASE.get(star, _STAR_BASE[5])
+        rating = (hp0 + atk0) // 20
+        out[mid] = {
+            "1": {
+                "id": mid, "r": 1, "m": star, "s": star,
+                "max_hp": hp0, "mhpb": hp0, "attack": atk0, "attb": atk0,
+                "mana_start": 0, "stun_time": 0, "special_attacks": 0,
+                "rating": rating,
+                "rating_hp": hp0 // 2, "rating_attack": atk0 // 2,
+                "rating_hp_base": hp0 // 2, "rating_attack_base": atk0 // 2,
+                "ab": 0,
+                "hp": float(hp0), "armor": 500.0, "crit_chance": 0.1, "crit_damage": 1.5,
+                "perfect_block_chance": 0.1, "block_proficiency": 0.75, "mana_gain": 1.0,
+                "resist_magic": 0.0, "resist_physical": 0.0, "stun_chance": 0.0,
+                "cr": 0.0, "rcr": 0.0, "rcd": 0.0, "spb": 0.0, "pjb": 0.0, "cpw": 0.0,
+                "ap": 0.0, "bp": 0.0, "il": 0.0, "il2": 0.0, "il3": 0.0, "is4": 0.0,
+                "eg": 0.0, "fg": 0.0, "ar": 0.0, "hr": 0.0, "hm": 0.0, "am": 0.0,
+                "hrhp": 0.0, "hra": 0.0,
+                "stat_mods": [], "sig_mods": [], "buff_mods": [],
+                "i": [], "i2": [], "i3": [], "i4": [],
+            }
+        }
+    for r in _load_relics():
+        rid = r["id"]
+        star = r.get("default_star", 5)
+        hp0, atk0 = _STAR_BASE.get(star, _STAR_BASE[5])
+        rating = (hp0 + atk0) // 20
+        out[rid] = {
+            "1": {
+                "id": rid, "r": 1, "m": star, "s": star,
+                "max_hp": hp0, "mhpb": hp0, "attack": atk0, "attb": atk0,
+                "mana_start": 0, "stun_time": 0, "special_attacks": 0,
+                "rating": rating,
+                "rating_hp": hp0 // 2, "rating_attack": atk0 // 2,
+                "rating_hp_base": hp0 // 2, "rating_attack_base": atk0 // 2,
+                "ab": 0,
+                "hp": float(hp0), "armor": 500.0, "crit_chance": 0.1, "crit_damage": 1.5,
+                "perfect_block_chance": 0.1, "block_proficiency": 0.75, "mana_gain": 1.0,
+                "resist_magic": 0.0, "resist_physical": 0.0, "stun_chance": 0.0,
+                "cr": 0.0, "rcr": 0.0, "rcd": 0.0, "spb": 0.0, "pjb": 0.0, "cpw": 0.0,
+                "ap": 0.0, "bp": 0.0, "il": 0.0, "il2": 0.0, "il3": 0.0, "is4": 0.0,
+                "eg": 0.0, "fg": 0.0, "ar": 0.0, "hr": 0.0, "hm": 0.0, "am": 0.0,
+                "hrhp": 0.0, "hra": 0.0,
+                "stat_mods": [], "sig_mods": [], "buff_mods": [],
+                "i": [], "i2": [], "i3": [], "i4": [],
+            }
+        }
+    return out
 
 
 def build_stat_modifiers():
@@ -774,6 +1017,35 @@ def build_stat_modifiers():
             "rh": 0.0,
             "ra": 0.0,
         },
+        "arcee_s_bleed": {
+            "id": "arcee_s_bleed",
+            "t": "bleed",
+            "tm": "special_attack",
+            "tr": ["on_special_attack_hit", "on_hit"],
+            "uit": ["bleed"],
+            "pri": 1,
+            "trm": 1.0,
+            "trs": "",
+            "trr": "none",
+            "c": 1.0,
+            "m": 1.0,
+            "d": 4.0,
+            "s": "stack",
+            "ta": "target",
+            "mt": "debuff",
+            "v": "bleed",
+            "ms": "",
+            "st": 0,
+            "g": "damage",
+            "gc": 0.0,
+            "gcv": "",
+            "rcv": "",
+            "ti": 8,
+            "a": [],
+            "au": [],
+            "rh": 0.0,
+            "ra": 0.0,
+        },
     }
 
 
@@ -789,7 +1061,15 @@ def build_login_data(lang="en"):
         "heroRatingMaxHPWeight": 1.0,
         "attributeGrowthDefs": [],
         "statMods": build_stat_modifiers(),
-        "statModAppears": {},
+        "statModAppears": {
+            "arcee_s_bleed": {
+                "id": "arcee_s_bleed",
+                "title": "ID_STAT_BLD_HUD",
+                "desc": "ID_STAT_ARCEE_HEADSHOT",
+                "icon": "\ue414",
+                "type": "debuff",
+            },
+        },
         # NOTE (session 3): this map is BCGManager._baseHeroData (BCGHeroBaseDict), the per-
         # (blueprint,rank) BASE-ATTRIBUTE templates -> structure heroes[blueprintId][rank] =
         # { <BCGHeroBase fields, parsed by BCGHeroBase..ctor RVA 0xC21AC4> }. It is EMPTY here,
@@ -812,14 +1092,19 @@ def build_login_data(lang="en"):
     }
 
 
-def build_hero_entry(bid, rank=1, level=1):
+def build_hero_entry(bid, rank=None, level=None):
     """One owned-hero record for getUserData `updates.heroes`. Same keys as the
-    proven single-hero response; entity_type MUST be 'bot'."""
-    faction, klass, star = ROSTER.get(bid, ("decepticon", "tact", 1))
+    proven single-hero response; entity_type MUST be 'bot'.
+    Defaults to full 5-Star Rank 5 Level 50 Awakened (sig_lvl 100, flvl 100)."""
+    faction, klass, star = ROSTER.get(bid, ("decepticon", "tact", 5))
+    if rank is None:
+        rank = max(1, star)
+    if level is None:
+        level = rank * 10
     hp, atk = base_stats(bid, rank, level)
     return {
         "entity_type": "bot", "bid": bid,
-        "rank": rank, "level": level, "sig_lvl": 0,
+        "rank": rank, "level": level, "sig_lvl": 100,
         "required_xp": 0, "max_xp": 100,
         "stamina": 100, "stamina_ts": 0, "stamina_full_ts": 0, "stt": "",
         "max_hp": hp, "attack": atk,
@@ -827,8 +1112,9 @@ def build_hero_entry(bid, rank=1, level=1):
         "rating_attack": atk // 2, "rating_hp": hp // 2,
         "rating_attack_base": atk // 2, "rating_hp_base": hp // 2,
         "special_attacks": max_special_attacks(bid, star), "pvpb": {}, "exc": {},
+        "stat_mods": ["arcee_s_bleed"] if bid == "arcee_gs_deluxe2014" else [],
         "mana_gain": _MANA_GAIN_RATE, "mana_start": _DIAG_MANA_START,
-        "flvl": 0, "req_fxp": 0, "max_fxp": 0, "mfl": 0,
+        "flvl": 100, "req_fxp": 0, "max_fxp": 100, "mfl": 100,
     }
 
 
@@ -953,14 +1239,60 @@ def build_active_team(activity_id="1.1.1-0", heroes=None):
     }
 
 
+def build_mod_entry(mid, rank=1, level=1):
+    """One owned-module record for getUserData `updates.heroes` (entity_type='tower')."""
+    mod_dict = {m["id"]: m for m in _load_mods()}
+    mod_info = mod_dict.get(mid, {})
+    star = mod_info.get("default_star", 5)
+    hp0, atk0 = _STAR_BASE.get(star, _STAR_BASE[5])
+    rating = (hp0 + atk0) // 20
+    return {
+        "entity_type": "tower", "bid": mid,
+        "rank": rank, "level": level, "sig_lvl": 0,
+        "required_xp": 0, "max_xp": 100,
+        "stamina": 100, "stamina_ts": 0, "stamina_full_ts": 0, "stt": "",
+        "max_hp": hp0, "attack": atk0,
+        "rating": rating,
+        "rating_attack": atk0 // 2, "rating_hp": hp0 // 2,
+        "rating_attack_base": atk0 // 2, "rating_hp_base": hp0 // 2,
+        "special_attacks": 0, "pvpb": {}, "exc": {},
+        "mana_gain": 1.0, "mana_start": 0,
+        "flvl": 0, "req_fxp": 0, "max_fxp": 0, "mfl": 0,
+    }
+
+
+def build_relic_entry(rid, rank=1, level=1):
+    """One owned-relic record for getUserData `updates.heroes` (entity_type='relic')."""
+    relic_dict = {r["id"]: r for r in _load_relics()}
+    relic_info = relic_dict.get(rid, {})
+    star = relic_info.get("default_star", 5)
+    hp0, atk0 = _STAR_BASE.get(star, _STAR_BASE[5])
+    rating = (hp0 + atk0) // 20
+    return {
+        "entity_type": "relic", "bid": rid,
+        "rank": rank, "level": level, "sig_lvl": 0,
+        "required_xp": 0, "max_xp": 100,
+        "stamina": 100, "stamina_ts": 0, "stamina_full_ts": 0, "stt": "",
+        "max_hp": hp0, "attack": atk0,
+        "rating": rating,
+        "rating_attack": atk0 // 2, "rating_hp": hp0 // 2,
+        "rating_attack_base": atk0 // 2, "rating_hp_base": hp0 // 2,
+        "special_attacks": 0, "pvpb": {}, "exc": {},
+        "mana_gain": 1.0, "mana_start": 0,
+        "flvl": 0, "req_fxp": 0, "max_fxp": 0, "mfl": 0,
+    }
+
+
 def build_user_data(team=None):
     """Full getUserData result. userData maxes + owned heroes through `updates`,
     exactly as the proven response and the README/TECHNICAL_NOTES describe."""
     heroes = [build_hero_entry(bid) for bid in OWNED]
+    mods = [build_mod_entry(m["id"]) for m in _load_mods()]
+    relics = [build_relic_entry(r["id"]) for r in _load_relics()]
     return {
         # teamSizeMax expanded to 5 as requested
-        "userData": {"blueprintsMax": 500, "teamSizeMax": 5, "teamCountMax": 5},
-        "updates": {"heroes": heroes, "savedTeams": [build_saved_team(heroes=team)],
+        "userData": {"blueprintsMax": 500, "teamSizeMax": 5, "teamCountMax": 5, "BotDupedTut": {"id": "BotDupedTut", "state": 2, "completed": True, "branch": ""}, "BotDupedTutorial": {"id": "BotDupedTutorial", "state": 2, "completed": True, "branch": ""}, "ForgeBotTut": {"id": "ForgeBotTut", "state": 2, "completed": True, "branch": ""}, "ForgeBotTutorial": {"id": "ForgeBotTutorial", "state": 2, "completed": True, "branch": ""}, "ForgeModTut": {"id": "ForgeModTut", "state": 2, "completed": True, "branch": ""}, "ForgeModTutorial": {"id": "ForgeModTutorial", "state": 2, "completed": True, "branch": ""}, "RankUpTut": {"id": "RankUpTut", "state": 2, "completed": True, "branch": ""}, "RankUpTutorial": {"id": "RankUpTutorial", "state": 2, "completed": True, "branch": ""}, "UpgradeBotsScreen": {"id": "UpgradeBotsScreen", "state": 2, "completed": True, "branch": ""}, "RelicTut": {"id": "RelicTut", "state": 2, "completed": True, "branch": ""}, "RelicsTutorial": {"id": "RelicsTutorial", "state": 2, "completed": True, "branch": ""}, "MasteryPointIntro": {"id": "MasteryPointIntro", "state": 2, "completed": True, "branch": ""}, "MasteriesTutorial": {"id": "MasteriesTutorial", "state": 2, "completed": True, "branch": ""}, "MasteryPointTutorial": {"id": "MasteryPointTutorial", "state": 2, "completed": True, "branch": ""}, "ShieldTutorial": {"id": "ShieldTutorial", "state": 2, "completed": True, "branch": ""}, "AutoFightTutorial": {"id": "AutoFightTutorial", "state": 2, "completed": True, "branch": ""}, "AvoidanceTutorial": {"id": "AvoidanceTutorial", "state": 2, "completed": True, "branch": ""}, "ClassAdvantageTutorial": {"id": "ClassAdvantageTutorial", "state": 2, "completed": True, "branch": ""}, "ClassGateTutorial": {"id": "ClassGateTutorial", "state": 2, "completed": True, "branch": ""}, "LinkNodesTutorial": {"id": "LinkNodesTutorial", "state": 2, "completed": True, "branch": ""}, "RaidsTutorial": {"id": "RaidsTutorial", "state": 2, "completed": True, "branch": ""}, "RaidTutorial": {"id": "RaidTutorial", "state": 2, "completed": True, "branch": ""}, "StashTutorial": {"id": "StashTutorial", "state": 2, "completed": True, "branch": ""}, "TreasuryTutorial": {"id": "TreasuryTutorial", "state": 2, "completed": True, "branch": ""}, "SparksTutorial": {"id": "SparksTutorial", "state": 2, "completed": True, "branch": ""}, "ArenaTutorial": {"id": "ArenaTutorial", "state": 2, "completed": True, "branch": ""}, "AllianceEventsTutorial": {"id": "AllianceEventsTutorial", "state": 2, "completed": True, "branch": ""}, "DailyMissionsTutorial": {"id": "DailyMissionsTutorial", "state": 2, "completed": True, "branch": ""}, "BotPlacementTutorial": {"id": "BotPlacementTutorial", "state": 2, "completed": True, "branch": ""}},
+        "updates": {"heroes": heroes + mods + relics, "savedTeams": [build_saved_team(heroes=team)],
                     "activeTeams": [build_active_team(heroes=team)]},
         "deletes": {},
     }
@@ -1121,6 +1453,10 @@ def build_quest_enemy(map_override=None, tod_index=None, key=None, is_final_boss
     map_override = ARENA_LEVEL if map_override is None else map_override
     tod_index = ARENA_TOD_INDEX if tod_index is None else tod_index
     key = (ENCOUNTER_SENTINELS[-1] if is_final_boss else ENCOUNTER_SENTINELS[0]) if key is None else key
+    faction, klass, star = ROSTER.get(key, ("decepticon", "tact", 5))
+    rank = max(1, star)
+    level = rank * 10
+    hp, atk = base_stats(key, rank, level)
     return {
         # The entity key doubles as the combat blueprint id. PrefightScreenData sends it
         # verbatim to /bcg/getBaseHeroData; an arbitrary encounter id therefore creates a
@@ -1130,7 +1466,12 @@ def build_quest_enemy(map_override=None, tod_index=None, key=None, is_final_boss
         "parentEntityType": "boss",
         "isFinalBoss": is_final_boss,
         "characters": [key],
-        "rank": 1, "level": 1, "sig_lvl": 0, "flvl": 0,
+        "rank": rank, "level": level, "sig_lvl": 0, "flvl": 0,
+        "hp": 1.0,
+        "pi": (hp + atk) // 20,
+        "rating": (hp + atk) // 20,
+        "rating_attack": atk // 2,
+        "rating_hp": hp // 2,
         "aiType": 0, "aiString": "default", "aiPer": "default",
         "mapOverride": map_override, "todIndex": tod_index,
     }
@@ -1168,11 +1509,14 @@ def build_quest_progression(qid="1.1.1", start=(0, 1), team=None):
     # This quest-local dictionary is what the pre-fight bot selector enumerates.
     # Truncating it silently drops chosen squad members from the mission.
     for bid in bids:
-        hp, atk = base_stats(bid, 1, 1)
+        faction, klass, star = ROSTER.get(bid, ("decepticon", "tact", 5))
+        rank = max(1, star)
+        level = rank * 10
+        hp, atk = base_stats(bid, rank, level)
         quest_team[bid] = {
             "hp": 1.0,
             "pi": (hp + atk) // 20,
-            "sig_lvl": 0,
+            "sig_lvl": 100,
             "stat_mods": [],
             "sig_mods": [],
         }
@@ -1188,7 +1532,7 @@ def build_quest_progression(qid="1.1.1", start=(0, 1), team=None):
         "previouslyCleared": [],
         # revealed = List<QuestTileProgressionNode>; each authored as a tile position so the path
         # tiles read as revealed (non-hidden path tiles are visible regardless, but keep it explicit).
-        "revealed": [{"x": r, "y": 1} for r in range(3)],
+        "revealed": [{"x": r, "y": 1} for r in range(QUEST_DIM)],
         # users keyed by uid string; the local-uid entry becomes the board player (see above).
         "users": {LOCAL_UID: user},
     }
@@ -1443,21 +1787,21 @@ BASE_SOCKET_TYPE = "building"
 BASE_BUILDINGS = {
     "bldg_battle_centre": {
         "name": "Battle Centre",
-        "desc": "Coordinate your Autobots' battles from here.",
-        "model": "z_bldg_battle_centre_01",
+        "desc": "The command centre of your base.",
+        "model": "z_bldg_battle_centre_03",
     },
     "bldg_away_team": {
-        "name": "Away Team",
-        "desc": "Send bots on away missions across Cybertron.",
-        "model": "z_bldg_away_team_01",
+        "name": "Away Team Station",
+        "desc": "Coordinates away missions.",
+        "model": "z_bldg_away_team_03",
     },
     "bldg_alliance_help": {
-        "name": "Alliance Beacon",
+        "name": "Alliance Relay",
         "desc": "Call in help from allied Autobots.",
-        "model": "z_bldg_alliance_help_01",
+        "model": "z_bldg_alliance_help_03",
     },
     "bldg_crystal_free": {
-        "name": "Crystal Chamber",
+        "name": "Free Crystal Vault",
         "desc": "Synthesizes a free crystal now and then.",
         "model": "z_bldg_gacha_free_01",
     },
@@ -1473,14 +1817,12 @@ BASE_BUILDINGS = {
     },
 }
 
-# Which building sits in which plot's socket. All positions must be walkable
-# (on the plus-shaped walkway) so their tiles -- and building sockets -- exist.
 BASE_PLACEMENTS = {
-    (2, 2): "bldg_battle_centre",
-    (2, 1): "bldg_away_team",
-    (2, 3): "bldg_alliance_help",
-    (1, 2): "bldg_crystal_free",
-    (3, 2): "bldg_crystal_daily",
+    (1, 1): "bldg_away_team",        # Back-Left (Away Team Station + Spaceship Shuttle)
+    (1, 2): "bldg_battle_centre",    # Back-Center (Battle Centre Command Tower)
+    (1, 3): "bldg_alliance_help",    # Back-Right (Alliance Help Radar Tower)
+    (2, 1): "bldg_crystal_free",     # Mid-Left (Free Crystal Vault)
+    (2, 3): "bldg_crystal_premium",  # Mid-Right (Premium Crystal Vault)
 }
 
 
@@ -1502,26 +1844,11 @@ def build_base_summary():
 
 
 def build_base_map():
-    """The base's EB.Missions.Map.
-
-    Identical wire shape to the quest map (build_quest_map documents the reader in
-    detail): a square `grid` of gridDimension rows x gridDimension tile dicts indexed
-    [row][col], plus `pathData`. The differences are all base-specific:
-
-      * every walkable tile carries a `sockets` dictionary -- the build plots. Tile
-        sockets are what BaseBoard's node/building interaction hangs off; without them
-        a node has nothing to place into.
-      * there is no `final`/boss tile: a base is not cleared, so no encounter is
-        authored here.
-      * pathData must still hold at least one path element, for the same reason as the
-        quest board: Map.Deserialize stores paths = NULL for an empty pathData, and
-        PathAnalyzer.GetPathsFromMap (@0xB3C718) then NREs during board build.
-    """
+    """The base's EB.Missions.Map."""
     dim = BASE_DIM
     centre = dim // 2
 
     def links_for(row, col):
-        """Absolute positions reachable from (row, col) -- the plus-shaped walkway."""
         out = []
         for r, c in ((row - 1, col), (row + 1, col), (row, col - 1), (row, col + 1)):
             if 0 <= r < dim and 0 <= c < dim and _base_walkable(r, c):
@@ -1540,8 +1867,6 @@ def build_base_map():
                 "walkable": True, "hidden": False,
                 "lab": "Plot %d-%d" % (row, col),
                 "links": lk, "visibleLinks": lk,
-                # Entry key -> Socket.id; `entityType` -> Socket.type (see the
-                # socket wire-contract note above BASE_BUILDINGS).
                 "sockets": {
                     _base_socket_id(row, col): {
                         "entityType": BASE_SOCKET_TYPE,
@@ -1557,12 +1882,11 @@ def build_base_map():
 
     walkable = sum(1 for row in range(dim) for col in range(dim)
                    if _base_walkable(row, col))
-    # One path along the centre row and one down the centre column: the walkway the
-    # plus-shaped layout implies. Each element is a MapPath dict whose `path` key is a
-    # list of {x,y} integer tile positions (see build_quest_map).
+    # Circuit pathways connecting all 3 rows and 3 columns
     path_data = [
-        {"path": [{"x": centre, "y": c} for c in range(dim)]},
-        {"path": [{"x": r, "y": centre} for r in range(dim)]},
+        {"path": [{"x": r, "y": c} for c in range(1, 4)]} for r in range(1, 4)
+    ] + [
+        {"path": [{"x": r, "y": c} for r in range(1, 4)]} for c in range(1, 4)
     ]
 
     return {
@@ -1577,9 +1901,8 @@ def build_base_map():
 
 
 def _base_walkable(row, col):
-    """The authored base layout: a plus/cross of plots through the centre."""
-    centre = BASE_DIM // 2
-    return row == centre or col == centre
+    """3x3 core grid of plots (rows 1..3, cols 1..3)."""
+    return 1 <= row <= 3 and 1 <= col <= 3
 
 
 def _base_socket_id(row, col):
@@ -1602,9 +1925,6 @@ def build_base_mission():
         "modes": ["base"],
         "data": build_base_summary(),
         "map": build_base_map(),
-        # Placements: socket id -> the building occupying it. `key` is the
-        # building id; it travels to NewEntity as extraData, which is what makes
-        # the base builder clone the catalogue entry (see note at BASE_BUILDINGS).
         "placements": {
             _base_socket_id(r, c): {
                 "entityType": "building",
@@ -1618,12 +1938,7 @@ def build_base_mission():
 
 
 def build_base_available_buildings():
-    """The building catalogue, one entry per BASE_BUILDINGS row.
-
-    Keys per Building.Deserialize (@0x149C594); see the wire-contract note at
-    BASE_BUILDINGS. `levels` is a List<BuildingLevelRange> used only by the
-    upgrade-cost math, safe to leave empty for display.
-    """
+    """The building catalogue, one entry per BASE_BUILDINGS row."""
     out = []
     for bid, spec in BASE_BUILDINGS.items():
         out.append({
@@ -1670,30 +1985,52 @@ def build_base_hero_details(req_heroes):
     requested hero, drawn from the authored stat curve so the numbers match the roster
     instead of the old crude ad-hoc curve in fakeserver."""
     out = []
+    mod_dict = {m["id"]: m for m in _load_mods()}
+    relic_dict = {r["id"]: r for r in _load_relics()}
     for h in (req_heroes or []):
         bid = h.get("bid", "")
         rank = int(h.get("rank", 1) or 1)
         level = int(h.get("level", 1) or 1)
-        faction, klass, star = ROSTER.get(bid, ("decepticon", "tact", 1))
-        hp, atk = base_stats(bid, rank, level)
-        # ManaGain@0x54 seeds _powerGainRate@0x138; these original authored values keep the
-        # per-hit `attackValues[*].m` contribution nonzero for both combatants.
-        out.append({
-            "bid": bid, "rank": rank, "level": level,
-            "sig_lvl": int(h.get("sig_lvl", 0) or 0),
-            # The request identifies the enemy only by bid. Keep its authored render
-            # identity on the computed detail too; the wire walk check confirmed the
-            # intermediate warrior must resolve as npc_shark_warr, not a blank default.
-            "i": art_base(bid), "img": art_base(bid),
-            "m": model_id(bid), "mdl": model_id(bid),
-            "rating_hp": hp, "max_hp": hp,
-            "rating_attack": atk, "attack": atk,
-            "health": hp, "armor": 0, "crit_rate": 0, "crit_dmg": 0,
-            "block_prof": 0, "perfect_block": 0, "sig_ability": 0,
-            "special_attacks": max_special_attacks(bid, star), "user_owned": True,
-            "mana_gain": _MANA_GAIN_RATE, "mana_start": _DIAG_MANA_START,
-            "synergyBonuses": [], "pvpb": {},
-        })
+        if bid in mod_dict or bid in relic_dict:
+            item_info = mod_dict.get(bid) or relic_dict.get(bid)
+            star = item_info.get("default_star", 5)
+            mdl = item_info.get("model_id", bid)
+            hp0, atk0 = _STAR_BASE.get(star, _STAR_BASE[5])
+            hp = hp0 * level
+            atk = atk0 * level
+            out.append({
+                "bid": bid, "rank": rank, "level": level,
+                "sig_lvl": int(h.get("sig_lvl", 0) or 0),
+                "i": art_base(bid), "img": art_base(bid),
+                "m": mdl, "mdl": mdl,
+                "rating_hp": hp, "max_hp": hp,
+                "rating_attack": atk, "attack": atk,
+                "health": hp, "armor": 0, "crit_rate": 0, "crit_dmg": 0,
+                "block_prof": 0, "perfect_block": 0, "sig_ability": 0,
+                "special_attacks": 0, "user_owned": True,
+                "mana_gain": _MANA_GAIN_RATE, "mana_start": _DIAG_MANA_START,
+                "synergyBonuses": [], "pvpb": {},
+            })
+        else:
+            faction, klass, star = ROSTER.get(bid, ("decepticon", "tact", 5))
+            hp, atk = base_stats(bid, rank, level)
+            req_sig = h.get("sig_lvl")
+            sig_val = int(req_sig) if req_sig is not None else 100
+            out.append({
+                "bid": bid, "rank": rank, "level": level,
+                "sig_lvl": sig_val,
+                "i": art_base(bid), "img": art_base(bid),
+                "m": model_id(bid), "mdl": model_id(bid),
+                "rating_hp": hp, "max_hp": hp,
+                "rating_attack": atk, "attack": atk,
+                "health": hp, "armor": 0, "crit_rate": 0, "crit_dmg": 0,
+                "block_prof": 0, "perfect_block": 0, "sig_ability": 1,
+                "special_attacks": max_special_attacks(bid, star), "user_owned": True,
+                "mana_gain": _MANA_GAIN_RATE, "mana_start": _DIAG_MANA_START,
+                "flvl": 100, "req_fxp": 0, "max_fxp": 100, "mfl": 100,
+                "stat_mods": ["arcee_s_bleed"] if bid == "arcee_gs_deluxe2014" else [],
+                "synergyBonuses": [], "pvpb": {},
+            })
     return out
 
 

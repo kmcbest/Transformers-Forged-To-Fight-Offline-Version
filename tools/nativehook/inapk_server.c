@@ -33,6 +33,8 @@
 #define MAX_BODY (1024u * 1024u)
 #define MAX_CONN 64
 
+__attribute__((used)) const char g_payload_asset_tag[] = "assets/tftf_offline_payload.bin";
+
 typedef struct { uint32_t ko, kl, bo, bl; } Rec;
 typedef struct { const unsigned char *p; size_t n; uint32_t count, eo, pc, po, dfo, dfl, port; } Blob;
 typedef struct {
@@ -145,6 +147,7 @@ static const Rec *find_key(const char *key) {
 }
 static const unsigned char *body_for(const Rec *r, size_t *n) { if (!r) return NULL; *n=r->bl; return g_blob.p+r->bo; }
 static const unsigned char *lookup(const char *key, size_t *n) { return body_for(find_key(key),n); }
+const unsigned char *tftf_payload_lookup(const char *key, size_t *out_n) { return lookup(key, out_n); }
 static int out_reserve(Out *o, size_t add) { size_t cap; unsigned char *p; if (add <= o->cap-o->n) return 1; cap=o->cap?o->cap:256; while(cap-o->n<add) { if(cap>MAX_BODY*8) return 0; cap*=2; } p=realloc(o->p,cap); if(!p)return 0; o->p=p;o->cap=cap;return 1; }
 static int out_add(Out *o, const void *p, size_t n) { if(!out_reserve(o,n))return 0; memcpy(o->p+o->n,p,n);o->n+=n;return 1; }
 static int out_template_args(Out *o, const unsigned char *s, size_t n, const TemplateArg *args, size_t count) {
@@ -376,11 +379,18 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
             g_pos[slot].x=x;g_pos[slot].y=y;
             int picked[6];
             for(int k=0; k<6; k++) {
+                if(k == 0) {
+                    snprintf(g_pos[slot].e_bid[0], sizeof g_pos[slot].e_bid[0], "slipstream_gs");
+                    snprintf(e_bid[0], sizeof e_bid[0], "slipstream_gs");
+                    picked[0] = -1;
+                    continue;
+                }
                 int cand;
                 for(;;) {
                     cand = q_rand() % ENEMY_POOL_SIZE;
+                    if(!strcmp(g_enemy_pool[cand], "slipstream_gs")) continue;
                     int dup = 0;
-                    for(int prev=0; prev<k; prev++) {
+                    for(int prev=1; prev<k; prev++) {
                         if(picked[prev] == cand) { dup = 1; break; }
                     }
                     if(!dup) break;
@@ -406,7 +416,8 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
     if(strstr(p,"/quests/quest-movedir/")) { int dx=1,dy=0,sx=0,sy=1,nx,ny;
         const char *z=strrchr(p,'/'); const char *yseg=z?z+1:""; const char *z2=z?NULL:NULL; if(z){z2=z-1;while(z2>p&&*z2!='/')z2--; if(*z2=='/')z2++;} if(!z||!z2)return NULL; char xs[32], ys[32], seg[96];snprintf(ys,sizeof ys,"%.31s",yseg);snprintf(xs,sizeof xs,"%.*s",(int)(z-z2),z2); const char *z3=z2-2;while(z3>p&&*z3!='/')z3--;if(*z3=='/')z3++;snprintf(seg,sizeof seg,"%.*s",(int)(z2-z3-1),z3);char *dash=strrchr(seg,'-');if(!dash)return NULL;*dash=0;snprintf(qid,sizeof qid,"%.63s",seg);char *ep;long lx=strtol(xs,&ep,10);if(*ep)lx=1;long ly=strtol(ys,&ep,10);if(*ep){lx=1;ly=0;}dx=(int)lx;dy=(int)ly;
         char e_bid[6][64];
-        for(int k=0; k<6; k++) snprintf(e_bid[k], sizeof e_bid[k], "%s", g_enemy_pool[k % ENEMY_POOL_SIZE]);
+        snprintf(e_bid[0], sizeof e_bid[0], "slipstream_gs");
+        for(int k=1; k<6; k++) snprintf(e_bid[k], sizeof e_bid[k], "%s", g_enemy_pool[k % ENEMY_POOL_SIZE]);
         pthread_mutex_lock(&g_pos_lock);int slot=-1;for(int i=0;i<16;i++)if(!strcmp(g_pos[i].qid,qid)){slot=i;break;}if(slot<0)for(int i=0;i<16;i++)if(!g_pos[i].qid[0]){slot=i;snprintf(g_pos[i].qid,sizeof g_pos[i].qid,"%s",qid);break;}
         if(slot>=0){
             sx=g_pos[slot].x;sy=g_pos[slot].y;if(!sx&&!sy){sy=1;g_pos[slot].y=1;}
@@ -588,6 +599,43 @@ int tftf_apk_candidates(const char *maps_path, const char *cmdline_path,
 }
 
 int tftf_server_start_from_apk(void) {
+    /* Hot-reload: check for loose payload in external app data or local paths */
+    const char *hot_paths[] = {
+        "/sdcard/Android/media/com.kabam.bigrobot/tftf_offline_payload.bin",
+        "/storage/emulated/0/Android/media/com.kabam.bigrobot/tftf_offline_payload.bin",
+        "/sdcard/Android/media/com.kabam.bigrobot/files/tftf_offline_payload.bin",
+        "/data/data/com.kabam.bigrobot/files/tftf_offline_payload.bin",
+        "/data/user/0/com.kabam.bigrobot/files/tftf_offline_payload.bin",
+        "/data/local/tmp/tftf_offline_payload.bin",
+        "/sdcard/Android/data/com.kabam.bigrobot/files/tftf_offline_payload.bin",
+        "/storage/emulated/0/Android/data/com.kabam.bigrobot/files/tftf_offline_payload.bin",
+        "/sdcard/Documents/tftf_offline_payload.bin",
+        "/storage/emulated/0/Documents/tftf_offline_payload.bin",
+        "/sdcard/Download/tftf_offline_payload.bin",
+        "/storage/emulated/0/Download/tftf_offline_payload.bin",
+        NULL
+    };
+    for (size_t h = 0; hot_paths[h]; h++) {
+        int hfd = open(hot_paths[h], O_RDONLY);
+        if (hfd >= 0) {
+            struct stat hst;
+            if (!fstat(hfd, &hst) && hst.st_size > 64) {
+                int hrc = map_payload_fd(hfd, 0, (size_t)hst.st_size);
+                close(hfd);
+                if (!hrc) {
+                    logmsg("HOT RELOAD payload active: %s (size %zu)", hot_paths[h], (size_t)hst.st_size);
+                    return 0;
+                }
+                logmsg("HOT RELOAD rejected %s: invalid payload (%d)", hot_paths[h], hrc);
+            } else {
+                logmsg("HOT RELOAD rejected %s: fstat fail or empty", hot_paths[h]);
+                close(hfd);
+            }
+        } else {
+            logmsg("HOT RELOAD probe %s: fd=%d (errno=%d: %s)", hot_paths[h], hfd, errno, strerror(errno));
+        }
+    }
+
     char paths[MAX_APK_CANDIDATES][4096], package[4096];
     int count, i;
     count = tftf_apk_candidates("/proc/self/maps", "/proc/self/cmdline", paths,

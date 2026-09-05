@@ -288,15 +288,72 @@ def build(
                 pmatpath = Path("assets_netflix/character_matinee_procedural.assetbundle")
                 if pmatpath.exists():
                     data = pmatpath.read_bytes()
+            elif info.filename.startswith("assets/assetpack/") and info.filename.endswith(".assetbundle"):
+                b_name = Path(info.filename).name
+                rpath = Path("assets_redeco") / b_name
+                if rpath.exists():
+                    data = rpath.read_bytes()
+            elif info.filename == "assets/towers_odr/toc.txt":
+                try:
+                    toc_dict = json.loads(data.decode("utf-8"))
+                    tpaths = toc_dict["bundles"]["towers"]["paths"]
+                    for mod_stem in [
+                        "mods_generic_utl_01", "mods_laserguidance", "mods_nightbirdsmark", "mods_techconsole",
+                        "mods_generic_off_01", "mods_brawlersfury", "mods_robotresource", "mods_scoutssentry",
+                        "mods_superconductor", "mods_health", "mods_repairmodule", "mods_security",
+                        "mods_emimodule", "mods_strangerefractor", "defaulttower", "mods_immobilizer",
+                        "mods_fluxincapacitator", "mods_exofilter", "mods_harmaccelerator", "mods_demolitionscache",
+                        "mods_primemodule", "mods_warriorscall", "mods_generic_def_01", "mods_attack",
+                        "mods_tacticianstrick"
+                    ]:
+                        tpaths[f"bundles/characters/merged/{mod_stem}"] = f"Assets/Bundles/quest/towers/prefabs/{mod_stem}.prefab"
+                        tpaths[f"bundles/characters/merged/{mod_stem}_lw"] = f"Assets/Bundles/quest/towers/prefabs/{mod_stem}.prefab"
+                    data = json.dumps(toc_dict, indent=4).encode("utf-8")
+                except Exception as e:
+                    print(f"Failed to patch towers toc: {e}")
+            elif info.filename == "assets/relics_odr/toc.txt":
+                try:
+                    toc_dict = json.loads(data.decode("utf-8"))
+                    rpaths = toc_dict["bundles"]["relics"]["paths"]
+                    for relic_stem in [
+                        "rlc1", "rlc2", "rlc3", "rlc4", "rlc5", "rlc6", "rlc7", "rlc8", "rlc9", "rlc10",
+                        "rlc11", "rlc13", "rlc14", "rlc19", "rlc20", "rlc22", "rlc28", "rlc29",
+                        "rlc30a", "rlc30b", "rlc30c", "rlc30d",
+                        "rlc31a", "rlc31b", "rlc31c", "rlc31d",
+                        "rlc33a", "rlc33b", "rlc33c", "rlc33d",
+                        "rlc34a", "rlc34b", "rlc34c", "rlc34d",
+                        "rlc35a", "rlc35b", "rlc35c", "rlc35d",
+                        "rlc36a", "rlc36b", "rlc36c", "rlc36d",
+                        "rlc37a", "rlc37b", "rlc37c", "rlc37d",
+                        "rlc38a", "rlc38b", "rlc38c", "rlc38d",
+                        "rlc39a", "rlc39b", "rlc39c", "rlc39d",
+                        "rlc40a", "rlc40b", "rlc40c", "rlc40d",
+                        "rlc41a", "rlc41b", "rlc41c", "rlc41d",
+                        "rlc_jazz_a", "rlc_jazz_b", "rlc_jazz_c", "rlc_jazz_gs", "defaultrelic"
+                    ]:
+                        rpaths[f"bundles/characters/merged/{relic_stem}"] = f"Assets/Bundles/quest/relics/prefabs/{relic_stem}.prefab"
+                        rpaths[f"bundles/characters/merged/{relic_stem}_lw"] = f"Assets/Bundles/quest/relics/prefabs/{relic_stem}.prefab"
+                    data = json.dumps(toc_dict, indent=4).encode("utf-8")
+                except Exception as e:
+                    print(f"Failed to patch relics toc: {e}")
             elif info.filename == "assets/packs.txt":
                 try:
                     pdict = json.loads(data.decode("utf-8"))
                     packs = pdict.get("packs", {})
                     for pkey in [
+                        "acidstorm_gs_leader2015_odr",
+                        "bitstream_gs_leader2015_odr",
                         "chromia_gs_kabam_odr",
                         "deadend_gs_deluxe2015_odr",
+                        "hotlink_gs_leader2015_odr",
+                        "ionstorm_gs_leader2015_odr",
+                        "novastorm_gs_leader2015_odr",
                         "optimusprime_gs_v_odr",
+                        "optimusprime_sg_voyager2015_odr",
+                        "starsaber_gs_leader2014_odr",
                         "starscream_gs_odr",
+                        "sunstorm_gs_leader2015_odr",
+                        "thrust_gs_deluxe2008_odr",
                     ]:
                         packs[pkey] = pkey
                     pdict["packs"] = packs
@@ -308,10 +365,28 @@ def build(
                     ptoc = json.loads(data.decode("utf-8"))
                     flist = ptoc.get("files", [])
                     for pentry in [
+                        "portraits/portrait_acidstorm_large.png",
+                        "portraits/portrait_acidstorm_small.jpg",
+                        "portraits/portrait_bitstream_large.png",
+                        "portraits/portrait_bitstream_small.jpg",
                         "portraits/portrait_chromia_gs_large.png",
                         "portraits/portrait_chromia_gs_small.jpg",
                         "portraits/portrait_deadend_gs_large.png",
                         "portraits/portrait_deadend_gs_small.jpg",
+                        "portraits/portrait_hotlink_large.png",
+                        "portraits/portrait_hotlink_small.jpg",
+                        "portraits/portrait_ionstorm_large.png",
+                        "portraits/portrait_ionstorm_small.jpg",
+                        "portraits/portrait_novastorm_large.png",
+                        "portraits/portrait_novastorm_small.jpg",
+                        "portraits/portrait_optimus_sg_large.png",
+                        "portraits/portrait_optimus_sg_small.jpg",
+                        "portraits/portrait_starsaber_large.png",
+                        "portraits/portrait_starsaber_small.jpg",
+                        "portraits/portrait_sunstorm_large.png",
+                        "portraits/portrait_sunstorm_small.jpg",
+                        "portraits/portrait_thrust_large.png",
+                        "portraits/portrait_thrust_small.jpg",
                     ]:
                         if pentry not in flist:
                             flist.append(pentry)
@@ -319,13 +394,43 @@ def build(
                     data = json.dumps(ptoc, indent=4).encode("utf-8")
                 except Exception:
                     pass
+            elif info.filename == "assets/questboard_odr/toc.txt":
+                try:
+                    qtoc = json.loads(data.decode("utf-8"))
+                    flist = qtoc.get("files", [])
+                    for qentry in [
+                        "questboard/portrait_acidstorm_quest.png",
+                        "questboard/portrait_bitstream_quest.png",
+                        "questboard/portrait_hotlink_quest.png",
+                        "questboard/portrait_ionstorm_quest.png",
+                        "questboard/portrait_novastorm_quest.png",
+                        "questboard/portrait_optimus_sg_quest.png",
+                        "questboard/portrait_starsaber_quest.png",
+                        "questboard/portrait_sunstorm_quest.png",
+                        "questboard/portrait_thrust_quest.png",
+                    ]:
+                        if qentry not in flist:
+                            flist.append(qentry)
+                    qtoc["files"] = flist
+                    data = json.dumps(qtoc, indent=4).encode("utf-8")
+                except Exception:
+                    pass
             elif info.filename == "assets/dialogue_odr/toc.txt":
                 try:
                     dtoc = json.loads(data.decode("utf-8"))
                     flist = dtoc.get("files", [])
                     for dentry in [
+                        "dialogue/acidstorm.png",
+                        "dialogue/bitstream.png",
                         "dialogue/chromia_gs.png",
                         "dialogue/deadend_gs.png",
+                        "dialogue/hotlink.png",
+                        "dialogue/ionstorm.png",
+                        "dialogue/novastorm.png",
+                        "dialogue/optimus_sg.png",
+                        "dialogue/starsaber.png",
+                        "dialogue/sunstorm.png",
+                        "dialogue/thrust.png",
                     ]:
                         if dentry not in flist:
                             flist.append(dentry)
@@ -458,6 +563,56 @@ def build(
                 pfile = netflix_dir / fpath
                 if pfile.exists():
                     zout.writestr(ztarget, pfile.read_bytes())
+
+        # Inject Redeco custom characters (All newbots + SG Optimus + Star Saber)
+        redeco_dir = Path("assets_redeco")
+        if redeco_dir.is_dir():
+            for bpath in redeco_dir.glob("*.assetbundle"):
+                bot_id = bpath.stem
+                if bot_id in ("towers", "relics"):
+                    continue
+                bdata = bpath.read_bytes()
+                bundle_target = f"assets/assetpack/{bot_id}_odr/{bot_id}.assetbundle"
+                toc_target = f"assets/{bot_id}_odr/toc.txt"
+                if bundle_target not in names:
+                    zout.writestr(bundle_target, bdata)
+                if toc_target not in names:
+                    b_toc = json.dumps({
+                        "tags": [], "pack": f"{bot_id}_odr", "scenes": {},
+                        "bundles": {
+                            bot_id: {
+                                "crc": 0, "compression": "LZ4", "typetreehash": None,
+                                "file": f"{bot_id}_odr/{bot_id}.assetbundle",
+                                "ts": 637933503540000000, "deterministic": False, "manifest": "manifest_main",
+                                "paths": {
+                                    f"bundles/characters/merged/{bot_id}_lw": f"Assets/Bundles/Characters/Merged/{bot_id}/{bot_id}_lw.prefab",
+                                    f"bundles/characters/merged/{bot_id}": f"Assets/Bundles/Characters/Merged/{bot_id}/{bot_id}.prefab"
+                                },
+                                "directory": "odr", "deps": ["character_fx", "moves", "character_audio"],
+                                "contenthash": None, "size": len(bdata), "hash": 0, "parent": "", "mount": "None"
+                            }
+                        },
+                        "files": [], "pad": {"deliverymode": 1, "assetpack": "default"}, "version": "9.2.0"
+                    }, indent=4)
+                    zout.writestr(toc_target, b_toc)
+
+            # Inject all portraits and dialogue icons from assets_redeco
+            for pfile in redeco_dir.glob("portrait_*_large.png"):
+                zout.writestr(f"assets/assetpack/portraits_odr/portraits/{pfile.name}", pfile.read_bytes())
+            for pfile in redeco_dir.glob("portrait_*_small.jpg"):
+                zout.writestr(f"assets/assetpack/portraits_odr/portraits/{pfile.name}", pfile.read_bytes())
+            for pfile in redeco_dir.glob("portrait_*_quest.png"):
+                zout.writestr(f"assets/assetpack/questboard_odr/questboard/{pfile.name}", pfile.read_bytes())
+            for pfile in redeco_dir.glob("*.png"):
+                if not pfile.name.startswith("portrait_") and not pfile.name.startswith("cha_") and not pfile.name.startswith("debug_"):
+                    zout.writestr(f"assets/assetpack/dialogue_odr/dialogue/{pfile.name}", pfile.read_bytes())
+
+            # Inject official authentic Chinese localization snapshots
+            xlate_assets_dir = Path("assets/xlate/snapshots")
+            if xlate_assets_dir.exists():
+                for xfile in xlate_assets_dir.rglob("*.json"):
+                    rel_zip_path = str(xfile).replace("\\", "/")
+                    zout.writestr(rel_zip_path, xfile.read_bytes())
 
         if payload is not None:
             payload_info = zipfile.ZipInfo(PAYLOAD_ASSET, date_time=(1980, 1, 1, 0, 0, 0))
