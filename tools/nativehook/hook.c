@@ -719,7 +719,7 @@ static void flush_keys(void){ if(g_f) fflush(g_f); }
     else { void* k = H[i].jp ? (a0 ? *(void**)((char*)a0 + 8) : 0) : a0; log_key(H[i].tag, k); } \
     ); \
     return H[i].orig(a0,a1,a2,a3,a4,a5,a6,a7); }
-MKHOOK(0) MKHOOK(1) MKHOOK(2) MKHOOK(3) MKHOOK(4) MKHOOK(5) MKHOOK(6) MKHOOK(7) MKHOOK(8)
+MKHOOK(0) MKHOOK(1) MKHOOK(2) MKHOOK(3) MKHOOK(4) MKHOOK(5) MKHOOK(6) MKHOOK(7)
 MKHOOK(9) MKHOOK(10) MKHOOK(11) MKHOOK(12) MKHOOK(14) MKHOOK(15) MKHOOK(16)
 MKHOOK(17) MKHOOK(18) MKHOOK(19) MKHOOK(20)
 MKHOOK(25) MKHOOK(26) MKHOOK(27) MKHOOK(29) MKHOOK(30)
@@ -727,7 +727,7 @@ MKHOOK(25) MKHOOK(26) MKHOOK(27) MKHOOK(29) MKHOOK(30)
 MKHOOK(33) MKHOOK(34) MKHOOK(35) MKHOOK(39) MKHOOK(40) MKHOOK(41)
 MKHOOK(47) MKHOOK(48) MKHOOK(49) MKHOOK(51)
 // slots 53/54/55: BCGHeroBase ctor field readers (jp=1 key logging, HB-prefixed via g_inhb)
-MKHOOK(53) MKHOOK(54) MKHOOK(55)
+MKHOOK(54) MKHOOK(55)
 MKHOOK(91)
 // LOADBLDG (slot 92): log the requested model as before, then queue authored building ids
 // so the later DefaultRelic SpawnBuilding fallbacks can be paired FIFO with their real prefab.
@@ -795,6 +795,55 @@ static int read_str(void* s, char* buf, int cap){
     int32_t len=*(int32_t*)(p+0x10); if(len<0||len>cap-1) return 0;
     uint16_t* ch=(uint16_t*)(p+0x14); int i; for(i=0;i<len;i++) buf[i]=(ch[i]<128)?(char)ch[i]:'?'; buf[len]=0; return 1;
 }
+// slot 8: EB.Fast.Dot.Single(JSONPath name, JSONPath altPath, object data, float def, MethodInfo* method)
+typedef float (*fn_fast_dot_single_alt)(void*, void*, void*, float, void*);
+float hook_8(void* a0, void* a1, void* a2, float def, void* a4) {
+    float def_val = def;
+    PROTECT({
+        void* k = H[8].jp ? (a0 ? *(void**)((char*)a0 + 8) : 0) : a0;
+        log_key(H[8].tag, k);
+    });
+    fn_fast_dot_single_alt orig = (fn_fast_dot_single_alt)H[8].orig;
+    volatile float r = orig(a0, a1, a2, def_val, a4);
+    PROTECT({
+        void* k = H[8].jp ? (a0 ? *(void**)((char*)a0 + 8) : 0) : a0;
+        if (k && obj_ok(k)) {
+            char key_str[32];
+            if (read_str(k, key_str, sizeof key_str) && strcmp(key_str, "hp") == 0) {
+                if (r <= 0.0f) {
+                    flog("HOOK_8: auto-reviving 'hp' from %f to 1.0f", r);
+                    r = 1.0f;
+                }
+            }
+        }
+    });
+    return r;
+}
+// slot 53: EB.Fast.Dot.Single(JSONPath name, object data, float def, MethodInfo* method)
+typedef float (*fn_fast_dot_single)(void*, void*, float, void*);
+float hook_53(void* a0, void* a1, float def, void* a3) {
+    float def_val = def;
+    PROTECT({
+        void* k = H[53].jp ? (a0 ? *(void**)((char*)a0 + 8) : 0) : a0;
+        log_key(H[53].tag, k);
+    });
+    fn_fast_dot_single orig = (fn_fast_dot_single)H[53].orig;
+    volatile float r = orig(a0, a1, def_val, a3);
+    PROTECT({
+        void* k = H[53].jp ? (a0 ? *(void**)((char*)a0 + 8) : 0) : a0;
+        if (k && obj_ok(k)) {
+            char key_str[32];
+            if (read_str(k, key_str, sizeof key_str) && strcmp(key_str, "hp") == 0) {
+                if (r <= 0.0f) {
+                    flog("HOOK_53: auto-reviving 'hp' from %f to 1.0f", r);
+                    r = 1.0f;
+                }
+            }
+        }
+    });
+    return r;
+}
+
 // slot 44 TEXPATH: HeroPortrait.LoadTexture(this=a0, path=a1) ; slot 50 SETPATH: set_baseTexturePath(this=a0,value=a1)
 // both: jp=30 -> log the a1 string.
 void* hook_44(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
@@ -2385,6 +2434,28 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
             }
             LOG("FIXFIGHT_STATS: player=%d bp=%s filled hp=%d atk=%d pi=%d",
                  player_idx, id1, hp, atk, pi);
+        } else if (player_idx == 0) {
+            if (at1 && obj_ok(at1)) {
+                float cur_norm_hp = *(float*)((char*)at1 + 0x34);
+                if (cur_norm_hp <= 0.0f || cur_hp <= 0) {
+                    flog("FIXFIGHT: reviving Player 0 HP from %f (max=%d) to 1.0f", cur_norm_hp, cur_hp);
+                    *(float*)((char*)at1 + 0x34) = 1.0f;
+                    if (cur_hp <= 0) {
+                        *(int32_t*)((char*)at1 + 0x2C) = 50000;
+                        *(int32_t*)((char*)at1 + 0x30) = 50000;
+                    }
+                }
+                float bp = *(float*)((char*)at1 + 0x50);
+                if (bp <= 0.0f || bp > 1.0f) {
+                    *(float*)((char*)at1 + 0x50) = 0.5f;
+                }
+            }
+            if (ch1 && obj_ok(ch1)) {
+                if (*(float*)((char*)ch1 + 0x34) <= 0.0f) {
+                    *(float*)((char*)ch1 + 0x34) = 1.0f;
+                }
+                *(float*)((char*)ch1 + 0x58) = 1.0f;
+            }
         }
         flog("FIXFIGHT player=%d bp1=%s msa=%d attr.specials=%d tags:%p->%p  bp2=%s msa=%d attr.specials=%d tags:%p->%p",
              player_idx, id1, obj_ok(bp1)?*(int32_t*)((uintptr_t)bp1+0xAC):-1,
@@ -2397,6 +2468,30 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
             typedef void (*fn_set_mana)(void*, float, void*);
             fn_set_mana set_mana = (fn_set_mana)(g_base + 0xDAC720);
             set_mana(a0, 0.0f, NULL);
+            int player_idx = obj_ok(a1) ? *(int32_t*)((uintptr_t)a1+0xF4) : -1;
+            if (player_idx == 0) {
+                typedef float (*fn_get_hp)(void*, void*);
+                fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC698);
+                float cur_hp_val = get_hp(a0, NULL);
+                if (cur_hp_val <= 0.0f) {
+                    flog("FIXFIGHT: post-init Player 0 HP was %f, recovering to 1.0f", cur_hp_val);
+                    void* ch = fld_p(a0, 0x68);
+                    if (ch && obj_ok(ch)) {
+                        void* cur_prop = fld_p(ch, 0x18);
+                        void* max_prop = fld_p(ch, 0x28);
+                        if (cur_prop && max_prop) {
+                            typedef float (*fn_get_val)(void*, void*);
+                            typedef void (*fn_set_val)(void*, float, void*);
+                            fn_get_val get_val = (fn_get_val)(g_base + 0x1345EC4);
+                            fn_set_val set_val = (fn_set_val)(g_base + 0x1346048);
+                            float max_val = get_val(max_prop, NULL);
+                            if (max_val <= 0.0f) { max_val = 50000.0f; set_val(max_prop, max_val, NULL); }
+                            set_val(cur_prop, max_val, NULL);
+                            flog("FIXFIGHT: post-init CombatHealth set cur=max=%f", max_val);
+                        }
+                    }
+                }
+            }
         }
     });
     return r;
@@ -3814,8 +3909,10 @@ void* hook_158(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
     });
     return r;
 }
-void* hook_159(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
-    void* r = H[159].orig(self, a1, a2, a3, a4, a5, a6, a7);
+typedef int (*fn_apply_damage)(void* self, float damage, void* mi);
+int hook_159(void* self, float damage, void* mi) {
+    fn_apply_damage orig = (fn_apply_damage)H[159].orig;
+    int r = orig(self, damage, mi);
     PROTECT({
         if (obj_ok(self)) {
             reset_player_attack_chain(self);
