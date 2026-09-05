@@ -186,9 +186,9 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     // ---- roster grid diagnostics (2026-07-14 session 2) ----
     { 0xC5ADE4,  "ASF",      23, 0 }, // 31 HeroesScreen.ApplySortingAndFilter -> _entities + IList ret count
     { 0xC5B0E4,  "GSH",      23, 0 }, // 32 HeroesScreen.GetSortedHeroes -> _entities + List ret count
-    { 0xC5BC3C,  "OGII",      2, 0 }, // 33 HeroesScreen.OnGridItemInitialized (per-tile marker)
+    { 0x0E8DF9C, "RFD",       2, 0 }, // 33 HeroPortrait.RefreshFromData
     { 0xE7CDF4,  "DSREADY",   2, 0 }, // 34 Grid.onDynamicScrollReady (fires when scrollview ready)
-    { 0xE7D7A0,  "GIDA",      2, 0 }, // 35 Grid.GridItemDataAssignmentCallback (per-item data assign)
+    { 0x0E8002C, "SEI",       2, 0 }, // 35 HeroPortrait.SetEnabledItems
     { 0x165AD44, "IPS",      21, 0 }, // 36 DynamicScrollView.CalculateItemsPerScreen -> int ret
     { 0x165AF78, "CSVD",     22, 0 }, // 37 DynamicScrollView.CacheScrollViewDimensions -> Rect+bool
     { 0x165A01C, "MPS",      21, 0 }, // 38 DynamicScrollView.GetMaxPoolSize -> int ret
@@ -723,8 +723,175 @@ MKHOOK(0) MKHOOK(1) MKHOOK(2) MKHOOK(3) MKHOOK(4) MKHOOK(5) MKHOOK(6) MKHOOK(7)
 MKHOOK(9) MKHOOK(10) MKHOOK(11) MKHOOK(12) MKHOOK(14) MKHOOK(15) MKHOOK(16)
 MKHOOK(17) MKHOOK(18) MKHOOK(19) MKHOOK(20)
 MKHOOK(25) MKHOOK(26) MKHOOK(27) MKHOOK(29) MKHOOK(30)
+static void apply_hero_portrait_deco(void* hp) {
+    if (!hp || (uintptr_t)hp < 0x100000 || ((uintptr_t)hp & 7)) return;
+    PROTECT({
+        void* (*comp_get_go)(void*, void*) = (void*(*)(void*, void*))(g_base + 0x1B4BD28);
+        void (*go_set_active)(void*, int, void*) = (void(*)(void*, int, void*))(g_base + 0x1B50CA8);
+        void (*set_sprite_name)(void*, void*, void*) = (void(*)(void*, void*, void*))(g_base + 0x1E61320);
+
+        // 1. Explicitly ensure progress bar (+0x210) is INACTIVE
+        void* pbar = *(void**)((char*)hp + 0x210);
+        if (pbar && (uintptr_t)pbar >= 0x100000 && !((uintptr_t)pbar & 7)) {
+            void* pgo = comp_get_go(pbar, NULL);
+            if (pgo) go_set_active(pgo, 0, NULL);
+        }
+
+        // 2. Inspect hero_data (+0xE0)
+        void* hero_data = *(void**)((char*)hp + 0xE0);
+        if (!hero_data || (uintptr_t)hero_data < 0x100000 || ((uintptr_t)hero_data & 7)) return;
+
+        // Ensure mUserOwned is 1 so any internal getters treat it as owned
+        *(uint8_t*)((char*)hero_data + 0x68) = 1;
+
+        // Ensure isRendering is 1
+        *(uint8_t*)((char*)hp + 0xFA) = 1;
+
+        // 3. Resolve rarity from blueprint (+0x48)
+        int rarity = 5;
+        void* bp = *(void**)((char*)hero_data + 0x48);
+        if (!bp || (uintptr_t)bp < 0x100000 || ((uintptr_t)bp & 7)) {
+            void* bid = *(void**)((char*)hero_data + 0x10);
+            if (bid && (uintptr_t)bid >= 0x100000 && !((uintptr_t)bid & 7)) {
+                bp = ((void*(*)(void*, void*))(g_base + 0xC1B364))(bid, NULL);
+                if (bp) *(void**)((char*)hero_data + 0x48) = bp;
+            }
+        }
+        if (bp && (uintptr_t)bp >= 0x100000 && !((uintptr_t)bp & 7)) {
+            int r = *(int*)((char*)bp + 0x64);
+            if (r >= 1 && r <= 5) rarity = r;
+        }
+
+        // 4. Set rarity frame (HeroPortrait.SetRarityFrame @ 0xE91768)
+        ((void(*)(void*, int, void*))(g_base + 0xE91768))(hp, rarity, NULL);
+
+        // 5. Activate _frame UISprite (+0x240) and _portraitTexture (+0x260)
+        void* frame_sprite = *(void**)((char*)hp + 0x240);
+        if (frame_sprite && (uintptr_t)frame_sprite >= 0x100000 && !((uintptr_t)frame_sprite & 7)) {
+            void* fgo = comp_get_go(frame_sprite, NULL);
+            if (fgo) go_set_active(fgo, 1, NULL);
+        }
+        void* frame_tex = *(void**)((char*)hp + 0x260);
+        if (frame_tex && (uintptr_t)frame_tex >= 0x100000 && !((uintptr_t)frame_tex & 7)) {
+            void* tgo = comp_get_go(frame_tex, NULL);
+            if (tgo) go_set_active(tgo, 1, NULL);
+        }
+
+        // 5b. Activate mWingWangs container (+0x1E0)
+        void* wing_wangs = *(void**)((char*)hp + 0x1E0);
+        if (wing_wangs && (uintptr_t)wing_wangs >= 0x100000 && !((uintptr_t)wing_wangs & 7)) {
+            void* wgo = comp_get_go(wing_wangs, NULL);
+            if (wgo) go_set_active(wgo, 1, NULL);
+        }
+
+        // 6. Iterate child widgets (+0x1D8) and update data
+        void* widgets_list = *(void**)((char*)hp + 0x1D8);
+        if (widgets_list && (uintptr_t)widgets_list >= 0x100000 && !((uintptr_t)widgets_list & 7)) {
+            int count = *(int*)((char*)widgets_list + 0x18);
+            void* items = *(void**)((char*)widgets_list + 0x10);
+            if (items && count > 0 && count < 32) {
+                for (int i = 0; i < count; i++) {
+                    void* w = *(void**)((char*)items + 0x20 + i * 8);
+                    if (w && (uintptr_t)w >= 0x100000 && !((uintptr_t)w & 7)) {
+                        void* wgo = comp_get_go(w, NULL);
+                        if (wgo) go_set_active(wgo, 1, NULL);
+
+                        const char* cname = "<unknown>";
+                        void* klass = *(void**)w;
+                        if (klass && !((uintptr_t)klass & 7)) {
+                            cname = *(const char**)((char*)klass + 0x10);
+                        }
+
+                        // Call SetData(hero_data) via interface vtable slot 0x1C8
+                        void** vtable = (void**)klass;
+                        if (vtable) {
+                            typedef void (*set_data_fn)(void*, void*, void*);
+                            set_data_fn fn = (set_data_fn)vtable[0x1C8 / 8];
+                            void* minfo = vtable[0x1D0 / 8];
+                            if (fn && (uintptr_t)fn >= g_base) {
+                                fn(w, hero_data, minfo);
+                            }
+                        }
+
+                        // If RarityWidget, explicitly activate and configure star GameObjects!
+                        if (cname && strstr(cname, "RarityWidget")) {
+                            void* star_str = g_strnew ? g_strnew("Star_white") : NULL;
+                            for (int arr_idx = 0; arr_idx < 2; arr_idx++) {
+                                void* stars_arr = *(void**)((char*)w + 0x20 + arr_idx * 8);
+                                if (stars_arr && (uintptr_t)stars_arr >= 0x100000 && !((uintptr_t)stars_arr & 7)) {
+                                    int n_stars = *(int*)((char*)stars_arr + 0x18);
+                                    if (n_stars > 0 && n_stars <= 10) {
+                                        for (int s = 0; s < n_stars; s++) {
+                                            void* star_sp = *(void**)((char*)stars_arr + 0x20 + s * 8);
+                                            if (star_sp && (uintptr_t)star_sp >= 0x100000 && !((uintptr_t)star_sp & 7)) {
+                                                void* sgo = comp_get_go(star_sp, NULL);
+                                                if (sgo) {
+                                                    go_set_active(sgo, (s < rarity) ? 1 : 0, NULL);
+                                                }
+                                                if (s < rarity && star_str) {
+                                                    set_sprite_name(star_sp, star_str, NULL);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            // Reposition aligners
+                            void* aligner1 = *(void**)((char*)w + 0x40);
+                            if (aligner1 && (uintptr_t)aligner1 >= 0x100000 && !((uintptr_t)aligner1 & 7)) {
+                                void* ago1 = comp_get_go(aligner1, NULL);
+                                if (ago1) go_set_active(ago1, 1, NULL);
+                                ((void(*)(void*, void*))(g_base + 0x1517F60))(aligner1, NULL);
+                            }
+                            void* aligner2 = *(void**)((char*)w + 0x48);
+                            if (aligner2 && (uintptr_t)aligner2 >= 0x100000 && !((uintptr_t)aligner2 & 7)) {
+                                void* ago2 = comp_get_go(aligner2, NULL);
+                                if (ago2) go_set_active(ago2, 1, NULL);
+                                ((void(*)(void*, void*))(g_base + 0x1517F60))(aligner2, NULL);
+                            }
+                        }
+
+                        // If RatingWidget, explicitly activate FactionLabel and reposition aligner!
+                        if (cname && strstr(cname, "RatingWidget")) {
+                            void* flabel = *(void**)((char*)w + 0x30);
+                            if (flabel && (uintptr_t)flabel >= 0x100000 && !((uintptr_t)flabel & 7)) {
+                                void* fgo = comp_get_go(flabel, NULL);
+                                if (fgo) go_set_active(fgo, 1, NULL);
+                                int faction = ((int(*)(void*, void*))(g_base + 0xE8D8A0))(hero_data, NULL);
+                                int isUpgraded = ((int(*)(void*, void*))(g_base + 0xE8D94C))(hero_data, NULL);
+                                void* icon_str = ((void*(*)(int, int, void*))(g_base + 0xC2197C))(faction, isUpgraded, NULL);
+                                if (icon_str) {
+                                    ((void(*)(void*, void*, void*))(g_base + 0xDE127C))(flabel, icon_str, NULL);
+                                }
+                            }
+                            void* r_align = *(void**)((char*)w + 0x38);
+                            if (r_align && (uintptr_t)r_align >= 0x100000 && !((uintptr_t)r_align & 7)) {
+                                void* ago = comp_get_go(r_align, NULL);
+                                if (ago) go_set_active(ago, 1, NULL);
+                                ((void(*)(void*, void*))(g_base + 0xDDE398))(r_align, NULL);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+void* hook_33(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
+    void* r = H[33].orig(a0,a1,a2,a3,a4,a5,a6,a7);
+    apply_hero_portrait_deco(a0);
+    return r;
+}
+
+void* hook_35(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
+    void* r = H[35].orig(a0,a1,a2,a3,a4,a5,a6,a7);
+    apply_hero_portrait_deco(a0);
+    return r;
+}
+
 // marker slots (jp=2): log tag once per call
-MKHOOK(33) MKHOOK(34) MKHOOK(35) MKHOOK(39) MKHOOK(40) MKHOOK(41)
+MKHOOK(34) MKHOOK(39) MKHOOK(40) MKHOOK(41)
 MKHOOK(47) MKHOOK(48) MKHOOK(49) MKHOOK(51)
 // slots 53/54/55: BCGHeroBase ctor field readers (jp=1 key logging, HB-prefixed via g_inhb)
 MKHOOK(54) MKHOOK(55)
@@ -865,6 +1032,7 @@ void* hook_46(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
     void* r = H[46].orig(a0,a1,a2,a3,a4,a5,a6,a7);
     PROTECT( uintptr_t hp=(uintptr_t)a0; int after=-1; if(hp>=0x100000 && !(hp&7)) after=*(unsigned char*)(hp+0x140);
         flog("TEXDONE loadedNow=%d", after); );
+    apply_hero_portrait_deco(a0);
     return r;
 }
 // slot 52 FDS2: EB.Fast.Dot.String(name=a0, altPath=a1, data=a2, def=a3). Log both JSONPath keys
@@ -2586,12 +2754,7 @@ void* hook_42(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
     return H[42].orig(a0,a1,a2,a3,a4,a5,a6,a7);
 }
 void* hook_43(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
-    void* r = H[43].orig(a0,a1,a2,a3,a4,a5,a6,a7);
-    PROTECT( char b[64]; b[0]=0; uintptr_t s=(uintptr_t)a1;
-        if(s>=0x100000 && !(s&7)){ int32_t l=*(int32_t*)(s+0x10); uint16_t*c=(uint16_t*)(s+0x14);
-            if(l>=0&&l<60){for(int i=0;i<l;i++)b[i]=(char)c[i];b[l]=0;} }
-        flog("OWNS bp=%s ret=%d", b, (int)(intptr_t)r); );
-    return r;
+    return (void*)1;
 }
 // jp=22 CacheScrollViewDimensions: log this->scrollViewArea (Rect @ +0x70) + bool ret + the
 // grid's UIPanel state (scrollViewPanel @ this+0x60): mAlpha@0x128, mClipping@0x12c,
@@ -4268,6 +4431,32 @@ static void* installer(void* arg){
     // field instead of throwing. (Same spirit as the Tags empty-collection fix; done as a targeted
     // instruction poke rather than fabricating a List<string> whose RGCTX may be uninitialized.)
     poke32(0xC17278, 0xB4000640);   // cbz x0, 0xC17370 (throw) -> cbz x0, 0xC17340 (return empty)
+    // FIXSIG: BCGHeroBase.get_IsSignatureUnlocked (@0xC1C4A0) throws NullReferenceException
+    // when this._heroData (offset 0x50) is null. Redirect cbz x8 to return 0 (signature locked / white stars).
+    poke32(0xC1C4D8, 0xB40000A8);   // cbz x8, 0xC1C4FC (throw) -> cbz x8, 0xC1C4EC (return 0)
+
+    // FIXROSTER_DECO:
+    // 1) HeroPortrait.RefreshFromData (@0xE8DF9C): nop mUserOwned==0 branch so rarity frame & child widgets update.
+    poke32(0xE8E0FC, 0xD503201F);   // cbz w9, 0xE8E1E0 -> nop
+
+    // 2) HeroPortrait.SetEnabledItems (@0xE8002C): suppress empty level progress bar (pass w1=0 to GameUtil.SetActive).
+    poke32(0xE80238, 0x52800001);   // ldrb w1, [x19, #0xa9] -> mov w1, #0
+
+    // 3) HeroesScreen.OnGridItemInitialized (@0xC5BC3C): pass mask 0x1B (HERO_NAME | HERO_RATING | HERO_RARITY | HERO_ICONS).
+    poke32(0xC5C1C0, 0x52800361);   // csel w1, w9, w8, ne -> mov w1, #0x1b
+
+    // 4) HeroesScreen.OnGridItemInitialized (@0xC5BC3C): neutralize ForceSetRarityFrame(hp, 0).
+    poke32(0xC5C258, 0xD503201F);   // bl 0xE91758 -> nop
+
+    // 5) HeroPortrait.SetEnabledItems (@0xE8002C): nop child widgets deactivation loop.
+    poke32(0xE80220, 0xD503201F);   // bl 0xDE0D18 -> nop
+
+    // 6) HeroPortrait.RefreshFromData (@0xE8DF9C): poke 0xE8E21C mov w1, wzr -> mov w1, #1 (so NGUITools.SetActive(mFrame, 1)).
+    poke32(0xE8E21C, 0x52800021);   // mov w1, wzr -> mov w1, #1
+
+    // 7) HeroesScreen.<OnGridItemInitialized>b__99_1 (@0xC5D26C): pass mask 0x1B to SetEnabledItems.
+    poke32(0xC5D888, 0x52800361);   // mov w1, #8 -> mov w1, #0x1b
+
     LOG("install done (%d hooks)", NH);
     return NULL;
 }
