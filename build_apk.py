@@ -29,7 +29,10 @@ def get_git_branch() -> str:
 
 def main():
     branch = get_git_branch()
-    output_apk_name = f'Transformers-9.2-offline-branch.apk'.replace('branch', branch)
+    if branch == "redeco":
+        output_apk_name = "Transformers-9.2-offline-redeco-edition.apk"
+    else:
+        output_apk_name = f'Transformers-9.2-offline-{branch}.apk'
     output_apk_path = BUILD_DIR / output_apk_name
     print(f"=== Building Offline APK for branch [{branch}] ===")
     print(f"Target APK: {output_apk_path}")
