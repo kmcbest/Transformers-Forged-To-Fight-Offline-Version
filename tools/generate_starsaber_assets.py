@@ -29,7 +29,7 @@ import os
 import sys
 import zipfile
 from pathlib import Path
-from PIL import Image
+from PIL import Image, ImageDraw
 import numpy as np
 
 try:
@@ -73,12 +73,23 @@ def generate_starsaber_assets(apk_path: str | None = None, output_dir: str = "as
     print("[*] Synthesizing Star Saber (史达) texture maps...")
 
     j_main_img = None
+    j_tform_img = None
+    j_mesh_00_obj = None
     for obj in j_env.objects:
         if obj.type.name == "Texture2D":
             tree = obj.read_typetree()
             tname = tree.get("m_Name", "")
             if tname == "cha_jetfire_gs_leader2014_main_a":
                 j_main_img = obj.read().image
+            elif tname in ["tform_misc_A", "tform_misc_a"]:
+                j_tform_img = obj.read().image
+        elif obj.type.name == "Mesh":
+            tree = obj.read_typetree()
+            if tree.get("m_Name", "") == "cha_jetfire_gs_leader2014_00":
+                try:
+                    j_mesh_00_obj = obj.read().export()
+                except Exception:
+                    j_mesh_00_obj = None
 
     m_wpns_img = None
     m_wpns_raoe_img = None
@@ -91,50 +102,219 @@ def generate_starsaber_assets(apk_path: str | None = None, output_dir: str = "as
             elif tname == "wpns_RAOE":
                 m_wpns_raoe_img = obj.read().image
 
-    # 1. Main Body Texture (Load user custom if present, else synthesize)
+    # 1. Main Body Texture (Load user custom if present, else synthesize with 3D UV alignment)
     user_main_path = out_dir / "cha_starsaber_gs_leader2014_main_a.png"
     if user_main_path.exists():
         print(f"[*] Loading user-customized main texture from {user_main_path} ...")
         final_main_img = Image.open(user_main_path).convert("RGBA")
+    elif j_mesh_00_obj is not None:
+        print("[*] Synthesizing Star Saber main texture with 3D mesh UV alignment...")
+        w, h = j_main_img.size
+        orig_arr = np.array(j_main_img.convert("RGBA"), dtype=np.float32)
+        lum = (orig_arr[..., 0] * 0.299 + orig_arr[..., 1] * 0.587 + orig_arr[..., 2] * 0.114) / 255.0
+
+        verts = []
+        vts = []
+        for line in j_mesh_00_obj.splitlines():
+            if line.startswith('v '):
+                p = line.split()
+                verts.append([float(p[1]), float(p[2]), float(p[3])])
+            elif line.startswith('vt '):
+                p = line.split()
+                vts.append([float(p[1]), float(p[2])])
+
+        verts = np.array(verts)
+        vts = np.array(vts)
+
+        mask_helmet = Image.new('L', (w, h), 0)
+        draw_helmet = ImageDraw.Draw(mask_helmet)
+        mask_crest = Image.new('L', (w, h), 0)
+        draw_crest = ImageDraw.Draw(mask_crest)
+        mask_ears = Image.new('L', (w, h), 0)
+        draw_ears = ImageDraw.Draw(mask_ears)
+        mask_face = Image.new('L', (w, h), 0)
+        draw_face = ImageDraw.Draw(mask_face)
+        mask_visor = Image.new('L', (w, h), 0)
+        draw_visor = ImageDraw.Draw(mask_visor)
+        mask_chest = Image.new('L', (w, h), 0)
+        draw_chest = ImageDraw.Draw(mask_chest)
+        mask_waist_belt = Image.new('L', (w, h), 0)
+        draw_waist_belt = ImageDraw.Draw(mask_waist_belt)
+        mask_boots = Image.new('L', (w, h), 0)
+        draw_boots = ImageDraw.Draw(mask_boots)
+
+        current_g = None
+        for line in j_mesh_00_obj.splitlines():
+            if line.startswith('g '):
+                current_g = line.split()[1]
+            elif line.startswith('f ') and current_g == 'cha_jetfire_gs_leader2014_00_0':
+                face_data = []
+                for p in line.split()[1:]:
+                    vals = p.split('/')
+                    vi = int(vals[0]) - 1
+                    vti = int(vals[1]) - 1 if len(vals) > 1 and vals[1] else None
+                    face_data.append((vi, vti))
+                
+                f_vis = [vi for vi, vti in face_data]
+                f_verts = verts[f_vis]
+                cy = f_verts[:, 1].mean()
+                cz = f_verts[:, 2].mean()
+                cx = f_verts[:, 0].mean()
+
+                pts = []
+                for vi, vti in face_data:
+                    if vti is not None:
+                        u, v = vts[vti]
+                        px = int(np.clip(u * w, 0, w - 1))
+                        py = int(np.clip((1.0 - v) * h, 0, h - 1))
+                        pts.append((px, py))
+
+                if len(pts) < 3:
+                    continue
+
+                if cy >= 11.2 and abs(cx) <= 1.0 and cz >= -0.8 and cz <= 0.8:
+                    if 11.45 <= cy <= 11.75 and cz > 0.05 and abs(cx) < 0.25:
+                        draw_visor.polygon(pts, fill=255)
+                    elif 11.1 <= cy < 11.45 and cz > 0.0 and abs(cx) < 0.28:
+                        draw_face.polygon(pts, fill=255)
+                    elif cy >= 11.8 and abs(cx) < 0.08 and cz > -0.1:
+                        draw_crest.polygon(pts, fill=255)
+                    elif abs(cx) >= 0.35 and cy >= 11.2:
+                        draw_ears.polygon(pts, fill=255)
+                    else:
+                        draw_helmet.polygon(pts, fill=255)
+                elif 7.5 <= cy <= 10.8 and abs(cx) <= 2.2 and cz >= 0.3:
+                    draw_chest.polygon(pts, fill=255)
+                elif 5.5 <= cy <= 7.2 and cz >= 0.1 and abs(cx) <= 1.5:
+                    draw_waist_belt.polygon(pts, fill=255)
+                elif cy <= 1.5:
+                    draw_boots.polygon(pts, fill=255)
+
+        m_helmet = np.array(mask_helmet) > 0
+        m_crest = np.array(mask_crest) > 0
+        m_ears = np.array(mask_ears) > 0
+        m_face = np.array(mask_face) > 0
+        m_visor = np.array(mask_visor) > 0
+        m_chest = np.array(mask_chest) > 0
+        m_waist_belt = np.array(mask_waist_belt) > 0
+        m_boots = np.array(mask_boots) > 0
+
+        m_helmet = m_helmet & (~m_crest) & (~m_ears) & (~m_face) & (~m_visor)
+        m_crest = m_crest & (~m_visor) & (~m_face)
+        m_face = m_face & (~m_visor)
+
+        red_r = np.clip(lum * 180.0 + 75.0, 0, 255)
+        red_g = np.clip(lum * 25.0 + 5.0, 0, 255)
+        red_b = np.clip(lum * 35.0 + 10.0, 0, 255)
+
+        gold_r = np.clip(lum * 185.0 + 70.0, 0, 255)
+        gold_g = np.clip(lum * 145.0 + 45.0, 0, 255)
+        gold_b = np.clip(lum * 25.0 + 5.0, 0, 255)
+
+        blue_r = np.clip(lum * 25.0 + 8.0, 0, 255)
+        blue_g = np.clip(lum * 65.0 + 25.0, 0, 255)
+        blue_b = np.clip(lum * 190.0 + 65.0, 0, 255)
+
+        cyan_r = np.clip(lum * 30.0 + 20.0, 0, 255)
+        cyan_g = np.clip(lum * 110.0 + 140.0, 0, 255)
+        cyan_b = np.clip(lum * 80.0 + 175.0, 0, 255)
+
+        silver_r = np.clip(lum * 135.0 + 120.0, 0, 255)
+        silver_g = np.clip(lum * 135.0 + 120.0, 0, 255)
+        silver_b = np.clip(lum * 140.0 + 120.0, 0, 255)
+
+        white_r = np.clip(lum * 140.0 + 115.0, 0, 255)
+        white_g = np.clip(lum * 140.0 + 115.0, 0, 255)
+        white_b = np.clip(lum * 145.0 + 115.0, 0, 255)
+
+        jr, jg, jb, ja = orig_arr[..., 0], orig_arr[..., 1], orig_arr[..., 2], orig_arr[..., 3]
+        is_red_accents = (jr > 120) & (jg < 80) & (jb < 80)
+        is_black_metals = (lum < 0.25)
+        res_r = np.where(is_red_accents, red_r, np.where(is_black_metals, blue_r, white_r))
+        res_g = np.where(is_red_accents, red_g, np.where(is_black_metals, blue_g, white_g))
+        res_b = np.where(is_red_accents, red_b, np.where(is_black_metals, blue_b, white_b))
+
+        res_r = np.where(m_helmet, red_r, res_r)
+        res_g = np.where(m_helmet, red_g, res_g)
+        res_b = np.where(m_helmet, red_b, res_b)
+
+        res_r = np.where(m_crest, gold_r, res_r)
+        res_g = np.where(m_crest, gold_g, res_g)
+        res_b = np.where(m_crest, gold_b, res_b)
+
+        res_r = np.where(m_ears, blue_r, res_r)
+        res_g = np.where(m_ears, blue_g, res_g)
+        res_b = np.where(m_ears, blue_b, res_b)
+
+        res_r = np.where(m_face, silver_r, res_r)
+        res_g = np.where(m_face, silver_g, res_g)
+        res_b = np.where(m_face, silver_b, res_b)
+
+        res_r = np.where(m_visor, cyan_r, res_r)
+        res_g = np.where(m_visor, cyan_g, res_g)
+        res_b = np.where(m_visor, cyan_b, res_b)
+
+        res_r = np.where(m_chest, red_r, res_r)
+        res_g = np.where(m_chest, red_g, res_g)
+        res_b = np.where(m_chest, red_b, res_b)
+
+        res_r = np.where(m_waist_belt, blue_r, res_r)
+        res_g = np.where(m_waist_belt, blue_g, res_g)
+        res_b = np.where(m_waist_belt, blue_b, res_b)
+
+        res_r = np.where(m_boots, blue_r, res_r)
+        res_g = np.where(m_boots, blue_g, res_g)
+        res_b = np.where(m_boots, blue_b, res_b)
+
+        final_main_img = Image.fromarray(np.stack([np.clip(res_r, 0, 255), np.clip(res_g, 0, 255), np.clip(res_b, 0, 255), ja], axis=-1).astype(np.uint8))
+        final_main_img.save(user_main_path)
     else:
         j_arr = np.array(j_main_img.convert("RGBA"), dtype=np.float32)
         jr, jg, jb, ja = j_arr[:, :, 0], j_arr[:, :, 1], j_arr[:, :, 2], j_arr[:, :, 3]
         lum = (jr * 0.299 + jg * 0.587 + jb * 0.114) / 255.0
-
         is_red_accents = (jr > 120) & (jg < 80) & (jb < 80)
         is_black_metals = (lum < 0.25)
-        is_white_armor = (lum >= 0.25) & (~is_red_accents)
-
-        # Star Saber Colors:
-        # A. Victory Crimson Red for chest, wings, and thrusters
         ss_red_r = np.clip(lum * 180.0 + 75.0, 0, 255)
         ss_red_g = np.clip(lum * 25.0 + 5.0, 0, 255)
         ss_red_b = np.clip(lum * 35.0 + 10.0, 0, 255)
-
-        # B. Star Saber Navy/Cobalt Blue for faceplate, shin trims, and accents
         ss_blue_r = np.clip(lum * 20.0 + 8.0, 0, 255)
         ss_blue_g = np.clip(lum * 60.0 + 25.0, 0, 255)
         ss_blue_b = np.clip(lum * 180.0 + 75.0, 0, 255)
-
-        # C. Pure Ceramic White for main body armor
         ss_white_r = np.clip(lum * 140.0 + 115.0, 0, 255)
         ss_white_g = np.clip(lum * 140.0 + 115.0, 0, 255)
         ss_white_b = np.clip(lum * 145.0 + 115.0, 0, 255)
-
-        # Composite Main Texture
         final_r = np.where(is_red_accents, ss_red_r, np.where(is_black_metals, ss_blue_r, ss_white_r))
         final_g = np.where(is_red_accents, ss_red_g, np.where(is_black_metals, ss_blue_g, ss_white_g))
         final_b = np.where(is_red_accents, ss_red_b, np.where(is_black_metals, ss_blue_b, ss_white_b))
-
         final_main_img = Image.fromarray(np.stack([final_r, final_g, final_b, ja], axis=-1).astype(np.uint8))
         final_main_img.save(user_main_path)
 
-    # 1b. Vehicle (Transform Misc) Texture (Load user custom if present)
+    # 1b. Vehicle (Transform Misc) Texture (Load user custom if present, else synthesize)
     user_tform_path = out_dir / "cha_starsaber_gs_leader2014_tform_misc_a.png"
     final_tform_img = None
     if user_tform_path.exists():
         print(f"[*] Loading user-customized vehicle texture from {user_tform_path} ...")
         final_tform_img = Image.open(user_tform_path).convert("RGBA")
+    elif j_tform_img is not None:
+        t_arr = np.array(j_tform_img.convert("RGBA"), dtype=np.float32)
+        tr, tg, tb, ta = t_arr[:, :, 0], t_arr[:, :, 1], t_arr[:, :, 2], t_arr[:, :, 3]
+        tlum = (tr * 0.299 + tg * 0.587 + tb * 0.114) / 255.0
+        t_red_r = np.clip(tlum * 180.0 + 75.0, 0, 255)
+        t_red_g = np.clip(tlum * 25.0 + 5.0, 0, 255)
+        t_red_b = np.clip(tlum * 35.0 + 10.0, 0, 255)
+        t_blue_r = np.clip(tlum * 20.0 + 8.0, 0, 255)
+        t_blue_g = np.clip(tlum * 60.0 + 25.0, 0, 255)
+        t_blue_b = np.clip(tlum * 180.0 + 75.0, 0, 255)
+        t_white_r = np.clip(tlum * 140.0 + 115.0, 0, 255)
+        t_white_g = np.clip(tlum * 140.0 + 115.0, 0, 255)
+        t_white_b = np.clip(tlum * 145.0 + 115.0, 0, 255)
+        is_t_red = (tr > 120) & (tg < 80) & (tb < 80)
+        is_t_metal = (tlum < 0.25)
+        t_out_r = np.where(is_t_red, t_red_r, np.where(is_t_metal, t_blue_r, t_white_r))
+        t_out_g = np.where(is_t_red, t_red_g, np.where(is_t_metal, t_blue_g, t_white_g))
+        t_out_b = np.where(is_t_red, t_red_b, np.where(is_t_metal, t_blue_b, t_white_b))
+        final_tform_img = Image.fromarray(np.stack([t_out_r, t_out_g, t_out_b, ta], axis=-1).astype(np.uint8))
+        final_tform_img.save(user_tform_path)
 
     # 2. Saber Blade Weapons Texture Synthesis
     w_arr = np.array(m_wpns_img.convert("RGBA"), dtype=np.float32)
