@@ -293,6 +293,12 @@ def build_entries(listen_port: int = 8080) -> dict[str, bytes]:
     for bid in sorted(set(gamedata.OWNED) | set(gamedata.DEFAULT_TEAM)):
         add(f"@savedteam:hero:{bid}", json.dumps(gamedata.build_hero_entry(bid), separators=(",", ":")).encode())
 
+    timings_path = HERE / "sp3_timings.json"
+    if not timings_path.is_file():
+        timings_path = Path("Server/sp3_timings.json")
+    if timings_path.is_file():
+        add("@sp3_timings", timings_path.read_bytes())
+
     return entries
 
 

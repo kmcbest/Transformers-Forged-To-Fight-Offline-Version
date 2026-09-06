@@ -549,6 +549,24 @@ static volatile int g_inhb = 0;
 // the controller for the cinematic state, enter alt form after the state's own reset, and let the
 // simulation-tick beat schedule alternate alt and robot before restoring robot form on exit. The
 // prop swap itself is rendered by slot 138.
+static void* g_p0_controller = NULL;
+static void* g_p1_controller = NULL;
+static char g_p0_bot_id[80] = {0};
+static char g_p1_bot_id[80] = {0};
+
+#define SP3_MAX_INTERVALS 4
+typedef struct {
+    int count;
+    int on_ms[SP3_MAX_INTERVALS];
+    int off_ms[SP3_MAX_INTERVALS];
+} SP3ActiveTiming;
+
+static SP3ActiveTiming g_current_sp3_timing = {
+    .count = 1,
+    .on_ms = {1000},
+    .off_ms = {2500}
+};
+
 static void* g_sp3_xf[4];
 static void* g_sp3_xf_props[8];
 static int g_sp3_xf_capture_props = 0;
@@ -558,12 +576,7 @@ static int g_sp3_xf_timeout_logged = 0;
 /* SP3BEAT (shipped): the captured authored TransformMoveEvent duration is retained for
    diagnostics only - it is logged by sp3_beat_capture() but no longer drives the schedule. */
 static int g_sp3_beat_du_ms = 800;
-/* SP3BEAT (shipped): the level-3 cinematic shows ONE contiguous alternate-form block, not an
-   alternation. Boundaries are measured off reference recordings of the original game: the
-   character is visibly a robot for the first ~1.0 s of the cinematic, holds the alternate
-   (vehicle) body for ~1.5 s, and finishes the cinematic in robot form. These are original
-   authored constants: this build ships no real SpecialAttack03 move, so the substituted
-   move's own event data (66 ms start / 800 ms duration) is not authentic beat data for it. */
+/* SP3BEAT: dynamic per-character timeline engine. g_sp3_alt_on_ms and g_sp3_alt_off_ms mirror interval 0. */
 static int g_sp3_alt_on_ms  = 1000;   /* alternate form appears at this offset */
 static int g_sp3_alt_off_ms = 2500;   /* alternate form is gone from this offset onward */
 static int g_sp3_beat_form = -1;      /* -1 unknown, 1 alt, 0 robot: what is applied right now */
@@ -2512,7 +2525,6 @@ void* hook_13(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
 static int g_last_enemy_pi = 3000;
 static float g_last_enemy_hp = 50000.0f;
 static float g_last_enemy_atk = 2500.0f;
-static void* g_p0_controller = NULL;
 
 static void calc_enemy_stats_all(const char* bid, int rank, int level, float* out_hp, float* out_atk, int* out_pi) {
     int hp = 42000, atk = 2300, rating = 44300;
@@ -2562,7 +2574,19 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
         void* at1=fld_p((void*)fd,0x30); void* at2=fld_p((void*)ofd,0x30);
         void* ch1=fld_p((void*)fd,0x38); void* ch2=fld_p((void*)ofd,0x38);
         int player_idx = obj_ok(a1) ? *(int32_t*)((uintptr_t)a1+0xF4) : -1;
-        if (player_idx == 0 && obj_ok(a1)) g_p0_controller = a1;
+        if (player_idx == 0 || g_p0_controller == NULL) {
+            g_p0_controller = a1;
+            strncpy(g_p0_bot_id, id1, sizeof(g_p0_bot_id) - 1);
+            g_p0_bot_id[sizeof(g_p0_bot_id) - 1] = 0;
+            if (id2[0] && strcmp(id2, "<null>") != 0 && !g_p1_bot_id[0]) {
+                strncpy(g_p1_bot_id, id2, sizeof(g_p1_bot_id) - 1);
+                g_p1_bot_id[sizeof(g_p1_bot_id) - 1] = 0;
+            }
+        } else {
+            g_p1_controller = a1;
+            strncpy(g_p1_bot_id, id1, sizeof(g_p1_bot_id) - 1);
+            g_p1_bot_id[sizeof(g_p1_bot_id) - 1] = 0;
+        }
         int32_t cur_hp = (at1 && obj_ok(at1)) ? *(int32_t*)((char*)at1 + 0x2C) : 0;
         if (player_idx == 1 || (player_idx != 0 && cur_hp <= 0)) {
             float hp_f = 50000.0f;
@@ -3587,12 +3611,171 @@ static int sp3_prop_mirror(void* prop, int on){
     return applied;
 }
 
+static void sp3_set_default_timing(void) {
+    g_current_sp3_timing.count = 1;
+    g_current_sp3_timing.on_ms[0] = 1000;
+    g_current_sp3_timing.off_ms[0] = 2500;
+    g_sp3_alt_on_ms = 1000;
+    g_sp3_alt_off_ms = 2500;
+}
+
+static int sp3_parse_intervals_from_json(const char* json_str, const char* bot_id) {
+    if (!json_str || !bot_id || !bot_id[0]) return 0;
+
+    const char* p = NULL;
+    char search_id[80];
+    strncpy(search_id, bot_id, sizeof(search_id) - 1);
+    search_id[sizeof(search_id) - 1] = 0;
+
+    // 1. Try matching bot_id, progressively stripping suffix after '_'
+    while (search_id[0]) {
+        char quoted[96];
+        snprintf(quoted, sizeof(quoted), "\"%s\"", search_id);
+        p = strstr(json_str, quoted);
+        if (p) break;
+        p = strstr(json_str, search_id);
+        if (p) break;
+
+        char* last_under = strrchr(search_id, '_');
+        if (last_under) {
+            *last_under = 0;
+        } else {
+            break;
+        }
+    }
+
+    // If not found, try "_default"
+    if (!p) {
+        p = strstr(json_str, "\"_default\"");
+        if (!p) p = strstr(json_str, "_default");
+    }
+    if (!p) return 0;
+
+    const char* block_start = strchr(p, '{');
+    if (!block_start) return 0;
+    const char* block_end = strchr(block_start, '}');
+    if (!block_end) return 0;
+
+    // 2. Retrieve "intervals"
+    const char* inv = strstr(block_start, "\"intervals\"");
+    if (!inv || inv > block_end) return 0;
+
+    const char* arr_start = strchr(inv, '[');
+    if (!arr_start || arr_start > block_end) return 0;
+
+    // Parse [[on1, off1], [on2, off2]]
+    int count = 0;
+    const char* cur = arr_start + 1;
+    while (cur && cur < block_end && count < SP3_MAX_INTERVALS) {
+        const char* sub_start = strchr(cur, '[');
+        if (!sub_start || sub_start > block_end) break;
+        int on_val = 0, off_val = 0;
+        if (sscanf(sub_start + 1, "%d , %d", &on_val, &off_val) == 2 ||
+            sscanf(sub_start + 1, "%d ,%d", &on_val, &off_val) == 2 ||
+            sscanf(sub_start + 1, "%d,%d", &on_val, &off_val) == 2) {
+            g_current_sp3_timing.on_ms[count] = on_val;
+            g_current_sp3_timing.off_ms[count] = off_val;
+            count++;
+        }
+        const char* sub_end = strchr(sub_start, ']');
+        if (!sub_end) break;
+        cur = sub_end + 1;
+    }
+
+    if (count > 0) {
+        g_current_sp3_timing.count = count;
+        g_sp3_alt_on_ms = g_current_sp3_timing.on_ms[0];
+        g_sp3_alt_off_ms = g_current_sp3_timing.off_ms[0];
+        return 1;
+    }
+    return 0;
+}
+
+static void sp3_load_timing_for_character(const char* bot_id) {
+    sp3_set_default_timing();
+    if (!bot_id || !bot_id[0]) return;
+
+    // 1. Try loading from local hot-reload file
+    const char* hot_paths[] = {
+        "/data/data/com.kabam.bigrobot/files/sp3_timings.json",
+        "/sdcard/Android/media/com.kabam.bigrobot/sp3_timings.json",
+        "/sdcard/Download/sp3_timings.json",
+        "/storage/emulated/0/Download/sp3_timings.json",
+        "/data/local/tmp/sp3_timings.json"
+    };
+    for (size_t hi = 0; hi < sizeof(hot_paths)/sizeof(hot_paths[0]); hi++) {
+        FILE* fp = fopen(hot_paths[hi], "rb");
+        if (fp) {
+            fseek(fp, 0, SEEK_END);
+            long len = ftell(fp);
+            fseek(fp, 0, SEEK_SET);
+            if (len > 10 && len < 262144) {
+                char* buf = (char*)malloc(len + 1);
+                if (buf) {
+                    size_t read_bytes = fread(buf, 1, len, fp);
+                    buf[read_bytes] = 0;
+                    if (sp3_parse_intervals_from_json(buf, bot_id)) {
+                        flog("SP3TIMING: loaded from %s for %s (intervals=%d on0=%d off0=%d)",
+                             hot_paths[hi], bot_id, g_current_sp3_timing.count, g_current_sp3_timing.on_ms[0], g_current_sp3_timing.off_ms[0]);
+                        free(buf);
+                        fclose(fp);
+                        return;
+                    }
+                    free(buf);
+                }
+            }
+            fclose(fp);
+        }
+    }
+
+    // 2. Try loading from APK in-app Payload @sp3_timings
+    size_t payload_len = 0;
+    const unsigned char* pdata = tftf_payload_lookup("@sp3_timings", &payload_len);
+    if (pdata && payload_len > 10) {
+        char* pbuf = (char*)malloc(payload_len + 1);
+        if (pbuf) {
+            memcpy(pbuf, pdata, payload_len);
+            pbuf[payload_len] = 0;
+            if (sp3_parse_intervals_from_json(pbuf, bot_id)) {
+                flog("SP3TIMING: loaded from @sp3_timings payload for %s (intervals=%d on0=%d off0=%d)",
+                     bot_id, g_current_sp3_timing.count, g_current_sp3_timing.on_ms[0], g_current_sp3_timing.off_ms[0]);
+                free(pbuf);
+                return;
+            }
+            free(pbuf);
+        }
+    }
+
+    // 3. Built-in C fallback table
+    if (strstr(bot_id, "optimusprime")) {
+        g_current_sp3_timing.count = 1;
+        g_current_sp3_timing.on_ms[0] = 1150;
+        g_current_sp3_timing.off_ms[0] = 3200;
+    } else if (strstr(bot_id, "starscream")) {
+        g_current_sp3_timing.count = 1;
+        g_current_sp3_timing.on_ms[0] = 850;
+        g_current_sp3_timing.off_ms[0] = 2650;
+    } else if (strstr(bot_id, "bumblebee")) {
+        g_current_sp3_timing.count = 1;
+        g_current_sp3_timing.on_ms[0] = 1300;
+        g_current_sp3_timing.off_ms[0] = 2900;
+    }
+    g_sp3_alt_on_ms = g_current_sp3_timing.on_ms[0];
+    g_sp3_alt_off_ms = g_current_sp3_timing.off_ms[0];
+    flog("SP3TIMING: used fallback for %s: count=%d on0=%d off0=%d",
+         bot_id, g_current_sp3_timing.count, g_current_sp3_timing.on_ms[0], g_current_sp3_timing.off_ms[0]);
+}
+
 /* SP3BEAT (shipped): the scheduled body at a given offset into the cinematic. 1 = alternate
-   (vehicle) form, 0 = robot form. One contiguous alternate block only - see the reference
-   measurements recorded next to g_sp3_alt_on_ms. */
+   (vehicle) form, 0 = robot form. Evaluates all active intervals in g_current_sp3_timing. */
 static int sp3_beat_form_at(uint64_t elapsed_ms){
-    return elapsed_ms >= (uint64_t)g_sp3_alt_on_ms
-        && elapsed_ms <  (uint64_t)g_sp3_alt_off_ms;
+    for (int i = 0; i < g_current_sp3_timing.count; i++) {
+        if (elapsed_ms >= (uint64_t)g_current_sp3_timing.on_ms[i] &&
+            elapsed_ms <  (uint64_t)g_current_sp3_timing.off_ms[i]) {
+            return 1;
+        }
+    }
+    return 0;
 }
 
 /* SP3BEAT (shipped): push the scheduled body onto the captured props. Called only when the form
@@ -3877,12 +4060,21 @@ void* hook_142(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     PROTECT({
         void* pc=fld_p(a0,0x18);
         if (obj_ok(pc)) {
+            const char* current_bot_id = (pc == g_p0_controller) ? g_p0_bot_id : g_p1_bot_id;
+            if (!current_bot_id || !current_bot_id[0]) {
+                if (g_p0_bot_id[0]) current_bot_id = g_p0_bot_id;
+                else if (g_p1_bot_id[0]) current_bot_id = g_p1_bot_id;
+            }
+            flog("SP3XFIX enter pc=%p bot_id=%s tms=%llu", pc, current_bot_id ? current_bot_id : "unknown",
+                 (unsigned long long)propgo_now_ms());
+
+            sp3_load_timing_for_character(current_bot_id);
+
             sp3_xf_add(pc);
             g_sp3_beat_form = 0;
             g_sp3_beat_ticks = 0;
-            flog("SP3XFIX enter pc=%p tms=%llu", pc, (unsigned long long)propgo_now_ms());
-            flog("SP3SCHED on=%d off=%d tms=%llu", g_sp3_alt_on_ms, g_sp3_alt_off_ms,
-                 (unsigned long long)propgo_now_ms());
+            flog("SP3SCHED intervals=%d on0=%d off0=%d tms=%llu", g_current_sp3_timing.count,
+                 g_sp3_alt_on_ms, g_sp3_alt_off_ms, (unsigned long long)propgo_now_ms());
             g_sp3_xf_capture_props=1;
             ((void(*)(void*,int,void*))(g_base + 0x117A67C))(pc,1,NULL);
             g_sp3_xf_capture_props=0;
