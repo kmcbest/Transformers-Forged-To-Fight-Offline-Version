@@ -4451,8 +4451,6 @@ static void* installer(void* arg){
     // 5) HeroPortrait.SetEnabledItems (@0xE8002C): nop child widgets deactivation loop.
     poke32(0xE80220, 0xD503201F);   // bl 0xDE0D18 -> nop
 
-    // 6) HeroPortrait.RefreshFromData (@0xE8DF9C): poke 0xE8E21C mov w1, wzr -> mov w1, #1 (so NGUITools.SetActive(mFrame, 1)).
-    poke32(0xE8E21C, 0x52800021);   // mov w1, wzr -> mov w1, #1
 
     // 7) HeroesScreen.<OnGridItemInitialized>b__99_1 (@0xC5D26C): pass mask 0x1B to SetEnabledItems.
     poke32(0xC5D888, 0x52800361);   // mov w1, #8 -> mov w1, #0x1b
