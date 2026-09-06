@@ -91,38 +91,50 @@ def generate_starsaber_assets(apk_path: str | None = None, output_dir: str = "as
             elif tname == "wpns_RAOE":
                 m_wpns_raoe_img = obj.read().image
 
-    # 1. Main Body Texture Recolor (Star Saber Victory Scheme)
-    j_arr = np.array(j_main_img.convert("RGBA"), dtype=np.float32)
-    jr, jg, jb, ja = j_arr[:, :, 0], j_arr[:, :, 1], j_arr[:, :, 2], j_arr[:, :, 3]
-    lum = (jr * 0.299 + jg * 0.587 + jb * 0.114) / 255.0
+    # 1. Main Body Texture (Load user custom if present, else synthesize)
+    user_main_path = out_dir / "cha_starsaber_gs_leader2014_main_a.png"
+    if user_main_path.exists():
+        print(f"[*] Loading user-customized main texture from {user_main_path} ...")
+        final_main_img = Image.open(user_main_path).convert("RGBA")
+    else:
+        j_arr = np.array(j_main_img.convert("RGBA"), dtype=np.float32)
+        jr, jg, jb, ja = j_arr[:, :, 0], j_arr[:, :, 1], j_arr[:, :, 2], j_arr[:, :, 3]
+        lum = (jr * 0.299 + jg * 0.587 + jb * 0.114) / 255.0
 
-    is_red_accents = (jr > 120) & (jg < 80) & (jb < 80)
-    is_black_metals = (lum < 0.25)
-    is_white_armor = (lum >= 0.25) & (~is_red_accents)
+        is_red_accents = (jr > 120) & (jg < 80) & (jb < 80)
+        is_black_metals = (lum < 0.25)
+        is_white_armor = (lum >= 0.25) & (~is_red_accents)
 
-    # Star Saber Colors:
-    # A. Victory Crimson Red for chest, wings, and thrusters
-    ss_red_r = np.clip(lum * 180.0 + 75.0, 0, 255)
-    ss_red_g = np.clip(lum * 25.0 + 5.0, 0, 255)
-    ss_red_b = np.clip(lum * 35.0 + 10.0, 0, 255)
+        # Star Saber Colors:
+        # A. Victory Crimson Red for chest, wings, and thrusters
+        ss_red_r = np.clip(lum * 180.0 + 75.0, 0, 255)
+        ss_red_g = np.clip(lum * 25.0 + 5.0, 0, 255)
+        ss_red_b = np.clip(lum * 35.0 + 10.0, 0, 255)
 
-    # B. Star Saber Navy/Cobalt Blue for faceplate, shin trims, and accents
-    ss_blue_r = np.clip(lum * 20.0 + 8.0, 0, 255)
-    ss_blue_g = np.clip(lum * 60.0 + 25.0, 0, 255)
-    ss_blue_b = np.clip(lum * 180.0 + 75.0, 0, 255)
+        # B. Star Saber Navy/Cobalt Blue for faceplate, shin trims, and accents
+        ss_blue_r = np.clip(lum * 20.0 + 8.0, 0, 255)
+        ss_blue_g = np.clip(lum * 60.0 + 25.0, 0, 255)
+        ss_blue_b = np.clip(lum * 180.0 + 75.0, 0, 255)
 
-    # C. Pure Ceramic White for main body armor
-    ss_white_r = np.clip(lum * 140.0 + 115.0, 0, 255)
-    ss_white_g = np.clip(lum * 140.0 + 115.0, 0, 255)
-    ss_white_b = np.clip(lum * 145.0 + 115.0, 0, 255)
+        # C. Pure Ceramic White for main body armor
+        ss_white_r = np.clip(lum * 140.0 + 115.0, 0, 255)
+        ss_white_g = np.clip(lum * 140.0 + 115.0, 0, 255)
+        ss_white_b = np.clip(lum * 145.0 + 115.0, 0, 255)
 
-    # Composite Main Texture
-    final_r = np.where(is_red_accents, ss_red_r, np.where(is_black_metals, ss_blue_r, ss_white_r))
-    final_g = np.where(is_red_accents, ss_red_g, np.where(is_black_metals, ss_blue_g, ss_white_g))
-    final_b = np.where(is_red_accents, ss_red_b, np.where(is_black_metals, ss_blue_b, ss_white_b))
+        # Composite Main Texture
+        final_r = np.where(is_red_accents, ss_red_r, np.where(is_black_metals, ss_blue_r, ss_white_r))
+        final_g = np.where(is_red_accents, ss_red_g, np.where(is_black_metals, ss_blue_g, ss_white_g))
+        final_b = np.where(is_red_accents, ss_red_b, np.where(is_black_metals, ss_blue_b, ss_white_b))
 
-    final_main_img = Image.fromarray(np.stack([final_r, final_g, final_b, ja], axis=-1).astype(np.uint8))
-    final_main_img.save(out_dir / "cha_starsaber_gs_leader2014_main_a.png")
+        final_main_img = Image.fromarray(np.stack([final_r, final_g, final_b, ja], axis=-1).astype(np.uint8))
+        final_main_img.save(user_main_path)
+
+    # 1b. Vehicle (Transform Misc) Texture (Load user custom if present)
+    user_tform_path = out_dir / "cha_starsaber_gs_leader2014_tform_misc_a.png"
+    final_tform_img = None
+    if user_tform_path.exists():
+        print(f"[*] Loading user-customized vehicle texture from {user_tform_path} ...")
+        final_tform_img = Image.open(user_tform_path).convert("RGBA")
 
     # 2. Saber Blade Weapons Texture Synthesis
     w_arr = np.array(m_wpns_img.convert("RGBA"), dtype=np.float32)
@@ -307,6 +319,12 @@ def generate_starsaber_assets(apk_path: str | None = None, output_dir: str = "as
                 data_obj = obj.read()
                 data_obj.image = final_main_img
                 data_obj.save()
+                print("[+] Successfully injected Star Saber main texture!")
+            elif tname in ["tform_misc_A", "tform_misc_a"] and final_tform_img is not None:
+                data_obj = obj.read()
+                data_obj.image = final_tform_img
+                data_obj.save()
+                print("[+] Successfully injected Star Saber vehicle (tform_misc_A) texture!")
             elif tname == "cha_jetfire_gs_leader2014_wpns_a":
                 data_obj = obj.read()
                 data_obj.image = final_wpns_img
@@ -422,10 +440,14 @@ def generate_starsaber_assets(apk_path: str | None = None, output_dir: str = "as
         else:
             res_img.save(out_dir / out_name)
 
-    make_portrait(p_large_bytes, "portrait_starsaber_large.png", False)
-    make_portrait(p_small_bytes, "portrait_starsaber_small.jpg", True)
-    make_portrait(p_quest_bytes, "portrait_starsaber_quest.png", False)
-    make_portrait(p_large_bytes, "starsaber.png", False)
+    if not (out_dir / "portrait_starsaber_large.png").exists():
+        make_portrait(p_large_bytes, "portrait_starsaber_large.png", False)
+    if not (out_dir / "portrait_starsaber_small.jpg").exists():
+        make_portrait(p_small_bytes, "portrait_starsaber_small.jpg", True)
+    if not (out_dir / "portrait_starsaber_quest.png").exists():
+        make_portrait(p_quest_bytes, "portrait_starsaber_quest.png", False)
+    if not (out_dir / "starsaber.png").exists():
+        make_portrait(p_large_bytes, "starsaber.png", False)
 
     print(f"[+] Star Saber (史达) complete composite assets successfully generated in: {out_dir}/")
 
