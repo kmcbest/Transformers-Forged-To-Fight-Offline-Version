@@ -3611,6 +3611,7 @@ static int sp3_prop_mirror(void* prop, int on){
     return applied;
 }
 
+
 static void sp3_set_default_timing(void) {
     g_current_sp3_timing.count = 1;
     g_current_sp3_timing.on_ms[0] = 1000;
@@ -3782,27 +3783,34 @@ static int sp3_beat_form_at(uint64_t elapsed_ms){
    actually changes. Each captured entry is a PropData*; its name is the string at +0x10 and is
    either "transformed" (the alternate body) or "character_model" (the robot body). */
 static void sp3_beat_apply(int alt){
-    for(int i=0;i<8;i++){
-        void* prop=g_sp3_xf_props[i];
-        if(!obj_ok(prop)) continue;
-        char name[64];
-        name[0]=0;
-        read_str(*(void**)((char*)prop+0x10), name, sizeof name);
-        int want;
-        if(!strcmp(name,"transformed")) want=alt;
-        else if(!strcmp(name,"character_model")) want=!alt;
-        else continue;
-        ((void(*)(void*,int,void*,void*,void*,void*,void*,void*))H[138].orig)
-            (prop,want,NULL,NULL,NULL,NULL,NULL,NULL);
-        sp3_prop_mirror(prop,want);
-        /* SP3ANIM (shipped): the alternate body renders in bind pose unless its own Animator is
-           driven, so re-drive it each time the vehicle form comes back on. 0xEA05B4 =
-           PropData.PlayAnimatorState(string). */
-        if(alt && want && !strcmp(name,"transformed") && g_strnew){
-            void* st=g_strnew("SpecialAttack03");
-            if(st) ((void(*)(void*,void*,void*))(g_base+0xEA05B4))(prop,st,NULL);
+    PROTECT({
+        for(int i=0;i<8;i++){
+            void* prop=g_sp3_xf_props[i];
+            if(!obj_ok(prop)) continue;
+            char name[64];
+            name[0]=0;
+            void* str_obj = *(void**)((char*)prop+0x10);
+            if(!obj_ok(str_obj)) continue;
+            read_str(str_obj, name, sizeof name);
+            int want;
+            if(!strcmp(name,"transformed")) want=alt;
+            else if(!strcmp(name,"character_model")) want=!alt;
+            else continue;
+            ((void(*)(void*,int,void*,void*,void*,void*,void*,void*))H[138].orig)
+                (prop,want,NULL,NULL,NULL,NULL,NULL,NULL);
+            int n = sp3_prop_mirror(prop,want);
+            flog("SP3BEAT_PROP name=%s want=%d n=%d pgo=%p", name, want, n, *(void**)((char*)prop+0x60));
+            /* SP3ANIM (shipped): the alternate body renders in bind pose unless its own Animator is
+               driven. If not already started at t=0, drive it here as fallback. */
+            if(!g_sp3_anim_played && alt && want && !strcmp(name,"transformed") && g_strnew){
+                void* st=g_strnew("SpecialAttack03");
+                if(st) ((void(*)(void*,void*,void*))(g_base+0xEA05B4))(prop,st,NULL);
+                void* st2=g_strnew("Base.SpecialAttack03");
+                if(st2) ((void(*)(void*,void*,void*))(g_base+0xEA05B4))(prop,st2,NULL);
+                g_sp3_anim_played = 1;
+            }
         }
-    }
+    });
     if(g_sp3_beat_lines<40){ g_sp3_beat_lines++;
         flog("SP3BEAT apply alt=%d on=%d off=%d tms=%llu", alt, g_sp3_alt_on_ms,
              g_sp3_alt_off_ms, (unsigned long long)propgo_now_ms()); }
@@ -3841,7 +3849,7 @@ void* hook_138(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
                     int alt=sp3_beat_form_at(now-g_sp3_xf_since_ms);
                     int forced=!strcmp(name,"transformed") ? alt : !alt;
                     if(req!=forced){
-                        if(g_propgoinv_lines<200){ g_propgoinv_lines++;
+                        if(g_propgoinv_lines<500){ g_propgoinv_lines++;
                             flog("PROPGOINV prop=%s req=%d forced=%d tms=%llu",name,req,forced,(unsigned long long)now); }
                         a1=(void*)(intptr_t)forced;
                     }
@@ -3853,18 +3861,17 @@ void* hook_138(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     PROTECT({
         int on = (intptr_t)a1 ? 1 : 0;
         int applied = sp3_prop_mirror(a0, on);
-        if(applied > 0 && g_propgoact_lines < 200){ g_propgoact_lines++;
+        if(applied > 0 && g_propgoact_lines < 500){ g_propgoact_lines++;
             flog("PROPGOACT prop=%s on=%d n=%d tms=%llu", name, on, applied, (unsigned long long)propgo_now_ms()); }
         if(propgo_special){
-            // SP3ANIM (shipped): the cinematic special never runs the move's event list on this build, so the
-            // alternate-form prop is never told to play its own SpecialAttack03 clip and renders in bind pose.
-            // Drive its Animator directly, once per cinematic, right after the prop is activated.
             if (on && !g_sp3_anim_played && g_sp3_xf_since_ms && sp3_xf_props_has(a0)
                     && !strcmp(name, "transformed") && g_strnew) {
                 void* st = g_strnew("SpecialAttack03");
                 if (st) {
                     g_sp3_anim_played = 1;
                     ((void(*)(void*,void*,void*))(g_base + 0xEA05B4))(a0, st, NULL);
+                    void* st2 = g_strnew("Base.SpecialAttack03");
+                    if (st2) ((void(*)(void*,void*,void*))(g_base + 0xEA05B4))(a0, st2, NULL);
                     flog("SP3ANIM prop=%s state=SpecialAttack03 anim=%p tms=%llu",
                          name, fld_p(a0,0x68), (unsigned long long)propgo_now_ms());
                 }
@@ -4073,16 +4080,48 @@ void* hook_142(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
             sp3_xf_add(pc);
             g_sp3_beat_form = 0;
             g_sp3_beat_ticks = 0;
+            g_sp3_anim_played = 0;
+            g_sp3_beat_lines = 0;
+            g_propgoact_lines = 0;
+            g_propgoinv_lines = 0;
             flog("SP3SCHED intervals=%d on0=%d off0=%d tms=%llu", g_current_sp3_timing.count,
                  g_sp3_alt_on_ms, g_sp3_alt_off_ms, (unsigned long long)propgo_now_ms());
+
+            sp3_xf_props_clear();
+            void* cpm = *(void**)((char*)pc + 0x90);
+            if (obj_ok(cpm) && g_strnew) {
+                void* prop_trans = ((void*(*)(void*,void*,void*))(g_base + 0xEA16C0))(cpm, g_strnew("transformed"), NULL);
+                void* prop_char  = ((void*(*)(void*,void*,void*))(g_base + 0xEA16C0))(cpm, g_strnew("character_model"), NULL);
+                if (prop_trans) sp3_xf_props_add(prop_trans);
+                if (prop_char)  sp3_xf_props_add(prop_char);
+                flog("SP3PROPS cpm=%p trans=%p char=%p", cpm, prop_trans, prop_char);
+            }
+
             g_sp3_xf_capture_props=1;
             ((void(*)(void*,int,void*))(g_base + 0x117A67C))(pc,1,NULL);
             g_sp3_xf_capture_props=0;
-            /* SP3BEAT (shipped): the cinematic opens on the ROBOT wind-up. The Transform(true)
-               call above only exists to route the props through slot 138 so they can be
-               captured; push the robot body back on straight away so the alternate form does
-               not flash at t=0. */
+            /* SP3BEAT (shipped): the cinematic opens on the ROBOT wind-up. */
             sp3_beat_apply(0);
+            /* Start vehicle animation at t=0 so it advances in parallel with the robot cinematic. */
+            if (g_strnew) {
+                for (int pi = 0; pi < 8; pi++) {
+                    void* p = g_sp3_xf_props[pi];
+                    if (!obj_ok(p)) continue;
+                    char pname[64]; pname[0] = 0;
+                    void* strobj = *(void**)((char*)p + 0x10);
+                    if (!obj_ok(strobj)) continue;
+                    read_str(strobj, pname, sizeof pname);
+                    if (!strcmp(pname, "transformed")) {
+                        void* st = g_strnew("SpecialAttack03");
+                        void* st2 = g_strnew("Base.SpecialAttack03");
+                        if (st)  ((void(*)(void*,void*,void*))(g_base + 0xEA05B4))(p, st, NULL);
+                        if (st2) ((void(*)(void*,void*,void*))(g_base + 0xEA05B4))(p, st2, NULL);
+                        g_sp3_anim_played = 1;
+                        flog("SP3ANIM_START prop=transformed anim=%p tms=%llu",
+                             fld_p(p, 0x68), (unsigned long long)propgo_now_ms());
+                    }
+                }
+            }
         }
     });
     return r;
@@ -4092,9 +4131,11 @@ static void reset_player_attack_chain(void* pc);
 // SP3XFIX (shipped): drop the hold before restoring robot form at cinematic exit.
 void* hook_143(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
     void* pc=fld_p(a0,0x18);
+    sp3_beat_apply(0);
     sp3_xf_remove(pc);
     sp3_xf_props_clear();
     g_sp3_beat_form = -1;
+    g_sp3_anim_played = 0;
     void* r=H[143].orig(a0,a1,a2,a3,a4,a5,a6,a7);
     PROTECT({
         if (obj_ok(pc)) {
