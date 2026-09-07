@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SP3 变形时间计算器 (TFTF SP3 Timing Calculator)</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --primary: #38bdf8;
+      --primary-hover: #0ea5e9;
+      --accent: #f43f5e;
+      --success: #10b981;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --input-bg: #0f172a;
+      --input-border: #475569;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; }
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      padding: 24px 16px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .container {
+      width: 100%;
+      max-width: 680px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+    }
+    h1 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .full-width { grid-column: span 2; }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    label {
+      font-size: 0.825rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+    }
+    label span.hint {
+      color: #64748b;
+      font-weight: normal;
+    }
+    input, select {
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: #fff;
+      font-size: 0.95rem;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      outline: none;
+      transition: all 0.2s;
+    }
+    input:focus, select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .badge-blue { background: rgba(56, 189, 248, 0.15); color: var(--primary); }
+    .badge-rose { background: rgba(244, 63, 94, 0.15); color: var(--accent); }
+    .badge-emerald { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+
+    .result-box {
+      background: #090d16;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 24px;
+      position: relative;
+    }
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .result-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .output-code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #38bdf8;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid #1e293b;
+      padding: 12px 16px;
+      border-radius: 8px;
+      letter-spacing: 0.02em;
+      margin-bottom: 12px;
+      word-break: break-all;
+    }
+    .stats-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      padding-top: 10px;
+      border-top: 1px solid #1e293b;
+      font-size: 0.825rem;
+      color: var(--text-muted);
+    }
+    .stats-row strong {
+      color: #e2e8f0;
+      font-weight: 600;
+    }
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+    }
+    button {
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 18px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #0f172a;
+      flex: 1;
+    }
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+    .btn-secondary {
+      background: #334155;
+      color: #f1f5f9;
+    }
+    .btn-secondary:hover {
+      background: #475569;
+    }
+    .copy-toast {
+      position: absolute;
+      top: 14px;
+      right: 18px;
+      background: var(--success);
+      color: #0f172a;
+      font-weight: 700;
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 6px;
+      opacity: 0;
+      transform: translateY(-6px);
+      transition: all 0.2s ease;
+      pointer-events: none;
+    }
+    .copy-toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .helper-text {
+      margin-top: 18px;
+      font-size: 0.75rem;
+      color: #64748b;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>
+      <span>⚡</span> SP3 变形时间计算器
+    </h1>
+    <p class="subtitle">输入视频时间戳（时:分:秒;帧），自动计算出可直接粘贴进 <code>sp3_timings.json</code> 的单行格式。</p>
+
+    <div class="grid">
+      <div class="form-group full-width">
+        <label>
+          <span>1. S3 释放开始时间点 (T₀)</span>
+          <span class="badge badge-blue">基准点 0.0s</span>
+        </label>
+        <input type="text" id="t0" placeholder="00:01:02;16" value="00:01:02;16">
+      </div>
+
+      <div class="form-group">
+        <label>
+          <span>2. 变身（变载具）时间点 (T₁)</span>
+          <span class="badge badge-rose">变形时刻 On</span>
+        </label>
+        <input type="text" id="t1" placeholder="00:01:04;16" value="00:01:04;16">
+      </div>
+
+      <div class="form-group">
+        <label>
+          <span>3. 变回（变人身）时间点 (T₂)</span>
+          <span class="badge badge-emerald">还原时刻 Off</span>
+        </label>
+        <input type="text" id="t2" placeholder="00:01:05;23" value="00:01:05;23">
+      </div>
+
+      <div class="form-group">
+        <label>
+          <span>视频帧率 (FPS)</span>
+          <span class="hint">通常为 30 或 60</span>
+        </label>
+        <select id="fps">
+          <option value="30" selected>30 FPS (常见视频录像)</option>
+          <option value="60">60 FPS (高刷录像)</option>
+          <option value="24">24 FPS (电影标准)</option>
+          <option value="29.97">29.97 FPS (NTSC)</option>
+          <option value="59.94">59.94 FPS</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>
+          <span>时间取整方式</span>
+          <span class="hint">推荐取整到10ms</span>
+        </label>
+        <select id="rounding">
+          <option value="10" selected>十位取整 (例如 3230 ms)</option>
+          <option value="1">精确到毫秒 (例如 3233 ms)</option>
+          <option value="5">五位取整 (例如 3235 ms)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="btn-row" style="margin-top: 0; margin-bottom: 16px;">
+      <button class="btn-secondary" onclick="loadExample('arcee')">载入阿尔茜示例</button>
+      <button class="btn-secondary" onclick="loadExample('megatron')">载入威震天示例</button>
+      <button class="btn-secondary" onclick="clearInputs()">清空重填</button>
+    </div>
+
+    <div class="result-box">
+      <div id="copyToast" class="copy-toast">已复制到剪贴板 ✓</div>
+      <div class="result-header">
+        <span class="result-title">计算结果 (可直接替换)</span>
+      </div>
+      
+      <div class="output-code" id="output">[[2000, 3230]],</div>
+      
+      <div class="stats-row">
+        <div>变车起始：<strong id="statOn">2000 ms</strong> <span id="statOnSec" style="color:#64748b;">(2.00s)</span></div>
+        <div>变回人身：<strong id="statOff">3230 ms</strong> <span id="statOffSec" style="color:#64748b;">(3.23s)</span></div>
+        <div>载具持续：<strong id="statDu">1230 ms</strong> <span id="statDuSec" style="color:#64748b;">(1.23s)</span></div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-primary" onclick="copyResult()">
+          <span>📋</span> 复制结果: <code id="btnCopyText" style="margin-left: 4px;">[[2000, 3230]],</code>
+        </button>
+        <button class="btn-secondary" onclick="copyFullLine()">
+          <span>复制整行 "intervals"</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="helper-text">
+      💡 提示：时间戳支持 <code>00:01:05;23</code>、<code>01:05:23</code>、<code>1:5.23</code> 等多种格式。<br>
+      复制后直接替换 <code>Server/sp3_timings.json</code> 中的 <code>"intervals": [[...]],</code> 即可，随后使用 <code>adb push Server/sp3_timings.json /data/local/tmp/sp3_timings.json</code> 即可免装热更！
+    </div>
+  </div>
+
+  <script>
+    function parseTimestamp(str, fps) {
+      if (!str) return 0;
+      str = str.trim();
+      // Replace semicolon, dot with colon for unified splitting
+      var parts = str.replace(/[;.]/g, ':').split(':').map(function(s) { return parseFloat(s) || 0; });
+      
+      var h = 0, m = 0, s = 0, f = 0;
+      if (parts.length === 4) {
+        h = parts[0]; m = parts[1]; s = parts[2]; f = parts[3];
+      } else if (parts.length === 3) {
+        m = parts[0]; s = parts[1]; f = parts[2];
+      } else if (parts.length === 2) {
+        s = parts[0]; f = parts[1];
+      } else if (parts.length === 1) {
+        s = parts[0];
+      }
+      
+      var totalSec = h * 3600 + m * 60 + s + (f / fps);
+      return totalSec * 1000;
+    }
+
+    function calculate() {
+      var fps = parseFloat(document.getElementById('fps').value) || 30;
+      var rounding = parseInt(document.getElementById('rounding').value) || 10;
+      
+      var t0_ms = parseTimestamp(document.getElementById('t0').value, fps);
+      var t1_ms = parseTimestamp(document.getElementById('t1').value, fps);
+      var t2_ms = parseTimestamp(document.getElementById('t2').value, fps);
+
+      var on_ms = Math.max(0, t1_ms - t0_ms);
+      var off_ms = Math.max(on_ms, t2_ms - t0_ms);
+
+      if (rounding > 1) {
+        on_ms = Math.round(on_ms / rounding) * rounding;
+        off_ms = Math.round(off_ms / rounding) * rounding;
+      } else {
+        on_ms = Math.round(on_ms);
+        off_ms = Math.round(off_ms);
+      }
+
+      var duration_ms = off_ms - on_ms;
+      var resultText = '[[' + on_ms + ', ' + off_ms + ']],';
+
+      document.getElementById('output').textContent = resultText;
+      document.getElementById('btnCopyText').textContent = resultText;
+      
+      document.getElementById('statOn').textContent = on_ms + ' ms';
+      document.getElementById('statOnSec').textContent = '(' + (on_ms / 1000).toFixed(2) + 's)';
+      
+      document.getElementById('statOff').textContent = off_ms + ' ms';
+      document.getElementById('statOffSec').textContent = '(' + (off_ms / 1000).toFixed(2) + 's)';
+      
+      document.getElementById('statDu').textContent = duration_ms + ' ms';
+      document.getElementById('statDuSec').textContent = '(' + (duration_ms / 1000).toFixed(2) + 's)';
+    }
+
+    function showToast(msg) {
+      var toast = document.getElementById('copyToast');
+      toast.textContent = msg || '已复制到剪贴板 ✓';
+      toast.classList.add('show');
+      setTimeout(function() {
+        toast.classList.remove('show');
+      }, 1500);
+    }
+
+    function copyResult() {
+      var text = document.getElementById('output').textContent;
+      navigator.clipboard.writeText(text).then(function() {
+        showToast('已复制: ' + text);
+      });
+    }
+
+    function copyFullLine() {
+      var text = '    "intervals": ' + document.getElementById('output').textContent;
+      navigator.clipboard.writeText(text).then(function() {
+        showToast('已复制整行 "intervals" ✓');
+      });
+    }
+
+    function loadExample(type) {
+      if (type === 'arcee') {
+        document.getElementById('t0').value = '00:01:02;16';
+        document.getElementById('t1').value = '00:01:04;16';
+        document.getElementById('t2').value = '00:01:05;23';
+        document.getElementById('fps').value = '30';
+      } else if (type === 'megatron') {
+        document.getElementById('t0').value = '00:00:00;00';
+        document.getElementById('t1').value = '00:00:02;26';
+        document.getElementById('t2').value = '00:00:04;26';
+        document.getElementById('fps').value = '30';
+      }
+      calculate();
+    }
+
+    function clearInputs() {
+      document.getElementById('t0').value = '';
+      document.getElementById('t1').value = '';
+      document.getElementById('t2').value = '';
+      calculate();
+    }
+
+    // Attach real-time listeners
+    ['t0', 't1', 't2', 'fps', 'rounding'].forEach(function(id) {
+      document.getElementById(id).addEventListener('input', calculate);
+      document.getElementById(id).addEventListener('change', calculate);
+    });
+
+    calculate();
+  </script>
+</body>
+</html>
