@@ -164,7 +164,7 @@
     "notes": "威震天系列 - 默认载具/野兽变形区间"
   },
   "megatronus": {
-    "intervals": [[1000, 2500]],
+    "intervals": [[6830, 8370]],
     "notes": "堕落金刚系列 - 默认载具/野兽变形区间"
   },
   "mirage": {
@@ -344,7 +344,7 @@
     "notes": "挽歌 (Dirge) - 战机"
   },
   "drift_cin_aoe": {
-    "intervals": [[1000, 2500]],
+    "intervals": [[530, 1500]],
     "notes": "漂移 (Drift) - 跑车/直升机"
   },
   "galvatron_gs_voyager2016": {
@@ -388,7 +388,7 @@
     "notes": "爵士 (Jazz) - 保时捷赛车"
   },
   "jetfire_gs_leader2014": {
-    "intervals": [[1000, 2500]],
+    "intervals": [[2930, 8830]],
     "notes": "天火 (Jetfire) - 穿梭超音速战机"
   },
   "kickback_gs_kabam": {
@@ -404,7 +404,7 @@
     "notes": "G1威震天 (Megatron) - 坦克"
   },
   "megatronus_gs_kabam": {
-    "intervals": [[1000, 2500]],
+    "intervals": [[6830, 8370]],
     "notes": "堕落金刚/震天尊 (Megatronus) - 远古战车"
   },
   "mirage_gs_deluxe2016": {
@@ -420,7 +420,7 @@
     "notes": "汽车大师 (Motormaster) - 飞虎队重型卡车"
   },
   "necrotronus_gs_kabam": {
-    "intervals": [[1000, 2500]],
+    "intervals": [[6830, 8370]],
     "notes": "死灵金刚 (Necrotronus)"
   },
   "novastorm_gs_leader2015": {
@@ -508,7 +508,7 @@
     "notes": "声波 (Soundwave)"
   },
   "starsaber_gs_leader2014": {
-    "intervals": [[1000, 2500]],
+    "intervals": [[2930, 8830]],
     "notes": "皇者之剑史达 (Star Saber) - 超音速战机"
   },
   "sunstorm_gs_leader2015": {
@@ -516,7 +516,7 @@
     "notes": "太阳风暴 (Sunstorm) - 战机"
   },
   "sunstreaker_gs_deluxe2008": {
-    "intervals": [[1000, 2500]],
+    "intervals": [[530, 1500]],
     "notes": "飞毛腿 (Sunstreaker) - 跑车"
   },
   "tantrum_gs_kabam": {
