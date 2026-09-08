@@ -2630,6 +2630,38 @@ static void load_combat_tuning_config(void) {
             fclose(fp);
         }
     }
+
+    // 2. Try loading from APK in-app Payload @sp3_timings
+    size_t payload_len = 0;
+    const unsigned char* pdata = tftf_payload_lookup("@sp3_timings", &payload_len);
+    if (pdata && payload_len > 10) {
+        char* buf = (char*)malloc(payload_len + 1);
+        if (buf) {
+            memcpy(buf, pdata, payload_len);
+            buf[payload_len] = 0;
+            const char* p_enemy = strstr(buf, "\"enemy_mana_gain\"");
+            if (p_enemy) {
+                const char* colon = strchr(p_enemy, ':');
+                if (colon) {
+                    float val = 0.5f;
+                    if (sscanf(colon + 1, "%f", &val) == 1 && val >= 0.0f && val <= 10.0f) {
+                        g_combat_enemy_mana_gain = val;
+                    }
+                }
+            }
+            const char* p_player = strstr(buf, "\"player_mana_gain\"");
+            if (p_player) {
+                const char* colon = strchr(p_player, ':');
+                if (colon) {
+                    float val = 1.0f;
+                    if (sscanf(colon + 1, "%f", &val) == 1 && val >= 0.0f && val <= 10.0f) {
+                        g_combat_player_mana_gain = val;
+                    }
+                }
+            }
+            free(buf);
+        }
+    }
 }
 
 // slot 56 FIXFIGHT: PlayerAttributes.Init(this=a0, owner=a1, manager=a2, fighterData=a3,
