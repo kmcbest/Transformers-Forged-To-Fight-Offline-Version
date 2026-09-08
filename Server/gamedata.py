@@ -1391,7 +1391,7 @@ def build_active_team(activity_id="1.1.1-0", heroes=None):
     hero_dicts = {b: build_hero_entry(b) for b in bids}
     return {
         "aid": activity_id,
-        "type": "pve", "modes": ["pve"],
+        "type": "PvE", "modes": ["PvE"],
         "heroes": hero_dicts, "expire": 0,
     }
 

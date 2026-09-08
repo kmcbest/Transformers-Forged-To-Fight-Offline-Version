@@ -535,11 +535,7 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x1173B28, "BLOCKENTER",         2, 0 }, // 160 PlayerBlockState.OnEnter -> reset attack chain on entering block
     { 0xC16688,  "GET_MAP_ASSET_ID",   2, 0 }, // 161 BCGBlueprintBase.get_MapAssetID -> resolve to real portrait resource name
     { 0x127F794, "LOCALIZE",           2, 0 }, // 162 Localization.Get
-    { 0x95BDD8,  "LIVENESS_ADD_OBJ",   2, 0 }, // 163 AddProcessObject (filter invalid object pointers during GC/liveness)
-    { 0x103E278, "GETACTQ",            2, 0 }, // 164 QuestDB.GetActiveQuest(category) -> alias Story to PvE / fallback
-    { 0xC1FFDC,  "GETACTT",            2, 0 }, // 165 BCGUserData.GetActiveTeam(teamId) -> fallback team
-    { 0xCB7E70,  "OPENQPOP",           2, 0 }, // 166 QuestsManager.OpenQuestPopup(category) -> log / ensure quest
-    { 0x11794A4, "ADDMANA",            2, 0 }, // 167 PlayerController.AddMana -> scale enemy mana gain dynamically
+    { 0x11794A4, "ADDMANA",            2, 0 }, // 163 PlayerController.AddMana -> scale enemy mana gain dynamically
 };
 #define NH (int)(sizeof(H)/sizeof(H[0]))
 
@@ -1088,19 +1084,7 @@ void* hook_52(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
     g_inqs--; \
     PROTECT( flog("%s end", H[i].tag); ); \
     return r; }
-MKQS(59) MKQS(60) MKQS(61) MKQS(62) MKQS(63) /* 64 custom */ MKQS(65) MKQS(66)
-static void* g_last_quest_summary = NULL;
-void* hook_64(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
-    PROTECT( flog("%s begin (summary=%p)", H[64].tag, a1); );
-    if (a1 && obj_ok(a1)) {
-        g_last_quest_summary = a1;
-    }
-    g_inqs++;
-    void* r = H[64].orig(a0,a1,a2,a3,a4,a5,a6,a7);
-    g_inqs--;
-    PROTECT( flog("%s end", H[64].tag); );
-    return r;
-}
+MKQS(59) MKQS(60) MKQS(61) MKQS(62) MKQS(63) MKQS(64) MKQS(65) MKQS(66)
 // slots 67-69 (session 8): story-visibility instrumentation. Log the category argument and
 // results of the set-count/lookup queries the STORY landing runs, to locate the availability
 // gate that keeps the (correctly-parsed) mission from appearing. read_str/flog defined above.
@@ -4855,113 +4839,9 @@ void* hook_162(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     return r;
 }
 
-void* hook_163(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7) {
-    if (!obj_ok(a0)) {
-        if (a0) {
-            flog("LIVENESS_GUARD: filtered bad obj=%p (caller=%p)", a0, __builtin_return_address(0));
-        }
-        return (void*)0;
-    }
-    void* res = (void*)0;
-    PROTECT({
-        uintptr_t k = *(uintptr_t*)a0;
-        uintptr_t clean_k = k & ~1ULL;
-        if (obj_ok((void*)clean_k)) {
-            volatile uint16_t test_attr = *(volatile uint16_t*)(clean_k + 0x132);
-            (void)test_attr;
-            res = H[163].orig(a0, a1, a2, a3, a4, a5, a6, a7);
-        } else {
-            flog("LIVENESS_GUARD: filtered bad klass=%p for obj=%p (caller=%p)", (void*)k, a0, __builtin_return_address(0));
-        }
-    });
-    return res;
-}
-
-static void* g_last_active_quest = NULL;
-static void* g_last_active_team = NULL;
-
-void* hook_164(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7) {
-    char cat[64] = {0};
-    if (a0 && obj_ok(a0)) {
-        read_str(a0, cat, sizeof(cat));
-    }
-    void* r = H[164].orig(a0, a1, a2, a3, a4, a5, a6, a7);
-    if (r) {
-        g_last_active_quest = r;
-        flog("GETACTQ: found active quest for cat='%s' -> %p", cat, r);
-    } else if (strcmp(cat, "Story") == 0 && g_strnew) {
-        void* pve = g_strnew("PvE");
-        if (pve) {
-            r = H[164].orig(pve, a1, a2, a3, a4, a5, a6, a7);
-            if (r) {
-                g_last_active_quest = r;
-                flog("GETACTQ: 'Story' -> 'PvE' aliased -> %p", r);
-            }
-        }
-    }
-    if (!r && g_last_active_quest && obj_ok(g_last_active_quest)) {
-        r = g_last_active_quest;
-        flog("GETACTQ: using cached g_last_active_quest=%p for cat='%s'", r, cat);
-    }
-    if (r && obj_ok(r)) {
-        PROTECT({
-            if (g_last_quest_summary && obj_ok(g_last_quest_summary)) {
-                *(void**)((uintptr_t)r + 0x28) = g_last_quest_summary;
-                flog("GETACTQ: updated activeQuest->questSummary to %p", g_last_quest_summary);
-            }
-            void* tid_ptr = *(void**)((uintptr_t)r + 0x18);
-            if (!tid_ptr && g_strnew) {
-                *(void**)((uintptr_t)r + 0x18) = g_strnew("1.1.2-0");
-                flog("GETACTQ: patched null teamId to '1.1.2-0'");
-            }
-        });
-    }
-    return r;
-}
-
-void* hook_165(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7) {
-    char tid[64] = {0};
-    if (a0 && obj_ok(a0)) {
-        read_str(a0, tid, sizeof(tid));
-    }
-    void* r = H[165].orig(a0, a1, a2, a3, a4, a5, a6, a7);
-    if (r) {
-        g_last_active_team = r;
-        flog("GETACTT: found team for tid='%s' -> %p", tid, r);
-        return r;
-    }
-    if (g_strnew) {
-        const char* fallbacks[] = {"1.1.2-0", "1.1.1-0", "0", NULL};
-        for (int i = 0; fallbacks[i]; i++) {
-            void* st = g_strnew(fallbacks[i]);
-            if (st) {
-                r = H[165].orig(st, a1, a2, a3, a4, a5, a6, a7);
-                if (r) {
-                    g_last_active_team = r;
-                    flog("GETACTT: fallback '%s' -> %p", fallbacks[i], r);
-                    return r;
-                }
-            }
-        }
-    }
-    if (g_last_active_team && obj_ok(g_last_active_team)) {
-        flog("GETACTT: using cached g_last_active_team=%p for tid='%s'", g_last_active_team, tid);
-        return g_last_active_team;
-    }
-    flog("GETACTT: null for tid='%s'", tid);
-    return NULL;
-}
-
-void* hook_166(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7) {
-    flog("OPENQPOP: enter (a0=%p)", a0);
-    void* r = H[166].orig(a0, a1, a2, a3, a4, a5, a6, a7);
-    flog("OPENQPOP: exit -> %p", r);
-    return r;
-}
-
-// hook 167: PlayerController.AddMana(float amount)
+// hook 163: PlayerController.AddMana(float amount)
 // ABI: self in a0 (PlayerController*), amount in s0
-void* hook_167(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+void* hook_163(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     float amt;
     __asm__ volatile ("fmov %w0, s0" : "=r"(amt));
     if (obj_ok(a0)) {
@@ -4975,7 +4855,7 @@ void* hook_167(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
         }
     }
     __asm__ volatile ("fmov s0, %w0" : : "r"(amt));
-    return H[167].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    return H[163].orig(a0, a1, a2, a3, a4, a5, a6, a7);
 }
 
 static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hook_7,hook_8,
@@ -4995,8 +4875,7 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     hook_138,hook_139,hook_140,hook_141,hook_142,hook_143,hook_144,
     hook_145,hook_146,hook_147,hook_148,hook_149,hook_150,hook_151,
     hook_152,hook_153,hook_154,hook_155,hook_156,hook_157,hook_158,
-    hook_159,hook_160,hook_161,hook_162,hook_163,hook_164,hook_165,hook_166,
-    hook_167 };
+    hook_159,hook_160,hook_161,hook_162,hook_163 };
 
 static void write_jump(uint8_t* dst, void* target){
     uint32_t* p = (uint32_t*)dst;
@@ -5146,27 +5025,6 @@ static void* installer(void* arg){
 
     // 7) HeroesScreen.<OnGridItemInitialized>b__99_1 (@0xC5D26C): pass mask 0x1B to SetEnabledItems.
     poke32(0xC5D888, 0x52800361);   // mov w1, #8 -> mov w1, #0x1b
-
-    // FIX_QUEST_REENTER: Prevent NullReferenceException / IndexOutOfRangeException
-    // when re-entering a story quest after a battle or quitting a map.
-    // 1) In Legacy.QuestSet (0x101CE1C):
-    //    When set->quests is null or count <= 1, redirect to safe exit 0x101D388 instead of throwing.
-    poke32(0x101D1B0, 0xB4000EC8);   // cbz x8, 0x101D3B4 (throw NRE) -> cbz x8, 0x101D388 (safe exit)
-    poke32(0x101D1BC, 0x54000E69);   // b.ls 0x101D3B8 (throw IOORE) -> b.ls 0x101D388 (safe exit)
-    poke32(0x101D3B4, 0x17FFFFF5);   // bl 0x9BB514 (throw NRE) -> b 0x101D388
-    poke32(0x101D3B8, 0x17FFFFF4);   // bl 0x9BB53C (throw IOORE) -> b 0x101D388
-
-    // 2) In badge counter / quest aggregator (0x10445C0):
-    //    If set->quests is null, skip to next set instead of throwing NRE at 0x1044C68.
-    poke32(0x10447B8, 0xB40004A8);   // cbz x8, 0x1044C68 -> cbz x8, 0x104484C (skip set)
-    poke32(0x1044848, 0x14000001);   // b 0x1044C68 -> b 0x104484C (skip set)
-    poke32(0x1044C68, 0x52800000);   // bl 0x9BB514 (throw) -> mov w0, wzr (return 0)
-    poke32(0x1044C6C, 0x14000001);   // mov w0, w21 -> b 0x1044C70 (restore & return)
-
-    // 3) In QuestDB.AddExpiredQuest (0x103DC04):
-    //    If null check fails, return null instead of throwing NRE at 0x103E078.
-    poke32(0x103E078, 0xAA1F03E0);   // bl 0x9BB514 (throw) -> mov x0, xzr
-    poke32(0x103E07C, 0x17FFFF3B);   // mov x0, x25 -> b 0x103DD68 (return null)
 
     LOG("install done (%d hooks)", NH);
     return NULL;

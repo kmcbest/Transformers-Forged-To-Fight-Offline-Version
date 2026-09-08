@@ -234,21 +234,7 @@ static const unsigned char *json_default_spaces(const unsigned char *s, size_t n
                 }
             }
         }
-        if (!quoted && i + 10 <= n && !memcmp(s + i, "\"todIndex\"", 10)) {
-            size_t j = i + 10;
-            while (j < n && isspace((unsigned char)s[j])) j++;
-            if (j < n && s[j] == ':') {
-                j++;
-                while (j < n && isspace((unsigned char)s[j])) j++;
-                while (j < n && (isdigit((unsigned char)s[j]) || s[j] == '-')) j++;
-                int tod = (int)(q_rand() % 3);
-                char buf[32];
-                int blen = snprintf(buf, sizeof(buf), "\"todIndex\": %d", tod);
-                if (!out_add(o, (const unsigned char*)buf, (size_t)blen)) return NULL;
-                i = j - 1;
-                continue;
-            }
-        }
+
         unsigned char c=s[i];
         if(!out_add(o,&c,1)) return NULL;
         if(quoted) { if(escaped) escaped=0; else if(c=='\\') escaped=1; else if(c=='\"') quoted=0; }
