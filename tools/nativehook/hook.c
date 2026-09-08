@@ -567,6 +567,19 @@ static SP3ActiveTiming g_current_sp3_timing = {
     .off_ms = {2500}
 };
 
+#define SP3_MAX_PROPS 8
+typedef struct {
+    char name[32];
+    int count;
+    int on_ms[SP3_MAX_INTERVALS];
+    int off_ms[SP3_MAX_INTERVALS];
+    void* prop_ptr;
+    int is_active;
+} SP3PropTiming;
+
+static int g_sp3_prop_timing_count = 0;
+static SP3PropTiming g_sp3_prop_timings[SP3_MAX_PROPS];
+
 static void* g_sp3_xf[4];
 static void* g_sp3_xf_props[8];
 static int g_sp3_xf_capture_props = 0;
@@ -630,6 +643,7 @@ static void sp3_xf_remove(void* pc) {
 static void sp3_xf_clear(void) {
     for (int i = 0; i < 4; i++) g_sp3_xf[i] = NULL;
     sp3_xf_props_clear();
+    g_sp3_prop_timing_count = 0;
     g_sp3_xf_capture_props = 0;
     g_sp3_xf_since_ms = 0;
     g_sp3_anim_played = 0;
@@ -3618,6 +3632,8 @@ static void sp3_set_default_timing(void) {
     g_current_sp3_timing.off_ms[0] = 2500;
     g_sp3_alt_on_ms = 1000;
     g_sp3_alt_off_ms = 2500;
+    g_sp3_prop_timing_count = 0;
+    memset(g_sp3_prop_timings, 0, sizeof(g_sp3_prop_timings));
 }
 
 static int sp3_parse_intervals_from_json(const char* json_str, const char* bot_id) {
@@ -3654,7 +3670,22 @@ static int sp3_parse_intervals_from_json(const char* json_str, const char* bot_i
 
     const char* block_start = strchr(p, '{');
     if (!block_start) return 0;
-    const char* block_end = strchr(block_start, '}');
+
+    // Find matching closing brace for this bot (handles nested props: { ... })
+    const char* cur_b = block_start + 1;
+    int brace_depth = 1;
+    const char* block_end = NULL;
+    while (*cur_b && brace_depth > 0) {
+        if (*cur_b == '{') brace_depth++;
+        else if (*cur_b == '}') {
+            brace_depth--;
+            if (brace_depth == 0) {
+                block_end = cur_b;
+                break;
+            }
+        }
+        cur_b++;
+    }
     if (!block_end) return 0;
 
     // 2. Retrieve "intervals"
@@ -3687,9 +3718,107 @@ static int sp3_parse_intervals_from_json(const char* json_str, const char* bot_i
         g_current_sp3_timing.count = count;
         g_sp3_alt_on_ms = g_current_sp3_timing.on_ms[0];
         g_sp3_alt_off_ms = g_current_sp3_timing.off_ms[0];
-        return 1;
+    } else {
+        return 0;
     }
-    return 0;
+
+    // 3. Parse "props" if present
+    g_sp3_prop_timing_count = 0;
+    const char* props_kw = strstr(block_start, "\"props\"");
+    if (props_kw && props_kw < block_end) {
+        const char* p_obj_start = strchr(props_kw, '{');
+        if (p_obj_start && p_obj_start < block_end) {
+            // Find end of props object
+            const char* cur_pb = p_obj_start + 1;
+            int p_depth = 1;
+            const char* p_obj_end = NULL;
+            while (*cur_pb && cur_pb < block_end && p_depth > 0) {
+                if (*cur_pb == '{') p_depth++;
+                else if (*cur_pb == '}') {
+                    p_depth--;
+                    if (p_depth == 0) { p_obj_end = cur_pb; break; }
+                }
+                cur_pb++;
+            }
+            if (p_obj_end) {
+                const char* cur_p = p_obj_start + 1;
+                while (cur_p < p_obj_end && g_sp3_prop_timing_count < SP3_MAX_PROPS) {
+                    const char* q1 = strchr(cur_p, '\"');
+                    if (!q1 || q1 >= p_obj_end) break;
+                    const char* q2 = strchr(q1 + 1, '\"');
+                    if (!q2 || q2 >= p_obj_end) break;
+                    size_t nlen = (size_t)(q2 - (q1 + 1));
+                    if (nlen > 0 && nlen < 32) {
+                        char pname[32];
+                        memcpy(pname, q1 + 1, nlen);
+                        pname[nlen] = 0;
+
+                        const char* colon = strchr(q2, ':');
+                        if (!colon || colon >= p_obj_end) break;
+                        const char* arr_open = strchr(colon, '[');
+                        if (!arr_open || arr_open >= p_obj_end) break;
+
+                        // Track outer array depth to find where this prop ends
+                        const char* scur = arr_open + 1;
+                        int arr_depth = 1;
+                        const char* outer_arr_end = NULL;
+                        while (*scur && scur < p_obj_end && arr_depth > 0) {
+                            if (*scur == '[') arr_depth++;
+                            else if (*scur == ']') {
+                                arr_depth--;
+                                if (arr_depth == 0) { outer_arr_end = scur; break; }
+                            }
+                            scur++;
+                        }
+
+                        // Parse intervals within [arr_open, outer_arr_end]
+                        int p_cnt = 0;
+                        int p_on[SP3_MAX_INTERVALS];
+                        int p_off[SP3_MAX_INTERVALS];
+                        const char* pcur = arr_open + 1;
+                        while (outer_arr_end && pcur < outer_arr_end && p_cnt < SP3_MAX_INTERVALS) {
+                            const char* ssub = strchr(pcur, '[');
+                            if (!ssub || ssub >= outer_arr_end) break;
+                            int on_v = 0, off_v = 0;
+                            if (sscanf(ssub + 1, "%d , %d", &on_v, &off_v) == 2 ||
+                                sscanf(ssub + 1, "%d ,%d", &on_v, &off_v) == 2 ||
+                                sscanf(ssub + 1, "%d,%d", &on_v, &off_v) == 2) {
+                                if (on_v > 0 || off_v > 0) {
+                                    p_on[p_cnt] = on_v;
+                                    p_off[p_cnt] = off_v;
+                                    p_cnt++;
+                                }
+                            }
+                            const char* ssub_end = strchr(ssub, ']');
+                            if (!ssub_end || ssub_end > outer_arr_end) break;
+                            pcur = ssub_end + 1;
+                        }
+
+                        if (p_cnt > 0) {
+                            SP3PropTiming* pt = &g_sp3_prop_timings[g_sp3_prop_timing_count++];
+                            strncpy(pt->name, pname, sizeof(pt->name) - 1);
+                            pt->name[sizeof(pt->name) - 1] = 0;
+                            pt->count = p_cnt;
+                            for (int k = 0; k < p_cnt; k++) {
+                                pt->on_ms[k] = p_on[k];
+                                pt->off_ms[k] = p_off[k];
+                            }
+                            pt->prop_ptr = NULL;
+                            pt->is_active = 0;
+                            flog("SP3WEAPON_CFG name=%s active_intervals=%d on0=%d off0=%d",
+                                 pt->name, pt->count, pt->on_ms[0], pt->off_ms[0]);
+                        }
+
+                        if (outer_arr_end) cur_p = outer_arr_end + 1;
+                        else cur_p = q2 + 1;
+                    } else {
+                        cur_p = q2 + 1;
+                    }
+                }
+            }
+        }
+    }
+    return 1;
 }
 
 static void sp3_load_timing_for_character(const char* bot_id) {
@@ -3824,9 +3953,28 @@ static void sp3_beat_pump(void){
     if(elapsed>12000u) return;               /* the 12 s safety bound used elsewhere */
     g_sp3_beat_ticks++;
     int want=sp3_beat_form_at(elapsed);
-    if(want==g_sp3_beat_form) return;
-    g_sp3_beat_form=want;
-    sp3_beat_apply(want);
+    if(want!=g_sp3_beat_form) {
+        g_sp3_beat_form=want;
+        sp3_beat_apply(want);
+    }
+    for (int i = 0; i < g_sp3_prop_timing_count; i++) {
+        SP3PropTiming* pt = &g_sp3_prop_timings[i];
+        if (!obj_ok(pt->prop_ptr)) continue;
+        int prop_want = 0;
+        for (int k = 0; k < pt->count; k++) {
+            if (elapsed >= (uint64_t)pt->on_ms[k] && elapsed < (uint64_t)pt->off_ms[k]) {
+                prop_want = 1;
+                break;
+            }
+        }
+        if (prop_want != pt->is_active) {
+            pt->is_active = prop_want;
+            ((void(*)(void*,int,void*,void*,void*,void*,void*,void*))H[138].orig)
+                (pt->prop_ptr, prop_want, NULL,NULL,NULL,NULL,NULL,NULL);
+            sp3_prop_mirror(pt->prop_ptr, prop_want);
+            flog("SP3WEAPON_BEAT prop=%s want=%d elapsed=%llu", pt->name, prop_want, (unsigned long long)elapsed);
+        }
+    }
 }
 void* hook_138(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
     char name[64]; name[0]=0;
@@ -4095,6 +4243,18 @@ void* hook_142(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
                 if (prop_trans) sp3_xf_props_add(prop_trans);
                 if (prop_char)  sp3_xf_props_add(prop_char);
                 flog("SP3PROPS cpm=%p trans=%p char=%p", cpm, prop_trans, prop_char);
+
+                for (int pi = 0; pi < g_sp3_prop_timing_count; pi++) {
+                    void* p = ((void*(*)(void*,void*,void*))(g_base + 0xEA16C0))(cpm, g_strnew(g_sp3_prop_timings[pi].name), NULL);
+                    g_sp3_prop_timings[pi].prop_ptr = p;
+                    g_sp3_prop_timings[pi].is_active = 0;
+                    if (p) {
+                        ((void(*)(void*,int,void*,void*,void*,void*,void*,void*))H[138].orig)
+                            (p, 0, NULL,NULL,NULL,NULL,NULL,NULL);
+                        sp3_prop_mirror(p, 0);
+                        flog("SP3WEAPON_INIT name=%s ptr=%p", g_sp3_prop_timings[pi].name, p);
+                    }
+                }
             }
 
             g_sp3_xf_capture_props=1;
@@ -4132,6 +4292,18 @@ static void reset_player_attack_chain(void* pc);
 void* hook_143(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
     void* pc=fld_p(a0,0x18);
     sp3_beat_apply(0);
+    // Reset auxiliary weapon props to hidden
+    for (int i = 0; i < g_sp3_prop_timing_count; i++) {
+        SP3PropTiming* pt = &g_sp3_prop_timings[i];
+        if (obj_ok(pt->prop_ptr)) {
+            ((void(*)(void*,int,void*,void*,void*,void*,void*,void*))H[138].orig)
+                (pt->prop_ptr, 0, NULL,NULL,NULL,NULL,NULL,NULL);
+            sp3_prop_mirror(pt->prop_ptr, 0);
+            pt->prop_ptr = NULL;
+            pt->is_active = 0;
+        }
+    }
+    g_sp3_prop_timing_count = 0;
     sp3_xf_remove(pc);
     sp3_xf_props_clear();
     g_sp3_beat_form = -1;
@@ -4147,11 +4319,36 @@ void* hook_143(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     });
     return r;
 }
+// SP3 Testing Aid: Automatically keeps Player 0 special power gauge full (3 bars).
+// Set TFTF_ENABLE_MAX_POWER_TEST to 0 to disable this testing mod and restore normal power accumulation.
+#ifndef TFTF_ENABLE_MAX_POWER_TEST
+#define TFTF_ENABLE_MAX_POWER_TEST 1
+#endif
+
+static void give_p0_max_power(void) {
+#if TFTF_ENABLE_MAX_POWER_TEST
+    if (sp3_xf_any()) return; // Don't interfere while casting SP3
+    if (!g_p0_controller || !obj_ok(g_p0_controller)) return;
+    PROTECT({
+        void* c80 = *(void**)((char*)g_p0_controller + 0x80);
+        if (obj_ok(c80)) {
+            void* spec = *(void**)((char*)c80 + 0x70);
+            if (obj_ok(spec) && g_base) {
+                ((void(*)(void*, float, void*))(g_base + 0xE2FE60))(spec, 99999.0f, NULL);
+            }
+        }
+    });
+#endif
+}
+
 /* SP3BEAT (shipped): per simulation tick, drive the one contiguous alternate-form block for an
    active cinematic special and apply the scheduled body when it changes. */
 void* hook_145(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
     void* r=H[145].orig(a0,a1,a2,a3,a4,a5,a6,a7);
-    PROTECT({ sp3_beat_pump(); });
+    PROTECT({
+        sp3_beat_pump();
+        give_p0_max_power();
+    });
     return r;
 }
 // AIRANGE (slot 146): the shipped AI behavior tree receives the valid Default/Ranged
@@ -4260,6 +4457,11 @@ void* hook_153(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
 }
 void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7){
     int action = (int)(intptr_t)a1;
+    PROTECT({
+        if (obj_ok(self) && *(int32_t*)((uintptr_t)self + 0xF4) == 0) {
+            g_p0_controller = self;
+        }
+    });
     if (action >= 4 && action <= 10) {
         flog("PLAYER_ACTION action=%d on controller=%p (p0=%p, is_p0=%d)",
              action, self, g_p0_controller, (self == g_p0_controller));

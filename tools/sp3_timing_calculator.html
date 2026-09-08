@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SP3 变形时间计算器 (TFTF SP3 Timing Calculator)</title>
+  <title>SP3 变形与武器时间轴计算器 (TFTF SP3 Timing & Weapon Calculator)</title>
   <style>
     :root {
       --bg: #0f172a;
@@ -13,6 +13,8 @@
       --primary-hover: #0ea5e9;
       --accent: #f43f5e;
       --success: #10b981;
+      --amber: #f59e0b;
+      --purple: #a855f7;
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
       --input-bg: #0f172a;
@@ -30,7 +32,7 @@
     }
     .container {
       width: 100%;
-      max-width: 680px;
+      max-width: 860px;
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: 16px;
@@ -38,7 +40,7 @@
       box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
     }
     h1 {
-      font-size: 1.4rem;
+      font-size: 1.45rem;
       font-weight: 700;
       color: var(--text-main);
       display: flex;
@@ -49,9 +51,39 @@
     .subtitle {
       color: var(--text-muted);
       font-size: 0.875rem;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
       line-height: 1.5;
     }
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 12px;
+    }
+    .tab-btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tab-btn:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .tab-btn.active {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: rgba(56, 189, 248, 0.4);
+      color: var(--primary);
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
     .grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -70,6 +102,7 @@
       color: var(--text-muted);
       display: flex;
       justify-content: space-between;
+      align-items: center;
     }
     label span.hint {
       color: #64748b;
@@ -81,7 +114,7 @@
       border-radius: 8px;
       padding: 10px 14px;
       color: #fff;
-      font-size: 0.95rem;
+      font-size: 0.925rem;
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       outline: none;
       transition: all 0.2s;
@@ -100,235 +133,687 @@
     .badge-blue { background: rgba(56, 189, 248, 0.15); color: var(--primary); }
     .badge-rose { background: rgba(244, 63, 94, 0.15); color: var(--accent); }
     .badge-emerald { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+    .badge-amber { background: rgba(245, 158, 11, 0.15); color: var(--amber); }
+    .badge-purple { background: rgba(168, 85, 247, 0.15); color: var(--purple); }
 
+    /* Vehicle card */
+    .veh-card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+    .veh-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 14px;
+      align-items: flex-end;
+    }
+
+    /* Props panel */
+    .props-panel {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+    .props-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .prop-item {
+      margin-bottom: 10px;
+    }
+    .prop-row {
+      display: grid;
+      grid-template-columns: 160px 1fr 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 10px 12px;
+      background: rgba(30, 41, 59, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+    .prop-row:hover, .prop-row.drawer-open {
+      background: rgba(30, 41, 59, 0.85);
+      border-color: rgba(56, 189, 248, 0.3);
+    }
+    .prop-name {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-main);
+      font-family: ui-monospace, monospace;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* Hover action button */
+    .btn-calc-toggle {
+      background: #1e293b;
+      border: 1px solid #475569;
+      color: #94a3b8;
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 0.775rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      opacity: 0.45;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .prop-row:hover .btn-calc-toggle,
+    .veh-row:hover .btn-calc-toggle,
+    .btn-calc-toggle.active {
+      opacity: 1;
+      background: rgba(56, 189, 248, 0.15);
+      border-color: rgba(56, 189, 248, 0.4);
+      color: var(--primary);
+    }
+
+    /* Inline Drawer */
+    .inline-drawer {
+      background: #090e1a;
+      border: 1px solid #334155;
+      border-top: none;
+      border-radius: 0 0 8px 8px;
+      padding: 14px 16px;
+      animation: slideDown 0.15s ease-out;
+    }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .drawer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .drawer-header b {
+      color: var(--primary);
+    }
+    .drawer-close {
+      cursor: pointer;
+      color: #64748b;
+      font-size: 0.775rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .drawer-close:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.1);
+    }
+    .drawer-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr 1fr 90px;
+      gap: 10px;
+      align-items: center;
+    }
+    .drawer-grid input, .drawer-grid select {
+      padding: 7px 10px;
+      font-size: 0.85rem;
+    }
+    .drawer-footer {
+      margin-top: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+      color: #94a3b8;
+    }
+    .drawer-footer span.result-val {
+      color: var(--success);
+      font-weight: 700;
+      font-family: ui-monospace, monospace;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+    button {
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease-in-out;
+      border: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #0f172a;
+    }
+    .btn-primary:hover {
+      background: var(--primary-hover);
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+    }
+    .btn-secondary {
+      background: #334155;
+      color: var(--text-main);
+    }
+    .btn-secondary:hover {
+      background: #475569;
+    }
     .result-box {
       background: #090d16;
-      border: 1px solid #334155;
+      border: 1px solid #1e293b;
       border-radius: 12px;
-      padding: 20px;
-      margin-top: 24px;
+      padding: 16px;
       position: relative;
+      margin-top: 20px;
     }
     .result-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
     .result-title {
       font-size: 0.85rem;
-      font-weight: 600;
+      font-weight: 700;
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
     .output-code {
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      font-size: 1.35rem;
-      font-weight: 700;
-      color: #38bdf8;
-      background: rgba(15, 23, 42, 0.8);
-      border: 1px solid #1e293b;
-      padding: 12px 16px;
-      border-radius: 8px;
-      letter-spacing: 0.02em;
-      margin-bottom: 12px;
-      word-break: break-all;
-    }
-    .stats-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 16px;
-      padding-top: 10px;
-      border-top: 1px solid #1e293b;
-      font-size: 0.825rem;
-      color: var(--text-muted);
-    }
-    .stats-row strong {
-      color: #e2e8f0;
-      font-weight: 600;
-    }
-    .btn-row {
-      display: flex;
-      gap: 10px;
-      margin-top: 16px;
-    }
-    button {
-      cursor: pointer;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 18px;
       font-size: 0.875rem;
-      font-weight: 600;
-      transition: all 0.2s;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-    .btn-primary {
-      background: var(--primary);
-      color: #0f172a;
-      flex: 1;
-    }
-    .btn-primary:hover {
-      background: var(--primary-hover);
-    }
-    .btn-secondary {
-      background: #334155;
-      color: #f1f5f9;
-    }
-    .btn-secondary:hover {
-      background: #475569;
+      color: #38bdf8;
+      background: #020617;
+      padding: 14px;
+      border-radius: 8px;
+      overflow-x: auto;
+      white-space: pre;
+      border: 1px solid rgba(56, 189, 248, 0.15);
+      line-height: 1.5;
     }
     .copy-toast {
       position: absolute;
-      top: 14px;
-      right: 18px;
+      top: 16px;
+      right: 16px;
       background: var(--success);
-      color: #0f172a;
-      font-weight: 700;
+      color: #022c22;
       font-size: 0.75rem;
+      font-weight: 700;
       padding: 4px 10px;
       border-radius: 6px;
       opacity: 0;
-      transform: translateY(-6px);
-      transition: all 0.2s ease;
+      transition: opacity 0.2s ease;
       pointer-events: none;
     }
-    .copy-toast.show {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    .copy-toast.show { opacity: 1; }
     .helper-text {
-      margin-top: 18px;
-      font-size: 0.75rem;
+      margin-top: 16px;
+      font-size: 0.8rem;
       color: #64748b;
-      line-height: 1.5;
+      line-height: 1.6;
+    }
+    .helper-text code {
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.08);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.75rem;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>
-      <span>⚡</span> SP3 变形时间计算器
-    </h1>
-    <p class="subtitle">输入视频时间戳（时:分:秒;帧），自动计算出可直接粘贴进 <code>sp3_timings.json</code> 的单行格式。</p>
+    <h1><span>⏱️</span> SP3 变形与武器时间轴计算器</h1>
+    <div class="subtitle">
+      为 Transformers: Forged to Fight 的大招变形（SP3）计算精确时间轴，支持载具区间与专属武器 (Props) 协同调度。
+    </div>
 
-    <div class="grid">
-      <div class="form-group full-width">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('botTab')">🤖 角色武器配置 (众创模式)</button>
+      <button class="tab-btn" onclick="switchTab('calcTab')">📐 自由时间戳转换</button>
+    </div>
+
+    <!-- TAB 1: BOT PRESET & PROPS -->
+    <div id="botTab" class="tab-content active">
+      <div class="form-group" style="margin-bottom: 16px;">
         <label>
-          <span>1. S3 释放开始时间点 (T₀)</span>
-          <span class="badge badge-blue">基准点 0.0s</span>
+          <span>选择角色模型 (Bot Model)</span>
+          <span id="botPropBadge" class="badge badge-purple">0 个武器部件</span>
         </label>
-        <input type="text" id="t0" placeholder="00:01:02;16" value="00:01:02;16">
+        <select id="botSelect" onchange="onBotSelected()"></select>
       </div>
 
-      <div class="form-group">
-        <label>
-          <span>2. 变身（变载具）时间点 (T₁)</span>
-          <span class="badge badge-rose">变形时刻 On</span>
-        </label>
-        <input type="text" id="t1" placeholder="00:01:04;16" value="00:01:04;16">
+      <!-- VEHICLE CARD -->
+      <div class="veh-card">
+        <div class="veh-row">
+          <div class="form-group">
+            <label>
+              <span>🚗 载具变身开始 (ms)</span>
+              <span class="badge badge-rose">Vehicle On</span>
+            </label>
+            <input type="number" id="botVehOn" value="1000" oninput="updateBotOutput()">
+          </div>
+
+          <div class="form-group">
+            <label>
+              <span>🚗 载具变回人身 (ms)</span>
+              <span class="badge badge-emerald">Vehicle Off</span>
+            </label>
+            <input type="number" id="botVehOff" value="2500" oninput="updateBotOutput()">
+          </div>
+
+          <div>
+            <button type="button" class="btn-calc-toggle" id="btnToggleVeh" onclick="toggleDrawer('_veh')">
+              <span>⏱️</span> 视频时间戳算载具
+            </button>
+          </div>
+        </div>
+
+        <!-- VEHICLE DRAWER -->
+        <div class="inline-drawer" id="drawer__veh" style="display: none; margin-top: 12px; border: 1px solid #334155; border-radius: 8px;">
+          <div class="drawer-header">
+            <span>📐 <b>载具变身 (Vehicle)</b> 视频时间戳换算</span>
+            <span class="drawer-close" onclick="toggleDrawer('_veh')">✕ 收起</span>
+          </div>
+          <div class="drawer-grid">
+            <div class="form-group">
+              <label>S3起点 T₀ <span class="hint">(大招开始)</span></label>
+              <input type="text" id="veh_t0" placeholder="00:01:02;16" value="00:01:02;16" oninput="onDrawerInput('_veh')">
+            </div>
+            <div class="form-group">
+              <label>变车时刻 T₁ <span class="badge badge-rose">On</span></label>
+              <input type="text" id="veh_t1" placeholder="00:01:04;16" oninput="onDrawerInput('_veh')">
+            </div>
+            <div class="form-group">
+              <label>还原时刻 T₂ <span class="badge badge-emerald">Off</span></label>
+              <input type="text" id="veh_t2" placeholder="00:01:05;23" oninput="onDrawerInput('_veh')">
+            </div>
+            <div class="form-group">
+              <label>帧率</label>
+              <select id="veh_fps" onchange="onDrawerInput('_veh')">
+                <option value="30" selected>30 FPS</option>
+                <option value="60">60 FPS</option>
+                <option value="24">24 FPS</option>
+              </select>
+            </div>
+          </div>
+          <div class="drawer-footer">
+            <span>填入后自动同步到上方：<span id="veh_res" class="result-val">请输入 T₁ 和 T₂</span></span>
+            <span style="font-size:0.75rem; color:#64748b;">T₀ 将自动同步给所有武器</span>
+          </div>
+        </div>
       </div>
 
-      <div class="form-group">
-        <label>
-          <span>3. 变回（变人身）时间点 (T₂)</span>
-          <span class="badge badge-emerald">还原时刻 Off</span>
-        </label>
-        <input type="text" id="t2" placeholder="00:01:05;23" value="00:01:05;23">
+      <!-- PROPS LIST -->
+      <div class="props-panel">
+        <div class="props-title">
+          <span>🗡️ 专属武器与附属道具时间轴 (Props)</span>
+          <span class="hint" style="font-size:0.75rem; color:#64748b; font-weight:normal;">(鼠标移动到行右侧点击「⏱️ 换算」即可直接填时间戳)</span>
+        </div>
+        <div id="propsContainer">
+          <div style="color:#64748b; font-size:0.85rem; padding:8px 0;">该角色没有独立的额外外挂武器部件。</div>
+        </div>
       </div>
 
-      <div class="form-group">
-        <label>
-          <span>视频帧率 (FPS)</span>
-          <span class="hint">通常为 30 或 60</span>
-        </label>
-        <select id="fps">
-          <option value="30" selected>30 FPS (常见视频录像)</option>
-          <option value="60">60 FPS (高刷录像)</option>
-          <option value="24">24 FPS (电影标准)</option>
-          <option value="29.97">29.97 FPS (NTSC)</option>
-          <option value="59.94">59.94 FPS</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>
-          <span>时间取整方式</span>
-          <span class="hint">推荐取整到10ms</span>
-        </label>
-        <select id="rounding">
-          <option value="10" selected>十位取整 (例如 3230 ms)</option>
-          <option value="1">精确到毫秒 (例如 3233 ms)</option>
-          <option value="5">五位取整 (例如 3235 ms)</option>
-        </select>
+      <div class="result-box">
+        <div id="botCopyToast" class="copy-toast">已复制到剪贴板 ✓</div>
+        <div class="result-header">
+          <span class="result-title">生成的角色 JSON 代码 (单行紧凑格式，可直接覆盖 sp3_timings.json)</span>
+          <button class="btn-primary" onclick="copyBotJson()">
+            <span>📋</span> 复制整段代码
+          </button>
+        </div>
+        <div class="output-code" id="botOutputCode"></div>
       </div>
     </div>
 
-    <div class="btn-row" style="margin-top: 0; margin-bottom: 16px;">
-      <button class="btn-secondary" onclick="loadExample('arcee')">载入阿尔茜示例</button>
-      <button class="btn-secondary" onclick="loadExample('megatron')">载入威震天示例</button>
-      <button class="btn-secondary" onclick="clearInputs()">清空重填</button>
-    </div>
+    <!-- TAB 2: GENERAL CALCULATOR -->
+    <div id="calcTab" class="tab-content">
+      <div class="grid">
+        <div class="form-group full-width">
+          <label>
+            <span>1. S3 释放开始时间点 (T₀)</span>
+            <span class="badge badge-blue">基准点 0.0s</span>
+          </label>
+          <input type="text" id="t0" placeholder="00:01:02;16" value="00:01:02;16" oninput="calculate()">
+        </div>
 
-    <div class="result-box">
-      <div id="copyToast" class="copy-toast">已复制到剪贴板 ✓</div>
-      <div class="result-header">
-        <span class="result-title">计算结果 (可直接替换)</span>
-      </div>
-      
-      <div class="output-code" id="output">[[2000, 3230]],</div>
-      
-      <div class="stats-row">
-        <div>变车起始：<strong id="statOn">2000 ms</strong> <span id="statOnSec" style="color:#64748b;">(2.00s)</span></div>
-        <div>变回人身：<strong id="statOff">3230 ms</strong> <span id="statOffSec" style="color:#64748b;">(3.23s)</span></div>
-        <div>载具持续：<strong id="statDu">1230 ms</strong> <span id="statDuSec" style="color:#64748b;">(1.23s)</span></div>
+        <div class="form-group">
+          <label>
+            <span>2. 出现时间点 (T₁)</span>
+            <span class="badge badge-rose">显现时刻 On</span>
+          </label>
+          <input type="text" id="t1" placeholder="00:01:04;16" value="00:01:04;16" oninput="calculate()">
+        </div>
+
+        <div class="form-group">
+          <label>
+            <span>3. 消失时间点 (T₂)</span>
+            <span class="badge badge-emerald">收回时刻 Off</span>
+          </label>
+          <input type="text" id="t2" placeholder="00:01:05;23" value="00:01:05;23" oninput="calculate()">
+        </div>
+
+        <div class="form-group">
+          <label>
+            <span>视频帧率 (FPS)</span>
+            <span class="hint">常见为 30 或 60</span>
+          </label>
+          <select id="fps" onchange="calculate()">
+            <option value="30" selected>30 FPS (常见视频录像)</option>
+            <option value="60">60 FPS (高刷录像)</option>
+            <option value="24">24 FPS (电影标准)</option>
+            <option value="29.97">29.97 FPS (NTSC)</option>
+            <option value="59.94">59.94 FPS</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>
+            <span>时间取整方式</span>
+            <span class="hint">推荐取整到10ms</span>
+          </label>
+          <select id="rounding" onchange="calculate()">
+            <option value="10" selected>十位取整 (例如 3230 ms)</option>
+            <option value="1">精确到毫秒 (例如 3233 ms)</option>
+            <option value="5">五位取整 (例如 3235 ms)</option>
+          </select>
+        </div>
       </div>
 
-      <div class="btn-row">
-        <button class="btn-primary" onclick="copyResult()">
-          <span>📋</span> 复制结果: <code id="btnCopyText" style="margin-left: 4px;">[[2000, 3230]],</code>
-        </button>
-        <button class="btn-secondary" onclick="copyFullLine()">
-          <span>复制整行 "intervals"</span>
-        </button>
+      <div class="result-box">
+        <div id="copyToast" class="copy-toast">已复制到剪贴板 ✓</div>
+        <div class="result-header">
+          <span class="result-title">计算结果 (可直接填入时间)</span>
+          <button class="btn-primary" onclick="copyResult()">
+            <span>📋</span> 复制: <code id="btnCopyText" style="margin-left: 4px;">[[2000, 3230]]</code>
+          </button>
+        </div>
+        <div class="output-code" id="output">[[2000, 3230]],</div>
       </div>
     </div>
 
     <div class="helper-text">
-      💡 提示：时间戳支持 <code>00:01:05;23</code>、<code>01:05:23</code>、<code>1:5.23</code> 等多种格式。<br>
-      复制后直接替换 <code>Server/sp3_timings.json</code> 中的 <code>"intervals": [[...]],</code> 即可，随后使用 <code>adb push Server/sp3_timings.json /data/local/tmp/sp3_timings.json</code> 即可免装热更！
+      💡 提示：在角色武器配置器中微调完毕后，直接复制并覆盖 <code>Server/sp3_timings.json</code> 中的对应条目即可。<br>
+      手机上使用 <code>adb push Server/sp3_timings.json /data/local/tmp/sp3_timings.json</code> 即可实现免重启秒级热更新测试！
     </div>
   </div>
 
   <script>
+    var ALL_TIMINGS = {"_default": {"intervals": [[1000, 2500]], "props": {}, "notes": "全局默认变形时间：1.0秒至2.5秒"}, "optimusprime": {"intervals": [[1295, 2330]], "props": {"leftSword": [[0, 0]], "rightSword": [[0, 0]], "gun": [[0, 0]]}, "notes": "擎天柱 - 卡车冲撞"}, "optimusprime_gs": {"intervals": [[1295, 2330]], "props": {"leftSword": [[0, 0]], "rightSword": [[0, 0]], "gun": [[0, 0]]}, "notes": "G1擎天柱 - 卡车冲撞"}, "optimusprime_cin_tf": {"intervals": [[2167, 2633]], "props": {"leftSword": [[0, 0]], "rightSword": [[0, 0]], "gun": [[0, 0]]}, "notes": "电影擎天柱 - 卡车冲撞"}, "optimusprime_sg_voyager2015": {"intervals": [[1295, 2330]], "props": {"rightgun": [[0, 0]], "axe": [[0, 0]], "leftgun": [[0, 0]]}, "notes": "镜像擎天柱 - 卡车冲撞"}, "fte_optimus_gs_t3": {"intervals": [[1295, 2330]], "props": {}, "notes": "新手教学擎天柱 - 卡车冲撞"}, "nemesisprime_gs_voyager2015": {"intervals": [[1295, 2330]], "props": {"rightgun": [[0, 0]], "axe": [[0, 0]], "leftgun": [[0, 0]]}, "notes": "暗黑擎天柱 - 卡车冲撞"}, "starscream": {"intervals": [[2230, 5230]], "props": {}, "notes": "红蜘蛛 - 喷气机俯冲扫射"}, "starscream_gs": {"intervals": [[2230, 5230]], "props": {}, "notes": "G1红蜘蛛 - 喷气机俯冲扫射"}, "fte_stars_gs_t3": {"intervals": [[2230, 5230]], "props": {}, "notes": "新手教学红蜘蛛 - 喷气机俯冲扫射"}, "bumblebee": {"intervals": [[1300, 2900]], "props": {"leftCannon": [[0, 0]], "rightCannon": [[0, 0]], "mask": [[0, 0]]}, "notes": "大黄蜂 - 甲壳虫漂移甩尾"}, "bumblebee_gs_kabam": {"intervals": [[433, 3800]], "props": {"rightgun": [[0, 0]], "leftgun": [[0, 0]]}, "notes": "G1大黄蜂 - 甲壳虫漂移甩尾"}, "bumblebee_cin_dotm": {"intervals": [[1167, 3633]], "props": {"leftCannon": [[0, 0]], "rightCannon": [[0, 0]], "mask": [[0, 0]]}, "notes": "电影大黄蜂 - 跑车漂移甩尾"}, "special_multi_bot": {"intervals": [[800, 1500], [2200, 3400]], "props": {}, "notes": "多次变形区间示例"}, "acidstorm": {"intervals": [[2230, 5230]], "props": {}, "notes": "酸雨系列 - 默认载具/野兽变形区间"}, "arcee": {"intervals": [[2000, 3230]], "props": {"rightPistol": [[0, 0]], "leftPistol": [[0, 0]], "sniperRifle": [[0, 0]], "swordLeft": [[0, 0]], "swordRight": [[0, 0]]}, "notes": "阿尔茜系列 - 默认载具/野兽变形区间"}, "barricade": {"intervals": [[1000, 2500]], "props": {"gun": [[0, 0]], "nunchuck": [[0, 0]]}, "notes": "路障系列 - 默认载具/野兽变形区间"}, "bitstream": {"intervals": [[2230, 5230]], "props": {}, "notes": "比特流系列 - 默认载具/野兽变形区间"}, "blaster": {"intervals": [[1000, 2500]], "props": {"steeljaw": [[0, 0]], "rewind": [[0, 0]], "pistol": [[0, 0]], "opener": [[0, 0]], "speakerLeft": [[0, 0]], "speakerRight": [[0, 0]]}, "notes": "录音机系列 - 默认载具/野兽变形区间"}, "bludgeon": {"intervals": [[1000, 2500]], "props": {"dagger": [[0, 0]], "sword": [[0, 0]], "daggerHandle": [[0, 0]]}, "notes": "雷翼/利刃系列 - 默认载具/野兽变形区间"}, "bonecrusher": {"intervals": [[1000, 2500]], "props": {"claw": [[0, 0]]}, "notes": "碎骨魔系列 - 默认载具/野兽变形区间"}, "cheetor": {"intervals": [[1000, 2500]], "props": {"leftClaw": [[0, 0]], "rightClaw": [[0, 0]], "sickle": [[0, 0]], "jet_fx_null": [[0, 0]]}, "notes": "黄豹勇士系列 - 默认载具/野兽变形区间"}, "chromia": {"intervals": [[2030, 3160]], "props": {"rightPistol": [[0, 0]], "leftPistol": [[0, 0]], "axe": [[0, 0]], "secondaxe": [[0, 0]]}, "notes": "克劳莉娅系列 - 默认载具/野兽变形区间"}, "cliffjumper": {"intervals": [[4250, 6390]], "props": {"leftgun": [[0, 0]], "gasgun": [[0, 0]]}, "notes": "飞过山系列 - 默认载具/野兽变形区间"}, "cyclonus": {"intervals": [[1000, 2500]], "props": {"rightPistol": [[0, 0]], "sword": [[0, 0]], "rifle": [[0, 0]]}, "notes": "狂飙系列 - 默认载具/野兽变形区间"}, "deadend": {"intervals": [[1000, 2500]], "props": {"gun": [[0, 0]], "Baton": [[0, 0]]}, "notes": "封锁系列 - 默认载具/野兽变形区间"}, "dinobot": {"intervals": [[1000, 2500]], "props": {"gun": [[0, 0]], "sword": [[0, 0]]}, "notes": "恐龙勇士系列 - 默认载具/野兽变形区间"}, "dirge": {"intervals": [[930, 6850]], "props": {"chest": [[0, 0]], "armMissile": [[0, 0]], "launchMissile": [[0, 0]], "mainLaunchMissile": [[0, 0]], "smallBombs": [[0, 0]]}, "notes": "挽歌系列 - 默认载具/野兽变形区间"}, "drift": {"intervals": [[1000, 2500]], "props": {"leftsword": [[0, 0]], "leftdagger": [[0, 0]], "rightsword": [[0, 0]], "rightdagger": [[0, 0]]}, "notes": "漂移系列 - 默认载具/野兽变形区间"}, "galvatron": {"intervals": [[1000, 2500]], "props": {"cannon": [[0, 0]]}, "notes": "惊破天系列 - 默认载具/野兽变形区间"}, "grimlock": {"intervals": [[1000, 2500]], "props": {"sword": [[0, 0]], "gun": [[0, 0]]}, "notes": "钢锁系列 - 默认载具/野兽变形区间"}, "grindor": {"intervals": [[1000, 2500]], "props": {"Rotor": [[0, 0]]}, "notes": "歼灭者系列 - 默认载具/野兽变形区间"}, "hotlink": {"intervals": [[2230, 5230]], "props": {}, "notes": "热链系列 - 默认载具/野兽变形区间"}, "hotrod": {"intervals": [[1000, 2500]], "props": {"gunRight": [[0, 0]]}, "notes": "热破系列 - 默认载具/野兽变形区间"}, "hound": {"intervals": [[1000, 2500]], "props": {"beard": [[0, 0]], "belly": [[0, 0]], "shotgunbelly": [[0, 0]], "gatlingback": [[0, 0]], "shotgunright": [[0, 0]], "shotgunleft": [[0, 0]], "gatlingright": [[0, 0]], "cigar": [[0, 0]]}, "notes": "探长系列 - 默认载具/野兽变形区间"}, "ionstorm": {"intervals": [[2230, 5230]], "props": {}, "notes": "离子风暴系列 - 默认载具/野兽变形区间"}, "ironhide": {"intervals": [[4250, 6390]], "props": {"gun": [[0, 0]]}, "notes": "铁皮系列 - 默认载具/野兽变形区间"}, "jazz": {"intervals": [[1000, 2500]], "props": {"gun": [[0, 0]], "Hook": [[0, 0]]}, "notes": "爵士系列 - 默认载具/野兽变形区间"}, "jetfire": {"intervals": [[1000, 2500]], "props": {"gun": [[0, 0]]}, "notes": "天火系列 - 默认载具/野兽变形区间"}, "kickback": {"intervals": [[1000, 2500]], "props": {"wings": [[0, 0]]}, "notes": "反冲系列 - 默认载具/野兽变形区间"}, "megatron": {"intervals": [[1000, 2500]], "props": {"cannon": [[0, 0]], "mace": [[0, 0]], "staticCannon": [[0, 0]]}, "notes": "威震天系列 - 默认载具/野兽变形区间"}, "megatronus": {"intervals": [[6730, 8370]], "props": {}, "notes": "堕落金刚系列 - 默认载具/野兽变形区间"}, "mirage": {"intervals": [[1000, 2500]], "props": {"cube": [[0, 0]], "leftgun": [[0, 0]], "rightgun": [[0, 0]]}, "notes": "幻影系列 - 默认载具/野兽变形区间"}, "mixmaster": {"intervals": [[1000, 2500]], "props": {"sheildgun": [[0, 0]], "armshieldright": [[0, 0]], "armshieldleft": [[0, 0]]}, "notes": "搅拌大师系列 - 默认载具/野兽变形区间"}, "motormaster": {"intervals": [[1000, 2500]], "props": {"gun": [[0, 0]], "sword": [[0, 0]]}, "notes": "汽车大师系列 - 默认载具/野兽变形区间"}, "necrotronus": {"intervals": [[1000, 2500]], "props": {}, "notes": "死灵金刚系列 - 默认载具/野兽变形区间"}, "nemesisprime": {"intervals": [[1295, 2330]], "props": {"rightgun": [[0, 0]], "axe": [[0, 0]], "leftgun": [[0, 0]]}, "notes": "暗黑擎天柱系列 - 默认载具/野兽变形区间"}, "novastorm": {"intervals": [[2230, 5230]], "props": {}, "notes": "新星风暴系列 - 默认载具/野兽变形区间"}, "optimusprimal": {"intervals": [[1000, 2500]], "props": {"leftsword": [[0, 0]], "rightsword": [[0, 0]], "doublesword": [[0, 0]], "shoulderguns": [[0, 0]]}, "notes": "猩猩队长系列 - 默认载具/野兽变形区间"}, "prowl": {"intervals": [[1000, 2500]], "props": {"gun": [[0, 0]], "Baton": [[0, 0]]}, "notes": "警车系列 - 默认载具/野兽变形区间"}, "ramjet": {"intervals": [[930, 6850]], "props": {"chest": [[0, 0]], "armMissile": [[0, 0]], "launchMissile": [[0, 0]], "mainLaunchMissile": [[0, 0]], "smallBombs": [[0, 0]]}, "notes": "冲锋系列 - 默认载具/野兽变形区间"}, "ratchet": {"intervals": [[4250, 6390]], "props": {"rightGun": [[0, 0]], "leftGun": [[0, 0]], "wrench": [[0, 0]]}, "notes": "救护车系列 - 默认载具/野兽变形区间"}, "rhinox": {"intervals": [[1000, 2500]], "props": {"leftgun": [[0, 0]], "rightgun": [[0, 0]]}, "notes": "犀牛勇士系列 - 默认载具/野兽变形区间"}, "rodimusprime": {"intervals": [[1000, 2500]], "props": {"leftPistol": [[0, 0]], "rifle": [[0, 0]], "matrix": [[0, 0]], "chest": [[0, 0]]}, "notes": "补天士系列 - 默认载具/野兽变形区间"}, "scorponok": {"intervals": [[1000, 2500]], "props": {"clawleft": [[0, 0]], "clawright": [[0, 0]], "bee": [[0, 0]], "tail": [[0, 0]]}, "notes": "巨蝎勇士系列 - 默认载具/野兽变形区间"}, "sharkticon": {"intervals": [[1000, 2500]], "props": {"gun": [[0, 0]]}, "notes": "饿鲨系列 - 默认载具/野兽变形区间"}, "shockwave": {"intervals": [[1000, 2500]], "props": {"gun": [[0, 0]]}, "notes": "震荡波系列 - 默认载具/野兽变形区间"}, "sideswipe": {"intervals": [[1000, 2500]], "props": {"gun": [[0, 0]], "rocketBase": [[0, 0]], "rocket": [[0, 0]]}, "notes": "横炮系列 - 默认载具/野兽变形区间"}, "skywarp": {"intervals": [[2230, 5230]], "props": {}, "notes": "惊天雷系列 - 默认载具/野兽变形区间"}, "slipstream": {"intervals": [[2230, 5230]], "props": {}, "notes": "滑流系列 - 默认载具/野兽变形区间"}, "soundblaster": {"intervals": [[1000, 2500]], "props": {"buzzsaw": [[0, 0]], "howlback": [[0, 0]], "cannon": [[0, 0]], "blaster": [[0, 0]], "opener": [[0, 0]]}, "notes": "音爆系列 - 默认载具/野兽变形区间"}, "soundwave": {"intervals": [[1000, 2500]], "props": {"laserbeak": [[0, 0]], "ravage": [[0, 0]], "cannon": [[0, 0]], "blaster": [[0, 0]], "opener": [[0, 0]], "tapeRavage": [[0, 0]]}, "notes": "声波系列 - 默认载具/野兽变形区间"}, "starsaber": {"intervals": [[1000, 2500]], "props": {"sword": [[0, 0]]}, "notes": "皇者之剑史达系列 - 默认载具/野兽变形区间"}, "sunstorm": {"intervals": [[2230, 5230]], "props": {}, "notes": "太阳风暴系列 - 默认载具/野兽变形区间"}, "sunstreaker": {"intervals": [[1000, 2500]], "props": {"gun": [[0, 0]], "sword": [[0, 0]]}, "notes": "飞毛腿系列 - 默认载具/野兽变形区间"}, "tantrum": {"intervals": [[1000, 2500]], "props": {"sword": [[0, 0]]}, "notes": "喧闹/野牛系列 - 默认载具/野兽变形区间"}, "thrust": {"intervals": [[930, 6850]], "props": {"chest": [[0, 0]], "armMissile": [[0, 0]], "launchMissile": [[0, 0]], "mainLaunchMissile": [[0, 0]], "smallBombs": [[0, 0]]}, "notes": "喷气机系列 - 默认载具/野兽变形区间"}, "thundercracker": {"intervals": [[2230, 5230]], "props": {}, "notes": "闹翻天系列 - 默认载具/野兽变形区间"}, "ultramagnus": {"intervals": [[1000, 2500]], "props": {"rightgun": [[0, 0]], "axe": [[0, 0]], "leftgun": [[0, 0]]}, "notes": "通天晓系列 - 默认载具/野兽变形区间"}, "waspinator": {"intervals": [[1000, 2500]], "props": {"gunright": [[0, 0]], "wings": [[0, 0]], "bomb": [[0, 0]]}, "notes": "黄蜂勇士系列 - 默认载具/野兽变形区间"}, "wheeljack": {"intervals": [[1000, 2500]], "props": {"blaster": [[0, 0]], "rightPistol": [[0, 0]], "rifle": [[0, 0]]}, "notes": "千斤顶系列 - 默认载具/野兽变形区间"}, "windblade": {"intervals": [[1000, 2500]], "props": {"Sword": [[0, 0]]}, "notes": "风刃系列 - 默认载具/野兽变形区间"}, "acidstorm_gs_leader2015": {"intervals": [[2230, 5230]], "props": {}, "notes": "酸雨 (Acid Storm) - 雨袭战机"}, "arcee_gs_deluxe2014": {"intervals": [[2000, 3230]], "props": {"rightPistol": [[0, 0]], "leftPistol": [[0, 0]], "sniperRifle": [[0, 0]], "swordLeft": [[0, 0]], "swordRight": [[0, 0]]}, "notes": "阿尔茜 (Arcee) - 摩托车"}, "barricade_cin_dotm": {"intervals": [[2033, 3100]], "props": {"gun": [[0, 0]], "nunchuck": [[0, 0]]}, "notes": "路障 (Barricade) - 警车追逐"}, "bitstream_gs_leader2015": {"intervals": [[2230, 5230]], "props": {}, "notes": "比特流 (Bitstream) - 战机"}, "blaster_gs_leader2016": {"intervals": [[0, 7300]], "props": {"steeljaw": [[0, 0]], "rewind": [[0, 0]], "pistol": [[0, 0]], "opener": [[0, 0]], "speakerLeft": [[0, 0]], "speakerRight": [[0, 0]]}, "notes": "录音机 (Blaster)"}, "bludgeon_gs_rd20": {"intervals": [[3300, 5267]], "props": {"dagger": [[0, 0]], "sword": [[0, 0]], "daggerHandle": [[0, 0]]}, "notes": "雷翼/利刃 (Bludgeon) - 坦克"}, "bonecrusher_cin_rotf": {"intervals": [[2433, 4300]], "props": {"claw": [[0, 0]]}, "notes": "碎骨魔 (Bonecrusher) - 装甲扫雷车"}, "cheetor_bw_transmetal": {"intervals": [[2600, 3800]], "props": {"leftClaw": [[0, 0]], "rightClaw": [[0, 0]], "sickle": [[0, 0]], "jet_fx_null": [[0, 0]]}, "notes": "黄豹勇士 (Cheetor) - 金属猎豹"}, "chromia_gs_kabam": {"intervals": [[4667, 6867]], "props": {"rightPistol": [[0, 0]], "leftPistol": [[0, 0]], "axe": [[0, 0]], "secondaxe": [[0, 0]]}, "notes": "克劳莉娅 (Chromia) - 摩托车"}, "cliffjumper_gs_kabam": {"intervals": [[4250, 6390]], "props": {"leftgun": [[0, 0]], "gasgun": [[0, 0]]}, "notes": "飞过山 (Cliffjumper) - 跑车"}, "cyclonus_gs_uw06": {"intervals": [[1233, 5600]], "props": {"rightPistol": [[0, 0]], "sword": [[0, 0]], "rifle": [[0, 0]]}, "notes": "狂飙 (Cyclonus) - 宇宙战机"}, "deadend_gs_deluxe2015": {"intervals": [[1433, 3533]], "props": {"gun": [[0, 0]], "Baton": [[0, 0]]}, "notes": "封锁 (Dead End) - 保时捷跑车"}, "dinobot_bw_kabam": {"intervals": [[300, 5133]], "props": {"gun": [[0, 0]], "sword": [[0, 0]]}, "notes": "恐龙勇士 (Dinobot) - 迅猛龙"}, "dirge_gs_deluxe2008": {"intervals": [[930, 6850]], "props": {"chest": [[0, 0]], "armMissile": [[0, 0]], "launchMissile": [[0, 0]], "mainLaunchMissile": [[0, 0]], "smallBombs": [[0, 0]]}, "notes": "挽歌 (Dirge) - 战机"}, "drift_cin_aoe": {"intervals": [[530, 1500]], "props": {"leftsword": [[0, 0]], "leftdagger": [[0, 0]], "rightsword": [[0, 0]], "rightdagger": [[0, 0]]}, "notes": "漂移 (Drift) - 跑车/直升机"}, "galvatron_gs_voyager2016": {"intervals": [[5500, 7967]], "props": {"cannon": [[0, 0]]}, "notes": "惊破天 (Galvatron) - 粒子加农炮"}, "grimlock_gs_mp08": {"intervals": [[633, 6467]], "props": {"sword": [[0, 0]], "gun": [[0, 0]]}, "notes": "钢锁 (Grimlock) - 霸王龙"}, "grindor_cin_rotf": {"intervals": [[3200, 5033]], "props": {"Rotor": [[0, 0]]}, "notes": "歼灭者/眩晕 (Grindor) - 重型直升机"}, "hotlink_gs_leader2015": {"intervals": [[2230, 5230]], "props": {}, "notes": "热链 (Hotlink) - 战机"}, "hotrod_cin_tlk": {"intervals": [[600, 2500]], "props": {"gunRight": [[0, 0]]}, "notes": "热破 (Hot Rod) - 超级跑车"}, "hound_cin_tlk": {"intervals": [[333, 2233]], "props": {"beard": [[0, 0]], "belly": [[0, 0]], "shotgunbelly": [[0, 0]], "gatlingback": [[0, 0]], "shotgunright": [[0, 0]], "shotgunleft": [[0, 0]], "gatlingright": [[0, 0]], "cigar": [[0, 0]]}, "notes": "探长 (Hound) - 重型装甲车"}, "ionstorm_gs_leader2015": {"intervals": [[2230, 5230]], "props": {}, "notes": "离子风暴 (Ion Storm) - 战机"}, "ironhide_cin_rotf": {"intervals": [[733, 2667]], "props": {}, "notes": "电影铁皮 (Ironhide) - 重型皮卡"}, "ironhide_gs_kabam": {"intervals": [[4250, 6390]], "props": {"gun": [[0, 0]]}, "notes": "G1铁皮 (Ironhide) - 厢型车/皮卡"}, "jazz_gs_twm05": {"intervals": [[600, 2700]], "props": {"gun": [[0, 0]], "Hook": [[0, 0]]}, "notes": "爵士 (Jazz) - 保时捷赛车"}, "jetfire_gs_leader2014": {"intervals": [[2930, 8830]], "props": {"gun": [[0, 0]]}, "notes": "天火 (Jetfire) - 穿梭超音速战机"}, "kickback_gs_kabam": {"intervals": [[3833, 8500]], "props": {"wings": [[0, 0]]}, "notes": "反冲 (Kickback) - 机械蝗虫"}, "megatron_cin_rotf": {"intervals": [[3033, 4433]], "props": {}, "notes": "电影威震天 (Megatron) - 外星战车/飞船"}, "megatron_gs_leader2015": {"intervals": [[2870, 4860]], "props": {"cannon": [[0, 0]], "mace": [[0, 0]], "staticCannon": [[0, 0]]}, "notes": "G1威震天 (Megatron) - 坦克"}, "megatronus_gs_kabam": {"intervals": [[6730, 8070]], "props": {}, "notes": "堕落金刚/震天尊 (Megatronus) - 远古战车"}, "mirage_gs_deluxe2016": {"intervals": [[4000, 4867]], "props": {"cube": [[0, 0]], "leftgun": [[0, 0]], "rightgun": [[0, 0]]}, "notes": "幻影 (Mirage) - F1赛车"}, "mixmaster_cin_rotf": {"intervals": [[2433, 7000]], "props": {"sheildgun": [[0, 0]], "armshieldright": [[0, 0]], "armshieldleft": [[0, 0]]}, "notes": "搅拌大者(Mixmaster) - 水泥车"}, "motormaster_gs_voyager2015": {"intervals": [[6100, 7067]], "props": {"gun": [[0, 0]], "sword": [[0, 0]]}, "notes": "汽车大师 (Motormaster) - 飞虎队重型卡车"}, "necrotronus_gs_kabam": {"intervals": [[6730, 8070]], "props": {}, "notes": "亡灵天尊 (Necrotronus)-外星战机"}, "novastorm_gs_leader2015": {"intervals": [[2230, 5230]], "props": {}, "notes": "新星风暴 (Nova Storm) - 战机"}, "optimusprimal_bw_mp32": {"intervals": [[2100, 7967]], "props": {"leftsword": [[0, 0]], "rightsword": [[0, 0]], "doublesword": [[0, 0]], "shoulderguns": [[0, 0]]}, "notes": "猩猩队长 (Optimus Primal) - 巨猿"}, "prowl_gs_deluxe2016": {"intervals": [[3333, 4967]], "props": {"gun": [[0, 0]], "Baton": [[0, 0]]}, "notes": "警车 (Prowl) - 巡逻警车"}, "ramjet_gs_deluxe2008": {"intervals": [[930, 6850]], "props": {"chest": [[0, 0]], "armMissile": [[0, 0]], "launchMissile": [[0, 0]], "mainLaunchMissile": [[0, 0]], "smallBombs": [[0, 0]]}, "notes": "冲锋 (Ramjet) - 撞击战机"}, "ratchet_gs_kabam": {"intervals": [[4250, 6390]], "props": {"rightGun": [[0, 0]], "leftGun": [[0, 0]], "wrench": [[0, 0]]}, "notes": "救护车 (Ratchet) - 救护救险车"}, "rhinox_gs_voyager2014": {"intervals": [[600, 1767]], "props": {"leftgun": [[0, 0]], "rightgun": [[0, 0]]}, "notes": "犀牛勇士 (Rhinox) - 机械犀牛"}, "rodimusprime_gs_mp09": {"intervals": [[2167, 2633]], "props": {"leftPistol": [[0, 0]], "rifle": [[0, 0]], "matrix": [[0, 0]], "chest": [[0, 0]]}, "notes": "补天士 (Rodimus Prime) - 跑车/旅行车"}, "scorponok_bw_kabam": {"intervals": [[1100, 6933]], "props": {"clawleft": [[0, 0]], "clawright": [[0, 0]], "bee": [[0, 0]], "tail": [[0, 0]]}, "notes": "巨蝎勇士 (Scorponok) - 机械巨蝎"}, "sharkticon_gs_brawler": {"intervals": [[633, 7767]], "props": {"gun": [[0, 0]]}, "notes": "饿鲨·斗士 (Sharkticon)"}, "sharkticon_gs_demolition": {"intervals": [[633, 7767]], "props": {"gun": [[0, 0]]}, "notes": "饿鲨·爆破 (Sharkticon)"}, "sharkticon_gs_kabam": {"intervals": [[633, 7767]], "props": {"gun": [[0, 0]]}, "notes": "饿鲨-1000 (Sharkticon) - 机械两栖鲨鱼"}, "sharkticon_gs_scout": {"intervals": [[633, 7767]], "props": {"gun": [[0, 0]]}, "notes": "饿鲨·侦察 (Sharkticon)"}, "sharkticon_gs_tactician": {"intervals": [[633, 7767]], "props": {"gun": [[0, 0]], "axe": [[0, 0]]}, "notes": "饿鲨·战术 (Sharkticon)"}, "sharkticon_gs_tech": {"intervals": [[633, 7767]], "props": {"gun": [[0, 0]], "leftgun": [[0, 0]], "rightgun": [[0, 0]], "cube": [[0, 0]]}, "notes": "饿鲨·科技 (Sharkticon)"}, "sharkticon_gs_warrior": {"intervals": [[633, 7767]], "props": {"gun": [[0, 0]], "Sword": [[0, 0]]}, "notes": "饿鲨·战士 (Sharkticon)"}, "shockwave_gs": {"intervals": [[3533, 5800]], "props": {"gun": [[0, 0]]}, "notes": "震荡波 (Shockwave) - 激光重炮"}, "sideswipe_gs": {"intervals": [[700, 2133]], "props": {"gun": [[0, 0]], "rocketBase": [[0, 0]], "rocket": [[0, 0]]}, "notes": "横炮 (Sideswipe) - 兰博基尼跑车"}, "skywarp_gs_leader2015": {"intervals": [[2230, 5230]], "props": {}, "notes": "惊天雷 (Skywarp) - 瞬移战机"}, "slipstream_gs": {"intervals": [[1333, 3667]], "props": {}, "notes": "滑流 (Slipstream) - 隐身战机"}, "soundblaster_gs_mp13b": {"intervals": [[0, 4533]], "props": {"buzzsaw": [[0, 0]], "howlback": [[0, 0]], "cannon": [[0, 0]], "blaster": [[0, 0]], "opener": [[0, 0]]}, "notes": "音板 (Soundblaster)"}, "soundwave_gs": {"intervals": [[0, 4533]], "props": {"laserbeak": [[0, 0]], "ravage": [[0, 0]], "cannon": [[0, 0]], "blaster": [[0, 0]], "opener": [[0, 0]], "tapeRavage": [[0, 0]]}, "notes": "声波 (Soundwave)"}, "starsaber_gs_leader2014": {"intervals": [[2930, 8830]], "props": {"sword": [[0, 0]]}, "notes": "皇者之剑史达 (Star Saber) - 超音速战机"}, "sunstorm_gs_leader2015": {"intervals": [[2230, 5230]], "props": {}, "notes": "太阳风 (Sunstorm) - 战机"}, "sunstreaker_gs_deluxe2008": {"intervals": [[530, 1500]], "props": {"gun": [[0, 0]], "sword": [[0, 0]]}, "notes": "飞毛腿 (Sunstreaker) - 跑车"}, "tantrum_gs_kabam": {"intervals": [[500, 6267]], "props": {"sword": [[0, 0]]}, "notes": "野牛 (Tantrum) - 机械野牛"}, "thrust_gs_deluxe2008": {"intervals": [[930, 6850]], "props": {"chest": [[0, 0]], "armMissile": [[0, 0]], "launchMissile": [[0, 0]], "mainLaunchMissile": [[0, 0]], "smallBombs": [[0, 0]]}, "notes": "喷气机 (Thrust) - VTOL战机"}, "thundercracker_gs_leader2015": {"intervals": [[2230, 5230]], "props": {}, "notes": "闹翻天 (Thundercracker) - 战机"}, "ultramagnus_gs_leader": {"intervals": [[3000, 5800]], "props": {"rightgun": [[0, 0]], "axe": [[0, 0]], "leftgun": [[0, 0]]}, "notes": "通天晓 (Ultra Magnus) - 重型装甲运输卡车"}, "waspinator_gs_deluxe": {"intervals": [[2100, 3300]], "props": {"gunright": [[0, 0]], "wings": [[0, 0]], "bomb": [[0, 0]]}, "notes": "黄蜂勇士 (Waspinator) - 机械黄蜂"}, "wheeljack_gs_mp20": {"intervals": [[733, 2200]], "props": {"blaster": [[0, 0]], "rightPistol": [[0, 0]], "rifle": [[0, 0]]}, "notes": "千斤顶 (Wheeljack) - 赛车"}, "windblade_gs": {"intervals": [[1333, 3667]], "props": {"Sword": [[0, 0]]}, "notes": "风刃 (Windblade) - VTOL超音速喷气机"}, "cliffjump_gs": {"intervals": [[4250, 6390]], "props": {}, "notes": "Group 1"}, "stars_gs": {"intervals": [[2230, 5230]], "props": {}, "notes": "Group 2 Seekers"}, "stars_gs_t3": {"intervals": [[2230, 5230]], "props": {}, "notes": "Group 2 Seekers"}, "optimus": {"intervals": [[1295, 2330]], "props": {"leftsword": [[0, 0]], "rightsword": [[0, 0]], "doublesword": [[0, 0]], "shoulderguns": [[0, 0]]}, "notes": "Group 3 Optimus"}, "optimus_gs": {"intervals": [[1295, 2330]], "props": {"leftsword": [[0, 0]], "rightsword": [[0, 0]], "doublesword": [[0, 0]], "shoulderguns": [[0, 0]]}, "notes": "Group 3 Optimus"}, "optimus_gs_t3": {"intervals": [[1295, 2330]], "props": {"leftsword": [[0, 0]], "rightsword": [[0, 0]], "doublesword": [[0, 0]], "shoulderguns": [[0, 0]]}, "notes": "Group 3 Optimus"}, "optimus_c_tf": {"intervals": [[1295, 2330]], "props": {"leftsword": [[0, 0]], "rightsword": [[0, 0]], "doublesword": [[0, 0]], "shoulderguns": [[0, 0]]}, "notes": "Group 3 Optimus"}};
+    var g_shared_t0 = "00:01:02;16";
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      event.currentTarget.classList.add('active');
+    }
+
+    function initBotSelect() {
+      var sel = document.getElementById('botSelect');
+      sel.innerHTML = '';
+      var keys = Object.keys(ALL_TIMINGS).sort();
+      keys.forEach(k => {
+        var entry = ALL_TIMINGS[k];
+        var opt = document.createElement('option');
+        opt.value = k;
+        var pcount = entry.props ? Object.keys(entry.props).length : 0;
+        var note = entry.notes ? (' - ' + entry.notes.split('-')[0].trim()) : '';
+        opt.textContent = k + note + (pcount > 0 ? (' [' + pcount + ' 武器]') : '');
+        sel.appendChild(opt);
+      });
+
+      if (ALL_TIMINGS['arcee_gs_deluxe2014']) {
+        sel.value = 'arcee_gs_deluxe2014';
+      }
+      onBotSelected();
+    }
+
+    function onBotSelected() {
+      var sel = document.getElementById('botSelect');
+      var botId = sel.value;
+      var data = ALL_TIMINGS[botId] || { intervals: [[1000, 2500]], props: {} };
+
+      var inv0 = (data.intervals && data.intervals[0]) ? data.intervals[0] : [1000, 2500];
+      document.getElementById('botVehOn').value = inv0[0];
+      document.getElementById('botVehOff').value = inv0[1];
+
+      var props = data.props || {};
+      var propKeys = Object.keys(props);
+      document.getElementById('botPropBadge').textContent = propKeys.length + ' 个武器部件';
+
+      var container = document.getElementById('propsContainer');
+      container.innerHTML = '';
+
+      if (propKeys.length === 0) {
+        container.innerHTML = '<div style="color:#64748b; font-size:0.85rem; padding:8px 0;">该角色没有独立的额外外挂武器部件。</div>';
+      } else {
+        propKeys.forEach(pname => {
+          var pvals = props[pname] && props[pname][0] ? props[pname][0] : [0, 0];
+          var safeName = encodeURIComponent(pname).replace(/%/g, '_');
+
+          var item = document.createElement('div');
+          item.className = 'prop-item';
+          item.id = 'item_' + safeName;
+          item.innerHTML = `
+            <div class="prop-row" id="row_${safeName}">
+              <div class="prop-name" title="${pname}">🗡️ ${pname}</div>
+              <div class="form-group">
+                <label>起始 On (ms)</label>
+                <input type="number" class="prop-on-input" data-prop="${pname}" id="on_${safeName}" value="${pvals[0]}" oninput="updateBotOutput()">
+              </div>
+              <div class="form-group">
+                <label>结束 Off (ms)</label>
+                <input type="number" class="prop-off-input" data-prop="${pname}" id="off_${safeName}" value="${pvals[1]}" oninput="updateBotOutput()">
+              </div>
+              <div>
+                <button type="button" class="btn-calc-toggle" id="btn_${safeName}" onclick="toggleDrawer('${safeName}')">
+                  <span>⏱️</span> 换算
+                </button>
+              </div>
+            </div>
+
+            <!-- Inline Calculation Drawer -->
+            <div class="inline-drawer" id="drawer_${safeName}" style="display: none;">
+              <div class="drawer-header">
+                <span>📐 <b>${pname}</b> 视频时间戳换算</span>
+                <span class="drawer-close" onclick="toggleDrawer('${safeName}')">✕ 收起</span>
+              </div>
+              <div class="drawer-grid">
+                <div class="form-group">
+                  <label>S3起点 T₀</label>
+                  <input type="text" id="t0_${safeName}" class="calc-t0-input" placeholder="00:01:02;16" value="${g_shared_t0}" oninput="onDrawerInput('${safeName}', '${pname}')">
+                </div>
+                <div class="form-group">
+                  <label>显现时刻 T₁ <span class="badge badge-rose">On</span></label>
+                  <input type="text" id="t1_${safeName}" placeholder="00:01:05;12" oninput="onDrawerInput('${safeName}', '${pname}')">
+                </div>
+                <div class="form-group">
+                  <label>收回时刻 T₂ <span class="badge badge-emerald">Off</span></label>
+                  <input type="text" id="t2_${safeName}" placeholder="00:01:08;25" oninput="onDrawerInput('${safeName}', '${pname}')">
+                </div>
+                <div class="form-group">
+                  <label>帧率</label>
+                  <select id="fps_${safeName}" onchange="onDrawerInput('${safeName}', '${pname}')">
+                    <option value="30" selected>30 FPS</option>
+                    <option value="60">60 FPS</option>
+                    <option value="24">24 FPS</option>
+                  </select>
+                </div>
+              </div>
+              <div class="drawer-footer">
+                <span>填入后自动同步到上方框：<span id="res_${safeName}" class="result-val">请输入 T₁ 和 T₂</span></span>
+                <span style="font-size:0.75rem; color:#64748b;">修改 T₀ 会自动同步</span>
+              </div>
+            </div>
+          `;
+          container.appendChild(item);
+        });
+      }
+      updateBotOutput();
+    }
+
+    function toggleDrawer(id) {
+      var drawer = document.getElementById('drawer_' + id);
+      var btn = document.getElementById(id === '_veh' ? 'btnToggleVeh' : ('btn_' + id));
+      var row = document.getElementById(id === '_veh' ? null : ('row_' + id));
+      if (!drawer) return;
+
+      if (drawer.style.display === 'none' || drawer.style.display === '') {
+        drawer.style.display = 'block';
+        if (btn) btn.classList.add('active');
+        if (row) row.classList.add('drawer-open');
+        // sync shared t0
+        var t0El = document.getElementById(id === '_veh' ? 'veh_t0' : ('t0_' + id));
+        if (t0El && !t0El.value) t0El.value = g_shared_t0;
+      } else {
+        drawer.style.display = 'none';
+        if (btn) btn.classList.remove('active');
+        if (row) row.classList.remove('drawer-open');
+      }
+    }
+
+    function onDrawerInput(id, pname) {
+      var isVeh = (id === '_veh');
+      var t0El = document.getElementById(isVeh ? 'veh_t0' : ('t0_' + id));
+      var t1El = document.getElementById(isVeh ? 'veh_t1' : ('t1_' + id));
+      var t2El = document.getElementById(isVeh ? 'veh_t2' : ('t2_' + id));
+      var fpsEl = document.getElementById(isVeh ? 'veh_fps' : ('fps_' + id));
+      var resEl = document.getElementById(isVeh ? 'veh_res' : ('res_' + id));
+
+      var fps = parseFloat(fpsEl.value) || 30;
+      var t0_str = t0El.value.trim();
+      var t1_str = t1El.value.trim();
+      var t2_str = t2El.value.trim();
+
+      // Sync shared t0 if changed
+      if (t0_str && t0_str !== g_shared_t0) {
+        g_shared_t0 = t0_str;
+        document.querySelectorAll('.calc-t0-input').forEach(inp => {
+          if (inp !== t0El && !inp.dataset.customized) inp.value = g_shared_t0;
+        });
+        var vehT0 = document.getElementById('veh_t0');
+        if (vehT0 && vehT0 !== t0El) vehT0.value = g_shared_t0;
+      }
+
+      if (!t1_str) {
+        resEl.textContent = '请输入 T₁ 显现时刻';
+        resEl.style.color = '#94a3b8';
+        return;
+      }
+
+      var t0_ms = parseTimestamp(t0_str, fps);
+      var t1_ms = parseTimestamp(t1_str, fps);
+      var t2_ms = t2_str ? parseTimestamp(t2_str, fps) : t1_ms;
+
+      var on_ms = Math.max(0, Math.round((t1_ms - t0_ms) / 10) * 10);
+      var off_ms = Math.max(on_ms, Math.round((t2_ms - t0_ms) / 10) * 10);
+
+      resEl.textContent = `[[${on_ms}, ${off_ms}]] (已填入上方)`;
+      resEl.style.color = '#10b981';
+
+      if (isVeh) {
+        document.getElementById('botVehOn').value = on_ms;
+        document.getElementById('botVehOff').value = off_ms;
+      } else {
+        var onInput = document.getElementById('on_' + id);
+        var offInput = document.getElementById('off_' + id);
+        if (onInput) onInput.value = on_ms;
+        if (offInput) offInput.value = off_ms;
+      }
+      updateBotOutput();
+    }
+
+    function formatBotBlock(botId, vehOn, vehOff, propsObj, notes) {
+      var lines = [];
+      lines.push('  "' + botId + '": {');
+      lines.push('    "intervals": [[' + vehOn + ', ' + vehOff + ']],');
+      var pkeys = Object.keys(propsObj);
+      if (pkeys.length === 0) {
+        lines.push('    "props": {},');
+      } else {
+        lines.push('    "props": {');
+        for (var i = 0; i < pkeys.length; i++) {
+          var pk = pkeys[i];
+          var pv = propsObj[pk];
+          var comma = (i < pkeys.length - 1) ? ',' : '';
+          lines.push('      "' + pk + '": ' + JSON.stringify(pv) + comma);
+        }
+        lines.push('    },');
+      }
+      if (notes) {
+        lines.push('    "notes": ' + JSON.stringify(notes));
+      } else {
+        if (lines[lines.length - 1].endsWith(',')) {
+          lines[lines.length - 1] = lines[lines.length - 1].slice(0, -1);
+        }
+      }
+      lines.push('  },');
+      return lines.join('\n');
+    }
+
+    function updateBotOutput() {
+      var sel = document.getElementById('botSelect');
+      var botId = sel.value;
+      var orig = ALL_TIMINGS[botId] || {};
+
+      var vehOn = parseInt(document.getElementById('botVehOn').value) || 0;
+      var vehOff = parseInt(document.getElementById('botVehOff').value) || 0;
+
+      var propsObj = {};
+      document.querySelectorAll('.prop-on-input').forEach(inp => {
+        var pname = inp.getAttribute('data-prop');
+        var onV = parseInt(inp.value) || 0;
+        var offV = parseInt(document.querySelector(`.prop-off-input[data-prop="${pname}"]`).value) || 0;
+        propsObj[pname] = [[onV, offV]];
+      });
+
+      var code = formatBotBlock(botId, vehOn, vehOff, propsObj, orig.notes);
+      document.getElementById('botOutputCode').textContent = code;
+    }
+
+    function copyBotJson() {
+      var text = document.getElementById('botOutputCode').textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        var toast = document.getElementById('botCopyToast');
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 1500);
+      });
+    }
+
     function parseTimestamp(str, fps) {
       if (!str) return 0;
       str = str.trim();
-      // Replace semicolon, dot with colon for unified splitting
-      var parts = str.replace(/[;.]/g, ':').split(':').map(function(s) { return parseFloat(s) || 0; });
-      
+      var parts = str.replace(/[;.]/g, ':').split(':').map(s => parseFloat(s) || 0);
       var h = 0, m = 0, s = 0, f = 0;
-      if (parts.length === 4) {
-        h = parts[0]; m = parts[1]; s = parts[2]; f = parts[3];
-      } else if (parts.length === 3) {
-        m = parts[0]; s = parts[1]; f = parts[2];
-      } else if (parts.length === 2) {
-        s = parts[0]; f = parts[1];
-      } else if (parts.length === 1) {
-        s = parts[0];
-      }
-      
-      var totalSec = h * 3600 + m * 60 + s + (f / fps);
-      return totalSec * 1000;
+      if (parts.length === 4) { h = parts[0]; m = parts[1]; s = parts[2]; f = parts[3]; }
+      else if (parts.length === 3) { m = parts[0]; s = parts[1]; f = parts[2]; }
+      else if (parts.length === 2) { s = parts[0]; f = parts[1]; }
+      else if (parts.length === 1) { s = parts[0]; }
+      return (h * 3600 + m * 60 + s + (f / fps)) * 1000;
     }
 
     function calculate() {
       var fps = parseFloat(document.getElementById('fps').value) || 30;
       var rounding = parseInt(document.getElementById('rounding').value) || 10;
-      
+
       var t0_ms = parseTimestamp(document.getElementById('t0').value, fps);
       var t1_ms = parseTimestamp(document.getElementById('t1').value, fps);
       var t2_ms = parseTimestamp(document.getElementById('t2').value, fps);
@@ -344,74 +829,24 @@
         off_ms = Math.round(off_ms);
       }
 
-      var duration_ms = off_ms - on_ms;
       var resultText = '[[' + on_ms + ', ' + off_ms + ']],';
-
       document.getElementById('output').textContent = resultText;
-      document.getElementById('btnCopyText').textContent = resultText;
-      
-      document.getElementById('statOn').textContent = on_ms + ' ms';
-      document.getElementById('statOnSec').textContent = '(' + (on_ms / 1000).toFixed(2) + 's)';
-      
-      document.getElementById('statOff').textContent = off_ms + ' ms';
-      document.getElementById('statOffSec').textContent = '(' + (off_ms / 1000).toFixed(2) + 's)';
-      
-      document.getElementById('statDu').textContent = duration_ms + ' ms';
-      document.getElementById('statDuSec').textContent = '(' + (duration_ms / 1000).toFixed(2) + 's)';
-    }
-
-    function showToast(msg) {
-      var toast = document.getElementById('copyToast');
-      toast.textContent = msg || '已复制到剪贴板 ✓';
-      toast.classList.add('show');
-      setTimeout(function() {
-        toast.classList.remove('show');
-      }, 1500);
+      document.getElementById('btnCopyText').textContent = '[[' + on_ms + ', ' + off_ms + ']]';
     }
 
     function copyResult() {
       var text = document.getElementById('output').textContent;
-      navigator.clipboard.writeText(text).then(function() {
-        showToast('已复制: ' + text);
+      navigator.clipboard.writeText(text).then(() => {
+        var toast = document.getElementById('copyToast');
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 1500);
       });
     }
 
-    function copyFullLine() {
-      var text = '    "intervals": ' + document.getElementById('output').textContent;
-      navigator.clipboard.writeText(text).then(function() {
-        showToast('已复制整行 "intervals" ✓');
-      });
-    }
-
-    function loadExample(type) {
-      if (type === 'arcee') {
-        document.getElementById('t0').value = '00:01:02;16';
-        document.getElementById('t1').value = '00:01:04;16';
-        document.getElementById('t2').value = '00:01:05;23';
-        document.getElementById('fps').value = '30';
-      } else if (type === 'megatron') {
-        document.getElementById('t0').value = '00:00:00;00';
-        document.getElementById('t1').value = '00:00:02;26';
-        document.getElementById('t2').value = '00:00:04;26';
-        document.getElementById('fps').value = '30';
-      }
+    window.onload = function() {
+      initBotSelect();
       calculate();
-    }
-
-    function clearInputs() {
-      document.getElementById('t0').value = '';
-      document.getElementById('t1').value = '';
-      document.getElementById('t2').value = '';
-      calculate();
-    }
-
-    // Attach real-time listeners
-    ['t0', 't1', 't2', 'fps', 'rounding'].forEach(function(id) {
-      document.getElementById(id).addEventListener('input', calculate);
-      document.getElementById(id).addEventListener('change', calculate);
-    });
-
-    calculate();
+    };
   </script>
 </body>
 </html>
