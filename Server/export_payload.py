@@ -133,7 +133,7 @@ def _hero_detail(bid: str, rank: int, level: int) -> bytes:
 
 def _move_body(qid: str, start: tuple[int, int], dx: int, dy: int) -> bytes:
     nx, ny = start[0] + dx, start[1] + dy
-    if not (0 <= nx < gamedata.QUEST_DIM and ny == 1):
+    if not gamedata.is_quest_legal_move(qid, start, (nx, ny)):
         dx = dy = 0
     return _envelope(gamedata.build_quest_movedir(qid, dx, dy, start=start))
 
@@ -165,8 +165,9 @@ def _quest_begin_template(qid: str, set_id: str) -> bytes:
     body = _replace_exact(body, b'"strongestHero":"' + lead + b'"', b'"strongestHero":"%LEAD%"', 2,
                           f"quest-begin {qid} lead")
     body = _replace_exact(body, quest, b"%QTEAM%", 2, f"quest-begin {qid} team")
-    for i, sentinel in enumerate(gamedata.ENCOUNTER_SENTINELS):
-        body = _replace_exact(body, sentinel.encode(), f"%EB{i}%".encode(), 8, f"quest-begin {qid} enemy {i}")
+    if qid != "1.1.2":
+        for i, sentinel in enumerate(gamedata.ENCOUNTER_SENTINELS):
+            body = _replace_exact(body, sentinel.encode(), f"%EB{i}%".encode(), 8, f"quest-begin {qid} enemy {i}")
     return body
 
 
@@ -178,9 +179,10 @@ def _movedir_template(qid: str, start: tuple[int, int], dx: int, dy: int) -> byt
                           f"movedir {qid}/{start}/{dx},{dy} lead")
     body = _replace_exact(body, quest, b"%QTEAM%", 1, f"movedir {qid}/{start}/{dx},{dy} quest team")
     body = _replace_exact(body, active, b"%ATEAM%", 1, f"movedir {qid}/{start}/{dx},{dy} active team")
-    for i, sentinel in enumerate(gamedata.ENCOUNTER_SENTINELS):
-        if sentinel.encode() in body:
-            body = _replace_exact(body, sentinel.encode(), f"%EB{i}%".encode(), 5, f"movedir {qid} enemy {i}")
+    if qid != "1.1.2":
+        for i, sentinel in enumerate(gamedata.ENCOUNTER_SENTINELS):
+            if sentinel.encode() in body:
+                body = _replace_exact(body, sentinel.encode(), f"%EB{i}%".encode(), 5, f"movedir {qid} enemy {i}")
     return body
 
 
@@ -192,17 +194,17 @@ def _saved_team_template() -> bytes:
         raise ValueError("fakeserver did not produce saved-team template")
     body = json.dumps(json.loads(body), separators=(",", ":")).encode()
     saved, active, _ = _team_values()
-    if body.count(b"%TID%") != 2:
-        raise ValueError("saved-team template: expected two teamID tokens")
+    if body.count(b"%TID%") != 3:
+        raise ValueError("saved-team template: expected three teamID tokens")
     body = _replace_exact(body, saved, b"%STEAM%", 1, "saved-team saved heroes")
-    return _replace_exact(body, active, b"%ATEAM%", 1, "saved-team active heroes")
+    return _replace_exact(body, active, b"%ATEAM%", 2, "saved-team active heroes")
 
 
 def _user_data_template() -> bytes:
     body = _envelope(gamedata.build_user_data())
     saved, active, _ = _team_values()
     body = _replace_exact(body, saved, b"%STEAM%", 1, "user-data saved heroes")
-    return _replace_exact(body, active, b"%ATEAM%", 1, "user-data active heroes")
+    return _replace_exact(body, active, b"%ATEAM%", 2, "user-data active heroes")
 
 
 def build_entries(listen_port: int = 8080) -> dict[str, bytes]:
@@ -237,21 +239,47 @@ def build_entries(listen_port: int = 8080) -> dict[str, bytes]:
         add(f"POST /quests/quest-detail/{qid}", _envelope(gamedata.build_quest_detail(qid, set_id)))
         add(f"POST /quests/quest-begin/{qid}", _quest_begin_template(qid, set_id))
 
-        add(f"@quest:start:{qid}", b"0 1")
-        legal_lines = []
-        for start in MOVE_STARTS:
-            for dx, dy in MOVE_DIRECTIONS:
-                nx, ny = start[0] + dx, start[1] + dy
-                if 0 <= nx < gamedata.QUEST_DIM and ny == 1:
-                    legal_lines.append((start[0], start[1], dx, dy, nx, ny))
+        if qid == "1.1.2":
+            sx, sy = gamedata.quest_start(qid)
+            add(f"@quest:start:{qid}", f"{sx} {sy}".encode())
+            legal_lines = []
+            walkable = gamedata.quest_walkable_tiles(qid)
+            directions = tuple((dx, dy) for dx in (-1, 0, 1) for dy in (-1, 0, 1))
+            for start in walkable:
                 add(
-                    f"@movedir:{qid}:{start[0]}:{start[1]}:{dx}:{dy}",
-                    _movedir_template(qid, start, dx, dy),
+                    f"@movedir:{qid}:{start[0]}:{start[1]}:0:0",
+                    _movedir_template(qid, start, 0, 0),
                 )
-        moves = b"".join(
-            ("%d %d %d %d %d %d\n" % line).encode() for line in sorted(legal_lines)
-        )
-        add(f"@quest:moves:{qid}", moves)
+                for dx, dy in directions:
+                    if dx == 0 and dy == 0:
+                        continue
+                    nx, ny = start[0] + dx, start[1] + dy
+                    if gamedata.is_quest_legal_move(qid, start, (nx, ny)):
+                        legal_lines.append((start[0], start[1], dx, dy, nx, ny))
+                        add(
+                            f"@movedir:{qid}:{start[0]}:{start[1]}:{dx}:{dy}",
+                            _movedir_template(qid, start, dx, dy),
+                        )
+            moves = b"".join(
+                ("%d %d %d %d %d %d\n" % line).encode() for line in sorted(legal_lines)
+            )
+            add(f"@quest:moves:{qid}", moves)
+        else:
+            add(f"@quest:start:{qid}", b"0 1")
+            legal_lines = []
+            for start in MOVE_STARTS:
+                for dx, dy in MOVE_DIRECTIONS:
+                    nx, ny = start[0] + dx, start[1] + dy
+                    if 0 <= nx < gamedata.QUEST_DIM and ny == 1:
+                        legal_lines.append((start[0], start[1], dx, dy, nx, ny))
+                    add(
+                        f"@movedir:{qid}:{start[0]}:{start[1]}:{dx}:{dy}",
+                        _movedir_template(qid, start, dx, dy),
+                    )
+            moves = b"".join(
+                ("%d %d %d %d %d %d\n" % line).encode() for line in sorted(legal_lines)
+            )
+            add(f"@quest:moves:{qid}", moves)
 
     add("@grouprefresh:missionsconfig", _envelope({"updates": [gamedata.build_missions_autorefresh_update()]}))
     add("@grouprefresh:", _envelope({"updates": []}))

@@ -28,6 +28,7 @@ bundles that already ship in the app, so their art exists; only the numbers were
 missing. See COMPLIANCE.md for the full rationale.
 """
 import json
+import math
 import os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -1084,6 +1085,228 @@ QUEST_ENCOUNTERS = {
     6: (ENCOUNTER_SENTINELS[5], True, "Boss"),
 }
 
+# ---------------------------------------------------------------------------
+# CHALLENGE 1.1.2: Six Paths of Cybertron (六道试炼)
+# 33x33 wheel map with 6 radial paths (60 deg apart) connecting to an outer ring.
+# ---------------------------------------------------------------------------
+CHALLENGE_DIM = 33
+CHALLENGE_CENTER = (16, 16)
+CHALLENGE_R = 14
+
+_CHALLENGE_SPOKE_ANGLES = [0, math.pi/3, 2*math.pi/3, math.pi, 4*math.pi/3, 5*math.pi/3]
+
+_CHALLENGE_SPOKE_ENEMIES = [
+    # 0: Brawler (East, 0 deg) - 12 bots
+    [
+        "sharkticon_gs_brawler",
+        "sunstreaker_gs_deluxe2008",
+        "ironhide_gs_kabam",
+        "hotlink_gs_leader2015",
+        "thundercracker_gs_leader2015",
+        "grindor_cin_rotf",
+        "tantrum_gs_kabam",
+        "optimusprime_cin_tf",
+        "optimusprimal_bw_mp32",
+        "optimusprime_sg_voyager2015",
+        "motormaster_gs_voyager2015",
+        "grimlock_gs_mp08",
+    ],
+    # 1: Scout (NE, 60 deg) - 11 bots
+    [
+        "sharkticon_gs_scout",
+        "barricade_cin_dotm",
+        "kickback_gs_kabam",
+        "slipstream_gs",
+        "thrust_gs_deluxe2008",
+        "prowl_gs_deluxe2016",
+        "jazz_gs_twm05",
+        "sideswipe_gs",
+        "bumblebee_gs_kabam",
+        "windblade_gs",
+        "cheetor_bw_transmetal",
+    ],
+    # 2: Warrior (NW, 120 deg) - 12 bots
+    [
+        "sharkticon_gs_warrior",
+        "bonecrusher_cin_rotf",
+        "dirge_gs_deluxe2008",
+        "sunstorm_gs_leader2015",
+        "hotrod_cin_tlk",
+        "hound_cin_tlk",
+        "chromia_gs_kabam",
+        "arcee_gs_deluxe2014",
+        "necrotronus_gs_kabam",
+        "scorponok_bw_kabam",
+        "bludgeon_gs_rd20",
+        "drift_cin_aoe",
+    ],
+    # 3: Tactician (West, 180 deg) - 10 bots
+    [
+        "sharkticon_gs_tactician",
+        "dinobot_bw_kabam",
+        "cyclonus_gs_uw06",
+        "ionstorm_gs_leader2015",
+        "bumblebee_cin_dotm",
+        "ultramagnus_gs_leader",
+        "rodimusprime_gs_mp09",
+        "starsaber_gs_leader2014",
+        "nemesisprime_gs_voyager2015",
+        "megatron_gs_leader2015",
+    ],
+    # 4: Tech (SW, 240 deg) - 12 bots
+    [
+        "sharkticon_gs_tech",
+        "acidstorm_gs_leader2015",
+        "bitstream_gs_leader2015",
+        "wheeljack_gs_mp20",
+        "ratchet_gs_kabam",
+        "rhinox_gs_voyager2014",
+        "mirage_gs_deluxe2016",
+        "jetfire_gs_leader2014",
+        "blaster_gs_leader2016",
+        "skywarp_gs_leader2015",
+        "soundwave_gs",
+        "shockwave_gs",
+    ],
+    # 5: Demolition (SE, 300 deg) - 12 bots
+    [
+        "sharkticon_gs_demolition",
+        "ramjet_gs_deluxe2008",
+        "mixmaster_cin_rotf",
+        "cliffjumper_gs_kabam",
+        "ironhide_cin_rotf",
+        "deadend_gs_deluxe2015",
+        "waspinator_gs_deluxe",
+        "soundblaster_gs_mp13b",
+        "megatronus_gs_kabam",
+        "novastorm_gs_leader2015",
+        "megatron_cin_rotf",
+        "galvatron_gs_voyager2016",
+    ],
+]
+
+
+def _get_spoke_ray(cx, cy, angle, num_steps):
+    dx, dy = math.cos(angle), math.sin(angle)
+    path = [(cx, cy)]
+    for _ in range(num_steps):
+        px, py = path[-1]
+        best_cand = None
+        best_dist = 1e9
+        for dpx in (-1, 0, 1):
+            for dpy in (-1, 0, 1):
+                if dpx == 0 and dpy == 0:
+                    continue
+                nx, ny = px + dpx, py + dpy
+                if (nx, ny) in path:
+                    continue
+                t = (nx - cx) * dx + (ny - cy) * dy
+                if t <= 0:
+                    continue
+                perp_d = abs((nx - cx) * dy - (ny - cy) * dx)
+                cost = perp_d + abs(t - len(path)) * 0.1
+                if cost < best_dist:
+                    best_dist = cost
+                    best_cand = (nx, ny)
+        path.append(best_cand)
+    return path
+
+
+def _build_challenge_layout():
+    cx, cy = CHALLENGE_CENTER
+    spokes = []
+    for s_idx, theta in enumerate(_CHALLENGE_SPOKE_ANGLES):
+        n_steps = len(_CHALLENGE_SPOKE_ENEMIES[s_idx])
+        spokes.append(_get_spoke_ray(cx, cy, theta, n_steps))
+
+    ring_arcs = []
+    num_arc_steps = 20
+    for i in range(6):
+        th1 = _CHALLENGE_SPOKE_ANGLES[i]
+        th2 = _CHALLENGE_SPOKE_ANGLES[(i + 1) % 6]
+        if th2 < th1:
+            th2 += 2 * math.pi
+        r1 = len(_CHALLENGE_SPOKE_ENEMIES[i])
+        r2 = len(_CHALLENGE_SPOKE_ENEMIES[(i + 1) % 6])
+        end_pt = spokes[(i + 1) % 6][-1]
+
+        arc = [spokes[i][-1]]
+        for s in range(1, num_arc_steps + 1):
+            frac = s / num_arc_steps
+            t = th1 + (th2 - th1) * frac
+            r = r1 + (r2 - r1) * frac
+            target = (round(cx + r * math.cos(t)), round(cy + r * math.sin(t)))
+            while arc[-1] != target:
+                px, py = arc[-1]
+                sx = px + (1 if target[0] > px else (-1 if target[0] < px else 0))
+                sy = py + (1 if target[1] > py else (-1 if target[1] < py else 0))
+                arc.append((sx, sy))
+        while arc[-1] != end_pt:
+            px, py = arc[-1]
+            sx = px + (1 if end_pt[0] > px else (-1 if end_pt[0] < px else 0))
+            sy = py + (1 if end_pt[1] > py else (-1 if end_pt[1] < py else 0))
+            arc.append((sx, sy))
+        ring_arcs.append(arc)
+
+    adjacency = {}
+    def add_edge(u, v):
+        adjacency.setdefault(u, set()).add(v)
+        adjacency.setdefault(v, set()).add(u)
+
+    for sp in spokes:
+        for i in range(len(sp) - 1):
+            add_edge(sp[i], sp[i + 1])
+
+    for arc in ring_arcs:
+        for i in range(len(arc) - 1):
+            add_edge(arc[i], arc[i + 1])
+
+    encounters = {}
+    for s_idx, sp in enumerate(spokes):
+        enemies = _CHALLENGE_SPOKE_ENEMIES[s_idx]
+        for step_idx, coord in enumerate(sp[1:]):
+            bot_id = enemies[step_idx]
+            encounters[coord] = (bot_id, False, f"Trial: {bot_id}")
+
+    walkable = sorted(adjacency.keys())
+    path_data = [
+        {"path": [{"x": r, "y": c} for r, c in sp]} for sp in spokes
+    ] + [
+        {"path": [{"x": r, "y": c} for r, c in arc]} for arc in ring_arcs
+    ]
+
+    return spokes, ring_arcs, adjacency, encounters, walkable, path_data
+
+_CHALLENGE_CACHED = None
+def _get_challenge_data():
+    global _CHALLENGE_CACHED
+    if _CHALLENGE_CACHED is None:
+        _CHALLENGE_CACHED = _build_challenge_layout()
+    return _CHALLENGE_CACHED
+
+def quest_start(qid="1.1.1"):
+    return CHALLENGE_CENTER if qid == "1.1.2" else (0, 1)
+
+def quest_walkable_tiles(qid="1.1.1"):
+    if qid == "1.1.2":
+        _, _, _, _, walkable, _ = _get_challenge_data()
+        return tuple(walkable)
+    return tuple((r, 1) for r in range(QUEST_DIM))
+
+def is_quest_walkable(qid, pos):
+    if qid == "1.1.2":
+        _, _, _, _, walkable, _ = _get_challenge_data()
+        return pos in walkable
+    return 0 <= pos[0] < QUEST_DIM and pos[1] == QUEST_PATH_COL
+
+def is_quest_legal_move(qid, from_pos, to_pos):
+    if qid == "1.1.2":
+        _, _, adjacency, _, _, _ = _get_challenge_data()
+        return to_pos in adjacency.get(from_pos, set())
+    return (0 <= to_pos[0] < QUEST_DIM and to_pos[1] == QUEST_PATH_COL
+            and abs(to_pos[0] - from_pos[0]) == 1 and to_pos[1] == from_pos[1])
+
+
 
 # Live verification showed that changing only quest-begin updates its progression while the
 # board marker and prefight selector retain the active-team data folded from user-data updates.
@@ -1227,7 +1450,8 @@ def build_user_data(team=None):
         # teamSizeMax expanded to 5 as requested
         "userData": {"blueprintsMax": 500, "teamSizeMax": 5, "teamCountMax": 5, "BotDupedTut": {"id": "BotDupedTut", "state": 2, "completed": True, "branch": ""}, "BotDupedTutorial": {"id": "BotDupedTutorial", "state": 2, "completed": True, "branch": ""}, "ForgeBotTut": {"id": "ForgeBotTut", "state": 2, "completed": True, "branch": ""}, "ForgeBotTutorial": {"id": "ForgeBotTutorial", "state": 2, "completed": True, "branch": ""}, "ForgeModTut": {"id": "ForgeModTut", "state": 2, "completed": True, "branch": ""}, "ForgeModTutorial": {"id": "ForgeModTutorial", "state": 2, "completed": True, "branch": ""}, "RankUpTut": {"id": "RankUpTut", "state": 2, "completed": True, "branch": ""}, "RankUpTutorial": {"id": "RankUpTutorial", "state": 2, "completed": True, "branch": ""}, "UpgradeBotsScreen": {"id": "UpgradeBotsScreen", "state": 2, "completed": True, "branch": ""}, "RelicTut": {"id": "RelicTut", "state": 2, "completed": True, "branch": ""}, "RelicsTutorial": {"id": "RelicsTutorial", "state": 2, "completed": True, "branch": ""}, "MasteryPointIntro": {"id": "MasteryPointIntro", "state": 2, "completed": True, "branch": ""}, "MasteriesTutorial": {"id": "MasteriesTutorial", "state": 2, "completed": True, "branch": ""}, "MasteryPointTutorial": {"id": "MasteryPointTutorial", "state": 2, "completed": True, "branch": ""}, "ShieldTutorial": {"id": "ShieldTutorial", "state": 2, "completed": True, "branch": ""}, "AutoFightTutorial": {"id": "AutoFightTutorial", "state": 2, "completed": True, "branch": ""}, "AvoidanceTutorial": {"id": "AvoidanceTutorial", "state": 2, "completed": True, "branch": ""}, "ClassAdvantageTutorial": {"id": "ClassAdvantageTutorial", "state": 2, "completed": True, "branch": ""}, "ClassGateTutorial": {"id": "ClassGateTutorial", "state": 2, "completed": True, "branch": ""}, "LinkNodesTutorial": {"id": "LinkNodesTutorial", "state": 2, "completed": True, "branch": ""}, "RaidsTutorial": {"id": "RaidsTutorial", "state": 2, "completed": True, "branch": ""}, "RaidTutorial": {"id": "RaidTutorial", "state": 2, "completed": True, "branch": ""}, "StashTutorial": {"id": "StashTutorial", "state": 2, "completed": True, "branch": ""}, "TreasuryTutorial": {"id": "TreasuryTutorial", "state": 2, "completed": True, "branch": ""}, "SparksTutorial": {"id": "SparksTutorial", "state": 2, "completed": True, "branch": ""}, "ArenaTutorial": {"id": "ArenaTutorial", "state": 2, "completed": True, "branch": ""}, "AllianceEventsTutorial": {"id": "AllianceEventsTutorial", "state": 2, "completed": True, "branch": ""}, "DailyMissionsTutorial": {"id": "DailyMissionsTutorial", "state": 2, "completed": True, "branch": ""}, "BotPlacementTutorial": {"id": "BotPlacementTutorial", "state": 2, "completed": True, "branch": ""}},
         "updates": {"heroes": heroes + mods + relics, "savedTeams": [build_saved_team(heroes=team)],
-                    "activeTeams": [build_active_team(heroes=team)]},
+                    "activeTeams": [build_active_team("1.1.1-0", heroes=team),
+                                    build_active_team("1.1.2-0", heroes=team)]},
         "deletes": {},
     }
 
@@ -1240,6 +1464,18 @@ def build_quest_summary(mission_id="1.1.1", set_id="story_act1"):
     act = int(parts[0]) if len(parts) > 0 and parts[0].isdigit() else 1
     chapter = int(parts[1]) if len(parts) > 1 and parts[1].isdigit() else 1
     mission = int(parts[2]) if len(parts) > 2 and parts[2].isdigit() else 1
+    if mission_id == "1.1.2":
+        return {
+            "id": mission_id, "setId": set_id, "hash": "h1",
+            "act": act, "chapter": chapter, "mission": mission,
+            "missionIndex": mission, "index": mission,
+            "friendlyName": "六道轮回",
+            "description": "高难轮盘挑战：全职业六芒星轮盘战，敌人血量统一10倍！",
+            "category": "story", "difficulty": "hard",
+            "energyPerTile": 1, "minXpPerTile": 10, "maxXpPerTile": 20,
+            "minHealthPerTile": 100, "maxHealthPerTile": 100,
+            "image": "", "theme": "primordial", "todIndex": 0,
+        }
     return {
         "id": mission_id, "setId": set_id, "hash": "h1",
         "act": act, "chapter": chapter, "mission": mission,
@@ -1264,7 +1500,58 @@ def build_quest_detail(mission_id="1.1.1", set_id="story_act1"):
     }
 
 
+def build_challenge_map(qid="1.1.2"):
+    dim = CHALLENGE_DIM
+    spokes, ring_arcs, adj, encounters, walkable, path_data = _get_challenge_data()
+    grid = []
+    for r in range(dim):
+        row = []
+        for c in range(dim):
+            pt = (r, c)
+            if pt == CHALLENGE_CENTER:
+                neighbors = [{"x": nr, "y": nc} for nr, nc in sorted(adj.get(pt, []))]
+                row.append({
+                    "start": True, "walkable": True, "hidden": False,
+                    "lab": "六道核心 (Nexus Core)",
+                    "links": neighbors, "visibleLinks": neighbors,
+                })
+            elif pt in encounters:
+                key, is_final_boss, label = encounters[pt]
+                neighbors = [{"x": nr, "y": nc} for nr, nc in sorted(adj.get(pt, []))]
+                row.append({
+                    "final": is_final_boss, "walkable": True, "hidden": False,
+                    "lab": label, "links": neighbors, "visibleLinks": neighbors,
+                    "boss": key,
+                    "entities": {
+                        key: build_quest_enemy(key=key, is_final_boss=is_final_boss, rank=5, level=50),
+                    },
+                })
+            elif pt in adj:
+                neighbors = [{"x": nr, "y": nc} for nr, nc in sorted(adj.get(pt, []))]
+                row.append({
+                    "walkable": True, "hidden": False,
+                    "lab": "轮盘通道 (Nexus Ring)",
+                    "links": neighbors, "visibleLinks": neighbors,
+                })
+            else:
+                row.append({"walkable": False, "hidden": True})
+        grid.append(row)
+
+    return {
+        "hash": "qm_%s" % qid, "v": 1, "mapHash": "qm_%s" % qid,
+        "gridDimension": dim,
+        "grid": grid,
+        "walkableCount": len(walkable),
+        "visibleWalkableCount": len(walkable),
+        "pathData": path_data,
+        "overrideZoom": 0,
+    }
+
+
 def build_quest_map(qid="1.1.1"):
+    if qid == "1.1.2":
+        return build_challenge_map(qid)
+    dim = QUEST_DIM
     """The QuestMap object (ActiveQuest.map). Disassembly of base Map.Deserialize
     (@0x14837EC) shows the wire shape precisely:
       - `mapHash`(String), `gridDimension`(Integer): the grid is allocated as a SQUARE
@@ -1374,7 +1661,7 @@ def build_quest_map(qid="1.1.1"):
     }
 
 
-def build_quest_enemy(map_override=None, tod_index=None, key=None, is_final_boss=True):
+def build_quest_enemy(map_override=None, tod_index=None, key=None, is_final_boss=True, rank=1, level=1):
     """An authored STORY BCGEntity in the exact QuestBoss wire schema.
 
     The field names were captured from the live QuestBoss.Deserialize call after the first
@@ -1396,7 +1683,7 @@ def build_quest_enemy(map_override=None, tod_index=None, key=None, is_final_boss
         "parentEntityType": "boss",
         "isFinalBoss": is_final_boss,
         "characters": [key],
-        "rank": 1, "level": 1, "sig_lvl": 0, "flvl": 0,
+        "rank": rank, "level": level, "sig_lvl": 0, "flvl": 0,
         "aiType": 0, "aiString": "default", "aiPer": "default",
         "mapOverride": map_override, "todIndex": tod_index,
     }
@@ -1405,7 +1692,7 @@ def build_quest_enemy(map_override=None, tod_index=None, key=None, is_final_boss
 LOCAL_UID = "1000000000001"   # POST /auth/login result.user.uid (get_LocalUserId)
 
 
-def build_quest_progression(qid="1.1.1", start=(0, 1), team=None):
+def build_quest_progression(qid="1.1.1", start=None, team=None):
     """The per-instance QuestProgression data (the instance dict IS the data passed to
     QuestProgression..ctor @0xCA5684). This is what puts the PLAYER (and thus the camera focus)
     on the board so the tappable nodes become visible/reachable.
@@ -1428,6 +1715,8 @@ def build_quest_progression(qid="1.1.1", start=(0, 1), team=None):
     blueprint ids and each value supplies the quest-local health/rating record. It is not the
     BCGUserActiveTeam `heroes` dictionary: the pre-fight provider builds its selectable HeroData
     from this local QuestUserInfo team."""
+    if start is None:
+        start = quest_start(qid)
     sx, sy = start
     bids = resolve_team(team)
     quest_team = {}
@@ -1450,6 +1739,10 @@ def build_quest_progression(qid="1.1.1", start=(0, 1), team=None):
         "currentPos": {"x": sx, "y": sy},
         "team": quest_team, "points": 0,
     }
+    if qid == "1.1.2":
+        revealed_tiles = [{"x": r, "y": c} for r, c in quest_walkable_tiles(qid)]
+    else:
+        revealed_tiles = [{"x": r, "y": 1} for r in range(3)]
     return {
         "version": 1,
         "currentPos": {"x": sx, "y": sy},
@@ -1457,7 +1750,7 @@ def build_quest_progression(qid="1.1.1", start=(0, 1), team=None):
         "previouslyCleared": [],
         # revealed = List<QuestTileProgressionNode>; each authored as a tile position so the path
         # tiles read as revealed (non-hidden path tiles are visible regardless, but keep it explicit).
-        "revealed": [{"x": r, "y": 1} for r in range(3)],
+        "revealed": revealed_tiles,
         # users keyed by uid string; the local-uid entry becomes the board player (see above).
         "users": {LOCAL_UID: user},
     }
@@ -1518,7 +1811,7 @@ def build_quest_begin(qid="1.1.1", set_id="story_act1", team=None):
     }
 
 
-def build_quest_movedir(qid="1.1.1", offx=1, offy=0, start=(0, 1), team=None):
+def build_quest_movedir(qid="1.1.1", offx=1, offy=0, start=None, team=None):
     """POST /quests/quest-movedir/<qid>-<teamId>/<offX>/<offY> reply. This is what makes the
     player VISIBLY move one tile on the board.
 
@@ -1546,6 +1839,8 @@ def build_quest_movedir(qid="1.1.1", offx=1, offy=0, start=(0, 1), team=None):
     The three literals were resolved live from the running process memory (the il2cpp string-literal
     slots are DOUBLE-indirect: `ldr x8,[slot]; ldr x0,[x8]` -> Il2CppString*): key0="action",
     variant key1="moveto", position keys "x"/"y"."""
+    if start is None:
+        start = quest_start(qid)
     sx, sy = start
     nx, ny = sx + int(offx), sy + int(offy)          # new tile (row, col)
 
@@ -1568,7 +1863,13 @@ def build_quest_movedir(qid="1.1.1", offx=1, offy=0, start=(0, 1), team=None):
     # encounter entity. The name is live-confirmed from QuestActionResult's field trace. This
     # variant is not final-tile-specific: isFinalBoss is its field, so intermediate nodes use
     # the same slot-3 `battle` variant with isFinalBoss false.
-    encounter = QUEST_ENCOUNTERS.get(nx) if ny == QUEST_PATH_COL else None
+    if qid == "1.1.2":
+        _, _, _, encounters, _, _ = _get_challenge_data()
+        encounter = encounters.get((nx, ny))
+        revealed_tiles = [{"x": r, "y": c} for r, c in quest_walkable_tiles(qid)]
+    else:
+        encounter = QUEST_ENCOUNTERS.get(nx) if ny == QUEST_PATH_COL else None
+        revealed_tiles = [{"x": r, "y": 1} for r in range(QUEST_DIM)]
     if encounter is not None:
         key, is_final_boss, _ = encounter
         actions.append({
@@ -1585,7 +1886,7 @@ def build_quest_movedir(qid="1.1.1", offx=1, offy=0, start=(0, 1), team=None):
     # Updated progression: player now on the new tile; old tile cleared/revealed.
     prog = build_quest_progression(qid, start=(nx, ny), team=team)
     prog["cleared"] = [{"x": sx, "y": sy}]
-    prog["revealed"] = [{"x": r, "y": 1} for r in range(QUEST_DIM)]
+    prog["revealed"] = revealed_tiles
     if encounter is not None:
         prog.update({
             "currentBattleId": key,

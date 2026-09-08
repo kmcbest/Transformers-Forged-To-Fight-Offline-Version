@@ -84,6 +84,7 @@ static char g_saved_team[5][64];
 static int g_saved_team_count;
 static int g_connections;
 static int g_started;
+int g_current_is_10x_challenge = 0;
 
 static void logmsg(const char *fmt, ...) {
     va_list ap;
@@ -161,6 +162,46 @@ static int out_template_args(Out *o, const unsigned char *s, size_t n, const Tem
 static int out_template(Out *o, const unsigned char *s, size_t n, const char *a, const char *av, const char *b, const char *bv) {
     TemplateArg args[2]={{a,(const unsigned char*)av,strlen(av)},{b,(const unsigned char*)bv,strlen(bv)}};
     return out_template_args(o,s,n,args,2);
+}
+static int out_hero_detail(Out *o, const unsigned char *s, size_t n, const char *sig, int is_10x) {
+    if (!is_10x) {
+        return out_template(o, s, n, "%SIG%", sig, "", "");
+    }
+    Out tmp = {0};
+    if (!out_template(&tmp, s, n, "%SIG%", sig, "", "")) {
+        free(tmp.p);
+        return 0;
+    }
+    size_t i = 0;
+    while (i < tmp.n) {
+        static const char * const hp_keys[] = {
+            "\"rating_hp\":",
+            "\"max_hp\":",
+            "\"health\":"
+        };
+        int matched = 0;
+        for (int k = 0; k < 3; k++) {
+            size_t kl = strlen(hp_keys[k]);
+            if (i + kl <= tmp.n && !memcmp(tmp.p + i, hp_keys[k], kl)) {
+                if (!out_add(o, tmp.p + i, kl)) { free(tmp.p); return 0; }
+                i += kl;
+                while (i < tmp.n && isdigit(tmp.p[i])) {
+                    if (!out_add(o, &tmp.p[i], 1)) { free(tmp.p); return 0; }
+                    i++;
+                }
+                char zero = '0';
+                if (!out_add(o, &zero, 1)) { free(tmp.p); return 0; }
+                matched = 1;
+                break;
+            }
+        }
+        if (!matched) {
+            if (!out_add(o, &tmp.p[i], 1)) { free(tmp.p); return 0; }
+            i++;
+        }
+    }
+    free(tmp.p);
+    return 1;
 }
 /* The authored dynamic bodies are compact; fakeserver's json.dumps uses its default spaces. */
 static const unsigned char *json_default_spaces(const unsigned char *s, size_t n, Out *o, size_t *outn) {
@@ -336,6 +377,7 @@ static int detect_chinese_language(const char *headers, const char *query) {
 
 static const unsigned char *dynamic(const char *headers, const char *method, const char *p, const char *query, const char *body, size_t bn, Out *o, size_t *outn) {
     char key[256], tid[64]="", bid[64]="", mid[64], qid[64]; const unsigned char *v; size_t n; const char *end=body+bn;
+    if(strstr(p,"/quests/quest-list")) { g_current_is_10x_challenge = 0; }
     /* Language-adaptive getLoginData */
     if(has_suffix(p,"/bcg/getLoginData")) {
         int is_zh = detect_chinese_language(headers, query);
@@ -365,11 +407,12 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
     }
     if(has_suffix(p,"/bcg/getBaseHeroData")) {
         const char *a=strstr(body,"\"heroes\""); const char *arr=a?strchr(a,'['):NULL; const char *q=arr?arr+1:NULL; v=lookup("@herodata:open",&n);if(!v||!out_add(o,v,n))return NULL;
-        int first=1; while(q&&q<end){const char *open=strchr(q,'{'),*close;int depth=0;if(!open||open>=end)break;close=open;do{if(*close=='{')depth++;else if(*close=='}')depth--;close++;}while(close<end&&depth);if(depth)break;char hb[64]="", hk[200], sig[32];int rank=json_int(open,close,"rank",1),level=json_int(open,close,"level",1),sl=json_int(open,close,"sig_lvl",0);if(!rank)rank=1;if(!level)level=1;if(!json_string(open,close,"bid",hb,sizeof hb))json_string(open,close,"character",hb,sizeof hb);snprintf(hk,sizeof hk,"@hero:%s:%d:%d",hb,rank,level);v=lookup(hk,&n);if(!v){snprintf(hk,sizeof hk,"@hero:%s:1:1",hb);v=lookup(hk,&n);}if(!v)v=lookup("@hero:*:1:1",&n);if(v){snprintf(sig,sizeof sig,"%d",sl);if(!first&&!out_add(o,",",1))return NULL;if(!out_template(o,v,n,"%SIG%",sig,"", ""))return NULL;first=0;}q=close;}
+        int first=1; while(q&&q<end){const char *open=strchr(q,'{'),*close;int depth=0;if(!open||open>=end)break;close=open;do{if(*close=='{')depth++;else if(*close=='}')depth--;close++;}while(close<end&&depth);if(depth)break;char hb[64]="", hk[200], sig[32];int rank=json_int(open,close,"rank",1),level=json_int(open,close,"level",1),sl=json_int(open,close,"sig_lvl",0);if(!rank)rank=1;if(!level)level=1;if(!json_string(open,close,"bid",hb,sizeof hb))json_string(open,close,"character",hb,sizeof hb);snprintf(hk,sizeof hk,"@hero:%s:%d:%d",hb,rank,level);v=lookup(hk,&n);if(!v){snprintf(hk,sizeof hk,"@hero:%s:1:1",hb);v=lookup(hk,&n);}if(!v)v=lookup("@hero:*:1:1",&n);if(v){snprintf(sig,sizeof sig,"%d",sl);if(!first&&!out_add(o,",",1))return NULL;int apply_10x=g_current_is_10x_challenge;if(apply_10x){Team tm;if(resolve_team(&tm)){for(int ti=0;ti<tm.count;ti++){if(!strcmp(tm.bid[ti],hb)){apply_10x=0;break;}}}}if(!out_hero_detail(o,v,n,sig,apply_10x))return NULL;first=0;}q=close;}
         v=lookup("@herodata:close",&n);if(!v||!out_add(o,v,n))return NULL; Out compact=*o; o->p=NULL;o->n=o->cap=0; v=json_default_spaces(compact.p,compact.n,o,outn);free(compact.p);return v;
     }
-    if(strstr(p,"/quests/quest-detail/")) { snprintf(mid,sizeof mid,"%.63s",path_last(p));snprintf(key,sizeof key,"%s /quests/quest-detail/%s",method,mid);v=lookup(key,&n);if(!v){snprintf(key,sizeof key,"POST /quests/quest-detail/%s",mid);v=lookup(key,&n);}return v?json_default_spaces(v,n,o,outn):NULL; }
+    if(strstr(p,"/quests/quest-detail/")) { snprintf(mid,sizeof mid,"%.63s",path_last(p));g_current_is_10x_challenge=(strcmp(mid,"1.1.2")==0);snprintf(key,sizeof key,"%s /quests/quest-detail/%s",method,mid);v=lookup(key,&n);if(!v){snprintf(key,sizeof key,"POST /quests/quest-detail/%s",mid);v=lookup(key,&n);}return v?json_default_spaces(v,n,o,outn):NULL; }
     if(strstr(p,"/quests/quest-begin/")) { Team team; Out qteam={0}; TemplateArg args[8];snprintf(qid,sizeof qid,"%.63s",path_last(p));
+        g_current_is_10x_challenge = (strcmp(qid, "1.1.2") == 0);
         int x=0,y=1;store_quest_team(body,end);snprintf(key,sizeof key,"@quest:start:%s",qid);v=lookup(key,&n);if(v)sscanf((const char*)v,"%d %d",&x,&y);
         char e_bid[6][64];
         for(int k=0; k<6; k++) snprintf(e_bid[k], sizeof e_bid[k], "%s", g_enemy_pool[k % ENEMY_POOL_SIZE]);
@@ -407,7 +450,9 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         v=template_spaced(o,v,n,args,8,outn);free(qteam.p);return v;
     }
     if(strstr(p,"/quests/quest-movedir/")) { int dx=1,dy=0,sx=0,sy=1,nx,ny;
-        const char *z=strrchr(p,'/'); const char *yseg=z?z+1:""; const char *z2=z?NULL:NULL; if(z){z2=z-1;while(z2>p&&*z2!='/')z2--; if(*z2=='/')z2++;} if(!z||!z2)return NULL; char xs[32], ys[32], seg[96];snprintf(ys,sizeof ys,"%.31s",yseg);snprintf(xs,sizeof xs,"%.*s",(int)(z-z2),z2); const char *z3=z2-2;while(z3>p&&*z3!='/')z3--;if(*z3=='/')z3++;snprintf(seg,sizeof seg,"%.*s",(int)(z2-z3-1),z3);char *dash=strrchr(seg,'-');if(!dash)return NULL;*dash=0;snprintf(qid,sizeof qid,"%.63s",seg);char *ep;long lx=strtol(xs,&ep,10);if(*ep)lx=1;long ly=strtol(ys,&ep,10);if(*ep){lx=1;ly=0;}dx=(int)lx;dy=(int)ly;
+        const char *z=strrchr(p,'/'); const char *yseg=z?z+1:""; const char *z2=z?NULL:NULL; if(z){z2=z-1;while(z2>p&&*z2!='/')z2--; if(*z2=='/')z2++;} if(!z||!z2)return NULL; char xs[32], ys[32], seg[96];snprintf(ys,sizeof ys,"%.31s",yseg);snprintf(xs,sizeof xs,"%.*s",(int)(z-z2),z2); const char *z3=z2-2;while(z3>p&&*z3!='/')z3--;if(*z3=='/')z3++;snprintf(seg,sizeof seg,"%.*s",(int)(z2-z3-1),z3);char *dash=strrchr(seg,'-');if(!dash)return NULL;*dash=0;snprintf(qid,sizeof qid,"%.63s",seg);
+        g_current_is_10x_challenge = (strcmp(qid, "1.1.2") == 0);
+        char *ep;long lx=strtol(xs,&ep,10);if(*ep)lx=1;long ly=strtol(ys,&ep,10);if(*ep){lx=1;ly=0;}dx=(int)lx;dy=(int)ly;
         char e_bid[6][64];
         for(int k=0; k<6; k++) snprintf(e_bid[k], sizeof e_bid[k], "%s", g_enemy_pool[k % ENEMY_POOL_SIZE]);
         pthread_mutex_lock(&g_pos_lock);int slot=-1;for(int i=0;i<16;i++)if(!strcmp(g_pos[i].qid,qid)){slot=i;break;}if(slot<0)for(int i=0;i<16;i++)if(!g_pos[i].qid[0]){slot=i;snprintf(g_pos[i].qid,sizeof g_pos[i].qid,"%s",qid);break;}

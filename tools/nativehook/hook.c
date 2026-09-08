@@ -2607,6 +2607,10 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
             float atk_f = 2500.0f;
             int pi = 3000;
             calc_enemy_stats_all(id1, 5, 50, &hp_f, &atk_f, &pi);
+            if (g_current_is_10x_challenge) {
+                hp_f *= 10.0f;
+                pi = (int)(hp_f + atk_f) / 20;
+            }
             int32_t hp = (int32_t)hp_f;
             int32_t atk = (int32_t)atk_f;
             g_last_enemy_pi = pi;
@@ -4321,8 +4325,9 @@ void* hook_143(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
 }
 // SP3 Testing Aid: Automatically keeps Player 0 special power gauge full (3 bars).
 // Set TFTF_ENABLE_MAX_POWER_TEST to 0 to disable this testing mod and restore normal power accumulation.
+// Set TFTF_ENABLE_MAX_POWER_TEST to 1 to re-enable continuous full special meter (3 bars).
 #ifndef TFTF_ENABLE_MAX_POWER_TEST
-#define TFTF_ENABLE_MAX_POWER_TEST 1
+#define TFTF_ENABLE_MAX_POWER_TEST 0
 #endif
 
 static void give_p0_max_power(void) {

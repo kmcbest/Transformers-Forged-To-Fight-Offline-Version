@@ -234,7 +234,7 @@ class H(http.server.BaseHTTPRequestHandler):
                 if posted_team:
                     _saved_team = list(posted_team)
                 team = list(_saved_team) if _saved_team else []
-                _quest_positions[qid] = (0, 1)
+                _quest_positions[qid] = gamedata.quest_start(qid) if gamedata is not None else (0, 1)
             if gamedata is not None:
                 result = gamedata.build_quest_begin(qid, set_id, team)
             else:
@@ -254,16 +254,10 @@ class H(http.server.BaseHTTPRequestHandler):
             except Exception:
                 offx_i, offy_i = 1, 0
             with _quest_state_lock:
-                start = _quest_positions.get(qid, (0, 1))
+                start = _quest_positions.get(qid, gamedata.quest_start(qid) if gamedata is not None else (0, 1))
                 team = list(_saved_team) if _saved_team else []
                 candidate = (start[0] + offx_i, start[1] + offy_i)
-                # The authored 1.1.1 map is a vertical path in map coordinates.
-                # Keep this acceptance gate on the same dimensions as build_quest_map:
-                # the wire walk test's second /1/0 move reached (2,1), so a separate
-                # literal here would otherwise be able to clamp a valid authored node.
-                quest_dim = gamedata.QUEST_DIM if gamedata is not None else 3
-                path_col = gamedata.QUEST_PATH_COL if gamedata is not None else 1
-                if 0 <= candidate[0] < quest_dim and candidate[1] == path_col:
+                if gamedata is not None and gamedata.is_quest_legal_move(qid, start, candidate):
                     _quest_positions[qid] = candidate
                 else:
                     offx_i = offy_i = 0
@@ -290,17 +284,20 @@ class H(http.server.BaseHTTPRequestHandler):
                 _saved_team = list(heroes)
             if gamedata is not None:
                 team = gamedata.build_saved_team(team_id, heroes)
-                # The story mission is the only qid this host handler currently starts; mirror
-                # its existing literal so the active-team fold key is "<qid>-<teamID>".
-                active_team = gamedata.build_active_team("1.1.1-%s" % team_id, heroes=heroes)
+                active_teams = [
+                    gamedata.build_active_team("1.1.1-%s" % team_id, heroes=heroes),
+                    gamedata.build_active_team("1.1.2-%s" % team_id, heroes=heroes),
+                ]
             else:
                 team = {"TeamID": team_id, "teamID": team_id, "id": team_id,
                         "TeamHeroes": list(heroes), "heroes": list(heroes)}
-                active_team = {"aid": "1.1.1-%s" % team_id, "type": "PvE",
-                               "modes": ["PvE"],
-                               "heroes": {bid: {"bid": bid} for bid in heroes[:2]},
-                               "expire": 0}
-            result = {"updates": {"savedTeams": [team], "activeTeams": [active_team]},
+                active_teams = [
+                    {"aid": "1.1.1-%s" % team_id, "type": "PvE", "modes": ["PvE"],
+                     "heroes": {bid: {"bid": bid} for bid in heroes[:2]}, "expire": 0},
+                    {"aid": "1.1.2-%s" % team_id, "type": "PvE", "modes": ["PvE"],
+                     "heroes": {bid: {"bid": bid} for bid in heroes[:2]}, "expire": 0},
+                ]
+            result = {"updates": {"savedTeams": [team], "activeTeams": active_teams},
                       "deletes": {}}
             return json.dumps({"error": None, "result": result}).encode()
         return None
