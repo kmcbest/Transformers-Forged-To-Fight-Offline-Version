@@ -38,10 +38,8 @@ static void seg_handler(int sig, siginfo_t* si, void* uc){
         ucontext_t* u = (ucontext_t*)uc;
         uintptr_t pc = (uintptr_t)u->uc_mcontext.pc;
         uintptr_t fa = (uintptr_t)(si ? si->si_addr : 0);
-        if (pc > g_base && pc - g_base < 0x4000000) {
-            __android_log_print(ANDROID_LOG_ERROR, "TFTFHOOK", "FAULT sig=%d pc_rva=0x%lx faultaddr=0x%lx", sig, (long)(pc - g_base), (long)fa);
+        if (pc > g_base && pc - g_base < 0x4000000)
             flog("FAULT sig=%d pc_rva=0x%lx faultaddr=0x%lx", sig, (long)(pc - g_base), (long)fa);
-        }
     }
     struct sigaction* o = (sig==SIGBUS)?&g_oldbus:&g_oldsegv;     // chain to game's handler
     if (o->sa_flags & SA_SIGINFO) { if(o->sa_sigaction) o->sa_sigaction(sig,si,uc); }
@@ -541,7 +539,6 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x103E278, "GETACTQ",            2, 0 }, // 164 QuestDB.GetActiveQuest(category) -> alias Story to PvE / fallback
     { 0xC1FFDC,  "GETACTT",            2, 0 }, // 165 BCGUserData.GetActiveTeam(teamId) -> fallback team
     { 0xCB7E70,  "OPENQPOP",           2, 0 }, // 166 QuestsManager.OpenQuestPopup(category) -> log / ensure quest
-    { 0x9BB514,  "RAISE_EX",           2, 0 }, // 167 il2cpp_codegen_raise_exception -> log caller and stack trace
 };
 #define NH (int)(sizeof(H)/sizeof(H[0]))
 
@@ -4850,44 +4847,6 @@ void* hook_166(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     return r;
 }
 
-void* hook_167(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7) {
-    char ex_cls[128] = {0};
-    char ex_msg[256] = {0};
-    if (a0) {
-        il2cpp_object_class(a0, ex_cls, sizeof(ex_cls));
-        PROTECT({
-            void* msg_str = *(void**)((char*)a0 + 0x18);
-            if (msg_str) read_str(msg_str, ex_msg, sizeof(ex_msg));
-        });
-    }
-    void* caller = __builtin_return_address(0);
-    uintptr_t c_pc = (uintptr_t)caller;
-    uintptr_t c_rva = (c_pc > g_base && c_pc - g_base < 0x4000000) ? (c_pc - g_base) : 0;
-    LOG("!!! EXCEPTION_RAISED: class='%s' msg='%s' caller_rva=0x%lx (pc=%p)",
-        ex_cls, ex_msg, (unsigned long)c_rva, caller);
-
-    // Frame unwinding
-    uintptr_t cur_fp = (uintptr_t)__builtin_frame_address(0);
-    for (int frame = 0; frame < 24 && cur_fp >= 0x100000 && !(cur_fp & 7); frame++) {
-        uintptr_t ret_addr = 0;
-        uintptr_t next_fp = 0;
-        PROTECT({
-            next_fp = *(uintptr_t*)cur_fp;
-            ret_addr = *(uintptr_t*)(cur_fp + 8);
-        });
-        if (!ret_addr) break;
-        if (ret_addr > g_base && ret_addr - g_base < 0x4000000) {
-            LOG("  #%02d pc_rva=0x%lx", frame, (unsigned long)(ret_addr - g_base));
-        } else {
-            LOG("  #%02d pc=%p", frame, (void*)ret_addr);
-        }
-        if (next_fp <= cur_fp || next_fp - cur_fp > 0x100000) break;
-        cur_fp = next_fp;
-    }
-
-    return H[167].orig(a0, a1, a2, a3, a4, a5, a6, a7);
-}
-
 static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hook_7,hook_8,
     hook_9,hook_10,hook_11,hook_12,hook_13,hook_14,hook_15,hook_16,hook_17,hook_18,hook_19,hook_20,hook_21,
     hook_22,hook_23,hook_24,hook_25,hook_26,hook_27,hook_28,hook_29,hook_30,
@@ -4905,8 +4864,7 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     hook_138,hook_139,hook_140,hook_141,hook_142,hook_143,hook_144,
     hook_145,hook_146,hook_147,hook_148,hook_149,hook_150,hook_151,
     hook_152,hook_153,hook_154,hook_155,hook_156,hook_157,hook_158,
-    hook_159,hook_160,hook_161,hook_162,hook_163,hook_164,hook_165,hook_166,
-    hook_167 };
+    hook_159,hook_160,hook_161,hook_162,hook_163,hook_164,hook_165,hook_166 };
 
 static void write_jump(uint8_t* dst, void* target){
     uint32_t* p = (uint32_t*)dst;
