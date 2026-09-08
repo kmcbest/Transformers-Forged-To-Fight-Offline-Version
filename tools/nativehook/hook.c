@@ -3715,12 +3715,25 @@ static int sp3_parse_intervals_from_json(const char* json_str, const char* bot_i
     const char* arr_start = strchr(inv, '[');
     if (!arr_start || arr_start > block_end) return 0;
 
-    // Parse [[on1, off1], [on2, off2]]
+    // Track outer array depth to find where "intervals" ends
+    const char* inv_cur = arr_start + 1;
+    int inv_arr_depth = 1;
+    const char* outer_inv_end = NULL;
+    while (*inv_cur && inv_cur < block_end && inv_arr_depth > 0) {
+        if (*inv_cur == '[') inv_arr_depth++;
+        else if (*inv_cur == ']') {
+            inv_arr_depth--;
+            if (inv_arr_depth == 0) { outer_inv_end = inv_cur; break; }
+        }
+        inv_cur++;
+    }
+
+    // Parse [[on1, off1], [on2, off2]] strictly within [arr_start, outer_inv_end]
     int count = 0;
     const char* cur = arr_start + 1;
-    while (cur && cur < block_end && count < SP3_MAX_INTERVALS) {
+    while (outer_inv_end && cur < outer_inv_end && count < SP3_MAX_INTERVALS) {
         const char* sub_start = strchr(cur, '[');
-        if (!sub_start || sub_start > block_end) break;
+        if (!sub_start || sub_start > outer_inv_end) break;
         int on_val = 0, off_val = 0;
         if (sscanf(sub_start + 1, "%d , %d", &on_val, &off_val) == 2 ||
             sscanf(sub_start + 1, "%d ,%d", &on_val, &off_val) == 2 ||
@@ -3730,7 +3743,7 @@ static int sp3_parse_intervals_from_json(const char* json_str, const char* bot_i
             count++;
         }
         const char* sub_end = strchr(sub_start, ']');
-        if (!sub_end) break;
+        if (!sub_end || sub_end > outer_inv_end) break;
         cur = sub_end + 1;
     }
 

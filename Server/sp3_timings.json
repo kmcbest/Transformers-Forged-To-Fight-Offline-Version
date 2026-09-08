@@ -25,8 +25,8 @@
   "optimusprime_cin_tf": {
     "intervals": [[2167, 2633]],
     "props": {
-      "leftSword": [[0, 0]],
-      "rightSword": [[0, 0]],
+      "leftSword": [[430,1970],[2800,3970]],
+      "rightSword": [[430,1970],[2800,4600]],
       "gun": [[0, 0]]
     },
     "notes": "电影擎天柱 - 卡车冲撞"
@@ -316,8 +316,8 @@
   "megatron": {
     "intervals": [[1000, 2500]],
     "props": {
-      "cannon": [[0, 0]],
-      "mace": [[0, 0]],
+      "cannon": [[0, 2870],[4860, 8000]],
+      "mace": [[30,2900]],
       "staticCannon": [[0, 0]]
     },
     "notes": "威震天系列 - 默认载具/野兽变形区间"
@@ -798,8 +798,8 @@
     "intervals": [[2870, 4860]],
     "props": {
       "cannon": [[0, 0]],
-      "mace": [[0, 0]],
-      "staticCannon": [[0, 0]]
+      "mace": [[30,2900]],
+      "staticCannon": [[0, 2870],[4860, 8000]]
     },
     "notes": "G1威震天 (Megatron) - 坦克"
   },
