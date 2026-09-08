@@ -1,0 +1,1990 @@
+[
+  {
+    "id": "optimusprime",
+    "zh": "擎天柱",
+    "faction": "",
+    "category": "卡车 / 货车",
+    "intervals": [
+      [
+        1295,
+        2330
+      ]
+    ],
+    "note": "擎天柱 - 卡车冲撞",
+    "is_calibrated": true
+  },
+  {
+    "id": "optimusprime_gs",
+    "zh": "G1擎天柱",
+    "faction": "",
+    "category": "卡车 / 货车",
+    "intervals": [
+      [
+        1295,
+        2330
+      ]
+    ],
+    "note": "G1擎天柱 - 卡车冲撞",
+    "is_calibrated": true
+  },
+  {
+    "id": "optimusprime_cin_tf",
+    "zh": "电影擎天柱",
+    "faction": "汽车人",
+    "category": "卡车 / 货车",
+    "intervals": [
+      [
+        1295,
+        2330
+      ]
+    ],
+    "note": "电影擎天柱 - 卡车冲撞",
+    "is_calibrated": true
+  },
+  {
+    "id": "optimusprime_sg_voyager2015",
+    "zh": "倾天柱",
+    "faction": "欺扯人",
+    "category": "卡车 / 货车",
+    "intervals": [
+      [
+        1295,
+        2330
+      ]
+    ],
+    "note": "镜像擎天柱 - 卡车冲撞",
+    "is_calibrated": true
+  },
+  {
+    "id": "fte_optimus_gs_t3",
+    "zh": "G1擎天柱",
+    "faction": "汽车人",
+    "category": "卡车 / 货车",
+    "intervals": [
+      [
+        1295,
+        2330
+      ]
+    ],
+    "note": "新手教学擎天柱 - 卡车冲撞",
+    "is_calibrated": true
+  },
+  {
+    "id": "nemesisprime_gs_voyager2015",
+    "zh": "暗天陨",
+    "faction": "霸天虎",
+    "category": "卡车 / 货车",
+    "intervals": [
+      [
+        1295,
+        2330
+      ]
+    ],
+    "note": "暗黑擎天柱 - 卡车冲撞",
+    "is_calibrated": true
+  },
+  {
+    "id": "starscream",
+    "zh": "红蜘蛛",
+    "faction": "",
+    "category": "战机 / 飞船",
+    "intervals": [
+      [
+        2230,
+        5230
+      ]
+    ],
+    "note": "红蜘蛛 - 喷气机俯冲扫射",
+    "is_calibrated": true
+  },
+  {
+    "id": "starscream_gs",
+    "zh": "G1红蜘蛛",
+    "faction": "",
+    "category": "战机 / 飞船",
+    "intervals": [
+      [
+        2230,
+        5230
+      ]
+    ],
+    "note": "G1红蜘蛛 - 喷气机俯冲扫射",
+    "is_calibrated": true
+  },
+  {
+    "id": "fte_stars_gs_t3",
+    "zh": "红蜘蛛",
+    "faction": "霸天虎",
+    "category": "战机 / 飞船",
+    "intervals": [
+      [
+        2230,
+        5230
+      ]
+    ],
+    "note": "新手教学红蜘蛛 - 喷气机俯冲扫射",
+    "is_calibrated": true
+  },
+  {
+    "id": "bumblebee",
+    "zh": "大黄蜂",
+    "faction": "",
+    "category": "跑车 / 轿车",
+    "intervals": [
+      [
+        1300,
+        2900
+      ]
+    ],
+    "note": "大黄蜂 - 甲壳虫漂移甩尾",
+    "is_calibrated": true
+  },
+  {
+    "id": "bumblebee_gs_kabam",
+    "zh": "小黄蜂",
+    "faction": "汽车人",
+    "category": "跑车 / 轿车",
+    "intervals": [
+      [
+        1300,
+        2900
+      ]
+    ],
+    "note": "G1大黄蜂 - 甲壳虫漂移甩尾",
+    "is_calibrated": true
+  },
+  {
+    "id": "bumblebee_cin_dotm",
+    "zh": "大黄蜂",
+    "faction": "汽车人",
+    "category": "跑车 / 轿车",
+    "intervals": [
+      [
+        1300,
+        2900
+      ]
+    ],
+    "note": "电影大黄蜂 - 跑车漂移甩尾",
+    "is_calibrated": true
+  },
+  {
+    "id": "acidstorm",
+    "zh": "酸雨",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        2230,
+        5230
+      ]
+    ],
+    "note": "酸雨系列 - 默认载具/野兽变形区间",
+    "is_calibrated": true
+  },
+  {
+    "id": "arcee",
+    "zh": "阿尔茜",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        2000,
+        3230
+      ]
+    ],
+    "note": "阿尔茜系列 - 默认载具/野兽变形区间",
+    "is_calibrated": true
+  },
+  {
+    "id": "barricade",
+    "zh": "路障",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "路障系列 - 默认载具/野兽变形区间",
+    "is_calibrated": false
+  },
+  {
+    "id": "bitstream",
+    "zh": "比特流",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        2230,
+        5230
+      ]
+    ],
+    "note": "比特流系列 - 默认载具/野兽变形区间",
+    "is_calibrated": true
+  },
+  {
+    "id": "blaster",
+    "zh": "录音机",
+    "faction": "",
+    "category": "战机 / 飞船",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "录音机系列 - 默认载具/野兽变形区间",
+    "is_calibrated": false
+  },
+  {
+    "id": "bludgeon",
+    "zh": "雷翼/利刃",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "雷翼/利刃系列 - 默认载具/野兽变形区间",
+    "is_calibrated": false
+  },
+  {
+    "id": "bonecrusher",
+    "zh": "碎骨魔",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "碎骨魔系列 - 默认载具/野兽变形区间",
+    "is_calibrated": false
+  },
+  {
+    "id": "cheetor",
+    "zh": "黄豹勇士",
+    "faction": "",
+    "category": "野兽 / 恐龙 / 昆虫",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "黄豹勇士系列 - 默认载具/野兽变形区间",
+    "is_calibrated": false
+  },
+  {
+    "id": "chromia",
+    "zh": "克劳莉娅",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        2030,
+        3160
+      ]
+    ],
+    "note": "克劳莉娅系列 - 默认载具/野兽变形区间",
+    "is_calibrated": true
+  },
+  {
+    "id": "cliffjumper",
+    "zh": "飞过山",
+    "faction": "",
+    "category": "战机 / 飞船",
+    "intervals": [
+      [
+        4250,
+        6390
+      ]
+    ],
+    "note": "飞过山系列 - 默认载具/野兽变形区间",
+    "is_calibrated": true
+  },
+  {
+    "id": "cyclonus",
+    "zh": "狂飙",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "狂飙系列 - 默认载具/野兽变形区间",
+    "is_calibrated": false
+  },
+  {
+    "id": "deadend",
+    "zh": "封锁",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "封锁系列 - 默认载具/野兽变形区间",
+    "is_calibrated": false
+  },
+  {
+    "id": "dinobot",
+    "zh": "恐龙勇士",
+    "faction": "",
+    "category": "野兽 / 恐龙 / 昆虫",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "恐龙勇士系列 - 默认载具/野兽变形区间",
+    "is_calibrated": false
+  },
+  {
+    "id": "dirge",
+    "zh": "挽歌",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        930,
+        6850
+      ]
+    ],
+    "note": "挽歌系列 - 默认载具/野兽变形区间",
+    "is_calibrated": true
+  },
+  {
+    "id": "drift",
+    "zh": "漂移",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "漂移系列 - 默认载具/野兽变形区间",
+    "is_calibrated": false
+  },
+  {
+    "id": "galvatron",
+    "zh": "惊破天",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "惊破天系列 - 默认载具/野兽变形区间",
+    "is_calibrated": false
+  },
+  {
+    "id": "grimlock",
+    "zh": "钢锁",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "钢锁系列 - 默认载具/野兽变形区间",
+    "is_calibrated": false
+  },
+  {
+    "id": "grindor",
+    "zh": "歼灭者",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "歼灭者系列 - 默认载具/野兽变形区间",
+    "is_calibrated": false
+  },
+  {
+    "id": "hotlink",
+    "zh": "热链",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        2230,
+        5230
+      ]
+    ],
+    "note": "热链系列 - 默认载具/野兽变形区间",
+    "is_calibrated": true
+  },
+  {
+    "id": "hotrod",
+    "zh": "热破",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "热破系列 - 默认载具/野兽变形区间",
+    "is_calibrated": false
+  },
+  {
+    "id": "hound",
+    "zh": "探长",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "探长系列 - 默认载具/野兽变形区间",
+    "is_calibrated": false
+  },
+  {
+    "id": "ionstorm",
+    "zh": "离子风暴",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        2230,
+        5230
+      ]
+    ],
+    "note": "离子风暴系列 - 默认载具/野兽变形区间",
+    "is_calibrated": true
+  },
+  {
+    "id": "ironhide",
+    "zh": "铁皮",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        4250,
+        6390
+      ]
+    ],
+    "note": "铁皮系列 - 默认载具/野兽变形区间",
+    "is_calibrated": true
+  },
+  {
+    "id": "jazz",
+    "zh": "爵士",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "爵士系列 - 默认载具/野兽变形区间",
+    "is_calibrated": false
+  },
+  {
+    "id": "jetfire",
+    "zh": "天火",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "天火系列 - 默认载具/野兽变形区间",
+    "is_calibrated": false
+  },
+  {
+    "id": "kickback",
+    "zh": "反冲",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "反冲系列 - 默认载具/野兽变形区间",
+    "is_calibrated": false
+  },
+  {
+    "id": "megatron",
+    "zh": "威震天",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "威震天系列 - 默认载具/野兽变形区间",
+    "is_calibrated": false
+  },
+  {
+    "id": "megatronus",
+    "zh": "堕落金刚",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        6830,
+        8370
+      ]
+    ],
+    "note": "堕落金刚系列 - 默认载具/野兽变形区间",
+    "is_calibrated": true
+  },
+  {
+    "id": "mirage",
+    "zh": "幻影",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "幻影系列 - 默认载具/野兽变形区间",
+    "is_calibrated": false
+  },
+  {
+    "id": "mixmaster",
+    "zh": "搅拌大师",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "搅拌大师系列 - 默认载具/野兽变形区间",
+    "is_calibrated": false
+  },
+  {
+    "id": "motormaster",
+    "zh": "汽车大师",
+    "faction": "",
+    "category": "跑车 / 轿车",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "汽车大师系列 - 默认载具/野兽变形区间",
+    "is_calibrated": false
+  },
+  {
+    "id": "necrotronus",
+    "zh": "死灵金刚",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "死灵金刚系列 - 默认载具/野兽变形区间",
+    "is_calibrated": false
+  },
+  {
+    "id": "nemesisprime",
+    "zh": "暗黑擎天柱",
+    "faction": "",
+    "category": "卡车 / 货车",
+    "intervals": [
+      [
+        1295,
+        2330
+      ]
+    ],
+    "note": "暗黑擎天柱系列 - 默认载具/野兽变形区间",
+    "is_calibrated": true
+  },
+  {
+    "id": "novastorm",
+    "zh": "新星风暴",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        2230,
+        5230
+      ]
+    ],
+    "note": "新星风暴系列 - 默认载具/野兽变形区间",
+    "is_calibrated": true
+  },
+  {
+    "id": "optimusprimal",
+    "zh": "猩猩队长",
+    "faction": "",
+    "category": "野兽 / 恐龙 / 昆虫",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "猩猩队长系列 - 默认载具/野兽变形区间",
+    "is_calibrated": false
+  },
+  {
+    "id": "prowl",
+    "zh": "警车",
+    "faction": "",
+    "category": "跑车 / 轿车",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "警车系列 - 默认载具/野兽变形区间",
+    "is_calibrated": false
+  },
+  {
+    "id": "ramjet",
+    "zh": "冲锋",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        930,
+        6850
+      ]
+    ],
+    "note": "冲锋系列 - 默认载具/野兽变形区间",
+    "is_calibrated": true
+  },
+  {
+    "id": "ratchet",
+    "zh": "救护车",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        4250,
+        6390
+      ]
+    ],
+    "note": "救护车系列 - 默认载具/野兽变形区间",
+    "is_calibrated": true
+  },
+  {
+    "id": "rhinox",
+    "zh": "犀牛勇士",
+    "faction": "",
+    "category": "野兽 / 恐龙 / 昆虫",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "犀牛勇士系列 - 默认载具/野兽变形区间",
+    "is_calibrated": false
+  },
+  {
+    "id": "rodimusprime",
+    "zh": "补天士",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "补天士系列 - 默认载具/野兽变形区间",
+    "is_calibrated": false
+  },
+  {
+    "id": "scorponok",
+    "zh": "巨蝎勇士",
+    "faction": "",
+    "category": "野兽 / 恐龙 / 昆虫",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "巨蝎勇士系列 - 默认载具/野兽变形区间",
+    "is_calibrated": false
+  },
+  {
+    "id": "sharkticon",
+    "zh": "鲨鱼精",
+    "faction": "",
+    "category": "野兽 / 恐龙 / 昆虫",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "鲨鱼精系列 - 默认载具/野兽变形区间",
+    "is_calibrated": false
+  },
+  {
+    "id": "shockwave",
+    "zh": "震荡波",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "震荡波系列 - 默认载具/野兽变形区间",
+    "is_calibrated": false
+  },
+  {
+    "id": "sideswipe",
+    "zh": "横炮",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "横炮系列 - 默认载具/野兽变形区间",
+    "is_calibrated": false
+  },
+  {
+    "id": "skywarp",
+    "zh": "惊天雷",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        2230,
+        5230
+      ]
+    ],
+    "note": "惊天雷系列 - 默认载具/野兽变形区间",
+    "is_calibrated": true
+  },
+  {
+    "id": "slipstream",
+    "zh": "滑流",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        2230,
+        5230
+      ]
+    ],
+    "note": "滑流系列 - 默认载具/野兽变形区间",
+    "is_calibrated": true
+  },
+  {
+    "id": "soundblaster",
+    "zh": "音爆",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "音爆系列 - 默认载具/野兽变形区间",
+    "is_calibrated": false
+  },
+  {
+    "id": "soundwave",
+    "zh": "声波",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "声波系列 - 默认载具/野兽变形区间",
+    "is_calibrated": false
+  },
+  {
+    "id": "starsaber",
+    "zh": "皇者之剑史达",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "皇者之剑史达系列 - 默认载具/野兽变形区间",
+    "is_calibrated": false
+  },
+  {
+    "id": "sunstorm",
+    "zh": "太阳风暴",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        2230,
+        5230
+      ]
+    ],
+    "note": "太阳风暴系列 - 默认载具/野兽变形区间",
+    "is_calibrated": true
+  },
+  {
+    "id": "sunstreaker",
+    "zh": "飞毛腿",
+    "faction": "",
+    "category": "战机 / 飞船",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "飞毛腿系列 - 默认载具/野兽变形区间",
+    "is_calibrated": false
+  },
+  {
+    "id": "tantrum",
+    "zh": "喧闹/野牛",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "喧闹/野牛系列 - 默认载具/野兽变形区间",
+    "is_calibrated": false
+  },
+  {
+    "id": "thrust",
+    "zh": "喷气机",
+    "faction": "",
+    "category": "战机 / 飞船",
+    "intervals": [
+      [
+        930,
+        6850
+      ]
+    ],
+    "note": "喷气机系列 - 默认载具/野兽变形区间",
+    "is_calibrated": true
+  },
+  {
+    "id": "thundercracker",
+    "zh": "闹翻天",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        2230,
+        5230
+      ]
+    ],
+    "note": "闹翻天系列 - 默认载具/野兽变形区间",
+    "is_calibrated": true
+  },
+  {
+    "id": "ultramagnus",
+    "zh": "通天晓",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "通天晓系列 - 默认载具/野兽变形区间",
+    "is_calibrated": false
+  },
+  {
+    "id": "waspinator",
+    "zh": "黄蜂勇士",
+    "faction": "",
+    "category": "野兽 / 恐龙 / 昆虫",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "黄蜂勇士系列 - 默认载具/野兽变形区间",
+    "is_calibrated": false
+  },
+  {
+    "id": "wheeljack",
+    "zh": "千斤顶",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "千斤顶系列 - 默认载具/野兽变形区间",
+    "is_calibrated": false
+  },
+  {
+    "id": "windblade",
+    "zh": "风刃",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "风刃系列 - 默认载具/野兽变形区间",
+    "is_calibrated": false
+  },
+  {
+    "id": "acidstorm_gs_leader2015",
+    "zh": "酸雨",
+    "faction": "霸天虎",
+    "category": "战机 / 飞船",
+    "intervals": [
+      [
+        2230,
+        5230
+      ]
+    ],
+    "note": "酸雨 (Acid Storm) - 雨袭战机",
+    "is_calibrated": true
+  },
+  {
+    "id": "arcee_gs_deluxe2014",
+    "zh": "阿尔茜",
+    "faction": "汽车人",
+    "category": "摩托车",
+    "intervals": [
+      [
+        2000,
+        3230
+      ]
+    ],
+    "note": "阿尔茜 (Arcee) - 摩托车",
+    "is_calibrated": true
+  },
+  {
+    "id": "barricade_cin_dotm",
+    "zh": "路障",
+    "faction": "霸天虎",
+    "category": "跑车 / 轿车",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "路障 (Barricade) - 警车追逐",
+    "is_calibrated": false
+  },
+  {
+    "id": "bitstream_gs_leader2015",
+    "zh": "比特流",
+    "faction": "霸天虎",
+    "category": "战机 / 飞船",
+    "intervals": [
+      [
+        2230,
+        5230
+      ]
+    ],
+    "note": "比特流 (Bitstream) - 战机",
+    "is_calibrated": true
+  },
+  {
+    "id": "blaster_gs_leader2016",
+    "zh": "录音机",
+    "faction": "汽车人",
+    "category": "战机 / 飞船",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "录音机 (Blaster)",
+    "is_calibrated": false
+  },
+  {
+    "id": "bludgeon_gs_rd20",
+    "zh": "雷震",
+    "faction": "霸天虎",
+    "category": "装甲车 / 战车 / 巨炮",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "雷翼/利刃 (Bludgeon) - 坦克",
+    "is_calibrated": false
+  },
+  {
+    "id": "bonecrusher_cin_rotf",
+    "zh": "碎骨魔",
+    "faction": "霸天虎",
+    "category": "装甲车 / 战车 / 巨炮",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "碎骨魔 (Bonecrusher) - 装甲扫雷车",
+    "is_calibrated": false
+  },
+  {
+    "id": "cheetor_bw_transmetal",
+    "zh": "黄豹",
+    "faction": "汽车人",
+    "category": "野兽 / 恐龙 / 昆虫",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "黄豹勇士 (Cheetor) - 金属猎豹",
+    "is_calibrated": false
+  },
+  {
+    "id": "chromia_gs_kabam",
+    "zh": "克劳莉娅",
+    "faction": "汽车人",
+    "category": "摩托车",
+    "intervals": [
+      [
+        2030,
+        3160
+      ]
+    ],
+    "note": "克劳莉娅 (Chromia) - 摩托车",
+    "is_calibrated": true
+  },
+  {
+    "id": "cliffjumper_gs_kabam",
+    "zh": "飞过山",
+    "faction": "汽车人",
+    "category": "战机 / 飞船",
+    "intervals": [
+      [
+        4250,
+        6390
+      ]
+    ],
+    "note": "飞过山 (Cliffjumper) - 跑车",
+    "is_calibrated": true
+  },
+  {
+    "id": "cyclonus_gs_uw06",
+    "zh": "狂飙",
+    "faction": "霸天虎",
+    "category": "战机 / 飞船",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "狂飙 (Cyclonus) - 宇宙战机",
+    "is_calibrated": false
+  },
+  {
+    "id": "deadend_gs_deluxe2015",
+    "zh": "封锁",
+    "faction": "霸天虎",
+    "category": "跑车 / 轿车",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "封锁 (Dead End) - 保时捷跑车",
+    "is_calibrated": false
+  },
+  {
+    "id": "dinobot_bw_kabam",
+    "zh": "恐龙勇士",
+    "faction": "汽车人",
+    "category": "野兽 / 恐龙 / 昆虫",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "恐龙勇士 (Dinobot) - 迅猛龙",
+    "is_calibrated": false
+  },
+  {
+    "id": "dirge_gs_deluxe2008",
+    "zh": "挽歌",
+    "faction": "霸天虎",
+    "category": "战机 / 飞船",
+    "intervals": [
+      [
+        930,
+        6850
+      ]
+    ],
+    "note": "挽歌 (Dirge) - 战机",
+    "is_calibrated": true
+  },
+  {
+    "id": "drift_cin_aoe",
+    "zh": "漂移",
+    "faction": "汽车人",
+    "category": "战机 / 飞船",
+    "intervals": [
+      [
+        530,
+        1500
+      ]
+    ],
+    "note": "漂移 (Drift) - 跑车/直升机",
+    "is_calibrated": true
+  },
+  {
+    "id": "galvatron_gs_voyager2016",
+    "zh": "惊破天",
+    "faction": "霸天虎",
+    "category": "装甲车 / 战车 / 巨炮",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "惊破天 (Galvatron) - 粒子加农炮",
+    "is_calibrated": false
+  },
+  {
+    "id": "grimlock_gs_mp08",
+    "zh": "钢锁",
+    "faction": "汽车人",
+    "category": "其它",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "钢锁 (Grimlock) - 霸王龙",
+    "is_calibrated": false
+  },
+  {
+    "id": "grindor_cin_rotf",
+    "zh": "碾碎器",
+    "faction": "霸天虎",
+    "category": "战机 / 飞船",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "歼灭者/眩晕 (Grindor) - 重型直升机",
+    "is_calibrated": false
+  },
+  {
+    "id": "hotlink_gs_leader2015",
+    "zh": "热链接",
+    "faction": "霸天虎",
+    "category": "战机 / 飞船",
+    "intervals": [
+      [
+        2230,
+        5230
+      ]
+    ],
+    "note": "热链 (Hotlink) - 战机",
+    "is_calibrated": true
+  },
+  {
+    "id": "hotrod_cin_tlk",
+    "zh": "热破",
+    "faction": "汽车人",
+    "category": "跑车 / 轿车",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "热破 (Hot Rod) - 超级跑车",
+    "is_calibrated": false
+  },
+  {
+    "id": "hound_cin_tlk",
+    "zh": "探长",
+    "faction": "汽车人",
+    "category": "装甲车 / 战车 / 巨炮",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "探长 (Hound) - 重型装甲车",
+    "is_calibrated": false
+  },
+  {
+    "id": "ionstorm_gs_leader2015",
+    "zh": "离子风",
+    "faction": "霸天虎",
+    "category": "战机 / 飞船",
+    "intervals": [
+      [
+        2230,
+        5230
+      ]
+    ],
+    "note": "离子风暴 (Ion Storm) - 战机",
+    "is_calibrated": true
+  },
+  {
+    "id": "ironhide_cin_rotf",
+    "zh": "电影铁皮",
+    "faction": "汽车人",
+    "category": "卡车 / 货车",
+    "intervals": [
+      [
+        4250,
+        6390
+      ]
+    ],
+    "note": "电影铁皮 (Ironhide) - 重型皮卡",
+    "is_calibrated": true
+  },
+  {
+    "id": "ironhide_gs_kabam",
+    "zh": "G1铁皮",
+    "faction": "汽车人",
+    "category": "卡车 / 货车",
+    "intervals": [
+      [
+        4250,
+        6390
+      ]
+    ],
+    "note": "G1铁皮 (Ironhide) - 厢型车/皮卡",
+    "is_calibrated": true
+  },
+  {
+    "id": "jazz_gs_twm05",
+    "zh": "爵士",
+    "faction": "汽车人",
+    "category": "其它",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "爵士 (Jazz) - 保时捷赛车",
+    "is_calibrated": false
+  },
+  {
+    "id": "jetfire_gs_leader2014",
+    "zh": "天火",
+    "faction": "汽车人",
+    "category": "战机 / 飞船",
+    "intervals": [
+      [
+        2930,
+        8830
+      ]
+    ],
+    "note": "天火 (Jetfire) - 穿梭超音速战机",
+    "is_calibrated": true
+  },
+  {
+    "id": "kickback_gs_kabam",
+    "zh": "反冲",
+    "faction": "霸天虎",
+    "category": "战机 / 飞船",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "反冲 (Kickback) - 机械蝗虫",
+    "is_calibrated": false
+  },
+  {
+    "id": "megatron_cin_rotf",
+    "zh": "电影威震天",
+    "faction": "霸天虎",
+    "category": "战机 / 飞船",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "电影威震天 (Megatron) - 外星战车/飞船",
+    "is_calibrated": false
+  },
+  {
+    "id": "megatron_gs_leader2015",
+    "zh": "G1威震天",
+    "faction": "霸天虎",
+    "category": "装甲车 / 战车 / 巨炮",
+    "intervals": [
+      [
+        2870,
+        4860
+      ]
+    ],
+    "note": "G1威震天 (Megatron) - 坦克",
+    "is_calibrated": true
+  },
+  {
+    "id": "megatronus_gs_kabam",
+    "zh": "震天尊",
+    "faction": "霸天虎",
+    "category": "其它",
+    "intervals": [
+      [
+        6830,
+        8370
+      ]
+    ],
+    "note": "堕落金刚/震天尊 (Megatronus) - 远古战车",
+    "is_calibrated": true
+  },
+  {
+    "id": "mirage_gs_deluxe2016",
+    "zh": "幻影",
+    "faction": "汽车人",
+    "category": "跑车 / 轿车",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "幻影 (Mirage) - F1赛车",
+    "is_calibrated": false
+  },
+  {
+    "id": "mixmaster_cin_rotf",
+    "zh": "搅拌者",
+    "faction": "霸天虎",
+    "category": "装甲车 / 战车 / 巨炮",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "搅拌大师 (Mixmaster) - 水泥车/重炮",
+    "is_calibrated": false
+  },
+  {
+    "id": "motormaster_gs_voyager2015",
+    "zh": "汽车大师",
+    "faction": "霸天虎",
+    "category": "战机 / 飞船",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "汽车大师 (Motormaster) - 飞虎队重型卡车",
+    "is_calibrated": false
+  },
+  {
+    "id": "necrotronus_gs_kabam",
+    "zh": "亡灵天尊",
+    "faction": "霸天虎",
+    "category": "其它",
+    "intervals": [
+      [
+        6830,
+        8370
+      ]
+    ],
+    "note": "死灵金刚 (Necrotronus)",
+    "is_calibrated": true
+  },
+  {
+    "id": "novastorm_gs_leader2015",
+    "zh": "新星风",
+    "faction": "霸天虎",
+    "category": "战机 / 飞船",
+    "intervals": [
+      [
+        2230,
+        5230
+      ]
+    ],
+    "note": "新星风暴 (Nova Storm) - 战机",
+    "is_calibrated": true
+  },
+  {
+    "id": "optimusprimal_bw_mp32",
+    "zh": "猩猩队长",
+    "faction": "汽车人",
+    "category": "野兽 / 恐龙 / 昆虫",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "猩猩队长 (Optimus Primal) - 巨猿",
+    "is_calibrated": false
+  },
+  {
+    "id": "prowl_gs_deluxe2016",
+    "zh": "警车",
+    "faction": "汽车人",
+    "category": "跑车 / 轿车",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "警车 (Prowl) - 巡逻警车",
+    "is_calibrated": false
+  },
+  {
+    "id": "ramjet_gs_deluxe2008",
+    "zh": "喷气机",
+    "faction": "霸天虎",
+    "category": "战机 / 飞船",
+    "intervals": [
+      [
+        930,
+        6850
+      ]
+    ],
+    "note": "冲锋 (Ramjet) - 撞击战机",
+    "is_calibrated": true
+  },
+  {
+    "id": "ratchet_gs_kabam",
+    "zh": "救护车",
+    "faction": "汽车人",
+    "category": "其它",
+    "intervals": [
+      [
+        4250,
+        6390
+      ]
+    ],
+    "note": "救护车 (Ratchet) - 救护救险车",
+    "is_calibrated": true
+  },
+  {
+    "id": "rhinox_gs_voyager2014",
+    "zh": "犀牛",
+    "faction": "汽车人",
+    "category": "战机 / 飞船",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "犀牛勇士 (Rhinox) - 机械犀牛",
+    "is_calibrated": false
+  },
+  {
+    "id": "rodimusprime_gs_mp09",
+    "zh": "补天士",
+    "faction": "汽车人",
+    "category": "跑车 / 轿车",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "补天士 (Rodimus Prime) - 跑车/旅行车",
+    "is_calibrated": false
+  },
+  {
+    "id": "scorponok_bw_kabam",
+    "zh": "巨蝎勇士",
+    "faction": "霸天虎",
+    "category": "战机 / 飞船",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "巨蝎勇士 (Scorponok) - 机械巨蝎",
+    "is_calibrated": false
+  },
+  {
+    "id": "sharkticon_gs_brawler",
+    "zh": "饿鲨",
+    "faction": "杂兵 (Sharkticon)",
+    "category": "野兽 / 恐龙 / 昆虫",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "鲨鱼精·格斗 (Sharkticon)",
+    "is_calibrated": false
+  },
+  {
+    "id": "sharkticon_gs_demolition",
+    "zh": "饿鲨",
+    "faction": "杂兵 (Sharkticon)",
+    "category": "野兽 / 恐龙 / 昆虫",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "鲨鱼精·爆破 (Sharkticon)",
+    "is_calibrated": false
+  },
+  {
+    "id": "sharkticon_gs_kabam",
+    "zh": "饿鲨1000",
+    "faction": "杂兵 (Sharkticon)",
+    "category": "战机 / 飞船",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "鲨鱼精 (Sharkticon) - 机械两栖鲨鱼",
+    "is_calibrated": false
+  },
+  {
+    "id": "sharkticon_gs_scout",
+    "zh": "饿鲨",
+    "faction": "杂兵 (Sharkticon)",
+    "category": "野兽 / 恐龙 / 昆虫",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "鲨鱼精·侦察 (Sharkticon)",
+    "is_calibrated": false
+  },
+  {
+    "id": "sharkticon_gs_tactician",
+    "zh": "饿鲨",
+    "faction": "杂兵 (Sharkticon)",
+    "category": "野兽 / 恐龙 / 昆虫",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "鲨鱼精·战术 (Sharkticon)",
+    "is_calibrated": false
+  },
+  {
+    "id": "sharkticon_gs_tech",
+    "zh": "饿鲨",
+    "faction": "杂兵 (Sharkticon)",
+    "category": "野兽 / 恐龙 / 昆虫",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "鲨鱼精·科技 (Sharkticon)",
+    "is_calibrated": false
+  },
+  {
+    "id": "sharkticon_gs_warrior",
+    "zh": "饿鲨",
+    "faction": "杂兵 (Sharkticon)",
+    "category": "野兽 / 恐龙 / 昆虫",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "鲨鱼精·勇士 (Sharkticon)",
+    "is_calibrated": false
+  },
+  {
+    "id": "shockwave_gs",
+    "zh": "震荡波",
+    "faction": "霸天虎",
+    "category": "其它",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "震荡波 (Shockwave) - 激光重炮",
+    "is_calibrated": false
+  },
+  {
+    "id": "sideswipe_gs",
+    "zh": "横炮",
+    "faction": "汽车人",
+    "category": "跑车 / 轿车",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "横炮 (Sideswipe) - 兰博基尼跑车",
+    "is_calibrated": false
+  },
+  {
+    "id": "skywarp_gs_leader2015",
+    "zh": "闹翻天",
+    "faction": "霸天虎",
+    "category": "战机 / 飞船",
+    "intervals": [
+      [
+        2230,
+        5230
+      ]
+    ],
+    "note": "惊天雷 (Skywarp) - 瞬移战机",
+    "is_calibrated": true
+  },
+  {
+    "id": "slipstream_gs",
+    "zh": "滑流",
+    "faction": "霸天虎",
+    "category": "战机 / 飞船",
+    "intervals": [
+      [
+        2230,
+        5230
+      ]
+    ],
+    "note": "滑流 (Slipstream) - 隐身战机",
+    "is_calibrated": true
+  },
+  {
+    "id": "soundblaster_gs_mp13b",
+    "zh": "音板",
+    "faction": "霸天虎",
+    "category": "其它",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "音爆 (Soundblaster)",
+    "is_calibrated": false
+  },
+  {
+    "id": "soundwave_gs",
+    "zh": "声波",
+    "faction": "霸天虎",
+    "category": "其它",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "声波 (Soundwave)",
+    "is_calibrated": false
+  },
+  {
+    "id": "starsaber_gs_leader2014",
+    "zh": "史达",
+    "faction": "汽车人",
+    "category": "战机 / 飞船",
+    "intervals": [
+      [
+        2930,
+        8830
+      ]
+    ],
+    "note": "皇者之剑史达 (Star Saber) - 超音速战机",
+    "is_calibrated": true
+  },
+  {
+    "id": "sunstorm_gs_leader2015",
+    "zh": "太阳风",
+    "faction": "霸天虎",
+    "category": "战机 / 飞船",
+    "intervals": [
+      [
+        2230,
+        5230
+      ]
+    ],
+    "note": "太阳风暴 (Sunstorm) - 战机",
+    "is_calibrated": true
+  },
+  {
+    "id": "sunstreaker_gs_deluxe2008",
+    "zh": "飞毛腿",
+    "faction": "汽车人",
+    "category": "战机 / 飞船",
+    "intervals": [
+      [
+        530,
+        1500
+      ]
+    ],
+    "note": "飞毛腿 (Sunstreaker) - 跑车",
+    "is_calibrated": true
+  },
+  {
+    "id": "tantrum_gs_kabam",
+    "zh": "野牛",
+    "faction": "霸天虎",
+    "category": "战机 / 飞船",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "野牛/喧闹 (Tantrum) - 机械野牛",
+    "is_calibrated": false
+  },
+  {
+    "id": "thrust_gs_deluxe2008",
+    "zh": "冲锋",
+    "faction": "霸天虎",
+    "category": "战机 / 飞船",
+    "intervals": [
+      [
+        930,
+        6850
+      ]
+    ],
+    "note": "喷气机 (Thrust) - VTOL战机",
+    "is_calibrated": true
+  },
+  {
+    "id": "thundercracker_gs_leader2015",
+    "zh": "惊天雷",
+    "faction": "霸天虎",
+    "category": "战机 / 飞船",
+    "intervals": [
+      [
+        2230,
+        5230
+      ]
+    ],
+    "note": "闹翻天 (Thundercracker) - 战机",
+    "is_calibrated": true
+  },
+  {
+    "id": "ultramagnus_gs_leader",
+    "zh": "通天晓",
+    "faction": "汽车人",
+    "category": "卡车 / 货车",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "通天晓 (Ultra Magnus) - 重型装甲运输卡车",
+    "is_calibrated": false
+  },
+  {
+    "id": "waspinator_gs_deluxe",
+    "zh": "黄蜂勇士",
+    "faction": "霸天虎",
+    "category": "战机 / 飞船",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "黄蜂勇士 (Waspinator) - 机械黄蜂",
+    "is_calibrated": false
+  },
+  {
+    "id": "wheeljack_gs_mp20",
+    "zh": "千斤顶",
+    "faction": "汽车人",
+    "category": "其它",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "千斤顶 (Wheeljack) - 赛车",
+    "is_calibrated": false
+  },
+  {
+    "id": "windblade_gs",
+    "zh": "风刃",
+    "faction": "汽车人",
+    "category": "战机 / 飞船",
+    "intervals": [
+      [
+        1000,
+        2500
+      ]
+    ],
+    "note": "风刃 (Windblade) - VTOL超音速喷气机",
+    "is_calibrated": false
+  },
+  {
+    "id": "cliffjump_gs",
+    "zh": "Group 1",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        4250,
+        6390
+      ]
+    ],
+    "note": "Group 1",
+    "is_calibrated": true
+  },
+  {
+    "id": "stars_gs",
+    "zh": "Group 2 Seekers",
+    "faction": "",
+    "category": "战机 / 飞船",
+    "intervals": [
+      [
+        2230,
+        5230
+      ]
+    ],
+    "note": "Group 2 Seekers",
+    "is_calibrated": true
+  },
+  {
+    "id": "stars_gs_t3",
+    "zh": "Group 2 Seekers",
+    "faction": "",
+    "category": "战机 / 飞船",
+    "intervals": [
+      [
+        2230,
+        5230
+      ]
+    ],
+    "note": "Group 2 Seekers",
+    "is_calibrated": true
+  },
+  {
+    "id": "optimus",
+    "zh": "Group 3 Optimus",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        1295,
+        2330
+      ]
+    ],
+    "note": "Group 3 Optimus",
+    "is_calibrated": true
+  },
+  {
+    "id": "optimus_gs",
+    "zh": "Group 3 Optimus",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        1295,
+        2330
+      ]
+    ],
+    "note": "Group 3 Optimus",
+    "is_calibrated": true
+  },
+  {
+    "id": "optimus_gs_t3",
+    "zh": "Group 3 Optimus",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        1295,
+        2330
+      ]
+    ],
+    "note": "Group 3 Optimus",
+    "is_calibrated": true
+  },
+  {
+    "id": "optimus_c_tf",
+    "zh": "Group 3 Optimus",
+    "faction": "",
+    "category": "其它",
+    "intervals": [
+      [
+        1295,
+        2330
+      ]
+    ],
+    "note": "Group 3 Optimus",
+    "is_calibrated": true
+  }
+]

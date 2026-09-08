@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TFTF SP3 角色变形时序调试清单 (SP3 Timings Checklist)</title>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: #131d31;
+      --card-border: #1e2e4a;
+      --table-row-hover: #1a2742;
+      --table-border: #1e293b;
+      --primary: #38bdf8;
+      --primary-glow: rgba(56, 189, 248, 0.25);
+      --accent: #f43f5e;
+      --success: #10b981;
+      --success-glow: rgba(16, 185, 129, 0.25);
+      --warning: #f59e0b;
+      --warning-glow: rgba(245, 158, 11, 0.2);
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --input-bg: #090d16;
+      --input-border: #334155;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; }
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      padding: 20px 24px;
+      min-height: 100vh;
+    }
+    .wrapper {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--card-border);
+    }
+    .title-area h1 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      letter-spacing: -0.02em;
+    }
+    .title-area h1 span.logo-tag {
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      color: #0b0f19;
+      font-size: 0.75rem;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-weight: 900;
+      letter-spacing: 0.05em;
+    }
+    .subtitle {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    /* Progress & Stats Card */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    @media (max-width: 900px) {
+      .dashboard-grid { grid-template-columns: 1fr; }
+    }
+
+    .dash-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .progress-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+    .progress-stat {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--primary);
+    }
+    .progress-bar-bg {
+      width: 100%;
+      height: 10px;
+      background: #090d16;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid var(--card-border);
+      margin-bottom: 12px;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #10b981, #38bdf8);
+      width: 0%;
+      transition: width 0.4s ease;
+      border-radius: 6px;
+    }
+    .stat-chips {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .stat-chip {
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+      background: #090d16;
+      border: 1px solid var(--card-border);
+    }
+
+    /* Built-in Compact Calculator */
+    .calc-box {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .calc-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .calc-inputs {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+    @media (max-width: 600px) {
+      .calc-inputs { grid-template-columns: 1fr 1fr; }
+    }
+    .calc-field label {
+      display: block;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-bottom: 3px;
+      font-weight: 600;
+    }
+    .calc-field input, .calc-field select {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      border-radius: 6px;
+      padding: 6px 8px;
+      color: #fff;
+      font-size: 0.82rem;
+      font-family: ui-monospace, Consolas, monospace;
+      outline: none;
+    }
+    .calc-field input:focus, .calc-field select:focus {
+      border-color: var(--primary);
+    }
+    .calc-result-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      background: #090d16;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--card-border);
+    }
+    .calc-code {
+      flex: 1;
+      font-family: ui-monospace, Consolas, monospace;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #38bdf8;
+    }
+
+    /* Controls & Filter Bar */
+    .filter-section {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin-bottom: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .filter-row-primary {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .search-box {
+      flex: 1;
+      min-width: 250px;
+      position: relative;
+    }
+    .search-box input {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      border-radius: 8px;
+      padding: 9px 14px 9px 36px;
+      color: #fff;
+      font-size: 0.88rem;
+      outline: none;
+    }
+    .search-box input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+    }
+    .search-box::before {
+      content: "🔍";
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.85rem;
+      opacity: 0.6;
+    }
+    .tab-group {
+      display: flex;
+      gap: 6px;
+      background: #090d16;
+      padding: 4px;
+      border-radius: 8px;
+      border: 1px solid var(--card-border);
+    }
+    .tab-btn {
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      background: transparent;
+      color: var(--text-muted);
+      transition: all 0.2s;
+    }
+    .tab-btn.active {
+      background: var(--card-bg);
+      color: #fff;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    }
+    .tab-btn:hover:not(.active) {
+      color: #fff;
+    }
+
+    .category-pills {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .pill-btn {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      border: 1px solid var(--card-border);
+      background: #090d16;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .pill-btn.active {
+      background: var(--primary);
+      color: #0b0f19;
+      border-color: var(--primary);
+      font-weight: 700;
+    }
+    .pill-btn:hover:not(.active) {
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    /* Table Styling */
+    .table-container {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+    th {
+      background: #0d1525;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--card-border);
+      user-select: none;
+    }
+    td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--table-border);
+      font-size: 0.85rem;
+      vertical-align: middle;
+    }
+    tr.calibrated-row {
+      background: rgba(16, 185, 129, 0.03);
+    }
+    tr.uncalibrated-row {
+      background: transparent;
+    }
+    tr:hover {
+      background-color: var(--table-row-hover) !important;
+    }
+
+    /* Badges & Elements */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .badge-calibrated {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .badge-uncalibrated {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    .badge-category {
+      background: #1e293b;
+      color: #94a3b8;
+      border: 1px solid #334155;
+    }
+    .bot-id {
+      font-family: ui-monospace, Consolas, monospace;
+      font-size: 0.82rem;
+      color: #93c5fd;
+      cursor: pointer;
+      display: inline-block;
+      padding: 2px 4px;
+      border-radius: 4px;
+      background: rgba(56, 189, 248, 0.08);
+    }
+    .bot-id:hover {
+      text-decoration: underline;
+      background: rgba(56, 189, 248, 0.2);
+    }
+    .bot-name {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: #f8fafc;
+    }
+    .bot-notes {
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      margin-top: 2px;
+    }
+    .timing-val {
+      font-family: ui-monospace, Consolas, monospace;
+      font-weight: 700;
+      font-size: 0.85rem;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: #090d16;
+      display: inline-block;
+      border: 1px solid var(--card-border);
+    }
+    .timing-calibrated {
+      color: #38bdf8;
+      border-color: rgba(56, 189, 248, 0.4);
+    }
+    .timing-default {
+      color: #f59e0b;
+      border-color: rgba(245, 158, 11, 0.3);
+    }
+
+    .btn {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #f8fafc;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn:hover {
+      background: #334155;
+      border-color: #475569;
+    }
+    .btn-primary {
+      background: #0284c7;
+      border-color: #0369a1;
+    }
+    .btn-primary:hover {
+      background: #0369a1;
+    }
+    .btn-success {
+      background: #059669;
+      border-color: #047857;
+    }
+    .btn-success:hover {
+      background: #047857;
+    }
+    .btn-sm {
+      padding: 4px 8px;
+      font-size: 0.72rem;
+    }
+
+    .actions-cell {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    /* Custom Checkbox */
+    .check-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .custom-checkbox {
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      border: 2px solid #475569;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      background: #090d16;
+    }
+    .custom-checkbox.checked {
+      background: #10b981;
+      border-color: #10b981;
+    }
+    .custom-checkbox.checked::after {
+      content: "✓";
+      color: #fff;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    /* Toast Notification */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #10b981;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(10px);
+      transition: all 0.25s ease;
+      z-index: 1000;
+    }
+    #toast.show {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    /* Empty state */
+    .empty-state {
+      padding: 40px 20px;
+      text-align: center;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <header>
+      <div class="title-area">
+        <h1>
+          TFTF SP3 角色变形时序调试清单
+          <span class="logo-tag">OFFLINE VER</span>
+        </h1>
+        <div class="subtitle">全面跟踪记录全角色 SP3 载具/野兽动画生效区间 (只统计 72 个具备实际模具与ODR文件的独立角色)</div>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-primary" onclick="exportModifiedTimings()">💾 导出最新 sp3_timings.json</button>
+        <button class="btn" onclick="exportPendingList()">📋 导出待调整名单</button>
+        <button class="btn" onclick="resetChecklistState()">🔄 重置勾选缓存</button>
+      </div>
+    </header>
+
+    <!-- Dashboard & Calculator -->
+    <div class="dashboard-grid">
+      <!-- Progress Summary -->
+      <div class="dash-card">
+        <div class="progress-header">
+          <span class="progress-title">📊 调整完成进度</span>
+          <span class="progress-stat" id="statProgressPct">0%</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="progressBar"></div>
+        </div>
+        <div class="stat-chips">
+          <div class="stat-chip">
+            <span style="color: #94a3b8;">角色总数:</span>
+            <strong id="statTotal" style="color: #fff;">142</strong>
+          </div>
+          <div class="stat-chip">
+            <span style="color: #34d399;">🟢 已校准:</span>
+            <strong id="statCalibrated" style="color: #34d399;">0</strong>
+          </div>
+          <div class="stat-chip">
+            <span style="color: #fbbf24;">🟡 待调整:</span>
+            <strong id="statUncalibrated" style="color: #fbbf24;">0</strong>
+          </div>
+          <div class="stat-chip">
+            <span style="color: #38bdf8;">✓ 本地已标记:</span>
+            <strong id="statLocalChecked" style="color: #38bdf8;">0</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Calculator -->
+      <div class="dash-card">
+        <div class="calc-box">
+          <div class="calc-header">
+            <strong style="font-size: 0.9rem; color: #fff;">⏱️ 极速时间戳计算器</strong>
+            <span style="font-size: 0.75rem; color: #94a3b8;">支持 00:01:05;23 或 01:05.23</span>
+          </div>
+          <div class="calc-inputs">
+            <div class="calc-field">
+              <label>S3开始时间 (T1)</label>
+              <input type="text" id="calcT1" placeholder="00:00:00;00" value="00:00:00;00">
+            </div>
+            <div class="calc-field">
+              <label>变载具时刻 (T2)</label>
+              <input type="text" id="calcT2" placeholder="00:00:02;00" value="00:00:02;00">
+            </div>
+            <div class="calc-field">
+              <label>变回人时刻 (T3)</label>
+              <input type="text" id="calcT3" placeholder="00:00:03;07" value="00:00:03;07">
+            </div>
+            <div class="calc-field">
+              <label>帧率 (FPS)</label>
+              <select id="calcFps">
+                <option value="30" selected>30 FPS</option>
+                <option value="60">60 FPS</option>
+                <option value="29.97">29.97 FPS</option>
+                <option value="24">24 FPS</option>
+              </select>
+            </div>
+          </div>
+          <div class="calc-result-row">
+            <span style="font-size: 0.75rem; color: #94a3b8;">计算结果:</span>
+            <div class="calc-code" id="calcResult">[[2000, 3233]],</div>
+            <button class="btn btn-primary btn-sm" onclick="copyCalcResult()">📋 复制结果</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter & Search Controls -->
+    <div class="filter-section">
+      <div class="filter-row-primary">
+        <div class="search-box">
+          <input type="text" id="searchKeyword" placeholder="搜索角色名、英文ID (如 optimus, arcee)、车型、动作关键词..." oninput="filterData()">
+        </div>
+        <div class="tab-group">
+          <button class="tab-btn active" id="tabAll" onclick="setStatusFilter('all')">全部 (<span id="cntAll">142</span>)</button>
+          <button class="tab-btn" id="tabPending" onclick="setStatusFilter('pending')">🟡 待调整 (<span id="cntPending">79</span>)</button>
+          <button class="tab-btn" id="tabDone" onclick="setStatusFilter('done')">🟢 已校准 (<span id="cntDone">63</span>)</button>
+        </div>
+      </div>
+      <div class="category-pills" id="categoryPills">
+        <!-- populated dynamically -->
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 48px; text-align: center;">标记</th>
+            <th style="width: 160px;">角色名称 / 阵营</th>
+            <th style="width: 220px;">Bot ID (代码标识)</th>
+            <th style="width: 130px;">类别</th>
+            <th>载具 / 野兽形态与动作说明</th>
+            <th style="width: 170px;">当前变形时序区间 (ms)</th>
+            <th style="width: 160px;">操作</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <!-- populated dynamically -->
+        </tbody>
+      </table>
+      <div id="emptyState" class="empty-state" style="display: none;">
+        未找到匹配的角色记录
+      </div>
+    </div>
+  </div>
+
+  <div id="toast">复制成功！</div>
+
+  <script>
+    // Initial data injected directly
+    const RAW_ITEMS = [{"id": "fte_optimus_gs_t3", "zh": "G1擎天柱", "en": "Optimus Prime", "faction": "汽车人", "category": "其它", "intervals": [[1295, 2330]], "note": "G1 经典战术系", "is_calibrated": true}, {"id": "fte_stars_gs_t3", "zh": "红蜘蛛", "en": "Starscream", "faction": "霸天虎", "category": "其它", "intervals": [[2230, 5230]], "note": "G1 经典战术系", "is_calibrated": true}, {"id": "arcee_gs_deluxe2014", "zh": "阿尔茜", "en": "Arcee", "faction": "汽车人", "category": "其它", "intervals": [[2000, 3230]], "note": "勇士系", "is_calibrated": true}, {"id": "blaster_gs_leader2016", "zh": "录音机", "en": "Blaster", "faction": "汽车人", "category": "其它", "intervals": [[0, 7300]], "note": "科技系", "is_calibrated": true}, {"id": "bumblebee_cin_dotm", "zh": "大黄蜂", "en": "Bumblebee (DOTM)", "faction": "汽车人", "category": "野兽 / 恐龙 / 昆虫", "intervals": [[1167, 3633]], "note": "真人电影3·月黑之时", "is_calibrated": true}, {"id": "bumblebee_gs_kabam", "zh": "小黄蜂", "en": "Bumblebee", "faction": "汽车人", "category": "野兽 / 恐龙 / 昆虫", "intervals": [[433, 3800]], "note": "经典G1 侦察系", "is_calibrated": true}, {"id": "cheetor_bw_transmetal", "zh": "黄豹", "en": "Cheetor", "faction": "汽车人", "category": "野兽 / 恐龙 / 昆虫", "intervals": [[2600, 3800]], "note": "超能勇士·金属变异", "is_calibrated": true}, {"id": "chromia_gs_kabam", "zh": "克劳莉娅", "en": "Chromia", "faction": "汽车人", "category": "其它", "intervals": [[2030, 3160]], "note": "经典G1 勇士系", "is_calibrated": true}, {"id": "cliffjumper_gs_kabam", "zh": "飞过山", "en": "Cliffjumper", "faction": "汽车人", "category": "其它", "intervals": [[4250, 6390]], "note": "经典G1 爆破系", "is_calibrated": true}, {"id": "dinobot_bw_kabam", "zh": "恐龙勇士", "en": "Dinobot", "faction": "汽车人", "category": "野兽 / 恐龙 / 昆虫", "intervals": [[300, 5133]], "note": "超能勇士 战术系", "is_calibrated": true}, {"id": "drift_cin_aoe", "zh": "漂移", "en": "Drift", "faction": "汽车人", "category": "其它", "intervals": [[530, 1500]], "note": "真人电影4·绝迹重生", "is_calibrated": true}, {"id": "grimlock_gs_mp08", "zh": "钢锁", "en": "Grimlock", "faction": "汽车人", "category": "野兽 / 恐龙 / 昆虫", "intervals": [[633, 6467]], "note": "恐龙派领袖 格斗系", "is_calibrated": true}, {"id": "hotrod_cin_tlk", "zh": "热破", "en": "Hot Rod", "faction": "汽车人", "category": "其它", "intervals": [[600, 2500]], "note": "真人电影5·最后的骑士", "is_calibrated": true}, {"id": "hound_cin_tlk", "zh": "探长", "en": "Hound", "faction": "汽车人", "category": "其它", "intervals": [[333, 2233]], "note": "真人电影5·最后的骑士", "is_calibrated": true}, {"id": "ironhide_cin_rotf", "zh": "电影铁皮", "en": "Ironhide (ROTF)", "faction": "汽车人", "category": "其它", "intervals": [[733, 2667]], "note": "真人电影2·卷土重来", "is_calibrated": true}, {"id": "ironhide_gs_kabam", "zh": "G1铁皮", "en": "Ironhide", "faction": "汽车人", "category": "其它", "intervals": [[4250, 6390]], "note": "经典G1 格斗系", "is_calibrated": true}, {"id": "jazz_gs_twm05", "zh": "爵士", "en": "Jazz", "faction": "汽车人", "category": "其它", "intervals": [[600, 2700]], "note": "经典G1 侦察系", "is_calibrated": true}, {"id": "jetfire_gs_leader2014", "zh": "天火", "en": "Jetfire", "faction": "汽车人", "category": "其它", "intervals": [[2930, 8830]], "note": "经典G1 科技系", "is_calibrated": true}, {"id": "mirage_gs_deluxe2016", "zh": "幻影", "en": "Mirage", "faction": "汽车人", "category": "其它", "intervals": [[4000, 4867]], "note": "经典G1 科技系", "is_calibrated": true}, {"id": "optimusprimal_bw_mp32", "zh": "猩猩队长", "en": "Optimus Primal", "faction": "汽车人", "category": "野兽 / 恐龙 / 昆虫", "intervals": [[2100, 7967]], "note": "超能勇士 巨无霸领袖", "is_calibrated": true}, {"id": "optimusprime_cin_tf", "zh": "电影擎天柱", "en": "Optimus Prime (MV1)", "faction": "汽车人", "category": "其它", "intervals": [[2167, 2633]], "note": "真人电影1代 格斗系", "is_calibrated": true}, {"id": "optimusprime_sg_voyager2015", "zh": "倾天柱", "en": "SG Optimus Prime", "faction": "欺扯人", "category": "其它", "intervals": [[1295, 2330]], "note": "镜面世界 战术系", "is_calibrated": true}, {"id": "prowl_gs_deluxe2016", "zh": "警车", "en": "Prowl", "faction": "汽车人", "category": "跑车 / 轿车", "intervals": [[3333, 4967]], "note": "经典G1 侦察系", "is_calibrated": true}, {"id": "ratchet_gs_kabam", "zh": "救护车", "en": "Ratchet", "faction": "汽车人", "category": "其它", "intervals": [[4250, 6390]], "note": "经典G1 科技系", "is_calibrated": true}, {"id": "rhinox_gs_voyager2014", "zh": "犀牛", "en": "Rhinox", "faction": "汽车人", "category": "野兽 / 恐龙 / 昆虫", "intervals": [[600, 1767]], "note": "超能勇士 科技系", "is_calibrated": true}, {"id": "rodimusprime_gs_mp09", "zh": "补天士", "en": "Rodimus Prime", "faction": "汽车人", "category": "其它", "intervals": [[2167, 2633]], "note": "经典G1 战术系", "is_calibrated": true}, {"id": "sideswipe_gs", "zh": "横炮", "en": "Sideswipe", "faction": "汽车人", "category": "其它", "intervals": [[1000, 2500]], "note": "经典G1 侦察系", "is_calibrated": false}, {"id": "sunstreaker_gs_deluxe2008", "zh": "飞毛腿", "en": "Sunstreaker", "faction": "汽车人", "category": "其它", "intervals": [[530, 1500]], "note": "经典G1 格斗系", "is_calibrated": true}, {"id": "ultramagnus_gs_leader", "zh": "通天晓", "en": "Ultra Magnus", "faction": "汽车人", "category": "其它", "intervals": [[1000, 2500]], "note": "经典G1 战术系", "is_calibrated": false}, {"id": "wheeljack_gs_mp20", "zh": "千斤顶", "en": "Wheeljack", "faction": "汽车人", "category": "其它", "intervals": [[1000, 2500]], "note": "经典G1 科技系", "is_calibrated": false}, {"id": "windblade_gs", "zh": "风刃", "en": "Windblade", "faction": "汽车人", "category": "其它", "intervals": [[1333, 3667]], "note": "风刃 勇士系", "is_calibrated": true}, {"id": "barricade_cin_dotm", "zh": "路障", "en": "Barricade", "faction": "霸天虎", "category": "其它", "intervals": [[2033, 3100]], "note": "真人电影3·月黑之时", "is_calibrated": true}, {"id": "bludgeon_gs_rd20", "zh": "雷震", "en": "Bludgeon", "faction": "霸天虎", "category": "其它", "intervals": [[3300, 5267]], "note": "武士浪人 勇士系", "is_calibrated": true}, {"id": "bonecrusher_cin_rotf", "zh": "碎骨魔", "en": "Bonecrusher", "faction": "霸天虎", "category": "其它", "intervals": [[2433, 4300]], "note": "真人电影2·卷土重来", "is_calibrated": true}, {"id": "cyclonus_gs_uw06", "zh": "狂飙", "en": "Cyclonus", "faction": "霸天虎", "category": "其它", "intervals": [[1233, 5600]], "note": "经典G1 战术系", "is_calibrated": true}, {"id": "deadend_gs_deluxe2015", "zh": "封锁", "en": "Dead End", "faction": "霸天虎", "category": "其它", "intervals": [[1000, 2500]], "note": "组合战争 爆破系 飞虎队", "is_calibrated": false}, {"id": "dirge_gs_deluxe2008", "zh": "挽歌", "en": "Dirge", "faction": "霸天虎", "category": "其它", "intervals": [[930, 6850]], "note": "挽歌 勇士系", "is_calibrated": true}, {"id": "galvatron_gs_voyager2016", "zh": "惊破天", "en": "Galvatron", "faction": "霸天虎", "category": "其它", "intervals": [[5500, 7967]], "note": "经典G1 爆破系", "is_calibrated": true}, {"id": "grindor_cin_rotf", "zh": "碾碎器", "en": "Grindor", "faction": "霸天虎", "category": "其它", "intervals": [[3200, 5033]], "note": "真人电影2 (眩晕同型)", "is_calibrated": true}, {"id": "kickback_gs_kabam", "zh": "反冲", "en": "Kickback", "faction": "霸天虎", "category": "其它", "intervals": [[3833, 8500]], "note": "昆虫部队 侦察系", "is_calibrated": true}, {"id": "megatron_cin_rotf", "zh": "电影威震天", "en": "Megatron (ROTF)", "faction": "霸天虎", "category": "装甲车 / 战车 / 巨炮", "intervals": [[3033, 4433]], "note": "真人电影2·卷土重来 坦克型", "is_calibrated": true}, {"id": "megatron_gs_leader2015", "zh": "G1威震天", "en": "Megatron", "faction": "霸天虎", "category": "其它", "intervals": [[2870, 4860]], "note": "经典G1 战术系", "is_calibrated": true}, {"id": "megatronus_gs_kabam", "zh": "震天尊", "en": "Megatronus", "faction": "霸天虎", "category": "其它", "intervals": [[6730, 8070]], "note": "十三元祖 震天尊", "is_calibrated": true}, {"id": "mixmaster_cin_rotf", "zh": "搅拌者", "en": "Mixmaster", "faction": "霸天虎", "category": "其它", "intervals": [[2433, 7000]], "note": "大力神挖掘部队 爆破系", "is_calibrated": true}, {"id": "motormaster_gs_voyager2015", "zh": "汽车大师", "en": "Motormaster", "faction": "霸天虎", "category": "其它", "intervals": [[6100, 7067]], "note": "飞虎队领袖 格斗系", "is_calibrated": true}, {"id": "necrotronus_gs_kabam", "zh": "亡灵天尊", "en": "Necrotronus", "faction": "霸天虎", "category": "其它", "intervals": [[6730, 8070]], "note": "殁天仇 勇士系", "is_calibrated": true}, {"id": "nemesisprime_gs_voyager2015", "zh": "暗天陨", "en": "Nemesis Prime", "faction": "霸天虎", "category": "其它", "intervals": [[1295, 2330]], "note": "暗黑煞 战术系", "is_calibrated": true}, {"id": "ramjet_gs_deluxe2008", "zh": "喷气机", "en": "Ramjet", "faction": "霸天虎", "category": "战机 / 飞船", "intervals": [[930, 6850]], "note": "经典G1 爆破系", "is_calibrated": true}, {"id": "scorponok_bw_kabam", "zh": "巨蝎勇士", "en": "Scorponok", "faction": "霸天虎", "category": "野兽 / 恐龙 / 昆虫", "intervals": [[1100, 6933]], "note": "超能勇士 原始兽", "is_calibrated": true}, {"id": "shockwave_gs", "zh": "震荡波", "en": "Shockwave", "faction": "霸天虎", "category": "其它", "intervals": [[1000, 2500]], "note": "经典G1 科技系", "is_calibrated": false}, {"id": "skywarp_gs_leader2015", "zh": "闹翻天", "en": "Skywarp", "faction": "霸天虎", "category": "其它", "intervals": [[2230, 5230]], "note": "经典G1 科技系", "is_calibrated": true}, {"id": "slipstream_gs", "zh": "滑流", "en": "Slipstream", "faction": "霸天虎", "category": "其它", "intervals": [[1333, 3667]], "note": "狂派女寻猎者 侦察系", "is_calibrated": true}, {"id": "soundblaster_gs_mp13b", "zh": "音板", "en": "Soundblaster", "faction": "霸天虎", "category": "其它", "intervals": [[1000, 2500]], "note": "录音板 爆破系", "is_calibrated": false}, {"id": "soundwave_gs", "zh": "声波", "en": "Soundwave", "faction": "霸天虎", "category": "其它", "intervals": [[1000, 2500]], "note": "经典G1 科技系", "is_calibrated": false}, {"id": "starsaber_gs_leader2014", "zh": "史达", "en": "Star Saber", "faction": "汽车人", "category": "其它", "intervals": [[2930, 8830]], "note": "胜利之斗争 战术系", "is_calibrated": true}, {"id": "thundercracker_gs_leader2015", "zh": "惊天雷", "en": "Thundercracker", "faction": "霸天虎", "category": "其它", "intervals": [[2230, 5230]], "note": "经典G1 格斗系", "is_calibrated": true}, {"id": "tantrum_gs_kabam", "zh": "野牛", "en": "Tantrum", "faction": "霸天虎", "category": "其它", "intervals": [[1000, 2500]], "note": "巨兽部队 格斗系", "is_calibrated": false}, {"id": "waspinator_gs_deluxe", "zh": "黄蜂勇士", "en": "Waspinator", "faction": "霸天虎", "category": "野兽 / 恐龙 / 昆虫", "intervals": [[1000, 2500]], "note": "超能勇士 爆破系", "is_calibrated": false}, {"id": "sharkticon_gs_kabam", "zh": "饿鲨1000", "en": "Sharkticon", "faction": "杂兵 (Sharkticon)", "category": "其它", "intervals": [[633, 7767]], "note": "五面怪侍卫", "is_calibrated": true}, {"id": "sharkticon_gs_brawler", "zh": "饿鲨", "en": "Sharkticon (Brawler)", "faction": "杂兵 (Sharkticon)", "category": "其它", "intervals": [[633, 7767]], "note": "格斗系", "is_calibrated": true}, {"id": "sharkticon_gs_demolition", "zh": "饿鲨", "en": "Sharkticon (Demolition)", "faction": "杂兵 (Sharkticon)", "category": "其它", "intervals": [[633, 7767]], "note": "爆破系", "is_calibrated": true}, {"id": "sharkticon_gs_scout", "zh": "饿鲨", "en": "Sharkticon (Scout)", "faction": "杂兵 (Sharkticon)", "category": "其它", "intervals": [[633, 7767]], "note": "侦察系", "is_calibrated": true}, {"id": "sharkticon_gs_tactician", "zh": "饿鲨", "en": "Sharkticon (Tactician)", "faction": "杂兵 (Sharkticon)", "category": "其它", "intervals": [[633, 7767]], "note": "战术系", "is_calibrated": true}, {"id": "sharkticon_gs_tech", "zh": "饿鲨", "en": "Sharkticon (Tech)", "faction": "杂兵 (Sharkticon)", "category": "其它", "intervals": [[633, 7767]], "note": "科技系", "is_calibrated": true}, {"id": "sharkticon_gs_warrior", "zh": "饿鲨", "en": "Sharkticon (Warrior)", "faction": "杂兵 (Sharkticon)", "category": "其它", "intervals": [[633, 7767]], "note": "勇士系", "is_calibrated": true}, {"id": "thrust_gs_deluxe2008", "zh": "冲锋", "en": "Thrust", "faction": "霸天虎", "category": "其它", "intervals": [[930, 6850]], "note": "侦察系", "is_calibrated": true}, {"id": "acidstorm_gs_leader2015", "zh": "酸雨", "en": "Acid Storm", "faction": "霸天虎", "category": "其它", "intervals": [[2230, 5230]], "note": "科技系", "is_calibrated": true}, {"id": "ionstorm_gs_leader2015", "zh": "离子风", "en": "Ion Storm", "faction": "霸天虎", "category": "其它", "intervals": [[2230, 5230]], "note": "战术系", "is_calibrated": true}, {"id": "novastorm_gs_leader2015", "zh": "新星风", "en": "Nova Storm", "faction": "霸天虎", "category": "其它", "intervals": [[2230, 5230]], "note": "爆破系", "is_calibrated": true}, {"id": "sunstorm_gs_leader2015", "zh": "太阳风", "en": "Sunstorm", "faction": "霸天虎", "category": "其它", "intervals": [[2230, 5230]], "note": "勇士系", "is_calibrated": true}, {"id": "bitstream_gs_leader2015", "zh": "比特流", "en": "Bitstream", "faction": "霸天虎", "category": "其它", "intervals": [[2230, 5230]], "note": "科技系", "is_calibrated": true}, {"id": "hotlink_gs_leader2015", "zh": "热链接", "en": "Hotlink", "faction": "霸天虎", "category": "其它", "intervals": [[2230, 5230]], "note": "格斗系", "is_calibrated": true}];
+    const RAW_TIMINGS = {"_default": {"intervals": [[1000, 2500]], "notes": "全局默认变形时间：1.0秒至2.5秒"}, "optimusprime": {"intervals": [[1295, 2330]], "notes": "擎天柱 - 卡车冲撞"}, "optimusprime_gs": {"intervals": [[1295, 2330]], "notes": "G1擎天柱 - 卡车冲撞"}, "optimusprime_cin_tf": {"intervals": [[1295, 2330]], "notes": "电影擎天柱 - 卡车冲撞"}, "optimusprime_sg_voyager2015": {"intervals": [[1295, 2330]], "notes": "镜像擎天柱 - 卡车冲撞"}, "fte_optimus_gs_t3": {"intervals": [[1295, 2330]], "notes": "新手教学擎天柱 - 卡车冲撞"}, "nemesisprime_gs_voyager2015": {"intervals": [[1295, 2330]], "notes": "暗黑擎天柱 - 卡车冲撞"}, "starscream": {"intervals": [[2230, 5230]], "notes": "红蜘蛛 - 喷气机俯冲扫射"}, "starscream_gs": {"intervals": [[2230, 5230]], "notes": "G1红蜘蛛 - 喷气机俯冲扫射"}, "fte_stars_gs_t3": {"intervals": [[2230, 5230]], "notes": "新手教学红蜘蛛 - 喷气机俯冲扫射"}, "bumblebee": {"intervals": [[1300, 2900]], "notes": "大黄蜂 - 甲壳虫漂移甩尾"}, "bumblebee_gs_kabam": {"intervals": [[1300, 2900]], "notes": "G1大黄蜂 - 甲壳虫漂移甩尾"}, "bumblebee_cin_dotm": {"intervals": [[1300, 2900]], "notes": "电影大黄蜂 - 跑车漂移甩尾"}, "special_multi_bot": {"intervals": [[800, 1500], [2200, 3400]], "notes": "多次变形区间示例"}, "acidstorm": {"intervals": [[2230, 5230]], "notes": "酸雨系列 - 默认载具/野兽变形区间"}, "arcee": {"intervals": [[2000, 3230]], "notes": "阿尔茜系列 - 默认载具/野兽变形区间"}, "barricade": {"intervals": [[1000, 2500]], "notes": "路障系列 - 默认载具/野兽变形区间"}, "bitstream": {"intervals": [[2230, 5230]], "notes": "比特流系列 - 默认载具/野兽变形区间"}, "blaster": {"intervals": [[1000, 2500]], "notes": "录音机系列 - 默认载具/野兽变形区间"}, "bludgeon": {"intervals": [[1000, 2500]], "notes": "雷翼/利刃系列 - 默认载具/野兽变形区间"}, "bonecrusher": {"intervals": [[1000, 2500]], "notes": "碎骨魔系列 - 默认载具/野兽变形区间"}, "cheetor": {"intervals": [[1000, 2500]], "notes": "黄豹勇士系列 - 默认载具/野兽变形区间"}, "chromia": {"intervals": [[2030, 3160]], "notes": "克劳莉娅系列 - 默认载具/野兽变形区间"}, "cliffjumper": {"intervals": [[4250, 6390]], "notes": "飞过山系列 - 默认载具/野兽变形区间"}, "cyclonus": {"intervals": [[1000, 2500]], "notes": "狂飙系列 - 默认载具/野兽变形区间"}, "deadend": {"intervals": [[1000, 2500]], "notes": "封锁系列 - 默认载具/野兽变形区间"}, "dinobot": {"intervals": [[1000, 2500]], "notes": "恐龙勇士系列 - 默认载具/野兽变形区间"}, "dirge": {"intervals": [[930, 6850]], "notes": "挽歌系列 - 默认载具/野兽变形区间"}, "drift": {"intervals": [[1000, 2500]], "notes": "漂移系列 - 默认载具/野兽变形区间"}, "galvatron": {"intervals": [[1000, 2500]], "notes": "惊破天系列 - 默认载具/野兽变形区间"}, "grimlock": {"intervals": [[1000, 2500]], "notes": "钢锁系列 - 默认载具/野兽变形区间"}, "grindor": {"intervals": [[1000, 2500]], "notes": "歼灭者系列 - 默认载具/野兽变形区间"}, "hotlink": {"intervals": [[2230, 5230]], "notes": "热链系列 - 默认载具/野兽变形区间"}, "hotrod": {"intervals": [[1000, 2500]], "notes": "热破系列 - 默认载具/野兽变形区间"}, "hound": {"intervals": [[1000, 2500]], "notes": "探长系列 - 默认载具/野兽变形区间"}, "ionstorm": {"intervals": [[2230, 5230]], "notes": "离子风暴系列 - 默认载具/野兽变形区间"}, "ironhide": {"intervals": [[4250, 6390]], "notes": "铁皮系列 - 默认载具/野兽变形区间"}, "jazz": {"intervals": [[1000, 2500]], "notes": "爵士系列 - 默认载具/野兽变形区间"}, "jetfire": {"intervals": [[1000, 2500]], "notes": "天火系列 - 默认载具/野兽变形区间"}, "kickback": {"intervals": [[1000, 2500]], "notes": "反冲系列 - 默认载具/野兽变形区间"}, "megatron": {"intervals": [[1000, 2500]], "notes": "威震天系列 - 默认载具/野兽变形区间"}, "megatronus": {"intervals": [[6830, 8370]], "notes": "堕落金刚系列 - 默认载具/野兽变形区间"}, "mirage": {"intervals": [[1000, 2500]], "notes": "幻影系列 - 默认载具/野兽变形区间"}, "mixmaster": {"intervals": [[1000, 2500]], "notes": "搅拌大师系列 - 默认载具/野兽变形区间"}, "motormaster": {"intervals": [[1000, 2500]], "notes": "汽车大师系列 - 默认载具/野兽变形区间"}, "necrotronus": {"intervals": [[1000, 2500]], "notes": "死灵金刚系列 - 默认载具/野兽变形区间"}, "nemesisprime": {"intervals": [[1295, 2330]], "notes": "暗黑擎天柱系列 - 默认载具/野兽变形区间"}, "novastorm": {"intervals": [[2230, 5230]], "notes": "新星风暴系列 - 默认载具/野兽变形区间"}, "optimusprimal": {"intervals": [[1000, 2500]], "notes": "猩猩队长系列 - 默认载具/野兽变形区间"}, "prowl": {"intervals": [[1000, 2500]], "notes": "警车系列 - 默认载具/野兽变形区间"}, "ramjet": {"intervals": [[930, 6850]], "notes": "冲锋系列 - 默认载具/野兽变形区间"}, "ratchet": {"intervals": [[4250, 6390]], "notes": "救护车系列 - 默认载具/野兽变形区间"}, "rhinox": {"intervals": [[1000, 2500]], "notes": "犀牛勇士系列 - 默认载具/野兽变形区间"}, "rodimusprime": {"intervals": [[1000, 2500]], "notes": "补天士系列 - 默认载具/野兽变形区间"}, "scorponok": {"intervals": [[1000, 2500]], "notes": "巨蝎勇士系列 - 默认载具/野兽变形区间"}, "sharkticon": {"intervals": [[1000, 2500]], "notes": "鲨鱼精系列 - 默认载具/野兽变形区间"}, "shockwave": {"intervals": [[1000, 2500]], "notes": "震荡波系列 - 默认载具/野兽变形区间"}, "sideswipe": {"intervals": [[1000, 2500]], "notes": "横炮系列 - 默认载具/野兽变形区间"}, "skywarp": {"intervals": [[2230, 5230]], "notes": "惊天雷系列 - 默认载具/野兽变形区间"}, "slipstream": {"intervals": [[2230, 5230]], "notes": "滑流系列 - 默认载具/野兽变形区间"}, "soundblaster": {"intervals": [[1000, 2500]], "notes": "音爆系列 - 默认载具/野兽变形区间"}, "soundwave": {"intervals": [[1000, 2500]], "notes": "声波系列 - 默认载具/野兽变形区间"}, "starsaber": {"intervals": [[1000, 2500]], "notes": "皇者之剑史达系列 - 默认载具/野兽变形区间"}, "sunstorm": {"intervals": [[2230, 5230]], "notes": "太阳风暴系列 - 默认载具/野兽变形区间"}, "sunstreaker": {"intervals": [[1000, 2500]], "notes": "飞毛腿系列 - 默认载具/野兽变形区间"}, "tantrum": {"intervals": [[1000, 2500]], "notes": "喧闹/野牛系列 - 默认载具/野兽变形区间"}, "thrust": {"intervals": [[930, 6850]], "notes": "喷气机系列 - 默认载具/野兽变形区间"}, "thundercracker": {"intervals": [[2230, 5230]], "notes": "闹翻天系列 - 默认载具/野兽变形区间"}, "ultramagnus": {"intervals": [[1000, 2500]], "notes": "通天晓系列 - 默认载具/野兽变形区间"}, "waspinator": {"intervals": [[1000, 2500]], "notes": "黄蜂勇士系列 - 默认载具/野兽变形区间"}, "wheeljack": {"intervals": [[1000, 2500]], "notes": "千斤顶系列 - 默认载具/野兽变形区间"}, "windblade": {"intervals": [[1000, 2500]], "notes": "风刃系列 - 默认载具/野兽变形区间"}, "acidstorm_gs_leader2015": {"intervals": [[2230, 5230]], "notes": "酸雨 (Acid Storm) - 雨袭战机"}, "arcee_gs_deluxe2014": {"intervals": [[2000, 3230]], "notes": "阿尔茜 (Arcee) - 摩托车"}, "barricade_cin_dotm": {"intervals": [[1000, 2500]], "notes": "路障 (Barricade) - 警车追逐"}, "bitstream_gs_leader2015": {"intervals": [[2230, 5230]], "notes": "比特流 (Bitstream) - 战机"}, "blaster_gs_leader2016": {"intervals": [[1000, 2500]], "notes": "录音机 (Blaster)"}, "bludgeon_gs_rd20": {"intervals": [[1000, 2500]], "notes": "雷翼/利刃 (Bludgeon) - 坦克"}, "bonecrusher_cin_rotf": {"intervals": [[1000, 2500]], "notes": "碎骨魔 (Bonecrusher) - 装甲扫雷车"}, "cheetor_bw_transmetal": {"intervals": [[1000, 2500]], "notes": "黄豹勇士 (Cheetor) - 金属猎豹"}, "chromia_gs_kabam": {"intervals": [[2030, 3160]], "notes": "克劳莉娅 (Chromia) - 摩托车"}, "cliffjumper_gs_kabam": {"intervals": [[4250, 6390]], "notes": "飞过山 (Cliffjumper) - 跑车"}, "cyclonus_gs_uw06": {"intervals": [[1000, 2500]], "notes": "狂飙 (Cyclonus) - 宇宙战机"}, "deadend_gs_deluxe2015": {"intervals": [[1000, 2500]], "notes": "封锁 (Dead End) - 保时捷跑车"}, "dinobot_bw_kabam": {"intervals": [[1000, 2500]], "notes": "恐龙勇士 (Dinobot) - 迅猛龙"}, "dirge_gs_deluxe2008": {"intervals": [[930, 6850]], "notes": "挽歌 (Dirge) - 战机"}, "drift_cin_aoe": {"intervals": [[530, 1500]], "notes": "漂移 (Drift) - 跑车/直升机"}, "galvatron_gs_voyager2016": {"intervals": [[1000, 2500]], "notes": "惊破天 (Galvatron) - 粒子加农炮"}, "grimlock_gs_mp08": {"intervals": [[1000, 2500]], "notes": "钢锁 (Grimlock) - 霸王龙"}, "grindor_cin_rotf": {"intervals": [[1000, 2500]], "notes": "歼灭者/眩晕 (Grindor) - 重型直升机"}, "hotlink_gs_leader2015": {"intervals": [[2230, 5230]], "notes": "热链 (Hotlink) - 战机"}, "hotrod_cin_tlk": {"intervals": [[1000, 2500]], "notes": "热破 (Hot Rod) - 超级跑车"}, "hound_cin_tlk": {"intervals": [[1000, 2500]], "notes": "探长 (Hound) - 重型装甲车"}, "ionstorm_gs_leader2015": {"intervals": [[2230, 5230]], "notes": "离子风暴 (Ion Storm) - 战机"}, "ironhide_cin_rotf": {"intervals": [[4250, 6390]], "notes": "电影铁皮 (Ironhide) - 重型皮卡"}, "ironhide_gs_kabam": {"intervals": [[4250, 6390]], "notes": "G1铁皮 (Ironhide) - 厢型车/皮卡"}, "jazz_gs_twm05": {"intervals": [[1000, 2500]], "notes": "爵士 (Jazz) - 保时捷赛车"}, "jetfire_gs_leader2014": {"intervals": [[2930, 8830]], "notes": "天火 (Jetfire) - 穿梭超音速战机"}, "kickback_gs_kabam": {"intervals": [[1000, 2500]], "notes": "反冲 (Kickback) - 机械蝗虫"}, "megatron_cin_rotf": {"intervals": [[1000, 2500]], "notes": "电影威震天 (Megatron) - 外星战车/飞船"}, "megatron_gs_leader2015": {"intervals": [[2870, 4860]], "notes": "G1威震天 (Megatron) - 坦克"}, "megatronus_gs_kabam": {"intervals": [[6830, 8370]], "notes": "堕落金刚/震天尊 (Megatronus) - 远古战车"}, "mirage_gs_deluxe2016": {"intervals": [[1000, 2500]], "notes": "幻影 (Mirage) - F1赛车"}, "mixmaster_cin_rotf": {"intervals": [[1000, 2500]], "notes": "搅拌大师 (Mixmaster) - 水泥车/重炮"}, "motormaster_gs_voyager2015": {"intervals": [[1000, 2500]], "notes": "汽车大师 (Motormaster) - 飞虎队重型卡车"}, "necrotronus_gs_kabam": {"intervals": [[6830, 8370]], "notes": "死灵金刚 (Necrotronus)"}, "novastorm_gs_leader2015": {"intervals": [[2230, 5230]], "notes": "新星风暴 (Nova Storm) - 战机"}, "optimusprimal_bw_mp32": {"intervals": [[1000, 2500]], "notes": "猩猩队长 (Optimus Primal) - 巨猿"}, "prowl_gs_deluxe2016": {"intervals": [[1000, 2500]], "notes": "警车 (Prowl) - 巡逻警车"}, "ramjet_gs_deluxe2008": {"intervals": [[930, 6850]], "notes": "冲锋 (Ramjet) - 撞击战机"}, "ratchet_gs_kabam": {"intervals": [[4250, 6390]], "notes": "救护车 (Ratchet) - 救护救险车"}, "rhinox_gs_voyager2014": {"intervals": [[1000, 2500]], "notes": "犀牛勇士 (Rhinox) - 机械犀牛"}, "rodimusprime_gs_mp09": {"intervals": [[1000, 2500]], "notes": "补天士 (Rodimus Prime) - 跑车/旅行车"}, "scorponok_bw_kabam": {"intervals": [[1000, 2500]], "notes": "巨蝎勇士 (Scorponok) - 机械巨蝎"}, "sharkticon_gs_brawler": {"intervals": [[1000, 2500]], "notes": "鲨鱼精·格斗 (Sharkticon)"}, "sharkticon_gs_demolition": {"intervals": [[1000, 2500]], "notes": "鲨鱼精·爆破 (Sharkticon)"}, "sharkticon_gs_kabam": {"intervals": [[1000, 2500]], "notes": "鲨鱼精 (Sharkticon) - 机械两栖鲨鱼"}, "sharkticon_gs_scout": {"intervals": [[1000, 2500]], "notes": "鲨鱼精·侦察 (Sharkticon)"}, "sharkticon_gs_tactician": {"intervals": [[1000, 2500]], "notes": "鲨鱼精·战术 (Sharkticon)"}, "sharkticon_gs_tech": {"intervals": [[1000, 2500]], "notes": "鲨鱼精·科技 (Sharkticon)"}, "sharkticon_gs_warrior": {"intervals": [[1000, 2500]], "notes": "鲨鱼精·勇士 (Sharkticon)"}, "shockwave_gs": {"intervals": [[1000, 2500]], "notes": "震荡波 (Shockwave) - 激光重炮"}, "sideswipe_gs": {"intervals": [[1000, 2500]], "notes": "横炮 (Sideswipe) - 兰博基尼跑车"}, "skywarp_gs_leader2015": {"intervals": [[2230, 5230]], "notes": "惊天雷 (Skywarp) - 瞬移战机"}, "slipstream_gs": {"intervals": [[2230, 5230]], "notes": "滑流 (Slipstream) - 隐身战机"}, "soundblaster_gs_mp13b": {"intervals": [[1000, 2500]], "notes": "音爆 (Soundblaster)"}, "soundwave_gs": {"intervals": [[1000, 2500]], "notes": "声波 (Soundwave)"}, "starsaber_gs_leader2014": {"intervals": [[2930, 8830]], "notes": "皇者之剑史达 (Star Saber) - 超音速战机"}, "sunstorm_gs_leader2015": {"intervals": [[2230, 5230]], "notes": "太阳风暴 (Sunstorm) - 战机"}, "sunstreaker_gs_deluxe2008": {"intervals": [[530, 1500]], "notes": "飞毛腿 (Sunstreaker) - 跑车"}, "tantrum_gs_kabam": {"intervals": [[1000, 2500]], "notes": "野牛/喧闹 (Tantrum) - 机械野牛"}, "thrust_gs_deluxe2008": {"intervals": [[930, 6850]], "notes": "喷气机 (Thrust) - VTOL战机"}, "thundercracker_gs_leader2015": {"intervals": [[2230, 5230]], "notes": "闹翻天 (Thundercracker) - 战机"}, "ultramagnus_gs_leader": {"intervals": [[1000, 2500]], "notes": "通天晓 (Ultra Magnus) - 重型装甲运输卡车"}, "waspinator_gs_deluxe": {"intervals": [[1000, 2500]], "notes": "黄蜂勇士 (Waspinator) - 机械黄蜂"}, "wheeljack_gs_mp20": {"intervals": [[1000, 2500]], "notes": "千斤顶 (Wheeljack) - 赛车"}, "windblade_gs": {"intervals": [[1000, 2500]], "notes": "风刃 (Windblade) - VTOL超音速喷气机"}, "cliffjump_gs": {"intervals": [[4250, 6390]], "notes": "Group 1"}, "stars_gs": {"intervals": [[2230, 5230]], "notes": "Group 2 Seekers"}, "stars_gs_t3": {"intervals": [[2230, 5230]], "notes": "Group 2 Seekers"}, "optimus": {"intervals": [[1295, 2330]], "notes": "Group 3 Optimus"}, "optimus_gs": {"intervals": [[1295, 2330]], "notes": "Group 3 Optimus"}, "optimus_gs_t3": {"intervals": [[1295, 2330]], "notes": "Group 3 Optimus"}, "optimus_c_tf": {"intervals": [[1295, 2330]], "notes": "Group 3 Optimus"}};
+
+    let items = JSON.parse(JSON.stringify(RAW_ITEMS));
+    let statusFilter = 'all'; // 'all', 'pending', 'done'
+    let currentCategory = '全部';
+    let searchQuery = '';
+
+    // Load checked state from localStorage
+    const STORAGE_KEY = 'tftf_sp3_checked_ids_v1';
+    let userCheckedMap = {};
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        userCheckedMap = JSON.parse(saved);
+      }
+    } catch(e) {}
+
+    // Categories setup
+    const CATEGORIES = [
+      '全部',
+      '战机 / 飞船',
+      '跑车 / 轿车',
+      '卡车 / 货车',
+      '装甲车 / 战车 / 巨炮',
+      '野兽 / 恐龙 / 昆虫',
+      '摩托车',
+      '其它'
+    ];
+
+    function init() {
+      setupPills();
+      bindCalcEvents();
+      calculate();
+      updateDashboard();
+      renderTable();
+    }
+
+    function setupPills() {
+      const container = document.getElementById('categoryPills');
+      container.innerHTML = '';
+      CATEGORIES.forEach(cat => {
+        const btn = document.createElement('button');
+        btn.className = `pill-btn ${cat === currentCategory ? 'active' : ''}`;
+        btn.textContent = cat;
+        btn.onclick = () => {
+          currentCategory = cat;
+          document.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          filterData();
+        };
+        container.appendChild(btn);
+      });
+    }
+
+    function updateDashboard() {
+      const total = items.length;
+      const calibratedCount = items.filter(x => x.is_calibrated).length;
+      const uncalibratedCount = total - calibratedCount;
+      const localCheckedCount = Object.keys(userCheckedMap).filter(k => userCheckedMap[k]).length;
+      const pct = Math.round((calibratedCount / total) * 100);
+
+      document.getElementById('statTotal').textContent = total;
+      document.getElementById('statCalibrated').textContent = calibratedCount;
+      document.getElementById('statUncalibrated').textContent = uncalibratedCount;
+      document.getElementById('statLocalChecked').textContent = localCheckedCount;
+      document.getElementById('statProgressPct').textContent = pct + '%';
+      document.getElementById('progressBar').style.width = pct + '%';
+
+      document.getElementById('cntAll').textContent = total;
+      document.getElementById('cntPending').textContent = uncalibratedCount;
+      document.getElementById('cntDone').textContent = calibratedCount;
+    }
+
+    function setStatusFilter(status) {
+      statusFilter = status;
+      document.getElementById('tabAll').className = `tab-btn ${status === 'all' ? 'active' : ''}`;
+      document.getElementById('tabPending').className = `tab-btn ${status === 'pending' ? 'active' : ''}`;
+      document.getElementById('tabDone').className = `tab-btn ${status === 'done' ? 'active' : ''}`;
+      filterData();
+    }
+
+    function filterData() {
+      searchQuery = document.getElementById('searchKeyword').value.trim().toLowerCase();
+      renderTable();
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('tableBody');
+      tbody.innerHTML = '';
+
+      let filtered = items.filter(item => {
+        // Status filter
+        if (statusFilter === 'pending' && item.is_calibrated) return false;
+        if (statusFilter === 'done' && !item.is_calibrated) return false;
+
+        // Category filter
+        if (currentCategory !== '全部' && item.category !== currentCategory) return false;
+
+        // Search query
+        if (searchQuery) {
+          const target = (item.id + ' ' + item.zh + ' ' + item.note + ' ' + item.category).toLowerCase();
+          if (!target.includes(searchQuery)) return false;
+        }
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        document.getElementById('emptyState').style.display = 'block';
+      } else {
+        document.getElementById('emptyState').style.display = 'none';
+      }
+
+      filtered.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.className = item.is_calibrated ? 'calibrated-row' : 'uncalibrated-row';
+
+        const isChecked = !!userCheckedMap[item.id] || item.is_calibrated;
+        const timingStr = JSON.stringify(item.intervals);
+
+        tr.innerHTML = `
+          <td style="text-align: center;">
+            <div class="check-container" onclick="toggleUserCheck('${item.id}')">
+              <div class="custom-checkbox ${isChecked ? 'checked' : ''}" id="chk_${item.id}"></div>
+            </div>
+          </td>
+          <td>
+            <div class="bot-name">${escapeHtml(item.zh)}</div>
+            <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 2px;">
+              ${item.faction ? `<span class="badge badge-category" style="padding: 1px 5px; font-size: 0.68rem;">${item.faction}</span>` : ''}
+            </div>
+          </td>
+          <td>
+            <code class="bot-id" onclick="copyText('${item.id}', '已复制 Bot ID: ${item.id}')">${item.id}</code>
+          </td>
+          <td>
+            <span class="badge badge-category">${item.category}</span>
+          </td>
+          <td>
+            <div class="bot-notes">${escapeHtml(item.note)}</div>
+          </td>
+          <td>
+            <span class="timing-val ${item.is_calibrated ? 'timing-calibrated' : 'timing-default'}">${timingStr}</span>
+            ${item.is_calibrated ? '<span class="badge badge-calibrated" style="margin-left: 6px;">已校准</span>' : '<span class="badge badge-uncalibrated" style="margin-left: 6px;">待调整</span>'}
+          </td>
+          <td>
+            <div class="actions-cell">
+              <button class="btn btn-sm" onclick="copyInterval('${item.id}', '${timingStr}')">📋 复制</button>
+              <button class="btn btn-sm btn-primary" onclick="applyCalcToBot('${item.id}')">⏱️ 填入计算</button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function toggleUserCheck(botId) {
+      userCheckedMap[botId] = !userCheckedMap[botId];
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(userCheckedMap));
+      const el = document.getElementById('chk_' + botId);
+      if (el) {
+        el.classList.toggle('checked', userCheckedMap[botId]);
+      }
+      updateDashboard();
+    }
+
+    function copyInterval(botId, val) {
+      const text = `"intervals": ${val},`;
+      copyText(text, `已复制 ${botId} 的时序配置: ${text}`);
+    }
+
+    function applyCalcToBot(botId) {
+      const resultText = document.getElementById('calcResult').textContent.trim();
+      // Parse interval from calculator
+      try {
+        let clean = resultText.replace(/,$/, '');
+        let parsed = JSON.parse(clean);
+        let found = items.find(x => x.id === botId);
+        if (found) {
+          found.intervals = parsed;
+          found.is_calibrated = (parsed[0][0] !== 1000 || parsed[0][1] !== 2500);
+          userCheckedMap[botId] = true;
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(userCheckedMap));
+          updateDashboard();
+          renderTable();
+          showToast(`已更新 ${found.zh} (${botId}) 的时序为 ${resultText}`);
+        }
+      } catch(e) {
+        showToast('解析计算结果失败，请先核对时间戳格式');
+      }
+    }
+
+    // Calculator Logic
+    function bindCalcEvents() {
+      ['calcT1', 'calcT2', 'calcT3', 'calcFps'].forEach(id => {
+        document.getElementById(id).addEventListener('input', calculate);
+        document.getElementById(id).addEventListener('change', calculate);
+      });
+    }
+
+    function parseTimecode(tcStr, fps) {
+      tcStr = tcStr.trim();
+      let parts = tcStr.split(/[:;\.]/);
+      let h = 0, m = 0, s = 0, f = 0;
+      if (parts.length === 4) {
+        h = parseFloat(parts[0]) || 0;
+        m = parseFloat(parts[1]) || 0;
+        s = parseFloat(parts[2]) || 0;
+        f = parseFloat(parts[3]) || 0;
+      } else if (parts.length === 3) {
+        m = parseFloat(parts[0]) || 0;
+        s = parseFloat(parts[1]) || 0;
+        f = parseFloat(parts[2]) || 0;
+      } else if (parts.length === 2) {
+        s = parseFloat(parts[0]) || 0;
+        f = parseFloat(parts[1]) || 0;
+      } else if (parts.length === 1) {
+        s = parseFloat(parts[0]) || 0;
+      }
+      let totalSec = h * 3600 + m * 60 + s + (f / fps);
+      return totalSec * 1000.0;
+    }
+
+    function calculate() {
+      const fps = parseFloat(document.getElementById('calcFps').value) || 30;
+      const t1 = parseTimecode(document.getElementById('calcT1').value, fps);
+      const t2 = parseTimecode(document.getElementById('calcT2').value, fps);
+      const t3 = parseTimecode(document.getElementById('calcT3').value, fps);
+
+      let startMs = Math.round(t2 - t1);
+      let endMs = Math.round(t3 - t1);
+
+      if (startMs < 0) startMs = 0;
+      if (endMs < startMs) endMs = startMs;
+
+      const formatted = `[[${startMs}, ${endMs}]],`;
+      document.getElementById('calcResult').textContent = formatted;
+    }
+
+    function copyCalcResult() {
+      const text = document.getElementById('calcResult').textContent.trim();
+      copyText(text, '已复制计算结果: ' + text);
+    }
+
+    function exportModifiedTimings() {
+      // Update timings object
+      const exported = JSON.parse(JSON.stringify(RAW_TIMINGS));
+      items.forEach(item => {
+        if (exported[item.id]) {
+          exported[item.id].intervals = item.intervals;
+        } else {
+          exported[item.id] = {
+            intervals: item.intervals,
+            notes: item.note
+          };
+        }
+      });
+
+      // Format clean JSON with single line intervals
+      let jsonLines = ['{'];
+      const keys = Object.keys(exported);
+      keys.forEach((k, idx) => {
+        const isLast = (idx === keys.length - 1);
+        const comma = isLast ? '' : ',';
+        const v = exported[k];
+        jsonLines.push(`  "${k}": {`);
+        jsonLines.push(`    "intervals": ${JSON.stringify(v.intervals)},`);
+        jsonLines.push(`    "notes": ${JSON.stringify(v.notes)}`);
+        jsonLines.push(`  }${comma}`);
+      });
+      jsonLines.push('}');
+      const fullJson = jsonLines.join('\n');
+
+      downloadFile('sp3_timings.json', fullJson, 'application/json');
+      showToast('已生成并下载最新的 sp3_timings.json！');
+    }
+
+    function exportPendingList() {
+      const pending = items.filter(x => !x.is_calibrated);
+      let md = '# 待校准角色清单 (共 ' + pending.length + ' 个)\n\n';
+      md += '| 编号 | 角色名称 | Bot ID | 分类 | 动作说明 | 当前时序 |\n';
+      md += '| :--- | :--- | :--- | :--- | :--- | :--- |\n';
+      pending.forEach((x, i) => {
+        md += `| ${i + 1} | ${x.zh} | \`${x.id}\` | ${x.category} | ${x.note} | \`${JSON.stringify(x.intervals)}\` |\n`;
+      });
+      downloadFile('sp3_pending_characters.md', md, 'text/markdown');
+      showToast('已导出待调整名单 Markdown！');
+    }
+
+    function resetChecklistState() {
+      if (confirm('确定要清除本地的手动勾选记录吗？（不会丢失已修改的时序数值）')) {
+        userCheckedMap = {};
+        localStorage.removeItem(STORAGE_KEY);
+        updateDashboard();
+        renderTable();
+        showToast('已重置本地勾选状态');
+      }
+    }
+
+    function downloadFile(filename, content, type) {
+      const blob = new Blob([content], { type: type + ';charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function copyText(text, successMsg) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          showToast(successMsg || '已复制到剪贴板！');
+        }).catch(() => {
+          fallbackCopy(text, successMsg);
+        });
+      } else {
+        fallbackCopy(text, successMsg);
+      }
+    }
+
+    function fallbackCopy(text, successMsg) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast(successMsg || '已复制到剪贴板！');
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2600);
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

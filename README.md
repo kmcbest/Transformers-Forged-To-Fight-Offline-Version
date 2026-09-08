@@ -65,6 +65,20 @@ This fork extends the project with massive gameplay enhancements, full data reco
 * Built-in official Simplified Chinese bot name translation table ([`bot_names_zh.json`](bot_names_zh.json)).
 * Localized class names, faction badges, update notes, and compliance statement screens.
 
+### 6. 🔄 SP3 Dynamic Transformation Engine & Timing Calibrations
+* **Dynamic S3 Alternation Schedule**: Fixed missing S3 vehicle transform animations; drives vehicle body/robot form alternation matching official animation timelines.
+* **Multi-Interval & Auxiliary Weapon Prop Hiding**: Supports multiple transformation segments per cinematic (`intervals`) and precise weapon/accessory hiding intervals (`props: { "gun": [[0, 0]] }`).
+* **Hot-Reload & Built-In Payload**: Embeds calibrated timing configs (`@sp3_timings`) in the APK while supporting external hot-reloading (`/sdcard/Download/sp3_timings.json`).
+* **Checklist Diagnostic Tool**: Interactive HTML dashboard ([`tools/sp3_checklist.html`](tools/sp3_checklist.html)) to visualize and verify timing accuracy across all characters.
+
+### 7. 🌌 'Six Paths of Samsara' Infinite Challenge Map (六道轮回)
+* **High-Difficulty Custom Progression**: Features Act 1 / Quest 2 dedicated 6-class branch challenge (Warrior, Scout, Tech, Demolitions, Tactician, Brawler).
+* **Supercharged Bosses**: 10x Max HP multipliers, tuned PI ratings, and aggressive combat AI for true endgame testing.
+
+### 8. ⚖️ Combat Mana Gain Tuning & Dynamic Arena Pool
+* **Mana Gain Control**: Intercepts `PlayerController.AddMana` with configurable multipliers (`enemy_mana_gain: 0.5`, `player_mana_gain: 1.0`) to balance battle pace.
+* **Randomized Battle Arenas**: Dynamically cycles through all available arena environments (`mapOverride`) on every fight transition.
+
 ---
 
 ## 🛠️ Automated Extraction & Transcoding Tools
@@ -175,6 +189,20 @@ adb install -r --no-incremental build/Transformers-9.2-offline-netflix-edition.a
 * **内置回环服务器**：单 APK 内部集成完整离线 Python HTTP 伪服务器（Port 8080），内置压缩后的 `tftf_offline_payload.bin` 响应载荷。
 * **零配置即装即玩**：通过 `libdothook.so` + `libil2cpp-arm64-patched.so` 自动将游戏内全部 API 请求重定向至 `127.0.0.1:8080`；
 * **无需电脑、无需外挂 Python、无需 Wi-Fi、无需 Root**，安装后随时随地开机秒进游戏！
+
+### 6. 🔄 SP3 (S3大招) 全套动态变形引擎与全角色标定
+* **动态变形时序引擎**：彻底修复原版离线缺少 S3 载具动作导致的站桩问题，依据官方特写精准驱动载具与人形态切换。
+* **多段变形与挂件/武器定时隐藏**：支持单次特写中多次变形切换（`intervals`），以及多部件专属武器、枪炮在变形期间的精确隐藏与复原（`props: { "gun": [[0, 0]] }`）。
+* **内置配表与本地热重载**：APK 内部打包嵌入 `@sp3_timings`，同时支持手机外置目录热重载调试。
+* **时序调试看板**：内置交互式检查工具（[`tools/sp3_checklist.html`](tools/sp3_checklist.html)），可视化检视 63 角色标定进度。
+
+### 7. 🌌 “六道轮回” 六职业高难挑战关卡
+* **专属无限挑战地图**：在第一幕第2关内置六道分支（勇士、侦察、科技、爆破、战术、格斗）。
+* **高难 Boss 挑战**：Boss 拥有 10 倍血量加成、高战力加成与高侵略性 AI，提供极致对战乐趣。
+
+### 8. ⚖️ 战斗怒气动态平衡与随机战斗竞技场
+* **双方加气倍率调优**：精准拦截 `PlayerController.AddMana`，支持通过配表动态调节敌我加气速度（默认敌方 0.5x 减半避免无脑连发大招，我方 1.0x 正常）。
+* **竞技场随机化**：战斗地图不再固定单一场景，每次进入战斗从全场景池（`mapOverride`）中动态随机分配。
 
 ---
 
