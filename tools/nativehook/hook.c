@@ -535,6 +535,10 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x1173B28, "BLOCKENTER",         2, 0 }, // 160 PlayerBlockState.OnEnter -> reset attack chain on entering block
     { 0xC16688,  "GET_MAP_ASSET_ID",   2, 0 }, // 161 BCGBlueprintBase.get_MapAssetID -> resolve to real portrait resource name
     { 0x127F794, "LOCALIZE",           2, 0 }, // 162 Localization.Get
+    { 0x95BDD8,  "LIVENESS_ADD_OBJ",   2, 0 }, // 163 AddProcessObject (filter invalid object pointers during GC/liveness)
+    { 0x103E278, "GETACTQ",            2, 0 }, // 164 QuestDB.GetActiveQuest(category) -> alias Story to PvE / fallback
+    { 0xC1FFDC,  "GETACTT",            2, 0 }, // 165 BCGUserData.GetActiveTeam(teamId) -> fallback team
+    { 0xCB7E70,  "OPENQPOP",           2, 0 }, // 166 QuestsManager.OpenQuestPopup(category) -> log / ensure quest
 };
 #define NH (int)(sizeof(H)/sizeof(H[0]))
 
@@ -1083,7 +1087,19 @@ void* hook_52(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
     g_inqs--; \
     PROTECT( flog("%s end", H[i].tag); ); \
     return r; }
-MKQS(59) MKQS(60) MKQS(61) MKQS(62) MKQS(63) MKQS(64) MKQS(65) MKQS(66)
+MKQS(59) MKQS(60) MKQS(61) MKQS(62) MKQS(63) /* 64 custom */ MKQS(65) MKQS(66)
+static void* g_last_quest_summary = NULL;
+void* hook_64(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
+    PROTECT( flog("%s begin (summary=%p)", H[64].tag, a1); );
+    if (a1 && obj_ok(a1)) {
+        g_last_quest_summary = a1;
+    }
+    g_inqs++;
+    void* r = H[64].orig(a0,a1,a2,a3,a4,a5,a6,a7);
+    g_inqs--;
+    PROTECT( flog("%s end", H[64].tag); );
+    return r;
+}
 // slots 67-69 (session 8): story-visibility instrumentation. Log the category argument and
 // results of the set-count/lookup queries the STORY landing runs, to locate the availability
 // gate that keeps the (correctly-parsed) mission from appearing. read_str/flog defined above.
@@ -1552,7 +1568,7 @@ static const char* const COLORPROPS[] = {
 };
 // Safe field readers: every base-board field we want lives at a fixed offset off a managed
 // object, so read them directly (under PROTECT) rather than calling back into il2cpp.
-static int obj_ok(void* p){ return (uintptr_t)p >= 0x100000 && !((uintptr_t)p & 7); }
+static int obj_ok(void* p){ return (uintptr_t)p >= 0x100000 && (uintptr_t)p < 0x0000800000000000ULL && !((uintptr_t)p & 7); }
 static void* fld_p(void* o, int off){ return obj_ok(o) ? *(void**)((uintptr_t)o + off) : NULL; }
 static float fld_f(void* o, int off){ return obj_ok(o) ? *(float*)((uintptr_t)o + off) : -999.0f; }
 // System.Collections.Generic.List<T>._size lives at 0x18; -1 marks "list itself was null".
@@ -4727,6 +4743,110 @@ void* hook_162(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     return r;
 }
 
+void* hook_163(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7) {
+    if (!obj_ok(a0)) {
+        if (a0) {
+            flog("LIVENESS_GUARD: filtered bad obj=%p (caller=%p)", a0, __builtin_return_address(0));
+        }
+        return (void*)0;
+    }
+    void* res = (void*)0;
+    PROTECT({
+        uintptr_t k = *(uintptr_t*)a0;
+        uintptr_t clean_k = k & ~1ULL;
+        if (obj_ok((void*)clean_k)) {
+            volatile uint16_t test_attr = *(volatile uint16_t*)(clean_k + 0x132);
+            (void)test_attr;
+            res = H[163].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+        } else {
+            flog("LIVENESS_GUARD: filtered bad klass=%p for obj=%p (caller=%p)", (void*)k, a0, __builtin_return_address(0));
+        }
+    });
+    return res;
+}
+
+static void* g_last_active_quest = NULL;
+static void* g_last_active_team = NULL;
+
+void* hook_164(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7) {
+    char cat[64] = {0};
+    if (a0 && obj_ok(a0)) {
+        read_str(a0, cat, sizeof(cat));
+    }
+    void* r = H[164].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    if (r) {
+        g_last_active_quest = r;
+        flog("GETACTQ: found active quest for cat='%s' -> %p", cat, r);
+    } else if (strcmp(cat, "Story") == 0 && g_strnew) {
+        void* pve = g_strnew("PvE");
+        if (pve) {
+            r = H[164].orig(pve, a1, a2, a3, a4, a5, a6, a7);
+            if (r) {
+                g_last_active_quest = r;
+                flog("GETACTQ: 'Story' -> 'PvE' aliased -> %p", r);
+            }
+        }
+    }
+    if (!r && g_last_active_quest && obj_ok(g_last_active_quest)) {
+        r = g_last_active_quest;
+        flog("GETACTQ: using cached g_last_active_quest=%p for cat='%s'", r, cat);
+    }
+    if (r && obj_ok(r)) {
+        PROTECT({
+            if (g_last_quest_summary && obj_ok(g_last_quest_summary)) {
+                *(void**)((uintptr_t)r + 0x28) = g_last_quest_summary;
+                flog("GETACTQ: updated activeQuest->questSummary to %p", g_last_quest_summary);
+            }
+            void* tid_ptr = *(void**)((uintptr_t)r + 0x18);
+            if (!tid_ptr && g_strnew) {
+                *(void**)((uintptr_t)r + 0x18) = g_strnew("1.1.2-0");
+                flog("GETACTQ: patched null teamId to '1.1.2-0'");
+            }
+        });
+    }
+    return r;
+}
+
+void* hook_165(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7) {
+    char tid[64] = {0};
+    if (a0 && obj_ok(a0)) {
+        read_str(a0, tid, sizeof(tid));
+    }
+    void* r = H[165].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    if (r) {
+        g_last_active_team = r;
+        flog("GETACTT: found team for tid='%s' -> %p", tid, r);
+        return r;
+    }
+    if (g_strnew) {
+        const char* fallbacks[] = {"1.1.2-0", "1.1.1-0", "0", NULL};
+        for (int i = 0; fallbacks[i]; i++) {
+            void* st = g_strnew(fallbacks[i]);
+            if (st) {
+                r = H[165].orig(st, a1, a2, a3, a4, a5, a6, a7);
+                if (r) {
+                    g_last_active_team = r;
+                    flog("GETACTT: fallback '%s' -> %p", fallbacks[i], r);
+                    return r;
+                }
+            }
+        }
+    }
+    if (g_last_active_team && obj_ok(g_last_active_team)) {
+        flog("GETACTT: using cached g_last_active_team=%p for tid='%s'", g_last_active_team, tid);
+        return g_last_active_team;
+    }
+    flog("GETACTT: null for tid='%s'", tid);
+    return NULL;
+}
+
+void* hook_166(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7) {
+    flog("OPENQPOP: enter (a0=%p)", a0);
+    void* r = H[166].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    flog("OPENQPOP: exit -> %p", r);
+    return r;
+}
+
 static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hook_7,hook_8,
     hook_9,hook_10,hook_11,hook_12,hook_13,hook_14,hook_15,hook_16,hook_17,hook_18,hook_19,hook_20,hook_21,
     hook_22,hook_23,hook_24,hook_25,hook_26,hook_27,hook_28,hook_29,hook_30,
@@ -4744,7 +4864,7 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     hook_138,hook_139,hook_140,hook_141,hook_142,hook_143,hook_144,
     hook_145,hook_146,hook_147,hook_148,hook_149,hook_150,hook_151,
     hook_152,hook_153,hook_154,hook_155,hook_156,hook_157,hook_158,
-    hook_159,hook_160,hook_161,hook_162 };
+    hook_159,hook_160,hook_161,hook_162,hook_163,hook_164,hook_165,hook_166 };
 
 static void write_jump(uint8_t* dst, void* target){
     uint32_t* p = (uint32_t*)dst;
@@ -4900,7 +5020,7 @@ static void* installer(void* arg){
 }
 
 static void inapk_log(const char* fmt, ...){
-    char line[512]; va_list ap;
+    char line[2048]; va_list ap;
     va_start(ap, fmt); vsnprintf(line, sizeof line, fmt, ap); va_end(ap);
     LOG("%s", line);
 }

@@ -531,6 +531,24 @@ static void *connection(void *arg) {
         if(clen>MAX_BODY) { size_t consumed=body_have; unsigned char junk[4096]; while(consumed<clen){size_t want=clen-consumed;if(want>sizeof junk)want=sizeof junk;ssize_t r=recv(fd,junk,want,0);if(r<=0)goto out;consumed+=(size_t)r;} take=MAX_BODY; }
         if (hlen + take < MAX_HEAD + MAX_BODY) buf[hlen + take] = 0;
         snprintf(path,sizeof path,"%s",target); char *q=strchr(path,'?');if(q){*q++=0;query=q;}
+        logmsg("HTTP: %s %s", method, path);
+        if (strstr(path, "/bugs")) {
+            FILE* bf = fopen("/sdcard/Android/data/com.kabam.bigrobot/files/last_bug_report.json", "wb");
+            if (bf) {
+                fwrite((const char*)buf + hlen, 1, take, bf);
+                fclose(bf);
+                logmsg("BUG_REPORT_SAVED (%d bytes)", (int)take);
+            }
+            const char* body = (const char*)buf + hlen;
+            const char* p_st = strstr(body, "\"stack\"");
+            if (p_st) {
+                logmsg("BUG_STACK: %.500s", p_st);
+            }
+            const char* p_err = strstr(body, "\"error\"");
+            if (p_err) {
+                logmsg("BUG_ERR: %.300s", p_err);
+            }
+        }
         Out o={0}; size_t n=0; const unsigned char *answer;
         if(ci_equal(method,"HEAD")) answer=(const unsigned char*)"";
         else { answer=dynamic((const char*)buf,method,path,query,(const char*)buf+hlen,take,&o,&n); if(!answer){char key[4200];snprintf(key,sizeof key,"%s %s",method,path);answer=lookup(key,&n);} if(!answer){uint32_t i;for(i=0;i<g_blob.pc;i++){Rec r=rec_at(&g_blob,g_blob.po,i);if(strlen(path)>=r.kl&&!memcmp(path,g_blob.p+r.ko,r.kl)){answer=body_for(&r,&n);break;}}}if(!answer){answer=g_blob.p+g_blob.dfo;n=g_blob.dfl;} }

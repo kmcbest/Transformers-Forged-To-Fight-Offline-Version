@@ -292,9 +292,9 @@ class H(http.server.BaseHTTPRequestHandler):
                 team = {"TeamID": team_id, "teamID": team_id, "id": team_id,
                         "TeamHeroes": list(heroes), "heroes": list(heroes)}
                 active_teams = [
-                    {"aid": "1.1.1-%s" % team_id, "type": "PvE", "modes": ["PvE"],
+                    {"aid": "1.1.1-%s" % team_id, "type": "pve", "modes": ["pve"],
                      "heroes": {bid: {"bid": bid} for bid in heroes[:2]}, "expire": 0},
-                    {"aid": "1.1.2-%s" % team_id, "type": "PvE", "modes": ["PvE"],
+                    {"aid": "1.1.2-%s" % team_id, "type": "pve", "modes": ["pve"],
                      "heroes": {bid: {"bid": bid} for bid in heroes[:2]}, "expire": 0},
                 ]
             result = {"updates": {"savedTeams": [team], "activeTeams": active_teams},

@@ -713,7 +713,7 @@ end
 public function build_active_team(activity_id: text, heroes: a list of text): Json
   intent: build
   let bids: a list of text = resolve_team(heroes)
-  jsonout.json_obj([jsonout.json_pair("aid", jsonout.json_text(activity_id)), jsonout.json_pair("type", jsonout.json_text("PvE")), jsonout.json_pair("modes", jsonout.json_list([jsonout.json_text("PvE")])), jsonout.json_pair("heroes", json_hero_object(bids)), jsonout.json_pair("expire", jsonout.json_int(0))])
+  jsonout.json_obj([jsonout.json_pair("aid", jsonout.json_text(activity_id)), jsonout.json_pair("type", jsonout.json_text("pve")), jsonout.json_pair("modes", jsonout.json_list([jsonout.json_text("pve")])), jsonout.json_pair("heroes", json_hero_object(bids)), jsonout.json_pair("expire", jsonout.json_int(0))])
 end
 
 public function build_user_data(team: a list of text): Json
