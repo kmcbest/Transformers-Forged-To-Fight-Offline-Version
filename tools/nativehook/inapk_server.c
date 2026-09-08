@@ -65,6 +65,11 @@ static const char * const g_enemy_pool[] = {
 };
 #define ENEMY_POOL_SIZE (sizeof(g_enemy_pool) / sizeof(g_enemy_pool[0]))
 
+static const char * const g_arena_pool[] = {
+    "chicago", "hongkong", "karnak", "mine", "rust"
+};
+#define ARENA_POOL_SIZE (sizeof(g_arena_pool) / sizeof(g_arena_pool[0]))
+
 static unsigned int g_rand_seed = 123456789;
 static unsigned int q_rand(void) {
     if (g_rand_seed == 123456789) {
@@ -207,6 +212,43 @@ static int out_hero_detail(Out *o, const unsigned char *s, size_t n, const char 
 static const unsigned char *json_default_spaces(const unsigned char *s, size_t n, Out *o, size_t *outn) {
     size_t i; int quoted=0, escaped=0;
     for(i=0;i<n;i++) {
+        if (!quoted && i + 13 <= n && !memcmp(s + i, "\"mapOverride\"", 13)) {
+            size_t j = i + 13;
+            while (j < n && isspace((unsigned char)s[j])) j++;
+            if (j < n && s[j] == ':') {
+                j++;
+                while (j < n && isspace((unsigned char)s[j])) j++;
+                if (j < n && s[j] == '\"') {
+                    j++;
+                    while (j < n && s[j] != '\"') {
+                        if (s[j] == '\\') j++;
+                        if (j < n) j++;
+                    }
+                    if (j < n && s[j] == '\"') j++;
+                    const char *arena = g_arena_pool[q_rand() % ARENA_POOL_SIZE];
+                    char buf[64];
+                    int blen = snprintf(buf, sizeof(buf), "\"mapOverride\": \"%s\"", arena);
+                    if (!out_add(o, (const unsigned char*)buf, (size_t)blen)) return NULL;
+                    i = j - 1;
+                    continue;
+                }
+            }
+        }
+        if (!quoted && i + 10 <= n && !memcmp(s + i, "\"todIndex\"", 10)) {
+            size_t j = i + 10;
+            while (j < n && isspace((unsigned char)s[j])) j++;
+            if (j < n && s[j] == ':') {
+                j++;
+                while (j < n && isspace((unsigned char)s[j])) j++;
+                while (j < n && (isdigit((unsigned char)s[j]) || s[j] == '-')) j++;
+                int tod = (int)(q_rand() % 3);
+                char buf[32];
+                int blen = snprintf(buf, sizeof(buf), "\"todIndex\": %d", tod);
+                if (!out_add(o, (const unsigned char*)buf, (size_t)blen)) return NULL;
+                i = j - 1;
+                continue;
+            }
+        }
         unsigned char c=s[i];
         if(!out_add(o,&c,1)) return NULL;
         if(quoted) { if(escaped) escaped=0; else if(c=='\\') escaped=1; else if(c=='\"') quoted=0; }
