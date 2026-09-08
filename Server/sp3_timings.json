@@ -221,7 +221,7 @@
   },
   "sharkticon": {
     "intervals": [[1000,2500]],
-    "notes": "鲨鱼精系列 - 默认载具/野兽变形区间"
+    "notes": "饿鲨系列 - 默认载具/野兽变形区间"
   },
   "shockwave": {
     "intervals": [[1000,2500]],
@@ -320,7 +320,7 @@
     "notes": "黄豹勇士 (Cheetor) - 金属猎豹"
   },
   "chromia_gs_kabam": {
-    "intervals": [[2030,3160]],
+    "intervals": [[4667, 6867]],    
     "notes": "克劳莉娅 (Chromia) - 摩托车"
   },
   "cliffjumper_gs_kabam": {
@@ -332,7 +332,7 @@
     "notes": "狂飙 (Cyclonus) - 宇宙战机"
   },
   "deadend_gs_deluxe2015": {
-    "intervals": [[1000,2500]],
+    "intervals": [[1433, 3533]],
     "notes": "封锁 (Dead End) - 保时捷跑车"
   },
   "dinobot_bw_kabam": {
@@ -413,7 +413,7 @@
   },
   "mixmaster_cin_rotf": {
     "intervals": [[2433, 7000]],
-    "notes": "搅拌大师 (Mixmaster) - 水泥车/重炮"
+    "notes": "搅拌大者(Mixmaster) - 水泥车"
   },
   "motormaster_gs_voyager2015": {
     "intervals": [[6100, 7067]],
@@ -421,7 +421,7 @@
   },
   "necrotronus_gs_kabam": {
     "intervals": [[6730,8070]],
-    "notes": "死灵金刚 (Necrotronus)"
+    "notes": "亡灵天尊 (Necrotronus)-外星战机"
   },
   "novastorm_gs_leader2015": {
     "intervals": [[2230,5230]],
@@ -457,38 +457,38 @@
   },
   "sharkticon_gs_brawler": {
     "intervals": [[633, 7767]],
-    "notes": "鲨鱼精·格斗 (Sharkticon)"
+    "notes": "饿鲨·斗士 (Sharkticon)"
   },
   "sharkticon_gs_demolition": {
     "intervals": [[633, 7767]],
-    "notes": "鲨鱼精·爆破 (Sharkticon)"
+    "notes": "饿鲨·爆破 (Sharkticon)"
   },
   "sharkticon_gs_kabam": {
     "intervals": [[633, 7767]],
-    "notes": "鲨鱼精 (Sharkticon) - 机械两栖鲨鱼"
+    "notes": "饿鲨-1000 (Sharkticon) - 机械两栖鲨鱼"
   },
   "sharkticon_gs_scout": {
     "intervals": [[633, 7767]],
-    "notes": "鲨鱼精·侦察 (Sharkticon)"
+    "notes": "饿鲨·侦察 (Sharkticon)"
   },
   "sharkticon_gs_tactician": {
     "intervals": [[633, 7767]],
-    "notes": "鲨鱼精·战术 (Sharkticon)"
+    "notes": "饿鲨·战术 (Sharkticon)"
   },
   "sharkticon_gs_tech": {
     "intervals": [[633, 7767]],
-    "notes": "鲨鱼精·科技 (Sharkticon)"
+    "notes": "饿鲨·科技 (Sharkticon)"
   },
   "sharkticon_gs_warrior": {
     "intervals": [[633, 7767]],
-    "notes": "鲨鱼精·勇士 (Sharkticon)"
+    "notes": "饿鲨·战士 (Sharkticon)"
   },
   "shockwave_gs": {
-    "intervals": [[1000,2500]],
+    "intervals": [[3533, 5800]],
     "notes": "震荡波 (Shockwave) - 激光重炮"
   },
   "sideswipe_gs": {
-    "intervals": [[1000,2500]],
+    "intervals": [[700, 2133]],
     "notes": "横炮 (Sideswipe) - 兰博基尼跑车"
   },
   "skywarp_gs_leader2015": {
@@ -500,11 +500,11 @@
     "notes": "滑流 (Slipstream) - 隐身战机"
   },
   "soundblaster_gs_mp13b": {
-    "intervals": [[1000,2500]],
-    "notes": "音爆 (Soundblaster)"
+    "intervals": [[0, 4533]],
+    "notes": "音板 (Soundblaster)"
   },
   "soundwave_gs": {
-    "intervals": [[1000,2500]],
+    "intervals": [[0, 4533]],
     "notes": "声波 (Soundwave)"
   },
   "starsaber_gs_leader2014": {
@@ -513,15 +513,15 @@
   },
   "sunstorm_gs_leader2015": {
     "intervals": [[2230,5230]],
-    "notes": "太阳风暴 (Sunstorm) - 战机"
+    "notes": "太阳风 (Sunstorm) - 战机"
   },
   "sunstreaker_gs_deluxe2008": {
     "intervals": [[530,1500]],
     "notes": "飞毛腿 (Sunstreaker) - 跑车"
   },
   "tantrum_gs_kabam": {
-    "intervals": [[1000,2500]],
-    "notes": "野牛/喧闹 (Tantrum) - 机械野牛"
+    "intervals": [[500, 6267]],
+    "notes": "野牛 (Tantrum) - 机械野牛"
   },
   "thrust_gs_deluxe2008": {
     "intervals": [[930,6850]],
@@ -532,15 +532,15 @@
     "notes": "闹翻天 (Thundercracker) - 战机"
   },
   "ultramagnus_gs_leader": {
-    "intervals": [[1000,2500]],
+    "intervals": [[3000, 5800]],
     "notes": "通天晓 (Ultra Magnus) - 重型装甲运输卡车"
   },
   "waspinator_gs_deluxe": {
-    "intervals": [[1000,2500]],
+    "intervals": [[2100, 3300]],
     "notes": "黄蜂勇士 (Waspinator) - 机械黄蜂"
   },
   "wheeljack_gs_mp20": {
-    "intervals": [[1000,2500]],
+    "intervals": [[733, 2200]],
     "notes": "千斤顶 (Wheeljack) - 赛车"
   },
   "windblade_gs": {
