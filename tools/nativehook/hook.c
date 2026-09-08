@@ -3827,6 +3827,15 @@ static int sp3_parse_intervals_from_json(const char* json_str, const char* bot_i
                             pt->is_active = 0;
                             flog("SP3WEAPON_CFG name=%s active_intervals=%d on0=%d off0=%d",
                                  pt->name, pt->count, pt->on_ms[0], pt->off_ms[0]);
+                        } else {
+                            // Explicitly specified with [[0, 0]] or empty -> force hide throughout SP3
+                            SP3PropTiming* pt = &g_sp3_prop_timings[g_sp3_prop_timing_count++];
+                            strncpy(pt->name, pname, sizeof(pt->name) - 1);
+                            pt->name[sizeof(pt->name) - 1] = 0;
+                            pt->count = 0;
+                            pt->prop_ptr = NULL;
+                            pt->is_active = 0;
+                            flog("SP3WEAPON_CFG name=%s force_hidden", pt->name);
                         }
 
                         if (outer_arr_end) cur_p = outer_arr_end + 1;
