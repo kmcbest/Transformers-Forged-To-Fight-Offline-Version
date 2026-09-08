@@ -539,6 +539,7 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x103E278, "GETACTQ",            2, 0 }, // 164 QuestDB.GetActiveQuest(category) -> alias Story to PvE / fallback
     { 0xC1FFDC,  "GETACTT",            2, 0 }, // 165 BCGUserData.GetActiveTeam(teamId) -> fallback team
     { 0xCB7E70,  "OPENQPOP",           2, 0 }, // 166 QuestsManager.OpenQuestPopup(category) -> log / ensure quest
+    { 0x11794A4, "ADDMANA",            2, 0 }, // 167 PlayerController.AddMana -> scale enemy mana gain dynamically
 };
 #define NH (int)(sizeof(H)/sizeof(H[0]))
 
@@ -2579,6 +2580,58 @@ static int calc_enemy_rating(const char* bid, int rank, int level) {
     return pi;
 }
 
+static float g_combat_enemy_mana_gain = 0.5f;
+static float g_combat_player_mana_gain = 1.0f;
+
+static void load_combat_tuning_config(void) {
+    const char* hot_paths[] = {
+        "/data/data/com.kabam.bigrobot/files/sp3_timings.json",
+        "/sdcard/Android/media/com.kabam.bigrobot/sp3_timings.json",
+        "/sdcard/Download/sp3_timings.json",
+        "/storage/emulated/0/Download/sp3_timings.json",
+        "/data/local/tmp/sp3_timings.json"
+    };
+    for (size_t hi = 0; hi < sizeof(hot_paths)/sizeof(hot_paths[0]); hi++) {
+        FILE* fp = fopen(hot_paths[hi], "rb");
+        if (fp) {
+            fseek(fp, 0, SEEK_END);
+            long len = ftell(fp);
+            fseek(fp, 0, SEEK_SET);
+            if (len > 10 && len < 262144) {
+                char* buf = (char*)malloc(len + 1);
+                if (buf) {
+                    size_t read_bytes = fread(buf, 1, len, fp);
+                    buf[read_bytes] = 0;
+                    const char* p_enemy = strstr(buf, "\"enemy_mana_gain\"");
+                    if (p_enemy) {
+                        const char* colon = strchr(p_enemy, ':');
+                        if (colon) {
+                            float val = 0.5f;
+                            if (sscanf(colon + 1, "%f", &val) == 1 && val >= 0.0f && val <= 10.0f) {
+                                g_combat_enemy_mana_gain = val;
+                            }
+                        }
+                    }
+                    const char* p_player = strstr(buf, "\"player_mana_gain\"");
+                    if (p_player) {
+                        const char* colon = strchr(p_player, ':');
+                        if (colon) {
+                            float val = 1.0f;
+                            if (sscanf(colon + 1, "%f", &val) == 1 && val >= 0.0f && val <= 10.0f) {
+                                g_combat_player_mana_gain = val;
+                            }
+                        }
+                    }
+                    free(buf);
+                    fclose(fp);
+                    return;
+                }
+            }
+            fclose(fp);
+        }
+    }
+}
+
 // slot 56 FIXFIGHT: PlayerAttributes.Init(this=a0, owner=a1, manager=a2, fighterData=a3,
 // opponentFighterData=a4). At dac178 it does `new HashSet<string>(this._blueprint.Tags)` and
 // throws ArgumentNullException when Tags is null -> "unknown error" as the fight loads. The
@@ -2617,6 +2670,7 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
             strncpy(g_p1_bot_id, id1, sizeof(g_p1_bot_id) - 1);
             g_p1_bot_id[sizeof(g_p1_bot_id) - 1] = 0;
         }
+        load_combat_tuning_config();
         int32_t cur_hp = (at1 && obj_ok(at1)) ? *(int32_t*)((char*)at1 + 0x2C) : 0;
         if (player_idx == 1 || (player_idx != 0 && cur_hp <= 0)) {
             float hp_f = 50000.0f;
@@ -2643,11 +2697,12 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                 *(float*)  ((char*)at1 + 0x44) = 0.2f;  // CritChance
                 *(float*)  ((char*)at1 + 0x48) = 1.5f;  // CritDamage
                 *(float*)  ((char*)at1 + 0x50) = 0.5f;  // BlockProficiency
-                *(float*)  ((char*)at1 + 0x54) = 1.0f;  // ManaGain
+                *(float*)  ((char*)at1 + 0x54) = g_combat_enemy_mana_gain;  // Dynamic enemy mana gain rate
                 *(int32_t*)((char*)at1 + 0x58) = 0;     // ManaStart = 0
             }
             if (at2 && obj_ok(at2)) {
                 *(int32_t*)((char*)at2 + 0x58) = 0;     // Player ManaStart = 0
+                *(float*)  ((char*)at2 + 0x54) = g_combat_player_mana_gain; // Dynamic player mana gain rate
             }
             if (ch1 && obj_ok(ch1)) {
                 *(int32_t*)((char*)ch1 + 0x28) = 3;     // NumSpecials
@@ -2658,10 +2713,11 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                 *(int32_t*)((char*)ch1 + 0x3C) = atk;
                 *(float*)  ((char*)ch1 + 0x58) = 1.0f;  // HP multiplier in CharacterData
             }
-            LOG("FIXFIGHT_STATS: player=%d bp=%s filled hp=%d atk=%d pi=%d",
-                 player_idx, id1, hp, atk, pi);
+            LOG("FIXFIGHT_STATS: player=%d bp=%s filled hp=%d atk=%d pi=%d enemy_mana_gain=%.2f",
+                 player_idx, id1, hp, atk, pi, g_combat_enemy_mana_gain);
         } else if (player_idx == 0) {
             if (at1 && obj_ok(at1)) {
+                *(float*)((char*)at1 + 0x54) = g_combat_player_mana_gain; // Dynamic player mana gain rate
                 float cur_norm_hp = *(float*)((char*)at1 + 0x34);
                 if (cur_norm_hp <= 0.0f || cur_hp <= 0) {
                     flog("FIXFIGHT: reviving Player 0 HP from %f (max=%d) to 1.0f", cur_norm_hp, cur_hp);
@@ -2675,6 +2731,9 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                 if (bp <= 0.0f || bp > 1.0f) {
                     *(float*)((char*)at1 + 0x50) = 0.5f;
                 }
+            }
+            if (at2 && obj_ok(at2)) {
+                *(float*)((char*)at2 + 0x54) = g_combat_enemy_mana_gain; // Enemy mana gain rate
             }
             if (ch1 && obj_ok(ch1)) {
                 if (*(float*)((char*)ch1 + 0x34) <= 0.0f) {
@@ -2713,7 +2772,6 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                             float max_val = get_val(max_prop, NULL);
                             if (max_val <= 0.0f) { max_val = 50000.0f; set_val(max_prop, max_val, NULL); }
                             set_val(cur_prop, max_val, NULL);
-                            flog("FIXFIGHT: post-init CombatHealth set cur=max=%f", max_val);
                         }
                     }
                 }
@@ -4869,6 +4927,25 @@ void* hook_166(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     return r;
 }
 
+// hook 167: PlayerController.AddMana(float amount)
+// ABI: self in a0 (PlayerController*), amount in s0
+void* hook_167(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    float amt;
+    __asm__ volatile ("fmov %w0, s0" : "=r"(amt));
+    if (obj_ok(a0)) {
+        int32_t p_idx = *(int32_t*)((uintptr_t)a0 + 0xF4);
+        if (p_idx != 0) {
+            // Enemy / AI player: apply dynamic enemy mana gain multiplier
+            amt *= g_combat_enemy_mana_gain;
+        } else {
+            // Player 0: apply player multiplier
+            amt *= g_combat_player_mana_gain;
+        }
+    }
+    __asm__ volatile ("fmov s0, %w0" : : "r"(amt));
+    return H[167].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+}
+
 static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hook_7,hook_8,
     hook_9,hook_10,hook_11,hook_12,hook_13,hook_14,hook_15,hook_16,hook_17,hook_18,hook_19,hook_20,hook_21,
     hook_22,hook_23,hook_24,hook_25,hook_26,hook_27,hook_28,hook_29,hook_30,
@@ -4886,7 +4963,8 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     hook_138,hook_139,hook_140,hook_141,hook_142,hook_143,hook_144,
     hook_145,hook_146,hook_147,hook_148,hook_149,hook_150,hook_151,
     hook_152,hook_153,hook_154,hook_155,hook_156,hook_157,hook_158,
-    hook_159,hook_160,hook_161,hook_162,hook_163,hook_164,hook_165,hook_166 };
+    hook_159,hook_160,hook_161,hook_162,hook_163,hook_164,hook_165,hook_166,
+    hook_167 };
 
 static void write_jump(uint8_t* dst, void* target){
     uint32_t* p = (uint32_t*)dst;

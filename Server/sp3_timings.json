@@ -2,7 +2,9 @@
   "_default": {
     "intervals": [[1000, 2500]],
     "props": {},
-    "notes": "全局默认变形时间：1.0秒至2.5秒"
+    "enemy_mana_gain": 0.5,
+    "player_mana_gain": 1.0,
+    "notes": "全局默认变形时间：1.0秒至2.5秒; enemy_mana_gain为敌方加气倍率(默认0.5即减半), player_mana_gain为我方加气倍率(默认1.0)"
   },
   "optimusprime": {
     "intervals": [[1295, 2330]],
@@ -81,8 +83,8 @@
   "bumblebee_gs_kabam": {
     "intervals": [[433, 3800]],
     "props": {
-      "rightgun": [[0, 0]],
-      "leftgun": [[0, 0]]
+      "rightgun": [[4030,6300]],
+      "leftgun": [[4030,6300]]
     },
     "notes": "G1大黄蜂 - 甲壳虫漂移甩尾"
   },
@@ -91,7 +93,7 @@
     "props": {
       "leftCannon": [[0, 0]],
       "rightCannon": [[0, 0]],
-      "mask": [[0, 0]]
+      "mask": [[4230,8570]]
     },
     "notes": "电影大黄蜂 - 跑车漂移甩尾"
   },
