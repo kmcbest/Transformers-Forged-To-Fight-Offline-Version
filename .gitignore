@@ -31,9 +31,8 @@
 .longtask/
 /toolchain/
 *.zip
-*.png
+*.psd
 assets_netflix/
-assets_redeco/
 extracted_optimus/
 extracted_apk/
 *.bin
@@ -44,4 +43,17 @@ tools/apk_asset_index.json
 
 gamecache/vungle_cache/
 gamecache/Unity/
-*.assetbundle
+
+# Ignore assets_redeco directory by default, but whitelist essential original assets and enhancements
+assets_redeco/*
+!assets_redeco/cha_starsaber_gs_leader2014_main_a.png
+!assets_redeco/cha_starsaber_gs_leader2014_tform_misc_a.png
+!assets_redeco/portrait_starsaber_large.png
+!assets_redeco/portrait_starsaber_small.jpg
+!assets_redeco/portrait_starsaber_quest.png
+!assets_redeco/starsaber.png
+!assets_redeco/cha_optimusprime_sg_main_a.png
+!assets_redeco/buildings.assetbundle
+!assets_redeco/primordial_base.assetbundle
+!assets_redeco/towers.assetbundle
+!assets_redeco/relics.assetbundle
