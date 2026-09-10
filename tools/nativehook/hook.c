@@ -4665,6 +4665,9 @@ static const struct ArtBaseMap ART_BASE_MAP[] = {
     { "deadend_gs_deluxe2015", "deadend_gs" },
     { "dinobot_bw_kabam", "dinob_bw" },
     { "dirge_gs_deluxe2008", "dirge_gs" },
+    { "dragstrip_gs_deluxe2016", "dragstrip" },
+    { "dragstrip_gs", "dragstrip" },
+    { "dragstrip", "dragstrip" },
     { "drift_cin_aoe", "drift_c" },
     { "fte_optimus_gs_t3", "optimus_gs" },
     { "fte_stars_gs_t3", "stars_gs" },
@@ -4835,6 +4838,12 @@ void* hook_162(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
                 LOG("LOCALIZE sp: %s -> %s", k, tr);
                 return g_strnew(tr);
             }
+        }
+        if (strstr(k, "DRAGSTRIP") || strstr(k, "dragstrip") || strstr(k, "Dragstrip")) {
+            if (strstr(k, "BIO") || strstr(k, "desc") || strstr(k, "DESC") || strstr(k, "Bio")) {
+                return g_strnew("飞虎队成员抢劫。他是个极度渴望胜利的战士，为了获胜不惜采用一切手段。第一名就是一切，第二名就是头号输家。");
+            }
+            return g_strnew("抢劫");
         }
     }
     return r;

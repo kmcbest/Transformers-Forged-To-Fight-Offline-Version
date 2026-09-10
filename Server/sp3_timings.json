@@ -6,6 +6,24 @@
     "player_mana_gain": 1.0,
     "notes": "全局默认变形时间：1.0秒至2.5秒; enemy_mana_gain为敌方加气倍率(默认0.5即减半), player_mana_gain为我方加气倍率(默认1.0)"
   },
+  "dragstrip": {
+    "intervals": [[1000, 2500]],
+    "props": {
+      "cube": [[0, 0]],
+      "leftgun": [[0, 0]],
+      "rightgun": [[0, 0]]
+    },
+    "notes": "抢劫Dragstrip - 幻影F1分身漂移S3"
+  },
+  "dragstrip_gs_deluxe2016": {
+    "intervals": [[1000, 2500]],
+    "props": {
+      "cube": [[0, 0]],
+      "leftgun": [[0, 0]],
+      "rightgun": [[0, 0]]
+    },
+    "notes": "抢劫Dragstrip - 幻影F1分身漂移S3"
+  },
   "optimusprime": {
     "intervals": [[1295, 2330]],
     "props": {

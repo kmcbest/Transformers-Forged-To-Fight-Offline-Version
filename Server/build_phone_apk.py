@@ -345,6 +345,7 @@ def build(
                         "bitstream_gs_leader2015_odr",
                         "chromia_gs_kabam_odr",
                         "deadend_gs_deluxe2015_odr",
+                        "dragstrip_gs_deluxe2016_odr",
                         "hotlink_gs_leader2015_odr",
                         "ionstorm_gs_leader2015_odr",
                         "novastorm_gs_leader2015_odr",
@@ -356,6 +357,12 @@ def build(
                         "thrust_gs_deluxe2008_odr",
                     ]:
                         packs[pkey] = pkey
+                    # Dynamically add all assetbundles in assets_redeco as packs
+                    _rdir = Path("assets_redeco")
+                    if _rdir.is_dir():
+                        for _b in _rdir.glob("*.assetbundle"):
+                            if _b.stem not in ("towers", "relics"):
+                                packs[f"{_b.stem}_odr"] = f"{_b.stem}_odr"
                     pdict["packs"] = packs
                     data = json.dumps(pdict, indent=4).encode("utf-8")
                 except Exception:
@@ -373,6 +380,10 @@ def build(
                         "portraits/portrait_chromia_gs_small.jpg",
                         "portraits/portrait_deadend_gs_large.png",
                         "portraits/portrait_deadend_gs_small.jpg",
+                        "portraits/portrait_dragstrip_large.png",
+                        "portraits/portrait_dragstrip_small.jpg",
+                        "portraits/portrait_dragstrip_gs_large.png",
+                        "portraits/portrait_dragstrip_gs_small.jpg",
                         "portraits/portrait_hotlink_large.png",
                         "portraits/portrait_hotlink_small.jpg",
                         "portraits/portrait_ionstorm_large.png",
@@ -390,6 +401,16 @@ def build(
                     ]:
                         if pentry not in flist:
                             flist.append(pentry)
+                    _rdir = Path("assets_redeco")
+                    if _rdir.is_dir():
+                        for _p in _rdir.glob("portrait_*_large.png"):
+                            _e = f"portraits/{_p.name}"
+                            if _e not in flist:
+                                flist.append(_e)
+                        for _p in _rdir.glob("portrait_*_small.jpg"):
+                            _e = f"portraits/{_p.name}"
+                            if _e not in flist:
+                                flist.append(_e)
                     ptoc["files"] = flist
                     data = json.dumps(ptoc, indent=4).encode("utf-8")
                 except Exception:
@@ -401,6 +422,8 @@ def build(
                     for qentry in [
                         "questboard/portrait_acidstorm_quest.png",
                         "questboard/portrait_bitstream_quest.png",
+                        "questboard/portrait_dragstrip_quest.png",
+                        "questboard/portrait_dragstrip_gs_quest.png",
                         "questboard/portrait_hotlink_quest.png",
                         "questboard/portrait_ionstorm_quest.png",
                         "questboard/portrait_novastorm_quest.png",
@@ -411,6 +434,12 @@ def build(
                     ]:
                         if qentry not in flist:
                             flist.append(qentry)
+                    _rdir = Path("assets_redeco")
+                    if _rdir.is_dir():
+                        for _p in _rdir.glob("portrait_*_quest.png"):
+                            _e = f"questboard/{_p.name}"
+                            if _e not in flist:
+                                flist.append(_e)
                     qtoc["files"] = flist
                     data = json.dumps(qtoc, indent=4).encode("utf-8")
                 except Exception:
@@ -424,6 +453,8 @@ def build(
                         "dialogue/bitstream.png",
                         "dialogue/chromia_gs.png",
                         "dialogue/deadend_gs.png",
+                        "dialogue/dragstrip.png",
+                        "dialogue/dragstrip_gs.png",
                         "dialogue/hotlink.png",
                         "dialogue/ionstorm.png",
                         "dialogue/novastorm.png",
@@ -434,6 +465,13 @@ def build(
                     ]:
                         if dentry not in flist:
                             flist.append(dentry)
+                    _rdir = Path("assets_redeco")
+                    if _rdir.is_dir():
+                        for _p in _rdir.glob("*.png"):
+                            if not _p.name.startswith("portrait_") and not _p.name.startswith("cha_") and not _p.name.startswith("debug_"):
+                                _e = f"dialogue/{_p.name}"
+                                if _e not in flist:
+                                    flist.append(_e)
                     dtoc["files"] = flist
                     data = json.dumps(dtoc, indent=4).encode("utf-8")
                 except Exception:

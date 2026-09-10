@@ -39,6 +39,19 @@ extracted_apk/
 *.bin
 *.log
 *.jpeg
+/*.png
+module_descriptions.json
+tools/launcher_menu.html
+.venv/
+log_*.txt
+logcat_*.txt
+last_bug_report*.json
+screen_*.png
+screen_*.jpg
+Snipaste_*.png
+scratch_*.png
+*.assetbundle.old
+assets/characters.assetbundle
 [0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]*
 tools/apk_asset_index.json
 
@@ -59,3 +72,5 @@ assets_redeco/*
 !assets_redeco/towers.assetbundle
 !assets_redeco/relics.assetbundle
 !assets_redeco/starsaber_gs_leader2014.assetbundle
+!assets_redeco/dragstrip_gs_deluxe2016.assetbundle
+!assets_redeco/*dragstrip*

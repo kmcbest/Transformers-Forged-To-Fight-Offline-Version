@@ -113,6 +113,7 @@ ROSTER = {
     "bonecrusher_cin_rotf":         ("decepticon", "warr", 5),
     "cyclonus_gs_uw06":             ("decepticon", "tact", 5),
     "deadend_gs_deluxe2015":        ("decepticon", "demo", 5),
+    "dragstrip_gs_deluxe2016":      ("decepticon", "warr", 5),
     "dirge_gs_deluxe2008":          ("decepticon", "warr", 5),
     "galvatron_gs_voyager2016":     ("decepticon", "demo", 5),
     "grindor_cin_rotf":             ("decepticon", "braw", 5),
@@ -374,6 +375,7 @@ _ART_BASE = {
     # The misspelled clyclon_gs is large-only; use the correctly spelled paired art.
     "cyclonus_gs_uw06": "cyclon_gs",
     "deadend_gs_deluxe2015": "deadend_gs",
+    "dragstrip_gs_deluxe2016": "dragstrip",
     "dirge_gs_deluxe2008": "dirge_gs",
     "grindor_cin_rotf": "grind_c_rotf",
     "hotlink_gs_leader2015": "hotlink",
@@ -555,6 +557,7 @@ _BOT_NAMES = {
     "bonecrusher_cin_rotf": "Bonecrusher",
     "cyclonus_gs_uw06": "Cyclonus",
     "dirge_gs_deluxe2008": "Dirge",
+    "dragstrip_gs_deluxe2016": "Dragstrip",
     "galvatron_gs_voyager2016": "Galvatron",
     "grindor_cin_rotf": "Grindor",
     "kickback_gs_kabam": "Kickback",
@@ -1139,6 +1142,7 @@ _CHALLENGE_SPOKE_ENEMIES = [
         "scorponok_bw_kabam",
         "bludgeon_gs_rd20",
         "drift_cin_aoe",
+        "dragstrip_gs_deluxe2016",
     ],
     # 3: Tactician (West, 180 deg) - 10 bots
     [
