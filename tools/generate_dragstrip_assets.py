@@ -33,6 +33,8 @@ import io
 import os
 import sys
 import zipfile
+import struct
+import numpy as np
 from pathlib import Path
 from PIL import Image
 
@@ -82,6 +84,10 @@ def generate_dragstrip_assets(apk_path: str | None = None, output_dir: str = "as
     jazz_bytes = load_bundle("jazz_gs_twm05_odr/jazz_gs_twm05.assetbundle")
     blaster_bytes = load_bundle("blaster_gs_leader2016_odr/blaster_gs_leader2016.assetbundle")
     cheetor_bytes = load_bundle("cheetor_bw_transmetal_odr/cheetor_bw_transmetal.assetbundle")
+    if Path("assets_netflix/deadend_gs_deluxe2015.assetbundle").is_file():
+        deadend_bytes = Path("assets_netflix/deadend_gs_deluxe2015.assetbundle").read_bytes()
+    else:
+        deadend_bytes = load_bundle("deadend_gs_deluxe2015_odr/deadend_gs_deluxe2015.assetbundle")
 
     print("[*] Parsing source bundles...")
     m_env = UnityPy.load(mirage_bytes)
@@ -91,6 +97,7 @@ def generate_dragstrip_assets(apk_path: str | None = None, output_dir: str = "as
     j_env = UnityPy.load(jazz_bytes)
     bl_env = UnityPy.load(blaster_bytes)
     ch_env = UnityPy.load(cheetor_bytes)
+    d_env = UnityPy.load(deadend_bytes)
 
     # 1. Extract required AnimationClips
     print("[*] Extracting external animation clips...")
@@ -441,6 +448,366 @@ def generate_dragstrip_assets(apk_path: str | None = None, output_dir: str = "as
             tree = obj.read_typetree()
             replace_str_in_tree(tree, old_cab, new_cab)
             obj.save_typetree(tree)
+
+    # 3. Head Swap: Graft Dead End head directly into Mesh 00 (-7047427799269870338)
+    print("[*] Grafting Dead End head onto Dragstrip Mesh 00...")
+
+    d_mesh_obj = None
+    for obj in d_env.objects:
+        if obj.type.name == "Mesh" and obj.path_id == -6627344992554209802:
+            d_mesh_obj = obj.read()
+            break
+
+    if d_mesh_obj is not None:
+        lines = d_mesh_obj.export().splitlines()
+        d_verts, d_vts, d_vns = [], [], []
+        faces_0, faces_1 = [], []
+        curr_g = None
+        for l in lines:
+            if l.startswith("v "):
+                p = l.split()
+                d_verts.append([float(p[1]), float(p[2]), float(p[3])])
+            elif l.startswith("vt "):
+                p = l.split()
+                d_vts.append([float(p[1]), float(p[2])])
+            elif l.startswith("vn "):
+                p = l.split()
+                d_vns.append([float(p[1]), float(p[2]), float(p[3])])
+            elif l.startswith("g ") or l.startswith("o "):
+                curr_g = l.split()[1]
+            elif l.startswith("f ") and curr_g:
+                f_pts = l.split()[1:]
+                vis = [int(p.split("/")[0]) - 1 for p in f_pts]
+                if len(vis) >= 3:
+                    cy = sum(d_verts[idx][1] for idx in vis) / len(vis)
+                    cx = sum(d_verts[idx][0] for idx in vis) / len(vis)
+                    cz = sum(d_verts[idx][2] for idx in vis) / len(vis)
+                    if cy > 7.72 and abs(cx) < 0.85 and abs(cz) < 0.9:
+                        if "mesh_0" in curr_g:
+                            faces_0.append(f_pts)
+                        elif "mesh_1" in curr_g:
+                            faces_1.append(f_pts)
+
+        def process_mesh_part(faces, delta_y=-0.2377, delta_z=0.0324):
+            combos, combo_list, remapped_faces = {}, [], []
+            for f in faces:
+                face_indices = []
+                for p in f:
+                    parts = p.split("/")
+                    vi = int(parts[0]) - 1
+                    vti = int(parts[1]) - 1 if len(parts) > 1 and parts[1] else -1
+                    vni = int(parts[2]) - 1 if len(parts) > 2 and parts[2] else -1
+                    c = (vi, vti, vni)
+                    if c not in combos:
+                        combos[c] = len(combos)
+                        combo_list.append(c)
+                    face_indices.append(combos[c])
+                remapped_faces.append(face_indices)
+            nv = len(combo_list)
+            s0 = bytearray(nv * 40)
+            s1 = bytearray(nv * 16)
+            s2 = bytearray(nv * 4)
+            for idx, (vi, vti, vni) in enumerate(combo_list):
+                vx = d_verts[vi][0]
+                vy = d_verts[vi][1] + delta_y
+                vz = d_verts[vi][2] + delta_z
+                struct.pack_into("<3f", s0, idx * 40, vx, vy, vz)
+                nx = d_vns[vni][0] if 0 <= vni < len(d_vns) else 0.0
+                ny = d_vns[vni][1] if 0 <= vni < len(d_vns) else 1.0
+                nz = d_vns[vni][2] if 0 <= vni < len(d_vns) else 0.0
+                struct.pack_into("<3f", s0, idx * 40 + 12, nx, ny, nz)
+                struct.pack_into("<4f", s0, idx * 40 + 24, 1.0, 0.0, 0.0, 1.0)
+                u = d_vts[vti][0] if 0 <= vti < len(d_vts) else 0.0
+                v = d_vts[vti][1] if 0 <= vti < len(d_vts) else 0.0
+                struct.pack_into("<2f", s1, idx * 16, u, v)
+                struct.pack_into("<2f", s1, idx * 16 + 8, u, v)
+                struct.pack_into("<I", s2, idx * 4, 5) # Bone index 5 is Head bone in Mirage skeleton!
+            flat_indices = []
+            for f in remapped_faces:
+                flat_indices.extend(f)
+            return nv, s0, s1, s2, flat_indices
+
+        nv0, s0_0, s1_0, s2_0, idx0 = process_mesh_part(faces_0)
+        nv1, s0_1, s1_1, s2_1, idx1 = process_mesh_part(faces_1)
+        print(f"[+] Dead End head extracted: Part 0 (misc_A)={nv0}v/{len(idx0)//3}t, Part 1 (main_a)={nv1}v/{len(idx1)//3}t")
+
+        # Merge directly into Mirage Mesh 00 (-7047427799269870338)
+        for obj in m_env.objects:
+            if obj.type.name == "Mesh" and obj.path_id == -7047427799269870338:
+                t = obj.read_typetree()
+                vd = t["m_VertexData"]
+                orig_vc = vd["m_VertexCount"]
+                orig_raw = bytes(vd["m_DataSize"])
+                orig_s0 = bytearray(orig_raw[:orig_vc * 40])
+                orig_s1 = bytearray(orig_raw[orig_vc * 40 : orig_vc * 40 + orig_vc * 16])
+                orig_s2 = bytearray(orig_raw[orig_vc * 40 + orig_vc * 16 : orig_vc * 40 + orig_vc * 16 + orig_vc * 4])
+
+                # Zero out original Mirage head vertices (all vertices bound to Head bone or in head volume)
+                zeroed = 0
+                for i in range(orig_vc):
+                    x, y, z = struct.unpack_from("<3f", orig_s0, i * 40)
+                    b_idx = struct.unpack_from("<I", orig_s2, i * 4)[0]
+                    if b_idx == 5 or (y > 7.72 and abs(x) < 0.85 and abs(z) < 0.9):
+                        struct.pack_into("<3f", orig_s0, i * 40, 0.0, 7.72, 0.0)
+                        zeroed += 1
+                print(f"[+] Zeroed {zeroed} original Mirage head vertices!")
+
+                sm0_orig_vc = t["m_SubMeshes"][0]["vertexCount"]
+                sm1_orig_vc = t["m_SubMeshes"][1]["vertexCount"]
+
+                s0_sm0 = orig_s0[:sm0_orig_vc * 40]
+                s0_sm1 = orig_s0[sm0_orig_vc * 40 : (sm0_orig_vc + sm1_orig_vc) * 40]
+                merged_s0 = s0_sm0 + s0_0 + s0_sm1 + s0_1
+
+                s1_sm0 = orig_s1[:sm0_orig_vc * 16]
+                s1_sm1 = orig_s1[sm0_orig_vc * 16 : (sm0_orig_vc + sm1_orig_vc) * 16]
+                merged_s1 = s1_sm0 + s1_0 + s1_sm1 + s1_1
+
+                s2_sm0 = orig_s2[:sm0_orig_vc * 4]
+                s2_sm1 = orig_s2[sm0_orig_vc * 4 : (sm0_orig_vc + sm1_orig_vc) * 4]
+                merged_s2 = s2_sm0 + s2_0 + s2_sm1 + s2_1
+
+                new_total_vc = sm0_orig_vc + nv0 + sm1_orig_vc + nv1
+
+                raw_idx_bytes = bytes(t["m_IndexBuffer"])
+                orig_idx = struct.unpack(f"<{len(raw_idx_bytes)//2}H", raw_idx_bytes)
+                sm0_idx_cnt = t["m_SubMeshes"][0]["indexCount"]
+                sm1_idx_cnt = t["m_SubMeshes"][1]["indexCount"]
+
+                orig_sm0_indices = list(orig_idx[:sm0_idx_cnt])
+                orig_sm1_indices = list(orig_idx[sm0_idx_cnt : sm0_idx_cnt + sm1_idx_cnt])
+
+                new_sm0_part = [i + sm0_orig_vc for i in idx0]
+                new_sm0_indices = orig_sm0_indices + new_sm0_part
+
+                sm1_base_new = sm0_orig_vc + nv0
+                shifted_orig_sm1 = [i + nv0 for i in orig_sm1_indices]
+                new_sm1_part = [i + (sm1_base_new + sm1_orig_vc) for i in idx1]
+                new_sm1_indices = shifted_orig_sm1 + new_sm1_part
+
+                merged_indices = new_sm0_indices + new_sm1_indices
+
+                vd["m_VertexCount"] = new_total_vc
+                vd["m_DataSize"] = bytes(merged_s0 + merged_s1 + merged_s2)
+                t["m_IndexBuffer"] = struct.pack(f"<{len(merged_indices)}H", *merged_indices)
+
+                t["m_SubMeshes"][0]["firstByte"] = 0
+                t["m_SubMeshes"][0]["indexCount"] = len(new_sm0_indices)
+                t["m_SubMeshes"][0]["firstVertex"] = 0
+                t["m_SubMeshes"][0]["vertexCount"] = sm0_orig_vc + nv0
+
+                t["m_SubMeshes"][1]["firstByte"] = len(new_sm0_indices) * 2
+                t["m_SubMeshes"][1]["indexCount"] = len(new_sm1_indices)
+                t["m_SubMeshes"][1]["firstVertex"] = sm1_base_new
+                t["m_SubMeshes"][1]["vertexCount"] = sm1_orig_vc + nv1
+
+                replace_str_in_tree(t, old_cab, new_cab)
+                obj.save_typetree(t)
+                print(f"[+] Merged Dead End head into Mesh 00: Total {new_total_vc} vertices, {len(merged_indices)//3} triangles!")
+
+        # Texture compositing:
+        # 1. Recolor Mirage main body from Blue to Dragstrip Yellow
+        # 2. Blend Dead End head textures
+        # 3. Recolor weapons from gray to Decepticon Purple
+        from PIL import ImageDraw
+
+        # A. Recolor and blend main_a
+        for obj in m_env.objects:
+            if obj.type.name == "Texture2D" and obj.read_typetree().get("m_Name") == "cha_mirage_gs_deluxe2016_main_a":
+                tex = obj.read()
+                m_img = tex.image.convert("RGBA")
+                m_arr = np.array(m_img).astype(np.float32)
+
+                # Blue to Yellow color conversion
+                r = m_arr[:, :, 0] / 255.0
+                g = m_arr[:, :, 1] / 255.0
+                b = m_arr[:, :, 2] / 255.0
+                mx = np.maximum(np.maximum(r, g), b)
+                mn = np.minimum(np.minimum(r, g), b)
+                df = mx - mn
+
+                sat = np.zeros_like(mx)
+                nz = mx > 1e-5
+                sat[nz] = df[nz] / mx[nz]
+
+                hue = np.zeros_like(mx)
+                mr = (mx == r) & (df > 1e-5)
+                mg = (mx == g) & (df > 1e-5)
+                mb = (mx == b) & (df > 1e-5)
+                hue[mr] = (60.0 * ((g[mr] - b[mr]) / df[mr]) + 360.0) % 360.0
+                hue[mg] = (60.0 * ((b[mg] - r[mg]) / df[mg]) + 120.0) % 360.0
+                hue[mb] = (60.0 * ((r[mb] - g[mb]) / df[mb]) + 240.0) % 360.0
+
+                # Detect blue paint regions
+                blue_mask = (hue >= 170.0) & (hue <= 265.0) & (sat > 0.15) & (mx > 0.1)
+
+                # Dragstrip warm yellow: Hue = 44 deg (0.122)
+                new_h = 44.0 / 360.0
+                new_s = np.clip(sat * 1.15, 0.0, 1.0)
+                new_v = mx
+
+                c = new_v * new_s
+                x_val = c * (1.0 - np.abs((new_h * 6.0) % 2.0 - 1.0))
+                m_val = new_v - c
+
+                new_r = np.clip((c + m_val) * 255.0, 0, 255)
+                new_g = np.clip((x_val + m_val) * 255.0, 0, 255)
+                new_b = np.clip((m_val) * 255.0, 0, 255)
+
+                res_arr = np.array(m_img).copy()
+                res_arr[blue_mask, 0] = new_r[blue_mask].astype(np.uint8)
+                res_arr[blue_mask, 1] = new_g[blue_mask].astype(np.uint8)
+                res_arr[blue_mask, 2] = new_b[blue_mask].astype(np.uint8)
+
+                # Blend Dead End head main_a onto Dragstrip main_a
+                d_main_img = None
+                for d_obj in d_env.objects:
+                    if d_obj.type.name == "Texture2D" and d_obj.read_typetree().get("m_Name") == "cha_deadend_gs_deluxe2015_main_a":
+                        d_main_img = d_obj.read().image
+                        break
+
+                if d_main_img is not None and len(faces_1) > 0:
+                    mask_1 = Image.new("L", (1024, 1024), 0)
+                    draw_1 = ImageDraw.Draw(mask_1)
+                    for f in faces_1:
+                        poly = []
+                        for p in f:
+                            parts = p.split("/")
+                            if len(parts) > 1 and parts[1]:
+                                vti = int(parts[1]) - 1
+                                if vti < len(d_vts):
+                                    u, v = d_vts[vti]
+                                    poly.append((int(np.clip(u * 1024, 0, 1023)), int(np.clip((1.0 - v) * 1024, 0, 1023))))
+                        if len(poly) >= 3:
+                            draw_1.polygon(poly, fill=255)
+
+                    mask_arr_1 = np.array(mask_1) > 0
+                    d_arr_1 = np.array(d_main_img.convert("RGBA"))
+
+                    # Recolor Dead End head texture:
+                    # 1. Helmet cheeks/ears (originally yellow in Dead End): turn to dark red/maroon
+                    head_crop_y = (d_arr_1[:, :, 0] > 140) & (d_arr_1[:, :, 1] > 90) & (d_arr_1[:, :, 2] < 70) & mask_arr_1
+                    d_arr_1[head_crop_y, 0] = np.clip(d_arr_1[head_crop_y, 0] * 0.75, 0, 255).astype(np.uint8)
+                    d_arr_1[head_crop_y, 1] = np.clip(d_arr_1[head_crop_y, 1] * 0.15, 0, 255).astype(np.uint8)
+                    d_arr_1[head_crop_y, 2] = np.clip(d_arr_1[head_crop_y, 2] * 0.18, 0, 255).astype(np.uint8)
+
+                    # 2. Glowing Red Visor optics (Y: 158..189, X: 58..104 in PIL coords)
+                    d_arr_1[158:190, 58:105, 0] = 255
+                    d_arr_1[158:190, 58:105, 1] = 25
+                    d_arr_1[158:190, 58:105, 2] = 35
+
+                    # 3. Face plate (mouth/chin area): clean metallic silver
+                    face_mask = np.zeros_like(mask_arr_1)
+                    face_mask[122:160, 68:145] = True
+                    face_area = face_mask & mask_arr_1
+                    fg = 0.3 * d_arr_1[face_area, 0] + 0.59 * d_arr_1[face_area, 1] + 0.11 * d_arr_1[face_area, 2]
+                    d_arr_1[face_area, 0] = np.clip(fg * 0.75 + 55, 0, 255).astype(np.uint8)
+                    d_arr_1[face_area, 1] = np.clip(fg * 0.85 + 85, 0, 255).astype(np.uint8)
+                    d_arr_1[face_area, 2] = np.clip(fg * 1.05 + 130, 0, 255).astype(np.uint8)
+
+                    res_arr[mask_arr_1] = d_arr_1[mask_arr_1]
+                    print("[+] Blended and customized Dead End head main texture (Dark Red + Glowing Red Visor)!")
+
+                tex.image = Image.fromarray(res_arr)
+                tex.save()
+                print(f"[+] Converted {np.sum(blue_mask)} body pixels to Dragstrip Yellow!")
+                break
+
+        # B. Recolor and Blend onto tform_misc_A (back, feet, misc car parts)
+        for obj in m_env.objects:
+            if obj.type.name == "Texture2D" and obj.read_typetree().get("m_Name") == "tform_misc_A":
+                tex = obj.read()
+                misc_img = tex.image.convert("RGBA")
+                misc_arr = np.array(misc_img).astype(np.float32)
+
+                # Convert all remaining blue pixels in tform_misc_A (back, feet, chassis) to Dragstrip Yellow
+                mr = misc_arr[:, :, 0] / 255.0
+                mg = misc_arr[:, :, 1] / 255.0
+                mb = misc_arr[:, :, 2] / 255.0
+                mmx = np.maximum(np.maximum(mr, mg), mb)
+                mmn = np.minimum(np.minimum(mr, mg), mb)
+                mdf = mmx - mmn
+
+                msat = np.zeros_like(mmx)
+                mnz = mmx > 1e-5
+                msat[mnz] = mdf[mnz] / mmx[mnz]
+
+                mhue = np.zeros_like(mmx)
+                mmr = (mmx == mr) & (mdf > 1e-5)
+                mmg = (mmx == mg) & (mdf > 1e-5)
+                mmb = (mmx == mb) & (mdf > 1e-5)
+                mhue[mmr] = (60.0 * ((mg[mmr] - mb[mmr]) / mdf[mmr]) + 360.0) % 360.0
+                mhue[mmg] = (60.0 * ((mb[mmg] - mr[mmg]) / mdf[mmg]) + 120.0) % 360.0
+                mhue[mmb] = (60.0 * ((mr[mmb] - mg[mmb]) / mdf[mmb]) + 240.0) % 360.0
+
+                misc_blue_mask = (mhue >= 170.0) & (mhue <= 265.0) & (msat > 0.15) & (mmx > 0.1)
+
+                new_h = 44.0 / 360.0
+                new_s = np.clip(msat * 1.15, 0.0, 1.0)
+                new_v = mmx
+
+                c = new_v * new_s
+                x_val = c * (1.0 - np.abs((new_h * 6.0) % 2.0 - 1.0))
+                m_val = new_v - c
+
+                res_misc = np.array(misc_img).copy()
+                res_misc[misc_blue_mask, 0] = np.clip((c + m_val) * 255.0, 0, 255)[misc_blue_mask].astype(np.uint8)
+                res_misc[misc_blue_mask, 1] = np.clip((x_val + m_val) * 255.0, 0, 255)[misc_blue_mask].astype(np.uint8)
+                res_misc[misc_blue_mask, 2] = np.clip((m_val) * 255.0, 0, 255)[misc_blue_mask].astype(np.uint8)
+
+                # Blend Part 0 (misc_A) of Dead End head
+                d_misc_img = None
+                for d_obj in d_env.objects:
+                    if d_obj.type.name == "Texture2D" and d_obj.read_typetree().get("m_Name") == "tform_misc_A":
+                        d_misc_img = d_obj.read().image
+                        break
+
+                if d_misc_img is not None and len(faces_0) > 0:
+                    mask_0 = Image.new("L", (512, 512), 0)
+                    draw_0 = ImageDraw.Draw(mask_0)
+                    for f in faces_0:
+                        poly = []
+                        for p in f:
+                            parts = p.split("/")
+                            if len(parts) > 1 and parts[1]:
+                                vti = int(parts[1]) - 1
+                                if vti < len(d_vts):
+                                    u, v = d_vts[vti]
+                                    poly.append((int(np.clip(u * 512, 0, 511)), int(np.clip((1.0 - v) * 512, 0, 511))))
+                        if len(poly) >= 3:
+                            draw_0.polygon(poly, fill=255)
+
+                    mask_arr_0 = np.array(mask_0) > 0
+                    d_arr_0 = np.array(d_misc_img.convert("RGBA"))
+                    res_misc[mask_arr_0] = d_arr_0[mask_arr_0]
+                    print("[+] Blended Dead End head misc texture onto Dragstrip tform_misc_A!")
+
+                tex.image = Image.fromarray(res_misc)
+                tex.save()
+                print(f"[+] Recolored {np.sum(misc_blue_mask)} blue pixels in tform_misc_A (back and feet) to Dragstrip Yellow!")
+                break
+
+        # C. Recolor weapons (cha_mirage_gs_deluxe2016_wpns_a) to Decepticon Purple
+        for obj in m_env.objects:
+            if obj.type.name == "Texture2D" and obj.read_typetree().get("m_Name") == "cha_mirage_gs_deluxe2016_wpns_a":
+                tex = obj.read()
+                w_img = tex.image.convert("RGBA")
+                w_arr = np.array(w_img).astype(np.float32)
+                # Compute luminance
+                w_gray = (0.299 * w_arr[:, :, 0] + 0.587 * w_arr[:, :, 1] + 0.114 * w_arr[:, :, 2]) / 255.0
+                # Decepticon weapon purple tint (R: 95, G: 45, B: 155)
+                purp_r = np.clip(w_gray * 95, 0, 255).astype(np.uint8)
+                purp_g = np.clip(w_gray * 45, 0, 255).astype(np.uint8)
+                purp_b = np.clip(w_gray * 155, 0, 255).astype(np.uint8)
+
+                out_w = np.array(w_img).copy()
+                out_w[:, :, 0] = purp_r
+                out_w[:, :, 1] = purp_g
+                out_w[:, :, 2] = purp_b
+                tex.image = Image.fromarray(out_w)
+                tex.save()
+                print("[+] Recolored Dragstrip blasters to Decepticon Purple!")
+                break
 
     # Save rebuilt AssetBundle
     new_files = {}
