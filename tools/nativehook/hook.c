@@ -536,6 +536,7 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0xC16688,  "GET_MAP_ASSET_ID",   2, 0 }, // 161 BCGBlueprintBase.get_MapAssetID -> resolve to real portrait resource name
     { 0x127F794, "LOCALIZE",           2, 0 }, // 162 Localization.Get
     { 0x11794A4, "ADDMANA",            2, 0 }, // 163 PlayerController.AddMana -> scale enemy mana gain dynamically
+    { 0xC1F2B8,  "GET_TOP_HERO_ID",    2, 0 }, // 164 BCGHelper.GetTopHeroId -> squad leader avatar
 };
 #define NH (int)(sizeof(H)/sizeof(H[0]))
 
@@ -4858,6 +4859,27 @@ void* hook_163(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     return H[163].orig(a0, a1, a2, a3, a4, a5, a6, a7);
 }
 
+// hook 164: BCGHelper.GetTopHeroID @ 0xC1F2B8
+// Intercepts the top hero ID query (which drives the COMMANDER avatar portrait and profile button)
+// and returns the squad leader (team[0]) from squad_config.json, without modifying hero stats/PI.
+void* hook_164(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    void* leader_str = NULL;
+    PROTECT({
+        Team current_team;
+        if (tftf_get_current_team(&current_team) && current_team.count > 0 && current_team.bid[0][0]) {
+            const char* leader_bid = current_team.bid[0];
+            leader_str = g_strnew ? g_strnew(leader_bid) : NULL;
+            if (leader_str) {
+                flog("GET_TOP_HERO_ID intercepted -> returning squad leader '%s'", leader_bid);
+            }
+        }
+    });
+    if (leader_str) {
+        return leader_str;
+    }
+    return H[164].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+}
+
 static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hook_7,hook_8,
     hook_9,hook_10,hook_11,hook_12,hook_13,hook_14,hook_15,hook_16,hook_17,hook_18,hook_19,hook_20,hook_21,
     hook_22,hook_23,hook_24,hook_25,hook_26,hook_27,hook_28,hook_29,hook_30,
@@ -4875,7 +4897,7 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     hook_138,hook_139,hook_140,hook_141,hook_142,hook_143,hook_144,
     hook_145,hook_146,hook_147,hook_148,hook_149,hook_150,hook_151,
     hook_152,hook_153,hook_154,hook_155,hook_156,hook_157,hook_158,
-    hook_159,hook_160,hook_161,hook_162,hook_163 };
+    hook_159,hook_160,hook_161,hook_162,hook_163,hook_164 };
 
 static void write_jump(uint8_t* dst, void* target){
     uint32_t* p = (uint32_t*)dst;

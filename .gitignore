@@ -24,6 +24,7 @@
 /patches/__pycache__/
 /Server/certs/
 /Server/logs/
+/Server/squad_config.json
 
 # Local ffmpeg two-pass encoding artifacts.
 /ffmpeg2pass-*.log

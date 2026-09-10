@@ -43,8 +43,7 @@ typedef struct {
     char e_bid[6][64];
 } Position;
 typedef struct { unsigned char *p; size_t n, cap; } Out;
-/* Team slot expanded to 5 members */
-typedef struct { char bid[5][64]; int count; } Team;
+/* Team is defined in inapk_server.h */
 typedef struct { const char *token; const unsigned char *p; size_t n; } TemplateArg;
 
 static const char * const g_enemy_pool[] = {
@@ -271,24 +270,155 @@ static int team_from_lines(const unsigned char *s, size_t n, Team *team) {
     }
     return team->count>0;
 }
+
+/* Forward declarations */
+static const char *json_value(const char *s, const char *end, const char *want);
+static int resolve_team(Team *team);
+
+static const char * const g_squad_config_paths[] = {
+    "/sdcard/Android/data/com.kabam.bigrobot/files/squad_config.json",
+    "/storage/emulated/0/Android/data/com.kabam.bigrobot/files/squad_config.json",
+    "/data/data/com.kabam.bigrobot/files/squad_config.json",
+    "/data/user/0/com.kabam.bigrobot/files/squad_config.json",
+    NULL
+};
+
+void tftf_save_squad_config(const Team *team) {
+    if (!team || team->count <= 0) return;
+    char buf[1024];
+    int len = snprintf(buf, sizeof(buf), "{\n  \"team\": [\n");
+    for (int i = 0; i < team->count; i++) {
+        len += snprintf(buf + len, sizeof(buf) - len, "    \"%s\"%s\n",
+                        team->bid[i], (i + 1 < team->count) ? "," : "");
+    }
+    len += snprintf(buf + len, sizeof(buf) - len, "  ]\n}\n");
+
+    for (int p = 0; g_squad_config_paths[p]; p++) {
+        FILE *fp = fopen(g_squad_config_paths[p], "wb");
+        if (fp) {
+            fwrite(buf, 1, (size_t)len, fp);
+            fclose(fp);
+            logmsg("squad_config saved to %s (%d bots)", g_squad_config_paths[p], team->count);
+        }
+    }
+}
+
+int tftf_load_squad_config(Team *team) {
+    if (!team) return 0;
+    char buf[2048];
+    for (int p = 0; g_squad_config_paths[p]; p++) {
+        FILE *fp = fopen(g_squad_config_paths[p], "rb");
+        if (fp) {
+            size_t rd = fread(buf, 1, sizeof(buf) - 1, fp);
+            fclose(fp);
+            if (rd > 0) {
+                buf[rd] = 0;
+                char bids[5][64];
+                int count = 0, invalid = 0;
+                /* Scan JSON array "team": ["bot1", "bot2", ...] */
+                const char *q = json_value(buf, buf + rd, "team");
+                if (q && *q == '[') {
+                    q++;
+                    for (;;) {
+                        while (q < buf + rd && isspace((unsigned char)*q)) q++;
+                        if (q >= buf + rd || *q == ']') break;
+                        if (*q != '\"') break;
+                        q++;
+                        const char *e = q;
+                        while (e < buf + rd && *e != '\"') {
+                            if (*e == '\\') { invalid = 1; break; }
+                            e++;
+                        }
+                        if (invalid || e >= buf + rd) break;
+                        size_t l = (size_t)(e - q);
+                        if (count < 5 && l < sizeof(bids[0])) {
+                            memcpy(bids[count], q, l);
+                            bids[count][l] = 0;
+                            if (safe_id(bids[count])) count++;
+                            else invalid = 1;
+                        }
+                        q = e + 1;
+                        while (q < buf + rd && isspace((unsigned char)*q)) q++;
+                        if (q < buf + rd && *q == ',') q++;
+                    }
+                }
+                if (!invalid && count > 0) {
+                    team->count = count;
+                    for (int i = 0; i < count; i++) {
+                        snprintf(team->bid[i], sizeof(team->bid[i]), "%s", bids[i]);
+                    }
+                    logmsg("squad_config loaded from %s (%d bots, leader: %s)",
+                           g_squad_config_paths[p], count, team->bid[0]);
+                    return 1;
+                }
+            }
+        }
+    }
+    return 0;
+}
+
 static void store_saved_team(const char bids[][64], int count, int invalid) {
     int i;
     pthread_mutex_lock(&g_pos_lock);
-    g_saved_team_count=invalid||count<0||count>5?-1:count;
-    if(g_saved_team_count>0)for(i=0;i<g_saved_team_count;i++)snprintf(g_saved_team[i],sizeof g_saved_team[i],"%s",bids[i]);
+    g_saved_team_count = invalid || count < 0 || count > 5 ? -1 : count;
+    if (g_saved_team_count > 0) {
+        for (i = 0; i < g_saved_team_count; i++) {
+            snprintf(g_saved_team[i], sizeof g_saved_team[i], "%s", bids[i]);
+        }
+        Team tm;
+        tm.count = g_saved_team_count;
+        for (i = 0; i < tm.count; i++) snprintf(tm.bid[i], sizeof(tm.bid[i]), "%s", g_saved_team[i]);
+        tftf_save_squad_config(&tm);
+    }
     pthread_mutex_unlock(&g_pos_lock);
 }
+
+static int g_config_loaded = 0;
+
+int tftf_get_current_team(Team *team) {
+    if (!team) return 0;
+    return resolve_team(team);
+}
+
 static int resolve_team(Team *team) {
-    const unsigned char *roster,*defaults; size_t rn,dn; int i,valid=1;
-    defaults=lookup("@team:default",&dn);roster=lookup("@roster",&rn);
-    if(!defaults||!roster||!team_from_lines(defaults,dn,team))return 0;
+    const unsigned char *roster, *defaults;
+    size_t rn, dn;
+    int i, valid = 1;
+    defaults = lookup("@team:default", &dn);
+    roster = lookup("@roster", &rn);
+    if (!defaults || !roster || !team_from_lines(defaults, dn, team)) return 0;
+
     pthread_mutex_lock(&g_pos_lock);
-    if(g_saved_team_count<=0)valid=0;
+    if (!g_config_loaded) {
+        g_config_loaded = 1;
+        Team file_team;
+        if (tftf_load_squad_config(&file_team)) {
+            int file_valid = 1;
+            for (i = 0; i < file_team.count; i++) {
+                if (!safe_id(file_team.bid[i]) || !list_has(roster, rn, file_team.bid[i])) {
+                    file_valid = 0;
+                    break;
+                }
+            }
+            if (file_valid) {
+                g_saved_team_count = file_team.count;
+                for (i = 0; i < file_team.count; i++) {
+                    snprintf(g_saved_team[i], sizeof(g_saved_team[i]), "%s", file_team.bid[i]);
+                }
+            }
+        } else {
+            /* If squad_config.json doesn't exist yet, seed it with default team */
+            tftf_save_squad_config(team);
+        }
+    }
+
+    if (g_saved_team_count <= 0) valid = 0;
     else {
-        Team saved; saved.count=g_saved_team_count;
-        for(i=0;i<saved.count;i++)snprintf(saved.bid[i],sizeof saved.bid[i],"%s",g_saved_team[i]);
-        for(i=0;i<saved.count;i++)if(!safe_id(saved.bid[i])||!list_has(roster,rn,saved.bid[i]))valid=0;
-        if(valid)*team=saved;
+        Team saved;
+        saved.count = g_saved_team_count;
+        for (i = 0; i < saved.count; i++) snprintf(saved.bid[i], sizeof saved.bid[i], "%s", g_saved_team[i]);
+        for (i = 0; i < saved.count; i++) if (!safe_id(saved.bid[i]) || !list_has(roster, rn, saved.bid[i])) valid = 0;
+        if (valid) *team = saved;
     }
     pthread_mutex_unlock(&g_pos_lock);
     return 1;

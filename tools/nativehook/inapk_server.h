@@ -13,6 +13,9 @@ int tftf_apk_candidates(const char *maps_path, const char *cmdline_path,
 int tftf_server_start_from_apk(void);
 const unsigned char *tftf_payload_lookup(const char *key, size_t *n);
 
+typedef struct { char bid[5][64]; int count; } Team;
+
 extern int g_current_is_10x_challenge;
+int tftf_get_current_team(Team *team);
 
 #endif

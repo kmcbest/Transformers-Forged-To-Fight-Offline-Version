@@ -37,21 +37,25 @@
     "intervals": [[1295, 2330]],
     "props": {
       "rightgun": [[0, 0]],
-      "axe": [[0, 0]],
+      "axe": [[2800, 6730]],
       "leftgun": [[0, 0]]
     },
     "notes": "镜像擎天柱 - 卡车冲撞"
   },
   "fte_optimus_gs_t3": {
     "intervals": [[1295, 2330]],
-    "props": {},
+    "props": {
+      "rightgun": [[0, 0]],
+      "axe": [[2800, 6730]],
+      "leftgun": [[0, 0]]
+    },
     "notes": "新手教学擎天柱 - 卡车冲撞"
   },
   "nemesisprime_gs_voyager2015": {
     "intervals": [[1295, 2330]],
     "props": {
       "rightgun": [[0, 0]],
-      "axe": [[0, 0]],
+      "axe": [[2800, 6730]],
       "leftgun": [[0, 0]]
     },
     "notes": "暗黑擎天柱 - 卡车冲撞"

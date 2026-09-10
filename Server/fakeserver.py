@@ -31,7 +31,32 @@ _lock = threading.Lock()
 _quest_positions = {}
 _quest_state_lock = threading.Lock()
 _saved_team = None
+CONFIG_PATH = os.path.join(HERE, "squad_config.json")
 
+def load_squad_config():
+    global _saved_team
+    if os.path.exists(CONFIG_PATH):
+        try:
+            with open(CONFIG_PATH, "r", encoding="utf-8", errors="replace") as f:
+                data = json.load(f)
+                team = data.get("team")
+                if isinstance(team, list) and team:
+                    _saved_team = list(team)
+                    return _saved_team
+        except Exception:
+            pass
+    return None
+
+def save_squad_config(team):
+    if not team:
+        return
+    try:
+        with open(CONFIG_PATH, "w", encoding="utf-8") as f:
+            json.dump({"team": list(team)}, f, indent=2)
+    except Exception:
+        pass
+
+load_squad_config()
 
 def get_saved_team():
     """Return a copy of the session squad so tests cannot mutate server state in place."""
@@ -44,6 +69,7 @@ def reset_saved_team():
     global _saved_team
     with _quest_state_lock:
         _saved_team = None
+
 
 # Tutorials whose interactive "prompt" branch infinite-loops the main thread offline.
 # We return an error envelope for these so the flow aborts gracefully instead of freezing.
@@ -233,6 +259,7 @@ class H(http.server.BaseHTTPRequestHandler):
             with _quest_state_lock:
                 if posted_team:
                     _saved_team = list(posted_team)
+                    save_squad_config(_saved_team)
                 team = list(_saved_team) if _saved_team else []
                 _quest_positions[qid] = gamedata.quest_start(qid) if gamedata is not None else (0, 1)
             if gamedata is not None:
@@ -282,6 +309,7 @@ class H(http.server.BaseHTTPRequestHandler):
                 heroes = []
             with _quest_state_lock:
                 _saved_team = list(heroes)
+                save_squad_config(_saved_team)
             if gamedata is not None:
                 team = gamedata.build_saved_team(team_id, heroes)
                 active_teams = [
