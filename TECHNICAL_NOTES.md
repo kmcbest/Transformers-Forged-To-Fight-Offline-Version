@@ -673,6 +673,98 @@ renders the game board, moves the player between board nodes, and plays the figh
 listener is `127.0.0.1:8080` inside the game process. `--bundle-server` rejects `--scheme https`,
 non-loopback `--server-host` values, and a hook built without the in-app server.
 
+## Character composite grafting and combat subsystems
+
+Original and composite characters (e.g. Star Saber / 史达, Dragstrip / 抢劫) graft animation clips, physical meshes, weapon attachments, and movesets across disparate robot rigs. This section documents the underlying engine contracts, object pooling mechanisms, and gotchas discovered during composite character development.
+
+### Combat moveset architecture
+
+Combat abilities split into two distinct execution tiers:
+1. **Standard combat state machine**: Light (L1-L4), Medium (M1-M2), Heavy attack, Special 1 (S1), and Special 2 (S2).
+   - Animation clips are mapped via `m_Clips` in the character's Fight `AnimatorOverrideController` (AOC).
+   - Hitboxes, damage scaling, frame timings, and event tracks are defined by serialized `MoveAsset` records in `moves.assetbundle` (or local MonoBehaviours) referenced by the character root's `MoveSet` component (`MonoBehaviour._moves`).
+   - Cross-character grafting for these moves succeeds simply by injecting the source `AnimationClip` into the target bundle and assigning the corresponding `MoveAsset` pointer in `_moves`.
+2. **Cinematic Matinee stages**: Special 3 (S3) and Victory Poses.
+   - These are orchestrated cutscenes executed by `EB.Animation.Matinee.MatineeStage` rather than bare state machine transitions.
+
+### Projectile lifecycle and entity object pooling
+
+A recurring failure when borrowing projectile-based attacks (such as Cliffjumper's vehicle-mode heavy blast or Hot Rod's S2 final shot) is that the character completes the attack animation but fires no projectile bullet or energy blast.
+
+#### The root cause
+In `MoveAsset` JSON event trees, a `ProjectileMoveEvent` specifies the projectile entity name via `pn`:
+- Cliffjumper Heavy: `"pn": "projectile_megatron_gs_bullet"` (fires Megatron's fusion cannon projectile).
+- Hot Rod S2: `"pn": "projectile_hotrod_bullet"` (fires Hot Rod's laser blast).
+
+When the event triggers, `CombatEntity.FireProjectile` attempts to instantiate or pull the projectile from the character's pre-warmed object pool. The pool is declared on the character's root GameObject via the `PrefabList` component (e.g. `MonoBehaviour` PathID `-2249602606274241856` on Mirage).
+
+If the character's root `PrefabList` does not declare an entry for that projectile GameObject, **the pool lookup returns null and the bullet emission is silently dropped**.
+
+#### Projectile entity structure
+In FTF, a combat projectile is not a simple particle system; it is a full autonomous GameObject composed of five interconnected components:
+1. `Transform`: local coordinate origin.
+2. `MonoBehaviour` (`MoveToPlayOnFire` / `MoveToPlayOnExplode`, script PathID `-3660570848581127988`): binds states to child moves.
+3. `MonoBehaviour` (`_moves`, script PathID `2297153707519481197`): defines the projectile's `fire`, `explode`, and `explode_special` move assets (pointing into `moves.assetbundle`).
+4. `MonoBehaviour` (`PrefabList`, script PathID `-3815473324432562333`): internal particle effect pool containing impact sparks, trails, and energy burst prefabs (pointing into `character_fx.assetbundle` or `character_fx_procedural.assetbundle`).
+5. `MonoBehaviour` (`CombatEntity`, script PathID `4113389322536752908`): runtime projectile combat hitbox and physics entity.
+
+#### Cross-bundle grafting and TypeTree compliance
+When importing projectile GameObjects and their components from an external donor bundle (e.g., from `cliffjumper_gs_kabam` into `mirage_gs_deluxe2016`):
+- **TypeTree template cloning**: Never copy bare `ObjectReader` instances across bundles directly, as differences in `asset.types` metadata will cause UnityPy serialization to fail (`ValueError: Expected to read X bytes, but only read Y bytes`). Instead, clone a template `ObjectReader` of the matching script type from the host bundle and overwrite its typetree with the donor data.
+- **Dependency remapping**: Remap external `m_FileID` pointers inside the projectile's `_moves` and `PrefabList` to match the host bundle's external table (e.g., `character_fx_procedural` may be FileID 2 in the donor but FileID 3 in the host).
+- **Pool registration**: Append the grafted projectile GameObject to the character root's `PrefabList` (`MonoBehaviour`), along with any associated muzzle flash / ignition particles (e.g. `fx_p_heavy_projectile_ignition` or `fx_p_hotrod_muzzle_blue_flash`).
+- **AssetBundle preload table**: Add all injected projectile entity and component PathIDs to `m_PreloadTable` and update `preloadSize` / `preloadIndex` in `m_Container` for the character's `.prefab`.
+
+### Weapon and prop name aliasing
+
+During special attacks, `PropMoveEvent` coordinates the visibility of weapons and accessories via the prop identifier `p`:
+- Hot Rod S2 specifies `"p": "gunRight"`.
+- Different character rigs use conflicting nomenclature for the exact same physical slot:
+  - Hot Rod: `"gunRight"`, `"gunLeft"`
+  - Mirage: `"rightgun"`, `"leftgun"`
+  - Soundwave / Blaster: `"weapon_gun"`, `"weapon_shoulder"`
+  - Drift / Windblade / Motormaster: `"sword"`, `"sheath"`
+
+If a borrowed move references an unmapped prop name, the weapon model fails to attach to the hand during the attack.
+**Resolution**: In the character's root `_props` manager (`MonoBehaviour`, e.g. PathID `-3532403574792160156`), duplicate the existing weapon definition entry and insert the donor's prop name as an alias into `_serializedKeys` and `_serializedValues` (e.g. alias `"gunRight"` pointing to `"rightgun"`).
+
+### Cinematic Matinee stages: S3 & Victory Poses
+
+Unlike standard moves, S3 and Victory poses are full scripted cutscenes powered by Unity Matinee stages.
+
+#### Root cause of combat load crash ("An unknown error occurred")
+The character's root GameObject defines:
+- `Special3StagePrefab`: pointer to the S3 cinematic cutscene prefab (e.g. `TFormStage_Mirage_Special03`).
+- `VictoryStagePrefab`: pointer to the victory cinematic cutscene prefab (e.g. `TFormStage_Agile_Backflip_Victory`).
+
+During battle scene loading, the client pre-warms all cinematics by calling `EB.Animation.Matinee.MatineeStage.PreInitializeMatinee()`. Inside the stage prefab, timeline tracks (`PlayMecanimAnimationEvent`) expect specific hardcoded clip names (e.g. `Agile_Backflip_Victory` for Agile victory, or `mirage_gs_attackSpecial_03` for Mirage S3).
+
+If the character's Fight AOC has overwritten that slot with a different clip (e.g. Sideswipe's `Brawler_Normal_Victory`), `OverwriteAnimClips` fails to locate the expected clip name for `Actor0_locator`:
+```text
+E: Was not able to locate animation clip to overwrite Agile_Backflip_Victory for Actor0_locator
+NullReferenceException: Object reference not set to an instance of an object.
+  at EB.Animation.Matinee.PlayMecanimAnimationEvent.RestoreControllerAnimClipIfNeeded ()
+  at EB.Animation.Matinee.PlayMecanimAnimationEvent.EndEvent ()
+  at EB.Animation.Matinee.MatineeContainer.Reset ()
+  at EB.Animation.Matinee.MatineeContainer.ResetContents ()
+  at EB.Animation.Matinee.MatineeStage+<PreInitializeMatinee>d__46.MoveNext ()
+```
+The unhandled exception aborts the match loading sequence and returns the player to the roster screen with a generic "unknown error".
+
+#### Feasibility of cross-character S3 and Victory Pose grafting
+Cross-borrowing S3 or Victory poses is entirely feasible if the stage prefab and animation clip are migrated together:
+
+1. **Option A: Donor base grafting (donor as host)**
+   - Use the character with the desired S3 (e.g. Bumblebee) as the base asset bundle.
+   - Graft the target robot's physical skinned meshes and textures onto the donor skeleton.
+   - *Consideration*: In S3 vehicle sequences, the humanoid model is swapped for the `transformed` vehicle prop. If grafting an F1 racer onto Bumblebee, the F1 model will execute Bumblebee's stunt driving and jump tracks; wheel and chassis bone hierarchies must align with the vehicle animation.
+
+2. **Option B: Full stage prefab retargeting (recipient as host)**
+   - Retarget the root GameObject's `Special3StagePrefab` or `VictoryStagePrefab` to the desired stage prefab PathID.
+   - Add the external stage assetbundle (e.g. `stage_cinematics_brawler_shared_assets` or `stage_cinematics_bumblebee_special03_assets`) to the host bundle's `externals` table.
+   - Populate the Fight AOC slots with the exact clip names mandated by the donor stage prefab.
+   - Because the stage tracks and AOC slots match, `PreInitializeMatinee()` completes without null references.
+
 ## Known remaining frontiers
 
 1. Correct the STORY player's rendered model identity. Both sides currently load the Sharkticon
