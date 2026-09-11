@@ -51,6 +51,9 @@ static void seg_handler(int sig, siginfo_t* si, void* uc){
 #define LOG(...) do { __android_log_print(ANDROID_LOG_ERROR, "TFTFHOOK", __VA_ARGS__); flog(__VA_ARGS__); } while(0)
 static FILE* g_f = NULL;
 static void flog(const char* fmt, ...){
+    char buf[1024];
+    va_list ap; va_start(ap, fmt); vsnprintf(buf, sizeof buf, fmt, ap); va_end(ap);
+    __android_log_print(ANDROID_LOG_INFO, "TFTFHOOK", "%s", buf);
     if (!g_f) {
         char fname[64];
         time_t rawtime;
@@ -87,8 +90,7 @@ static void flog(const char* fmt, ...){
         }
     }
     if (!g_f) return;
-    va_list ap; va_start(ap, fmt); vfprintf(g_f, fmt, ap); va_end(ap);
-    fputc('\n', g_f); fflush(g_f);
+    fputs(buf, g_f); fputc('\n', g_f); fflush(g_f);
 }
 
 typedef void* (*fn8)(void*,void*,void*,void*,void*,void*,void*,void*);
@@ -529,7 +531,7 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x1174300, "PCSPECIAL",          2, 0 }, // 153 PlayerController.SpecialAttack(int index)
     { 0x1179AF4, "PCACTION",           2, 0 }, // 154 PlayerController.Action(int action)
     { 0xE33DB8,  "SPEXIT",             2, 0 }, // 155 PlayerSpecialAttackState.OnExit -> reset attack chain on special end (S1/S2)
-    { 0x11828E0, "HEAVYENTER",         2, 0 }, // 156 PlayerNewHeavyAttackState.OnEnter -> reset attack chain on heavy attack
+    { 0x1182764, "HEAVYENTER",         2, 0 }, // 156 PlayerNewHeavyAttackState.OnEnter -> reset attack chain on heavy attack
     { 0x1180480, "HITREACT",           2, 0 }, // 157 PlayerHitReactState.OnEnter -> reset attack chain on being hit
     { 0x1179938, "HITSTUN",            2, 0 }, // 158 PlayerController.ApplyHitStun -> reset attack chain on hit stun
     { 0x117AB6C, "APPLYDMG",           2, 0 }, // 159 PlayerController.ApplyDamage -> reset attack chain on taking damage
@@ -538,6 +540,9 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x127F794, "LOCALIZE",           2, 0 }, // 162 Localization.Get
     { 0x11794A4, "ADDMANA",            2, 0 }, // 163 PlayerController.AddMana -> scale enemy mana gain dynamically
     { 0xC1F2B8,  "GET_TOP_HERO_ID",    2, 0 }, // 164 BCGHelper.GetTopHeroId -> squad leader avatar
+    { 0x117E4AC, "DODGEENTER",         2, 0 }, // 165 PlayerDodgeState.OnEnter -> reset attack chain on dodge (swipe back)
+    { 0x117ADC8, "COMBOWRAP",          2, 0 }, // 166 Combo Finisher Wrap (L4/M2 end) -> reset attack chain
+    { 0x11828E0, "HEAVYEXIT",          2, 0 }, // 167 PlayerNewHeavyAttackState.OnExit -> reset attack chain on heavy exit
 };
 #define NH (int)(sizeof(H)/sizeof(H[0]))
 
@@ -4561,14 +4566,12 @@ void* hook_152(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
 
 static void reset_player_attack_chain(void* pc) {
     if (!obj_ok(pc)) return;
-    if (g_p0_controller && pc != g_p0_controller) return;
     int32_t p_idx = *(int32_t*)((uintptr_t)pc + 0xF4);
-    if (p_idx != 0) return;
-    *(uint64_t*)((uintptr_t)pc + 0x1c0) = 0;
-    *(uint32_t*)((uintptr_t)pc + 0x1c8) = 0;
-    if (g_base) {
-        ((void(*)(void*, void*))(g_base + 0x1177288))(pc, NULL);
-    }
+    if (p_idx != 0) return; // local player P0 only
+    g_p0_controller = pc;
+    *(uint32_t*)((uintptr_t)pc + 0x1c0) = 0; // _lightAttackIndex = 0
+    *(uint32_t*)((uintptr_t)pc + 0x1c4) = 0; // _mediumAttackIndex = 0
+    *(uint32_t*)((uintptr_t)pc + 0x1c8) = 0; // _rangedAttackIndex = 0
     flog("RESET_ATTACK_CHAIN on p0 pc=%p", pc);
 }
 
@@ -4897,6 +4900,53 @@ void* hook_164(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     return H[164].orig(a0, a1, a2, a3, a4, a5, a6, a7);
 }
 
+void* hook_165(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    void* pc = fld_p(a0, 0x18);
+    void* r = H[165].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    PROTECT({
+        if (obj_ok(pc)) {
+            flog("DODGE_ENTER (0x117E4AC) resetting attack chain on pc=%p", pc);
+            reset_player_attack_chain(pc);
+        } else if (obj_ok(g_p0_controller)) {
+            reset_player_attack_chain(g_p0_controller);
+        }
+    });
+    return r;
+}
+
+void* hook_166(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    void* r = H[166].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    PROTECT({
+        if (obj_ok(a0)) {
+            flog("COMBOWRAP (0x117ADC8) resetting attack chain on pc=%p", a0);
+            reset_player_attack_chain(a0);
+        } else if (obj_ok(g_p0_controller)) {
+            reset_player_attack_chain(g_p0_controller);
+        }
+    });
+    return r;
+}
+
+void* hook_167(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    void* pc = fld_p(a0, 0x18);
+    void* r = H[167].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    PROTECT({
+        if (obj_ok(pc)) {
+            flog("HEAVYEXIT (0x11828E0) resetting attack chain on pc=%p", pc);
+            reset_player_attack_chain(pc);
+            if (g_base) {
+                ((void(*)(void*, void*))(g_base + 0x117ADC8))(pc, NULL);
+            }
+        } else if (obj_ok(g_p0_controller)) {
+            reset_player_attack_chain(g_p0_controller);
+            if (g_base) {
+                ((void(*)(void*, void*))(g_base + 0x117ADC8))(g_p0_controller, NULL);
+            }
+        }
+    });
+    return r;
+}
+
 static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hook_7,hook_8,
     hook_9,hook_10,hook_11,hook_12,hook_13,hook_14,hook_15,hook_16,hook_17,hook_18,hook_19,hook_20,hook_21,
     hook_22,hook_23,hook_24,hook_25,hook_26,hook_27,hook_28,hook_29,hook_30,
@@ -4914,7 +4964,8 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     hook_138,hook_139,hook_140,hook_141,hook_142,hook_143,hook_144,
     hook_145,hook_146,hook_147,hook_148,hook_149,hook_150,hook_151,
     hook_152,hook_153,hook_154,hook_155,hook_156,hook_157,hook_158,
-    hook_159,hook_160,hook_161,hook_162,hook_163,hook_164 };
+    hook_159,hook_160,hook_161,hook_162,hook_163,hook_164,
+    hook_165,hook_166,hook_167 };
 
 static void write_jump(uint8_t* dst, void* target){
     uint32_t* p = (uint32_t*)dst;
