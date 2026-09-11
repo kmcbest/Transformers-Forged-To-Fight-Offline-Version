@@ -10,7 +10,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.webkit.ConsoleMessage;
 import android.webkit.JavascriptInterface;
+import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -115,56 +117,75 @@ public class LauncherDialog {
         }
         final String currentConfig = loaded;
 
-        class JsBridge {
-            @JavascriptInterface
-            public String getInitialSettings() {
-                return currentConfig;
-            }
-
-            @JavascriptInterface
-            public void saveAndLaunch(final String jsonStr) {
-                Log.i(TAG, "saveAndLaunch called with: " + jsonStr);
-                try {
-                    File file = new File(activity.getFilesDir(), SETTINGS_FILE);
-                    FileOutputStream fos = new FileOutputStream(file);
-                    fos.write(jsonStr.getBytes(StandardCharsets.UTF_8));
-                    fos.close();
-                    Log.i(TAG, "Saved user settings to " + file.getAbsolutePath());
-                } catch (Exception e) {
-                    Log.e(TAG, "Failed to save internal settings: " + e.getMessage());
-                }
-
-                try {
-                    File extDir = activity.getExternalFilesDir(null);
-                    if (extDir != null) {
-                        File extFile = new File(extDir, SETTINGS_FILE);
-                        FileOutputStream fos = new FileOutputStream(extFile);
-                        fos.write(jsonStr.getBytes(StandardCharsets.UTF_8));
-                        fos.close();
-                        Log.i(TAG, "Saved user settings to external: " + extFile.getAbsolutePath());
-                    }
-                } catch (Exception e) {}
-
-                activity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            dialog.dismiss();
-                            Log.i(TAG, "LauncherDialog dismissed");
-                        } catch (Exception e) {
-                            Log.e(TAG, "Error dismissing dialog: " + e.getMessage());
-                        }
-                    }
-                });
-            }
-        }
-
-        webView.addJavascriptInterface(new JsBridge(), "Android");
+        webView.addJavascriptInterface(new JsBridge(activity, dialog, currentConfig), "Android");
         webView.setWebViewClient(new WebViewClient());
+        webView.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public boolean onConsoleMessage(ConsoleMessage cm) {
+                Log.i(TAG, "[JS Console] " + cm.message() + " (line " + cm.lineNumber() + ")");
+                return true;
+            }
+        });
 
         dialog.setContentView(webView);
         dialog.show();
         webView.loadUrl("file:///android_asset/launcher_menu.html");
         Log.i(TAG, "LauncherDialog displayed successfully");
+    }
+
+    public static class JsBridge {
+        private final Activity activity;
+        private final Dialog dialog;
+        private final String initialConfig;
+
+        public JsBridge(Activity activity, Dialog dialog, String initialConfig) {
+            this.activity = activity;
+            this.dialog = dialog;
+            this.initialConfig = initialConfig;
+        }
+
+        @JavascriptInterface
+        public String getInitialSettings() {
+            return initialConfig;
+        }
+
+        @JavascriptInterface
+        public void saveAndLaunch(final String jsonStr) {
+            Log.i(TAG, "saveAndLaunch called with: " + jsonStr);
+            try {
+                File file = new File(activity.getFilesDir(), SETTINGS_FILE);
+                FileOutputStream fos = new FileOutputStream(file);
+                fos.write(jsonStr.getBytes(StandardCharsets.UTF_8));
+                fos.close();
+                Log.i(TAG, "Saved user settings to " + file.getAbsolutePath());
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to save internal settings: " + e.getMessage());
+            }
+
+            try {
+                File extDir = activity.getExternalFilesDir(null);
+                if (extDir != null) {
+                    File extFile = new File(extDir, SETTINGS_FILE);
+                    FileOutputStream fos = new FileOutputStream(extFile);
+                    fos.write(jsonStr.getBytes(StandardCharsets.UTF_8));
+                    fos.close();
+                    Log.i(TAG, "Saved user settings to external: " + extFile.getAbsolutePath());
+                }
+            } catch (Exception e) {}
+
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        if (dialog != null && dialog.isShowing()) {
+                            dialog.dismiss();
+                            Log.i(TAG, "LauncherDialog dismissed");
+                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error dismissing dialog: " + e.getMessage());
+                    }
+                }
+            });
+        }
     }
 }

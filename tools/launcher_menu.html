@@ -702,8 +702,7 @@
 
     function onCommanderInput() {
       const inp = document.getElementById('inp-commander');
-      let val = inp.value.replace(/[
-	"'\]/g, '');
+      let val = inp.value.replace(/[\r\n\t"'\\\]]/g, '');
       const trimmed = trimToMaxUnits(val, 16);
       if (val !== trimmed.text) {
         inp.value = trimmed.text;
@@ -772,35 +771,38 @@
     }
 
     function saveAndLaunch() {
-      onCommanderInput();
-      updateConfig();
-      const payloadStr = JSON.stringify(config, null, 2);
-
-      // 1. Android WebView Native Interface Bridge
-      if (window.Android && typeof window.Android.saveAndLaunch === 'function') {
-        window.Android.saveAndLaunch(payloadStr);
-        return;
-      }
-      if (window.Android && typeof window.Android.saveConfig === 'function') {
-        window.Android.saveConfig(payloadStr);
-      }
-
-      // 2. LocalStorage
       try {
-        localStorage.setItem('tftf_user_settings', payloadStr);
-      } catch (e) {}
+        onCommanderInput();
+        updateConfig();
+        const payloadStr = JSON.stringify(config, null, 2);
 
-      // 3. 视觉反馈
-      const btn = document.getElementById('btn-launch');
-      const orig = btn.innerHTML;
-      btn.innerHTML = '<span class="game-font">LAUNCHING...</span>';
-      setTimeout(() => {
-        alert('配置已保存！
+        // 1. Android WebView Native Interface Bridge
+        if (window.Android && typeof window.Android.saveAndLaunch === 'function') {
+          window.Android.saveAndLaunch(payloadStr);
+          return;
+        }
+        if (window.Android && typeof window.Android.saveConfig === 'function') {
+          window.Android.saveConfig(payloadStr);
+          return;
+        }
 
-【生效参数】:
-' + payloadStr);
-        btn.innerHTML = orig;
-      }, 250);
+        // 2. LocalStorage (fallback for browser testing)
+        try {
+          localStorage.setItem('tftf_user_settings', payloadStr);
+        } catch (e) {}
+
+        // 3. Fallback visual feedback if tested in desktop browser
+        const btn = document.getElementById('btn-launch');
+        if (btn) {
+          const orig = btn.innerHTML;
+          btn.innerHTML = '<span class="game-font">SAVED!</span>';
+          setTimeout(() => {
+            btn.innerHTML = orig;
+          }, 800);
+        }
+      } catch (err) {
+        console.error('saveAndLaunch error:', err);
+      }
     }
 
     (function initSaved() {

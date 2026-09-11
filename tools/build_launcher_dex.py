@@ -133,6 +133,7 @@ public class Dialog {
     public void setContentView(View v) {}
     public void show() {}
     public void dismiss() {}
+    public boolean isShowing() { return true; }
 }
 """, encoding="utf-8")
 
@@ -152,6 +153,20 @@ public class WebSettings {
 }
 """, encoding="utf-8")
 
+    (stub_dir / "android/webkit/ConsoleMessage.java").write_text("""package android.webkit;
+public class ConsoleMessage {
+    public String message() { return null; }
+    public int lineNumber() { return 0; }
+    public String sourceId() { return null; }
+}
+""", encoding="utf-8")
+
+    (stub_dir / "android/webkit/WebChromeClient.java").write_text("""package android.webkit;
+public class WebChromeClient {
+    public boolean onConsoleMessage(ConsoleMessage cm) { return false; }
+}
+""", encoding="utf-8")
+
     (stub_dir / "android/webkit/WebViewClient.java").write_text("""package android.webkit;
 public class WebViewClient {}
 """, encoding="utf-8")
@@ -165,6 +180,7 @@ public class WebView extends View {
     public WebSettings getSettings() { return null; }
     public void addJavascriptInterface(Object obj, String name) {}
     public void setWebViewClient(WebViewClient client) {}
+    public void setWebChromeClient(WebChromeClient client) {}
     public void loadUrl(String url) {}
 }
 """, encoding="utf-8")
