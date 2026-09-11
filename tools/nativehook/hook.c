@@ -5007,6 +5007,26 @@ static void poke32(uintptr_t rva, uint32_t word){
     LOG("poked 0x%lx : %08x -> %08x", (long)rva, old, word);
 }
 
+static fn8 orig_set_targetFrameRate = NULL;
+static void* hooked_set_targetFrameRate(void* fps, void* m, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7){
+    int req_fps = (int)(intptr_t)fps;
+    LOG("Application.set_targetFrameRate: req=%d -> forcing 60", req_fps);
+    if (orig_set_targetFrameRate) {
+        return orig_set_targetFrameRate((void*)(intptr_t)60, m, a2, a3, a4, a5, a6, a7);
+    }
+    return NULL;
+}
+
+static fn8 orig_set_vSyncCount = NULL;
+static void* hooked_set_vSyncCount(void* count, void* m, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7){
+    int req_vsync = (int)(intptr_t)count;
+    LOG("QualitySettings.set_vSyncCount: req=%d -> forcing 0", req_vsync);
+    if (orig_set_vSyncCount) {
+        return orig_set_vSyncCount((void*)(intptr_t)0, m, a2, a3, a4, a5, a6, a7);
+    }
+    return NULL;
+}
+
 static void* installer(void* arg){
     for (int i = 0; i < 1200; i++) {           // up to 60s
         g_base = 0; dl_iterate_phdr(find_cb, NULL);
@@ -5053,9 +5073,69 @@ static void* installer(void* arg){
     // 5) HeroPortrait.SetEnabledItems (@0xE8002C): nop child widgets deactivation loop.
     poke32(0xE80220, 0xD503201F);   // bl 0xDE0D18 -> nop
 
-
     // 7) HeroesScreen.<OnGridItemInitialized>b__99_1 (@0xC5D26C): pass mask 0x1B to SetEnabledItems.
     poke32(0xC5D888, 0x52800361);   // mov w1, #8 -> mov w1, #0x1b
+
+    // =========================================================================
+    // 60 FPS & GRAPHICS ENHANCEMENT (Scheme A / UNLOCK_60FPS_AND_GRAPHICS_ENHANCEMENT_PLAN)
+    // =========================================================================
+    // 1) PerformanceManager..cctor (@0xDA5168): default targetFrameRate 60 (was 30) & vSyncCount 0 (was 2)
+    poke32(0xDA52E0, 0x52800780);   // mov w0, #60
+    poke32(0xDA52F8, 0x2A1F03E0);   // mov w0, wzr (vSyncCount = 0)
+
+    // 2) PerformanceManager.ApplyOnce (@0xDA65DC): unconditionally branch to _60NoVSync (0xDA6724)
+    poke32(0xDA6700, 0x14000009);   // b 0xDA6724
+
+    // 3) PerformanceManager.CanDeviceRunGPUParticles (@0xDA7EE0): GPU Particles hardware gate
+    poke32(0xDA7EE0, 0x52800020);   // mov w0, #1
+    poke32(0xDA7EE4, 0xD65F03C0);   // ret
+
+    // 4) PerformanceManager.CanDeviceRunDestruction (@0xDA7E68): arena destruction FX hardware gate
+    poke32(0xDA7E68, 0x52800020);   // mov w0, #1
+    poke32(0xDA7E6C, 0xD65F03C0);   // ret
+
+    // 5) PerformanceManager.RemapGPUParticles (@0xDA7A20): force return true (1) -> bypass config check
+    poke32(0xDA7A20, 0x52800020);   // mov w0, #1
+    poke32(0xDA7A24, 0xD65F03C0);   // ret
+
+    // 6) PerformanceManager.RemapDestruction (@0xDA7A14): force return true (1) -> bypass config check
+    poke32(0xDA7A14, 0x52800020);   // mov w0, #1
+    poke32(0xDA7A18, 0xD65F03C0);   // ret
+
+    // 7) PerformanceManager.RemapParticleQuality (@0xDA74F0): force High (2)
+    poke32(0xDA74F0, 0x52800040);   // mov w0, #2
+    poke32(0xDA74F4, 0xD65F03C0);   // ret
+
+    // 8) PerformanceManager.GetParticlePalQuality (@0xDA758C): force High (2)
+    poke32(0xDA758C, 0x52800040);   // mov w0, #2
+    poke32(0xDA7590, 0xD65F03C0);   // ret
+
+    // 9) PerformanceManager.RemapTrailQuality (@0xDA7628): force High (2)
+    poke32(0xDA7628, 0x52800040);   // mov w0, #2
+    poke32(0xDA762C, 0xD65F03C0);   // ret
+
+    // 10) PerformanceManager.GetTrailQuality (@0xDA76C4): force High (2)
+    poke32(0xDA76C4, 0x52800040);   // mov w0, #2
+    poke32(0xDA76C8, 0xD65F03C0);   // ret
+
+    // 11) PerformanceManager.IsLowMemoryDevice (@0xDA7CA4): force false (0) -> disable memory throttle
+    poke32(0xDA7CA4, 0x2A1F03E0);   // mov w0, wzr
+    poke32(0xDA7CA8, 0xD65F03C0);   // ret
+
+    // 12) PerformanceManager.IsSlowDevice (@0xDA7CC4): force false (0) -> disable low-end throttle
+    poke32(0xDA7CC4, 0x2A1F03E0);   // mov w0, wzr
+    poke32(0xDA7CC8, 0xD65F03C0);   // ret
+
+    // 13) PerformanceManager.ApplyOnce (@0xDA65DC): nop cbnz w9, 0xDA66C8 -> force CharacterDamageManager.Init (low-health smoke & battle damage textures)
+    poke32(0xDA6640, 0xD503201F);   // nop
+
+    // 14) PerformanceManager.ApplyWhenSceneChanges (@0xDA68E4): Force all scene-loaded runtime graphics to HIGH
+    poke32(0xDA6978, 0x52800055);   // csel w21, w8, w10, lo -> mov w21, #2 (force EBParticlePal.quality = High)
+    poke32(0xDA69F4, 0x52800055);   // csel w21, w8, w10, lo -> mov w21, #2 (force TrailQuality = High)
+
+    // 15) Global hooks on Application.set_targetFrameRate (@0x1B46108) and QualitySettings.set_vSyncCount (@0x16A71C0)
+    inline_hook((void*)(g_base + 0x1B46108), (void*)hooked_set_targetFrameRate, &orig_set_targetFrameRate);
+    inline_hook((void*)(g_base + 0x16A71C0), (void*)hooked_set_vSyncCount, &orig_set_vSyncCount);
 
     LOG("install done (%d hooks)", NH);
     return NULL;

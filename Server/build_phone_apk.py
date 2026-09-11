@@ -191,6 +191,26 @@ def patch_endpoint_config(
     if len(new) > len(old):
         raise ValueError("server host is too long for the fixed-size Unity endpoint config")
     return data.replace(old, new + b" " * (len(old) - len(new)))
+def patch_globalgamemanagers(data: bytes) -> bytes:
+    """Patch Unity QualitySettings to unlock 60FPS particle raycast budget, LOD bias, and soft particles."""
+    try:
+        import UnityPy
+        env = UnityPy.load(data)
+        for obj in env.objects:
+            if obj.type.name == "QualitySettings":
+                d = obj.read_typetree()
+                for qs in d.get("m_QualitySettings", []):
+                    qs["particleRaycastBudget"] = 4096
+                    qs["lodBias"] = 2.0
+                    qs["softParticles"] = True
+                    qs["pixelLightCount"] = 4
+                    qs["anisotropicTextures"] = 2
+                    qs["vSyncCount"] = 0
+                obj.save_typetree(d)
+        return env.file.save()
+    except Exception as e:
+        print(f"Warning: failed to patch globalgamemanagers QualitySettings: {e}")
+        return data
 
 
 def build(
@@ -272,6 +292,8 @@ def build(
                 data = hook
             elif info.filename == wanted_il2cpp and replacement_il2cpp is not None:
                 data = replacement_il2cpp
+            elif info.filename == "assets/bin/Data/globalgamemanagers":
+                data = patch_globalgamemanagers(data)
             elif info.filename == "assets/assetpack/characters/moves.assetbundle":
                 mpath = Path("assets_netflix/moves.assetbundle")
                 if mpath.exists():

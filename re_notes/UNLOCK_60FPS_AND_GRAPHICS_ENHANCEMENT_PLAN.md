@@ -43,34 +43,44 @@
 
 ---
 
-### 2.2 画质与特效门禁关键点
+### 2.2 画质与特效门禁关键点（经 IL2CPP 符号表与代码注册严格核准）
 
 1. **GPU 粒子模拟门禁（`CanDeviceRunGPUParticles`）**：
-   - **函数位置**：`0xda7e68`
-   - **逻辑分析**：
-     ```assembly
-     0xda7ea8: ldr  w19, [x8, #0x24]      ; 读取 EnvironmentInfo.gpuParticles (偏移 0x24)
-     ...
-     0xda7ec4: cmp  w19, #2               ; 判断是否等于 2 (eDEFAULT.ForceOn)
-     0xda7ec8: cset w0, eq                ; 仅当配置显式等于 ForceOn 时返回 true (1)，否则全部返回 false (0)
-     0xda7edc: ret
-     ```
-   - **影响**：安卓的默认配置文件中 `gpuParticles` 为 `Default (0)` 或 `ForceOff (1)`，导致该函数永远返回 `0`，打击产生的大量 GPU 火花粒子被整体屏蔽。
+   - **函数位置**：`0xda7ee0`（Method 62074）
+   - **逻辑分析**：检测硬件 Shader 级别与 LOD，若不满足条件在 `0xda7f5c` 返回 `0`。强制返回 `1` 解锁 GPU 粒子。
 
-2. **角色受损/残血冒烟管理器初始化门禁（`CharacterDamageManager`）**：
-   - **函数位置**：`0xda65dc`（`PerformanceManager.ApplyOnce` 内 `0xda663c`）
-   - **逻辑分析**：
-     ```assembly
-     0xda663c: ldr  w9, [x8, #0x5c]       ; 读取 EnvironmentInfo.damageQuality (偏移 0x5c)
-     0xda6640: cbnz w9, #0xda66c8         ; 若未配置或关闭，直接跳过初始化！
-     ...
-     0xda66bc: bl   #0xd19da4             ; CharacterDamageManager.Init (实例化战损渲染器)
-     ```
-   - **影响**：当 `CharacterDamageManager` 被跳过初始化后，战斗内所有机器人的受击破损贴图计算停止，角色身上挂载的残血低血量烟雾/蒸汽粒子预制体（`fx_t_smoke_steam_anim.png` / `fx_p_burst_smoke.prefab`）因无法接收到血量阶段阈值信号而无法触发。
+2. **场景物理破坏门禁（`CanDeviceRunDestruction`）**：
+   - **函数位置**：`0xda7e68`（Method 62073）
+   - **影响**：控制战斗场景物件破碎、爆炸飞石与地面凹陷烟尘。强制返回 `1`。
 
-3. **环境物理破坏门禁（`CanDeviceRunDestruction`）**：
-   - **函数位置**：`0xda7df0`
-   - **逻辑分析**：同样仅当 `destruction == 2`（`ForceOn`）时返回 1。
+3. **10位高动态光照门禁（`CanDeviceRun10BitLighting`）**：
+   - **函数位置**：`0xda7df0`（Method 62072）
+   - **注意**：**严禁强制开启**。移动端缺少相应 Tone-mapping 处理，强制开启会导致全屏亮白过曝（已验证并保持原版）。
+
+4. **配置重映射门禁（`RemapGPUParticles` / `RemapDestruction`）**：
+   - **`RemapGPUParticles`**：`0xda7a20`（Method 62062）-> 强制返回 `1`。
+   - **`RemapDestruction`**：`0xda7a14`（Method 62061）-> 强制返回 `1`。
+
+5. **粒子品质与粒子池控制（`RemapParticleQuality` / `GetParticlePalQuality`）**：
+   - **`RemapParticleQuality`**：`0xda74f0`（Method 62046）-> 强制返回 High (`2`)。
+   - **`GetParticlePalQuality`**：`0xda758c`（Method 62047）-> 强制返回 High (`2`)。
+   - **`RemapTrailQuality`**：`0xda7628`（Method 62049）-> 强制返回 High (`2`)。
+   - **`GetTrailQuality`**：`0xda76c4`（Method 62050）-> 强制返回 High (`2`)。
+
+6. **设备性能降级门禁（`IsSlowDevice` / `IsLowMemoryDevice`）**：
+   - **`IsLowMemoryDevice`**：`0xda7ca4`（Method 62068）-> 强制返回 `0`。
+   - **`IsSlowDevice`**：`0xda7cc4`（Method 62069）-> 强制返回 `0`。
+
+7. **角色受损/残血冒烟管理器初始化门禁（`CharacterDamageManager`）**：
+   - **函数位置**：`0xda65dc`（`PerformanceManager.ApplyOnce` 内 `0xda6640`）
+   - **修复**：将 `0xda6640` 的 `cbnz w9, #0xda66c8` 替换为 `nop` (`0xd503201f`)，强制穿透执行 `CharacterDamageManager.Init`。
+
+8. **Unity 引擎级 QualitySettings 粒子预算与 LOD 限制（底层核心阻碍）**：
+   - 原版 `globalgamemanagers` 打包时硬编码了 `Fastest` 预设：
+     - `particleRaycastBudget = 4`（Unity 默认 4096，4 会瞬间吃满预算导致打击火花射线碰撞全部被引擎剔除）
+     - `lodBias = 0.3`（极激进的 LOD 距离剔除）
+     - `softParticles = False`（软粒子半透明融合关闭）
+   - **修复**：打包时通过 `UnityPy` 将 `globalgamemanagers` 动态篡改为 `particleRaycastBudget = 4096`, `lodBias = 2.0`, `softParticles = True`, `pixelLightCount = 4`, `anisotropicTextures = 2`, `vSyncCount = 0`。
 
 ---
 
