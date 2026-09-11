@@ -192,7 +192,19 @@ public class WebView extends View {
     shutil.copy(launcher_src, target_java)
 
     # 3. Compile
-    javac = ROOT / "toolchain" / "jdk-17" / "bin" / "javac.exe"
+    javac = shutil.which("javac")
+    if not javac:
+        for cand in [
+            ROOT / "toolchain" / "jdk-17" / "bin" / "javac.exe",
+            Path("C:/Program Files/Java/jdk-17/bin/javac.exe"),
+            Path("C:/Program Files/Microsoft/jdk-17.0.20.8-hotspot/bin/javac.exe"),
+        ]:
+            if cand.exists():
+                javac = str(cand)
+                break
+    if not javac:
+        raise FileNotFoundError("javac not found in toolchain or system JDK paths")
+
     stub_files = [str(p) for p in stub_dir.rglob("*.java")]
     src_files = [str(p) for p in src_dir.rglob("*.java")]
 
@@ -210,8 +222,30 @@ public class WebView extends View {
             shutil.rmtree(d)
 
     # 4. Convert to DEX with D8
-    java = ROOT / "toolchain" / "jdk-17" / "bin" / "java.exe"
-    d8_jar = ROOT / "toolchain" / "android-13" / "lib" / "d8.jar"
+    java = shutil.which("java")
+    if not java:
+        for cand in [
+            ROOT / "toolchain" / "jdk-17" / "bin" / "java.exe",
+            Path("C:/Program Files/Java/jdk-17/bin/java.exe"),
+            Path("C:/Program Files/Microsoft/jdk-17.0.20.8-hotspot/bin/java.exe"),
+        ]:
+            if cand.exists():
+                java = str(cand)
+                break
+    if not java:
+        raise FileNotFoundError("java not found in toolchain or system JDK paths")
+
+    d8_jar = None
+    for cand in [
+        ROOT / "toolchain" / "android-13" / "lib" / "d8.jar",
+        ROOT / "toolchain" / "android-sdk" / "build-tools" / "34.0.0" / "lib" / "d8.jar",
+    ] + list(ROOT.glob("toolchain/**/d8.jar")):
+        if cand.exists():
+            d8_jar = cand
+            break
+    if not d8_jar:
+        raise FileNotFoundError("d8.jar not found in toolchain")
+
     class_files = [str(p) for p in bin_dir.rglob("*.class")]
 
     cmd = [str(java), "-cp", str(d8_jar), "com.android.tools.r8.D8", "--min-api", "23", "--output", str(out_dir)] + class_files
