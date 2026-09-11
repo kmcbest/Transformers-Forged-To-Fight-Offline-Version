@@ -679,6 +679,17 @@ def build(
             payload_info.compress_type = zipfile.ZIP_STORED
             payload_info.external_attr = 0o644 << 16
             zout.writestr(payload_info, payload)
+
+        # Inject Launcher Menu DEX, HTML assets, and SP3 timings
+        classes3_path = Path("build/classes3.dex")
+        if classes3_path.exists():
+            zout.writestr("classes3.dex", classes3_path.read_bytes())
+        launcher_html = Path("tools/launcher_menu.html")
+        if launcher_html.exists():
+            zout.writestr("assets/launcher_menu.html", launcher_html.read_bytes())
+        sp3_path = Path("Server/sp3_timings.json")
+        if sp3_path.exists():
+            zout.writestr("assets/sp3_timings.json", sp3_path.read_bytes())
     return list(dict.fromkeys(changed_hosts))
 
 

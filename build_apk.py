@@ -59,6 +59,12 @@ def main():
         sys.executable, "Server/export_payload.py", "--out", str(payload_bin)
     ], check=True, cwd=ROOT)
 
+    # 2.5. Build launcher DEX
+    print("\n[2.5/5] Building launcher DEX (classes3.dex)...")
+    subprocess.run([
+        sys.executable, "tools/build_launcher_dex.py", str(BUILD_DIR / "classes3.dex")
+    ], check=True, cwd=ROOT)
+
     # 3. Build phone unsigned APK
     print("\n[3/5] Packaging unsigned APK...")
     base_apk = ROOT / "com.kabam.bigrobot_9.2.0-123129100_minAPI23(arm64-v8a,armeabi-v7a)(nodpi)_apkmirror.com.apk"

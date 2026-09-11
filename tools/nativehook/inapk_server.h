@@ -18,4 +18,9 @@ typedef struct { char bid[5][64]; int count; } Team;
 extern int g_current_is_10x_challenge;
 int tftf_get_current_team(Team *team);
 
+float tftf_get_challenge_hp_multiplier(void);
+float tftf_get_enemy_mana_gain(void);
+const char* tftf_get_commander_name(void);
+void tftf_reload_user_settings(void);
+
 #endif

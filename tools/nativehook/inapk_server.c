@@ -90,6 +90,111 @@ static int g_connections;
 static int g_started;
 int g_current_is_10x_challenge = 0;
 
+typedef struct {
+    char commander_name[64];
+    float challenge_hp_multiplier;
+    float enemy_mana_gain;
+    int enable_custom_bots;
+    int arena_randomization;
+    int skip_launcher_next_time;
+} UserSettings;
+
+static UserSettings g_user_settings = {
+    .commander_name = "Commander",
+    .challenge_hp_multiplier = 10.0f,
+    .enemy_mana_gain = 0.5f,
+    .enable_custom_bots = 1,
+    .arena_randomization = 1,
+    .skip_launcher_next_time = 0
+};
+static int g_settings_loaded = 0;
+
+static void load_user_settings(void) {
+    const char *paths[] = {
+        "/data/data/com.kabam.bigrobot/files/user_settings.json",
+        "/data/user/0/com.kabam.bigrobot/files/user_settings.json",
+        "/sdcard/Android/data/com.kabam.bigrobot/files/user_settings.json",
+        "/storage/emulated/0/Android/data/com.kabam.bigrobot/files/user_settings.json",
+        NULL
+    };
+    for (int i = 0; paths[i]; i++) {
+        FILE *f = fopen(paths[i], "rb");
+        if (f) {
+            char buf[4096];
+            size_t n = fread(buf, 1, sizeof(buf)-1, f);
+            fclose(f);
+            if (n > 0) {
+                buf[n] = 0;
+                char *cn = strstr(buf, "\"commander_name\"");
+                if (cn) {
+                    char *c = strchr(cn, ':');
+                    if (c) {
+                        char *q1 = strchr(c, '"');
+                        if (q1) {
+                            char *q2 = strchr(q1 + 1, '"');
+                            if (q2 && (size_t)(q2 - q1 - 1) < sizeof(g_user_settings.commander_name)) {
+                                size_t len = (size_t)(q2 - q1 - 1);
+                                memcpy(g_user_settings.commander_name, q1 + 1, len);
+                                g_user_settings.commander_name[len] = 0;
+                            }
+                        }
+                    }
+                }
+                char *hp = strstr(buf, "\"challenge_hp_multiplier\"");
+                if (hp) {
+                    char *c = strchr(hp, ':');
+                    if (c) {
+                        float v = (float)strtod(c + 1, NULL);
+                        if (v > 0.0f) g_user_settings.challenge_hp_multiplier = v;
+                    }
+                }
+                char *mg = strstr(buf, "\"enemy_mana_gain\"");
+                if (mg) {
+                    char *c = strchr(mg, ':');
+                    if (c) {
+                        float v = (float)strtod(c + 1, NULL);
+                        if (v > 0.0f) g_user_settings.enemy_mana_gain = v;
+                    }
+                }
+                char *cb = strstr(buf, "\"enable_custom_bots\"");
+                if (cb) {
+                    char *c = strchr(cb, ':');
+                    if (c) {
+                        while (*c && (*c == ':' || isspace((unsigned char)*c))) c++;
+                        g_user_settings.enable_custom_bots = !strncmp(c, "true", 4);
+                    }
+                }
+                char *ar = strstr(buf, "\"arena_randomization\"");
+                if (ar) {
+                    char *c = strchr(ar, ':');
+                    if (c) {
+                        while (*c && (*c == ':' || isspace((unsigned char)*c))) c++;
+                        g_user_settings.arena_randomization = !strncmp(c, "true", 4);
+                    }
+                }
+                g_settings_loaded = 1;
+                return;
+            }
+        }
+    }
+}
+
+float tftf_get_challenge_hp_multiplier(void) {
+    if (!g_settings_loaded) load_user_settings();
+    return g_user_settings.challenge_hp_multiplier;
+}
+float tftf_get_enemy_mana_gain(void) {
+    if (!g_settings_loaded) load_user_settings();
+    return g_user_settings.enemy_mana_gain;
+}
+const char* tftf_get_commander_name(void) {
+    if (!g_settings_loaded) load_user_settings();
+    return g_user_settings.commander_name;
+}
+void tftf_reload_user_settings(void) {
+    load_user_settings();
+}
+
 static void logmsg(const char *fmt, ...) {
     va_list ap;
     if (!g_log) return;
@@ -171,6 +276,10 @@ static int out_hero_detail(Out *o, const unsigned char *s, size_t n, const char 
     if (!is_10x) {
         return out_template(o, s, n, "%SIG%", sig, "", "");
     }
+    float mult = g_user_settings.challenge_hp_multiplier;
+    if (mult <= 0.05f) mult = 1.0f;
+    float atk_mult = (mult <= 1.5f) ? 0.8f : ((mult >= 9.0f) ? 1.25f : 1.0f);
+
     Out tmp = {0};
     if (!out_template(&tmp, s, n, "%SIG%", sig, "", "")) {
         free(tmp.p);
@@ -183,20 +292,49 @@ static int out_hero_detail(Out *o, const unsigned char *s, size_t n, const char 
             "\"max_hp\":",
             "\"health\":"
         };
+        static const char * const atk_keys[] = {
+            "\"rating_attack\":",
+            "\"attack\":"
+        };
         int matched = 0;
         for (int k = 0; k < 3; k++) {
             size_t kl = strlen(hp_keys[k]);
             if (i + kl <= tmp.n && !memcmp(tmp.p + i, hp_keys[k], kl)) {
                 if (!out_add(o, tmp.p + i, kl)) { free(tmp.p); return 0; }
                 i += kl;
-                while (i < tmp.n && isdigit(tmp.p[i])) {
-                    if (!out_add(o, &tmp.p[i], 1)) { free(tmp.p); return 0; }
-                    i++;
+                char val_str[32] = {0};
+                int vi = 0;
+                while (i < tmp.n && isdigit(tmp.p[i]) && vi < (int)sizeof(val_str)-1) {
+                    val_str[vi++] = (char)tmp.p[i++];
                 }
-                char zero = '0';
-                if (!out_add(o, &zero, 1)) { free(tmp.p); return 0; }
+                long long orig_hp = atoll(val_str);
+                long long new_hp = (long long)(orig_hp * mult);
+                char new_val[32];
+                int nlen = snprintf(new_val, sizeof(new_val), "%lld", new_hp);
+                if (!out_add(o, new_val, (size_t)nlen)) { free(tmp.p); return 0; }
                 matched = 1;
                 break;
+            }
+        }
+        if (!matched) {
+            for (int k = 0; k < 2; k++) {
+                size_t kl = strlen(atk_keys[k]);
+                if (i + kl <= tmp.n && !memcmp(tmp.p + i, atk_keys[k], kl)) {
+                    if (!out_add(o, tmp.p + i, kl)) { free(tmp.p); return 0; }
+                    i += kl;
+                    char val_str[32] = {0};
+                    int vi = 0;
+                    while (i < tmp.n && isdigit(tmp.p[i]) && vi < (int)sizeof(val_str)-1) {
+                        val_str[vi++] = (char)tmp.p[i++];
+                    }
+                    long long orig_atk = atoll(val_str);
+                    long long new_atk = (long long)(orig_atk * atk_mult);
+                    char new_val[32];
+                    int nlen = snprintf(new_val, sizeof(new_val), "%lld", new_atk);
+                    if (!out_add(o, new_val, (size_t)nlen)) { free(tmp.p); return 0; }
+                    matched = 1;
+                    break;
+                }
             }
         }
         if (!matched) {
@@ -207,11 +345,41 @@ static int out_hero_detail(Out *o, const unsigned char *s, size_t n, const char 
     free(tmp.p);
     return 1;
 }
+
+static const unsigned char *replace_commander_name(const unsigned char *s, size_t n, Out *o, size_t *outn) {
+    if (g_user_settings.commander_name[0] && strcmp(g_user_settings.commander_name, "Commander") != 0) {
+        const char *orig = (const char*)s;
+        const char *target = "\"name\":\"Commander\"";
+        const char *pos = strstr(orig, target);
+        size_t tlen = strlen(target);
+        if (!pos) {
+            target = "\"name\": \"Commander\"";
+            pos = strstr(orig, target);
+            tlen = strlen(target);
+        }
+        if (pos) {
+            size_t pre = (size_t)(pos - orig);
+            char rep[128];
+            snprintf(rep, sizeof rep, "\"name\":\"%s\"", g_user_settings.commander_name);
+            size_t replen = strlen(rep);
+            size_t post = n - pre - tlen;
+            if (out_add(o, orig, pre) &&
+                out_add(o, rep, replen) &&
+                out_add(o, pos + tlen, post)) {
+                *outn = o->n;
+                return o->p;
+            }
+        }
+    }
+    *outn = n;
+    return s;
+}
+
 /* The authored dynamic bodies are compact; fakeserver's json.dumps uses its default spaces. */
 static const unsigned char *json_default_spaces(const unsigned char *s, size_t n, Out *o, size_t *outn) {
     size_t i; int quoted=0, escaped=0;
     for(i=0;i<n;i++) {
-        if (!quoted && i + 13 <= n && !memcmp(s + i, "\"mapOverride\"", 13)) {
+        if (g_user_settings.arena_randomization && !quoted && i + 13 <= n && !memcmp(s + i, "\"mapOverride\"", 13)) {
             size_t j = i + 13;
             while (j < n && isspace((unsigned char)s[j])) j++;
             if (j < n && s[j] == ':') {
@@ -458,6 +626,7 @@ static void store_quest_team(const char *s, const char *end) {
 }
 static const char *path_last(const char *p) { const char *x=strrchr(p,'/'); return x?x+1:p; }
 static int has_suffix(const char *p, const char *s) { size_t a=strlen(p),b=strlen(s);return a>=b&&!memcmp(p+a-b,s,b); }
+static int ci_equal(const char *a, const char *b);
 static const char *ci_find_header(const char *h, const char *name);
 
 static int header_contains(const char *h, const char *name, const char *token) {
@@ -536,6 +705,58 @@ static int detect_chinese_language(const char *headers, const char *query) {
 static const unsigned char *dynamic(const char *headers, const char *method, const char *p, const char *query, const char *body, size_t bn, Out *o, size_t *outn) {
     char key[256], tid[64]="", bid[64]="", mid[64], qid[64]; const unsigned char *v; size_t n; const char *end=body+bn;
     if(strstr(p,"/quests/quest-list")) { g_current_is_10x_challenge = 0; }
+
+    /* 0. Launcher Menu API & Web UI */
+    if(strstr(p, "/launcher/save") && !ci_equal(method, "GET")) {
+        const char *save_paths[] = {
+            "/data/data/com.kabam.bigrobot/files/user_settings.json",
+            "/sdcard/Android/data/com.kabam.bigrobot/files/user_settings.json",
+            NULL
+        };
+        for (int sp = 0; save_paths[sp]; sp++) {
+            FILE *sf = fopen(save_paths[sp], "wb");
+            if (sf) {
+                fwrite(body, 1, bn, sf);
+                fclose(sf);
+            }
+        }
+        load_user_settings();
+        const char *resp = "{\"ok\":true}";
+        *outn = strlen(resp);
+        return (const unsigned char*)resp;
+    }
+    if(strstr(p, "/launcher")) {
+        const char *lpaths[] = {
+            "/sdcard/Android/data/com.kabam.bigrobot/files/launcher_menu.html",
+            "/data/data/com.kabam.bigrobot/files/launcher_menu.html",
+            NULL
+        };
+        for (int lp = 0; lpaths[lp]; lp++) {
+            FILE *lf = fopen(lpaths[lp], "rb");
+            if (lf) {
+                fseek(lf, 0, SEEK_END);
+                long fsz = ftell(lf);
+                fseek(lf, 0, SEEK_SET);
+                if (fsz > 0 && fsz < 2 * 1024 * 1024) {
+                    if (out_reserve(o, (size_t)fsz)) {
+                        fread(o->p, 1, (size_t)fsz, lf);
+                        fclose(lf);
+                        o->n = (size_t)fsz;
+                        *outn = o->n;
+                        return o->p;
+                    }
+                }
+                fclose(lf);
+            }
+        }
+    }
+
+    /* 1. /auth/login with custom commander name */
+    if(has_suffix(p,"/auth/login")) {
+        load_user_settings();
+        v = lookup("POST /auth/login", &n);
+        if (v) return replace_commander_name(v, n, o, outn);
+    }
     /* Language-adaptive getLoginData */
     if(has_suffix(p,"/bcg/getLoginData")) {
         int is_zh = detect_chinese_language(headers, query);
@@ -664,10 +885,11 @@ static int has_token(const char *v, const char *token) {
     return 0;
 }
 static void *find_end(unsigned char *p, size_t n) { size_t i; for(i=0;i+4<=n;i++)if(!memcmp(p+i,"\r\n\r\n",4))return p+i;return NULL; }
-static int respond(int fd, const unsigned char *data, size_t n, int head) {
+static int respond(int fd, const unsigned char *data, size_t n, int head, const char *path) {
     char hdr[160]; int m;
     if(head) { m=snprintf(hdr,sizeof hdr,"HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n"); return send_all(fd,hdr,(size_t)m); }
-    m=snprintf(hdr,sizeof hdr,"HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: %zu\r\n\r\n",n);
+    const char *ct = (path && strstr(path, "/launcher") && !strstr(path, "/launcher/save")) ? "text/html; charset=utf-8" : "application/json";
+    m=snprintf(hdr,sizeof hdr,"HTTP/1.1 200 OK\r\nContent-Type: %s\r\nContent-Length: %zu\r\n\r\n", ct, n);
     return m>0 && send_all(fd,hdr,(size_t)m) && send_all(fd,data,n);
 }
 static ssize_t recv_more(int fd, unsigned char *buf, size_t *used, size_t cap) {
@@ -710,7 +932,7 @@ static void *connection(void *arg) {
         Out o={0}; size_t n=0; const unsigned char *answer;
         if(ci_equal(method,"HEAD")) answer=(const unsigned char*)"";
         else { answer=dynamic((const char*)buf,method,path,query,(const char*)buf+hlen,take,&o,&n); if(!answer){char key[4200];snprintf(key,sizeof key,"%s %s",method,path);answer=lookup(key,&n);} if(!answer){uint32_t i;for(i=0;i<g_blob.pc;i++){Rec r=rec_at(&g_blob,g_blob.po,i);if(strlen(path)>=r.kl&&!memcmp(path,g_blob.p+r.ko,r.kl)){answer=body_for(&r,&n);break;}}}if(!answer){answer=g_blob.p+g_blob.dfo;n=g_blob.dfl;} }
-        if(!respond(fd,answer,n,ci_equal(method,"HEAD"))){free(o.p);goto out;} free(o.p);
+        if(!respond(fd,answer,n,ci_equal(method,"HEAD"),path)){free(o.p);goto out;} free(o.p);
         conn=ci_find_header((char*)buf,"Connection");if(has_token(conn,"close"))close_after=1; if(!strcmp(proto,"HTTP/1.0")&&!has_token(conn,"keep-alive"))close_after=1;
         if(clen>MAX_BODY) { used=0; } else { size_t consumed=hlen+clen; if(used>consumed)memmove(buf,buf+consumed,used-consumed); used=used>consumed?used-consumed:0; }
         if(close_after)break;

@@ -21,6 +21,7 @@
 #include <dlfcn.h>
 #include <time.h>
 #include "inapk_server.h"
+#include <jni.h>
 
 // forward decls (used by seg_handler below, defined later)
 static void flog(const char* fmt, ...);
@@ -2647,6 +2648,9 @@ static void load_combat_tuning_config(void) {
             free(buf);
         }
     }
+
+    tftf_reload_user_settings();
+    g_combat_enemy_mana_gain = tftf_get_enemy_mana_gain();
 }
 
 // slot 56 FIXFIGHT: PlayerAttributes.Init(this=a0, owner=a1, manager=a2, fighterData=a3,
@@ -2695,7 +2699,11 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
             int pi = 3000;
             calc_enemy_stats_all(id1, 5, 50, &hp_f, &atk_f, &pi);
             if (g_current_is_10x_challenge) {
-                hp_f *= 10.0f;
+                float mult = tftf_get_challenge_hp_multiplier();
+                if (mult <= 0.05f) mult = 1.0f;
+                float atk_mult = (mult <= 1.5f) ? 0.8f : ((mult >= 9.0f) ? 1.25f : 1.0f);
+                hp_f *= mult;
+                atk_f *= atk_mult;
                 pi = (int)(hp_f + atk_f) / 20;
             }
             int32_t hp = (int32_t)hp_f;
@@ -2730,8 +2738,8 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                 *(int32_t*)((char*)ch1 + 0x3C) = atk;
                 *(float*)  ((char*)ch1 + 0x58) = 1.0f;  // HP multiplier in CharacterData
             }
-            LOG("FIXFIGHT_STATS: player=%d bp=%s filled hp=%d atk=%d pi=%d enemy_mana_gain=%.2f",
-                 player_idx, id1, hp, atk, pi, g_combat_enemy_mana_gain);
+            LOG("FIXFIGHT_STATS: player=%d bp=%s filled hp=%d atk=%d pi=%d enemy_mana_gain=%.2f challenge_mult=%.1f",
+                 player_idx, id1, hp, atk, pi, g_combat_enemy_mana_gain, tftf_get_challenge_hp_multiplier());
         } else if (player_idx == 0) {
             if (at1 && obj_ok(at1)) {
                 *(float*)((char*)at1 + 0x54) = g_combat_player_mana_gain; // Dynamic player mana gain rate
@@ -5147,6 +5155,132 @@ static void inapk_log(const char* fmt, ...){
     LOG("%s", line);
 }
 
+static void* launcher_thread(void* arg) {
+    (void)arg;
+    LOG("[Launcher] Launcher thread started, waiting for g_base...");
+    for (int i = 0; i < 600; i++) {
+        if (g_base) break;
+        usleep(50000);
+    }
+    if (!g_base) {
+        LOG("[Launcher] g_base not found");
+        return NULL;
+    }
+    LOG("[Launcher] g_base found: %p, waiting for il2cpp JavaVM pointer...", (void*)g_base);
+
+    JavaVM* vm = NULL;
+    for (int i = 0; i < 200; i++) {
+        vm = *(JavaVM**)(g_base + 0x2E4A1F8);
+        if (vm) break;
+        usleep(50000);
+    }
+    if (!vm) {
+        LOG("[Launcher] JavaVM pointer at %p is null after timeout", (void*)(g_base + 0x2E4A1F8));
+        return NULL;
+    }
+    LOG("[Launcher] JavaVM obtained: %p", vm);
+
+    JNIEnv* env = NULL;
+    jint res = (*vm)->AttachCurrentThread(vm, &env, NULL);
+    if (res != JNI_OK || !env) {
+        LOG("[Launcher] AttachCurrentThread failed: %d", res);
+        return NULL;
+    }
+
+    // 1. Get Application ClassLoader via ActivityThread.currentApplication()
+    jclass atClass = (*env)->FindClass(env, "android/app/ActivityThread");
+    if (!atClass) {
+        LOG("[Launcher] ActivityThread class not found");
+        (*vm)->DetachCurrentThread(vm);
+        return NULL;
+    }
+    jmethodID curAppMethod = (*env)->GetStaticMethodID(env, atClass, "currentApplication", "()Landroid/app/Application;");
+    if (!curAppMethod) {
+        LOG("[Launcher] ActivityThread.currentApplication method not found");
+        (*vm)->DetachCurrentThread(vm);
+        return NULL;
+    }
+
+    jobject app = NULL;
+    for (int retry = 0; retry < 50; retry++) {
+        app = (*env)->CallStaticObjectMethod(env, atClass, curAppMethod);
+        if (app) break;
+        usleep(100000);
+    }
+    if (!app) {
+        LOG("[Launcher] currentApplication is null after timeout");
+        (*vm)->DetachCurrentThread(vm);
+        return NULL;
+    }
+    LOG("[Launcher] Found Application: %p", app);
+
+    jclass appClass = (*env)->GetObjectClass(env, app);
+    jmethodID getClMethod = (*env)->GetMethodID(env, appClass, "getClassLoader", "()Ljava/lang/ClassLoader;");
+    jobject classLoader = (*env)->CallObjectMethod(env, app, getClMethod);
+    LOG("[Launcher] Found ClassLoader: %p", classLoader);
+
+    jclass clClass = (*env)->FindClass(env, "java/lang/ClassLoader");
+    jmethodID loadClassMethod = (*env)->GetMethodID(env, clClass, "loadClass", "(Ljava/lang/String;)Ljava/lang/Class;");
+
+    // 2. Load UnityPlayer and wait for currentActivity
+    jstring upName = (*env)->NewStringUTF(env, "com.unity3d.player.UnityPlayer");
+    jclass upClass = (jclass)(*env)->CallObjectMethod(env, classLoader, loadClassMethod, upName);
+    (*env)->DeleteLocalRef(env, upName);
+
+    if (!upClass || (*env)->ExceptionCheck(env)) {
+        (*env)->ExceptionClear(env);
+        LOG("[Launcher] Failed to load com.unity3d.player.UnityPlayer via ClassLoader");
+        (*vm)->DetachCurrentThread(vm);
+        return NULL;
+    }
+
+    jfieldID actField = (*env)->GetStaticFieldID(env, upClass, "currentActivity", "Landroid/app/Activity;");
+    if (!actField) {
+        LOG("[Launcher] currentActivity field not found");
+        (*vm)->DetachCurrentThread(vm);
+        return NULL;
+    }
+
+    jobject act = NULL;
+    for (int retry = 0; retry < 100; retry++) {
+        act = (*env)->GetStaticObjectField(env, upClass, actField);
+        if (act) break;
+        usleep(100000);
+    }
+    if (!act) {
+        LOG("[Launcher] UnityPlayer.currentActivity is null after timeout");
+        (*vm)->DetachCurrentThread(vm);
+        return NULL;
+    }
+    LOG("[Launcher] Found UnityPlayer.currentActivity: %p", act);
+
+    // 3. Load com.kabam.bigrobot.LauncherDialog
+    jstring ldName = (*env)->NewStringUTF(env, "com.kabam.bigrobot.LauncherDialog");
+    jclass launcherClass = (jclass)(*env)->CallObjectMethod(env, classLoader, loadClassMethod, ldName);
+    (*env)->DeleteLocalRef(env, ldName);
+
+    if (!launcherClass || (*env)->ExceptionCheck(env)) {
+        (*env)->ExceptionDescribe(env);
+        (*env)->ExceptionClear(env);
+        LOG("[Launcher] Failed to load com.kabam.bigrobot.LauncherDialog");
+        (*vm)->DetachCurrentThread(vm);
+        return NULL;
+    }
+    LOG("[Launcher] Loaded LauncherDialog class: %p", launcherClass);
+
+    jmethodID showMethod = (*env)->GetStaticMethodID(env, launcherClass, "show", "(Landroid/app/Activity;)V");
+    if (showMethod) {
+        (*env)->CallStaticVoidMethod(env, launcherClass, showMethod, act);
+        LOG("[Launcher] Called LauncherDialog.show successfully!");
+    } else {
+        LOG("[Launcher] LauncherDialog.show method not found");
+    }
+
+    usleep(500000);
+    (*vm)->DetachCurrentThread(vm);
+    return NULL;
+}
+
 __attribute__((constructor))
 static void init(void){
     struct sigaction sa; memset(&sa, 0, sizeof sa);
@@ -5159,4 +5293,5 @@ static void init(void){
     int inapk_rc = tftf_server_start_from_apk();
     LOG("in-apk server start: %d", inapk_rc);
     pthread_t th; pthread_create(&th, NULL, installer, NULL);
+    pthread_t lth; pthread_create(&lth, NULL, launcher_thread, NULL);
 }

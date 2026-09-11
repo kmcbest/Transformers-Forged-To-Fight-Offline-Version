@@ -41,7 +41,6 @@ extracted_apk/
 *.jpeg
 /*.png
 module_descriptions.json
-tools/launcher_menu.html
 .venv/
 log_*.txt
 logcat_*.txt
