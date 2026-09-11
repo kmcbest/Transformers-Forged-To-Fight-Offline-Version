@@ -618,7 +618,28 @@
           </div>
         </div>
 
-        <!-- 4. 下次跳过启动菜单 (Skip Next Time) -->
+        <!-- 4. 画面帧率上限 (Target Frame Rate) -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <span class="dot" style="background: var(--cyan);"></span>
+              <span>画面帧率上限 (Target Frame Rate)</span>
+            </div>
+            <span class="current-val game-font" id="txt-fps-val">60 FPS (高刷流畅)</span>
+          </div>
+          <div class="pills-group" style="grid-template-columns: 1fr 1fr;">
+            <div class="pill-btn active" id="btn-fps-60" onclick="setFps(60, this)">
+              <span class="pill-name c-cyan">高刷流畅</span>
+              <span class="pill-badge bg-cyan game-font">60 FPS (推荐)</span>
+            </div>
+            <div class="pill-btn" id="btn-fps-30" onclick="setFps(30, this)">
+              <span class="pill-name c-green">原版省电</span>
+              <span class="pill-badge bg-green game-font">30 FPS (降温)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. 下次跳过启动菜单 (Skip Next Time) -->
         <label class="skip-card" style="margin-top: 2px;">
           <input type="checkbox" id="chk-skip-launcher" onchange="updateConfig()">
           <div class="skip-text">
@@ -677,6 +698,7 @@
       challenge_hp_multiplier: 10.0,
       enemy_mana_gain: 0.5,
       player_mana_gain: 1.0,
+      target_fps: 60,
       skip_launcher_next_time: false
     };
 
@@ -737,6 +759,19 @@
       updateJsonPreview();
     }
 
+    function setFps(fps, el) {
+      config.target_fps = fps;
+      document.querySelectorAll('#btn-fps-60, #btn-fps-30').forEach(btn => btn.classList.remove('active'));
+      el.classList.add('active');
+      const txt = document.getElementById('txt-fps-val');
+      if (fps === 30) {
+        txt.textContent = '30 FPS (原版省电)';
+      } else {
+        txt.textContent = '60 FPS (高刷流畅)';
+      }
+      updateJsonPreview();
+    }
+
     function updateConfig() {
       config.skip_launcher_next_time = document.getElementById('chk-skip-launcher').checked;
       updateJsonPreview();
@@ -765,6 +800,9 @@
 
       const manaPills = document.querySelectorAll('.grid-container .col:first-child .card:last-child .pill-btn');
       manaPills[1].click();
+
+      const fpsBtn60 = document.getElementById('btn-fps-60');
+      if (fpsBtn60) fpsBtn60.click();
 
       updateConfig();
       updateJsonPreview();
@@ -832,6 +870,16 @@
             if (mana >= 0.8) manaPills[0].click();
             else if (mana >= 0.4) manaPills[1].click();
             else manaPills[2].click();
+          }
+          if (parsed.target_fps !== undefined) {
+            const fps = parsed.target_fps;
+            if (fps === 30) {
+              const b30 = document.getElementById('btn-fps-30');
+              if (b30) b30.click();
+            } else {
+              const b60 = document.getElementById('btn-fps-60');
+              if (b60) b60.click();
+            }
           }
           if (parsed.skip_launcher_next_time !== undefined) {
             document.getElementById('chk-skip-launcher').checked = parsed.skip_launcher_next_time;

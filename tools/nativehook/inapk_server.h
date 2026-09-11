@@ -21,6 +21,7 @@ int tftf_get_current_team(Team *team);
 float tftf_get_challenge_hp_multiplier(void);
 float tftf_get_enemy_mana_gain(void);
 const char* tftf_get_commander_name(void);
+int tftf_get_target_fps(void);
 void tftf_reload_user_settings(void);
 
 #endif

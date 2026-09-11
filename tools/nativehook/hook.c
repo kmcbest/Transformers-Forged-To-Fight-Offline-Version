@@ -5069,9 +5069,11 @@ static void poke32(uintptr_t rva, uint32_t word){
 static fn8 orig_set_targetFrameRate = NULL;
 static void* hooked_set_targetFrameRate(void* fps, void* m, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7){
     int req_fps = (int)(intptr_t)fps;
-    LOG("Application.set_targetFrameRate: req=%d -> forcing 60", req_fps);
+    int target_fps = tftf_get_target_fps();
+    if (target_fps <= 0) target_fps = 60;
+    LOG("Application.set_targetFrameRate: req=%d -> forcing %d", req_fps, target_fps);
     if (orig_set_targetFrameRate) {
-        return orig_set_targetFrameRate((void*)(intptr_t)60, m, a2, a3, a4, a5, a6, a7);
+        return orig_set_targetFrameRate((void*)(intptr_t)target_fps, m, a2, a3, a4, a5, a6, a7);
     }
     return NULL;
 }
@@ -5136,14 +5138,25 @@ static void* installer(void* arg){
     poke32(0xC5D888, 0x52800361);   // mov w1, #8 -> mov w1, #0x1b
 
     // =========================================================================
-    // 60 FPS & GRAPHICS ENHANCEMENT (Scheme A / UNLOCK_60FPS_AND_GRAPHICS_ENHANCEMENT_PLAN)
+    // FPS & GRAPHICS ENHANCEMENT (Scheme A / UNLOCK_60FPS_AND_GRAPHICS_ENHANCEMENT_PLAN)
     // =========================================================================
-    // 1) PerformanceManager..cctor (@0xDA5168): default targetFrameRate 60 (was 30) & vSyncCount 0 (was 2)
-    poke32(0xDA52E0, 0x52800780);   // mov w0, #60
+    int target_fps = tftf_get_target_fps();
+    LOG("Applying target_fps setting: %d", target_fps);
+
+    // 1) PerformanceManager..cctor (@0xDA5168): default targetFrameRate (30 or 60) & vSyncCount 0 (was 2)
+    if (target_fps == 30) {
+        poke32(0xDA52E0, 0x528003C0);   // mov w0, #30 (0x1e)
+    } else {
+        poke32(0xDA52E0, 0x52800780);   // mov w0, #60 (0x3c)
+    }
     poke32(0xDA52F8, 0x2A1F03E0);   // mov w0, wzr (vSyncCount = 0)
 
-    // 2) PerformanceManager.ApplyOnce (@0xDA65DC): unconditionally branch to _60NoVSync (0xDA6724)
-    poke32(0xDA6700, 0x14000009);   // b 0xDA6724
+    // 2) PerformanceManager.ApplyOnce (@0xDA65DC): branch to _30NoVSync (0xDA6750) or _60NoVSync (0xDA6724)
+    if (target_fps == 30) {
+        poke32(0xDA6700, 0x14000014);   // b 0xDA6750 (_30NoVSync)
+    } else {
+        poke32(0xDA6700, 0x14000009);   // b 0xDA6724 (_60NoVSync)
+    }
 
     // 3) PerformanceManager.CanDeviceRunGPUParticles (@0xDA7EE0): GPU Particles hardware gate
     poke32(0xDA7EE0, 0x52800020);   // mov w0, #1

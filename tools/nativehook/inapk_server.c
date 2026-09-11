@@ -97,6 +97,7 @@ typedef struct {
     int enable_custom_bots;
     int arena_randomization;
     int skip_launcher_next_time;
+    int target_fps;
 } UserSettings;
 
 static UserSettings g_user_settings = {
@@ -105,7 +106,8 @@ static UserSettings g_user_settings = {
     .enemy_mana_gain = 0.5f,
     .enable_custom_bots = 1,
     .arena_randomization = 1,
-    .skip_launcher_next_time = 0
+    .skip_launcher_next_time = 0,
+    .target_fps = 60
 };
 static int g_settings_loaded = 0;
 
@@ -172,6 +174,14 @@ static void load_user_settings(void) {
                         g_user_settings.arena_randomization = !strncmp(c, "true", 4);
                     }
                 }
+                char *fps = strstr(buf, "\"target_fps\"");
+                if (fps) {
+                    char *c = strchr(fps, ':');
+                    if (c) {
+                        int v = (int)strtol(c + 1, NULL, 10);
+                        if (v == 30 || v == 60) g_user_settings.target_fps = v;
+                    }
+                }
                 g_settings_loaded = 1;
                 return;
             }
@@ -190,6 +200,10 @@ float tftf_get_enemy_mana_gain(void) {
 const char* tftf_get_commander_name(void) {
     if (!g_settings_loaded) load_user_settings();
     return g_user_settings.commander_name;
+}
+int tftf_get_target_fps(void) {
+    if (!g_settings_loaded) load_user_settings();
+    return g_user_settings.target_fps > 0 ? g_user_settings.target_fps : 60;
 }
 void tftf_reload_user_settings(void) {
     load_user_settings();
