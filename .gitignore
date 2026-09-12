@@ -78,5 +78,7 @@ assets_redeco/*
 !assets_redeco/*lifeline*
 !assets_redeco/wildrider_gs_deluxe2016.assetbundle
 !assets_redeco/*wildrider*
+!assets_redeco/breakdown_gs.assetbundle
+!assets_redeco/*breakdown*
 !assets_redeco/moves.assetbundle
 !assets_redeco/character_fx.assetbundle

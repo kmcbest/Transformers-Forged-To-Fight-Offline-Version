@@ -16,9 +16,18 @@
     "notes": "抢劫Dragstrip - 幻影F1分身漂移S3"
   },
   "wildrider_gs_deluxe2016": {
-    "intervals": [[1000, 2500]],
+    "intervals":  [[3333, 4967]],
     "props": {},
     "notes": "莽撞Wildrider - 警车S3"
+  },
+  "breakdown_gs": {
+    "intervals": [[700, 2133]],
+    "props": {
+      "gun": [[0, 0]],
+      "rocketBase": [[0, 0]],
+      "rocket": [[0, 0]]
+    },
+    "notes": "打击Breakdown - 横炮S3"
   },
   "optimusprime_cin_tf": {
     "intervals": [[2167, 2633]],

@@ -227,6 +227,12 @@
         "faction": "霸天虎",
         "note": "飞虎队 格斗系"
     },
+    "breakdown_gs": {
+        "en": "Breakdown",
+        "zh": "打击",
+        "faction": "霸天虎",
+        "note": "飞虎队 侦查系"
+    },
     "dirge_gs_deluxe2008": {
         "en": "Dirge",
         "zh": "挽歌",
