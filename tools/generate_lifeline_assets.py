@@ -31,6 +31,7 @@ Usage:
 """
 
 import argparse
+import copy
 import glob
 import json
 import os
@@ -80,101 +81,167 @@ def make_zero_scale_curve(bone_path: str, duration: float) -> dict:
     }
 
 
-def patch_moves_assetbundle(moves_bundle_data: bytes, out_dir: Path) -> None:
-    print("[*] Patching moves.assetbundle with universal VFX...")
-    moves_env = UnityPy.load(moves_bundle_data)
-    kb_patched = False
-    rt_patched = False
+LIFELINE_S1_PID = -8888888888888888881
+LIFELINE_S2_PID = -8888888888888888882
 
-    for obj in moves_env.objects:
-        # Kickback S1 TextAsset
-        if obj.path_id == 7117130594397893526:
-            data_obj = obj.read()
-            data = json.loads(data_obj.m_Script)
-            for ev in data.get("moves", {}).get("events", []):
-                pn = ev.get("pn", "")
-                if "laser_beam" in pn:
-                    ev["pn"] = "fx_p_laser_beam"
-                    ev["dn"] = "fx_p_laser_beam"
-                    ev["d"] = 15
-                    # Aim straight forward horizontally from visor towards enemy
-                    if "po" in ev and "o" in ev["po"]:
-                        ev["po"]["o"]["x"] = -0.7
-                        ev["po"]["o"]["y"] = 0.0
-                        ev["po"]["o"]["z"] = 0.2
-                    if "ro" in ev and "o" in ev["ro"]:
-                        is_mirrored = any(
-                            sc.get("type") == "MoveEventCondition_IsMirrored" and sc.get("inv") is False
-                            for sc in ev.get("sc", [])
-                        )
-                        ev["ro"]["o"]["x"] = 0.0
-                        ev["ro"]["o"]["z"] = 0.0
-                        ev["ro"]["o"]["y"] = 290.0 if is_mirrored else 110.0
-                elif "dash" in pn:
-                    ev["pn"] = "fx_r_dash_trail"
-            data_obj.m_Script = json.dumps(data)
-            data_obj.save()
-            kb_patched = True
-            print("[+] Patched move_kickback_special_01 (laser beam aimed horizontally forward & dash FX)")
 
-        # Ratchet S2 TextAsset
-        elif obj.path_id == -6948591784739340340:
-            data_obj = obj.read()
-            data = json.loads(data_obj.m_Script)
-            for ev in data.get("moves", {}).get("events", []):
-                pn = ev.get("pn", "")
-                if "powerup_ring" in pn:
-                    ev["pn"] = "fx_p_laser_beam_particulates_circle"
-                    ev["dn"] = "fx_p_laser_beam_particulates_circle"
-                    ev["d"] = 45
-                    # Center halo ring around Lifeline's torso
-                    if "po" in ev and "o" in ev["po"]:
-                        ev["po"]["o"]["x"] = 0.0
-                        ev["po"]["o"]["y"] = 1.2
-                        ev["po"]["o"]["z"] = 0.0
-                elif "powerup" in pn:
-                    ev["pn"] = "fx_p_shockwave_powerup"
-                    ev["dn"] = "fx_p_shockwave_powerup"
-                    ev["d"] = 30
-                    if "po" in ev and "o" in ev["po"]:
-                        ev["po"]["o"]["x"] = 0.0
-                        ev["po"]["o"]["y"] = 1.2
-                        ev["po"]["o"]["z"] = 0.0
-                elif "body_charge" in pn:
-                    ev["pn"] = "fx_p_shockwave_body_charge"
-                elif "chest_charge" in pn:
-                    ev["pn"] = "fx_p_blast_charge"
-                elif "wrench_blur" in pn:
-                    ev["pn"] = "fx_r_arcee_trail"
-                
-                # Rewire props from Ratchet's guns/wrenches to Lifeline's swords
-                if ev.get("type") == "PropMoveEvent":
-                    if ev.get("p") == "wrench":
-                        ev["p"] = "swordRight"
-                    elif ev.get("p") == "leftGun":
-                        ev["p"] = "swordLeft"
-                elif ev.get("type") == "PlayPropAnimatorStateMoveEvent":
-                    if ev.get("pn") == "wrench":
-                        ev["pn"] = "swordRight"
+def patch_character_fx_assetbundle(cfx_bundle_data: bytes, out_dir: Path) -> None:
+    print("[*] Patching character_fx.assetbundle with high-velocity long-range laser beam...")
+    cfx_env = UnityPy.load(cfx_bundle_data)
+    patched = 0
 
-                s_ev = json.dumps(ev)
-                if "leftGun" in s_ev or "wrench" in s_ev:
-                    s_ev = s_ev.replace("leftGun/Reference/COG/FX", "swordLeft")
-                    s_ev = s_ev.replace("wrench/cha_ratchet_gs_kabam_wpns_wrench", "swordRight")
-                    ev.clear()
-                    ev.update(json.loads(s_ev))
-            data_obj.m_Script = json.dumps(data)
-            data_obj.save()
-            rt_patched = True
-            print("[+] Patched move_ratchet_special_02 (powerup halo ring centered on body, charge & trail FX)")
+    for pid in [-3275282738736286132, 1824103235525829645]:
+        for o in cfx_env.objects:
+            if o.path_id == pid:
+                go = o.read_typetree()
+                for comp in go.get("m_Component", []):
+                    cid = comp.get("component", {}).get("m_PathID")
+                    for o2 in cfx_env.objects:
+                        if o2.path_id == cid:
+                            if o2.type.name == "ParticleSystem":
+                                ps = o2.read_typetree()
+                                ps["InitialModule"]["startSpeed"]["scalar"] = 50.0
+                                ps["InitialModule"]["startLifetime"]["scalar"] = 0.55
+                                ps["lengthInSec"] = 0.55
+                                ps["EmissionModule"]["rateOverTime"]["scalar"] = 12.0
+                                o2.save_typetree(ps)
+                                patched += 1
+                            elif o2.type.name == "ParticleSystemRenderer":
+                                psr = o2.read_typetree()
+                                psr["m_MaxParticleSize"] = 10.0
+                                psr["m_LengthScale"] = 0.35
+                                o2.save_typetree(psr)
+                                patched += 1
 
-    if kb_patched and rt_patched:
-        saved_moves = moves_env.file.save()
-        moves_out_file = out_dir / "moves.assetbundle"
-        moves_out_file.write_bytes(saved_moves)
-        print(f"[+] Successfully saved patched moves.assetbundle ({len(saved_moves)} bytes) to {moves_out_file}")
+    if patched > 0:
+        saved_cfx = cfx_env.file.save()
+        cfx_out = out_dir / "character_fx.assetbundle"
+        cfx_out.write_bytes(saved_cfx)
+        print(f"[+] Successfully saved patched character_fx.assetbundle ({len(saved_cfx)} bytes) with long-range laser beam to {cfx_out}")
     else:
-        print(f"[-] Warning: moves patching incomplete: kb={kb_patched}, rt={rt_patched}")
+        print("[-] Warning: Failed to patch character_fx.assetbundle!")
+
+
+def patch_moves_assetbundle(moves_bundle_data: bytes, out_dir: Path) -> None:
+    print("[*] Patching moves.assetbundle with dedicated Lifeline moves...")
+    moves_env = UnityPy.load(moves_bundle_data)
+    moves_file = list(moves_env.file.files.values())[0]
+
+    ab_obj = None
+    for obj in moves_env.objects:
+        if obj.type.name == "AssetBundle":
+            ab_obj = obj
+            break
+
+    kb_reader = moves_file.objects[7117130594397893526]
+    rt_reader = moves_file.objects[-6948591784739340340]
+
+    # Clone Lifeline S1 (based on Kickback S1)
+    s1_move = copy.deepcopy(kb_reader.read_typetree())
+    s1_move["m_Name"] = "move_lifeline_special_01"
+    s1_data = json.loads(s1_move["m_Script"])
+    s1_data["moves"]["m_Name"] = "move_lifeline_special_01"
+
+    for ev in s1_data.get("moves", {}).get("events", []):
+        pn = ev.get("pn", "")
+        if "laser_beam" in pn:
+            ev["pn"] = "fx_p_laser_beam"
+            ev["dn"] = "fx_p_laser_beam"
+            ev["d"] = 15
+            if "po" in ev and "o" in ev["po"]:
+                ev["po"]["o"]["x"] = -0.8
+                ev["po"]["o"]["y"] = 0.0
+                ev["po"]["o"]["z"] = 0.25
+            if "ro" in ev and "o" in ev["ro"]:
+                is_mirrored = any(
+                    sc.get("type") == "MoveEventCondition_IsMirrored" and sc.get("inv") is False
+                    for sc in ev.get("sc", [])
+                )
+                ev["ro"]["o"]["x"] = 0.0
+                ev["ro"]["o"]["z"] = 0.0
+                ev["ro"]["o"]["y"] = 290.0 if is_mirrored else 110.0
+        elif "dash" in pn:
+            ev["pn"] = "fx_r_dash_trail"
+
+    s1_move["m_Script"] = json.dumps(s1_data)
+    s1_reader = copy.copy(kb_reader)
+    s1_reader.path_id = LIFELINE_S1_PID
+    moves_file.objects[LIFELINE_S1_PID] = s1_reader
+    s1_reader.save_typetree(s1_move)
+
+    # Clone Lifeline S2 (based on Ratchet S2)
+    s2_move = copy.deepcopy(rt_reader.read_typetree())
+    s2_move["m_Name"] = "move_lifeline_special_02"
+    s2_data = json.loads(s2_move["m_Script"])
+    s2_data["moves"]["m_Name"] = "move_lifeline_special_02"
+
+    for ev in s2_data.get("moves", {}).get("events", []):
+        pn = ev.get("pn", "")
+        if "powerup_ring" in pn:
+            ev["pn"] = "fx_p_laser_beam_particulates_circle"
+            ev["dn"] = "fx_p_laser_beam_particulates_circle"
+            ev["d"] = 45
+            if "po" in ev and "o" in ev["po"]:
+                ev["po"]["o"]["x"] = 0.0
+                ev["po"]["o"]["y"] = 1.2
+                ev["po"]["o"]["z"] = 0.0
+        elif "powerup" in pn:
+            ev["pn"] = "fx_p_shockwave_powerup"
+            ev["dn"] = "fx_p_shockwave_powerup"
+            ev["d"] = 30
+            if "po" in ev and "o" in ev["po"]:
+                ev["po"]["o"]["x"] = 0.0
+                ev["po"]["o"]["y"] = 1.2
+                ev["po"]["o"]["z"] = 0.0
+        elif "body_charge" in pn:
+            ev["pn"] = "fx_p_shockwave_body_charge"
+        elif "chest_charge" in pn:
+            ev["pn"] = "fx_p_blast_charge"
+        elif "wrench_blur" in pn:
+            ev["pn"] = "fx_r_arcee_trail"
+
+        # Rewire props from Ratchet's guns/wrenches to Lifeline's swords
+        if ev.get("type") == "PropMoveEvent":
+            if ev.get("p") == "wrench":
+                ev["p"] = "swordRight"
+            elif ev.get("p") == "leftGun":
+                ev["p"] = "swordLeft"
+        elif ev.get("type") == "PlayPropAnimatorStateMoveEvent":
+            if ev.get("pn") == "wrench":
+                ev["pn"] = "swordRight"
+
+        s_ev = json.dumps(ev)
+        if "leftGun" in s_ev or "wrench" in s_ev:
+            s_ev = s_ev.replace("leftGun/Reference/COG/FX", "swordLeft")
+            s_ev = s_ev.replace("wrench/cha_ratchet_gs_kabam_wpns_wrench", "swordRight")
+            ev.clear()
+            ev.update(json.loads(s_ev))
+
+    s2_move["m_Script"] = json.dumps(s2_data)
+    s2_reader = copy.copy(rt_reader)
+    s2_reader.path_id = LIFELINE_S2_PID
+    moves_file.objects[LIFELINE_S2_PID] = s2_reader
+    s2_reader.save_typetree(s2_move)
+
+    if ab_obj:
+        ab_tree = ab_obj.read_typetree()
+        container = ab_tree.get("m_Container", [])
+        container = [c for c in container if "move_lifeline_special" not in c[0]]
+        container.append([
+            "assets/bundles/movedata/move_lifeline_special_01.txt",
+            {"preloadIndex": 0, "preloadSize": 0, "asset": {"m_FileID": 0, "m_PathID": LIFELINE_S1_PID}}
+        ])
+        container.append([
+            "assets/bundles/movedata/move_lifeline_special_02.txt",
+            {"preloadIndex": 0, "preloadSize": 0, "asset": {"m_FileID": 0, "m_PathID": LIFELINE_S2_PID}}
+        ])
+        ab_tree["m_Container"] = container
+        ab_obj.save_typetree(ab_tree)
+
+    saved_moves = moves_env.file.save()
+    moves_out_file = out_dir / "moves.assetbundle"
+    moves_out_file.write_bytes(saved_moves)
+    print(f"[+] Successfully saved patched moves.assetbundle ({len(saved_moves)} bytes) with move_lifeline_special_01 & 02 to {moves_out_file}")
 
 
 def generate_lifeline_assets(apk_path: str | None = None, output_dir: str = "assets_redeco") -> None:
@@ -193,6 +260,7 @@ def generate_lifeline_assets(apk_path: str | None = None, output_dir: str = "ass
         wb_bundle_data = (pack_dir / "windblade_gs_odr/windblade_gs.assetbundle").read_bytes()
         proc_bundle_data = (pack_dir / "characters_procedural_odr/character_anim_procedural.assetbundle").read_bytes()
         moves_bundle_data = (pack_dir / "characters/moves.assetbundle").read_bytes()
+        cfx_bundle_data = (pack_dir / "characters/character_fx.assetbundle").read_bytes()
         
         p_large_bytes = (pack_dir / "portraits_odr/portraits/portrait_arcee_gs_large.png").read_bytes()
         p_small_bytes = (pack_dir / "portraits_odr/portraits/portrait_arcee_gs_small.jpg").read_bytes()
@@ -208,13 +276,15 @@ def generate_lifeline_assets(apk_path: str | None = None, output_dir: str = "ass
             wb_bundle_data = z.read("assets/assetpack/windblade_gs_odr/windblade_gs.assetbundle")
             proc_bundle_data = z.read("assets/assetpack/characters_procedural_odr/character_anim_procedural.assetbundle")
             moves_bundle_data = z.read("assets/assetpack/characters/moves.assetbundle")
+            cfx_bundle_data = z.read("assets/assetpack/characters/character_fx.assetbundle")
             p_large_bytes = z.read("assets/assetpack/portraits_odr/portraits/portrait_arcee_gs_large.png")
             p_small_bytes = z.read("assets/assetpack/portraits_odr/portraits/portrait_arcee_gs_small.jpg")
     else:
         raise FileNotFoundError(f"Neither extracted_apk/ nor a valid APK was found: {apk_path}")
 
-    # Patch moves.assetbundle
+    # Patch moves.assetbundle and character_fx.assetbundle
     patch_moves_assetbundle(moves_bundle_data, out_dir)
+    patch_character_fx_assetbundle(cfx_bundle_data, out_dir)
 
     a_env = UnityPy.load(a_bundle_data)
     kb_env = UnityPy.load(kb_bundle_data)
@@ -563,10 +633,10 @@ def generate_lifeline_assets(apk_path: str | None = None, output_dir: str = "ass
             moves[4] = {"_name": "move_primal_attack_medium_01", "_animStateName": "Base.MediumAttack01", "_asset": {"m_FileID": 7, "m_PathID": -6973531985879257707}}
             # [5] Base.MediumAttack02 -> Bonecrusher M2
             moves[5] = {"_name": "move_feral_attack_medium_02", "_animStateName": "Base.MediumAttack02", "_asset": {"m_FileID": 7, "m_PathID": 5917300479849172794}}
-            # [6] Base.SpecialAttack01 -> Kickback S1
-            moves[6] = {"_name": "move_kickback_special_01", "_animStateName": "Base.SpecialAttack01", "_asset": {"m_FileID": 7, "m_PathID": 7117130594397893526}}
-            # [7] Base.SpecialAttack02 -> Ratchet S2
-            moves[7] = {"_name": "move_ratchet_special_02", "_animStateName": "Base.SpecialAttack02", "_asset": {"m_FileID": 7, "m_PathID": -6948591784739340340}}
+            # [6] Base.SpecialAttack01 -> Lifeline S1 (Long-range horizontal visor laser beam)
+            moves[6] = {"_name": "move_lifeline_special_01", "_animStateName": "Base.SpecialAttack01", "_asset": {"m_FileID": 7, "m_PathID": LIFELINE_S1_PID}}
+            # [7] Base.SpecialAttack02 -> Lifeline S2 (Dual energon swords powerup)
+            moves[7] = {"_name": "move_lifeline_special_02", "_animStateName": "Base.SpecialAttack02", "_asset": {"m_FileID": 7, "m_PathID": LIFELINE_S2_PID}}
             # [43] Base.HeavyAttack -> Arcee Heavy preserved
             tree["_moves"] = moves
             replace_str_in_tree(tree, old_cab, new_cab)

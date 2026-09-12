@@ -98,7 +98,7 @@
       "swordLeft": [[1, 2]],
       "swordRight": [[1, 2]]
     },
-    "notes": "回春手 (Lifeline) - 摩托车"
+    "notes": "回春手 (Lifeline) "
   },
   "barricade_cin_dotm": {
     "intervals": [[2033, 3100]],
@@ -338,10 +338,10 @@
     "notes": "搅拌大者(Mixmaster) - 水泥车"
   },
   "motormaster_gs_voyager2015": {
-    "intervals": [[4300, 7100]],
+    "intervals": [[5300, 7100]],
     "props": {
       "gun": [[0, 0]],
-      "sword": [[1, 2]]
+      "sword": [[0, 0]]
     },
     "notes": "汽车大师 (Motormaster) - 飞虎队重型卡车"
   },
