@@ -295,8 +295,13 @@ def build(
             elif info.filename == "assets/bin/Data/globalgamemanagers":
                 data = patch_globalgamemanagers(data)
             elif info.filename == "assets/assetpack/characters/moves.assetbundle":
+                rpath = Path("assets_redeco/moves.assetbundle")
                 mpath = Path("assets_netflix/moves.assetbundle")
-                if mpath.exists():
+                if rpath.exists():
+                    print(f"[*] Overriding {info.filename} with {rpath}")
+                    data = rpath.read_bytes()
+                elif mpath.exists():
+                    print(f"[*] Overriding {info.filename} with {mpath}")
                     data = mpath.read_bytes()
             elif info.filename == "assets/assetpack/characters_procedural_odr/character_anim_procedural.assetbundle":
                 panimpath = Path("assets_netflix/character_anim_procedural.assetbundle")
@@ -314,6 +319,7 @@ def build(
                 b_name = Path(info.filename).name
                 rpath = Path("assets_redeco") / b_name
                 if rpath.exists():
+                    print(f"[*] Overriding {info.filename} with {rpath}")
                     data = rpath.read_bytes()
             elif info.filename == "assets/towers_odr/toc.txt":
                 try:
@@ -370,6 +376,7 @@ def build(
                         "dragstrip_gs_deluxe2016_odr",
                         "hotlink_gs_leader2015_odr",
                         "ionstorm_gs_leader2015_odr",
+                        "lifeline_gs_deluxe2014_odr",
                         "novastorm_gs_leader2015_odr",
                         "optimusprime_gs_v_odr",
                         "optimusprime_sg_voyager2015_odr",
@@ -383,7 +390,7 @@ def build(
                     _rdir = Path("assets_redeco")
                     if _rdir.is_dir():
                         for _b in _rdir.glob("*.assetbundle"):
-                            if _b.stem not in ("towers", "relics", "buildings", "primordial_base", "character_audio"):
+                            if _b.stem not in ("towers", "relics", "buildings", "primordial_base", "character_audio", "moves"):
                                 packs[f"{_b.stem}_odr"] = f"{_b.stem}_odr"
                     pdict["packs"] = packs
                     data = json.dumps(pdict, indent=4).encode("utf-8")
@@ -629,7 +636,7 @@ def build(
         if redeco_dir.is_dir():
             for bpath in redeco_dir.glob("*.assetbundle"):
                 bot_id = bpath.stem
-                if bot_id in ("towers", "relics", "buildings", "primordial_base", "character_audio"):
+                if bot_id in ("towers", "relics", "buildings", "primordial_base", "character_audio", "moves"):
                     continue
                 bdata = bpath.read_bytes()
                 bundle_target = f"assets/assetpack/{bot_id}_odr/{bot_id}.assetbundle"

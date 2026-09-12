@@ -1,0 +1,46 @@
+ManifestFileVersion: 0
+CRC: 0
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: 5f6e7d8c9b0a123456789abcdef01234
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 76e93ef67dadb9a900b941c584b3142d
+HashAppended: 0
+ClassTypes:
+- Class: 1
+  Script: {instanceID: 0}
+- Class: 4
+  Script: {instanceID: 0}
+- Class: 21
+  Script: {instanceID: 0}
+- Class: 28
+  Script: {instanceID: 0}
+- Class: 43
+  Script: {instanceID: 0}
+- Class: 48
+  Script: {instanceID: 0}
+- Class: 74
+  Script: {instanceID: 0}
+- Class: 90
+  Script: {instanceID: 0}
+- Class: 91
+  Script: {instanceID: 0}
+- Class: 95
+  Script: {instanceID: 0}
+- Class: 114
+  Script: {instanceID: 0}
+- Class: 115
+  Script: {instanceID: 0}
+- Class: 137
+  Script: {instanceID: 0}
+- Class: 221
+  Script: {instanceID: 0}
+Assets:
+- Assets/Bundles/Characters/Merged/Lifeline_GS_Deluxe2014/Lifeline_GS_Deluxe2014.prefab
+- Assets/Bundles/Characters/Merged/Lifeline_GS_Deluxe2014/Lifeline_GS_Deluxe2014_lw.prefab
+Dependencies:
+- characters/character_fx.assetbundle
+- characters/character_audio.assetbundle
+- characters/moves.assetbundle

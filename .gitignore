@@ -73,3 +73,7 @@ assets_redeco/*
 !assets_redeco/starsaber_gs_leader2014.assetbundle
 !assets_redeco/dragstrip_gs_deluxe2016.assetbundle
 !assets_redeco/*dragstrip*
+!assets_redeco/lifeline_gs_deluxe2014.assetbundle
+!assets_redeco/lifeline_gs_deluxe2014.assetbundle.manifest
+!assets_redeco/*lifeline*
+!assets_redeco/moves.assetbundle
