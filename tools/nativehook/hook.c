@@ -543,6 +543,9 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x117E4AC, "DODGEENTER",         2, 0 }, // 165 PlayerDodgeState.OnEnter -> reset attack chain on dodge (swipe back)
     { 0x117ADC8, "COMBOWRAP",          2, 0 }, // 166 Combo Finisher Wrap (L4/M2 end) -> reset attack chain
     { 0x11828E0, "HEAVYEXIT",          2, 0 }, // 167 PlayerNewHeavyAttackState.OnExit -> reset attack chain on heavy exit
+    { 0xD1C8D8,  "SHOWCASE_ENTER",     2, 0 }, // 168 CharacterDetailScreen.WindowEnter
+    { 0xD1DE94,  "SHOWCASE_EXIT",      2, 0 }, // 169 CharacterDetailScreen.WindowExit
+    { 0xDA60E4,  "SHOWCASE_PUMP",      2, 0 }, // 170 PerformanceManager.Update
 };
 #define NH (int)(sizeof(H)/sizeof(H[0]))
 
@@ -3646,11 +3649,286 @@ void* hook_113(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     LOG("UICLICK listener=%p onClick=%p",a0,obj_ok(a0)?*(void**)((uintptr_t)a0+0x28):NULL);
     return H[113].orig(a0,a1,a2,a3,a4,a5,a6,a7);
 }
+// ---------------- Showcase Museum (Action Museum) ----------------
+static int g_showcase_r1_state = 0; // 0 = 4 lights, 1 = 2 mediums
+static int g_showcase_r4_state = 0; // 0 = S1, 1 = S2
+
+static void* g_detail_screen = NULL;
+static int g_seq_active = 0;
+static int g_seq_step = 0;
+static int g_seq_total = 0;
+static uint64_t g_seq_next_ms = 0;
+static const char* g_seq_names[8] = {0};
+static int g_seq_delays_ms[8] = {0};
+
+static void* g_saved_lw_rac = NULL;
+static int g_fight_mode = 0;
+
+static const char* RANGED_WEAPONS[] = {
+    "gun", "gunRight", "gunright", "leftgun", "rightgun", "leftGun", "rightGun",
+    "pistol", "leftPistol", "rightPistol", "rifle", "sniperRifle",
+    "cannon", "leftCannon", "rightCannon", "staticCannon",
+    "blaster", "gasgun", "sheildgun", "shotgunbelly", "shotgunleft", "shotgunright",
+    "shoulderguns", "gatlingback", "gatlingright", "armMissile", "launchMissile",
+    "mainLaunchMissile", "rocket", "rocketBase", "bomb", "smallBombs",
+    NULL
+};
+
+static const char* SPECIAL_WEAPONS[] = {
+    "sword", "Sword", "swordLeft", "swordRight", "leftSword", "rightSword",
+    "leftsword", "rightsword", "doublesword", "dagger", "daggerHandle",
+    "leftdagger", "rightdagger", "axe", "mace", "wrench", "Baton", "Hook",
+    "Rotor", "claw", "leftClaw", "rightClaw", "clawleft", "clawright",
+    "nunchuck", "sickle", "armshieldleft", "armshieldright",
+    "laserbeak", "buzzsaw", "ravage", "tapeRavage", "howlback", "steeljaw",
+    "rewind", "bee", "matrix", "cube", "opener", "speakerLeft", "speakerRight",
+    "mask", "cigar", "beard", "wings", "tail", "chest", "belly",
+    "gun", "gunRight", "gunright", "leftgun", "rightgun", "leftGun", "rightGun",
+    "pistol", "leftPistol", "rightPistol", "rifle", "sniperRifle",
+    "cannon", "leftCannon", "rightCannon", "staticCannon", "blaster",
+    NULL
+};
+
+static void set_showcase_prop_active(void* props_ctrl, const char* name, int active) {
+    if (!obj_ok(props_ctrl) || !g_strnew) return;
+    void* s = g_strnew(name);
+    if (!s) return;
+    // PropsController.SetActive(this, propName, active): 0xEA1734
+    ((void(*)(void*, void*, int))(g_base + 0xEA1734))(props_ctrl, s, active ? 1 : 0);
+}
+
+static void set_showcase_weapons(void* props_ctrl, const char** list, int active) {
+    if (!obj_ok(props_ctrl)) return;
+    for (int i = 0; list[i]; i++) {
+        set_showcase_prop_active(props_ctrl, list[i], active);
+    }
+}
+
+static void hide_showcase_weapons(void* props_ctrl) {
+    if (!obj_ok(props_ctrl)) return;
+    set_showcase_weapons(props_ctrl, RANGED_WEAPONS, 0);
+    set_showcase_weapons(props_ctrl, SPECIAL_WEAPONS, 0);
+}
+
+static void* get_showcase_ctrl(void) {
+    if (!obj_ok(g_detail_screen)) return NULL;
+    // CharacterDetailScreen: 0x2E8 is _characterController (UIPlayerController).
+    void* ctrl = *(void**)((uintptr_t)g_detail_screen + 0x2E8);
+    return obj_ok(ctrl) ? ctrl : NULL;
+}
+
+static void* get_fight_rac(void* props_ctrl) {
+    if (!obj_ok(props_ctrl) || !g_strnew) return NULL;
+    void* s = g_strnew("fight");
+    if (!s) return NULL;
+    // PropsController.GetProp(this, propName): 0xEA16C0
+    void* prop = ((void*(*)(void*, void*))(g_base + 0xEA16C0))(props_ctrl, s);
+    if (!obj_ok(prop)) return NULL;
+    // Prop.OverrideController is at offset 0x30
+    void* oc = *(void**)((uintptr_t)prop + 0x30);
+    return obj_ok(oc) ? oc : NULL;
+}
+
+static void play_showcase_anim(const char* name) {
+    void* ctrl = get_showcase_ctrl();
+    if (!ctrl) {
+        LOG("SHOWCASE_ANIM: get_showcase_ctrl returned NULL (screen=%p)", g_detail_screen);
+        return;
+    }
+    PROTECT({
+        void* animator = *(void**)((uintptr_t)ctrl + 0x30);
+        if (!obj_ok(animator)) {
+            LOG("SHOWCASE_ANIM: animator is invalid (ctrl=%p anim=%p)", ctrl, animator);
+            return;
+        }
+        void* rac = ((void*(*)(void*))(g_base + 0x219BBD0))(animator);
+        char rac_name[128] = {0};
+        if (obj_ok(rac)) {
+            void* n = ((void*(*)(void*, void*))(g_base + 0x16A16A0))(rac, NULL);
+            if (obj_ok(n)) read_str(n, rac_name, sizeof(rac_name));
+        }
+        LOG("SHOWCASE_ANIM: playing '%s' on ctrl=%p anim=%p rac='%s'", name, ctrl, animator, rac_name);
+        void* s = g_strnew ? g_strnew(name) : NULL;
+        if (s) {
+            ((void(*)(void*, void*, int, float))(g_base + 0x219B7D0))(animator, s, 0, 0.0f);
+        }
+    });
+}
+
+static void enter_fight_mode(void* ctrl) {
+    if (!obj_ok(ctrl)) return;
+    void* animator = *(void**)((uintptr_t)ctrl + 0x30);
+    void* props_ctrl = *(void**)((uintptr_t)ctrl + 0x20);
+    if (!obj_ok(animator) || !obj_ok(props_ctrl)) return;
+
+    if (!g_fight_mode) {
+        void* fight_rac = get_fight_rac(props_ctrl);
+        if (obj_ok(fight_rac)) {
+            // UnityEngine.Animator.get_runtimeAnimatorController: 0x219BBD0
+            g_saved_lw_rac = ((void*(*)(void*))(g_base + 0x219BBD0))(animator);
+            LOG("SHOWCASE: enter_fight_mode saving lw_rac=%p, setting fight_rac=%p", g_saved_lw_rac, fight_rac);
+            // UnityEngine.Animator.set_runtimeAnimatorController: 0x219BC10
+            ((void(*)(void*, void*))(g_base + 0x219BC10))(animator, fight_rac);
+            g_fight_mode = 1;
+        } else {
+            LOG("SHOWCASE: get_fight_rac returned NULL");
+        }
+    }
+}
+
+static void exit_fight_mode(void* ctrl) {
+    if (!obj_ok(ctrl)) {
+        g_fight_mode = 0;
+        g_saved_lw_rac = NULL;
+        return;
+    }
+    void* animator = *(void**)((uintptr_t)ctrl + 0x30);
+    void* props_ctrl = *(void**)((uintptr_t)ctrl + 0x20);
+
+    hide_showcase_weapons(props_ctrl);
+
+    if (g_fight_mode && obj_ok(animator) && obj_ok(g_saved_lw_rac)) {
+        LOG("SHOWCASE: exit_fight_mode restoring lw_rac=%p", g_saved_lw_rac);
+        ((void(*)(void*, void*))(g_base + 0x219BC10))(animator, g_saved_lw_rac);
+    }
+    g_fight_mode = 0;
+    g_saved_lw_rac = NULL;
+
+    if (obj_ok(animator) && g_strnew) {
+        void* s = g_strnew("FE_Idle");
+        if (s) {
+            ((void(*)(void*, void*, int, float))(g_base + 0x219B7D0))(animator, s, 0, 0.0f);
+        }
+    }
+}
+
+static inline void showcase_pump(void) {
+    if (__builtin_expect(!g_seq_active, 1)) return;
+    void* ctrl = get_showcase_ctrl();
+    if (!ctrl) { g_seq_active = 0; return; }
+    uint64_t now = propgo_now_ms();
+    if (now >= g_seq_next_ms) {
+        if (g_seq_step < g_seq_total) {
+            const char* anim = g_seq_names[g_seq_step];
+            int delay = g_seq_delays_ms[g_seq_step];
+            play_showcase_anim(anim);
+            g_seq_step++;
+            g_seq_next_ms = now + delay;
+        } else {
+            g_seq_active = 0;
+            LOG("SHOWCASE_SEQ: finished sequence -> exiting fight mode");
+            exit_fight_mode(ctrl);
+        }
+    }
+}
+
+static void showcase_handle_touch(float nx, float ny) {
+    void* ctrl = get_showcase_ctrl();
+    if (!ctrl) return;
+    void* props_ctrl = *(void**)((uintptr_t)ctrl + 0x20);
+
+    // Center (Bot): nx between 0.38 and 0.65 -> Original transform behavior!
+    if (nx >= 0.38f && nx <= 0.65f) {
+        LOG("SHOWCASE_TOUCH: Center/Robot (nx=%.3f, ny=%.3f) -> NGUI transform", nx, ny);
+        g_seq_active = 0;
+        if (g_fight_mode) {
+            exit_fight_mode(ctrl);
+        }
+        return;
+    }
+
+    if (nx < 0.38f && ny >= 0.35f) {
+        // Region 1 (Mid-Left): 1st tap plays 4 lights, 2nd tap plays 2 mediums
+        enter_fight_mode(ctrl);
+        set_showcase_weapons(props_ctrl, SPECIAL_WEAPONS, 1);
+        if (g_showcase_r1_state == 0) {
+            LOG("SHOWCASE_TOUCH: Region 1 (nx=%.3f, ny=%.3f) -> 4 Light Attacks", nx, ny);
+            g_seq_names[0] = "LightAttack01";  g_seq_delays_ms[0] = 500;
+            g_seq_names[1] = "LightAttack02";  g_seq_delays_ms[1] = 500;
+            g_seq_names[2] = "LightAttack03";  g_seq_delays_ms[2] = 500;
+            g_seq_names[3] = "LightAttack04";  g_seq_delays_ms[3] = 700;
+            g_seq_total = 4;
+            g_showcase_r1_state = 1;
+        } else {
+            LOG("SHOWCASE_TOUCH: Region 1 (nx=%.3f, ny=%.3f) -> 2 Medium Attacks", nx, ny);
+            g_seq_names[0] = "MediumAttack01"; g_seq_delays_ms[0] = 600;
+            g_seq_names[1] = "MediumAttack02"; g_seq_delays_ms[1] = 800;
+            g_seq_total = 2;
+            g_showcase_r1_state = 0;
+        }
+        play_showcase_anim(g_seq_names[0]);
+        g_seq_step = 1;
+        g_seq_next_ms = propgo_now_ms() + g_seq_delays_ms[0];
+        g_seq_active = (g_seq_total > 1) ? 1 : 0;
+        return;
+    }
+
+    if (nx < 0.38f && ny < 0.35f) {
+        // Region 2 (Bottom-Left): 3 Ranged Attacks
+        enter_fight_mode(ctrl);
+        set_showcase_weapons(props_ctrl, RANGED_WEAPONS, 1);
+        LOG("SHOWCASE_TOUCH: Region 2 (nx=%.3f, ny=%.3f) -> 3 Ranged Attacks", nx, ny);
+        g_seq_names[0] = "RangedAttack01"; g_seq_delays_ms[0] = 500;
+        g_seq_names[1] = "RangedAttack02"; g_seq_delays_ms[1] = 500;
+        g_seq_names[2] = "RangedAttack03"; g_seq_delays_ms[2] = 700;
+        g_seq_total = 3;
+        play_showcase_anim(g_seq_names[0]);
+        g_seq_step = 1;
+        g_seq_next_ms = propgo_now_ms() + g_seq_delays_ms[0];
+        g_seq_active = 1;
+        return;
+    }
+
+    if (nx > 0.65f && ny >= 0.35f) {
+        // Region 3 (Mid-Right): Cancelled per user request
+        LOG("SHOWCASE_TOUCH: Region 3 (nx=%.3f, ny=%.3f) -> Heavy Attack cancelled", nx, ny);
+        return;
+    }
+
+    if (nx > 0.65f && ny < 0.35f) {
+        // Region 4 (Bottom-Right): 1st tap S1, 2nd tap S2
+        enter_fight_mode(ctrl);
+        set_showcase_weapons(props_ctrl, SPECIAL_WEAPONS, 1);
+        if (g_showcase_r4_state == 0) {
+            LOG("SHOWCASE_TOUCH: Region 4 (nx=%.3f, ny=%.3f) -> SpecialAttack01", nx, ny);
+            g_seq_names[0] = "SpecialAttack01";
+            g_seq_delays_ms[0] = 1800;
+            g_showcase_r4_state = 1;
+        } else {
+            LOG("SHOWCASE_TOUCH: Region 4 (nx=%.3f, ny=%.3f) -> SpecialAttack02", nx, ny);
+            g_seq_names[0] = "SpecialAttack02";
+            g_seq_delays_ms[0] = 4200;
+            g_showcase_r4_state = 0;
+        }
+        g_seq_total = 1;
+        play_showcase_anim(g_seq_names[0]);
+        g_seq_step = 1;
+        g_seq_next_ms = propgo_now_ms() + g_seq_delays_ms[0];
+        g_seq_active = 1;
+        return;
+    }
+}
+
 void* hook_114(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
     void* r=H[114].orig(a0,a1,a2,a3,a4,a5,a6,a7);
     // ProcessTouch receives `pressed` in w1; dispatch only on that edge, not the
     // matching release/update call for the same Android touch.
     if ((uintptr_t)a1 & 1) {
+        PROTECT({
+            float mpos[3] = {0};
+            ((void(*)(float*))(g_base + 0x21BC22C))(mpos);
+            int sw = ((int(*)(void))(g_base + 0x16AFBF8))();
+            int sh = ((int(*)(void))(g_base + 0x16AFC2C))();
+            if (sw <= 0) sw = 2712;
+            if (sh <= 0) sh = 1220;
+            float nx = mpos[0] / (float)sw;
+            float ny = mpos[1] / (float)sh;
+            LOG("TOUCH_DOWN mpos=(%.1f, %.1f) screen=(%d, %d) norm=(%.3f, %.3f) screen=%p",
+                mpos[0], mpos[1], sw, sh, nx, ny, g_detail_screen);
+            if (obj_ok(g_detail_screen)) {
+                showcase_handle_touch(nx, ny);
+            }
+        });
         // UICamera.get_isOverUI is static: x0 is its hidden MethodInfo* (NULL).
         // If NGUI handled the touch (including the top navigation), preserve that
         // UI action and do not turn it into a base-card click.
@@ -4947,6 +5225,32 @@ void* hook_167(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     return r;
 }
 
+void* hook_168(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
+    if (obj_ok(a0)) {
+        g_detail_screen = a0;
+        void* ctrl = *(void**)((uintptr_t)a0 + 0x2E8);
+        LOG("SHOWCASE: WindowEnter CharacterDetailScreen=%p ctrl=%p", a0, ctrl);
+    }
+    return H[168].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+}
+
+void* hook_169(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
+    LOG("SHOWCASE: WindowExit CharacterDetailScreen");
+    void* ctrl = get_showcase_ctrl();
+    if (ctrl) exit_fight_mode(ctrl);
+    g_detail_screen = NULL;
+    g_seq_active = 0;
+    return H[169].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+}
+
+void* hook_170(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
+    void* r = H[170].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    PROTECT({
+        showcase_pump();
+    });
+    return r;
+}
+
 static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hook_7,hook_8,
     hook_9,hook_10,hook_11,hook_12,hook_13,hook_14,hook_15,hook_16,hook_17,hook_18,hook_19,hook_20,hook_21,
     hook_22,hook_23,hook_24,hook_25,hook_26,hook_27,hook_28,hook_29,hook_30,
@@ -4965,7 +5269,7 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     hook_145,hook_146,hook_147,hook_148,hook_149,hook_150,hook_151,
     hook_152,hook_153,hook_154,hook_155,hook_156,hook_157,hook_158,
     hook_159,hook_160,hook_161,hook_162,hook_163,hook_164,
-    hook_165,hook_166,hook_167 };
+    hook_165,hook_166,hook_167,hook_168,hook_169,hook_170 };
 
 static void write_jump(uint8_t* dst, void* target){
     uint32_t* p = (uint32_t*)dst;

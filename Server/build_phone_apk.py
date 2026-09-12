@@ -38,9 +38,10 @@ import zipfile
 from pathlib import Path
 
 # Server/ is intentionally a script directory rather than a Python package.  A
-# plain import works both for ``python3 Server/build_phone_apk.py`` and for the
-# unittest suite, which inserts this directory on sys.path before importing us.
 import export_payload
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from tools.patch_showcase_bundle import patch_character_bundle
 
 
 METADATA = "assets/bin/Data/Managed/Metadata/global-metadata.dat"
@@ -321,6 +322,7 @@ def build(
                 if rpath.exists():
                     print(f"[*] Overriding {info.filename} with {rpath}")
                     data = rpath.read_bytes()
+                data = patch_character_bundle(data, b_name)
             elif info.filename == "assets/towers_odr/toc.txt":
                 try:
                     toc_dict = json.loads(data.decode("utf-8"))
@@ -392,7 +394,7 @@ def build(
                     _rdir = Path("assets_redeco")
                     if _rdir.is_dir():
                         for _b in _rdir.glob("*.assetbundle"):
-                            if _b.stem not in ("towers", "relics", "buildings", "primordial_base", "character_audio", "moves"):
+                            if _b.stem not in ("towers", "relics", "buildings", "primordial_base", "character_audio", "moves", "test_verify_dirge"):
                                 packs[f"{_b.stem}_odr"] = f"{_b.stem}_odr"
                     pdict["packs"] = packs
                     data = json.dumps(pdict, indent=4).encode("utf-8")
@@ -586,7 +588,7 @@ def build(
         if netflix_dir.is_dir():
             chromia_bundle = netflix_dir / "chromia_gs_kabam.assetbundle"
             if chromia_bundle.exists():
-                cdata = chromia_bundle.read_bytes()
+                cdata = patch_character_bundle(chromia_bundle.read_bytes(), chromia_bundle.name)
                 zout.writestr("assets/assetpack/chromia_gs_kabam_odr/chromia_gs_kabam.assetbundle", cdata)
                 chromia_mf = netflix_dir / "chromia_gs_kabam.assetbundle.manifest"
                 if chromia_mf.exists():
@@ -612,7 +614,7 @@ def build(
 
             deadend_bundle = netflix_dir / "deadend_gs_deluxe2015.assetbundle"
             if deadend_bundle.exists():
-                ddata = deadend_bundle.read_bytes()
+                ddata = patch_character_bundle(deadend_bundle.read_bytes(), deadend_bundle.name)
                 zout.writestr("assets/assetpack/deadend_gs_deluxe2015_odr/deadend_gs_deluxe2015.assetbundle", ddata)
                 deadend_mf = netflix_dir / "deadend_gs_deluxe2015.assetbundle.manifest"
                 if deadend_mf.exists():
@@ -654,9 +656,9 @@ def build(
         if redeco_dir.is_dir():
             for bpath in redeco_dir.glob("*.assetbundle"):
                 bot_id = bpath.stem
-                if bot_id in ("towers", "relics", "buildings", "primordial_base", "character_audio", "moves"):
+                if bot_id in ("towers", "relics", "buildings", "primordial_base", "character_audio", "moves", "test_verify_dirge"):
                     continue
-                bdata = bpath.read_bytes()
+                bdata = patch_character_bundle(bpath.read_bytes(), bpath.name)
                 bundle_target = f"assets/assetpack/{bot_id}_odr/{bot_id}.assetbundle"
                 toc_target = f"assets/{bot_id}_odr/toc.txt"
                 if bundle_target not in names:
