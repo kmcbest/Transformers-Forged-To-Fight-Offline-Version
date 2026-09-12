@@ -813,15 +813,23 @@ Dependencies:
 """
     (out_dir / "lifeline_gs_deluxe2014.assetbundle.manifest").write_text(mf_text, encoding="utf-8")
 
-    # Portraits Placeholders (as requested, copy Arcee portraits to placeholder slots)
-    print("[*] Generating UI and dialogue portrait placeholders...")
-    (out_dir / "portrait_lifeline_large.png").write_bytes(p_large_bytes)
-    (out_dir / "portrait_lifeline_small.jpg").write_bytes(p_small_bytes)
-    (out_dir / "portrait_lifeline_quest.png").write_bytes(p_large_bytes)
-    (out_dir / "portrait_lifeline_gs_large.png").write_bytes(p_large_bytes)
-    (out_dir / "portrait_lifeline_gs_small.jpg").write_bytes(p_small_bytes)
-    (out_dir / "portrait_lifeline_gs_quest.png").write_bytes(p_large_bytes)
-    (out_dir / "lifeline.png").write_bytes(p_large_bytes)
+    # Portraits Placeholders (only write if file does not already exist so user customizations are preserved)
+    print("[*] Checking UI and dialogue portraits...")
+    for p_name, p_bytes in [
+        ("portrait_lifeline_large.png", p_large_bytes),
+        ("portrait_lifeline_small.jpg", p_small_bytes),
+        ("portrait_lifeline_quest.png", p_large_bytes),
+        ("portrait_lifeline_gs_large.png", p_large_bytes),
+        ("portrait_lifeline_gs_small.jpg", p_small_bytes),
+        ("portrait_lifeline_gs_quest.png", p_large_bytes),
+        ("lifeline.png", p_large_bytes),
+    ]:
+        target_p = out_dir / p_name
+        if not target_p.exists():
+            target_p.write_bytes(p_bytes)
+            print(f"  [+] Created default placeholder: {p_name}")
+        else:
+            print(f"  [*] Preserved custom portrait: {p_name}")
 
     print(f"\n[SUCCESS] Lifeline (回春手) complete composite assets generated in {out_dir}/!")
 
