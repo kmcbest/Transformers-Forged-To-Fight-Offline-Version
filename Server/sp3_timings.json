@@ -15,6 +15,11 @@
     },
     "notes": "抢劫Dragstrip - 幻影F1分身漂移S3"
   },
+  "wildrider_gs_deluxe2016": {
+    "intervals": [[1000, 2500]],
+    "props": {},
+    "notes": "莽撞Wildrider - 警车S3"
+  },
   "optimusprime_cin_tf": {
     "intervals": [[2167, 2633]],
     "props": {
