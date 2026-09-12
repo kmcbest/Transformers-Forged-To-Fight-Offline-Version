@@ -177,3 +177,59 @@ Every character, mod, and relic requires 3 portrait formats:
    ```
 2. **打包脚本底层智能防御**：
    `Server/build_phone_apk.py` 内部已集成智能自适应：当检测到处于离线工程且存在 `build/libil2cpp-arm64-patched.so` 时，即便命令漏传参数，也会自动启用 `--bundle-server`、嵌入全部 3.2 万条路由并打入修补版 IL2CPP，彻底从底层根除该 bug。
+
+---
+
+## 10. UnityPy AssetBundle 压缩机制与安装包体积膨胀陷阱 (UnityPy AssetBundle Compression & APK Bloat)
+
+### 10.1 现象与体积异常暴增
+* **现象**：在对角色 AssetBundle（如添加动作控制器、材质或模型补丁）进行全量处理后，编译出的 APK 安装包体积由原本正常的 **~0.9 GB** 剧增至 **~1.35 GB**（额外膨胀了 400MB+）。
+* **排查对比**：
+  * 单个角色的 AssetBundle 修改前后体积实测：
+    * 原版 Bundle（例如 `acidstorm_gs_leader2015.assetbundle`）：**4.46 MB**
+    * UnityPy 默认 `env.file.save()` 导出后：**10.21 MB**（体积直接翻倍至 2.3 倍！）
+  * 当工程对全游戏 75 个角色 Bundle 进行批量处理并重新打包时：$75 \times \approx 5.5\text{ MB} \approx 410\text{ MB}$，导致 APK 安装包整体剧烈膨胀。
+
+### 10.2 根本原因
+1. **UnityFS 内部压缩机制**：Unity 官方导出的 `.assetbundle` 采用 LZ4 块压缩算法存储资源数据。
+2. **Android APK 存储规范**：在 Android APK 的 ZIP 结构中，所有 `.assetbundle` 文件必须以 `ZIP_STORED`（仅存储不压缩，`compress_type = 0`）方式放入，以允许 Unity 引擎运行时直接流式加载与内存映射。
+3. **UnityPy 的默认保存策略**：
+   在 `UnityPy.files.BundleFile.save(self, packer=None)` 中：
+   ```python
+   def save(self, packer=None):
+       # packer 为 None 时，默认采用 "none"（完全无压缩，raw data）
+       if not packer or packer == "none":
+           self.save_fs(writer, 64, 64)
+       elif packer == "lz4":
+           self.save_fs(writer, data_flag=194, block_info_flag=2)
+       elif packer == "original":
+           self.save_fs(writer, data_flag=self.dataflags, block_info_flag=self._block_info_flags)
+   ```
+   **调用 `env.file.save()` 若不显式指定 `packer`，将默认导出完全未压缩的裸数据**。APK 打包时由于不进行二次 zip 压缩，裸数据直接进包，最终导致整体体积严重失控。
+
+### 10.3 规范与铁律
+* **铁律**：凡使用 `UnityPy` 保存任何 UnityFS AssetBundle，**严禁使用无参 `save()`**！必须显式传入 `packer="lz4"` 或 `packer="original"`：
+  ```python
+  # 推荐写法（保留原 Bundle 压缩方式或使用标准 LZ4）
+  patched_bytes = env.file.save(packer="lz4")       # 标准 LZ4 块压缩
+  # 或
+  patched_bytes = env.file.save(packer="original")  # 沿用原文件头压缩标志位
+  ```
+* **效果**：体积完美与原版保持 $100\%$ 一致（4.46 MB），APK 安装包稳定维持在 0.9 GB 黄金区间。
+
+---
+
+## 11. ADB 手机端 APK 快捷安装图形工具 (`INSTALL-ADB.py`)
+
+为解决开发者与用户通过命令行手动输入 `adb install` 命令易遗漏关键参数的问题，项目根目录下提供了专属图形化安装工具 `INSTALL-ADB.py`。
+
+### 11.1 工具核心功能
+* **设备自动识别**：自动调用 `adb devices` 探测并列出当前连接的物理真机与模拟器。
+* **默认标准安装参数**：预设 `-r --no-incremental`，彻底避免增量安装失败或签名不匹配问题。
+* **文件拖选与实时日志**：支持图形化文件浏览弹窗，多线程异步执行安装，实时回显终端控制台日志与结果弹窗提示。
+
+### 11.2 使用方式
+```powershell
+python INSTALL-ADB.py
+```
+
