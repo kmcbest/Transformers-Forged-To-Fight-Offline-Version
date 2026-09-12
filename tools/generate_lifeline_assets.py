@@ -86,7 +86,7 @@ LIFELINE_S2_PID = -8888888888888888882
 
 
 def patch_character_fx_assetbundle(cfx_bundle_data: bytes, out_dir: Path) -> None:
-    print("[*] Patching character_fx.assetbundle with high-velocity long-range laser beam...")
+    print("[*] Patching character_fx.assetbundle with long-range horizontal laser beam...")
     cfx_env = UnityPy.load(cfx_bundle_data)
     patched = 0
 
@@ -100,16 +100,19 @@ def patch_character_fx_assetbundle(cfx_bundle_data: bytes, out_dir: Path) -> Non
                         if o2.path_id == cid:
                             if o2.type.name == "ParticleSystem":
                                 ps = o2.read_typetree()
-                                ps["InitialModule"]["startSpeed"]["scalar"] = 50.0
+                                ps["InitialModule"]["startSpeed"]["scalar"] = 0.5
                                 ps["InitialModule"]["startLifetime"]["scalar"] = 0.55
+                                ps["InitialModule"]["startSize"]["scalar"] = 1.35
                                 ps["lengthInSec"] = 0.55
-                                ps["EmissionModule"]["rateOverTime"]["scalar"] = 12.0
+                                ps["looping"] = True
+                                ps["EmissionModule"]["rateOverTime"]["scalar"] = 0.0
                                 o2.save_typetree(ps)
                                 patched += 1
                             elif o2.type.name == "ParticleSystemRenderer":
                                 psr = o2.read_typetree()
-                                psr["m_MaxParticleSize"] = 10.0
-                                psr["m_LengthScale"] = 0.35
+                                psr["m_MaxParticleSize"] = 5.0
+                                psr["m_LengthScale"] = 75.0
+                                psr["m_RenderMode"] = 1  # Stretched Billboard
                                 o2.save_typetree(psr)
                                 patched += 1
 
@@ -142,7 +145,10 @@ def patch_moves_assetbundle(moves_bundle_data: bytes, out_dir: Path) -> None:
     s1_data = json.loads(s1_move["m_Script"])
     s1_data["moves"]["m_Name"] = "move_lifeline_special_01"
 
+    s1_events = []
     for ev in s1_data.get("moves", {}).get("events", []):
+        if ev.get("type") in ["PropMoveEvent", "PlayPropAnimatorStateMoveEvent"]:
+            continue
         pn = ev.get("pn", "")
         if "laser_beam" in pn:
             ev["pn"] = "fx_p_laser_beam"
@@ -162,7 +168,9 @@ def patch_moves_assetbundle(moves_bundle_data: bytes, out_dir: Path) -> None:
                 ev["ro"]["o"]["y"] = 290.0 if is_mirrored else 110.0
         elif "dash" in pn:
             ev["pn"] = "fx_r_dash_trail"
+        s1_events.append(ev)
 
+    s1_data["moves"]["events"] = s1_events
     s1_move["m_Script"] = json.dumps(s1_data)
     s1_reader = copy.copy(kb_reader)
     s1_reader.path_id = LIFELINE_S1_PID
@@ -175,7 +183,13 @@ def patch_moves_assetbundle(moves_bundle_data: bytes, out_dir: Path) -> None:
     s2_data = json.loads(s2_move["m_Script"])
     s2_data["moves"]["m_Name"] = "move_lifeline_special_02"
 
+    s2_events = []
     for ev in s2_data.get("moves", {}).get("events", []):
+        # Filter out PropMoveEvent and PlayPropAnimatorStateMoveEvent so Lifeline's dual swords
+        # never get hidden/deactivated after S2 ends! Lifeline's swords are permanent weapons.
+        if ev.get("type") in ["PropMoveEvent", "PlayPropAnimatorStateMoveEvent"]:
+            continue
+
         pn = ev.get("pn", "")
         if "powerup_ring" in pn:
             ev["pn"] = "fx_p_laser_beam_particulates_circle"
@@ -200,23 +214,15 @@ def patch_moves_assetbundle(moves_bundle_data: bytes, out_dir: Path) -> None:
         elif "wrench_blur" in pn:
             ev["pn"] = "fx_r_arcee_trail"
 
-        # Rewire props from Ratchet's guns/wrenches to Lifeline's swords
-        if ev.get("type") == "PropMoveEvent":
-            if ev.get("p") == "wrench":
-                ev["p"] = "swordRight"
-            elif ev.get("p") == "leftGun":
-                ev["p"] = "swordLeft"
-        elif ev.get("type") == "PlayPropAnimatorStateMoveEvent":
-            if ev.get("pn") == "wrench":
-                ev["pn"] = "swordRight"
-
         s_ev = json.dumps(ev)
         if "leftGun" in s_ev or "wrench" in s_ev:
             s_ev = s_ev.replace("leftGun/Reference/COG/FX", "swordLeft")
             s_ev = s_ev.replace("wrench/cha_ratchet_gs_kabam_wpns_wrench", "swordRight")
-            ev.clear()
-            ev.update(json.loads(s_ev))
+            ev = json.loads(s_ev)
 
+        s2_events.append(ev)
+
+    s2_data["moves"]["events"] = s2_events
     s2_move["m_Script"] = json.dumps(s2_data)
     s2_reader = copy.copy(rt_reader)
     s2_reader.path_id = LIFELINE_S2_PID
