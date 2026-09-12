@@ -606,9 +606,16 @@ def generate_dragstrip_assets(apk_path: str | None = None, output_dir: str = "as
         from PIL import ImageDraw
 
         # A. Recolor and blend main_a
+        user_main_path = out_dir / "cha_dragstrip_gs_deluxe2016_main_a.png"
         for obj in m_env.objects:
             if obj.type.name == "Texture2D" and obj.read_typetree().get("m_Name") == "cha_mirage_gs_deluxe2016_main_a":
                 tex = obj.read()
+                if user_main_path.is_file():
+                    print(f"[*] Using existing custom Dragstrip main texture: {user_main_path}")
+                    tex.image = Image.open(user_main_path).convert("RGBA")
+                    tex.save()
+                    break
+
                 m_img = tex.image.convert("RGBA")
                 m_arr = np.array(m_img).astype(np.float32)
 
@@ -743,9 +750,16 @@ def generate_dragstrip_assets(apk_path: str | None = None, output_dir: str = "as
                 break
 
         # B. Recolor and Blend onto tform_misc_A (back, feet, spoiler, misc chassis)
+        user_misc_path = out_dir / "cha_dragstrip_gs_deluxe2016_tform_misc_a.png"
         for obj in m_env.objects:
             if obj.type.name == "Texture2D" and obj.read_typetree().get("m_Name") == "tform_misc_A":
                 tex = obj.read()
+                if user_misc_path.is_file():
+                    print(f"[*] Using existing custom Dragstrip vehicle texture: {user_misc_path}")
+                    tex.image = Image.open(user_misc_path).convert("RGBA")
+                    tex.save()
+                    break
+
                 misc_img = tex.image.convert("RGBA")
                 misc_arr = np.array(misc_img).astype(np.float32)
 
@@ -800,9 +814,16 @@ def generate_dragstrip_assets(apk_path: str | None = None, output_dir: str = "as
                 break
 
         # C. Recolor weapons (cha_mirage_gs_deluxe2016_wpns_a) to Decepticon Purple
+        user_wpns_path = out_dir / "cha_dragstrip_gs_deluxe2016_wpns_a.png"
         for obj in m_env.objects:
             if obj.type.name == "Texture2D" and obj.read_typetree().get("m_Name") == "cha_mirage_gs_deluxe2016_wpns_a":
                 tex = obj.read()
+                if user_wpns_path.is_file():
+                    print(f"[*] Using existing custom Dragstrip weapons texture: {user_wpns_path}")
+                    tex.image = Image.open(user_wpns_path).convert("RGBA")
+                    tex.save()
+                    break
+
                 w_img = tex.image.convert("RGBA")
                 w_arr = np.array(w_img).astype(np.float32)
                 # Compute luminance
