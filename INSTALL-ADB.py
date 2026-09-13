@@ -1,7 +1,15 @@
 import os
+import sys
 import shlex
 import subprocess
 import threading
+from pathlib import Path
+
+# Automatically append toolchain adb path if available
+_toolchain_adb = Path(__file__).resolve().parent / "toolchain" / "android-sdk" / "platform-tools"
+if _toolchain_adb.is_dir() and str(_toolchain_adb) not in os.environ.get("PATH", ""):
+    os.environ["PATH"] = f"{_toolchain_adb}{os.pathsep}{os.environ.get('PATH', '')}"
+
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from tkinter.scrolledtext import ScrolledText
@@ -201,7 +209,55 @@ class ApkInstallerApp:
             self.btn_refresh.config(state="normal")
 
 
+def run_cli_install(apk_path: str):
+    print(f"=== [Automated ADB Installer] Target APK: {apk_path} ===")
+    # 1. Get devices
+    res = subprocess.run(["adb", "devices"], capture_output=True, text=True)
+    devices = []
+    for line in res.stdout.splitlines()[1:]:
+        parts = line.strip().split()
+        if len(parts) >= 2 and parts[1] == "device":
+            devices.append(parts[0])
+    if not devices:
+        print("[ERROR] No online ADB device detected! Please connect your phone with USB debugging enabled.")
+        sys.exit(1)
+    
+    device = devices[0]
+    print(f"[*] Detected device: {device}")
+    cmd = ["adb", "-s", device, "install", "-r", "--no-incremental", apk_path]
+    print(f"[*] Running: {' '.join(cmd)}")
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+    for line in proc.stdout:
+        print(line.rstrip())
+    proc.wait()
+    if proc.returncode == 0:
+        print(f"\n[SUCCESS] Successfully installed {apk_path} on {device}!")
+    else:
+        print(f"\n[ERROR] ADB installation failed with exit code {proc.returncode}")
+        sys.exit(proc.returncode)
+
+
 if __name__ == "__main__":
-    root = tk.Tk()
-    app = ApkInstallerApp(root)
-    root.mainloop()
+    import argparse
+    parser = argparse.ArgumentParser(description="ADB APK 安装工具")
+    parser.add_argument("--apk", type=str, help="APK 路径（若指定且带 --auto 则直接安装）")
+    parser.add_argument("--auto", action="store_true", help="命令行自动安装模式，不启动图形界面")
+    args = parser.parse_args()
+
+    if args.auto:
+        target_apk = args.apk
+        if not target_apk:
+            # Default to latest build apk
+            build_apks = list(Path("build").glob("*.apk"))
+            if build_apks:
+                target_apk = str(sorted(build_apks, key=lambda p: p.stat().st_mtime, reverse=True)[0])
+        if not target_apk or not Path(target_apk).exists():
+            print(f"[ERROR] APK not found: {target_apk}")
+            sys.exit(1)
+        run_cli_install(target_apk)
+    else:
+        root = tk.Tk()
+        app = ApkInstallerApp(root)
+        if args.apk and Path(args.apk).exists():
+            app.apk_path.set(str(Path(args.apk).resolve()))
+        root.mainloop()

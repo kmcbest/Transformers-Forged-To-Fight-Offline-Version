@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>《百炼为战》特效全景检视与动态播放器</title>
+<style>
+  :root {
+    --bg-main: #0c0f17;
+    --bg-card: #161b26;
+    --border: #232c3d;
+    --accent: #00d2ff;
+    --accent-glow: rgba(0, 210, 255, 0.3);
+    --gold: #ffaa00;
+    --text-main: #e2e8f0;
+    --text-muted: #8892b0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+  }
+  header {
+    background: linear-gradient(180deg, #182032 0%, #101624 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .logo-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .badge {
+    background: rgba(0, 210, 255, 0.15);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 1px;
+  }
+  h1 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .btn-group {
+    display: flex;
+    background: #090c13;
+    border-radius: 6px;
+    padding: 2px;
+    border: 1px solid var(--border);
+  }
+  .btn-group button {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    padding: 5px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s;
+  }
+  .btn-group button.active {
+    background: var(--accent);
+    color: #000;
+    font-weight: bold;
+  }
+  .btn-group button.active-gold {
+    background: var(--gold);
+    color: #000;
+    font-weight: bold;
+  }
+  .layout {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* 左侧画廊 */
+  .gallery-pane {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .filters {
+    padding: 10px 14px;
+    background: #111622;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+  }
+  .filter-chip {
+    background: #1a2233;
+    color: var(--text-muted);
+    border: 1px solid transparent;
+    padding: 5px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .filter-chip:hover {
+    background: #232e44;
+    color: #fff;
+  }
+  .filter-chip.active {
+    background: rgba(0, 210, 255, 0.2);
+    border-color: var(--accent);
+    color: var(--accent);
+    font-weight: bold;
+  }
+  .search-box {
+    margin-left: auto;
+    background: #0a0d14;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 4px 12px;
+    color: #fff;
+    font-size: 12px;
+    outline: none;
+    width: 170px;
+  }
+  .search-box:focus {
+    border-color: var(--accent);
+  }
+  .cards-grid {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 12px;
+    align-content: start;
+  }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  .card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  }
+  .card.selected {
+    border-color: var(--gold);
+    box-shadow: 0 0 10px rgba(255, 170, 0, 0.35);
+    background: #1e2433;
+  }
+  .card-thumb-wrap {
+    width: 100%;
+    aspect-ratio: 1;
+    background: #000;
+    border-radius: 4px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border: 1px solid #1f2738;
+  }
+  .card-thumb-wrap img {
+    max-width: 92%;
+    max-height: 92%;
+    object-fit: contain;
+  }
+  .card-tag {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    font-size: 10px;
+    padding: 2px 5px;
+    border-radius: 3px;
+    background: rgba(0, 0, 0, 0.8);
+    color: var(--accent);
+    border: 1px solid rgba(0, 210, 255, 0.4);
+  }
+  .card-tag.anim {
+    color: #ffaa00;
+    border-color: #ffaa00;
+  }
+  .card-info {
+    margin-top: 6px;
+  }
+  .card-name {
+    font-size: 11px;
+    font-weight: bold;
+    color: #fff;
+    word-break: break-all;
+    line-height: 1.3;
+  }
+  .card-desc {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    line-height: 1.25;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .card-meta {
+    font-size: 10px;
+    color: #55627a;
+    margin-top: 4px;
+    font-family: monospace;
+  }
+
+  /* 右侧检视/播放舞台 */
+  .stage-pane {
+    width: 560px;
+    display: flex;
+    flex-direction: column;
+    background: #0b0e16;
+    flex-shrink: 0;
+  }
+  .stage-header {
+    padding: 10px 16px;
+    background: #111624;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .stage-mode-tabs {
+    display: flex;
+    gap: 6px;
+  }
+  .stage-mode-btn {
+    background: #1a2233;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 5px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .stage-mode-btn.active {
+    background: #2563eb;
+    border-color: #3b82f6;
+    color: #fff;
+    font-weight: bold;
+  }
+  .nav-btn {
+    background: #1a2233;
+    border: 1px solid var(--border);
+    color: #cbd5e1;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    cursor: pointer;
+  }
+  .nav-btn:hover {
+    background: #28354f;
+    color: #fff;
+  }
+
+  .viewport {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: #000;
+  }
+  .viewport.bg-black { background: #000000; }
+  .viewport.bg-slate { background: #1e293b; }
+  .viewport.bg-arena { background: radial-gradient(circle at center, #26334a 0%, #080b11 85%); }
+  .viewport.bg-white { background: #ffffff; }
+  .viewport.bg-grid {
+    background-color: #121620;
+    background-image: linear-gradient(45deg, #1c2436 25%, transparent 25%), linear-gradient(-45deg, #1c2436 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #1c2436 75%), linear-gradient(-45deg, transparent 75%, #1c2436 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+  }
+
+  /* 静态大图检视 */
+  .static-view {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    position: relative;
+  }
+  .static-img-wrap {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    position: relative;
+  }
+  .static-img-wrap img {
+    max-width: 85%;
+    max-height: 85%;
+    object-fit: contain;
+    border: 1px dashed rgba(255, 255, 255, 0.2);
+  }
+  .static-img-wrap.filter-alpha img {
+    filter: invert(1) grayscale(1) contrast(2);
+  }
+  .static-img-wrap.filter-boost img {
+    filter: brightness(2) contrast(1.5);
+  }
+  .channel-bar {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    display: flex;
+    gap: 6px;
+    z-index: 10;
+  }
+  .channel-btn {
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid var(--border);
+    color: #94a3b8;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    cursor: pointer;
+  }
+  .channel-btn.active {
+    background: var(--accent);
+    color: #000;
+    font-weight: bold;
+    border-color: var(--accent);
+  }
+
+  /* 动态 Canvas */
+  canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* 底部参数/信息面板 */
+  .stage-footer {
+    background: #101522;
+    border-top: 1px solid var(--border);
+    padding: 12px 16px;
+    flex-shrink: 0;
+  }
+  .info-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+  }
+  .info-title .name {
+    font-size: 13px;
+    font-weight: bold;
+    color: var(--accent);
+  }
+  .info-title .res {
+    font-size: 11px;
+    font-family: monospace;
+    color: var(--gold);
+  }
+  .info-desc {
+    font-size: 12px;
+    color: #cbd5e1;
+    line-height: 1.4;
+    margin-bottom: 8px;
+  }
+
+  /* 控制器条目 */
+  .player-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #090c13;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    font-size: 11px;
+  }
+  .player-bar button {
+    background: #1e2638;
+    border: 1px solid #334155;
+    color: #fff;
+    padding: 3px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .player-bar button:hover {
+    background: #2a3750;
+  }
+  .player-bar input[type="range"] {
+    accent-color: var(--accent);
+    flex: 1;
+  }
+  .hint-badge {
+    font-size: 10px;
+    background: rgba(0, 210, 255, 0.15);
+    color: var(--accent);
+    padding: 2px 6px;
+    border-radius: 3px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-title">
+    <span class="badge">TFTF FX INSPECTOR</span>
+    <h1>《百炼为战》游戏特效全景检视与精准播放台</h1>
+  </div>
+  <div class="header-actions">
+    <div style="font-size: 12px; color: var(--text-muted);">背景色:</div>
+    <div class="btn-group" id="bgGroup">
+      <button class="active" onclick="setBg('bg-black', this)">纯黑</button>
+      <button onclick="setBg('bg-arena', this)">角斗场</button>
+      <button onclick="setBg('bg-slate', this)">深灰</button>
+      <button onclick="setBg('bg-grid', this)">棋盘格</button>
+      <button onclick="setBg('bg-white', this)">纯白</button>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <!-- 左侧：全景贴图分类列表 -->
+  <div class="gallery-pane">
+    <div class="filters" id="filterBar">
+      <button class="filter-chip active" onclick="filterCat('all', this)">全部全部 (116)</button>
+      <button class="filter-chip" onclick="filterCat('sparks', this)">💥 碰撞/火星 (Sparks)</button>
+      <button class="filter-chip" onclick="filterCat('smoke', this)">💨 战损/冒烟 (Smoke & Steam)</button>
+      <button class="filter-chip" onclick="filterCat('hit', this)">✨ 受击/爆点 (Hit Flares)</button>
+      <button class="filter-chip" onclick="filterCat('electric', this)">⚡ 能量/电弧 (Electricity)</button>
+      <button class="filter-chip" onclick="filterCat('fire', this)">🔥 火焰/拖尾 (Fire & Trails)</button>
+      <button class="filter-chip" onclick="filterCat('debris', this)">🪨 崩解/碎石 (Debris)</button>
+      <input type="text" class="search-box" id="searchInput" placeholder="搜索贴图或效果描述..." oninput="onSearch()">
+    </div>
+    <div class="cards-grid" id="cardsGrid"></div>
+  </div>
+
+  <!-- 右侧：检视与回放舞台 -->
+  <div class="stage-pane">
+    <div class="stage-header">
+      <div class="stage-mode-tabs">
+        <button class="stage-mode-btn active" id="btnModeStatic" onclick="setStageMode('static')">🖼️ 高清原图检视</button>
+        <button class="stage-mode-btn" id="btnModeDynamic" onclick="setStageMode('dynamic')">🎬 真实动态播放器</button>
+      </div>
+      <div style="display: flex; gap: 6px;">
+        <button class="nav-btn" onclick="prevItem()" title="快捷键 ←">◀ 上一个</button>
+        <button class="nav-btn" onclick="nextItem()" title="快捷键 →">下一个 ▶</button>
+      </div>
+    </div>
+
+    <!-- 视口区域 -->
+    <div class="viewport bg-black" id="viewport">
+      <!-- 模式 1：静态原图检视 -->
+      <div class="static-view" id="staticView">
+        <div class="channel-bar">
+          <button class="channel-btn active" onclick="setChannel('normal', this)">原图通道</button>
+          <button class="channel-btn" onclick="setChannel('boost', this)">加亮增强</button>
+          <button class="channel-btn" onclick="setChannel('alpha', this)">Alpha黑白遮罩</button>
+        </div>
+        <div class="static-img-wrap" id="staticWrap">
+          <img id="staticImg" src="" alt="贴图原图">
+        </div>
+      </div>
+
+      <!-- 模式 2：动态模拟播放 Canvas -->
+      <canvas id="stageCanvas" style="display: none;"></canvas>
+    </div>
+
+    <!-- 底部信息与播放控制器 -->
+    <div class="stage-footer">
+      <div class="info-title">
+        <span class="name" id="curName">fx_t_grind_sparks</span>
+        <span class="res" id="curRes">256x256</span>
+      </div>
+      <div class="info-desc" id="curDesc">金属摩擦/刃口撞击四溅的高亮拉丝火星贴图</div>
+
+      <!-- 动态控制器栏（当处于动态模式时） -->
+      <div class="player-bar" id="playerBar" style="display: none;">
+        <span class="hint-badge" id="dynTypeBadge">序列帧播放</span>
+        <button id="btnPlayPause" onclick="togglePlay()">⏸️ 暂停</button>
+        <button onclick="stepFrame(-1)">⏮️ 减一帧</button>
+        <button onclick="stepFrame(1)">⏭️ 加一帧</button>
+        <span id="frameCounter" style="font-family: monospace; min-width: 60px;">1/16 帧</span>
+        <span style="color: var(--text-muted);">速度:</span>
+        <input type="range" id="paramFps" min="1" max="60" value="24" oninput="updateFps()">
+        <span id="fpsVal" style="font-family: monospace; width: 35px;">24fps</span>
+      </div>
+
+      <div class="player-bar" id="particleBar" style="display: none;">
+        <span class="hint-badge">火花/爆点模拟</span>
+        <button onclick="triggerDynamic()">💥 再次爆发</button>
+        <span style="color: var(--text-muted);">点击视口可自由测试受击闪光</span>
+        <span style="margin-left: auto; color: #64748b;">支持键盘 ← / → 切换</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const FX_LIST = [{"file": "chic_bldg_landmark_03_e.png", "name": "chic_bldg_landmark_03_e", "width": 512, "height": 512, "category": "other", "categoryTitle": "其他特效资源", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "chic_bldg_rubble_01_d.png", "name": "chic_bldg_rubble_01_d", "width": 512, "height": 512, "category": "debris", "categoryTitle": "战损碎石/破损 (Debris & Destruction)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "chic_bldg_rubble_01_m.png", "name": "chic_bldg_rubble_01_m", "width": 512, "height": 512, "category": "debris", "categoryTitle": "战损碎石/破损 (Debris & Destruction)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "chic_bldg_rubble_01_n.png", "name": "chic_bldg_rubble_01_n", "width": 1024, "height": 1024, "category": "debris", "categoryTitle": "战损碎石/破损 (Debris & Destruction)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "chic_bldg_rubble_01_r.png", "name": "chic_bldg_rubble_01_r", "width": 512, "height": 512, "category": "debris", "categoryTitle": "战损碎石/破损 (Debris & Destruction)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_ambush_beam.png", "name": "fx_t_ambush_beam", "width": 256, "height": 256, "category": "electric", "categoryTitle": "电弧/闪电/能量 (Electricity & Energy)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_beam_leg_swoosh.png", "name": "fx_t_beam_leg_swoosh", "width": 256, "height": 256, "category": "electric", "categoryTitle": "电弧/闪电/能量 (Electricity & Energy)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_beam_leg_swoosh_bottom.png", "name": "fx_t_beam_leg_swoosh_bottom", "width": 256, "height": 256, "category": "electric", "categoryTitle": "电弧/闪电/能量 (Electricity & Energy)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_bg_hex.png", "name": "fx_t_bg_hex", "width": 256, "height": 256, "category": "other", "categoryTitle": "其他特效资源", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_blastmark.png", "name": "fx_t_blastmark", "width": 256, "height": 256, "category": "hit", "categoryTitle": "打击/受击/光芒 (Hits, Flares & Impacts)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_block_ring.png", "name": "fx_t_block_ring", "width": 256, "height": 256, "category": "hit", "categoryTitle": "打击/受击/光芒 (Hits, Flares & Impacts)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_blue_elec_flare.png", "name": "fx_t_blue_elec_flare", "width": 256, "height": 256, "category": "hit", "categoryTitle": "打击/受击/光芒 (Hits, Flares & Impacts)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "带电/短路/电离火花效果"}, {"file": "fx_t_blur_streaks.png", "name": "fx_t_blur_streaks", "width": 256, "height": 256, "category": "fire", "categoryTitle": "火焰/爆炸/拖尾 (Fire, Explosion & Trails)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_bubble.png", "name": "fx_t_bubble", "width": 64, "height": 64, "category": "debris", "categoryTitle": "战损碎石/破损 (Debris & Destruction)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_circle_piece.png", "name": "fx_t_circle_piece", "width": 128, "height": 128, "category": "other", "categoryTitle": "其他特效资源", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_cloud_smoke_ANIM.png", "name": "fx_t_cloud_smoke_ANIM", "width": 128, "height": 128, "category": "smoke", "categoryTitle": "冒烟/蒸汽/尘土 (Smoke, Steam & Dust)", "isAnim": true, "animCols": 2, "animRows": 2, "desc": "烟云团簇动画序列帧"}, {"file": "fx_t_concrete_chunks_ANIM.png", "name": "fx_t_concrete_chunks_ANIM", "width": 256, "height": 256, "category": "debris", "categoryTitle": "战损碎石/破损 (Debris & Destruction)", "isAnim": true, "animCols": 4, "animRows": 4, "desc": "重击砸地飞溅的碎石块翻滚动画"}, {"file": "fx_t_coolant_ANIM.png", "name": "fx_t_coolant_ANIM", "width": 256, "height": 256, "category": "smoke", "categoryTitle": "冒烟/蒸汽/尘土 (Smoke, Steam & Dust)", "isAnim": true, "animCols": 4, "animRows": 4, "desc": "【核心】机器人受损喷涌出的冷却液/机油带电动画"}, {"file": "fx_t_crack_marks.png", "name": "fx_t_crack_marks", "width": 64, "height": 64, "category": "debris", "categoryTitle": "战损碎石/破损 (Debris & Destruction)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_CrawlingLightning.png", "name": "fx_t_CrawlingLightning", "width": 512, "height": 512, "category": "electric", "categoryTitle": "电弧/闪电/能量 (Electricity & Energy)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "沿着机器人机体爬行的环绕闪电"}, {"file": "fx_t_crystalminer_electric.png", "name": "fx_t_crystalminer_electric", "width": 256, "height": 256, "category": "electric", "categoryTitle": "电弧/闪电/能量 (Electricity & Energy)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "带电/短路/电离火花效果"}, {"file": "fx_t_debris_spinning_ANIM.png", "name": "fx_t_debris_spinning_ANIM", "width": 256, "height": 256, "category": "debris", "categoryTitle": "战损碎石/破损 (Debris & Destruction)", "isAnim": true, "animCols": 4, "animRows": 4, "desc": "受重创时身上脱落崩飞的旋转零件碎片"}, {"file": "fx_t_dirt_squib.png", "name": "fx_t_dirt_squib", "width": 256, "height": 256, "category": "smoke", "categoryTitle": "冒烟/蒸汽/尘土 (Smoke, Steam & Dust)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_dust_particulates.png", "name": "fx_t_dust_particulates", "width": 256, "height": 256, "category": "smoke", "categoryTitle": "冒烟/蒸汽/尘土 (Smoke, Steam & Dust)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "弥散在空中的细微粉尘/颗粒"}, {"file": "fx_t_dust_particulates_02.png", "name": "fx_t_dust_particulates_02", "width": 128, "height": 128, "category": "smoke", "categoryTitle": "冒烟/蒸汽/尘土 (Smoke, Steam & Dust)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_dust_puff.png", "name": "fx_t_dust_puff", "width": 128, "height": 128, "category": "smoke", "categoryTitle": "冒烟/蒸汽/尘土 (Smoke, Steam & Dust)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "受击砸地或滑步激起的尘团"}, {"file": "fx_t_dusty_smoke.png", "name": "fx_t_dusty_smoke", "width": 256, "height": 256, "category": "smoke", "categoryTitle": "冒烟/蒸汽/尘土 (Smoke, Steam & Dust)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "尘土质感的扩散浓烟"}, {"file": "fx_t_elec_square_ANIM.png", "name": "fx_t_elec_square_ANIM", "width": 512, "height": 512, "category": "electric", "categoryTitle": "电弧/闪电/能量 (Electricity & Energy)", "isAnim": true, "animCols": 8, "animRows": 8, "desc": "带电/短路/电离火花效果"}, {"file": "fx_t_electric_arcs.png", "name": "fx_t_electric_arcs", "width": 512, "height": 512, "category": "electric", "categoryTitle": "电弧/闪电/能量 (Electricity & Energy)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "机体短路或带电攻击的强烈电弧"}, {"file": "fx_t_electric_circle.png", "name": "fx_t_electric_circle", "width": 128, "height": 128, "category": "electric", "categoryTitle": "电弧/闪电/能量 (Electricity & Energy)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "带电/短路/电离火花效果"}, {"file": "fx_t_electric_dbl.png", "name": "fx_t_electric_dbl", "width": 512, "height": 512, "category": "electric", "categoryTitle": "电弧/闪电/能量 (Electricity & Energy)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "带电/短路/电离火花效果"}, {"file": "fx_t_electric_spread_bolt.png", "name": "fx_t_electric_spread_bolt", "width": 256, "height": 256, "category": "electric", "categoryTitle": "电弧/闪电/能量 (Electricity & Energy)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "带电/短路/电离火花效果"}, {"file": "fx_t_electric_strikeHorz.png", "name": "fx_t_electric_strikeHorz", "width": 256, "height": 256, "category": "electric", "categoryTitle": "电弧/闪电/能量 (Electricity & Energy)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "带电/短路/电离火花效果"}, {"file": "fx_t_electric_strikeHorz_quintessa.png", "name": "fx_t_electric_strikeHorz_quintessa", "width": 256, "height": 256, "category": "electric", "categoryTitle": "电弧/闪电/能量 (Electricity & Energy)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "带电/短路/电离火花效果"}, {"file": "fx_t_electric_white.png", "name": "fx_t_electric_white", "width": 512, "height": 512, "category": "hit", "categoryTitle": "打击/受击/光芒 (Hits, Flares & Impacts)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "打击命中/爆点视觉效果"}, {"file": "fx_t_ember_v01.png", "name": "fx_t_ember_v01", "width": 128, "height": 128, "category": "sparks", "categoryTitle": "火星/火花 (Sparks & Embers)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "滞空飘散的火星/余烬粒子"}, {"file": "fx_t_emi_swirl.png", "name": "fx_t_emi_swirl", "width": 256, "height": 256, "category": "other", "categoryTitle": "其他特效资源", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_energy_portal.png", "name": "fx_t_energy_portal", "width": 256, "height": 256, "category": "electric", "categoryTitle": "电弧/闪电/能量 (Electricity & Energy)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_energy_vortex.png", "name": "fx_t_energy_vortex", "width": 256, "height": 256, "category": "other", "categoryTitle": "其他特效资源", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_explosion_fireball_ANIM.png", "name": "fx_t_explosion_fireball_ANIM", "width": 256, "height": 256, "category": "fire", "categoryTitle": "火焰/爆炸/拖尾 (Fire, Explosion & Trails)", "isAnim": true, "animCols": 4, "animRows": 4, "desc": "翻滚/序列帧粒子动画 (4x4)"}, {"file": "fx_t_finalboss_beam.png", "name": "fx_t_finalboss_beam", "width": 256, "height": 256, "category": "electric", "categoryTitle": "电弧/闪电/能量 (Electricity & Energy)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_fire_trail.png", "name": "fx_t_fire_trail", "width": 512, "height": 512, "category": "fire", "categoryTitle": "火焰/爆炸/拖尾 (Fire, Explosion & Trails)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_fireball_explosion_ANIM.png", "name": "fx_t_fireball_explosion_ANIM", "width": 256, "height": 256, "category": "fire", "categoryTitle": "火焰/爆炸/拖尾 (Fire, Explosion & Trails)", "isAnim": true, "animCols": 4, "animRows": 4, "desc": "爆炸火球序列帧动画"}, {"file": "fx_t_flare_large.png", "name": "fx_t_flare_large", "width": 256, "height": 256, "category": "hit", "categoryTitle": "打击/受击/光芒 (Hits, Flares & Impacts)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_flare_spikes.png", "name": "fx_t_flare_spikes", "width": 256, "height": 256, "category": "hit", "categoryTitle": "打击/受击/光芒 (Hits, Flares & Impacts)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_flareRings.png", "name": "fx_t_flareRings", "width": 128, "height": 128, "category": "hit", "categoryTitle": "打击/受击/光芒 (Hits, Flares & Impacts)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_flash_cross.png", "name": "fx_t_flash_cross", "width": 128, "height": 128, "category": "hit", "categoryTitle": "打击/受击/光芒 (Hits, Flares & Impacts)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_flat_sparks.png", "name": "fx_t_flat_sparks", "width": 128, "height": 128, "category": "sparks", "categoryTitle": "火星/火花 (Sparks & Embers)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "扁平方向性散射火星（常用于格挡或快速横斩）"}, {"file": "fx_t_foot_trail.png", "name": "fx_t_foot_trail", "width": 128, "height": 128, "category": "fire", "categoryTitle": "火焰/爆炸/拖尾 (Fire, Explosion & Trails)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_gacha_flare.png", "name": "fx_t_gacha_flare", "width": 256, "height": 256, "category": "hit", "categoryTitle": "打击/受击/光芒 (Hits, Flares & Impacts)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_gacha_flare_thin.png", "name": "fx_t_gacha_flare_thin", "width": 32, "height": 32, "category": "hit", "categoryTitle": "打击/受击/光芒 (Hits, Flares & Impacts)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_glow_spark.png", "name": "fx_t_glow_spark", "width": 64, "height": 64, "category": "sparks", "categoryTitle": "火星/火花 (Sparks & Embers)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "单点明亮高光火星，用于火花中心爆发"}, {"file": "fx_t_glow_spark_orange.png", "name": "fx_t_glow_spark_orange", "width": 64, "height": 64, "category": "sparks", "categoryTitle": "火星/火花 (Sparks & Embers)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "橙红色火星爆发光晕"}, {"file": "fx_t_glow_spark_orange_rotate.png", "name": "fx_t_glow_spark_orange_rotate", "width": 32, "height": 32, "category": "sparks", "categoryTitle": "火星/火花 (Sparks & Embers)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "火星/火花相关粒子贴图"}, {"file": "fx_t_glow_sphere_base.png", "name": "fx_t_glow_sphere_base", "width": 256, "height": 256, "category": "other", "categoryTitle": "其他特效资源", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_god_ray.png", "name": "fx_t_god_ray", "width": 128, "height": 128, "category": "other", "categoryTitle": "其他特效资源", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_gradient_circle.png", "name": "fx_t_gradient_circle", "width": 128, "height": 128, "category": "other", "categoryTitle": "其他特效资源", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_grind_sparks.png", "name": "fx_t_grind_sparks", "width": 256, "height": 256, "category": "sparks", "categoryTitle": "火星/火花 (Sparks & Embers)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "【核心】金属摩擦/刃口撞击四溅的高亮拉丝火星贴图"}, {"file": "fx_t_ground_beam_fire_ANIM.png", "name": "fx_t_ground_beam_fire_ANIM", "width": 256, "height": 256, "category": "electric", "categoryTitle": "电弧/闪电/能量 (Electricity & Energy)", "isAnim": true, "animCols": 4, "animRows": 4, "desc": "地表火焰喷射动画"}, {"file": "fx_t_ground_decal.png", "name": "fx_t_ground_decal", "width": 256, "height": 256, "category": "other", "categoryTitle": "其他特效资源", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_heli_blur.png", "name": "fx_t_heli_blur", "width": 128, "height": 128, "category": "other", "categoryTitle": "其他特效资源", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_heli_blur_streak.png", "name": "fx_t_heli_blur_streak", "width": 256, "height": 256, "category": "fire", "categoryTitle": "火焰/爆炸/拖尾 (Fire, Explosion & Trails)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_hex.png", "name": "fx_t_hex", "width": 256, "height": 256, "category": "other", "categoryTitle": "其他特效资源", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_hit_light_attack_flare.png", "name": "fx_t_hit_light_attack_flare", "width": 256, "height": 256, "category": "hit", "categoryTitle": "打击/受击/光芒 (Hits, Flares & Impacts)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "轻攻击命中的十字耀芒"}, {"file": "fx_t_hit_master.png", "name": "fx_t_hit_master", "width": 256, "height": 256, "category": "hit", "categoryTitle": "打击/受击/光芒 (Hits, Flares & Impacts)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "【核心】万用重击受击爆发中心高光"}, {"file": "fx_t_hit_master_circle.png", "name": "fx_t_hit_master_circle", "width": 256, "height": 256, "category": "hit", "categoryTitle": "打击/受击/光芒 (Hits, Flares & Impacts)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "环形受击冲击波"}, {"file": "fx_t_hit_master_rocket.png", "name": "fx_t_hit_master_rocket", "width": 256, "height": 256, "category": "hit", "categoryTitle": "打击/受击/光芒 (Hits, Flares & Impacts)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "火箭/炮弹重击命中光圈"}, {"file": "fx_t_hit_projectile_flare.png", "name": "fx_t_hit_projectile_flare", "width": 128, "height": 128, "category": "hit", "categoryTitle": "打击/受击/光芒 (Hits, Flares & Impacts)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "远程子弹打中机体时的火光闪烁"}, {"file": "fx_t_hit_purple_flare.png", "name": "fx_t_hit_purple_flare", "width": 256, "height": 256, "category": "hit", "categoryTitle": "打击/受击/光芒 (Hits, Flares & Impacts)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "霸天虎/虚空/特异伤害紫色受击光晕"}, {"file": "fx_t_hit_thin_puff.png", "name": "fx_t_hit_thin_puff", "width": 128, "height": 128, "category": "smoke", "categoryTitle": "冒烟/蒸汽/尘土 (Smoke, Steam & Dust)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "轻量打击伴随的轻微气流环"}, {"file": "fx_t_hit_yellow_flare.png", "name": "fx_t_hit_yellow_flare", "width": 128, "height": 128, "category": "hit", "categoryTitle": "打击/受击/光芒 (Hits, Flares & Impacts)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "暴击/黄字伤害命中爆发光晕"}, {"file": "fx_t_hot_soft_glow.png", "name": "fx_t_hot_soft_glow", "width": 256, "height": 256, "category": "other", "categoryTitle": "其他特效资源", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_jetfire_trail.png", "name": "fx_t_jetfire_trail", "width": 512, "height": 512, "category": "fire", "categoryTitle": "火焰/爆炸/拖尾 (Fire, Explosion & Trails)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_karnak_sides.png", "name": "fx_t_karnak_sides", "width": 256, "height": 256, "category": "other", "categoryTitle": "其他特效资源", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_laser_sparks.png", "name": "fx_t_laser_sparks", "width": 64, "height": 64, "category": "sparks", "categoryTitle": "火星/火花 (Sparks & Embers)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "【核心】能量激光/高压射击命中时喷发的细小光粒子火花"}, {"file": "fx_t_lava_water_ANIM.png", "name": "fx_t_lava_water_ANIM", "width": 256, "height": 256, "category": "other", "categoryTitle": "其他特效资源", "isAnim": true, "animCols": 4, "animRows": 4, "desc": "翻滚/序列帧粒子动画 (4x4)"}, {"file": "fx_t_lava_water_spray_ANIM.png", "name": "fx_t_lava_water_spray_ANIM", "width": 256, "height": 256, "category": "other", "categoryTitle": "其他特效资源", "isAnim": true, "animCols": 4, "animRows": 4, "desc": "翻滚/序列帧粒子动画 (4x4)"}, {"file": "fx_t_modCharge.png", "name": "fx_t_modCharge", "width": 128, "height": 128, "category": "other", "categoryTitle": "其他特效资源", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_modplace.png", "name": "fx_t_modplace", "width": 256, "height": 256, "category": "other", "categoryTitle": "其他特效资源", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_modplacePixels.png", "name": "fx_t_modplacePixels", "width": 256, "height": 256, "category": "other", "categoryTitle": "其他特效资源", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_molotov_burst_ANIM.png", "name": "fx_t_molotov_burst_ANIM", "width": 256, "height": 256, "category": "fire", "categoryTitle": "火焰/爆炸/拖尾 (Fire, Explosion & Trails)", "isAnim": true, "animCols": 4, "animRows": 4, "desc": "燃烧弹爆裂火焰动画"}, {"file": "fx_t_mushroom_smoke_ANIM.png", "name": "fx_t_mushroom_smoke_ANIM", "width": 256, "height": 256, "category": "smoke", "categoryTitle": "冒烟/蒸汽/尘土 (Smoke, Steam & Dust)", "isAnim": true, "animCols": 2, "animRows": 2, "desc": "烟雾/汽化粒子贴图"}, {"file": "fx_t_muzzle_centre.png", "name": "fx_t_muzzle_centre", "width": 128, "height": 128, "category": "other", "categoryTitle": "其他特效资源", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_muzzle_cross.png", "name": "fx_t_muzzle_cross", "width": 256, "height": 256, "category": "hit", "categoryTitle": "打击/受击/光芒 (Hits, Flares & Impacts)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_noise_wave.png", "name": "fx_t_noise_wave", "width": 256, "height": 256, "category": "other", "categoryTitle": "其他特效资源", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_noise_wave_sideways.png", "name": "fx_t_noise_wave_sideways", "width": 128, "height": 128, "category": "other", "categoryTitle": "其他特效资源", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_photon_beam.png", "name": "fx_t_photon_beam", "width": 32, "height": 32, "category": "electric", "categoryTitle": "电弧/闪电/能量 (Electricity & Energy)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_pickup_cubes.png", "name": "fx_t_pickup_cubes", "width": 64, "height": 64, "category": "other", "categoryTitle": "其他特效资源", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_pickupflare.png", "name": "fx_t_pickupflare", "width": 128, "height": 128, "category": "hit", "categoryTitle": "打击/受击/光芒 (Hits, Flares & Impacts)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_plasma_arcs.png", "name": "fx_t_plasma_arcs", "width": 128, "height": 128, "category": "electric", "categoryTitle": "电弧/闪电/能量 (Electricity & Energy)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_refractorbeam.png", "name": "fx_t_refractorbeam", "width": 256, "height": 256, "category": "electric", "categoryTitle": "电弧/闪电/能量 (Electricity & Energy)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_repairmodule_beam.png", "name": "fx_t_repairmodule_beam", "width": 64, "height": 64, "category": "electric", "categoryTitle": "电弧/闪电/能量 (Electricity & Energy)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_round_cloud.png", "name": "fx_t_round_cloud", "width": 64, "height": 64, "category": "smoke", "categoryTitle": "冒烟/蒸汽/尘土 (Smoke, Steam & Dust)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_sand.png", "name": "fx_t_sand", "width": 256, "height": 256, "category": "other", "categoryTitle": "其他特效资源", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_Shockwave.png", "name": "fx_t_Shockwave", "width": 256, "height": 256, "category": "hit", "categoryTitle": "打击/受击/光芒 (Hits, Flares & Impacts)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "受击或破防时的大范围透明冲击波涟漪"}, {"file": "fx_t_sign_beam.png", "name": "fx_t_sign_beam", "width": 128, "height": 128, "category": "electric", "categoryTitle": "电弧/闪电/能量 (Electricity & Energy)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_smoke_steam_ANIM.png", "name": "fx_t_smoke_steam_ANIM", "width": 256, "height": 256, "category": "smoke", "categoryTitle": "冒烟/蒸汽/尘土 (Smoke, Steam & Dust)", "isAnim": true, "animCols": 4, "animRows": 4, "desc": "【核心】战损/残血冒烟蒸汽序列帧翻滚动画"}, {"file": "fx_t_soft_glow.png", "name": "fx_t_soft_glow", "width": 64, "height": 64, "category": "other", "categoryTitle": "其他特效资源", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_spark_cross.png", "name": "fx_t_spark_cross", "width": 64, "height": 64, "category": "sparks", "categoryTitle": "火星/火花 (Sparks & Embers)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "火星/火花相关粒子贴图"}, {"file": "fx_t_square.png", "name": "fx_t_square", "width": 32, "height": 32, "category": "other", "categoryTitle": "其他特效资源", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_streak.png", "name": "fx_t_streak", "width": 64, "height": 64, "category": "fire", "categoryTitle": "火焰/爆炸/拖尾 (Fire, Explosion & Trails)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_tapIndicator.png", "name": "fx_t_tapIndicator", "width": 64, "height": 64, "category": "other", "categoryTitle": "其他特效资源", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_tileable_rocks_b.png", "name": "fx_t_tileable_rocks_b", "width": 256, "height": 256, "category": "debris", "categoryTitle": "战损碎石/破损 (Debris & Destruction)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_tileable_rocks_n.png", "name": "fx_t_tileable_rocks_n", "width": 256, "height": 256, "category": "debris", "categoryTitle": "战损碎石/破损 (Debris & Destruction)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_transformers_glow.png", "name": "fx_t_transformers_glow", "width": 256, "height": 256, "category": "other", "categoryTitle": "其他特效资源", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_transformers_glow_yellow.png", "name": "fx_t_transformers_glow_yellow", "width": 256, "height": 256, "category": "other", "categoryTitle": "其他特效资源", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_TriggerFightBeams.png", "name": "fx_t_TriggerFightBeams", "width": 256, "height": 256, "category": "electric", "categoryTitle": "电弧/闪电/能量 (Electricity & Energy)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "fx_t_wave_electric_ANIM.png", "name": "fx_t_wave_electric_ANIM", "width": 256, "height": 256, "category": "electric", "categoryTitle": "电弧/闪电/能量 (Electricity & Energy)", "isAnim": true, "animCols": 4, "animRows": 4, "desc": "带电/短路/电离火花效果"}, {"file": "fx_t_wave_electric_src_alpha_ANIM.png", "name": "fx_t_wave_electric_src_alpha_ANIM", "width": 256, "height": 256, "category": "electric", "categoryTitle": "电弧/闪电/能量 (Electricity & Energy)", "isAnim": true, "animCols": 4, "animRows": 4, "desc": "带电/短路/电离火花效果"}, {"file": "fx_t_white_circle.png", "name": "fx_t_white_circle", "width": 128, "height": 128, "category": "hit", "categoryTitle": "打击/受击/光芒 (Hits, Flares & Impacts)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "打击命中/爆点视觉效果"}, {"file": "fx_t_wind_trail.png", "name": "fx_t_wind_trail", "width": 256, "height": 256, "category": "fire", "categoryTitle": "火焰/爆炸/拖尾 (Fire, Explosion & Trails)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "mods_strangerefractor_01_a.png", "name": "mods_strangerefractor_01_a", "width": 256, "height": 256, "category": "other", "categoryTitle": "其他特效资源", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "mods_strangerefractor_01_e.png", "name": "mods_strangerefractor_01_e", "width": 256, "height": 256, "category": "other", "categoryTitle": "其他特效资源", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "qb_ruinedcity_tileablerocks_01_a.png", "name": "qb_ruinedcity_tileablerocks_01_a", "width": 256, "height": 256, "category": "debris", "categoryTitle": "战损碎石/破损 (Debris & Destruction)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "qb_ruinedcity_tileablerocks_01_n.png", "name": "qb_ruinedcity_tileablerocks_01_n", "width": 256, "height": 256, "category": "debris", "categoryTitle": "战损碎石/破损 (Debris & Destruction)", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}, {"file": "qb_warzone_ground_01_r.png", "name": "qb_warzone_ground_01_r", "width": 512, "height": 512, "category": "other", "categoryTitle": "其他特效资源", "isAnim": false, "animCols": 1, "animRows": 1, "desc": "战斗/场景辅助特效贴图"}];
+
+let currentCat = 'all';
+let searchQuery = '';
+let selectedIndex = 0;
+let stageMode = 'static'; // 'static' or 'dynamic'
+let isPlaying = true;
+let animTimer = null;
+let currentFrame = 0;
+let targetFps = 24;
+
+const canvas = document.getElementById('stageCanvas');
+const ctx = canvas.getContext('2d');
+let dynamicImg = new Image();
+let particles = [];
+let hitFlashes = [];
+
+function init() {
+  renderCards();
+  // 默认选中火星四溅
+  const defaultIdx = FX_LIST.findIndex(x => x.name === 'fx_t_grind_sparks');
+  selectItem(defaultIdx >= 0 ? defaultIdx : 0);
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'INPUT') return;
+    if (e.key === 'ArrowLeft') prevItem();
+    if (e.key === 'ArrowRight') nextItem();
+    if (e.key === ' ') {
+      togglePlay();
+      e.preventDefault();
+    }
+  });
+
+  canvas.addEventListener('pointerdown', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    onCanvasClick(x, y);
+  });
+
+  requestAnimationFrame(dynamicLoop);
+}
+
+function resizeCanvas() {
+  const container = document.getElementById('viewport');
+  canvas.width = container.clientWidth;
+  canvas.height = container.clientHeight;
+}
+
+function renderCards() {
+  const grid = document.getElementById('cardsGrid');
+  grid.innerHTML = '';
+
+  FX_LIST.forEach((item, index) => {
+    if (currentCat !== 'all' && item.category !== currentCat) return;
+    if (searchQuery && !item.name.toLowerCase().includes(searchQuery.toLowerCase()) && !item.desc.includes(searchQuery)) return;
+
+    const card = document.createElement('div');
+    card.className = 'card' + (index === selectedIndex ? ' selected' : '');
+    card.onclick = () => selectItem(index);
+
+    const tag = item.isAnim ? `<div class="card-tag anim">序列帧</div>` : (item.category === 'sparks' ? `<div class="card-tag">火花</div>` : '');
+
+    card.innerHTML = `
+      <div class="card-thumb-wrap">
+        ${tag}
+        <img src="textures/${item.file}" alt="${item.name}" loading="lazy">
+      </div>
+      <div class="card-info">
+        <div class="card-name">${item.name}</div>
+        <div class="card-desc">${item.desc}</div>
+        <div class="card-meta">${item.width}x${item.height} · ${item.categoryTitle.split(' ')[0]}</div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function filterCat(cat, btn) {
+  currentCat = cat;
+  document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCards();
+}
+
+function onSearch() {
+  searchQuery = document.getElementById('searchInput').value.trim();
+  renderCards();
+}
+
+function prevItem() {
+  if (selectedIndex > 0) {
+    selectItem(selectedIndex - 1);
+    scrollToSelected();
+  }
+}
+
+function nextItem() {
+  if (selectedIndex < FX_LIST.length - 1) {
+    selectItem(selectedIndex + 1);
+    scrollToSelected();
+  }
+}
+
+function scrollToSelected() {
+  const selectedEl = document.querySelector('.card.selected');
+  if (selectedEl) selectedEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function selectItem(index) {
+  selectedIndex = index;
+  const item = FX_LIST[index];
+  if (!item) return;
+
+  renderCards();
+
+  document.getElementById('curName').innerText = item.name;
+  document.getElementById('curRes').innerText = `${item.width}x${item.height}${item.isAnim ? ` (${item.animCols}x${item.animRows}帧)` : ''}`;
+  document.getElementById('curDesc').innerText = item.desc;
+
+  // 静态图片更新
+  const imgUrl = `textures/${item.file}`;
+  document.getElementById('staticImg').src = imgUrl;
+
+  // 动态图预载
+  dynamicImg = new Image();
+  dynamicImg.src = imgUrl;
+  currentFrame = 0;
+  particles = [];
+  hitFlashes = [];
+
+  updateFooterBars(item);
+
+  dynamicImg.onload = () => {
+    triggerDynamic();
+  };
+}
+
+function updateFooterBars(item) {
+  const pBar = document.getElementById('playerBar');
+  const partBar = document.getElementById('particleBar');
+
+  if (stageMode === 'static') {
+    pBar.style.display = 'none';
+    partBar.style.display = 'none';
+    return;
+  }
+
+  if (item.isAnim) {
+    pBar.style.display = 'flex';
+    partBar.style.display = 'none';
+    document.getElementById('dynTypeBadge').innerText = `序列帧动画 (${item.animCols * item.animRows}帧)`;
+    document.getElementById('frameCounter').innerText = `1/${item.animCols * item.animRows} 帧`;
+  } else {
+    pBar.style.display = 'none';
+    partBar.style.display = 'flex';
+  }
+}
+
+function setStageMode(mode) {
+  stageMode = mode;
+  document.getElementById('btnModeStatic').classList.toggle('active', mode === 'static');
+  document.getElementById('btnModeDynamic').classList.toggle('active', mode === 'dynamic');
+
+  document.getElementById('staticView').style.display = mode === 'static' ? 'flex' : 'none';
+  document.getElementById('stageCanvas').style.display = mode === 'dynamic' ? 'block' : 'none';
+
+  const item = FX_LIST[selectedIndex];
+  updateFooterBars(item);
+
+  if (mode === 'dynamic') {
+    resizeCanvas();
+    triggerDynamic();
+  }
+}
+
+function setChannel(ch, btn) {
+  const wrap = document.getElementById('staticWrap');
+  wrap.className = 'static-img-wrap';
+  if (ch === 'alpha') wrap.classList.add('filter-alpha');
+  if (ch === 'boost') wrap.classList.add('filter-boost');
+  document.querySelectorAll('.channel-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function setBg(bgClass, btn) {
+  const container = document.getElementById('viewport');
+  container.className = 'viewport ' + bgClass;
+  document.querySelectorAll('#bgGroup button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function togglePlay() {
+  isPlaying = !isPlaying;
+  document.getElementById('btnPlayPause').innerText = isPlaying ? '⏸️ 暂停' : '▶️ 播放';
+}
+
+function stepFrame(delta) {
+  isPlaying = false;
+  document.getElementById('btnPlayPause').innerText = '▶️ 播放';
+  const item = FX_LIST[selectedIndex];
+  if (!item || !item.isAnim) return;
+  const total = item.animCols * item.animRows;
+  currentFrame = (currentFrame + delta + total) % total;
+  document.getElementById('frameCounter').innerText = `${currentFrame + 1}/${total} 帧`;
+}
+
+function updateFps() {
+  targetFps = parseInt(document.getElementById('paramFps').value);
+  document.getElementById('fpsVal').innerText = `${targetFps}fps`;
+}
+
+function triggerDynamic() {
+  if (stageMode !== 'dynamic' || !dynamicImg.complete) return;
+  const item = FX_LIST[selectedIndex];
+  if (!item) return;
+
+  const cx = canvas.width / 2;
+  const cy = canvas.height / 2;
+
+  if (item.isAnim) {
+    // 序列帧重置到首帧，在屏幕中央原地播放
+    currentFrame = 0;
+  } else if (item.category === 'hit') {
+    // 打击命中光晕：在中央闪耀爆开并消隐
+    hitFlashes.push({
+      x: cx,
+      y: cy,
+      scale: 0.2,
+      maxScale: 1.4,
+      alpha: 1,
+      life: 25,
+      maxLife: 25,
+      rot: (Math.random() - 0.5) * 0.5
+    });
+  } else if (item.category === 'sparks') {
+    // 火花类：真实的金属切削/拉丝火星散射
+    particles = [];
+    for (let i = 0; i < 40; i++) {
+      const angle = (Math.PI * 0.8) + (Math.random() - 0.5) * 1.5;
+      const spd = 4 + Math.random() * 12;
+      particles.push({
+        x: cx - 50,
+        y: cy + 30,
+        vx: Math.cos(angle) * spd,
+        vy: Math.sin(angle) * spd - 3,
+        size: 14 + Math.random() * 22,
+        alpha: 1,
+        life: 30 + Math.random() * 20,
+        maxLife: 50,
+        gravity: 0.4
+      });
+    }
+  } else {
+    // 其他单张贴图：原地脉冲呼吸闪耀
+    hitFlashes.push({
+      x: cx,
+      y: cy,
+      scale: 0.8,
+      maxScale: 1.2,
+      alpha: 1,
+      life: 40,
+      maxLife: 40,
+      rot: 0
+    });
+  }
+}
+
+function onCanvasClick(x, y) {
+  const item = FX_LIST[selectedIndex];
+  if (!item) return;
+
+  if (item.isAnim) {
+    // 点击任意位置在中心继续播放
+    triggerDynamic();
+  } else if (item.category === 'hit') {
+    hitFlashes.push({
+      x: x,
+      y: y,
+      scale: 0.3,
+      maxScale: 1.3,
+      alpha: 1,
+      life: 20,
+      maxLife: 20,
+      rot: (Math.random() - 0.5) * 1
+    });
+  } else if (item.category === 'sparks') {
+    for (let i = 0; i < 30; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const spd = 3 + Math.random() * 10;
+      particles.push({
+        x: x,
+        y: y,
+        vx: Math.cos(angle) * spd,
+        vy: Math.sin(angle) * spd - 2,
+        size: 12 + Math.random() * 20,
+        alpha: 1,
+        life: 25 + Math.random() * 20,
+        maxLife: 45,
+        gravity: 0.4
+      });
+    }
+  } else {
+    hitFlashes.push({
+      x: x,
+      y: y,
+      scale: 0.6,
+      maxScale: 1.1,
+      alpha: 1,
+      life: 30,
+      maxLife: 30,
+      rot: 0
+    });
+  }
+}
+
+let lastFrameTime = 0;
+function dynamicLoop(now) {
+  if (stageMode === 'dynamic') {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const item = FX_LIST[selectedIndex];
+
+    if (item && dynamicImg.complete) {
+      const cx = canvas.width / 2;
+      const cy = canvas.height / 2;
+
+      // 1. 序列帧动画：原地居中播放动画胶片
+      if (item.isAnim) {
+        const totalFrames = item.animCols * item.animRows;
+        if (isPlaying && now - lastFrameTime > (1000 / targetFps)) {
+          currentFrame = (currentFrame + 1) % totalFrames;
+          lastFrameTime = now;
+          document.getElementById('frameCounter').innerText = `${currentFrame + 1}/${totalFrames} 帧`;
+        }
+
+        const col = currentFrame % item.animCols;
+        const row = Math.floor(currentFrame / item.animCols);
+        const sw = dynamicImg.width / item.animCols;
+        const sh = dynamicImg.height / item.animRows;
+
+        // 原地大图展示播放
+        const drawSize = Math.min(canvas.width * 0.7, canvas.height * 0.7, 360);
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.globalCompositeOperation = 'screen';
+        ctx.drawImage(dynamicImg, col * sw, row * sh, sw, sh, -drawSize/2, -drawSize/2, drawSize, drawSize);
+        ctx.restore();
+      }
+
+      // 2. 打击爆点光晕闪耀
+      for (let i = hitFlashes.length - 1; i >= 0; i--) {
+        const h = hitFlashes[i];
+        h.life--;
+        if (h.life <= 0) {
+          hitFlashes.splice(i, 1);
+          continue;
+        }
+        const prog = 1 - (h.life / h.maxLife);
+        const currentScale = h.scale + (h.maxScale - h.scale) * Math.sin(prog * Math.PI / 2);
+        h.alpha = Math.max(0, 1 - prog);
+
+        ctx.save();
+        ctx.translate(h.x, h.y);
+        ctx.rotate(h.rot);
+        ctx.globalAlpha = h.alpha;
+        ctx.globalCompositeOperation = 'screen';
+
+        const size = Math.min(canvas.width * 0.6, 280) * currentScale;
+        ctx.drawImage(dynamicImg, -size/2, -size/2, size, size);
+        ctx.restore();
+      }
+
+      // 3. 火花四溅粒子
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.life--;
+        if (p.life <= 0) {
+          particles.splice(i, 1);
+          continue;
+        }
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += p.gravity;
+
+        const prog = 1 - (p.life / p.maxLife);
+        p.alpha = Math.max(0, 1 - prog);
+
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(Math.atan2(p.vy, p.vx));
+        ctx.globalAlpha = p.alpha;
+        ctx.globalCompositeOperation = 'screen';
+
+        const w = p.size * 2.2;
+        const h = p.size * 0.8;
+        ctx.drawImage(dynamicImg, -w/2, -h/2, w, h);
+        ctx.restore();
+      }
+    }
+  }
+
+  requestAnimationFrame(dynamicLoop);
+}
+
+window.onload = init;
+</script>
+</body>
+</html>
