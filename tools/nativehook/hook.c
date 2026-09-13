@@ -4905,26 +4905,18 @@ void* hook_165(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     void* r = H[165].orig(a0, a1, a2, a3, a4, a5, a6, a7);
     PROTECT({
         if (obj_ok(pc)) {
-            flog("DODGE_ENTER (0x117E4AC) resetting attack chain on pc=%p", pc);
             reset_player_attack_chain(pc);
-        } else if (obj_ok(g_p0_controller)) {
-            reset_player_attack_chain(g_p0_controller);
         }
     });
     return r;
 }
 
 void* hook_166(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
-    void* r = H[166].orig(a0, a1, a2, a3, a4, a5, a6, a7);
-    PROTECT({
-        if (obj_ok(a0)) {
-            flog("COMBOWRAP (0x117ADC8) resetting attack chain on pc=%p", a0);
-            reset_player_attack_chain(a0);
-        } else if (obj_ok(g_p0_controller)) {
-            reset_player_attack_chain(g_p0_controller);
-        }
-    });
-    return r;
+    // 0x117ADC8 was formerly hooked as COMBOWRAP, but it is actually a core state machine
+    // function that fires repeatedly during AI action selection and weapon/projectile events.
+    // Hooking or resetting attack chain here breaks projectile/special states (such as Dead End's S2 grenade).
+    // Bypass custom reset logic and pass through cleanly to original function.
+    return H[166].orig(a0, a1, a2, a3, a4, a5, a6, a7);
 }
 
 void* hook_167(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
@@ -4932,16 +4924,7 @@ void* hook_167(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     void* r = H[167].orig(a0, a1, a2, a3, a4, a5, a6, a7);
     PROTECT({
         if (obj_ok(pc)) {
-            flog("HEAVYEXIT (0x11828E0) resetting attack chain on pc=%p", pc);
             reset_player_attack_chain(pc);
-            if (g_base) {
-                ((void(*)(void*, void*))(g_base + 0x117ADC8))(pc, NULL);
-            }
-        } else if (obj_ok(g_p0_controller)) {
-            reset_player_attack_chain(g_p0_controller);
-            if (g_base) {
-                ((void(*)(void*, void*))(g_base + 0x117ADC8))(g_p0_controller, NULL);
-            }
         }
     });
     return r;

@@ -244,7 +244,7 @@ def patch_moves_assetbundle(moves_bundle_data: bytes, out_dir: Path) -> None:
         ab_tree["m_Container"] = container
         ab_obj.save_typetree(ab_tree)
 
-    saved_moves = moves_env.file.save()
+    saved_moves = moves_env.file.save(packer="lz4")
     moves_out_file = out_dir / "moves.assetbundle"
     moves_out_file.write_bytes(saved_moves)
     print(f"[+] Successfully saved patched moves.assetbundle ({len(saved_moves)} bytes) with move_lifeline_special_01 & 02 to {moves_out_file}")
@@ -265,7 +265,11 @@ def generate_lifeline_assets(apk_path: str | None = None, output_dir: str = "ass
         op_bundle_data = (pack_dir / "optimusprimal_bw_mp32_odr/optimusprimal_bw_mp32.assetbundle").read_bytes()
         wb_bundle_data = (pack_dir / "windblade_gs_odr/windblade_gs.assetbundle").read_bytes()
         proc_bundle_data = (pack_dir / "characters_procedural_odr/character_anim_procedural.assetbundle").read_bytes()
-        moves_bundle_data = (pack_dir / "characters/moves.assetbundle").read_bytes()
+        if Path("assets_netflix/moves.assetbundle").is_file():
+            print("[*] Using assets_netflix/moves.assetbundle as base for moves patching...")
+            moves_bundle_data = Path("assets_netflix/moves.assetbundle").read_bytes()
+        else:
+            moves_bundle_data = (pack_dir / "characters/moves.assetbundle").read_bytes()
         cfx_bundle_data = (pack_dir / "characters/character_fx.assetbundle").read_bytes()
         
         p_large_bytes = (pack_dir / "portraits_odr/portraits/portrait_arcee_gs_large.png").read_bytes()
@@ -281,7 +285,11 @@ def generate_lifeline_assets(apk_path: str | None = None, output_dir: str = "ass
             op_bundle_data = z.read("assets/assetpack/optimusprimal_bw_mp32_odr/optimusprimal_bw_mp32.assetbundle")
             wb_bundle_data = z.read("assets/assetpack/windblade_gs_odr/windblade_gs.assetbundle")
             proc_bundle_data = z.read("assets/assetpack/characters_procedural_odr/character_anim_procedural.assetbundle")
-            moves_bundle_data = z.read("assets/assetpack/characters/moves.assetbundle")
+            if Path("assets_netflix/moves.assetbundle").is_file():
+                print("[*] Using assets_netflix/moves.assetbundle as base for moves patching...")
+                moves_bundle_data = Path("assets_netflix/moves.assetbundle").read_bytes()
+            else:
+                moves_bundle_data = z.read("assets/assetpack/characters/moves.assetbundle")
             cfx_bundle_data = z.read("assets/assetpack/characters/character_fx.assetbundle")
             p_large_bytes = z.read("assets/assetpack/portraits_odr/portraits/portrait_arcee_gs_large.png")
             p_small_bytes = z.read("assets/assetpack/portraits_odr/portraits/portrait_arcee_gs_small.jpg")
