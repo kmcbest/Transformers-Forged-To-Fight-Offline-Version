@@ -84,10 +84,6 @@ def generate_dragstrip_assets(apk_path: str | None = None, output_dir: str = "as
     jazz_bytes = load_bundle("jazz_gs_twm05_odr/jazz_gs_twm05.assetbundle")
     blaster_bytes = load_bundle("blaster_gs_leader2016_odr/blaster_gs_leader2016.assetbundle")
     cheetor_bytes = load_bundle("cheetor_bw_transmetal_odr/cheetor_bw_transmetal.assetbundle")
-    if Path("assets_netflix/deadend_gs_deluxe2015.assetbundle").is_file():
-        deadend_bytes = Path("assets_netflix/deadend_gs_deluxe2015.assetbundle").read_bytes()
-    else:
-        deadend_bytes = load_bundle("deadend_gs_deluxe2015_odr/deadend_gs_deluxe2015.assetbundle")
 
     print("[*] Parsing source bundles...")
     m_env = UnityPy.load(mirage_bytes)
@@ -97,7 +93,6 @@ def generate_dragstrip_assets(apk_path: str | None = None, output_dir: str = "as
     j_env = UnityPy.load(jazz_bytes)
     bl_env = UnityPy.load(blaster_bytes)
     ch_env = UnityPy.load(cheetor_bytes)
-    d_env = UnityPy.load(deadend_bytes)
 
     # 1. Extract required AnimationClips
     print("[*] Extracting external animation clips...")
@@ -443,165 +438,15 @@ def generate_dragstrip_assets(apk_path: str | None = None, output_dir: str = "as
             replace_str_in_tree(tree, old_cab, new_cab)
             obj.save_typetree(tree)
 
-        # For stream-backed assets (Texture2D and AudioClip), update the CAB archive path
-        elif obj.type.name in ["Texture2D", "AudioClip"]:
+        # For stream-backed or linked assets, update the CAB archive path
+        elif obj.type.name in ["Mesh", "Texture2D", "AudioClip"]:
             tree = obj.read_typetree()
             replace_str_in_tree(tree, old_cab, new_cab)
             obj.save_typetree(tree)
 
-    # 3. Head Swap: Graft Dead End head directly into Mesh 00 (-7047427799269870338)
-    print("[*] Grafting Dead End head onto Dragstrip Mesh 00...")
-
-    d_mesh_obj = None
-    for obj in d_env.objects:
-        if obj.type.name == "Mesh" and obj.path_id == -6627344992554209802:
-            d_mesh_obj = obj.read()
-            break
-
-    if d_mesh_obj is not None:
-        lines = d_mesh_obj.export().splitlines()
-        d_verts, d_vts, d_vns = [], [], []
-        faces_0, faces_1 = [], []
-        curr_g = None
-        for l in lines:
-            if l.startswith("v "):
-                p = l.split()
-                d_verts.append([float(p[1]), float(p[2]), float(p[3])])
-            elif l.startswith("vt "):
-                p = l.split()
-                d_vts.append([float(p[1]), float(p[2])])
-            elif l.startswith("vn "):
-                p = l.split()
-                d_vns.append([float(p[1]), float(p[2]), float(p[3])])
-            elif l.startswith("g ") or l.startswith("o "):
-                curr_g = l.split()[1]
-            elif l.startswith("f ") and curr_g:
-                f_pts = l.split()[1:]
-                vis = [int(p.split("/")[0]) - 1 for p in f_pts]
-                if len(vis) >= 3:
-                    cy = sum(d_verts[idx][1] for idx in vis) / len(vis)
-                    cx = sum(d_verts[idx][0] for idx in vis) / len(vis)
-                    cz = sum(d_verts[idx][2] for idx in vis) / len(vis)
-                    if "mesh_1" in curr_g and cy > 7.72 and abs(cx) < 0.85 and abs(cz) < 0.9:
-                        faces_1.append(f_pts)
-
-        def process_mesh_part(faces, delta_y=-0.2377, delta_z=0.0324):
-            combos, combo_list, remapped_faces = {}, [], []
-            for f in faces:
-                face_indices = []
-                for p in f:
-                    parts = p.split("/")
-                    vi = int(parts[0]) - 1
-                    vti = int(parts[1]) - 1 if len(parts) > 1 and parts[1] else -1
-                    vni = int(parts[2]) - 1 if len(parts) > 2 and parts[2] else -1
-                    c = (vi, vti, vni)
-                    if c not in combos:
-                        combos[c] = len(combos)
-                        combo_list.append(c)
-                    face_indices.append(combos[c])
-                remapped_faces.append(face_indices)
-            nv = len(combo_list)
-            s0 = bytearray(nv * 40)
-            s1 = bytearray(nv * 16)
-            s2 = bytearray(nv * 4)
-            for idx, (vi, vti, vni) in enumerate(combo_list):
-                vx = d_verts[vi][0]
-                vy = d_verts[vi][1] + delta_y
-                vz = d_verts[vi][2] + delta_z
-                struct.pack_into("<3f", s0, idx * 40, vx, vy, vz)
-                nx = d_vns[vni][0] if 0 <= vni < len(d_vns) else 0.0
-                ny = d_vns[vni][1] if 0 <= vni < len(d_vns) else 1.0
-                nz = d_vns[vni][2] if 0 <= vni < len(d_vns) else 0.0
-                struct.pack_into("<3f", s0, idx * 40 + 12, nx, ny, nz)
-                struct.pack_into("<4f", s0, idx * 40 + 24, 1.0, 0.0, 0.0, 1.0)
-                u = d_vts[vti][0] if 0 <= vti < len(d_vts) else 0.0
-                v = d_vts[vti][1] if 0 <= vti < len(d_vts) else 0.0
-                struct.pack_into("<2f", s1, idx * 16, u, v)
-                struct.pack_into("<2f", s1, idx * 16 + 8, u, v)
-                struct.pack_into("<I", s2, idx * 4, 5) # Bone index 5 is Head bone in Mirage skeleton!
-            flat_indices = []
-            for f in remapped_faces:
-                flat_indices.extend(f)
-            return nv, s0, s1, s2, flat_indices
-
-        nv_head, s0_h, s1_h, s2_h, idx_h = process_mesh_part(faces_1)
-        print(f"[+] Dead End head extracted: Part 1 (main_a)={nv_head}v/{len(idx_h)//3}t")
-
-        # Merge directly into Mirage Mesh 00 (-7047427799269870338)
-        for obj in m_env.objects:
-            if obj.type.name == "Mesh" and obj.path_id == -7047427799269870338:
-                t = obj.read_typetree()
-                vd = t["m_VertexData"]
-                orig_vc = vd["m_VertexCount"]
-                orig_raw = bytes(vd["m_DataSize"])
-                orig_s0 = bytearray(orig_raw[:orig_vc * 40])
-                orig_s1 = bytearray(orig_raw[orig_vc * 40 : orig_vc * 40 + orig_vc * 16])
-                orig_s2 = bytearray(orig_raw[orig_vc * 40 + orig_vc * 16 : orig_vc * 40 + orig_vc * 16 + orig_vc * 4])
-
-                # Zero out original Mirage head vertices (all vertices bound to Head bone or in head volume)
-                zeroed = 0
-                for i in range(orig_vc):
-                    x, y, z = struct.unpack_from("<3f", orig_s0, i * 40)
-                    b_idx = struct.unpack_from("<I", orig_s2, i * 4)[0]
-                    if b_idx == 5 or (y > 7.72 and abs(x) < 0.85 and abs(z) < 0.9):
-                        struct.pack_into("<3f", orig_s0, i * 40, 0.0, 7.72, 0.0)
-                        zeroed += 1
-                print(f"[+] Zeroed {zeroed} original Mirage head vertices!")
-
-                sm0_orig_vc = t["m_SubMeshes"][0]["vertexCount"]
-                sm1_orig_vc = t["m_SubMeshes"][1]["vertexCount"]
-
-                s0_sm0 = orig_s0[:sm0_orig_vc * 40]
-                s0_sm1 = orig_s0[sm0_orig_vc * 40 : (sm0_orig_vc + sm1_orig_vc) * 40]
-                merged_s0 = s0_sm0 + s0_h + s0_sm1
-
-                s1_sm0 = orig_s1[:sm0_orig_vc * 16]
-                s1_sm1 = orig_s1[sm0_orig_vc * 16 : (sm0_orig_vc + sm1_orig_vc) * 16]
-                merged_s1 = s1_sm0 + s1_h + s1_sm1
-
-                s2_sm0 = orig_s2[:sm0_orig_vc * 4]
-                s2_sm1 = orig_s2[sm0_orig_vc * 4 : (sm0_orig_vc + sm1_orig_vc) * 4]
-                merged_s2 = s2_sm0 + s2_h + s2_sm1
-
-                new_total_vc = sm0_orig_vc + nv_head + sm1_orig_vc
-
-                raw_idx_bytes = bytes(t["m_IndexBuffer"])
-                orig_idx = struct.unpack(f"<{len(raw_idx_bytes)//2}H", raw_idx_bytes)
-                sm0_idx_cnt = t["m_SubMeshes"][0]["indexCount"]
-                sm1_idx_cnt = t["m_SubMeshes"][1]["indexCount"]
-
-                orig_sm0_indices = list(orig_idx[:sm0_idx_cnt])
-                orig_sm1_indices = list(orig_idx[sm0_idx_cnt : sm0_idx_cnt + sm1_idx_cnt])
-
-                # Append head triangles to Submesh 0 (Material 0, main_a)
-                new_head_indices = [i + sm0_orig_vc for i in idx_h]
-                new_sm0_indices = orig_sm0_indices + new_head_indices
-
-                # Submesh 1 vertices shifted by nv_head
-                new_sm1_indices = [i + nv_head for i in orig_sm1_indices]
-                merged_indices = new_sm0_indices + new_sm1_indices
-
-                vd["m_VertexCount"] = new_total_vc
-                vd["m_DataSize"] = bytes(merged_s0 + merged_s1 + merged_s2)
-                t["m_IndexBuffer"] = struct.pack(f"<{len(merged_indices)}H", *merged_indices)
-
-                t["m_SubMeshes"][0]["firstByte"] = 0
-                t["m_SubMeshes"][0]["indexCount"] = len(new_sm0_indices)
-                t["m_SubMeshes"][0]["firstVertex"] = 0
-                t["m_SubMeshes"][0]["vertexCount"] = sm0_orig_vc + nv_head
-
-                t["m_SubMeshes"][1]["firstByte"] = len(new_sm0_indices) * 2
-                t["m_SubMeshes"][1]["indexCount"] = len(new_sm1_indices)
-                t["m_SubMeshes"][1]["firstVertex"] = sm0_orig_vc + nv_head
-                t["m_SubMeshes"][1]["vertexCount"] = sm1_orig_vc
-
-                replace_str_in_tree(t, old_cab, new_cab)
-                obj.save_typetree(t)
-                print(f"[+] Merged Dead End head into Mesh 00 Submesh 0 (main_a): Total {new_total_vc} vertices, {len(merged_indices)//3} triangles!")
-
         # Texture compositing:
         # 1. Recolor Mirage main body from Blue to Dragstrip Yellow
-        # 2. Blend Dead End head textures
+        # 2. Recolor Mirage head helmet from Blue to Dragstrip Red (with clean silver faceplate & glowing ruby red optic)
         # 3. Recolor weapons from gray to Decepticon Purple
         from PIL import ImageDraw
 
@@ -648,79 +493,29 @@ def generate_dragstrip_assets(apk_path: str | None = None, output_dir: str = "as
 
                 yellow_mask = blue_mask | white_mask
 
-                # Dead End head extraction and blending
-                d_main_img = None
-                for d_obj in d_env.objects:
-                    if d_obj.type.name == "Texture2D" and d_obj.read_typetree().get("m_Name") == "cha_deadend_gs_deluxe2015_main_a":
-                        d_main_img = d_obj.read().image
-                        break
+                # Mirage Head: Recolor helmet from Blue to Dragstrip Red (Hue = 356 deg) & optics to glowing ruby red
+                head_box = np.zeros_like(mx, dtype=bool)
+                head_box[:300, :510] = True
 
-                mask_arr_1 = None
-                d_arr_1 = None
-                if d_main_img is not None and len(faces_1) > 0:
-                    from PIL import ImageFilter
-                    mask_1 = Image.new("L", (1024, 1024), 0)
-                    draw_1 = ImageDraw.Draw(mask_1)
-                    for f in faces_1:
-                        poly = []
-                        for p in f:
-                            parts = p.split("/")
-                            if len(parts) > 1 and parts[1]:
-                                vti = int(parts[1]) - 1
-                                if vti < len(d_vts):
-                                    u, v = d_vts[vti]
-                                    poly.append((int(np.clip(u * 1024, 0, 1023)), int(np.clip((1.0 - v) * 1024, 0, 1023))))
-                        if len(poly) >= 3:
-                            draw_1.polygon(poly, fill=255)
+                optics_box = np.zeros_like(mx, dtype=bool)
+                optics_box[20:65, 80:135] = True
+                optics_mask = (hue >= 170.0) & (hue <= 220.0) & (sat > 0.45) & (mx > 0.45) & optics_box
 
-                    # Dilate mask slightly so texture filtering margin doesn't bleed original texture
-                    dilated_mask_1 = mask_1.filter(ImageFilter.MaxFilter(size=11))
-                    mask_arr_1 = np.array(dilated_mask_1) > 0
-                    d_arr_1 = np.array(d_main_img.convert("RGBA"))
+                helmet_blue = head_box & blue_mask & (~optics_mask)
 
-                    # Customized Dead End Head:
-                    # 1. Visor mask (optics): glowing ruby red
-                    visor_mask = np.zeros_like(mask_arr_1)
-                    visor_mask[105:185, 345:515] = True
-                    visor_area = visor_mask & mask_arr_1 & (d_arr_1[:, :, 0] > 140) & (d_arr_1[:, :, 1] > 80) & (d_arr_1[:, :, 2] < 80)
-                    v_img = Image.fromarray(visor_area.astype(np.uint8)*255).filter(ImageFilter.MaxFilter(size=5))
-                    visor_area = np.array(v_img) > 0
+                # Red helmet target (Hue = 356 deg)
+                th = 356.0 / 360.0
+                ts = np.clip(np.maximum(sat * 1.2, 0.85), 0.0, 1.0)
+                tv = np.clip(mx * 0.95, 0.0, 1.0)
+                rc = tv * ts
+                rx = rc * (1.0 - np.abs((th * 6.0) % 2.0 - 1.0))
+                rm = tv - rc
+                red_r = np.clip((rc + rm) * 255.0, 0, 255).astype(np.uint8)
+                red_g = np.clip((rx + rm) * 255.0, 0, 255).astype(np.uint8)
+                red_b = np.clip(rm * 255.0, 0, 255).astype(np.uint8)
 
-                    # 2. Face mask (faceplate: mouth, nose, chin): clean metallic silver
-                    face_mask = np.zeros_like(mask_arr_1)
-                    face_mask[10:102, 335:445] = True
-                    face_area = face_mask & mask_arr_1
-                    fg = (0.299 * d_arr_1[:, :, 0] + 0.587 * d_arr_1[:, :, 1] + 0.114 * d_arr_1[:, :, 2]) / 255.0
-                    silver_val = np.clip(fg * 180 + 55, 0, 255).astype(np.uint8)
-                    d_arr_1[face_area, 0] = silver_val[face_area]
-                    d_arr_1[face_area, 1] = silver_val[face_area]
-                    d_arr_1[face_area, 2] = np.clip(silver_val[face_area].astype(int) + 5, 0, 255).astype(np.uint8)
-
-                    # Set glowing ruby red on visor optics
-                    d_arr_1[visor_area, 0] = 255
-                    d_arr_1[visor_area, 1] = 20
-                    d_arr_1[visor_area, 2] = 30
-
-                    # 3. Helmet: Dark Red / Maroon (including top crest, sides, and cheek guards)
-                    is_amber = np.zeros_like(mask_arr_1)
-                    is_amber[:250, :520] = (d_arr_1[:250, :520, 0] > 130) & (d_arr_1[:250, :520, 1] > 70) & (d_arr_1[:250, :520, 2] < 85)
-                    helmet_area = (mask_arr_1 | is_amber) & (~face_area) & (~visor_area)
-
-                    h_r = d_arr_1[:, :, 0].astype(float) / 255.0
-                    h_g = d_arr_1[:, :, 1].astype(float) / 255.0
-                    h_b = d_arr_1[:, :, 2].astype(float) / 255.0
-                    lum = 0.299 * h_r + 0.587 * h_g + 0.114 * h_b
-
-                    maroon_r = np.clip(lum * 190 + 35, 0, 255).astype(np.uint8)
-                    maroon_g = np.clip(lum * 35 + 5, 0, 255).astype(np.uint8)
-                    maroon_b = np.clip(lum * 45 + 10, 0, 255).astype(np.uint8)
-
-                    d_arr_1[helmet_area, 0] = maroon_r[helmet_area]
-                    d_arr_1[helmet_area, 1] = maroon_g[helmet_area]
-                    d_arr_1[helmet_area, 2] = maroon_b[helmet_area]
-
-                    # Exclude blended head area from yellow body paint
-                    yellow_mask = yellow_mask & (~mask_arr_1)
+                # Exclude head area from yellow body paint
+                yellow_mask = yellow_mask & (~head_box)
 
                 # Target Dragstrip Warm Canary Yellow (Hue = 44 deg)
                 target_h = 44.0 / 360.0
@@ -740,9 +535,15 @@ def generate_dragstrip_assets(apk_path: str | None = None, output_dir: str = "as
                 res_arr[yellow_mask, 1] = new_g[yellow_mask].astype(np.uint8)
                 res_arr[yellow_mask, 2] = new_b[yellow_mask].astype(np.uint8)
 
-                if mask_arr_1 is not None and d_arr_1 is not None:
-                    res_arr[mask_arr_1] = d_arr_1[mask_arr_1]
-                    print("[+] Blended and customized Dead End head (Dark Red Helmet, Glowing Visor, Silver Face)!")
+                # Apply red helmet and ruby red optics
+                res_arr[helmet_blue, 0] = red_r[helmet_blue]
+                res_arr[helmet_blue, 1] = red_g[helmet_blue]
+                res_arr[helmet_blue, 2] = red_b[helmet_blue]
+
+                res_arr[optics_mask, 0] = 255
+                res_arr[optics_mask, 1] = 20
+                res_arr[optics_mask, 2] = 30
+                print("[+] Applied Mirage red-helmet head (Metallic Red Helmet, Ruby Red Optics, Silver Face)!")
 
                 tex.image = Image.fromarray(res_arr)
                 tex.save()
