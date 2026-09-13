@@ -590,6 +590,15 @@
     },
     "notes": "通天晓 (Ultra Magnus) - 重型装甲运输卡车"
   },
+  "ultramagnus_sg_leader": {
+    "intervals": [[3000, 5800]],
+    "props": {
+      "rightgun": [[0, 0]],
+      "sword": [[0, 0]],
+      "leftgun": [[0, 0]]
+    },
+    "notes": "捅天枭 (SG Ultra Magnus) - 镜像重型装甲卡车"
+  },
   "waspinator_gs_deluxe": {
     "intervals": [[2100, 3300]],
     "props": {

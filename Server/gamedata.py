@@ -103,6 +103,7 @@ ROSTER = {
     "starsaber_gs_leader2014":      ("autobot",    "tact", 5),
     "sunstreaker_gs_deluxe2008":    ("autobot",    "braw", 5),
     "ultramagnus_gs_leader":        ("autobot",    "tact", 5),
+    "ultramagnus_sg_leader":        ("autobot",    "braw", 5),
     "wheeljack_gs_mp20":            ("autobot",    "tech", 5),
     "windblade_gs":                 ("autobot",    "scou", 5),
 
@@ -367,6 +368,7 @@ _ART_BASE = {
     "starsaber_gs_leader2014": "starsaber",
     "sunstreaker_gs_deluxe2008": "sunstreak_gs",
     "ultramagnus_gs_leader": "ultram_gs",
+    "ultramagnus_sg_leader": "ultram_sg",
     "wheeljack_gs_mp20": "wheelj_gs",
     "windblade_gs": "windb_gs",
 
@@ -555,6 +557,7 @@ _BOT_NAMES = {
     "starsaber_gs_leader2014": "Star Saber",
     "sunstreaker_gs_deluxe2008": "Sunstreaker",
     "ultramagnus_gs_leader": "Ultra Magnus",
+    "ultramagnus_sg_leader": "SG Ultra Magnus",
     "wheeljack_gs_mp20": "Wheeljack",
     "windblade_gs": "Windblade",
 
@@ -1120,6 +1123,7 @@ _CHALLENGE_SPOKE_ENEMIES = [
         "optimusprime_cin_tf",
         "optimusprimal_bw_mp32",
         "optimusprime_sg_voyager2015",
+        "ultramagnus_sg_leader",
         "motormaster_gs_voyager2015",
         "wildrider_gs_deluxe2016",
         "grimlock_gs_mp08",

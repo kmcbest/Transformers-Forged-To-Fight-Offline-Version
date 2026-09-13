@@ -180,6 +180,12 @@
         "faction": "汽车人",
         "note": "经典G1 战术系"
     },
+    "ultramagnus_sg_leader": {
+        "en": "SG Ultra Magnus",
+        "zh": "捅天枭",
+        "faction": "汽车人",
+        "note": "碎玻璃/镜像宇宙 格斗系"
+    },
     "wheeljack_gs_mp20": {
         "en": "Wheeljack",
         "zh": "千斤顶",
