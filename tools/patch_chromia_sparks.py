@@ -117,8 +117,11 @@ def patch_character_fx():
 
 def patch_moves():
     print("\n>>> Patching moves.assetbundle for Chromia donut & agile attacks...")
+    netflix_moves = ROOT / "assets_netflix" / "moves.assetbundle"
     if TARGET_MOVES_BUNDLE.exists():
         raw_data = TARGET_MOVES_BUNDLE.read_bytes()
+    elif netflix_moves.exists():
+        raw_data = netflix_moves.read_bytes()
     else:
         with zipfile.ZipFile(APK_PATH, "r") as zf:
             raw_data = zf.read("assets/assetpack/characters/moves.assetbundle")

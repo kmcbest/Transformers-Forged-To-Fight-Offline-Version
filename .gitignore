@@ -8,6 +8,7 @@
 
 # Local media captures (including screenshots and recordings) must never be committed.
 /media/
+/screenshots/
 
 # Local demo captures (screen recordings of the running game contain copyrighted
 # game audiovisual content and must stay local -- see COMPLIANCE.md "never add game
@@ -20,6 +21,7 @@
 
 # Generated local-server artifacts; certificates and request logs can contain
 # private keys and session data and must remain local.
+__pycache__/
 /Server/__pycache__/
 /patches/__pycache__/
 /Server/certs/
@@ -82,3 +84,5 @@ assets_redeco/*
 !assets_redeco/*breakdown*
 !assets_redeco/moves.assetbundle
 !assets_redeco/character_fx.assetbundle
+!assets_redeco/character_fx_procedural.assetbundle
+

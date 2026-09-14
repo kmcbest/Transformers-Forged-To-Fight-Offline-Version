@@ -26,3 +26,9 @@
 
 - Use `INSTALL-ADB.py` located in the root directory for graphical and automated APK installation via ADB with standard flags (`-r --no-incremental`).
 
+## Moveset and Netflix AssetBundle guidelines
+
+- Never extract or overwrite `moves.assetbundle` from the base Kabam 9.2.0 APK. Chromia (克劳莉娅, 12 moves) and Dead End (封锁, 8 moves) are Netflix exclusives; their moves only exist in `assets_netflix/moves.assetbundle`.
+- Any tool generating `assets_redeco/moves.assetbundle` must base on `assets_netflix/moves.assetbundle`, preserve Lifeline's stitched moves (`move_lifeline_special_01` & `02`), and verify that total moves count is >= 945.
+
+

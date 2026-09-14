@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>《百炼为战》受击火花物理拟真调校实验室 (Hit Sparks Lab)</title>
+<style>
+  :root {
+    --bg-dark: #0a0d14;
+    --panel-bg: #121824;
+    --card-bg: #1a2232;
+    --border-col: #27344a;
+    --accent: #ff6a00;
+    --accent-glow: rgba(255, 106, 0, 0.4);
+    --gold: #ffb700;
+    --cyan: #00d2ff;
+    --text: #e2e8f0;
+    --text-muted: #8c9bb4;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background-color: var(--bg-dark);
+    color: var(--text);
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+  }
+  /* 左侧主视口 */
+  .viewport-container {
+    flex: 1;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: radial-gradient(circle at center, #1b2434 0%, #06090e 85%);
+  }
+  .hud-header {
+    position: absolute;
+    top: 16px;
+    left: 20px;
+    right: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    pointer-events: none;
+    z-index: 10;
+  }
+  .hud-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .badge {
+    background: rgba(255, 106, 0, 0.2);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 1px;
+  }
+  .title-text {
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+  }
+  .hud-tips {
+    background: rgba(18, 24, 36, 0.85);
+    border: 1px solid var(--border-col);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    color: var(--text-muted);
+    backdrop-filter: blur(8px);
+  }
+  .hud-tips span { color: var(--gold); font-weight: bold; }
+
+  canvas#sparkCanvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    cursor: crosshair;
+  }
+
+  /* 底部快速触发条 */
+  .action-bar {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 12px;
+    background: rgba(14, 19, 29, 0.9);
+    border: 1px solid var(--border-col);
+    padding: 8px 16px;
+    border-radius: 30px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+    backdrop-filter: blur(10px);
+    z-index: 10;
+  }
+  .act-btn {
+    background: #1e283c;
+    color: #fff;
+    border: 1px solid #334460;
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .act-btn:hover {
+    background: #2a3854;
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--accent-glow);
+  }
+  .act-btn:active { transform: translateY(0); }
+  .act-btn.primary {
+    background: linear-gradient(135deg, #ff6a00 0%, #d4380d 100%);
+    border-color: #ff8833;
+    color: #fff;
+  }
+
+  /* 右侧控制面板 */
+  .control-sidebar {
+    width: 440px;
+    background: var(--panel-bg);
+    border-left: 1px solid var(--border-col);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    flex-shrink: 0;
+  }
+  .sidebar-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-col);
+    background: #151d2c;
+  }
+  .sidebar-header h2 {
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .sidebar-header p {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+
+  /* 预设方案选择 */
+  .preset-section {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-col);
+  }
+  .section-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .preset-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .preset-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-col);
+    border-radius: 8px;
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .preset-card:hover {
+    border-color: var(--accent);
+    background: #202b3e;
+  }
+  .preset-card.active {
+    border-color: var(--accent);
+    background: #242a38;
+    box-shadow: 0 0 12px var(--accent-glow);
+  }
+  .preset-card.active::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; bottom: 0; width: 4px;
+    background: var(--accent);
+  }
+  .p-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .p-desc {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    line-height: 1.3;
+  }
+
+  /* 参数滑块组 */
+  .sliders-section {
+    padding: 16px 20px;
+    flex: 1;
+  }
+  .param-group {
+    margin-bottom: 16px;
+  }
+  .param-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .param-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: #cbd5e1;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .param-val {
+    font-size: 12px;
+    font-family: monospace;
+    color: var(--gold);
+    background: #0f1522;
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid #233044;
+  }
+  .slider-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  input[type="range"] {
+    flex: 1;
+    height: 5px;
+    border-radius: 3px;
+    background: #233044;
+    outline: none;
+    -webkit-appearance: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    box-shadow: 0 0 6px var(--accent-glow);
+    transition: transform 0.1s;
+  }
+  input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+  }
+
+  /* 切换标签按钮组 */
+  .segmented-control {
+    display: flex;
+    background: #0f1522;
+    border-radius: 6px;
+    padding: 2px;
+    border: 1px solid var(--border-col);
+  }
+  .seg-btn {
+    flex: 1;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    padding: 6px 0;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.15s;
+  }
+  .seg-btn.active {
+    background: #2b3952;
+    color: #fff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  }
+
+  /* 颜色挑选 */
+  .color-presets {
+    display: flex;
+    gap: 8px;
+    margin-top: 6px;
+  }
+  .color-dot {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.15s;
+  }
+  .color-dot.active {
+    border-color: #fff;
+    transform: scale(1.15);
+    box-shadow: 0 0 8px #fff;
+  }
+
+  /* 底部生成代码区域 */
+  .export-section {
+    padding: 16px 20px;
+    border-top: 1px solid var(--border-col);
+    background: #111724;
+  }
+  .code-preview {
+    background: #090c13;
+    border: 1px solid #1f2a3a;
+    border-radius: 6px;
+    padding: 10px;
+    font-family: Consolas, monospace;
+    font-size: 11px;
+    color: #a5b4fc;
+    white-space: pre-wrap;
+    max-height: 120px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+    user-select: text;
+  }
+  .btn-export {
+    width: 100%;
+    background: linear-gradient(135deg, #ff7a18 0%, #af2e00 100%);
+    color: #fff;
+    border: none;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    box-shadow: 0 4px 15px rgba(255, 106, 0, 0.35);
+  }
+  .btn-export:hover { opacity: 0.9; }
+</style>
+</head>
+<body>
+
+<!-- 左侧物理仿真画面 -->
+<div class="viewport-container">
+  <div class="hud-header">
+    <div class="hud-title">
+      <span class="badge">PHYSICS SIM</span>
+      <span class="title-text">受击火花物理动效调试器</span>
+    </div>
+    <div class="hud-tips">
+      点击画面任意位置 或 按 <span>空格键</span> 触发打击
+    </div>
+  </div>
+
+  <canvas id="sparkCanvas"></canvas>
+
+  <!-- 底部交互打击控制条 -->
+  <div class="action-bar">
+    <button class="act-btn primary" id="btnLight">👊 轻击打击 (Light Hit)</button>
+    <button class="act-btn" id="btnMedium">⚔️ 中击重拳 (Medium Hit)</button>
+    <button class="act-btn" id="btnHeavy">💥 重击大火花 (Heavy Slam)</button>
+    <button class="act-btn" id="btnCombo">⚡ 连招测试 (Combo 1-2-3)</button>
+  </div>
+</div>
+
+<!-- 右侧调参控制板 -->
+<div class="control-sidebar">
+  <div class="sidebar-header">
+    <h2>⚙️ 物理与视觉参数调优</h2>
+    <p>拖动滑块实时生效，点击左侧画布任意位置查看击打喷溅与重力下坠弧线。</p>
+  </div>
+
+  <!-- 预设方案 -->
+  <div class="preset-section">
+    <div class="section-label">
+      <span>官方/候选风格预设</span>
+      <span style="color:var(--accent);">点击一键切换</span>
+    </div>
+    <div class="preset-grid">
+      <div class="preset-card active" data-preset="forge_ios">
+        <div class="p-title">🔨 iOS 熔铁落体 (推荐)</div>
+        <div class="p-desc">极佳重力弧线，深橙红锻打金属感，下坠迅速，最还原iOS</div>
+      </div>
+      <div class="preset-card" data-preset="grind_gold">
+        <div class="p-title">✨ 金黄砂轮火星</div>
+        <div class="p-desc">金属刀口高亮摩擦，高饱和度黄橙色，轻巧拉丝</div>
+      </div>
+      <div class="preset-card" data-preset="heavy_lava">
+        <div class="p-title">🔥 强重力深赤熔浆</div>
+        <div class="p-desc">极重坠落感，暗红赤铁高温碎屑，重度受击质感</div>
+      </div>
+      <div class="preset-card" data-preset="old_redeco">
+        <div class="p-title">🎆 昨日 Redeco 焰火</div>
+        <div class="p-desc">对比对照组：初速200，360°全向爆散无重力，颜色泛白</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 滑块组 -->
+  <div class="sliders-section">
+    <div class="section-label">Unity 粒子核心物理</div>
+
+    <!-- 初速度 startSpeed -->
+    <div class="param-group">
+      <div class="param-row">
+        <span class="param-name">初速度 (startSpeed)</span>
+        <span class="param-val" id="valSpeed">42</span>
+      </div>
+      <div class="slider-wrap">
+        <input type="range" id="slSpeed" min="15" max="200" step="1" value="42">
+      </div>
+    </div>
+
+    <!-- 重力系数 gravityModifier -->
+    <div class="param-group">
+      <div class="param-row">
+        <span class="param-name">重力加速度 (gravityModifier)</span>
+        <span class="param-val" id="valGravity">2.8</span>
+      </div>
+      <div class="slider-wrap">
+        <input type="range" id="slGravity" min="0" max="6.0" step="0.1" value="2.8">
+      </div>
+    </div>
+
+    <!-- 发射形状 Shape (Cone vs Sphere) -->
+    <div class="param-group">
+      <div class="param-row">
+        <span class="param-name">发射形状 (ShapeModule)</span>
+        <span class="param-val" id="valShape">Cone (定向锥形 65°)</span>
+      </div>
+      <div class="segmented-control" id="segShape">
+        <button class="seg-btn active" data-shape="cone">Cone (朝前锥形)</button>
+        <button class="seg-btn" data-shape="wide_cone">Wide Cone (广角锥形)</button>
+        <button class="seg-btn" data-shape="sphere">Sphere (360° 全向)</button>
+      </div>
+    </div>
+
+    <div class="section-label" style="margin-top:20px;">渲染模式与拉伸视觉</div>
+
+    <!-- 拉伸长度 LengthScale -->
+    <div class="param-group">
+      <div class="param-row">
+        <span class="param-name">火花拉伸长度 (m_LengthScale)</span>
+        <span class="param-val" id="valLength">-0.45</span>
+      </div>
+      <div class="slider-wrap">
+        <input type="range" id="slLength" min="-2.5" max="-0.05" step="0.05" value="-0.45">
+      </div>
+    </div>
+
+    <!-- 发射粒子数量 Burst Count -->
+    <div class="param-group">
+      <div class="param-row">
+        <span class="param-name">单次喷发火花数 (Burst Count)</span>
+        <span class="param-val" id="valCount">60</span>
+      </div>
+      <div class="slider-wrap">
+        <input type="range" id="slCount" min="15" max="180" step="5" value="60">
+      </div>
+    </div>
+
+    <!-- 发光颜色 Tint & Emissive -->
+    <div class="param-group">
+      <div class="param-row">
+        <span class="param-name">发光色彩 (_emissive_intensity_col)</span>
+        <span class="param-val" id="valColorHex">#FF5511 (深橙红)</span>
+      </div>
+      <div class="color-presets" id="colorPicker">
+        <div class="color-dot active" data-color="#ff5511" data-r="1.0" data-g="0.38" data-b="0.08" style="background:#ff5511;" title="深橙红 (iOS 锻铁赤铁)"></div>
+        <div class="color-dot" data-color="#ff3300" data-r="1.0" data-g="0.20" data-b="0.02" style="background:#ff3300;" title="浓烈赤红 (高温钢屑)"></div>
+        <div class="color-dot" data-color="#ffaa00" data-r="1.0" data-g="0.67" data-b="0.10" style="background:#ffaa00;" title="炽热金黄 (砂轮火星)"></div>
+        <div class="color-dot" data-color="#ffe49e" data-r="0.95" data-g="0.84" data-b="0.55" style="background:#ffe49e;" title="浅金黄 (旧大受击)"></div>
+        <div class="color-dot" data-color="#ffffff" data-r="1.0" data-g="1.0" data-b="1.0" style="background:#ffffff;" title="纯白爆闪"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 代码导出与应用 -->
+  <div class="export-section">
+    <div class="section-label">生成的 Unity 注入参数</div>
+    <div class="code-preview" id="codeOut">
+# Unity 对应参数
+speed = 42.0
+gravity = 2.8
+length_scale = -0.45
+color = (1.0, 0.38, 0.08)
+burst = 60
+shape = "Cone_65"</div>
+    <button class="btn-export" id="btnCopy">📋 复制当前最佳参数配置</button>
+  </div>
+</div>
+
+<script>
+// Canvas & Simulation Engine
+const canvas = document.getElementById('sparkCanvas');
+const ctx = canvas.getContext('2d');
+
+let W, H, groundY;
+function resize() {
+  W = canvas.width = canvas.parentElement.clientWidth;
+  H = canvas.height = canvas.parentElement.clientHeight;
+  groundY = H * 0.78; // 模拟地面高度
+}
+window.addEventListener('resize', resize);
+resize();
+
+// 核心调控状态
+const config = {
+  speed: 42,
+  gravity: 2.8,
+  shape: 'cone', // 'cone', 'wide_cone', 'sphere'
+  coneAngle: 65,
+  lengthScale: -0.45,
+  count: 60,
+  color: { hex: '#ff5511', r: 1.0, g: 0.38, b: 0.08 },
+  lifetime: 0.8
+};
+
+// 预设集
+const PRESETS = {
+  forge_ios: {
+    speed: 42,
+    gravity: 2.8,
+    shape: 'cone',
+    coneAngle: 65,
+    lengthScale: -0.45,
+    count: 65,
+    color: { hex: '#ff5511', r: 1.0, g: 0.38, b: 0.08 }
+  },
+  grind_gold: {
+    speed: 55,
+    gravity: 2.2,
+    shape: 'cone',
+    coneAngle: 75,
+    lengthScale: -0.75,
+    count: 80,
+    color: { hex: '#ffaa00', r: 1.0, g: 0.67, b: 0.10 }
+  },
+  heavy_lava: {
+    speed: 48,
+    gravity: 3.8,
+    shape: 'cone',
+    coneAngle: 50,
+    lengthScale: -0.55,
+    count: 90,
+    color: { hex: '#ff3300', r: 1.0, g: 0.20, b: 0.02 }
+  },
+  old_redeco: {
+    speed: 180,
+    gravity: 0.2,
+    shape: 'sphere',
+    coneAngle: 180,
+    lengthScale: -2.2,
+    count: 140,
+    color: { hex: '#ffe49e', r: 0.95, g: 0.84, b: 0.55 }
+  }
+};
+
+class Particle {
+  constructor(x, y, vx, vy, life, color, size, lengthScale) {
+    this.x = x;
+    this.y = y;
+    this.vx = vx;
+    this.vy = vy;
+    this.maxLife = life;
+    this.life = life;
+    this.color = color;
+    this.size = size;
+    this.lengthScale = lengthScale;
+    this.bounced = 0;
+  }
+
+  update(dt, g) {
+    this.life -= dt;
+    if (this.life <= 0) return false;
+
+    // 重力下坠
+    this.vy += g * 9.8 * 8.0 * dt;
+
+    // 空气阻力
+    this.vx *= Math.pow(0.96, dt * 60);
+    this.vy *= Math.pow(0.97, dt * 60);
+
+    this.x += this.vx * dt * 10;
+    this.y += this.vy * dt * 10;
+
+    // 地面反弹判定
+    if (this.y >= groundY) {
+      this.y = groundY;
+      this.vy = -this.vy * 0.35; // 弹力衰减
+      this.vx *= 0.6; // 地面摩擦
+      this.bounced++;
+    }
+
+    return true;
+  }
+
+  draw(ctx) {
+    const alpha = Math.max(0, this.life / this.maxLife);
+    const speed = Math.hypot(this.vx, this.vy);
+
+    ctx.save();
+    ctx.translate(this.x, this.y);
+
+    // 计算运动方向
+    const angle = Math.atan2(this.vy, this.vx);
+    ctx.rotate(angle);
+
+    // Stretched Billboard 拉伸长度计算
+    const stretch = 1.0 + Math.abs(this.lengthScale) * speed * 0.8;
+    const pW = this.size * stretch;
+    const pH = this.size;
+
+    // 核心光亮
+    ctx.globalCompositeOperation = 'lighter';
+
+    // 外围炽热辉光
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = this.color.hex;
+
+    // 渐变火花条 (从白热中心过渡到熔铁深橙红，尾部消隐)
+    const grad = ctx.createLinearGradient(-pW, 0, pW, 0);
+    grad.addColorStop(0, 'rgba(255,255,255,0)');
+    grad.addColorStop(0.5, `rgba(255, 255, 230, ${alpha})`);
+    grad.addColorStop(0.85, `rgba(${Math.round(this.color.r * 255)}, ${Math.round(this.color.g * 255)}, ${Math.round(this.color.b * 255)}, ${alpha})`);
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, pW, pH, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+  }
+}
+
+// 粒子池
+let particles = [];
+
+// 产生受击火花爆发
+function spawnHit(x, y, scale = 1.0, dirSign = 1) {
+  const count = Math.round(config.count * scale);
+  const baseSpeed = config.speed * scale;
+
+  for (let i = 0; i < count; i++) {
+    let angleRad, spd;
+
+    if (config.shape === 'sphere') {
+      // 360° 全向球体爆散
+      angleRad = Math.random() * Math.PI * 2;
+      spd = baseSpeed * (0.6 + Math.random() * 0.8);
+    } else {
+      // 锥形定向喷发 (向前方与斜上)
+      const halfCone = (config.shape === 'wide_cone' ? 85 : config.coneAngle) * (Math.PI / 180) / 2;
+      // 中心主偏角朝前偏上 15°
+      const centerAngle = (dirSign > 0 ? 0 : Math.PI) - (15 * Math.PI / 180);
+      angleRad = centerAngle + (Math.random() - 0.5) * halfCone * 2;
+      spd = baseSpeed * (0.4 + Math.random() * 0.9);
+    }
+
+    const vx = Math.cos(angleRad) * spd;
+    const vy = Math.sin(angleRad) * spd;
+
+    const life = config.lifetime * (0.6 + Math.random() * 0.6);
+    const size = (1.5 + Math.random() * 2.0) * (scale > 1.2 ? 1.3 : 1.0);
+
+    particles.push(new Particle(x, y, vx, vy, life, config.color, size, config.lengthScale));
+  }
+}
+
+// 绘制地平线与背景环境
+function drawEnvironment(ctx) {
+  // 地面网格暗线
+  ctx.save();
+  ctx.strokeStyle = '#182436';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(0, groundY);
+  ctx.lineTo(W, groundY);
+  ctx.stroke();
+
+  // 受击点靶心虚影
+  const targetX = W * 0.45;
+  const targetY = groundY - 140;
+
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath();
+  ctx.arc(targetX, targetY, 40, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // 地面轻微高光倒影反射
+  const gGrad = ctx.createLinearGradient(0, groundY, 0, groundY + 80);
+  gGrad.addColorStop(0, 'rgba(255, 100, 20, 0.08)');
+  gGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+  ctx.fillStyle = gGrad;
+  ctx.fillRect(0, groundY, W, 80);
+
+  ctx.restore();
+}
+
+// 主渲染物理循环
+let lastTime = performance.now();
+function loop(now) {
+  const dt = Math.min((now - lastTime) / 1000, 0.05);
+  lastTime = now;
+
+  ctx.clearRect(0, 0, W, H);
+  drawEnvironment(ctx);
+
+  // 更新并绘制所有火花粒子
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    if (!p.update(dt, config.gravity)) {
+      particles.splice(i, 1);
+    } else {
+      p.draw(ctx);
+    }
+  }
+
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+// 默认中心靶位击打
+function hitCenter(scale = 1.0, dirSign = 1) {
+  const targetX = W * 0.45;
+  const targetY = groundY - 140;
+  spawnHit(targetX, targetY, scale, dirSign);
+}
+
+// 鼠标交互触发
+canvas.addEventListener('pointerdown', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  spawnHit(x, y, 1.0);
+});
+
+// 快捷键空格
+window.addEventListener('keydown', (e) => {
+  if (e.code === 'Space') {
+    e.preventDefault();
+    hitCenter(1.0);
+  }
+});
+
+// 底部按钮绑定
+document.getElementById('btnLight').addEventListener('click', () => hitCenter(0.85));
+document.getElementById('btnMedium').addEventListener('click', () => hitCenter(1.2));
+document.getElementById('btnHeavy').addEventListener('click', () => hitCenter(1.8));
+
+// 连招模拟
+document.getElementById('btnCombo').addEventListener('click', () => {
+  hitCenter(0.8, 1);
+  setTimeout(() => hitCenter(0.9, -1), 220);
+  setTimeout(() => hitCenter(1.1, 1), 460);
+  setTimeout(() => hitCenter(1.8, 1), 750);
+});
+
+// UI 与配置同步
+function updateCodePreview() {
+  const code = `# 《百炼为战》受击火花最佳调校参数
+SPARK_CONFIG = {
+    "startSpeed": ${config.speed.toFixed(1)},
+    "gravityModifier": ${config.gravity.toFixed(1)},
+    "m_RenderMode": 1,  # Stretched Billboard
+    "m_LengthScale": ${config.lengthScale.toFixed(2)},
+    "m_VelocityScale": -0.02,
+    "burstCount": ${config.count},
+    "shape": "${config.shape}",  # cone / wide_cone / sphere
+    "emissiveColor": (${config.color.r.toFixed(3)}, ${config.color.g.toFixed(3)}, ${config.color.b.toFixed(3)})
+}`;
+  document.getElementById('codeOut').textContent = code;
+}
+
+// 滑块监听
+const slSpeed = document.getElementById('slSpeed');
+const valSpeed = document.getElementById('valSpeed');
+slSpeed.addEventListener('input', () => {
+  config.speed = parseFloat(slSpeed.value);
+  valSpeed.textContent = config.speed;
+  updateCodePreview();
+  hitCenter(0.9);
+});
+
+const slGravity = document.getElementById('slGravity');
+const valGravity = document.getElementById('valGravity');
+slGravity.addEventListener('input', () => {
+  config.gravity = parseFloat(slGravity.value);
+  valGravity.textContent = config.gravity.toFixed(1);
+  updateCodePreview();
+  hitCenter(0.9);
+});
+
+const slLength = document.getElementById('slLength');
+const valLength = document.getElementById('valLength');
+slLength.addEventListener('input', () => {
+  config.lengthScale = parseFloat(slLength.value);
+  valLength.textContent = config.lengthScale.toFixed(2);
+  updateCodePreview();
+  hitCenter(0.9);
+});
+
+const slCount = document.getElementById('slCount');
+const valCount = document.getElementById('valCount');
+slCount.addEventListener('input', () => {
+  config.count = parseInt(slCount.value);
+  valCount.textContent = config.count;
+  updateCodePreview();
+});
+
+// 发射形状
+const segShape = document.getElementById('segShape');
+const valShape = document.getElementById('valShape');
+segShape.querySelectorAll('.seg-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    segShape.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    config.shape = btn.dataset.shape;
+    valShape.textContent = btn.textContent;
+    updateCodePreview();
+    hitCenter(1.0);
+  });
+});
+
+// 颜色拾取
+const colorPicker = document.getElementById('colorPicker');
+const valColorHex = document.getElementById('valColorHex');
+colorPicker.querySelectorAll('.color-dot').forEach(dot => {
+  dot.addEventListener('click', () => {
+    colorPicker.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+    dot.classList.add('active');
+    config.color = {
+      hex: dot.dataset.color,
+      r: parseFloat(dot.dataset.r),
+      g: parseFloat(dot.dataset.g),
+      b: parseFloat(dot.dataset.b)
+    };
+    valColorHex.textContent = `${dot.dataset.color.toUpperCase()} (${dot.title.split(' ')[0]})`;
+    updateCodePreview();
+    hitCenter(1.0);
+  });
+});
+
+// 预设选择
+document.querySelectorAll('.preset-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('active'));
+    card.classList.add('active');
+    const p = PRESETS[card.dataset.preset];
+    if (!p) return;
+
+    // 同步到 config
+    config.speed = p.speed;
+    config.gravity = p.gravity;
+    config.shape = p.shape;
+    config.lengthScale = p.lengthScale;
+    config.count = p.count;
+    config.color = { ...p.color };
+
+    // 同步到 UI 控件
+    slSpeed.value = p.speed; valSpeed.textContent = p.speed;
+    slGravity.value = p.gravity; valGravity.textContent = p.gravity.toFixed(1);
+    slLength.value = p.lengthScale; valLength.textContent = p.lengthScale.toFixed(2);
+    slCount.value = p.count; valCount.textContent = p.count;
+
+    segShape.querySelectorAll('.seg-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.shape === p.shape);
+    });
+    valShape.textContent = segShape.querySelector('.seg-btn.active').textContent;
+
+    colorPicker.querySelectorAll('.color-dot').forEach(d => {
+      d.classList.toggle('active', d.dataset.color.toLowerCase() === p.color.hex.toLowerCase());
+    });
+    valColorHex.textContent = p.color.hex.toUpperCase();
+
+    updateCodePreview();
+    hitCenter(1.2);
+  });
+});
+
+// 复制按钮
+document.getElementById('btnCopy').addEventListener('click', () => {
+  const code = document.getElementById('codeOut').textContent;
+  navigator.clipboard.writeText(code).then(() => {
+    const btn = document.getElementById('btnCopy');
+    btn.textContent = '✅ 已成功复制到剪贴板！';
+    setTimeout(() => { btn.textContent = '📋 复制当前最佳参数配置'; }, 1800);
+  });
+});
+
+// 初始更新
+updateCodePreview();
+// 页面打开时自动演示一次 iOS 熔铁火花
+setTimeout(() => hitCenter(1.2), 300);
+
+</script>
+</body>
+</html>

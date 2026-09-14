@@ -3,6 +3,7 @@ import sys
 import shlex
 import subprocess
 import threading
+from datetime import datetime
 from pathlib import Path
 
 # Automatically append toolchain adb path if available
@@ -19,15 +20,16 @@ class ApkInstallerApp:
 
     def __init__(self, root):
         self.root = root
-        self.root.title("ADB APK 安装工具")
-        self.root.geometry("620x520")
-        self.root.minsize(500, 400)
+        self.root.title("ADB APK 安装与截图工具")
+        self.root.geometry("640x580")
+        self.root.minsize(520, 450)
 
         # 变量绑定
         self.selected_device = tk.StringVar()
         self.apk_path = tk.StringVar()
         # 注意：adb 官方参数为 --no-incremental（此处做成可编辑输入框，默认填入）
         self.install_args = tk.StringVar(value="-r --no-incremental")
+        self.screenshot_filename = tk.StringVar(value="")
 
         self._create_widgets()
         self.refresh_devices()
@@ -77,7 +79,37 @@ class ApkInstallerApp:
         )
         self.btn_install.pack(fill="x", padx=10, pady=5)
 
-        # 5. 日志输出区域
+        # 5. 设备截图区域
+        shot_frame = ttk.LabelFrame(self.root, text="设备截图", padding=10)
+        shot_frame.pack(fill="x", padx=10, pady=5)
+
+        row_shot = ttk.Frame(shot_frame)
+        row_shot.pack(fill="x", expand=True)
+
+        ttk.Label(row_shot, text="自定义文件名:").pack(side="left", padx=5)
+        self.entry_screenshot = ttk.Entry(
+            row_shot, textvariable=self.screenshot_filename
+        )
+        self.entry_screenshot.pack(side="left", fill="x", expand=True, padx=5)
+
+        self.btn_screenshot = ttk.Button(
+            row_shot, text="📸 获取截图", command=self.start_screenshot_thread
+        )
+        self.btn_screenshot.pack(side="right", padx=5)
+
+        self.btn_open_dir = ttk.Button(
+            row_shot, text="📂 打开目录", command=self.open_screenshot_dir
+        )
+        self.btn_open_dir.pack(side="right", padx=5)
+
+        ttk.Label(
+            shot_frame,
+            text="* 留空默认文件名: screenshot_YYYYMMDD_HHMMSS.png；若存在同名文件将默认直接覆盖",
+            font=("TkDefaultFont", 8),
+            foreground="gray",
+        ).pack(anchor="w", padx=5, pady=(4, 0))
+
+        # 6. 日志输出区域
         log_frame = ttk.LabelFrame(self.root, text="执行日志", padding=5)
         log_frame.pack(fill="both", expand=True, padx=10, pady=5)
 
@@ -208,6 +240,157 @@ class ApkInstallerApp:
             self.btn_install.config(state="normal")
             self.btn_refresh.config(state="normal")
 
+    def get_screenshot_target_path(self) -> Path:
+        """根据输入框计算最终截图保存路径，默认同名覆盖"""
+        base_dir = Path(__file__).resolve().parent / "screenshots"
+        custom_name = self.screenshot_filename.get().strip()
+
+        if custom_name:
+            if not custom_name.lower().endswith(".png"):
+                custom_name += ".png"
+            p = Path(custom_name)
+            if p.is_absolute() or len(p.parts) > 1:
+                return p
+            return base_dir / custom_name
+        else:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            return base_dir / f"screenshot_{timestamp}.png"
+
+    def start_screenshot_thread(self):
+        """启动后台线程进行截图，防止界面无响应"""
+        device_id = self.get_clean_device_id()
+        if not device_id:
+            messagebox.showwarning("警告", "请先选择一个有效的已连接设备！")
+            return
+
+        self.btn_screenshot.config(state="disabled")
+        self.btn_refresh.config(state="disabled")
+
+        thread = threading.Thread(
+            target=self._screenshot_worker, args=(device_id,)
+        )
+        thread.daemon = True
+        thread.start()
+
+    def _screenshot_worker(self, device_id):
+        try:
+            target_file = self.get_screenshot_target_path()
+            self.log("=" * 50)
+            self.log(f"📸 正在从设备 {device_id} 获取屏幕截图...")
+            self.log(f"目标保存路径: {target_file.resolve()}")
+
+            success, msg = capture_device_screenshot(device_id, target_file)
+            if success:
+                size_kb = target_file.stat().st_size / 1024
+                self.log(f"🎉 截图成功！文件大小: {size_kb:.1f} KB")
+                self.log(f"保存路径: {target_file.resolve()}")
+                messagebox.showinfo(
+                    "截图成功",
+                    f"屏幕截图已保存至:\n{target_file.resolve()}\n大小: {size_kb:.1f} KB",
+                )
+            else:
+                self.log(f"❌ {msg}")
+                messagebox.showerror("截图失败", f"截图执行失败！\n\n{msg}")
+
+        except Exception as e:
+            self.log(f"[异常] 截图过程中发生错误: {str(e)}")
+            messagebox.showerror("异常", f"截图异常: {str(e)}")
+        finally:
+            self.btn_screenshot.config(state="normal")
+            self.btn_refresh.config(state="normal")
+
+    def open_screenshot_dir(self):
+        """打开截图存放目录"""
+        target_dir = (Path(__file__).resolve().parent / "screenshots").resolve()
+        target_dir.mkdir(parents=True, exist_ok=True)
+        try:
+            os.startfile(str(target_dir))
+            self.log(f"[提示] 已在文件资源管理器中打开截图目录: {target_dir}")
+        except Exception as e:
+            self.log(f"[提示] 截图目录为: {target_dir} ({e})")
+
+
+def capture_device_screenshot(device_id: str, output_file: Path) -> tuple[bool, str]:
+    """
+    通过 ADB 从设备截取当前屏幕并保存到本地 output_file（默认同名覆盖）。
+    优先采用高效二进制流 (exec-out screencap -p)，若失败则自动回退至 (shell screencap -> pull -> rm)。
+    """
+    output_file = Path(output_file).resolve()
+    output_file.parent.mkdir(parents=True, exist_ok=True)
+
+    # 1. 优先尝试 exec-out screencap -p (秒级快速抓取)
+    try:
+        cmd = ["adb", "-s", device_id, "exec-out", "screencap", "-p"]
+        res = subprocess.run(cmd, capture_output=True, timeout=12)
+        if res.returncode == 0 and res.stdout.startswith(b"\x89PNG\r\n\x1a\n"):
+            output_file.write_bytes(res.stdout)
+            return True, f"截图已保存至: {output_file}"
+    except Exception:
+        pass
+
+    # 2. 回退机制: 通过设备临时存储转存并 pull
+    try:
+        remote_tmp = "/data/local/tmp/tftf_screencap.png"
+        subprocess.run(
+            ["adb", "-s", device_id, "shell", "screencap", "-p", remote_tmp],
+            check=True,
+            timeout=12,
+        )
+        subprocess.run(
+            ["adb", "-s", device_id, "pull", remote_tmp, str(output_file)],
+            check=True,
+            timeout=12,
+        )
+        subprocess.run(
+            ["adb", "-s", device_id, "shell", "rm", "-f", remote_tmp],
+            timeout=5,
+        )
+        if output_file.exists() and output_file.stat().st_size > 0:
+            return True, f"截图已保存至: {output_file}"
+        return False, "未能从设备拉取到有效截图文件"
+    except Exception as e:
+        return False, f"ADB 截图执行失败: {e}"
+
+
+def run_cli_screenshot(custom_name: str = "", out_dir: str = "screenshots"):
+    print("=== [Automated ADB Screencap] ===")
+    res = subprocess.run(["adb", "devices"], capture_output=True, text=True)
+    devices = []
+    for line in res.stdout.splitlines()[1:]:
+        parts = line.strip().split()
+        if len(parts) >= 2 and parts[1] == "device":
+            devices.append(parts[0])
+    if not devices:
+        print(
+            "[ERROR] No online ADB device detected! Please connect your phone with USB debugging enabled."
+        )
+        sys.exit(1)
+
+    device = devices[0]
+    base_dir = Path(out_dir).resolve()
+    base_dir.mkdir(parents=True, exist_ok=True)
+
+    if custom_name.strip():
+        fname = custom_name.strip()
+        if not fname.lower().endswith(".png"):
+            fname += ".png"
+        p = Path(fname)
+        target_path = (
+            p if p.is_absolute() or len(p.parts) > 1 else base_dir / fname
+        )
+    else:
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        target_path = base_dir / f"screenshot_{timestamp}.png"
+
+    print(f"[*] Target device: {device}")
+    print(f"[*] Capturing to: {target_path}")
+    ok, msg = capture_device_screenshot(device, target_path)
+    if ok:
+        print(f"[SUCCESS] {msg} ({target_path.stat().st_size / 1024:.1f} KB)")
+    else:
+        print(f"[ERROR] {msg}")
+        sys.exit(1)
+
 
 def run_cli_install(apk_path: str):
     print(f"=== [Automated ADB Installer] Target APK: {apk_path} ===")
@@ -219,14 +402,18 @@ def run_cli_install(apk_path: str):
         if len(parts) >= 2 and parts[1] == "device":
             devices.append(parts[0])
     if not devices:
-        print("[ERROR] No online ADB device detected! Please connect your phone with USB debugging enabled.")
+        print(
+            "[ERROR] No online ADB device detected! Please connect your phone with USB debugging enabled."
+        )
         sys.exit(1)
-    
+
     device = devices[0]
     print(f"[*] Detected device: {device}")
     cmd = ["adb", "-s", device, "install", "-r", "--no-incremental", apk_path]
     print(f"[*] Running: {' '.join(cmd)}")
-    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+    proc = subprocess.Popen(
+        cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True
+    )
     for line in proc.stdout:
         print(line.rstrip())
     proc.wait()
@@ -239,18 +426,46 @@ def run_cli_install(apk_path: str):
 
 if __name__ == "__main__":
     import argparse
-    parser = argparse.ArgumentParser(description="ADB APK 安装工具")
-    parser.add_argument("--apk", type=str, help="APK 路径（若指定且带 --auto 则直接安装）")
-    parser.add_argument("--auto", action="store_true", help="命令行自动安装模式，不启动图形界面")
+
+    parser = argparse.ArgumentParser(description="ADB APK 安装与截图工具")
+    parser.add_argument(
+        "--apk", type=str, help="APK 路径（若指定且带 --auto 则直接安装）"
+    )
+    parser.add_argument(
+        "--auto", action="store_true", help="命令行自动安装模式，不启动图形界面"
+    )
+    parser.add_argument(
+        "--screenshot",
+        action="store_true",
+        help="从已连接设备截取屏幕保存到本地（默认同名覆盖）",
+    )
+    parser.add_argument(
+        "--name",
+        type=str,
+        default="",
+        help="截图文件名（可选，默认带时间戳变量）",
+    )
+    parser.add_argument(
+        "--out-dir",
+        type=str,
+        default="screenshots",
+        help="截图保存目录（默认 screenshots）",
+    )
     args = parser.parse_args()
 
-    if args.auto:
+    if args.screenshot:
+        run_cli_screenshot(custom_name=args.name, out_dir=args.out_dir)
+    elif args.auto:
         target_apk = args.apk
         if not target_apk:
             # Default to latest build apk
             build_apks = list(Path("build").glob("*.apk"))
             if build_apks:
-                target_apk = str(sorted(build_apks, key=lambda p: p.stat().st_mtime, reverse=True)[0])
+                target_apk = str(
+                    sorted(
+                        build_apks, key=lambda p: p.stat().st_mtime, reverse=True
+                    )[0]
+                )
         if not target_apk or not Path(target_apk).exists():
             print(f"[ERROR] APK not found: {target_apk}")
             sys.exit(1)

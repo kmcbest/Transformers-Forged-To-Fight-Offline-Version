@@ -4589,9 +4589,14 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
     PROTECT({
         if (obj_ok(self) && *(int32_t*)((uintptr_t)self + 0xF4) == 0) {
             g_p0_controller = self;
+            if (action == 2) {
+                // Action 2 = Swipe back / Dodge: immediately reset attack chain for P0
+                flog("PLAYER_ACTION dodge action=2 on p0 pc=%p -> reset attack chain", self);
+                reset_player_attack_chain(self);
+            }
         }
     });
-    if (action >= 4 && action <= 10) {
+    if (action >= 2 && action <= 10) {
         flog("PLAYER_ACTION action=%d on controller=%p (p0=%p, is_p0=%d)",
              action, self, g_p0_controller, (self == g_p0_controller));
     }
@@ -4901,11 +4906,14 @@ void* hook_164(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
 }
 
 void* hook_165(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
-    void* pc = fld_p(a0, 0x18);
     void* r = H[165].orig(a0, a1, a2, a3, a4, a5, a6, a7);
     PROTECT({
+        void* pc = fld_p(a0, 0x18);
+        flog("DODGE_ENTER (0x117E4AC) a0=%p, pc=%p, g_p0=%p", a0, pc, g_p0_controller);
         if (obj_ok(pc)) {
             reset_player_attack_chain(pc);
+        } else if (obj_ok(g_p0_controller)) {
+            reset_player_attack_chain(g_p0_controller);
         }
     });
     return r;
@@ -4920,11 +4928,14 @@ void* hook_166(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
 }
 
 void* hook_167(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
-    void* pc = fld_p(a0, 0x18);
     void* r = H[167].orig(a0, a1, a2, a3, a4, a5, a6, a7);
     PROTECT({
+        void* pc = fld_p(a0, 0x18);
+        flog("HEAVYEXIT (0x11828E0) a0=%p, pc=%p, g_p0=%p", a0, pc, g_p0_controller);
         if (obj_ok(pc)) {
             reset_player_attack_chain(pc);
+        } else if (obj_ok(g_p0_controller)) {
+            reset_player_attack_chain(g_p0_controller);
         }
     });
     return r;

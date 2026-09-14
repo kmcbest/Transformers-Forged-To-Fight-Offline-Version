@@ -233,3 +233,56 @@ Every character, mod, and relic requires 3 portrait formats:
 python INSTALL-ADB.py
 ```
 
+---
+
+## 12. Netflix 独占金刚招式库继承与覆盖陷阱 (Chromia & Dead End MoveSet Inheritance Trap)
+
+### 12.1 现象与隐蔽 Bug
+* **现象**：新构建的 APK 中，克劳莉娅（Chromia）和封锁（Dead End）的普攻/重击/必杀动作失效或动作姿态异常，部分专属招式打不出判定或丢失特效。
+* **排查发现**：打包进 APK 的 `moves.assetbundle` 招式总数由正常的 **945 条** 异常缩水为 **923 条**。
+
+### 12.2 根本原因
+1. **历史版本差异**：原版 Kabam 9.2.0 基础 APK 中尚未实装克劳莉娅（12 条招式）和封锁（8 条招式）。这 20 条官方动作资产仅存在于后续 Netflix 版本中，通过 `tools/extract_netflix_assets.py` 转码提取到了 `assets_netflix/moves.assetbundle`（共 943 条招式）。
+2. **复合新角色依赖**：自制金刚回春手（Lifeline）的专属 S1/S2 必杀招式（`move_lifeline_special_01` 与 `02`）亦需缝合注入该动作库（合计 945 条）。
+3. **重涂工具覆盖陷阱**：
+   在编写打击火花物理调校（`apply_spark_tuning.py`）或动作事件修复脚本时，若直接从 Kabam 基础 APK (`APK_PATH`) 中提取并重新覆写 `assets_redeco/moves.assetbundle`，由于 `Server/build_phone_apk.py` 会优先采纳 `assets_redeco/` 下的同名 Bundle，该缩水后的 923 条文件将无情覆盖 APK 打包流，导致克劳莉娅、封锁与回春手的动作库被全量清空剔除。
+
+### 12.3 规范与铁律
+* **铁律 1（底包锁定）**：所有对 `moves.assetbundle` 的解包、修改或保存工具，**底包数据源必须且只能使用 `assets_netflix/moves.assetbundle`**，严禁以 Kabam 原始 APK 作为底包！
+* **铁律 2（动作全量保留与断言）**：凡导出 `assets_redeco/moves.assetbundle`，必须包含以下基准校验，数量不足直接中断抛错：
+  ```python
+  assert len(chromia_moves) >= 12, "Chromia moves missing!"
+  assert len(deadend_moves) >= 8,   "DeadEnd moves missing!"
+  assert len(lifeline_moves) >= 2,  "Lifeline moves missing!"
+  assert total_moves >= 945,        "moves.assetbundle truncated!"
+  ```
+
+---
+
+## 13. 战斗连击状态机重置与后撤输入防御 (Combat Combo Attack Chain & Dodge Reset Trap)
+
+### 13.1 现象与手感退化
+* **现象**：打完一套连击或突进后，玩家向后滑屏后撤（Dodge），再点击屏幕（Tap）攻击时，未能从 L1 起手，而是直接打出 L4 或非法动作；连击槽计数未被正确重置。
+* **排查复现**：在 commit `5c5bc2c` 中，为了解决 `hook_166` 重置导致封锁（Dead End）等角色 S2 必杀手雷状态机中断的问题，清理代码时误将 `hook_165`（`PlayerDodgeState.OnEnter`）中的 `else if (obj_ok(g_p0_controller)) reset_player_attack_chain(g_p0_controller);` 一并删去。
+
+### 13.2 根本原因
+1. **状态对象指针延迟**：在 `PlayerDodgeState.OnEnter`（`0x117E4AC`）执行起始，传入的 `a0` 对象的 `[a0, 0x18]` 指针在部分机型和状态转换瞬间可能未完成初始化或无法通过严格的指针校验。若移除了 `g_p0_controller` 兜底保护，将导致重置逻辑直接被跳过。
+2. **底层动作与状态机对应关系**：
+   在 `PlayerController.Action`（`0x1179AF4` / `hook_154`）的底层跳转表中：
+   * `action == 2`：底层精确对应滑屏后撤（`StateMachine.ChangeState(typeof(PlayerDodgeState))`）；
+   * `action == 4`：轻击输入（Tap）；
+   * `action == 8`：中击突进（Swipe Forward）。
+
+### 13.3 规范与双保险防御机制
+1. **输入层即时重置（Action 2 拦截）**：
+   在 `hook_154`（`PlayerController.Action`）中，一旦检测到本地玩家执行 `action == 2`（后撤动作），立即直接重置攻击链：
+   ```c
+   if (action == 2) {
+       reset_player_attack_chain(self);
+   }
+   ```
+2. **状态层兜底重置（DodgeEnter 拦截）**：
+   在 `hook_165`（`PlayerDodgeState.OnEnter`）中，保留 `g_p0_controller` 兜底检查，确保无论从哪个路径触发后撤，本地玩家的普攻索引（`_lightAttackIndex`、`_mediumAttackIndex`、`_rangedAttackIndex`）均被 100% 重置为 0。
+
+
+
