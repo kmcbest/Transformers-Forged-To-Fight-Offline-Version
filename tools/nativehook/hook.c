@@ -531,19 +531,19 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0xFEAFA0,  "HUD_PLAYER_INFO_INIT", 0, 0 }, // 152 HudPlayerInfo.Init
     { 0x1174300, "PCSPECIAL",          2, 0 }, // 153 PlayerController.SpecialAttack(int index)
     { 0x1179AF4, "PCACTION",           2, 0 }, // 154 PlayerController.Action(int action)
-    { 0xE33DB8,  "SPEXIT",             2, 0 }, // 155 PlayerSpecialAttackState.OnExit -> reset attack chain on special end (S1/S2)
-    { 0x1182764, "HEAVYENTER",         2, 0 }, // 156 PlayerNewHeavyAttackState.OnEnter -> reset attack chain on heavy attack
-    { 0x1180480, "HITREACT",           2, 0 }, // 157 PlayerHitReactState.OnEnter -> reset attack chain on being hit
-    { 0x1179938, "HITSTUN",            2, 0 }, // 158 PlayerController.ApplyHitStun -> reset attack chain on hit stun
-    { 0x117AB6C, "APPLYDMG",           2, 0 }, // 159 PlayerController.ApplyDamage -> reset attack chain on taking damage
-    { 0x1173B28, "BLOCKENTER",         2, 0 }, // 160 PlayerBlockState.OnEnter -> reset attack chain on entering block
+    { 0x0E34640, "SPEXIT",             2, 0 }, // 155 PlayerSpecialAttackState.OnExit -> reset attack chain on special end (S1/S2)
+    { 0,          "UNUSED_156",         0, 0 }, // 156 disabled (no-op pass-through)
+    { 0,          "UNUSED_157",         0, 0 }, // 157 disabled (0x11805C8 was only 8 bytes, clobbered 0x11805D0)
+    { 0,          "UNUSED_158",         0, 0 }, // 158 disabled (no-op pass-through)
+    { 0,          "UNUSED_159",         0, 0 }, // 159 disabled (no-op pass-through)
+    { 0x0D32A00, "BLOCKENTER",         2, 0 }, // 160 PlayerBlockState.OnEnter -> arm block timer
     { 0xC16688,  "GET_MAP_ASSET_ID",   2, 0 }, // 161 BCGBlueprintBase.get_MapAssetID -> resolve to real portrait resource name
     { 0x127F794, "LOCALIZE",           2, 0 }, // 162 Localization.Get
     { 0x11794A4, "ADDMANA",            2, 0 }, // 163 PlayerController.AddMana -> scale enemy mana gain dynamically
     { 0xC1F2B8,  "GET_TOP_HERO_ID",    2, 0 }, // 164 BCGHelper.GetTopHeroId -> squad leader avatar
-    { 0x117E5E0, "DODGEENTER",         2, 0 }, // 165 PlayerDodgeState.OnEnter -> reset attack chain on dodge (swipe back)
-    { 0x117ADC8, "COMBOWRAP",          2, 0 }, // 166 Combo Finisher Wrap (L4/M2 end) -> reset attack chain
-    { 0x11828E0, "HEAVYEXIT",          2, 0 }, // 167 PlayerNewHeavyAttackState.OnExit -> reset attack chain on heavy exit
+    { 0x0D34E6C, "DODGEENTER",         2, 0 }, // 165 PlayerDodgeState.OnEnter -> reset attack chain on dodge (swipe back)
+    { 0,          "UNUSED_166",         0, 0 }, // 166 disabled (no-op pass-through)
+    { 0x0E318E0, "HEAVYEXIT",          2, 0 }, // 167 PlayerNewHeavyAttackState.OnExit -> reset attack chain on heavy exit
     { 0x1173FA4, "PCGETSPTIER",        2, 0 }, // 168 PlayerController.GetAvailableSpecialTier -> dynamic special tier
     { 0xFF05C8,  "HUDSPBTN",           2, 0 }, // 169 HudSpecialMeter.OnSpecialButtonPressed -> gesture recognition
 };
@@ -564,8 +564,8 @@ static void* g_p0_controller = NULL;
 static void* g_p1_controller = NULL;
 static char g_p0_bot_id[80] = {0};
 static char g_p1_bot_id[80] = {0};
-static volatile int g_p0_is_blocking = 0;
 static volatile uint64_t g_p0_block_enter_ms = 0;
+static volatile int g_p0_block_reset_done = 0;
 
 #define SP3_MAX_INTERVALS 4
 typedef struct {
@@ -4467,8 +4467,8 @@ void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     g_p1_controller = NULL;
     g_intended_special_tier = 0;
     g_sp_touch_tracking = 0;
-    g_p0_is_blocking = 0;
     g_p0_block_enter_ms = 0;
+    g_p0_block_reset_done = 0;
     return H[140].orig(a0,a1,a2,a3,a4,a5,a6,a7);
 }
 void* hook_141(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
@@ -4624,9 +4624,10 @@ void* hook_145(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     PROTECT({
         sp3_beat_pump();
         give_p0_max_power();
-        if (g_p0_is_blocking && g_p0_controller) {
+        if (g_p0_block_enter_ms > 0 && !g_p0_block_reset_done && g_p0_controller) {
             uint64_t held = propgo_now_ms() - g_p0_block_enter_ms;
             if (held >= 200) {
+                g_p0_block_reset_done = 1;
                 flog("BLOCK_HELD: P0 held guard stance for %llu ms >= 200ms -> attack chain reset to L1", (unsigned long long)held);
                 reset_player_attack_chain(g_p0_controller);
             }
@@ -4721,11 +4722,10 @@ static void reset_player_attack_chain(void* pc) {
     int32_t p_idx = *(int32_t*)((uintptr_t)pc + 0xF4);
     if (p_idx != 0) return; // local player P0 only
     g_p0_controller = pc;
-    g_p0_is_blocking = 0;
     *(uint32_t*)((uintptr_t)pc + 0x1c0) = 0; // _lightAttackIndex = 0
     *(uint32_t*)((uintptr_t)pc + 0x1c4) = 0; // _mediumAttackIndex = 0
     *(uint32_t*)((uintptr_t)pc + 0x1c8) = 0; // _rangedAttackIndex = 0
-    flog("RESET_ATTACK_CHAIN on p0 pc=%p", pc);
+    flog("RESET_ATTACK_CHAIN on p0 pc=%p (caller=%p)", pc, __builtin_return_address(0));
 }
 
 void* hook_153(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7){
@@ -4735,9 +4735,6 @@ void* hook_153(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
     if (self == g_p0_controller) {
         g_intended_special_tier = 0;
     }
-    PROTECT({
-        reset_player_attack_chain(self);
-    });
     void* r = H[153].orig(self, a1, a2, a3, a4, a5, a6, a7);
     PROTECT({
         ensure_p0_power_rounding(self);
@@ -4750,29 +4747,20 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
         if (obj_ok(self) && *(int32_t*)((uintptr_t)self + 0xF4) == 0) {
             g_p0_controller = self;
             if (action == 2) {
-                // Action 2 = Swipe back / Dodge input: do NOT reset chain here!
-                // Real dodge resets via hook_165 (PlayerDodgeState.OnEnter) once the character actually hops backward.
-                // Prematurely resetting on input request here allowed tap-left infinite combo exploits.
-                if (g_p0_is_blocking) {
-                    uint64_t held = propgo_now_ms() - g_p0_block_enter_ms;
-                    g_p0_is_blocking = 0;
-                    flog("PLAYER_ACTION dodge action=2 during block: held %llu ms (< 200ms) -> chain NOT reset", (unsigned long long)held);
-                }
+                // Action 2 = Swipe back / Dodge input request.
+                // Attack chain is reset when the robot actually enters PlayerDodgeState (hook_165 @ 0x0D34E6C).
+                g_p0_block_enter_ms = 0;
+                g_p0_block_reset_done = 0;
             }
-            if (action == 0x80) {
-                // Action 0x80 = Release block: abort timer if released before 200ms
-                if (g_p0_is_blocking) {
+            if (action == 0x80 || action == 1 || action == 4 || action == 8 || action == 0x100) {
+                // Release block (0x80) or Attack/Dash/Heavy: abort block timer if released before 200ms
+                if (g_p0_block_enter_ms > 0) {
                     uint64_t held = propgo_now_ms() - g_p0_block_enter_ms;
-                    g_p0_is_blocking = 0;
-                    flog("PLAYER_ACTION release block (0x80): held %llu ms (< 200ms) -> chain NOT reset", (unsigned long long)held);
-                }
-            }
-            if (action == 1 || action == 4 || action == 8 || action == 0x100) {
-                // Action 1=Attack, 4=Dash, 8=Heavy, 0x100=Charge Heavy: cancel block tracking
-                if (g_p0_is_blocking) {
-                    uint64_t held = propgo_now_ms() - g_p0_block_enter_ms;
-                    g_p0_is_blocking = 0;
-                    flog("PLAYER_ACTION action=%d during block: held %llu ms (< 200ms) -> chain NOT reset", action, (unsigned long long)held);
+                    g_p0_block_enter_ms = 0;
+                    if (!g_p0_block_reset_done) {
+                        flog("PLAYER_ACTION action=%d: held block for %llu ms (< 200ms) -> tap ignored, attack chain NOT reset",
+                             action, (unsigned long long)held);
+                    }
                 }
             }
             if (action == 0x200) {
@@ -4795,7 +4783,8 @@ void* hook_155(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     void* pc = fld_p(a0, 0x18);
     void* r = H[155].orig(a0, a1, a2, a3, a4, a5, a6, a7);
     PROTECT({
-        if (obj_ok(pc)) {
+        if (obj_ok(pc) && *(int32_t*)((uintptr_t)pc + 0xF4) == 0) {
+            flog("SPECIAL_EXIT (0x0E34640) on P0: attack chain reset");
             reset_player_attack_chain(pc);
             ensure_p0_power_rounding(pc);
         }
@@ -4803,44 +4792,18 @@ void* hook_155(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     return r;
 }
 void* hook_156(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
-    void* pc = fld_p(a0, 0x18);
-    void* r = H[156].orig(a0, a1, a2, a3, a4, a5, a6, a7);
-    PROTECT({
-        if (obj_ok(pc)) {
-            reset_player_attack_chain(pc);
-        }
-    });
-    return r;
+    return H[156].orig ? H[156].orig(a0, a1, a2, a3, a4, a5, a6, a7) : NULL;
 }
 void* hook_157(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
-    void* pc = fld_p(a0, 0x18);
-    void* r = H[157].orig(a0, a1, a2, a3, a4, a5, a6, a7);
-    PROTECT({
-        if (obj_ok(pc)) {
-            reset_player_attack_chain(pc);
-        }
-    });
-    return r;
+    return H[157].orig ? H[157].orig(a0, a1, a2, a3, a4, a5, a6, a7) : NULL;
 }
 void* hook_158(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
-    void* r = H[158].orig(self, a1, a2, a3, a4, a5, a6, a7);
-    PROTECT({
-        if (obj_ok(self)) {
-            reset_player_attack_chain(self);
-        }
-    });
-    return r;
+    return H[158].orig ? H[158].orig(self, a1, a2, a3, a4, a5, a6, a7) : NULL;
 }
 typedef int (*fn_apply_damage)(void* self, float damage, void* mi);
 int hook_159(void* self, float damage, void* mi) {
     fn_apply_damage orig = (fn_apply_damage)H[159].orig;
-    int r = orig(self, damage, mi);
-    PROTECT({
-        if (obj_ok(self)) {
-            reset_player_attack_chain(self);
-        }
-    });
-    return r;
+    return orig ? orig(self, damage, mi) : 0;
 }
 void* hook_160(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     void* pc = fld_p(a0, 0x18);
@@ -4849,8 +4812,8 @@ void* hook_160(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
         if (obj_ok(pc) && *(int32_t*)((uintptr_t)pc + 0xF4) == 0) {
             g_p0_controller = pc;
             g_p0_block_enter_ms = propgo_now_ms();
-            g_p0_is_blocking = 1;
-            flog("BLOCK_ENTER: P0 started guarding at %llu ms (timer armed, hold 200ms required to reset chain)",
+            g_p0_block_reset_done = 0;
+            flog("BLOCK_ENTER (0x0D32A00): P0 started guarding at %llu ms (timer armed, hold >= 200ms required)",
                  (unsigned long long)g_p0_block_enter_ms);
         }
     });
@@ -5103,8 +5066,10 @@ void* hook_165(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     void* r = H[165].orig(a0, a1, a2, a3, a4, a5, a6, a7);
     PROTECT({
         void* pc = fld_p(a0, 0x18);
-        flog("DODGE_ENTER (0x117E5E0) a0=%p, pc=%p, g_p0=%p", a0, pc, g_p0_controller);
-        if (obj_ok(pc)) {
+        g_p0_block_enter_ms = 0;
+        g_p0_block_reset_done = 0;
+        if (obj_ok(pc) && *(int32_t*)((uintptr_t)pc + 0xF4) == 0) {
+            flog("DODGE_ENTER (0x0D34E6C) on P0: reset attack chain to allow shooting");
             reset_player_attack_chain(pc);
         } else if (obj_ok(g_p0_controller)) {
             reset_player_attack_chain(g_p0_controller);
@@ -5114,19 +5079,15 @@ void* hook_165(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
 }
 
 void* hook_166(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
-    // 0x117ADC8 was formerly hooked as COMBOWRAP, but it is actually a core state machine
-    // function that fires repeatedly during AI action selection and weapon/projectile events.
-    // Hooking or resetting attack chain here breaks projectile/special states (such as Dead End's S2 grenade).
-    // Bypass custom reset logic and pass through cleanly to original function.
-    return H[166].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    return H[166].orig ? H[166].orig(a0, a1, a2, a3, a4, a5, a6, a7) : NULL;
 }
 
 void* hook_167(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     void* r = H[167].orig(a0, a1, a2, a3, a4, a5, a6, a7);
     PROTECT({
         void* pc = fld_p(a0, 0x18);
-        flog("HEAVYEXIT (0x11828E0) a0=%p, pc=%p, g_p0=%p", a0, pc, g_p0_controller);
-        if (obj_ok(pc)) {
+        if (obj_ok(pc) && *(int32_t*)((uintptr_t)pc + 0xF4) == 0) {
+            flog("HEAVY_EXIT (0x0E318E0) on P0: reset attack chain");
             reset_player_attack_chain(pc);
         } else if (obj_ok(g_p0_controller)) {
             reset_player_attack_chain(g_p0_controller);
@@ -5334,9 +5295,10 @@ static void* installer(void* arg){
     if (!g_strnew) { void* h = dlopen("libil2cpp.so", RTLD_NOLOAD); if (h) g_strnew = (strnew_t)dlsym(h, "il2cpp_string_new"); }
     g_arraynew = (arraynew_t)dlsym(RTLD_DEFAULT, "il2cpp_array_new");
     if (!g_arraynew) { void* h = dlopen("libil2cpp.so", RTLD_NOLOAD); if (h) g_arraynew = (arraynew_t)dlsym(h, "il2cpp_array_new"); }
-    LOG("il2cpp_string_new=%p il2cpp_array_new=%p", (void*)g_strnew, (void*)g_arraynew);
-    for (int i = 0; i < NH; i++)
+    for (int i = 0; i < NH; i++) {
+        if (!H[i].rva) continue;
         inline_hook((void*)(g_base + H[i].rva), handlers[i], &H[i].orig);
+    }
     // FIXSYN (session 10): BCGBlueprintBase.get_SynergyBonuses (@0xC17198) throws
     // NullReferenceException when this._synergyBonuses (List<string> @0xE0) is null -- which it
     // ALWAYS is offline (the blueprint ctor never parses a synergy key). Adding a bot to the STORY
