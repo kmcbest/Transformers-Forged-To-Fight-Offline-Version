@@ -5132,7 +5132,7 @@ static void* installer(void* arg){
     poke32(0xC5D888, 0x52800361);   // mov w1, #8 -> mov w1, #0x1b
 
     // =========================================================================
-    // FPS & GRAPHICS ENHANCEMENT (Scheme A / UNLOCK_60FPS_AND_GRAPHICS_ENHANCEMENT_PLAN)
+    // FPS & GRAPHICS ENHANCEMENT (Complete iOS High-Tier Graphics & Battle Damage)
     // =========================================================================
     int target_fps = tftf_get_target_fps();
     LOG("Applying target_fps setting: %d", target_fps);
@@ -5152,54 +5152,85 @@ static void* installer(void* arg){
         poke32(0xDA6700, 0x14000009);   // b 0xDA6724 (_60NoVSync)
     }
 
-    // 3) PerformanceManager.CanDeviceRunGPUParticles (@0xDA7EE0): GPU Particles hardware gate
-    poke32(0xDA7EE0, 0x52800020);   // mov w0, #1
-    poke32(0xDA7EE4, 0xD65F03C0);   // ret
-
-    // 4) PerformanceManager.CanDeviceRunDestruction (@0xDA7E68): arena destruction FX hardware gate
-    poke32(0xDA7E68, 0x52800020);   // mov w0, #1
+    // 3) GPU Particles, MRT, RT & Scene Destruction (Hardware Capability Gates)
+    poke32(0xDA7E68, 0x52800020);   // CanDeviceRunGPUParticles (@0xDA7E68): mov w0, #1
     poke32(0xDA7E6C, 0xD65F03C0);   // ret
-
-    // 5) PerformanceManager.RemapGPUParticles (@0xDA7A20): force return true (1) -> bypass config check
-    poke32(0xDA7A20, 0x52800020);   // mov w0, #1
-    poke32(0xDA7A24, 0xD65F03C0);   // ret
-
-    // 6) PerformanceManager.RemapDestruction (@0xDA7A14): force return true (1) -> bypass config check
-    poke32(0xDA7A14, 0x52800020);   // mov w0, #1
+    poke32(0xDA7DF0, 0x52800020);   // CanDeviceRunDestruction (@0xDA7DF0): mov w0, #1
+    poke32(0xDA7DF4, 0xD65F03C0);   // ret
+    poke32(0xDA7EE0, 0x52800020);   // CanDeviceRenderToMRT (@0xDA7EE0): mov w0, #1
+    poke32(0xDA7EE4, 0xD65F03C0);   // ret
+    poke32(0xDA7FA8, 0x52800020);   // CanDeviceRenderToRT (@0xDA7FA8): mov w0, #1
+    poke32(0xDA7FAC, 0xD65F03C0);   // ret
+    poke32(0xDA7FC0, 0x52800020);   // RemapCanRenderToRT (@0xDA7FC0): mov w0, #1
+    poke32(0xDA7FC4, 0xD65F03C0);   // ret
+    poke32(0xDA7A08, 0x52800020);   // RemapDestruction (@0xDA7A08): mov w0, #1
+    poke32(0xDA7A0C, 0xD65F03C0);   // ret
+    poke32(0xDA7A14, 0x52800020);   // RemapGPUParticles (@0xDA7A14): mov w0, #1
     poke32(0xDA7A18, 0xD65F03C0);   // ret
 
-    // 7) PerformanceManager.RemapParticleQuality (@0xDA74F0): force High (2)
-    poke32(0xDA74F0, 0x52800040);   // mov w0, #2
+    // 4) Particle, Trail & Flare Quality (Force High = 2)
+    poke32(0xDA7230, 0x52800040);   // RemapParticleQuality (@0xDA7230): mov w0, #2
+    poke32(0xDA7234, 0xD65F03C0);   // ret
+    poke32(0xDA74F0, 0x52800040);   // GetParticlePalQuality (@0xDA74F0): mov w0, #2
     poke32(0xDA74F4, 0xD65F03C0);   // ret
-
-    // 8) PerformanceManager.GetParticlePalQuality (@0xDA758C): force High (2)
-    poke32(0xDA758C, 0x52800040);   // mov w0, #2
-    poke32(0xDA7590, 0xD65F03C0);   // ret
-
-    // 9) PerformanceManager.RemapTrailQuality (@0xDA7628): force High (2)
-    poke32(0xDA7628, 0x52800040);   // mov w0, #2
+    poke32(0xDA7240, 0x52800040);   // RemapTrailQuality (@0xDA7240): mov w0, #2
+    poke32(0xDA7244, 0xD65F03C0);   // ret
+    poke32(0xDA7628, 0x52800040);   // GetTrailQuality (@0xDA7628): mov w0, #2
     poke32(0xDA762C, 0xD65F03C0);   // ret
+    poke32(0xDA7254, 0x52800040);   // RemapLensFlareQuality (@0xDA7254): mov w0, #2
+    poke32(0xDA7258, 0xD65F03C0);   // ret
 
-    // 10) PerformanceManager.GetTrailQuality (@0xDA76C4): force High (2)
-    poke32(0xDA76C4, 0x52800040);   // mov w0, #2
-    poke32(0xDA76C8, 0xD65F03C0);   // ret
+    // 5) Contact Shadows & Realtime Shadows (iOS High Quality)
+    poke32(0xDA7264, 0x52800020);   // RemapContactShadowQuality (@0xDA7264): mov w0, #1 (High)
+    poke32(0xDA7268, 0xD65F03C0);   // ret
+    poke32(0xDA79D0, 0x52800060);   // RemapShadowQuality (@0xDA79D0): mov w0, #3 (High)
+    poke32(0xDA79D4, 0xD65F03C0);   // ret
+    poke32(0xDA79DC, 0x52800040);   // RemapShadowCount (@0xDA79DC): mov w0, #2 (2 casters)
+    poke32(0xDA79E0, 0xD65F03C0);   // ret
+    poke32(0xDA79F4, 0x52800020);   // RemapShadowUpdate (@0xDA79F4): mov w0, #1 (Every frame)
+    poke32(0xDA79F8, 0xD65F03C0);   // ret
 
-    // 11) PerformanceManager.IsLowMemoryDevice (@0xDA7CA4): force false (0) -> disable memory throttle
-    poke32(0xDA7CA4, 0x2A1F03E0);   // mov w0, wzr
+    // 6) PostFX, Bloom & Tone Mapping (iOS High Quality)
+    poke32(0xDA7840, 0x52800020);   // RemapPostFXQuality (@0xDA7840): mov w0, #1 (High)
+    poke32(0xDA7844, 0xD65F03C0);   // ret
+    // In LoadPostFXConfig (@0xDA8048): bypass throttle disable (0xDA8154) and force PostFX Quality = 2 (0xDA8170-0xDA8174)
+    poke32(0xDA8154, 0x14000004);   // b 0xDA8164 (bypass w9 = -1 disable branch)
+    poke32(0xDA8170, 0x52800049);   // mov w9, #2 (force PostFX Quality = 2: Bloom + ToneMapping + ColorGrading)
+    poke32(0xDA8174, 0x14000003);   // b 0xDA8180
+
+    // 7) Planar Reflections & MSAA Anti-Aliasing (iOS High Quality)
+    poke32(0xDA74DC, 0x52800020);   // RemapPlanarReflectionQuality (@0xDA74DC): mov w0, #1 (High)
+    poke32(0xDA74E0, 0xD65F03C0);   // ret
+    poke32(0xDA83A8, 0x52800080);   // GetMSAA (@0xDA83A8): mov w0, #4 (4x MSAA)
+    poke32(0xDA83AC, 0xD65F03C0);   // ret
+    poke32(0xDA8414, 0x52800040);   // GetPlanarReflectionMSAA (@0xDA8414): mov w0, #2 (2x MSAA)
+    poke32(0xDA8418, 0xD65F03C0);   // ret
+
+    // 8) Anisotropic Texture Filtering (ForceEnable)
+    poke32(0xDA7298, 0x52800020);   // RemapAnisotropicFiltering (@0xDA7298): mov w0, #1
+    poke32(0xDA729C, 0xD65F03C0);   // ret
+    // In PerformanceManager.ApplyWhenSceneChanges (@0xDA68E4):
+    poke32(0xDA6BA0, 0x52800040);   // cset w0, eq -> mov w0, #2 (AnisotropicFiltering.ForceEnable)
+
+    // 9) PBR Material Maximum Shader LOD (Full 1500 LOD fidelity)
+    // In PerformanceManager.ApplyWhenSceneChanges: bypass low-LOD 100 branch
+    poke32(0xDA6940, 0x14000003);   // cbz w9, #0xDA694C -> b 0xDA694C (always read full LOD @ [x8, #0x10])
+
+    // 10) Disable Low-End & Low-Memory Device Throttling
+    poke32(0xDA7BC0, 0x2A1F03E0);   // IsLowMemoryDevice (@0xDA7BC0): mov w0, wzr
+    poke32(0xDA7BC4, 0xD65F03C0);   // ret
+    poke32(0xDA7CA4, 0x2A1F03E0);   // IsSlowDevice (@0xDA7CA4): mov w0, wzr
     poke32(0xDA7CA8, 0xD65F03C0);   // ret
 
-    // 12) PerformanceManager.IsSlowDevice (@0xDA7CC4): force false (0) -> disable low-end throttle
-    poke32(0xDA7CC4, 0x2A1F03E0);   // mov w0, wzr
-    poke32(0xDA7CC8, 0xD65F03C0);   // ret
+    // 11) Character Damage System (Battle damage textures, dents, scratches & smoke)
+    poke32(0xDA6640, 0xD503201F);   // PerformanceManager.ApplyOnce: nop cbnz w9, 0xDA66C8 -> force CharacterDamageManager.Init
+    poke32(0xD19E2C, 0xD503201F);   // CharacterDamageManager.Init (@0xD19E2C): nop tbz w0, #0, 0xD19EF8 -> force enable & allocate texture pool
 
-    // 13) PerformanceManager.ApplyOnce (@0xDA65DC): nop cbnz w9, 0xDA66C8 -> force CharacterDamageManager.Init (low-health smoke & battle damage textures)
-    poke32(0xDA6640, 0xD503201F);   // nop
-
-    // 14) PerformanceManager.ApplyWhenSceneChanges (@0xDA68E4): Force all scene-loaded runtime graphics to HIGH
+    // 12) PerformanceManager.ApplyWhenSceneChanges (@0xDA68E4): Force all scene-loaded runtime graphics to HIGH
     poke32(0xDA6978, 0x52800055);   // csel w21, w8, w10, lo -> mov w21, #2 (force EBParticlePal.quality = High)
     poke32(0xDA69F4, 0x52800055);   // csel w21, w8, w10, lo -> mov w21, #2 (force TrailQuality = High)
 
-    // 15) Global hooks on Application.set_targetFrameRate (@0x1B46108) and QualitySettings.set_vSyncCount (@0x16A71C0)
+    // 13) Global hooks on Application.set_targetFrameRate (@0x1B46108) and QualitySettings.set_vSyncCount (@0x16A71C0)
     inline_hook((void*)(g_base + 0x1B46108), (void*)hooked_set_targetFrameRate, &orig_set_targetFrameRate);
     inline_hook((void*)(g_base + 0x16A71C0), (void*)hooked_set_vSyncCount, &orig_set_vSyncCount);
 

@@ -206,6 +206,12 @@ def patch_globalgamemanagers(data: bytes) -> bytes:
                     qs["pixelLightCount"] = 4
                     qs["anisotropicTextures"] = 2
                     qs["vSyncCount"] = 0
+                    qs["shadows"] = 2
+                    qs["shadowResolution"] = 3
+                    qs["shadowCascades"] = 2
+                    qs["shadowDistance"] = 40.0
+                    qs["antiAliasing"] = 4
+                    qs["realtimeReflectionProbes"] = True
                 obj.save_typetree(d)
         return env.file.save()
     except Exception as e:

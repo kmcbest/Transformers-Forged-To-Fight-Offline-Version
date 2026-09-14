@@ -86,3 +86,5 @@ assets_redeco/*
 !assets_redeco/character_fx.assetbundle
 !assets_redeco/character_fx_procedural.assetbundle
 
+*.mkv
+cookies.txt
