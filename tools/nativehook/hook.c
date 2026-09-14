@@ -541,7 +541,7 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x127F794, "LOCALIZE",           2, 0 }, // 162 Localization.Get
     { 0x11794A4, "ADDMANA",            2, 0 }, // 163 PlayerController.AddMana -> scale enemy mana gain dynamically
     { 0xC1F2B8,  "GET_TOP_HERO_ID",    2, 0 }, // 164 BCGHelper.GetTopHeroId -> squad leader avatar
-    { 0x117E4AC, "DODGEENTER",         2, 0 }, // 165 PlayerDodgeState.OnEnter -> reset attack chain on dodge (swipe back)
+    { 0x117E5E0, "DODGEENTER",         2, 0 }, // 165 PlayerDodgeState.OnEnter -> reset attack chain on dodge (swipe back)
     { 0x117ADC8, "COMBOWRAP",          2, 0 }, // 166 Combo Finisher Wrap (L4/M2 end) -> reset attack chain
     { 0x11828E0, "HEAVYEXIT",          2, 0 }, // 167 PlayerNewHeavyAttackState.OnExit -> reset attack chain on heavy exit
     { 0x1173FA4, "PCGETSPTIER",        2, 0 }, // 168 PlayerController.GetAvailableSpecialTier -> dynamic special tier
@@ -4750,9 +4750,14 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
         if (obj_ok(self) && *(int32_t*)((uintptr_t)self + 0xF4) == 0) {
             g_p0_controller = self;
             if (action == 2) {
-                // Action 2 = Swipe back / Dodge: immediately reset attack chain for P0
-                flog("PLAYER_ACTION dodge action=2 on p0 pc=%p -> reset attack chain", self);
-                reset_player_attack_chain(self);
+                // Action 2 = Swipe back / Dodge input: do NOT reset chain here!
+                // Real dodge resets via hook_165 (PlayerDodgeState.OnEnter) once the character actually hops backward.
+                // Prematurely resetting on input request here allowed tap-left infinite combo exploits.
+                if (g_p0_is_blocking) {
+                    uint64_t held = propgo_now_ms() - g_p0_block_enter_ms;
+                    g_p0_is_blocking = 0;
+                    flog("PLAYER_ACTION dodge action=2 during block: held %llu ms (< 200ms) -> chain NOT reset", (unsigned long long)held);
+                }
             }
             if (action == 0x80) {
                 // Action 0x80 = Release block: abort timer if released before 200ms
@@ -5098,7 +5103,7 @@ void* hook_165(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     void* r = H[165].orig(a0, a1, a2, a3, a4, a5, a6, a7);
     PROTECT({
         void* pc = fld_p(a0, 0x18);
-        flog("DODGE_ENTER (0x117E4AC) a0=%p, pc=%p, g_p0=%p", a0, pc, g_p0_controller);
+        flog("DODGE_ENTER (0x117E5E0) a0=%p, pc=%p, g_p0=%p", a0, pc, g_p0_controller);
         if (obj_ok(pc)) {
             reset_player_attack_chain(pc);
         } else if (obj_ok(g_p0_controller)) {
