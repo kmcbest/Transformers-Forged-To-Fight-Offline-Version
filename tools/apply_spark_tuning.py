@@ -53,34 +53,41 @@ def patch_character_fx_procedural(col_r: float, col_g: float, col_b: float):
     env = UnityPy.load(raw_data)
     sf = list(env.file.files.values())[0]
 
-    # 2. Extract Chromia materials from Netflix bundle
+    # 2. Extract Chromia materials and meshes from Netflix bundle
     netflix_procedural = ROOT / "assets_netflix" / "character_fx_procedural.assetbundle"
     chromia_mats = {}
+    chromia_meshes = {}
+    b_net_ress = b""
     if netflix_procedural.exists():
-        print(f"    Extracting Chromia materials from: {netflix_procedural}")
+        print(f"    Extracting Chromia assets from: {netflix_procedural}")
         env_net = UnityPy.load(netflix_procedural.read_bytes())
+        ress_net = env_net.file.files.get("CAB-7b4e49a3d1aa1dc7f57cab96e5d8d1f7.resS")
+        if ress_net:
+            b_net_ress = bytes(ress_net.view) if hasattr(ress_net, "view") else ress_net.read()
+
+        target_mesh_pids = {4547667473076947885, -8468514086234420794, 5070877881822408183}  # SlashMesh5, wind_spin meshes
         for obj in env_net.objects:
             if obj.type.name == "Material":
                 tree = obj.read_typetree()
                 if "chromia" in tree.get("m_Name", "").lower():
                     chromia_mats[obj.path_id] = tree
-        print(f"    Found {len(chromia_mats)} Chromia materials to port.")
+            elif obj.type.name == "Mesh" and (obj.path_id in target_mesh_pids or "slashmesh" in getattr(obj.read(), "m_Name", "").lower()):
+                tree = obj.read_typetree()
+                chromia_meshes[obj.path_id] = tree
+
+        print(f"    Found {len(chromia_mats)} Chromia materials and {len(chromia_meshes)} meshes to port.")
 
     # 3. Transcode 2021 Chromia materials into 2020 Material schema
     if chromia_mats:
-        template_reader = None
-        for obj in env.objects:
-            if obj.type.name == "Material":
-                template_reader = obj
-                break
-        assert template_reader is not None, "Failed to find template Material in 2020 base bundle!"
+        template_mat_reader = next((obj for obj in env.objects if obj.type.name == "Material"), None)
+        assert template_mat_reader is not None, "Failed to find template Material in 2020 base bundle!"
 
-        template_dict = template_reader.read_typetree()
+        template_mat_dict = template_mat_reader.read_typetree()
         for pid, tree_2021 in chromia_mats.items():
-            new_reader = copy.copy(template_reader)
+            new_reader = copy.copy(template_mat_reader)
             new_reader.path_id = pid
 
-            mat_2020 = copy.deepcopy(template_dict)
+            mat_2020 = copy.deepcopy(template_mat_dict)
             mat_2020["m_Name"] = tree_2021["m_Name"]
             mat_2020["m_Shader"] = tree_2021["m_Shader"]
             mat_2020["m_SavedProperties"] = tree_2021["m_SavedProperties"]
@@ -98,20 +105,46 @@ def patch_character_fx_procedural(col_r: float, col_g: float, col_b: float):
             sf.objects[pid] = new_reader
             print(f"    - Injected ported material: {mat_2020['m_Name']} (PathID={pid})")
 
-        # Register in AssetBundle container
-        for obj in env.objects:
-            if obj.type.name == "AssetBundle":
-                ab_tree = obj.read_typetree()
-                container = ab_tree.get("m_Container", [])
-                existing_pids = {entry[1]["asset"]["m_PathID"] for entry in container}
-                for pid, tree_2021 in chromia_mats.items():
-                    if pid not in existing_pids:
-                        mname = tree_2021.get("m_Name")
-                        asset_path = f"assets/bundles/characters/materials/{mname.lower()}.mat"
-                        container.append((asset_path, {"preloadIndex": 0, "preloadSize": 0, "asset": {"m_FileID": 0, "m_PathID": pid}}))
-                ab_tree["m_Container"] = container
-                obj.save_typetree(ab_tree)
-                print("    - Registered Chromia materials in AssetBundle container")
+    # 3.5. Transcode and inline Chromia meshes (SlashMesh5 etc.) into 2020 bundle
+    if chromia_meshes and b_net_ress:
+        template_mesh_reader = next((obj for obj in env.objects if obj.type.name == "Mesh"), None)
+        assert template_mesh_reader is not None, "Failed to find template Mesh in 2020 base bundle!"
+
+        for pid, m_tree in chromia_meshes.items():
+            sd = m_tree.get("m_StreamData", {})
+            size = sd.get("size", 0)
+            offset = sd.get("offset", 0)
+            if size > 0 and b_net_ress:
+                # Convert external stream to self-contained inline vertex data
+                vbytes = b_net_ress[offset : offset + size]
+                m_tree["m_VertexData"]["m_DataSize"] = vbytes
+                m_tree["m_StreamData"] = {"offset": 0, "size": 0, "path": ""}
+
+            new_m_reader = copy.copy(template_mesh_reader)
+            new_m_reader.path_id = pid
+            new_m_reader.save_typetree(m_tree)
+            sf.objects[pid] = new_m_reader
+            print(f"    - Injected inline mesh: {m_tree.get('m_Name')} (PathID={pid})")
+
+    # Register in AssetBundle container
+    for obj in env.objects:
+        if obj.type.name == "AssetBundle":
+            ab_tree = obj.read_typetree()
+            container = ab_tree.get("m_Container", [])
+            existing_pids = {entry[1]["asset"]["m_PathID"] for entry in container}
+            for pid, tree_2021 in chromia_mats.items():
+                if pid not in existing_pids:
+                    mname = tree_2021.get("m_Name")
+                    asset_path = f"assets/bundles/characters/materials/{mname.lower()}.mat"
+                    container.append((asset_path, {"preloadIndex": 0, "preloadSize": 0, "asset": {"m_FileID": 0, "m_PathID": pid}}))
+            for pid, m_tree in chromia_meshes.items():
+                if pid not in existing_pids:
+                    mname = m_tree.get("m_Name")
+                    asset_path = f"assets/bundles/characters_fx/meshes/{mname.lower()}.asset"
+                    container.append((asset_path, {"preloadIndex": 0, "preloadSize": 0, "asset": {"m_FileID": 0, "m_PathID": pid}}))
+            ab_tree["m_Container"] = container
+            obj.save_typetree(ab_tree)
+            print("    - Registered Chromia materials & meshes in AssetBundle container")
 
     # 4. Patch spark materials with molten forge color
     patched_mats = 0
@@ -148,15 +181,20 @@ def patch_character_fx_procedural(col_r: float, col_g: float, col_b: float):
     # 5. Verification on reloaded bundle
     verify_env = UnityPy.load(saved_bytes)
     chromia_trail_found = False
+    slashmesh_found = False
     for obj in verify_env.objects:
         if obj.type.name == "Material":
             d = obj.read()
             if getattr(d, "m_Name", "") == "fx_m_Chromia_SP3_trail 1":
                 chromia_trail_found = True
-                break
+        elif obj.type.name == "Mesh":
+            d = obj.read()
+            if getattr(d, "m_Name", "") == "SlashMesh5":
+                slashmesh_found = True
 
     assert chromia_trail_found, "CRITICAL: fx_m_Chromia_SP3_trail 1 missing from patched bundle!"
-    print(f"  [+] Verified Chromia SP3 trail material fx_m_Chromia_SP3_trail 1 present in saved bundle")
+    assert slashmesh_found, "CRITICAL: SlashMesh5 missing from patched bundle!"
+    print(f"  [+] Verified Chromia SP3 trail material fx_m_Chromia_SP3_trail 1 & SlashMesh5 present in saved bundle")
 
 
 def patch_character_fx(speed: float, gravity: float, length_scale: float, burst: int,

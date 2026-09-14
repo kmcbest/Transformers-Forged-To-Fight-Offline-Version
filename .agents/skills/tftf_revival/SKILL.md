@@ -361,24 +361,30 @@ python INSTALL-ADB.py
 
 ---
 
-## 14. 独占角色过场光效与过程材质包继承陷阱 (Character FX Procedural & Matinee VFX Trap)
+## 14. 独占角色过场光效与过程材质包跨版本继承陷阱 (Character FX Procedural & Matinee VFX Trap)
 
 ### 14.1 现象与隐蔽丢失
 * **现象**：克劳莉娅（Chromia）在施放三气超必杀大招（SP3 / Special Attack 3）时，开场挥舞斧头的动作缺少原版划过屏幕的明亮弧光光效（刀光拖尾），动画表现单薄。
-* **排查根因**：
-  Chromia 的大招属于 Unity Matinee 电影级切镜舞台（`TFormStage_chromia_gs_special03`）。开场挥斧光弧挂载于 `Trails/fx_p_Chromia_SP3_trail_first` 粒子节点上，其渲染器引用的外部材质为 `fx_m_Chromia_SP3_trail 1`（PathID `1790633657150229957`）。
-  该材质**只存在于 Netflix 版本的 `character_fx_procedural.assetbundle` 中**。若火花调校脚本从 Kabam 原版 9.2.0 基础 APK 提取底包，导出的 `assets_redeco/character_fx_procedural.assetbundle` 将完全不包含 Chromia 的大招拖尾材质，导致 Unity 渲染器加载材质失败而静默吞掉光弧。
+* **排查深层根因**：
+  1. **Matinee 镜头舞台挂载**：Chromia 的大招属于 Unity Matinee 电影级切镜舞台（`TFormStage_chromia_gs_special03`）。开场挥斧光弧由 `Trails/fx_p_Chromia_SP3_trail_first` 粒子节点发射。
+  2. **双重依赖缺失（材质 + 3D 切割网格）**：
+     - **材质依赖**：粒子渲染器引用的外部材质为 `fx_m_Chromia_SP3_trail 1`（PathID `1790633657150229957`）。
+     - **网格依赖（关键陷阱）**：该粒子系统的渲染模式为网格渲染（`m_RenderMode: 4`），其刀光几何体引用了外部网格 `SlashMesh5`（PathID `4547667473076947885`）。**若仅注入材质而漏掉网格，Unity 粒子系统因缺少网格模型无法绘制任何多边形，光弧完全隐形！**
+  3. **版本跨度（Unity 2021 vs Unity 2020）与 .resS 崩溃陷阱**：
+     - 若直接将 Netflix 的 `character_fx_procedural.assetbundle` 替换进 APK，由于 Netflix 资产包出自 Unity 2021，其 Material 使用了 `m_ValidKeywords` 列表字段，且 17MB 的 `.resS` 纹理流数据偏移与 2020 引擎不匹配，会导致 `Loading.Preload` 预加载阶段报 `Position out of bounds!` 严重损毁并直接触发 `SIGTRAP` 闪退。
 
-### 14.2 规范与断言防护
-1. **底包源头锁定**：
-   凡修改或生成 `character_fx_procedural.assetbundle`，底包**必须优先读取 `assets_netflix/character_fx_procedural.assetbundle`**，严禁使用原版 Kabam APK。
-2. **构建流水线多层兜底**：
-   在 `Server/build_phone_apk.py` 中显式针对 `character_fx_procedural.assetbundle` 增加覆盖逻辑，优先顺序为：`assets_redeco/` -> `assets_netflix/`。
-3. **断言守护**：
-   在资产处理脚本（如 `tools/apply_spark_tuning.py`）中必须包含 Chromia 关键材质存在性断言：
+### 14.2 解决方案与规范 (Transcoding & Inlining Solution)
+1. **以 2020 原包为底座**：
+   以 9.2.0 原版 `character_fx_procedural.assetbundle` 为主体基底，保护原有全部纹理和 `.resS` 外部流。
+2. **材质 Schema 跨版本转码**：
+   从 Netflix 提取 Chromia 独占材质（`fx_m_Chromia_SP3_trail 1` 等），克隆 2020 Material 模板，将 `m_ValidKeywords` 列表合并为空格分隔的 `m_ShaderKeywords` 字符串，按原 PathID 注入并注册入容器。
+3. **网格内联技术（Self-Contained Inline Mesh）**：
+   从 Netflix 的 `.resS` 提取 `SlashMesh5` 的 15,680 字节顶点数据，直接写入 `m_VertexData['m_DataSize']`，并将 `m_StreamData` 设为 `{offset: 0, size: 0, path: ""}`。这样无需扩充或修改原版 `.resS`，即可在 2020 引擎中稳定自包含渲染 3D 刀光网格。
+4. **全自动断言守护**：
+   在 [`tools/apply_spark_tuning.py`](file:///d:/Agent/tftf/tools/apply_spark_tuning.py) 的重载验证阶段，必须同时对材质与网格进行存在性断言：
    ```python
-   assert any(m.name == "fx_m_Chromia_SP3_trail 1" for m in materials), \
-       "CRITICAL: fx_m_Chromia_SP3_trail 1 missing! Must base on assets_netflix!"
+   assert any(m.name == "fx_m_Chromia_SP3_trail 1" for m in materials)
+   assert any(m.name == "SlashMesh5" for m in meshes)
    ```
 
 
