@@ -181,17 +181,46 @@ Every character, mod, and relic requires 3 portrait formats:
 
 ### 6.1 PBR Composite (RAOE) 贴图通道解密
 在 TFTF 使用的 `EB/Character/PBR` 及 `EB/Character/PBR/Uber` 高级角色着色器中，贴图 `_pbr_composite_tex`（通常命名为 `*_RAOE` 或 `*_RMEA`）采用 4 通道紧凑打包：
-* **R 通道 (Red)**：Roughness（粗糙度）
+* **R 通道 (Red)**：Roughness（粗糙度，控制高光弥散）
 * **G 通道 (Green)**：Ambient Occlusion / Metallic（环境遮挡 / 金属度）
-* **B 通道 (Blue)**：Cavity / Detail Mask（凹陷与细节）
+* **B 通道 (Blue)**：Cavity / Detail Mask（凹陷与微观细节）
 * **A 通道 (Alpha)**：**Emissive Mask（自发光 / 能量辉光蒙版）**
+  * `Alpha = 0`（纯黑）：完全不发光，正常接受场景实时光照与阴影投射；
+  * `Alpha = 255`（纯白）：满额 $100\%$ 自发光（Self-Illuminating），无视外部阴影遮挡，与战斗相机的 Bloom / HDR 后处理产生剧烈光学反应，泛出耀眼辉光；
+  * `Alpha = 50 ~ 150`（灰度）：呈现内敛柔和的微光或幽暗荧光质感。
 
-### 6.2 幽灵/能量过载/全息发光实战技巧 (Ghost Starscream / Hologram)
-* **原理**：当向角色的 `_pbr_composite_tex` 注入具有高亮度 Alpha 甚至全彩亮度的贴图时，着色器会将这些区域视作 $100\%$ 自发光材质（Self-Illuminating），并与战斗场景的 Bloom 泛光及后处理（Post-Processing）产生剧烈光学反应，呈现出通体晶莹剔透、幽幽发光的“能量幽灵”视觉效果。
-* **应用场景**：
-  * 鬼魂红蜘蛛（Ghost Starscream）
-  * 黑暗能量超载形态（Dark Energon Overload）
-  * 领袖能量矩阵爆发 / 赛博坦全息分身投影
+### 6.2 局部/任意部位精准发光定位 (Localized Part Emissive Control)
+发光效果**完全不局限于全身**，可精准控制到角色的**任意指定部位**甚至单个像素：
+* **原理**：角色 3D 模型的各个身体部件（眼睛、面罩、整个头部、胸口车灯、阵营标志、剑刃刀锋、引擎喷气口等）在 2D 贴图上均有严格对应的 UV 坐标区间。
+* **做法**：通过 3D 几何或 UV 选区提取（例如使用 3D Mesh 顶点高度 $Y$ 与深度 $Z$ 进行空间定位，或直接在 2D 贴图遮罩上选区），将指定区域在 RAOE 的 Alpha 通道涂白（255），其他身体部位的 Alpha 保持为 0，即可实现**仅眼睛发亮、仅头部发光、或仅武器刀刃幽幽发光，而机体其余金属部位保持正常磨砂或高光质感**。
+
+### 6.3 发光色彩与辉光强度调控 (Color & Intensity Customization)
+发光绝不仅限于史达的“幽幽青蓝色”，其最终光芒色彩与质感由三大要素共同决定：
+1. **底层漫反射色彩 (`_base_tex` Albedo)**：
+   * 自发光直接叠加在底色之上。底色为亮红则透出猩红光，底色为亮金则透出炽烈金光，底色为翠绿则透出医疗/能量晶体绿光。
+2. **材质级发光调色向量 (`_emissive_intensity_col`)**：
+   * 原生 Material 内部暴露了专属发光调色向量（RGBA 浮点），直接控制发光色调：
+     * **霸天虎暗能量紫光 (Dark Energon)**：`{r: 0.85, g: 0.15, b: 1.0, a: 0.0}`
+     * **狂怒/狂暴猩红光 (Fury / Berserk)**：`{r: 1.0, g: 0.05, b: 0.05, a: 0.0}`
+     * **领袖矩阵神圣炽金光 (Matrix Gold)**：`{r: 1.0, g: 0.85, b: 0.2, a: 0.0}`
+     * **赛博坦能量晶体绿光 (Energon Green)**：`{r: 0.1, g: 1.0, b: 0.4, a: 0.0}`
+     * **纯白超载耀斑强光 (Overcharge White)**：`{r: 1.0, g: 1.0, b: 1.0, a: 0.0}`
+     * **史达青蓝能量光 (Saber Cyan)**：`{r: 0.0, g: 0.14, b: 0.66, a: 0.0}`
+3. **超亮泛光倍率 (`_emissive_overbright_range`)**：
+   * 材质浮点参数，默认可达 `120.0`。数值设定在 `10.0 ~ 40.0` 时表现为柔和幽光；拉高到 `100.0 ~ 150.0` 时将产生极强烈的眩目泛光（Bloom 光晕溢出），极具视觉冲击力。
+
+### 6.4 原生着色器进阶高级特效拓展 (Advanced Shader Effects)
+基于 `EB/Character/PBR` 的原生暴露属性，还可进一步调出以下高阶视觉表现：
+1. **能量核心呼吸闪烁 (Pulsing / Breathing Glow)**：
+   * 调节材质浮点 `_emissive_pulse_intensity_range`（脉冲波动幅度，如 `0.2 ~ 0.8`）与 `_emissive_pulse_time_range`（呼吸周期时长，如 `1.5s`）。无需任何额外脚本，着色器会自动让发光部位像**机械心脏/能量火种一般有节奏地一明一暗“呼吸”**（极度契合震荡波独眼、死火核心、或领袖胸口能量宝）。
+2. **电流回路流动 / 全息扫描线 (UV Scrolling Circuit Flow)**：
+   * 调节材质向量 `_emissive_scroll_speed_vector: {r: speed_x, g: speed_y, b: 0, a: 0}`。配合绘制好的能量回路贴图，光效将沿装甲线路不断滚动流动，实现**赛博朋克电路奔涌或全息扫描**动态。
+3. **镜面电镀镀铬高反光 (Chrome Metal Finish)**：
+   * 在 `_pbr_composite_tex` 中将 G 通道（Metallic）拉满到 255，同时将 R 通道（Roughness）压至接近 0，可使原本塑料质感的哑光外壳瞬间变为**如水银般映射环境的镜面电镀金/电镀银**。
+4. **熔岩地狱战损裂纹 (Magma / Molten Armor)**：
+   * 在 Diffuse 贴图绘制细密装甲裂痕，而在 Emissive Alpha 通道仅将裂痕线刷白并赋予高饱和红/橙光，呈现**机体裂解熔岩喷薄、过载暴走**的狂战士机甲风范。
+5. **能量幽灵 / 全息投影形态 (Ghost / Hologram Avatar)**：
+   * 将全身 Alpha 贴图全面提亮，结合材质半透明（Transparency），呈现类似“鬼魂红蜘蛛（Ghost Starscream）”晶莹剔透的全息灵体。
 
 ---
 

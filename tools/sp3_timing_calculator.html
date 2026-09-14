@@ -434,18 +434,18 @@
           <div class="drawer-grid">
             <div class="form-group">
               <label>S3起点 T₀ <span class="hint">(大招开始)</span></label>
-              <input type="text" id="veh_t0" placeholder="00:01:02;16" value="00:01:02;16" oninput="onDrawerInput('_veh')">
+              <input type="text" id="veh_t0" placeholder="00:01:02,500 或 00:01:02;16" value="00:01:02;16" oninput="onDrawerInput('_veh')">
             </div>
             <div class="form-group">
               <label>变车时刻 T₁ <span class="badge badge-rose">On</span></label>
-              <input type="text" id="veh_t1" placeholder="00:01:04;16" oninput="onDrawerInput('_veh')">
+              <input type="text" id="veh_t1" placeholder="00:01:04,500 或 00:01:04;16" oninput="onDrawerInput('_veh')">
             </div>
             <div class="form-group">
               <label>还原时刻 T₂ <span class="badge badge-emerald">Off</span></label>
-              <input type="text" id="veh_t2" placeholder="00:01:05;23" oninput="onDrawerInput('_veh')">
+              <input type="text" id="veh_t2" placeholder="00:01:05,800 或 00:01:05;23" oninput="onDrawerInput('_veh')">
             </div>
             <div class="form-group">
-              <label>帧率</label>
+              <label>帧率 <span class="hint">(仅分号帧数时有效)</span></label>
               <select id="veh_fps" onchange="onDrawerInput('_veh')">
                 <option value="30" selected>30 FPS</option>
                 <option value="60">60 FPS</option>
@@ -550,7 +550,8 @@
     </div>
 
     <div class="helper-text">
-      💡 提示：在角色武器配置器中微调完毕后，直接复制并覆盖 <code>Server/sp3_timings.json</code> 中的对应条目即可。<br>
+      💡 提示：时间戳支持 <code>00:01:09,908</code>（播放器/字幕毫秒逗号）、<code>00:01:09.908</code>、<code>00:01:09;16</code>（SMPTE 帧号分号）、<code>01:09.908</code> 等多种常见格式。<br>
+      在角色武器配置器中微调完毕后，直接复制并覆盖 <code>Server/sp3_timings.json</code> 中的对应条目即可。<br>
       手机上使用 <code>adb push Server/sp3_timings.json /data/local/tmp/sp3_timings.json</code> 即可实现免重启秒级热更新测试！
     </div>
   </div>
@@ -639,18 +640,18 @@
               <div class="drawer-grid">
                 <div class="form-group">
                   <label>S3起点 T₀</label>
-                  <input type="text" id="t0_${safeName}" class="calc-t0-input" placeholder="00:01:02;16" value="${g_shared_t0}" oninput="onDrawerInput('${safeName}', '${pname}')">
+                  <input type="text" id="t0_${safeName}" class="calc-t0-input" placeholder="00:01:02,500 或 00:01:02;16" value="${g_shared_t0}" oninput="onDrawerInput('${safeName}', '${pname}')">
                 </div>
                 <div class="form-group">
                   <label>显现时刻 T₁ <span class="badge badge-rose">On</span></label>
-                  <input type="text" id="t1_${safeName}" placeholder="00:01:05;12" oninput="onDrawerInput('${safeName}', '${pname}')">
+                  <input type="text" id="t1_${safeName}" placeholder="00:01:05,500 或 00:01:05;12" oninput="onDrawerInput('${safeName}', '${pname}')">
                 </div>
                 <div class="form-group">
                   <label>收回时刻 T₂ <span class="badge badge-emerald">Off</span></label>
-                  <input type="text" id="t2_${safeName}" placeholder="00:01:08;25" oninput="onDrawerInput('${safeName}', '${pname}')">
+                  <input type="text" id="t2_${safeName}" placeholder="00:01:08,500 或 00:01:08;25" oninput="onDrawerInput('${safeName}', '${pname}')">
                 </div>
                 <div class="form-group">
-                  <label>帧率</label>
+                  <label>帧率 <span class="hint">(仅分号帧数时有效)</span></label>
                   <select id="fps_${safeName}" onchange="onDrawerInput('${safeName}', '${pname}')">
                     <option value="30" selected>30 FPS</option>
                     <option value="60">60 FPS</option>
@@ -801,13 +802,54 @@
     function parseTimestamp(str, fps) {
       if (!str) return 0;
       str = str.trim();
-      var parts = str.replace(/[;.]/g, ':').split(':').map(s => parseFloat(s) || 0);
-      var h = 0, m = 0, s = 0, f = 0;
-      if (parts.length === 4) { h = parts[0]; m = parts[1]; s = parts[2]; f = parts[3]; }
-      else if (parts.length === 3) { m = parts[0]; s = parts[1]; f = parts[2]; }
-      else if (parts.length === 2) { s = parts[0]; f = parts[1]; }
-      else if (parts.length === 1) { s = parts[0]; }
-      return (h * 3600 + m * 60 + s + (f / fps)) * 1000;
+      fps = fps || 30;
+
+      // 1. 标准化逗号：播放器与字幕格式（PotPlayer, VLC, 剪映, SRT）常以逗号分隔毫秒，如 00:01:09,908
+      str = str.replace(/,(\d+)/g, '.$1');
+
+      // 2. 带有分号 ; 的 SMPTE 剪辑格式（如 Premiere/FCP/达芬奇中的 00:01:09;16 或 01:09;16）
+      if (str.indexOf(';') !== -1) {
+        var semiParts = str.split(';');
+        var timeStr = semiParts[0];
+        var frames = parseFloat(semiParts[1]) || 0;
+        var tParts = timeStr.split(':').map(s => parseFloat(s) || 0);
+        var sec = 0;
+        if (tParts.length === 3) {
+          sec = tParts[0] * 3600 + tParts[1] * 60 + tParts[2];
+        } else if (tParts.length === 2) {
+          sec = tParts[0] * 60 + tParts[1];
+        } else if (tParts.length === 1) {
+          sec = tParts[0];
+        }
+        return (sec + frames / fps) * 1000;
+      }
+
+      // 3. 纯冒号分隔处理
+      var parts = str.split(':');
+      if (parts.length === 4) {
+        // HH:MM:SS:FF (4段式，最后一段是帧)
+        var h = parseFloat(parts[0]) || 0;
+        var m = parseFloat(parts[1]) || 0;
+        var s = parseFloat(parts[2]) || 0;
+        var f = parseFloat(parts[3]) || 0;
+        return (h * 3600 + m * 60 + s + f / fps) * 1000;
+      } else if (parts.length === 3) {
+        // 3段式：标准播放器 HH:MM:SS 或 HH:MM:SS.mmm（如 00:01:09 或 00:01:09.908）
+        var h = parseFloat(parts[0]) || 0;
+        var m = parseFloat(parts[1]) || 0;
+        var s = parseFloat(parts[2]) || 0;
+        return (h * 3600 + m * 60 + s) * 1000;
+      } else if (parts.length === 2) {
+        // 2段式：MM:SS 或 MM:SS.mmm（如 01:09 或 01:09.908）
+        var m = parseFloat(parts[0]) || 0;
+        var s = parseFloat(parts[1]) || 0;
+        return (m * 60 + s) * 1000;
+      } else if (parts.length === 1) {
+        // 单纯秒数（如 69.908）
+        var val = parseFloat(parts[0]) || 0;
+        return val * 1000;
+      }
+      return 0;
     }
 
     function calculate() {
