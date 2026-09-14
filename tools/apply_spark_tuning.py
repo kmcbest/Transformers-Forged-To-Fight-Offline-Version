@@ -37,20 +37,89 @@ TARGET_MOVES_BUNDLE = REDECO_DIR / "moves.assetbundle"
 
 
 def patch_character_fx_procedural(col_r: float, col_g: float, col_b: float):
-    print(f"\n>>> Patching character_fx_procedural.assetbundle materials with deep forge color:")
+    print(f"\n>>> Patching character_fx_procedural.assetbundle materials with molten forge color:")
     print(f"    Target Emissive Color=({col_r:.3f}, {col_g:.3f}, {col_b:.3f})")
 
-    with zipfile.ZipFile(APK_PATH, "r") as zf:
-        raw_data = zf.read("assets/assetpack/characters_fx_procedural_odr/character_fx_procedural.assetbundle")
+    # 1. Base bundle MUST be genuine Unity 2020 bundle from APK to avoid .resS and TypeTree crash
+    extracted_base = ROOT / "extracted_apk" / "assets" / "assetpack" / "characters_fx_procedural_odr" / "character_fx_procedural.assetbundle"
+    if extracted_base.exists():
+        print(f"    Using base: {extracted_base}")
+        raw_data = extracted_base.read_bytes()
+    else:
+        print(f"    Extracting base from: {APK_PATH}")
+        with zipfile.ZipFile(APK_PATH, "r") as zf:
+            raw_data = zf.read("assets/assetpack/characters_fx_procedural_odr/character_fx_procedural.assetbundle")
 
     env = UnityPy.load(raw_data)
-    patched_mats = 0
+    sf = list(env.file.files.values())[0]
 
+    # 2. Extract Chromia materials from Netflix bundle
+    netflix_procedural = ROOT / "assets_netflix" / "character_fx_procedural.assetbundle"
+    chromia_mats = {}
+    if netflix_procedural.exists():
+        print(f"    Extracting Chromia materials from: {netflix_procedural}")
+        env_net = UnityPy.load(netflix_procedural.read_bytes())
+        for obj in env_net.objects:
+            if obj.type.name == "Material":
+                tree = obj.read_typetree()
+                if "chromia" in tree.get("m_Name", "").lower():
+                    chromia_mats[obj.path_id] = tree
+        print(f"    Found {len(chromia_mats)} Chromia materials to port.")
+
+    # 3. Transcode 2021 Chromia materials into 2020 Material schema
+    if chromia_mats:
+        template_reader = None
+        for obj in env.objects:
+            if obj.type.name == "Material":
+                template_reader = obj
+                break
+        assert template_reader is not None, "Failed to find template Material in 2020 base bundle!"
+
+        template_dict = template_reader.read_typetree()
+        for pid, tree_2021 in chromia_mats.items():
+            new_reader = copy.copy(template_reader)
+            new_reader.path_id = pid
+
+            mat_2020 = copy.deepcopy(template_dict)
+            mat_2020["m_Name"] = tree_2021["m_Name"]
+            mat_2020["m_Shader"] = tree_2021["m_Shader"]
+            mat_2020["m_SavedProperties"] = tree_2021["m_SavedProperties"]
+            mat_2020["m_CustomRenderQueue"] = tree_2021.get("m_CustomRenderQueue", -1)
+            mat_2020["stringTagMap"] = tree_2021.get("stringTagMap", [])
+            mat_2020["disabledShaderPasses"] = tree_2021.get("disabledShaderPasses", [])
+
+            keywords = tree_2021.get("m_ValidKeywords", [])
+            if isinstance(keywords, list):
+                mat_2020["m_ShaderKeywords"] = " ".join(keywords)
+            else:
+                mat_2020["m_ShaderKeywords"] = str(keywords)
+
+            new_reader.save_typetree(mat_2020)
+            sf.objects[pid] = new_reader
+            print(f"    - Injected ported material: {mat_2020['m_Name']} (PathID={pid})")
+
+        # Register in AssetBundle container
+        for obj in env.objects:
+            if obj.type.name == "AssetBundle":
+                ab_tree = obj.read_typetree()
+                container = ab_tree.get("m_Container", [])
+                existing_pids = {entry[1]["asset"]["m_PathID"] for entry in container}
+                for pid, tree_2021 in chromia_mats.items():
+                    if pid not in existing_pids:
+                        mname = tree_2021.get("m_Name")
+                        asset_path = f"assets/bundles/characters/materials/{mname.lower()}.mat"
+                        container.append((asset_path, {"preloadIndex": 0, "preloadSize": 0, "asset": {"m_FileID": 0, "m_PathID": pid}}))
+                ab_tree["m_Container"] = container
+                obj.save_typetree(ab_tree)
+                print("    - Registered Chromia materials in AssetBundle container")
+
+    # 4. Patch spark materials with molten forge color
+    patched_mats = 0
     target_mat_names = (
         "flat_sparks", "hit_sparks", "cyclonus_flat", "grimlock_flat_sparks"
     )
 
-    for obj in env.objects:
+    for obj in sf.objects.values():
         if obj.type.name == "Material":
             raw = obj.read_typetree()
             mname = raw.get("m_Name", "")
@@ -59,7 +128,7 @@ def patch_character_fx_procedural(col_r: float, col_g: float, col_b: float):
                 modified = False
                 for cp in col_props:
                     prop_name = cp[0] if isinstance(cp, (list, tuple)) else cp.get("first")
-                    if prop_name in ["_emissive_intensity_col", "_TintColor"]:
+                    if prop_name in ["_emissive_intensity_col", "_TintColor", "_Color"]:
                         target_dict = cp[1] if isinstance(cp, (list, tuple)) else cp.get("second")
                         target_dict["r"] = float(col_r)
                         target_dict["g"] = float(col_g)
@@ -69,12 +138,25 @@ def patch_character_fx_procedural(col_r: float, col_g: float, col_b: float):
                 if modified:
                     obj.save_typetree(raw)
                     patched_mats += 1
-                    print(f"    - Patched material: {mname}")
+                    print(f"    - Patched spark material: {mname}")
 
     print(f"  [+] Patched {patched_mats} materials in character_fx_procedural")
     saved_bytes = env.file.save(packer="lz4")
     TARGET_PROCEDURAL_BUNDLE.write_bytes(saved_bytes)
     print(f"  [+] Saved {TARGET_PROCEDURAL_BUNDLE} ({len(saved_bytes) / 1024 / 1024:.2f} MB, LZ4 compressed)")
+
+    # 5. Verification on reloaded bundle
+    verify_env = UnityPy.load(saved_bytes)
+    chromia_trail_found = False
+    for obj in verify_env.objects:
+        if obj.type.name == "Material":
+            d = obj.read()
+            if getattr(d, "m_Name", "") == "fx_m_Chromia_SP3_trail 1":
+                chromia_trail_found = True
+                break
+
+    assert chromia_trail_found, "CRITICAL: fx_m_Chromia_SP3_trail 1 missing from patched bundle!"
+    print(f"  [+] Verified Chromia SP3 trail material fx_m_Chromia_SP3_trail 1 present in saved bundle")
 
 
 def patch_character_fx(speed: float, gravity: float, length_scale: float, burst: int,
@@ -116,7 +198,7 @@ def patch_character_fx(speed: float, gravity: float, length_scale: float, burst:
                 raw["looping"] = False
 
                 init = raw.get("InitialModule", {})
-                init["maxNumParticles"] = max(init.get("maxNumParticles", 40), 600)
+                init["maxNumParticles"] = max(init.get("maxNumParticles", 40), 800)
 
                 # Set StartSpeed (physics ejection - compact explosion)
                 spd = init.get("startSpeed", {})
@@ -512,7 +594,7 @@ def main():
     args = parser.parse_args()
 
     presets = {
-        "forge_ios": {"speed": 28.0, "gravity": 16.0, "length_scale": -0.40, "burst": 110, "color": (1.0, 0.16, 0.01), "shape": "cone"},
+        "forge_ios": {"speed": 28.0, "gravity": 16.0, "length_scale": -0.40, "burst": 160, "color": (1.0, 0.40, 0.05), "shape": "cone"},
         "grind_gold": {"speed": 24.0, "gravity": 6.5, "length_scale": -0.50, "burst": 70, "color": (1.0, 0.60, 0.08), "shape": "cone"},
         "heavy_lava": {"speed": 26.0, "gravity": 18.0, "length_scale": -0.40, "burst": 120, "color": (1.0, 0.12, 0.01), "shape": "cone"},
         "old_redeco": {"speed": 180.0, "gravity": 0.2, "length_scale": -2.2, "burst": 140, "color": (0.95, 0.84, 0.55), "shape": "sphere"},

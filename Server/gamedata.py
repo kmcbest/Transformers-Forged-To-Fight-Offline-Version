@@ -145,14 +145,14 @@ ROSTER = {
     "tantrum_gs_kabam":             ("decepticon", "braw", 5),
     "waspinator_gs_deluxe":         ("decepticon", "demo", 5),
 
-    # --- Sharkticons (generic enemy fodder; low rarity) ---
-    "sharkticon_gs_kabam":          ("decepticon", "braw", 1),
-    "sharkticon_gs_brawler":        ("decepticon", "braw", 1),
-    "sharkticon_gs_demolition":     ("decepticon", "demo", 1),
-    "sharkticon_gs_scout":          ("decepticon", "scou", 1),
-    "sharkticon_gs_tactician":      ("decepticon", "tact", 1),
-    "sharkticon_gs_tech":           ("decepticon", "tech", 1),
-    "sharkticon_gs_warrior":        ("decepticon", "warr", 1),
+    # --- Sharkticons (unlocked 5-star cards; cannon-fodder combat stats preserved) ---
+    "sharkticon_gs_kabam":          ("decepticon", "braw", 5),
+    "sharkticon_gs_brawler":        ("decepticon", "braw", 5),
+    "sharkticon_gs_demolition":     ("decepticon", "demo", 5),
+    "sharkticon_gs_scout":          ("decepticon", "scou", 5),
+    "sharkticon_gs_tactician":      ("decepticon", "tact", 5),
+    "sharkticon_gs_tech":           ("decepticon", "tech", 5),
+    "sharkticon_gs_warrior":        ("decepticon", "warr", 5),
 }
 
 # Which bots the offline player owns at boot. For a preservation sandbox we grant the
@@ -187,6 +187,14 @@ def base_stats(bid, rank=1, level=1):
     """Authored HP/attack for a bot at a given rank/level. Pure, deterministic,
     and original. Scaled so enemy encounters and player squad are evenly matched."""
     faction, klass, star = ROSTER.get(bid, ("decepticon", "tact", 5))
+    if bid.startswith("sharkticon_"):
+        # Lore constraint: Sharkticons are cannon-fodder ("水货").
+        # Keep stats low at the 1-star tier baseline even though star/rank is unlocked.
+        hp0, atk0 = _STAR_BASE[1]
+        hpm, atkm = _CLASS_MOD.get(klass, (1.0, 1.0))
+        hp = int(hp0 * hpm)
+        atk = int(atk0 * atkm)
+        return hp, atk
     hp0, atk0 = _STAR_BASE.get(star, _STAR_BASE[5])
     hpm, atkm = _CLASS_MOD.get(klass, (1.0, 1.0))
     rank_mult = 1.0 + 0.05 * (max(1, rank) - 1)
@@ -209,8 +217,8 @@ _MSA_OVERRIDE = {
 def max_special_attacks(bid, star):
     """How many special attacks a bot can charge. Proven entries keep their verified
     value; everything else uses the authored rarity curve."""
-    if bid in _MSA_OVERRIDE:
-        return _MSA_OVERRIDE[bid]
+    if bid in _MSA_OVERRIDE or bid.startswith("sharkticon_"):
+        return 3
     return 1 if star <= 1 else (2 if star <= 3 else 3)
 
 

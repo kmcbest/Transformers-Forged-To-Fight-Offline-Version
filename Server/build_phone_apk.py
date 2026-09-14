@@ -315,6 +315,11 @@ def build(
                 pmatpath = Path("assets_netflix/character_matinee_procedural.assetbundle")
                 if pmatpath.exists():
                     data = pmatpath.read_bytes()
+            elif info.filename == "assets/assetpack/characters_fx_procedural_odr/character_fx_procedural.assetbundle":
+                rpath = Path("assets_redeco/character_fx_procedural.assetbundle")
+                if rpath.exists():
+                    print(f"[*] Overriding {info.filename} with {rpath}")
+                    data = rpath.read_bytes()
             elif info.filename.startswith("assets/assetpack/") and info.filename.endswith(".assetbundle"):
                 b_name = Path(info.filename).name
                 rpath = Path("assets_redeco") / b_name

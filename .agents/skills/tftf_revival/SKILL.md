@@ -9,6 +9,81 @@ This skill documents critical domain knowledge, reverse-engineered architecture,
 
 ---
 
+## 0. 项目核心架构与核心文件导航地图 (Project Architecture & Core File Navigation Map)
+
+本项目是一个基于逆向工程的完全离线单机复活重构工程。为避免在多模块排查时迷失方向，必须清晰掌握以下 5 大核心功能层及其对应的核心文件权责划分：
+
+```
+[客户端 APK] (Unity 2017 + IL2CPP arm64)
+  │
+  ├── 1. 运行时底层 NativeHook 层 (tools/nativehook/)
+  │      └── 拦截 C# 虚表与通信 -> libdothook.so (内存级离线微服务器)
+  │
+  ├── 2. 服务端数据与载荷生成层 (Server/)
+  │      └── gamedata.py (单一真理源) -> export_payload.py -> tftf_offline_payload.bin
+  │
+  ├── 3. 资产与过场动作层 (assets_netflix/ & assets_redeco/)
+  │      └── moves.assetbundle (945 招式大包) + character_fx*.assetbundle (物理火花与过场材质)
+  │
+  ├── 4. 角色定义与本地化字典 (bot_names_zh.json & special_attacks_zh.h)
+  │      └── 全角色中英文名、必杀技描述哈希表
+  │
+  └── 5. 顶层打包与真机部署层 (build_apk.py & INSTALL-ADB.py)
+```
+
+### 0.1 核心业务逻辑与数据流 (Game Data & Server Layer)
+
+| 核心文件 | 核心职能与记录的内容 | 关键符号 / 函数 / 结构 |
+| :--- | :--- | :--- |
+| [`Server/gamedata.py`](file:///d:/Agent/tftf/Server/gamedata.py) | **全项目游戏数值与阵容的单一真理源 (Single Source of Truth)**。<br>1. **角色总阵容**：定义全 77+ 名角色的阵营（`autobot`/`decepticon`）、职业（`braw`/`tact`/`scou`/`demo`/`warr`/`tech`）与初始星级。<br>2. **数值曲线**：HP/ATK 基础成长模型与战斗力（Rating / PI）公式。特化角色的弱化约束（如水货饿鲨）。<br>3. **大招段数**：必杀技段数（SP1~SP3）解锁规则与必杀伤害倍率。<br>4. **离线响应生成**：生成客户端启动与漫游所需的全部标准 JSON。 | `ROSTER`: 角色阵容字典<br>`base_stats()`: 属性计算函数<br>`_STAR_BASE`: 星级基础数值表<br>`_CLASS_MOD`: 职业系数表<br>`max_special_attacks()`: 必杀槽位控制<br>`build_user_data()`: 玩家背包/战队/进度数据<br>`build_blueprints()`: 角色/模块/遗物蓝图映射 |
+| [`Server/export_payload.py`](file:///d:/Agent/tftf/Server/export_payload.py) | **离线二进制数据库烘焙工具**。<br>将 `gamedata.py` 生成的全部动静态 HTTP 响应路由与 `Server/sp3_timings.json` 烘焙为单一内存对齐的紧凑二进制文件：`build/tftf_offline_payload.bin`（约 23 MB，33000+ 条路由条目）。打包进 APK 的 `assets/` 供 C 语言内嵌微服务器直接 mmap 检索。 | `build_payload()`<br>`PAYLOAD_MAGIC`: `TFTFPAY\0`<br>`add("@sp3_timings")` |
+| [`Server/sp3_timings.json`](file:///d:/Agent/tftf/Server/sp3_timings.json) | **全角色三气大招变身时间轴配置表**。<br>记录每个角色施放 SP3（超必杀）期间，人形（`character_model`）与载具变形车态（`transformed`）在时间轴上的切换毫秒区间。支持手机目录热重载调试。 | `intervals: [{"on_ms": ..., "off_ms": ...}]`<br>`notes`: 中文角色标注与形态说明 |
+| [`Server/fakeserver.py`](file:///d:/Agent/tftf/Server/fakeserver.py) | **离线路由调度参考原型**。<br>记录副本移动路线校验（`build_quest_movedir`）、副本开始（`build_quest_begin`）、基地展台（`build_base_active`）等动态交互逻辑。 | `_quest_positions`<br>`get_saved_team()` |
+| [`Server/responses/`](file:///d:/Agent/tftf/Server/responses/) | **预烘焙的基础 Canned JSON 响应目录**。<br>存放 `GET__bcg_getUserData.json`（玩家全角色背包）、`GET__bcg_getLoginData.json`（全角色蓝图与基础定义）等预导出文件。 | 绝不可手工随意编辑，由 `python Server/gamedata.py` 自动导出覆写。 |
+
+---
+
+### 0.2 角色定义、技能与本地化字典 (Character Definitions, Skills & Localization)
+
+| 核心文件 | 核心职能与记录的内容 | 关键符号 / 结构 |
+| :--- | :--- | :--- |
+| [`bot_names_zh.json`](file:///d:/Agent/tftf/bot_names_zh.json) /<br>[`Server/bot_names_zh.json`](file:///d:/Agent/tftf/Server/bot_names_zh.json) | **全角色官方中英文对照字典**。<br>包含全 77+ 名角色 ID、英文原名、官方简体中文名及所属派系。用于蓝图注册（`display_name`）与基地/选人界面名称显示。 | 键为 `bot_id`，如 `"chromia_gs_kabam": {"en": "Chromia", "zh": "克劳莉娅", "faction": "汽车人 (Autobots)"}` |
+| [`tools/nativehook/special_attacks_zh.h`](file:///d:/Agent/tftf/tools/nativehook/special_attacks_zh.h) | **必杀技中英文文本与技能描述哈希表**。<br>记录所有角色的 SP1、SP2、SP3 技能名称与技能招式中文详细说明。NativeHook 层拦截字符串查找时提供中文替换。 | `ID_SPECIAL_ATTACK_MOVE_*`<br>`ID_SPECIAL_ATTACK_DESCRIPTION_MOVE_*` |
+| [`tools/nativehook/bot_names_zh.h`](file:///d:/Agent/tftf/tools/nativehook/bot_names_zh.h) | **C 语言底层角色名与别名映射表**。<br>提供 `bot_id` 与中文展示名的即时查询，用于战斗结算与 HUD 显示。 | `BotNameEntry g_bot_names_zh[]` |
+
+---
+
+### 0.3 底层逆向 Hook 与原生运行时 (IL2CPP Native Hook & Reverse Engineering)
+
+| 核心文件 | 核心职能与记录的内容 | 关键符号 / 函数 / 槽位 |
+| :--- | :--- | :--- |
+| [`tools/nativehook/hook.c`](file:///d:/Agent/tftf/tools/nativehook/hook.c) | **整套项目的逆向工程核心枢纽 (The Core Engine)**。<br>1. **槽位映射表 (`H[]`)**：170+ 个 IL2CPP 函数拦截。<br>2. **内嵌微服务器 (`inapk_server.c`)**：在游戏内部拦截 Localhost 8080，直接查询 `tftf_offline_payload.bin`。<br>3. **SP3 变身动力学引擎**：通过 `hook_138` (PropData.SetActive)、`hook_139` (SP3MOVE)、`hook_142/143` (CinematicState)、`hook_145` (FixedUpdate pump) 驱动大招车形态与武器显隐。<br>4. **手感与连击状态机**：`hook_154` (Action 2 滑屏拦截) + `hook_165` (PlayerDodgeState) 双重保障后撤立即清空连击段数。 | `hook_138`: 武器/变形部件渲染显隐 (`PROPGOACT`)<br>`hook_139`: SP3 动作未配置兜底解析 (`SP3MOVE`)<br>`hook_142 / hook_143`: SP3 进出状态机 (`SP3XIN` / `SP3XOUT`)<br>`hook_145`: SP3 变身泵驱动 (`SP3BEAT`)<br>`hook_154`: 滑屏与轻重击输入拦截 (`COMBAT_ACTION`)<br>`hook_165`: 闪避后撤状态机 (`DODGE_ENTER`)<br>`reset_player_attack_chain()`: 连击槽重置 |
+| [`tools/nativehook/compile_hook.py`](file:///d:/Agent/tftf/tools/nativehook/compile_hook.py) | **NativeHook 自动化交叉编译脚本**。<br>使用 NDK Clang 将 `hook.c`、`inapk_server.c`、`arena.c` 编译为 `libdothook.so` (arm64-v8a)。 | 自动检测项目内置 `toolchain/android-ndk-r26d`。 |
+| [`TECHNICAL_NOTES.md`](file:///d:/Agent/tftf/TECHNICAL_NOTES.md) | **深层底层技术细节文档**。<br>记录内存布局、虚表偏移、Hook 槽位号详细对照表、Protobuf/JSON 解析细节、Matinee 电影级切镜阶段工作原理。 | 遇到未知虚表崩溃或调用链异常时首要参考文档。 |
+
+---
+
+### 0.4 资产包、动作库与特效层 (AssetBundles, Movesets & VFX)
+
+| 目录 / 文件 | 核心职能与记录的内容 | 铁律与关键规范 |
+| :--- | :--- | :--- |
+| [`assets_netflix/`](file:///d:/Agent/tftf/assets_netflix/) | **官方权威资产底包目录 (Netflix Exclusives Source)**。<br>原版 Kabam 9.2.0 APK 缺失克劳莉娅（Chromia）和封锁（Dead End）。全部动作与过程特效**必须以此目录为基底**！<br>- `moves.assetbundle` (943 官方动作)<br>- `character_fx_procedural.assetbundle` (含 Chromia 大招挥斧光弧 `fx_m_Chromia_SP3_trail 1` 等独占材质)<br>- `character_anim_procedural.assetbundle` (含饿鲨等角色全套 SP3 剪辑) | **铁律**：严禁使用 Kabam 原版 APK 覆写此目录或以此目录外的包作为动作底包！ |
+| [`assets_redeco/`](file:///d:/Agent/tftf/assets_redeco/) | **自定义魔改与调校包产物目录 (Redeco & Overrides)**。<br>打包时由 `build_phone_apk.py` 优先覆盖进 APK：<br>- `moves.assetbundle`：945 条完整动作库（943 Netflix + 2 回春手 Lifeline 专属缝合动作 + 火花事件注入）。<br>- `character_fx.assetbundle`：物理近战火花粒子系统。<br>- `character_fx_procedural.assetbundle`：保留 Netflix 特效材质的前提下调校自发光火花颜色。<br>- `towers.assetbundle` / `relics.assetbundle`：防御模块与真实遗物 3D 展台模型。 | 必须通过断言守护招式总数 `>= 945`，Chromia 材质存在。 |
+| [`tools/apply_spark_tuning.py`](file:///d:/Agent/tftf/tools/apply_spark_tuning.py) | **打击火花物理参数与动作包生成器**。<br>负责解包、参数调校、缝合 Lifeline 动作库并重新以 LZ4 压缩打包 `character_fx.assetbundle`、`character_fx_procedural.assetbundle` 和 `moves.assetbundle`。 | 包含完整的 Fail-Fast 断言校验。 |
+| [`tools/spark_tuner.html`](file:///d:/Agent/tftf/tools/spark_tuner.html) &<br>[`打开火花物理调校器.bat`](file:///d:/Agent/tftf/打开火花物理调校器.bat) | **Web 交互式火花物理调校套件**。<br>在浏览器 Canvas 中实时模拟速度、重力加速度、发射角度、拉伸比与色泽，支持一键导出参数命令。 | 双击 `.bat` 即可在默认浏览器启动。 |
+
+---
+
+### 0.5 顶层打包与真机部署 (Build & Deployment Pipeline)
+
+| 核心文件 | 核心职能与命令 |
+| :--- | :--- |
+| [`build_apk.py`](file:///d:/Agent/tftf/build_apk.py) | **全自动顶层构建脚本**。<br>一键完成：`compile_hook.py` -> `export_payload.py` -> `Server/build_phone_apk.py`，输出 `build/Transformers-9.2-offline-redeco-edition.apk`。 |
+| [`Server/build_phone_apk.py`](file:///d:/Agent/tftf/Server/build_phone_apk.py) | **底包重构与重打包核心**。<br>负责：DEX 补丁注入、libil2cpp 修补、AssetBundle 覆盖注入、域名重定向劫持、zipalign 对齐与签名。 |
+| [`INSTALL-ADB.py`](file:///d:/Agent/tftf/INSTALL-ADB.py) | **真机自动化部署与测试工具**：<br>- `python INSTALL-ADB.py --auto`：免点击自动查找最新 APK 推送安装。<br>- `python INSTALL-ADB.py --screenshot [--name xxx]`：截取真机当前屏幕回传到本地 `screenshots/` 目录。<br>- 直接运行启动图形界面。 |
+
+---
+
 ## 1. Unity AssetBundle & 3D Transform Pitfalls
 
 ### 1.1 Compounded Hierarchy Scaling (连乘缩放陷阱)
@@ -283,6 +358,29 @@ python INSTALL-ADB.py
    ```
 2. **状态层兜底重置（DodgeEnter 拦截）**：
    在 `hook_165`（`PlayerDodgeState.OnEnter`）中，保留 `g_p0_controller` 兜底检查，确保无论从哪个路径触发后撤，本地玩家的普攻索引（`_lightAttackIndex`、`_mediumAttackIndex`、`_rangedAttackIndex`）均被 100% 重置为 0。
+
+---
+
+## 14. 独占角色过场光效与过程材质包继承陷阱 (Character FX Procedural & Matinee VFX Trap)
+
+### 14.1 现象与隐蔽丢失
+* **现象**：克劳莉娅（Chromia）在施放三气超必杀大招（SP3 / Special Attack 3）时，开场挥舞斧头的动作缺少原版划过屏幕的明亮弧光光效（刀光拖尾），动画表现单薄。
+* **排查根因**：
+  Chromia 的大招属于 Unity Matinee 电影级切镜舞台（`TFormStage_chromia_gs_special03`）。开场挥斧光弧挂载于 `Trails/fx_p_Chromia_SP3_trail_first` 粒子节点上，其渲染器引用的外部材质为 `fx_m_Chromia_SP3_trail 1`（PathID `1790633657150229957`）。
+  该材质**只存在于 Netflix 版本的 `character_fx_procedural.assetbundle` 中**。若火花调校脚本从 Kabam 原版 9.2.0 基础 APK 提取底包，导出的 `assets_redeco/character_fx_procedural.assetbundle` 将完全不包含 Chromia 的大招拖尾材质，导致 Unity 渲染器加载材质失败而静默吞掉光弧。
+
+### 14.2 规范与断言防护
+1. **底包源头锁定**：
+   凡修改或生成 `character_fx_procedural.assetbundle`，底包**必须优先读取 `assets_netflix/character_fx_procedural.assetbundle`**，严禁使用原版 Kabam APK。
+2. **构建流水线多层兜底**：
+   在 `Server/build_phone_apk.py` 中显式针对 `character_fx_procedural.assetbundle` 增加覆盖逻辑，优先顺序为：`assets_redeco/` -> `assets_netflix/`。
+3. **断言守护**：
+   在资产处理脚本（如 `tools/apply_spark_tuning.py`）中必须包含 Chromia 关键材质存在性断言：
+   ```python
+   assert any(m.name == "fx_m_Chromia_SP3_trail 1" for m in materials), \
+       "CRITICAL: fx_m_Chromia_SP3_trail 1 missing! Must base on assets_netflix!"
+   ```
+
 
 
 
