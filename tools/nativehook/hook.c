@@ -5316,24 +5316,6 @@ static void* hooked_set_vSyncCount(void* count, void* m, void* a2, void* a3, voi
     return NULL;
 }
 
-typedef void (*fn_pbs_on_exit)(void* self, void* method);
-static fn_pbs_on_exit orig_pbs_on_exit = NULL;
-
-static void hook_pbs_on_exit(void* self, void* method) {
-    PROTECT({
-        void* pc = (self && obj_ok(self)) ? *(void**)((char*)self + 0x18) : NULL;
-        if (pc && obj_ok(pc) && *(int32_t*)((uintptr_t)pc + 0xF4) == 0) {
-            if (g_p0_is_blocking) {
-                uint64_t held = propgo_now_ms() - g_p0_block_enter_ms;
-                g_p0_is_blocking = 0;
-                flog("BLOCK_EXIT: P0 left block state after %llu ms (timer aborted)", (unsigned long long)held);
-            }
-        }
-    });
-    if (orig_pbs_on_exit) {
-        orig_pbs_on_exit(self, method);
-    }
-}
 
 static void* installer(void* arg){
     for (int i = 0; i < 1200; i++) {           // up to 60s
@@ -5486,17 +5468,6 @@ static void* installer(void* arg){
     // 13) Global hooks on Application.set_targetFrameRate (@0x1B46108) and QualitySettings.set_vSyncCount (@0x16A71C0)
     inline_hook((void*)(g_base + 0x1B46108), (void*)hooked_set_targetFrameRate, &orig_set_targetFrameRate);
     inline_hook((void*)(g_base + 0x16A71C0), (void*)hooked_set_vSyncCount, &orig_set_vSyncCount);
-
-    // 14) PlayerBlockState.OnExit vtable hook (@0x2CB6518 + 0x10)
-    uintptr_t* pbs_vtbl = (uintptr_t*)(g_base + 0x2CB6518);
-    uintptr_t pbs_pg = (uintptr_t)pbs_vtbl & ~0xFFFUL;
-    if (mprotect((void*)pbs_pg, 0x2000, PROT_READ | PROT_WRITE) == 0) {
-        orig_pbs_on_exit = (fn_pbs_on_exit)pbs_vtbl[2];
-        pbs_vtbl[2] = (uintptr_t)hook_pbs_on_exit;
-        LOG("PlayerBlockState.OnExit hooked in vtable: orig=%p -> hook=%p", (void*)orig_pbs_on_exit, (void*)hook_pbs_on_exit);
-    } else {
-        LOG("PlayerBlockState.OnExit vtable mprotect failed");
-    }
 
     LOG("install done (%d hooks)", NH);
     return NULL;
