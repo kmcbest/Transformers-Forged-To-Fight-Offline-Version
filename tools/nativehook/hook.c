@@ -564,6 +564,8 @@ static void* g_p0_controller = NULL;
 static void* g_p1_controller = NULL;
 static char g_p0_bot_id[80] = {0};
 static char g_p1_bot_id[80] = {0};
+static volatile int g_p0_is_blocking = 0;
+static volatile uint64_t g_p0_block_enter_ms = 0;
 
 #define SP3_MAX_INTERVALS 4
 typedef struct {
@@ -4465,6 +4467,8 @@ void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     g_p1_controller = NULL;
     g_intended_special_tier = 0;
     g_sp_touch_tracking = 0;
+    g_p0_is_blocking = 0;
+    g_p0_block_enter_ms = 0;
     return H[140].orig(a0,a1,a2,a3,a4,a5,a6,a7);
 }
 void* hook_141(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
@@ -4620,6 +4624,13 @@ void* hook_145(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     PROTECT({
         sp3_beat_pump();
         give_p0_max_power();
+        if (g_p0_is_blocking && g_p0_controller) {
+            uint64_t held = propgo_now_ms() - g_p0_block_enter_ms;
+            if (held >= 200) {
+                flog("BLOCK_HELD: P0 held guard stance for %llu ms >= 200ms -> attack chain reset to L1", (unsigned long long)held);
+                reset_player_attack_chain(g_p0_controller);
+            }
+        }
     });
     return r;
 }
@@ -4710,6 +4721,7 @@ static void reset_player_attack_chain(void* pc) {
     int32_t p_idx = *(int32_t*)((uintptr_t)pc + 0xF4);
     if (p_idx != 0) return; // local player P0 only
     g_p0_controller = pc;
+    g_p0_is_blocking = 0;
     *(uint32_t*)((uintptr_t)pc + 0x1c0) = 0; // _lightAttackIndex = 0
     *(uint32_t*)((uintptr_t)pc + 0x1c4) = 0; // _mediumAttackIndex = 0
     *(uint32_t*)((uintptr_t)pc + 0x1c8) = 0; // _rangedAttackIndex = 0
@@ -4741,6 +4753,22 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
                 // Action 2 = Swipe back / Dodge: immediately reset attack chain for P0
                 flog("PLAYER_ACTION dodge action=2 on p0 pc=%p -> reset attack chain", self);
                 reset_player_attack_chain(self);
+            }
+            if (action == 0x80) {
+                // Action 0x80 = Release block: abort timer if released before 200ms
+                if (g_p0_is_blocking) {
+                    uint64_t held = propgo_now_ms() - g_p0_block_enter_ms;
+                    g_p0_is_blocking = 0;
+                    flog("PLAYER_ACTION release block (0x80): held %llu ms (< 200ms) -> chain NOT reset", (unsigned long long)held);
+                }
+            }
+            if (action == 1 || action == 4 || action == 8 || action == 0x100) {
+                // Action 1=Attack, 4=Dash, 8=Heavy, 0x100=Charge Heavy: cancel block tracking
+                if (g_p0_is_blocking) {
+                    uint64_t held = propgo_now_ms() - g_p0_block_enter_ms;
+                    g_p0_is_blocking = 0;
+                    flog("PLAYER_ACTION action=%d during block: held %llu ms (< 200ms) -> chain NOT reset", action, (unsigned long long)held);
+                }
             }
             if (action == 0x200) {
                 if (!g_sp_dispatching_internal && g_sp_touch_tracking) {
@@ -4813,8 +4841,12 @@ void* hook_160(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     void* pc = fld_p(a0, 0x18);
     void* r = H[160].orig(a0, a1, a2, a3, a4, a5, a6, a7);
     PROTECT({
-        if (obj_ok(pc)) {
-            reset_player_attack_chain(pc);
+        if (obj_ok(pc) && *(int32_t*)((uintptr_t)pc + 0xF4) == 0) {
+            g_p0_controller = pc;
+            g_p0_block_enter_ms = propgo_now_ms();
+            g_p0_is_blocking = 1;
+            flog("BLOCK_ENTER: P0 started guarding at %llu ms (timer armed, hold 200ms required to reset chain)",
+                 (unsigned long long)g_p0_block_enter_ms);
         }
     });
     return r;
@@ -5284,6 +5316,25 @@ static void* hooked_set_vSyncCount(void* count, void* m, void* a2, void* a3, voi
     return NULL;
 }
 
+typedef void (*fn_pbs_on_exit)(void* self, void* method);
+static fn_pbs_on_exit orig_pbs_on_exit = NULL;
+
+static void hook_pbs_on_exit(void* self, void* method) {
+    PROTECT({
+        void* pc = (self && obj_ok(self)) ? *(void**)((char*)self + 0x18) : NULL;
+        if (pc && obj_ok(pc) && *(int32_t*)((uintptr_t)pc + 0xF4) == 0) {
+            if (g_p0_is_blocking) {
+                uint64_t held = propgo_now_ms() - g_p0_block_enter_ms;
+                g_p0_is_blocking = 0;
+                flog("BLOCK_EXIT: P0 left block state after %llu ms (timer aborted)", (unsigned long long)held);
+            }
+        }
+    });
+    if (orig_pbs_on_exit) {
+        orig_pbs_on_exit(self, method);
+    }
+}
+
 static void* installer(void* arg){
     for (int i = 0; i < 1200; i++) {           // up to 60s
         g_base = 0; dl_iterate_phdr(find_cb, NULL);
@@ -5435,6 +5486,17 @@ static void* installer(void* arg){
     // 13) Global hooks on Application.set_targetFrameRate (@0x1B46108) and QualitySettings.set_vSyncCount (@0x16A71C0)
     inline_hook((void*)(g_base + 0x1B46108), (void*)hooked_set_targetFrameRate, &orig_set_targetFrameRate);
     inline_hook((void*)(g_base + 0x16A71C0), (void*)hooked_set_vSyncCount, &orig_set_vSyncCount);
+
+    // 14) PlayerBlockState.OnExit vtable hook (@0x2CB6518 + 0x10)
+    uintptr_t* pbs_vtbl = (uintptr_t*)(g_base + 0x2CB6518);
+    uintptr_t pbs_pg = (uintptr_t)pbs_vtbl & ~0xFFFUL;
+    if (mprotect((void*)pbs_pg, 0x2000, PROT_READ | PROT_WRITE) == 0) {
+        orig_pbs_on_exit = (fn_pbs_on_exit)pbs_vtbl[2];
+        pbs_vtbl[2] = (uintptr_t)hook_pbs_on_exit;
+        LOG("PlayerBlockState.OnExit hooked in vtable: orig=%p -> hook=%p", (void*)orig_pbs_on_exit, (void*)hook_pbs_on_exit);
+    } else {
+        LOG("PlayerBlockState.OnExit vtable mprotect failed");
+    }
 
     LOG("install done (%d hooks)", NH);
     return NULL;
