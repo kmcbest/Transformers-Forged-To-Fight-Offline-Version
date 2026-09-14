@@ -22,6 +22,7 @@
 #include <time.h>
 #include "inapk_server.h"
 #include <jni.h>
+#include <math.h>
 
 // forward decls (used by seg_handler below, defined later)
 static void flog(const char* fmt, ...);
@@ -543,6 +544,8 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x117E4AC, "DODGEENTER",         2, 0 }, // 165 PlayerDodgeState.OnEnter -> reset attack chain on dodge (swipe back)
     { 0x117ADC8, "COMBOWRAP",          2, 0 }, // 166 Combo Finisher Wrap (L4/M2 end) -> reset attack chain
     { 0x11828E0, "HEAVYEXIT",          2, 0 }, // 167 PlayerNewHeavyAttackState.OnExit -> reset attack chain on heavy exit
+    { 0x1173FA4, "PCGETSPTIER",        2, 0 }, // 168 PlayerController.GetAvailableSpecialTier -> dynamic special tier
+    { 0xFF05C8,  "HUDSPBTN",           2, 0 }, // 169 HudSpecialMeter.OnSpecialButtonPressed -> gesture recognition
 };
 #define NH (int)(sizeof(H)/sizeof(H[0]))
 
@@ -3646,11 +3649,84 @@ void* hook_113(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     LOG("UICLICK listener=%p onClick=%p",a0,obj_ok(a0)?*(void**)((uintptr_t)a0+0x28):NULL);
     return H[113].orig(a0,a1,a2,a3,a4,a5,a6,a7);
 }
+static uint64_t propgo_now_ms(void){
+    struct timespec ts;
+    if (clock_gettime(CLOCK_MONOTONIC, &ts)) return 0;
+    return (uint64_t)ts.tv_sec * 1000u + (uint64_t)ts.tv_nsec / 1000000u;
+}
+
+typedef struct {
+    float x;
+    float y;
+    float z;
+} Vector3_t;
+
+static volatile int g_intended_special_tier = 0;
+static volatile uint64_t g_intended_special_time_ms = 0;
+static volatile int g_sp_touch_tracking = 0;
+static float g_sp_touch_start_x = 0.0f;
+static float g_sp_touch_start_y = 0.0f;
+static uint64_t g_sp_touch_start_ms = 0;
+static volatile int g_sp_btn_pressed_fired = 0;
+
+static inline Vector3_t unity_get_mouse_position(void) {
+    typedef Vector3_t (*fn_mouse_pos)(void);
+    return ((fn_mouse_pos)(g_base + 0x21BC1D4))();
+}
+
+static inline int unity_get_screen_width(void) {
+    typedef int (*fn_screen_dim)(void);
+    return ((fn_screen_dim)(g_base + 0x16AFBF8))();
+}
+
+static inline int unity_get_screen_height(void) {
+    typedef int (*fn_screen_dim)(void);
+    return ((fn_screen_dim)(g_base + 0x16AFC2C))();
+}
+
+static inline int power_meter_can_use_special(void* power_meter, int tier) {
+    if (!obj_ok(power_meter)) return 0;
+    typedef int (*fn_can_use_sp)(void*, int, void*);
+    return ((fn_can_use_sp)(g_base + 0xDACE1C))(power_meter, tier, NULL);
+}
+
+static volatile int g_sp_dispatching_internal = 0;
+static inline void trigger_special_action(void* controller) {
+    if (!obj_ok(controller)) return;
+    g_sp_dispatching_internal = 1;
+    H[154].orig(controller, (void*)(intptr_t)0x200, NULL, NULL, NULL, NULL, NULL, NULL);
+    g_sp_dispatching_internal = 0;
+}
+
+static inline void ensure_p0_power_rounding(void* pc) {
+    if (!obj_ok(pc)) return;
+    if (pc != g_p0_controller && *(int32_t*)((uintptr_t)pc + 0xF4) != 0) return;
+    void* pm = *(void**)((char*)pc + 0x80);
+    if (!obj_ok(pm)) return;
+    void* fm = *(void**)((char*)pm + 0x70);
+    if (!obj_ok(fm)) return;
+    typedef float (*fn_get_cur)(void*, void*);
+    typedef void (*fn_set_cur)(void*, float, void*);
+    fn_get_cur get_cur = (fn_get_cur)(g_base + 0xE2FF20);
+    fn_set_cur set_cur = (fn_set_cur)(g_base + 0xE2FF70);
+    float cur = get_cur(fm, NULL);
+    if (cur >= 0.32f && cur <= 0.3339f) {
+        set_cur(fm, 0.34f, NULL);
+        flog("POWER_ROUNDING: cur=%.5f -> boosted to 0.34f (SP1 full green)", cur);
+    } else if (cur >= 0.65f && cur <= 0.6675f) {
+        set_cur(fm, 0.67f, NULL);
+        flog("POWER_ROUNDING: cur=%.5f -> boosted to 0.67f (SP2 full green)", cur);
+    }
+}
+
 void* hook_114(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
     void* r=H[114].orig(a0,a1,a2,a3,a4,a5,a6,a7);
+    uintptr_t pressed = (uintptr_t)a1 & 1;
+    uintptr_t unpressed = (uintptr_t)a2 & 1;
+
     // ProcessTouch receives `pressed` in w1; dispatch only on that edge, not the
     // matching release/update call for the same Android touch.
-    if ((uintptr_t)a1 & 1) {
+    if (pressed) {
         // UICamera.get_isOverUI is static: x0 is its hidden MethodInfo* (NULL).
         // If NGUI handled the touch (including the top navigation), preserve that
         // UI action and do not turn it into a base-card click.
@@ -3661,9 +3737,6 @@ void* hook_114(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
             g_base_tap_dispatching=1;
             dispatched=1;
             H[108].orig(g_base_tap_card,g_base_tap_go,NULL,NULL,NULL,NULL,NULL,NULL);
-            // BaseBoard.OnCardTapped has a shipped RelicCard/BossCard type mismatch in
-            // this client build (it logs CARDTAP then aborts before the tile handler).
-            // The normal destination is nevertheless known and receives the real tile.
             PROTECT({
                 void* node=*(void**)((uintptr_t)g_base_tap_card+0x38); // QuestCard._provider
                 void* board=node ? *(void**)((uintptr_t)node+0x48) : NULL; // NodeController._provider
@@ -3676,6 +3749,69 @@ void* hook_114(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
         LOG("BASETAPFIX gate overUI=%d card=%p -> %s",over,g_base_tap_card,
             dispatched ? "dispatch" : "skip");
     }
+
+    // Touch tracking & real-time gesture recognition for Special Attack Button (bottom-left)
+    if (obj_ok(g_p0_controller)) {
+        PROTECT({
+            Vector3_t mpos = unity_get_mouse_position();
+            int sw = unity_get_screen_width();
+            int sh = unity_get_screen_height();
+            if (sw <= 0) sw = 1920;
+            if (sh <= 0) sh = 1080;
+
+            if (pressed) {
+                // Check if touch is within special button bounding box in bottom-left
+                if (mpos.x >= 0 && mpos.x <= 0.28f * (float)sw && mpos.y >= 0 && mpos.y <= 0.35f * (float)sh) {
+                    g_sp_touch_tracking = 1;
+                    g_sp_touch_start_x = mpos.x;
+                    g_sp_touch_start_y = mpos.y;
+                    g_sp_touch_start_ms = propgo_now_ms();
+                    g_sp_btn_pressed_fired = 0;
+                    flog("SP_TOUCH DOWN at (%.1f, %.1f) [screen %dx%d]", mpos.x, mpos.y, sw, sh);
+                } else {
+                    g_sp_touch_tracking = 0;
+                }
+            } else if (g_sp_touch_tracking) {
+                uint64_t elapsed = propgo_now_ms() - g_sp_touch_start_ms;
+                float dx = mpos.x - g_sp_touch_start_x;
+                float dy = mpos.y - g_sp_touch_start_y;
+
+                // Real-time swipe detection while dragging
+                if (dx > 35.0f && dx > fabsf(dy)) {
+                    flog("SP_GESTURE: SWIPE RIGHT (SP1) dx=%.1f dy=%.1f elapsed=%llu ms",
+                         dx, dy, (unsigned long long)elapsed);
+                    g_intended_special_tier = 1;
+                    g_intended_special_time_ms = propgo_now_ms();
+                    g_sp_touch_tracking = 0;
+                    trigger_special_action(g_p0_controller);
+                } else if (dy > 35.0f && dy > fabsf(dx)) {
+                    flog("SP_GESTURE: SWIPE UP (SP2) dx=%.1f dy=%.1f elapsed=%llu ms",
+                         dx, dy, (unsigned long long)elapsed);
+                    g_intended_special_tier = 2;
+                    g_intended_special_time_ms = propgo_now_ms();
+                    g_sp_touch_tracking = 0;
+                    trigger_special_action(g_p0_controller);
+                } else if (unpressed) {
+                    // Finger lifted without significant swipe -> TAP (SP3 / highest)
+                    flog("SP_GESTURE: TAP RELEASE (MAX SP) dx=%.1f dy=%.1f elapsed=%llu ms",
+                         dx, dy, (unsigned long long)elapsed);
+                    g_intended_special_tier = 0;
+                    g_intended_special_time_ms = propgo_now_ms();
+                    g_sp_touch_tracking = 0;
+                    trigger_special_action(g_p0_controller);
+                } else if (elapsed > 350) {
+                    // Held down for >350ms without swipe -> TAP (SP3 / highest)
+                    flog("SP_GESTURE: HOLD TIMEOUT (MAX SP) dx=%.1f dy=%.1f elapsed=%llu ms",
+                         dx, dy, (unsigned long long)elapsed);
+                    g_intended_special_tier = 0;
+                    g_intended_special_time_ms = propgo_now_ms();
+                    g_sp_touch_tracking = 0;
+                    trigger_special_action(g_p0_controller);
+                }
+            }
+        });
+    }
+
     return r;
 }
 // FTEBASEFIX (slot 102): permit the base-edit branch only; authored tutorial state is
@@ -3709,8 +3845,6 @@ static int g_propgoact_lines = 0;
 static int g_sp3move_lines = 0;
 static int g_sp3cand_dumped = 0;
 static int g_sp3cand_lines = 0;
-static uint64_t propgo_now_ms(void){ struct timespec ts; if(clock_gettime(CLOCK_MONOTONIC,&ts)) return 0;
-    return (uint64_t)ts.tv_sec*1000u + (uint64_t)ts.tv_nsec/1000000u; }
 /* PROPGOACT (shipped): PropData.SetActiveInternal only sets Renderer.enabled, which has no
    visible effect in this build. Mirror every prop's requested state onto each renderer's own
    GameObject: weapons and effects (including energy swords), alternate bodies, and alternate
@@ -4327,6 +4461,10 @@ void* hook_139(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
 }
 void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
     sp3_xf_clear();
+    g_p0_controller = NULL;
+    g_p1_controller = NULL;
+    g_intended_special_tier = 0;
+    g_sp_touch_tracking = 0;
     return H[140].orig(a0,a1,a2,a3,a4,a5,a6,a7);
 }
 void* hook_141(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
@@ -4345,6 +4483,9 @@ void* hook_142(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     PROTECT({
         void* pc=fld_p(a0,0x18);
         if (obj_ok(pc)) {
+            if (pc == g_p0_controller) {
+                g_intended_special_tier = 0;
+            }
             const char* current_bot_id = (pc == g_p0_controller) ? g_p0_bot_id : g_p1_bot_id;
             if (!current_bot_id || !current_bot_id[0]) {
                 if (g_p0_bot_id[0]) current_bot_id = g_p0_bot_id;
@@ -4579,10 +4720,17 @@ void* hook_153(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
     int index = (int)(intptr_t)a1;
     flog("SPECIAL_ATTACK index=%d called on controller=%p (p0=%p, is_p0=%d)",
          index, self, g_p0_controller, (self == g_p0_controller));
+    if (self == g_p0_controller) {
+        g_intended_special_tier = 0;
+    }
     PROTECT({
         reset_player_attack_chain(self);
     });
-    return H[153].orig(self, a1, a2, a3, a4, a5, a6, a7);
+    void* r = H[153].orig(self, a1, a2, a3, a4, a5, a6, a7);
+    PROTECT({
+        ensure_p0_power_rounding(self);
+    });
+    return r;
 }
 void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7){
     int action = (int)(intptr_t)a1;
@@ -4593,6 +4741,14 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
                 // Action 2 = Swipe back / Dodge: immediately reset attack chain for P0
                 flog("PLAYER_ACTION dodge action=2 on p0 pc=%p -> reset attack chain", self);
                 reset_player_attack_chain(self);
+            }
+            if (action == 0x200) {
+                if (!g_sp_dispatching_internal && g_sp_touch_tracking) {
+                    flog("PLAYER_ACTION 0x200: suppressed premature touch-down special on P0 (tracking gesture)");
+                    return (void*)1;
+                }
+                flog("PLAYER_ACTION 0x200: executing on P0 (intended_tier=%d, internal=%d)",
+                     g_intended_special_tier, g_sp_dispatching_internal);
             }
         }
     });
@@ -4608,6 +4764,7 @@ void* hook_155(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     PROTECT({
         if (obj_ok(pc)) {
             reset_player_attack_chain(pc);
+            ensure_p0_power_rounding(pc);
         }
     });
     return r;
@@ -4941,6 +5098,51 @@ void* hook_167(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     return r;
 }
 
+void* hook_168(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    uint64_t now = propgo_now_ms();
+    if (self == g_p0_controller && g_intended_special_tier > 0 && (now - g_intended_special_time_ms < 600)) {
+        int target_tier = g_intended_special_tier;
+        void* power_meter = *(void**)((char*)self + 0x80);
+        if (power_meter_can_use_special(power_meter, target_tier)) {
+            flog("GET_AVAIL_SP_TIER: P0 overriding special tier to %d (valid power)", target_tier);
+            return (void*)(intptr_t)target_tier;
+        } else {
+            flog("GET_AVAIL_SP_TIER: P0 intended tier %d not enough power, falling back to stock", target_tier);
+            g_intended_special_tier = 0;
+        }
+    }
+    void* r = H[168].orig(self, a1, a2, a3, a4, a5, a6, a7);
+    if (self == g_p0_controller) {
+        flog("GET_AVAIL_SP_TIER: P0 stock returned tier=%d", (int)(intptr_t)r);
+    }
+    return r;
+}
+
+void* hook_169(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    g_sp_btn_pressed_fired = 1;
+    PROTECT({
+        Vector3_t mpos = unity_get_mouse_position();
+        float dx = 0.0f, dy = 0.0f;
+        if (g_sp_touch_tracking) {
+            dx = mpos.x - g_sp_touch_start_x;
+            dy = mpos.y - g_sp_touch_start_y;
+        }
+        int intent = 0;
+        if (dx > 35.0f && dx > fabsf(dy)) {
+            intent = 1; // Swipe Right -> SP1
+        } else if (dy > 35.0f && dy > fabsf(dx)) {
+            intent = 2; // Swipe Up -> SP2
+        } else {
+            intent = 0; // Tap -> Max / SP3
+        }
+        g_intended_special_tier = intent;
+        g_intended_special_time_ms = propgo_now_ms();
+        flog("HUD_SP_BUTTON_PRESSED: cur=(%.1f, %.1f), start=(%.1f, %.1f), dx=%.1f, dy=%.1f -> intended_tier=%d",
+             mpos.x, mpos.y, g_sp_touch_start_x, g_sp_touch_start_y, dx, dy, intent);
+    });
+    return H[169].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+}
+
 static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hook_7,hook_8,
     hook_9,hook_10,hook_11,hook_12,hook_13,hook_14,hook_15,hook_16,hook_17,hook_18,hook_19,hook_20,hook_21,
     hook_22,hook_23,hook_24,hook_25,hook_26,hook_27,hook_28,hook_29,hook_30,
@@ -4959,7 +5161,7 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     hook_145,hook_146,hook_147,hook_148,hook_149,hook_150,hook_151,
     hook_152,hook_153,hook_154,hook_155,hook_156,hook_157,hook_158,
     hook_159,hook_160,hook_161,hook_162,hook_163,hook_164,
-    hook_165,hook_166,hook_167 };
+    hook_165,hook_166,hook_167,hook_168,hook_169 };
 
 static void write_jump(uint8_t* dst, void* target){
     uint32_t* p = (uint32_t*)dst;
