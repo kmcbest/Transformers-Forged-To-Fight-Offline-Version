@@ -543,7 +543,7 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0xC1F2B8,  "GET_TOP_HERO_ID",    2, 0 }, // 164 BCGHelper.GetTopHeroId -> squad leader avatar
     { 0x0D34E6C, "DODGEENTER",         2, 0 }, // 165 PlayerDodgeState.OnEnter -> reset attack chain on dodge (swipe back)
     { 0,          "UNUSED_166",         0, 0 }, // 166 disabled (no-op pass-through)
-    { 0x0E318E0, "HEAVYEXIT",          2, 0 }, // 167 PlayerNewHeavyAttackState.OnExit -> reset attack chain on heavy exit
+    { 0,          "UNUSED_167",         0, 0 }, // 167 disabled (heavy attack reset handled via action 8 in hook_154)
     { 0x1173FA4, "PCGETSPTIER",        2, 0 }, // 168 PlayerController.GetAvailableSpecialTier -> dynamic special tier
     { 0xFF05C8,  "HUDSPBTN",           2, 0 }, // 169 HudSpecialMeter.OnSpecialButtonPressed -> gesture recognition
 };
@@ -566,6 +566,18 @@ static char g_p0_bot_id[80] = {0};
 static char g_p1_bot_id[80] = {0};
 static volatile uint64_t g_p0_block_enter_ms = 0;
 static volatile int g_p0_block_reset_done = 0;
+static volatile int g_p0_after_heavy = 0;
+static volatile int g_p0_combo_ended = 0;
+static void* g_p0_combat_character = NULL;
+static volatile float g_p0_last_hp = -1.0f;
+
+#define COMBAT_ASSERT(cond, tag, fmt, ...) \
+    do { \
+        if (!(cond)) { \
+            flog("[COMBAT_RULE_VIOLATION][%s] ASSERT FAILED: " fmt, tag, ##__VA_ARGS__); \
+        } \
+    } while(0)
+
 
 #define SP3_MAX_INTERVALS 4
 typedef struct {
@@ -2790,9 +2802,12 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
             set_mana(a0, 0.0f, NULL);
             int player_idx = obj_ok(a1) ? *(int32_t*)((uintptr_t)a1+0xF4) : -1;
             if (player_idx == 0) {
+                g_p0_combat_character = a0;
+                g_p0_last_hp = -1.0f;
                 typedef float (*fn_get_hp)(void*, void*);
                 fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC698);
                 float cur_hp_val = get_hp(a0, NULL);
+                g_p0_last_hp = cur_hp_val;
                 if (cur_hp_val <= 0.0f) {
                     flog("FIXFIGHT: post-init Player 0 HP was %f, recovering to 1.0f", cur_hp_val);
                     void* ch = fld_p(a0, 0x68);
@@ -4469,6 +4484,10 @@ void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     g_sp_touch_tracking = 0;
     g_p0_block_enter_ms = 0;
     g_p0_block_reset_done = 0;
+    g_p0_after_heavy = 0;
+    g_p0_combo_ended = 0;
+    g_p0_combat_character = NULL;
+    g_p0_last_hp = -1.0f;
     return H[140].orig(a0,a1,a2,a3,a4,a5,a6,a7);
 }
 void* hook_141(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
@@ -4632,6 +4651,24 @@ void* hook_145(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
                 reset_player_attack_chain(g_p0_controller);
             }
         }
+        if (g_p0_combat_character && obj_ok(g_p0_combat_character)) {
+            typedef float (*fn_get_hp)(void*, void*);
+            fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC698);
+            float cur_hp = get_hp(g_p0_combat_character, NULL);
+            if (g_p0_last_hp >= 0.0f && cur_hp < g_p0_last_hp - 0.01f) {
+                flog("COMBAT_GATE: P0 took damage (%.1f -> %.1f) -> hit reaction resets attack chain",
+                     g_p0_last_hp, cur_hp);
+                if (g_p0_controller) {
+                    reset_player_attack_chain(g_p0_controller);
+                    g_p0_combo_ended = 0;
+                    g_p0_after_heavy = 0;
+                    COMBAT_ASSERT(*(uint32_t*)((uintptr_t)g_p0_controller + 0x1c0) == 0 &&
+                                  *(uint32_t*)((uintptr_t)g_p0_controller + 0x1c4) == 0,
+                                  "GATE-03", "Combo chain must be reset after hit reaction");
+                }
+            }
+            g_p0_last_hp = cur_hp;
+        }
     });
     return r;
 }
@@ -4743,17 +4780,48 @@ void* hook_153(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
 }
 void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7){
     int action = (int)(intptr_t)a1;
+    uint32_t pre_l = 0, pre_m = 0;
     PROTECT({
         if (obj_ok(self) && *(int32_t*)((uintptr_t)self + 0xF4) == 0) {
             g_p0_controller = self;
+            pre_l = *(uint32_t*)((uintptr_t)self + 0x1c0);
+            pre_m = *(uint32_t*)((uintptr_t)self + 0x1c4);
+
             if (action == 2) {
                 // Action 2 = Swipe back / Dodge input request.
                 // Attack chain is reset when the robot actually enters PlayerDodgeState (hook_165 @ 0x0D34E6C).
                 g_p0_block_enter_ms = 0;
                 g_p0_block_reset_done = 0;
             }
-            if (action == 0x80 || action == 1 || action == 4 || action == 8 || action == 0x100) {
-                // Release block (0x80) or Attack/Dash/Heavy: abort block timer if released before 200ms
+            if (action == 8) {
+                // Action 8 = Heavy Attack: reset attack chain and set after_heavy flag
+                g_p0_block_enter_ms = 0;
+                g_p0_block_reset_done = 0;
+                g_p0_after_heavy = 1;
+                flog("PLAYER_ACTION heavy (action=8) on P0: reset attack chain and arm after_heavy flag");
+                reset_player_attack_chain(self);
+            }
+            if (action == 1 || action == 4) {
+                // Action 1 = Attack (Tap), Action 4 = Dash attack (Swipe forward)
+                if (g_p0_after_heavy) {
+                    flog("COMBAT_GATE: attack following heavy attack (action=%d) -> reset attack chain to L1/M1", action);
+                    reset_player_attack_chain(self);
+                    g_p0_after_heavy = 0;
+                    pre_l = *(uint32_t*)((uintptr_t)self + 0x1c0);
+                    pre_m = *(uint32_t*)((uintptr_t)self + 0x1c4);
+                    COMBAT_ASSERT(pre_l == 0, "GATE-02", "Light index must be 0 after heavy attack, got %u", pre_l);
+                } else if (g_p0_combo_ended || pre_m >= 2 || pre_l >= 4) {
+                    flog("COMBAT_GATE: combo ender reached (ended_flag=%d, pre_m=%u, pre_l=%u, action=%d) -> reset chain",
+                         g_p0_combo_ended, pre_m, pre_l, action);
+                    reset_player_attack_chain(self);
+                    g_p0_combo_ended = 0;
+                    pre_l = *(uint32_t*)((uintptr_t)self + 0x1c0);
+                    pre_m = *(uint32_t*)((uintptr_t)self + 0x1c4);
+                    COMBAT_ASSERT(pre_l == 0 && pre_m == 0, "GATE-01", "Attack after combo ender must start at index 0");
+                }
+            }
+            if (action == 0x80 || action == 1 || action == 4 || action == 0x100) {
+                // Release block (0x80) or Attack/Dash/ChargeHeavy: abort block timer if released before 200ms
                 if (g_p0_block_enter_ms > 0) {
                     uint64_t held = propgo_now_ms() - g_p0_block_enter_ms;
                     g_p0_block_enter_ms = 0;
@@ -4777,7 +4845,19 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
         flog("PLAYER_ACTION action=%d on controller=%p (p0=%p, is_p0=%d)",
              action, self, g_p0_controller, (self == g_p0_controller));
     }
-    return H[154].orig(self, a1, a2, a3, a4, a5, a6, a7);
+    void* r = H[154].orig(self, a1, a2, a3, a4, a5, a6, a7);
+    PROTECT({
+        if (obj_ok(self) && *(int32_t*)((uintptr_t)self + 0xF4) == 0) {
+            uint32_t post_l = *(uint32_t*)((uintptr_t)self + 0x1c0);
+            uint32_t post_m = *(uint32_t*)((uintptr_t)self + 0x1c4);
+            if (post_m >= 2 || post_l >= 4 || (action == 4 && pre_m >= 1) || (action == 1 && pre_l >= 3)) {
+                g_p0_combo_ended = 1;
+                flog("COMBAT_GATE: post-action combo ender detected (action=%d, post_l=%u, post_m=%u) -> g_p0_combo_ended = 1",
+                     action, post_l, post_m);
+            }
+        }
+    });
+    return r;
 }
 void* hook_155(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     void* pc = fld_p(a0, 0x18);
@@ -5083,17 +5163,7 @@ void* hook_166(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
 }
 
 void* hook_167(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
-    void* r = H[167].orig(a0, a1, a2, a3, a4, a5, a6, a7);
-    PROTECT({
-        void* pc = fld_p(a0, 0x18);
-        if (obj_ok(pc) && *(int32_t*)((uintptr_t)pc + 0xF4) == 0) {
-            flog("HEAVY_EXIT (0x0E318E0) on P0: reset attack chain");
-            reset_player_attack_chain(pc);
-        } else if (obj_ok(g_p0_controller)) {
-            reset_player_attack_chain(g_p0_controller);
-        }
-    });
-    return r;
+    return H[167].orig ? H[167].orig(a0, a1, a2, a3, a4, a5, a6, a7) : NULL;
 }
 
 void* hook_168(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
