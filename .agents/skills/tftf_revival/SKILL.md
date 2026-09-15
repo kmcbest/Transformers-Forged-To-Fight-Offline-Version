@@ -416,6 +416,58 @@ python INSTALL-ADB.py
    assert any(m.name == "SlashMesh5" for m in meshes)
    ```
 
+---
 
+## 15. 副本卡片专属图标定制与 ODR 路径解析规范 (Quest Card Custom Icons & ODR Path Resolution)
 
+### 15.1 业务场景与需求
+* **场景**：对于随机敌人路线（如 1.1.1 宿命降临 / Arrival）或多职业高难轮盘战（如 1.1.2 六道轮回 / Karma Six），不应显示默认随机变动的关底 Boss 头像，而需要注入专属的固化方形图标（如专属能量魔方或六芒星轮盘徽标）。
+* **多语言支持**：关卡标题与描述在服务端数据中需支持中英文双语适配（如中文「宿命降临」「六道轮回」，英文「Arrival」「Karma Six」）。
 
+### 15.2 逆向架构与调用链路
+1. **关卡卡片刷新**：
+   关卡选择界面通过 `SelectQuestTile.RefreshDisplay`（`0x11CF018`）计算 Boss 信息后，调用 `SelectQuestTile.SetTexturePath(this, path, addSuffix)`（`0x11CFCAC`）。
+2. **底层贴图设置**：
+   * `a0`：`SelectQuestTile*` 对象指针。
+   * `a1`：贴图相对路径字符串（`Il2CppString*`）。
+   * `a2`：`bool addSuffix`。若为 `true`，底层将自动在字符串后追加 `this->PortraitSuffix`（即 `_quest`）。
+   * `SetTexturePath` 激活 `this->_bossPortrait`（位于偏移 `0x118` 的 `UITextureRef` 组件），并调用 `UITextureRef.set_baseTexturePath`（`0x1991FD0`）。
+3. **ODR 资源调度与加载**：
+   `UITextureRef.LoadTexture` 收集候选路径列表后，最终调用 `EB.Assets.LoadTexture` 在按需资源（ODR）体系中异步加载贴图。
+
+### 15.3 核心陷阱：ODR 资源子目录前缀缺失 (The ODR Subfolder Prefix Trap)
+* **致命陷阱**：
+  在 Unity 及 `EB.Assets` 资源体系中，所有 ODR 资产包内部的文件索引全部带有各包专属的子目录前缀，例如：
+  - 对话框头像：`dialogue_odr` -> `dialogue/bumbl_gs.png`
+  - 场景宣传图：`fightlanding_odr` -> `fightlanding/FightStoryImgLrg.jpg`
+  - 角色头像：`portraits_odr` -> `portraits/portrait_optimus_c_tf_small.jpg`
+  - 关卡看板：`questboard_odr` -> **`questboard/portrait_xxx_quest.png`**
+* **失败表现**：
+  若在 Hook 中重定向至 `portrait_arrival_quest`，由于缺少 `questboard/` 前缀，`EB.Assets` 在读取 `assets/questboard_odr/toc.txt` 时将无法匹配到任何条目，Unity 不会发起资源请求，导致关卡卡片方框内贴图**完全空白且无任何报错提示**。
+* **铁律与规范**：
+  在 `tools/nativehook/hook.c` 的 Hook 170 中进行路径重定向时，**必须显式包含 `questboard/` 子目录前缀，并将 `addSuffix` 置为 0 (`false`)**：
+  ```c
+  if (strcmp(qid, "1.1.1") == 0) {
+      a1 = g_strnew("questboard/portrait_arrival_quest");
+      a2 = (void*)0; // 禁用自动追加 _quest
+  } else if (strcmp(qid, "1.1.2") == 0) {
+      a1 = g_strnew("questboard/portrait_karmasix_quest");
+      a2 = (void*)0;
+  }
+  ```
+
+### 15.4 资源标准与自动化打包流
+1. **图标尺寸与格式**：
+   * 尺寸：**128×128**（无需使用原版 256×256，既保证在卡片方框内的视觉精细度，又能节省 APK 打包体积）。
+   * 格式：RGBA PNG 或高质量 JPEG（推荐转为 RGBA PNG）。
+2. **存放目录与打包自动注入**：
+   * 资源存放在 `assets_redeco/portrait_<name>_quest.png`。
+   * [`Server/build_phone_apk.py`](file:///d:/Agent/tftf/Server/build_phone_apk.py) 已实现全自动识别与装配：
+     1. 自动注入文件至 `assets/assetpack/questboard_odr/questboard/portrait_<name>_quest.png`；
+     2. 自动在 `assets/questboard_odr/toc.txt` 的 `files` 列表中注册 `"questboard/portrait_<name>_quest.png"`。
+3. **验证判定标准**：
+   通过 `adb logcat` 观察必须出现如下资源加载确认行：
+   ```log
+   I Unity : Calling get asset location, assetPackName: default, path: assetpack/questboard_odr/questboard/portrait_arrival_quest.png
+   ```
+   并通过 `python INSTALL-ADB.py --screenshot` 直观复核卡片方框内的图案渲染效果。

@@ -235,8 +235,12 @@ def build_entries(listen_port: int = 8080) -> dict[str, bytes]:
             raise ValueError("invalid prefix rule")
 
     add("GET /base/active", _envelope(gamedata.build_base_active()))
+    add("@questlist:zh", _envelope(gamedata.build_quest_list(lang="zh")))
+    add("@questlist:en", _envelope(gamedata.build_quest_list(lang="en")))
     for set_id, qid in _mission_pairs():
-        add(f"POST /quests/quest-detail/{qid}", _envelope(gamedata.build_quest_detail(qid, set_id)))
+        add(f"POST /quests/quest-detail/{qid}", _envelope(gamedata.build_quest_detail(qid, set_id, lang="zh")))
+        add(f"@questdetail:{qid}:zh", _envelope(gamedata.build_quest_detail(qid, set_id, lang="zh")))
+        add(f"@questdetail:{qid}:en", _envelope(gamedata.build_quest_detail(qid, set_id, lang="en")))
         add(f"POST /quests/quest-begin/{qid}", _quest_begin_template(qid, set_id))
 
         if qid == "1.1.2":

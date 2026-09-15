@@ -546,6 +546,7 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0,          "UNUSED_167",         0, 0 }, // 167 disabled (heavy attack reset handled via action 8 in hook_154)
     { 0x1173FA4, "PCGETSPTIER",        2, 0 }, // 168 PlayerController.GetAvailableSpecialTier -> dynamic special tier
     { 0xFF05C8,  "HUDSPBTN",           2, 0 }, // 169 HudSpecialMeter.OnSpecialButtonPressed -> gesture recognition
+    { 0x11CFCAC, "QUEST_TEX",          2, 0 }, // 170 SelectQuestTile.SetTexturePath -> custom quest icons
 };
 #define NH (int)(sizeof(H)/sizeof(H[0]))
 
@@ -5211,6 +5212,44 @@ void* hook_169(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     return H[169].orig(a0, a1, a2, a3, a4, a5, a6, a7);
 }
 
+void* hook_170(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    PROTECT({
+        if (obj_ok(a0)) {
+            void* summary = *(void**)((char*)a0 + 0xB0);
+            if (obj_ok(summary)) {
+                void* qid_str = *(void**)((char*)summary + 0x20);
+                char qid[32];
+                if (read_str(qid_str, qid, sizeof(qid))) {
+                    char orig_path[128] = "<null>";
+                    if (a1 && obj_ok(a1)) read_str(a1, orig_path, sizeof(orig_path));
+                    if (strcmp(qid, "1.1.1") == 0) {
+                        if (g_strnew) {
+                            a1 = g_strnew("questboard/portrait_arrival_quest");
+                            a2 = (void*)0;
+                            static int logged_111 = 0;
+                            if (logged_111 < 5) {
+                                flog("QUEST_ICON: tile %p (1.1.1, orig='%s') redirected to questboard/portrait_arrival_quest", a0, orig_path);
+                                logged_111++;
+                            }
+                        }
+                    } else if (strcmp(qid, "1.1.2") == 0) {
+                        if (g_strnew) {
+                            a1 = g_strnew("questboard/portrait_karmasix_quest");
+                            a2 = (void*)0;
+                            static int logged_112 = 0;
+                            if (logged_112 < 5) {
+                                flog("QUEST_ICON: tile %p (1.1.2, orig='%s') redirected to questboard/portrait_karmasix_quest", a0, orig_path);
+                                logged_112++;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    });
+    return H[170].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+}
+
 static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hook_7,hook_8,
     hook_9,hook_10,hook_11,hook_12,hook_13,hook_14,hook_15,hook_16,hook_17,hook_18,hook_19,hook_20,hook_21,
     hook_22,hook_23,hook_24,hook_25,hook_26,hook_27,hook_28,hook_29,hook_30,
@@ -5229,7 +5268,7 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     hook_145,hook_146,hook_147,hook_148,hook_149,hook_150,hook_151,
     hook_152,hook_153,hook_154,hook_155,hook_156,hook_157,hook_158,
     hook_159,hook_160,hook_161,hook_162,hook_163,hook_164,
-    hook_165,hook_166,hook_167,hook_168,hook_169 };
+    hook_165,hook_166,hook_167,hook_168,hook_169,hook_170 };
 
 static void write_jump(uint8_t* dst, void* target){
     uint32_t* p = (uint32_t*)dst;

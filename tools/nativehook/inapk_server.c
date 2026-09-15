@@ -715,10 +715,16 @@ static int detect_chinese_language(const char *headers, const char *query) {
 
     return 0;
 }
-
 static const unsigned char *dynamic(const char *headers, const char *method, const char *p, const char *query, const char *body, size_t bn, Out *o, size_t *outn) {
     char key[256], tid[64]="", bid[64]="", mid[64], qid[64]; const unsigned char *v; size_t n; const char *end=body+bn;
-    if(strstr(p,"/quests/quest-list")) { g_current_is_10x_challenge = 0; }
+    if(strstr(p,"/quests/quest-list")) {
+        g_current_is_10x_challenge = 0;
+        int is_zh = detect_chinese_language(headers, query);
+        v = lookup(is_zh ? "@questlist:zh" : "@questlist:en", outn);
+        if(v) return v;
+        v = lookup("GET /quests/quest-list", outn);
+        if(v) return v;
+    }
 
     /* 0. Launcher Menu API & Web UI */
     if(strstr(p, "/launcher/save") && !ci_equal(method, "GET")) {
@@ -803,7 +809,17 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         int first=1; while(q&&q<end){const char *open=strchr(q,'{'),*close;int depth=0;if(!open||open>=end)break;close=open;do{if(*close=='{')depth++;else if(*close=='}')depth--;close++;}while(close<end&&depth);if(depth)break;char hb[64]="", hk[200], sig[32];int rank=json_int(open,close,"rank",1),level=json_int(open,close,"level",1),sl=json_int(open,close,"sig_lvl",0);if(!rank)rank=1;if(!level)level=1;if(!json_string(open,close,"bid",hb,sizeof hb))json_string(open,close,"character",hb,sizeof hb);snprintf(hk,sizeof hk,"@hero:%s:%d:%d",hb,rank,level);v=lookup(hk,&n);if(!v){snprintf(hk,sizeof hk,"@hero:%s:1:1",hb);v=lookup(hk,&n);}if(!v)v=lookup("@hero:*:1:1",&n);if(v){snprintf(sig,sizeof sig,"%d",sl);if(!first&&!out_add(o,",",1))return NULL;int apply_10x=g_current_is_10x_challenge;if(apply_10x){Team tm;if(resolve_team(&tm)){for(int ti=0;ti<tm.count;ti++){if(!strcmp(tm.bid[ti],hb)){apply_10x=0;break;}}}}if(!out_hero_detail(o,v,n,sig,apply_10x))return NULL;first=0;}q=close;}
         v=lookup("@herodata:close",&n);if(!v||!out_add(o,v,n))return NULL; Out compact=*o; o->p=NULL;o->n=o->cap=0; v=json_default_spaces(compact.p,compact.n,o,outn);free(compact.p);return v;
     }
-    if(strstr(p,"/quests/quest-detail/")) { snprintf(mid,sizeof mid,"%.63s",path_last(p));g_current_is_10x_challenge=(strcmp(mid,"1.1.2")==0);snprintf(key,sizeof key,"%s /quests/quest-detail/%s",method,mid);v=lookup(key,&n);if(!v){snprintf(key,sizeof key,"POST /quests/quest-detail/%s",mid);v=lookup(key,&n);}return v?json_default_spaces(v,n,o,outn):NULL; }
+    if(strstr(p,"/quests/quest-detail/")) {
+        snprintf(mid,sizeof mid,"%.63s",path_last(p));
+        g_current_is_10x_challenge=(strcmp(mid,"1.1.2")==0);
+        int is_zh = detect_chinese_language(headers, query);
+        char lkey[128];
+        snprintf(lkey, sizeof lkey, "@questdetail:%s:%s", mid, is_zh ? "zh" : "en");
+        v = lookup(lkey, &n);
+        if(!v) { snprintf(key,sizeof key,"%s /quests/quest-detail/%s",method,mid); v=lookup(key,&n); }
+        if(!v) { snprintf(key,sizeof key,"POST /quests/quest-detail/%s",mid); v=lookup(key,&n); }
+        return v?json_default_spaces(v,n,o,outn):NULL;
+    }
     if(strstr(p,"/quests/quest-begin/")) { Team team; Out qteam={0}; TemplateArg args[8];snprintf(qid,sizeof qid,"%.63s",path_last(p));
         g_current_is_10x_challenge = (strcmp(qid, "1.1.2") == 0);
         int x=0,y=1;store_quest_team(body,end);snprintf(key,sizeof key,"@quest:start:%s",qid);v=lookup(key,&n);if(v)sscanf((const char*)v,"%d %d",&x,&y);

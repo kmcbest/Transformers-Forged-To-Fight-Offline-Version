@@ -752,7 +752,17 @@ public function build_quest_summary(mission_id: text, set_id: text): Json
   let act: integer = mission_part(parts, 0)
   let chapter: integer = mission_part(parts, 1)
   let mission: integer = mission_part(parts, 2)
-  jsonout.json_obj([jsonout.json_pair("id", jsonout.json_text(mission_id)), jsonout.json_pair("setId", jsonout.json_text(set_id)), jsonout.json_pair("hash", jsonout.json_text("h1")), jsonout.json_pair("act", jsonout.json_int(act)), jsonout.json_pair("chapter", jsonout.json_int(chapter)), jsonout.json_pair("mission", jsonout.json_int(mission)), jsonout.json_pair("missionIndex", jsonout.json_int(mission)), jsonout.json_pair("index", jsonout.json_int(mission)), jsonout.json_pair("friendlyName", jsonout.json_text("Arrival")), jsonout.json_pair("description", jsonout.json_text("The first battle.")), jsonout.json_pair("category", jsonout.json_text("story")), jsonout.json_pair("difficulty", jsonout.json_text("normal")), jsonout.json_pair("energyPerTile", jsonout.json_int(1)), jsonout.json_pair("minXpPerTile", jsonout.json_int(1)), jsonout.json_pair("maxXpPerTile", jsonout.json_int(2)), jsonout.json_pair("minHealthPerTile", jsonout.json_int(100)), jsonout.json_pair("maxHealthPerTile", jsonout.json_int(100)), jsonout.json_pair("image", jsonout.json_text("")), jsonout.json_pair("theme", jsonout.json_text("primordial")), jsonout.json_pair("todIndex", jsonout.json_int(0)), jsonout.json_pair("dialogueSets", build_dialogue_sets())])
+  mutable fname: text = "宿命降临"
+  mutable fname_en: text = "Arrival"
+  mutable desc: text = "宿命的初战。"
+  mutable desc_en: text = "The first battle."
+  if mission_id == "1.1.2" then
+    set fname = "六道轮回"
+    set fname_en = "Karma Six"
+    set desc = "高难轮盘挑战：全职业六芒星轮盘战，敌人血量统一10倍！"
+    set desc_en = "High-difficulty wheel challenge: 6-class hexagram wheel battle with 10x enemy HP!"
+  end
+  jsonout.json_obj([jsonout.json_pair("id", jsonout.json_text(mission_id)), jsonout.json_pair("setId", jsonout.json_text(set_id)), jsonout.json_pair("hash", jsonout.json_text("h1")), jsonout.json_pair("act", jsonout.json_int(act)), jsonout.json_pair("chapter", jsonout.json_int(chapter)), jsonout.json_pair("mission", jsonout.json_int(mission)), jsonout.json_pair("missionIndex", jsonout.json_int(mission)), jsonout.json_pair("index", jsonout.json_int(mission)), jsonout.json_pair("friendlyName", jsonout.json_text(fname)), jsonout.json_pair("name_en", jsonout.json_text(fname_en)), jsonout.json_pair("name_zh", jsonout.json_text(fname)), jsonout.json_pair("description", jsonout.json_text(desc)), jsonout.json_pair("description_en", jsonout.json_text(desc_en)), jsonout.json_pair("description_zh", jsonout.json_text(desc)), jsonout.json_pair("category", jsonout.json_text("story")), jsonout.json_pair("difficulty", jsonout.json_text("normal")), jsonout.json_pair("energyPerTile", jsonout.json_int(1)), jsonout.json_pair("minXpPerTile", jsonout.json_int(1)), jsonout.json_pair("maxXpPerTile", jsonout.json_int(2)), jsonout.json_pair("minHealthPerTile", jsonout.json_int(100)), jsonout.json_pair("maxHealthPerTile", jsonout.json_int(100)), jsonout.json_pair("image", jsonout.json_text("")), jsonout.json_pair("theme", jsonout.json_text("primordial")), jsonout.json_pair("todIndex", jsonout.json_int(0)), jsonout.json_pair("dialogueSets", build_dialogue_sets())])
 end
 
 public function build_quest_detail(mission_id: text, set_id: text): Json

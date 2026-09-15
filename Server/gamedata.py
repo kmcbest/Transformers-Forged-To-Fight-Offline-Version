@@ -1484,7 +1484,46 @@ def build_user_data(team=None):
     }
 
 
-def build_quest_summary(mission_id="1.1.1", set_id="story_act1"):
+_QUEST_NAMES = {
+    "1.1.1": {
+        "zh": "宿命降临",
+        "en": "Arrival",
+    },
+    "1.1.2": {
+        "zh": "六道轮回",
+        "en": "Karma Six",
+    },
+}
+
+_QUEST_DESCRIPTIONS = {
+    "1.1.1": {
+        "zh": "宿命的初战。",
+        "en": "The first battle.",
+    },
+    "1.1.2": {
+        "zh": "高难轮盘挑战：全职业六芒星轮盘战，敌人血量统一10倍！",
+        "en": "High-difficulty wheel challenge: 6-class hexagram wheel battle with 10x enemy HP!",
+    },
+}
+
+
+def quest_name(qid, lang="zh"):
+    """Human-readable quest name for a mission id. Supports 'en' and 'zh'."""
+    names = _QUEST_NAMES.get(qid, {})
+    if lang in names:
+        return names[lang]
+    return names.get("zh") or names.get("en") or qid
+
+
+def quest_description(qid, lang="zh"):
+    """Human-readable quest description for a mission id. Supports 'en' and 'zh'."""
+    descs = _QUEST_DESCRIPTIONS.get(qid, {})
+    if lang in descs:
+        return descs[lang]
+    return descs.get("zh") or descs.get("en") or ""
+
+
+def build_quest_summary(mission_id="1.1.1", set_id="story_act1", lang="zh"):
     """The detailed mission Summary (result["data"] of quest-detail; also ActiveQuest.data
     in quest-begin). Fields mirror the quest-list availableQuests entry plus detail-only
     battle/map data, discovered empirically from the client's FDS2 field-name log."""
@@ -1492,13 +1531,21 @@ def build_quest_summary(mission_id="1.1.1", set_id="story_act1"):
     act = int(parts[0]) if len(parts) > 0 and parts[0].isdigit() else 1
     chapter = int(parts[1]) if len(parts) > 1 and parts[1].isdigit() else 1
     mission = int(parts[2]) if len(parts) > 2 and parts[2].isdigit() else 1
+    fname = quest_name(mission_id, lang=lang)
+    desc = quest_description(mission_id, lang=lang)
+    name_en = quest_name(mission_id, lang="en")
+    name_zh = quest_name(mission_id, lang="zh")
+    desc_en = quest_description(mission_id, lang="en")
+    desc_zh = quest_description(mission_id, lang="zh")
     if mission_id == "1.1.2":
         return {
             "id": mission_id, "setId": set_id, "hash": "h1",
             "act": act, "chapter": chapter, "mission": mission,
             "missionIndex": mission, "index": mission,
-            "friendlyName": "六道轮回",
-            "description": "高难轮盘挑战：全职业六芒星轮盘战，敌人血量统一10倍！",
+            "friendlyName": fname,
+            "name_en": name_en, "name_zh": name_zh,
+            "description": desc,
+            "description_en": desc_en, "description_zh": desc_zh,
             "category": "story", "difficulty": "hard",
             "energyPerTile": 1, "minXpPerTile": 10, "maxXpPerTile": 20,
             "minHealthPerTile": 100, "maxHealthPerTile": 100,
@@ -1508,7 +1555,10 @@ def build_quest_summary(mission_id="1.1.1", set_id="story_act1"):
         "id": mission_id, "setId": set_id, "hash": "h1",
         "act": act, "chapter": chapter, "mission": mission,
         "missionIndex": mission, "index": mission,
-        "friendlyName": "Arrival", "description": "The first battle.",
+        "friendlyName": fname,
+        "name_en": name_en, "name_zh": name_zh,
+        "description": desc,
+        "description_en": desc_en, "description_zh": desc_zh,
         "category": "story", "difficulty": "normal",
         "energyPerTile": 1, "minXpPerTile": 1, "maxXpPerTile": 2,
         "minHealthPerTile": 100, "maxHealthPerTile": 100,
@@ -1516,16 +1566,57 @@ def build_quest_summary(mission_id="1.1.1", set_id="story_act1"):
     }
 
 
-def build_quest_detail(mission_id="1.1.1", set_id="story_act1"):
+def build_quest_detail(mission_id="1.1.1", set_id="story_act1", lang="zh"):
     """POST /quests/quest-detail/<mission_id> reply. QuestDB.AddQuestDetails (0x12E4110)
     reads result["data"] as the detailed mission Summary (via Summary.Deserialize, the
     FDS2 reader), then Legacy.QuestSet.AddQuestDetails (0x103A0E4) reads result["progression"]
     and a second maps object (literal @0x2c2b590, key name being confirmed live). Empty
     progression/maps for now -- the structure is being discovered empirically."""
     return {
-        "data": build_quest_summary(mission_id, set_id),
+        "data": build_quest_summary(mission_id, set_id, lang=lang),
         "progression": {},
     }
+
+
+def build_quest_list(lang="zh"):
+    """Build quest-list response structure for available quests."""
+    quests = []
+    for qid in ("1.1.1", "1.1.2"):
+        parts = qid.split(".")
+        act = int(parts[0]) if len(parts) > 0 and parts[0].isdigit() else 1
+        chapter = int(parts[1]) if len(parts) > 1 and parts[1].isdigit() else 1
+        mission = int(parts[2]) if len(parts) > 2 and parts[2].isdigit() else 1
+        fname = quest_name(qid, lang=lang)
+        desc = quest_description(qid, lang=lang)
+        diff = "hard" if qid == "1.1.2" else "normal"
+        min_xp = 10 if qid == "1.1.2" else 1
+        max_xp = 20 if qid == "1.1.2" else 2
+        theme = "primordial" if qid == "1.1.2" else ""
+        quests.append({
+            "id": qid,
+            "act": act, "chapter": chapter, "mission": mission,
+            "missionIndex": mission, "index": mission,
+            "friendlyName": fname,
+            "name_en": quest_name(qid, lang="en"),
+            "name_zh": quest_name(qid, lang="zh"),
+            "description": desc,
+            "description_en": quest_description(qid, lang="en"),
+            "description_zh": quest_description(qid, lang="zh"),
+            "category": "story", "difficulty": diff,
+            "energyPerTile": 1, "minXpPerTile": min_xp, "maxXpPerTile": max_xp,
+            "minHealthPerTile": 100, "maxHealthPerTile": 100,
+            "image": "", "theme": theme,
+        })
+    return [{
+        "hash": "h1", "setId": "story_act1", "setName": "ACT 1", "expiry": 0, "timeLimit": 0, "timeLimitGrace": 0,
+        "showUI": True, "group": "story", "difficulty": "normal", "difficulty_label": "NORMAL",
+        "minLevel": 0, "recommendMinLevel": 0, "cdn": "", "use_ui_color": False, "hasProgression": True,
+        "category": "Story", "tags": [],
+        "actCount": 1, "chapterCount": [1, 1],
+        "acts": [{"name": "ACT 1", "index": 0}, {"name": "ACT 1", "index": 1}],
+        "chapters": [{"name": "Chapter 1", "index": 0, "actIndex": 0}, {"name": "Chapter 1", "index": 1, "actIndex": 1}],
+        "availableQuests": quests,
+    }]
 
 
 def build_challenge_map(qid="1.1.2"):
@@ -1784,7 +1875,7 @@ def build_quest_progression(qid="1.1.1", start=None, team=None):
     }
 
 
-def build_active_quest(qid="1.1.1", set_id="story_act1", team=None):
+def build_active_quest(qid="1.1.1", set_id="story_act1", team=None, lang="zh"):
     """The per-qid VALUE object in quest-begin's result["activeQuests"] dict. Disassembly of
     QuestDB.DeserializeActiveQuests (@0x12E43EC) shows: activeQuests is a Dictionary keyed by
     qid; each value is enumerated, an inner ARRAY is read via Dot.Array (the per-quest instance
@@ -1797,7 +1888,7 @@ def build_active_quest(qid="1.1.1", set_id="story_act1", team=None):
     instance = {
         "id": qid, "qid": qid, "index": 0, "instanceIndex": 0,
         "phase": 0, "startTime": 0, "expiryTime": 0,
-        "data": build_quest_summary(qid, set_id),
+        "data": build_quest_summary(qid, set_id, lang=lang),
         "map": qmap,
     }
     # ActiveQuest..ctor (@0xC38BC8) builds the QuestProgression from
@@ -1821,7 +1912,7 @@ def build_active_quest(qid="1.1.1", set_id="story_act1", team=None):
         # past BeginQuest and the client re-POSTed quest-begin forever.
         "category": "PvE", "mode": "PvE",
         "setId": set_id, "hash": "h1", "phase": 0,
-        "data": build_quest_summary(qid, set_id),
+        "data": build_quest_summary(qid, set_id, lang=lang),
         "map": qmap,
         "progression": {},
         # `instances` is the confirmed Dot.Array key iterated by DeserializeActiveQuests.
@@ -1829,13 +1920,13 @@ def build_active_quest(qid="1.1.1", set_id="story_act1", team=None):
     }
 
 
-def build_quest_begin(qid="1.1.1", set_id="story_act1", team=None):
+def build_quest_begin(qid="1.1.1", set_id="story_act1", team=None, lang="zh"):
     """POST /quests/quest-begin/<qid> reply. QuestDB.DeserializeActiveQuests reads
     result["activeQuests"] via Dot.Object -> it must be a DICTIONARY keyed by qid (an array
     yields null and the parse exits immediately, which is what left combat unloaded). Each value
     is a per-quest object (see build_active_quest)."""
     return {
-        "activeQuests": {qid: build_active_quest(qid, set_id, team)},
+        "activeQuests": {qid: build_active_quest(qid, set_id, team, lang=lang)},
     }
 
 

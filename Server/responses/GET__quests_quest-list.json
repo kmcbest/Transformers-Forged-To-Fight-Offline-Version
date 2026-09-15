@@ -10,7 +10,8 @@
    {
      "id":"1.1.1",
      "act":1,"chapter":1,"mission":1,"missionIndex":1,"index":1,
-     "friendlyName":"Arrival","description":"The first battle.",
+     "friendlyName":"宿命降临","name_en":"Arrival","name_zh":"宿命降临",
+     "description":"宿命的初战。","description_en":"The first battle.","description_zh":"宿命的初战。",
      "category":"story","difficulty":"normal",
      "energyPerTile":1,"minXpPerTile":1,"maxXpPerTile":2,
      "minHealthPerTile":100,"maxHealthPerTile":100,
@@ -19,7 +20,10 @@
    {
      "id":"1.1.2",
      "act":1,"chapter":1,"mission":2,"missionIndex":2,"index":2,
-     "friendlyName":"六道轮回","description":"高难轮盘挑战：全职业六芒星轮盘战，敌人血量统一10倍！",
+     "friendlyName":"六道轮回","name_en":"Karma Six","name_zh":"六道轮回",
+     "description":"高难轮盘挑战：全职业六芒星轮盘战，敌人血量统一10倍！",
+     "description_en":"High-difficulty wheel challenge: 6-class hexagram wheel battle with 10x enemy HP!",
+     "description_zh":"高难轮盘挑战：全职业六芒星轮盘战，敌人血量统一10倍！",
      "category":"story","difficulty":"hard",
      "energyPerTile":1,"minXpPerTile":10,"maxXpPerTile":20,
      "minHealthPerTile":100,"maxHealthPerTile":100,
