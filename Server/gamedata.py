@@ -728,10 +728,10 @@ def build_attack_values():
         }
 
     return {
-        "Light": av("Light", 0.35, 50.0, 0.05, 1.5, 0.0),
-        "Medium": av("Medium", 0.60, 75.0, 0.05, 1.5, 0.0),
-        "Heavy": av("Heavy", 1.00, 120.0, 0.05, 1.5, 0.05),
-        "Ranged": av("Ranged", 0.40, 55.0, 0.05, 1.5, 0.0),
+        "Light": av("Light", 0.35, 50.0, 1.0, 1.5, 0.0),
+        "Medium": av("Medium", 0.60, 75.0, 1.0, 1.5, 0.0),
+        "Heavy": av("Heavy", 1.00, 120.0, 1.0, 1.5, 0.05),
+        "Ranged": av("Ranged", 0.40, 55.0, 1.0, 1.5, 0.0),
     }
 
 
@@ -899,7 +899,7 @@ def build_hero_base(bid, rank=1):
         "rating_hp_base": hp // 2, "rating_attack_base": atk // 2,
         "ab": 1,
         # combat-tuning floats: sensible neutral values (roster view doesn't need real balance)
-        "hp": float(hp), "armor": 0.0, "crit_chance": 0.05, "crit_damage": 1.5,
+        "hp": float(hp), "armor": 0.0, "crit_chance": 1.0, "crit_damage": 1.5,
         "perfect_block_chance": 0.1, "block_proficiency": 0.75, "mana_gain": _MANA_GAIN_RATE,
         "resist_magic": 0.0, "resist_physical": 0.0, "stun_chance": 0.05,
         "cr": 0.0, "rcr": 0.0, "rcd": 0.0, "spb": 0.0, "pjb": 0.0, "cpw": 0.0,
@@ -2368,7 +2368,8 @@ def build_base_hero_details(req_heroes):
                 "m": model_id(bid), "mdl": model_id(bid),
                 "rating_hp": hp, "max_hp": hp,
                 "rating_attack": atk, "attack": atk,
-                "health": hp, "armor": 0, "crit_rate": 0, "crit_dmg": 0,
+                "health": hp, "armor": 0, "crit_rate": 1000, "crit_dmg": 1500,
+                "crit_chance": 1.0, "crit_damage": 1.5,
                 "block_prof": 0, "perfect_block": 0, "sig_ability": 1,
                 "special_attacks": max_special_attacks(bid, star), "user_owned": True,
                 "mana_gain": _MANA_GAIN_RATE, "mana_start": _DIAG_MANA_START,

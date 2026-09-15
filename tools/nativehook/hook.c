@@ -532,7 +532,7 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x1174300, "PCSPECIAL",          2, 0 }, // 153 PlayerController.SpecialAttack(int index)
     { 0x1179AF4, "PCACTION",           2, 0 }, // 154 PlayerController.Action(int action)
     { 0x0E34640, "SPEXIT",             2, 0 }, // 155 PlayerSpecialAttackState.OnExit -> reset attack chain on special end (S1/S2)
-    { 0,          "UNUSED_156",         0, 0 }, // 156 disabled (no-op pass-through)
+    { 0x0DADA6C, "ROLL_CRIT",          2, 0 }, // 156 PlayerAttributes.RollForCriticalHit -> force critical hit
     { 0,          "UNUSED_157",         0, 0 }, // 157 disabled (0x11805C8 was only 8 bytes, clobbered 0x11805D0)
     { 0,          "UNUSED_158",         0, 0 }, // 158 disabled (no-op pass-through)
     { 0,          "UNUSED_159",         0, 0 }, // 159 disabled (no-op pass-through)
@@ -2742,7 +2742,7 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                 *(int32_t*)((char*)at1 + 0x38) = atk;   // Attack
                 *(int32_t*)((char*)at1 + 0x3C) = atk;   // AttackBase
                 *(float*)  ((char*)at1 + 0x40) = 0.0f;  // Armor
-                *(float*)  ((char*)at1 + 0x44) = 0.2f;  // CritChance
+                *(float*)  ((char*)at1 + 0x44) = 1.0f;  // CritChance (Forced 100% test)
                 *(float*)  ((char*)at1 + 0x48) = 1.5f;  // CritDamage
                 *(float*)  ((char*)at1 + 0x50) = 0.5f;  // BlockProficiency
                 *(float*)  ((char*)at1 + 0x54) = g_combat_enemy_mana_gain;  // Dynamic enemy mana gain rate
@@ -2750,6 +2750,7 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
             }
             if (at2 && obj_ok(at2)) {
                 *(int32_t*)((char*)at2 + 0x58) = 0;     // Player ManaStart = 0
+                *(float*)  ((char*)at2 + 0x44) = 1.0f;  // Player CritChance (Forced 100% test)
                 *(float*)  ((char*)at2 + 0x54) = g_combat_player_mana_gain; // Dynamic player mana gain rate
             }
             if (ch1 && obj_ok(ch1)) {
@@ -2765,6 +2766,8 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                  player_idx, id1, hp, atk, pi, g_combat_enemy_mana_gain, tftf_get_challenge_hp_multiplier());
         } else if (player_idx == 0) {
             if (at1 && obj_ok(at1)) {
+                *(float*)((char*)at1 + 0x44) = 1.0f;                      // Player 0 CritChance (Forced 100% test)
+                *(float*)((char*)at1 + 0x48) = 1.5f;                      // Player 0 CritDamage
                 *(float*)((char*)at1 + 0x54) = g_combat_player_mana_gain; // Dynamic player mana gain rate
                 float cur_norm_hp = *(float*)((char*)at1 + 0x34);
                 if (cur_norm_hp <= 0.0f || cur_hp <= 0) {
@@ -2781,6 +2784,7 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                 }
             }
             if (at2 && obj_ok(at2)) {
+                *(float*)((char*)at2 + 0x44) = 1.0f;                      // Enemy CritChance (Forced 100% test)
                 *(float*)((char*)at2 + 0x54) = g_combat_enemy_mana_gain; // Enemy mana gain rate
             }
             if (ch1 && obj_ok(ch1)) {
@@ -2789,6 +2793,8 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                 }
                 *(float*)((char*)ch1 + 0x58) = 1.0f;
             }
+            LOG("FIXFIGHT_STATS: player=0 bp=%s set crit_chance=%.2f at1=%p at2=%p",
+                id1, at1 ? *(float*)((char*)at1 + 0x44) : -1.0f, at1, at2);
         }
         flog("FIXFIGHT player=%d bp1=%s msa=%d attr.specials=%d tags:%p->%p  bp2=%s msa=%d attr.specials=%d tags:%p->%p",
              player_idx, id1, obj_ok(bp1)?*(int32_t*)((uintptr_t)bp1+0xAC):-1,
@@ -4873,7 +4879,14 @@ void* hook_155(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     return r;
 }
 void* hook_156(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
-    return H[156].orig ? H[156].orig(a0, a1, a2, a3, a4, a5, a6, a7) : NULL;
+    if (H[156].orig) {
+        H[156].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    }
+    static int s_crit_log_cnt = 0;
+    if (s_crit_log_cnt++ < 30) {
+        flog("ROLL_CRIT: PlayerAttributes.RollForCriticalHit called on %p -> forcing true (1)", a0);
+    }
+    return (void*)(intptr_t)1;
 }
 void* hook_157(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     return H[157].orig ? H[157].orig(a0, a1, a2, a3, a4, a5, a6, a7) : NULL;
