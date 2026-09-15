@@ -882,6 +882,17 @@ def build_rarity_properties():
 #   list   : stat_mods sig_mods buff_mods i i2 i3 i4
 # 's' is the star/rarity (drives the tile's rarity frame); the rating_* fields drive the
 # RatingWidget; the rest are combat tuning that can default to 0/empty for the roster view.
+def bot_abilities(bid):
+    """Assign abilities per-bot. Single source of truth.
+
+    Arcee (arcee_gs_deluxe2014) gets her official Headshot Bleed ability
+    extracted from tftf_all_characters.json.
+    """
+    if bid == "arcee_gs_deluxe2014":
+        return ["arcee_headshot_bleed"]
+    return []
+
+
 def build_hero_base(bid, rank=1):
     """One BCGHeroBase record for login `heroes[bid][rank]`. Deterministic/original,
     reusing the same authored stat curve as the owned-hero + blueprint builders."""
@@ -906,7 +917,7 @@ def build_hero_base(bid, rank=1):
         "ap": 0.0, "bp": 0.0, "il": 0.0, "il2": 0.0, "il3": 0.0, "is4": 0.0,
         "eg": 0.0, "fg": 0.0, "ar": 0.0, "hr": 0.0, "hm": 0.0, "am": 0.0,
         "hrhp": 0.0, "hra": 0.0,
-        "stat_mods": [], "sig_mods": [], "buff_mods": [],
+        "stat_mods": bot_abilities(bid), "sig_mods": [], "buff_mods": [],
         "i": [], "i2": [], "i3": [], "i4": [],
     }
 
@@ -973,6 +984,129 @@ def build_heroes():
     return out
 
 
+def build_buffs_config():
+    """Defines stackability and UI display settings for combat buff groupings."""
+    return {
+        "groupings": {
+            "floating_text_dmg": {"stackable": True, "active_display": False},
+            "floating_text_heal": {"stackable": True, "active_display": False},
+            "dmg_bleed": {"stackable": True, "active_display": True},
+        }
+    }
+
+
+def build_buffs_set():
+    """Global buff behaviors for combat arbiter.
+
+    Ids here correspond to 't' field in statMods (must match exactly).
+    """
+    return {
+        "globalBuffs": {
+            "floating_text_dmg": {
+                "id": "floating_text_dmg",
+                "iconTexture": "",
+                "image": "",
+                "images3": False,
+                "modeAvail": [],
+                "scope": "global",
+                "valueType": "absolute",
+                "displayValue": 0.0,
+                "c": 1,
+                "value": 0.0,
+                "buffType": "floating_text",
+                "group": "floating_text_dmg",
+                "p": {"key": "_ftd", "style": 0},
+                "hasDuration": False,
+                "e": 0,
+                "time": {"amount": 0},
+                "loc_name": "floating_text_dmg",
+                "loc_desc": "floating_text_dmg",
+            },
+            "floating_text_heal": {
+                "id": "floating_text_heal",
+                "iconTexture": "",
+                "image": "",
+                "images3": False,
+                "modeAvail": [],
+                "scope": "global",
+                "valueType": "absolute",
+                "displayValue": 0.0,
+                "c": 1,
+                "value": 0.0,
+                "buffType": "floating_text",
+                "group": "floating_text_heal",
+                "p": {"key": "_fth", "style": 0},
+                "hasDuration": False,
+                "e": 0,
+                "time": {"amount": 0},
+                "loc_name": "floating_text_heal",
+                "loc_desc": "floating_text_heal",
+            },
+            "dmg_bleed": {
+                "id": "dmg_bleed",
+                "iconTexture": "",
+                "image": "",
+                "images3": False,
+                "modeAvail": [],
+                "scope": "global",
+                "valueType": "percent",
+                "displayValue": 0.6,
+                "c": 1,
+                "value": 0.6,
+                "buffType": "damage",
+                "group": "dmg_bleed",
+                "p": {"damage_type": "bleed"},
+                "hasDuration": True,
+                "e": 0,
+                "time": {"amount": 3.0},
+                "loc_name": "bleed",
+                "loc_desc": "bleed",
+            },
+        },
+        "userBuffs": {},
+    }
+
+
+def build_stat_mod_appears():
+    """Visual appearances for stat modifiers and combat buffs.
+
+    Uses genuine Unicode PUA codepoints for Tecnica_Bold_116 font:
+    \uE402 = bleed glyph
+    """
+    return {
+        "arcee_headshot_bleed": {
+            "id": "arcee_headshot_bleed",
+            "a": "Headshot Bleed",
+            "s": "Bleed",
+            "l": "Ranged strikes inflict a bleeding headshot: 60% of Attack as direct bleed damage over 3 seconds.",
+            "ss": "60% of Attack as bleed damage over 3 seconds.",
+            "t": "\uE402",
+            "f": "",
+            "st": "BLEED",
+            "ps": "Bleed",
+            "pl": "60% of Attack as bleed damage over 3 seconds.",
+            "tc": "#FFFFFF",
+            "gt": "#FFFFFF",
+            "gb": "#FFFFFF",
+        },
+        "dmg_bleed": {
+            "id": "dmg_bleed",
+            "a": "Bleed",
+            "s": "Bleed",
+            "l": "Direct damage over time ignoring armor.",
+            "ss": "Direct damage over time ignoring armor.",
+            "t": "\uE402",
+            "f": "",
+            "st": "BLEED",
+            "ps": "Bleed",
+            "pl": "Direct damage over time ignoring armor.",
+            "tc": "#FFFFFF",
+            "gt": "#FFFFFF",
+            "gb": "#FFFFFF",
+        },
+    }
+
+
 def build_stat_modifiers():
     """Original offline stat modifiers keyed exactly as BCGStatModifierDict expects.
 
@@ -1012,6 +1146,64 @@ def build_stat_modifiers():
             "rh": 0.0,
             "ra": 0.0,
         },
+        "gp_dmg_ft": {
+            "id": "gp_dmg_ft",
+            "t": "floating_text_dmg",
+            "tm": "",
+            "tr": [],
+            "uit": [],
+            "pri": 0,
+            "trm": 0.0,
+            "trs": "",
+            "trr": "none",
+            "c": 1.0,
+            "m": 1.0,
+            "d": 0.0,
+            "s": "none",
+            "ta": "self",
+            "mt": "passive",
+            "v": "",
+            "ms": "",
+            "st": 0,
+            "g": "",
+            "gc": 0.0,
+            "gcv": "",
+            "rcv": "",
+            "ti": 0,
+            "a": [],
+            "au": [],
+            "rh": 0.0,
+            "ra": 0.0,
+        },
+        "arcee_headshot_bleed": {
+            "id": "arcee_headshot_bleed",
+            "t": "dmg_bleed",
+            "tm": "",
+            "tr": ["onHit"],
+            "uit": ["onHit"],
+            "pri": 0,
+            "trm": 0.0,
+            "trs": "",
+            "trr": "repeat",
+            "c": 1.0,
+            "m": 0.6,
+            "d": 3.0,
+            "s": "none",
+            "ta": "opponent",
+            "mt": "debuff",
+            "v": "",
+            "ms": "",
+            "st": 1,
+            "g": "",
+            "gc": 0.0,
+            "gcv": "",
+            "rcv": "",
+            "ti": 0,
+            "a": ["arcee_headshot_bleed"],
+            "au": [],
+            "rh": 0.0,
+            "ra": 0.0,
+        },
     }
 
 
@@ -1027,7 +1219,7 @@ def build_login_data(lang="en"):
         "heroRatingMaxHPWeight": 1.0,
         "attributeGrowthDefs": [],
         "statMods": build_stat_modifiers(),
-        "statModAppears": {},
+        "statModAppears": build_stat_mod_appears(),
         # NOTE (session 3): this map is BCGManager._baseHeroData (BCGHeroBaseDict), the per-
         # (blueprint,rank) BASE-ATTRIBUTE templates -> structure heroes[blueprintId][rank] =
         # { <BCGHeroBase fields, parsed by BCGHeroBase..ctor RVA 0xC21AC4> }. It is EMPTY here,
@@ -1071,6 +1263,7 @@ def build_hero_entry(bid, rank=None, level=None):
         "rating_attack": atk // 2, "rating_hp": hp // 2,
         "rating_attack_base": atk // 2, "rating_hp_base": hp // 2,
         "special_attacks": max_special_attacks(bid, star), "pvpb": {}, "exc": {},
+        "stat_mods": bot_abilities(bid), "sig_mods": [], "buff_mods": [],
         "mana_gain": _MANA_GAIN_RATE, "mana_start": _DIAG_MANA_START,
         "flvl": 100, "req_fxp": 0, "max_fxp": 100, "mfl": 100,
     }
@@ -1850,7 +2043,7 @@ def build_quest_progression(qid="1.1.1", start=None, team=None):
             "hp": 1.0,
             "pi": (hp + atk) // 20,
             "sig_lvl": 100,
-            "stat_mods": [],
+            "stat_mods": bot_abilities(bid),
             "sig_mods": [],
         }
     user = {
@@ -2372,6 +2565,7 @@ def build_base_hero_details(req_heroes):
                 "crit_chance": 1.0, "crit_damage": 1.5,
                 "block_prof": 0, "perfect_block": 0, "sig_ability": 1,
                 "special_attacks": max_special_attacks(bid, star), "user_owned": True,
+                "stat_mods": bot_abilities(bid), "sig_mods": [], "buff_mods": [],
                 "mana_gain": _MANA_GAIN_RATE, "mana_start": _DIAG_MANA_START,
                 "flvl": 100, "req_fxp": 0, "max_fxp": 100, "mfl": 100,
                 "synergyBonuses": [], "pvpb": {},
@@ -2401,9 +2595,13 @@ def build_responses():
     with open(account_path, encoding="utf-8") as f:
         account = json.load(f)
     account["result"]["missionsconfig"] = build_missions_account_data()
+    account["result"]["buffs_cdn"] = ""
+    account["result"]["buffs_config"] = build_buffs_config()
+    account["result"]["buffs_set"] = build_buffs_set()
+    account["result"]["buffs"] = {}
     with open(account_path, "w", encoding="utf-8") as f:
         f.write(json.dumps(account, separators=(",", ":")))
-    print("updated GET__account_data.json missionsconfig")
+    print("updated GET__account_data.json missionsconfig and buffs")
 
     refresh_path = os.path.join(
         RESP_DIR, "GET__autorefresh_missionsconfig_refresh.json"
