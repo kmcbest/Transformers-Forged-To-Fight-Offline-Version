@@ -60,7 +60,7 @@ CDN = "https://tform-0901-hzlhiniyfcwf.tf-cdn.net"
 
 # ---------------------------------------------------------------------------
 # Roster.  id -> (faction, class, star)
-#   faction : "autobot" | "decepticon"  (maps to the `gen` field)
+#   faction : "autobot" | "decepticon" | "maximal" | "predacon"  (maps to the `gen` field)
 #   class   : one of CLASSES
 #   star    : 1..5 rarity, drives the authored stat curve below
 #
@@ -78,10 +78,10 @@ ROSTER = {
     "blaster_gs_leader2016":        ("autobot",    "tech", 5),
     "bumblebee_cin_dotm":           ("autobot",    "tact", 5),
     "bumblebee_gs_kabam":           ("autobot",    "scou", 5),
-    "cheetor_bw_transmetal":        ("autobot",    "scou", 5),
+    "cheetor_bw_transmetal":        ("maximal",    "scou", 5),
     "chromia_gs_kabam":             ("autobot",    "warr", 5),
     "cliffjumper_gs_kabam":         ("autobot",    "demo", 5),
-    "dinobot_bw_kabam":             ("autobot",    "tact", 5),
+    "dinobot_bw_kabam":             ("maximal",    "tact", 5),
     "drift_cin_aoe":                ("autobot",    "warr", 5),
     "grimlock_gs_mp08":             ("autobot",    "braw", 5),
     "hotrod_cin_tlk":               ("autobot",    "warr", 5),
@@ -92,12 +92,12 @@ ROSTER = {
     "jetfire_gs_leader2014":        ("autobot",    "tech", 5),
     "lifeline_gs_deluxe2014":       ("autobot",    "tech", 5),
     "mirage_gs_deluxe2016":         ("autobot",    "tech", 5),
-    "optimusprimal_bw_mp32":        ("autobot",    "braw", 5),
+    "optimusprimal_bw_mp32":        ("maximal",    "braw", 5),
     "optimusprime_cin_tf":          ("autobot",    "braw", 5),
     "optimusprime_sg_voyager2015":  ("autobot",    "braw", 5),
     "prowl_gs_deluxe2016":          ("autobot",    "scou", 5),
     "ratchet_gs_kabam":             ("autobot",    "tech", 5),
-    "rhinox_gs_voyager2014":        ("autobot",    "tech", 5),
+    "rhinox_gs_voyager2014":        ("maximal",    "tech", 5),
     "rodimusprime_gs_mp09":         ("autobot",    "tact", 5),
     "sideswipe_gs":                 ("autobot",    "scou", 5),
     "starsaber_gs_leader2014":      ("autobot",    "tact", 5),
@@ -133,7 +133,7 @@ ROSTER = {
     "nemesisprime_gs_voyager2015":  ("decepticon", "tact", 5),
     "novastorm_gs_leader2015":      ("decepticon", "demo", 5),
     "ramjet_gs_deluxe2008":         ("decepticon", "demo", 5),
-    "scorponok_bw_kabam":           ("decepticon", "warr", 5),
+    "scorponok_bw_kabam":           ("predacon",   "warr", 5),
     "shockwave_gs":                 ("decepticon", "tech", 5),
     "skywarp_gs_leader2015":        ("decepticon", "tech", 5),
     "slipstream_gs":                ("decepticon", "scou", 5),
@@ -143,7 +143,7 @@ ROSTER = {
     "thundercracker_gs_leader2015": ("decepticon", "braw", 5),
     "thrust_gs_deluxe2008":         ("decepticon", "scou", 5),
     "tantrum_gs_kabam":             ("decepticon", "braw", 5),
-    "waspinator_gs_deluxe":         ("decepticon", "demo", 5),
+    "waspinator_gs_deluxe":         ("predacon",   "demo", 5),
 
     # --- Sharkticons (unlocked 5-star cards; cannon-fodder combat stats preserved) ---
     "sharkticon_gs_kabam":          ("decepticon", "braw", 5),

@@ -471,3 +471,45 @@ python INSTALL-ADB.py
    I Unity : Calling get asset location, assetPackName: default, path: assetpack/questboard_odr/questboard/portrait_arrival_quest.png
    ```
    并通过 `python INSTALL-ADB.py --screenshot` 直观复核卡片方框内的图案渲染效果。
+
+---
+
+## 16. 阵营徽章 PUA 字形与"静默空白"陷阱 (Faction Badge PUA Glyph & Silent Blank Trap)
+
+### 16.1 现象
+* **主现象**：机器人列表（BOTS）卡片的 RatingWidget 上，稀有度外框、星级、战力数字全部正常，**唯独阵营徽章位置空白**——不崩溃、不报错、`logcat` 里也没有任何异常。
+* **连带现象**：接入野兽之战（Beast Wars）角色后，黄豹 / 恐龙勇士 / 猩猩队长 / 犀牛显示成**汽车人**徽章，黄蜂勇士 / 巨蝎勇士显示成**霸天虎**徽章。
+
+### 16.2 逆向架构：徽章是字形，不是 Sprite
+阵营徽章**不存在于任何图集**，它是 **UI 字体的私用区（PUA）字形**；客户端把"一个字符"写进 RatingWidget 的阵营 UILabel（`widget+0x30`，用 `GameObject.SetActive` 激活）来绘制：
+
+| 字形 | 阵营 | `ROSTER.faction` 取值 |
+| :--- | :--- | :--- |
+| `U+E134` | Autobot 汽车人 | `"autobot"` |
+| `U+E135` | Decepticon 霸天虎 | `"decepticon"` |
+| `U+E160` | Maximal 巨无霸 | `"maximal"` |
+| `U+E161` | Predacon 原始兽 | `"predacon"` |
+
+数据链路（单一真理源 → 客户端字段 → hook 读回）：
+
+```
+Server/gamedata.py ROSTER.faction
+  └─ blueprint `a` (AttributeBaseType @0x70) ──┐
+  └─ characters `gen` / `hc` / `hero_colour`   ├─ hook 从 blueprint @0x70 读回字符串
+  └─ userData `faction`  (@0x48 的 blueprint) ─┘
+```
+
+### 16.3 根本原因：为什么会"静默空白"
+1. 早期实现把"取阵营 → 翻译成字形"整件事**外包给客户端的图标查询函数**（`0xC2197C`）与 `HeroData.get_Faction`（`0xE8D8A0`）。这两个符号在本工程内没有任何名字注释（`re_notes/dump.cs` 已不在仓库里），签名与 key 契约**无从验证**。
+2. 该查询函数遇到不认识的 key **返回 NULL**，而调用点写成 `if (icon_str) { set_text(...) }`——判空后**直接跳过写入**。于是既不崩、也不打日志，徽章就是空白：故障被"静默吞掉"。
+3. 更隐蔽的是：**客户端自己的 `RatingWidget.SetData` 走的是同一个 getter**。hook 只是"用同一条坏链路再画一遍"，无论怎么调参都不可能画出来——必须把映射表拿回自己手里。
+4. `int faction = get_Faction(...)` 这种把未知返回类型一律当 `int` 接的写法同样是隐患：若该 getter 返回 `Il2CppString*`，指针会被截断成低 32 位再喂给查表函数，永远查不到。
+
+### 16.4 规范与铁律
+1. **铁律 1（映射表自己写）**：阵营 → PUA 字形必须由 `tools/nativehook/hook.c` 的 `faction_icon_code()` / `faction_icon_glyph()` 用 `if/switch` 本地实现，**禁止**委托客户端的图标查询函数（`0xC2197C`）与 `0xE8D94C`。字形用 `g_strnew()`（UTF-8）构造后写入阵营 label。
+2. **铁律 2（读我们自己的字段）**：阵营字符串优先读 blueprint 的 `AttributeBaseType`（`@0x70` == login-data 的 `a`），`HeroData.get_Faction`（`0xE8D8A0`）只保留为兜底，避免客户端字段一挪就再次静默空白。
+3. **铁律 3（取值小写 + 四处同步）**：`ROSTER.faction` 一律小写；新增 / 修改角色时，`Server/gamedata.py`、`Server/bot_names_zh.json`、`bot_names_zh.json`、`Server/gamedata.lbl` 四处同名定义必须同步。野兽之战角色归属以客户端自带官方 bio 为准（`assets/xlate/snapshots/zh-CN/character_bios_zh-CN.json`）。
+4. **铁律 4（不许静默）**：任何"取值 → 查表 → 写入"的链路都要带日志。现行 hook 会打印 `RATEWGT <bid> faction='...' glyph=U+.... label=...(<类名>) written`；取不到时打印 `-> NO glyph, badge blank`（`label=(非 Label 类名)` 就意味着 `widget+0x30` 的偏移判断也错了）。
+5. **判定标准**：真机 `logcat` 或 `/sdcard/Documents/tftf_*.log` 必须出现 `RATEWGT ... written`；BOTS 列表中黄豹 / 恐龙勇士 / 猩猩队长 / 犀牛为 `U+E160`（巨无霸），黄蜂勇士 / 巨蝎勇士为 `U+E161`（原始兽）。
+
+> 关联记录：[`re_notes/ROSTER_PORTRAIT_RARITY_FRAME_AND_STARS.md`](file:///e:/Agent/TFTF/re_notes/ROSTER_PORTRAIT_RARITY_FRAME_AND_STARS.md) 第六节。

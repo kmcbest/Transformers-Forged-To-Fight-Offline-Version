@@ -45,7 +45,7 @@
     "cheetor_bw_transmetal": {
         "en": "Cheetor",
         "zh": "黄豹",
-        "faction": "汽车人",
+        "faction": "巨无霸",
         "note": "超能勇士·金属变异"
     },
     "chromia_gs_kabam": {
@@ -63,7 +63,7 @@
     "dinobot_bw_kabam": {
         "en": "Dinobot",
         "zh": "恐龙勇士",
-        "faction": "汽车人",
+        "faction": "巨无霸",
         "note": "超能勇士 战术系"
     },
     "drift_cin_aoe": {
@@ -123,7 +123,7 @@
     "optimusprimal_bw_mp32": {
         "en": "Optimus Primal",
         "zh": "猩猩队长",
-        "faction": "汽车人",
+        "faction": "巨无霸",
         "note": "超能勇士 巨无霸领袖"
     },
     "optimusprime_cin_tf": {
@@ -153,7 +153,7 @@
     "rhinox_gs_voyager2014": {
         "en": "Rhinox",
         "zh": "犀牛",
-        "faction": "汽车人",
+        "faction": "巨无霸",
         "note": "超能勇士 科技系"
     },
     "rodimusprime_gs_mp09": {
@@ -321,7 +321,7 @@
     "scorponok_bw_kabam": {
         "en": "Scorponok",
         "zh": "巨蝎勇士",
-        "faction": "霸天虎",
+        "faction": "原始兽",
         "note": "超能勇士 原始兽"
     },
     "shockwave_gs": {
@@ -375,7 +375,7 @@
     "waspinator_gs_deluxe": {
         "en": "Waspinator",
         "zh": "黄蜂勇士",
-        "faction": "霸天虎",
+        "faction": "原始兽",
         "note": "超能勇士 爆破系"
     },
     "sharkticon_gs_kabam": {

@@ -776,6 +776,54 @@ MKHOOK(0) MKHOOK(1) MKHOOK(2) MKHOOK(3) MKHOOK(4) MKHOOK(5) MKHOOK(6) MKHOOK(7)
 MKHOOK(9) MKHOOK(10) MKHOOK(11) MKHOOK(12) MKHOOK(14) MKHOOK(15) MKHOOK(16)
 MKHOOK(17) MKHOOK(18) MKHOOK(19) MKHOOK(20)
 MKHOOK(25) MKHOOK(26) MKHOOK(27) MKHOOK(29) MKHOOK(30)
+// ---- roster faction badge ---------------------------------------------------
+// The BOTS tile's faction badge is NOT a sprite: it is a PRIVATE-USE glyph of the
+// UI font, drawn by putting ONE character into the RatingWidget's faction label
+// (U+E134 Autobot, U+E135 Decepticon, U+E160 Maximal, U+E161 Predacon).
+//
+// The previous version asked the client's own lookup (0xC2197C) for that glyph,
+// feeding it an int from HeroData.get_Faction (0xE8D8A0). Neither symbol is named
+// anywhere in this file and re_notes/dump.cs is not in the tree, so both contracts
+// are unverified; and the lookup returns NULL for a key it does not recognise,
+// after which `if (icon_str)` skips the write entirely -> the badge stays blank
+// with no error at all. So the mapping is done HERE ("if/switch -> PUA char"),
+// from the faction string this project authors itself
+// (Server/gamedata.py ROSTER -> blueprint `a` / AttributeBaseType @0x70).
+static int faction_icon_code(const char* faction) {
+    if (!faction || !*faction) return 0;
+    if (!strcmp(faction, "autobot"))    return 0xE134;  // Autobot
+    if (!strcmp(faction, "decepticon")) return 0xE135;  // Decepticon
+    if (!strcmp(faction, "maximal"))    return 0xE160;  // Maximal
+    if (!strcmp(faction, "predacon"))   return 0xE161;  // Predacon
+    return 0;
+}
+// UTF-8 bytes of that one glyph (il2cpp_string_new takes a UTF-8 C string).
+static const char* faction_icon_glyph(const char* faction) {
+    switch (faction_icon_code(faction)) {
+        case 0xE134: return "\uE134";   // EE 84 B4
+        case 0xE135: return "\uE135";   // EE 84 B5
+        case 0xE160: return "\uE160";   // EE 85 A0
+        case 0xE161: return "\uE161";   // EE 85 A1
+    }
+    return NULL;
+}
+// Resolve the hero's authored faction string. Primary source is the blueprint's
+// AttributeBaseType (@0x70 == the login-data `a` key, authored from ROSTER);
+// HeroData.get_Faction (@0xE8D8A0) is kept only as a fallback so that a field move
+// on either side cannot silently blank the badge again.
+static const char* hero_faction_str(void* hero_data) {
+    static char buf[24];
+    buf[0] = 0;
+    if (!obj_ok(hero_data)) return NULL;
+    void* bp = *(void**)((char*)hero_data + 0x48);
+    if (obj_ok(bp)) {
+        void* a = *(void**)((char*)bp + 0x70);
+        if (read_str(a, buf, sizeof buf) && buf[0]) return buf;
+    }
+    void* f = ((void*(*)(void*,void*))(g_base + 0xE8D8A0))(hero_data, NULL);
+    if (read_str(f, buf, sizeof buf) && buf[0]) return buf;
+    return NULL;
+}
 static void apply_hero_portrait_deco(void* hp) {
     if (!hp || (uintptr_t)hp < 0x100000 || ((uintptr_t)hp & 7)) return;
     PROTECT({
@@ -904,17 +952,46 @@ static void apply_hero_portrait_deco(void* hp) {
                             }
                         }
 
-                        // If RatingWidget, explicitly activate FactionLabel and reposition aligner!
+                        // If RatingWidget, activate FactionLabel and paint the faction glyph ourselves.
                         if (cname && strstr(cname, "RatingWidget")) {
                             void* flabel = *(void**)((char*)w + 0x30);
                             if (flabel && (uintptr_t)flabel >= 0x100000 && !((uintptr_t)flabel & 7)) {
                                 void* fgo = comp_get_go(flabel, NULL);
                                 if (fgo) go_set_active(fgo, 1, NULL);
-                                int faction = ((int(*)(void*, void*))(g_base + 0xE8D8A0))(hero_data, NULL);
-                                int isUpgraded = ((int(*)(void*, void*))(g_base + 0xE8D94C))(hero_data, NULL);
-                                void* icon_str = ((void*(*)(int, int, void*))(g_base + 0xC2197C))(faction, isUpgraded, NULL);
-                                if (icon_str) {
-                                    ((void(*)(void*, void*, void*))(g_base + 0xDE127C))(flabel, icon_str, NULL);
+                                // Faction badge: resolve the authored faction and map it to its PUA
+                                // glyph locally. Never route this through the client's own icon lookup
+                                // (0xC2197C): an unrecognised key makes it return NULL and the badge
+                                // then stays blank without a single error.
+                                char bid[80]; bid[0] = 0;
+                                read_str(*(void**)((char*)hero_data + 0x10), bid, sizeof bid);
+                                const char* faction = hero_faction_str(hero_data);
+                                const char* glyph = faction_icon_glyph(faction);
+                                char lcn[40]; lcn[0] = 0;
+                                {   // diagnostic: what really sits at widget+0x30?
+                                    void* fk = *(void**)flabel;
+                                    if (obj_ok(fk)) {
+                                        const char* n = *(const char**)((char*)fk + 0x10);
+                                        if ((uintptr_t)n >= 0x100000) {
+                                            int k = 0;
+                                            for (; k < 39; k++) { char ch = n[k]; if (!ch || ch < 0x20 || ch >= 0x7f) break; lcn[k] = ch; }
+                                            lcn[k] = 0;
+                                        }
+                                    }
+                                }
+                                if (glyph && g_strnew) {
+                                    void* icon_str = g_strnew(glyph);
+                                    if (icon_str) {
+                                        ((void(*)(void*, void*, void*))(g_base + 0xDE127C))(flabel, icon_str, NULL);
+                                        flog("RATEWGT %s faction='%s' glyph=U+%04X label=%p(%s) written",
+                                             bid[0] ? bid : "?", faction ? faction : "<null>",
+                                             (unsigned)faction_icon_code(faction), flabel, lcn);
+                                    }
+                                } else {
+                                    int attr_raw = 0;
+                                    void* bp2 = *(void**)((char*)hero_data + 0x48);
+                                    if (obj_ok(bp2)) attr_raw = *(int*)((char*)bp2 + 0x70);
+                                    flog("RATEWGT %s faction='%s' attr_raw=%d label=%p(%s) -> NO glyph, badge blank",
+                                         bid[0] ? bid : "?", faction ? faction : "<null>", attr_raw, flabel, lcn);
                                 }
                             }
                             void* r_align = *(void**)((char*)w + 0x38);

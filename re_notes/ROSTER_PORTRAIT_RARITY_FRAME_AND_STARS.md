@@ -7,7 +7,7 @@
 - **原版设计**：
   1. 拥有**稀有度外框（Rarity Frame）**：5 星机器人拥有**高亮发光的紫色外框**（1~4 星分别为灰/绿/蓝/金）。
   2. 底部拥有**星级展示（Stars）**：显示对应的 1~5 颗白色星星（`★★★★★`），觉醒后显示为发光蓝星。
-  3. 战力左侧拥有**阵营徽章（Faction Badge）**：汽车人（Autobot）红色标志或霸天虎（Decepticon）紫色标志。
+  3. 战力左侧拥有**阵营徽章（Faction Badge）**：汽车人（Autobot）红色标志 / 霸天虎（Decepticon）紫色标志 / 巨无霸（Maximal）/ 原始兽（Predacon）。**注意：它不是 Sprite，而是 UI 字体里的私用区（PUA）字形**（`U+E134` / `U+E135` / `U+E160` / `U+E161`），实现细节见文末「六」与 `.agents/skills/tftf_revival/SKILL.md` §16。
 
 ---
 
@@ -36,10 +36,12 @@
 
 UI 系统基于 **NGUI** 实现，核心组件为 `HeroPortrait`、`RarityWidget`、`RatingWidget`。
 
+> ⚠️ **下表为早期草稿，部分 RVA 与现行实现不符**（例如 `RefreshFromData` / `SetRarityFrame` 已就地更正，`HeroData::get_Faction` 与 `RatingWidget::SetData` 两行始终未经证实）。**一律以 [`tools/nativehook/hook.c`](file:///e:/Agent/TFTF/tools/nativehook/hook.c) 的 `H[]` 表与实际调用点为准**；这段草稿的未证实偏移正是「阵营徽章静默空白」能存活下来的原因之一，详见文末「六」。
+
 | 类与方法名 | ARM64 偏移 (RVA) | 功能说明 |
 | :--- | :--- | :--- |
-| `HeroPortrait::RefreshFromData` | `0xE91530` | 核心刷新入口：根据绑定 `HeroData` 刷新卡片各子组件 |
-| `HeroPortrait::SetRarityFrame` | `0xE91E10` | 边框设置方法：传入 Sprite 名字（如 `"frame_portrait_rarity_5"`） |
+| `HeroPortrait::RefreshFromData` | `0xE8DF9C` | 核心刷新入口：根据绑定 `HeroData` 刷新卡片各子组件（hook 槽位 33 `RFD`） |
+| `HeroPortrait::SetRarityFrame` | `0xE91768` | 边框设置方法（调用点：`apply_hero_portrait_deco`，`hp, rarity, NULL`） |
 | `HeroPortrait::ForceSetRarityFrame` | `0xE91D18` | 强制重新设置并刷新边框 UISprite |
 | `HeroPortrait::OnHeroTextureLoaded` | `0xE917CC` | 头像贴图加载完成回调（已有 Hook Slot 46 `TEXDONE`） |
 | `HeroPortrait::SetEnabledItems` | `0xE8FE60` | 位掩码开关（`OverlayBitMap`: 包含 `HERO_RARITY` 掩码） |
@@ -182,3 +184,33 @@ def build_rarity_properties():
    - 验证 5 星机器人卡片是否已显示**紫色发光外框**。
    - 验证卡片下方是否正确排列 **5 颗白色星星（★★★★★）**。
    - 验证战力数值旁是否显示**霸天虎/汽车人阵营标志**。
+
+---
+
+## 六、阵营徽章（PUA 字形）补充记录与踩坑（真机验证）
+
+> 完整踩坑条目见 `.agents/skills/tftf_revival/SKILL.md` §16；此处只记录与本方案直接相关的结论与偏差修正。
+
+### 6.1 机制更正：徽章是字形，不是图集 Sprite
+第二节把阵营徽章归到 `assets_common.assetbundle` 图集（`FactionIcon`）是**错的**。阵营徽章是 **UI 字体的私用区（PUA）字形**，客户端把"一个字符"写进 RatingWidget 的阵营 UILabel（`widget+0x30`，先 `GameObject.SetActive(1)`）来绘制：
+
+| 字形 | 阵营 | `ROSTER.faction` 取值（必须小写） |
+| :--- | :--- | :--- |
+| `U+E134` | Autobot 汽车人 | `"autobot"` |
+| `U+E135` | Decepticon 霸天虎 | `"decepticon"` |
+| `U+E160` | Maximal 巨无霸 | `"maximal"` |
+| `U+E161` | Predacon 原始兽 | `"predacon"` |
+
+### 6.2 静默空白的根因
+早期实现把"取阵营 → 翻译成字形"外包给客户端符号：`HeroData.get_Faction`（`0xE8D8A0`；第三节表格曾写成 `0xE8DBA8`，两者都未经证实）与图标查询 `0xC2197C`。契约无从验证，而该查询函数遇到不认识的 key **返回 NULL**，调用点 `if (icon_str)` 判空后**直接跳过写入**——不崩溃、不报错、徽章空白。加上客户端自己的 `RatingWidget.SetData` 走的是同一个 getter，hook 只是复现同一条坏链路。
+
+### 6.3 现行实现（`tools/nativehook/hook.c`）
+* `faction_icon_code()` / `faction_icon_glyph()`：本地 `if/switch` 映射表；**不再调用** `0xC2197C` 与 `0xE8D94C`。
+* `hero_faction_str()`：优先读 blueprint 的 `AttributeBaseType`（`@0x70`，即 login-data 的 `a` 键），`HeroData.get_Faction`（`0xE8D8A0`）仅作兜底。
+* 写入：`g_strnew(字形)` → 阵营 label（`0xDE127C`），并打印 `RATEWGT <bid> faction='...' glyph=U+.... label=...(<类名>) written`；取不到字形时打印 `-> NO glyph, badge blank`（`label=(非 Label 类名)` 表示 `widget+0x30` 的偏移判断也错了）。
+
+### 6.4 数据侧铁律
+`ROSTER.faction` 一律**小写**，且四处同名定义必须同步：`Server/gamedata.py`、`Server/bot_names_zh.json`、`bot_names_zh.json`、`Server/gamedata.lbl`（前者的 faction 会被发射到 blueprint `a`、characters `gen` / `hc` / `hero_colour`、userData `faction`）。野兽之战角色归属以客户端自带官方 bio 为准（`assets/xlate/snapshots/zh-CN/character_bios_zh-CN.json`：`ID_CHARACTER_BIOS_DINOBOT_BW` = 由原始兽转变而来的巨无霸；`ID_CHARACTER_BIOS_SCORPONOK_BW` = 原始兽）。
+
+### 6.5 验证判定标准
+真机 `logcat` 或 `/sdcard/Documents/tftf_*.log` 必须出现 `RATEWGT ... written`；BOTS 列表中黄豹 / 恐龙勇士 / 猩猩队长 / 犀牛显示 `U+E160`（巨无霸），黄蜂勇士 / 巨蝎勇士显示 `U+E161`（原始兽），其余角色仍为 `U+E134` / `U+E135`。
