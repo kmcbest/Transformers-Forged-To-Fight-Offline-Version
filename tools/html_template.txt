@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TFTF 技能/图标私有区字符对照标注工具</title>
+    <style>
+        @font-face {
+            font-family: 'TFTFIconFont';
+            src: url('data:font/truetype;charset=utf-8;base64,__FONT_BASE64__') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        :root {
+            --bg-color: #0f1117;
+            --card-bg: #181b22;
+            --card-border: #2d333b;
+            --card-hover: #22272e;
+            --accent: #58a6ff;
+            --accent-hover: #388bfd;
+            --text-main: #e6edf3;
+            --text-muted: #8b949e;
+            --input-bg: #0d1117;
+            --input-border: #30363d;
+            --success: #238636;
+            --success-border: #2ea043;
+            --gold: #f2c744;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            padding: 24px;
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(15, 17, 23, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 16px 24px;
+            margin: -24px -24px 24px -24px;
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .title-box h1 {
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .title-box p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            color: var(--text-main);
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            width: 220px;
+            transition: border-color 0.2s;
+        }
+        .search-input:focus {
+            border-color: var(--accent);
+        }
+
+        .btn {
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid transparent;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: #ffffff;
+        }
+        .btn-success:hover {
+            background: var(--success-border);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border-color: var(--card-border);
+            color: var(--text-main);
+        }
+        .btn-outline:hover {
+            background: var(--card-hover);
+        }
+
+        .status-badge {
+            font-size: 13px;
+            padding: 5px 10px;
+            background: #21262d;
+            border-radius: 12px;
+            color: var(--accent);
+            border: 1px solid var(--card-border);
+            font-weight: 600;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 16px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+
+        .card:hover {
+            border-color: var(--accent);
+        }
+
+        .card.is-filled {
+            border-left: 4px solid var(--success-border);
+            background: #141f19;
+        }
+
+        .icon-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .icon-preview-box {
+            width: 72px;
+            height: 72px;
+            background: #090b0e;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .game-icon {
+            font-family: 'TFTFIconFont' !important;
+            font-size: 44px;
+            line-height: 1;
+            user-select: none;
+            color: var(--gold);
+            text-shadow: 0 0 10px rgba(242, 199, 68, 0.35);
+        }
+
+        .icon-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            overflow: hidden;
+        }
+
+        .code-pill {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .glyph-name {
+            font-size: 12px;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .inputs-row {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .field-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .field-group label {
+            font-size: 12px;
+            width: 32px;
+            color: var(--text-muted);
+            text-align: right;
+            flex-shrink: 0;
+            font-weight: bold;
+        }
+
+        .text-input {
+            flex: 1;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 4px;
+            padding: 6px 10px;
+            color: var(--text-main);
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+
+        .text-input:focus {
+            border-color: var(--accent);
+        }
+
+        #toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--success);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.6);
+            display: none;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="title-box">
+            <h1><span class="game-icon" style="font-size: 26px;">&#xe501;</span> TFTF 技能/图标私有区字符对照标注工具</h1>
+            <p>已内嵌字体 811e9b20e41fd447796b1e264201af71 (Tecnica_Bold_116)。输入时自动保存在浏览器的 LocalStorage 中，刷新页面不丢失。</p>
+        </div>
+        <div class="actions">
+            <span class="status-badge" id="statsBadge">已标注: 0 / 0</span>
+            <input type="text" id="searchInput" class="search-input" placeholder="搜索字符/名称/Glyph...">
+            <button class="btn btn-outline" id="filterFilledBtn">仅看已标注</button>
+            <button class="btn btn-outline" id="importBtn">导入 JSON</button>
+            <input type="file" id="fileInput" accept=".json" style="display:none">
+            <button class="btn btn-success" id="exportBtn">导出 JSON (\u格式)</button>
+        </div>
+    </header>
+
+    <div class="grid-container" id="gridContainer"></div>
+
+    <div id="toast">已保存</div>
+
+    <script>
+        const PUA_LIST = __PUA_JSON__;
+        const STORAGE_KEY = 'tftf_icon_pua_mappings_v1';
+
+        // Load storage
+        let storageData = {};
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            if (raw) {
+                storageData = JSON.parse(raw);
+            }
+        } catch(e) {
+            console.error('Failed to load localStorage', e);
+        }
+
+        const gridContainer = document.getElementById('gridContainer');
+        const statsBadge = document.getElementById('statsBadge');
+        const searchInput = document.getElementById('searchInput');
+        const filterFilledBtn = document.getElementById('filterFilledBtn');
+        const exportBtn = document.getElementById('exportBtn');
+        const importBtn = document.getElementById('importBtn');
+        const fileInput = document.getElementById('fileInput');
+        const toast = document.getElementById('toast');
+
+        let onlyFilled = false;
+
+        function showToast(msg) {
+            toast.textContent = msg;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 2000);
+        }
+
+        function saveToStorage() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(storageData));
+            updateStats();
+        }
+
+        function updateStats() {
+            let filledCount = 0;
+            for (const item of PUA_LIST) {
+                const rec = storageData[item.unicode_escape];
+                if (rec && (rec.name_en || rec.name_zh)) {
+                    filledCount++;
+                }
+            }
+            statsBadge.textContent = `已标注: ${filledCount} / ${PUA_LIST.length}`;
+        }
+
+        function renderCards() {
+            gridContainer.innerHTML = '';
+            const filterText = searchInput.value.trim().toLowerCase();
+
+            for (const item of PUA_LIST) {
+                const rec = storageData[item.unicode_escape] || { name_en: '', name_zh: '' };
+                const hasFilled = !!(rec.name_en || rec.name_zh);
+
+                if (onlyFilled && !hasFilled) continue;
+
+                if (filterText) {
+                    const matchHex = item.hex.toLowerCase().includes(filterText);
+                    const matchEscape = item.unicode_escape.toLowerCase().includes(filterText);
+                    const matchGlyph = item.glyph_name.toLowerCase().includes(filterText);
+                    const matchEn = (rec.name_en || '').toLowerCase().includes(filterText);
+                    const matchZh = (rec.name_zh || '').toLowerCase().includes(filterText);
+                    if (!matchHex && !matchEscape && !matchGlyph && !matchEn && !matchZh) {
+                        continue;
+                    }
+                }
+
+                const card = document.createElement('div');
+                card.className = `card ${hasFilled ? 'is-filled' : ''}`;
+                card.dataset.escape = item.unicode_escape;
+
+                card.innerHTML = `
+                    <div class="icon-row">
+                        <div class="icon-preview-box">
+                            <span class="game-icon">${item.char}</span>
+                        </div>
+                        <div class="icon-meta">
+                            <span class="code-pill">${item.unicode_escape}</span>
+                            <span class="glyph-name">Glyph: ${item.glyph_name}</span>
+                            <span class="glyph-name">Hex: 0x${item.hex} (Dec: ${item.code})</span>
+                        </div>
+                    </div>
+                    <div class="inputs-row">
+                        <div class="field-group">
+                            <label>EN</label>
+                            <input type="text" class="text-input input-en" placeholder="English name / skill..." value="${rec.name_en ? escapeHtml(rec.name_en) : ''}">
+                        </div>
+                        <div class="field-group">
+                            <label>中文</label>
+                            <input type="text" class="text-input input-zh" placeholder="中文名 / 技能说明..." value="${rec.name_zh ? escapeHtml(rec.name_zh) : ''}">
+                        </div>
+                    </div>
+                `;
+
+                const inputEn = card.querySelector('.input-en');
+                const inputZh = card.querySelector('.input-zh');
+
+                const handleInputChange = () => {
+                    const valEn = inputEn.value.trim();
+                    const valZh = inputZh.value.trim();
+                    if (valEn || valZh) {
+                        storageData[item.unicode_escape] = {
+                            hex: item.hex,
+                            glyph_name: item.glyph_name,
+                            name_en: valEn,
+                            name_zh: valZh
+                        };
+                        card.classList.add('is-filled');
+                    } else {
+                        delete storageData[item.unicode_escape];
+                        card.classList.remove('is-filled');
+                    }
+                    saveToStorage();
+                };
+
+                inputEn.addEventListener('input', handleInputChange);
+                inputZh.addEventListener('input', handleInputChange);
+
+                gridContainer.appendChild(card);
+            }
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/&/g, '&amp;')
+                      .replace(/</g, '&lt;')
+                      .replace(/>/g, '&gt;')
+                      .replace(/"/g, '&quot;')
+                      .replace(/'/g, '&#039;');
+        }
+
+        searchInput.addEventListener('input', () => {
+            renderCards();
+        });
+
+        filterFilledBtn.addEventListener('click', () => {
+            onlyFilled = !onlyFilled;
+            filterFilledBtn.textContent = onlyFilled ? '显示全部' : '仅看已标注';
+            if (onlyFilled) {
+                filterFilledBtn.style.background = '#21262d';
+                filterFilledBtn.style.borderColor = 'var(--accent)';
+            } else {
+                filterFilledBtn.style.background = 'transparent';
+                filterFilledBtn.style.borderColor = 'var(--card-border)';
+            }
+            renderCards();
+        });
+
+        // Export JSON
+        exportBtn.addEventListener('click', () => {
+            const exportResult = {};
+            for (const item of PUA_LIST) {
+                const rec = storageData[item.unicode_escape];
+                if (rec && (rec.name_en || rec.name_zh)) {
+                    exportResult[item.unicode_escape] = {
+                        name_en: rec.name_en || "",
+                        name_zh: rec.name_zh || "",
+                        glyph_name: item.glyph_name,
+                        hex: item.hex
+                    };
+                }
+            }
+
+            const jsonStr = JSON.stringify(exportResult, null, 2);
+            const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'tftf_font_pua_skills.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('已成功导出 JSON 文件！');
+        });
+
+        // Import JSON
+        importBtn.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const imported = JSON.parse(event.target.result);
+                    for (const [key, val] of Object.entries(imported)) {
+                        let k = key;
+                        if (!k.startsWith('\\\\u') && !k.startsWith('\\u')) {
+                            if (k.startsWith('U+') || k.startsWith('u+')) {
+                                k = '\\\\u' + k.slice(2).toLowerCase();
+                            }
+                        }
+                        storageData[k] = {
+                            name_en: val.name_en || val.en || "",
+                            name_zh: val.name_zh || val.zh || "",
+                            glyph_name: val.glyph_name || "",
+                            hex: val.hex || ""
+                        };
+                    }
+                    saveToStorage();
+                    renderCards();
+                    showToast('成功导入并合并数据！');
+                } catch (err) {
+                    alert('导入失败，请检查 JSON 格式：' + err.message);
+                }
+            };
+            reader.readAsText(file);
+            fileInput.value = '';
+        });
+
+        // Initial setup
+        updateStats();
+        renderCards();
+    </script>
+</body>
+</html>
