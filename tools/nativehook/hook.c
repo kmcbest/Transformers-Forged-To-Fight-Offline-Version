@@ -547,6 +547,17 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x1173FA4, "PCGETSPTIER",        2, 0 }, // 168 PlayerController.GetAvailableSpecialTier -> dynamic special tier
     { 0xFF05C8,  "HUDSPBTN",           2, 0 }, // 169 HudSpecialMeter.OnSpecialButtonPressed -> gesture recognition
     { 0x11CFCAC, "QUEST_TEX",          2, 0 }, // 170 SelectQuestTile.SetTexturePath -> custom quest icons
+    // ---- guard / dodge entries restored (2026-09-16, device-measured) ----
+    // These two addresses are the ones that DEMONSTRABLY fire in this binary: the repo's earlier logs
+    // contain "BLOCK_ENTER (0x1173848): P0 started guarding ..." followed by a successful
+    // "BLOCK_HELD ... >= 200ms -> attack chain reset", and "DODGE_ENTER (0x117E4AC) a0=.. pc=<P0
+    // controller>" with the controller resolving correctly. Commit 0ae8498 replaced both with the
+    // 0x0D3xxxxx state-entry addresses instead of adding them, which silently broke guard: 0x0D32A00
+    // never fired once in any later session (so holding guard stopped clearing the chain and
+    // GATE-05's 200 ms rule was dead), while 0x0D34E6C does fire but with a0+0x18 == 0, so only its
+    // silent fallback did any work. Both are hooked again here, next to the newer entries.
+    { 0x1173848, "BLOCKENTER2",        2, 0 }, // 171 guard entry (fires) -> arm the guard-hold timer
+    { 0x117E4AC, "DODGEENTER2",        2, 0 }, // 172 dodge entry (fires, controller resolves) -> reset chain
 };
 #define NH (int)(sizeof(H)/sizeof(H[0]))
 
@@ -571,6 +582,12 @@ static volatile int g_p0_after_heavy = 0;
 static volatile int g_p0_combo_ended = 0;
 static void* g_p0_combat_character = NULL;
 static volatile float g_p0_last_hp = -1.0f;
+// Timestamp of the last P0 attack action (1 / 4 / 32). GATE-04: hook_145 clears the chain once this
+// is older than COMBO_IDLE_RESET_MS, because no native combo-window timeout is observable --
+// measured on device (2026-09-16): TAP, wait 1s, TAP, wait 1s, TAP produced L1,L2,L3 instead of
+// three separate L1s, i.e. waiting in place never ended the chain.
+static volatile uint64_t g_p0_last_attack_ms = 0;
+#define COMBO_IDLE_RESET_MS 900
 
 #define COMBAT_ASSERT(cond, tag, fmt, ...) \
     do { \
@@ -4619,6 +4636,7 @@ void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     g_p0_block_reset_done = 0;
     g_p0_after_heavy = 0;
     g_p0_combo_ended = 0;
+    g_p0_last_attack_ms = 0;
     g_p0_combat_character = NULL;
     g_p0_last_hp = -1.0f;
     return H[140].orig(a0,a1,a2,a3,a4,a5,a6,a7);
@@ -4776,6 +4794,20 @@ void* hook_145(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     PROTECT({
         sp3_beat_pump();
         give_p0_max_power();
+        // GATE-04: an idle gap longer than the combo window ends the chain. Nothing native was
+        // observable for this -- waiting in place left l untouched and produced no reset line -- yet
+        // the required behaviour is that attacking again after a pause starts at L1/M1.
+        if (g_p0_last_attack_ms && obj_ok(g_p0_controller)) {
+            uint64_t idle = propgo_now_ms() - g_p0_last_attack_ms;
+            if (idle >= COMBO_IDLE_RESET_MS) {
+                g_p0_last_attack_ms = 0;
+                flog("COMBAT_IDLE: %llu ms without an attack (>= %d ms window) -> reset attack chain to L1",
+                     (unsigned long long)idle, COMBO_IDLE_RESET_MS);
+                reset_player_attack_chain(g_p0_controller);
+                g_p0_combo_ended = 0;
+                g_p0_after_heavy = 0;
+            }
+        }
         if (g_p0_block_enter_ms > 0 && !g_p0_block_reset_done && g_p0_controller) {
             uint64_t held = propgo_now_ms() - g_p0_block_enter_ms;
             if (held >= 200) {
@@ -4908,6 +4940,7 @@ static void reset_player_attack_chain(void* pc) {
     int32_t p_idx = *(int32_t*)((uintptr_t)pc + 0xF4);
     if (p_idx != 0) return; // local player P0 only
     g_p0_controller = pc;
+    g_p0_last_attack_ms = 0;                 // the idle window restarts from the next attack
     *(uint32_t*)((uintptr_t)pc + 0x1c0) = 0; // _lightAttackIndex = 0
     *(uint32_t*)((uintptr_t)pc + 0x1c4) = 0; // _mediumAttackIndex = 0
     *(uint32_t*)((uintptr_t)pc + 0x1c8) = 0; // _rangedAttackIndex = 0
@@ -4966,7 +4999,10 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
                 // counter untouched and the next forward swipe produced M2 instead of M1.
                 g_p0_block_enter_ms = 0;
                 g_p0_block_reset_done = 0;
-                g_p0_after_heavy = 1;
+                // 0x100 is the heavy attack; 8 is the back-swipe/dodge edge (measured: the dodge
+                // state is entered on the same call). Both must end the chain, but only a real heavy
+                // has any reason to arm the "attack right after a heavy" latch.
+                if (action == 0x100) g_p0_after_heavy = 1;
                 flog("PLAYER_ACTION heavy/ender (action=%d) on P0: reset attack chain and arm after_heavy flag", action);
                 reset_player_attack_chain(self);
                 did_reset = 1;
@@ -4978,8 +5014,13 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
                               "Medium index must be 0 after heavy attack so the next swipe is M1, got %u",
                               *(uint32_t*)((uintptr_t)self + 0x1c4));
             }
-            if (action == 1 || action == 4) {
-                // Action 1 = Attack (Tap), Action 4 = Dash attack (Swipe forward)
+            if (action == 1 || action == 4 || action == 32) {
+                // 1 = attack / tap, 4 = forward dash (swipe forward), 32 = the medium-attack state the
+                // game re-dispatches every frame. All three must consume the after-heavy latch: the old
+                // {1,4} set let it stay armed through a post-heavy forward swipe (measured
+                // 2026-09-16), so a later forward dash (4) fired it and pulled the medium counter back
+                // to 0 -- turning a required M2 into M1. Consuming it on the first post-heavy attack
+                // keeps the latch to exactly the one attack it was meant for.
                 if (g_p0_after_heavy) {
                     flog("COMBAT_GATE: attack following heavy attack (action=%d) -> reset attack chain to L1/M1", action);
                     reset_player_attack_chain(self);
@@ -5018,6 +5059,10 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
                 flog("PLAYER_ACTION 0x200: executing on P0 (intended_tier=%d, internal=%d)",
                      g_intended_special_tier, g_sp_dispatching_internal);
             }
+            // GATE-04 idle window: any attack action (light 1 / dash 4 / medium state 32) marks
+            // activity. Timed at the END of the pre-block on purpose -- a chain reset performed
+            // above must not immediately re-zero the clock for an attack that is happening now.
+            if (action == 1 || action == 4 || action == 32) g_p0_last_attack_ms = propgo_now_ms();
         }
     });
     // DIAGNOSTIC ONLY: the range used to start at 2, which silently hid action==1 (the tap /
@@ -5370,6 +5415,47 @@ void* hook_165(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     return r;
 }
 
+// slot 171 BLOCKENTER2 (0x1173848): the guard entry that actually fires in this binary. Slot 160's
+// 0x0D32A00 never fired once in any measured session, which is exactly why holding guard stopped
+// clearing the chain (measured 2026-09-16: TAP, guard, TAP, guard gave L1,L2 instead of L1,L1).
+// Same body as slot 160, plus a cached-controller fallback so the timer is armed even when a0+0x18
+// cannot be resolved.
+void* hook_171(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    void* pc = fld_p(a0, 0x18);
+    void* r = H[171].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    PROTECT({
+        void* target = (obj_ok(pc) && *(int32_t*)((uintptr_t)pc + 0xF4) == 0) ? pc
+                     : (obj_ok(g_p0_controller) ? g_p0_controller : NULL);
+        if (target) {
+            g_p0_controller = target;
+            g_p0_block_enter_ms = propgo_now_ms();
+            g_p0_block_reset_done = 0;
+            flog("BLOCK_ENTER (0x1173848): P0 started guarding at %llu ms (timer armed, hold >= 200ms required)",
+                 (unsigned long long)g_p0_block_enter_ms);
+        }
+    });
+    return r;
+}
+
+// slot 172 DODGEENTER2 (0x117E4AC): the dodge entry whose controller resolves. Slot 165's 0x0D34E6C
+// does fire, but with a0+0x18 == 0, so only its silent fallback ever did any work.
+void* hook_172(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    void* r = H[172].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    PROTECT({
+        void* pc = fld_p(a0, 0x18);
+        g_p0_block_enter_ms = 0;
+        g_p0_block_reset_done = 0;
+        if (obj_ok(pc) && *(int32_t*)((uintptr_t)pc + 0xF4) == 0) {
+            flog("DODGE_ENTER (0x117E4AC) on P0: reset attack chain to allow shooting");
+            reset_player_attack_chain(pc);
+        } else if (obj_ok(g_p0_controller)) {
+            flog("DODGE_ENTER (0x117E4AC): a0+0x18 did not resolve to P0 (pc=%p) -> reset via cached g_p0_controller", pc);
+            reset_player_attack_chain(g_p0_controller);
+        }
+    });
+    return r;
+}
+
 void* hook_166(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     extern int g_is_chinese_lang;
     if (g_strnew && obj_ok(a0)) {
@@ -5525,7 +5611,8 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     hook_145,hook_146,hook_147,hook_148,hook_149,hook_150,hook_151,
     hook_152,hook_153,hook_154,hook_155,hook_156,hook_157,hook_158,
     hook_159,hook_160,hook_161,hook_162,hook_163,hook_164,
-    hook_165,hook_166,hook_167,hook_168,hook_169,hook_170 };
+    hook_165,hook_166,hook_167,hook_168,hook_169,hook_170,
+    hook_171,hook_172 };
 
 static void write_jump(uint8_t* dst, void* target){
     uint32_t* p = (uint32_t*)dst;

@@ -490,7 +490,7 @@ def build(
                             flist.append(qentry)
                     _rdir = Path("assets_redeco")
                     if _rdir.is_dir():
-                        for _p in _rdir.glob("portrait_*_quest.png"):
+                        for _p in list(_rdir.glob("portrait_*_quest.png")) + list(_rdir.glob("poster_*.png")):
                             _e = f"questboard/{_p.name}"
                             if _e not in flist:
                                 flist.append(_e)
@@ -697,10 +697,10 @@ def build(
                 zout.writestr(f"assets/assetpack/portraits_odr/portraits/{pfile.name}", pfile.read_bytes())
             for pfile in redeco_dir.glob("portrait_*_small.jpg"):
                 zout.writestr(f"assets/assetpack/portraits_odr/portraits/{pfile.name}", pfile.read_bytes())
-            for pfile in redeco_dir.glob("portrait_*_quest.png"):
+            for pfile in list(redeco_dir.glob("portrait_*_quest.png")) + list(redeco_dir.glob("poster_*.png")):
                 zout.writestr(f"assets/assetpack/questboard_odr/questboard/{pfile.name}", pfile.read_bytes())
             for pfile in redeco_dir.glob("*.png"):
-                if not pfile.name.startswith("portrait_") and not pfile.name.startswith("cha_") and not pfile.name.startswith("debug_"):
+                if not pfile.name.startswith("portrait_") and not pfile.name.startswith("poster_") and not pfile.name.startswith("cha_") and not pfile.name.startswith("debug_"):
                     zout.writestr(f"assets/assetpack/dialogue_odr/dialogue/{pfile.name}", pfile.read_bytes())
 
             # Inject official authentic Chinese localization snapshots
