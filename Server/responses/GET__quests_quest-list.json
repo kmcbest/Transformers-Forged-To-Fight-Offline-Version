@@ -1,33 +1,147 @@
-{"error":null,"result":[{
- "hash":"h1","setId":"story_act1","setName":"ACT 1","expiry":0,"timeLimit":0,"timeLimitGrace":0,
- "showUI":true,"group":"story","difficulty":"normal","difficulty_label":"NORMAL",
- "minLevel":0,"recommendMinLevel":0,"cdn":"","use_ui_color":false,"hasProgression":true,
- "category":"Story","tags":[],
- "actCount":1,"chapterCount":[1,1],
- "acts":[{"name":"ACT 1","index":0},{"name":"ACT 1","index":1}],
- "chapters":[{"name":"Chapter 1","index":0,"actIndex":0},{"name":"Chapter 1","index":1,"actIndex":1}],
- "availableQuests":[
-   {
-     "id":"1.1.1",
-     "act":1,"chapter":1,"mission":1,"missionIndex":1,"index":1,
-     "friendlyName":"宿命降临","name_en":"Arrival","name_zh":"宿命降临",
-     "description":"宿命的初战。","description_en":"The first battle.","description_zh":"宿命的初战。",
-     "category":"story","difficulty":"normal",
-     "energyPerTile":1,"minXpPerTile":1,"maxXpPerTile":2,
-     "minHealthPerTile":100,"maxHealthPerTile":100,
-     "image":"","theme":""
-   },
-   {
-     "id":"1.1.2",
-     "act":1,"chapter":1,"mission":2,"missionIndex":2,"index":2,
-     "friendlyName":"六道轮回","name_en":"Karma Six","name_zh":"六道轮回",
-     "description":"高难轮盘挑战：全职业六芒星轮盘战，敌人血量统一10倍！",
-     "description_en":"High-difficulty wheel challenge: 6-class hexagram wheel battle with 10x enemy HP!",
-     "description_zh":"高难轮盘挑战：全职业六芒星轮盘战，敌人血量统一10倍！",
-     "category":"story","difficulty":"hard",
-     "energyPerTile":1,"minXpPerTile":10,"maxXpPerTile":20,
-     "minHealthPerTile":100,"maxHealthPerTile":100,
-     "image":"","theme":"primordial"
-   }
- ]
-}]}
+{
+  "error": null,
+  "result": [
+    {
+      "hash": "h1",
+      "setId": "story_act1",
+      "setName": "ACT 1",
+      "expiry": 0,
+      "timeLimit": 0,
+      "timeLimitGrace": 0,
+      "showUI": true,
+      "group": "story",
+      "difficulty": "normal",
+      "difficulty_label": "NORMAL",
+      "minLevel": 0,
+      "recommendMinLevel": 0,
+      "cdn": "",
+      "use_ui_color": false,
+      "hasProgression": true,
+      "category": "Story",
+      "tags": [],
+      "actCount": 1,
+      "chapterCount": [
+        1,
+        1
+      ],
+      "acts": [
+        {
+          "name": "ACT 1",
+          "index": 0
+        },
+        {
+          "name": "ACT 1",
+          "index": 1
+        }
+      ],
+      "chapters": [
+        {
+          "name": "Chapter 1",
+          "index": 0,
+          "actIndex": 0
+        },
+        {
+          "name": "Chapter 1",
+          "index": 1,
+          "actIndex": 1
+        }
+      ],
+      "availableQuests": [
+        {
+          "id": "1.1.1",
+          "act": 1,
+          "chapter": 1,
+          "mission": 1,
+          "missionIndex": 1,
+          "index": 1,
+          "friendlyName": "宿命降临",
+          "name_en": "Arrival",
+          "name_zh": "宿命降临",
+          "description": "宿命的初战。",
+          "description_en": "The first battle.",
+          "description_zh": "宿命的初战。",
+          "category": "story",
+          "difficulty": "normal",
+          "energyPerTile": 1,
+          "minXpPerTile": 1,
+          "maxXpPerTile": 2,
+          "minHealthPerTile": 100,
+          "maxHealthPerTile": 100,
+          "image": "",
+          "theme": ""
+        }
+      ]
+    },
+    {
+      "hash": "h_special_karmasix",
+      "setId": "special_karmasix",
+      "setName": "六道轮回",
+      "expiry": 0,
+      "timeLimit": 0,
+      "timeLimitGrace": 0,
+      "showUI": true,
+      "group": "event",
+      "difficulty": "hard",
+      "difficulty_label": "CHALLENGE",
+      "minLevel": 0,
+      "recommendMinLevel": 0,
+      "cdn": "",
+      "use_ui_color": false,
+      "hasProgression": false,
+      "category": "Event",
+      "tags": [],
+      "actCount": 1,
+      "chapterCount": [
+        1,
+        1
+      ],
+      "acts": [
+        {
+          "name": "六道轮回",
+          "index": 0
+        },
+        {
+          "name": "六道轮回",
+          "index": 1
+        }
+      ],
+      "chapters": [
+        {
+          "name": "Chapter 1",
+          "index": 0,
+          "actIndex": 0
+        },
+        {
+          "name": "Chapter 1",
+          "index": 1,
+          "actIndex": 1
+        }
+      ],
+      "availableQuests": [
+        {
+          "id": "1.1.2",
+          "act": 1,
+          "chapter": 1,
+          "mission": 1,
+          "missionIndex": 1,
+          "index": 1,
+          "friendlyName": "六道轮回",
+          "name_en": "Karma Six",
+          "name_zh": "六道轮回",
+          "description": "高难轮盘挑战：全职业六芒星轮盘战，敌人血量统一10倍！",
+          "description_en": "High-difficulty wheel challenge: 6-class hexagram wheel battle with 10x enemy HP!",
+          "description_zh": "高难轮盘挑战：全职业六芒星轮盘战，敌人血量统一10倍！",
+          "category": "story",
+          "difficulty": "hard",
+          "energyPerTile": 1,
+          "minXpPerTile": 10,
+          "maxXpPerTile": 20,
+          "minHealthPerTile": 100,
+          "maxHealthPerTile": 100,
+          "image": "",
+          "theme": "primordial"
+        }
+      ]
+    }
+  ]
+}

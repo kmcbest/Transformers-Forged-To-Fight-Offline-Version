@@ -237,53 +237,57 @@ def build_entries(listen_port: int = 8080) -> dict[str, bytes]:
     add("GET /base/active", _envelope(gamedata.build_base_active()))
     add("@questlist:zh", _envelope(gamedata.build_quest_list(lang="zh")))
     add("@questlist:en", _envelope(gamedata.build_quest_list(lang="en")))
+    seen_qids = set()
     for set_id, qid in _mission_pairs():
-        add(f"POST /quests/quest-detail/{qid}", _envelope(gamedata.build_quest_detail(qid, set_id, lang="zh")))
-        add(f"@questdetail:{qid}:zh", _envelope(gamedata.build_quest_detail(qid, set_id, lang="zh")))
-        add(f"@questdetail:{qid}:en", _envelope(gamedata.build_quest_detail(qid, set_id, lang="en")))
-        add(f"POST /quests/quest-begin/{qid}", _quest_begin_template(qid, set_id))
+        add(f"POST /quests/quest-detail/{qid}/{set_id}", _envelope(gamedata.build_quest_detail(qid, set_id, lang="zh")))
+        if qid not in seen_qids:
+            seen_qids.add(qid)
+            add(f"POST /quests/quest-detail/{qid}", _envelope(gamedata.build_quest_detail(qid, set_id, lang="zh")))
+            add(f"@questdetail:{qid}:zh", _envelope(gamedata.build_quest_detail(qid, set_id, lang="zh")))
+            add(f"@questdetail:{qid}:en", _envelope(gamedata.build_quest_detail(qid, set_id, lang="en")))
+            add(f"POST /quests/quest-begin/{qid}", _quest_begin_template(qid, set_id))
 
-        if qid == "1.1.2":
-            sx, sy = gamedata.quest_start(qid)
-            add(f"@quest:start:{qid}", f"{sx} {sy}".encode())
-            legal_lines = []
-            walkable = gamedata.quest_walkable_tiles(qid)
-            directions = tuple((dx, dy) for dx in (-1, 0, 1) for dy in (-1, 0, 1))
-            for start in walkable:
-                add(
-                    f"@movedir:{qid}:{start[0]}:{start[1]}:0:0",
-                    _movedir_template(qid, start, 0, 0),
+            if qid == "1.1.2":
+                sx, sy = gamedata.quest_start(qid)
+                add(f"@quest:start:{qid}", f"{sx} {sy}".encode())
+                legal_lines = []
+                walkable = gamedata.quest_walkable_tiles(qid)
+                directions = tuple((dx, dy) for dx in (-1, 0, 1) for dy in (-1, 0, 1))
+                for start in walkable:
+                    add(
+                        f"@movedir:{qid}:{start[0]}:{start[1]}:0:0",
+                        _movedir_template(qid, start, 0, 0),
+                    )
+                    for dx, dy in directions:
+                        if dx == 0 and dy == 0:
+                            continue
+                        nx, ny = start[0] + dx, start[1] + dy
+                        if gamedata.is_quest_legal_move(qid, start, (nx, ny)):
+                            legal_lines.append((start[0], start[1], dx, dy, nx, ny))
+                            add(
+                                f"@movedir:{qid}:{start[0]}:{start[1]}:{dx}:{dy}",
+                                _movedir_template(qid, start, dx, dy),
+                            )
+                moves = b"".join(
+                    ("%d %d %d %d %d %d\n" % line).encode() for line in sorted(legal_lines)
                 )
-                for dx, dy in directions:
-                    if dx == 0 and dy == 0:
-                        continue
-                    nx, ny = start[0] + dx, start[1] + dy
-                    if gamedata.is_quest_legal_move(qid, start, (nx, ny)):
-                        legal_lines.append((start[0], start[1], dx, dy, nx, ny))
+                add(f"@quest:moves:{qid}", moves)
+            else:
+                add(f"@quest:start:{qid}", b"0 1")
+                legal_lines = []
+                for start in MOVE_STARTS:
+                    for dx, dy in MOVE_DIRECTIONS:
+                        nx, ny = start[0] + dx, start[1] + dy
+                        if 0 <= nx < gamedata.QUEST_DIM and ny == 1:
+                            legal_lines.append((start[0], start[1], dx, dy, nx, ny))
                         add(
                             f"@movedir:{qid}:{start[0]}:{start[1]}:{dx}:{dy}",
                             _movedir_template(qid, start, dx, dy),
                         )
-            moves = b"".join(
-                ("%d %d %d %d %d %d\n" % line).encode() for line in sorted(legal_lines)
-            )
-            add(f"@quest:moves:{qid}", moves)
-        else:
-            add(f"@quest:start:{qid}", b"0 1")
-            legal_lines = []
-            for start in MOVE_STARTS:
-                for dx, dy in MOVE_DIRECTIONS:
-                    nx, ny = start[0] + dx, start[1] + dy
-                    if 0 <= nx < gamedata.QUEST_DIM and ny == 1:
-                        legal_lines.append((start[0], start[1], dx, dy, nx, ny))
-                    add(
-                        f"@movedir:{qid}:{start[0]}:{start[1]}:{dx}:{dy}",
-                        _movedir_template(qid, start, dx, dy),
-                    )
-            moves = b"".join(
-                ("%d %d %d %d %d %d\n" % line).encode() for line in sorted(legal_lines)
-            )
-            add(f"@quest:moves:{qid}", moves)
+                moves = b"".join(
+                    ("%d %d %d %d %d %d\n" % line).encode() for line in sorted(legal_lines)
+                )
+                add(f"@quest:moves:{qid}", moves)
 
     add("@grouprefresh:missionsconfig", _envelope({"updates": [gamedata.build_missions_autorefresh_update()]}))
     add("@grouprefresh:", _envelope({"updates": []}))

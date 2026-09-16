@@ -1607,7 +1607,7 @@ def build_quest_list(lang="zh"):
             "minHealthPerTile": 100, "maxHealthPerTile": 100,
             "image": "", "theme": theme,
         })
-    return [{
+    story_set = {
         "hash": "h1", "setId": "story_act1", "setName": "ACT 1", "expiry": 0, "timeLimit": 0, "timeLimitGrace": 0,
         "showUI": True, "group": "story", "difficulty": "normal", "difficulty_label": "NORMAL",
         "minLevel": 0, "recommendMinLevel": 0, "cdn": "", "use_ui_color": False, "hasProgression": True,
@@ -1615,8 +1615,33 @@ def build_quest_list(lang="zh"):
         "actCount": 1, "chapterCount": [1, 1],
         "acts": [{"name": "ACT 1", "index": 0}, {"name": "ACT 1", "index": 1}],
         "chapters": [{"name": "Chapter 1", "index": 0, "actIndex": 0}, {"name": "Chapter 1", "index": 1, "actIndex": 1}],
-        "availableQuests": quests,
-    }]
+        "availableQuests": [q for q in quests if q["id"] == "1.1.1"],
+    }
+
+    karma_quest = [{
+        **q,
+        "act": 1,
+        "chapter": 1,
+        "mission": 1,
+        "missionIndex": 1,
+        "index": 1,
+    } for q in quests if q["id"] == "1.1.2"]
+
+    special_name = "六道轮回" if lang == "zh" else "Karma Six"
+    special_set = {
+        "hash": "h_special_karmasix", "setId": "special_karmasix",
+        "setName": special_name,
+        "expiry": 0, "timeLimit": 0, "timeLimitGrace": 0,
+        "showUI": True, "group": "event", "difficulty": "hard", "difficulty_label": "CHALLENGE",
+        "minLevel": 0, "recommendMinLevel": 0, "cdn": "", "use_ui_color": False, "hasProgression": False,
+        "category": "Event", "tags": [],
+        "actCount": 1, "chapterCount": [1, 1],
+        "acts": [{"name": special_name, "index": 0}, {"name": special_name, "index": 1}],
+        "chapters": [{"name": "Chapter 1", "index": 0, "actIndex": 0}, {"name": "Chapter 1", "index": 1, "actIndex": 1}],
+        "availableQuests": karma_quest,
+    }
+
+    return [story_set, special_set]
 
 
 def build_challenge_map(qid="1.1.2"):

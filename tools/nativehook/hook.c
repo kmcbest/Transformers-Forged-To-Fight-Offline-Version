@@ -5517,6 +5517,19 @@ static void* installer(void* arg){
     // when this._heroData (offset 0x50) is null. Redirect cbz x8 to return 0 (signature locked / white stars).
     poke32(0xC1C4D8, 0xB40000A8);   // cbz x8, 0xC1C4FC (throw) -> cbz x8, 0xC1C4EC (return 0)
 
+    // UNLOCK_EVENT_BUTTON:
+    // 1) LevelLock.get_Locked (@0xF0C820): force return 0 (unlocked).
+    // The Event button on FightLandingScreen checks get_Locked; offline account level/CL
+    // makes this return true, branching to ShowLevelLockAlert and skipping OnSpecialEventsClicked.
+    poke32(0xF0C820, 0x2A1F03E0);   // mov w0, wzr (return false)
+    poke32(0xF0C824, 0xD65F03C0);   // ret
+
+    // 2) FightLandingPresentation.StartPendingTutorial (@0xEA8E30): force return 0 (no tutorial pending).
+    // OnSpecialEventsClicked checks StartPendingTutorial("SpecialEventsTutorial"); offline the
+    // uncompleted tutorial state returns true and ret-exits before ProcessQuestModeClick.
+    poke32(0xEA8E30, 0x2A1F03E0);   // mov w0, wzr (return false)
+    poke32(0xEA8E34, 0xD65F03C0);   // ret
+
     // FIXROSTER_DECO:
     // 1) HeroPortrait.RefreshFromData (@0xE8DF9C): nop mUserOwned==0 branch so rarity frame & child widgets update.
     poke32(0xE8E0FC, 0xD503201F);   // cbz w9, 0xE8E1E0 -> nop
