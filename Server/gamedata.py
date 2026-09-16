@@ -1502,21 +1502,21 @@ _QUEST_NAMES = {
         "en": "Supreme Optimus Prime",
     },
     "1.1.5": {
-        "zh": "领导模块之战",
-        "en": "Battle of the Matrix",
+        "zh": "模块之战",
+        "en": "Matrix War",
     },
     "1.1.6": {
         "zh": "巾帼之力",
         "en": "Power of Fembots",
     },
     "1.1.7": {
-        "zh": "红蜘蛛的野餐",
-        "en": "Starscream's Picnic",
+        "zh": "野餐",
+        "en": "Picnic",
     },
-    "1.1.8": {
-        "zh": "镜像世界",
-        "en": "Shattered Glass",
-    },
+    # "1.1.8": {
+    #     "zh": "镜像世界",
+    #     "en": "Shattered Glass",
+    # },
 }
 
 _QUEST_DESCRIPTIONS = {
@@ -1630,6 +1630,14 @@ def build_quest_list(lang="zh"):
         min_xp = 10 if qid != "1.1.1" else 1
         max_xp = 20 if qid != "1.1.1" else 2
         theme = "primordial" if qid == "1.1.2" else ""
+        qimage = {
+            "1.1.2": "questboard/poster_karmasix",
+            "1.1.3": "questboard/poster_menasor",
+            "1.1.4": "questboard/poster_supreme_optimus",
+            "1.1.5": "questboard/poster_special_act",
+            "1.1.6": "questboard/poster_special_act",
+            "1.1.7": "questboard/poster_special_act",
+        }.get(qid, "")
         quests.append({
             "id": qid,
             "act": act, "chapter": chapter, "mission": mission,
@@ -1643,7 +1651,7 @@ def build_quest_list(lang="zh"):
             "category": "story", "difficulty": diff,
             "energyPerTile": 1, "minXpPerTile": min_xp, "maxXpPerTile": max_xp,
             "minHealthPerTile": 100, "maxHealthPerTile": 100,
-            "image": "", "theme": theme,
+            "image": qimage, "theme": theme,
         })
     story_set = {
         "hash": "h1", "setId": "story_act1", "setName": "ACT 1", "expiry": 0, "timeLimit": 0, "timeLimitGrace": 0,
@@ -1656,7 +1664,10 @@ def build_quest_list(lang="zh"):
         "availableQuests": [q for q in quests if q["id"] == "1.1.1"],
     }
 
-    special_qids = ("1.1.2", "1.1.3", "1.1.4", "1.1.5", "1.1.6", "1.1.7", "1.1.8")
+    # Special Missions: 包含 6 个任务
+    special_qids = ("1.1.2", "1.1.3", "1.1.4", "1.1.5", "1.1.6", "1.1.7")
+    # 备用任务（暂时安全注释停用）：
+    # special_qids_extra = ("1.1.8",)
     special_quests = []
     for idx, qid in enumerate(special_qids, start=1):
         q = next(item for item in quests if item["id"] == qid)
@@ -1669,17 +1680,27 @@ def build_quest_list(lang="zh"):
             "index": idx,
         })
 
-    special_name = "六道轮回" if lang == "zh" else "Karma Six"
+    special_set_name = "重生" if lang == "zh" else "Revived"
+    act1_name = "塞伯坦挑战" if lang == "zh" else "Cybertron's Challenge"
     special_set = {
         "hash": "h_special_karmasix", "setId": "special_karmasix",
-        "setName": special_name,
+        "setName": special_set_name,
+        "friendlyName": special_set_name,
+        "name_zh": "重生",
+        "name_en": "Revived",
         "expiry": 0, "timeLimit": 0, "timeLimitGrace": 0,
         "showUI": True, "group": "event", "difficulty": "hard", "difficulty_label": "CHALLENGE",
         "minLevel": 0, "recommendMinLevel": 0, "cdn": "", "use_ui_color": False, "hasProgression": False,
         "category": "Event", "tags": [],
         "actCount": 1, "chapterCount": [1, 1],
-        "acts": [{"name": special_name, "index": 0}, {"name": special_name, "index": 1}],
-        "chapters": [{"name": "Chapter 1", "index": 0, "actIndex": 0}, {"name": "Chapter 1", "index": 1, "actIndex": 1}],
+        "acts": [
+            {"name": act1_name, "friendlyName": act1_name, "index": 0, "image": "questboard/poster_special_act"},
+            {"name": act1_name, "friendlyName": act1_name, "index": 1, "image": "questboard/poster_special_act"}
+        ],
+        "chapters": [
+            {"name": "Chapter 1", "friendlyName": act1_name, "index": 0, "actIndex": 0, "image": "questboard/poster_karmasix"},
+            {"name": "Chapter 1", "friendlyName": act1_name, "index": 1, "actIndex": 1, "image": "questboard/poster_karmasix"}
+        ],
         "availableQuests": special_quests,
     }
 

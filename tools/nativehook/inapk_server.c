@@ -729,11 +729,19 @@ static int detect_chinese_language(const char *headers, const char *query) {
 
     return 0;
 }
+
+int g_is_chinese_lang = 1;
+
+static int detect_and_store_lang(const char *headers, const char *query) {
+    g_is_chinese_lang = detect_chinese_language(headers, query);
+    return g_is_chinese_lang;
+}
+
 static const unsigned char *dynamic(const char *headers, const char *method, const char *p, const char *query, const char *body, size_t bn, Out *o, size_t *outn) {
     char key[256], tid[64]="", bid[64]="", mid[64], qid[64]; const unsigned char *v; size_t n; const char *end=body+bn;
     if(strstr(p,"/quests/quest-list")) {
         g_current_is_10x_challenge = 0;
-        int is_zh = detect_chinese_language(headers, query);
+        int is_zh = detect_and_store_lang(headers, query);
         v = lookup(is_zh ? "@questlist:zh" : "@questlist:en", outn);
         if(v) return v;
         v = lookup("GET /quests/quest-list", outn);

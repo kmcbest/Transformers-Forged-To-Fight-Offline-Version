@@ -75,7 +75,10 @@
     {
       "hash": "h_special_karmasix",
       "setId": "special_karmasix",
-      "setName": "六道轮回",
+      "setName": "重生",
+      "friendlyName": "重生",
+      "name_zh": "重生",
+      "name_en": "Revived",
       "expiry": 0,
       "timeLimit": 0,
       "timeLimitGrace": 0,
@@ -97,24 +100,36 @@
       ],
       "acts": [
         {
-          "name": "六道轮回",
-          "index": 0
+          "name": "塞伯坦挑战",
+          "friendlyName": "塞伯坦挑战",
+          "name_zh": "塞伯坦挑战",
+          "name_en": "Cybertron's Challenge",
+          "index": 0,
+          "image": "questboard/poster_special_act"
         },
         {
-          "name": "六道轮回",
-          "index": 1
+          "name": "塞伯坦挑战",
+          "friendlyName": "塞伯坦挑战",
+          "name_zh": "塞伯坦挑战",
+          "name_en": "Cybertron's Challenge",
+          "index": 1,
+          "image": "questboard/poster_special_act"
         }
       ],
       "chapters": [
         {
           "name": "Chapter 1",
+          "friendlyName": "塞伯坦挑战",
           "index": 0,
-          "actIndex": 0
+          "actIndex": 0,
+          "image": "questboard/poster_karmasix"
         },
         {
           "name": "Chapter 1",
+          "friendlyName": "塞伯坦挑战",
           "index": 1,
-          "actIndex": 1
+          "actIndex": 1,
+          "image": "questboard/poster_karmasix"
         }
       ],
       "availableQuests": [
@@ -138,7 +153,7 @@
           "maxXpPerTile": 20,
           "minHealthPerTile": 100,
           "maxHealthPerTile": 100,
-          "image": "",
+          "image": "questboard/poster_karmasix",
           "theme": "primordial"
         },
         {
@@ -161,7 +176,7 @@
           "maxXpPerTile": 20,
           "minHealthPerTile": 100,
           "maxHealthPerTile": 100,
-          "image": "",
+          "image": "questboard/poster_menasor",
           "theme": ""
         },
         {
@@ -184,7 +199,7 @@
           "maxXpPerTile": 20,
           "minHealthPerTile": 100,
           "maxHealthPerTile": 100,
-          "image": "",
+          "image": "questboard/poster_supreme_optimus",
           "theme": ""
         },
         {
@@ -194,9 +209,9 @@
           "mission": 4,
           "missionIndex": 4,
           "index": 4,
-          "friendlyName": "领导模块之战",
-          "name_en": "Battle of the Matrix",
-          "name_zh": "领导模块之战",
+          "friendlyName": "模块之战",
+          "name_en": "Matrix War",
+          "name_zh": "模块之战",
           "description": "争夺领导模块的巅峰之战。",
           "description_en": "The battle for the Matrix of Leadership.",
           "description_zh": "争夺领导模块的巅峰之战。",
@@ -207,7 +222,7 @@
           "maxXpPerTile": 20,
           "minHealthPerTile": 100,
           "maxHealthPerTile": 100,
-          "image": "",
+          "image": "questboard/poster_special_act",
           "theme": ""
         },
         {
@@ -230,7 +245,7 @@
           "maxXpPerTile": 20,
           "minHealthPerTile": 100,
           "maxHealthPerTile": 100,
-          "image": "",
+          "image": "questboard/poster_special_act",
           "theme": ""
         },
         {
@@ -240,9 +255,9 @@
           "mission": 6,
           "missionIndex": 6,
           "index": 6,
-          "friendlyName": "红蜘蛛的野餐",
-          "name_en": "Starscream's Picnic",
-          "name_zh": "红蜘蛛的野餐",
+          "friendlyName": "野餐",
+          "name_en": "Picnic",
+          "name_zh": "野餐",
           "description": "狂派副官红蜘蛛的专属野餐。",
           "description_en": "Decepticon second-in-command Starscream's picnic.",
           "description_zh": "狂派副官红蜘蛛的专属野餐。",
@@ -253,30 +268,7 @@
           "maxXpPerTile": 20,
           "minHealthPerTile": 100,
           "maxHealthPerTile": 100,
-          "image": "",
-          "theme": ""
-        },
-        {
-          "id": "1.1.8",
-          "act": 1,
-          "chapter": 1,
-          "mission": 7,
-          "missionIndex": 7,
-          "index": 7,
-          "friendlyName": "镜像世界",
-          "name_en": "Shattered Glass",
-          "name_zh": "镜像世界",
-          "description": "善恶颠倒的镜像宇宙之战。",
-          "description_en": "Battle in the inverted Shattered Glass universe.",
-          "description_zh": "善恶颠倒的镜像宇宙之战。",
-          "category": "story",
-          "difficulty": "hard",
-          "energyPerTile": 1,
-          "minXpPerTile": 10,
-          "maxXpPerTile": 20,
-          "minHealthPerTile": 100,
-          "maxHealthPerTile": 100,
-          "image": "",
+          "image": "questboard/poster_special_act",
           "theme": ""
         }
       ]

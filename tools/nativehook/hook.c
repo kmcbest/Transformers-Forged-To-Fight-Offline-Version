@@ -276,7 +276,7 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     // (@0x28) length>=2 AND Chapters[1].Quests[] (Summary[] @0x28) length>=2 (phantom [0] + real).
     // Log the real linked counts so we can see whether the authored chapters/availableQuests link a
     // Summary into Chapters[1].Quests[1], or the data never reaches the act structure.
-    { 0xC2B4E0, "RMV",       2, 0 }, // 73 ActPanel.RefreshMainView -> log act/chapter/quest link counts
+    { 0x00CB4980, "REFRESH_DISP", 2, 0 }, // 73 QuestSelectPanelBase.RefreshDisplay
     // With the ACT unlocked, tapping it expands to a ChapterPanel that is STILL locked ("Unlock by
     // completing Chapter 0"). ChapterPanel is a plain MonoBehaviour (not a QuestSelectPanelBase, so
     // FORCELOCK doesn't reach it); its OnPanelClicked (@0xD15394) reads Chapter.unlocked (byte @0x30)
@@ -542,7 +542,7 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x11794A4, "ADDMANA",            2, 0 }, // 163 PlayerController.AddMana -> scale enemy mana gain dynamically
     { 0xC1F2B8,  "GET_TOP_HERO_ID",    2, 0 }, // 164 BCGHelper.GetTopHeroId -> squad leader avatar
     { 0x0D34E6C, "DODGEENTER",         2, 0 }, // 165 PlayerDodgeState.OnEnter -> reset attack chain on dodge (swipe back)
-    { 0,          "UNUSED_166",         0, 0 }, // 166 disabled (no-op pass-through)
+    { 0x00C2BE04, "ACT_NAME",          2, 0 }, // 166 ActPanel.get_panelDisplayNameText -> return "重生" / "Revived"
     { 0,          "UNUSED_167",         0, 0 }, // 167 disabled (heavy attack reset handled via action 8 in hook_154)
     { 0x1173FA4, "PCGETSPTIER",        2, 0 }, // 168 PlayerController.GetAvailableSpecialTier -> dynamic special tier
     { 0xFF05C8,  "HUDSPBTN",           2, 0 }, // 169 HudSpecialMeter.OnSpecialButtonPressed -> gesture recognition
@@ -1148,7 +1148,18 @@ void* hook_44(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
     return H[44].orig(a0,a1,a2,a3,a4,a5,a6,a7);
 }
 void* hook_50(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
-    PROTECT( char b[300]; if(read_str(a1,b,sizeof b)) flog("SETPATH %s", b); else flog("SETPATH <null/empty>"); );
+    PROTECT({
+        char b[300] = {0};
+        int ok = read_str(a1, b, sizeof b);
+        if (!ok || b[0] == '\0') {
+            if (g_strnew) {
+                a1 = g_strnew("questboard/poster_special_act");
+                flog("SETPATH <null/empty> -> redirected to questboard/poster_special_act for %p", a0);
+            }
+        } else {
+            flog("SETPATH %s", b);
+        }
+    });
     return H[50].orig(a0,a1,a2,a3,a4,a5,a6,a7);
 }
 // slot 46 TEXDONE: HeroPortrait.OnHeroTextureLoaded(this=a0) -> the load-complete gate.
@@ -1256,27 +1267,37 @@ void* hook_72(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
 // slot 73 RMV: ActPanel.RefreshMainView(this=a0) diagnostic. Read the act link structure the
 // render path gates on: _actIndex@0x228, _actData@0x220 (Act); Act.Chapters[] (@0x28, arr len@0x18,
 // elems@0x20); Chapters[1] (@0x28); Chapters[1].Quests[] (Summary[] @0x28, len@0x18); and the real
-// quest Quests[1] (@0x28) unlocked byte@0xC0. Tells us exactly which array is short/unlinked.
 void* hook_73(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
-    PROTECT( uintptr_t p=(uintptr_t)a0;
-        int actIdx=-1; uintptr_t act=0; int chLen=-1; uintptr_t ch1=0; int qLen=-1; int q1unl=-1;
-        if(p>=0x100000 && !(p&7)){
-            actIdx=*(int*)(p+0x228);
-            act=*(uintptr_t*)(p+0x220);
-            if(act>=0x100000 && !(act&7)){
-                uintptr_t chs=*(uintptr_t*)(act+0x28);          // Chapter[] Chapters
-                if(chs>=0x100000 && !(chs&7)){
-                    chLen=*(int*)(chs+0x18);
-                    if(chLen>=2){ ch1=*(uintptr_t*)(chs+0x28);   // Chapters[1]
-                        if(ch1>=0x100000 && !(ch1&7)){
-                            uintptr_t qs=*(uintptr_t*)(ch1+0x28); // Summary[] Quests
-                            if(qs>=0x100000 && !(qs&7)){
-                                qLen=*(int*)(qs+0x18);
-                                if(qLen>=2){ uintptr_t q1=*(uintptr_t*)(qs+0x28); // Quests[1]
-                                    if(q1>=0x100000 && !(q1&7)) q1unl=*(unsigned char*)(q1+0xC0); }
-                            } } } } } }
-        flog("RMV actIdx=%d act=%p chLen=%d ch1=%p qLen=%d q1unl=%d", actIdx,(void*)act,chLen,(void*)ch1,qLen,q1unl); );
-    return H[73].orig(a0,a1,a2,a3,a4,a5,a6,a7);
+    void* r = H[73].orig(a0,a1,a2,a3,a4,a5,a6,a7);
+    PROTECT({
+        uintptr_t p=(uintptr_t)a0;
+        if(p>=0x100000 && !(p&7) && g_strnew){
+            void* img = *(void**)(p + 0x148);
+            if (obj_ok(img)) {
+                void (*set_tex_path)(void*, void*, void*) = (void(*)(void*, void*, void*))(g_base + 0x1991FD0);
+                set_tex_path(img, g_strnew("questboard/poster_special_act"), NULL);
+                static int logged_act_p = 0;
+                if (logged_act_p < 5) {
+                    flog("REFRESH_DISP: set poster_special_act for panel %p (img=%p)", a0, img);
+                    logged_act_p++;
+                }
+            }
+            extern int g_is_chinese_lang;
+            void* lbl_name = *(void**)(p + 0x120);
+            if (obj_ok(lbl_name)) {
+                void (*set_text)(void*, void*, void*) = (void(*)(void*, void*, void*))(g_base + 0xDE127C);
+                if (set_text) {
+                    set_text(lbl_name, g_strnew(g_is_chinese_lang ? "重生" : "Revived"), NULL);
+                    static int logged_name_l = 0;
+                    if (logged_name_l < 5) {
+                        flog("REFRESH_DISP: set _nameLabel for panel %p to %s", a0, g_is_chinese_lang ? "重生" : "Revived");
+                        logged_name_l++;
+                    }
+                }
+            }
+        }
+    });
+    return r;
 }
 // slot 74 FORCECHAP: Chapter.UpdateProgression @0xD13E78. Mirror of FORCEACT (slot 71). Run the
 // original, then force this.unlocked(@0x30)=1 and this.completed(@0x31)=0 so ChapterPanel.OnPanelClicked
@@ -1321,8 +1342,31 @@ void* hook_76(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
             *(unsigned char*)(cd+0x30)=1;   // unlocked
             *(unsigned char*)(cd+0x31)=0;   // completed
             if(n<4){ flog("FORCECHAPSD chapter=%p unlocked %d->1", (void*)cd, bu); n++; }
+            int chapIdx = (int)(intptr_t)a1;
+            if (g_strnew && chapIdx >= 1) {
+                extern int g_is_chinese_lang;
+                const char* chap_title = g_is_chinese_lang ? "塞伯坦挑战" : "Cybertron's Challenge";
+                *(void**)(cd + 0x10) = g_strnew(chap_title); // friendlyName
+                *(void**)(cd + 0x20) = g_strnew("questboard/poster_karmasix"); // image
+            }
         } );
-    return H[76].orig(a0,a1,a2,a3,a4,a5,a6,a7);
+    void* r = H[76].orig(a0,a1,a2,a3,a4,a5,a6,a7);
+    PROTECT(
+        int chapIdx = (int)(intptr_t)a1;
+        if (g_strnew && chapIdx >= 1 && obj_ok(a0)) {
+            void* img = *(void**)((char*)a0 + 0xd8);
+            if (obj_ok(img)) {
+                void (*set_tex_path)(void*, void*, void*) = (void(*)(void*, void*, void*))(g_base + 0x1991FD0);
+                set_tex_path(img, g_strnew("questboard/poster_karmasix"), NULL);
+                static int logged_ch_p = 0;
+                if (logged_ch_p < 5) {
+                    flog("CHAP_PANEL: set poster_karmasix for chapIdx %d (img=%p)", chapIdx, img);
+                    logged_ch_p++;
+                }
+            }
+        }
+    );
+    return r;
 }
 // slot 77 FIXWRAPMI: SafeAction.<>c__DisplayClass1_0<object>.<Wrap>b__0(this=a0, obj=a1, MethodInfo*=a2)
 // @0x152B570. This gshared method needs a2 (its MethodInfo) to resolve Action<object>::Invoke via
@@ -5251,6 +5295,19 @@ void* hook_165(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
 }
 
 void* hook_166(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    extern int g_is_chinese_lang;
+    if (g_strnew && obj_ok(a0)) {
+        // Check if this ActPanel has actIndex >= 1 or is special act
+        uintptr_t actData = *(uintptr_t*)((char*)a0 + 0x220);
+        int actIdx = *(int*)((char*)a0 + 0x228);
+        const char* name = g_is_chinese_lang ? "重生" : "Revived";
+        static int logged_act_name = 0;
+        if (logged_act_name < 5) {
+            flog("ACT_NAME: ActPanel %p (actIdx=%d actData=%p) returning %s", a0, actIdx, (void*)actData, name);
+            logged_act_name++;
+        }
+        return g_strnew(name);
+    }
     return H[166].orig ? H[166].orig(a0, a1, a2, a3, a4, a5, a6, a7) : NULL;
 }
 
@@ -5338,12 +5395,12 @@ void* hook_170(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
                         }
                     } else if (strcmp(qid, "1.1.3") == 0) {
                         if (g_strnew) {
-                            a1 = g_strnew("questboard/portrait_motorm_gs_quest");
+                            a1 = g_strnew("questboard/portrait_menasor_quest");
                             a2 = (void*)0;
                         }
                     } else if (strcmp(qid, "1.1.4") == 0) {
                         if (g_strnew) {
-                            a1 = g_strnew("questboard/portrait_optimus_gs_quest");
+                            a1 = g_strnew("questboard/portrait_supreme_optimus_quest");
                             a2 = (void*)0;
                         }
                     } else if (strcmp(qid, "1.1.5") == 0) {
@@ -5361,11 +5418,11 @@ void* hook_170(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
                             a1 = g_strnew("questboard/portrait_stars_gs_quest");
                             a2 = (void*)0;
                         }
-                    } else if (strcmp(qid, "1.1.8") == 0) {
+                    /* } else if (strcmp(qid, "1.1.8") == 0) {
                         if (g_strnew) {
                             a1 = g_strnew("questboard/portrait_optimus_sg_quest");
                             a2 = (void*)0;
-                        }
+                        } */
                     }
                 }
             }
