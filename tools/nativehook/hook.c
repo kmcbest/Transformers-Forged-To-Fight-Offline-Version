@@ -5336,6 +5336,36 @@ void* hook_170(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
                                 logged_112++;
                             }
                         }
+                    } else if (strcmp(qid, "1.1.3") == 0) {
+                        if (g_strnew) {
+                            a1 = g_strnew("questboard/portrait_motorm_gs_quest");
+                            a2 = (void*)0;
+                        }
+                    } else if (strcmp(qid, "1.1.4") == 0) {
+                        if (g_strnew) {
+                            a1 = g_strnew("questboard/portrait_optimus_gs_quest");
+                            a2 = (void*)0;
+                        }
+                    } else if (strcmp(qid, "1.1.5") == 0) {
+                        if (g_strnew) {
+                            a1 = g_strnew("questboard/portrait_optimus_c_tf_quest");
+                            a2 = (void*)0;
+                        }
+                    } else if (strcmp(qid, "1.1.6") == 0) {
+                        if (g_strnew) {
+                            a1 = g_strnew("questboard/portrait_windb_gs_quest");
+                            a2 = (void*)0;
+                        }
+                    } else if (strcmp(qid, "1.1.7") == 0) {
+                        if (g_strnew) {
+                            a1 = g_strnew("questboard/portrait_stars_gs_quest");
+                            a2 = (void*)0;
+                        }
+                    } else if (strcmp(qid, "1.1.8") == 0) {
+                        if (g_strnew) {
+                            a1 = g_strnew("questboard/portrait_optimus_sg_quest");
+                            a2 = (void*)0;
+                        }
                     }
                 }
             }

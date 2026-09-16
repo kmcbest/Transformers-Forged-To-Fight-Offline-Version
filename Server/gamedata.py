@@ -1493,6 +1493,30 @@ _QUEST_NAMES = {
         "zh": "六道轮回",
         "en": "Karma Six",
     },
+    "1.1.3": {
+        "zh": "飞天虎",
+        "en": "Menasor",
+    },
+    "1.1.4": {
+        "zh": "盖世擎天柱",
+        "en": "Supreme Optimus Prime",
+    },
+    "1.1.5": {
+        "zh": "领导模块之战",
+        "en": "Battle of the Matrix",
+    },
+    "1.1.6": {
+        "zh": "巾帼之力",
+        "en": "Power of Fembots",
+    },
+    "1.1.7": {
+        "zh": "红蜘蛛的野餐",
+        "en": "Starscream's Picnic",
+    },
+    "1.1.8": {
+        "zh": "镜像世界",
+        "en": "Shattered Glass",
+    },
 }
 
 _QUEST_DESCRIPTIONS = {
@@ -1503,6 +1527,30 @@ _QUEST_DESCRIPTIONS = {
     "1.1.2": {
         "zh": "高难轮盘挑战：全职业六芒星轮盘战，敌人血量统一10倍！",
         "en": "High-difficulty wheel challenge: 6-class hexagram wheel battle with 10x enemy HP!",
+    },
+    "1.1.3": {
+        "zh": "组合金刚飞天虎特殊挑战。",
+        "en": "Combiner Menasor special challenge.",
+    },
+    "1.1.4": {
+        "zh": "盖世擎天柱特殊挑战。",
+        "en": "Supreme Optimus Prime special challenge.",
+    },
+    "1.1.5": {
+        "zh": "争夺领导模块的巅峰之战。",
+        "en": "The battle for the Matrix of Leadership.",
+    },
+    "1.1.6": {
+        "zh": "巾帼不让须眉的女子军团挑战。",
+        "en": "Power of the female Autobots and Decepticons.",
+    },
+    "1.1.7": {
+        "zh": "狂派副官红蜘蛛的专属野餐。",
+        "en": "Decepticon second-in-command Starscream's picnic.",
+    },
+    "1.1.8": {
+        "zh": "善恶颠倒的镜像宇宙之战。",
+        "en": "Battle in the inverted Shattered Glass universe.",
     },
 }
 
@@ -1537,20 +1585,9 @@ def build_quest_summary(mission_id="1.1.1", set_id="story_act1", lang="zh"):
     name_zh = quest_name(mission_id, lang="zh")
     desc_en = quest_description(mission_id, lang="en")
     desc_zh = quest_description(mission_id, lang="zh")
-    if mission_id == "1.1.2":
-        return {
-            "id": mission_id, "setId": set_id, "hash": "h1",
-            "act": act, "chapter": chapter, "mission": mission,
-            "missionIndex": mission, "index": mission,
-            "friendlyName": fname,
-            "name_en": name_en, "name_zh": name_zh,
-            "description": desc,
-            "description_en": desc_en, "description_zh": desc_zh,
-            "category": "story", "difficulty": "hard",
-            "energyPerTile": 1, "minXpPerTile": 10, "maxXpPerTile": 20,
-            "minHealthPerTile": 100, "maxHealthPerTile": 100,
-            "image": "", "theme": "primordial", "todIndex": 0,
-        }
+    diff = "hard" if mission_id != "1.1.1" else "normal"
+    min_xp = 10 if mission_id != "1.1.1" else 1
+    max_xp = 20 if mission_id != "1.1.1" else 2
     return {
         "id": mission_id, "setId": set_id, "hash": "h1",
         "act": act, "chapter": chapter, "mission": mission,
@@ -1559,10 +1596,10 @@ def build_quest_summary(mission_id="1.1.1", set_id="story_act1", lang="zh"):
         "name_en": name_en, "name_zh": name_zh,
         "description": desc,
         "description_en": desc_en, "description_zh": desc_zh,
-        "category": "story", "difficulty": "normal",
-        "energyPerTile": 1, "minXpPerTile": 1, "maxXpPerTile": 2,
+        "category": "story", "difficulty": diff,
+        "energyPerTile": 1, "minXpPerTile": min_xp, "maxXpPerTile": max_xp,
         "minHealthPerTile": 100, "maxHealthPerTile": 100,
-        "image": "", "theme": "primordial", "todIndex": 0,
+        "image": "", "theme": "primordial" if mission_id == "1.1.2" else "", "todIndex": 0,
     }
 
 
@@ -1580,17 +1617,18 @@ def build_quest_detail(mission_id="1.1.1", set_id="story_act1", lang="zh"):
 
 def build_quest_list(lang="zh"):
     """Build quest-list response structure for available quests."""
+    all_qids = ("1.1.1", "1.1.2", "1.1.3", "1.1.4", "1.1.5", "1.1.6", "1.1.7", "1.1.8")
     quests = []
-    for qid in ("1.1.1", "1.1.2"):
+    for qid in all_qids:
         parts = qid.split(".")
         act = int(parts[0]) if len(parts) > 0 and parts[0].isdigit() else 1
         chapter = int(parts[1]) if len(parts) > 1 and parts[1].isdigit() else 1
         mission = int(parts[2]) if len(parts) > 2 and parts[2].isdigit() else 1
         fname = quest_name(qid, lang=lang)
         desc = quest_description(qid, lang=lang)
-        diff = "hard" if qid == "1.1.2" else "normal"
-        min_xp = 10 if qid == "1.1.2" else 1
-        max_xp = 20 if qid == "1.1.2" else 2
+        diff = "hard" if qid != "1.1.1" else "normal"
+        min_xp = 10 if qid != "1.1.1" else 1
+        max_xp = 20 if qid != "1.1.1" else 2
         theme = "primordial" if qid == "1.1.2" else ""
         quests.append({
             "id": qid,
@@ -1618,14 +1656,18 @@ def build_quest_list(lang="zh"):
         "availableQuests": [q for q in quests if q["id"] == "1.1.1"],
     }
 
-    karma_quest = [{
-        **q,
-        "act": 1,
-        "chapter": 1,
-        "mission": 1,
-        "missionIndex": 1,
-        "index": 1,
-    } for q in quests if q["id"] == "1.1.2"]
+    special_qids = ("1.1.2", "1.1.3", "1.1.4", "1.1.5", "1.1.6", "1.1.7", "1.1.8")
+    special_quests = []
+    for idx, qid in enumerate(special_qids, start=1):
+        q = next(item for item in quests if item["id"] == qid)
+        special_quests.append({
+            **q,
+            "act": 1,
+            "chapter": 1,
+            "mission": idx,
+            "missionIndex": idx,
+            "index": idx,
+        })
 
     special_name = "六道轮回" if lang == "zh" else "Karma Six"
     special_set = {
@@ -1638,7 +1680,7 @@ def build_quest_list(lang="zh"):
         "actCount": 1, "chapterCount": [1, 1],
         "acts": [{"name": special_name, "index": 0}, {"name": special_name, "index": 1}],
         "chapters": [{"name": "Chapter 1", "index": 0, "actIndex": 0}, {"name": "Chapter 1", "index": 1, "actIndex": 1}],
-        "availableQuests": karma_quest,
+        "availableQuests": special_quests,
     }
 
     return [story_set, special_set]
