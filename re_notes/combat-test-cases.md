@@ -1,4 +1,4 @@
-﻿# 战斗连击规则与质量门禁测试用例 (Combat Quality Gates)
+# 战斗连击规则与质量门禁测试用例 (Combat Quality Gates)
 
 本文档基于 combo-rules.md 制定，作为战斗手感、连击状态机及 tools/nativehook/hook.c 的核心质量门禁。任何关于输入、连击或状态机代码的修改，均必须严格通过以下 6 个质量门禁场景。
 
@@ -84,6 +84,21 @@
 - **代码质量断言 (Invariant)**：
   \COMBAT_ASSERT(ranged_index <= 3, "GATE-06", "Ranged shooting capped at 3 rounds!");\
   \COMBAT_ASSERT(gun_cancel_dash => medium_index == 0, "GATE-06", "Gun cancel into forward dash must initiate M1!");\
+
+---
+
+### TC-GATE-07: 重击后中击起手门禁 (Heavy → M1 Re-initiation)
+- **前置条件**：近身，并先打出一段同时含轻击与中击的连击，例：`L1 -> L2 -> L3 -> M1`。
+- **测试动作**：
+  1. 在上述连击之后，长按右侧打出**重击**（真机实测其动作码为 `0x100` / `256`）。
+  2. 重击收招完毕，立即**向前滑**（Swipe Forward）。
+- **预期结果**：
+  - 重击终结整段连击，**中击计数必须归零**。
+  - 因此接下来的前滑必须从 **M1**（前冲中攻击）起手，**严禁**接续重击之前的中击进度而打出 **M2**。
+- **代码质量断言 (Invariant)**：
+  \COMBAT_ASSERT(medium_index == 0, "GATE-07", "After heavy attack, the next swipe must initiate M1!");\
+- **实测记录（2026-09-16 真机）**：修复前，`L1 -> L2 -> L3 -> M1` → 重击 → 前滑 会打出 **M2**；根因是真重击派发的是 `action == 0x100`，而 `hook_154` 当时只识别 `action == 8`，导致重击既没有清链也没有 arm `after_heavy`，中击计数器仍停留在上一个 M1 的进度上。
+- **判定标准**：前滑对应的 `ACTION post` 行中 `m` 必须由 **0 → 1**（= M1），而不是 `1 -> 2`（= M2）；且 `logcat` 中不得出现 `[COMBAT_RULE_VIOLATION][GATE-07]`。
 
 ---
 

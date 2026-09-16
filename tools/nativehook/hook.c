@@ -4605,6 +4605,11 @@ void* hook_139(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     return r;
 }
 void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
+    // DIAGNOSTIC ONLY -- no behavior change. Per-combat delimiter: every fight re-enters
+    // Simulation.RegisterComponents, which resets the entire P0 combo state below, so this line
+    // marks "chain state is fresh from here" and lets a raw log be split into test rounds
+    // (one quality-gate scenario per fight). Logging only.
+    flog("COMBAT_START: Simulation.RegisterComponents -> all P0 combo state cleared");
     sp3_xf_clear();
     g_p0_controller = NULL;
     g_p1_controller = NULL;
@@ -4806,6 +4811,22 @@ void* hook_145(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
 // CanShoot supplies availability and out-of-melee-range gates; TryExecuteAction retains
 // normal action-state, hit-stun, recovery, and blocked-action checks. No custom range/cooldown.
 void hook_146(void* self, float dT, void* method){
+    // TEST AID (marker file, see tftf_get_freeze_enemy_ai in inapk_server.c): with
+    // /sdcard/Android/media/com.kabam.bigrobot/freeze_enemy_ai present, the enemy AI's tick is
+    // skipped entirely, so it never attacks or repositions and the combo quality-gate scenarios
+    // can be played uninterrupted. Only NON-P0 controllers are frozen. With no marker file this
+    // whole block is inert and the original body behaves byte-for-byte as before.
+    int frozen = 0;
+    PROTECT({
+        void* ai_pc = fld_p(self,0x90);                        // AIController.PlayerController
+        if (obj_ok(ai_pc) && *(int32_t*)((uintptr_t)ai_pc + 0xF4) != 0 && tftf_get_freeze_enemy_ai())
+            frozen = 1;
+    });
+    if (frozen) {
+        static unsigned frozen_lines = 0;
+        if (frozen_lines < 8) { frozen_lines++; flog("ENEMY_AI_FROZEN: skipped AIController.Simulate (marker file present) ai=%p", self); }
+        return;
+    }
     ((fn_ai_simulate)H[146].orig)(self,dT,method);
     PROTECT({
         void* player=fld_p(self,0x90);                    // AIController.PlayerController
@@ -4909,11 +4930,26 @@ void* hook_153(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
 void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7){
     int action = (int)(intptr_t)a1;
     uint32_t pre_l = 0, pre_m = 0;
+    // Set when THIS call already cleared the chain, so the POST block below cannot mistake our
+    // own clear for a native combo-end (which would re-arm the flag forever).
+    int did_reset = 0;
     PROTECT({
         if (obj_ok(self) && *(int32_t*)((uintptr_t)self + 0xF4) == 0) {
             g_p0_controller = self;
             pre_l = *(uint32_t*)((uintptr_t)self + 0x1c0);
             pre_m = *(uint32_t*)((uintptr_t)self + 0x1c4);
+
+            // DIAGNOSTIC ONLY -- no behavior change (logs only; writes nothing, gates unchanged).
+            // Closes two blind spots that made every earlier combat log unable to settle the
+            // combo bugs:
+            //   1) action==1 (the tap / light-attack path) was hidden by the PLAYER_ACTION
+            //      filter below, so no previous log could show which action code a plain tap
+            //      produces;
+            //   2) the chain counters were only ever printed when a gate branch tripped, so
+            //      ordinary combo progression was unobservable. +0x1c8 (_rangedAttackIndex) is
+            //      read here for the first time -- until now it was write-only (reset to 0).
+            flog("ACTION pre act=%d l=%u m=%u r=%u", action, pre_l, pre_m,
+                 *(uint32_t*)((uintptr_t)self + 0x1c8));
 
             if (action == 2) {
                 // Action 2 = Swipe back / Dodge input request.
@@ -4921,19 +4957,33 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
                 g_p0_block_enter_ms = 0;
                 g_p0_block_reset_done = 0;
             }
-            if (action == 8) {
-                // Action 8 = Heavy Attack: reset attack chain and set after_heavy flag
+            if (action == 0x100 || action == 8) {
+                // MEASURED on device (2026-09-16): a real heavy attack dispatches action 0x100 (256)
+                // -- 27 occurrences, one per heavy press, and it never touches l/m/r. action==8
+                // showed up only once, during a back-swipe, so it is not the heavy path either.
+                // Both are treated as chain enders here, because a heavy AND a dodge must end the
+                // combo. Before this fix only action==8 was handled, so a real heavy left the medium
+                // counter untouched and the next forward swipe produced M2 instead of M1.
                 g_p0_block_enter_ms = 0;
                 g_p0_block_reset_done = 0;
                 g_p0_after_heavy = 1;
-                flog("PLAYER_ACTION heavy (action=8) on P0: reset attack chain and arm after_heavy flag");
+                flog("PLAYER_ACTION heavy/ender (action=%d) on P0: reset attack chain and arm after_heavy flag", action);
                 reset_player_attack_chain(self);
+                did_reset = 1;
+                // GATE-07: a heavy ends the whole chain, so the medium counter must be back to 0 --
+                // otherwise the next forward swipe continues the medium chain and produces M2
+                // instead of the required M1 (reproduced on device 2026-09-16, before the 0x100
+                // action code above was recognised).
+                COMBAT_ASSERT(*(uint32_t*)((uintptr_t)self + 0x1c4) == 0, "GATE-07",
+                              "Medium index must be 0 after heavy attack so the next swipe is M1, got %u",
+                              *(uint32_t*)((uintptr_t)self + 0x1c4));
             }
             if (action == 1 || action == 4) {
                 // Action 1 = Attack (Tap), Action 4 = Dash attack (Swipe forward)
                 if (g_p0_after_heavy) {
                     flog("COMBAT_GATE: attack following heavy attack (action=%d) -> reset attack chain to L1/M1", action);
                     reset_player_attack_chain(self);
+                    did_reset = 1;
                     g_p0_after_heavy = 0;
                     pre_l = *(uint32_t*)((uintptr_t)self + 0x1c0);
                     pre_m = *(uint32_t*)((uintptr_t)self + 0x1c4);
@@ -4942,6 +4992,7 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
                     flog("COMBAT_GATE: combo ender reached (ended_flag=%d, pre_m=%u, pre_l=%u, action=%d) -> reset chain",
                          g_p0_combo_ended, pre_m, pre_l, action);
                     reset_player_attack_chain(self);
+                    did_reset = 1;
                     g_p0_combo_ended = 0;
                     pre_l = *(uint32_t*)((uintptr_t)self + 0x1c0);
                     pre_m = *(uint32_t*)((uintptr_t)self + 0x1c4);
@@ -4969,7 +5020,9 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
             }
         }
     });
-    if (action >= 2 && action <= 10) {
+    // DIAGNOSTIC ONLY: the range used to start at 2, which silently hid action==1 (the tap /
+    // light-attack path) from every log. Widened to 1 so taps are observable; logging only.
+    if (action >= 1 && action <= 10) {
         flog("PLAYER_ACTION action=%d on controller=%p (p0=%p, is_p0=%d)",
              action, self, g_p0_controller, (self == g_p0_controller));
     }
@@ -4978,10 +5031,28 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
         if (obj_ok(self) && *(int32_t*)((uintptr_t)self + 0xF4) == 0) {
             uint32_t post_l = *(uint32_t*)((uintptr_t)self + 0x1c0);
             uint32_t post_m = *(uint32_t*)((uintptr_t)self + 0x1c4);
-            if (post_m >= 2 || post_l >= 4 || (action == 4 && pre_m >= 1) || (action == 1 && pre_l >= 3)) {
+            // DIAGNOSTIC ONLY -- no behavior change. Prints the chain counters AFTER the native
+            // handler ran for EVERY P0 action; previously these values only reached the log when
+            // the ender branch below happened to trip, so the ordinary L1..L4/M1..M2 progression
+            // (and the counter base: is 4 == "L4 played" or == "L4 about to play"?) was
+            // unobservable. The two latch flags are dumped alongside so arming vs consumption can
+            // be read in time order.
+            flog("ACTION post act=%d l=%u m=%u r=%u ended=%d heavy=%d", action, post_l, post_m,
+                 *(uint32_t*)((uintptr_t)self + 0x1c8), g_p0_combo_ended, g_p0_after_heavy);
+            // Arm the ender flag only on a CONFIRMED combo end -- never on an anticipated one.
+            // Root cause of "L4 unreachable" (measured 2026-09-16): the old conditions
+            // (action==1 && pre_l>=3 / action==4 && pre_m>=1) hold for EVERY re-dispatch of the 3rd
+            // light attack -- the game re-sends Action() ~10x per attack -- so the flag was armed
+            // *during* L3 and the very next re-dispatch consumed it and zeroed the index. The 4th tap
+            // therefore came out as L1 and the L4 finisher never played (l never exceeded 3 in any
+            // session, while a 4-tap test produced l 0->1, 1->2, 2->3 and then 0->1 again).
+            // Now the flag is armed only after the ender really happened: the counter either reached
+            // its ender value (4 / 2), or the native cleared the chain itself (a decrease -- that is
+            // how M2 ends the medium chain, confirmed by the M1,M2,L1 test giving L1 afterwards).
+            if (!did_reset && (post_l >= 4 || post_m >= 2 || post_l < pre_l || post_m < pre_m)) {
                 g_p0_combo_ended = 1;
-                flog("COMBAT_GATE: post-action combo ender detected (action=%d, post_l=%u, post_m=%u) -> g_p0_combo_ended = 1",
-                     action, post_l, post_m);
+                flog("COMBAT_GATE: combo ender CONFIRMED (action=%d, pre l=%u m=%u -> post l=%u m=%u) -> g_p0_combo_ended = 1",
+                     action, pre_l, pre_m, post_l, post_m);
             }
         }
     });
@@ -5288,6 +5359,11 @@ void* hook_165(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
             flog("DODGE_ENTER (0x0D34E6C) on P0: reset attack chain to allow shooting");
             reset_player_attack_chain(pc);
         } else if (obj_ok(g_p0_controller)) {
+            // DIAGNOSTIC: in every measured session the branch above NEVER fired -- DODGE_ENTER was
+            // absent from the log entirely while dodges did clear the chain, i.e. a0+0x18 does not
+            // resolve to the P0 controller and this fallback does all the work. Log it so "who
+            // cleared my chain" can never be invisible again.
+            flog("DODGE_ENTER (0x0D34E6C): a0+0x18 did not resolve to P0 (pc=%p) -> reset via cached g_p0_controller", pc);
             reset_player_attack_chain(g_p0_controller);
         }
     });

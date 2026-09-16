@@ -219,6 +219,27 @@ int tftf_get_enable_swipe_specials(void) {
     if (!g_settings_loaded) load_user_settings();
     return g_user_settings.enable_swipe_specials;
 }
+
+/* TEST AID (combo quality-gate testing): when this marker file exists, hook_146 skips the
+   enemy AI's entire tick, so the opponent never attacks and never moves -- combo sequences can
+   then be observed without being interrupted by hit reactions. Flip it on the device, no rebuild
+   and no app restart needed:
+       adb shell touch /sdcard/Android/media/com.kabam.bigrobot/freeze_enemy_ai
+       adb shell rm -f /sdcard/Android/media/com.kabam.bigrobot/freeze_enemy_ai
+   With NO marker file (the default) this returns 0 and hook_146 behaves exactly as before. */
+int tftf_get_freeze_enemy_ai(void) {
+    static const char *paths[] = {
+        "/sdcard/Android/media/com.kabam.bigrobot/freeze_enemy_ai",
+        "/storage/emulated/0/Android/media/com.kabam.bigrobot/freeze_enemy_ai",
+        "/sdcard/Android/data/com.kabam.bigrobot/files/freeze_enemy_ai",
+        "/storage/emulated/0/Android/data/com.kabam.bigrobot/files/freeze_enemy_ai",
+        NULL
+    };
+    for (int i = 0; paths[i]; i++) {
+        if (access(paths[i], F_OK) == 0) return 1;
+    }
+    return 0;
+}
 void tftf_reload_user_settings(void) {
     load_user_settings();
 }

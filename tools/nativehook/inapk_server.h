@@ -23,6 +23,7 @@ float tftf_get_enemy_mana_gain(void);
 const char* tftf_get_commander_name(void);
 int tftf_get_target_fps(void);
 int tftf_get_enable_swipe_specials(void);
+int tftf_get_freeze_enemy_ai(void);
 void tftf_reload_user_settings(void);
 
 #endif
