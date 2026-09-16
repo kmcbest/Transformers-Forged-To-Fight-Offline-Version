@@ -98,6 +98,7 @@ typedef struct {
     int arena_randomization;
     int skip_launcher_next_time;
     int target_fps;
+    int enable_swipe_specials;
 } UserSettings;
 
 static UserSettings g_user_settings = {
@@ -107,7 +108,8 @@ static UserSettings g_user_settings = {
     .enable_custom_bots = 1,
     .arena_randomization = 1,
     .skip_launcher_next_time = 0,
-    .target_fps = 60
+    .target_fps = 60,
+    .enable_swipe_specials = 1
 };
 static int g_settings_loaded = 0;
 
@@ -182,6 +184,14 @@ static void load_user_settings(void) {
                         if (v == 30 || v == 60) g_user_settings.target_fps = v;
                     }
                 }
+                char *ss = strstr(buf, "\"enable_swipe_specials\"");
+                if (ss) {
+                    char *c = strchr(ss, ':');
+                    if (c) {
+                        while (*c && (*c == ':' || isspace((unsigned char)*c))) c++;
+                        g_user_settings.enable_swipe_specials = !strncmp(c, "true", 4);
+                    }
+                }
                 g_settings_loaded = 1;
                 return;
             }
@@ -204,6 +214,10 @@ const char* tftf_get_commander_name(void) {
 int tftf_get_target_fps(void) {
     if (!g_settings_loaded) load_user_settings();
     return g_user_settings.target_fps > 0 ? g_user_settings.target_fps : 60;
+}
+int tftf_get_enable_swipe_specials(void) {
+    if (!g_settings_loaded) load_user_settings();
+    return g_user_settings.enable_swipe_specials;
 }
 void tftf_reload_user_settings(void) {
     load_user_settings();

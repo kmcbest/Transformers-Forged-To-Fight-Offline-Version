@@ -2819,7 +2819,7 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                 *(int32_t*)((char*)at1 + 0x38) = atk;   // Attack
                 *(int32_t*)((char*)at1 + 0x3C) = atk;   // AttackBase
                 *(float*)  ((char*)at1 + 0x40) = 0.0f;  // Armor
-                *(float*)  ((char*)at1 + 0x44) = 1.0f;  // CritChance (Forced 100% test)
+                *(float*)  ((char*)at1 + 0x44) = 0.5f;  // CritChance (50% crit rate)
                 *(float*)  ((char*)at1 + 0x48) = 1.5f;  // CritDamage
                 *(float*)  ((char*)at1 + 0x50) = 0.5f;  // BlockProficiency
                 *(float*)  ((char*)at1 + 0x54) = g_combat_enemy_mana_gain;  // Dynamic enemy mana gain rate
@@ -2827,7 +2827,7 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
             }
             if (at2 && obj_ok(at2)) {
                 *(int32_t*)((char*)at2 + 0x58) = 0;     // Player ManaStart = 0
-                *(float*)  ((char*)at2 + 0x44) = 1.0f;  // Player CritChance (Forced 100% test)
+                *(float*)  ((char*)at2 + 0x44) = 0.5f;  // Player CritChance (50% crit rate)
                 *(float*)  ((char*)at2 + 0x54) = g_combat_player_mana_gain; // Dynamic player mana gain rate
             }
             if (ch1 && obj_ok(ch1)) {
@@ -2843,7 +2843,7 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                  player_idx, id1, hp, atk, pi, g_combat_enemy_mana_gain, tftf_get_challenge_hp_multiplier());
         } else if (player_idx == 0) {
             if (at1 && obj_ok(at1)) {
-                *(float*)((char*)at1 + 0x44) = 1.0f;                      // Player 0 CritChance (Forced 100% test)
+                *(float*)((char*)at1 + 0x44) = 0.5f;                      // Player 0 CritChance (50% crit rate)
                 *(float*)((char*)at1 + 0x48) = 1.5f;                      // Player 0 CritDamage
                 *(float*)((char*)at1 + 0x54) = g_combat_player_mana_gain; // Dynamic player mana gain rate
                 float cur_norm_hp = *(float*)((char*)at1 + 0x34);
@@ -3852,7 +3852,7 @@ void* hook_114(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     }
 
     // Touch tracking & real-time gesture recognition for Special Attack Button (bottom-left)
-    if (obj_ok(g_p0_controller)) {
+    if (obj_ok(g_p0_controller) && tftf_get_enable_swipe_specials()) {
         PROTECT({
             Vector3_t mpos = unity_get_mouse_position();
             int sw = unity_get_screen_width();
@@ -4959,11 +4959,12 @@ void* hook_156(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     if (H[156].orig) {
         H[156].orig(a0, a1, a2, a3, a4, a5, a6, a7);
     }
+    int is_crit = (rand() % 100) < 50 ? 1 : 0;
     static int s_crit_log_cnt = 0;
     if (s_crit_log_cnt++ < 30) {
-        flog("ROLL_CRIT: PlayerAttributes.RollForCriticalHit called on %p -> forcing true (1)", a0);
+        flog("ROLL_CRIT: PlayerAttributes.RollForCriticalHit called on %p -> 50%% roll: %d", a0, is_crit);
     }
-    return (void*)(intptr_t)1;
+    return (void*)(intptr_t)is_crit;
 }
 void* hook_157(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     return H[157].orig ? H[157].orig(a0, a1, a2, a3, a4, a5, a6, a7) : NULL;
@@ -5259,7 +5260,7 @@ void* hook_167(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
 
 void* hook_168(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     uint64_t now = propgo_now_ms();
-    if (self == g_p0_controller && g_intended_special_tier > 0 && (now - g_intended_special_time_ms < 600)) {
+    if (tftf_get_enable_swipe_specials() && self == g_p0_controller && g_intended_special_tier > 0 && (now - g_intended_special_time_ms < 600)) {
         int target_tier = g_intended_special_tier;
         void* power_meter = *(void**)((char*)self + 0x80);
         if (power_meter_can_use_special(power_meter, target_tier)) {
@@ -5278,6 +5279,9 @@ void* hook_168(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
 }
 
 void* hook_169(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    if (!tftf_get_enable_swipe_specials()) {
+        return H[169].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    }
     g_sp_btn_pressed_fired = 1;
     PROTECT({
         Vector3_t mpos = unity_get_mouse_position();

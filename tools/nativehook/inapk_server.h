@@ -22,6 +22,7 @@ float tftf_get_challenge_hp_multiplier(void);
 float tftf_get_enemy_mana_gain(void);
 const char* tftf_get_commander_name(void);
 int tftf_get_target_fps(void);
+int tftf_get_enable_swipe_specials(void);
 void tftf_reload_user_settings(void);
 
 #endif

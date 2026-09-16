@@ -53,9 +53,9 @@
 
     .launcher-frame {
       width: 96vw;
-      max-width: 860px;
+      max-width: 900px;
       height: 95vh;
-      max-height: 480px;
+      max-height: 520px;
       background: var(--panel-bg);
       border: 1px solid var(--panel-border);
       border-radius: 14px;
@@ -69,8 +69,8 @@
 
     /* Header */
     .top-bar {
-      height: 38px;
-      padding: 0 12px;
+      height: 46px;
+      padding: 0 16px;
       background: linear-gradient(90deg, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.8) 60%, rgba(8, 47, 73, 0.4));
       border-bottom: 1px solid rgba(56, 189, 248, 0.18);
       display: flex;
@@ -82,12 +82,12 @@
     .brand-box {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
 
     .logo-badge {
-      width: 24px;
-      height: 24px;
+      width: 28px;
+      height: 28px;
       border-radius: 6px;
       background: rgba(56, 189, 248, 0.12);
       border: 1px solid rgba(56, 189, 248, 0.4);
@@ -98,35 +98,69 @@
     }
 
     .brand-title {
-      font-size: 13px;
+      font-size: 16.5px;
       font-weight: bold;
       color: #f8fafc;
       letter-spacing: 0.02em;
     }
 
     .version-tag {
-      font-size: 9px;
-      padding: 1px 5px;
+      font-size: 12px;
+      padding: 2px 7px;
       border-radius: 4px;
       background: rgba(56, 189, 248, 0.15);
       color: var(--cyan);
       border: 1px solid rgba(56, 189, 248, 0.3);
     }
 
-    .lang-status {
-      font-size: 10px;
-      color: #64748b;
+    /* Language Switcher */
+    .lang-switcher {
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 8px;
     }
-    .lang-status span {
+
+    .lang-status-badge {
+      display: flex;
+      align-items: center;
+      gap: 5px;
       color: #94a3b8;
+    }
+
+    .lang-pill-group {
+      display: flex;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 6px;
+      padding: 2px;
+      gap: 2px;
+    }
+
+    .lang-pill-btn {
+      background: transparent;
+      border: none;
+      border-radius: 4px;
+      color: #94a3b8;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 3px 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .lang-pill-btn:hover {
+      color: #f1f5f9;
+    }
+
+    .lang-pill-btn.active {
+      background: rgba(56, 189, 248, 0.25);
+      color: var(--cyan);
+      box-shadow: 0 0 6px rgba(56, 189, 248, 0.3);
     }
 
     /* Commander Input Strip */
     .commander-strip {
-      padding: 5px 12px;
+      padding: 6px 14px;
       background: rgba(10, 16, 28, 0.65);
       border-bottom: 1px solid rgba(56, 189, 248, 0.12);
       display: flex;
@@ -137,7 +171,7 @@
     }
 
     .commander-label {
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 600;
       color: #cbd5e1;
       display: flex;
@@ -156,12 +190,12 @@
 
     .commander-input {
       width: 100%;
-      height: 26px;
+      height: 34px;
       background: rgba(15, 23, 42, 0.85);
       border: 1px solid rgba(56, 189, 248, 0.3);
       border-radius: 6px;
-      padding: 0 54px 0 8px;
-      font-size: 12px;
+      padding: 0 62px 0 12px;
+      font-size: 14.5px;
       color: #38bdf8;
       outline: none;
       transition: all 0.15s ease;
@@ -175,12 +209,12 @@
 
     .char-counter {
       position: absolute;
-      right: 6px;
-      font-size: 9px;
+      right: 8px;
+      font-size: 12px;
       font-family: 'TecnicaBold', monospace;
-      color: #64748b;
+      color: #94a3b8;
       background: rgba(15, 23, 42, 0.7);
-      padding: 1px 4px;
+      padding: 1px 6px;
       border-radius: 3px;
       pointer-events: none;
     }
@@ -190,8 +224,8 @@
     }
 
     .commander-hint {
-      font-size: 10px;
-      color: #64748b;
+      font-size: 12px;
+      color: #94a3b8;
       white-space: nowrap;
     }
 
@@ -200,22 +234,22 @@
       flex: 1;
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      padding: 8px 12px;
-      overflow: hidden;
+      gap: 12px;
+      padding: 12px 16px;
+      overflow-y: auto;
     }
 
     .col {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 10px;
     }
 
     .card {
       background: rgba(15, 23, 42, 0.55);
       border: 1px solid rgba(51, 65, 85, 0.65);
       border-radius: 10px;
-      padding: 8px 10px;
+      padding: 10px 14px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -234,23 +268,23 @@
     }
 
     .card-title {
-      font-size: 11px;
+      font-size: 14px;
       font-weight: 600;
       color: #e2e8f0;
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 6px;
     }
 
     .card-title .dot {
-      width: 5px;
-      height: 5px;
+      width: 7px;
+      height: 7px;
       border-radius: 50%;
       background: var(--cyan);
     }
 
     .current-val {
-      font-size: 10px;
+      font-size: 13px;
       color: var(--cyan);
     }
 
@@ -258,14 +292,15 @@
     .pills-group {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
-      gap: 6px;
+      gap: 8px;
     }
 
     .pill-btn {
       background: rgba(15, 23, 42, 0.85);
       border: 1px solid rgba(51, 65, 85, 0.8);
-      border-radius: 7px;
-      padding: 6px 4px;
+      border-radius: 8px;
+      padding: 8px 4px;
+      min-height: 50px;
       cursor: pointer;
       text-align: center;
       transition: all 0.15s ease;
@@ -273,7 +308,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 2px;
+      gap: 3px;
     }
 
     .pill-btn:hover {
@@ -288,14 +323,14 @@
     }
 
     .pill-name {
-      font-size: 11px;
+      font-size: 13.5px;
       font-weight: bold;
     }
 
     .pill-badge {
-      font-size: 9px;
-      padding: 0 4px;
-      border-radius: 3px;
+      font-size: 12px;
+      padding: 2px 6px;
+      border-radius: 4px;
     }
 
     .c-green { color: var(--emerald); }
@@ -312,11 +347,11 @@
 
     /* Switch Cards */
     .switch-card {
-      padding: 8px 10px;
+      padding: 10px 14px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 8px;
+      gap: 12px;
     }
 
     .switch-info {
@@ -324,7 +359,7 @@
     }
 
     .switch-title {
-      font-size: 11px;
+      font-size: 14px;
       font-weight: 600;
       color: #e2e8f0;
       display: flex;
@@ -333,18 +368,18 @@
     }
 
     .switch-desc {
-      font-size: 10px;
+      font-size: 12px;
       color: #94a3b8;
-      margin-top: 2px;
-      line-height: 1.25;
+      margin-top: 4px;
+      line-height: 1.4;
     }
 
     /* Toggle Switch */
     .switch {
       position: relative;
       display: inline-block;
-      width: 38px;
-      height: 20px;
+      width: 44px;
+      height: 24px;
       flex-shrink: 0;
     }
     .switch input { opacity: 0; width: 0; height: 0; }
@@ -355,13 +390,13 @@
       background-color: #1e293b;
       border: 1px solid #334155;
       transition: .2s cubic-bezier(0.4, 0, 0.2, 1);
-      border-radius: 20px;
+      border-radius: 24px;
     }
     .slider:before {
       position: absolute;
       content: "";
-      height: 14px;
-      width: 14px;
+      height: 18px;
+      width: 18px;
       left: 2px;
       bottom: 2px;
       background-color: #ffffff;
@@ -379,7 +414,7 @@
       box-shadow: 0 0 8px rgba(168, 85, 247, 0.35);
     }
     input:checked + .slider:before {
-      transform: translateX(18px);
+      transform: translateX(20px);
     }
 
     /* Skip checkbox strip */
@@ -387,33 +422,34 @@
       background: rgba(8, 47, 73, 0.2);
       border: 1px solid rgba(56, 189, 248, 0.25);
       border-radius: 8px;
-      padding: 6px 10px;
+      padding: 9px 14px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       cursor: pointer;
     }
     .skip-card input {
       accent-color: #38bdf8;
-      width: 14px;
-      height: 14px;
+      width: 18px;
+      height: 18px;
       cursor: pointer;
     }
     .skip-text {
-      font-size: 10px;
+      font-size: 12px;
       color: #cbd5e1;
-      line-height: 1.2;
+      line-height: 1.35;
     }
     .skip-text strong {
       color: #f1f5f9;
-      font-size: 11px;
+      font-size: 13.5px;
       display: block;
+      margin-bottom: 2px;
     }
 
     /* Footer */
     .footer-bar {
-      height: 42px;
-      padding: 0 12px;
+      height: 52px;
+      padding: 0 16px;
       background: rgba(10, 16, 28, 0.95);
       border-top: 1px solid rgba(51, 65, 85, 0.6);
       display: flex;
@@ -425,20 +461,20 @@
     .footer-actions-left {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
 
     .btn-secondary {
-      padding: 4px 10px;
-      border-radius: 6px;
+      padding: 7px 14px;
+      border-radius: 7px;
       background: rgba(30, 41, 59, 0.6);
       border: 1px solid rgba(51, 65, 85, 0.8);
       color: #94a3b8;
-      font-size: 11px;
+      font-size: 13px;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 6px;
       transition: all 0.15s;
     }
     .btn-secondary:hover {
@@ -448,17 +484,17 @@
     }
 
     .btn-primary {
-      padding: 6px 18px;
+      padding: 9px 24px;
       border-radius: 8px;
       background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
       border: 1px solid rgba(56, 189, 248, 0.6);
       color: #ffffff;
-      font-size: 12px;
+      font-size: 14.5px;
       font-weight: bold;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       box-shadow: 0 0 14px rgba(2, 132, 199, 0.35);
       transition: all 0.15s ease;
     }
@@ -531,12 +567,23 @@
             <path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5zm0 2.18l7 3.89v4.93c0 4.54-3.08 8.79-7 9.92-3.92-1.13-7-5.38-7-9.92V8.07l7-3.89zM11 7v2h2V7h-2zm-3 4v2h8v-2H8zm1 4v2h6v-2H9z"/>
           </svg>
         </div>
-        <span class="brand-title">启动配置与战斗调优</span>
+        <span class="brand-title" data-i18n="brand_title">启动配置与战斗调优</span>
         <span class="version-tag game-font">v9.2.0 Redeco</span>
       </div>
 
-      <div class="lang-status">
-        <span>当前语言: 简体中文 (系统自适应)</span>
+      <div class="lang-switcher">
+        <div class="lang-status-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+          <span id="txt-lang-mode" class="game-font">自适应: 简中</span>
+        </div>
+        <div class="lang-pill-group">
+          <button type="button" class="lang-pill-btn active" id="btn-lang-zh" onclick="setLanguage('zh')">简中</button>
+          <button type="button" class="lang-pill-btn" id="btn-lang-en" onclick="setLanguage('en')">EN</button>
+        </div>
       </div>
     </header>
 
@@ -551,22 +598,22 @@
           <div class="card-header">
             <div class="card-title">
               <span class="dot" style="background: var(--rose);"></span>
-              <span>六道轮回挑战难度 (Challenge Difficulty)</span>
+              <span data-i18n="diff_title">六道轮回挑战难度</span>
             </div>
             <span class="current-val game-font" id="txt-diff-val">10.0x HP (六道极意)</span>
           </div>
           <div class="pills-group">
             <div class="pill-btn" onclick="setDifficulty(1.0, this)">
-              <span class="pill-name c-green">正常剧情</span>
-              <span class="pill-badge bg-green game-font">1.0x (原版)</span>
+              <span class="pill-name c-green" data-i18n="diff_normal">正常剧情</span>
+              <span class="pill-badge bg-green game-font" data-i18n="diff_normal_badge">1.0x (原版)</span>
             </div>
             <div class="pill-btn" onclick="setDifficulty(5.0, this)">
-              <span class="pill-name c-amber">狂暴进阶</span>
-              <span class="pill-badge bg-amber game-font">5.0x (5倍)</span>
+              <span class="pill-name c-amber" data-i18n="diff_fury">狂暴进阶</span>
+              <span class="pill-badge bg-amber game-font" data-i18n="diff_fury_badge">5.0x (5倍)</span>
             </div>
             <div class="pill-btn active" onclick="setDifficulty(10.0, this)">
-              <span class="pill-name c-rose">六道极意</span>
-              <span class="pill-badge bg-rose game-font">10.0x (10倍)</span>
+              <span class="pill-name c-rose" data-i18n="diff_extreme">六道极意</span>
+              <span class="pill-badge bg-rose game-font" data-i18n="diff_extreme_badge">10.0x (10倍)</span>
             </div>
           </div>
         </div>
@@ -576,24 +623,41 @@
           <div class="card-header">
             <div class="card-title">
               <span class="dot" style="background: var(--cyan);"></span>
-              <span>敌方受击加气倍率 (Enemy Mana Gain)</span>
+              <span data-i18n="mana_title">敌方受击加气倍率</span>
             </div>
             <span class="current-val game-font" id="txt-mana-val">0.5x (减半推荐)</span>
           </div>
           <div class="pills-group">
             <div class="pill-btn" onclick="setMana(1.0, this)">
-              <span class="pill-name c-amber">官方原版</span>
-              <span class="pill-badge bg-amber game-font">1.0x (原速)</span>
+              <span class="pill-name c-amber" data-i18n="mana_1">官方原版</span>
+              <span class="pill-badge bg-amber game-font" data-i18n="mana_1_badge">1.0x (原速)</span>
             </div>
             <div class="pill-btn active" onclick="setMana(0.5, this)">
-              <span class="pill-name c-cyan">减半推荐</span>
-              <span class="pill-badge bg-cyan game-font">0.5x (稳健)</span>
+              <span class="pill-name c-cyan" data-i18n="mana_half">减半推荐</span>
+              <span class="pill-badge bg-cyan game-font" data-i18n="mana_half_badge">0.5x (稳健)</span>
             </div>
             <div class="pill-btn" onclick="setMana(0.2, this)">
-              <span class="pill-name c-green">畅快压制</span>
-              <span class="pill-badge bg-green game-font">0.2x (慢充)</span>
+              <span class="pill-name c-green" data-i18n="mana_slow">畅快压制</span>
+              <span class="pill-badge bg-green game-font" data-i18n="mana_slow_badge">0.2x (慢充)</span>
             </div>
           </div>
+        </div>
+
+        <!-- 3. 大招手势选择 (Special Attack Gesture Control) -->
+        <div class="card switch-card">
+          <div class="switch-info">
+            <div class="switch-title">
+              <span class="dot" style="background: var(--purple);"></span>
+              <span data-i18n="swipe_title">必杀技滑动手势 (右滑S1 / 上滑S2)</span>
+            </div>
+            <div class="switch-desc" data-i18n="swipe_desc">
+              按住大招按钮右滑即放S1，上滑即放S2，点按放最高可用大招；关闭后恢复原版纯点按模式。
+            </div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="chk-swipe-specials" onchange="toggleSwipeSpecials(this.checked)" checked>
+            <span class="slider purple-switch"></span>
+          </label>
         </div>
 
       </div>
@@ -606,14 +670,14 @@
           <div class="card-header">
             <div class="card-title">
               <span class="dot" style="background: var(--emerald);"></span>
-              <span>指挥官代号 (Commander Name)</span>
+              <span data-i18n="cmdr_title">指挥官代号</span>
             </div>
             <span id="lbl-char-counter" class="char-counter game-font">9/16</span>
           </div>
           <div class="input-wrapper" style="margin-top: 4px;">
-            <input type="text" id="inp-commander" class="commander-input game-font" value="Commander" placeholder="最多8汉字或16英文字符" maxlength="16" oninput="onCommanderInput()">
+            <input type="text" id="inp-commander" class="commander-input game-font" value="Commander" placeholder="最多8汉字或16英文字符" data-i18n-ph="cmdr_placeholder" maxlength="16" oninput="onCommanderInput()">
           </div>
-          <div class="card-hint" style="margin-top: 6px; font-size: 10px; color: var(--text-dim); line-height: 1.4;">
+          <div class="card-hint" style="margin-top: 6px; font-size: 12px; color: var(--text-dim); line-height: 1.4;" data-i18n="cmdr_hint">
             替换系统默认代号 · 基地主页、战报结算与档案即时同步
           </div>
         </div>
@@ -623,18 +687,18 @@
           <div class="card-header">
             <div class="card-title">
               <span class="dot" style="background: var(--cyan);"></span>
-              <span>画面帧率上限 (Target Frame Rate)</span>
+              <span data-i18n="fps_title">画面帧率上限</span>
             </div>
             <span class="current-val game-font" id="txt-fps-val">60 FPS (高刷流畅)</span>
           </div>
           <div class="pills-group" style="grid-template-columns: 1fr 1fr;">
             <div class="pill-btn active" id="btn-fps-60" onclick="setFps(60, this)">
-              <span class="pill-name c-cyan">高刷流畅</span>
-              <span class="pill-badge bg-cyan game-font">60 FPS (推荐)</span>
+              <span class="pill-name c-cyan" data-i18n="fps_60">高刷流畅</span>
+              <span class="pill-badge bg-cyan game-font" data-i18n="fps_60_badge">60 FPS (推荐)</span>
             </div>
             <div class="pill-btn" id="btn-fps-30" onclick="setFps(30, this)">
-              <span class="pill-name c-green">原版省电</span>
-              <span class="pill-badge bg-green game-font">30 FPS (降温)</span>
+              <span class="pill-name c-green" data-i18n="fps_30">原版省电</span>
+              <span class="pill-badge bg-green game-font" data-i18n="fps_30_badge">30 FPS (降温)</span>
             </div>
           </div>
         </div>
@@ -643,8 +707,8 @@
         <label class="skip-card" style="margin-top: 2px;">
           <input type="checkbox" id="chk-skip-launcher" onchange="updateConfig()">
           <div class="skip-text">
-            <strong>记住我的选择，下次直接进入游戏</strong>
-            下次冷启动静默跳过此菜单；可在系统应用管理「清除存储」重置
+            <strong data-i18n="skip_title">记住我的选择，下次直接进入游戏</strong>
+            <span data-i18n="skip_desc">下次冷启动静默跳过此菜单；可在系统应用管理「清除存储」重置</span>
           </div>
         </label>
 
@@ -659,11 +723,14 @@
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
           </svg>
-          <span>恢复默认</span>
+          <span data-i18n="btn_reset">恢复默认</span>
         </button>
+        <!-- 【功能屏蔽注释 - 严禁删除】JSON查看配置按钮临时屏蔽，后续调测备用 -->
+        <!--
         <button class="btn-secondary game-font" onclick="toggleJsonModal()">
           <span>{ } JSON</span>
         </button>
+        -->
       </div>
 
       <div>
@@ -671,7 +738,7 @@
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
           </svg>
-          <span>保存并进入方舟</span>
+          <span data-i18n="btn_launch">保存并进入方舟</span>
         </button>
       </div>
     </footer>
@@ -687,7 +754,7 @@
       </div>
       <pre id="json-preview" class="modal-pre"></pre>
       <div style="display:flex; justify-content:flex-end;">
-        <button class="btn-secondary" onclick="toggleJsonModal()">关闭 (Close)</button>
+        <button class="btn-secondary" onclick="toggleJsonModal()" data-i18n="btn_close">关闭</button>
       </div>
     </div>
   </div>
@@ -699,8 +766,143 @@
       enemy_mana_gain: 0.5,
       player_mana_gain: 1.0,
       target_fps: 60,
+      enable_swipe_specials: true,
       skip_launcher_next_time: false
     };
+
+    const i18n = {
+      zh: {
+        mode_auto: "自适应: 简中",
+        mode_manual: "语言: 简中",
+        brand_title: "启动配置与战斗调优",
+        diff_title: "六道轮回挑战难度",
+        diff_normal: "正常剧情",
+        diff_normal_badge: "1.0x (原版)",
+        diff_fury: "狂暴进阶",
+        diff_fury_badge: "5.0x (5倍)",
+        diff_extreme: "六道极意",
+        diff_extreme_badge: "10.0x (10倍)",
+        diff_val_1: "1.0x HP (正常剧情)",
+        diff_val_5: "5.0x HP (狂暴进阶)",
+        diff_val_10: "10.0x HP (六道极意)",
+        mana_title: "敌方受击加气倍率",
+        mana_1: "官方原版",
+        mana_1_badge: "1.0x (原速)",
+        mana_half: "减半推荐",
+        mana_half_badge: "0.5x (稳健)",
+        mana_slow: "畅快压制",
+        mana_slow_badge: "0.2x (慢充)",
+        mana_val_1: "1.0x (官方原版)",
+        mana_val_half: "0.5x (减半推荐)",
+        mana_val_slow: "0.2x (畅快压制)",
+        swipe_title: "必杀技滑动手势 (右滑S1 / 上滑S2)",
+        swipe_desc: "按住大招按钮右滑即放S1，上滑即放S2，点按放最高可用大招；关闭后恢复原版纯点按模式。",
+        cmdr_title: "指挥官代号",
+        cmdr_placeholder: "最多8汉字或16英文字符",
+        cmdr_hint: "替换系统默认代号 · 基地主页、战报结算与档案即时同步",
+        fps_title: "画面帧率上限",
+        fps_60: "高刷流畅",
+        fps_60_badge: "60 FPS (推荐)",
+        fps_30: "原版省电",
+        fps_30_badge: "30 FPS (降温)",
+        fps_val_60: "60 FPS (高刷流畅)",
+        fps_val_30: "30 FPS (原版省电)",
+        skip_title: "记住我的选择，下次直接进入游戏",
+        skip_desc: "下次冷启动静默跳过此菜单；可在系统应用管理「清除存储」重置",
+        btn_reset: "恢复默认",
+        btn_json: "{ } JSON",
+        btn_launch: "保存并进入方舟",
+        btn_close: "关闭"
+      },
+      en: {
+        mode_auto: "Auto: EN",
+        mode_manual: "Lang: EN",
+        brand_title: "Launcher Settings & Combat Tuning",
+        diff_title: "Challenge Difficulty",
+        diff_normal: "Normal Story",
+        diff_normal_badge: "1.0x (Stock)",
+        diff_fury: "Furious Rage",
+        diff_fury_badge: "5.0x (5x HP)",
+        diff_extreme: "Extreme Samsara",
+        diff_extreme_badge: "10.0x (10x HP)",
+        diff_val_1: "1.0x HP (Normal Story)",
+        diff_val_5: "5.0x HP (Furious Rage)",
+        diff_val_10: "10.0x HP (Extreme Samsara)",
+        mana_title: "Enemy Mana Gain Rate",
+        mana_1: "Official Stock",
+        mana_1_badge: "1.0x (Stock)",
+        mana_half: "Half (Rec.)",
+        mana_half_badge: "0.5x (Balanced)",
+        mana_slow: "Suppression",
+        mana_slow_badge: "0.2x (Slow)",
+        mana_val_1: "1.0x (Official Stock)",
+        mana_val_half: "0.5x (Half Rate)",
+        mana_val_slow: "0.2x (Suppression)",
+        swipe_title: "Special Attack Swipe Gestures (Swipe S1 / S2)",
+        swipe_desc: "Hold SP & swipe right for SP1, swipe up for SP2, tap for highest SP; disable to restore classic tap-only mode.",
+        cmdr_title: "Commander Name",
+        cmdr_placeholder: "Up to 16 characters",
+        cmdr_hint: "Replaces default handle · Syncs with base, battle results & profile",
+        fps_title: "Target Frame Rate",
+        fps_60: "High Smooth",
+        fps_60_badge: "60 FPS (Rec.)",
+        fps_30: "Battery Saver",
+        fps_30_badge: "30 FPS (Cooler)",
+        fps_val_60: "60 FPS (High Smooth)",
+        fps_val_30: "30 FPS (Battery Saver)",
+        skip_title: "Remember my choice, skip next time",
+        skip_desc: "Once checked, this menu can be brought up by clearing your app data.",
+        btn_reset: "Reset Defaults",
+        btn_json: "{ } JSON",
+        btn_launch: "Save & Launch Game",
+        btn_close: "Close"
+      }
+    };
+
+    let currentLang = "zh";
+    let isManualLang = false;
+
+    function detectSystemLang() {
+      try {
+        const nav = (navigator.language || (navigator.languages && navigator.languages[0]) || '').toLowerCase();
+        return nav.startsWith('zh') ? 'zh' : 'en';
+      } catch (e) {
+        return 'zh';
+      }
+    }
+
+    function setLanguage(lang, manual = true) {
+      currentLang = (lang === 'en') ? 'en' : 'zh';
+      if (manual) {
+        isManualLang = true;
+        config.launcher_language = currentLang;
+      }
+
+      document.querySelectorAll('.lang-pill-btn').forEach(btn => btn.classList.remove('active'));
+      const activeBtn = document.getElementById('btn-lang-' + currentLang);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      const dict = i18n[currentLang];
+      const modeLabel = document.getElementById('txt-lang-mode');
+      if (modeLabel) {
+        modeLabel.textContent = isManualLang ? dict.mode_manual : dict.mode_auto;
+      }
+
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (dict[key]) el.textContent = dict[key];
+      });
+
+      document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+        const key = el.getAttribute('data-i18n-ph');
+        if (dict[key]) el.placeholder = dict[key];
+      });
+
+      updateDiffDisplay();
+      updateManaDisplay();
+      updateFpsDisplay();
+      updateJsonPreview();
+    }
 
     function calcUnits(str) {
       let units = 0;
@@ -737,25 +939,48 @@
       updateJsonPreview();
     }
 
+    function updateDiffDisplay() {
+      const mult = config.challenge_hp_multiplier;
+      const txt = document.getElementById('txt-diff-val');
+      const dict = i18n[currentLang] || i18n.zh;
+      if (mult <= 1.5) txt.textContent = dict.diff_val_1;
+      else if (mult <= 5.5) txt.textContent = dict.diff_val_5;
+      else txt.textContent = dict.diff_val_10;
+    }
+
+    function updateManaDisplay() {
+      const gain = config.enemy_mana_gain;
+      const txt = document.getElementById('txt-mana-val');
+      const dict = i18n[currentLang] || i18n.zh;
+      if (gain >= 0.8) txt.textContent = dict.mana_val_1;
+      else if (gain >= 0.4) txt.textContent = dict.mana_val_half;
+      else txt.textContent = dict.mana_val_slow;
+    }
+
+    function updateFpsDisplay() {
+      const fps = config.target_fps;
+      const txt = document.getElementById('txt-fps-val');
+      const dict = i18n[currentLang] || i18n.zh;
+      if (fps === 30) {
+        txt.textContent = dict.fps_val_30;
+      } else {
+        txt.textContent = dict.fps_val_60;
+      }
+    }
+
     function setDifficulty(mult, el) {
       config.challenge_hp_multiplier = mult;
       document.querySelectorAll('.grid-container .col:first-child .card:first-child .pill-btn').forEach(btn => btn.classList.remove('active'));
       el.classList.add('active');
-      const txt = document.getElementById('txt-diff-val');
-      if (mult <= 1.5) txt.textContent = '1.0x HP (正常剧情)';
-      else if (mult <= 5.5) txt.textContent = '5.0x HP (狂暴进阶)';
-      else txt.textContent = '10.0x HP (六道极意)';
+      updateDiffDisplay();
       updateJsonPreview();
     }
 
     function setMana(gain, el) {
       config.enemy_mana_gain = gain;
-      document.querySelectorAll('.grid-container .col:first-child .card:last-child .pill-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.grid-container .col:first-child .card:nth-child(2) .pill-btn').forEach(btn => btn.classList.remove('active'));
       el.classList.add('active');
-      const txt = document.getElementById('txt-mana-val');
-      if (gain >= 0.8) txt.textContent = '1.0x (官方原版)';
-      else if (gain >= 0.4) txt.textContent = '0.5x (减半推荐)';
-      else txt.textContent = '0.2x (畅快压制)';
+      updateManaDisplay();
       updateJsonPreview();
     }
 
@@ -763,12 +988,12 @@
       config.target_fps = fps;
       document.querySelectorAll('#btn-fps-60, #btn-fps-30').forEach(btn => btn.classList.remove('active'));
       el.classList.add('active');
-      const txt = document.getElementById('txt-fps-val');
-      if (fps === 30) {
-        txt.textContent = '30 FPS (原版省电)';
-      } else {
-        txt.textContent = '60 FPS (高刷流畅)';
-      }
+      updateFpsDisplay();
+      updateJsonPreview();
+    }
+
+    function toggleSwipeSpecials(enabled) {
+      config.enable_swipe_specials = enabled;
       updateJsonPreview();
     }
 
@@ -798,11 +1023,22 @@
       const diffPills = document.querySelectorAll('.grid-container .col:first-child .card:first-child .pill-btn');
       diffPills[2].click();
 
-      const manaPills = document.querySelectorAll('.grid-container .col:first-child .card:last-child .pill-btn');
+      const manaPills = document.querySelectorAll('.grid-container .col:first-child .card:nth-child(2) .pill-btn');
       manaPills[1].click();
 
       const fpsBtn60 = document.getElementById('btn-fps-60');
       if (fpsBtn60) fpsBtn60.click();
+
+      const chkSwipe = document.getElementById('chk-swipe-specials');
+      if (chkSwipe) {
+        chkSwipe.checked = true;
+        toggleSwipeSpecials(true);
+      }
+
+      // Reset language to auto-detect
+      isManualLang = false;
+      delete config.launcher_language;
+      setLanguage(detectSystemLang(), false);
 
       updateConfig();
       updateJsonPreview();
@@ -852,6 +1088,7 @@
         if (!saved) {
           saved = localStorage.getItem('tftf_user_settings');
         }
+        let savedLang = null;
         if (saved) {
           const parsed = (typeof saved === 'string') ? JSON.parse(saved) : saved;
           if (parsed.commander_name) {
@@ -866,7 +1103,7 @@
           }
           if (parsed.enemy_mana_gain !== undefined) {
             const mana = parsed.enemy_mana_gain;
-            const manaPills = document.querySelectorAll('.grid-container .col:first-child .card:last-child .pill-btn');
+            const manaPills = document.querySelectorAll('.grid-container .col:first-child .card:nth-child(2) .pill-btn');
             if (mana >= 0.8) manaPills[0].click();
             else if (mana >= 0.4) manaPills[1].click();
             else manaPills[2].click();
@@ -881,11 +1118,28 @@
               if (b60) b60.click();
             }
           }
+          if (parsed.enable_swipe_specials !== undefined) {
+            const chkSwipe = document.getElementById('chk-swipe-specials');
+            if (chkSwipe) {
+              chkSwipe.checked = !!parsed.enable_swipe_specials;
+              config.enable_swipe_specials = !!parsed.enable_swipe_specials;
+            }
+          }
+          if (parsed.launcher_language) {
+            savedLang = parsed.launcher_language;
+          }
           if (parsed.skip_launcher_next_time !== undefined) {
             document.getElementById('chk-skip-launcher').checked = parsed.skip_launcher_next_time;
           }
         }
-      } catch (e) {}
+        if (savedLang) {
+          setLanguage(savedLang, true);
+        } else {
+          setLanguage(detectSystemLang(), false);
+        }
+      } catch (e) {
+        setLanguage(detectSystemLang(), false);
+      }
       onCommanderInput();
       updateConfig();
       updateJsonPreview();
