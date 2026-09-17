@@ -89,6 +89,12 @@ assets_redeco/*
 !assets_redeco/moves.assetbundle
 !assets_redeco/character_fx.assetbundle
 !assets_redeco/character_fx_procedural.assetbundle
+!assets_redeco/poster_supreme_optimus.png
+!assets_redeco/poster_menasor.png
+!assets_redeco/poster_karmasix.png
+!assets_redeco/poster_special_act.png
+!assets_redeco/portrait_supreme_optimus_quest.png
+!assets_redeco/portrait_menasor_quest.png
 
 *.mkv
 cookies.txt
