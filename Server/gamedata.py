@@ -1664,10 +1664,10 @@ def build_quest_list(lang="zh"):
         "availableQuests": [q for q in quests if q["id"] == "1.1.1"],
     }
 
-    # Special Missions: 包含 6 个任务
-    special_qids = ("1.1.2", "1.1.3", "1.1.4", "1.1.5", "1.1.6", "1.1.7")
-    # 备用任务（暂时安全注释停用）：
-    # special_qids_extra = ("1.1.8",)
+    # Special Missions: 暂时屏蔽除六道轮回（1.1.2）以外的任务章节
+    special_qids = ("1.1.2",)
+    # 暂时屏蔽的任务列表（后续补充海报及地图后可随时解开）：
+    # special_qids_extra = ("1.1.3", "1.1.4", "1.1.5", "1.1.6", "1.1.7", "1.1.8")
     special_quests = []
     for idx, qid in enumerate(special_qids, start=1):
         q = next(item for item in quests if item["id"] == qid)
