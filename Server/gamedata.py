@@ -1319,19 +1319,25 @@ def quest_walkable_tiles(qid="1.1.1"):
     if qid == "1.1.2":
         _, _, _, _, walkable, _ = _get_challenge_data()
         return tuple(walkable)
+    if qid in ("1.1.3", "1.1.4"):
+        return tuple((r, 1) for r in range(6))
     return tuple((r, 1) for r in range(QUEST_DIM))
 
 def is_quest_walkable(qid, pos):
     if qid == "1.1.2":
         _, _, _, _, walkable, _ = _get_challenge_data()
         return pos in walkable
+    if qid in ("1.1.3", "1.1.4"):
+        return 0 <= pos[0] < 6 and pos[1] == 1
     return 0 <= pos[0] < QUEST_DIM and pos[1] == QUEST_PATH_COL
 
 def is_quest_legal_move(qid, from_pos, to_pos):
     if qid == "1.1.2":
         _, _, adjacency, _, _, _ = _get_challenge_data()
         return to_pos in adjacency.get(from_pos, set())
-    return (0 <= to_pos[0] < QUEST_DIM and to_pos[1] == QUEST_PATH_COL
+    dim = 6 if qid in ("1.1.3", "1.1.4") else QUEST_DIM
+    col = 1 if qid in ("1.1.3", "1.1.4") else QUEST_PATH_COL
+    return (0 <= to_pos[0] < dim and to_pos[1] == col
             and abs(to_pos[0] - from_pos[0]) == 1 and to_pos[1] == from_pos[1])
 
 
@@ -1588,7 +1594,7 @@ def build_quest_summary(mission_id="1.1.1", set_id="story_act1", lang="zh"):
     diff = "hard" if mission_id != "1.1.1" else "normal"
     min_xp = 10 if mission_id != "1.1.1" else 1
     max_xp = 20 if mission_id != "1.1.1" else 2
-    return {
+    summary = {
         "id": mission_id, "setId": set_id, "hash": "h1",
         "act": act, "chapter": chapter, "mission": mission,
         "missionIndex": mission, "index": mission,
@@ -1601,6 +1607,11 @@ def build_quest_summary(mission_id="1.1.1", set_id="story_act1", lang="zh"):
         "minHealthPerTile": 100, "maxHealthPerTile": 100,
         "image": "", "theme": "primordial", "todIndex": 0,
     }
+    if mission_id in ("1.1.3", "1.1.4"):
+        summary["teamSettings"] = {"teamSizeMin": 1, "teamSizeMax": 1}
+        summary["teamSizeMin"] = 1
+        summary["teamSizeMax"] = 1
+    return summary
 
 
 def build_quest_detail(mission_id="1.1.1", set_id="story_act1", lang="zh"):
@@ -1638,7 +1649,7 @@ def build_quest_list(lang="zh"):
             "1.1.6": "questboard/poster_special_act",
             "1.1.7": "questboard/poster_special_act",
         }.get(qid, "")
-        quests.append({
+        q_dict = {
             "id": qid,
             "act": act, "chapter": chapter, "mission": mission,
             "missionIndex": mission, "index": mission,
@@ -1652,7 +1663,12 @@ def build_quest_list(lang="zh"):
             "energyPerTile": 1, "minXpPerTile": min_xp, "maxXpPerTile": max_xp,
             "minHealthPerTile": 100, "maxHealthPerTile": 100,
             "image": qimage, "theme": theme,
-        })
+        }
+        if qid in ("1.1.3", "1.1.4"):
+            q_dict["teamSettings"] = {"teamSizeMin": 1, "teamSizeMax": 1}
+            q_dict["teamSizeMin"] = 1
+            q_dict["teamSizeMax"] = 1
+        quests.append(q_dict)
     story_set = {
         "hash": "h1", "setId": "story_act1", "setName": "ACT 1", "expiry": 0, "timeLimit": 0, "timeLimitGrace": 0,
         "showUI": True, "group": "story", "difficulty": "normal", "difficulty_label": "NORMAL",
@@ -1755,9 +1771,90 @@ def build_challenge_map(qid="1.1.2"):
     }
 
 
+MENASOR_ENCOUNTERS = {
+    1: ("dragstrip_gs_deluxe2016", False, "飞虎队·抢劫 (Dragstrip)"),
+    2: ("breakdown_gs", False, "飞虎队·打击 (Breakdown)"),
+    3: ("wildrider_gs_deluxe2016", False, "飞虎队·莽撞 (Wildrider)"),
+    4: ("deadend_gs_deluxe2015", False, "飞虎队·封锁 (Dead End)"),
+    5: ("motormaster_gs_voyager2015", True, "飞虎队首领·汽车大师 (Motormaster)"),
+}
+
+SUPREME_OPTIMUS_ENCOUNTERS = {
+    1: ("mirage_gs_deluxe2016", False, "合体成员·幻影 (Mirage)"),
+    2: ("ironhide_gs_kabam", False, "合体成员·铁皮 (Ironhide)"),
+    3: ("sunstreaker_gs_deluxe2008", False, "合体成员·飞毛腿 (Sunstreaker)"),
+    4: ("prowl_gs_deluxe2016", False, "合体成员·警车 (Prowl)"),
+    5: ("fte_optimus_gs_t3", True, "合体核心·G1擎天柱 (Optimus Prime)"),
+}
+
+
+def _build_combiner_linear_map(qid, encounters, start_label="起点 (Start)"):
+    dim = 6
+    path_col = 1
+
+    def links_for(row):
+        return [{"x": r, "y": path_col} for r in (row - 1, row + 1) if 0 <= r < dim]
+
+    grid = []
+    for row in range(dim):
+        r = []
+        for col in range(dim):
+            if col == path_col:
+                lk = links_for(row)
+                if row == 0:
+                    r.append({
+                        "start": True, "walkable": True, "hidden": False,
+                        "lab": start_label, "links": lk, "visibleLinks": lk,
+                    })
+                elif row in encounters:
+                    key, is_final_boss, label = encounters[row]
+                    r.append({
+                        "final": is_final_boss, "walkable": True, "hidden": False,
+                        "lab": label, "links": lk, "visibleLinks": lk,
+                        "boss": key,
+                        "entities": {
+                            key: build_quest_enemy(key=key, is_final_boss=is_final_boss, rank=5, level=50),
+                        },
+                    })
+                else:
+                    r.append({
+                        "walkable": True, "hidden": False,
+                        "lab": "Node %d" % row, "links": lk, "visibleLinks": lk,
+                    })
+            else:
+                r.append({"walkable": False, "hidden": True})
+        grid.append(r)
+
+    path_data = [{
+        "path": [{"x": r, "y": path_col} for r in range(dim)],
+    }]
+
+    return {
+        "hash": "qm_%s" % qid, "v": 1, "mapHash": "qm_%s" % qid,
+        "gridDimension": dim,
+        "grid": grid,
+        "walkableCount": dim,
+        "visibleWalkableCount": dim,
+        "pathData": path_data,
+        "overrideZoom": 0,
+    }
+
+
+def build_menasor_map(qid="1.1.3"):
+    return _build_combiner_linear_map(qid, MENASOR_ENCOUNTERS, start_label="飞虎队领地入口 (Start)")
+
+
+def build_supreme_optimus_map(qid="1.1.4"):
+    return _build_combiner_linear_map(qid, SUPREME_OPTIMUS_ENCOUNTERS, start_label="盖世试炼入口 (Start)")
+
+
 def build_quest_map(qid="1.1.1"):
     if qid == "1.1.2":
         return build_challenge_map(qid)
+    if qid == "1.1.3":
+        return build_menasor_map(qid)
+    if qid == "1.1.4":
+        return build_supreme_optimus_map(qid)
     dim = QUEST_DIM
     """The QuestMap object (ActiveQuest.map). Disassembly of base Map.Deserialize
     (@0x14837EC) shows the wire shape precisely:
@@ -1948,6 +2045,8 @@ def build_quest_progression(qid="1.1.1", start=None, team=None):
     }
     if qid == "1.1.2":
         revealed_tiles = [{"x": r, "y": c} for r, c in quest_walkable_tiles(qid)]
+    elif qid in ("1.1.3", "1.1.4"):
+        revealed_tiles = [{"x": r, "y": 1} for r in range(6)]
     else:
         revealed_tiles = [{"x": r, "y": 1} for r in range(3)]
     return {
@@ -2074,17 +2173,25 @@ def build_quest_movedir(qid="1.1.1", offx=1, offy=0, start=None, team=None):
         _, _, _, encounters, _, _ = _get_challenge_data()
         encounter = encounters.get((nx, ny))
         revealed_tiles = [{"x": r, "y": c} for r, c in quest_walkable_tiles(qid)]
+    elif qid == "1.1.3":
+        encounter = MENASOR_ENCOUNTERS.get(nx) if ny == 1 else None
+        revealed_tiles = [{"x": r, "y": 1} for r in range(6)]
+    elif qid == "1.1.4":
+        encounter = SUPREME_OPTIMUS_ENCOUNTERS.get(nx) if ny == 1 else None
+        revealed_tiles = [{"x": r, "y": 1} for r in range(6)]
     else:
         encounter = QUEST_ENCOUNTERS.get(nx) if ny == QUEST_PATH_COL else None
         revealed_tiles = [{"x": r, "y": 1} for r in range(QUEST_DIM)]
     if encounter is not None:
         key, is_final_boss, _ = encounter
+        rank = 5 if qid in ("1.1.2", "1.1.3", "1.1.4") else 1
+        level = 50 if qid in ("1.1.2", "1.1.3", "1.1.4") else 1
         actions.append({
             "action": {
                 "battle": {
                     "x": nx, "y": ny, "isFinalBoss": is_final_boss,
                     "battleEnemy": build_quest_enemy(
-                        key=key, is_final_boss=is_final_boss,
+                        key=key, is_final_boss=is_final_boss, rank=rank, level=level,
                     ),
                 },
             },

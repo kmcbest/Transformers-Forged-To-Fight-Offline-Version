@@ -177,7 +177,13 @@
           "minHealthPerTile": 100,
           "maxHealthPerTile": 100,
           "image": "questboard/poster_menasor",
-          "theme": "primordial"
+          "theme": "primordial",
+          "teamSettings": {
+            "teamSizeMin": 1,
+            "teamSizeMax": 1
+          },
+          "teamSizeMin": 1,
+          "teamSizeMax": 1
         },
         {
           "id": "1.1.4",
@@ -200,7 +206,13 @@
           "minHealthPerTile": 100,
           "maxHealthPerTile": 100,
           "image": "questboard/poster_supreme_optimus",
-          "theme": "primordial"
+          "theme": "primordial",
+          "teamSettings": {
+            "teamSizeMin": 1,
+            "teamSizeMax": 1
+          },
+          "teamSizeMin": 1,
+          "teamSizeMax": 1
         },
         {
           "id": "1.1.5",
