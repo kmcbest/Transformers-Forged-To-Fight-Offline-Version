@@ -1599,7 +1599,7 @@ def build_quest_summary(mission_id="1.1.1", set_id="story_act1", lang="zh"):
         "category": "story", "difficulty": diff,
         "energyPerTile": 1, "minXpPerTile": min_xp, "maxXpPerTile": max_xp,
         "minHealthPerTile": 100, "maxHealthPerTile": 100,
-        "image": "", "theme": "primordial" if mission_id == "1.1.2" else "", "todIndex": 0,
+        "image": "", "theme": "primordial", "todIndex": 0,
     }
 
 
@@ -1629,7 +1629,7 @@ def build_quest_list(lang="zh"):
         diff = "hard" if qid != "1.1.1" else "normal"
         min_xp = 10 if qid != "1.1.1" else 1
         max_xp = 20 if qid != "1.1.1" else 2
-        theme = "primordial" if qid == "1.1.2" else ""
+        theme = "primordial"
         qimage = {
             "1.1.2": "questboard/poster_karmasix",
             "1.1.3": "questboard/poster_menasor",

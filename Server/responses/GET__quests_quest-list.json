@@ -68,7 +68,7 @@
           "minHealthPerTile": 100,
           "maxHealthPerTile": 100,
           "image": "",
-          "theme": ""
+          "theme": "primordial"
         }
       ]
     },
@@ -177,7 +177,7 @@
           "minHealthPerTile": 100,
           "maxHealthPerTile": 100,
           "image": "questboard/poster_menasor",
-          "theme": ""
+          "theme": "primordial"
         },
         {
           "id": "1.1.4",
@@ -200,7 +200,7 @@
           "minHealthPerTile": 100,
           "maxHealthPerTile": 100,
           "image": "questboard/poster_supreme_optimus",
-          "theme": ""
+          "theme": "primordial"
         },
         {
           "id": "1.1.5",
@@ -223,7 +223,7 @@
           "minHealthPerTile": 100,
           "maxHealthPerTile": 100,
           "image": "questboard/poster_special_act",
-          "theme": ""
+          "theme": "primordial"
         },
         {
           "id": "1.1.6",
@@ -246,7 +246,7 @@
           "minHealthPerTile": 100,
           "maxHealthPerTile": 100,
           "image": "questboard/poster_special_act",
-          "theme": ""
+          "theme": "primordial"
         },
         {
           "id": "1.1.7",
@@ -269,7 +269,7 @@
           "minHealthPerTile": 100,
           "maxHealthPerTile": 100,
           "image": "questboard/poster_special_act",
-          "theme": ""
+          "theme": "primordial"
         }
       ]
     }
