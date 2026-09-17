@@ -848,9 +848,10 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         return o->p;
     }
     if(has_suffix(p,"/bcg/getBaseHeroData")) {
+        logmsg("getBaseHeroData req: %.300s", body);
         const char *a=strstr(body,"\"heroes\""); const char *arr=a?strchr(a,'['):NULL; const char *q=arr?arr+1:NULL; v=lookup("@herodata:open",&n);if(!v||!out_add(o,v,n))return NULL;
-        int first=1; while(q&&q<end){const char *open=strchr(q,'{'),*close;int depth=0;if(!open||open>=end)break;close=open;do{if(*close=='{')depth++;else if(*close=='}')depth--;close++;}while(close<end&&depth);if(depth)break;char hb[64]="", hk[200], sig[32];int rank=json_int(open,close,"rank",1),level=json_int(open,close,"level",1),sl=json_int(open,close,"sig_lvl",0);if(!rank)rank=1;if(!level)level=1;if(!json_string(open,close,"bid",hb,sizeof hb))json_string(open,close,"character",hb,sizeof hb);snprintf(hk,sizeof hk,"@hero:%s:%d:%d",hb,rank,level);v=lookup(hk,&n);if(!v){snprintf(hk,sizeof hk,"@hero:%s:1:1",hb);v=lookup(hk,&n);}if(!v)v=lookup("@hero:*:1:1",&n);if(v){snprintf(sig,sizeof sig,"%d",sl);if(!first&&!out_add(o,",",1))return NULL;int apply_10x=g_current_is_10x_challenge;if(apply_10x){Team tm;if(resolve_team(&tm)){for(int ti=0;ti<tm.count;ti++){if(!strcmp(tm.bid[ti],hb)){apply_10x=0;break;}}}}if(!out_hero_detail(o,v,n,sig,apply_10x))return NULL;first=0;}q=close;}
-        v=lookup("@herodata:close",&n);if(!v||!out_add(o,v,n))return NULL; Out compact=*o; o->p=NULL;o->n=o->cap=0; v=json_default_spaces(compact.p,compact.n,o,outn);free(compact.p);return v;
+        int first=1; while(q&&q<end){const char *open=strchr(q,'{'),*close;int depth=0;if(!open||open>=end)break;close=open;do{if(*close=='{')depth++;else if(*close=='}')depth--;close++;}while(close<end&&depth);if(depth)break;char hb[64]="", hk[200], sig[32];int rank=json_int(open,close,"rank",1),level=json_int(open,close,"level",1),sl=json_int(open,close,"sig_lvl",0);if(!rank)rank=1;if(!level)level=1;if(!json_string(open,close,"bid",hb,sizeof hb))if(!json_string(open,close,"character",hb,sizeof hb))json_string(open,close,"id",hb,sizeof hb);snprintf(hk,sizeof hk,"@hero:%s:%d:%d",hb,rank,level);v=lookup(hk,&n);if(!v){snprintf(hk,sizeof hk,"@hero:%s:1:1",hb);v=lookup(hk,&n);}if(!v)v=lookup("@hero:*:1:1",&n);logmsg("getBaseHeroData: hero=%s rank=%d lvl=%d lookup=%s", hb, rank, level, v ? "OK" : "NULL");if(v){snprintf(sig,sizeof sig,"%d",sl);if(!first&&!out_add(o,",",1))return NULL;if(!out_hero_detail(o,v,n,sig,0))return NULL;first=0;if(rank==5&&level==1){char hk50[200];size_t n50=0;snprintf(hk50,sizeof hk50,"@hero:%s:5:50",hb);const unsigned char *v50=lookup(hk50,&n50);if(v50){if(!out_add(o,",",1))return NULL;if(!out_hero_detail(o,v50,n50,sig,0))return NULL;logmsg("getBaseHeroData: also emitted rank 5 level 50 for %s", hb);}}}q=close;}
+        v=lookup("@herodata:close",&n);if(!v||!out_add(o,v,n))return NULL; Out compact=*o; o->p=NULL;o->n=o->cap=0; v=json_default_spaces(compact.p,compact.n,o,outn);free(compact.p);logmsg("getBaseHeroData reply (%zu bytes): %.300s", *outn, (const char*)v);return v;
     }
     if(strstr(p,"/quests/quest-detail/")) {
         snprintf(mid,sizeof mid,"%.63s",path_last(p));
@@ -899,7 +900,9 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         args[5]=(TemplateArg){"%EB3%",(const unsigned char*)e_bid[3],strlen(e_bid[3])};
         args[6]=(TemplateArg){"%EB4%",(const unsigned char*)e_bid[4],strlen(e_bid[4])};
         args[7]=(TemplateArg){"%EB5%",(const unsigned char*)e_bid[5],strlen(e_bid[5])};
-        v=template_spaced(o,v,n,args,8,outn);free(qteam.p);return v;
+        v=template_spaced(o,v,n,args,8,outn);free(qteam.p);
+        logmsg("quest-begin reply (%zu bytes): %.300s", *outn, (const char*)v);
+        return v;
     }
     if(strstr(p,"/quests/quest-movedir/")) { int dx=1,dy=0,sx=0,sy=1,nx,ny;
         const char *z=strrchr(p,'/'); const char *yseg=z?z+1:""; const char *z2=z?NULL:NULL; if(z){z2=z-1;while(z2>p&&*z2!='/')z2--; if(*z2=='/')z2++;} if(!z||!z2)return NULL; char xs[32], ys[32], seg[96];snprintf(ys,sizeof ys,"%.31s",yseg);snprintf(xs,sizeof xs,"%.*s",(int)(z-z2),z2); const char *z3=z2-2;while(z3>p&&*z3!='/')z3--;if(*z3=='/')z3++;snprintf(seg,sizeof seg,"%.*s",(int)(z2-z3-1),z3);char *dash=strrchr(seg,'-');if(!dash)return NULL;*dash=0;snprintf(qid,sizeof qid,"%.63s",seg);
@@ -928,7 +931,9 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
             args[6]=(TemplateArg){"%EB3%",(const unsigned char*)e_bid[3],strlen(e_bid[3])};
             args[7]=(TemplateArg){"%EB4%",(const unsigned char*)e_bid[4],strlen(e_bid[4])};
             args[8]=(TemplateArg){"%EB5%",(const unsigned char*)e_bid[5],strlen(e_bid[5])};
-            v=template_spaced(o,v,n,args,9,outn);free(qteam.p);free(ateam.p);return v;
+            v=template_spaced(o,v,n,args,9,outn);free(qteam.p);free(ateam.p);
+            logmsg("quest-movedir reply (%zu bytes): %.300s", *outn, (const char*)v);
+            return v;
         }
         return NULL;
     }

@@ -37,5 +37,15 @@
 - Never endlessly chase machine code / disassembly in `libil2cpp.so` for combat combo logic; inspect and reason through high-level state, hooks, and variables in `hook.c` directly.
 - Verify via logcat that no `[COMBAT_RULE_VIOLATION]` assertions are triggered during combat testing.
 
+## Troubleshooting and investigation guidelines (排查与分析方法规范)
+
+- **Avoid Disassembly and Machine Code Rabbit Holes (严禁陷入反汇编与机器码死循环)**:
+  TFTF is heavily data-driven (`JSON` wire payloads + local offline cache). Never endlessly disassemble ARM64 instructions, trace registers, or inspect deep il2cpp internals to debug UI numbers, missing attributes, or level stats. UI display anomalies (e.g. PI, HP, ATK showing 0, missing names) are virtually always caused by data payload mismatches (`(bid, rank, level)` query mismatching the local cache, or missing wire keys).
+- **Black-Box Data Diff First (对比排查优先)**:
+  Always compare the HTTP request/response payloads (especially `/bcg/getBaseHeroData`, `/quests/quest-movedir`, and `/quests/quest-begin`) between working scenarios (e.g. 1.1.1) and failing scenarios (e.g. 1.1.2, 1.1.3). Verify that `(bid, rank, level)` in `/bcg/getBaseHeroData` strictly matches `battleEnemy` in `/quests/quest-movedir`. A mismatch causes the client's cache lookup to fail, resulting in 0 stats.
+- **Do Not Analyze Build Scripts for Game Logic Issues (禁止无关工具发散分析)**:
+  When diagnosing gameplay, quest, or UI bugs, do NOT inspect or analyze build scripts like `build_apk.py` or `INSTALL-ADB.py`. Focus exclusively on the data flow (`gamedata.py`, `export_payload.py`), native server responses (`inapk_server.c`), and relevant hooks (`hook.c`).
+
+
 
 
