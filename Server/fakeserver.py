@@ -313,17 +313,16 @@ class H(http.server.BaseHTTPRequestHandler):
             if gamedata is not None:
                 team = gamedata.build_saved_team(team_id, heroes)
                 active_teams = [
-                    gamedata.build_active_team("1.1.1-%s" % team_id, heroes=heroes),
-                    gamedata.build_active_team("1.1.2-%s" % team_id, heroes=heroes),
+                    gamedata.build_active_team("%s-%s" % (q, team_id), heroes=heroes)
+                    for q in getattr(gamedata, "ALL_ACTIVE_QUEST_IDS", ("1.1.1", "1.1.2"))
                 ]
             else:
                 team = {"TeamID": team_id, "teamID": team_id, "id": team_id,
                         "TeamHeroes": list(heroes), "heroes": list(heroes)}
                 active_teams = [
-                    {"aid": "1.1.1-%s" % team_id, "type": "PvE", "modes": ["PvE"],
-                     "heroes": {bid: {"bid": bid} for bid in heroes[:2]}, "expire": 0},
-                    {"aid": "1.1.2-%s" % team_id, "type": "PvE", "modes": ["PvE"],
-                     "heroes": {bid: {"bid": bid} for bid in heroes[:2]}, "expire": 0},
+                    {"aid": "%s-%s" % (q, team_id), "type": "PvE", "modes": ["PvE"],
+                     "heroes": {bid: {"bid": bid} for bid in heroes[:2]}, "expire": 0}
+                    for q in ("1.1.1", "1.1.2", "1.1.3", "1.1.4", "1.1.5", "1.1.6", "1.1.7")
                 ]
             result = {"updates": {"savedTeams": [team], "activeTeams": active_teams},
                       "deletes": {}}

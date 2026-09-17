@@ -194,17 +194,20 @@ def _saved_team_template() -> bytes:
         raise ValueError("fakeserver did not produce saved-team template")
     body = json.dumps(json.loads(body), separators=(",", ":")).encode()
     saved, active, _ = _team_values()
-    if body.count(b"%TID%") != 3:
-        raise ValueError("saved-team template: expected three teamID tokens")
+    active_count = len(gamedata.ALL_ACTIVE_QUEST_IDS)
+    expected_tid = 1 + active_count
+    if body.count(b"%TID%") != expected_tid:
+        raise ValueError(f"saved-team template: expected {expected_tid} teamID tokens, found {body.count(b'%TID%')}")
     body = _replace_exact(body, saved, b"%STEAM%", 1, "saved-team saved heroes")
-    return _replace_exact(body, active, b"%ATEAM%", 2, "saved-team active heroes")
+    return _replace_exact(body, active, b"%ATEAM%", active_count, "saved-team active heroes")
 
 
 def _user_data_template() -> bytes:
     body = _envelope(gamedata.build_user_data())
     saved, active, _ = _team_values()
+    active_count = len(gamedata.ALL_ACTIVE_QUEST_IDS)
     body = _replace_exact(body, saved, b"%STEAM%", 1, "user-data saved heroes")
-    return _replace_exact(body, active, b"%ATEAM%", 2, "user-data active heroes")
+    return _replace_exact(body, active, b"%ATEAM%", active_count, "user-data active heroes")
 
 
 def build_entries(listen_port: int = 8080) -> dict[str, bytes]:

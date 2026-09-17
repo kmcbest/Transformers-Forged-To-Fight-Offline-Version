@@ -1474,6 +1474,9 @@ def build_relic_entry(rid, rank=1, level=1):
     }
 
 
+ALL_ACTIVE_QUEST_IDS = ("1.1.1", "1.1.2", "1.1.3", "1.1.4", "1.1.5", "1.1.6", "1.1.7")
+
+
 def build_user_data(team=None):
     """Full getUserData result. userData maxes + owned heroes through `updates`,
     exactly as the proven response and the README/TECHNICAL_NOTES describe."""
@@ -1484,8 +1487,8 @@ def build_user_data(team=None):
         # teamSizeMax expanded to 5 as requested
         "userData": {"blueprintsMax": 500, "teamSizeMax": 5, "teamCountMax": 5, "BotDupedTut": {"id": "BotDupedTut", "state": 2, "completed": True, "branch": ""}, "BotDupedTutorial": {"id": "BotDupedTutorial", "state": 2, "completed": True, "branch": ""}, "ForgeBotTut": {"id": "ForgeBotTut", "state": 2, "completed": True, "branch": ""}, "ForgeBotTutorial": {"id": "ForgeBotTutorial", "state": 2, "completed": True, "branch": ""}, "ForgeModTut": {"id": "ForgeModTut", "state": 2, "completed": True, "branch": ""}, "ForgeModTutorial": {"id": "ForgeModTutorial", "state": 2, "completed": True, "branch": ""}, "RankUpTut": {"id": "RankUpTut", "state": 2, "completed": True, "branch": ""}, "RankUpTutorial": {"id": "RankUpTutorial", "state": 2, "completed": True, "branch": ""}, "UpgradeBotsScreen": {"id": "UpgradeBotsScreen", "state": 2, "completed": True, "branch": ""}, "RelicTut": {"id": "RelicTut", "state": 2, "completed": True, "branch": ""}, "RelicsTutorial": {"id": "RelicsTutorial", "state": 2, "completed": True, "branch": ""}, "MasteryPointIntro": {"id": "MasteryPointIntro", "state": 2, "completed": True, "branch": ""}, "MasteriesTutorial": {"id": "MasteriesTutorial", "state": 2, "completed": True, "branch": ""}, "MasteryPointTutorial": {"id": "MasteryPointTutorial", "state": 2, "completed": True, "branch": ""}, "ShieldTutorial": {"id": "ShieldTutorial", "state": 2, "completed": True, "branch": ""}, "AutoFightTutorial": {"id": "AutoFightTutorial", "state": 2, "completed": True, "branch": ""}, "AvoidanceTutorial": {"id": "AvoidanceTutorial", "state": 2, "completed": True, "branch": ""}, "ClassAdvantageTutorial": {"id": "ClassAdvantageTutorial", "state": 2, "completed": True, "branch": ""}, "ClassGateTutorial": {"id": "ClassGateTutorial", "state": 2, "completed": True, "branch": ""}, "LinkNodesTutorial": {"id": "LinkNodesTutorial", "state": 2, "completed": True, "branch": ""}, "RaidsTutorial": {"id": "RaidsTutorial", "state": 2, "completed": True, "branch": ""}, "RaidTutorial": {"id": "RaidTutorial", "state": 2, "completed": True, "branch": ""}, "StashTutorial": {"id": "StashTutorial", "state": 2, "completed": True, "branch": ""}, "TreasuryTutorial": {"id": "TreasuryTutorial", "state": 2, "completed": True, "branch": ""}, "SparksTutorial": {"id": "SparksTutorial", "state": 2, "completed": True, "branch": ""}, "ArenaTutorial": {"id": "ArenaTutorial", "state": 2, "completed": True, "branch": ""}, "AllianceEventsTutorial": {"id": "AllianceEventsTutorial", "state": 2, "completed": True, "branch": ""}, "DailyMissionsTutorial": {"id": "DailyMissionsTutorial", "state": 2, "completed": True, "branch": ""}, "BotPlacementTutorial": {"id": "BotPlacementTutorial", "state": 2, "completed": True, "branch": ""}},
         "updates": {"heroes": heroes + mods + relics, "savedTeams": [build_saved_team(heroes=team)],
-                    "activeTeams": [build_active_team("1.1.1-0", heroes=team),
-                                    build_active_team("1.1.2-0", heroes=team)]},
+                    "activeTeams": [build_active_team(f"{qid}-0", heroes=team)
+                                    for qid in ALL_ACTIVE_QUEST_IDS]},
         "deletes": {},
     }
 
