@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TFTF 技能/图标私有区字符对照标注工具</title>
+    <title>TFTF PUA Skill Icons & Glyphs Annotation Tool</title>
     <style>
         @font-face {
             font-family: 'TFTFIconFont';
@@ -13,19 +13,24 @@
         }
 
         :root {
-            --bg-color: #0f1117;
-            --card-bg: #181b22;
-            --card-border: #2d333b;
-            --card-hover: #22272e;
+            --bg-color: #0d1117;
+            --header-bg: rgba(13, 17, 23, 0.95);
+            --card-bg: #161b22;
+            --card-border: #30363d;
+            --card-hover: #1f242c;
+            --card-filled: #12201b;
+            --card-filled-border: #238636;
             --accent: #58a6ff;
             --accent-hover: #388bfd;
+            --accent-glow: rgba(88, 166, 255, 0.15);
             --text-main: #e6edf3;
             --text-muted: #8b949e;
-            --input-bg: #0d1117;
+            --input-bg: #090d13;
             --input-border: #30363d;
             --success: #238636;
             --success-border: #2ea043;
             --gold: #f2c744;
+            --purple: #bc8cff;
         }
 
         * {
@@ -39,14 +44,15 @@
             color: var(--text-main);
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             padding: 24px;
+            min-height: 100vh;
         }
 
         header {
             position: sticky;
             top: 0;
             z-index: 100;
-            background: rgba(15, 17, 23, 0.95);
-            backdrop-filter: blur(10px);
+            background: var(--header-bg);
+            backdrop-filter: blur(12px);
             padding: 16px 24px;
             margin: -24px -24px 24px -24px;
             border-bottom: 1px solid var(--card-border);
@@ -74,7 +80,7 @@
         .actions {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             flex-wrap: wrap;
         }
 
@@ -87,16 +93,32 @@
             font-size: 14px;
             outline: none;
             width: 220px;
-            transition: border-color 0.2s;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
         .search-input:focus {
             border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .nickname-input {
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            color: var(--gold);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            outline: none;
+            width: 130px;
+            font-weight: 500;
+        }
+        .nickname-input:focus {
+            border-color: var(--gold);
         }
 
         .btn {
-            padding: 8px 14px;
+            padding: 7px 12px;
             border-radius: 6px;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 500;
             cursor: pointer;
             border: 1px solid transparent;
@@ -104,6 +126,26 @@
             align-items: center;
             gap: 6px;
             transition: all 0.2s;
+            user-select: none;
+            background: transparent;
+            color: var(--text-main);
+        }
+
+        .btn-outline {
+            border-color: var(--card-border);
+            background: #21262d;
+        }
+        .btn-outline:hover {
+            background: #30363d;
+            border-color: var(--text-muted);
+        }
+
+        .btn-primary {
+            background: #1f6feb;
+            color: #ffffff;
+        }
+        .btn-primary:hover {
+            background: #388bfd;
         }
 
         .btn-success {
@@ -114,23 +156,43 @@
             background: var(--success-border);
         }
 
-        .btn-outline {
-            background: transparent;
-            border-color: var(--card-border);
-            color: var(--text-main);
-        }
-        .btn-outline:hover {
-            background: var(--card-hover);
-        }
-
         .status-badge {
             font-size: 13px;
-            padding: 5px 10px;
-            background: #21262d;
-            border-radius: 12px;
+            padding: 5px 12px;
+            background: #161b22;
+            border-radius: 20px;
             color: var(--accent);
             border: 1px solid var(--card-border);
             font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .cloud-badge {
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            border: 1px solid transparent;
+        }
+        .cloud-syncing {
+            background: rgba(88, 166, 255, 0.1);
+            color: var(--accent);
+            border-color: rgba(88, 166, 255, 0.3);
+        }
+        .cloud-online {
+            background: rgba(46, 160, 67, 0.15);
+            color: #3fb950;
+            border-color: rgba(46, 160, 67, 0.3);
+        }
+        .cloud-offline {
+            background: rgba(248, 81, 73, 0.1);
+            color: #f85149;
+            border-color: rgba(248, 81, 73, 0.3);
         }
 
         .grid-container {
@@ -142,49 +204,54 @@
         .card {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
-            border-radius: 8px;
+            border-radius: 10px;
             padding: 16px;
             display: flex;
             flex-direction: column;
             gap: 12px;
-            transition: border-color 0.15s, box-shadow 0.15s;
+            transition: border-color 0.2s, box-shadow 0.2s, transform 0.1s;
+            position: relative;
         }
-
         .card:hover {
-            border-color: var(--accent);
+            border-color: var(--text-muted);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
-
         .card.is-filled {
-            border-left: 4px solid var(--success-border);
-            background: #141f19;
+            background: var(--card-filled);
+            border-color: var(--card-filled-border);
         }
 
         .icon-row {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 14px;
         }
 
         .icon-preview-box {
-            width: 72px;
-            height: 72px;
-            background: #090b0e;
+            width: 64px;
+            height: 64px;
+            min-width: 64px;
+            background: #090d13;
             border: 1px solid var(--card-border);
             border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            flex-shrink: 0;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
             position: relative;
         }
 
         .game-icon {
-            font-family: 'TFTFIconFont' !important;
-            font-size: 44px;
+            font-family: 'TFTFIconFont', sans-serif;
+            font-size: 40px;
+            color: var(--gold);
             line-height: 1;
             user-select: none;
-            color: var(--gold);
-            text-shadow: 0 0 10px rgba(242, 199, 68, 0.35);
+            transition: transform 0.2s;
+        }
+        .card:hover .game-icon {
+            transform: scale(1.15);
         }
 
         .icon-meta {
@@ -192,13 +259,25 @@
             flex-direction: column;
             gap: 4px;
             overflow: hidden;
+            flex: 1;
         }
 
         .code-pill {
-            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-            font-size: 15px;
-            font-weight: 700;
+            font-family: "Fira Code", monospace;
+            font-size: 13px;
+            font-weight: 600;
             color: var(--accent);
+            background: rgba(88, 166, 255, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            width: fit-content;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .code-pill:hover {
+            background: rgba(88, 166, 255, 0.25);
+            text-decoration: underline;
         }
 
         .glyph-name {
@@ -207,12 +286,22 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            font-family: monospace;
+        }
+
+        .contributor-tag {
+            font-size: 11px;
+            color: var(--purple);
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
 
         .inputs-row {
             display: flex;
             flex-direction: column;
             gap: 8px;
+            margin-top: 4px;
         }
 
         .field-group {
@@ -220,127 +309,347 @@
             align-items: center;
             gap: 8px;
         }
-
         .field-group label {
+            width: 48px;
             font-size: 12px;
-            width: 32px;
+            font-weight: 600;
             color: var(--text-muted);
             text-align: right;
-            flex-shrink: 0;
-            font-weight: bold;
         }
 
         .text-input {
             flex: 1;
             background: var(--input-bg);
             border: 1px solid var(--input-border);
-            border-radius: 4px;
-            padding: 6px 10px;
             color: var(--text-main);
+            padding: 6px 10px;
+            border-radius: 6px;
             font-size: 13px;
             outline: none;
-            transition: border-color 0.15s;
+            transition: border-color 0.2s;
         }
-
         .text-input:focus {
             border-color: var(--accent);
         }
 
-        #toast {
+        .sync-spinner {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .toast {
             position: fixed;
             bottom: 24px;
             right: 24px;
-            background: var(--success);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 6px;
-            font-size: 14px;
-            box-shadow: 0 4px 14px rgba(0,0,0,0.6);
-            display: none;
+            background: #21262d;
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
             z-index: 1000;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .search-input {
+                width: 100%;
+            }
+            .nickname-input {
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body>
-
     <header>
         <div class="title-box">
-            <h1><span class="game-icon" style="font-size: 26px;">&#xe501;</span> TFTF 技能/图标私有区字符对照标注工具</h1>
-            <p>已内嵌字体 811e9b20e41fd447796b1e264201af71 (Tecnica_Bold_116)。输入时自动保存在浏览器的 LocalStorage 中，刷新页面不丢失。</p>
+            <h1 id="header-title">🎮 TFTF 技能图标 PUA 私有区字符对照标注工具</h1>
+            <p id="header-subtitle">对照游戏原版录屏，众创标注 523 个 PUA 图标，云端实时同步 (Powered by Upstash)</p>
         </div>
         <div class="actions">
-            <span class="status-badge" id="statsBadge">已标注: 0 / 0</span>
-            <input type="text" id="searchInput" class="search-input" placeholder="搜索字符/名称/Glyph...">
-            <button class="btn btn-outline" id="filterFilledBtn">仅看已标注</button>
-            <button class="btn btn-outline" id="importBtn">导入 JSON</button>
-            <input type="file" id="fileInput" accept=".json" style="display:none">
-            <button class="btn btn-success" id="exportBtn">导出 JSON (\u格式)</button>
+            <div class="cloud-badge cloud-syncing" id="cloud-badge">
+                <span class="sync-spinner" id="cloud-spinner"></span>
+                <span id="cloud-text">正在拉取云端众创标注...</span>
+            </div>
+            <input type="text" class="nickname-input" id="nickname-input" placeholder="昵称 / Nickname" title="你的标注贡献者昵称 / Contributor name">
+            <input type="text" class="search-input" id="search-input" placeholder="搜索 hex (如 e401) / 字符 / 技能...">
+            <button class="btn btn-outline" id="filter-filled-btn">仅看已标注</button>
+            <button class="btn btn-primary" id="cloud-refresh-btn" title="强制刷新云端 / Refresh Cloud">☁️ 刷新</button>
+            <button class="btn btn-outline" id="export-btn">导出 JSON</button>
+            <button class="btn btn-outline" id="import-btn">导入 JSON</button>
+            <button class="btn btn-outline" id="lang-toggle-btn" style="border-color: var(--accent); color: var(--accent);">🌐 EN</button>
+            <div class="status-badge" id="stats-badge">已标注: 0 / 523</div>
         </div>
     </header>
 
-    <div class="grid-container" id="gridContainer"></div>
-
-    <div id="toast">已保存</div>
+    <div class="grid-container" id="grid-container"></div>
+    <input type="file" id="file-input" accept=".json" style="display: none;">
+    <div class="toast" id="toast"></div>
 
     <script>
         const PUA_LIST = __PUA_JSON__;
-        const STORAGE_KEY = 'tftf_icon_pua_mappings_v1';
 
-        // Load storage
-        let storageData = {};
-        try {
-            const raw = localStorage.getItem(STORAGE_KEY);
-            if (raw) {
-                storageData = JSON.parse(raw);
+        const UPSTASH_CONFIG = {
+            url: "https://deciding-bulldog-136761.upstash.io",
+            token: "gQAAAAAAAhY5AAIgcDEyZGMwZDRhNzRlZGQ0MDI2YWM2YmI3ZDExNTc3ZjZmNA",
+            hashKey: "tftf_pua_tags"
+        };
+
+        const I18N = {
+            zh: {
+                title: "🎮 TFTF 技能图标 PUA 私有区字符对照标注工具",
+                subtitle: "对照游戏原版录屏，众创标注 523 个 PUA 图标，云端实时同步 (Powered by Upstash)",
+                searchPlaceholder: "搜索 hex (如 e401) / 字符 / 技能...",
+                filterFilled: "仅看已标注",
+                filterAll: "显示全部",
+                refreshCloud: "☁️ 刷新",
+                exportJson: "导出 JSON",
+                importJson: "导入 JSON",
+                cloudSyncing: "正在拉取云端众创标注...",
+                cloudOnline: "云端已同步",
+                cloudSaved: "已保存至云端",
+                cloudOffline: "云端连接离线 (使用本地缓存)",
+                labeledCount: "已标注",
+                labelEn: "EN",
+                labelZh: "中文",
+                placeholderEn: "英文名 / Skill Name...",
+                placeholderZh: "中文名 / 技能说明...",
+                copied: "已复制到剪贴板！",
+                exportSuccess: "已成功导出 JSON 文件！",
+                importSuccess: "成功导入并合并数据！",
+                importFail: "导入失败，请检查 JSON 格式：",
+                contributorPrefix: "贡献者",
+                langToggle: "🌐 English"
+            },
+            en: {
+                title: "🎮 TFTF PUA Skill Icons & Glyphs Annotation Tool",
+                subtitle: "Visual PUA glyph mapping for TFTF with community cloud sync (Powered by Upstash)",
+                searchPlaceholder: "Search hex (e.g. e401) / glyph / skill...",
+                filterFilled: "Only Annotated",
+                filterAll: "Show All",
+                refreshCloud: "☁️ Refresh",
+                exportJson: "Export JSON",
+                importJson: "Import JSON",
+                cloudSyncing: "Syncing with cloud database...",
+                cloudOnline: "Cloud Synced",
+                cloudSaved: "Saved to Cloud",
+                cloudOffline: "Cloud Offline (Local cache used)",
+                labeledCount: "Annotated",
+                labelEn: "EN",
+                labelZh: "ZH",
+                placeholderEn: "English skill name...",
+                placeholderZh: "Chinese description...",
+                copied: "Copied to clipboard!",
+                exportSuccess: "Successfully exported JSON!",
+                importSuccess: "Data imported and merged!",
+                importFail: "Import failed, invalid JSON: ",
+                contributorPrefix: "by",
+                langToggle: "🌐 中文"
             }
-        } catch(e) {
-            console.error('Failed to load localStorage', e);
-        }
+        };
 
-        const gridContainer = document.getElementById('gridContainer');
-        const statsBadge = document.getElementById('statsBadge');
-        const searchInput = document.getElementById('searchInput');
-        const filterFilledBtn = document.getElementById('filterFilledBtn');
-        const exportBtn = document.getElementById('exportBtn');
-        const importBtn = document.getElementById('importBtn');
-        const fileInput = document.getElementById('fileInput');
-        const toast = document.getElementById('toast');
-
+        let currentLang = localStorage.getItem('tftf_pua_lang') || 'zh';
+        let storageData = JSON.parse(localStorage.getItem('tftf_pua_skills_data') || '{}');
         let onlyFilled = false;
+        let saveTimeoutMap = {};
+
+        const headerTitle = document.getElementById('header-title');
+        const headerSubtitle = document.getElementById('header-subtitle');
+        const searchInput = document.getElementById('search-input');
+        const filterFilledBtn = document.getElementById('filter-filled-btn');
+        const cloudRefreshBtn = document.getElementById('cloud-refresh-btn');
+        const exportBtn = document.getElementById('export-btn');
+        const importBtn = document.getElementById('import-btn');
+        const langToggleBtn = document.getElementById('lang-toggle-btn');
+        const statsBadge = document.getElementById('stats-badge');
+        const cloudBadge = document.getElementById('cloud-badge');
+        const cloudSpinner = document.getElementById('cloud-spinner');
+        const cloudText = document.getElementById('cloud-text');
+        const nicknameInput = document.getElementById('nickname-input');
+        const gridContainer = document.getElementById('grid-container');
+        const fileInput = document.getElementById('file-input');
+        const toastEl = document.getElementById('toast');
+
+        // Load nickname
+        nicknameInput.value = localStorage.getItem('tftf_pua_nickname') || '';
+        nicknameInput.addEventListener('input', () => {
+            localStorage.setItem('tftf_pua_nickname', nicknameInput.value.trim());
+        });
+
+        function getNickname() {
+            return nicknameInput.value.trim() || 'Community';
+        }
 
         function showToast(msg) {
-            toast.textContent = msg;
-            toast.style.display = 'block';
+            toastEl.textContent = msg;
+            toastEl.classList.add('show');
             setTimeout(() => {
-                toast.style.display = 'none';
-            }, 2000);
+                toastEl.classList.remove('show');
+            }, 2500);
         }
 
-        function saveToStorage() {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(storageData));
+        function applyI18n() {
+            const t = I18N[currentLang];
+            headerTitle.textContent = t.title;
+            headerSubtitle.textContent = t.subtitle;
+            searchInput.placeholder = t.searchPlaceholder;
+            filterFilledBtn.textContent = onlyFilled ? t.filterAll : t.filterFilled;
+            cloudRefreshBtn.innerHTML = t.refreshCloud;
+            exportBtn.textContent = t.exportJson;
+            importBtn.textContent = t.importJson;
+            langToggleBtn.textContent = t.langToggle;
             updateStats();
         }
 
+        langToggleBtn.addEventListener('click', () => {
+            currentLang = currentLang === 'zh' ? 'en' : 'zh';
+            localStorage.setItem('tftf_pua_lang', currentLang);
+            applyI18n();
+            renderCards();
+        });
+
         function updateStats() {
-            let filledCount = 0;
-            for (const item of PUA_LIST) {
-                const rec = storageData[item.unicode_escape];
-                if (rec && (rec.name_en || rec.name_zh)) {
-                    filledCount++;
-                }
-            }
-            statsBadge.textContent = `已标注: ${filledCount} / ${PUA_LIST.length}`;
+            const t = I18N[currentLang];
+            const filledCount = Object.keys(storageData).length;
+            statsBadge.textContent = `${t.labeledCount}: ${filledCount} / ${PUA_LIST.length}`;
         }
 
+        function saveToStorage() {
+            localStorage.setItem('tftf_pua_skills_data', JSON.stringify(storageData));
+            updateStats();
+        }
+
+        // ==================== UPSTASH CLOUD SYNC ====================
+        async function fetchFromCloud() {
+            setCloudStatus('syncing', I18N[currentLang].cloudSyncing);
+            try {
+                const resp = await fetch(`${UPSTASH_CONFIG.url}/hgetall/${UPSTASH_CONFIG.hashKey}`, {
+                    headers: {
+                        "Authorization": `Bearer ${UPSTASH_CONFIG.token}`
+                    }
+                });
+                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                const data = await resp.json();
+                if (data && Array.isArray(data.result)) {
+                    const cloudMap = {};
+                    for (let i = 0; i < data.result.length; i += 2) {
+                        const key = data.result[i];
+                        try {
+                            cloudMap[key] = JSON.parse(data.result[i + 1]);
+                        } catch (e) {
+                            cloudMap[key] = { name_en: data.result[i + 1], name_zh: "" };
+                        }
+                    }
+
+                    // Merge cloud data into storageData
+                    for (const [k, v] of Object.entries(cloudMap)) {
+                        storageData[k] = {
+                            hex: v.hex || storageData[k]?.hex || "",
+                            glyph_name: v.glyph_name || storageData[k]?.glyph_name || "",
+                            name_en: v.name_en || "",
+                            name_zh: v.name_zh || "",
+                            author: v.author || "Community",
+                            updated_at: v.updated_at || ""
+                        };
+                    }
+                    saveToStorage();
+                    renderCards();
+                    const count = Object.keys(cloudMap).length;
+                    setCloudStatus('online', `${I18N[currentLang].cloudOnline} (${count})`);
+                } else {
+                    setCloudStatus('online', `${I18N[currentLang].cloudOnline} (0)`);
+                }
+            } catch (err) {
+                console.error("Upstash fetch error:", err);
+                setCloudStatus('offline', I18N[currentLang].cloudOffline);
+            }
+        }
+
+        async function syncKeyToCloud(escapeKey, record) {
+            try {
+                if (record && (record.name_en || record.name_zh)) {
+                    await fetch(UPSTASH_CONFIG.url, {
+                        method: "POST",
+                        headers: {
+                            "Authorization": `Bearer ${UPSTASH_CONFIG.token}`,
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(["HSET", UPSTASH_CONFIG.hashKey, escapeKey, JSON.stringify(record)])
+                    });
+                } else {
+                    await fetch(UPSTASH_CONFIG.url, {
+                        method: "POST",
+                        headers: {
+                            "Authorization": `Bearer ${UPSTASH_CONFIG.token}`,
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(["HDEL", UPSTASH_CONFIG.hashKey, escapeKey])
+                    });
+                }
+                setCloudStatus('online', I18N[currentLang].cloudSaved);
+                setTimeout(() => {
+                    const count = Object.keys(storageData).length;
+                    setCloudStatus('online', `${I18N[currentLang].cloudOnline} (${count})`);
+                }, 2000);
+            } catch (err) {
+                console.error("Upstash save error:", err);
+                setCloudStatus('offline', "云端保存失败 / Sync Error");
+            }
+        }
+
+        function setCloudStatus(type, msg) {
+            cloudBadge.className = `cloud-badge cloud-${type}`;
+            cloudSpinner.style.display = type === 'syncing' ? 'inline-block' : 'none';
+            cloudText.textContent = msg;
+        }
+
+        cloudRefreshBtn.addEventListener('click', () => {
+            fetchFromCloud();
+            showToast(currentLang === 'zh' ? "正在拉取最新云端众创数据..." : "Syncing cloud data...");
+        });
+
+        // ==================== RENDERING ====================
         function renderCards() {
             gridContainer.innerHTML = '';
             const filterText = searchInput.value.trim().toLowerCase();
+            const t = I18N[currentLang];
 
             for (const item of PUA_LIST) {
-                const rec = storageData[item.unicode_escape] || { name_en: '', name_zh: '' };
+                const rec = storageData[item.unicode_escape] || {};
                 const hasFilled = !!(rec.name_en || rec.name_zh);
 
-                if (onlyFilled && !hasFilled) continue;
+                if (onlyFilled && !hasFilled) {
+                    continue;
+                }
 
                 if (filterText) {
                     const matchHex = item.hex.toLowerCase().includes(filterText);
@@ -357,46 +666,73 @@
                 card.className = `card ${hasFilled ? 'is-filled' : ''}`;
                 card.dataset.escape = item.unicode_escape;
 
+                const authorBadge = rec.author ? `<span class="contributor-tag">👤 ${rec.author}</span>` : '';
+
                 card.innerHTML = `
                     <div class="icon-row">
                         <div class="icon-preview-box">
                             <span class="game-icon">${item.char}</span>
                         </div>
                         <div class="icon-meta">
-                            <span class="code-pill">${item.unicode_escape}</span>
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <span class="code-pill" title="点击复制 / Click to copy">${item.unicode_escape}</span>
+                                ${authorBadge}
+                            </div>
                             <span class="glyph-name">Glyph: ${item.glyph_name}</span>
                             <span class="glyph-name">Hex: 0x${item.hex} (Dec: ${item.code})</span>
                         </div>
                     </div>
                     <div class="inputs-row">
                         <div class="field-group">
-                            <label>EN</label>
-                            <input type="text" class="text-input input-en" placeholder="English name / skill..." value="${rec.name_en ? escapeHtml(rec.name_en) : ''}">
+                            <label>${t.labelEn}</label>
+                            <input type="text" class="text-input input-en" placeholder="${t.placeholderEn}" value="${rec.name_en ? escapeHtml(rec.name_en) : ''}">
                         </div>
                         <div class="field-group">
-                            <label>中文</label>
-                            <input type="text" class="text-input input-zh" placeholder="中文名 / 技能说明..." value="${rec.name_zh ? escapeHtml(rec.name_zh) : ''}">
+                            <label>${t.labelZh}</label>
+                            <input type="text" class="text-input input-zh" placeholder="${t.placeholderZh}" value="${rec.name_zh ? escapeHtml(rec.name_zh) : ''}">
                         </div>
                     </div>
                 `;
 
                 const inputEn = card.querySelector('.input-en');
                 const inputZh = card.querySelector('.input-zh');
+                const codePill = card.querySelector('.code-pill');
+
+                codePill.addEventListener('click', () => {
+                    navigator.clipboard.writeText(item.unicode_escape);
+                    showToast(`${item.unicode_escape} ${t.copied}`);
+                });
 
                 const handleInputChange = () => {
                     const valEn = inputEn.value.trim();
                     const valZh = inputZh.value.trim();
+                    const esc = item.unicode_escape;
+
                     if (valEn || valZh) {
-                        storageData[item.unicode_escape] = {
+                        const recData = {
                             hex: item.hex,
                             glyph_name: item.glyph_name,
                             name_en: valEn,
-                            name_zh: valZh
+                            name_zh: valZh,
+                            author: getNickname(),
+                            updated_at: new Date().toISOString()
                         };
+                        storageData[esc] = recData;
                         card.classList.add('is-filled');
+
+                        // Debounce sync to Upstash
+                        clearTimeout(saveTimeoutMap[esc]);
+                        saveTimeoutMap[esc] = setTimeout(() => {
+                            syncKeyToCloud(esc, recData);
+                        }, 700);
                     } else {
-                        delete storageData[item.unicode_escape];
+                        delete storageData[esc];
                         card.classList.remove('is-filled');
+
+                        clearTimeout(saveTimeoutMap[esc]);
+                        saveTimeoutMap[esc] = setTimeout(() => {
+                            syncKeyToCloud(esc, null);
+                        }, 700);
                     }
                     saveToStorage();
                 };
@@ -422,7 +758,7 @@
 
         filterFilledBtn.addEventListener('click', () => {
             onlyFilled = !onlyFilled;
-            filterFilledBtn.textContent = onlyFilled ? '显示全部' : '仅看已标注';
+            filterFilledBtn.textContent = onlyFilled ? I18N[currentLang].filterAll : I18N[currentLang].filterFilled;
             if (onlyFilled) {
                 filterFilledBtn.style.background = '#21262d';
                 filterFilledBtn.style.borderColor = 'var(--accent)';
@@ -443,7 +779,8 @@
                         name_en: rec.name_en || "",
                         name_zh: rec.name_zh || "",
                         glyph_name: item.glyph_name,
-                        hex: item.hex
+                        hex: item.hex,
+                        author: rec.author || ""
                     };
                 }
             }
@@ -458,7 +795,7 @@
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            showToast('已成功导出 JSON 文件！');
+            showToast(I18N[currentLang].exportSuccess);
         });
 
         // Import JSON
@@ -470,37 +807,43 @@
             const file = e.target.files[0];
             if (!file) return;
             const reader = new FileReader();
-            reader.onload = (event) => {
+            reader.onload = async (event) => {
                 try {
                     const imported = JSON.parse(event.target.result);
+                    let importedCount = 0;
                     for (const [key, val] of Object.entries(imported)) {
                         let k = key;
-                        if (!k.startsWith('\\\\u') && !k.startsWith('\\u')) {
+                        if (!k.startsWith('\\u') && !k.startsWith('\u')) {
                             if (k.startsWith('U+') || k.startsWith('u+')) {
-                                k = '\\\\u' + k.slice(2).toLowerCase();
+                                k = '\\u' + k.slice(2).toLowerCase();
                             }
                         }
-                        storageData[k] = {
+                        const rec = {
                             name_en: val.name_en || val.en || "",
                             name_zh: val.name_zh || val.zh || "",
                             glyph_name: val.glyph_name || "",
-                            hex: val.hex || ""
+                            hex: val.hex || "",
+                            author: val.author || getNickname(),
+                            updated_at: new Date().toISOString()
                         };
+                        storageData[k] = rec;
+                        syncKeyToCloud(k, rec);
+                        importedCount++;
                     }
                     saveToStorage();
                     renderCards();
-                    showToast('成功导入并合并数据！');
+                    showToast(`${I18N[currentLang].importSuccess} (${importedCount})`);
                 } catch (err) {
-                    alert('导入失败，请检查 JSON 格式：' + err.message);
+                    alert(I18N[currentLang].importFail + err.message);
                 }
             };
             reader.readAsText(file);
             fileInput.value = '';
         });
 
-        // Initial setup
-        updateStats();
-        renderCards();
+        // Initialize
+        applyI18n();
+        fetchFromCloud();
     </script>
 </body>
 </html>
