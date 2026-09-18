@@ -26,4 +26,8 @@ int tftf_get_enable_swipe_specials(void);
 int tftf_get_freeze_enemy_ai(void);
 void tftf_reload_user_settings(void);
 
+int tftf_quest_is_leisure(void);
+float tftf_quest_get_hero_hp_ratio(int pos);
+float tftf_quest_get_hero_hp_ratio_by_bid(const char* bid);
+
 #endif

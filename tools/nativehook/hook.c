@@ -533,7 +533,7 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x1179AF4, "PCACTION",           2, 0 }, // 154 PlayerController.Action(int action)
     { 0x0E34640, "SPEXIT",             2, 0 }, // 155 PlayerSpecialAttackState.OnExit -> reset attack chain on special end (S1/S2)
     { 0x0DADA6C, "ROLL_CRIT",          2, 0 }, // 156 PlayerAttributes.RollForCriticalHit -> force critical hit
-    { 0,          "UNUSED_157",         0, 0 }, // 157 disabled (0x11805C8 was only 8 bytes, clobbered 0x11805D0)
+    { 0x10E1AE4, "QUEST_HERO_HP",      2, 0 }, // 157 QuestTeamData.GetTeamMemberHealth -> residual HP
     { 0,          "UNUSED_158",         0, 0 }, // 158 disabled (no-op pass-through)
     { 0,          "UNUSED_159",         0, 0 }, // 159 disabled (no-op pass-through)
     { 0x0D32A00, "BLOCKENTER",         2, 0 }, // 160 PlayerBlockState.OnEnter -> arm block timer
@@ -574,14 +574,18 @@ static volatile int g_inhb = 0;
 // prop swap itself is rendered by slot 138.
 static void* g_p0_controller = NULL;
 static void* g_p1_controller = NULL;
-static char g_p0_bot_id[80] = {0};
-static char g_p1_bot_id[80] = {0};
+char g_p0_bot_id[80] = {0};
+char g_p1_bot_id[80] = {0};
 static volatile uint64_t g_p0_block_enter_ms = 0;
 static volatile int g_p0_block_reset_done = 0;
 static volatile int g_p0_after_heavy = 0;
 static volatile int g_p0_combo_ended = 0;
-static void* g_p0_combat_character = NULL;
-static volatile float g_p0_last_hp = -1.0f;
+void* g_p0_combat_character = NULL;
+void* g_p1_combat_character = NULL;
+volatile float g_p0_max_hp = 50000.0f;
+volatile float g_p1_max_hp = 50000.0f;
+volatile float g_p0_last_hp = -1.0f;
+volatile float g_p1_last_hp = -1.0f;
 // Timestamp of the last P0 attack action (1 / 4 / 32). GATE-04: hook_145 clears the chain once this
 // is older than COMBO_IDLE_RESET_MS, because no native combo-window timeout is observable --
 // measured on device (2026-09-16): TAP, wait 1s, TAP, wait 1s, TAP produced L1,L2,L3 instead of
@@ -2907,13 +2911,20 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                 *(float*)((char*)at1 + 0x44) = 0.5f;                      // Player 0 CritChance (50% crit rate)
                 *(float*)((char*)at1 + 0x48) = 1.5f;                      // Player 0 CritDamage
                 *(float*)((char*)at1 + 0x54) = g_combat_player_mana_gain; // Dynamic player mana gain rate
-                float cur_norm_hp = *(float*)((char*)at1 + 0x34);
-                if (cur_norm_hp <= 0.0f || cur_hp <= 0) {
-                    flog("FIXFIGHT: reviving Player 0 HP from %f (max=%d) to 1.0f", cur_norm_hp, cur_hp);
-                    *(float*)((char*)at1 + 0x34) = 1.0f;
-                    if (cur_hp <= 0) {
-                        *(int32_t*)((char*)at1 + 0x2C) = 50000;
-                        *(int32_t*)((char*)at1 + 0x30) = 50000;
+                if (!tftf_quest_is_leisure()) {
+                    float hp_ratio = tftf_quest_get_hero_hp_ratio_by_bid(id1);
+                    if (hp_ratio > 1.0f) hp_ratio = 1.0f;
+                    if (hp_ratio < 0.05f) hp_ratio = 0.05f;
+                    *(float*)((char*)at1 + 0x34) = hp_ratio;
+                } else {
+                    float cur_norm_hp = *(float*)((char*)at1 + 0x34);
+                    if (cur_norm_hp <= 0.0f || cur_hp <= 0) {
+                        flog("FIXFIGHT: reviving Player 0 HP from %f (max=%d) to 1.0f", cur_norm_hp, cur_hp);
+                        *(float*)((char*)at1 + 0x34) = 1.0f;
+                        if (cur_hp <= 0) {
+                            *(int32_t*)((char*)at1 + 0x2C) = 50000;
+                            *(int32_t*)((char*)at1 + 0x30) = 50000;
+                        }
                     }
                 }
                 float bp = *(float*)((char*)at1 + 0x50);
@@ -2926,8 +2937,15 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                 *(float*)((char*)at2 + 0x54) = g_combat_enemy_mana_gain; // Enemy mana gain rate
             }
             if (ch1 && obj_ok(ch1)) {
-                if (*(float*)((char*)ch1 + 0x34) <= 0.0f) {
-                    *(float*)((char*)ch1 + 0x34) = 1.0f;
+                if (!tftf_quest_is_leisure()) {
+                    float hp_ratio = tftf_quest_get_hero_hp_ratio_by_bid(id1);
+                    if (hp_ratio > 1.0f) hp_ratio = 1.0f;
+                    if (hp_ratio < 0.05f) hp_ratio = 0.05f;
+                    *(float*)((char*)ch1 + 0x34) = hp_ratio;
+                } else {
+                    if (*(float*)((char*)ch1 + 0x34) <= 0.0f) {
+                        *(float*)((char*)ch1 + 0x34) = 1.0f;
+                    }
                 }
                 *(float*)((char*)ch1 + 0x58) = 1.0f;
             }
@@ -2953,9 +2971,34 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                 fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC698);
                 float cur_hp_val = get_hp(a0, NULL);
                 g_p0_last_hp = cur_hp_val;
-                if (cur_hp_val <= 0.0f) {
+                void* ch = fld_p(a0, 0x68);
+                if (ch && obj_ok(ch)) {
+                    void* max_prop = fld_p(ch, 0x28);
+                    if (max_prop) {
+                        typedef float (*fn_get_val)(void*, void*);
+                        fn_get_val get_val = (fn_get_val)(g_base + 0x1345EC4);
+                        float max_val = get_val(max_prop, NULL);
+                        if (max_val > 0.0f) g_p0_max_hp = max_val;
+                    }
+                }
+                if (!tftf_quest_is_leisure()) {
+                    float hp_ratio = tftf_quest_get_hero_hp_ratio_by_bid(g_p0_bot_id);
+                    if (hp_ratio > 1.0f) hp_ratio = 1.0f;
+                    if (hp_ratio < 0.05f) hp_ratio = 0.05f;
+                    if (ch && obj_ok(ch)) {
+                        void* cur_prop = fld_p(ch, 0x18);
+                        if (cur_prop) {
+                            typedef void (*fn_set_val)(void*, float, void*);
+                            fn_set_val set_val = (fn_set_val)(g_base + 0x1346048);
+                            float target_hp = g_p0_max_hp * hp_ratio;
+                            set_val(cur_prop, target_hp, NULL);
+                            g_p0_last_hp = target_hp;
+                            flog("FIXFIGHT: Scaled Player 0 '%s' combat HP to %.1f / %.1f (ratio=%.2f)",
+                                 g_p0_bot_id, target_hp, g_p0_max_hp, hp_ratio);
+                        }
+                    }
+                } else if (cur_hp_val <= 0.0f) {
                     flog("FIXFIGHT: post-init Player 0 HP was %f, recovering to 1.0f", cur_hp_val);
-                    void* ch = fld_p(a0, 0x68);
                     if (ch && obj_ok(ch)) {
                         void* cur_prop = fld_p(ch, 0x18);
                         void* max_prop = fld_p(ch, 0x28);
@@ -2970,6 +3013,25 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                         }
                     }
                 }
+            } else if (player_idx == 1) {
+                g_p1_combat_character = a0;
+                void* ch = fld_p(a0, 0x68);
+                if (ch && obj_ok(ch)) {
+                    void* max_prop = fld_p(ch, 0x28);
+                    if (max_prop) {
+                        typedef float (*fn_get_val)(void*, void*);
+                        fn_get_val get_val = (fn_get_val)(g_base + 0x1345EC4);
+                        float max_val = get_val(max_prop, NULL);
+                        if (max_val > 0.0f) {
+                            g_p1_max_hp = max_val;
+                            g_p1_last_hp = max_val;
+                        }
+                    }
+                }
+                typedef float (*fn_get_hp)(void*, void*);
+                fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC698);
+                float cur_p1_hp = get_hp(a0, NULL);
+                if (cur_p1_hp > 0.0f) g_p1_last_hp = cur_p1_hp;
             }
         }
     });
@@ -4637,8 +4699,6 @@ void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     g_p0_after_heavy = 0;
     g_p0_combo_ended = 0;
     g_p0_last_attack_ms = 0;
-    g_p0_combat_character = NULL;
-    g_p0_last_hp = -1.0f;
     return H[140].orig(a0,a1,a2,a3,a4,a5,a6,a7);
 }
 void* hook_141(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
@@ -4833,6 +4893,12 @@ void* hook_145(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
                 }
             }
             g_p0_last_hp = cur_hp;
+        }
+        if (g_p1_combat_character && obj_ok(g_p1_combat_character)) {
+            typedef float (*fn_get_hp)(void*, void*);
+            fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC698);
+            float cur_hp = get_hp(g_p1_combat_character, NULL);
+            g_p1_last_hp = cur_hp;
         }
     });
     return r;
@@ -5126,8 +5192,20 @@ void* hook_156(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     }
     return (void*)(intptr_t)is_crit;
 }
-void* hook_157(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
-    return H[157].orig ? H[157].orig(a0, a1, a2, a3, a4, a5, a6, a7) : NULL;
+float hook_157(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    int pos = (int)(intptr_t)a1;
+    if (!tftf_quest_is_leisure() && pos >= 0 && pos < 5) {
+        float ratio = tftf_quest_get_hero_hp_ratio(pos);
+        if (ratio > 1.0f) ratio = 1.0f;
+        if (ratio < 0.0f) ratio = 0.0f;
+        static int s_log_hp_cnt = 0;
+        if (s_log_hp_cnt++ < 30) {
+            flog("QUEST_HERO_HP: pos=%d -> ratio=%.2f", pos, ratio);
+        }
+        return ratio;
+    }
+    typedef float (*fn_orig)(void*, void*, void*, void*, void*, void*, void*, void*);
+    return H[157].orig ? ((fn_orig)H[157].orig)(a0, a1, a2, a3, a4, a5, a6, a7) : 1.0f;
 }
 void* hook_158(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     return H[158].orig ? H[158].orig(self, a1, a2, a3, a4, a5, a6, a7) : NULL;
@@ -5609,7 +5687,7 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     hook_128,hook_129,hook_130,hook_131,hook_132,hook_133,hook_134,hook_135,hook_136,hook_137,
     hook_138,hook_139,hook_140,hook_141,hook_142,hook_143,hook_144,
     hook_145,hook_146,hook_147,hook_148,hook_149,hook_150,hook_151,
-    hook_152,hook_153,hook_154,hook_155,hook_156,hook_157,hook_158,
+    hook_152,hook_153,hook_154,hook_155,hook_156,(void*)hook_157,hook_158,
     hook_159,hook_160,hook_161,hook_162,hook_163,hook_164,
     hook_165,hook_166,hook_167,hook_168,hook_169,hook_170,
     hook_171,hook_172 };

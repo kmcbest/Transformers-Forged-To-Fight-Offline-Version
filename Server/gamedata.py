@@ -1609,6 +1609,7 @@ def build_quest_summary(mission_id="1.1.1", set_id="story_act1", lang="zh"):
         "energyPerTile": 1, "minXpPerTile": min_xp, "maxXpPerTile": max_xp,
         "minHealthPerTile": 100, "maxHealthPerTile": 100,
         "image": "", "theme": "primordial", "todIndex": 0,
+        "isLeisure": mission_id not in ("1.1.3", "1.1.4"),
     }
     if mission_id in ("1.1.3", "1.1.4"):
         summary["teamSettings"] = {
@@ -1675,6 +1676,7 @@ def build_quest_list(lang="zh"):
             "energyPerTile": 1, "minXpPerTile": min_xp, "maxXpPerTile": max_xp,
             "minHealthPerTile": 100, "maxHealthPerTile": 100,
             "image": qimage, "theme": theme,
+            "isLeisure": qid not in ("1.1.3", "1.1.4"),
         }
         if qid in ("1.1.3", "1.1.4"):
             q_dict["teamSettings"] = {
