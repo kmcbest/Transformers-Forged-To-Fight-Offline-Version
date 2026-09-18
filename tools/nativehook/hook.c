@@ -533,8 +533,8 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x1179AF4, "PCACTION",           2, 0 }, // 154 PlayerController.Action(int action)
     { 0x0E34640, "SPEXIT",             2, 0 }, // 155 PlayerSpecialAttackState.OnExit -> reset attack chain on special end (S1/S2)
     { 0x0DADA6C, "ROLL_CRIT",          2, 0 }, // 156 PlayerAttributes.RollForCriticalHit -> force critical hit
-    { 0x10E1AE4, "QUEST_HERO_HP",      2, 0 }, // 157 QuestTeamData.GetTeamMemberHealth -> residual HP
-    { 0,          "UNUSED_158",         0, 0 }, // 158 disabled (no-op pass-through)
+    { 0x0E3D8CC, "PREFIGHT_HP",        2, 0 }, // 157 PrefightScreenData.GetTeamMemberHealth -> residual HP
+    { 0x10E1E54, "TEAMDATA_HP",        2, 0 }, // 158 TeamData.GetHP -> residual HP
     { 0,          "UNUSED_159",         0, 0 }, // 159 disabled (no-op pass-through)
     { 0x0D32A00, "BLOCKENTER",         2, 0 }, // 160 PlayerBlockState.OnEnter -> arm block timer
     { 0xC16688,  "GET_MAP_ASSET_ID",   2, 0 }, // 161 BCGBlueprintBase.get_MapAssetID -> resolve to real portrait resource name
@@ -2985,18 +2985,10 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                     float hp_ratio = tftf_quest_get_hero_hp_ratio_by_bid(g_p0_bot_id);
                     if (hp_ratio > 1.0f) hp_ratio = 1.0f;
                     if (hp_ratio < 0.05f) hp_ratio = 0.05f;
-                    if (ch && obj_ok(ch)) {
-                        void* cur_prop = fld_p(ch, 0x18);
-                        if (cur_prop) {
-                            typedef void (*fn_set_val)(void*, float, void*);
-                            fn_set_val set_val = (fn_set_val)(g_base + 0x1346048);
-                            float target_hp = g_p0_max_hp * hp_ratio;
-                            set_val(cur_prop, target_hp, NULL);
-                            g_p0_last_hp = target_hp;
-                            flog("FIXFIGHT: Scaled Player 0 '%s' combat HP to %.1f / %.1f (ratio=%.2f)",
-                                 g_p0_bot_id, target_hp, g_p0_max_hp, hp_ratio);
-                        }
-                    }
+                    float cur_scaled_hp = get_hp(a0, NULL);
+                    g_p0_last_hp = cur_scaled_hp;
+                    flog("FIXFIGHT: Player 0 '%s' combat HP initialized to %.1f / %.1f (ratio=%.2f)",
+                         g_p0_bot_id, cur_scaled_hp, g_p0_max_hp, hp_ratio);
                 } else if (cur_hp_val <= 0.0f) {
                     flog("FIXFIGHT: post-init Player 0 HP was %f, recovering to 1.0f", cur_hp_val);
                     if (ch && obj_ok(ch)) {
@@ -5198,17 +5190,29 @@ float hook_157(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
         float ratio = tftf_quest_get_hero_hp_ratio(pos);
         if (ratio > 1.0f) ratio = 1.0f;
         if (ratio < 0.0f) ratio = 0.0f;
-        static int s_log_hp_cnt = 0;
-        if (s_log_hp_cnt++ < 30) {
-            flog("QUEST_HERO_HP: pos=%d -> ratio=%.2f", pos, ratio);
+        static int s_log_hp157 = 0;
+        if (s_log_hp157++ < 20) {
+            flog("PREFIGHT_HP (0x0E3D8CC): pos=%d -> ratio=%.2f", pos, ratio);
         }
         return ratio;
     }
     typedef float (*fn_orig)(void*, void*, void*, void*, void*, void*, void*, void*);
     return H[157].orig ? ((fn_orig)H[157].orig)(a0, a1, a2, a3, a4, a5, a6, a7) : 1.0f;
 }
-void* hook_158(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
-    return H[158].orig ? H[158].orig(self, a1, a2, a3, a4, a5, a6, a7) : NULL;
+float hook_158(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    int slot = (int)(intptr_t)a1;
+    if (!tftf_quest_is_leisure() && slot >= 0 && slot < 5) {
+        float ratio = tftf_quest_get_hero_hp_ratio(slot);
+        if (ratio > 1.0f) ratio = 1.0f;
+        if (ratio < 0.0f) ratio = 0.0f;
+        static int s_log_hp158 = 0;
+        if (s_log_hp158++ < 20) {
+            flog("TEAMDATA_HP (0x10E1E54): slot=%d -> ratio=%.2f", slot, ratio);
+        }
+        return ratio;
+    }
+    typedef float (*fn_orig)(void*, void*, void*, void*, void*, void*, void*, void*);
+    return H[158].orig ? ((fn_orig)H[158].orig)(self, a1, a2, a3, a4, a5, a6, a7) : 1.0f;
 }
 typedef int (*fn_apply_damage)(void* self, float damage, void* mi);
 int hook_159(void* self, float damage, void* mi) {
@@ -5687,7 +5691,7 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     hook_128,hook_129,hook_130,hook_131,hook_132,hook_133,hook_134,hook_135,hook_136,hook_137,
     hook_138,hook_139,hook_140,hook_141,hook_142,hook_143,hook_144,
     hook_145,hook_146,hook_147,hook_148,hook_149,hook_150,hook_151,
-    hook_152,hook_153,hook_154,hook_155,hook_156,(void*)hook_157,hook_158,
+    hook_152,hook_153,hook_154,hook_155,hook_156,(void*)hook_157,(void*)hook_158,
     hook_159,hook_160,hook_161,hook_162,hook_163,hook_164,
     hook_165,hook_166,hook_167,hook_168,hook_169,hook_170,
     hook_171,hook_172 };

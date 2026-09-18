@@ -104,6 +104,7 @@ typedef struct {
     int pending_battle_active;
     int pending_battle_x, pending_battle_y;
     float hero_hp[5];
+    char hero_bid[5][64];
 } QuestRunState;
 
 static QuestRunState g_quest_state = {
@@ -112,13 +113,23 @@ static QuestRunState g_quest_state = {
 };
 
 void tftf_quest_on_combat_ended(const char* hero_bid, int player_won, float p0_remaining_hp_ratio) {
-    Team team;
-    int idx = 0;
-    if (resolve_team(&team) && hero_bid && hero_bid[0]) {
-        for (int i = 0; i < team.count && i < 5; i++) {
-            if (!strcmp(team.bid[i], hero_bid)) {
+    int idx = -1;
+    if (hero_bid && hero_bid[0]) {
+        for (int i = 0; i < 5; i++) {
+            if (!strcmp(g_quest_state.hero_bid[i], hero_bid)) {
                 idx = i;
                 break;
+            }
+        }
+    }
+    if (idx < 0) {
+        Team team;
+        if (resolve_team(&team) && hero_bid && hero_bid[0]) {
+            for (int i = 0; i < team.count && i < 5; i++) {
+                if (!strcmp(team.bid[i], hero_bid)) {
+                    idx = i;
+                    break;
+                }
             }
         }
     }
@@ -163,6 +174,11 @@ float tftf_quest_get_hero_hp_ratio(int pos) {
 float tftf_quest_get_hero_hp_ratio_by_bid(const char* bid) {
     if (g_quest_state.is_leisure) return 1.0f;
     if (!bid || !bid[0]) return 1.0f;
+    for (int i = 0; i < 5; i++) {
+        if (!strcmp(g_quest_state.hero_bid[i], bid)) {
+            return g_quest_state.hero_hp[i];
+        }
+    }
     Team team;
     if (resolve_team(&team)) {
         for (int i = 0; i < team.count && i < 5; i++) {
@@ -1011,6 +1027,34 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
 
         tftf_quest_on_combat_ended(g_p0_bot_id, player_won, p0_ratio);
 
+        Team team;
+        Out qteam = {0};
+        if (resolve_team(&team) && render_qteam(&qteam, &team)) {
+            int cx = g_quest_state.pending_battle_x;
+            int cy = g_quest_state.pending_battle_y;
+            if (!cx && !cy) {
+                cx = 0; cy = 1;
+            }
+            char head[256];
+            int hlen = snprintf(head, sizeof head,
+                "{\"error\":null,\"result\":{\"progression\":{\"currentPos\":{\"x\":%d,\"y\":%d},"
+                "\"users\":{\"1000000000001\":{\"currentPos\":{\"x\":%d,\"y\":%d},"
+                "\"name\":\"Commander\",\"points\":0,\"strongestHero\":\"%s\",\"tag\":\"\",\"team\":",
+                cx, cy, cx, cy, team.bid[0]);
+            if (out_reserve(o, (size_t)hlen + qteam.n * 2 + 64)) {
+                out_add(o, head, (size_t)hlen);
+                out_add(o, qteam.p, qteam.n);
+                out_add(o, "}}},\"teamData\":", 14);
+                out_add(o, qteam.p, qteam.n);
+                out_add(o, "}}", 2);
+                free(qteam.p);
+                *outn = o->n;
+                logmsg("HTTP_RESOLVE_MATCH: Emitted updated progression & teamData (%zu bytes)", *outn);
+                return o->p;
+            }
+            free(qteam.p);
+        }
+
         static const unsigned char match_ok[] = "{\"error\":null,\"result\":{}}";
         *outn = strlen((const char*)match_ok);
         return match_ok;
@@ -1077,6 +1121,9 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         pthread_mutex_unlock(&g_pos_lock);
         snprintf(key,sizeof key,"%s /quests/quest-begin/%s",method,qid);v=lookup(key,&n);if(!v){snprintf(key,sizeof key,"POST /quests/quest-begin/%s",qid);v=lookup(key,&n);}
         if(!v||!resolve_team(&team)||!render_qteam(&qteam,&team)){free(qteam.p);return NULL;}
+        for (int h = 0; h < team.count && h < 5; h++) {
+            snprintf(g_quest_state.hero_bid[h], sizeof(g_quest_state.hero_bid[h]), "%s", team.bid[h]);
+        }
         args[0]=(TemplateArg){"%LEAD%",(const unsigned char*)team.bid[0],strlen(team.bid[0])};
         args[1]=(TemplateArg){"%QTEAM%",qteam.p,qteam.n};
         args[2]=(TemplateArg){"%EB0%",(const unsigned char*)e_bid[0],strlen(e_bid[0])};
