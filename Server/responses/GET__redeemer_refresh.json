@@ -1,0 +1,43 @@
+{
+  "error": null,
+  "result": {
+    "nextrefresh": 2147483647,
+    "redeemers": {
+      "soft": {
+        "name": "soft",
+        "amount": 999999,
+        "max": 999999999,
+        "growthInterval": 0,
+        "spendWarn": false
+      },
+      "hard": {
+        "name": "hard",
+        "amount": 88888,
+        "max": 999999999,
+        "growthInterval": 0,
+        "spendWarn": false
+      },
+      "gold": {
+        "name": "gold",
+        "amount": 999999,
+        "max": 999999999,
+        "growthInterval": 0,
+        "spendWarn": false
+      },
+      "energon": {
+        "name": "energon",
+        "amount": 88888,
+        "max": 999999999,
+        "growthInterval": 0,
+        "spendWarn": false
+      },
+      "energy": {
+        "name": "energy",
+        "amount": 100,
+        "max": 100,
+        "growthInterval": 0,
+        "spendWarn": false
+      }
+    }
+  }
+}
