@@ -1041,12 +1041,16 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
                 "\"users\":{\"1000000000001\":{\"currentPos\":{\"x\":%d,\"y\":%d},"
                 "\"name\":\"Commander\",\"points\":0,\"strongestHero\":\"%s\",\"tag\":\"\",\"team\":",
                 cx, cy, cx, cy, team.bid[0]);
-            if (out_reserve(o, (size_t)hlen + qteam.n * 2 + 64)) {
+            char aid[64];
+            snprintf(aid, sizeof aid, "%s-0", g_quest_state.qid[0] ? g_quest_state.qid : "1.1.1");
+            char mid_buf[128];
+            int mlen = snprintf(mid_buf, sizeof mid_buf, "}}},\"teamData\":{\"aid\":\"%s\",\"type\":\"PvE\",\"modes\":[\"PvE\"],\"heroes\":", aid);
+            if (out_reserve(o, (size_t)hlen + (size_t)mlen + qteam.n * 2 + 64)) {
                 out_add(o, head, (size_t)hlen);
                 out_add(o, qteam.p, qteam.n);
-                out_add(o, "}}},\"teamData\":", 14);
+                out_add(o, mid_buf, (size_t)mlen);
                 out_add(o, qteam.p, qteam.n);
-                out_add(o, "}}", 2);
+                out_add(o, ",\"expire\":0}}}", 14);
                 free(qteam.p);
                 *outn = o->n;
                 logmsg("HTTP_RESOLVE_MATCH: Emitted updated progression & teamData (%zu bytes)", *outn);

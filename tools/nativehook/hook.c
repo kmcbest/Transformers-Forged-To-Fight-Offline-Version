@@ -535,7 +535,7 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x0DADA6C, "ROLL_CRIT",          2, 0 }, // 156 PlayerAttributes.RollForCriticalHit -> force critical hit
     { 0x0E3D8CC, "PREFIGHT_HP",        2, 0 }, // 157 PrefightScreenData.GetTeamMemberHealth -> residual HP
     { 0x10E1E54, "TEAMDATA_HP",        2, 0 }, // 158 TeamData.GetHP -> residual HP
-    { 0,          "UNUSED_159",         0, 0 }, // 159 disabled (no-op pass-through)
+    { 0x103CFC4, "QUH_GET_HP",         2, 0 }, // 159 Legacy.QuestUserHero.get_HP -> residual HP
     { 0x0D32A00, "BLOCKENTER",         2, 0 }, // 160 PlayerBlockState.OnEnter -> arm block timer
     { 0xC16688,  "GET_MAP_ASSET_ID",   2, 0 }, // 161 BCGBlueprintBase.get_MapAssetID -> resolve to real portrait resource name
     { 0x127F794, "LOCALIZE",           2, 0 }, // 162 Localization.Get
@@ -543,7 +543,7 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0xC1F2B8,  "GET_TOP_HERO_ID",    2, 0 }, // 164 BCGHelper.GetTopHeroId -> squad leader avatar
     { 0x0D34E6C, "DODGEENTER",         2, 0 }, // 165 PlayerDodgeState.OnEnter -> reset attack chain on dodge (swipe back)
     { 0x00C2BE04, "ACT_NAME",          2, 0 }, // 166 ActPanel.get_panelDisplayNameText -> return "重生" / "Revived"
-    { 0,          "UNUSED_167",         0, 0 }, // 167 disabled (heavy attack reset handled via action 8 in hook_154)
+    { 0x0E8F33C, "PORTRAIT_GET_HP",    2, 0 }, // 167 HeroPortrait.get_healthPercentage -> residual HP
     { 0x1173FA4, "PCGETSPTIER",        2, 0 }, // 168 PlayerController.GetAvailableSpecialTier -> dynamic special tier
     { 0xFF05C8,  "HUDSPBTN",           2, 0 }, // 169 HudSpecialMeter.OnSpecialButtonPressed -> gesture recognition
     { 0x11CFCAC, "QUEST_TEX",          2, 0 }, // 170 SelectQuestTile.SetTexturePath -> custom quest icons
@@ -5214,10 +5214,19 @@ float hook_158(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
     typedef float (*fn_orig)(void*, void*, void*, void*, void*, void*, void*, void*);
     return H[158].orig ? ((fn_orig)H[158].orig)(self, a1, a2, a3, a4, a5, a6, a7) : 1.0f;
 }
-typedef int (*fn_apply_damage)(void* self, float damage, void* mi);
-int hook_159(void* self, float damage, void* mi) {
-    fn_apply_damage orig = (fn_apply_damage)H[159].orig;
-    return orig ? orig(self, damage, mi) : 0;
+float hook_159(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    if (!tftf_quest_is_leisure()) {
+        float ratio = tftf_quest_get_hero_hp_ratio(0);
+        if (ratio > 1.0f) ratio = 1.0f;
+        if (ratio < 0.0f) ratio = 0.0f;
+        static int s_log_hp159 = 0;
+        if (s_log_hp159++ < 20) {
+            flog("QUH_GET_HP (0x103CFC4): ratio=%.2f", ratio);
+        }
+        return ratio;
+    }
+    typedef float (*fn_orig)(void*, void*, void*, void*, void*, void*, void*, void*);
+    return H[159].orig ? ((fn_orig)H[159].orig)(self, a1, a2, a3, a4, a5, a6, a7) : 1.0f;
 }
 void* hook_160(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     void* pc = fld_p(a0, 0x18);
@@ -5365,6 +5374,9 @@ static const struct ArtBaseMap ART_BASE_MAP[] = {
     { "ultramagnus_gs_leader", "ultram_gs" },
     { "waspinator_gs_deluxe", "wasp_bw" },
     { "wheeljack_gs_mp20", "wheelj_gs" },
+    { "wildrider_gs_deluxe2016", "wildrider" },
+    { "wildrider_gs", "wildrider" },
+    { "wildrider", "wildrider" },
     { "windblade_gs", "windb_gs" },
 };
 #define NUM_ART_BASE_MAP (int)(sizeof(ART_BASE_MAP)/sizeof(ART_BASE_MAP[0]))
@@ -5555,8 +5567,19 @@ void* hook_166(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     return H[166].orig ? H[166].orig(a0, a1, a2, a3, a4, a5, a6, a7) : NULL;
 }
 
-void* hook_167(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
-    return H[167].orig ? H[167].orig(a0, a1, a2, a3, a4, a5, a6, a7) : NULL;
+float hook_167(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    if (!tftf_quest_is_leisure()) {
+        float ratio = tftf_quest_get_hero_hp_ratio(0);
+        if (ratio > 1.0f) ratio = 1.0f;
+        if (ratio < 0.0f) ratio = 0.0f;
+        static int s_log_hp167 = 0;
+        if (s_log_hp167++ < 20) {
+            flog("PORTRAIT_GET_HP (0x0E8F33C): ratio=%.2f", ratio);
+        }
+        return ratio;
+    }
+    typedef float (*fn_orig)(void*, void*, void*, void*, void*, void*, void*, void*);
+    return H[167].orig ? ((fn_orig)H[167].orig)(self, a1, a2, a3, a4, a5, a6, a7) : 1.0f;
 }
 
 void* hook_168(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
@@ -5692,8 +5715,8 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     hook_138,hook_139,hook_140,hook_141,hook_142,hook_143,hook_144,
     hook_145,hook_146,hook_147,hook_148,hook_149,hook_150,hook_151,
     hook_152,hook_153,hook_154,hook_155,hook_156,(void*)hook_157,(void*)hook_158,
-    hook_159,hook_160,hook_161,hook_162,hook_163,hook_164,
-    hook_165,hook_166,hook_167,hook_168,hook_169,hook_170,
+    (void*)hook_159,hook_160,hook_161,hook_162,hook_163,hook_164,
+    hook_165,hook_166,(void*)hook_167,hook_168,hook_169,hook_170,
     hook_171,hook_172 };
 
 static void write_jump(uint8_t* dst, void* target){
