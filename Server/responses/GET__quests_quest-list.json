@@ -179,9 +179,15 @@
           "image": "questboard/poster_menasor",
           "theme": "primordial",
           "teamSettings": {
+            "v": 1,
+            "minTeamSize": 1,
+            "maxTeamSize": 1,
             "teamSizeMin": 1,
-            "teamSizeMax": 1
+            "teamSizeMax": 1,
+            "presetTeam": false
           },
+          "minTeamSize": 1,
+          "maxTeamSize": 1,
           "teamSizeMin": 1,
           "teamSizeMax": 1
         },
@@ -208,9 +214,15 @@
           "image": "questboard/poster_supreme_optimus",
           "theme": "primordial",
           "teamSettings": {
+            "v": 1,
+            "minTeamSize": 1,
+            "maxTeamSize": 1,
             "teamSizeMin": 1,
-            "teamSizeMax": 1
+            "teamSizeMax": 1,
+            "presetTeam": false
           },
+          "minTeamSize": 1,
+          "maxTeamSize": 1,
           "teamSizeMin": 1,
           "teamSizeMax": 1
         },

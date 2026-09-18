@@ -124,9 +124,15 @@
 * **配置方式**：在 `QuestSummary` 与 `availableQuests` 中设置：
   ```json
   "teamSettings": {
+      "v": 1,
+      "minTeamSize": 1,
+      "maxTeamSize": 1,
       "teamSizeMin": 1,
-      "teamSizeMax": 1
+      "teamSizeMax": 1,
+      "presetTeam": false
   },
+  "minTeamSize": 1,
+  "maxTeamSize": 1,
   "teamSizeMin": 1,
   "teamSizeMax": 1
   ```

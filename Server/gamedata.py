@@ -1611,7 +1611,16 @@ def build_quest_summary(mission_id="1.1.1", set_id="story_act1", lang="zh"):
         "image": "", "theme": "primordial", "todIndex": 0,
     }
     if mission_id in ("1.1.3", "1.1.4"):
-        summary["teamSettings"] = {"teamSizeMin": 1, "teamSizeMax": 1}
+        summary["teamSettings"] = {
+            "v": 1,
+            "minTeamSize": 1,
+            "maxTeamSize": 1,
+            "teamSizeMin": 1,
+            "teamSizeMax": 1,
+            "presetTeam": False,
+        }
+        summary["minTeamSize"] = 1
+        summary["maxTeamSize"] = 1
         summary["teamSizeMin"] = 1
         summary["teamSizeMax"] = 1
     return summary
@@ -1668,7 +1677,16 @@ def build_quest_list(lang="zh"):
             "image": qimage, "theme": theme,
         }
         if qid in ("1.1.3", "1.1.4"):
-            q_dict["teamSettings"] = {"teamSizeMin": 1, "teamSizeMax": 1}
+            q_dict["teamSettings"] = {
+                "v": 1,
+                "minTeamSize": 1,
+                "maxTeamSize": 1,
+                "teamSizeMin": 1,
+                "teamSizeMax": 1,
+                "presetTeam": False,
+            }
+            q_dict["minTeamSize"] = 1
+            q_dict["maxTeamSize"] = 1
             q_dict["teamSizeMin"] = 1
             q_dict["teamSizeMax"] = 1
         quests.append(q_dict)
