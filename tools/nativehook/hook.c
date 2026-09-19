@@ -3146,16 +3146,28 @@ static void rdname(uintptr_t sub, char* nm){ nm[0]=0; if(sub<0x100000||(sub&7))r
 // item data @ _items+0x20+8*k). Subsystems still connecting (stuck) remain here.
 void* hook_21(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
     static int n=0;
-    if((n++ % 120)==0 && g_f) PROTECT({
+    static int s_redeemer_fixed=0;
+    PROTECT({
         uintptr_t hub=(uintptr_t)a0;
         if(hub>=0x100000){ uintptr_t list=*(uintptr_t*)(hub+0x268);
             if(list>=0x100000){ int size=*(int*)(list+0x18); uintptr_t items=*(uintptr_t*)(list+0x10);
-                flog("== CONNECTING size=%d ==", size);
+                if((n % 120)==0 && g_f) flog("== CONNECTING size=%d ==", size);
                 if(items>=0x100000 && size>0 && size<80) for(int k=0;k<size;k++){
                     uintptr_t sub=*(uintptr_t*)(items+0x20+k*8);
-                    if(sub>=0x100000){ int st=*(int*)(sub+0x18); char nm[40]; rdname(sub,nm); flog("  STUCK %s st=%d", nm, st); }
+                    if(sub>=0x100000){
+                        int st=*(int*)(sub+0x18);
+                        char nm[40];
+                        rdname(sub,nm);
+                        if(strcmp(nm, "RedeemerManager") == 0 && st == 1) {
+                            *(int*)(sub+0x18) = 2;
+                            if(!s_redeemer_fixed){ s_redeemer_fixed = 1; flog("  FORCE CONNECTED: %s st 1 -> 2", nm); }
+                        } else if((n % 120)==0 && g_f) {
+                            flog("  STUCK %s st=%d", nm, st);
+                        }
+                    }
                 } } }
     });
+    n++;
     return H[21].orig(a0,a1,a2,a3,a4,a5,a6,a7);
 }
 // jp=6 FIX: run the original Connect, then force this subsystem to Connected(2).

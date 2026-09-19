@@ -5,28 +5,28 @@
     "redeemers": {
       "soft": {
         "name": "soft",
-        "amount": 999999,
+        "amount": 888888,
         "max": 999999999,
         "growthInterval": 0,
         "spendWarn": false
       },
       "hard": {
         "name": "hard",
-        "amount": 88888,
+        "amount": 66666,
         "max": 999999999,
         "growthInterval": 0,
         "spendWarn": false
       },
       "gold": {
         "name": "gold",
-        "amount": 999999,
+        "amount": 888888,
         "max": 999999999,
         "growthInterval": 0,
         "spendWarn": false
       },
       "energon": {
         "name": "energon",
-        "amount": 88888,
+        "amount": 66666,
         "max": 999999999,
         "growthInterval": 0,
         "spendWarn": false
@@ -35,6 +35,20 @@
         "name": "energy",
         "amount": 100,
         "max": 100,
+        "growthInterval": 0,
+        "spendWarn": false
+      },
+      "rc": {
+        "name": "rc",
+        "amount": 333333,
+        "max": 999999999,
+        "growthInterval": 0,
+        "spendWarn": false
+      },
+      "raid_chip": {
+        "name": "raid_chip",
+        "amount": 333333,
+        "max": 999999999,
         "growthInterval": 0,
         "spendWarn": false
       }
