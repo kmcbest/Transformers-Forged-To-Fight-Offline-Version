@@ -90,6 +90,7 @@ static int g_connections;
 static int g_started;
 int g_current_is_10x_challenge = 0;
 static volatile int g_matrix_war_active = 0;
+static volatile int g_matrix_war_empty_team = 1;
 
 int tftf_is_matrix_war_active(void) {
     return g_matrix_war_active;
@@ -97,6 +98,14 @@ int tftf_is_matrix_war_active(void) {
 
 void tftf_set_matrix_war_active(int active) {
     g_matrix_war_active = active;
+}
+
+int tftf_matrix_war_should_empty_team(void) {
+    return g_matrix_war_empty_team;
+}
+
+void tftf_matrix_war_set_empty_team(int empty) {
+    g_matrix_war_empty_team = empty;
 }
 
 static void logmsg(const char *fmt, ...);
@@ -1100,6 +1109,10 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
     if(strstr(p,"/quests/quest-detail/")) {
         snprintf(mid,sizeof mid,"%.63s",path_last(p));
         g_matrix_war_active = (strcmp(mid, "1.1.5") == 0);
+        if (g_matrix_war_active) {
+            g_matrix_war_empty_team = 1;
+            logmsg("MATRIX_WAR: quest-detail 1.1.5 -> armed empty_team flag!");
+        }
         g_current_is_10x_challenge=(strcmp(mid,"1.1.2")==0);
         int is_zh = detect_chinese_language(headers, query);
         char lkey[128];
@@ -1111,6 +1124,9 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
     }
     if(strstr(p,"/quests/quest-begin/")) { Team team; Out qteam={0}; TemplateArg args[8];snprintf(qid,sizeof qid,"%.63s",path_last(p));
         g_matrix_war_active = (strcmp(qid, "1.1.5") == 0);
+        if (g_matrix_war_active) {
+            g_matrix_war_empty_team = 1;
+        }
         g_current_is_10x_challenge = (strcmp(qid, "1.1.2") == 0);
         int is_leisure = (strcmp(qid, "1.1.3") != 0 && strcmp(qid, "1.1.4") != 0 && strcmp(qid, "1.1.5") != 0);
         int x=0,y=1;if(strcmp(qid,"1.1.5")!=0)store_quest_team(body,end);snprintf(key,sizeof key,"@quest:start:%s",qid);v=lookup(key,&n);if(v)sscanf((const char*)v,"%d %d",&x,&y);
@@ -1221,7 +1237,23 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         }
         return NULL;
     }
-    if(has_suffix(p,"/bcg/setSavedTeam")) { char teamid[64]="0",bids[5][64];int count,invalid;Team team;Out steam={0},ateam={0};TemplateArg args[3];json_string(body,end,"teamID",teamid,sizeof teamid);json_heroes(body,end,bids,&count,&invalid);store_saved_team(bids,count,invalid);v=lookup("@savedteam:template",&n);if(!v||!resolve_team(&team)||!render_steam(&steam,&team)||!render_ateam(&ateam,&team)){free(steam.p);free(ateam.p);return NULL;}args[0]=(TemplateArg){"%TID%",(const unsigned char*)teamid,strlen(teamid)};args[1]=(TemplateArg){"%STEAM%",steam.p,steam.n};args[2]=(TemplateArg){"%ATEAM%",ateam.p,ateam.n};v=template_spaced(o,v,n,args,3,outn);free(steam.p);free(ateam.p);return v; }
+    if(has_suffix(p,"/bcg/setSavedTeam")) {
+        char teamid[64]="0",bids[5][64];int count,invalid;Team team;Out steam={0},ateam={0};TemplateArg args[3];
+        json_string(body,end,"teamID",teamid,sizeof teamid);
+        json_heroes(body,end,bids,&count,&invalid);
+        if (g_matrix_war_active) {
+            tftf_matrix_war_set_empty_team(0);
+            logmsg("MATRIX_WAR: setSavedTeam disarmed empty_team flag!");
+        } else {
+            store_saved_team(bids,count,invalid);
+        }
+        v=lookup("@savedteam:template",&n);
+        if(!v||!resolve_team(&team)||!render_steam(&steam,&team)||!render_ateam(&ateam,&team)){free(steam.p);free(ateam.p);return NULL;}
+        args[0]=(TemplateArg){"%TID%",(const unsigned char*)teamid,strlen(teamid)};
+        args[1]=(TemplateArg){"%STEAM%",steam.p,steam.n};
+        args[2]=(TemplateArg){"%ATEAM%",ateam.p,ateam.n};
+        v=template_spaced(o,v,n,args,3,outn);free(steam.p);free(ateam.p);return v;
+    }
     return NULL;
 }
 

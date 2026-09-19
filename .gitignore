@@ -98,6 +98,7 @@ assets_redeco/*
 !assets_redeco/poster_special_act.png
 !assets_redeco/portrait_supreme_optimus_quest.png
 !assets_redeco/portrait_menasor_quest.png
+!assets_redeco/*matrix_war*
 
 *.mkv
 cookies.txt

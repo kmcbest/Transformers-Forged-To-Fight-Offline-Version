@@ -32,6 +32,8 @@ float tftf_quest_get_hero_hp_ratio_by_bid(const char* bid);
 
 int tftf_is_matrix_war_active(void);
 void tftf_set_matrix_war_active(int active);
+int tftf_matrix_war_should_empty_team(void);
+void tftf_matrix_war_set_empty_team(int empty);
 
 #endif
 

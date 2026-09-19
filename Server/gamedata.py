@@ -1425,7 +1425,10 @@ def build_saved_team(team_id="0", heroes=None):
 # each BCGHeroDetails. Sending an array makes Dot.Object fall back to an empty dictionary, which
 # leaves TeamData with no lead character and prevents QuestPlayerController from loading an actor.
 def build_active_team(activity_id="1.1.1-0", heroes=None):
-    bids = resolve_team(heroes)
+    if heroes is not None:
+        bids = [b for b in heroes if isinstance(b, str) and b in ROSTER]
+    else:
+        bids = resolve_team(heroes)
     hero_dicts = {b: build_hero_entry(b) for b in bids}
     return {
         "aid": activity_id,
@@ -1648,7 +1651,7 @@ def build_quest_detail(mission_id="1.1.1", set_id="story_act1", lang="zh"):
     if mission_id == "1.1.5":
         result["updates"] = {
             "activeTeams": [
-                build_active_team("1.1.5-0", heroes=["rodimusprime_gs_mp09"])
+                build_active_team("1.1.5-0", heroes=[])
             ]
         }
     return result
