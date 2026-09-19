@@ -250,9 +250,29 @@
           "maxXpPerTile": 20,
           "minHealthPerTile": 100,
           "maxHealthPerTile": 100,
-          "image": "questboard/poster_special_act",
+          "image": "portraits/portrait_matrix_war_small",
           "theme": "primordial",
-          "isLeisure": true
+          "teamSettings": {
+            "v": 1,
+            "minTeamSize": 1,
+            "maxTeamSize": 1,
+            "teamSizeMin": 1,
+            "teamSizeMax": 1,
+            "presetTeam": false
+          },
+          "minTeamSize": 1,
+          "maxTeamSize": 1,
+          "teamSizeMin": 1,
+          "teamSizeMax": 1,
+          "restrictions": [
+            {
+              "type": "blueprint",
+              "allowed": [
+                "rodimusprime_gs_mp09"
+              ]
+            }
+          ],
+          "isLeisure": false
         },
         {
           "id": "1.1.6",

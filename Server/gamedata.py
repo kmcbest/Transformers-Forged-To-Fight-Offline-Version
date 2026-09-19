@@ -1319,6 +1319,8 @@ def quest_walkable_tiles(qid="1.1.1"):
     if qid == "1.1.2":
         _, _, _, _, walkable, _ = _get_challenge_data()
         return tuple(walkable)
+    if qid == "1.1.5":
+        return tuple((r, 1) for r in range(5))
     if qid in ("1.1.3", "1.1.4"):
         return tuple((r, 1) for r in range(6))
     return tuple((r, 1) for r in range(QUEST_DIM))
@@ -1327,6 +1329,8 @@ def is_quest_walkable(qid, pos):
     if qid == "1.1.2":
         _, _, _, _, walkable, _ = _get_challenge_data()
         return pos in walkable
+    if qid == "1.1.5":
+        return 0 <= pos[0] < 5 and pos[1] == 1
     if qid in ("1.1.3", "1.1.4"):
         return 0 <= pos[0] < 6 and pos[1] == 1
     return 0 <= pos[0] < QUEST_DIM and pos[1] == QUEST_PATH_COL
@@ -1335,8 +1339,8 @@ def is_quest_legal_move(qid, from_pos, to_pos):
     if qid == "1.1.2":
         _, _, adjacency, _, _, _ = _get_challenge_data()
         return to_pos in adjacency.get(from_pos, set())
-    dim = 6 if qid in ("1.1.3", "1.1.4") else QUEST_DIM
-    col = 1 if qid in ("1.1.3", "1.1.4") else QUEST_PATH_COL
+    dim = 5 if qid == "1.1.5" else (6 if qid in ("1.1.3", "1.1.4") else QUEST_DIM)
+    col = 1 if qid in ("1.1.3", "1.1.4", "1.1.5") else QUEST_PATH_COL
     return (0 <= to_pos[0] < dim and to_pos[1] == col
             and abs(to_pos[0] - from_pos[0]) == 1 and to_pos[1] == from_pos[1])
 
@@ -1609,9 +1613,9 @@ def build_quest_summary(mission_id="1.1.1", set_id="story_act1", lang="zh"):
         "energyPerTile": 1, "minXpPerTile": min_xp, "maxXpPerTile": max_xp,
         "minHealthPerTile": 100, "maxHealthPerTile": 100,
         "image": "", "theme": "primordial", "todIndex": 0,
-        "isLeisure": mission_id not in ("1.1.3", "1.1.4"),
+        "isLeisure": mission_id not in ("1.1.3", "1.1.4", "1.1.5"),
     }
-    if mission_id in ("1.1.3", "1.1.4"):
+    if mission_id in ("1.1.3", "1.1.4", "1.1.5"):
         summary["teamSettings"] = {
             "v": 1,
             "minTeamSize": 1,
@@ -1624,6 +1628,10 @@ def build_quest_summary(mission_id="1.1.1", set_id="story_act1", lang="zh"):
         summary["maxTeamSize"] = 1
         summary["teamSizeMin"] = 1
         summary["teamSizeMax"] = 1
+        if mission_id == "1.1.5":
+            summary["restrictions"] = [
+                {"type": "blueprint", "allowed": ["rodimusprime_gs_mp09"]}
+            ]
     return summary
 
 
@@ -1633,10 +1641,17 @@ def build_quest_detail(mission_id="1.1.1", set_id="story_act1", lang="zh"):
     FDS2 reader), then Legacy.QuestSet.AddQuestDetails (0x103A0E4) reads result["progression"]
     and a second maps object (literal @0x2c2b590, key name being confirmed live). Empty
     progression/maps for now -- the structure is being discovered empirically."""
-    return {
+    result = {
         "data": build_quest_summary(mission_id, set_id, lang=lang),
         "progression": {},
     }
+    if mission_id == "1.1.5":
+        result["updates"] = {
+            "activeTeams": [
+                build_active_team("1.1.5-0", heroes=["rodimusprime_gs_mp09"])
+            ]
+        }
+    return result
 
 
 def build_quest_list(lang="zh"):
@@ -1658,7 +1673,7 @@ def build_quest_list(lang="zh"):
             "1.1.2": "questboard/poster_karmasix",
             "1.1.3": "questboard/poster_menasor",
             "1.1.4": "questboard/poster_supreme_optimus",
-            "1.1.5": "questboard/poster_special_act",
+            "1.1.5": "portraits/portrait_matrix_war_small",
             "1.1.6": "questboard/poster_special_act",
             "1.1.7": "questboard/poster_special_act",
         }.get(qid, "")
@@ -1676,9 +1691,9 @@ def build_quest_list(lang="zh"):
             "energyPerTile": 1, "minXpPerTile": min_xp, "maxXpPerTile": max_xp,
             "minHealthPerTile": 100, "maxHealthPerTile": 100,
             "image": qimage, "theme": theme,
-            "isLeisure": qid not in ("1.1.3", "1.1.4"),
+            "isLeisure": qid not in ("1.1.3", "1.1.4", "1.1.5"),
         }
-        if qid in ("1.1.3", "1.1.4"):
+        if qid in ("1.1.3", "1.1.4", "1.1.5"):
             q_dict["teamSettings"] = {
                 "v": 1,
                 "minTeamSize": 1,
@@ -1691,6 +1706,10 @@ def build_quest_list(lang="zh"):
             q_dict["maxTeamSize"] = 1
             q_dict["teamSizeMin"] = 1
             q_dict["teamSizeMax"] = 1
+            if qid == "1.1.5":
+                q_dict["restrictions"] = [
+                    {"type": "blueprint", "allowed": ["rodimusprime_gs_mp09"]}
+                ]
         quests.append(q_dict)
     story_set = {
         "hash": "h1", "setId": "story_act1", "setName": "ACT 1", "expiry": 0, "timeLimit": 0, "timeLimitGrace": 0,
@@ -1810,9 +1829,15 @@ SUPREME_OPTIMUS_ENCOUNTERS = {
     5: ("fte_optimus_gs_t3", True, "合体核心·G1擎天柱 (Optimus Prime)"),
 }
 
+MATRIX_WAR_ENCOUNTERS = {
+    1: ("fte_optimus_gs_t3", False, "领袖之魂·G1擎天柱 (Optimus Prime)"),
+    2: ("optimusprime_cin_tf", False, "怒火狂澜·电影擎天柱 (Optimus Prime MV1)"),
+    3: ("nemesisprime_gs_voyager2015", False, "黑暗倒影·暗天陨 (Nemesis Prime)"),
+    4: ("optimusprime_sg_voyager2015", True, "善恶逆乱·倾天柱 (SG Optimus Prime)"),
+}
 
-def _build_combiner_linear_map(qid, encounters, start_label="起点 (Start)"):
-    dim = 6
+
+def _build_combiner_linear_map(qid, encounters, start_label="起点 (Start)", dim=6):
     path_col = 1
 
     def links_for(row):
@@ -1871,6 +1896,10 @@ def build_supreme_optimus_map(qid="1.1.4"):
     return _build_combiner_linear_map(qid, SUPREME_OPTIMUS_ENCOUNTERS, start_label="盖世试炼入口 (Start)")
 
 
+def build_matrix_war_map(qid="1.1.5"):
+    return _build_combiner_linear_map(qid, MATRIX_WAR_ENCOUNTERS, start_label="领导模块神殿入口 (Start)", dim=5)
+
+
 def build_quest_map(qid="1.1.1"):
     if qid == "1.1.2":
         return build_challenge_map(qid)
@@ -1878,6 +1907,8 @@ def build_quest_map(qid="1.1.1"):
         return build_menasor_map(qid)
     if qid == "1.1.4":
         return build_supreme_optimus_map(qid)
+    if qid == "1.1.5":
+        return build_matrix_war_map(qid)
     dim = QUEST_DIM
     """The QuestMap object (ActiveQuest.map). Disassembly of base Map.Deserialize
     (@0x14837EC) shows the wire shape precisely:
@@ -2045,7 +2076,10 @@ def build_quest_progression(qid="1.1.1", start=None, team=None):
     if start is None:
         start = quest_start(qid)
     sx, sy = start
-    bids = resolve_team(team)
+    if qid == "1.1.5":
+        bids = ["rodimusprime_gs_mp09"]
+    else:
+        bids = resolve_team(team)
     quest_team = {}
     # This quest-local dictionary is what the pre-fight bot selector enumerates.
     # Truncating it silently drops chosen squad members from the mission.
@@ -2068,6 +2102,8 @@ def build_quest_progression(qid="1.1.1", start=None, team=None):
     }
     if qid == "1.1.2":
         revealed_tiles = [{"x": r, "y": c} for r, c in quest_walkable_tiles(qid)]
+    elif qid == "1.1.5":
+        revealed_tiles = [{"x": r, "y": 1} for r in range(5)]
     elif qid in ("1.1.3", "1.1.4"):
         revealed_tiles = [{"x": r, "y": 1} for r in range(6)]
     else:
@@ -2202,13 +2238,16 @@ def build_quest_movedir(qid="1.1.1", offx=1, offy=0, start=None, team=None):
     elif qid == "1.1.4":
         encounter = SUPREME_OPTIMUS_ENCOUNTERS.get(nx) if ny == 1 else None
         revealed_tiles = [{"x": r, "y": 1} for r in range(6)]
+    elif qid == "1.1.5":
+        encounter = MATRIX_WAR_ENCOUNTERS.get(nx) if ny == 1 else None
+        revealed_tiles = [{"x": r, "y": 1} for r in range(5)]
     else:
         encounter = QUEST_ENCOUNTERS.get(nx) if ny == QUEST_PATH_COL else None
         revealed_tiles = [{"x": r, "y": 1} for r in range(QUEST_DIM)]
     if encounter is not None:
         key, is_final_boss, _ = encounter
-        rank = 5 if qid in ("1.1.2", "1.1.3", "1.1.4") else 1
-        level = 50 if qid in ("1.1.2", "1.1.3", "1.1.4") else 1
+        rank = 5 if qid in ("1.1.2", "1.1.3", "1.1.4", "1.1.5") else 1
+        level = 50 if qid in ("1.1.2", "1.1.3", "1.1.4", "1.1.5") else 1
         actions.append({
             "action": {
                 "battle": {
@@ -2245,7 +2284,8 @@ def build_quest_movedir(qid="1.1.1", offx=1, offy=0, start=None, team=None):
         })
 
     # teamData -> QuestsManager.UpdateActiveTeam. Reuse the active-team shape; harmless if unread.
-    team_data = build_active_team("%s-0" % qid, heroes=resolve_team(team))
+    movedir_heroes = ["rodimusprime_gs_mp09"] if qid == "1.1.5" else resolve_team(team)
+    team_data = build_active_team("%s-0" % qid, heroes=movedir_heroes)
 
     return {
         # `results` is the AddActionResultsAndUpdateProgression Dot.Array key (live-confirmed);

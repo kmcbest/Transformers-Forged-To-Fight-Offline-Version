@@ -89,6 +89,16 @@ static int g_saved_team_count;
 static int g_connections;
 static int g_started;
 int g_current_is_10x_challenge = 0;
+static volatile int g_matrix_war_active = 0;
+
+int tftf_is_matrix_war_active(void) {
+    return g_matrix_war_active;
+}
+
+void tftf_set_matrix_war_active(int active) {
+    g_matrix_war_active = active;
+}
+
 static void logmsg(const char *fmt, ...);
 static int resolve_team(Team *team);
 
@@ -1029,7 +1039,12 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
 
         Team team;
         Out qteam = {0};
-        if (resolve_team(&team) && render_qteam(&qteam, &team)) {
+        if (resolve_team(&team)) {
+            if (strcmp(g_quest_state.qid, "1.1.5") == 0) {
+                team.count = 1;
+                snprintf(team.bid[0], sizeof team.bid[0], "rodimusprime_gs_mp09");
+            }
+            if (render_qteam(&qteam, &team)) {
             int cx = g_quest_state.pending_battle_x;
             int cy = g_quest_state.pending_battle_y;
             if (!cx && !cy) {
@@ -1057,6 +1072,7 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
                 return o->p;
             }
             free(qteam.p);
+            }
         }
 
         static const unsigned char match_ok[] = "{\"error\":null,\"result\":{}}";
@@ -1083,6 +1099,7 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
     }
     if(strstr(p,"/quests/quest-detail/")) {
         snprintf(mid,sizeof mid,"%.63s",path_last(p));
+        g_matrix_war_active = (strcmp(mid, "1.1.5") == 0);
         g_current_is_10x_challenge=(strcmp(mid,"1.1.2")==0);
         int is_zh = detect_chinese_language(headers, query);
         char lkey[128];
@@ -1093,9 +1110,10 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         return v?json_default_spaces(v,n,o,outn):NULL;
     }
     if(strstr(p,"/quests/quest-begin/")) { Team team; Out qteam={0}; TemplateArg args[8];snprintf(qid,sizeof qid,"%.63s",path_last(p));
+        g_matrix_war_active = (strcmp(qid, "1.1.5") == 0);
         g_current_is_10x_challenge = (strcmp(qid, "1.1.2") == 0);
-        int is_leisure = (strcmp(qid, "1.1.3") != 0 && strcmp(qid, "1.1.4") != 0);
-        int x=0,y=1;store_quest_team(body,end);snprintf(key,sizeof key,"@quest:start:%s",qid);v=lookup(key,&n);if(v)sscanf((const char*)v,"%d %d",&x,&y);
+        int is_leisure = (strcmp(qid, "1.1.3") != 0 && strcmp(qid, "1.1.4") != 0 && strcmp(qid, "1.1.5") != 0);
+        int x=0,y=1;if(strcmp(qid,"1.1.5")!=0)store_quest_team(body,end);snprintf(key,sizeof key,"@quest:start:%s",qid);v=lookup(key,&n);if(v)sscanf((const char*)v,"%d %d",&x,&y);
         char e_bid[6][64];
         for(int k=0; k<6; k++) snprintf(e_bid[k], sizeof e_bid[k], "%s", g_enemy_pool[k % ENEMY_POOL_SIZE]);
         pthread_mutex_lock(&g_pos_lock);int slot=-1;for(int i=0;i<16;i++)if(!strcmp(g_pos[i].qid,qid)||!g_pos[i].qid[0]){slot=i;break;}
@@ -1124,7 +1142,12 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         }
         pthread_mutex_unlock(&g_pos_lock);
         snprintf(key,sizeof key,"%s /quests/quest-begin/%s",method,qid);v=lookup(key,&n);if(!v){snprintf(key,sizeof key,"POST /quests/quest-begin/%s",qid);v=lookup(key,&n);}
-        if(!v||!resolve_team(&team)||!render_qteam(&qteam,&team)){free(qteam.p);return NULL;}
+        if(!v||!resolve_team(&team)) return NULL;
+        if (strcmp(qid, "1.1.5") == 0) {
+            team.count = 1;
+            snprintf(team.bid[0], sizeof team.bid[0], "rodimusprime_gs_mp09");
+        }
+        if(!render_qteam(&qteam,&team)){free(qteam.p);return NULL;}
         for (int h = 0; h < team.count && h < 5; h++) {
             snprintf(g_quest_state.hero_bid[h], sizeof(g_quest_state.hero_bid[h]), "%s", team.bid[h]);
         }
@@ -1176,7 +1199,13 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         }
         pthread_mutex_unlock(&g_pos_lock);
         snprintf(key,sizeof key,"@movedir:%s:%d:%d:%d:%d",qid,sx,sy,dx,dy);v=lookup(key,&n);if(!v){snprintf(key,sizeof key,"@movedir:%s:%d:%d:0:0",qid,sx,sy);v=lookup(key,&n);}
-        if(v){Team team;Out qteam={0},ateam={0};TemplateArg args[9];if(!resolve_team(&team)||!render_qteam(&qteam,&team)||!render_ateam(&ateam,&team)){free(qteam.p);free(ateam.p);return NULL;}
+        if(v){Team team;Out qteam={0},ateam={0};TemplateArg args[9];
+            if(!resolve_team(&team)) return NULL;
+            if(strcmp(qid, "1.1.5") == 0) {
+                team.count = 1;
+                snprintf(team.bid[0], sizeof team.bid[0], "rodimusprime_gs_mp09");
+            }
+            if(!render_qteam(&qteam,&team)||!render_ateam(&ateam,&team)){free(qteam.p);free(ateam.p);return NULL;}
             args[0]=(TemplateArg){"%LEAD%",(const unsigned char*)team.bid[0],strlen(team.bid[0])};
             args[1]=(TemplateArg){"%QTEAM%",qteam.p,qteam.n};
             args[2]=(TemplateArg){"%ATEAM%",ateam.p,ateam.n};

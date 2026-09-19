@@ -467,9 +467,9 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0xA6FAF0, "TSSHOW",     0, 0 }, // 125 BaseBoard.ResumeBoard -> restore TSHIDE objects
     { 0xA6FB54, "TSSHOWW",    0, 0 }, // 126 BaseBoard.OnWindowEntered -> restore TSHIDE objects
     { 0xF97D04, "TSDOWN",     0, 0 }, // 127 TeamSelectPresentation.TearDown -> restore TSHIDE objects
-    { 0xF9FFE4, "TSOUTRO",    0, 0 }, // 128 TeamSelectPresentation.OnOutroTransitionBegin -> restore TSHIDE objects
+    { 0xF9FFE4, "TSOUTRO",    2, 0 }, // 128 TeamSelectPresentation.OnOutroTransitionBegin -> restore TSHIDE objects
     { 0xFA06D0, "TSOUTBG",    0, 0 }, // 129 TeamSelectPresentation.OnOutroBlurredBackgroundUp -> log-only marker (never fires on this build)
-    { 0xF97B10, "TSBACK",     0, 0 }, // 130 TeamSelectPresentation.OnBackClicked -> restore TSHIDE objects
+    { 0xF97B10, "TSBACK",     2, 0 }, // 130 TeamSelectPresentation.OnBackClicked -> restore TSHIDE objects
     { 0xF9D200, "TSPODD",     0, 0 }, // 131 TeamSelectPodium.Deactivate -> log-only marker (never fires on this build)
     { 0xF9CFE8, "TSPODC",     0, 0 }, // 132 TeamSelectPodium.Cleanup -> log-only marker (fires during squad-screen setup; must not restore)
     // RSHIDE mirrors TSHIDE for the BOTS roster: HeroesScreen does not cause the cosmetic
@@ -558,6 +558,10 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     // silent fallback did any work. Both are hooked again here, next to the newer entries.
     { 0x1173848, "BLOCKENTER2",        2, 0 }, // 171 guard entry (fires) -> arm the guard-hold timer
     { 0x117E4AC, "DODGEENTER2",        2, 0 }, // 172 dodge entry (fires, controller resolves) -> reset chain
+    { 0x141CD54, "ONHCCLICK",          2, 0 }, // 173 TransformersTopBarPresentation.OnHardCurrencyClick -> redirect to OnResourceClick
+    { 0x0DA0720, "GETDEFTAB",          2, 0 }, // 174 PayoutsModel.GetDefaultTabId -> safe empty tab check
+    { 0xFA32D4,  "TS_DISABLE_EDIT",    2, 0 }, // 175 TeamSelectPresentation.ShouldForceDisableEditTeamButton
+    { 0xFA0648,  "TS_BLOCK_EDIT",      2, 0 }, // 176 TeamSelectPresentation.InternalGoToEditTeam
 };
 #define NH (int)(sizeof(H)/sizeof(H[0]))
 
@@ -3736,6 +3740,7 @@ void* hook_127(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     return H[127].orig(a0,a1,a2,a3,a4,a5,a6,a7);
 }
 void* hook_128(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
+    tftf_set_matrix_war_active(0);
     tshide_screen_exit("TSOUTRO");
     return H[128].orig(a0,a1,a2,a3,a4,a5,a6,a7);
 }
@@ -3745,6 +3750,7 @@ void* hook_129(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     return H[129].orig(a0,a1,a2,a3,a4,a5,a6,a7);
 }
 void* hook_130(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
+    tftf_set_matrix_war_active(0);
     tshide_screen_exit("TSBACK");
     return H[130].orig(a0,a1,a2,a3,a4,a5,a6,a7);
 }
@@ -5278,6 +5284,7 @@ static const struct ArtBaseMap ART_BASE_MAP[] = {
     { "dragstrip", "dragstrip" },
     { "drift_cin_aoe", "drift_c" },
     { "fte_optimus_gs_t3", "optimus_gs" },
+    { "optimusprime_gs_v", "optimus_gs" },
     { "fte_stars_gs_t3", "stars_gs" },
     { "galvatron_gs_voyager2016", "galvatron_gs" },
     { "grimlock_gs_mp08", "griml_gs" },
@@ -5562,6 +5569,53 @@ void* hook_172(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     return r;
 }
 
+// slot 173 ONHCCLICK (0x141CD54): TransformersTopBarPresentation.OnHardCurrencyClick
+// Redirect hard-currency (Energon) tap directly to OnResourceClick (0x141F8F8)
+// so clicking Energon opens the Resource Overview modal instead of the broken Payouts store.
+void* hook_173(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    flog("ONHCCLICK: hard currency clicked (this=%p, go=%p) -> redirecting to OnResourceClick", a0, a1);
+    if (g_base) {
+        typedef void* (*OnResourceClick_fn)(void*, void*, void*);
+        return ((OnResourceClick_fn)(g_base + 0x141F8F8))(a0, a1, a2);
+    }
+    return NULL;
+}
+
+// slot 174 GETDEFTAB (0xDA0720): PayoutsModel.GetDefaultTabId
+// Prevent IndexOutOfRangeException if Payouts is ever opened with an empty tabs array.
+void* hook_174(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    if (!a1 || !obj_ok(a1)) {
+        flog("GETDEFTAB: null tabs -> return NULL");
+        return NULL;
+    }
+    int len = *(int*)((uintptr_t)a1 + 0x18);
+    if (len <= 0) {
+        flog("GETDEFTAB: empty tabs array (len=%d) -> return NULL", len);
+        return NULL;
+    }
+    return H[174].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+}
+
+// slot 175 TS_DISABLE_EDIT (0xFA32D4): TeamSelectPresentation.ShouldForceDisableEditTeamButton
+// During Matrix War (1.1.5), force-disable the Edit Team button.
+void* hook_175(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    if (tftf_is_matrix_war_active()) {
+        flog("MATRIX_WAR: ShouldForceDisableEditTeamButton -> returning 1 (disabled)");
+        return (void*)(intptr_t)1;
+    }
+    return H[175].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+}
+
+// slot 176 TS_BLOCK_EDIT (0xFA0648): TeamSelectPresentation.InternalGoToEditTeam
+// During Matrix War (1.1.5), block transition to EditTeam screen (e.g. clicking character card/slot).
+void* hook_176(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    if (tftf_is_matrix_war_active()) {
+        flog("MATRIX_WAR: InternalGoToEditTeam blocked! Only Rodimus Prime is allowed.");
+        return NULL;
+    }
+    return H[176].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+}
+
 void* hook_166(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     extern int g_is_chinese_lang;
     if (g_strnew && obj_ok(a0)) {
@@ -5684,7 +5738,7 @@ void* hook_170(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
                         }
                     } else if (strcmp(qid, "1.1.5") == 0) {
                         if (g_strnew) {
-                            a1 = g_strnew("questboard/portrait_optimus_c_tf_quest");
+                            a1 = g_strnew("portraits/portrait_matrix_war_small");
                             a2 = (void*)0;
                         }
                     } else if (strcmp(qid, "1.1.6") == 0) {
@@ -5729,7 +5783,7 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     hook_152,hook_153,hook_154,hook_155,hook_156,(void*)hook_157,(void*)hook_158,
     (void*)hook_159,hook_160,hook_161,hook_162,hook_163,hook_164,
     hook_165,hook_166,(void*)hook_167,hook_168,hook_169,hook_170,
-    hook_171,hook_172 };
+    hook_171,hook_172,hook_173,hook_174,hook_175,hook_176 };
 
 static void write_jump(uint8_t* dst, void* target){
     uint32_t* p = (uint32_t*)dst;

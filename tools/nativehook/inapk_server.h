@@ -30,4 +30,8 @@ int tftf_quest_is_leisure(void);
 float tftf_quest_get_hero_hp_ratio(int pos);
 float tftf_quest_get_hero_hp_ratio_by_bid(const char* bid);
 
+int tftf_is_matrix_war_active(void);
+void tftf_set_matrix_war_active(int active);
+
 #endif
+

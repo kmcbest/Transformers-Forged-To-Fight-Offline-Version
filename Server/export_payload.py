@@ -146,13 +146,13 @@ def _replace_exact(body: bytes, old: bytes, new: bytes, expected: int, label: st
     return body.replace(old, new)
 
 
-def _team_values(team: list[str] | None = None) -> tuple[bytes, bytes, bytes]:
+def _team_values(team: list[str] | None = None, qid: str | None = None) -> tuple[bytes, bytes, bytes]:
     """Return compact saved, active, and quest team JSON values from gamedata."""
-    bids = gamedata.resolve_team(team)
+    bids = ["rodimusprime_gs_mp09"] if qid == "1.1.5" else gamedata.resolve_team(team)
     saved = json.dumps([gamedata.build_hero_entry(bid) for bid in bids], separators=(",", ":")).encode()
     active = json.dumps({bid: gamedata.build_hero_entry(bid) for bid in bids}, separators=(",", ":")).encode()
     quest = json.dumps(
-        gamedata.build_quest_progression(team=bids)["users"][gamedata.LOCAL_UID]["team"],
+        gamedata.build_quest_progression(qid=qid, team=bids)["users"][gamedata.LOCAL_UID]["team"],
         separators=(",", ":"),
     ).encode()
     return saved, active, quest
@@ -160,12 +160,12 @@ def _team_values(team: list[str] | None = None) -> tuple[bytes, bytes, bytes]:
 
 def _quest_begin_template(qid: str, set_id: str) -> bytes:
     body = _envelope(gamedata.build_quest_begin(qid, set_id))
-    _, _, quest = _team_values()
-    lead = gamedata.DEFAULT_TEAM[0].encode()
+    _, _, quest = _team_values(qid=qid)
+    lead = b"rodimusprime_gs_mp09" if qid == "1.1.5" else gamedata.DEFAULT_TEAM[0].encode()
     body = _replace_exact(body, b'"strongestHero":"' + lead + b'"', b'"strongestHero":"%LEAD%"', 2,
                           f"quest-begin {qid} lead")
     body = _replace_exact(body, quest, b"%QTEAM%", 2, f"quest-begin {qid} team")
-    if qid not in ("1.1.2", "1.1.3", "1.1.4"):
+    if qid not in ("1.1.2", "1.1.3", "1.1.4", "1.1.5"):
         for i, sentinel in enumerate(gamedata.ENCOUNTER_SENTINELS):
             body = _replace_exact(body, sentinel.encode(), f"%EB{i}%".encode(), 8, f"quest-begin {qid} enemy {i}")
     return body
@@ -173,13 +173,13 @@ def _quest_begin_template(qid: str, set_id: str) -> bytes:
 
 def _movedir_template(qid: str, start: tuple[int, int], dx: int, dy: int) -> bytes:
     body = _move_body(qid, start, dx, dy)
-    _, active, quest = _team_values()
-    lead = gamedata.DEFAULT_TEAM[0].encode()
+    _, active, quest = _team_values(qid=qid)
+    lead = b"rodimusprime_gs_mp09" if qid == "1.1.5" else gamedata.DEFAULT_TEAM[0].encode()
     body = _replace_exact(body, b'"strongestHero":"' + lead + b'"', b'"strongestHero":"%LEAD%"', 1,
                           f"movedir {qid}/{start}/{dx},{dy} lead")
     body = _replace_exact(body, quest, b"%QTEAM%", 1, f"movedir {qid}/{start}/{dx},{dy} quest team")
     body = _replace_exact(body, active, b"%ATEAM%", 1, f"movedir {qid}/{start}/{dx},{dy} active team")
-    if qid not in ("1.1.2", "1.1.3", "1.1.4"):
+    if qid not in ("1.1.2", "1.1.3", "1.1.4", "1.1.5"):
         for i, sentinel in enumerate(gamedata.ENCOUNTER_SENTINELS):
             if sentinel.encode() in body:
                 body = _replace_exact(body, sentinel.encode(), f"%EB{i}%".encode(), 5, f"movedir {qid} enemy {i}")
@@ -250,7 +250,7 @@ def build_entries(listen_port: int = 8080) -> dict[str, bytes]:
             add(f"@questdetail:{qid}:en", _envelope(gamedata.build_quest_detail(qid, set_id, lang="en")))
             add(f"POST /quests/quest-begin/{qid}", _quest_begin_template(qid, set_id))
 
-            if qid in ("1.1.2", "1.1.3", "1.1.4"):
+            if qid in ("1.1.2", "1.1.3", "1.1.4", "1.1.5"):
                 sx, sy = gamedata.quest_start(qid)
                 add(f"@quest:start:{qid}", f"{sx} {sy}".encode())
                 legal_lines = []
