@@ -185,6 +185,10 @@ int tftf_quest_is_leisure(void) {
     return g_quest_state.is_leisure;
 }
 
+const char* tftf_quest_get_current_qid(void) {
+    return g_quest_state.qid;
+}
+
 float tftf_quest_get_hero_hp_ratio(int pos) {
     if (g_quest_state.is_leisure) return 1.0f;
     if (pos >= 0 && pos < 5) {
@@ -1055,6 +1059,8 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
             if (strcmp(g_quest_state.qid, "1.1.5") == 0) {
                 team.count = 1;
                 snprintf(team.bid[0], sizeof team.bid[0], "rodimusprime_gs_mp09");
+            } else if (strcmp(g_quest_state.qid, "1.1.6") == 0) {
+                if (team.count > 1) team.count = 1;
             }
             if (render_qteam(&qteam, &team)) {
             int cx = g_quest_state.pending_battle_x;
@@ -1136,7 +1142,7 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
             g_matrix_war_empty_team = 1;
         }
         g_current_is_10x_challenge = (strcmp(qid, "1.1.2") == 0);
-        int is_leisure = (strcmp(qid, "1.1.3") != 0 && strcmp(qid, "1.1.4") != 0 && strcmp(qid, "1.1.5") != 0);
+        int is_leisure = (strcmp(qid, "1.1.3") != 0 && strcmp(qid, "1.1.4") != 0 && strcmp(qid, "1.1.5") != 0 && strcmp(qid, "1.1.6") != 0);
         int x=0,y=1;if(strcmp(qid,"1.1.5")!=0)store_quest_team(body,end);snprintf(key,sizeof key,"@quest:start:%s",qid);v=lookup(key,&n);if(v)sscanf((const char*)v,"%d %d",&x,&y);
         char e_bid[6][64];
         for(int k=0; k<6; k++) snprintf(e_bid[k], sizeof e_bid[k], "%s", g_enemy_pool[k % ENEMY_POOL_SIZE]);
@@ -1170,6 +1176,8 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         if (strcmp(qid, "1.1.5") == 0) {
             team.count = 1;
             snprintf(team.bid[0], sizeof team.bid[0], "rodimusprime_gs_mp09");
+        } else if (strcmp(qid, "1.1.6") == 0) {
+            if (team.count > 1) team.count = 1;
         }
         if(!render_qteam(&qteam,&team)){free(qteam.p);return NULL;}
         for (int h = 0; h < team.count && h < 5; h++) {
@@ -1228,6 +1236,8 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
             if(strcmp(qid, "1.1.5") == 0) {
                 team.count = 1;
                 snprintf(team.bid[0], sizeof team.bid[0], "rodimusprime_gs_mp09");
+            } else if(strcmp(qid, "1.1.6") == 0) {
+                if (team.count > 1) team.count = 1;
             }
             if(!render_qteam(&qteam,&team)||!render_ateam(&ateam,&team)){free(qteam.p);free(ateam.p);return NULL;}
             args[0]=(TemplateArg){"%LEAD%",(const unsigned char*)team.bid[0],strlen(team.bid[0])};

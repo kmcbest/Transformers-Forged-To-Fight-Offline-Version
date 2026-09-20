@@ -7,14 +7,22 @@ OUT_DIR = ROOT / "assets_redeco"
 OUT_DIR.mkdir(exist_ok=True)
 
 def process_small_icon(src_path, dst_path):
-    img = Image.open(src_path).convert("RGBA")
+    p = Path(src_path)
+    if not p.exists():
+        print(f"Skipping missing: {src_path}")
+        return
+    img = Image.open(p).convert("RGBA")
     # Resize / pad to 128x128
     img = img.resize((128, 128), Image.Resampling.LANCZOS)
     img.save(dst_path, "PNG", optimize=True)
     print(f"Saved {dst_path} ({os.path.getsize(dst_path) / 1024:.1f} KB)")
 
 def process_poster(src_path, dst_path, width=360, height=None):
-    img = Image.open(src_path).convert("RGB")
+    p = Path(src_path)
+    if not p.exists():
+        print(f"Skipping missing: {src_path}")
+        return
+    img = Image.open(p).convert("RGB")
     orig_w, orig_h = img.size
     if height is None:
         height = int(width * (orig_h / orig_w))
@@ -28,6 +36,7 @@ print("=== Processing Quest & Poster Images ===")
 # Small quest icons
 process_small_icon("飞天虎-small.jpg", OUT_DIR / "portrait_menasor_quest.png")
 process_small_icon("盖世擎天柱-small.jpg", OUT_DIR / "portrait_supreme_optimus_quest.png")
+process_small_icon(OUT_DIR / "fembots.jpg", OUT_DIR / "portrait_fembots_quest.png")
 
 # Posters
 # Act poster fits inside 360x430 so that bottom type/name labels are completely uncovered

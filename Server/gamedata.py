@@ -1321,7 +1321,7 @@ def quest_walkable_tiles(qid="1.1.1"):
         return tuple(walkable)
     if qid == "1.1.5":
         return tuple((r, 1) for r in range(5))
-    if qid in ("1.1.3", "1.1.4"):
+    if qid in ("1.1.3", "1.1.4", "1.1.6"):
         return tuple((r, 1) for r in range(6))
     return tuple((r, 1) for r in range(QUEST_DIM))
 
@@ -1331,7 +1331,7 @@ def is_quest_walkable(qid, pos):
         return pos in walkable
     if qid == "1.1.5":
         return 0 <= pos[0] < 5 and pos[1] == 1
-    if qid in ("1.1.3", "1.1.4"):
+    if qid in ("1.1.3", "1.1.4", "1.1.6"):
         return 0 <= pos[0] < 6 and pos[1] == 1
     return 0 <= pos[0] < QUEST_DIM and pos[1] == QUEST_PATH_COL
 
@@ -1339,8 +1339,8 @@ def is_quest_legal_move(qid, from_pos, to_pos):
     if qid == "1.1.2":
         _, _, adjacency, _, _, _ = _get_challenge_data()
         return to_pos in adjacency.get(from_pos, set())
-    dim = 5 if qid == "1.1.5" else (6 if qid in ("1.1.3", "1.1.4") else QUEST_DIM)
-    col = 1 if qid in ("1.1.3", "1.1.4", "1.1.5") else QUEST_PATH_COL
+    dim = 5 if qid == "1.1.5" else (6 if qid in ("1.1.3", "1.1.4", "1.1.6") else QUEST_DIM)
+    col = 1 if qid in ("1.1.3", "1.1.4", "1.1.5", "1.1.6") else QUEST_PATH_COL
     return (0 <= to_pos[0] < dim and to_pos[1] == col
             and abs(to_pos[0] - from_pos[0]) == 1 and to_pos[1] == from_pos[1])
 
@@ -1616,9 +1616,9 @@ def build_quest_summary(mission_id="1.1.1", set_id="story_act1", lang="zh"):
         "energyPerTile": 1, "minXpPerTile": min_xp, "maxXpPerTile": max_xp,
         "minHealthPerTile": 100, "maxHealthPerTile": 100,
         "image": "", "theme": "primordial", "todIndex": 0,
-        "isLeisure": mission_id not in ("1.1.3", "1.1.4", "1.1.5"),
+        "isLeisure": mission_id not in ("1.1.3", "1.1.4", "1.1.5", "1.1.6"),
     }
-    if mission_id in ("1.1.3", "1.1.4", "1.1.5"):
+    if mission_id in ("1.1.3", "1.1.4", "1.1.5", "1.1.6"):
         summary["teamSettings"] = {
             "v": 1,
             "minTeamSize": 1,
@@ -1694,9 +1694,9 @@ def build_quest_list(lang="zh"):
             "energyPerTile": 1, "minXpPerTile": min_xp, "maxXpPerTile": max_xp,
             "minHealthPerTile": 100, "maxHealthPerTile": 100,
             "image": qimage, "theme": theme,
-            "isLeisure": qid not in ("1.1.3", "1.1.4", "1.1.5"),
+            "isLeisure": qid not in ("1.1.3", "1.1.4", "1.1.5", "1.1.6"),
         }
-        if qid in ("1.1.3", "1.1.4", "1.1.5"):
+        if qid in ("1.1.3", "1.1.4", "1.1.5", "1.1.6"):
             q_dict["teamSettings"] = {
                 "v": 1,
                 "minTeamSize": 1,
@@ -1839,6 +1839,14 @@ MATRIX_WAR_ENCOUNTERS = {
     4: ("optimusprime_sg_voyager2015", True, "善恶逆乱·倾天柱 (SG Optimus Prime)"),
 }
 
+FEMBOTS_ENCOUNTERS = {
+    1: ("arcee_gs_deluxe2014", False, "巾帼先锋·阿尔茜 (Arcee)"),
+    2: ("windblade_gs", False, "剑舞狂岚·风刃 (Windblade)"),
+    3: ("chromia_gs_kabam", False, "铁血勇将·克劳莉娅 (Chromia)"),
+    4: ("slipstream_gs", False, "暗影寻猎·滑流 (Slipstream)"),
+    5: ("lifeline_gs_deluxe2014", True, "生命之赐·回春手 (Lifeline)"),
+}
+
 
 def _build_combiner_linear_map(qid, encounters, start_label="起点 (Start)", dim=6):
     path_col = 1
@@ -1903,6 +1911,10 @@ def build_matrix_war_map(qid="1.1.5"):
     return _build_combiner_linear_map(qid, MATRIX_WAR_ENCOUNTERS, start_label="领导模块神殿入口 (Start)", dim=5)
 
 
+def build_fembots_map(qid="1.1.6"):
+    return _build_combiner_linear_map(qid, FEMBOTS_ENCOUNTERS, start_label="巾帼殿堂入口 (Start)", dim=6)
+
+
 def build_quest_map(qid="1.1.1"):
     if qid == "1.1.2":
         return build_challenge_map(qid)
@@ -1912,6 +1924,8 @@ def build_quest_map(qid="1.1.1"):
         return build_supreme_optimus_map(qid)
     if qid == "1.1.5":
         return build_matrix_war_map(qid)
+    if qid == "1.1.6":
+        return build_fembots_map(qid)
     dim = QUEST_DIM
     """The QuestMap object (ActiveQuest.map). Disassembly of base Map.Deserialize
     (@0x14837EC) shows the wire shape precisely:
@@ -2107,7 +2121,7 @@ def build_quest_progression(qid="1.1.1", start=None, team=None):
         revealed_tiles = [{"x": r, "y": c} for r, c in quest_walkable_tiles(qid)]
     elif qid == "1.1.5":
         revealed_tiles = [{"x": r, "y": 1} for r in range(5)]
-    elif qid in ("1.1.3", "1.1.4"):
+    elif qid in ("1.1.3", "1.1.4", "1.1.6"):
         revealed_tiles = [{"x": r, "y": 1} for r in range(6)]
     else:
         revealed_tiles = [{"x": r, "y": 1} for r in range(3)]
@@ -2158,7 +2172,7 @@ def build_active_quest(qid="1.1.1", set_id="story_act1", team=None, lang="zh"):
         # the active-quest taxonomy the client queries is PvE/AvE/AvA (a story mission is
         # PvE), NOT the set-visibility category "Story". A "story" here made
         # GetActiveQuest("PvE") return null, so QuestFlow.CalculateFlowState never advanced
-        # past BeginQuest and the client re-POSTed quest-begin forever.
+        # past Loading to InQuest. Wire value is captured live.
         "category": "PvE", "mode": "PvE",
         "setId": set_id, "hash": "h1", "phase": 0,
         "data": build_quest_summary(qid, set_id, lang=lang),
@@ -2244,13 +2258,16 @@ def build_quest_movedir(qid="1.1.1", offx=1, offy=0, start=None, team=None):
     elif qid == "1.1.5":
         encounter = MATRIX_WAR_ENCOUNTERS.get(nx) if ny == 1 else None
         revealed_tiles = [{"x": r, "y": 1} for r in range(5)]
+    elif qid == "1.1.6":
+        encounter = FEMBOTS_ENCOUNTERS.get(nx) if ny == 1 else None
+        revealed_tiles = [{"x": r, "y": 1} for r in range(6)]
     else:
         encounter = QUEST_ENCOUNTERS.get(nx) if ny == QUEST_PATH_COL else None
         revealed_tiles = [{"x": r, "y": 1} for r in range(QUEST_DIM)]
     if encounter is not None:
         key, is_final_boss, _ = encounter
-        rank = 5 if qid in ("1.1.2", "1.1.3", "1.1.4", "1.1.5") else 1
-        level = 50 if qid in ("1.1.2", "1.1.3", "1.1.4", "1.1.5") else 1
+        rank = 5 if qid in ("1.1.2", "1.1.3", "1.1.4", "1.1.5", "1.1.6") else 1
+        level = 50 if qid in ("1.1.2", "1.1.3", "1.1.4", "1.1.5", "1.1.6") else 1
         actions.append({
             "action": {
                 "battle": {

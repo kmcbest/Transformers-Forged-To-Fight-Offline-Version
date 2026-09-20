@@ -165,7 +165,7 @@ def _quest_begin_template(qid: str, set_id: str) -> bytes:
     body = _replace_exact(body, b'"strongestHero":"' + lead + b'"', b'"strongestHero":"%LEAD%"', 2,
                           f"quest-begin {qid} lead")
     body = _replace_exact(body, quest, b"%QTEAM%", 2, f"quest-begin {qid} team")
-    if qid not in ("1.1.2", "1.1.3", "1.1.4", "1.1.5"):
+    if qid not in ("1.1.2", "1.1.3", "1.1.4", "1.1.5", "1.1.6"):
         for i, sentinel in enumerate(gamedata.ENCOUNTER_SENTINELS):
             body = _replace_exact(body, sentinel.encode(), f"%EB{i}%".encode(), 8, f"quest-begin {qid} enemy {i}")
     return body
@@ -179,7 +179,7 @@ def _movedir_template(qid: str, start: tuple[int, int], dx: int, dy: int) -> byt
                           f"movedir {qid}/{start}/{dx},{dy} lead")
     body = _replace_exact(body, quest, b"%QTEAM%", 1, f"movedir {qid}/{start}/{dx},{dy} quest team")
     body = _replace_exact(body, active, b"%ATEAM%", 1, f"movedir {qid}/{start}/{dx},{dy} active team")
-    if qid not in ("1.1.2", "1.1.3", "1.1.4", "1.1.5"):
+    if qid not in ("1.1.2", "1.1.3", "1.1.4", "1.1.5", "1.1.6"):
         for i, sentinel in enumerate(gamedata.ENCOUNTER_SENTINELS):
             if sentinel.encode() in body:
                 body = _replace_exact(body, sentinel.encode(), f"%EB{i}%".encode(), 5, f"movedir {qid} enemy {i}")
@@ -250,7 +250,7 @@ def build_entries(listen_port: int = 8080) -> dict[str, bytes]:
             add(f"@questdetail:{qid}:en", _envelope(gamedata.build_quest_detail(qid, set_id, lang="en")))
             add(f"POST /quests/quest-begin/{qid}", _quest_begin_template(qid, set_id))
 
-            if qid in ("1.1.2", "1.1.3", "1.1.4", "1.1.5"):
+            if qid in ("1.1.2", "1.1.3", "1.1.4", "1.1.5", "1.1.6"):
                 sx, sy = gamedata.quest_start(qid)
                 add(f"@quest:start:{qid}", f"{sx} {sy}".encode())
                 legal_lines = []

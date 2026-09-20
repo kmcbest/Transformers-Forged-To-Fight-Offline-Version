@@ -2975,7 +2975,16 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
             if (at1 && obj_ok(at1)) {
                 *(float*)((char*)at1 + 0x44) = 0.5f;                      // Player 0 CritChance (50% crit rate)
                 *(float*)((char*)at1 + 0x48) = 1.5f;                      // Player 0 CritDamage
-                *(float*)((char*)at1 + 0x54) = g_combat_player_mana_gain; // Dynamic player mana gain rate
+                const char* cur_qid = tftf_quest_get_current_qid();
+                int is_fembots = (cur_qid && strcmp(cur_qid, "1.1.6") == 0);
+                if (is_fembots) {
+                    *(float*)  ((char*)at1 + 0x54) = 0.0f; // ManaGainRate = 0 (攻击/受击不涨气)
+                    *(int32_t*)((char*)at1 + 0x58) = 0;    // ManaStart = 0
+                    *(int32_t*)((char*)at1 + 0x28) = 0;    // SpecialAttackCount = 0 (大招槽数量归零/锁定)
+                    flog("FIXFIGHT: Fembots (1.1.6) disabled player special attacks and mana gain!");
+                } else {
+                    *(float*)((char*)at1 + 0x54) = g_combat_player_mana_gain; // Dynamic player mana gain rate
+                }
                 if (!tftf_quest_is_leisure()) {
                     float hp_ratio = tftf_quest_get_hero_hp_ratio_by_bid(id1);
                     if (hp_ratio > 1.0f) hp_ratio = 1.0f;
@@ -3002,6 +3011,11 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                 *(float*)((char*)at2 + 0x54) = g_combat_enemy_mana_gain; // Enemy mana gain rate
             }
             if (ch1 && obj_ok(ch1)) {
+                const char* cur_qid = tftf_quest_get_current_qid();
+                int is_fembots = (cur_qid && strcmp(cur_qid, "1.1.6") == 0);
+                if (is_fembots) {
+                    *(int32_t*)((char*)ch1 + 0x28) = 0; // NumSpecials = 0
+                }
                 if (!tftf_quest_is_leisure()) {
                     float hp_ratio = tftf_quest_get_hero_hp_ratio_by_bid(id1);
                     if (hp_ratio > 1.0f) hp_ratio = 1.0f;
@@ -3030,6 +3044,11 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
             set_mana(a0, 0.0f, NULL);
             int player_idx = obj_ok(a1) ? *(int32_t*)((uintptr_t)a1+0xF4) : -1;
             if (player_idx == 0) {
+                const char* cur_qid = tftf_quest_get_current_qid();
+                int is_fembots = (cur_qid && strcmp(cur_qid, "1.1.6") == 0);
+                if (is_fembots) {
+                    set_mana(a0, 0.0f, NULL);
+                }
                 g_p0_combat_character = a0;
                 g_p0_last_hp = -1.0f;
                 typedef float (*fn_get_hp)(void*, void*);
@@ -5358,6 +5377,8 @@ static const struct ArtBaseMap ART_BASE_MAP[] = {
     { "blaster_gs_leader2016", "blastr_gs" },
     { "bludgeon_gs_rd20", "bludge_gs" },
     { "bonecrusher_cin_rotf", "bonec_c" },
+    { "breakdown_gs", "breakdown" },
+    { "breakdown", "breakdown" },
     { "bumblebee_cin_dotm", "bumbl_c" },
     { "bumblebee_gs_kabam", "bumbl_gs" },
     { "cheetor_bw_transmetal", "cheetor_bw" },
@@ -5386,6 +5407,9 @@ static const struct ArtBaseMap ART_BASE_MAP[] = {
     { "jazz_gs_twm05", "jazz_gs" },
     { "jetfire_gs_leader2014", "jetfire_gs" },
     { "kickback_gs_kabam", "kickb_gs" },
+    { "lifeline_gs_deluxe2014", "lifeline_gs" },
+    { "lifeline_gs", "lifeline_gs" },
+    { "lifeline", "lifeline_gs" },
     { "megatron_cin_rotf", "megat_c" },
     { "megatron_gs_leader2015", "megat_gs" },
     { "megatronus_gs_kabam", "megatro_gs" },
@@ -5479,6 +5503,8 @@ static const struct ArtBaseMap ART_BASE_MAP[] = {
     { "thrust_gs_deluxe2008", "thrust" },
     { "thundercracker_gs_leader2015", "thunder_gs" },
     { "ultramagnus_gs_leader", "ultram_gs" },
+    { "ultramagnus_sg_leader", "ultram_sg" },
+    { "ultramagnus_sg", "ultram_sg" },
     { "waspinator_gs_deluxe", "wasp_bw" },
     { "wheeljack_gs_mp20", "wheelj_gs" },
     { "wildrider_gs_deluxe2016", "wildrider" },
@@ -5904,7 +5930,7 @@ void* hook_170(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
                         }
                     } else if (strcmp(qid, "1.1.6") == 0) {
                         if (g_strnew) {
-                            a1 = g_strnew("questboard/portrait_windb_gs_quest");
+                            a1 = g_strnew("questboard/portrait_fembots_quest");
                             a2 = (void*)0;
                         }
                     } else if (strcmp(qid, "1.1.7") == 0) {

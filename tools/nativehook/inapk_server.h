@@ -35,5 +35,7 @@ void tftf_set_matrix_war_active(int active);
 int tftf_matrix_war_should_empty_team(void);
 void tftf_matrix_war_set_empty_team(int empty);
 
+const char* tftf_quest_get_current_qid(void);
+
 #endif
 
