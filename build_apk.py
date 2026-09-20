@@ -43,13 +43,21 @@ def main():
         ndk_dir = ROOT / "toolchain" / "android-ndk-r26d"
     clang = ndk_dir / "toolchains" / "llvm" / "prebuilt" / "windows-x86_64" / "bin" / "aarch64-linux-android28-clang.cmd"
     hook_so = ROOT / "tools" / "nativehook" / "libdothook.so"
-    hook_c = ROOT / "tools" / "nativehook" / "hook.c"
-    inapk_server_c = ROOT / "tools" / "nativehook" / "inapk_server.c"
+    native_dir = ROOT / "tools" / "nativehook"
+    hook_sources = [
+        str(native_dir / "hook.c"),
+        str(native_dir / "hook_quest.c"),
+        str(native_dir / "hook_ui.c"),
+        str(native_dir / "hook_combat.c"),
+        str(native_dir / "hook_diagnostics.c"),
+        str(native_dir / "inapk_server.c"),
+    ]
 
     print("\n[1/5] Compiling libdothook.so...")
     subprocess.run([
         str(clang), "-shared", "-O2", "-fPIC", "-Wl,-soname,libdothook.so",
-        "-o", str(hook_so), str(hook_c), str(inapk_server_c), "-llog"
+        f"-I{native_dir}",
+        "-o", str(hook_so), *hook_sources, "-llog"
     ], check=True, cwd=ROOT)
 
     # 2. Export offline payload
