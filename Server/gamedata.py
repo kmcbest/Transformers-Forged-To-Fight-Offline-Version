@@ -1319,6 +1319,8 @@ def quest_walkable_tiles(qid="1.1.1"):
     if qid == "1.1.2":
         _, _, _, _, walkable, _ = _get_challenge_data()
         return tuple(walkable)
+    if qid == "1.1.7":
+        return tuple((r, 1) for r in range(13))
     if qid == "1.1.5":
         return tuple((r, 1) for r in range(5))
     if qid in ("1.1.3", "1.1.4", "1.1.6"):
@@ -1329,6 +1331,8 @@ def is_quest_walkable(qid, pos):
     if qid == "1.1.2":
         _, _, _, _, walkable, _ = _get_challenge_data()
         return pos in walkable
+    if qid == "1.1.7":
+        return 0 <= pos[0] < 13 and pos[1] == 1
     if qid == "1.1.5":
         return 0 <= pos[0] < 5 and pos[1] == 1
     if qid in ("1.1.3", "1.1.4", "1.1.6"):
@@ -1339,8 +1343,8 @@ def is_quest_legal_move(qid, from_pos, to_pos):
     if qid == "1.1.2":
         _, _, adjacency, _, _, _ = _get_challenge_data()
         return to_pos in adjacency.get(from_pos, set())
-    dim = 5 if qid == "1.1.5" else (6 if qid in ("1.1.3", "1.1.4", "1.1.6") else QUEST_DIM)
-    col = 1 if qid in ("1.1.3", "1.1.4", "1.1.5", "1.1.6") else QUEST_PATH_COL
+    dim = 13 if qid == "1.1.7" else (5 if qid == "1.1.5" else (6 if qid in ("1.1.3", "1.1.4", "1.1.6") else QUEST_DIM))
+    col = 1 if qid in ("1.1.3", "1.1.4", "1.1.5", "1.1.6", "1.1.7") else QUEST_PATH_COL
     return (0 <= to_pos[0] < dim and to_pos[1] == col
             and abs(to_pos[0] - from_pos[0]) == 1 and to_pos[1] == from_pos[1])
 
@@ -1527,7 +1531,7 @@ _QUEST_NAMES = {
     },
     "1.1.7": {
         "zh": "野餐",
-        "en": "Picnic",
+        "en": "Starscream's Picnic",
     },
     # "1.1.8": {
     #     "zh": "镜像世界",
@@ -1561,8 +1565,8 @@ _QUEST_DESCRIPTIONS = {
         "en": "Power of the female Autobots and Decepticons.",
     },
     "1.1.7": {
-        "zh": "狂派副官红蜘蛛的专属野餐。",
-        "en": "Decepticon second-in-command Starscream's picnic.",
+        "zh": "霸天虎寻光者军团正在聚会！警告：只有远程攻击能对其造成伤害！",
+        "en": "The Decepticon Seekers are having a picnic! Warning: Only ranged attacks can inflict damage!",
     },
     "1.1.8": {
         "zh": "善恶颠倒的镜像宇宙之战。",
@@ -1616,7 +1620,7 @@ def build_quest_summary(mission_id="1.1.1", set_id="story_act1", lang="zh"):
         "energyPerTile": 1, "minXpPerTile": min_xp, "maxXpPerTile": max_xp,
         "minHealthPerTile": 100, "maxHealthPerTile": 100,
         "image": "", "theme": "primordial", "todIndex": 0,
-        "isLeisure": mission_id not in ("1.1.3", "1.1.4", "1.1.5", "1.1.6"),
+        "isLeisure": mission_id not in ("1.1.3", "1.1.4", "1.1.5", "1.1.6", "1.1.7"),
     }
     if mission_id in ("1.1.3", "1.1.4", "1.1.5", "1.1.6"):
         summary["teamSettings"] = {
@@ -1635,6 +1639,19 @@ def build_quest_summary(mission_id="1.1.1", set_id="story_act1", lang="zh"):
             summary["restrictions"] = [
                 {"type": "blueprint", "allowed": ["rodimusprime_gs_mp09"]}
             ]
+    elif mission_id == "1.1.7":
+        summary["teamSettings"] = {
+            "v": 1,
+            "minTeamSize": 1,
+            "maxTeamSize": 5,
+            "teamSizeMin": 1,
+            "teamSizeMax": 5,
+            "presetTeam": False,
+        }
+        summary["minTeamSize"] = 1
+        summary["maxTeamSize"] = 5
+        summary["teamSizeMin"] = 1
+        summary["teamSizeMax"] = 5
     return summary
 
 
@@ -1678,7 +1695,7 @@ def build_quest_list(lang="zh"):
             "1.1.4": "questboard/poster_supreme_optimus",
             "1.1.5": "portraits/portrait_matrix_war_small",
             "1.1.6": "questboard/poster_special_act",
-            "1.1.7": "questboard/poster_special_act",
+            "1.1.7": "portraits/portrait_picnic_small",
         }.get(qid, "")
         q_dict = {
             "id": qid,
@@ -1694,7 +1711,7 @@ def build_quest_list(lang="zh"):
             "energyPerTile": 1, "minXpPerTile": min_xp, "maxXpPerTile": max_xp,
             "minHealthPerTile": 100, "maxHealthPerTile": 100,
             "image": qimage, "theme": theme,
-            "isLeisure": qid not in ("1.1.3", "1.1.4", "1.1.5", "1.1.6"),
+            "isLeisure": qid not in ("1.1.3", "1.1.4", "1.1.5", "1.1.6", "1.1.7"),
         }
         if qid in ("1.1.3", "1.1.4", "1.1.5", "1.1.6"):
             q_dict["teamSettings"] = {
@@ -1713,6 +1730,19 @@ def build_quest_list(lang="zh"):
                 q_dict["restrictions"] = [
                     {"type": "blueprint", "allowed": ["rodimusprime_gs_mp09"]}
                 ]
+        elif qid == "1.1.7":
+            q_dict["teamSettings"] = {
+                "v": 1,
+                "minTeamSize": 1,
+                "maxTeamSize": 5,
+                "teamSizeMin": 1,
+                "teamSizeMax": 5,
+                "presetTeam": False,
+            }
+            q_dict["minTeamSize"] = 1
+            q_dict["maxTeamSize"] = 5
+            q_dict["teamSizeMin"] = 1
+            q_dict["teamSizeMax"] = 5
         quests.append(q_dict)
     story_set = {
         "hash": "h1", "setId": "story_act1", "setName": "ACT 1", "expiry": 0, "timeLimit": 0, "timeLimitGrace": 0,
@@ -1847,6 +1877,21 @@ FEMBOTS_ENCOUNTERS = {
     5: ("lifeline_gs_deluxe2014", True, "生命之赐·回春手 (Lifeline)"),
 }
 
+SEEKER_PICNIC_ENCOUNTERS = {
+    1: ("thrust_gs_deluxe2008", False, "尖头三角·冲锋 (Thrust)"),
+    2: ("ramjet_gs_deluxe2008", False, "尖头三角·喷气机 (Ramjet)"),
+    3: ("dirge_gs_deluxe2008", False, "尖头三角·挽歌 (Dirge)"),
+    4: ("acidstorm_gs_leader2015", False, "雨栈小队·硫酸雨 (Acid Storm)"),
+    5: ("ionstorm_gs_leader2015", False, "雨栈小队·离子风暴 (Ion Storm)"),
+    6: ("novastorm_gs_leader2015", False, "雨栈小队·新星风暴 (Nova Storm)"),
+    7: ("hotlink_gs_leader2015", False, "紫火先锋·热火 (Hotlink)"),
+    8: ("bitstream_gs_leader2015", False, "数据狂流·比特流 (Bitstream)"),
+    9: ("sunstorm_gs_leader2015", False, "炽阳烈焰·太阳风 (Sunstorm)"),
+    10: ("thundercracker_gs_leader2015", False, "音爆轰鸣·惊天雷 (Thundercracker)"),
+    11: ("skywarp_gs_leader2015", False, "瞬移暗杀·闹翻天 (Skywarp)"),
+    12: ("fte_stars_gs_t3", True, "空战军团长·红蜘蛛 (Starscream)"),
+}
+
 
 def _build_combiner_linear_map(qid, encounters, start_label="起点 (Start)", dim=6):
     path_col = 1
@@ -1915,6 +1960,10 @@ def build_fembots_map(qid="1.1.6"):
     return _build_combiner_linear_map(qid, FEMBOTS_ENCOUNTERS, start_label="巾帼殿堂入口 (Start)", dim=6)
 
 
+def build_picnic_map(qid="1.1.7"):
+    return _build_combiner_linear_map(qid, SEEKER_PICNIC_ENCOUNTERS, start_label="战机停机坪 (Start)", dim=13)
+
+
 def build_quest_map(qid="1.1.1"):
     if qid == "1.1.2":
         return build_challenge_map(qid)
@@ -1926,6 +1975,8 @@ def build_quest_map(qid="1.1.1"):
         return build_matrix_war_map(qid)
     if qid == "1.1.6":
         return build_fembots_map(qid)
+    if qid == "1.1.7":
+        return build_picnic_map(qid)
     dim = QUEST_DIM
     """The QuestMap object (ActiveQuest.map). Disassembly of base Map.Deserialize
     (@0x14837EC) shows the wire shape precisely:
@@ -2119,6 +2170,8 @@ def build_quest_progression(qid="1.1.1", start=None, team=None):
     }
     if qid == "1.1.2":
         revealed_tiles = [{"x": r, "y": c} for r, c in quest_walkable_tiles(qid)]
+    elif qid == "1.1.7":
+        revealed_tiles = [{"x": r, "y": 1} for r in range(13)]
     elif qid == "1.1.5":
         revealed_tiles = [{"x": r, "y": 1} for r in range(5)]
     elif qid in ("1.1.3", "1.1.4", "1.1.6"):
@@ -2261,13 +2314,16 @@ def build_quest_movedir(qid="1.1.1", offx=1, offy=0, start=None, team=None):
     elif qid == "1.1.6":
         encounter = FEMBOTS_ENCOUNTERS.get(nx) if ny == 1 else None
         revealed_tiles = [{"x": r, "y": 1} for r in range(6)]
+    elif qid == "1.1.7":
+        encounter = SEEKER_PICNIC_ENCOUNTERS.get(nx) if ny == 1 else None
+        revealed_tiles = [{"x": r, "y": 1} for r in range(13)]
     else:
         encounter = QUEST_ENCOUNTERS.get(nx) if ny == QUEST_PATH_COL else None
         revealed_tiles = [{"x": r, "y": 1} for r in range(QUEST_DIM)]
     if encounter is not None:
         key, is_final_boss, _ = encounter
-        rank = 5 if qid in ("1.1.2", "1.1.3", "1.1.4", "1.1.5", "1.1.6") else 1
-        level = 50 if qid in ("1.1.2", "1.1.3", "1.1.4", "1.1.5", "1.1.6") else 1
+        rank = 5 if qid in ("1.1.2", "1.1.3", "1.1.4", "1.1.5", "1.1.6", "1.1.7") else 1
+        level = 50 if qid in ("1.1.2", "1.1.3", "1.1.4", "1.1.5", "1.1.6", "1.1.7") else 1
         actions.append({
             "action": {
                 "battle": {

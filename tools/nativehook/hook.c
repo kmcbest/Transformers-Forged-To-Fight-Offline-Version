@@ -534,8 +534,8 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x0E34640, "SPEXIT",             2, 0 }, // 155 PlayerSpecialAttackState.OnExit -> reset attack chain on special end (S1/S2)
     { 0x0DADA6C, "ROLL_CRIT",          2, 0 }, // 156 PlayerAttributes.RollForCriticalHit -> force critical hit
     { 0x0E3D8CC, "PREFIGHT_HP",        2, 0 }, // 157 PrefightScreenData.GetTeamMemberHealth -> residual HP
-    { 0x10E1E54, "TEAMDATA_HP",        2, 0 }, // 158 TeamData.GetHP -> residual HP
-    { 0x103CFC4, "QUH_GET_HP",         2, 0 }, // 159 Legacy.QuestUserHero.get_HP -> residual HP
+    { 0x10E1E54, "TEAMDATA_IS_KO",     2, 0 }, // 158 TeamData.IsKnockedOut -> bool (1=KO, 0=alive)
+    { 0x10E1AE4, "TEAMDATA_GET_HP",    2, 0 }, // 159 TeamData.GetHP -> float residual HP
     { 0x0D32A00, "BLOCKENTER",         2, 0 }, // 160 PlayerBlockState.OnEnter -> arm block timer
     { 0xC16688,  "GET_MAP_ASSET_ID",   2, 0 }, // 161 BCGBlueprintBase.get_MapAssetID -> resolve to real portrait resource name
     { 0x127F794, "LOCALIZE",           2, 0 }, // 162 Localization.Get
@@ -562,6 +562,8 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x0DA0720, "GETDEFTAB",          2, 0 }, // 174 PayoutsModel.GetDefaultTabId -> safe empty tab check
     { 0xF9A7F8,  "TS_GET_TEAM",        2, 0 }, // 175 TeamSelectModel.get_Team -> empty team on entry
     { 0xB16C54,  "ET_INIT_HEROES",     2, 0 }, // 176 EditTeamModel.InitHeroes -> filter to Rodimus
+    { 0x0DAD5A4, "APPLY_DMG",          2, 0 }, // 177 PlayerAttributes.ApplyDamage -> picnic quest ranged-only damage
+    { 0x0E3D688, "PFS_ENEMY_HP",       2, 0 }, // 178 PrefightScreenData.GetEnemyNormalizedHealth -> residual enemy HP
 };
 #define NH (int)(sizeof(H)/sizeof(H[0]))
 
@@ -850,7 +852,9 @@ static const char* hero_faction_str(void* hero_data) {
     return NULL;
 }
 static void apply_hero_portrait_deco(void* hp) {
-    if (!hp || (uintptr_t)hp < 0x100000 || ((uintptr_t)hp & 7)) return;
+    if (!hp || !obj_ok(hp)) return;
+    char hp_cname[64];
+    if (!il2cpp_object_class(hp, hp_cname, sizeof(hp_cname)) || strcmp(hp_cname, "HeroPortrait") != 0) return;
     PROTECT({
         void* (*comp_get_go)(void*, void*) = (void*(*)(void*, void*))(g_base + 0x1B4BD28);
         void (*go_set_active)(void*, int, void*) = (void(*)(void*, int, void*))(g_base + 0x1B50CA8);
@@ -858,14 +862,14 @@ static void apply_hero_portrait_deco(void* hp) {
 
         // 1. Explicitly ensure progress bar (+0x210) is INACTIVE
         void* pbar = *(void**)((char*)hp + 0x210);
-        if (pbar && (uintptr_t)pbar >= 0x100000 && !((uintptr_t)pbar & 7)) {
+        if (pbar && obj_ok(pbar)) {
             void* pgo = comp_get_go(pbar, NULL);
-            if (pgo) go_set_active(pgo, 0, NULL);
+            if (pgo && obj_ok(pgo)) go_set_active(pgo, 0, NULL);
         }
 
         // 2. Inspect hero_data (+0xE0)
         void* hero_data = *(void**)((char*)hp + 0xE0);
-        if (!hero_data || (uintptr_t)hero_data < 0x100000 || ((uintptr_t)hero_data & 7)) return;
+        if (!hero_data || !obj_ok(hero_data)) return;
 
         if (tftf_is_matrix_war_active()) {
             char bid_check[80]; bid_check[0] = 0;
@@ -896,14 +900,14 @@ static void apply_hero_portrait_deco(void* hp) {
         // 3. Resolve rarity from blueprint (+0x48)
         int rarity = 5;
         void* bp = *(void**)((char*)hero_data + 0x48);
-        if (!bp || (uintptr_t)bp < 0x100000 || ((uintptr_t)bp & 7)) {
+        if (!bp || !obj_ok(bp)) {
             void* bid = *(void**)((char*)hero_data + 0x10);
-            if (bid && (uintptr_t)bid >= 0x100000 && !((uintptr_t)bid & 7)) {
+            if (bid && obj_ok(bid)) {
                 bp = ((void*(*)(void*, void*))(g_base + 0xC1B364))(bid, NULL);
-                if (bp) *(void**)((char*)hero_data + 0x48) = bp;
+                if (bp && obj_ok(bp)) *(void**)((char*)hero_data + 0x48) = bp;
             }
         }
-        if (bp && (uintptr_t)bp >= 0x100000 && !((uintptr_t)bp & 7)) {
+        if (bp && obj_ok(bp)) {
             int r = *(int*)((char*)bp + 0x64);
             if (r >= 1 && r <= 5) rarity = r;
         }
@@ -911,40 +915,79 @@ static void apply_hero_portrait_deco(void* hp) {
         // 4. Set rarity frame (HeroPortrait.SetRarityFrame @ 0xE91768)
         ((void(*)(void*, int, void*))(g_base + 0xE91768))(hp, rarity, NULL);
 
+        if (!tftf_quest_is_leisure()) {
+            char h_bid[80]; h_bid[0] = 0;
+            void* bid_str = *(void**)((char*)hero_data + 0x10);
+            if (obj_ok(bid_str)) read_str(bid_str, h_bid, sizeof(h_bid));
+            if (!h_bid[0] && bp && obj_ok(bp)) {
+                void* bps = *(void**)((char*)bp + 0x10);
+                if (obj_ok(bps)) read_str(bps, h_bid, sizeof(h_bid));
+            }
+            if (h_bid[0]) {
+                float h_ratio = tftf_quest_get_hero_hp_ratio_by_bid(h_bid);
+                if (h_ratio <= 0.001f) {
+                    *(uint8_t*)((char*)hp + 0x110) = 1; // _isClickDisabled
+                    *(uint8_t*)((char*)hp + 0x111) = 1; // _isDragDisabled
+                    *(uint8_t*)((char*)hp + 0x112) = 0; // _isKnockedOut (0 = dead)
+                    *(float*)((char*)hp + 0x1c8) = 0.0f; // _healthPercentage
+                    void* ko_tab = *(void**)((char*)hp + 0x178); // _knockedOutTab
+                    if (obj_ok(ko_tab)) {
+                        void* kogo = comp_get_go(ko_tab, NULL);
+                        if (kogo && obj_ok(kogo)) go_set_active(kogo, 1, NULL);
+                    }
+                    void* act_tab = *(void**)((char*)hp + 0x180);
+                    if (obj_ok(act_tab)) {
+                        void* actgo = comp_get_go(act_tab, NULL);
+                        if (actgo && obj_ok(actgo)) go_set_active(actgo, 0, NULL);
+                    }
+                } else {
+                    *(uint8_t*)((char*)hp + 0x110) = 0; // _isClickDisabled
+                    *(uint8_t*)((char*)hp + 0x111) = 0; // _isDragDisabled
+                    *(uint8_t*)((char*)hp + 0x112) = 1; // _isKnockedOut (1 = alive)
+                    *(float*)((char*)hp + 0x1c8) = h_ratio; // _healthPercentage
+                    void* ko_tab = *(void**)((char*)hp + 0x178); // _knockedOutTab
+                    if (obj_ok(ko_tab)) {
+                        void* kogo = comp_get_go(ko_tab, NULL);
+                        if (kogo && obj_ok(kogo)) go_set_active(kogo, 0, NULL);
+                    }
+                }
+            }
+        }
+
         // 5. Activate _frame UISprite (+0x240) and _portraitTexture (+0x260)
         void* frame_sprite = *(void**)((char*)hp + 0x240);
-        if (frame_sprite && (uintptr_t)frame_sprite >= 0x100000 && !((uintptr_t)frame_sprite & 7)) {
+        if (frame_sprite && obj_ok(frame_sprite)) {
             void* fgo = comp_get_go(frame_sprite, NULL);
-            if (fgo) go_set_active(fgo, 1, NULL);
+            if (fgo && obj_ok(fgo)) go_set_active(fgo, 1, NULL);
         }
         void* frame_tex = *(void**)((char*)hp + 0x260);
-        if (frame_tex && (uintptr_t)frame_tex >= 0x100000 && !((uintptr_t)frame_tex & 7)) {
+        if (frame_tex && obj_ok(frame_tex)) {
             void* tgo = comp_get_go(frame_tex, NULL);
-            if (tgo) go_set_active(tgo, 1, NULL);
+            if (tgo && obj_ok(tgo)) go_set_active(tgo, 1, NULL);
         }
 
         // 5b. Activate mWingWangs container (+0x1E0)
         void* wing_wangs = *(void**)((char*)hp + 0x1E0);
-        if (wing_wangs && (uintptr_t)wing_wangs >= 0x100000 && !((uintptr_t)wing_wangs & 7)) {
+        if (wing_wangs && obj_ok(wing_wangs)) {
             void* wgo = comp_get_go(wing_wangs, NULL);
-            if (wgo) go_set_active(wgo, 1, NULL);
+            if (wgo && obj_ok(wgo)) go_set_active(wgo, 1, NULL);
         }
 
         // 6. Iterate child widgets (+0x1D8) and update data
         void* widgets_list = *(void**)((char*)hp + 0x1D8);
-        if (widgets_list && (uintptr_t)widgets_list >= 0x100000 && !((uintptr_t)widgets_list & 7)) {
+        if (widgets_list && obj_ok(widgets_list)) {
             int count = *(int*)((char*)widgets_list + 0x18);
             void* items = *(void**)((char*)widgets_list + 0x10);
             if (items && count > 0 && count < 32) {
                 for (int i = 0; i < count; i++) {
                     void* w = *(void**)((char*)items + 0x20 + i * 8);
-                    if (w && (uintptr_t)w >= 0x100000 && !((uintptr_t)w & 7)) {
+                    if (w && obj_ok(w)) {
                         void* wgo = comp_get_go(w, NULL);
-                        if (wgo) go_set_active(wgo, 1, NULL);
+                        if (wgo && obj_ok(wgo)) go_set_active(wgo, 1, NULL);
 
                         const char* cname = "<unknown>";
                         void* klass = *(void**)w;
-                        if (klass && !((uintptr_t)klass & 7)) {
+                        if (klass && obj_ok(klass)) {
                             cname = *(const char**)((char*)klass + 0x10);
                         }
 
@@ -964,14 +1007,14 @@ static void apply_hero_portrait_deco(void* hp) {
                             void* star_str = g_strnew ? g_strnew("Star_white") : NULL;
                             for (int arr_idx = 0; arr_idx < 2; arr_idx++) {
                                 void* stars_arr = *(void**)((char*)w + 0x20 + arr_idx * 8);
-                                if (stars_arr && (uintptr_t)stars_arr >= 0x100000 && !((uintptr_t)stars_arr & 7)) {
+                                if (stars_arr && obj_ok(stars_arr)) {
                                     int n_stars = *(int*)((char*)stars_arr + 0x18);
                                     if (n_stars > 0 && n_stars <= 10) {
                                         for (int s = 0; s < n_stars; s++) {
                                             void* star_sp = *(void**)((char*)stars_arr + 0x20 + s * 8);
-                                            if (star_sp && (uintptr_t)star_sp >= 0x100000 && !((uintptr_t)star_sp & 7)) {
+                                            if (star_sp && obj_ok(star_sp)) {
                                                 void* sgo = comp_get_go(star_sp, NULL);
-                                                if (sgo) {
+                                                if (sgo && obj_ok(sgo)) {
                                                     go_set_active(sgo, (s < rarity) ? 1 : 0, NULL);
                                                 }
                                                 if (s < rarity && star_str) {
@@ -984,15 +1027,15 @@ static void apply_hero_portrait_deco(void* hp) {
                             }
                             // Reposition aligners
                             void* aligner1 = *(void**)((char*)w + 0x40);
-                            if (aligner1 && (uintptr_t)aligner1 >= 0x100000 && !((uintptr_t)aligner1 & 7)) {
+                            if (aligner1 && obj_ok(aligner1)) {
                                 void* ago1 = comp_get_go(aligner1, NULL);
-                                if (ago1) go_set_active(ago1, 1, NULL);
+                                if (ago1 && obj_ok(ago1)) go_set_active(ago1, 1, NULL);
                                 ((void(*)(void*, void*))(g_base + 0x1517F60))(aligner1, NULL);
                             }
                             void* aligner2 = *(void**)((char*)w + 0x48);
-                            if (aligner2 && (uintptr_t)aligner2 >= 0x100000 && !((uintptr_t)aligner2 & 7)) {
+                            if (aligner2 && obj_ok(aligner2)) {
                                 void* ago2 = comp_get_go(aligner2, NULL);
-                                if (ago2) go_set_active(ago2, 1, NULL);
+                                if (ago2 && obj_ok(ago2)) go_set_active(ago2, 1, NULL);
                                 ((void(*)(void*, void*))(g_base + 0x1517F60))(aligner2, NULL);
                             }
                         }
@@ -1000,15 +1043,16 @@ static void apply_hero_portrait_deco(void* hp) {
                         // If RatingWidget, activate FactionLabel and paint the faction glyph ourselves.
                         if (cname && strstr(cname, "RatingWidget")) {
                             void* flabel = *(void**)((char*)w + 0x30);
-                            if (flabel && (uintptr_t)flabel >= 0x100000 && !((uintptr_t)flabel & 7)) {
+                            if (flabel && obj_ok(flabel)) {
                                 void* fgo = comp_get_go(flabel, NULL);
-                                if (fgo) go_set_active(fgo, 1, NULL);
+                                if (fgo && obj_ok(fgo)) go_set_active(fgo, 1, NULL);
                                 // Faction badge: resolve the authored faction and map it to its PUA
                                 // glyph locally. Never route this through the client's own icon lookup
                                 // (0xC2197C): an unrecognised key makes it return NULL and the badge
                                 // then stays blank without a single error.
                                 char bid[80]; bid[0] = 0;
-                                read_str(*(void**)((char*)hero_data + 0x10), bid, sizeof bid);
+                                void* bstr = *(void**)((char*)hero_data + 0x10);
+                                if (obj_ok(bstr)) read_str(bstr, bid, sizeof bid);
                                 const char* faction = hero_faction_str(hero_data);
                                 const char* glyph = faction_icon_glyph(faction);
                                 char lcn[40]; lcn[0] = 0;
@@ -1040,9 +1084,9 @@ static void apply_hero_portrait_deco(void* hp) {
                                 }
                             }
                             void* r_align = *(void**)((char*)w + 0x38);
-                            if (r_align && (uintptr_t)r_align >= 0x100000 && !((uintptr_t)r_align & 7)) {
+                            if (r_align && obj_ok(r_align)) {
                                 void* ago = comp_get_go(r_align, NULL);
-                                if (ago) go_set_active(ago, 1, NULL);
+                                if (ago && obj_ok(ago)) go_set_active(ago, 1, NULL);
                                 ((void(*)(void*, void*))(g_base + 0xDDE398))(r_align, NULL);
                             }
                         }
@@ -1055,6 +1099,11 @@ static void apply_hero_portrait_deco(void* hp) {
 
 void* hook_33(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
     if (!a0 || !obj_ok(a0)) return NULL;
+
+    char cname[64];
+    if (!il2cpp_object_class(a0, cname, sizeof(cname)) || strcmp(cname, "HeroPortrait") != 0) {
+        return H[33].orig ? H[33].orig(a0,a1,a2,a3,a4,a5,a6,a7) : NULL;
+    }
 
     // Check hero_data (+0xE0)
     void* hero_data = *(void**)((char*)a0 + 0xE0);
@@ -2936,6 +2985,12 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                 atk_f *= atk_mult;
                 pi = (int)(hp_f + atk_f) / 20;
             }
+            float enemy_hp_ratio = 1.0f;
+            if (!tftf_quest_is_leisure() && tftf_quest_has_pending_enemy()) {
+                enemy_hp_ratio = tftf_quest_get_pending_enemy_hp_ratio();
+                if (enemy_hp_ratio < 0.05f) enemy_hp_ratio = 0.05f;
+                if (enemy_hp_ratio > 1.0f) enemy_hp_ratio = 1.0f;
+            }
             int32_t hp = (int32_t)hp_f;
             int32_t atk = (int32_t)atk_f;
             g_last_enemy_pi = pi;
@@ -2945,7 +3000,7 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                 *(int32_t*)((char*)at1 + 0x28) = 3;     // SpecialAttackCount (3 bars capacity)
                 *(int32_t*)((char*)at1 + 0x2C) = hp;    // HPMax
                 *(int32_t*)((char*)at1 + 0x30) = hp;    // HPMaxBase
-                *(float*)  ((char*)at1 + 0x34) = 1.0f;  // HP (normalized 1.0f)
+                *(float*)  ((char*)at1 + 0x34) = enemy_hp_ratio;  // HP (normalized)
                 *(int32_t*)((char*)at1 + 0x38) = atk;   // Attack
                 *(int32_t*)((char*)at1 + 0x3C) = atk;   // AttackBase
                 *(float*)  ((char*)at1 + 0x40) = 0.0f;  // Armor
@@ -2964,13 +3019,13 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                 *(int32_t*)((char*)ch1 + 0x28) = 3;     // NumSpecials
                 *(int32_t*)((char*)ch1 + 0x2C) = hp;
                 *(int32_t*)((char*)ch1 + 0x30) = hp;
-                *(float*)  ((char*)ch1 + 0x34) = 1.0f;
+                *(float*)  ((char*)ch1 + 0x34) = enemy_hp_ratio;
                 *(int32_t*)((char*)ch1 + 0x38) = atk;
                 *(int32_t*)((char*)ch1 + 0x3C) = atk;
                 *(float*)  ((char*)ch1 + 0x58) = 1.0f;  // HP multiplier in CharacterData
             }
-            LOG("FIXFIGHT_STATS: player=%d bp=%s filled hp=%d atk=%d pi=%d enemy_mana_gain=%.2f challenge_mult=%.1f",
-                 player_idx, id1, hp, atk, pi, g_combat_enemy_mana_gain, tftf_get_challenge_hp_multiplier());
+            LOG("FIXFIGHT_STATS: player=%d bp=%s filled hp=%d (ratio=%.2f) atk=%d pi=%d enemy_mana_gain=%.2f challenge_mult=%.1f",
+                 player_idx, id1, hp, enemy_hp_ratio, atk, pi, g_combat_enemy_mana_gain, tftf_get_challenge_hp_multiplier());
         } else if (player_idx == 0) {
             if (at1 && obj_ok(at1)) {
                 *(float*)((char*)at1 + 0x44) = 0.5f;                      // Player 0 CritChance (50% crit rate)
@@ -2988,8 +3043,11 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                 if (!tftf_quest_is_leisure()) {
                     float hp_ratio = tftf_quest_get_hero_hp_ratio_by_bid(id1);
                     if (hp_ratio > 1.0f) hp_ratio = 1.0f;
-                    if (hp_ratio < 0.05f) hp_ratio = 0.05f;
+                    if (hp_ratio <= 0.0f) hp_ratio = 0.0f;
                     *(float*)((char*)at1 + 0x34) = hp_ratio;
+                    if (hp_ratio <= 0.0f) {
+                        *(int32_t*)((char*)at1 + 0x2C) = 0;
+                    }
                 } else {
                     float cur_norm_hp = *(float*)((char*)at1 + 0x34);
                     if (cur_norm_hp <= 0.0f || cur_hp <= 0) {
@@ -3019,7 +3077,7 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                 if (!tftf_quest_is_leisure()) {
                     float hp_ratio = tftf_quest_get_hero_hp_ratio_by_bid(id1);
                     if (hp_ratio > 1.0f) hp_ratio = 1.0f;
-                    if (hp_ratio < 0.05f) hp_ratio = 0.05f;
+                    if (hp_ratio <= 0.0f) hp_ratio = 0.0f;
                     *(float*)((char*)ch1 + 0x34) = hp_ratio;
                 } else {
                     if (*(float*)((char*)ch1 + 0x34) <= 0.0f) {
@@ -3039,75 +3097,69 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
     void* r = H[56].orig(a0,a1,a2,a3,a4,a5,a6,a7);
     PROTECT({
         if (a0 && obj_ok(a0)) {
-            typedef void (*fn_set_mana)(void*, float, void*);
-            fn_set_mana set_mana = (fn_set_mana)(g_base + 0xDAC720);
-            set_mana(a0, 0.0f, NULL);
             int player_idx = obj_ok(a1) ? *(int32_t*)((uintptr_t)a1+0xF4) : -1;
             if (player_idx == 0) {
                 const char* cur_qid = tftf_quest_get_current_qid();
                 int is_fembots = (cur_qid && strcmp(cur_qid, "1.1.6") == 0);
                 if (is_fembots) {
+                    typedef void (*fn_set_mana)(void*, float, void*);
+                    fn_set_mana set_mana = (fn_set_mana)(g_base + 0xDAC774); // set_Mana
                     set_mana(a0, 0.0f, NULL);
                 }
                 g_p0_combat_character = a0;
-                g_p0_last_hp = -1.0f;
-                typedef float (*fn_get_hp)(void*, void*);
-                fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC698);
-                float cur_hp_val = get_hp(a0, NULL);
-                g_p0_last_hp = cur_hp_val;
-                void* ch = fld_p(a0, 0x68);
-                if (ch && obj_ok(ch)) {
-                    void* max_prop = fld_p(ch, 0x28);
-                    if (max_prop) {
-                        typedef float (*fn_get_val)(void*, void*);
-                        fn_get_val get_val = (fn_get_val)(g_base + 0x1345EC4);
-                        float max_val = get_val(max_prop, NULL);
-                        if (max_val > 0.0f) g_p0_max_hp = max_val;
-                    }
-                }
+                typedef float (*fn_get_max)(void*, void*);
+                fn_get_max get_max = (fn_get_max)(g_base + 0xDAC698); // get_MaxHealth
+                float max_val = get_max(a0, NULL);
+                if (max_val > 0.0f) g_p0_max_hp = max_val;
+
                 if (!tftf_quest_is_leisure()) {
                     float hp_ratio = tftf_quest_get_hero_hp_ratio_by_bid(g_p0_bot_id);
                     if (hp_ratio > 1.0f) hp_ratio = 1.0f;
-                    if (hp_ratio < 0.05f) hp_ratio = 0.05f;
-                    float cur_scaled_hp = get_hp(a0, NULL);
-                    g_p0_last_hp = cur_scaled_hp;
+                    if (hp_ratio <= 0.0f) hp_ratio = 0.0f;
+                    typedef void (*fn_set_norm)(void*, float, void*);
+                    fn_set_norm set_norm = (fn_set_norm)(g_base + 0xDAC720); // set_NormalizedHealth
+                    set_norm(a0, hp_ratio, NULL);
+                    typedef float (*fn_get_hp)(void*, void*);
+                    fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC6CC); // get_Health
+                    g_p0_last_hp = get_hp(a0, NULL);
                     flog("FIXFIGHT: Player 0 '%s' combat HP initialized to %.1f / %.1f (ratio=%.2f)",
-                         g_p0_bot_id, cur_scaled_hp, g_p0_max_hp, hp_ratio);
-                } else if (cur_hp_val <= 0.0f) {
-                    flog("FIXFIGHT: post-init Player 0 HP was %f, recovering to 1.0f", cur_hp_val);
-                    if (ch && obj_ok(ch)) {
-                        void* cur_prop = fld_p(ch, 0x18);
-                        void* max_prop = fld_p(ch, 0x28);
-                        if (cur_prop && max_prop) {
-                            typedef float (*fn_get_val)(void*, void*);
-                            typedef void (*fn_set_val)(void*, float, void*);
-                            fn_get_val get_val = (fn_get_val)(g_base + 0x1345EC4);
-                            fn_set_val set_val = (fn_set_val)(g_base + 0x1346048);
-                            float max_val = get_val(max_prop, NULL);
-                            if (max_val <= 0.0f) { max_val = 50000.0f; set_val(max_prop, max_val, NULL); }
-                            set_val(cur_prop, max_val, NULL);
-                        }
+                         g_p0_bot_id, g_p0_last_hp, g_p0_max_hp, hp_ratio);
+                } else {
+                    typedef float (*fn_get_hp)(void*, void*);
+                    fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC6CC);
+                    float cur_hp_val = get_hp(a0, NULL);
+                    if (cur_hp_val <= 0.0f) {
+                        typedef void (*fn_set_norm)(void*, float, void*);
+                        fn_set_norm set_norm = (fn_set_norm)(g_base + 0xDAC720);
+                        set_norm(a0, 1.0f, NULL);
+                        cur_hp_val = get_hp(a0, NULL);
                     }
+                    g_p0_last_hp = cur_hp_val;
                 }
             } else if (player_idx == 1) {
                 g_p1_combat_character = a0;
-                void* ch = fld_p(a0, 0x68);
-                if (ch && obj_ok(ch)) {
-                    void* max_prop = fld_p(ch, 0x28);
-                    if (max_prop) {
-                        typedef float (*fn_get_val)(void*, void*);
-                        fn_get_val get_val = (fn_get_val)(g_base + 0x1345EC4);
-                        float max_val = get_val(max_prop, NULL);
-                        if (max_val > 0.0f) {
-                            g_p1_max_hp = max_val;
-                            g_p1_last_hp = max_val;
-                        }
-                    }
+                typedef float (*fn_get_max)(void*, void*);
+                fn_get_max get_max = (fn_get_max)(g_base + 0xDAC698); // get_MaxHealth
+                float max_val = get_max(a0, NULL);
+                if (max_val > 0.0f) g_p1_max_hp = max_val;
+
+                if (!tftf_quest_is_leisure() && tftf_quest_has_pending_enemy()) {
+                    float enemy_hp_ratio = tftf_quest_get_pending_enemy_hp_ratio();
+                    if (enemy_hp_ratio < 0.05f) enemy_hp_ratio = 0.05f;
+                    if (enemy_hp_ratio > 1.0f) enemy_hp_ratio = 1.0f;
+                    typedef void (*fn_set_norm)(void*, float, void*);
+                    fn_set_norm set_norm = (fn_set_norm)(g_base + 0xDAC720); // set_NormalizedHealth
+                    set_norm(a0, enemy_hp_ratio, NULL);
+                    typedef float (*fn_get_hp)(void*, void*);
+                    fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC6CC); // get_Health
+                    g_p1_last_hp = get_hp(a0, NULL);
+                    flog("FIXFIGHT: Enemy '%s' combat HP initialized to %.1f / %.1f (ratio=%.2f)",
+                         g_p1_bot_id, g_p1_last_hp, g_p1_max_hp, enemy_hp_ratio);
+                } else {
+                    typedef float (*fn_get_hp)(void*, void*);
+                    fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC6CC);
+                    g_p1_last_hp = get_hp(a0, NULL);
                 }
-                typedef float (*fn_get_hp)(void*, void*);
-                fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC698);
-                float cur_p1_hp = get_hp(a0, NULL);
-                if (cur_p1_hp > 0.0f) g_p1_last_hp = cur_p1_hp;
             }
         }
     });
@@ -4995,7 +5047,7 @@ void* hook_145(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
         }
         if (g_p0_combat_character && obj_ok(g_p0_combat_character)) {
             typedef float (*fn_get_hp)(void*, void*);
-            fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC698);
+            fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC6CC); // get_Health
             float cur_hp = get_hp(g_p0_combat_character, NULL);
             if (g_p0_last_hp >= 0.0f && cur_hp < g_p0_last_hp - 0.01f) {
                 flog("COMBAT_GATE: P0 took damage (%.1f -> %.1f) -> hit reaction resets attack chain",
@@ -5013,7 +5065,7 @@ void* hook_145(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
         }
         if (g_p1_combat_character && obj_ok(g_p1_combat_character)) {
             typedef float (*fn_get_hp)(void*, void*);
-            fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC698);
+            fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC6CC); // get_Health
             float cur_hp = get_hp(g_p1_combat_character, NULL);
             g_p1_last_hp = cur_hp;
         }
@@ -5309,44 +5361,32 @@ void* hook_156(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     }
     return (void*)(intptr_t)is_crit;
 }
-float hook_157(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
-    int pos = (int)(intptr_t)a1;
-    if (!tftf_quest_is_leisure() && pos >= 0 && pos < 5) {
-        float ratio = tftf_quest_get_hero_hp_ratio(pos);
-        if (ratio > 1.0f) ratio = 1.0f;
-        if (ratio < 0.0f) ratio = 0.0f;
-        static int s_log_hp157 = 0;
-        if (s_log_hp157++ < 20) {
-            flog("PREFIGHT_HP (0x0E3D8CC): pos=%d -> ratio=%.2f", pos, ratio);
-        }
-        return ratio;
-    }
-    typedef float (*fn_orig)(void*, void*, void*, void*, void*, void*, void*, void*);
-    return H[157].orig ? ((fn_orig)H[157].orig)(a0, a1, a2, a3, a4, a5, a6, a7) : 1.0f;
+void* hook_157(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    return H[157].orig ? H[157].orig(a0, a1, a2, a3, a4, a5, a6, a7) : NULL;
 }
-float hook_158(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+int32_t hook_158(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    int slot = (int)(intptr_t)a1;
+    if (!tftf_quest_is_leisure() && slot >= 0 && slot < 5) {
+        float ratio = tftf_quest_get_hero_hp_ratio(slot);
+        int is_ko = (ratio <= 0.001f) ? 1 : 0;
+        static int s_log_hp158 = 0;
+        if (s_log_hp158++ < 20) {
+            flog("TEAMDATA_IS_KO (0x10E1E54): slot=%d ratio=%.2f -> is_ko=%d", slot, ratio, is_ko);
+        }
+        return is_ko;
+    }
+    typedef int32_t (*fn_orig)(void*, void*, void*, void*, void*, void*, void*, void*);
+    return H[158].orig ? ((fn_orig)H[158].orig)(self, a1, a2, a3, a4, a5, a6, a7) : 0;
+}
+float hook_159(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     int slot = (int)(intptr_t)a1;
     if (!tftf_quest_is_leisure() && slot >= 0 && slot < 5) {
         float ratio = tftf_quest_get_hero_hp_ratio(slot);
         if (ratio > 1.0f) ratio = 1.0f;
         if (ratio < 0.0f) ratio = 0.0f;
-        static int s_log_hp158 = 0;
-        if (s_log_hp158++ < 20) {
-            flog("TEAMDATA_HP (0x10E1E54): slot=%d -> ratio=%.2f", slot, ratio);
-        }
-        return ratio;
-    }
-    typedef float (*fn_orig)(void*, void*, void*, void*, void*, void*, void*, void*);
-    return H[158].orig ? ((fn_orig)H[158].orig)(self, a1, a2, a3, a4, a5, a6, a7) : 1.0f;
-}
-float hook_159(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
-    if (!tftf_quest_is_leisure()) {
-        float ratio = tftf_quest_get_hero_hp_ratio(0);
-        if (ratio > 1.0f) ratio = 1.0f;
-        if (ratio < 0.0f) ratio = 0.0f;
         static int s_log_hp159 = 0;
         if (s_log_hp159++ < 20) {
-            flog("QUH_GET_HP (0x103CFC4): ratio=%.2f", ratio);
+            flog("TEAMDATA_GET_HP (0x10E1AE4): slot=%d -> ratio=%.2f", slot, ratio);
         }
         return ratio;
     }
@@ -5803,6 +5843,62 @@ void* hook_176(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     return res;
 }
 
+typedef float (*fn_apply_dmg)(void* self, float damage, void* a1, int32_t a2, void* a3, int32_t a4, int32_t a5, float s1, float s2);
+
+// Slot 177: PlayerAttributes.ApplyDamage
+// In Starscream's Picnic (1.1.7), only ranged attacks can deal damage to enemies.
+// Melee attacks (light combo, medium dash, heavy charge) deal 0 damage.
+float hook_177(void* self, float damage, void* a1, int32_t a2, void* a3, int32_t a4, int32_t a5, float s1, float s2) {
+    if (tftf_is_picnic_quest_active()) {
+        PROTECT({
+            if (self && obj_ok(self)) {
+                int32_t p_idx = *(int32_t*)((char*)self + 0x38);
+                void* owner = *(void**)((char*)self + 0x28);
+                // Target is enemy (P1) if player_idx == 1, or owner is g_p1_controller, or owner != g_p0_controller
+                int is_enemy = (p_idx == 1 || (owner && owner == g_p1_controller) || (owner && g_p0_controller && owner != g_p0_controller));
+                if (is_enemy) {
+                    // Check if player P0 is doing a melee attack
+                    int is_melee = 0;
+                    if (g_p0_controller && obj_ok(g_p0_controller)) {
+                        uint32_t l = *(uint32_t*)((char*)g_p0_controller + 0x1c0);
+                        uint32_t m = *(uint32_t*)((char*)g_p0_controller + 0x1c4);
+                        uint32_t r = *(uint32_t*)((char*)g_p0_controller + 0x1c8);
+                        int is_heavy = (*(uint32_t*)((char*)g_p0_controller + 0x13c) & 1) || g_p0_after_heavy;
+
+                        typedef int (*fn_pc_bool)(void*);
+                        fn_pc_bool is_melee_fn = (fn_pc_bool)(g_base + 0x011754B8); // PlayerController.get_IsMeleeAttacking
+                        fn_pc_bool is_dash_fn = (fn_pc_bool)(g_base + 0x011755E0);  // PlayerController.get_IsDashAttacking
+                        fn_pc_bool is_shooting_fn = (fn_pc_bool)(g_base + 0x01175508); // PlayerController.get_IsShooting
+
+                        int native_melee = is_melee_fn ? is_melee_fn(g_p0_controller) : 0;
+                        int native_dash = is_dash_fn ? is_dash_fn(g_p0_controller) : 0;
+                        int native_shooting = is_shooting_fn ? is_shooting_fn(g_p0_controller) : 0;
+
+                        if (l > 0 || m > 0 || is_heavy || native_melee || native_dash) {
+                            is_melee = 1;
+                        }
+                        if (r > 0 || native_shooting) {
+                            is_melee = 0; // shooting takes precedence
+                        }
+
+                        static int s_dmg_log = 0;
+                        if (s_dmg_log++ < 30 || is_melee) {
+                            flog("PICNIC_DMG: enemy=%p dmg=%.1f->%.1f is_melee=%d (l=%u m=%u r=%u hvy=%d n_mel=%d n_dsh=%d n_sht=%d)",
+                                 self, damage, is_melee ? 0.0f : damage, is_melee, l, m, r, is_heavy, native_melee, native_dash, native_shooting);
+                        }
+                    }
+                    if (is_melee) {
+                        damage = 0.0f;
+                    }
+                }
+            }
+        });
+    }
+
+    if (!H[177].orig) return 0.0f;
+    return ((fn_apply_dmg)H[177].orig)(self, damage, a1, a2, a3, a4, a5, s1, s2);
+}
+
 void* hook_166(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     extern int g_is_chinese_lang;
     if (g_strnew && obj_ok(a0)) {
@@ -5822,12 +5918,32 @@ void* hook_166(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
 
 float hook_167(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     if (!tftf_quest_is_leisure()) {
-        float ratio = tftf_quest_get_hero_hp_ratio(0);
+        char bid[80]; bid[0] = 0;
+        if (self && obj_ok(self)) {
+            void* hero_data = *(void**)((char*)self + 0xE0);
+            if (hero_data && obj_ok(hero_data)) {
+                void* s10 = *(void**)((char*)hero_data + 0x10);
+                if (obj_ok(s10)) read_str(s10, bid, sizeof(bid));
+                if (!bid[0]) {
+                    void* bp = *(void**)((char*)hero_data + 0x48);
+                    if (obj_ok(bp)) {
+                        void* bps = *(void**)((char*)bp + 0x10);
+                        if (obj_ok(bps)) read_str(bps, bid, sizeof(bid));
+                    }
+                }
+            }
+        }
+        float ratio = 1.0f;
+        if (bid[0]) {
+            ratio = tftf_quest_get_hero_hp_ratio_by_bid(bid);
+        } else {
+            ratio = tftf_quest_get_hero_hp_ratio(0);
+        }
         if (ratio > 1.0f) ratio = 1.0f;
         if (ratio < 0.0f) ratio = 0.0f;
         static int s_log_hp167 = 0;
         if (s_log_hp167++ < 20) {
-            flog("PORTRAIT_GET_HP (0x0E8F33C): ratio=%.2f", ratio);
+            flog("PORTRAIT_GET_HP (0x0E8F33C): hero='%s' -> ratio=%.2f", bid[0] ? bid : "?", ratio);
         }
         return ratio;
     }
@@ -5935,7 +6051,7 @@ void* hook_170(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
                         }
                     } else if (strcmp(qid, "1.1.7") == 0) {
                         if (g_strnew) {
-                            a1 = g_strnew("questboard/portrait_stars_gs_quest");
+                            a1 = g_strnew("portraits/portrait_picnic_small");
                             a2 = (void*)0;
                         }
                     /* } else if (strcmp(qid, "1.1.8") == 0) {
@@ -5949,6 +6065,21 @@ void* hook_170(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
         }
     });
     return H[170].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+}
+
+float hook_178(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    if (!tftf_quest_is_leisure() && tftf_quest_has_pending_enemy()) {
+        float ratio = tftf_quest_get_pending_enemy_hp_ratio();
+        if (ratio > 1.0f) ratio = 1.0f;
+        if (ratio < 0.05f) ratio = 0.05f;
+        static int s_log_hp178 = 0;
+        if (s_log_hp178++ < 20) {
+            flog("PFS_ENEMY_HP (0x0E3D688): returning pending ratio=%.2f", ratio);
+        }
+        return ratio;
+    }
+    typedef float (*fn_orig)(void*, void*, void*, void*, void*, void*, void*, void*);
+    return H[178].orig ? ((fn_orig)H[178].orig)(self, a1, a2, a3, a4, a5, a6, a7) : 1.0f;
 }
 
 static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hook_7,hook_8,
@@ -5970,7 +6101,7 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     hook_152,hook_153,hook_154,hook_155,hook_156,(void*)hook_157,(void*)hook_158,
     (void*)hook_159,hook_160,hook_161,hook_162,hook_163,hook_164,
     hook_165,hook_166,(void*)hook_167,hook_168,hook_169,hook_170,
-    hook_171,hook_172,hook_173,hook_174,hook_175,hook_176 };
+    hook_171,hook_172,hook_173,hook_174,hook_175,hook_176,(void*)hook_177,(void*)hook_178 };
 
 static void write_jump(uint8_t* dst, void* target){
     uint32_t* p = (uint32_t*)dst;

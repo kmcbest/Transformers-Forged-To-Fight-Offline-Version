@@ -111,6 +111,16 @@ void tftf_matrix_war_set_empty_team(int empty) {
     g_matrix_war_empty_team = empty;
 }
 
+static volatile int g_picnic_quest_active = 0;
+
+int tftf_is_picnic_quest_active(void) {
+    return g_picnic_quest_active;
+}
+
+void tftf_set_picnic_quest_active(int active) {
+    g_picnic_quest_active = active;
+}
+
 static void logmsg(const char *fmt, ...);
 static int resolve_team(Team *team);
 
@@ -127,14 +137,16 @@ typedef struct {
     int pending_battle_x, pending_battle_y;
     float hero_hp[5];
     char hero_bid[5][64];
+    float pending_enemy_hp_ratio;
 } QuestRunState;
 
 static QuestRunState g_quest_state = {
     .is_leisure = 1,
-    .hero_hp = {1.0f, 1.0f, 1.0f, 1.0f, 1.0f}
+    .hero_hp = {1.0f, 1.0f, 1.0f, 1.0f, 1.0f},
+    .pending_enemy_hp_ratio = 1.0f
 };
 
-void tftf_quest_on_combat_ended(const char* hero_bid, int player_won, float p0_remaining_hp_ratio) {
+void tftf_quest_on_combat_ended(const char* hero_bid, int player_won, float p0_remaining_hp_ratio, float p1_remaining_hp_ratio) {
     int idx = -1;
     if (hero_bid && hero_bid[0]) {
         for (int i = 0; i < 5; i++) {
@@ -165,6 +177,7 @@ void tftf_quest_on_combat_ended(const char* hero_bid, int player_won, float p0_r
 
     if (player_won) {
         g_quest_state.pending_battle_active = 0;
+        g_quest_state.pending_enemy_hp_ratio = 1.0f;
         if (p0_remaining_hp_ratio <= 0.0f) p0_remaining_hp_ratio = 0.05f;
         if (p0_remaining_hp_ratio > 1.0f) p0_remaining_hp_ratio = 1.0f;
         g_quest_state.hero_hp[idx] = p0_remaining_hp_ratio;
@@ -173,10 +186,13 @@ void tftf_quest_on_combat_ended(const char* hero_bid, int player_won, float p0_r
                hero_bid ? hero_bid : "unknown", p0_remaining_hp_ratio);
     } else {
         g_quest_state.pending_battle_active = 1;
+        if (p1_remaining_hp_ratio <= 0.0f) p1_remaining_hp_ratio = 0.05f;
+        if (p1_remaining_hp_ratio > 1.0f) p1_remaining_hp_ratio = 1.0f;
+        g_quest_state.pending_enemy_hp_ratio = p1_remaining_hp_ratio;
         g_quest_state.hero_hp[idx] = 0.0f;
-        logmsg("QUEST_COMBAT: Player LOST! Battle remains locked at (%d,%d), hero[%d] '%s' KO (HP=0.0)",
+        logmsg("QUEST_COMBAT: Player LOST! Battle remains locked at (%d,%d), hero[%d] '%s' KO (HP=0.0). Enemy remaining HP ratio=%.2f",
                g_quest_state.pending_battle_x, g_quest_state.pending_battle_y, idx,
-               hero_bid ? hero_bid : "unknown");
+               hero_bid ? hero_bid : "unknown", p1_remaining_hp_ratio);
     }
     pthread_mutex_unlock(&g_pos_lock);
 }
@@ -214,6 +230,16 @@ float tftf_quest_get_hero_hp_ratio_by_bid(const char* bid) {
         }
     }
     return 1.0f;
+}
+
+float tftf_quest_get_pending_enemy_hp_ratio(void) {
+    if (g_quest_state.is_leisure) return 1.0f;
+    return g_quest_state.pending_enemy_hp_ratio > 0.0f ? g_quest_state.pending_enemy_hp_ratio : 0.05f;
+}
+
+int tftf_quest_has_pending_enemy(void) {
+    if (g_quest_state.is_leisure) return 0;
+    return g_quest_state.pending_battle_active && (g_quest_state.pending_enemy_hp_ratio < 0.999f);
 }
 
 typedef struct {
@@ -1045,13 +1071,35 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
             if (max0 > 0.0f && p0 > 0.0f) p0_ratio = (p0 / max0);
             else p0_ratio = player_won ? 0.75f : 0.0f;
         }
-        if (player_won && p0_ratio <= 0.0f) p0_ratio = 0.05f;
-        if (p0_ratio > 1.0f) p0_ratio = 1.0f;
+        float p1_ratio = -1.0f;
+        if (body_str) {
+            const char *p1_sec = strstr(body_str, "player_1_stats");
+            if (p1_sec) {
+                const char *hp_rem = strstr(p1_sec, "\"hp_remaining\":");
+                const char *hp_max = strstr(p1_sec, "\"hp_max\":");
+                const char *hp_pct = strstr(p1_sec, "\"hp_percent\":");
+                if (hp_rem && hp_max) {
+                    float rem = (float)atof(hp_rem + 15);
+                    float mval = (float)atof(hp_max + 9);
+                    if (mval > 0.0f) p1_ratio = rem / mval;
+                } else if (hp_pct) {
+                    float pct = (float)atof(hp_pct + 13);
+                    if (pct > 1.0f) pct /= 100.0f;
+                    if (pct >= 0.0f) p1_ratio = pct;
+                }
+            }
+        }
+        if (p1_ratio < 0.0f) {
+            if (max1 > 0.0f && p1 > 0.0f) p1_ratio = (p1 / max1);
+            else p1_ratio = player_won ? 0.0f : 1.0f;
+        }
+        if (!player_won && p1_ratio <= 0.0f) p1_ratio = 0.05f;
+        if (p1_ratio > 1.0f) p1_ratio = 1.0f;
 
-        logmsg("RESOLVE_MATCH: hero='%s' p0=%.1f/%.1f (ratio=%.2f), p1=%.1f/%.1f -> player_won=%d",
-               g_p0_bot_id, p0, max0, p0_ratio, p1, max1, player_won);
+        logmsg("RESOLVE_MATCH: hero='%s' p0=%.1f/%.1f (ratio=%.2f), p1=%.1f/%.1f (ratio=%.2f) -> player_won=%d",
+               g_p0_bot_id, p0, max0, p0_ratio, p1, max1, p1_ratio, player_won);
 
-        tftf_quest_on_combat_ended(g_p0_bot_id, player_won, p0_ratio);
+        tftf_quest_on_combat_ended(g_p0_bot_id, player_won, p0_ratio, p1_ratio);
 
         Team team;
         Out qteam = {0};
@@ -1127,6 +1175,10 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
                 logmsg("MATRIX_WAR: quest-detail 1.1.5 -> keep squad (saved team has %s)", g_saved_team[0]);
             }
         }
+        g_picnic_quest_active = (strcmp(mid, "1.1.7") == 0);
+        if (g_picnic_quest_active) {
+            logmsg("PICNIC: quest-detail 1.1.7 -> activated Starscream's Picnic!");
+        }
         g_current_is_10x_challenge=(strcmp(mid,"1.1.2")==0);
         int is_zh = detect_chinese_language(headers, query);
         char lkey[128];
@@ -1141,8 +1193,12 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         if (g_matrix_war_active) {
             g_matrix_war_empty_team = 1;
         }
+        g_picnic_quest_active = (strcmp(qid, "1.1.7") == 0);
+        if (g_picnic_quest_active) {
+            logmsg("PICNIC: quest-begin 1.1.7 -> activated Starscream's Picnic!");
+        }
         g_current_is_10x_challenge = (strcmp(qid, "1.1.2") == 0);
-        int is_leisure = (strcmp(qid, "1.1.3") != 0 && strcmp(qid, "1.1.4") != 0 && strcmp(qid, "1.1.5") != 0 && strcmp(qid, "1.1.6") != 0);
+        int is_leisure = (strcmp(qid, "1.1.3") != 0 && strcmp(qid, "1.1.4") != 0 && strcmp(qid, "1.1.5") != 0 && strcmp(qid, "1.1.6") != 0 && strcmp(qid, "1.1.7") != 0);
         int x=0,y=1;if(strcmp(qid,"1.1.5")!=0)store_quest_team(body,end);snprintf(key,sizeof key,"@quest:start:%s",qid);v=lookup(key,&n);if(v)sscanf((const char*)v,"%d %d",&x,&y);
         char e_bid[6][64];
         for(int k=0; k<6; k++) snprintf(e_bid[k], sizeof e_bid[k], "%s", g_enemy_pool[k % ENEMY_POOL_SIZE]);
@@ -1154,6 +1210,7 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
             snprintf(g_quest_state.qid, sizeof g_quest_state.qid, "%s", qid);
             g_quest_state.is_leisure = is_leisure;
             for (int h = 0; h < 5; h++) g_quest_state.hero_hp[h] = 1.0f;
+            g_quest_state.pending_enemy_hp_ratio = 1.0f;
             int picked[6];
             for(int k=0; k<6; k++) {
                 int cand;
@@ -1226,6 +1283,7 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
                 g_quest_state.pending_battle_active = 1;
                 g_quest_state.pending_battle_x = nx;
                 g_quest_state.pending_battle_y = ny;
+                g_quest_state.pending_enemy_hp_ratio = 1.0f;
                 logmsg("QUEST_COMBAT: Stepped onto encounter tile (%d,%d), armed pending_battle!", nx, ny);
             }
         }

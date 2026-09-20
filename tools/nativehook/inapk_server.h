@@ -29,11 +29,16 @@ void tftf_reload_user_settings(void);
 int tftf_quest_is_leisure(void);
 float tftf_quest_get_hero_hp_ratio(int pos);
 float tftf_quest_get_hero_hp_ratio_by_bid(const char* bid);
+float tftf_quest_get_pending_enemy_hp_ratio(void);
+int tftf_quest_has_pending_enemy(void);
 
 int tftf_is_matrix_war_active(void);
 void tftf_set_matrix_war_active(int active);
 int tftf_matrix_war_should_empty_team(void);
 void tftf_matrix_war_set_empty_team(int empty);
+
+int tftf_is_picnic_quest_active(void);
+void tftf_set_picnic_quest_active(int active);
 
 const char* tftf_quest_get_current_qid(void);
 
