@@ -561,11 +561,7 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x141CD54, "ONHCCLICK",          2, 0 }, // 173 TransformersTopBarPresentation.OnHardCurrencyClick -> redirect to OnResourceClick
     { 0x0DA0720, "GETDEFTAB",          2, 0 }, // 174 PayoutsModel.GetDefaultTabId -> safe empty tab check
     { 0xF9A7F8,  "TS_GET_TEAM",        2, 0 }, // 175 TeamSelectModel.get_Team -> empty team on entry
-    { 0xB17608,  "ET_APPLY_FILTER",    2, 0 }, // 176 EditTeamModel.ApplySortingAndFilter -> filter to Rodimus
-    { 0xB17460,  "ET_INIT",            2, 0 }, // 177 EditTeamModel.Init -> filter to Rodimus
-    { 0xB16C54,  "ET_INIT_HEROES",     2, 0 }, // 178 EditTeamModel.InitHeroes -> filter to Rodimus
-    { 0xB16BF0,  "ET_HERO_COUNT",      2, 0 }, // 179 EditTeamModel.get_HeroCount -> return 1
-    { 0xB17894,  "ET_GET_HERO",        2, 0 }, // 180 EditTeamModel.GetHero -> return Rodimus
+    { 0xB16C54,  "ET_INIT_HEROES",     2, 0 }, // 176 EditTeamModel.InitHeroes -> filter to Rodimus
 };
 #define NH (int)(sizeof(H)/sizeof(H[0]))
 
@@ -871,6 +867,26 @@ static void apply_hero_portrait_deco(void* hp) {
         void* hero_data = *(void**)((char*)hp + 0xE0);
         if (!hero_data || (uintptr_t)hero_data < 0x100000 || ((uintptr_t)hero_data & 7)) return;
 
+        if (tftf_is_matrix_war_active()) {
+            char bid_check[80]; bid_check[0] = 0;
+            void* bid_str = *(void**)((char*)hero_data + 0x10);
+            if (obj_ok(bid_str)) read_str(bid_str, bid_check, sizeof(bid_check));
+            if (!bid_check[0] || strstr(bid_check, "rodimus") == NULL) {
+                void* bp_chk = *(void**)((char*)hero_data + 0x48);
+                if (obj_ok(bp_chk)) {
+                    void* bps = *(void**)((char*)bp_chk + 0x10);
+                    if (obj_ok(bps)) read_str(bps, bid_check, sizeof(bid_check));
+                }
+            }
+            if (strstr(bid_check, "rodimus") == NULL) {
+                void* hp_go = comp_get_go(hp, NULL);
+                if (hp_go && obj_ok(hp_go)) {
+                    go_set_active(hp_go, 0, NULL);
+                    return;
+                }
+            }
+        }
+
         // Ensure mUserOwned is 1 so any internal getters treat it as owned
         *(uint8_t*)((char*)hero_data + 0x68) = 1;
 
@@ -1038,6 +1054,47 @@ static void apply_hero_portrait_deco(void* hp) {
 }
 
 void* hook_33(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
+    if (!a0 || !obj_ok(a0)) return NULL;
+
+    // Check hero_data (+0xE0)
+    void* hero_data = *(void**)((char*)a0 + 0xE0);
+    if (!hero_data || !obj_ok(hero_data)) {
+        // Empty/unassigned cell: do NOT call orig, as HeroPortrait.RefreshFromData
+        // will attempt to dereference _portraitTexture (+0x260) and throw NullReferenceException!
+        return NULL;
+    }
+
+    // Ensure blueprint (+0x48) is resolved before orig, because RefreshFromData
+    // unconditionally dereferences hero_data->blueprint (+0x48) at 0xe8e290 and throws NRE if NULL!
+    void* bp = *(void**)((char*)hero_data + 0x48);
+    if (!bp || !obj_ok(bp)) {
+        void* bid = *(void**)((char*)hero_data + 0x10);
+        if (bid && obj_ok(bid)) {
+            bp = ((void*(*)(void*, void*))(g_base + 0xC1B364))(bid, NULL);
+            if (bp) *(void**)((char*)hero_data + 0x48) = bp;
+        }
+    }
+
+    // In Matrix War, ensure non-Rodimus cards are hidden and do not crash
+    if (tftf_is_matrix_war_active()) {
+        char bid[80]; bid[0] = 0;
+        void* s10 = *(void**)((char*)hero_data + 0x10);
+        if (obj_ok(s10)) read_str(s10, bid, sizeof(bid));
+        if (!bid[0] || strstr(bid, "rodimus") == NULL) {
+            if (bp && obj_ok(bp)) {
+                void* bps = *(void**)((char*)bp + 0x10);
+                if (obj_ok(bps)) read_str(bps, bid, sizeof(bid));
+            }
+        }
+        if (strstr(bid, "rodimus") == NULL) {
+            void* (*comp_get_go)(void*, void*) = (void*(*)(void*, void*))(g_base + 0x1B4BD28);
+            void (*go_set_active)(void*, int, void*) = (void(*)(void*, int, void*))(g_base + 0x1B50CA8);
+            void* go = comp_get_go(a0, NULL);
+            if (go && obj_ok(go)) go_set_active(go, 0, NULL);
+            return NULL;
+        }
+    }
+
     void* r = H[33].orig(a0,a1,a2,a3,a4,a5,a6,a7);
     apply_hero_portrait_deco(a0);
     return r;
@@ -3744,7 +3801,6 @@ void* hook_127(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     return H[127].orig(a0,a1,a2,a3,a4,a5,a6,a7);
 }
 void* hook_128(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
-    tftf_set_matrix_war_active(0);
     tshide_screen_exit("TSOUTRO");
     return H[128].orig(a0,a1,a2,a3,a4,a5,a6,a7);
 }
@@ -3810,6 +3866,34 @@ void* hook_135(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
         static int n=0;
         if(n<24){ n++; flog("ROSTERDRAGFIX skip this=%p arg=%p class='%s'",a0,a1,valid?cls:"<invalid>"); }
         return NULL;
+    }
+    if (tftf_is_matrix_war_active()) {
+        char bid[80]; bid[0] = 0;
+        PROTECT({
+            void* hero_data = *(void**)((char*)a1 + 0xe0);
+            if (hero_data && obj_ok(hero_data)) {
+                void* s10 = *(void**)((char*)hero_data + 0x10);
+                if (obj_ok(s10)) read_str(s10, bid, sizeof(bid));
+                if (!bid[0] || strstr(bid, "rodimus") == NULL) {
+                    void* bp = *(void**)((char*)hero_data + 0x48);
+                    if (obj_ok(bp)) {
+                        void* bps = *(void**)((char*)bp + 0x10);
+                        if (obj_ok(bps)) read_str(bps, bid, sizeof(bid));
+                    }
+                }
+                if (!bid[0] || strstr(bid, "rodimus") == NULL) {
+                    void* uh = *(void**)((char*)hero_data + 0x18);
+                    if (obj_ok(uh)) {
+                        void* uhs = *(void**)((char*)uh + 0x10);
+                        if (obj_ok(uhs)) read_str(uhs, bid, sizeof(bid));
+                    }
+                }
+            }
+        });
+        if (strstr(bid, "rodimus") == NULL) {
+            flog("MATRIX_WAR: hook_135 rejected click on non-Rodimus bot '%s'", bid);
+            return NULL;
+        }
     }
     static int n=0;
     if(n<8){ n++; flog("ROSTERDRAGFIX pass this=%p arg=%p class='%s'",a0,a1,cls); }
@@ -5603,79 +5687,58 @@ void* hook_174(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
 // ---- Matrix War (1.1.5) team clear and hero restriction ----
 static void* g_matrix_war_rodimus_hero = NULL;
 
-static void filter_heroes_for_matrix_war(void* model) {
-    PROTECT({
-        if (!model || !obj_ok(model)) return;
+static void filter_heroes_list_to_rodimus(const char* tag, void* list) {
+    if (!list || !obj_ok(list)) return;
+    void* items = *(void**)((char*)list + 0x10);
+    int32_t size = *(int32_t*)((char*)list + 0x18);
+    flog("MATRIX_WAR: %s checking list=%p items=%p size=%d", tag, list, items, size);
+    if (!items || !obj_ok(items) || size <= 0) return;
 
-        void* list = *(void**)((char*)model + 0x20);
-        if (!list || !obj_ok(list)) return;
-
-        void* items = *(void**)((char*)list + 0x10);
-        if (!items || !obj_ok(items)) return;
-
-        int32_t size = *(int32_t*)((char*)list + 0x18);
-        flog("MATRIX_WAR: filter_heroes_for_matrix_war model=%p list=%p size=%d", model, list, size);
-        if (size <= 0) return;
-
-        void* rodimus = NULL;
+    void* rodimus = NULL;
+    for (int i = 0; i < size; i++) {
+        void* hero = *(void**)((char*)items + 0x20 + i * sizeof(void*));
+        if (!hero || !obj_ok(hero)) continue;
+        char bid[80]; bid[0] = 0;
+        void* s10 = *(void**)((char*)hero + 0x10);
+        if (obj_ok(s10)) read_str(s10, bid, sizeof(bid));
+        if (!bid[0] || strstr(bid, "rodimus") == NULL) {
+            void* bp = *(void**)((char*)hero + 0x48);
+            if (obj_ok(bp)) {
+                void* bps = *(void**)((char*)bp + 0x10);
+                if (obj_ok(bps)) read_str(bps, bid, sizeof(bid));
+            }
+        }
+        if (!bid[0] || strstr(bid, "rodimus") == NULL) {
+            void* uh = *(void**)((char*)hero + 0x18);
+            if (obj_ok(uh)) {
+                void* uhs = *(void**)((char*)uh + 0x10);
+                if (obj_ok(uhs)) read_str(uhs, bid, sizeof(bid));
+            }
+        }
+        if (strstr(bid, "rodimus") != NULL) {
+            flog("MATRIX_WAR: Found Rodimus Prime at index %d ('%s') hero=%p", i, bid, hero);
+            rodimus = hero;
+            break;
+        }
+    }
+    if (rodimus) {
+        g_matrix_war_rodimus_hero = rodimus;
         for (int i = 0; i < size; i++) {
-            void* hero = *(void**)((char*)items + 0x20 + i * sizeof(void*));
-            if (!hero || !obj_ok(hero)) continue;
-
-            char bid[80]; bid[0] = 0;
-            void* s10 = *(void**)((char*)hero + 0x10);
-            if (obj_ok(s10)) read_str(s10, bid, sizeof(bid));
-
-            if (!bid[0] || strstr(bid, "rodimus") == NULL) {
-                void* bp = *(void**)((char*)hero + 0x48);
-                if (obj_ok(bp)) {
-                    void* bps = *(void**)((char*)bp + 0x10);
-                    if (obj_ok(bps)) read_str(bps, bid, sizeof(bid));
-                }
-            }
-            if (!bid[0] || strstr(bid, "rodimus") == NULL) {
-                void* uh = *(void**)((char*)hero + 0x18);
-                if (obj_ok(uh)) {
-                    void* uhs = *(void**)((char*)uh + 0x10);
-                    if (obj_ok(uhs)) read_str(uhs, bid, sizeof(bid));
-                }
-            }
-
-            if (strstr(bid, "rodimusprime_gs_mp09") != NULL || strstr(bid, "rodimus") != NULL) {
-                flog("MATRIX_WAR: Found Rodimus Prime at index %d (bid='%s')", i, bid);
-                rodimus = hero;
-                break;
-            }
+            *(void**)((char*)items + 0x20 + i * sizeof(void*)) = rodimus;
         }
-
-        if (rodimus) {
-            g_matrix_war_rodimus_hero = rodimus;
-            *(void**)((char*)items + 0x20) = rodimus;
-            for (int i = 1; i < size; i++) {
-                *(void**)((char*)items + 0x20 + i * sizeof(void*)) = NULL;
-            }
-            *(int32_t*)((char*)list + 0x18) = 1;
-            *(int32_t*)((char*)list + 0x1C) += 1;
-            *(int32_t*)((char*)model + 0x30) = 1; // _heroCount = 1
-            *(int32_t*)((char*)model + 0x48) = 1; // _totalHeroes = 1
-
-            void* list40 = *(void**)((char*)model + 0x40);
-            if (list40 && obj_ok(list40)) {
-                void* items40 = *(void**)((char*)list40 + 0x10);
-                if (items40 && obj_ok(items40)) {
-                    *(void**)((char*)items40 + 0x20) = rodimus;
-                    int32_t size40 = *(int32_t*)((char*)list40 + 0x18);
-                    for (int i = 1; i < size40; i++) {
-                        *(void**)((char*)items40 + 0x20 + i * sizeof(void*)) = NULL;
-                    }
-                    *(int32_t*)((char*)list40 + 0x18) = 1;
-                }
-            }
-            flog("MATRIX_WAR: Successfully filtered heroes to Rodimus Prime only!");
-        } else {
-            flog("MATRIX_WAR: WARNING: Rodimus Prime not found in %d heroes!", size);
+        *(int32_t*)((char*)list + 0x18) = 1;
+        *(int32_t*)((char*)list + 0x1C) += 1;
+        flog("MATRIX_WAR: %s restricted list to 1 (Rodimus) successfully!", tag);
+    } else if (g_matrix_war_rodimus_hero) {
+        for (int i = 0; i < size; i++) {
+            *(void**)((char*)items + 0x20 + i * sizeof(void*)) = g_matrix_war_rodimus_hero;
         }
-    });
+        *(int32_t*)((char*)list + 0x18) = 1;
+        *(int32_t*)((char*)list + 0x1C) += 1;
+        flog("MATRIX_WAR: %s used cached Rodimus hero to restrict list!", tag);
+    } else {
+        flog("MATRIX_WAR: %s WARNING: Rodimus NOT found in %d heroes of list %p!", tag, size, list);
+    }
 }
 
 // slot 175 TS_GET_TEAM (0xF9A7F8): TeamSelectModel.get_Team
@@ -5687,52 +5750,31 @@ void* hook_175(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     return H[175].orig(a0, a1, a2, a3, a4, a5, a6, a7);
 }
 
-// slot 176 ET_APPLY_FILTER (0xB17608): EditTeamModel.ApplySortingAndFilter
+// slot 176 ET_INIT_HEROES (0xB16C54): EditTeamModel.InitHeroes(this, data)
+// Intercepts hero list initialization when opening Edit Squad.
+// In Matrix War (1.1.5), restricts the hero list to Rodimus Prime only before and after orig.
 void* hook_176(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    if (tftf_is_matrix_war_active()) {
+        PROTECT({
+            flog("MATRIX_WAR: hook_176 InitHeroes pre model=%p data=%p", a0, a1);
+            if (a1 && obj_ok(a1)) {
+                filter_heroes_list_to_rodimus("pre data+0x60", *(void**)((char*)a1 + 0x60));
+            }
+        });
+    }
+
     void* res = H[176].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+
     if (tftf_is_matrix_war_active()) {
-        filter_heroes_for_matrix_war(a0);
+        PROTECT({
+            flog("MATRIX_WAR: hook_176 InitHeroes post model=%p", a0);
+            if (a0 && obj_ok(a0)) {
+                // model+0x20 is EditTeamModel._heroes (List<HeroData>)
+                filter_heroes_list_to_rodimus("post model+0x20", *(void**)((char*)a0 + 0x20));
+            }
+        });
     }
     return res;
-}
-
-// slot 177 ET_INIT (0xB17460): EditTeamModel.Init
-void* hook_177(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
-    void* res = H[177].orig(a0, a1, a2, a3, a4, a5, a6, a7);
-    if (tftf_is_matrix_war_active()) {
-        filter_heroes_for_matrix_war(a0);
-    }
-    return res;
-}
-
-// slot 178 ET_INIT_HEROES (0xB16C54): EditTeamModel.InitHeroes
-void* hook_178(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
-    void* res = H[178].orig(a0, a1, a2, a3, a4, a5, a6, a7);
-    if (tftf_is_matrix_war_active()) {
-        filter_heroes_for_matrix_war(a0);
-    }
-    return res;
-}
-
-// slot 179 ET_HERO_COUNT (0xB16BF0): EditTeamModel.get_HeroCount
-void* hook_179(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
-    if (tftf_is_matrix_war_active()) {
-        return (void*)(intptr_t)1;
-    }
-    return H[179].orig(a0, a1, a2, a3, a4, a5, a6, a7);
-}
-
-// slot 180 ET_GET_HERO (0xB17894): EditTeamModel.GetHero
-void* hook_180(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
-    if (tftf_is_matrix_war_active()) {
-        if (!g_matrix_war_rodimus_hero) {
-            filter_heroes_for_matrix_war(a0);
-        }
-        if (g_matrix_war_rodimus_hero != NULL && (int)(intptr_t)a1 == 0) {
-            return g_matrix_war_rodimus_hero;
-        }
-    }
-    return H[180].orig(a0, a1, a2, a3, a4, a5, a6, a7);
 }
 
 void* hook_166(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
@@ -5902,8 +5944,7 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     hook_152,hook_153,hook_154,hook_155,hook_156,(void*)hook_157,(void*)hook_158,
     (void*)hook_159,hook_160,hook_161,hook_162,hook_163,hook_164,
     hook_165,hook_166,(void*)hook_167,hook_168,hook_169,hook_170,
-    hook_171,hook_172,hook_173,hook_174,hook_175,hook_176,
-    hook_177,hook_178,hook_179,hook_180 };
+    hook_171,hook_172,hook_173,hook_174,hook_175,hook_176 };
 
 static void write_jump(uint8_t* dst, void* target){
     uint32_t* p = (uint32_t*)dst;

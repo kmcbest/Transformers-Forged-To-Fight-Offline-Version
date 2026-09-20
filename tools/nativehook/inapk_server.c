@@ -101,6 +101,9 @@ void tftf_set_matrix_war_active(int active) {
 }
 
 int tftf_matrix_war_should_empty_team(void) {
+    if (g_saved_team_count > 0 && strstr(g_saved_team[0], "rodimus") != NULL) {
+        return 0;
+    }
     return g_matrix_war_empty_team;
 }
 
@@ -1110,8 +1113,13 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         snprintf(mid,sizeof mid,"%.63s",path_last(p));
         g_matrix_war_active = (strcmp(mid, "1.1.5") == 0);
         if (g_matrix_war_active) {
-            g_matrix_war_empty_team = 1;
-            logmsg("MATRIX_WAR: quest-detail 1.1.5 -> armed empty_team flag!");
+            if (!(g_saved_team_count > 0 && strstr(g_saved_team[0], "rodimus") != NULL)) {
+                g_matrix_war_empty_team = 1;
+                logmsg("MATRIX_WAR: quest-detail 1.1.5 -> armed empty_team flag (no rodimus in saved team)");
+            } else {
+                g_matrix_war_empty_team = 0;
+                logmsg("MATRIX_WAR: quest-detail 1.1.5 -> keep squad (saved team has %s)", g_saved_team[0]);
+            }
         }
         g_current_is_10x_challenge=(strcmp(mid,"1.1.2")==0);
         int is_zh = detect_chinese_language(headers, query);
@@ -1241,11 +1249,10 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         char teamid[64]="0",bids[5][64];int count,invalid;Team team;Out steam={0},ateam={0};TemplateArg args[3];
         json_string(body,end,"teamID",teamid,sizeof teamid);
         json_heroes(body,end,bids,&count,&invalid);
+        store_saved_team(bids,count,invalid);
         if (g_matrix_war_active) {
             tftf_matrix_war_set_empty_team(0);
-            logmsg("MATRIX_WAR: setSavedTeam disarmed empty_team flag!");
-        } else {
-            store_saved_team(bids,count,invalid);
+            logmsg("MATRIX_WAR: setSavedTeam saved team (count=%d bid[0]=%s) and disarmed empty_team flag!", count, bids[0]);
         }
         v=lookup("@savedteam:template",&n);
         if(!v||!resolve_team(&team)||!render_steam(&steam,&team)||!render_ateam(&ateam,&team)){free(steam.p);free(ateam.p);return NULL;}
