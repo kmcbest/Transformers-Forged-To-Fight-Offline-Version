@@ -626,7 +626,8 @@ static void* installer(void* arg){
     poke32(0xE8E0FC, 0xD503201F);   // HeroPortrait.RefreshFromData: nop mUserOwned==0
     poke32(0xE80238, 0x52800001);   // HeroPortrait.SetEnabledItems: suppress empty progress bar
     poke32(0xC5C1C0, 0x52800361);   // HeroesScreen.OnGridItemInitialized: mask 0x1b
-    poke32(0xC5C258, 0xD503201F);   // HeroesScreen: nop ForceSetRarityFrame
+    poke32(0xC5C250, 0x528000A1);   // HeroesScreen: mov w1, #5 (instead of mov w1, wzr)
+    poke32(0xC5C258, 0x9408D540);   // HeroesScreen: bl 0xE91758 (ForceSetRarityFrame(hp, 5))
     poke32(0xE80220, 0xD503201F);   // HeroPortrait.SetEnabledItems: nop deactivation loop
     poke32(0xC5D888, 0x52800361);   // HeroesScreen lambda: mask 0x1b
 

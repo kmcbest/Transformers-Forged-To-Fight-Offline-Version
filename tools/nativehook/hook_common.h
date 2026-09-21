@@ -118,8 +118,10 @@ static inline int read_str(void* s, char* buf, int cap) {
     buf[0] = 0;
     uintptr_t p = (uintptr_t)s;
     if (p < 0x100000 || (p >= 0x0000800000000000ULL) || (p & 7)) return 0;
+    uintptr_t k = *(uintptr_t*)p;
+    if (k < 0x100000 || (k >= 0x0000800000000000ULL) || (k & 7)) return 0;
     int32_t len = *(int32_t*)(p + 0x10);
-    if (len < 0 || len > cap - 1) return 0;
+    if (len <= 0 || len > cap - 1 || len > 2048) return 0;
     uint16_t* ch = (uint16_t*)(p + 0x14);
     for (int i = 0; i < len; i++) buf[i] = (ch[i] < 128) ? (char)ch[i] : '?';
     buf[len] = 0;

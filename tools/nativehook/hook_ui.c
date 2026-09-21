@@ -77,241 +77,184 @@ const char* hero_faction_str(void* hero_data) {
 // ============================================================================
 // Card Portrait Decorator
 //
-// Hardened against non-HeroPortrait objects (such as HeroPortraitOverlay)
-// to prevent heap corruption and segfaults.
-void apply_hero_portrait_deco(void* hp) {
+static void apply_hero_portrait_deco_internal(void* hp) {
     if (!hp || !obj_ok(hp)) return;
     char hp_cname[64];
-    if (!il2cpp_object_class(hp, hp_cname, sizeof(hp_cname)) || strcmp(hp_cname, "HeroPortrait") != 0) return;
+    if (!il2cpp_object_class(hp, hp_cname, sizeof(hp_cname))) return;
+    if (strstr(hp_cname, "Overlay") != NULL) return;
+    if (!strstr(hp_cname, "HeroPortrait")) return;
 
-    PROTECT({
-        void* (*comp_get_go)(void*, void*) = (void*(*)(void*, void*))(g_base + 0x1B4BD28);
-        void (*go_set_active)(void*, int, void*) = (void(*)(void*, int, void*))(g_base + 0x1B50CA8);
-        void (*set_sprite_name)(void*, void*, void*) = (void(*)(void*, void*, void*))(g_base + 0x1E61320);
+    void (*ngui_set_active)(void*, int, void*) = (void(*)(void*, int, void*))(g_base + 0xDE0D18);
+    void (*set_sprite_name)(void*, void*, void*) = (void(*)(void*, void*, void*))(g_base + 0x1E61320);
 
-        // 1. Explicitly ensure progress bar (+0x210) is INACTIVE
-        void* pbar = *(void**)((char*)hp + 0x210);
-        if (pbar && obj_ok(pbar)) {
-            void* pgo = comp_get_go(pbar, NULL);
-            if (pgo && obj_ok(pgo)) go_set_active(pgo, 0, NULL);
-        }
+    // 1. Inspect hero_data (+0xE0)
+    void* hero_data = *(void**)((char*)hp + 0xE0);
+    if (!hero_data || !obj_ok(hero_data)) return;
 
-        // 2. Inspect hero_data (+0xE0)
-        void* hero_data = *(void**)((char*)hp + 0xE0);
-        if (!hero_data || !obj_ok(hero_data)) return;
-
-        if (tftf_is_matrix_war_active()) {
-            char bid_check[80]; bid_check[0] = 0;
-            void* bid_str = *(void**)((char*)hero_data + 0x10);
-            if (obj_ok(bid_str)) read_str(bid_str, bid_check, sizeof(bid_check));
-            if (!bid_check[0] || strstr(bid_check, "rodimus") == NULL) {
-                void* bp_chk = *(void**)((char*)hero_data + 0x48);
-                if (obj_ok(bp_chk)) {
-                    void* bps = *(void**)((char*)bp_chk + 0x10);
-                    if (obj_ok(bps)) read_str(bps, bid_check, sizeof(bid_check));
-                }
-            }
-            if (strstr(bid_check, "rodimus") == NULL) {
-                void* hp_go = comp_get_go(hp, NULL);
-                if (hp_go && obj_ok(hp_go)) {
-                    go_set_active(hp_go, 0, NULL);
-                    return;
-                }
+    if (tftf_is_matrix_war_active()) {
+        char bid_check[80]; bid_check[0] = 0;
+        void* bid_str = *(void**)((char*)hero_data + 0x10);
+        if (obj_ok(bid_str)) read_str(bid_str, bid_check, sizeof(bid_check));
+        if (!bid_check[0] || strstr(bid_check, "rodimus") == NULL) {
+            void* bp_chk = *(void**)((char*)hero_data + 0x48);
+            if (obj_ok(bp_chk)) {
+                void* bps = *(void**)((char*)bp_chk + 0x10);
+                if (obj_ok(bps)) read_str(bps, bid_check, sizeof(bid_check));
             }
         }
-
-        // Ensure mUserOwned is 1 so any internal getters treat it as owned
-        *(uint8_t*)((char*)hero_data + 0x68) = 1;
-
-        // Ensure isRendering is 1
-        *(uint8_t*)((char*)hp + 0xFA) = 1;
-
-        // 3. Resolve rarity from blueprint (+0x48)
-        int rarity = 5;
-        void* bp = *(void**)((char*)hero_data + 0x48);
-        if (!bp || !obj_ok(bp)) {
-            void* bid = *(void**)((char*)hero_data + 0x10);
-            if (bid && obj_ok(bid)) {
-                bp = ((void*(*)(void*, void*))(g_base + 0xC1B364))(bid, NULL);
-                if (bp && obj_ok(bp)) *(void**)((char*)hero_data + 0x48) = bp;
-            }
+        if (strstr(bid_check, "rodimus") == NULL) {
+            ngui_set_active(hp, 0, NULL);
+            return;
         }
-        if (bp && obj_ok(bp)) {
-            int r = *(int*)((char*)bp + 0x64);
-            if (r >= 1 && r <= 5) rarity = r;
+    }
+
+    // Ensure mUserOwned is 1 so any internal getters treat it as owned
+    *(uint8_t*)((char*)hero_data + 0x68) = 1;
+
+    // Ensure isRendering is 1
+    *(uint8_t*)((char*)hp + 0xFA) = 1;
+
+    // 2. Resolve rarity from blueprint (+0x48)
+    int rarity = 5;
+    void* bp = *(void**)((char*)hero_data + 0x48);
+    if (!bp || !obj_ok(bp)) {
+        void* bid = *(void**)((char*)hero_data + 0x10);
+        if (bid && obj_ok(bid)) {
+            bp = ((void*(*)(void*, void*))(g_base + 0xC1B364))(bid, NULL);
+            if (bp && obj_ok(bp)) *(void**)((char*)hero_data + 0x48) = bp;
         }
+    }
+    if (bp && obj_ok(bp)) {
+        int r = *(int*)((char*)bp + 0x64);
+        if (r >= 1 && r <= 5) rarity = r;
+    }
 
-        // 4. Set rarity frame (HeroPortrait.SetRarityFrame @ 0xE91768)
-        ((void(*)(void*, int, void*))(g_base + 0xE91768))(hp, rarity, NULL);
-
-        // 4b. Restore alive / KO state (_isKnockedOut at +0x112: 1 = alive, 0 = KO)
-        float h_ratio = 1.0f;
-        if (!tftf_quest_is_leisure()) {
-            char h_bid[80]; h_bid[0] = 0;
-            void* bid_str = *(void**)((char*)hero_data + 0x10);
-            if (obj_ok(bid_str)) read_str(bid_str, h_bid, sizeof(h_bid));
-            if (!h_bid[0] && bp && obj_ok(bp)) {
-                void* bps = *(void**)((char*)bp + 0x10);
-                if (obj_ok(bps)) read_str(bps, h_bid, sizeof(h_bid));
-            }
-            if (h_bid[0]) {
-                h_ratio = tftf_quest_get_hero_hp_ratio_by_bid(h_bid);
-            }
+    // 3. Set rarity frame (HeroPortrait.SetRarityFrame @ 0xE91768)
+    void* frame_sprite = *(void**)((char*)hp + 0x240);
+    if (frame_sprite && obj_ok(frame_sprite)) {
+        void* prefix = *(void**)((char*)hp + 0x20);
+        if (prefix && obj_ok(prefix)) {
+            ((void(*)(void*, int, void*))(g_base + 0xE91768))(hp, rarity, NULL);
         }
+        ngui_set_active(frame_sprite, 1, NULL);
+    }
 
-        if (h_ratio <= 0.001f) {
-            *(uint8_t*)((char*)hp + 0x110) = 1; // _isClickDisabled
-            *(uint8_t*)((char*)hp + 0x111) = 1; // _isDragDisabled
-            *(uint8_t*)((char*)hp + 0x112) = 0; // _isKnockedOut (0 = KO)
-            *(float*)((char*)hp + 0x1c8) = 0.0f; // _healthPercentage
-            void* ko_tab = *(void**)((char*)hp + 0x178); // _knockedOutTab
-            if (obj_ok(ko_tab)) {
-                void* kogo = comp_get_go(ko_tab, NULL);
-                if (kogo && obj_ok(kogo)) go_set_active(kogo, 1, NULL);
-            }
-            void* act_tab = *(void**)((char*)hp + 0x180);
-            if (obj_ok(act_tab)) {
-                void* actgo = comp_get_go(act_tab, NULL);
-                if (actgo && obj_ok(actgo)) go_set_active(actgo, 0, NULL);
-            }
-        } else {
-            *(uint8_t*)((char*)hp + 0x110) = 0; // _isClickDisabled
-            *(uint8_t*)((char*)hp + 0x111) = 0; // _isDragDisabled
-            *(uint8_t*)((char*)hp + 0x112) = 1; // _isKnockedOut (1 = alive, not KO!)
-            *(float*)((char*)hp + 0x1c8) = h_ratio; // _healthPercentage
-            void* ko_tab = *(void**)((char*)hp + 0x178); // _knockedOutTab
-            if (obj_ok(ko_tab)) {
-                void* kogo = comp_get_go(ko_tab, NULL);
-                if (kogo && obj_ok(kogo)) go_set_active(kogo, 0, NULL);
-            }
+    // 5. Restore alive / KO state (_isKnockedOut at +0x101: 1 = alive, 0 = KO)
+    float h_ratio = 1.0f;
+    if (!tftf_quest_is_leisure()) {
+        char h_bid[80]; h_bid[0] = 0;
+        void* bid_str = *(void**)((char*)hero_data + 0x10);
+        if (obj_ok(bid_str)) read_str(bid_str, h_bid, sizeof(h_bid));
+        if (!h_bid[0] && bp && obj_ok(bp)) {
+            void* bps = *(void**)((char*)bp + 0x10);
+            if (obj_ok(bps)) read_str(bps, h_bid, sizeof(h_bid));
         }
-
-        // 5. Activate _frame UISprite (+0x240) and _portraitTexture (+0x260)
-        void* frame_sprite = *(void**)((char*)hp + 0x240);
-        if (frame_sprite && obj_ok(frame_sprite)) {
-            void* fgo = comp_get_go(frame_sprite, NULL);
-            if (fgo && obj_ok(fgo)) go_set_active(fgo, 1, NULL);
+        if (h_bid[0]) {
+            h_ratio = tftf_quest_get_hero_hp_ratio_by_bid(h_bid);
         }
-        void* frame_tex = *(void**)((char*)hp + 0x260);
-        if (frame_tex && obj_ok(frame_tex)) {
-            void* tgo = comp_get_go(frame_tex, NULL);
-            if (tgo && obj_ok(tgo)) go_set_active(tgo, 1, NULL);
-        }
+    }
 
-        // 5b. Activate mWingWangs container (+0x1E0)
-        void* wing_wangs = *(void**)((char*)hp + 0x1E0);
-        if (wing_wangs && obj_ok(wing_wangs)) {
-            void* wgo = comp_get_go(wing_wangs, NULL);
-            if (wgo && obj_ok(wgo)) go_set_active(wgo, 1, NULL);
-        }
+    void* ko_tab = *(void**)((char*)hp + 0x220); // _knockedOutTab
+    if (h_ratio <= 0.001f) {
+        *(uint8_t*)((char*)hp + 0x112) = 1; // _isClickDisabled
+        *(uint8_t*)((char*)hp + 0x113) = 1; // _isDragDisabled
+        *(uint8_t*)((char*)hp + 0x101) = 0; // _isKnockedOut (0 = KO)
+        *(float*)((char*)hp + 0x104) = 0.0f; // _healthPercentage
+        if (ko_tab && obj_ok(ko_tab)) ngui_set_active(ko_tab, 1, NULL);
+    } else {
+        *(uint8_t*)((char*)hp + 0x112) = 0; // _isClickDisabled
+        *(uint8_t*)((char*)hp + 0x113) = 0; // _isDragDisabled
+        *(uint8_t*)((char*)hp + 0x101) = 1; // _isKnockedOut (1 = alive)
+        *(float*)((char*)hp + 0x104) = h_ratio; // _healthPercentage
+        if (ko_tab && obj_ok(ko_tab)) ngui_set_active(ko_tab, 0, NULL);
+    }
 
-        // 6. Iterate child widgets (+0x1D8) and update data
-        void* widgets_list = *(void**)((char*)hp + 0x1D8);
-        if (widgets_list && obj_ok(widgets_list)) {
-            int count = *(int*)((char*)widgets_list + 0x18);
-            void* items = *(void**)((char*)widgets_list + 0x10);
-            if (items && count > 0 && count < 32) {
-                for (int i = 0; i < count; i++) {
-                    void* w = *(void**)((char*)items + 0x20 + i * 8);
-                    if (w && obj_ok(w)) {
-                        void* wgo = comp_get_go(w, NULL);
-                        if (wgo && obj_ok(wgo)) go_set_active(wgo, 1, NULL);
+    // 6. Iterate child overlays (_existingOverlays at +0x1D8) and configure stars & badge
+    void* widgets_list = *(void**)((char*)hp + 0x1D8);
+    if (widgets_list && obj_ok(widgets_list)) {
+        int count = *(int*)((char*)widgets_list + 0x18);
+        void* items = *(void**)((char*)widgets_list + 0x10);
+        if (items && count > 0 && count < 32) {
+            for (int i = 0; i < count; i++) {
+                void* w = *(void**)((char*)items + 0x20 + i * 8);
+                if (!w || !obj_ok(w)) continue;
+                ngui_set_active(w, 1, NULL);
 
-                        const char* cname = "<unknown>";
-                        void* klass = *(void**)w;
-                        if (klass && obj_ok(klass)) {
-                            cname = *(const char**)((char*)klass + 0x10);
-                        }
+                char cname[64];
+                if (!il2cpp_object_class(w, cname, sizeof(cname))) continue;
 
-                        // If RarityWidget, explicitly activate and configure star GameObjects!
-                        if (cname && strstr(cname, "RarityWidget")) {
-                            void* star_str = g_strnew ? g_strnew("Star_white") : NULL;
-                            for (int arr_idx = 0; arr_idx < 2; arr_idx++) {
-                                void* stars_arr = *(void**)((char*)w + 0x20 + arr_idx * 8);
-                                if (stars_arr && obj_ok(stars_arr)) {
-                                    int n_stars = *(int*)((char*)stars_arr + 0x18);
-                                    if (n_stars > 0 && n_stars <= 10) {
-                                        for (int s = 0; s < n_stars; s++) {
-                                            void* star_sp = *(void**)((char*)stars_arr + 0x20 + s * 8);
-                                            if (star_sp && obj_ok(star_sp)) {
-                                                void* sgo = comp_get_go(star_sp, NULL);
-                                                if (sgo && obj_ok(sgo)) {
-                                                    go_set_active(sgo, (s < rarity) ? 1 : 0, NULL);
-                                                }
-                                                if (s < rarity && star_str) {
-                                                    set_sprite_name(star_sp, star_str, NULL);
-                                                }
-                                            }
+                // If RarityWidget, explicitly activate and configure star UISprites!
+                if (strstr(cname, "RarityWidget")) {
+                    void* star_str = g_strnew ? g_strnew("Star_white") : NULL;
+                    for (int arr_idx = 0; arr_idx < 2; arr_idx++) {
+                        void* stars_arr = *(void**)((char*)w + 0x20 + arr_idx * 8);
+                        if (stars_arr && obj_ok(stars_arr)) {
+                            int n_stars = *(int*)((char*)stars_arr + 0x18);
+                            if (n_stars > 0 && n_stars <= 10) {
+                                for (int s = 0; s < n_stars; s++) {
+                                    void* star_sp = *(void**)((char*)stars_arr + 0x20 + s * 8);
+                                    if (star_sp && obj_ok(star_sp)) {
+                                        ngui_set_active(star_sp, (s < rarity) ? 1 : 0, NULL);
+                                        if (s < rarity && star_str) {
+                                            set_sprite_name(star_sp, star_str, NULL);
                                         }
                                     }
                                 }
                             }
-                            // Reposition aligners
-                            void* aligner1 = *(void**)((char*)w + 0x40);
-                            if (aligner1 && obj_ok(aligner1)) {
-                                void* ago1 = comp_get_go(aligner1, NULL);
-                                if (ago1 && obj_ok(ago1)) go_set_active(ago1, 1, NULL);
-                                ((void(*)(void*, void*))(g_base + 0x1517F60))(aligner1, NULL);
-                            }
-                            void* aligner2 = *(void**)((char*)w + 0x48);
-                            if (aligner2 && obj_ok(aligner2)) {
-                                void* ago2 = comp_get_go(aligner2, NULL);
-                                if (ago2 && obj_ok(ago2)) go_set_active(ago2, 1, NULL);
-                                ((void(*)(void*, void*))(g_base + 0x1517F60))(aligner2, NULL);
-                            }
                         }
+                    }
+                    // Reposition aligners (+0x40, +0x48)
+                    void* aligner1 = *(void**)((char*)w + 0x40);
+                    if (aligner1 && obj_ok(aligner1)) {
+                        ngui_set_active(aligner1, 1, NULL);
+                        ((void(*)(void*, void*))(g_base + 0x1517F60))(aligner1, NULL);
+                    }
+                    void* aligner2 = *(void**)((char*)w + 0x48);
+                    if (aligner2 && obj_ok(aligner2)) {
+                        ngui_set_active(aligner2, 1, NULL);
+                        ((void(*)(void*, void*))(g_base + 0x1517F60))(aligner2, NULL);
+                    }
+                }
 
-                        // If RatingWidget, activate FactionLabel and paint the faction glyph ourselves.
-                        if (cname && strstr(cname, "RatingWidget")) {
-                            void* flabel = *(void**)((char*)w + 0x30);
-                            if (flabel && obj_ok(flabel)) {
-                                void* fgo = comp_get_go(flabel, NULL);
-                                if (fgo && obj_ok(fgo)) go_set_active(fgo, 1, NULL);
-                                char bid[80]; bid[0] = 0;
-                                void* bstr = *(void**)((char*)hero_data + 0x10);
-                                if (obj_ok(bstr)) read_str(bstr, bid, sizeof bid);
-                                const char* faction = hero_faction_str(hero_data);
-                                const char* glyph = faction_icon_glyph(faction);
-                                char lcn[40]; lcn[0] = 0;
-                                {   // diagnostic: what really sits at widget+0x30?
-                                    void* fk = *(void**)flabel;
-                                    if (obj_ok(fk)) {
-                                        const char* n = *(const char**)((char*)fk + 0x10);
-                                        if ((uintptr_t)n >= 0x100000) {
-                                            int k = 0;
-                                            for (; k < 39; k++) { char ch = n[k]; if (!ch || ch < 0x20 || ch >= 0x7f) break; lcn[k] = ch; }
-                                            lcn[k] = 0;
-                                        }
-                                    }
-                                }
-                                if (glyph && g_strnew) {
-                                    void* icon_str = g_strnew(glyph);
-                                    if (icon_str) {
-                                        ((void(*)(void*, void*, void*))(g_base + 0xDE127C))(flabel, icon_str, NULL);
-                                        flog("RATEWGT %s faction='%s' glyph=U+%04X label=%p(%s) written",
-                                             bid[0] ? bid : "?", faction ? faction : "<null>",
-                                             (unsigned)faction_icon_code(faction), flabel, lcn);
-                                    }
-                                } else {
-                                    int attr_raw = 0;
-                                    void* bp2 = *(void**)((char*)hero_data + 0x48);
-                                    if (obj_ok(bp2)) attr_raw = *(int*)((char*)bp2 + 0x70);
-                                    flog("RATEWGT %s faction='%s' attr_raw=%d label=%p(%s) -> NO glyph, badge blank",
-                                         bid[0] ? bid : "?", faction ? faction : "<null>", attr_raw, flabel, lcn);
-                                }
-                            }
-                            void* r_align = *(void**)((char*)w + 0x38);
-                            if (r_align && obj_ok(r_align)) {
-                                void* ago = comp_get_go(r_align, NULL);
-                                if (ago && obj_ok(ago)) go_set_active(ago, 1, NULL);
-                                ((void(*)(void*, void*))(g_base + 0xDDE398))(r_align, NULL);
+                // If RatingWidget, activate FactionLabel (+0x30) and paint the faction glyph
+                if (strstr(cname, "RatingWidget")) {
+                    void* flabel = *(void**)((char*)w + 0x30);
+                    if (flabel && obj_ok(flabel)) {
+                        ngui_set_active(flabel, 1, NULL);
+                        char bid[80]; bid[0] = 0;
+                        void* bstr = *(void**)((char*)hero_data + 0x10);
+                        if (obj_ok(bstr)) read_str(bstr, bid, sizeof bid);
+                        const char* faction = hero_faction_str(hero_data);
+                        const char* glyph = faction_icon_glyph(faction);
+                        if (glyph && g_strnew) {
+                            void* icon_str = g_strnew(glyph);
+                            if (icon_str) {
+                                ((void(*)(void*, void*, void*))(g_base + 0xDE127C))(flabel, icon_str, NULL);
+                                flog("RATEWGT %s faction='%s' glyph=U+%04X label=%p written",
+                                     bid[0] ? bid : "?", faction ? faction : "<null>",
+                                     (unsigned)faction_icon_code(faction), flabel);
                             }
                         }
+                    }
+                    void* r_align = *(void**)((char*)w + 0x38);
+                    if (r_align && obj_ok(r_align)) {
+                        ngui_set_active(r_align, 1, NULL);
+                        ((void(*)(void*, void*))(g_base + 0xDDE398))(r_align, NULL);
                     }
                 }
             }
         }
+    }
+}
+
+void apply_hero_portrait_deco(void* hp) {
+    static int s_apply_deco_depth = 0;
+    if (s_apply_deco_depth > 0) return;
+    s_apply_deco_depth = 1;
+    PROTECT({
+        apply_hero_portrait_deco_internal(hp);
     });
+    s_apply_deco_depth = 0;
 }
 
 // ============================================================================
@@ -329,47 +272,44 @@ void* hook_HeroPortrait_RefreshFromData(void* a0, void* a1, void* a2, void* a3, 
     if (!a0 || !obj_ok(a0)) return NULL;
 
     char cname[64];
-    if (!il2cpp_object_class(a0, cname, sizeof(cname)) || strcmp(cname, "HeroPortrait") != 0) {
+    if (!il2cpp_object_class(a0, cname, sizeof(cname)) || strstr(cname, "Overlay") != NULL || !strstr(cname, "HeroPortrait")) {
         return H[33].orig ? H[33].orig(a0, a1, a2, a3, a4, a5, a6, a7) : NULL;
     }
 
-    // Check hero_data (+0xE0)
     void* hero_data = *(void**)((char*)a0 + 0xE0);
-    if (!hero_data || !obj_ok(hero_data)) {
-        return NULL;
-    }
-
-    // Ensure blueprint (+0x48) is resolved before orig
-    void* bp = *(void**)((char*)hero_data + 0x48);
-    if (!bp || !obj_ok(bp)) {
-        void* bid = *(void**)((char*)hero_data + 0x10);
-        if (bid && obj_ok(bid)) {
-            bp = ((void*(*)(void*, void*))(g_base + 0xC1B364))(bid, NULL);
-            if (bp) *(void**)((char*)hero_data + 0x48) = bp;
-        }
-    }
-
-    // In Matrix War, ensure non-Rodimus cards are hidden
-    if (tftf_is_matrix_war_active()) {
-        char bid[80]; bid[0] = 0;
-        void* s10 = *(void**)((char*)hero_data + 0x10);
-        if (obj_ok(s10)) read_str(s10, bid, sizeof(bid));
-        if (!bid[0] || strstr(bid, "rodimus") == NULL) {
-            if (bp && obj_ok(bp)) {
-                void* bps = *(void**)((char*)bp + 0x10);
-                if (obj_ok(bps)) read_str(bps, bid, sizeof(bid));
+    if (hero_data && obj_ok(hero_data)) {
+        // Ensure blueprint (+0x48) is resolved before orig
+        void* bp = *(void**)((char*)hero_data + 0x48);
+        if (!bp || !obj_ok(bp)) {
+            void* bid = *(void**)((char*)hero_data + 0x10);
+            if (bid && obj_ok(bid)) {
+                bp = ((void*(*)(void*, void*))(g_base + 0xC1B364))(bid, NULL);
+                if (bp) *(void**)((char*)hero_data + 0x48) = bp;
             }
         }
-        if (strstr(bid, "rodimus") == NULL) {
-            void* (*comp_get_go)(void*, void*) = (void*(*)(void*, void*))(g_base + 0x1B4BD28);
-            void (*go_set_active)(void*, int, void*) = (void(*)(void*, int, void*))(g_base + 0x1B50CA8);
-            void* go = comp_get_go(a0, NULL);
-            if (go && obj_ok(go)) go_set_active(go, 0, NULL);
-            return NULL;
+
+        // In Matrix War, ensure non-Rodimus cards are hidden
+        if (tftf_is_matrix_war_active()) {
+            char bid[80]; bid[0] = 0;
+            void* s10 = *(void**)((char*)hero_data + 0x10);
+            if (obj_ok(s10)) read_str(s10, bid, sizeof(bid));
+            if (!bid[0] || strstr(bid, "rodimus") == NULL) {
+                if (bp && obj_ok(bp)) {
+                    void* bps = *(void**)((char*)bp + 0x10);
+                    if (obj_ok(bps)) read_str(bps, bid, sizeof(bid));
+                }
+            }
+            if (strstr(bid, "rodimus") == NULL) {
+                void* (*comp_get_go)(void*, void*) = (void*(*)(void*, void*))(g_base + 0x1B4BD28);
+                void (*go_set_active)(void*, int, void*) = (void(*)(void*, int, void*))(g_base + 0x1B50CA8);
+                void* go = comp_get_go(a0, NULL);
+                if (go && obj_ok(go)) go_set_active(go, 0, NULL);
+                return NULL;
+            }
         }
     }
 
-    void* r = H[33].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    void* r = H[33].orig ? H[33].orig(a0, a1, a2, a3, a4, a5, a6, a7) : NULL;
     apply_hero_portrait_deco(a0);
     return r;
 }

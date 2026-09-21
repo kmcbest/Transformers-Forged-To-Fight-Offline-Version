@@ -3,62 +3,7 @@
 // ============================================================================
 // Matrix War (1.1.5) Helpers
 // ============================================================================
-static void* g_matrix_war_rodimus_hero = NULL;
 
-static void filter_heroes_list_to_rodimus(const char* tag, void* list) {
-    if (!tftf_is_matrix_war_active()) return;
-    if (!list || !obj_ok(list)) return;
-    void* items = *(void**)((char*)list + 0x10);
-    int32_t size = *(int32_t*)((char*)list + 0x18);
-    flog("MATRIX_WAR: %s checking list=%p items=%p size=%d", tag, list, items, size);
-    if (!items || !obj_ok(items) || size <= 0 || size > 200) return;
-
-    void* rodimus = NULL;
-    for (int i = 0; i < size; i++) {
-        void* hero = *(void**)((char*)items + 0x20 + i * sizeof(void*));
-        if (!hero || !obj_ok(hero)) continue;
-        char bid[80]; bid[0] = 0;
-        void* s10 = *(void**)((char*)hero + 0x10);
-        if (obj_ok(s10)) read_str(s10, bid, sizeof(bid));
-        if (!bid[0] || strstr(bid, "rodimus") == NULL) {
-            void* bp = *(void**)((char*)hero + 0x48);
-            if (obj_ok(bp)) {
-                void* bps = *(void**)((char*)bp + 0x10);
-                if (obj_ok(bps)) read_str(bps, bid, sizeof(bid));
-            }
-        }
-        if (!bid[0] || strstr(bid, "rodimus") == NULL) {
-            void* uh = *(void**)((char*)hero + 0x18);
-            if (obj_ok(uh)) {
-                void* uhs = *(void**)((char*)uh + 0x10);
-                if (obj_ok(uhs)) read_str(uhs, bid, sizeof(bid));
-            }
-        }
-        if (strstr(bid, "rodimus") != NULL) {
-            flog("MATRIX_WAR: Found Rodimus Prime at index %d ('%s') hero=%p", i, bid, hero);
-            rodimus = hero;
-            break;
-        }
-    }
-    if (rodimus) {
-        g_matrix_war_rodimus_hero = rodimus;
-        for (int i = 0; i < size; i++) {
-            *(void**)((char*)items + 0x20 + i * sizeof(void*)) = rodimus;
-        }
-        *(int32_t*)((char*)list + 0x18) = 1;
-        *(int32_t*)((char*)list + 0x1C) += 1;
-        flog("MATRIX_WAR: %s restricted list to 1 (Rodimus) successfully!", tag);
-    } else if (g_matrix_war_rodimus_hero) {
-        for (int i = 0; i < size; i++) {
-            *(void**)((char*)items + 0x20 + i * sizeof(void*)) = g_matrix_war_rodimus_hero;
-        }
-        *(int32_t*)((char*)list + 0x18) = 1;
-        *(int32_t*)((char*)list + 0x1C) += 1;
-        flog("MATRIX_WAR: %s used cached Rodimus hero to restrict list!", tag);
-    } else {
-        flog("MATRIX_WAR: %s WARNING: Rodimus NOT found in %d heroes of list %p!", tag, size, list);
-    }
-}
 
 // ============================================================================
 // Hook: PrefightScreenData.SetCurrentHero (Slot 157 @ 0x0E3D8CC)
@@ -258,26 +203,7 @@ void* hook_TeamSelectModel_get_Team(void* a0, void* a1, void* a2, void* a3, void
 //   Restricts the editable hero pool to Rodimus Prime only during Matrix War.
 // ============================================================================
 void* hook_EditTeamModel_InitHeroes(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
-    if (tftf_is_matrix_war_active()) {
-        PROTECT({
-            flog("MATRIX_WAR: hook_176 InitHeroes pre model=%p data=%p", a0, a1);
-            if (a1 && obj_ok(a1)) {
-                filter_heroes_list_to_rodimus("pre data+0x60", *(void**)((char*)a1 + 0x60));
-            }
-        });
-    }
-
-    void* res = H[176].orig(a0, a1, a2, a3, a4, a5, a6, a7);
-
-    if (tftf_is_matrix_war_active()) {
-        PROTECT({
-            flog("MATRIX_WAR: hook_176 InitHeroes post model=%p", a0);
-            if (a0 && obj_ok(a0)) {
-                filter_heroes_list_to_rodimus("post model+0x20", *(void**)((char*)a0 + 0x20));
-            }
-        });
-    }
-    return res;
+    return H[176].orig ? H[176].orig(a0, a1, a2, a3, a4, a5, a6, a7) : NULL;
 }
 
 // ============================================================================
@@ -300,6 +226,5 @@ float hook_PrefightScreenData_GetEnemyNormalizedHealth(void* self, void* a1, voi
         }
         return ratio;
     }
-    typedef float (*fn_orig)(void*, void*, void*, void*, void*, void*, void*, void*);
-    return H[178].orig ? ((fn_orig)H[178].orig)(self, a1, a2, a3, a4, a5, a6, a7) : 1.0f;
+    return 1.0f;
 }
