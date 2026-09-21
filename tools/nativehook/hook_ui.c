@@ -79,16 +79,10 @@ const char* hero_faction_str(void* hero_data) {
 //
 // Hardened against non-HeroPortrait objects (such as HeroPortraitOverlay)
 // to prevent heap corruption and segfaults.
-static __thread int s_in_apply_deco = 0;
 void apply_hero_portrait_deco(void* hp) {
-    if (s_in_apply_deco) return;
-    s_in_apply_deco = 1;
-    if (!hp || !obj_ok(hp)) { s_in_apply_deco = 0; return; }
+    if (!hp || !obj_ok(hp)) return;
     char hp_cname[64];
-    if (!il2cpp_object_class(hp, hp_cname, sizeof(hp_cname)) || strcmp(hp_cname, "HeroPortrait") != 0) {
-        s_in_apply_deco = 0;
-        return;
-    }
+    if (!il2cpp_object_class(hp, hp_cname, sizeof(hp_cname)) || strcmp(hp_cname, "HeroPortrait") != 0) return;
 
     PROTECT({
         void* (*comp_get_go)(void*, void*) = (void*(*)(void*, void*))(g_base + 0x1B4BD28);
@@ -318,7 +312,6 @@ void apply_hero_portrait_deco(void* hp) {
             }
         }
     });
-    s_in_apply_deco = 0;
 }
 
 // ============================================================================
