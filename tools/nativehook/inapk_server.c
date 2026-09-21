@@ -941,6 +941,8 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
     char key[256], tid[64]="", bid[64]="", mid[64], qid[64]; const unsigned char *v; size_t n; const char *end=body+bn;
     if(strstr(p,"/quests/quest-list")) {
         g_current_is_10x_challenge = 0;
+        g_matrix_war_active = 0;
+        g_picnic_quest_active = 0;
         int is_zh = detect_and_store_lang(headers, query);
         v = lookup(is_zh ? "@questlist:zh" : "@questlist:en", outn);
         if(v) return v;
@@ -1145,7 +1147,14 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         *outn = strlen((const char*)match_ok);
         return match_ok;
     }
-    if(has_suffix(p,"/base/active")) { snprintf(key,sizeof key,"%s /base/active",method); v=lookup(key,outn); return v?v:lookup("GET /base/active",outn); }
+    if(has_suffix(p,"/base/active")) {
+        g_current_is_10x_challenge = 0;
+        g_matrix_war_active = 0;
+        g_picnic_quest_active = 0;
+        snprintf(key,sizeof key,"%s /base/active",method);
+        v=lookup(key,outn);
+        return v?v:lookup("GET /base/active",outn);
+    }
     if(has_suffix(p,"/tutorial/start-tutorial")||has_suffix(p,"/tutorial/start-branch")||has_suffix(p,"/tutorial/early-start-branch")||has_suffix(p,"/tutorial/complete-tutorial")) {
         if(!json_string(body,end,"tid",tid,sizeof tid))if(!json_string(body,end,"tutorialId",tid,sizeof tid))json_string(body,end,"id",tid,sizeof tid);
         if(!safe_id(tid)) return NULL;
@@ -1510,7 +1519,6 @@ int tftf_server_start_from_apk(void) {
         "/sdcard/Android/media/com.kabam.bigrobot/files/tftf_offline_payload.bin",
         "/data/data/com.kabam.bigrobot/files/tftf_offline_payload.bin",
         "/data/user/0/com.kabam.bigrobot/files/tftf_offline_payload.bin",
-        "/data/local/tmp/tftf_offline_payload.bin",
         "/sdcard/Android/data/com.kabam.bigrobot/files/tftf_offline_payload.bin",
         "/storage/emulated/0/Android/data/com.kabam.bigrobot/files/tftf_offline_payload.bin",
         "/sdcard/Documents/tftf_offline_payload.bin",
