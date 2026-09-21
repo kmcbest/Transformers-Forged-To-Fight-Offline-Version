@@ -37,11 +37,15 @@ static int g_sp3cand_dumped = 0;
 static int g_sp3cand_lines = 0;
 
 // Input buffer window fallback for hook_58
-#define SETACT_FALLBACK_WINDOW 0.2f
+#define SETACT_FALLBACK_WINDOW 0.5f
 static inline float game_clock(void) {
     if (!g_base) return -1.0f;
-    typedef float (*fn_time)(void);
-    return ((fn_time)(g_base + 0x1B86184))(); // UnityEngine.Time.get_time
+    uintptr_t p = g_base + 0x2c1a928;
+    p = *(uintptr_t*)p; if (p < 0x100000 || (p & 7)) return -1.0f;
+    p = *(uintptr_t*)p; if (p < 0x100000 || (p & 7)) return -1.0f;
+    p = *(uintptr_t*)(p + 0xb8); if (p < 0x100000 || (p & 7)) return -1.0f;
+    p = *(uintptr_t*)p; if (p < 0x100000 || (p & 7)) return -1.0f;
+    return *(float*)(p + 0x18);
 }
 
 // ============================================================================
@@ -1478,22 +1482,22 @@ void hook_AIController_Simulate(void* self, float dT, void* method) {
     }
     PROTECT({
         if (!self || !obj_ok(self)) return;
-        typedef int (*fn_can_shoot)(void*);
-        fn_can_shoot can_shoot = (fn_can_shoot)(g_base + 0xDB31A8);
-        if (can_shoot && can_shoot(self)) {
-            typedef int (*fn_try_exec)(void*, int);
-            fn_try_exec try_exec = (fn_try_exec)(g_base + 0xDB237C);
-            if (try_exec) {
-                int ok = try_exec(self, 1);
-                static int ai_atk_logged = 0;
-                if (ok && ai_atk_logged < 15) {
-                    ai_atk_logged++;
-                    flog("AIRANGE: triggered ranged attack action=1 on %p", self);
-                }
+        void* player = fld_p(self, 0x90); // AIController.PlayerController
+        if (obj_ok(player) && *(uint8_t*)((uintptr_t)self + 0x88) && // AIController._inited
+            ((int(*)(void*, void*))(g_base + 0xDB07A4))(self, NULL) && // get_IsActive
+            !((int(*)(void*, void*))(g_base + 0xDB025C))(self, NULL) && // get_IsPaused
+            !((int(*)(void*, void*))(g_base + 0x11752C8))(player, NULL) && // get_IsAttacking
+            ((int(*)(void*, void*))(g_base + 0x1174FEC))(player, NULL)) { // get_CanShoot
+            ((void(*)(void*, int, void*))(g_base + 0x1179AF4))(player, 1, NULL); // Action.Attack
+            static unsigned fired_lines = 0;
+            if (fired_lines < 100) {
+                fired_lines++;
+                flog("AIRANGE fired=1 ai=%p player=%p", self, player);
             }
         }
     });
 }
+
 
 // Slot 153: PlayerController.SpecialAttack
 void* hook_PlayerController_SpecialAttack(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {

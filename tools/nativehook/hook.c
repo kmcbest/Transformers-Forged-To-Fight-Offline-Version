@@ -238,7 +238,7 @@ HookDef H[] = {
     { 0x1464ccc,"hbL",       1, 0 }, // 55 fast-dot list reader
     { 0xDAB16C, "FIXFIGHT",  2, 0 }, // 56 PlayerAttributes.Init
     { 0x12A9D94,"FIXHS",     2, 0 }, // 57 HashSet<T>..ctor
-    { 0xD35130, "SETACTFIX", 98, 0 }, // 58 PlayerInput.QueuedAction.SetAction
+    { 0xD35130, "SETACTFIX",  2, 0 }, // 58 PlayerInput.QueuedAction.SetAction
     { 0x12E3214, "==QLIST==",  99, 0 }, // 59 QuestDB.AddQuestSummarys
     { 0x10381F0, "==QSET==",   99, 0 }, // 60 Legacy.QuestSet.AddQuestSummarys
     { 0x12E4110, "==QDET==",   99, 0 }, // 61 QuestDB.AddQuestDetails

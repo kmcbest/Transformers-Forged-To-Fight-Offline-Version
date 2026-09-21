@@ -27,13 +27,50 @@ const char* hero_faction_str(void* hero_data) {
     static char buf[24];
     buf[0] = 0;
     if (!obj_ok(hero_data)) return NULL;
+
+    // 1. Try blueprint @ 0x48 -> AttributeBaseType @ 0x70
     void* bp = *(void**)((char*)hero_data + 0x48);
     if (obj_ok(bp)) {
         void* a = *(void**)((char*)bp + 0x70);
         if (read_str(a, buf, sizeof buf) && buf[0]) return buf;
     }
-    void* f = ((void*(*)(void*,void*))(g_base + 0xE8D8A0))(hero_data, NULL);
-    if (read_str(f, buf, sizeof buf) && buf[0]) return buf;
+
+    // 2. Try blueprint ID string @ 0x10 from hero_data or blueprint
+    char bid[80]; bid[0] = 0;
+    void* bstr = *(void**)((char*)hero_data + 0x10);
+    if (obj_ok(bstr)) read_str(bstr, bid, sizeof bid);
+    if (!bid[0] && obj_ok(bp)) {
+        void* bps = *(void**)((char*)bp + 0x10);
+        if (obj_ok(bps)) read_str(bps, bid, sizeof bid);
+    }
+    if (bid[0]) {
+        for (int i = 0; bid[i]; i++) {
+            if (bid[i] >= 'A' && bid[i] <= 'Z') bid[i] += 32;
+        }
+        if (strstr(bid, "cheetor") || strstr(bid, "rhino") || strstr(bid, "oprimal") || strstr(bid, "dinob")) {
+            strcpy(buf, "maximal");
+            return buf;
+        }
+        if (strstr(bid, "wasp") || strstr(bid, "scorponok")) {
+            strcpy(buf, "predacon");
+            return buf;
+        }
+        if (strstr(bid, "arcee") || strstr(bid, "windb") || strstr(bid, "chromia") || strstr(bid, "lifeline") ||
+            strstr(bid, "bumbl") || strstr(bid, "ironh") || strstr(bid, "ratch") || strstr(bid, "wheelj") ||
+            strstr(bid, "prowl") || strstr(bid, "sides") || strstr(bid, "griml") || strstr(bid, "mirag") ||
+            strstr(bid, "sunstreak") || strstr(bid, "blastr") || strstr(bid, "cliffjump") || strstr(bid, "hotrod") ||
+            strstr(bid, "hound") || strstr(bid, "jetfire") || strstr(bid, "starsaber") || strstr(bid, "ultramagnus_gs") ||
+            (strstr(bid, "optimus") && !strstr(bid, "optimus_sg") && !strstr(bid, "optimusprime_sg") && !strstr(bid, "nemesis"))) {
+            strcpy(buf, "autobot");
+            return buf;
+        }
+        if (strstr(bid, "autobot")) {
+            strcpy(buf, "autobot");
+            return buf;
+        }
+        strcpy(buf, "decepticon");
+        return buf;
+    }
     return NULL;
 }
 
@@ -42,12 +79,16 @@ const char* hero_faction_str(void* hero_data) {
 //
 // Hardened against non-HeroPortrait objects (such as HeroPortraitOverlay)
 // to prevent heap corruption and segfaults.
-// ============================================================================
-
+static __thread int s_in_apply_deco = 0;
 void apply_hero_portrait_deco(void* hp) {
-    if (!hp || !obj_ok(hp)) return;
+    if (s_in_apply_deco) return;
+    s_in_apply_deco = 1;
+    if (!hp || !obj_ok(hp)) { s_in_apply_deco = 0; return; }
     char hp_cname[64];
-    if (!il2cpp_object_class(hp, hp_cname, sizeof(hp_cname)) || strcmp(hp_cname, "HeroPortrait") != 0) return;
+    if (!il2cpp_object_class(hp, hp_cname, sizeof(hp_cname)) || strcmp(hp_cname, "HeroPortrait") != 0) {
+        s_in_apply_deco = 0;
+        return;
+    }
 
     PROTECT({
         void* (*comp_get_go)(void*, void*) = (void*(*)(void*, void*))(g_base + 0x1B4BD28);
@@ -109,6 +150,8 @@ void apply_hero_portrait_deco(void* hp) {
         // 4. Set rarity frame (HeroPortrait.SetRarityFrame @ 0xE91768)
         ((void(*)(void*, int, void*))(g_base + 0xE91768))(hp, rarity, NULL);
 
+        // 4b. Restore alive / KO state (_isKnockedOut at +0x112: 1 = alive, 0 = KO)
+        float h_ratio = 1.0f;
         if (!tftf_quest_is_leisure()) {
             char h_bid[80]; h_bid[0] = 0;
             void* bid_str = *(void**)((char*)hero_data + 0x10);
@@ -118,33 +161,34 @@ void apply_hero_portrait_deco(void* hp) {
                 if (obj_ok(bps)) read_str(bps, h_bid, sizeof(h_bid));
             }
             if (h_bid[0]) {
-                float h_ratio = tftf_quest_get_hero_hp_ratio_by_bid(h_bid);
-                if (h_ratio <= 0.001f) {
-                    *(uint8_t*)((char*)hp + 0x110) = 1; // _isClickDisabled
-                    *(uint8_t*)((char*)hp + 0x111) = 1; // _isDragDisabled
-                    *(uint8_t*)((char*)hp + 0x112) = 0; // _isKnockedOut (0 = dead)
-                    *(float*)((char*)hp + 0x1c8) = 0.0f; // _healthPercentage
-                    void* ko_tab = *(void**)((char*)hp + 0x178); // _knockedOutTab
-                    if (obj_ok(ko_tab)) {
-                        void* kogo = comp_get_go(ko_tab, NULL);
-                        if (kogo && obj_ok(kogo)) go_set_active(kogo, 1, NULL);
-                    }
-                    void* act_tab = *(void**)((char*)hp + 0x180);
-                    if (obj_ok(act_tab)) {
-                        void* actgo = comp_get_go(act_tab, NULL);
-                        if (actgo && obj_ok(actgo)) go_set_active(actgo, 0, NULL);
-                    }
-                } else {
-                    *(uint8_t*)((char*)hp + 0x110) = 0; // _isClickDisabled
-                    *(uint8_t*)((char*)hp + 0x111) = 0; // _isDragDisabled
-                    *(uint8_t*)((char*)hp + 0x112) = 1; // _isKnockedOut (1 = alive)
-                    *(float*)((char*)hp + 0x1c8) = h_ratio; // _healthPercentage
-                    void* ko_tab = *(void**)((char*)hp + 0x178); // _knockedOutTab
-                    if (obj_ok(ko_tab)) {
-                        void* kogo = comp_get_go(ko_tab, NULL);
-                        if (kogo && obj_ok(kogo)) go_set_active(kogo, 0, NULL);
-                    }
-                }
+                h_ratio = tftf_quest_get_hero_hp_ratio_by_bid(h_bid);
+            }
+        }
+
+        if (h_ratio <= 0.001f) {
+            *(uint8_t*)((char*)hp + 0x110) = 1; // _isClickDisabled
+            *(uint8_t*)((char*)hp + 0x111) = 1; // _isDragDisabled
+            *(uint8_t*)((char*)hp + 0x112) = 0; // _isKnockedOut (0 = KO)
+            *(float*)((char*)hp + 0x1c8) = 0.0f; // _healthPercentage
+            void* ko_tab = *(void**)((char*)hp + 0x178); // _knockedOutTab
+            if (obj_ok(ko_tab)) {
+                void* kogo = comp_get_go(ko_tab, NULL);
+                if (kogo && obj_ok(kogo)) go_set_active(kogo, 1, NULL);
+            }
+            void* act_tab = *(void**)((char*)hp + 0x180);
+            if (obj_ok(act_tab)) {
+                void* actgo = comp_get_go(act_tab, NULL);
+                if (actgo && obj_ok(actgo)) go_set_active(actgo, 0, NULL);
+            }
+        } else {
+            *(uint8_t*)((char*)hp + 0x110) = 0; // _isClickDisabled
+            *(uint8_t*)((char*)hp + 0x111) = 0; // _isDragDisabled
+            *(uint8_t*)((char*)hp + 0x112) = 1; // _isKnockedOut (1 = alive, not KO!)
+            *(float*)((char*)hp + 0x1c8) = h_ratio; // _healthPercentage
+            void* ko_tab = *(void**)((char*)hp + 0x178); // _knockedOutTab
+            if (obj_ok(ko_tab)) {
+                void* kogo = comp_get_go(ko_tab, NULL);
+                if (kogo && obj_ok(kogo)) go_set_active(kogo, 0, NULL);
             }
         }
 
@@ -183,17 +227,6 @@ void apply_hero_portrait_deco(void* hp) {
                         void* klass = *(void**)w;
                         if (klass && obj_ok(klass)) {
                             cname = *(const char**)((char*)klass + 0x10);
-                        }
-
-                        // Call SetData(hero_data) via interface vtable slot 0x1C8
-                        void** vtable = (void**)klass;
-                        if (vtable) {
-                            typedef void (*set_data_fn)(void*, void*, void*);
-                            set_data_fn fn = (set_data_fn)vtable[0x1C8 / 8];
-                            void* minfo = vtable[0x1D0 / 8];
-                            if (fn && (uintptr_t)fn >= g_base) {
-                                fn(w, hero_data, minfo);
-                            }
                         }
 
                         // If RarityWidget, explicitly activate and configure star GameObjects!
@@ -285,6 +318,7 @@ void apply_hero_portrait_deco(void* hp) {
             }
         }
     });
+    s_in_apply_deco = 0;
 }
 
 // ============================================================================
@@ -485,7 +519,9 @@ static const struct ArtBaseMap ART_BASE_MAP[] = {
     { "jazz_cin_tf", "jazz_c" },
     { "jetfire_gs_leader2014", "jetfire_gs" },
     { "kickback_gs_deluxe2012", "kickb_gs" },
-    { "lifeline_gs_deluxe2014", "lifeline" },
+    { "lifeline_gs_deluxe2014", "lifeline_gs" },
+    { "lifeline_gs", "lifeline_gs" },
+    { "lifeline", "lifeline_gs" },
     { "lockdown_cin_aoe", "lockd_c" },
     { "megatron_cin_rotf", "megatron_c_rotf" },
     { "megatron_gs_leader2015", "megatron_gs" },

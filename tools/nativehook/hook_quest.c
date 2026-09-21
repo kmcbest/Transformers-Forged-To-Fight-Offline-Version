@@ -6,11 +6,12 @@
 static void* g_matrix_war_rodimus_hero = NULL;
 
 static void filter_heroes_list_to_rodimus(const char* tag, void* list) {
+    if (!tftf_is_matrix_war_active()) return;
     if (!list || !obj_ok(list)) return;
     void* items = *(void**)((char*)list + 0x10);
     int32_t size = *(int32_t*)((char*)list + 0x18);
     flog("MATRIX_WAR: %s checking list=%p items=%p size=%d", tag, list, items, size);
-    if (!items || !obj_ok(items) || size <= 0) return;
+    if (!items || !obj_ok(items) || size <= 0 || size > 200) return;
 
     void* rodimus = NULL;
     for (int i = 0; i < size; i++) {

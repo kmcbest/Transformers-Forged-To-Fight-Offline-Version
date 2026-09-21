@@ -92,12 +92,28 @@ int g_current_is_10x_challenge = 0;
 static volatile int g_matrix_war_active = 0;
 static volatile int g_matrix_war_empty_team = 1;
 
+typedef struct {
+    char qid[64];
+    int is_leisure;
+    int pending_battle_active;
+    int pending_battle_x, pending_battle_y;
+    float hero_hp[5];
+    char hero_bid[5][64];
+    float pending_enemy_hp_ratio;
+} QuestRunState;
+
+static QuestRunState g_quest_state = {
+    .is_leisure = 1,
+    .hero_hp = {1.0f, 1.0f, 1.0f, 1.0f, 1.0f},
+    .pending_enemy_hp_ratio = 1.0f
+};
+
 int tftf_is_matrix_war_active(void) {
-    return g_matrix_war_active;
+    return g_matrix_war_active && (strcmp(g_quest_state.qid, "1.1.5") == 0);
 }
 
 void tftf_set_matrix_war_active(int active) {
-    g_matrix_war_active = active;
+    g_matrix_war_active = active && (strcmp(g_quest_state.qid, "1.1.5") == 0);
 }
 
 int tftf_matrix_war_should_empty_team(void) {
@@ -129,22 +145,6 @@ extern volatile float g_p0_max_hp;
 extern volatile float g_p1_max_hp;
 extern volatile float g_p0_last_hp;
 extern volatile float g_p1_last_hp;
-
-typedef struct {
-    char qid[64];
-    int is_leisure;
-    int pending_battle_active;
-    int pending_battle_x, pending_battle_y;
-    float hero_hp[5];
-    char hero_bid[5][64];
-    float pending_enemy_hp_ratio;
-} QuestRunState;
-
-static QuestRunState g_quest_state = {
-    .is_leisure = 1,
-    .hero_hp = {1.0f, 1.0f, 1.0f, 1.0f, 1.0f},
-    .pending_enemy_hp_ratio = 1.0f
-};
 
 void tftf_quest_on_combat_ended(const char* hero_bid, int player_won, float p0_remaining_hp_ratio, float p1_remaining_hp_ratio) {
     int idx = -1;
