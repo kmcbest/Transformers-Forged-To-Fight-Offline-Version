@@ -564,6 +564,7 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0xB16C54,  "ET_INIT_HEROES",     2, 0 }, // 176 EditTeamModel.InitHeroes -> filter to Rodimus
     { 0x0DAD5A4, "APPLY_DMG",          2, 0 }, // 177 PlayerAttributes.ApplyDamage -> picnic quest ranged-only damage
     { 0x0E3D688, "PFS_ENEMY_HP",       2, 0 }, // 178 PrefightScreenData.GetEnemyNormalizedHealth -> residual enemy HP
+    { 0x0DAD558, "CRIT_MULT",          2, 0 }, // 179 PlayerAttributes.GetCritDamageMultiplier -> ensure 1.5x crit damage for Player 0
 };
 #define NH (int)(sizeof(H)/sizeof(H[0]))
 
@@ -2780,6 +2781,7 @@ static int calc_enemy_rating(const char* bid, int rank, int level) {
 
 static float g_combat_enemy_mana_gain = 0.5f;
 static float g_combat_player_mana_gain = 1.0f;
+static float g_combat_player_crit_mult = 1.5f;
 
 static void load_combat_tuning_config(void) {
     const char* hot_paths[] = {
@@ -2820,6 +2822,16 @@ static void load_combat_tuning_config(void) {
                             }
                         }
                     }
+                    const char* p_crit = strstr(buf, "\"player_crit_mult\"");
+                    if (p_crit) {
+                        const char* colon = strchr(p_crit, ':');
+                        if (colon) {
+                            float val = 1.5f;
+                            if (sscanf(colon + 1, "%f", &val) == 1 && val >= 1.0f && val <= 10.0f) {
+                                g_combat_player_crit_mult = val;
+                            }
+                        }
+                    }
                     free(buf);
                     fclose(fp);
                     return;
@@ -2854,6 +2866,16 @@ static void load_combat_tuning_config(void) {
                     float val = 1.0f;
                     if (sscanf(colon + 1, "%f", &val) == 1 && val >= 0.0f && val <= 10.0f) {
                         g_combat_player_mana_gain = val;
+                    }
+                }
+            }
+            const char* p_crit = strstr(buf, "\"player_crit_mult\"");
+            if (p_crit) {
+                const char* colon = strchr(p_crit, ':');
+                if (colon) {
+                    float val = 1.5f;
+                    if (sscanf(colon + 1, "%f", &val) == 1 && val >= 1.0f && val <= 10.0f) {
+                        g_combat_player_crit_mult = val;
                     }
                 }
             }
@@ -2942,11 +2964,14 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                 *(float*)  ((char*)at1 + 0x50) = 0.5f;  // BlockProficiency
                 *(float*)  ((char*)at1 + 0x54) = g_combat_enemy_mana_gain;  // Dynamic enemy mana gain rate
                 *(int32_t*)((char*)at1 + 0x58) = 0;     // ManaStart = 0
+                *(float*)  ((char*)at1 + 0x8C) = 0.0f;  // Enemy CritDamageResist = 0 (allow player crits!)
             }
             if (at2 && obj_ok(at2)) {
                 *(int32_t*)((char*)at2 + 0x58) = 0;     // Player ManaStart = 0
                 *(float*)  ((char*)at2 + 0x44) = 0.5f;  // Player CritChance (50% crit rate)
+                *(float*)  ((char*)at2 + 0x48) = 1.5f;  // Player CritDamage
                 *(float*)  ((char*)at2 + 0x54) = g_combat_player_mana_gain; // Dynamic player mana gain rate
+                *(float*)  ((char*)at2 + 0x8C) = 0.0f;  // Player CritDamageResist = 0
             }
             if (ch1 && obj_ok(ch1)) {
                 *(int32_t*)((char*)ch1 + 0x28) = 3;     // NumSpecials
@@ -2955,7 +2980,9 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                 *(float*)  ((char*)ch1 + 0x34) = enemy_hp_ratio;
                 *(int32_t*)((char*)ch1 + 0x38) = atk;
                 *(int32_t*)((char*)ch1 + 0x3C) = atk;
+                *(float*)  ((char*)ch1 + 0x48) = 1.0f;  // CritDamage multiplier
                 *(float*)  ((char*)ch1 + 0x58) = 1.0f;  // HP multiplier in CharacterData
+                *(float*)  ((char*)ch1 + 0x8C) = 0.0f;  // CritDamageResist multiplier
             }
             LOG("FIXFIGHT_STATS: player=%d bp=%s filled hp=%d (ratio=%.2f) atk=%d pi=%d enemy_mana_gain=%.2f challenge_mult=%.1f",
                  player_idx, id1, hp, enemy_hp_ratio, atk, pi, g_combat_enemy_mana_gain, tftf_get_challenge_hp_multiplier());
@@ -2963,6 +2990,7 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
             if (at1 && obj_ok(at1)) {
                 *(float*)((char*)at1 + 0x44) = 0.5f;                      // Player 0 CritChance (50% crit rate)
                 *(float*)((char*)at1 + 0x48) = 1.5f;                      // Player 0 CritDamage
+                *(float*)((char*)at1 + 0x8C) = 0.0f;                      // Player 0 CritDamageResist = 0
                 const char* cur_qid = tftf_quest_get_current_qid();
                 int is_fembots = (cur_qid && strcmp(cur_qid, "1.1.6") == 0);
                 if (is_fembots) {
@@ -2998,8 +3026,10 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                 }
             }
             if (at2 && obj_ok(at2)) {
-                *(float*)((char*)at2 + 0x44) = 1.0f;                      // Enemy CritChance (Forced 100% test)
+                *(float*)((char*)at2 + 0x44) = 0.5f;                      // Enemy CritChance
+                *(float*)((char*)at2 + 0x48) = 1.5f;                      // Enemy CritDamage
                 *(float*)((char*)at2 + 0x54) = g_combat_enemy_mana_gain; // Enemy mana gain rate
+                *(float*)((char*)at2 + 0x8C) = 0.0f;                      // Enemy CritDamageResist = 0
             }
             if (ch1 && obj_ok(ch1)) {
                 const char* cur_qid = tftf_quest_get_current_qid();
@@ -3017,7 +3047,9 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                         *(float*)((char*)ch1 + 0x34) = 1.0f;
                     }
                 }
+                *(float*)((char*)ch1 + 0x48) = 1.0f;                      // CritDamage multiplier
                 *(float*)((char*)ch1 + 0x58) = 1.0f;
+                *(float*)((char*)ch1 + 0x8C) = 0.0f;                      // CritDamageResist multiplier
             }
             LOG("FIXFIGHT_STATS: player=0 bp=%s set crit_chance=%.2f at1=%p at2=%p",
                 id1, at1 ? *(float*)((char*)at1 + 0x44) : -1.0f, at1, at2);
@@ -6020,6 +6052,26 @@ float hook_178(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
     return H[178].orig ? ((fn_orig)H[178].orig)(self, a1, a2, a3, a4, a5, a6, a7) : 1.0f;
 }
 
+float hook_179(void* self, float opp_resist) {
+    typedef float (*fn_crit_mult)(void*, float);
+    float mult = H[179].orig ? ((fn_crit_mult)H[179].orig)(self, opp_resist) : 1.0f;
+    void* owner = (self && obj_ok(self)) ? *(void**)((char*)self + 0x28) : NULL;
+    int player_idx = (owner && obj_ok(owner)) ? *(int32_t*)((char*)owner + 0xF4) : -1;
+
+    if (player_idx == 0) {
+        float min_mult = g_combat_player_crit_mult > 1.0f ? g_combat_player_crit_mult : 1.5f;
+        if (mult < min_mult) {
+            mult = min_mult;
+        }
+    }
+    static int s_crit_mult_log = 0;
+    if (s_crit_mult_log++ < 30) {
+        flog("CRIT_MULT (0xDAD558): pidx=%d opp_resist=%.2f -> returning multiplier=%.2f",
+             player_idx, opp_resist, mult);
+    }
+    return mult;
+}
+
 static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hook_7,hook_8,
     hook_9,hook_10,hook_11,hook_12,hook_13,hook_14,hook_15,hook_16,hook_17,hook_18,hook_19,hook_20,hook_21,
     hook_22,hook_23,hook_24,hook_25,hook_26,hook_27,hook_28,hook_29,hook_30,
@@ -6039,7 +6091,8 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     hook_152,hook_153,hook_154,hook_155,hook_156,(void*)hook_157,(void*)hook_158,
     (void*)hook_159,hook_160,hook_161,hook_162,hook_163,hook_164,
     hook_165,hook_166,(void*)hook_167,hook_168,hook_169,hook_170,
-    hook_171,hook_172,hook_173,hook_174,hook_175,hook_176,(void*)hook_177,(void*)hook_178 };
+    hook_171,hook_172,hook_173,hook_174,hook_175,hook_176,(void*)hook_177,(void*)hook_178,
+    (void*)hook_179 };
 
 static void write_jump(uint8_t* dst, void* target){
     uint32_t* p = (uint32_t*)dst;
