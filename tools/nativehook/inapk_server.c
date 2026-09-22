@@ -92,14 +92,6 @@ int g_current_is_10x_challenge = 0;
 static volatile int g_matrix_war_active = 0;
 static volatile int g_matrix_war_empty_team = 1;
 
-int tftf_is_matrix_war_active(void) {
-    return g_matrix_war_active;
-}
-
-void tftf_set_matrix_war_active(int active) {
-    g_matrix_war_active = active;
-}
-
 int tftf_matrix_war_should_empty_team(void) {
     if (g_saved_team_count > 0 && strstr(g_saved_team[0], "rodimus") != NULL) {
         return 0;
@@ -112,14 +104,6 @@ void tftf_matrix_war_set_empty_team(int empty) {
 }
 
 static volatile int g_picnic_quest_active = 0;
-
-int tftf_is_picnic_quest_active(void) {
-    return g_picnic_quest_active;
-}
-
-void tftf_set_picnic_quest_active(int active) {
-    g_picnic_quest_active = active;
-}
 
 static void logmsg(const char *fmt, ...);
 static int resolve_team(Team *team);
@@ -145,6 +129,22 @@ static QuestRunState g_quest_state = {
     .hero_hp = {1.0f, 1.0f, 1.0f, 1.0f, 1.0f},
     .pending_enemy_hp_ratio = 1.0f
 };
+
+int tftf_is_matrix_war_active(void) {
+    return !g_quest_state.is_leisure && g_matrix_war_active && (strcmp(g_quest_state.qid, "1.1.5") == 0);
+}
+
+void tftf_set_matrix_war_active(int active) {
+    g_matrix_war_active = active && !g_quest_state.is_leisure && (strcmp(g_quest_state.qid, "1.1.5") == 0);
+}
+
+int tftf_is_picnic_quest_active(void) {
+    return !g_quest_state.is_leisure && g_picnic_quest_active && (strcmp(g_quest_state.qid, "1.1.7") == 0);
+}
+
+void tftf_set_picnic_quest_active(int active) {
+    g_picnic_quest_active = active && !g_quest_state.is_leisure && (strcmp(g_quest_state.qid, "1.1.7") == 0);
+}
 
 void tftf_quest_on_combat_ended(const char* hero_bid, int player_won, float p0_remaining_hp_ratio, float p1_remaining_hp_ratio) {
     int idx = -1;
@@ -1148,9 +1148,11 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         return match_ok;
     }
     if(has_suffix(p,"/base/active")) {
-        g_current_is_10x_challenge = 0;
+        g_quest_state.is_leisure = 1;
         g_matrix_war_active = 0;
         g_picnic_quest_active = 0;
+        g_quest_state.qid[0] = 0;
+        g_current_is_10x_challenge = 0;
         snprintf(key,sizeof key,"%s /base/active",method);
         v=lookup(key,outn);
         return v?v:lookup("GET /base/active",outn);
@@ -1167,6 +1169,10 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         return o->p;
     }
     if(has_suffix(p,"/bcg/getBaseHeroData")) {
+        g_quest_state.is_leisure = 1;
+        g_matrix_war_active = 0;
+        g_picnic_quest_active = 0;
+        g_quest_state.qid[0] = 0;
         logmsg("getBaseHeroData req: %.300s", body);
         const char *a=strstr(body,"\"heroes\""); const char *arr=a?strchr(a,'['):NULL; const char *q=arr?arr+1:NULL; v=lookup("@herodata:open",&n);if(!v||!out_add(o,v,n))return NULL;
         int first=1; while(q&&q<end){const char *open=strchr(q,'{'),*close;int depth=0;if(!open||open>=end)break;close=open;do{if(*close=='{')depth++;else if(*close=='}')depth--;close++;}while(close<end&&depth);if(depth)break;char hb[64]="", hk[200], sig[32];int rank=json_int(open,close,"rank",1),level=json_int(open,close,"level",1),sl=json_int(open,close,"sig_lvl",0);if(!rank)rank=1;if(!level)level=1;if(!json_string(open,close,"bid",hb,sizeof hb))if(!json_string(open,close,"character",hb,sizeof hb))json_string(open,close,"id",hb,sizeof hb);snprintf(hk,sizeof hk,"@hero:%s:%d:%d",hb,rank,level);v=lookup(hk,&n);if(!v){snprintf(hk,sizeof hk,"@hero:%s:1:1",hb);v=lookup(hk,&n);}if(!v)v=lookup("@hero:*:1:1",&n);logmsg("getBaseHeroData: hero=%s rank=%d lvl=%d lookup=%s", hb, rank, level, v ? "OK" : "NULL");if(v){snprintf(sig,sizeof sig,"%d",sl);if(!first&&!out_add(o,",",1))return NULL;if(!out_hero_detail(o,v,n,sig,0))return NULL;first=0;if(rank==5&&level==1){char hk50[200];size_t n50=0;snprintf(hk50,sizeof hk50,"@hero:%s:5:50",hb);const unsigned char *v50=lookup(hk50,&n50);if(v50){if(!out_add(o,",",1))return NULL;if(!out_hero_detail(o,v50,n50,sig,0))return NULL;logmsg("getBaseHeroData: also emitted rank 5 level 50 for %s", hb);}}}q=close;}
@@ -1326,10 +1332,12 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         char teamid[64]="0",bids[5][64];int count,invalid;Team team;Out steam={0},ateam={0};TemplateArg args[3];
         json_string(body,end,"teamID",teamid,sizeof teamid);
         json_heroes(body,end,bids,&count,&invalid);
-        store_saved_team(bids,count,invalid);
+        if (!tftf_is_matrix_war_active()) {
+            store_saved_team(bids,count,invalid);
+        }
         if (g_matrix_war_active) {
             tftf_matrix_war_set_empty_team(0);
-            logmsg("MATRIX_WAR: setSavedTeam saved team (count=%d bid[0]=%s) and disarmed empty_team flag!", count, bids[0]);
+            logmsg("MATRIX_WAR: setSavedTeam handled for Matrix War (count=%d bid[0]=%s) and disarmed empty_team flag!", count, bids[0]);
         }
         v=lookup("@savedteam:template",&n);
         if(!v||!resolve_team(&team)||!render_steam(&steam,&team)||!render_ateam(&ateam,&team)){free(steam.p);free(ateam.p);return NULL;}
