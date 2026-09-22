@@ -851,6 +851,9 @@ static const char* hero_faction_str(void* hero_data) {
     if (read_str(f, buf, sizeof buf) && buf[0]) return buf;
     return NULL;
 }
+
+static void* g_matrix_war_rodimus_hero = NULL;
+
 static void apply_hero_portrait_deco_internal(void* hp) {
     if (!hp || !obj_ok(hp)) return;
     char hp_cname[64];
@@ -3802,6 +3805,7 @@ void* hook_127(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     return H[127].orig(a0,a1,a2,a3,a4,a5,a6,a7);
 }
 void* hook_128(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
+    g_matrix_war_rodimus_hero = NULL;
     tshide_screen_exit("TSOUTRO");
     return H[128].orig(a0,a1,a2,a3,a4,a5,a6,a7);
 }
@@ -3812,6 +3816,7 @@ void* hook_129(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
 }
 void* hook_130(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
     tftf_set_matrix_war_active(0);
+    g_matrix_war_rodimus_hero = NULL;
     tshide_screen_exit("TSBACK");
     return H[130].orig(a0,a1,a2,a3,a4,a5,a6,a7);
 }
@@ -5685,8 +5690,6 @@ void* hook_174(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
 }
 
 // ---- Matrix War (1.1.5) team clear and hero restriction ----
-static void* g_matrix_war_rodimus_hero = NULL;
-
 static void filter_heroes_list_to_rodimus(const char* tag, void* list) {
     if (!tftf_is_matrix_war_active()) return;
     if (!list || !obj_ok(list)) return;

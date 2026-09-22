@@ -89,14 +89,15 @@ static int g_saved_team_count;
 static int g_connections;
 static int g_started;
 int g_current_is_10x_challenge = 0;
+static char g_active_quest_id[64] = "";
 static volatile int g_matrix_war_active = 0;
 static volatile int g_matrix_war_empty_team = 1;
+static volatile int g_matrix_war_team_set = 0;
+static char g_matrix_war_hero_bid[64] = "rodimusprime_gs_mp09";
 
 int tftf_matrix_war_should_empty_team(void) {
-    if (g_saved_team_count > 0 && strstr(g_saved_team[0], "rodimus") != NULL) {
-        return 0;
-    }
-    return g_matrix_war_empty_team;
+    if (!tftf_is_matrix_war_active()) return 0;
+    return !g_matrix_war_team_set;
 }
 
 void tftf_matrix_war_set_empty_team(int empty) {
@@ -140,11 +141,20 @@ static inline int is_quest_non_leisure(const char* qid) {
 }
 
 int tftf_is_matrix_war_active(void) {
-    return is_quest_non_leisure(g_quest_state.qid) && g_matrix_war_active && (strcmp(g_quest_state.qid, "1.1.5") == 0);
+    if (!g_matrix_war_active) return 0;
+    if (g_active_quest_id[0] && strcmp(g_active_quest_id, "1.1.5") == 0) return 1;
+    if (g_quest_state.qid[0] && strcmp(g_quest_state.qid, "1.1.5") == 0) return 1;
+    return 0;
 }
 
 void tftf_set_matrix_war_active(int active) {
-    g_matrix_war_active = active && is_quest_non_leisure(g_quest_state.qid) && (strcmp(g_quest_state.qid, "1.1.5") == 0);
+    g_matrix_war_active = active;
+    if (!active) {
+        if (strcmp(g_active_quest_id, "1.1.5") == 0) g_active_quest_id[0] = 0;
+        if (strcmp(g_quest_state.qid, "1.1.5") == 0) g_quest_state.qid[0] = 0;
+        g_matrix_war_empty_team = 0;
+        g_matrix_war_team_set = 0;
+    }
 }
 
 int tftf_is_picnic_quest_active(void) {
@@ -954,6 +964,8 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
     if(strstr(p,"/quests/quest-list")) {
         g_current_is_10x_challenge = 0;
         g_matrix_war_active = 0;
+        g_matrix_war_team_set = 0;
+        g_active_quest_id[0] = 0;
         g_picnic_quest_active = 0;
         g_quest_state.is_leisure = 1;
         g_quest_state.qid[0] = 0;
@@ -1165,6 +1177,8 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
     if(has_suffix(p,"/base/active")) {
         g_quest_state.is_leisure = 1;
         g_matrix_war_active = 0;
+        g_matrix_war_team_set = 0;
+        g_active_quest_id[0] = 0;
         g_picnic_quest_active = 0;
         g_quest_state.qid[0] = 0;
         g_current_is_10x_challenge = 0;
@@ -1191,15 +1205,14 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
     }
     if(strstr(p,"/quests/quest-detail/")) {
         snprintf(mid,sizeof mid,"%.63s",path_last(p));
+        snprintf(g_active_quest_id, sizeof g_active_quest_id, "%s", mid);
         g_matrix_war_active = (strcmp(mid, "1.1.5") == 0);
         if (g_matrix_war_active) {
-            if (!(g_saved_team_count > 0 && strstr(g_saved_team[0], "rodimus") != NULL)) {
-                g_matrix_war_empty_team = 1;
-                logmsg("MATRIX_WAR: quest-detail 1.1.5 -> armed empty_team flag (no rodimus in saved team)");
-            } else {
-                g_matrix_war_empty_team = 0;
-                logmsg("MATRIX_WAR: quest-detail 1.1.5 -> keep squad (saved team has %s)", g_saved_team[0]);
-            }
+            g_matrix_war_team_set = 0;
+            g_matrix_war_empty_team = 1;
+            logmsg("MATRIX_WAR: quest-detail 1.1.5 -> armed empty_team flag!");
+        } else {
+            g_matrix_war_empty_team = 0;
         }
         g_picnic_quest_active = (strcmp(mid, "1.1.7") == 0);
         if (g_picnic_quest_active) {
@@ -1215,6 +1228,7 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         return v?json_default_spaces(v,n,o,outn):NULL;
     }
     if(strstr(p,"/quests/quest-begin/")) { Team team; Out qteam={0}; TemplateArg args[8];snprintf(qid,sizeof qid,"%.63s",path_last(p));
+        snprintf(g_active_quest_id, sizeof g_active_quest_id, "%s", qid);
         g_matrix_war_active = (strcmp(qid, "1.1.5") == 0);
         if (g_matrix_war_active) {
             g_matrix_war_empty_team = 1;
@@ -1259,7 +1273,7 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         if(!v||!resolve_team(&team)) return NULL;
         if (strcmp(qid, "1.1.5") == 0) {
             team.count = 1;
-            snprintf(team.bid[0], sizeof team.bid[0], "rodimusprime_gs_mp09");
+            snprintf(team.bid[0], sizeof team.bid[0], "%s", g_matrix_war_team_set ? g_matrix_war_hero_bid : "rodimusprime_gs_mp09");
         } else if (strcmp(qid, "1.1.6") == 0) {
             if (team.count > 1) team.count = 1;
         }
@@ -1349,13 +1363,25 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         char teamid[64]="0",bids[5][64];int count,invalid;Team team;Out steam={0},ateam={0};TemplateArg args[3];
         json_string(body,end,"teamID",teamid,sizeof teamid);
         json_heroes(body,end,bids,&count,&invalid);
-        if (!tftf_is_matrix_war_active()) {
-            store_saved_team(bids,count,invalid);
-        }
-        if (g_matrix_war_active) {
+        if (tftf_is_matrix_war_active()) {
+            if (count > 0 && bids[0][0]) {
+                snprintf(g_matrix_war_hero_bid, sizeof(g_matrix_war_hero_bid), "%s", bids[0]);
+                g_matrix_war_team_set = 1;
+            }
             tftf_matrix_war_set_empty_team(0);
-            logmsg("MATRIX_WAR: setSavedTeam handled for Matrix War (count=%d bid[0]=%s) and disarmed empty_team flag!", count, bids[0]);
+            logmsg("MATRIX_WAR: setSavedTeam handled for Matrix War (bid=%s), normal saved team untouched!", g_matrix_war_hero_bid);
+            Team mw_team;
+            memset(&mw_team, 0, sizeof(mw_team));
+            mw_team.count = 1;
+            snprintf(mw_team.bid[0], sizeof(mw_team.bid[0]), "%s", g_matrix_war_hero_bid);
+            v=lookup("@savedteam:template",&n);
+            if(!v||!render_steam(&steam,&mw_team)||!render_ateam(&ateam,&mw_team)){free(steam.p);free(ateam.p);return NULL;}
+            args[0]=(TemplateArg){"%TID%",(const unsigned char*)teamid,strlen(teamid)};
+            args[1]=(TemplateArg){"%STEAM%",steam.p,steam.n};
+            args[2]=(TemplateArg){"%ATEAM%",ateam.p,ateam.n};
+            v=template_spaced(o,v,n,args,3,outn);free(steam.p);free(ateam.p);return v;
         }
+        store_saved_team(bids,count,invalid);
         v=lookup("@savedteam:template",&n);
         if(!v||!resolve_team(&team)||!render_steam(&steam,&team)||!render_ateam(&ateam,&team)){free(steam.p);free(ateam.p);return NULL;}
         args[0]=(TemplateArg){"%TID%",(const unsigned char*)teamid,strlen(teamid)};
