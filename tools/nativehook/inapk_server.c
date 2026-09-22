@@ -130,20 +130,29 @@ static QuestRunState g_quest_state = {
     .pending_enemy_hp_ratio = 1.0f
 };
 
+static inline int is_quest_non_leisure(const char* qid) {
+    if (!qid || !qid[0]) return 0;
+    return (strcmp(qid, "1.1.3") == 0 ||
+            strcmp(qid, "1.1.4") == 0 ||
+            strcmp(qid, "1.1.5") == 0 ||
+            strcmp(qid, "1.1.6") == 0 ||
+            strcmp(qid, "1.1.7") == 0);
+}
+
 int tftf_is_matrix_war_active(void) {
-    return !g_quest_state.is_leisure && g_matrix_war_active && (strcmp(g_quest_state.qid, "1.1.5") == 0);
+    return is_quest_non_leisure(g_quest_state.qid) && g_matrix_war_active && (strcmp(g_quest_state.qid, "1.1.5") == 0);
 }
 
 void tftf_set_matrix_war_active(int active) {
-    g_matrix_war_active = active && !g_quest_state.is_leisure && (strcmp(g_quest_state.qid, "1.1.5") == 0);
+    g_matrix_war_active = active && is_quest_non_leisure(g_quest_state.qid) && (strcmp(g_quest_state.qid, "1.1.5") == 0);
 }
 
 int tftf_is_picnic_quest_active(void) {
-    return !g_quest_state.is_leisure && g_picnic_quest_active && (strcmp(g_quest_state.qid, "1.1.7") == 0);
+    return is_quest_non_leisure(g_quest_state.qid) && g_picnic_quest_active && (strcmp(g_quest_state.qid, "1.1.7") == 0);
 }
 
 void tftf_set_picnic_quest_active(int active) {
-    g_picnic_quest_active = active && !g_quest_state.is_leisure && (strcmp(g_quest_state.qid, "1.1.7") == 0);
+    g_picnic_quest_active = active && is_quest_non_leisure(g_quest_state.qid) && (strcmp(g_quest_state.qid, "1.1.7") == 0);
 }
 
 void tftf_quest_on_combat_ended(const char* hero_bid, int player_won, float p0_remaining_hp_ratio, float p1_remaining_hp_ratio) {
@@ -198,6 +207,9 @@ void tftf_quest_on_combat_ended(const char* hero_bid, int player_won, float p0_r
 }
 
 int tftf_quest_is_leisure(void) {
+    if (is_quest_non_leisure(g_quest_state.qid)) {
+        return 0;
+    }
     return g_quest_state.is_leisure;
 }
 
@@ -943,6 +955,9 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         g_current_is_10x_challenge = 0;
         g_matrix_war_active = 0;
         g_picnic_quest_active = 0;
+        g_quest_state.is_leisure = 1;
+        g_quest_state.qid[0] = 0;
+        g_quest_state.pending_battle_active = 0;
         int is_zh = detect_and_store_lang(headers, query);
         v = lookup(is_zh ? "@questlist:zh" : "@questlist:en", outn);
         if(v) return v;
@@ -1169,10 +1184,6 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         return o->p;
     }
     if(has_suffix(p,"/bcg/getBaseHeroData")) {
-        g_quest_state.is_leisure = 1;
-        g_matrix_war_active = 0;
-        g_picnic_quest_active = 0;
-        g_quest_state.qid[0] = 0;
         logmsg("getBaseHeroData req: %.300s", body);
         const char *a=strstr(body,"\"heroes\""); const char *arr=a?strchr(a,'['):NULL; const char *q=arr?arr+1:NULL; v=lookup("@herodata:open",&n);if(!v||!out_add(o,v,n))return NULL;
         int first=1; while(q&&q<end){const char *open=strchr(q,'{'),*close;int depth=0;if(!open||open>=end)break;close=open;do{if(*close=='{')depth++;else if(*close=='}')depth--;close++;}while(close<end&&depth);if(depth)break;char hb[64]="", hk[200], sig[32];int rank=json_int(open,close,"rank",1),level=json_int(open,close,"level",1),sl=json_int(open,close,"sig_lvl",0);if(!rank)rank=1;if(!level)level=1;if(!json_string(open,close,"bid",hb,sizeof hb))if(!json_string(open,close,"character",hb,sizeof hb))json_string(open,close,"id",hb,sizeof hb);snprintf(hk,sizeof hk,"@hero:%s:%d:%d",hb,rank,level);v=lookup(hk,&n);if(!v){snprintf(hk,sizeof hk,"@hero:%s:1:1",hb);v=lookup(hk,&n);}if(!v)v=lookup("@hero:*:1:1",&n);logmsg("getBaseHeroData: hero=%s rank=%d lvl=%d lookup=%s", hb, rank, level, v ? "OK" : "NULL");if(v){snprintf(sig,sizeof sig,"%d",sl);if(!first&&!out_add(o,",",1))return NULL;if(!out_hero_detail(o,v,n,sig,0))return NULL;first=0;if(rank==5&&level==1){char hk50[200];size_t n50=0;snprintf(hk50,sizeof hk50,"@hero:%s:5:50",hb);const unsigned char *v50=lookup(hk50,&n50);if(v50){if(!out_add(o,",",1))return NULL;if(!out_hero_detail(o,v50,n50,sig,0))return NULL;logmsg("getBaseHeroData: also emitted rank 5 level 50 for %s", hb);}}}q=close;}
@@ -1213,7 +1224,7 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
             logmsg("PICNIC: quest-begin 1.1.7 -> activated Starscream's Picnic!");
         }
         g_current_is_10x_challenge = (strcmp(qid, "1.1.2") == 0);
-        int is_leisure = (strcmp(qid, "1.1.3") != 0 && strcmp(qid, "1.1.4") != 0 && strcmp(qid, "1.1.5") != 0 && strcmp(qid, "1.1.6") != 0 && strcmp(qid, "1.1.7") != 0);
+        int is_leisure = !is_quest_non_leisure(qid);
         int x=0,y=1;if(strcmp(qid,"1.1.5")!=0)store_quest_team(body,end);snprintf(key,sizeof key,"@quest:start:%s",qid);v=lookup(key,&n);if(v)sscanf((const char*)v,"%d %d",&x,&y);
         char e_bid[6][64];
         for(int k=0; k<6; k++) snprintf(e_bid[k], sizeof e_bid[k], "%s", g_enemy_pool[k % ENEMY_POOL_SIZE]);
@@ -1224,6 +1235,7 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
             memset(&g_quest_state, 0, sizeof g_quest_state);
             snprintf(g_quest_state.qid, sizeof g_quest_state.qid, "%s", qid);
             g_quest_state.is_leisure = is_leisure;
+            g_quest_state.pending_battle_active = 0;
             for (int h = 0; h < 5; h++) g_quest_state.hero_hp[h] = 1.0f;
             g_quest_state.pending_enemy_hp_ratio = 1.0f;
             int picked[6];
@@ -1270,6 +1282,11 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
     if(strstr(p,"/quests/quest-movedir/")) { int dx=1,dy=0,sx=0,sy=1,nx,ny;
         const char *z=strrchr(p,'/'); const char *yseg=z?z+1:""; const char *z2=z?NULL:NULL; if(z){z2=z-1;while(z2>p&&*z2!='/')z2--; if(*z2=='/')z2++;} if(!z||!z2)return NULL; char xs[32], ys[32], seg[96];snprintf(ys,sizeof ys,"%.31s",yseg);snprintf(xs,sizeof xs,"%.*s",(int)(z-z2),z2); const char *z3=z2-2;while(z3>p&&*z3!='/')z3--;if(*z3=='/')z3++;snprintf(seg,sizeof seg,"%.*s",(int)(z2-z3-1),z3);char *dash=strrchr(seg,'-');if(!dash)return NULL;*dash=0;snprintf(qid,sizeof qid,"%.63s",seg);
         g_current_is_10x_challenge = (strcmp(qid, "1.1.2") == 0);
+        int non_leisure = is_quest_non_leisure(qid);
+        g_quest_state.is_leisure = !non_leisure;
+        if (non_leisure) {
+            snprintf(g_quest_state.qid, sizeof g_quest_state.qid, "%s", qid);
+        }
         char *ep;long lx=strtol(xs,&ep,10);if(*ep)lx=1;long ly=strtol(ys,&ep,10);if(*ep){lx=1;ly=0;}dx=(int)lx;dy=(int)ly;
         char e_bid[6][64];
         for(int k=0; k<6; k++) snprintf(e_bid[k], sizeof e_bid[k], "%s", g_enemy_pool[k % ENEMY_POOL_SIZE]);
@@ -1283,7 +1300,7 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         snprintf(key,sizeof key,"@quest:moves:%s",qid);v=lookup(key,&n);int found=0;
         if(v){char *copy=malloc(n+1);if(copy){memcpy(copy,v,n);copy[n]=0;char *line=copy;while(line&&*line){int ax,ay,ad,ae,bx,by;char *next=strchr(line,'\n');if(next)*next++=0;if(sscanf(line,"%d %d %d %d %d %d",&ax,&ay,&ad,&ae,&bx,&by)==6&&ax==sx&&ay==sy&&ad==dx&&ae==dy){nx=bx;ny=by;found=1;break;}line=next;}free(copy);}}
         int blocked_by_battle = 0;
-        if (!g_quest_state.is_leisure && g_quest_state.pending_battle_active) {
+        if (non_leisure && g_quest_state.pending_battle_active) {
             if (dx != 0 || dy != 0) {
                 logmsg("QUEST_COMBAT: Blocked attempt to advance past uncleared battle at (%d,%d)!", sx, sy);
                 blocked_by_battle = 1;
@@ -1294,7 +1311,7 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         }
         if(found&&slot>=0){
             g_pos[slot].x=nx;g_pos[slot].y=ny;
-            if(!g_quest_state.is_leisure && !blocked_by_battle && (nx != sx || ny != sy)){
+            if(non_leisure && !blocked_by_battle && (nx != sx || ny != sy)){
                 g_quest_state.pending_battle_active = 1;
                 g_quest_state.pending_battle_x = nx;
                 g_quest_state.pending_battle_y = ny;

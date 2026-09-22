@@ -5296,7 +5296,10 @@ void* hook_157(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
 }
 int32_t hook_158(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     int slot = (int)(intptr_t)a1;
-    if (!tftf_quest_is_leisure() && slot >= 0 && slot < 5) {
+    if (tftf_quest_is_leisure()) {
+        return 0; // In leisure mode, heroes are never KO!
+    }
+    if (slot >= 0 && slot < 5) {
         float ratio = tftf_quest_get_hero_hp_ratio(slot);
         int is_ko = (ratio <= 0.001f) ? 1 : 0;
         static int s_log_hp158 = 0;
@@ -5305,12 +5308,14 @@ int32_t hook_158(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, v
         }
         return is_ko;
     }
-    typedef int32_t (*fn_orig)(void*, void*, void*, void*, void*, void*, void*, void*);
-    return H[158].orig ? ((fn_orig)H[158].orig)(self, a1, a2, a3, a4, a5, a6, a7) : 0;
+    return 0;
 }
 float hook_159(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     int slot = (int)(intptr_t)a1;
-    if (!tftf_quest_is_leisure() && slot >= 0 && slot < 5) {
+    if (tftf_quest_is_leisure()) {
+        return 1.0f; // In leisure mode, full HP
+    }
+    if (slot >= 0 && slot < 5) {
         float ratio = tftf_quest_get_hero_hp_ratio(slot);
         if (ratio > 1.0f) ratio = 1.0f;
         if (ratio < 0.0f) ratio = 0.0f;
@@ -5320,8 +5325,7 @@ float hook_159(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
         }
         return ratio;
     }
-    typedef float (*fn_orig)(void*, void*, void*, void*, void*, void*, void*, void*);
-    return H[159].orig ? ((fn_orig)H[159].orig)(self, a1, a2, a3, a4, a5, a6, a7) : 1.0f;
+    return 1.0f;
 }
 void* hook_160(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     void* pc = fld_p(a0, 0x18);
