@@ -179,23 +179,31 @@ Every character, mod, and relic requires 3 portrait formats:
 
 ## 6. 特殊着色器特效与“鬼魂/自发光”机制 (Ghost / Hologram Emissive Technique)
 
-### 6.1 PBR Composite (RAOE) 贴图通道解密
-在 TFTF 使用的 `EB/Character/PBR` 及 `EB/Character/PBR/Uber` 高级角色着色器中，贴图 `_pbr_composite_tex`（通常命名为 `*_RAOE` 或 `*_RMEA`）采用 4 通道紧凑打包：
+### 6.1 PBR Composite (RAOE) 贴图通道解密与着色器汇编真相
+在 TFTF 使用的 `EB/Character/PBR` 及 `EB/Character/PBR/Uber` 高级角色着色器中，贴图 `_pbr_composite_tex`（通常命名为 `*_RAOE` 或 `*_RMEA`）采用 4 通道紧凑打包。
+通过对 `EB/Character/PBR` (Program ID `-7396015257959012681`) 编译后的 GLSL/SPIR-V 片元着色器反汇编，其发光采样与计算公式为：
+```glsl
+u_xlat16_3.xyz = texture2D(_pbr_composite_tex, vs_TEXCOORD0.zw).xyz;
+u_xlat16_1.xyz = u_xlat16_3.xyz * u_xlat16_3.xyz;
+u_xlat16_2.xyz = _emissive_intensity_col.xyz * _emissive_intensity_col.xyz;
+u_xlat16_2.xyz = u_xlat16_1.zzz * u_xlat16_2.xyz;
+```
+* **B 通道 (Blue)**：**核心自发光蒙版（Emissive Mask）！**
+  * 在 `EB/Character/PBR` 汇编中，发光强度乘数是 `u_xlat16_1.zzz = u_xlat16_3.z * u_xlat16_3.z`，即 **Blue 通道的平方 ($B^2$)**。
+  * **重大格式陷阱**：官方原版大量角色的 `*_RAOE`（如 `main_tform_misc_RAOE`）在 AssetBundle 中其 Texture2D 格式为 **Format 7 (RGB24)** 或 **Format 34 (ETC2_RGB4)**，**原生完全不包含 Alpha 通道**！如果误以为发光在 Alpha 通道而仅修改 Alpha，在标准 PBR 材质下发光强度恒为 0。
+* **A 通道 (Alpha)**：在部分 `EB/Character/PBR/Uber` 或特殊着色器变体中用作高光遮罩或辅助发光。
+* **双通道最佳实践（Dual-Channel Emissive Pipeline）**：
+  * 为保证 100% 兼容标准 PBR 与 Uber 所有变体，**必须将发光遮罩同时写入 B 通道和 A 通道**（即 $B = A = \text{mask}$），并在写回 Bundle 时将 Texture2D 格式升级为 **Format 4 (RGBA32)**。
 * **R 通道 (Red)**：Roughness（粗糙度，控制高光弥散）
 * **G 通道 (Green)**：Ambient Occlusion / Metallic（环境遮挡 / 金属度）
-* **B 通道 (Blue)**：Cavity / Detail Mask（凹陷与微观细节）
-* **A 通道 (Alpha)**：**Emissive Mask（自发光 / 能量辉光蒙版）**
-  * `Alpha = 0`（纯黑）：完全不发光，正常接受场景实时光照与阴影投射；
-  * `Alpha = 255`（纯白）：满额 $100\%$ 自发光（Self-Illuminating），无视外部阴影遮挡，与战斗相机的 Bloom / HDR 后处理产生剧烈光学反应，泛出耀眼辉光；
-  * `Alpha = 50 ~ 150`（灰度）：呈现内敛柔和的微光或幽暗荧光质感。
 
 ### 6.2 局部/任意部位精准发光定位 (Localized Part Emissive Control)
 发光效果**完全不局限于全身**，可精准控制到角色的**任意指定部位**甚至单个像素：
 * **原理**：角色 3D 模型的各个身体部件（眼睛、面罩、整个头部、胸口车灯、阵营标志、剑刃刀锋、引擎喷气口等）在 2D 贴图上均有严格对应的 UV 坐标区间。
-* **做法**：通过 3D 几何或 UV 选区提取（例如使用 3D Mesh 顶点高度 $Y$ 与深度 $Z$ 进行空间定位，或直接在 2D 贴图遮罩上选区），将指定区域在 RAOE 的 Alpha 通道涂白（255），其他身体部位的 Alpha 保持为 0，即可实现**仅眼睛发亮、仅头部发光、或仅武器刀刃幽幽发光，而机体其余金属部位保持正常磨砂或高光质感**。
+* **做法**：通过 3D 几何或 UV 选区提取（例如使用 3D Mesh 顶点高度 $Y$ 与深度 $Z$ 进行空间定位，或直接在 2D 贴图遮罩上选区），将指定区域在 RAOE 的 B+A 通道涂亮，其他身体部位的 B+A 保持为 0，即可实现**仅眼睛发亮、仅头部发光、或仅武器刀刃幽幽发光，而机体其余金属部位保持正常磨砂或高光质感**。
 
-### 6.3 发光色彩与辉光强度调控 (Color & Intensity Customization)
-发光绝不仅限于史达的“幽幽青蓝色”，其最终光芒色彩与质感由三大要素共同决定：
+### 6.3 发光色彩、HDR 泛光平衡与调优经验 (Color & Bloom Calibration)
+最终光芒色彩与质感由三大要素共同决定：
 1. **底层漫反射色彩 (`_base_tex` Albedo)**：
    * 自发光直接叠加在底色之上。底色为亮红则透出猩红光，底色为亮金则透出炽烈金光，底色为翠绿则透出医疗/能量晶体绿光。
 2. **材质级发光调色向量 (`_emissive_intensity_col`)**：
@@ -206,10 +214,35 @@ Every character, mod, and relic requires 3 portrait formats:
      * **赛博坦能量晶体绿光 (Energon Green)**：`{r: 0.1, g: 1.0, b: 0.4, a: 0.0}`
      * **纯白超载耀斑强光 (Overcharge White)**：`{r: 1.0, g: 1.0, b: 1.0, a: 0.0}`
      * **史达青蓝能量光 (Saber Cyan)**：`{r: 0.0, g: 0.14, b: 0.66, a: 0.0}`
-3. **超亮泛光倍率 (`_emissive_overbright_range`)**：
-   * 材质浮点参数，默认可达 `120.0`。数值设定在 `10.0 ~ 40.0` 时表现为柔和幽光；拉高到 `100.0 ~ 150.0` 时将产生极强烈的眩目泛光（Bloom 光晕溢出），极具视觉冲击力。
+3. **超亮泛光倍率 (`_emissive_overbright_range`) 与过曝灾难防范**：
+   * 材质浮点参数，控制后处理 HDR Bloom 的激发电平。
+   * **白化过曝陷阱（Supernova Trap）**：若将 `_emissive_overbright_range` 盲目调高（如 `100.0 ~ 150.0`）且蒙版 $B \ge 200$，在手机 HDR/Bloom 后处理下会彻底泛白烧死，角色沦为一团没有机甲结构细节的刺眼白光轮廓。
+   * **黄金调优参数梯队**：
+     * **大面积幽灵/能量机身**：贴图发光遮罩 $B \in [40, 65]$（灰度），材质 `_emissive_overbright_range = 25.0 ~ 35.0`。既能保证强烈的幽蓝半透明发光氛围，又完美保留机甲刻线、分件接缝与金属质感。
+     * **局部能量核心（火种/胸灯）**：贴图发光遮罩 $B \in [180, 240]$，形成强烈局部能量爆发。
 
-### 6.4 原生着色器进阶高级特效拓展 (Advanced Shader Effects)
+### 6.4 异色眼睛/高反差光学设计铁律 (Contrasting Colored Optics Rule)
+* **光学污染问题**：`_emissive_intensity_col` 是材质全局发光着色（如幽蓝光）。若想在幽蓝鬼魂机体上保留一双凶恶的**红光眼睛（Red Optics）**，如果将眼睛区域的发光遮罩同样刷高，幽蓝光与红底色叠加后在 Bloom 下会引发严重白化互补，双眼退化为惨白斑块。
+* **正解标准**：
+  1. 在 `_pbr_composite_tex` 中将眼睛区域的 **B 通道与 A 通道严格置零 ($B = 0, A = 0$)**；
+  2. 在底层贴图 `_base_tex` (Albedo) 中将眼睛涂为满饱和度鲜红（$RGB = 255, 0, 0$）；
+  3. 将眼睛周围的面具/面罩底色适当压暗（如 $RGB = 10, 30, 45$）拉大明暗对比。
+  * **效果**：全身幽蓝自发光烘托下，血红双眼边缘锐利清晰，如暗夜寒芒，彻底消除白化遮挡。
+
+### 6.5 透明度机制与 Character PBR 限制 (Transparency & Leg Dissolve Trap)
+* **着色器硬编码限制**：
+  * `EB/Character/PBR` 为不透明（Opaque）延迟/前向 Pass，GLSL 反编译显示片元输出硬编码了 `SV_Target0.w = 1.0;`，渲染状态硬编码 `destBlend = 0.0 (Blend One Zero)` 与 `zWrite = 1.0`。
+  * 单纯在 Unity Material 属性中追加 `_Mode = 3.0`、`_DstBlend = 10.0`、`_SrcBlend = 5.0` **无法使机体产生真实物理半透明**，因为底层 compiled shader 不支持 Alpha 混合。
+* **鬼魂“下半身虚化消散/小腿渐隐”破局技巧**：
+  1. **空间深度渐变压暗（Albedo Space Shadow Dissolve）**：
+     提取 3D Mesh 顶点的 $Y$ 坐标（高度），在 `_base_tex` (Albedo) 对小腿与脚部自上而下施加衰减渐变，小腿末端漫反射色压至深邃阴影黑蓝（$RGB \sim 6, 20, 32$）；
+  2. **消除环境光反射**：
+     在 RAOE 中将小腿的 G 通道（AO/Metallic）压低、R 通道（Roughness）拉高，阻止场景反射与环境高光落在小腿表面；
+  3. **边缘能量弱化勾勒**：
+     小腿与脚掌的自发光蒙版 $B$ 通道维持在极弱灰度（$15 \sim 30$），仅留微弱能量余晖。
+  * **视觉呈现**：进入战斗场景后，小腿与脚部完全隐没于地面空间暗部，只有上半身与躯干散发浮空幽蓝强光，形成下半身虚化化为青烟的强烈幽灵悬浮质感。
+
+### 6.6 原生着色器进阶高级特效拓展 (Advanced Shader Effects)
 基于 `EB/Character/PBR` 的原生暴露属性，还可进一步调出以下高阶视觉表现：
 1. **能量核心呼吸闪烁 (Pulsing / Breathing Glow)**：
    * 调节材质浮点 `_emissive_pulse_intensity_range`（脉冲波动幅度，如 `0.2 ~ 0.8`）与 `_emissive_pulse_time_range`（呼吸周期时长，如 `1.5s`）。无需任何额外脚本，着色器会自动让发光部位像**机械心脏/能量火种一般有节奏地一明一暗“呼吸”**（极度契合震荡波独眼、死火核心、或领袖胸口能量宝）。
@@ -218,9 +251,9 @@ Every character, mod, and relic requires 3 portrait formats:
 3. **镜面电镀镀铬高反光 (Chrome Metal Finish)**：
    * 在 `_pbr_composite_tex` 中将 G 通道（Metallic）拉满到 255，同时将 R 通道（Roughness）压至接近 0，可使原本塑料质感的哑光外壳瞬间变为**如水银般映射环境的镜面电镀金/电镀银**。
 4. **熔岩地狱战损裂纹 (Magma / Molten Armor)**：
-   * 在 Diffuse 贴图绘制细密装甲裂痕，而在 Emissive Alpha 通道仅将裂痕线刷白并赋予高饱和红/橙光，呈现**机体裂解熔岩喷薄、过载暴走**的狂战士机甲风范。
+   * 在 Diffuse 贴图绘制细密装甲裂痕，而在 Emissive B+A 通道仅将裂痕线刷亮并赋予高饱和红/橙光，呈现**机体裂解熔岩喷薄、过载暴走**的狂战士机甲风范。
 5. **能量幽灵 / 全息投影形态 (Ghost / Hologram Avatar)**：
-   * 将全身 Alpha 贴图全面提亮，结合材质半透明（Transparency），呈现类似“鬼魂红蜘蛛（Ghost Starscream）”晶莹剔透的全息灵体。
+   * 将全身 B+A 贴图适度提亮结合深色渐隐，呈现“鬼魂红蜘蛛（Ghost Starscream）”晶莹剔透的全息灵体。
 
 ---
 

@@ -101,6 +101,7 @@ assets_redeco/*
 !assets_redeco/*matrix_war*
 !assets_redeco/portrait_fembots_quest.png
 !assets_redeco/*picnic*
+!assets_redeco/*ghost*
 
 *.mkv
 cookies.txt

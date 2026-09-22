@@ -11,6 +11,13 @@
         "faction": "霸天虎",
         "note": "G1 经典战术系"
     },
+    "starscream_ghost_gs": {
+        "en": "Ghost Starscream",
+        "zh": "鬼魂红蜘蛛",
+        "faction": "霸天虎",
+        "note": "经典G1 战术系",
+        "desc": "在被惊破天的巨炮化为灰烬后，红蜘蛛那不可磨灭的火种怨念化作不死鬼魂游荡在宇宙之间。拥有穿透实体防御的幽能，以及鬼魅般的全时悬浮飞行机动。"
+    },
     "arcee_gs_deluxe2014": {
         "en": "Arcee",
         "zh": "阿尔茜",

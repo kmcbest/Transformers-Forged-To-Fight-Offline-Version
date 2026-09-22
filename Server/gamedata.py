@@ -139,6 +139,7 @@ ROSTER = {
     "slipstream_gs":                ("decepticon", "scou", 5),
     "soundblaster_gs_mp13b":        ("decepticon", "demo", 5),
     "soundwave_gs":                 ("decepticon", "tech", 5),
+    "starscream_ghost_gs":          ("decepticon", "tact", 5),
     "sunstorm_gs_leader2015":       ("decepticon", "warr", 5),
     "thundercracker_gs_leader2015": ("decepticon", "braw", 5),
     "thrust_gs_deluxe2008":         ("decepticon", "scou", 5),
@@ -183,6 +184,17 @@ _STAR_BASE = {
 }
 
 
+# Per-bot base stats override
+_BASE_STATS_OVERRIDE = {
+    "starscream_ghost_gs": {
+        "health_mult": 0.95,
+        "attack_mult": 1.25,
+        "crit_chance": 0.65,
+        "crit_damage": 1.65,
+    },
+}
+
+
 def base_stats(bid, rank=1, level=1):
     """Authored HP/attack for a bot at a given rank/level. Pure, deterministic,
     and original. Scaled so enemy encounters and player squad are evenly matched."""
@@ -201,6 +213,9 @@ def base_stats(bid, rank=1, level=1):
     level_add = (max(1, level) - 1) / 500.0
     hp = int(hp0 * hpm * rank_mult * (1.0 + level_add))
     atk = int(atk0 * atkm * rank_mult * (1.0 + level_add))
+    if bid in _BASE_STATS_OVERRIDE:
+        hp = int(hp * _BASE_STATS_OVERRIDE[bid].get("health_mult", 1.0))
+        atk = int(atk * _BASE_STATS_OVERRIDE[bid].get("attack_mult", 1.0))
     return hp, atk
 
 
@@ -409,6 +424,7 @@ _ART_BASE = {
     "shockwave_gs": "shock_c",
     "soundblaster_gs_mp13b": "soundblast_gs",
     "soundwave_gs": "sound_gs",
+    "starscream_ghost_gs": "stars_ghost",
     "sunstorm_gs_leader2015": "sunstorm",
     "thundercracker_gs_leader2015": "thunder_gs",
     "thrust_gs_deluxe2008": "thrust",
@@ -595,6 +611,7 @@ _BOT_NAMES = {
     "slipstream_gs": "Slipstream",
     "soundblaster_gs_mp13b": "Soundblaster",
     "soundwave_gs": "Soundwave",
+    "starscream_ghost_gs": "Ghost Starscream",
     "thundercracker_gs_leader2015": "Thundercracker",
     "tantrum_gs_kabam": "Tantrum",
     "waspinator_gs_deluxe": "Waspinator",
@@ -889,6 +906,11 @@ def build_hero_base(bid, rank=1):
     level = max(1, rank * 10)
     hp, atk = base_stats(bid, rank, level)
     rating = (hp + atk) // 20
+    crit_chance = 0.5
+    crit_damage = 1.5
+    if bid in _BASE_STATS_OVERRIDE:
+        crit_chance = _BASE_STATS_OVERRIDE[bid].get("crit_chance", 0.5)
+        crit_damage = _BASE_STATS_OVERRIDE[bid].get("crit_damage", 1.5)
     return {
         "id": bid, "r": rank, "m": star, "s": star,
         "max_hp": hp, "mhpb": hp, "attack": atk, "attb": atk,
@@ -899,7 +921,7 @@ def build_hero_base(bid, rank=1):
         "rating_hp_base": hp // 2, "rating_attack_base": atk // 2,
         "ab": 1,
         # combat-tuning floats: sensible neutral values (roster view doesn't need real balance)
-        "hp": float(hp), "armor": 0.0, "crit_chance": 0.5, "crit_damage": 1.5,
+        "hp": float(hp), "armor": 0.0, "crit_chance": crit_chance, "crit_damage": crit_damage,
         "perfect_block_chance": 0.1, "block_proficiency": 0.75, "mana_gain": _MANA_GAIN_RATE,
         "resist_magic": 0.0, "resist_physical": 0.0, "stun_chance": 0.05,
         "cr": 0.0, "rcr": 0.0, "rcd": 0.0, "spb": 0.0, "pjb": 0.0, "cpw": 0.0,
@@ -2695,6 +2717,13 @@ def build_base_hero_details(req_heroes):
             hp, atk = base_stats(bid, rank, level)
             req_sig = h.get("sig_lvl")
             sig_val = int(req_sig) if req_sig is not None else 100
+            crit_chance = 0.5
+            crit_damage = 1.5
+            if bid in _BASE_STATS_OVERRIDE:
+                crit_chance = _BASE_STATS_OVERRIDE[bid].get("crit_chance", 0.5)
+                crit_damage = _BASE_STATS_OVERRIDE[bid].get("crit_damage", 1.5)
+            crit_rate = int(crit_chance * 1000)
+            crit_dmg = int(crit_damage * 1000)
             out.append({
                 "bid": bid, "rank": rank, "level": level,
                 "sig_lvl": sig_val,
@@ -2702,8 +2731,8 @@ def build_base_hero_details(req_heroes):
                 "m": model_id(bid), "mdl": model_id(bid),
                 "rating_hp": hp, "max_hp": hp,
                 "rating_attack": atk, "attack": atk,
-                "health": hp, "armor": 0, "crit_rate": 500, "crit_dmg": 1500,
-                "crit_chance": 0.5, "crit_damage": 1.5,
+                "health": hp, "armor": 0, "crit_rate": crit_rate, "crit_dmg": crit_dmg,
+                "crit_chance": crit_chance, "crit_damage": crit_damage,
                 "block_prof": 0, "perfect_block": 0, "sig_ability": 1,
                 "special_attacks": max_special_attacks(bid, star), "user_owned": True,
                 "mana_gain": _MANA_GAIN_RATE, "mana_start": _DIAG_MANA_START,
