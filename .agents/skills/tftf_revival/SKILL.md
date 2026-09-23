@@ -255,6 +255,8 @@ u_xlat16_2.xyz = u_xlat16_1.zzz * u_xlat16_2.xyz;
 5. **能量幽灵 / 全息投影形态 (Ghost / Hologram Avatar)**：
    * 将全身 B+A 贴图适度提亮结合深色渐隐，呈现“鬼魂红蜘蛛（Ghost Starscream）”晶莹剔透的全息灵体。
 
+> 📘 **全景技术参考**：关于原创角色开发演进史、跨模具物理装配、动作流派细拆、常驻武器与 PBR 底层汇编的全面总结，请参阅 [`re_notes/ORIGINAL_CHARACTER_CREATION_GUIDE.md`](file:///e:/Agent/TFTF/re_notes/ORIGINAL_CHARACTER_CREATION_GUIDE.md)。
+
 ---
 
 ## 7. 3D 武器挂点与骨骼绑定标准 (Weapon Socket Rigging)

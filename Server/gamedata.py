@@ -464,7 +464,7 @@ _ART_BASE = {
     "shockwave_gs": "shock_c",
     "soundblaster_gs_mp13b": "soundblast_gs",
     "soundwave_gs": "sound_gs",
-    "starscream_ghost_gs": "stars_ghost",
+    "starscream_ghost_gs": "starscream_ghost_gs",
     "sunstorm_gs_leader2015": "sunstorm",
     "thundercracker_gs_leader2015": "thunder_gs",
     "thrust_gs_deluxe2008": "thrust",

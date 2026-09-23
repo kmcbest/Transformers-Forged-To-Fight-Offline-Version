@@ -54,16 +54,31 @@ GHOST_BURST_03_PID = 7730000000000000003
 # ---------------------------------------------------------
 def setup_portraits():
     print("[*] Setting up Ghost Starscream UI Portraits...")
+    custom_l = OUT_DIR / "portrait_starscream_ghost_gs_large.png"
+    custom_s = OUT_DIR / "portrait_starscream_ghost_gs_small.jpg"
+    if custom_l.exists() and custom_s.exists():
+        print("    [+] Found custom user portraits! Syncing all variants...")
+        shutil.copy2(custom_l, OUT_DIR / "portrait_starscream_ghost_gs_quest.png")
+        shutil.copy2(custom_l, OUT_DIR / "starscream_ghost_gs.png")
+        shutil.copy2(custom_l, OUT_DIR / "portrait_stars_ghost_large.png")
+        shutil.copy2(custom_s, OUT_DIR / "portrait_stars_ghost_small.jpg")
+        shutil.copy2(custom_l, OUT_DIR / "portrait_stars_ghost_quest.png")
+        shutil.copy2(custom_l, OUT_DIR / "stars_ghost.png")
+        print("    [+] Custom portraits synced successfully.")
+        return
+
     src_l = Path("extracted_apk/assets/assetpack/portraits_odr/portraits/portrait_stars_gs_large.png")
     src_s = Path("extracted_apk/assets/assetpack/portraits_odr/portraits/portrait_stars_gs_small.jpg")
     src_d = Path("extracted_apk/assets/assetpack/dialogue_odr/dialogue/stars_gs.png")
 
-    shutil.copy2(src_l, OUT_DIR / "portrait_stars_ghost_large.png")
-    shutil.copy2(src_s, OUT_DIR / "portrait_stars_ghost_small.jpg")
-    shutil.copy2(src_l, OUT_DIR / "portrait_stars_ghost_quest.png")
+    if src_l.exists():
+        shutil.copy2(src_l, OUT_DIR / "portrait_stars_ghost_large.png")
+        shutil.copy2(src_l, OUT_DIR / "portrait_stars_ghost_quest.png")
+    if src_s.exists():
+        shutil.copy2(src_s, OUT_DIR / "portrait_stars_ghost_small.jpg")
     if src_d.exists():
         shutil.copy2(src_d, OUT_DIR / "stars_ghost.png")
-    print("    [+] Portraits copied to assets_redeco/portrait_stars_ghost_*")
+    print("    [+] Stock portraits copied to assets_redeco/portrait_stars_ghost_*")
 
 
 # ---------------------------------------------------------
