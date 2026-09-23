@@ -191,7 +191,7 @@
         "en": "SG Ultra Magnus",
         "zh": "捅天枭",
         "faction": "汽车人",
-        "note": "碎玻璃/镜像宇宙 格斗系"
+        "note": "碎玻璃/镜像宇宙 爆破系"
     },
     "wheeljack_gs_mp20": {
         "en": "Wheeljack",
@@ -353,7 +353,7 @@
         "en": "Soundblaster",
         "zh": "音板",
         "faction": "霸天虎",
-        "note": "录音板 爆破系"
+        "note": "经典G1 战术系"
     },
     "soundwave_gs": {
         "en": "Soundwave",
@@ -389,7 +389,7 @@
         "en": "Sharkticon",
         "zh": "饿鲨1000",
         "faction": "杂兵 (Sharkticon)",
-        "note": "五面怪侍卫"
+        "note": "五面怪侍卫 侦查系"
     },
     "sharkticon_gs_brawler": {
         "en": "Sharkticon (Brawler)",

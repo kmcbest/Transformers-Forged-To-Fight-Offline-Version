@@ -563,7 +563,7 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0xF9A7F8,  "TS_GET_TEAM",        2, 0 }, // 175 TeamSelectModel.get_Team -> empty team on entry
     { 0xB16C54,  "ET_INIT_HEROES",     2, 0 }, // 176 EditTeamModel.InitHeroes -> filter to Rodimus
     { 0x0DAD5A4, "APPLY_DMG",          2, 0 }, // 177 PlayerAttributes.ApplyDamage -> picnic quest ranged-only damage
-    { 0x0E3D688, "PFS_ENEMY_HP",       2, 0 }, // 178 PrefightScreenData.GetEnemyNormalizedHealth -> residual enemy HP
+    { 0,         "PFS_ENEMY_HP",       2, 0 }, // 178 PrefightScreenData.GetEnemyNormalizedHealth (disabled: stock function returns 1.0f directly)
     { 0x0DAD558, "CRIT_MULT",          2, 0 }, // 179 PlayerAttributes.GetCritDamageMultiplier -> ensure 1.5x crit damage for Player 0
 };
 #define NH (int)(sizeof(H)/sizeof(H[0]))
@@ -2756,14 +2756,17 @@ static int g_last_enemy_pi = 3000;
 static float g_last_enemy_hp = 50000.0f;
 static float g_last_enemy_atk = 2500.0f;
 
-static void calc_enemy_stats_all(const char* bid, int rank, int level, float* out_hp, float* out_atk, int* out_pi) {
+static void calc_enemy_stats_all(const char* bid, int rank, int level, float* out_hp, float* out_atk, int* out_pi, float* out_crit_chance, float* out_crit_damage) {
     int hp = 42000, atk = 2300, rating = 44300;
+    float crit_chance = 0.14f, crit_damage = 1.50f;
     if (bid && *bid) {
         for (int i = 0; i < NUM_ENEMY_STATS; i++) {
             if (strcmp(ENEMY_STATS[i].id, bid) == 0) {
                 hp = ENEMY_STATS[i].hp;
                 atk = ENEMY_STATS[i].atk;
                 rating = ENEMY_STATS[i].rating;
+                crit_chance = ENEMY_STATS[i].crit_chance;
+                crit_damage = ENEMY_STATS[i].crit_damage;
                 break;
             }
         }
@@ -2771,17 +2774,19 @@ static void calc_enemy_stats_all(const char* bid, int rank, int level, float* ou
     if (out_hp) *out_hp = (float)hp;
     if (out_atk) *out_atk = (float)atk;
     if (out_pi) *out_pi = rating;
+    if (out_crit_chance) *out_crit_chance = crit_chance;
+    if (out_crit_damage) *out_crit_damage = crit_damage;
 }
 
 static int calc_enemy_rating(const char* bid, int rank, int level) {
     int pi = 0;
-    calc_enemy_stats_all(bid, rank, level, NULL, NULL, &pi);
+    calc_enemy_stats_all(bid, rank, level, NULL, NULL, &pi, NULL, NULL);
     return pi;
 }
 
 static float g_combat_enemy_mana_gain = 0.5f;
 static float g_combat_player_mana_gain = 1.0f;
-static float g_combat_player_crit_mult = 1.5f;
+static float g_combat_player_crit_mult = 0.0f;
 
 static void load_combat_tuning_config(void) {
     const char* hot_paths[] = {
@@ -2931,7 +2936,10 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
             float hp_f = 50000.0f;
             float atk_f = 2500.0f;
             int pi = 3000;
-            calc_enemy_stats_all(id1, 5, 50, &hp_f, &atk_f, &pi);
+            float enemy_cc = 0.14f, enemy_cd = 1.50f;
+            float player_cc = 0.14f, player_cd = 1.50f;
+            calc_enemy_stats_all(id1, 5, 50, &hp_f, &atk_f, &pi, &enemy_cc, &enemy_cd);
+            calc_enemy_stats_all(id2, 5, 50, NULL, NULL, NULL, &player_cc, &player_cd);
             if (g_current_is_10x_challenge) {
                 float mult = tftf_get_challenge_hp_multiplier();
                 if (mult <= 0.05f) mult = 1.0f;
@@ -2959,19 +2967,15 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                 *(int32_t*)((char*)at1 + 0x38) = atk;   // Attack
                 *(int32_t*)((char*)at1 + 0x3C) = atk;   // AttackBase
                 *(float*)  ((char*)at1 + 0x40) = 0.0f;  // Armor
-                *(float*)  ((char*)at1 + 0x44) = 0.5f;  // CritChance (50% crit rate)
-                *(float*)  ((char*)at1 + 0x48) = 1.5f;  // CritDamage
+                *(float*)  ((char*)at1 + 0x44) = enemy_cc;  // Enemy CritChance from database
                 *(float*)  ((char*)at1 + 0x50) = 0.5f;  // BlockProficiency
                 *(float*)  ((char*)at1 + 0x54) = g_combat_enemy_mana_gain;  // Dynamic enemy mana gain rate
                 *(int32_t*)((char*)at1 + 0x58) = 0;     // ManaStart = 0
-                *(float*)  ((char*)at1 + 0x8C) = 0.0f;  // Enemy CritDamageResist = 0 (allow player crits!)
             }
             if (at2 && obj_ok(at2)) {
                 *(int32_t*)((char*)at2 + 0x58) = 0;     // Player ManaStart = 0
-                *(float*)  ((char*)at2 + 0x44) = 0.5f;  // Player CritChance (50% crit rate)
-                *(float*)  ((char*)at2 + 0x48) = 1.5f;  // Player CritDamage
+                *(float*)  ((char*)at2 + 0x44) = player_cc; // Player CritChance from database
                 *(float*)  ((char*)at2 + 0x54) = g_combat_player_mana_gain; // Dynamic player mana gain rate
-                *(float*)  ((char*)at2 + 0x8C) = 0.0f;  // Player CritDamageResist = 0
             }
             if (ch1 && obj_ok(ch1)) {
                 *(int32_t*)((char*)ch1 + 0x28) = 3;     // NumSpecials
@@ -2982,15 +2986,16 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                 *(int32_t*)((char*)ch1 + 0x3C) = atk;
                 *(float*)  ((char*)ch1 + 0x48) = 1.0f;  // CritDamage multiplier
                 *(float*)  ((char*)ch1 + 0x58) = 1.0f;  // HP multiplier in CharacterData
-                *(float*)  ((char*)ch1 + 0x8C) = 0.0f;  // CritDamageResist multiplier
             }
-            LOG("FIXFIGHT_STATS: player=%d bp=%s filled hp=%d (ratio=%.2f) atk=%d pi=%d enemy_mana_gain=%.2f challenge_mult=%.1f",
-                 player_idx, id1, hp, enemy_hp_ratio, atk, pi, g_combat_enemy_mana_gain, tftf_get_challenge_hp_multiplier());
+            LOG("FIXFIGHT_STATS: player=%d bp=%s filled hp=%d (ratio=%.2f) atk=%d pi=%d crit_chance=%.2f crit_damage=%.2f enemy_mana_gain=%.2f challenge_mult=%.1f",
+                 player_idx, id1, hp, enemy_hp_ratio, atk, pi, enemy_cc, enemy_cd, g_combat_enemy_mana_gain, tftf_get_challenge_hp_multiplier());
         } else if (player_idx == 0) {
+            float player_cc = 0.14f, player_cd = 1.50f;
+            float enemy_cc = 0.14f, enemy_cd = 1.50f;
+            calc_enemy_stats_all(id1, 5, 50, NULL, NULL, NULL, &player_cc, &player_cd);
+            calc_enemy_stats_all(id2, 5, 50, NULL, NULL, NULL, &enemy_cc, &enemy_cd);
             if (at1 && obj_ok(at1)) {
-                *(float*)((char*)at1 + 0x44) = 0.5f;                      // Player 0 CritChance (50% crit rate)
-                *(float*)((char*)at1 + 0x48) = 1.5f;                      // Player 0 CritDamage
-                *(float*)((char*)at1 + 0x8C) = 0.0f;                      // Player 0 CritDamageResist = 0
+                *(float*)((char*)at1 + 0x44) = player_cc;                 // Player 0 CritChance from database
                 const char* cur_qid = tftf_quest_get_current_qid();
                 int is_fembots = (cur_qid && strcmp(cur_qid, "1.1.6") == 0);
                 if (is_fembots) {
@@ -3026,10 +3031,8 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                 }
             }
             if (at2 && obj_ok(at2)) {
-                *(float*)((char*)at2 + 0x44) = 0.5f;                      // Enemy CritChance
-                *(float*)((char*)at2 + 0x48) = 1.5f;                      // Enemy CritDamage
+                *(float*)((char*)at2 + 0x44) = enemy_cc;                  // Enemy CritChance from database
                 *(float*)((char*)at2 + 0x54) = g_combat_enemy_mana_gain; // Enemy mana gain rate
-                *(float*)((char*)at2 + 0x8C) = 0.0f;                      // Enemy CritDamageResist = 0
             }
             if (ch1 && obj_ok(ch1)) {
                 const char* cur_qid = tftf_quest_get_current_qid();
@@ -3049,10 +3052,9 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                 }
                 *(float*)((char*)ch1 + 0x48) = 1.0f;                      // CritDamage multiplier
                 *(float*)((char*)ch1 + 0x58) = 1.0f;
-                *(float*)((char*)ch1 + 0x8C) = 0.0f;                      // CritDamageResist multiplier
             }
-            LOG("FIXFIGHT_STATS: player=0 bp=%s set crit_chance=%.2f at1=%p at2=%p",
-                id1, at1 ? *(float*)((char*)at1 + 0x44) : -1.0f, at1, at2);
+            LOG("FIXFIGHT_STATS: player=0 bp=%s set crit_chance=%.2f crit_damage=%.2f at1=%p at2=%p",
+                id1, at1 ? *(float*)((char*)at1 + 0x44) : -1.0f, at1 ? *(float*)((char*)at1 + 0x48) : -1.0f, at1, at2);
         }
         flog("FIXFIGHT player=%d bp1=%s msa=%d attr.specials=%d tags:%p->%p  bp2=%s msa=%d attr.specials=%d tags:%p->%p",
              player_idx, id1, obj_ok(bp1)?*(int32_t*)((uintptr_t)bp1+0xAC):-1,
@@ -3063,6 +3065,13 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
     PROTECT({
         if (a0 && obj_ok(a0)) {
             int player_idx = obj_ok(a1) ? *(int32_t*)((uintptr_t)a1+0xF4) : -1;
+            const char* cur_bid = (player_idx == 0) ? g_p0_bot_id : g_p1_bot_id;
+            float post_cc = 0.14f, post_cd = 1.50f;
+            if (cur_bid && cur_bid[0]) {
+                calc_enemy_stats_all(cur_bid, 5, 50, NULL, NULL, NULL, &post_cc, &post_cd);
+            }
+            flog("FIXFIGHT_POST: a0=%p pidx=%d bid=%s cc=%.2f",
+                 a0, player_idx, cur_bid ? cur_bid : "unknown", post_cc);
             if (player_idx == 0) {
                 const char* cur_qid = tftf_quest_get_current_qid();
                 int is_fembots = (cur_qid && strcmp(cur_qid, "1.1.6") == 0);
@@ -5318,13 +5327,28 @@ void* hook_155(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     return r;
 }
 void* hook_156(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
-    if (H[156].orig) {
-        H[156].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    float crit_chance = 0.14f;
+    void* owner = (a0 && obj_ok(a0)) ? *(void**)((char*)a0 + 0x28) : NULL;
+    int player_idx = (owner && obj_ok(owner)) ? *(int32_t*)((char*)owner + 0xF4) : -1;
+    const char* bid = (player_idx == 0) ? g_p0_bot_id : g_p1_bot_id;
+
+    if (bid && bid[0]) {
+        calc_enemy_stats_all(bid, 5, 50, NULL, NULL, NULL, &crit_chance, NULL);
     }
-    int is_crit = (rand() % 100) < 50 ? 1 : 0;
+
+    static int s_seeded = 0;
+    if (!s_seeded) {
+        srand((unsigned int)propgo_now_ms());
+        s_seeded = 1;
+    }
+
+    float roll = (float)(rand() % 10000) / 10000.0f;
+    int is_crit = (roll < crit_chance) ? 1 : 0;
+
     static int s_crit_log_cnt = 0;
-    if (s_crit_log_cnt++ < 30) {
-        flog("ROLL_CRIT: PlayerAttributes.RollForCriticalHit called on %p -> 50%% roll: %d", a0, is_crit);
+    if (s_crit_log_cnt++ < 60) {
+        flog("ROLL_CRIT: pidx=%d bid=%s (cc=%.2f, roll=%.4f) -> is_crit=%d (a0=%p)",
+             player_idx, bid ? bid : "unknown", crit_chance, roll, is_crit, a0);
     }
     return (void*)(intptr_t)is_crit;
 }
@@ -5813,48 +5837,34 @@ void* hook_176(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     return res;
 }
 
-typedef float (*fn_apply_dmg)(void* self, float damage, void* a1, int32_t a2, void* a3, int32_t a4, int32_t a5, float s1, float s2);
+typedef float (*fn_apply_dmg)(void* self, float damage, void* method);
 
 // Slot 177: PlayerAttributes.ApplyDamage
 // In Starscream's Picnic (1.1.7), only ranged attacks can deal damage to enemies.
 // Melee attacks (light combo, medium dash, heavy charge) deal 0 damage.
-float hook_177(void* self, float damage, void* a1, int32_t a2, void* a3, int32_t a4, int32_t a5, float s1, float s2) {
+float hook_177(void* self, float damage, void* method) {
     if (tftf_is_picnic_quest_active()) {
         PROTECT({
             if (self && obj_ok(self)) {
-                int32_t p_idx = *(int32_t*)((char*)self + 0x38);
                 void* owner = *(void**)((char*)self + 0x28);
-                // Target is enemy (P1) if player_idx == 1, or owner is g_p1_controller, or owner != g_p0_controller
-                int is_enemy = (p_idx == 1 || (owner && owner == g_p1_controller) || (owner && g_p0_controller && owner != g_p0_controller));
+                int is_enemy = (owner && g_p0_controller && owner != g_p0_controller);
                 if (is_enemy) {
-                    // Check if player P0 is doing a melee attack
                     int is_melee = 0;
                     if (g_p0_controller && obj_ok(g_p0_controller)) {
                         uint32_t l = *(uint32_t*)((char*)g_p0_controller + 0x1c0);
                         uint32_t m = *(uint32_t*)((char*)g_p0_controller + 0x1c4);
                         uint32_t r = *(uint32_t*)((char*)g_p0_controller + 0x1c8);
                         int is_heavy = (*(uint32_t*)((char*)g_p0_controller + 0x13c) & 1) || g_p0_after_heavy;
-
-                        typedef int (*fn_pc_bool)(void*);
-                        fn_pc_bool is_melee_fn = (fn_pc_bool)(g_base + 0x011754B8); // PlayerController.get_IsMeleeAttacking
-                        fn_pc_bool is_dash_fn = (fn_pc_bool)(g_base + 0x011755E0);  // PlayerController.get_IsDashAttacking
-                        fn_pc_bool is_shooting_fn = (fn_pc_bool)(g_base + 0x01175508); // PlayerController.get_IsShooting
-
-                        int native_melee = is_melee_fn ? is_melee_fn(g_p0_controller) : 0;
-                        int native_dash = is_dash_fn ? is_dash_fn(g_p0_controller) : 0;
-                        int native_shooting = is_shooting_fn ? is_shooting_fn(g_p0_controller) : 0;
-
-                        if (l > 0 || m > 0 || is_heavy || native_melee || native_dash) {
+                        if (l > 0 || m > 0 || is_heavy) {
                             is_melee = 1;
                         }
-                        if (r > 0 || native_shooting) {
-                            is_melee = 0; // shooting takes precedence
+                        if (r > 0) {
+                            is_melee = 0;
                         }
-
                         static int s_dmg_log = 0;
                         if (s_dmg_log++ < 30 || is_melee) {
-                            flog("PICNIC_DMG: enemy=%p dmg=%.1f->%.1f is_melee=%d (l=%u m=%u r=%u hvy=%d n_mel=%d n_dsh=%d n_sht=%d)",
-                                 self, damage, is_melee ? 0.0f : damage, is_melee, l, m, r, is_heavy, native_melee, native_dash, native_shooting);
+                            flog("PICNIC_DMG: enemy=%p dmg=%.1f->%.1f is_melee=%d",
+                                 self, damage, is_melee ? 0.0f : damage, is_melee);
                         }
                     }
                     if (is_melee) {
@@ -5866,7 +5876,7 @@ float hook_177(void* self, float damage, void* a1, int32_t a2, void* a3, int32_t
     }
 
     if (!H[177].orig) return 0.0f;
-    return ((fn_apply_dmg)H[177].orig)(self, damage, a1, a2, a3, a4, a5, s1, s2);
+    return ((fn_apply_dmg)H[177].orig)(self, damage, method);
 }
 
 void* hook_166(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
@@ -6053,21 +6063,30 @@ float hook_178(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
 }
 
 float hook_179(void* self, float opp_resist) {
-    typedef float (*fn_crit_mult)(void*, float);
-    float mult = H[179].orig ? ((fn_crit_mult)H[179].orig)(self, opp_resist) : 1.0f;
     void* owner = (self && obj_ok(self)) ? *(void**)((char*)self + 0x28) : NULL;
     int player_idx = (owner && obj_ok(owner)) ? *(int32_t*)((char*)owner + 0xF4) : -1;
+    const char* bid = (player_idx == 0) ? g_p0_bot_id : g_p1_bot_id;
 
-    if (player_idx == 0) {
-        float min_mult = g_combat_player_crit_mult > 1.0f ? g_combat_player_crit_mult : 1.5f;
-        if (mult < min_mult) {
-            mult = min_mult;
+    float bot_cd = 1.50f;
+    if (bid && bid[0]) {
+        calc_enemy_stats_all(bid, 5, 50, NULL, NULL, NULL, NULL, &bot_cd);
+    }
+    if (bot_cd < 1.0f) bot_cd = 1.0f;
+
+    float mult = bot_cd;
+    if (opp_resist > 0.0f) {
+        mult -= opp_resist;
+        if (mult < 1.0f) mult = 1.0f;
+    }
+    if (player_idx == 0 && g_combat_player_crit_mult > 1.0f) {
+        if (mult < g_combat_player_crit_mult) {
+            mult = g_combat_player_crit_mult;
         }
     }
     static int s_crit_mult_log = 0;
     if (s_crit_mult_log++ < 30) {
-        flog("CRIT_MULT (0xDAD558): pidx=%d opp_resist=%.2f -> returning multiplier=%.2f",
-             player_idx, opp_resist, mult);
+        flog("CRIT_MULT (0xDAD558): pidx=%d bid=%s opp_resist=%.2f -> returning multiplier=%.2f",
+             player_idx, bid ? bid : "unknown", opp_resist, mult);
     }
     return mult;
 }

@@ -1,0 +1,1871 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TFTF 角色数值与技能中枢 (Transformers Forged to Fight)</title>
+    <style>
+        @font-face {
+            font-family: 'TecnicaBold';
+            src: url('/fonts/Tecnica_Bold_116.ttf') format('truetype');
+        }
+
+        :root {
+            --bg-main: #0B0E14;
+            --bg-card: #151A23;
+            --bg-card-hover: #1E2532;
+            --bg-darker: #080A0F;
+            --border-color: #262F40;
+            --text-main: #F1F5F9;
+            --text-muted: #94A3B8;
+            --text-sub: #64748B;
+            --primary: #3B82F6;
+            --primary-glow: rgba(59, 130, 246, 0.25);
+            --tact-color: #0543EF;
+            --braw-color: #7D34BC;
+            --warr-color: #E9312D;
+            --scou-color: #1D9F06;
+            --tech-color: #09BCDD;
+            --demo-color: #F5BD0D;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.5;
+            padding-bottom: 80px;
+        }
+
+        .tecnica-icon {
+            font-family: 'TecnicaBold', sans-serif !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-style: normal;
+            line-height: 1;
+            vertical-align: middle;
+        }
+
+        /* Top Navigation Header */
+        header {
+            background: linear-gradient(180deg, #131822 0%, #0B0E14 100%);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 16px 32px;
+            backdrop-filter: blur(10px);
+        }
+
+        .header-container {
+            max-width: 1440px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .logo-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-title {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            background: linear-gradient(90deg, #60A5FA, #A78BFA);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo-badge {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60A5FA;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-weight: 600;
+        }
+
+        /* Search & Filters */
+        .controls-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            background: var(--bg-darker);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            width: 240px;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .search-box:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-glow);
+        }
+
+        .filter-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 7px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .filter-btn:hover {
+            color: var(--text-main);
+            background: var(--bg-card-hover);
+        }
+
+        .filter-btn.active {
+            background: var(--primary);
+            color: #FFF;
+            border-color: var(--primary);
+        }
+
+        /* Main Container */
+        main {
+            max-width: 1440px;
+            margin: 24px auto;
+            padding: 0 32px;
+        }
+
+        /* Stats Overview Cards */
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .overview-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .overview-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .overview-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        /* Class Section */
+        .class-section {
+            margin-bottom: 40px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .class-header {
+            padding: 18px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+            background: linear-gradient(90deg, rgba(255,255,255,0.02) 0%, transparent 100%);
+        }
+
+        .class-title-group {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .pua-icon-badge {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            background: var(--bg-darker);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .pua-icon-badge:hover {
+            border-color: var(--primary);
+            box-shadow: 0 0 12px var(--primary-glow);
+            transform: scale(1.05);
+        }
+
+        .pua-icon-badge .pua-tooltip {
+            position: absolute;
+            bottom: -28px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #000;
+            color: #FFF;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            z-index: 10;
+        }
+
+        .pua-icon-badge:hover .pua-tooltip {
+            opacity: 1;
+        }
+
+        .class-name {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .class-en-name {
+            font-size: 13px;
+            color: var(--text-sub);
+            margin-left: 6px;
+            font-weight: 500;
+        }
+
+        .class-stats-pill {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--bg-darker);
+            border: 1px solid var(--border-color);
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .pill-stat {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .pill-stat span.val {
+            font-weight: 700;
+            color: #38BDF8;
+        }
+
+        .class-trait {
+            padding: 8px 24px;
+            background: rgba(0, 0, 0, 0.2);
+            font-size: 12px;
+            color: var(--text-muted);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        /* Character Grid */
+        .character-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 16px;
+            padding: 20px 24px;
+        }
+
+        .character-card {
+            background: var(--bg-darker);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .character-card:hover {
+            border-color: rgba(59, 130, 246, 0.5);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .card-top {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar-frame {
+            width: 58px;
+            height: 58px;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid var(--border-color);
+            background: #000;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .card-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .char-names {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .name-zh {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .name-en {
+            font-size: 12px;
+            color: var(--text-sub);
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .char-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        .faction-tag {
+            font-size: 11px;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .source-tag {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 4px;
+            letter-spacing: 0.3px;
+            line-height: 1.4;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .source-kabam {
+            background: rgba(245, 158, 11, 0.15);
+            color: #FBBF24;
+            border: 1px solid rgba(245, 158, 11, 0.35);
+        }
+
+        .source-netflix {
+            background: rgba(229, 9, 20, 0.2);
+            color: #FF4D61;
+            border: 1px solid rgba(229, 9, 20, 0.5);
+            font-weight: 800;
+        }
+
+        .source-revival {
+            background: rgba(6, 182, 212, 0.16);
+            color: #22D3EE;
+            border: 1px solid rgba(34, 211, 238, 0.4);
+            box-shadow: 0 0 6px rgba(34, 211, 238, 0.15);
+        }
+
+        .origin-tag {
+            font-size: 11px;
+            color: var(--text-sub);
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(0, 0, 0, 0.25);
+            padding: 2px 4px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Stats Row */
+        .card-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.04);
+            border-radius: 8px;
+            padding: 8px;
+            font-size: 12px;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .stat-item .lbl {
+            font-size: 10px;
+            color: var(--text-sub);
+            text-transform: uppercase;
+        }
+
+        .stat-item .num {
+            font-weight: 700;
+            color: var(--text-main);
+            margin-top: 1px;
+        }
+
+        .stat-item .num.highlight {
+            color: #38BDF8;
+        }
+
+        .stat-item .num.custom-override {
+            color: #F59E0B;
+        }
+
+        /* Card Actions */
+        .card-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: auto;
+        }
+
+        .btn-view-skills {
+            flex: 1;
+            background: rgba(59, 130, 246, 0.12);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #60A5FA;
+            padding: 7px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .btn-view-skills:hover {
+            background: var(--primary);
+            color: #FFF;
+        }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            width: 90%;
+            max-width: 960px;
+            max-height: 88vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            transform: scale(0.96);
+            transition: transform 0.25s ease;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            padding: 20px 28px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--bg-darker);
+        }
+
+        .modal-body {
+            padding: 24px 28px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .modal-close-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 24px;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+        }
+
+        .modal-close-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #FFF;
+        }
+
+        /* Ability Category Sections */
+        .ability-category-block {
+            margin-bottom: 24px;
+            background: var(--bg-darker);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+
+        .category-header-bar {
+            padding: 12px 18px;
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .cat-title-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .cat-title-text {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .cat-count-badge {
+            font-size: 11px;
+            color: var(--text-sub);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1px 6px;
+            border-radius: 999px;
+        }
+
+        .btn-add-ability {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            color: #34D399;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-add-ability:hover {
+            background: #10B981;
+            color: #FFF;
+        }
+
+        .category-content-area {
+            padding: 14px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .empty-category-placeholder {
+            padding: 16px;
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-sub);
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.15);
+        }
+
+        /* Ability Card */
+        .ability-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            position: relative;
+        }
+
+        .ability-header-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .ability-pua-picker-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px dashed rgba(255, 255, 255, 0.25);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            color: #38BDF8;
+        }
+
+        .ability-pua-picker-btn:hover {
+            background: rgba(56, 189, 248, 0.15);
+            border-color: #38BDF8;
+            border-style: solid;
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+        }
+
+        .ability-pua-icon-glyph {
+            font-size: 22px;
+        }
+
+        .ability-pua-hex-sub {
+            font-size: 8px;
+            color: var(--text-sub);
+            margin-top: 1px;
+            font-family: monospace;
+        }
+
+        .ability-title-edit-input {
+            flex: 1;
+            background: var(--bg-darker);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            font-size: 14px;
+            font-weight: 700;
+            padding: 6px 10px;
+            border-radius: 6px;
+            outline: none;
+        }
+
+        .ability-title-edit-input:focus {
+            border-color: var(--primary);
+        }
+
+        .ability-card-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-card-action {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-card-action:hover {
+            background: var(--bg-card-hover);
+            color: #FFF;
+        }
+
+        .btn-card-action.save:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #FFF;
+        }
+
+        .btn-card-action.del:hover {
+            background: #EF4444;
+            border-color: #EF4444;
+            color: #FFF;
+        }
+
+        .ability-desc-textarea {
+            width: 100%;
+            background: var(--bg-darker);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            font-size: 13px;
+            line-height: 1.6;
+            padding: 10px 12px;
+            border-radius: 8px;
+            outline: none;
+            resize: vertical;
+            min-height: 54px;
+            font-family: inherit;
+        }
+
+        .ability-desc-textarea:focus {
+            border-color: var(--primary);
+        }
+
+        /* PUA Picker Grid Modal */
+        .pua-modal-content {
+            max-width: 800px;
+        }
+
+        .pua-search-input {
+            width: 100%;
+            background: var(--bg-darker);
+            border: 1px solid var(--border-color);
+            padding: 10px 16px;
+            border-radius: 8px;
+            color: #FFF;
+            font-size: 14px;
+            margin-bottom: 16px;
+            outline: none;
+        }
+
+        .pua-search-input:focus {
+            border-color: var(--primary);
+        }
+
+        .pua-filter-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .pua-tab-btn {
+            background: var(--bg-darker);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .pua-tab-btn.active {
+            background: var(--primary);
+            color: #FFF;
+            border-color: var(--primary);
+        }
+
+        .pua-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+            gap: 10px;
+            max-height: 480px;
+            overflow-y: auto;
+            padding-right: 6px;
+        }
+
+        .pua-cell {
+            background: var(--bg-darker);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .pua-cell:hover {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: #38BDF8;
+            transform: scale(1.08);
+            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+        }
+
+        .pua-cell .pua-glyph {
+            font-size: 28px;
+            margin-bottom: 4px;
+            color: #38BDF8;
+        }
+
+        .pua-cell .pua-hex {
+            font-size: 10px;
+            font-family: monospace;
+            color: var(--text-sub);
+        }
+
+        .pua-cell .pua-name {
+            font-size: 9px;
+            color: var(--text-muted);
+            max-width: 80px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            text-align: center;
+        }
+
+        /* Stats Edit Section in Character Modal */
+        .char-edit-stats-box {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            background: var(--bg-darker);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+
+        .edit-stat-col {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .edit-stat-col label {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .edit-stat-col input {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            outline: none;
+        }
+
+        .edit-stat-col input:focus {
+            border-color: var(--primary);
+        }
+
+        .btn-save-stats {
+            grid-column: 1 / -1;
+            background: var(--primary);
+            color: #FFF;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 8px;
+        }
+
+        .btn-save-stats:hover {
+            background: #2563EB;
+        }
+
+        /* Add Ability Modal */
+        .add-ability-modal-content {
+            max-width: 520px;
+        }
+
+        .form-row {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 14px;
+        }
+
+        .form-row label {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .form-row input, .form-row select, .form-row textarea {
+            background: var(--bg-darker);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .form-row input:focus, .form-row select:focus, .form-row textarea:focus {
+            border-color: var(--primary);
+        }
+
+        .btn-submit-new-ability {
+            background: #10B981;
+            color: #FFF;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.2s;
+        }
+
+        .btn-submit-new-ability:hover {
+            background: #059669;
+        }
+
+        /* Toast notifications */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #10B981;
+            color: #FFF;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 9999;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="header-container">
+            <div class="logo-group">
+                <span class="logo-title">TFTF 数值与技能中枢</span>
+                <span class="logo-badge">SQLite Database Live</span>
+            </div>
+            <div class="controls-bar">
+                <input type="text" id="searchInput" class="search-box" placeholder="搜索机器人中英文名 / ID..." oninput="handleSearch()">
+                <div class="filter-group">
+                    <button class="filter-btn faction-filter-btn active" onclick="filterFaction('all', this)">全部阵营</button>
+                    <button class="filter-btn faction-filter-btn" id="btnFilter_autobot" onclick="filterFaction('autobot', this)">汽车人</button>
+                    <button class="filter-btn faction-filter-btn" id="btnFilter_decepticon" onclick="filterFaction('decepticon', this)">霸天虎</button>
+                    <button class="filter-btn faction-filter-btn" id="btnFilter_predacon" onclick="filterFaction('predacon', this)">原始兽</button>
+                    <button class="filter-btn faction-filter-btn" id="btnFilter_maximal" onclick="filterFaction('maximal', this)">巨无霸</button>
+                </div>
+                <div class="filter-group">
+                    <button class="filter-btn source-filter-btn active" onclick="filterSource('all', this)">全部来源</button>
+                    <button class="filter-btn source-filter-btn" id="btnSource_Kabam" onclick="filterSource('Kabam', this)">Kabam (61)</button>
+                    <button class="filter-btn source-filter-btn" id="btnSource_Netflix" onclick="filterSource('Netflix', this)">Netflix (2)</button>
+                    <button class="filter-btn source-filter-btn" id="btnSource_Revival" onclick="filterSource('Revival', this)">Revival (15)</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Top Stats Overview -->
+        <div class="stats-overview">
+            <div class="overview-card">
+                <span class="overview-label">收录角色总数</span>
+                <span class="overview-value" id="statTotalBots">78</span>
+            </div>
+            <div class="overview-card">
+                <span class="overview-label">职业流派</span>
+                <span class="overview-value" id="statTotalClasses">6 系</span>
+            </div>
+            <div class="overview-card">
+                <span class="overview-label">官方收录战技</span>
+                <span class="overview-value" id="statTotalAbilities">1,163 条</span>
+            </div>
+            <div class="overview-card">
+                <span class="overview-label">PUA 矢量字形库</span>
+                <span class="overview-value" id="statTotalPua">523 个</span>
+            </div>
+        </div>
+
+        <!-- Class Sections Container -->
+        <div id="classSectionsContainer">
+            <!-- Dynamically populated -->
+        </div>
+    </main>
+
+    <!-- Character Details & Ability Modal -->
+    <div class="modal-overlay" id="charModal" onclick="closeModalOnBackdrop(event, 'charModal')">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <div class="avatar-frame" style="width: 52px; height: 52px;">
+                        <img id="mAvatar" class="avatar-img" src="" alt="avatar">
+                    </div>
+                    <div>
+                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                            <span id="mNameZh" style="font-size: 18px; font-weight: 700;"></span>
+                            <span id="mNameEn" style="font-size: 13px; color: var(--text-sub);"></span>
+                            <span id="mOriginalTag" style="font-size: 11px; background: rgba(245, 158, 11, 0.2); color: #F59E0B; padding: 1px 6px; border-radius: 4px; display: none;">专属原创角色</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
+                            <span id="mSourceBadge" class="source-tag"></span>
+                            <span id="mFactionBadge" class="faction-tag"></span>
+                            <span id="mClassBadge" class="faction-tag"></span>
+                            <span id="mOriginBadge" class="origin-tag"></span>
+                        </div>
+                    </div>
+                </div>
+                <button class="modal-close-btn" onclick="closeCharModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Editable Stats Box -->
+                <div class="char-edit-stats-box">
+                    <div class="edit-stat-col">
+                        <label>生命倍率 (HP Mult)</label>
+                        <input type="number" id="inpHealthMult" step="0.05">
+                    </div>
+                    <div class="edit-stat-col">
+                        <label>攻击倍率 (ATK Mult)</label>
+                        <input type="number" id="inpAttackMult" step="0.05">
+                    </div>
+                    <div class="edit-stat-col">
+                        <label>基础暴击率 (Crit %)</label>
+                        <input type="number" id="inpCritChance" step="0.01" placeholder="默认跟随职业">
+                    </div>
+                    <div class="edit-stat-col">
+                        <label>暴击伤害倍率 (Dmg)</label>
+                        <input type="number" id="inpCritDamage" step="0.05" placeholder="默认跟随职业">
+                    </div>
+                    <div class="edit-stat-col">
+                        <label>远程暴击率 (Ranged)</label>
+                        <input type="number" id="inpCritRanged" step="0.01" placeholder="留空默认">
+                    </div>
+                    <div class="edit-stat-col">
+                        <label>近战暴击率 (Melee)</label>
+                        <input type="number" id="inpCritMelee" step="0.01" placeholder="如惊天雷设0">
+                    </div>
+                    <div class="edit-stat-col">
+                        <label>格挡减伤率 (Block)</label>
+                        <input type="number" id="inpBlockProf" step="0.05" value="0.5">
+                    </div>
+                    <button class="btn-save-stats" onclick="saveCharacterStats()">保存角色数值设定</button>
+                </div>
+
+                <!-- Lore / Notes -->
+                <div style="margin-bottom: 20px;">
+                    <div style="font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">背景设定与特性</div>
+                    <div id="mDescZh" style="font-size: 13px; color: var(--text-main); line-height: 1.6; background: rgba(0,0,0,0.25); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);"></div>
+                </div>
+
+                <!-- Ability Sections Container -->
+                <div style="font-size: 15px; font-weight: 700; margin-bottom: 14px;">能力与招式列表 (分节管理)</div>
+                <div id="mAbilitySectionsContainer">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add New Ability Modal -->
+    <div class="modal-overlay" id="addAbilityModal" onclick="closeModalOnBackdrop(event, 'addAbilityModal')">
+        <div class="modal-content add-ability-modal-content">
+            <div class="modal-header">
+                <div>
+                    <div style="font-size: 16px; font-weight: 700;">新增战技 / 能力</div>
+                    <div style="font-size: 12px; color: var(--text-sub); margin-top: 2px;" id="addAbilityCategoryLabel">所属分类: 基础特长</div>
+                </div>
+                <button class="modal-close-btn" onclick="closeAddAbilityModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="newAbCategory" value="basic">
+                <div class="form-row">
+                    <label>能力标题 (Title)</label>
+                    <input type="text" id="newAbTitle" placeholder="如：能量过载 / 幽影潜行 / 破甲斩击...">
+                </div>
+                <div class="form-row">
+                    <label>效果详细描述 (Description)</label>
+                    <textarea id="newAbDesc" rows="4" placeholder="详细描述该技能触发机制、持续时间、数值百分比等..."></textarea>
+                </div>
+                <div class="form-row">
+                    <label>专属 PUA 矢量图标 (可选)</label>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div class="ability-pua-picker-btn" id="newAbPuaBtn" onclick="openPuaPicker('new_ability', 'temp', '')">
+                            <span class="tecnica-icon ability-pua-icon-glyph" id="newAbPuaGlyph">+</span>
+                            <span class="ability-pua-hex-sub" id="newAbPuaHex">PUA</span>
+                        </div>
+                        <span style="font-size: 12px; color: var(--text-sub);">点击左侧方框挑选图标</span>
+                    </div>
+                    <input type="hidden" id="newAbPuaIconVal" value="">
+                </div>
+                <button class="btn-submit-new-ability" onclick="submitNewAbility()">确认添加至角色能力库</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PUA Icon Picker Modal -->
+    <div class="modal-overlay" id="puaModal" onclick="closeModalOnBackdrop(event, 'puaModal')">
+        <div class="modal-content pua-modal-content">
+            <div class="modal-header">
+                <div>
+                    <div style="font-size: 16px; font-weight: 700;">选择 Tecnica Bold PUA 矢量图标</div>
+                    <div style="font-size: 12px; color: var(--text-sub); margin-top: 2px;" id="puaTargetDesc">用于当前技能图标设置</div>
+                </div>
+                <button class="modal-close-btn" onclick="closePuaModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="puaSearchInput" class="pua-search-input" placeholder="输入名称或 Hex 搜索 (如 shield, bleed, stun, e50)..." oninput="filterPuaIcons()">
+                <div class="pua-filter-tabs">
+                    <button class="pua-tab-btn active" onclick="filterPuaCategory('all', this)">全部 (All)</button>
+                    <button class="pua-tab-btn" onclick="filterPuaCategory('buff_shield', this)">护盾与格挡 (Shield)</button>
+                    <button class="pua-tab-btn" onclick="filterPuaCategory('buff_effect', this)">增益与减益 (Buffs)</button>
+                    <button class="pua-tab-btn" onclick="filterPuaCategory('ui_control', this)">UI控制与标记 (UI)</button>
+                    <button class="pua-tab-btn" onclick="filterPuaCategory('misc', this)">其他符号 (Misc)</button>
+                </div>
+                <div class="pua-grid" id="puaGrid">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toastMsg">已保存更新</div>
+
+    <script>
+        let gOverviewData = null;
+        let gPuaIcons = [];
+        let gCurBotId = null;
+        let gCurrentPuaTarget = null;
+        let gActiveFactionFilter = 'all';
+
+        // Fixed 7 Categories
+        const CATEGORY_DEFS = [
+            { key: 'basic',     name: '基础特长 (Basic Abilities)', desc: '常驻基础属性与特性' },
+            { key: 'passive',   name: '被动战技 (Passive Abilities)', desc: '战斗中特定条件触发' },
+            { key: 'signature', name: '觉醒能力 (Signature Ability)', desc: '核心招牌能力' },
+            { key: 'sp1',       name: '特殊技 1 (SP1 Attack)', desc: '1条能量槽大招' },
+            { key: 'sp2',       name: '特殊技 2 (SP2 Attack)', desc: '2条能量槽大招' },
+            { key: 'sp3',       name: '特殊技 3 (SP3 Attack)', desc: '3条能量槽满气大招' },
+            { key: 'synergy',   name: '战友协同 (Synergy Bonuses)', desc: '同队伍羁绊加成' },
+        ];
+
+        // Initialize dashboard
+        async function init() {
+            try {
+                const res = await fetch('/api/overview');
+                gOverviewData = await res.json();
+
+                const puaRes = await fetch('/api/pua_icons');
+                const puaData = await puaRes.json();
+                gPuaIcons = puaData.icons || [];
+                document.getElementById('statTotalPua').innerText = `${gPuaIcons.length} 个`;
+
+                renderDashboard();
+            } catch (err) {
+                console.error("Failed to load dashboard data:", err);
+            }
+        }
+
+        // Render main summary page grouped by class
+        function renderDashboard() {
+            if (!gOverviewData) return;
+
+            const container = document.getElementById('classSectionsContainer');
+            container.innerHTML = '';
+
+            const classes = gOverviewData.classes;
+            const characters = gOverviewData.characters;
+
+            document.getElementById('statTotalBots').innerText = characters.length;
+            document.getElementById('statTotalClasses').innerText = `${classes.length} 系`;
+            if (gOverviewData.total_abilities) {
+                document.getElementById('statTotalAbilities').innerText = `${gOverviewData.total_abilities.toLocaleString()} 条`;
+            }
+
+            // Update source filter buttons count
+            const kabamCount = characters.filter(b => b.source === 'Kabam').length;
+            const netflixCount = characters.filter(b => b.source === 'Netflix').length;
+            const revivalCount = characters.filter(b => b.source === 'Revival').length;
+            const btnK = document.getElementById('btnSource_Kabam');
+            if (btnK) btnK.innerText = `Kabam (${kabamCount})`;
+            const btnN = document.getElementById('btnSource_Netflix');
+            if (btnN) btnN.innerText = `Netflix (${netflixCount})`;
+            const btnR = document.getElementById('btnSource_Revival');
+            if (btnR) btnR.innerText = `Revival (${revivalCount})`;
+
+            // Update faction filter buttons with PUA icons
+            if (gOverviewData.factions) {
+                gOverviewData.factions.forEach(f => {
+                    const btn = document.getElementById(`btnFilter_${f.faction_id}`);
+                    if (btn) {
+                        const fPua = f.pua_icon ? `<span class="tecnica-icon" style="margin-right: 4px;">${String.fromCharCode(parseInt(f.pua_icon, 16))}</span>` : '';
+                        btn.innerHTML = `${fPua}${f.name_zh}`;
+                    }
+                });
+            }
+
+            classes.forEach(cls => {
+                const q = document.getElementById('searchInput').value.trim().toLowerCase();
+                const botsInClass = characters.filter(bot => {
+                    if (bot.class !== cls.class_id) return false;
+                    if (gActiveFactionFilter !== 'all' && bot.faction !== gActiveFactionFilter) return false;
+                    if (gActiveSourceFilter !== 'all' && bot.source !== gActiveSourceFilter) return false;
+                    if (q) {
+                        const matchNameZh = bot.name_zh && bot.name_zh.toLowerCase().includes(q);
+                        const matchNameEn = bot.name_en && bot.name_en.toLowerCase().includes(q);
+                        const matchBid = bot.bot_id && bot.bot_id.toLowerCase().includes(q);
+                        return matchNameZh || matchNameEn || matchBid;
+                    }
+                    return true;
+                });
+
+                // Sort: Kabam regular -> Kabam Sharkticons -> Netflix -> Revival
+                botsInClass.sort((a, b) => {
+                    const getOrder = (bot) => {
+                        const isShark = bot.bot_id && bot.bot_id.includes('shark');
+                        if (bot.source === 'Kabam') return isShark ? 1 : 0;
+                        if (bot.source === 'Netflix') return 2;
+                        if (bot.source === 'Revival') return 3;
+                        return 4;
+                    };
+                    const ordA = getOrder(a);
+                    const ordB = getOrder(b);
+                    if (ordA !== ordB) return ordA - ordB;
+                    return (a.name_zh || a.bot_id).localeCompare(b.name_zh || b.bot_id, 'zh-Hans-CN');
+                });
+
+                if (botsInClass.length === 0 && (q || gActiveFactionFilter !== 'all' || gActiveSourceFilter !== 'all')) {
+                    return;
+                }
+
+                const sec = document.createElement('div');
+                sec.className = 'class-section';
+
+                const puaDisplay = cls.pua_icon ? String.fromCharCode(parseInt(cls.pua_icon, 16)) : '⯁';
+                const puaTooltipText = cls.pua_icon ? `PUA: ${cls.pua_icon}` : '点击选择PUA职业图标';
+
+                sec.innerHTML = `
+                    <div class="class-header" style="border-left: 4px solid ${cls.color_hex};">
+                        <div class="class-title-group">
+                            <div class="pua-icon-badge" onclick="openPuaPicker('class', '${cls.class_id}', '${cls.pua_icon || ''}')" style="color: ${cls.color_hex};">
+                                <span class="tecnica-icon">${puaDisplay}</span>
+                                <div class="pua-tooltip">${puaTooltipText}</div>
+                            </div>
+                            <div>
+                                <span class="class-name" style="color: ${cls.color_hex};">${cls.name_zh}</span>
+                                <span class="class-en-name">${cls.name_en}</span>
+                                <span style="font-size: 12px; color: var(--text-sub); margin-left: 8px;">(${botsInClass.length} 名战士)</span>
+                            </div>
+                        </div>
+                        <div class="class-stats-pill">
+                            <div class="pill-stat">基准暴击: <span class="val">${Math.round(cls.crit_chance * 100)}%</span></div>
+                            <div class="pill-stat">爆伤: <span class="val">${cls.crit_damage.toFixed(2)}x</span></div>
+                            ${cls.ranged_crit_bonus > 0 ? `<div class="pill-stat">远程加成: <span class="val" style="color: #F59E0B;">+${Math.round(cls.ranged_crit_bonus * 100)}%</span></div>` : ''}
+                        </div>
+                    </div>
+                    <div class="class-trait">${cls.trait_zh || '暂无流派描述'}</div>
+                    <div class="character-grid" id="grid_${cls.class_id}"></div>
+                `;
+
+                container.appendChild(sec);
+                const grid = sec.querySelector(`#grid_${cls.class_id}`);
+
+                botsInClass.forEach(bot => {
+                    const card = createCharacterCard(bot, cls);
+                    grid.appendChild(card);
+                });
+            });
+        }
+
+        // Create individual character card
+        function createCharacterCard(bot, cls) {
+            const card = document.createElement('div');
+            card.className = 'character-card';
+
+            const factionObj = gOverviewData.factions.find(f => f.faction_id === bot.faction) || { name_zh: bot.faction, color_hex: '#888' };
+            const facPua = bot.pua_faction_icon || factionObj.pua_icon || '';
+            const isCritOverridden = bot.crit_chance !== null;
+            const critDisplay = Math.round(bot.effective_crit_chance * 100);
+            const isCritDmgOverridden = bot.crit_damage !== null;
+            const critDmgDisplay = bot.effective_crit_damage.toFixed(2);
+
+            let rangedDisplay = Math.round(bot.effective_crit_ranged * 100);
+            let meleeDisplay = Math.round(bot.effective_crit_melee * 100);
+
+            card.innerHTML = `
+                <div class="card-top">
+                    <div class="avatar-frame">
+                        <img class="avatar-img" src="${bot.portrait_url}" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'58\\' height=\\'58\\'><rect width=\\'100%\\' height=\\'100%\\' fill=\\'%23222\\'/><text x=\\'50%\\' y=\\'50%\\' fill=\\'%23666\\' font-size=\\'10\\' text-anchor=\\'middle\\' dy=\\'.3em\\'>TF</text></svg>'">
+                    </div>
+                    <div class="card-info">
+                        <div class="char-names" title="${bot.name_zh} (${bot.name_en})">
+                            <span class="name-zh">${bot.name_zh}</span>
+                            <span class="name-en">${bot.name_en}</span>
+                        </div>
+                        <div class="char-meta">
+                            <span class="source-tag source-${(bot.source || 'Kabam').toLowerCase()}">${bot.source || 'Kabam'}</span>
+                            <span class="faction-tag" style="background: ${factionObj.color_hex}22; color: ${factionObj.color_hex}; border-color: ${factionObj.color_hex}44;" onclick="openPuaPicker('faction', '${bot.faction}', '${facPua}')" title="点击选择 [${factionObj.name_zh}] 阵营通用图标并保存入库">
+                                ${facPua ? `<span class="tecnica-icon" style="margin-right: 3px;">${String.fromCharCode(parseInt(facPua, 16))}</span>` : ''}
+                                ${factionObj.name_zh}
+                            </span>
+                            <span class="origin-tag">${bot.origin || 'G1'}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-stats-grid">
+                    <div class="stat-item">
+                        <span class="lbl">生命倍率</span>
+                        <span class="num">${bot.health_mult.toFixed(2)}x</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="lbl">攻击倍率</span>
+                        <span class="num">${bot.attack_mult.toFixed(2)}x</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="lbl">暴击率</span>
+                        <span class="num highlight ${isCritOverridden ? 'custom-override' : ''}">${critDisplay}%${isCritOverridden ? '*' : ''}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="lbl">暴击伤害</span>
+                        <span class="num ${isCritDmgOverridden ? 'custom-override' : ''}">${critDmgDisplay}x</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="lbl">远程暴击</span>
+                        <span class="num" style="color: #F59E0B;">${rangedDisplay}%</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="lbl">近战暴击</span>
+                        <span class="num" style="${bot.crit_chance_melee === 0.0 ? 'color: #EF4444; font-weight:800;' : ''}">${meleeDisplay}%</span>
+                    </div>
+                </div>
+
+                <div class="card-actions">
+                    <button class="btn-view-skills" onclick="openCharacterModal('${bot.bot_id}')">查看技能与招式</button>
+                </div>
+            `;
+            return card;
+        }
+
+        // Open Character Modal
+        async function openCharacterModal(bid) {
+            gCurBotId = bid;
+            try {
+                const res = await fetch(`/api/character/${bid}`);
+                const data = await res.json();
+
+                document.getElementById('mAvatar').src = data.portrait_url;
+                document.getElementById('mNameZh').innerText = data.name_zh;
+                document.getElementById('mNameEn').innerText = data.name_en;
+
+                const fObj = gOverviewData.factions.find(f => f.faction_id === data.faction) || {};
+                const cObj = gOverviewData.classes.find(c => c.class_id === data.class) || {};
+
+                const facPua = data.pua_faction_icon || fObj.pua_icon || '';
+                const classPua = data.pua_class_icon || cObj.pua_icon || '';
+
+                const mFac = document.getElementById('mFactionBadge');
+                mFac.innerHTML = `${facPua ? `<span class="tecnica-icon" style="margin-right: 3px;">${String.fromCharCode(parseInt(facPua, 16))}</span>` : ''}${fObj.name_zh || data.faction}`;
+                mFac.style.color = fObj.color_hex || '#FFF';
+                mFac.style.cursor = 'pointer';
+                mFac.title = `点击选择 [${fObj.name_zh || data.faction}] 阵营通用图标并保存入库`;
+                mFac.onclick = () => openPuaPicker('faction', data.faction, facPua);
+
+                const mCls = document.getElementById('mClassBadge');
+                mCls.innerHTML = `${classPua ? `<span class="tecnica-icon" style="margin-right: 3px;">${String.fromCharCode(parseInt(classPua, 16))}</span>` : ''}${cObj.name_zh || data.class}`;
+                mCls.style.color = cObj.color_hex || '#FFF';
+                mCls.style.cursor = 'pointer';
+                mCls.title = `点击选择 [${cObj.name_zh || data.class}] 职业通用图标并保存入库`;
+                mCls.onclick = () => openPuaPicker('class', data.class, classPua);
+
+                document.getElementById('mOriginBadge').innerText = data.origin || 'Generation 1';
+
+                const src = data.source || 'Kabam';
+                const mSrc = document.getElementById('mSourceBadge');
+                mSrc.innerText = src;
+                mSrc.className = `source-tag source-${src.toLowerCase()}`;
+
+                const isOriginal = (!data.abilities || data.abilities.length === 0);
+                document.getElementById('mOriginalTag').style.display = (src === 'Revival') ? 'inline-block' : 'none';
+
+                // Input values
+                document.getElementById('inpHealthMult').value = data.health_mult;
+                document.getElementById('inpAttackMult').value = data.attack_mult;
+                document.getElementById('inpCritChance').value = data.crit_chance !== null ? data.crit_chance : '';
+                document.getElementById('inpCritDamage').value = data.crit_damage !== null ? data.crit_damage : '';
+                document.getElementById('inpCritRanged').value = data.crit_chance_ranged !== null ? data.crit_chance_ranged : '';
+                document.getElementById('inpCritMelee').value = data.crit_chance_melee !== null ? data.crit_chance_melee : '';
+                document.getElementById('inpBlockProf').value = data.block_proficiency;
+
+                document.getElementById('mDescZh').innerText = data.desc_zh || data.note || '暂无背景描述。';
+
+                // Render Categorized Abilities
+                renderCategorizedAbilities(data.abilities || []);
+
+                document.getElementById('charModal').classList.add('active');
+            } catch (err) {
+                console.error("Failed to load character detail:", err);
+            }
+        }
+
+        // Render Categorized Abilities with (+) Buttons
+        function renderCategorizedAbilities(abilities) {
+            const container = document.getElementById('mAbilitySectionsContainer');
+            container.innerHTML = '';
+
+            CATEGORY_DEFS.forEach(catDef => {
+                const absInCat = abilities.filter(a => a.category === catDef.key);
+
+                const block = document.createElement('div');
+                block.className = 'ability-category-block';
+
+                block.innerHTML = `
+                    <div class="category-header-bar">
+                        <div class="cat-title-left">
+                            <span class="cat-title-text">${catDef.name}</span>
+                            <span class="cat-count-badge">${absInCat.length} 条</span>
+                        </div>
+                        <button class="btn-add-ability" onclick="openAddAbilityModal('${catDef.key}', '${catDef.name}')">
+                            <span>+</span> 新增能力
+                        </button>
+                    </div>
+                    <div class="category-content-area" id="cat_content_${catDef.key}"></div>
+                `;
+
+                container.appendChild(block);
+                const contentArea = block.querySelector(`#cat_content_${catDef.key}`);
+
+                if (absInCat.length > 0) {
+                    absInCat.forEach(ab => {
+                        const abCard = document.createElement('div');
+                        abCard.className = 'ability-card';
+
+                        const puaChar = ab.pua_icon ? String.fromCharCode(parseInt(ab.pua_icon, 16)) : '+';
+                        const puaSub = ab.pua_icon ? ab.pua_icon : 'PUA';
+
+                        abCard.innerHTML = `
+                            <div class="ability-header-row">
+                                <div class="ability-pua-picker-btn" onclick="openPuaPicker('ability', '${ab.id}', '${ab.pua_icon || ''}')" title="点击选择PUA图标">
+                                    <span class="tecnica-icon ability-pua-icon-glyph">${puaChar}</span>
+                                    <span class="ability-pua-hex-sub">${puaSub}</span>
+                                </div>
+                                <input type="text" class="ability-title-edit-input" id="title_${ab.id}" value="${escapeHtml(ab.title_zh || ab.title_en || '')}" placeholder="技能标题...">
+                                <div class="ability-card-actions">
+                                    <button class="btn-card-action save" onclick="saveAbilityItem(${ab.id})">保存</button>
+                                    <button class="btn-card-action del" onclick="deleteAbilityItem(${ab.id})">删除</button>
+                                </div>
+                            </div>
+                            <textarea class="ability-desc-textarea" id="desc_${ab.id}" placeholder="技能描述...">${escapeHtml(ab.desc_zh || ab.desc_en || '')}</textarea>
+                        `;
+                        contentArea.appendChild(abCard);
+                    });
+                } else {
+                    contentArea.innerHTML = `<div class="empty-category-placeholder">暂无该分类技能，点击右上角 <b>[+ 新增能力]</b> 进行创作</div>`;
+                }
+            });
+        }
+
+        function escapeHtml(str) {
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        function closeCharModal() {
+            document.getElementById('charModal').classList.remove('active');
+        }
+
+        // Save Character Stats
+        async function saveCharacterStats() {
+            if (!gCurBotId) return;
+
+            const health_mult = parseFloat(document.getElementById('inpHealthMult').value) || 1.0;
+            const attack_mult = parseFloat(document.getElementById('inpAttackMult').value) || 1.0;
+            const crit_chance_val = document.getElementById('inpCritChance').value;
+            const crit_chance = crit_chance_val !== '' ? parseFloat(crit_chance_val) : null;
+            const crit_damage_val = document.getElementById('inpCritDamage').value;
+            const crit_damage = crit_damage_val !== '' ? parseFloat(crit_damage_val) : null;
+            const crit_ranged_val = document.getElementById('inpCritRanged').value;
+            const crit_chance_ranged = crit_ranged_val !== '' ? parseFloat(crit_ranged_val) : null;
+            const crit_melee_val = document.getElementById('inpCritMelee').value;
+            const crit_chance_melee = crit_melee_val !== '' ? parseFloat(crit_melee_val) : null;
+            const block_proficiency = parseFloat(document.getElementById('inpBlockProf').value) || 0.5;
+
+            const payload = {
+                health_mult,
+                attack_mult,
+                crit_chance,
+                crit_damage,
+                crit_chance_ranged,
+                crit_chance_melee,
+                block_proficiency
+            };
+
+            try {
+                const res = await fetch(`/api/character/${gCurBotId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const ret = await res.json();
+                if (ret.ok) {
+                    showToast("角色数值设定已保存入库！");
+                    const ovRes = await fetch('/api/overview');
+                    gOverviewData = await ovRes.json();
+                    renderDashboard();
+                }
+            } catch (err) {
+                console.error("Save failed:", err);
+                alert("保存失败，请检查服务连接");
+            }
+        }
+
+        // Save individual ability
+        async function saveAbilityItem(aid) {
+            const title_zh = document.getElementById(`title_${aid}`).value.trim();
+            const desc_zh = document.getElementById(`desc_${aid}`).value.trim();
+
+            try {
+                const res = await fetch(`/api/ability/${aid}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title_zh, desc_zh })
+                });
+                const ret = await res.json();
+                if (ret.ok) {
+                    showToast("技能已保存！");
+                }
+            } catch (err) {
+                console.error("Failed to save ability:", err);
+                alert("保存失败");
+            }
+        }
+
+        // Delete ability
+        async function deleteAbilityItem(aid) {
+            if (!confirm("确认删除此项能力？")) return;
+
+            try {
+                const res = await fetch(`/api/ability/delete/${aid}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const ret = await res.json();
+                if (ret.ok) {
+                    showToast("能力已删除");
+                    if (gCurBotId) openCharacterModal(gCurBotId);
+                }
+            } catch (err) {
+                console.error("Failed to delete ability:", err);
+                alert("删除失败");
+            }
+        }
+
+        // Open Add Ability Modal
+        function openAddAbilityModal(categoryKey, categoryName) {
+            document.getElementById('newAbCategory').value = categoryKey;
+            document.getElementById('addAbilityCategoryLabel').innerText = `所属分类: ${categoryName}`;
+            document.getElementById('newAbTitle').value = '';
+            document.getElementById('newAbDesc').value = '';
+            document.getElementById('newAbPuaIconVal').value = '';
+            document.getElementById('newAbPuaGlyph').innerText = '+';
+            document.getElementById('newAbPuaHex').innerText = 'PUA';
+            document.getElementById('addAbilityModal').classList.add('active');
+        }
+
+        function closeAddAbilityModal() {
+            document.getElementById('addAbilityModal').classList.remove('active');
+        }
+
+        // Submit New Ability
+        async function submitNewAbility() {
+            if (!gCurBotId) return;
+
+            const category = document.getElementById('newAbCategory').value;
+            const title_zh = document.getElementById('newAbTitle').value.trim();
+            const desc_zh = document.getElementById('newAbDesc').value.trim();
+            const pua_icon = document.getElementById('newAbPuaIconVal').value;
+
+            if (!title_zh) {
+                alert("请输入能力标题！");
+                return;
+            }
+
+            const payload = {
+                bot_id: gCurBotId,
+                category,
+                title_zh,
+                desc_zh,
+                pua_icon
+            };
+
+            try {
+                const res = await fetch('/api/ability/new', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const ret = await res.json();
+                if (ret.ok) {
+                    showToast("新能力创建成功！");
+                    closeAddAbilityModal();
+                    openCharacterModal(gCurBotId);
+                }
+            } catch (err) {
+                console.error("Failed to create ability:", err);
+                alert("创建失败");
+            }
+        }
+
+        // PUA Picker Modal
+        function openPuaPicker(type, targetId, currentHex) {
+            gCurrentPuaTarget = { type, targetId, currentHex };
+            const desc = document.getElementById('puaTargetDesc');
+            if (type === 'ability') {
+                desc.innerText = `为能力 ID #${targetId} 选择并保存 PUA 图标至数据库`;
+            } else if (type === 'new_ability') {
+                desc.innerText = `为新创作能力选择 PUA 图标`;
+            } else if (type === 'class') {
+                desc.innerText = `为职业 [${targetId}] 选择并保存 PUA 图标至 class_defaults 表`;
+            } else if (type === 'faction') {
+                desc.innerText = `为阵营 [${targetId}] 选择并保存 PUA 通用图标至 factions 表`;
+            } else if (type === 'char_faction') {
+                desc.innerText = `为角色 [${targetId}] 专属阵营选择 PUA 图标`;
+            }
+
+            renderPuaGrid(gPuaIcons);
+            document.getElementById('puaModal').classList.add('active');
+        }
+
+        function closePuaModal() {
+            document.getElementById('puaModal').classList.remove('active');
+            gCurrentPuaTarget = null;
+        }
+
+        function renderPuaGrid(icons) {
+            const grid = document.getElementById('puaGrid');
+            grid.innerHTML = '';
+
+            icons.forEach(icon => {
+                const cell = document.createElement('div');
+                cell.className = 'pua-cell';
+                const char = String.fromCharCode(icon.codepoint_dec);
+
+                cell.innerHTML = `
+                    <span class="tecnica-icon pua-glyph">${char}</span>
+                    <span class="pua-hex">${icon.codepoint_hex}</span>
+                    <span class="pua-name" title="${icon.glyph_name}">${icon.glyph_name}</span>
+                `;
+                cell.onclick = () => selectPuaIcon(icon);
+                grid.appendChild(cell);
+            });
+        }
+
+        async function selectPuaIcon(icon) {
+            if (!gCurrentPuaTarget) return;
+
+            const hex = icon.codepoint_hex;
+            const { type, targetId } = gCurrentPuaTarget;
+
+            try {
+                if (type === 'ability') {
+                    const res = await fetch(`/api/ability/${targetId}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ pua_icon: hex })
+                    });
+                    const ret = await res.json();
+                    if (ret.ok) {
+                        showToast(`技能图标已存入数据库: ${icon.glyph_name} (${hex})`);
+                        // Update button immediately in open modal
+                        const btn = document.querySelector(`.ability-pua-picker-btn[onclick*="'${targetId}'"]`);
+                        if (btn) {
+                            const glyphSpan = btn.querySelector('.ability-pua-icon-glyph');
+                            const hexSpan = btn.querySelector('.ability-pua-hex-sub');
+                            if (glyphSpan) glyphSpan.innerText = String.fromCharCode(icon.codepoint_dec);
+                            if (hexSpan) hexSpan.innerText = hex;
+                        }
+                    }
+                } else if (type === 'new_ability') {
+                    document.getElementById('newAbPuaIconVal').value = hex;
+                    document.getElementById('newAbPuaGlyph').innerText = String.fromCharCode(icon.codepoint_dec);
+                    document.getElementById('newAbPuaHex').innerText = hex;
+                    showToast(`新技能图标已选用: ${icon.glyph_name} (${hex})`);
+                } else if (type === 'class') {
+                    const res = await fetch(`/api/class/${targetId}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ pua_icon: hex })
+                    });
+                    const ret = await res.json();
+                    if (ret.ok) {
+                        showToast(`职业 [${targetId}] 图标已存入数据库: ${icon.glyph_name} (${hex})`);
+                        const ovRes = await fetch('/api/overview');
+                        gOverviewData = await ovRes.json();
+                        renderDashboard();
+                        if (gCurBotId) openCharacterModal(gCurBotId);
+                    }
+                } else if (type === 'faction') {
+                    const res = await fetch(`/api/faction/${targetId}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ pua_icon: hex })
+                    });
+                    const ret = await res.json();
+                    if (ret.ok) {
+                        showToast(`阵营 [${targetId}] 图标已存入数据库: ${icon.glyph_name} (${hex})`);
+                        const ovRes = await fetch('/api/overview');
+                        gOverviewData = await ovRes.json();
+                        renderDashboard();
+                        if (gCurBotId) openCharacterModal(gCurBotId);
+                    }
+                } else if (type === 'char_faction') {
+                    const res = await fetch(`/api/character/${targetId}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ pua_faction_icon: hex })
+                    });
+                    const ret = await res.json();
+                    if (ret.ok) {
+                        showToast(`角色阵营图标已存入数据库: ${icon.glyph_name} (${hex})`);
+                        const ovRes = await fetch('/api/overview');
+                        gOverviewData = await ovRes.json();
+                        renderDashboard();
+                        if (gCurBotId) openCharacterModal(gCurBotId);
+                    }
+                }
+
+                closePuaModal();
+            } catch (err) {
+                console.error("Failed to save PUA icon:", err);
+                alert("保存失败，请检查服务连接");
+            }
+        }
+
+        // PUA Search & Filter
+        let gCurPuaCat = 'all';
+        function filterPuaCategory(cat, btn) {
+            gCurPuaCat = cat;
+            document.querySelectorAll('.pua-tab-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            filterPuaIcons();
+        }
+
+        function filterPuaIcons() {
+            const q = document.getElementById('puaSearchInput').value.trim().toLowerCase();
+            const filtered = gPuaIcons.filter(ic => {
+                if (gCurPuaCat !== 'all' && ic.category !== gCurPuaCat) return false;
+                if (q) {
+                    return ic.glyph_name.toLowerCase().includes(q) || ic.codepoint_hex.toLowerCase().includes(q);
+                }
+                return true;
+            });
+            renderPuaGrid(filtered);
+        }
+
+        // Filter Faction
+        function filterFaction(faction, btn) {
+            gActiveFactionFilter = faction;
+            document.querySelectorAll('.faction-filter-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            renderDashboard();
+        }
+
+        // Filter Source (Kabam / Netflix / Revival)
+        let gActiveSourceFilter = 'all';
+        function filterSource(source, btn) {
+            gActiveSourceFilter = source;
+            document.querySelectorAll('.source-filter-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            renderDashboard();
+        }
+
+        // Search Bot
+        function handleSearch() {
+            renderDashboard();
+        }
+
+        // Modal backdrop click
+        function closeModalOnBackdrop(e, modalId) {
+            if (e.target.id === modalId) {
+                if (modalId === 'charModal') closeCharModal();
+                if (modalId === 'puaModal') closePuaModal();
+                if (modalId === 'addAbilityModal') closeAddAbilityModal();
+            }
+        }
+
+        // Toast
+        function showToast(msg) {
+            const t = document.getElementById('toastMsg');
+            t.innerText = msg;
+            t.classList.add('show');
+            setTimeout(() => {
+                t.classList.remove('show');
+            }, 3000);
+        }
+
+        // Start
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

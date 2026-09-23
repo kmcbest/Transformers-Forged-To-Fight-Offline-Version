@@ -30,6 +30,7 @@ missing. See COMPLIANCE.md for the full rationale.
 import json
 import math
 import os
+import sqlite3
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 RESP_DIR = os.path.join(HERE, "responses")
@@ -103,7 +104,7 @@ ROSTER = {
     "starsaber_gs_leader2014":      ("autobot",    "tact", 5),
     "sunstreaker_gs_deluxe2008":    ("autobot",    "braw", 5),
     "ultramagnus_gs_leader":        ("autobot",    "tact", 5),
-    "ultramagnus_sg_leader":        ("autobot",    "braw", 5),
+    "ultramagnus_sg_leader":        ("autobot",    "demo", 5),
     "wheeljack_gs_mp20":            ("autobot",    "tech", 5),
     "windblade_gs":                 ("autobot",    "scou", 5),
 
@@ -137,7 +138,7 @@ ROSTER = {
     "shockwave_gs":                 ("decepticon", "tech", 5),
     "skywarp_gs_leader2015":        ("decepticon", "tech", 5),
     "slipstream_gs":                ("decepticon", "scou", 5),
-    "soundblaster_gs_mp13b":        ("decepticon", "demo", 5),
+    "soundblaster_gs_mp13b":        ("decepticon", "tact", 5),
     "soundwave_gs":                 ("decepticon", "tech", 5),
     "starscream_ghost_gs":          ("decepticon", "scou", 5),
     "sunstorm_gs_leader2015":       ("decepticon", "warr", 5),
@@ -147,7 +148,7 @@ ROSTER = {
     "waspinator_gs_deluxe":         ("predacon",   "demo", 5),
 
     # --- Sharkticons (unlocked 5-star cards; cannon-fodder combat stats preserved) ---
-    "sharkticon_gs_kabam":          ("decepticon", "braw", 5),
+    "sharkticon_gs_kabam":          ("decepticon", "scou", 5),
     "sharkticon_gs_brawler":        ("decepticon", "braw", 5),
     "sharkticon_gs_demolition":     ("decepticon", "demo", 5),
     "sharkticon_gs_scout":          ("decepticon", "scou", 5),
@@ -163,8 +164,16 @@ OWNED = list(ROSTER)
 # ---------------------------------------------------------------------------
 # Authored stat curve.  All ORIGINAL, all invented for this revival.
 # ---------------------------------------------------------------------------
-# Per-class flavour: brawlers tanky, warriors hit hard, scouts glassy, etc.
-# (multipliers applied on top of the star base). Original balance.
+# Per-class flavour and crit curve: loaded from tftf_database.db (or original defaults).
+_CLASS_STATS = {
+    "tact": {"crit_chance": 0.14, "crit_damage": 1.50, "hp_mult": 1.00, "atk_mult": 1.00},
+    "braw": {"crit_chance": 0.08, "crit_damage": 1.35, "hp_mult": 1.25, "atk_mult": 0.90},
+    "warr": {"crit_chance": 0.24, "crit_damage": 1.55, "hp_mult": 0.95, "atk_mult": 1.15},
+    "scou": {"crit_chance": 0.32, "crit_damage": 1.70, "hp_mult": 0.85, "atk_mult": 1.20},
+    "tech": {"crit_chance": 0.18, "crit_damage": 1.50, "hp_mult": 1.05, "atk_mult": 0.95},
+    "demo": {"crit_chance": 0.14, "crit_damage": 1.60, "hp_mult": 1.10, "atk_mult": 1.05},
+}
+
 _CLASS_MOD = {
     "braw": (1.25, 0.90),  # (hp_mult, atk_mult)
     "tact": (1.00, 1.00),
@@ -183,16 +192,47 @@ _STAR_BASE = {
     5: (42000, 2300),
 }
 
-
 # Per-bot base stats override
 _BASE_STATS_OVERRIDE = {
     "starscream_ghost_gs": {
         "health_mult": 0.95,
         "attack_mult": 1.25,
-        "crit_chance": 0.65,
-        "crit_damage": 1.65,
+        "crit_chance": 0.35,
+        "crit_damage": 1.75,
     },
 }
+
+# Synchronize with SQLite database (Server/tftf_database.db) if available
+_DB_PATH = os.path.join(HERE, "tftf_database.db")
+if os.path.exists(_DB_PATH):
+    try:
+        _conn = sqlite3.connect(_DB_PATH)
+        _c = _conn.cursor()
+        for row in _c.execute("SELECT class_id, crit_chance, crit_damage, base_hp_mult, base_atk_mult FROM class_defaults"):
+            cid, cc, cd, hpm, atkm = row
+            _CLASS_STATS[cid] = {
+                "crit_chance": float(cc),
+                "crit_damage": float(cd),
+                "hp_mult": float(hpm),
+                "atk_mult": float(atkm),
+            }
+            _CLASS_MOD[cid] = (float(hpm), float(atkm))
+        for row in _c.execute("SELECT bot_id, health_mult, attack_mult, crit_chance, crit_damage FROM characters"):
+            bid, hm, am, cc, cd = row
+            d = _BASE_STATS_OVERRIDE.get(bid, {})
+            if hm is not None and hm != 1.0:
+                d["health_mult"] = float(hm)
+            if am is not None and am != 1.0:
+                d["attack_mult"] = float(am)
+            if cc is not None:
+                d["crit_chance"] = float(cc)
+            if cd is not None:
+                d["crit_damage"] = float(cd)
+            if d:
+                _BASE_STATS_OVERRIDE[bid] = d
+        _conn.close()
+    except Exception as e:
+        print(f"Warning: Failed to load stats from {_DB_PATH}: {e}")
 
 
 def base_stats(bid, rank=1, level=1):
@@ -846,7 +886,7 @@ _CLASS_NAMES = {
 # Rock-paper-scissors: each class is strong against the next in this ring and weak
 # to the previous one. ORIGINAL assignment for this revival. Used to fill the
 # IdealContender ("who this class beats") list in heroClasses.
-_CLASS_RING = ("braw", "tact", "scou", "demo", "warr", "tech")
+_CLASS_RING = ("tact", "braw", "warr", "scou", "tech", "demo")
 
 
 def build_hero_classes():
@@ -906,11 +946,12 @@ def build_hero_base(bid, rank=1):
     level = max(1, rank * 10)
     hp, atk = base_stats(bid, rank, level)
     rating = (hp + atk) // 20
-    crit_chance = 0.5
-    crit_damage = 1.5
+    cls_st = _CLASS_STATS.get(klass, {"crit_chance": 0.14, "crit_damage": 1.50})
+    crit_chance = cls_st["crit_chance"]
+    crit_damage = cls_st["crit_damage"]
     if bid in _BASE_STATS_OVERRIDE:
-        crit_chance = _BASE_STATS_OVERRIDE[bid].get("crit_chance", 0.5)
-        crit_damage = _BASE_STATS_OVERRIDE[bid].get("crit_damage", 1.5)
+        crit_chance = _BASE_STATS_OVERRIDE[bid].get("crit_chance", crit_chance)
+        crit_damage = _BASE_STATS_OVERRIDE[bid].get("crit_damage", crit_damage)
     return {
         "id": bid, "r": rank, "m": star, "s": star,
         "max_hp": hp, "mhpb": hp, "attack": atk, "attb": atk,
@@ -2717,11 +2758,12 @@ def build_base_hero_details(req_heroes):
             hp, atk = base_stats(bid, rank, level)
             req_sig = h.get("sig_lvl")
             sig_val = int(req_sig) if req_sig is not None else 100
-            crit_chance = 0.5
-            crit_damage = 1.5
+            cls_st = _CLASS_STATS.get(klass, {"crit_chance": 0.14, "crit_damage": 1.50})
+            crit_chance = cls_st["crit_chance"]
+            crit_damage = cls_st["crit_damage"]
             if bid in _BASE_STATS_OVERRIDE:
-                crit_chance = _BASE_STATS_OVERRIDE[bid].get("crit_chance", 0.5)
-                crit_damage = _BASE_STATS_OVERRIDE[bid].get("crit_damage", 1.5)
+                crit_chance = _BASE_STATS_OVERRIDE[bid].get("crit_chance", crit_chance)
+                crit_damage = _BASE_STATS_OVERRIDE[bid].get("crit_damage", crit_damage)
             crit_rate = int(crit_chance * 1000)
             crit_dmg = int(crit_damage * 1000)
             out.append({
@@ -2774,6 +2816,49 @@ def build_responses():
     with open(refresh_path, "w", encoding="utf-8") as f:
         f.write(env(build_missions_autorefresh_result()))
     print("wrote GET__autorefresh_missionsconfig_refresh.json")
+
+    export_bot_info_header()
+
+
+def export_bot_info_header():
+    """Generate tools/nativehook/bot_info.h from database / ROSTER data."""
+    header_path = os.path.join(HERE, "..", "tools", "nativehook", "bot_info.h")
+    lines = [
+        "// Auto-generated from Server/tftf_database.db via gamedata.py. DO NOT EDIT DIRECTLY.",
+        "#ifndef BOT_INFO_H",
+        "#define BOT_INFO_H",
+        "",
+        "typedef struct {",
+        "    const char* id;",
+        "    int hp;",
+        "    int atk;",
+        "    int rating;",
+        "    float crit_chance;",
+        "    float crit_damage;",
+        "} EnemyStat;",
+        "",
+        "static const EnemyStat ENEMY_STATS[] = {",
+    ]
+    bots = sorted(ROSTER.keys())
+    for bid in bots:
+        faction, klass, star = ROSTER[bid]
+        hp, atk = base_stats(bid, 5, 50)
+        pi = (hp + atk) // 20
+        cls_st = _CLASS_STATS.get(klass, {"crit_chance": 0.14, "crit_damage": 1.50})
+        crit_chance = cls_st["crit_chance"]
+        crit_damage = cls_st["crit_damage"]
+        if bid in _BASE_STATS_OVERRIDE:
+            crit_chance = _BASE_STATS_OVERRIDE[bid].get("crit_chance", crit_chance)
+            crit_damage = _BASE_STATS_OVERRIDE[bid].get("crit_damage", crit_damage)
+        lines.append(f'    {{ "{bid}", {hp}, {atk}, {pi}, {crit_chance:.2f}f, {crit_damage:.2f}f }},')
+    lines.append("};")
+    lines.append(f"#define NUM_ENEMY_STATS {len(bots)}")
+    lines.append("")
+    lines.append("#endif // BOT_INFO_H")
+    lines.append("")
+    with open(header_path, "w", encoding="utf-8") as f:
+        f.write("\n".join(lines))
+    print(f"wrote bot_info.h ({len(bots)} bots)")
 
 
 if __name__ == "__main__":
