@@ -6328,6 +6328,32 @@ static void* installer(void* arg){
     inline_hook((void*)(g_base + 0x1B46108), (void*)hooked_set_targetFrameRate, &orig_set_targetFrameRate);
     inline_hook((void*)(g_base + 0x16A71C0), (void*)hooked_set_vSyncCount, &orig_set_vSyncCount);
 
+    // 14) AutoFight (WatchFight) Global Unlock:
+    // Enables the native in-combat and pre-fight AutoFight button and AI takeover
+    poke32(0xC9D454, 0x52800020);   // AutoFightManager.AutoFightIsEnabled (@0xC9D454): mov w0, #1
+    poke32(0xC9D458, 0xD65F03C0);   // ret
+    poke32(0xC9BE48, 0x52800020);   // AutoFightManager.AutoFightIsEnabledForActiveQuest (@0xC9BE48): mov w0, #1
+    poke32(0xC9BE4C, 0xD65F03C0);   // ret
+    poke32(0xC9D630, 0x52800020);   // AutoFightManager.AutoFightIsEnabledForActiveQuest#2 (@0xC9D630): mov w0, #1
+    poke32(0xC9D634, 0xD65F03C0);   // ret
+    poke32(0xC9D534, 0x52800020);   // AutoFightManager.HasLevelRequirement (@0xC9D534): mov w0, #1
+    poke32(0xC9D538, 0xD65F03C0);   // ret
+    poke32(0xC9BDF0, 0x52800020);   // AutoFightManager.get_UnlockLevel (@0xC9BDF0): mov w0, #1
+    poke32(0xC9BDF4, 0xD65F03C0);   // ret
+    poke32(0xC9BB88, 0x52800020);   // AutoFightManager.AutoFightIsEnabledForModes (@0xC9BB88): mov w0, #1
+    poke32(0xC9BB8C, 0xD65F03C0);   // ret
+    poke32(0xC9C49C, 0x52800020);   // AutoFightManager.EnabledModesContain (@0xC9C49C): mov w0, #1
+    poke32(0xC9C4A0, 0xD65F03C0);   // ret
+    poke32(0xDB43B0, 0x52800020);   // AIProfilesManager.IsWatchFightEnabled (@0xDB43B0): mov w0, #1
+    poke32(0xDB43B4, 0xD65F03C0);   // ret
+    poke32(0xCD5444, 0x52800020);   // AIProfilesManager.IsWatchFightEnabledForModes (@0xCD5444): mov w0, #1
+    poke32(0xCD5448, 0xD65F03C0);   // ret
+    poke32(0xCD544C, 0x52800020);   // AIProfilesManager.WatchFightModesContain (@0xCD544C): mov w0, #1
+    poke32(0xCD5450, 0xD65F03C0);   // ret
+    // Force AutoFightButton.Init (@0xC9BEA8): bypass level/quest/tutorial checks and force _enabled = 1
+    poke32(0xC9BEF0, 0x52800028);   // mov w8, #1
+    poke32(0xC9BEF4, 0x14000013);   // b 0xC9BF40 (sets this._enabled = 1, activates full alpha & registers delegates)
+
     LOG("install done (%d hooks)", NH);
     return NULL;
 }
