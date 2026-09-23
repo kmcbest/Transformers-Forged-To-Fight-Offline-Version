@@ -139,7 +139,7 @@ ROSTER = {
     "slipstream_gs":                ("decepticon", "scou", 5),
     "soundblaster_gs_mp13b":        ("decepticon", "demo", 5),
     "soundwave_gs":                 ("decepticon", "tech", 5),
-    "starscream_ghost_gs":          ("decepticon", "tact", 5),
+    "starscream_ghost_gs":          ("decepticon", "scou", 5),
     "sunstorm_gs_leader2015":       ("decepticon", "warr", 5),
     "thundercracker_gs_leader2015": ("decepticon", "braw", 5),
     "thrust_gs_deluxe2008":         ("decepticon", "scou", 5),

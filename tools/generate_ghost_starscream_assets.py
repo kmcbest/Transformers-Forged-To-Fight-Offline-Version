@@ -431,45 +431,34 @@ def generate_ghost_starscream_bundle():
     ghost_g = ghost_g * (1.0 - m_flare) + 255.0 * m_flare
     ghost_b = ghost_b * (1.0 - m_flare) + 255.0 * m_flare
 
-    # 4c. Eyes: FIERY NEON RED (User Request: "然后眼睛调成红光")
-    mask_eyes_3d = Image.new("L", (w, h), 0)
-    draw_eyes_3d = ImageDraw.Draw(mask_eyes_3d)
-    for f in faces_0:
-        if len(f) < 3: continue
-        vis = [v[0] for v in f]
-        vtis = [v[1] for v in f if v[1] >= 0]
-        if len(vtis) < 3: continue
-        fv = verts[vis]
-        fvt = vts[vtis]
-        avg_y = fv[:, 1].mean()
-        avg_x = fv[:, 0].mean()
-        avg_z = fv[:, 2].mean()
-        pts = [(int(np.clip(u * w, 0, w - 1)), int(np.clip((1.0 - v) * h, 0, h - 1))) for u, v in fvt]
-        if 9.15 <= avg_y <= 9.55 and abs(avg_x) <= 0.15 and avg_z >= 0.38:
-            draw_eyes_3d.polygon(pts, fill=255)
-
+    # 4c. Eyes & Faceplate: FIERY NEON RED (User Request: "然后眼睛调成红光")
     yy, xx = np.mgrid[0:h, 0:w]
-    m_eyes_2d = (xx >= 352) & (xx <= 412) & (yy >= 262) & (yy <= 312) & ((mr > 110) | (mb > 140))
-    m_eyes_total = (np.array(mask_eyes_3d) > 50) | m_eyes_2d
 
-    # Red eye glow corona
-    m_eye_glow = np.array(Image.fromarray((m_eyes_total * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(3)), dtype=np.float32) / 255.0
+    # Faceplate region: x in [395, 510], y in [115, 225] excluding blue helmet
+    is_face_region = (xx >= 395) & (xx <= 510) & (yy >= 115) & (yy <= 225) & (mb < 200)
 
-    # Dark faceplate to make red eyes dramatically pop
-    m_faceplate = (xx >= 340) & (xx <= 425) & (yy >= 245) & (yy <= 335) & (~m_eyes_total)
-    ghost_r[m_faceplate] = 10.0
-    ghost_g[m_faceplate] = 30.0
-    ghost_b[m_faceplate] = 45.0
+    # Soften faceplate to dark obsidian charcoal so red eyes pop with extreme contrast
+    ghost_r[is_face_region] = 8.0
+    ghost_g[is_face_region] = 12.0
+    ghost_b[is_face_region] = 18.0
 
-    # Apply vivid red to eyes and corona
+    # Authentic eye optic slit and brow flare on the mirrored UVs (derived from 3D geometry + UV)
+    m_eye_slit = (xx >= 445) & (xx <= 476) & (yy >= 154) & (yy <= 168)
+    m_eye_flare = (xx >= 458) & (xx <= 490) & (yy >= 148) & (yy <= 164)
+    m_eyes_core = m_eye_slit | m_eye_flare
+
+    # Red eye glow corona (5px Gaussian blur around the eyes)
+    m_eye_glow = np.array(Image.fromarray((m_eyes_core * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(5.0)), dtype=np.float32) / 255.0
+
+    # Apply vivid red to eyes and surrounding corona (zero green/blue to prevent cyan wash)
     ghost_r = ghost_r * (1.0 - m_eye_glow) + 255.0 * m_eye_glow
-    ghost_g = ghost_g * (1.0 - m_eye_glow) + 5.0 * m_eye_glow
-    ghost_b = ghost_b * (1.0 - m_eye_glow) + 5.0 * m_eye_glow
+    ghost_g = ghost_g * (1.0 - m_eye_glow) + 0.0 * m_eye_glow
+    ghost_b = ghost_b * (1.0 - m_eye_glow) + 0.0 * m_eye_glow
 
-    # Hard core pure scarlet red eyes
-    ghost_r[m_eyes_total] = 255.0
-    ghost_g[m_eyes_total] = 0.0
-    ghost_b[m_eyes_total] = 0.0
+    # Hard core pure scarlet red optics
+    ghost_r[m_eyes_core] = 255.0
+    ghost_g[m_eyes_core] = 0.0
+    ghost_b[m_eyes_core] = 0.0
 
     # Decepticon insignia: vivid crimson red
     is_insignia = (mr > 130) & (mg < 60) & (mb > 130) & (yy > 500) & (yy < 660) & (xx > 650) & (xx < 800)
@@ -530,36 +519,45 @@ def generate_ghost_starscream_bundle():
     final_wpns_albedo = Image.fromarray(np.stack([w_r, w_g, w_b, wa], axis=-1).astype(np.uint8))
 
     # 4g. Synthesize Main RAOE Texture (512x512, RGBA32)
-    # Toned down emissive (55 base, not 245) to prevent overbright whiteout!
+    # Toned down emissive (32 base, not 55 or 245) to prevent overbright whiteout!
     raoe_r = np.full((512, 512), 15, dtype=np.uint8)   # Mirror roughness
     raoe_g = np.full((512, 512), 240, dtype=np.uint8)  # Chrome metallic
 
-    # Base body emissive: 55 (subtle, ethereal ghost luminescence)
-    raoe_b = np.full((512, 512), 55, dtype=np.uint8)
-    raoe_a = np.full((512, 512), 65, dtype=np.uint8)
+    # Base body emissive: 32 (subtle, ethereal ghost luminescence)
+    raoe_b = np.full((512, 512), 32, dtype=np.uint8)
+    raoe_a = np.full((512, 512), 45, dtype=np.uint8)
 
     legs_512 = np.array(mask_legs_fade.resize((512, 512)), dtype=np.float32) / 255.0
     fade_512 = np.clip(legs_512 ** 0.8, 0.0, 0.88)
-    raoe_b = np.clip(55.0 * (1.0 - fade_512), 5.0, 255.0).astype(np.uint8)
-    raoe_a = np.clip(65.0 * (1.0 - fade_512), 5.0, 255.0).astype(np.uint8)
+    raoe_b = np.clip(32.0 * (1.0 - fade_512), 5.0, 255.0).astype(np.uint8)
+    raoe_a = np.clip(45.0 * (1.0 - fade_512), 5.0, 255.0).astype(np.uint8)
 
-    # Chest spark: 200 (bright glowing energy core)
+    # Faceplate in RAOE: zero emissive, non-metallic matte charcoal
+    face_512 = np.array(Image.fromarray((is_face_region * 255).astype(np.uint8)).resize((512, 512))) > 30
+    raoe_b[face_512] = 0
+    raoe_a[face_512] = 0
+    raoe_g[face_512] = 0   # Non-metallic so faceplate has no mirror environment reflections
+    raoe_r[face_512] = 180 # Matte roughness
+
+    # Chest spark: 120 (gentle glowing energy core, not blinding)
     flare_512 = np.array(mask_chest_flare.resize((512, 512)), dtype=np.float32) > 50
-    raoe_b[flare_512] = 200
-    raoe_a[flare_512] = 220
+    raoe_b[flare_512] = 120
+    raoe_a[flare_512] = 135
 
-    # EYES: Zero out cyan emissive on eyes so red optics shine completely pure!
-    eyes_512 = np.array(Image.fromarray((m_eyes_total * 255).astype(np.uint8)).resize((512, 512))) > 30
-    raoe_b[eyes_512] = 0
+    # EYES: Zero out cyan emissive, zero metallic (allows 100% diffuse red), high matte roughness
+    eyes_512 = np.array(Image.fromarray((m_eyes_core * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(2.0)).resize((512, 512))) > 20
+    raoe_b[eyes_512] = 0   # Zero cyan emissive wash
     raoe_a[eyes_512] = 0
+    raoe_r[eyes_512] = 180 # Matte diffuse so scene lighting catches optics from all camera angles
+    raoe_g[eyes_512] = 0   # 0% Metallic -> (1.0 - metallic) * albedo = 100% pure bright red albedo!
 
     final_raoe = Image.fromarray(np.stack([raoe_r, raoe_g, raoe_b, raoe_a], axis=-1))
 
     # 4h. Synthesize Weapons RAOE Texture (256x256, RGBA32)
     w_raoe_r = np.full((256, 256), 15, dtype=np.uint8)
     w_raoe_g = np.full((256, 256), 240, dtype=np.uint8)
-    w_raoe_b = np.full((256, 256), 55, dtype=np.uint8)
-    w_raoe_a = np.full((256, 256), 65, dtype=np.uint8)
+    w_raoe_b = np.full((256, 256), 32, dtype=np.uint8)
+    w_raoe_a = np.full((256, 256), 45, dtype=np.uint8)
     final_wpns_raoe = Image.fromarray(np.stack([w_raoe_r, w_raoe_g, w_raoe_b, w_raoe_a], axis=-1))
 
     # Inject textures into target bundle with RGBA32 format (Format 4)
@@ -621,10 +619,10 @@ def generate_ghost_starscream_bundle():
         sp["m_Colors"] = new_colors
 
         float_updates = {
-            "_emissive_overbright_range": 28.0,
+            "_emissive_overbright_range": 14.0,
             "_emissive_range": 1.0,
             "_emissive_ramp_range": 0.7,
-            "_emissive_pulse_intensity_range": 0.25,
+            "_emissive_pulse_intensity_range": 0.20,
             "_emissive_pulse_time_range": 1.8,
             "_clearcoat_reflectance_range": 0.85,
             "_reflectance": 0.15,
