@@ -633,17 +633,19 @@
         }
 
         .cat-title-text {
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 700;
-            color: var(--text-main);
+            color: #F8FAFC;
+            letter-spacing: 0.2px;
         }
 
         .cat-count-badge {
             font-size: 11px;
             color: var(--text-sub);
-            background: rgba(255, 255, 255, 0.05);
-            padding: 1px 6px;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 2px 7px;
             border-radius: 999px;
+            font-weight: 500;
         }
 
         .btn-add-ability {
@@ -681,6 +683,240 @@
             border: 1px dashed rgba(255, 255, 255, 0.1);
             border-radius: 8px;
             background: rgba(0, 0, 0, 0.15);
+        }
+
+        /* Special Attacks Subgroups */
+        .sp-subgroup {
+            background: rgba(0, 0, 0, 0.22);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 12px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .sp-subgroup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .sp-subgroup-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sp-badge {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .sp-badge-1 {
+            background: rgba(56, 189, 248, 0.15);
+            color: #38BDF8;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+
+        .sp-badge-2 {
+            background: rgba(245, 158, 11, 0.15);
+            color: #F59E0B;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .sp-badge-3 {
+            background: rgba(236, 72, 153, 0.15);
+            color: #EC4899;
+            border: 1px solid rgba(236, 72, 153, 0.3);
+        }
+
+        .sp-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .sp-subgroup-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* Synergy Partners styling */
+        .synergy-partners-section {
+            background: rgba(0, 0, 0, 0.28);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 8px;
+            padding: 8px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .synergy-partners-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .synergy-partners-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #94A3B8;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-select-synergy-partners {
+            background: rgba(59, 130, 246, 0.15);
+            border: 1px solid rgba(59, 130, 246, 0.35);
+            color: #60A5FA;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-select-synergy-partners:hover {
+            background: #3B82F6;
+            color: #FFF;
+        }
+
+        .synergy-partners-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+            min-height: 26px;
+        }
+
+        .synergy-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(30, 41, 59, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 20px;
+            padding: 2px 8px 2px 4px;
+            font-size: 12px;
+            color: #F1F5F9;
+        }
+
+        .synergy-chip-avatar {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .synergy-chip-remove {
+            color: #94A3B8;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 2px;
+            line-height: 1;
+            font-weight: 700;
+        }
+
+        .synergy-chip-remove:hover {
+            color: #EF4444;
+        }
+
+        .synergy-empty-hint {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        /* Synergy Partner Picker Modal */
+        .synergy-picker-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 10px;
+            max-height: 52vh;
+            overflow-y: auto;
+            padding: 10px 4px;
+        }
+
+        .synergy-picker-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 6px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.15s ease;
+        }
+
+        .synergy-picker-item:hover {
+            border-color: var(--primary);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .synergy-picker-item.selected {
+            border-color: #10B981;
+            background: rgba(16, 185, 129, 0.12);
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.25);
+        }
+
+        .synergy-picker-item .check-mark {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #10B981;
+            color: #FFF;
+            font-size: 11px;
+            font-weight: 700;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .synergy-picker-item.selected .check-mark {
+            display: flex;
+        }
+
+        .synergy-picker-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .synergy-picker-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-main);
+            line-height: 1.2;
+            word-break: break-all;
+        }
+
+        .synergy-picker-sub {
+            font-size: 10px;
+            color: var(--text-sub);
         }
 
         /* Ability Card */
@@ -1146,14 +1382,7 @@
                     <button class="btn-save-stats" onclick="saveCharacterStats()">保存角色数值设定</button>
                 </div>
 
-                <!-- Lore / Notes -->
-                <div style="margin-bottom: 20px;">
-                    <div style="font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">背景设定与特性</div>
-                    <div id="mDescZh" style="font-size: 13px; color: var(--text-main); line-height: 1.6; background: rgba(0,0,0,0.25); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);"></div>
-                </div>
-
                 <!-- Ability Sections Container -->
-                <div style="font-size: 15px; font-weight: 700; margin-bottom: 14px;">能力与招式列表 (分节管理)</div>
                 <div id="mAbilitySectionsContainer">
                     <!-- Populated dynamically -->
                 </div>
@@ -1167,7 +1396,7 @@
             <div class="modal-header">
                 <div>
                     <div style="font-size: 16px; font-weight: 700;">新增战技 / 能力</div>
-                    <div style="font-size: 12px; color: var(--text-sub); margin-top: 2px;" id="addAbilityCategoryLabel">所属分类: 基础特长</div>
+                    <div style="font-size: 12px; color: var(--text-sub); margin-top: 2px;" id="addAbilityCategoryLabel">所属分类: 基础能力（Abilities）</div>
                 </div>
                 <button class="modal-close-btn" onclick="closeAddAbilityModal()">&times;</button>
             </div>
@@ -1180,6 +1409,17 @@
                 <div class="form-row">
                     <label>效果详细描述 (Description)</label>
                     <textarea id="newAbDesc" rows="4" placeholder="详细描述该技能触发机制、持续时间、数值百分比等..."></textarea>
+                </div>
+                <div class="form-row" id="newAbSynergyRow" style="display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <label style="margin-bottom: 0;">协同人物 (Partners)</label>
+                        <button type="button" class="btn-select-synergy-partners" onclick="openSynergyPartnerPicker('new_ability')">
+                            <span>+</span> 选择角色
+                        </button>
+                    </div>
+                    <div class="synergy-partners-chips" id="newAbSynergyChips" style="background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.06); padding: 6px 10px; border-radius: 6px;">
+                        <span class="synergy-empty-hint">暂未关联协同人物</span>
+                    </div>
                 </div>
                 <div class="form-row">
                     <label>专属 PUA 矢量图标 (可选)</label>
@@ -1223,6 +1463,39 @@
         </div>
     </div>
 
+    <!-- Synergy Partner Picker Modal -->
+    <div class="modal-overlay" id="synergyPickerModal" onclick="closeModalOnBackdrop(event, 'synergyPickerModal')">
+        <div class="modal-content" style="max-width: 680px;">
+            <div class="modal-header">
+                <div>
+                    <div style="font-size: 16px; font-weight: 700;">选择协同人物 (Select Synergy Partners)</div>
+                    <div style="font-size: 12px; color: var(--text-sub); margin-top: 2px;">勾选参与此协同羁绊加成的角色</div>
+                </div>
+                <button class="modal-close-btn" onclick="closeSynergyPickerModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="synergySearchInput" class="pua-search-input" placeholder="输入名称搜索 (如 大黄蜂, Bumblebee, Ironhide)..." oninput="filterSynergyPicker(this.value)">
+                <div class="pua-filter-tabs">
+                    <button class="pua-tab-btn active" onclick="filterSynergyFaction('all', this)">全部 (All)</button>
+                    <button class="pua-tab-btn" onclick="filterSynergyFaction('autobot', this)">汽车人</button>
+                    <button class="pua-tab-btn" onclick="filterSynergyFaction('decepticon', this)">霸天虎</button>
+                    <button class="pua-tab-btn" onclick="filterSynergyFaction('maximal', this)">巨无霸</button>
+                    <button class="pua-tab-btn" onclick="filterSynergyFaction('predacon', this)">原始兽</button>
+                </div>
+                <div class="synergy-picker-grid" id="synergyPickerGrid">
+                    <!-- Populated dynamically -->
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border-color);">
+                    <span id="synergySelectedCountText" style="font-size: 13px; color: var(--text-sub);">已选择 0 位角色</span>
+                    <div style="display: flex; gap: 8px;">
+                        <button type="button" class="btn-card-action del" onclick="clearSynergySelection()" style="padding: 6px 12px;">清空</button>
+                        <button type="button" class="btn-card-action save" onclick="confirmSynergyPartnerSelection()" style="padding: 6px 16px; font-size: 13px;">确认选择</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Notification -->
     <div class="toast" id="toastMsg">已保存更新</div>
 
@@ -1233,15 +1506,23 @@
         let gCurrentPuaTarget = null;
         let gActiveFactionFilter = 'all';
 
-        // Fixed 7 Categories
-        const CATEGORY_DEFS = [
-            { key: 'basic',     name: '基础特长 (Basic Abilities)', desc: '常驻基础属性与特性' },
-            { key: 'passive',   name: '被动战技 (Passive Abilities)', desc: '战斗中特定条件触发' },
-            { key: 'signature', name: '觉醒能力 (Signature Ability)', desc: '核心招牌能力' },
-            { key: 'sp1',       name: '特殊技 1 (SP1 Attack)', desc: '1条能量槽大招' },
-            { key: 'sp2',       name: '特殊技 2 (SP2 Attack)', desc: '2条能量槽大招' },
-            { key: 'sp3',       name: '特殊技 3 (SP3 Attack)', desc: '3条能量槽满气大招' },
-            { key: 'synergy',   name: '战友协同 (Synergy Bonuses)', desc: '同队伍羁绊加成' },
+        // 5 Top-level Ability Sections (with 3 Special Attacks grouped into 1 section)
+        const SECTION_DEFS = [
+            { type: 'single',        key: 'basic',     name: '基础能力（Abilities）', desc: '常驻基础属性与特性' },
+            { type: 'single',        key: 'passive',   name: '被动（Passive）', desc: '战斗中特定条件触发' },
+            { type: 'single',        key: 'signature', name: '招牌能力（Signature Ability）', desc: '核心招牌能力' },
+            {
+                type: 'special_group',
+                key: 'special',
+                name: '特殊技（Special Attacks）',
+                desc: '特殊技能招式',
+                subgroups: [
+                    { key: 'sp1', name: '特殊技 1 (SP1)', badge: 'SP1', badgeClass: 'sp-badge-1' },
+                    { key: 'sp2', name: '特殊技 2 (SP2)', badge: 'SP2', badgeClass: 'sp-badge-2' },
+                    { key: 'sp3', name: '特殊技 3 (SP3)', badge: 'SP3', badgeClass: 'sp-badge-3' }
+                ]
+            },
+            { type: 'single',        key: 'synergy',   name: '协同奖励 (Synergy Bonuses)', desc: '同队伍羁绊加成' }
         ];
 
         // Initialize dashboard
@@ -1528,7 +1809,8 @@
                 document.getElementById('inpCritMelee').value = data.crit_chance_melee !== null ? data.crit_chance_melee : '';
                 document.getElementById('inpBlockProf').value = data.block_proficiency;
 
-                document.getElementById('mDescZh').innerText = data.desc_zh || data.note || '暂无背景描述。';
+                const descEl = document.getElementById('mDescZh');
+                if (descEl) descEl.innerText = data.desc_zh || data.note || '';
 
                 // Render Categorized Abilities
                 renderCategorizedAbilities(data.abilities || []);
@@ -1539,59 +1821,208 @@
             }
         }
 
-        // Render Categorized Abilities with (+) Buttons
+        let gSynergyPartnersMap = {};
+        let gActiveSynergyTargetId = null;
+        let gTempSelectedSynergyBots = [];
+        let gSynergyFilterFaction = 'all';
+        let gSynergySearchQuery = '';
+        let gNewAbSynergyBots = [];
+        let gNewSpecialPuaIcons = {};
+
+        // Helper: Create single Ability Card element
+        function createAbilityCardElement(ab) {
+            const abCard = document.createElement('div');
+            abCard.className = 'ability-card';
+
+            const puaChar = ab.pua_icon ? String.fromCharCode(parseInt(ab.pua_icon, 16)) : '+';
+            const puaSub = ab.pua_icon ? ab.pua_icon : 'PUA';
+
+            let synergySectionHtml = '';
+            if (ab.category === 'synergy') {
+                gSynergyPartnersMap[ab.id] = Array.isArray(ab.synergy_bots) ? [...ab.synergy_bots] : [];
+                synergySectionHtml = `
+                    <div class="synergy-partners-section">
+                        <div class="synergy-partners-header">
+                            <span class="synergy-partners-label">🤝 协同人物:</span>
+                            <button type="button" class="btn-select-synergy-partners" onclick="openSynergyPartnerPicker(${ab.id})">
+                                <span>+</span> 选择协同角色
+                            </button>
+                        </div>
+                        <div class="synergy-partners-chips" id="synergy_chips_${ab.id}"></div>
+                    </div>
+                `;
+            }
+
+            abCard.innerHTML = `
+                <div class="ability-header-row">
+                    <div class="ability-pua-picker-btn" onclick="openPuaPicker('ability', '${ab.id}', '${ab.pua_icon || ''}')" title="点击选择PUA图标">
+                        <span class="tecnica-icon ability-pua-icon-glyph">${puaChar}</span>
+                        <span class="ability-pua-hex-sub">${puaSub}</span>
+                    </div>
+                    <input type="text" class="ability-title-edit-input" id="title_${ab.id}" value="${escapeHtml(ab.title_zh || ab.title_en || '')}" placeholder="技能标题...">
+                    <div class="ability-card-actions">
+                        <button class="btn-card-action save" onclick="saveAbilityItem(${ab.id})">保存</button>
+                        <button class="btn-card-action del" onclick="deleteAbilityItem(${ab.id})">删除</button>
+                    </div>
+                </div>
+                ${synergySectionHtml}
+                <textarea class="ability-desc-textarea" id="desc_${ab.id}" placeholder="技能描述...">${escapeHtml(ab.desc_zh || ab.desc_en || '')}</textarea>
+            `;
+
+            if (ab.category === 'synergy') {
+                setTimeout(() => renderSynergyChips(ab.id), 0);
+            }
+
+            return abCard;
+        }
+
+        // Render Special Attacks (Fixed 3 slots: SP1, SP2, SP3; no add/delete buttons)
+        function createSpecialAttackSlotElement(existingAb, spKey, spBadge, spName) {
+            const abCard = document.createElement('div');
+            abCard.className = 'ability-card';
+
+            if (existingAb) {
+                const puaChar = existingAb.pua_icon ? String.fromCharCode(parseInt(existingAb.pua_icon, 16)) : '+';
+                const puaSub = existingAb.pua_icon ? existingAb.pua_icon : 'PUA';
+
+                abCard.innerHTML = `
+                    <div class="ability-header-row">
+                        <div class="ability-pua-picker-btn" onclick="openPuaPicker('ability', '${existingAb.id}', '${existingAb.pua_icon || ''}')" title="点击选择PUA图标">
+                            <span class="tecnica-icon ability-pua-icon-glyph">${puaChar}</span>
+                            <span class="ability-pua-hex-sub">${puaSub}</span>
+                        </div>
+                        <input type="text" class="ability-title-edit-input" id="title_${existingAb.id}" value="${escapeHtml(existingAb.title_zh || existingAb.title_en || '')}" placeholder="特殊技 ${spBadge} 标题...">
+                        <div class="ability-card-actions">
+                            <button class="btn-card-action save" onclick="saveAbilityItem(${existingAb.id})">保存</button>
+                        </div>
+                    </div>
+                    <textarea class="ability-desc-textarea" id="desc_${existingAb.id}" placeholder="特殊技 ${spBadge} 详细机制与效果描述...">${escapeHtml(existingAb.desc_zh || existingAb.desc_en || '')}</textarea>
+                `;
+            } else {
+                const curHex = gNewSpecialPuaIcons[spKey] || '';
+                const puaChar = curHex ? String.fromCharCode(parseInt(curHex, 16)) : '+';
+                const puaSub = curHex || 'PUA';
+
+                abCard.innerHTML = `
+                    <div class="ability-header-row">
+                        <div class="ability-pua-picker-btn" onclick="openPuaPicker('new_sp', '${spKey}', '${curHex}')" title="点击选择PUA图标">
+                            <span class="tecnica-icon ability-pua-icon-glyph" id="pua_glyph_new_${spKey}">${puaChar}</span>
+                            <span class="ability-pua-hex-sub" id="pua_hex_new_${spKey}">${puaSub}</span>
+                        </div>
+                        <input type="text" class="ability-title-edit-input" id="title_new_${spKey}" value="" placeholder="特殊技 ${spBadge} 标题 (留空待填写)...">
+                        <div class="ability-card-actions">
+                            <button class="btn-card-action save" onclick="saveNewSpecialSlot('${spKey}', '${spBadge}')">保存</button>
+                        </div>
+                    </div>
+                    <textarea class="ability-desc-textarea" id="desc_new_${spKey}" placeholder="特殊技 ${spBadge} 详细机制与效果描述 (留空待填写)..."></textarea>
+                `;
+            }
+
+            return abCard;
+        }
+
+        async function saveNewSpecialSlot(spKey, spBadge) {
+            if (!gCurBotId) return;
+            const titleInput = document.getElementById(`title_new_${spKey}`);
+            const descInput = document.getElementById(`desc_new_${spKey}`);
+            const title_zh = titleInput ? titleInput.value.trim() : '';
+            const desc_zh = descInput ? descInput.value.trim() : '';
+            const pua_icon = gNewSpecialPuaIcons[spKey] || '';
+
+            if (!title_zh && !desc_zh) {
+                alert(`请先填写特殊技 ${spBadge} 的标题或描述后再保存！`);
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/ability/new', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        bot_id: gCurBotId,
+                        category: spKey,
+                        title_zh: title_zh || `特殊技 ${spBadge}`,
+                        desc_zh,
+                        pua_icon
+                    })
+                });
+                const ret = await res.json();
+                if (ret.ok) {
+                    showToast(`特殊技 ${spBadge} 已保存入库！`);
+                    gNewSpecialPuaIcons[spKey] = '';
+                    openCharacterModal(gCurBotId);
+                }
+            } catch (err) {
+                console.error("Save failed:", err);
+                alert("保存失败");
+            }
+        }
+
+        // Render Categorized Abilities into 5 Sections (SP1, SP2, SP3 fixed under Special Attacks)
         function renderCategorizedAbilities(abilities) {
             const container = document.getElementById('mAbilitySectionsContainer');
             container.innerHTML = '';
+            gSynergyPartnersMap = {};
 
-            CATEGORY_DEFS.forEach(catDef => {
-                const absInCat = abilities.filter(a => a.category === catDef.key);
-
+            SECTION_DEFS.forEach(secDef => {
                 const block = document.createElement('div');
                 block.className = 'ability-category-block';
 
-                block.innerHTML = `
-                    <div class="category-header-bar">
-                        <div class="cat-title-left">
-                            <span class="cat-title-text">${catDef.name}</span>
-                            <span class="cat-count-badge">${absInCat.length} 条</span>
+                if (secDef.type === 'single') {
+                    const absInCat = abilities.filter(a => a.category === secDef.key);
+                    block.innerHTML = `
+                        <div class="category-header-bar">
+                            <div class="cat-title-left">
+                                <span class="cat-title-text">${secDef.name}</span>
+                                <span class="cat-count-badge">${absInCat.length} 条</span>
+                            </div>
+                            <button class="btn-add-ability" onclick="openAddAbilityModal('${secDef.key}', '${secDef.name}')">
+                                <span>+</span> 新增能力
+                            </button>
                         </div>
-                        <button class="btn-add-ability" onclick="openAddAbilityModal('${catDef.key}', '${catDef.name}')">
-                            <span>+</span> 新增能力
-                        </button>
-                    </div>
-                    <div class="category-content-area" id="cat_content_${catDef.key}"></div>
-                `;
+                        <div class="category-content-area" id="cat_content_${secDef.key}"></div>
+                    `;
+                    container.appendChild(block);
+                    const contentArea = block.querySelector(`#cat_content_${secDef.key}`);
 
-                container.appendChild(block);
-                const contentArea = block.querySelector(`#cat_content_${catDef.key}`);
+                    if (absInCat.length > 0) {
+                        absInCat.forEach(ab => {
+                            contentArea.appendChild(createAbilityCardElement(ab));
+                        });
+                    } else {
+                        contentArea.innerHTML = `<div class="empty-category-placeholder">暂无该分类技能，点击右上角 <b>[+ 新增能力]</b> 进行创作</div>`;
+                    }
+                } else if (secDef.type === 'special_group') {
+                    // Exactly 3 fixed SP slots: SP1, SP2, SP3 (no add buttons)
+                    block.innerHTML = `
+                        <div class="category-header-bar">
+                            <div class="cat-title-left">
+                                <span class="cat-title-text">${secDef.name}</span>
+                                <span class="cat-count-badge">固定 3 招式槽位</span>
+                            </div>
+                        </div>
+                        <div class="category-content-area" id="cat_content_special" style="gap: 16px;"></div>
+                    `;
+                    container.appendChild(block);
+                    const contentArea = block.querySelector('#cat_content_special');
 
-                if (absInCat.length > 0) {
-                    absInCat.forEach(ab => {
-                        const abCard = document.createElement('div');
-                        abCard.className = 'ability-card';
-
-                        const puaChar = ab.pua_icon ? String.fromCharCode(parseInt(ab.pua_icon, 16)) : '+';
-                        const puaSub = ab.pua_icon ? ab.pua_icon : 'PUA';
-
-                        abCard.innerHTML = `
-                            <div class="ability-header-row">
-                                <div class="ability-pua-picker-btn" onclick="openPuaPicker('ability', '${ab.id}', '${ab.pua_icon || ''}')" title="点击选择PUA图标">
-                                    <span class="tecnica-icon ability-pua-icon-glyph">${puaChar}</span>
-                                    <span class="ability-pua-hex-sub">${puaSub}</span>
-                                </div>
-                                <input type="text" class="ability-title-edit-input" id="title_${ab.id}" value="${escapeHtml(ab.title_zh || ab.title_en || '')}" placeholder="技能标题...">
-                                <div class="ability-card-actions">
-                                    <button class="btn-card-action save" onclick="saveAbilityItem(${ab.id})">保存</button>
-                                    <button class="btn-card-action del" onclick="deleteAbilityItem(${ab.id})">删除</button>
+                    secDef.subgroups.forEach(sub => {
+                        const existingAb = abilities.find(a => a.category === sub.key);
+                        const subBlock = document.createElement('div');
+                        subBlock.className = 'sp-subgroup';
+                        subBlock.innerHTML = `
+                            <div class="sp-subgroup-header">
+                                <div class="sp-subgroup-title">
+                                    <span class="sp-badge ${sub.badgeClass}">${sub.badge}</span>
+                                    <span class="sp-name">${sub.name}</span>
                                 </div>
                             </div>
-                            <textarea class="ability-desc-textarea" id="desc_${ab.id}" placeholder="技能描述...">${escapeHtml(ab.desc_zh || ab.desc_en || '')}</textarea>
+                            <div class="sp-subgroup-cards" id="sp_cards_${sub.key}"></div>
                         `;
-                        contentArea.appendChild(abCard);
+                        contentArea.appendChild(subBlock);
+                        const subCardsArea = subBlock.querySelector(`#sp_cards_${sub.key}`);
+                        subCardsArea.appendChild(createSpecialAttackSlotElement(existingAb, sub.key, sub.badge, sub.name));
                     });
-                } else {
-                    contentArea.innerHTML = `<div class="empty-category-placeholder">暂无该分类技能，点击右上角 <b>[+ 新增能力]</b> 进行创作</div>`;
                 }
             });
         }
@@ -1651,14 +2082,21 @@
 
         // Save individual ability
         async function saveAbilityItem(aid) {
-            const title_zh = document.getElementById(`title_${aid}`).value.trim();
-            const desc_zh = document.getElementById(`desc_${aid}`).value.trim();
+            const titleInput = document.getElementById(`title_${aid}`);
+            const descInput = document.getElementById(`desc_${aid}`);
+            const title_zh = titleInput ? titleInput.value.trim() : '';
+            const desc_zh = descInput ? descInput.value.trim() : '';
+
+            const payload = { title_zh, desc_zh };
+            if (gSynergyPartnersMap[aid] !== undefined) {
+                payload.synergy_bots = gSynergyPartnersMap[aid];
+            }
 
             try {
                 const res = await fetch(`/api/ability/${aid}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ title_zh, desc_zh })
+                    body: JSON.stringify(payload)
                 });
                 const ret = await res.json();
                 if (ret.ok) {
@@ -1690,6 +2128,169 @@
             }
         }
 
+        // Synergy Chips Render & Removal
+        function renderSynergyChips(aid) {
+            const container = document.getElementById(`synergy_chips_${aid}`);
+            if (!container) return;
+            const partnerIds = gSynergyPartnersMap[aid] || [];
+            if (partnerIds.length === 0) {
+                container.innerHTML = `<span class="synergy-empty-hint">暂未关联协同人物，点击右上方 [+ 选择协同角色] 进行配置</span>`;
+                return;
+            }
+
+            container.innerHTML = partnerIds.map(bid => {
+                const bObj = (gOverviewData && gOverviewData.characters) ? gOverviewData.characters.find(c => c.bot_id === bid) : null;
+                const name = bObj ? (bObj.name_zh || bObj.name_en) : bid;
+                const portrait = bObj ? bObj.portrait_url : `/portrait/${bid}`;
+                return `
+                    <div class="synergy-chip" title="${escapeHtml(name)} (${bid})">
+                        <img src="${portrait}" class="synergy-chip-avatar" alt="${escapeHtml(name)}" onerror="this.src='/portrait/${bid}'">
+                        <span>${escapeHtml(name)}</span>
+                        <span class="synergy-chip-remove" onclick="removeSynergyPartner(${aid}, '${bid}')" title="移除此协同角色">&times;</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function removeSynergyPartner(aid, bid) {
+            if (!gSynergyPartnersMap[aid]) return;
+            gSynergyPartnersMap[aid] = gSynergyPartnersMap[aid].filter(id => id !== bid);
+            renderSynergyChips(aid);
+            saveAbilityItem(aid);
+        }
+
+        function renderNewAbSynergyChips() {
+            const container = document.getElementById('newAbSynergyChips');
+            if (!container) return;
+            if (gNewAbSynergyBots.length === 0) {
+                container.innerHTML = `<span class="synergy-empty-hint">暂未关联协同人物</span>`;
+                return;
+            }
+            container.innerHTML = gNewAbSynergyBots.map(bid => {
+                const bObj = (gOverviewData && gOverviewData.characters) ? gOverviewData.characters.find(c => c.bot_id === bid) : null;
+                const name = bObj ? (bObj.name_zh || bObj.name_en) : bid;
+                const portrait = bObj ? bObj.portrait_url : `/portrait/${bid}`;
+                return `
+                    <div class="synergy-chip" title="${escapeHtml(name)}">
+                        <img src="${portrait}" class="synergy-chip-avatar" alt="${escapeHtml(name)}">
+                        <span>${escapeHtml(name)}</span>
+                        <span class="synergy-chip-remove" onclick="removeNewAbSynergyPartner('${bid}')">&times;</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function removeNewAbSynergyPartner(bid) {
+            gNewAbSynergyBots = gNewAbSynergyBots.filter(id => id !== bid);
+            renderNewAbSynergyChips();
+        }
+
+        // Synergy Partner Picker Modal
+        function openSynergyPartnerPicker(targetId) {
+            gActiveSynergyTargetId = targetId;
+            if (targetId === 'new_ability') {
+                gTempSelectedSynergyBots = [...gNewAbSynergyBots];
+            } else {
+                gTempSelectedSynergyBots = gSynergyPartnersMap[targetId] ? [...gSynergyPartnersMap[targetId]] : [];
+            }
+            gSynergyFilterFaction = 'all';
+            gSynergySearchQuery = '';
+            document.getElementById('synergySearchInput').value = '';
+            document.querySelectorAll('#synergyPickerModal .pua-tab-btn').forEach(btn => btn.classList.remove('active'));
+            const firstTab = document.querySelector('#synergyPickerModal .pua-tab-btn');
+            if (firstTab) firstTab.classList.add('active');
+
+            renderSynergyPickerGrid();
+            document.getElementById('synergyPickerModal').classList.add('active');
+        }
+
+        function closeSynergyPickerModal() {
+            document.getElementById('synergyPickerModal').classList.remove('active');
+            gActiveSynergyTargetId = null;
+        }
+
+        function filterSynergyPicker(query) {
+            gSynergySearchQuery = (query || '').trim().toLowerCase();
+            renderSynergyPickerGrid();
+        }
+
+        function filterSynergyFaction(faction, btn) {
+            gSynergyFilterFaction = faction;
+            document.querySelectorAll('#synergyPickerModal .pua-tab-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            renderSynergyPickerGrid();
+        }
+
+        function renderSynergyPickerGrid() {
+            const grid = document.getElementById('synergyPickerGrid');
+            if (!grid || !gOverviewData) return;
+            grid.innerHTML = '';
+
+            let chars = gOverviewData.characters || [];
+            if (gCurBotId) {
+                chars = chars.filter(c => c.bot_id !== gCurBotId);
+            }
+
+            if (gSynergyFilterFaction !== 'all') {
+                chars = chars.filter(c => c.faction === gSynergyFilterFaction);
+            }
+
+            if (gSynergySearchQuery) {
+                chars = chars.filter(c => {
+                    const zh = (c.name_zh || '').toLowerCase();
+                    const en = (c.name_en || '').toLowerCase();
+                    const bid = (c.bot_id || '').toLowerCase();
+                    return zh.includes(gSynergySearchQuery) || en.includes(gSynergySearchQuery) || bid.includes(gSynergySearchQuery);
+                });
+            }
+
+            chars.forEach(c => {
+                const isSelected = gTempSelectedSynergyBots.includes(c.bot_id);
+                const item = document.createElement('div');
+                item.className = `synergy-picker-item ${isSelected ? 'selected' : ''}`;
+                item.onclick = () => toggleSynergyBotSelection(c.bot_id);
+
+                item.innerHTML = `
+                    <div class="check-mark">✓</div>
+                    <img src="${c.portrait_url}" class="synergy-picker-avatar" alt="${c.name_zh || c.bot_id}" onerror="this.src='/portrait/${c.bot_id}'">
+                    <div class="synergy-picker-name">${escapeHtml(c.name_zh || c.name_en)}</div>
+                    <div class="synergy-picker-sub">${escapeHtml(c.name_en || '')}</div>
+                `;
+                grid.appendChild(item);
+            });
+
+            const countText = document.getElementById('synergySelectedCountText');
+            if (countText) {
+                countText.innerText = `已选择 ${gTempSelectedSynergyBots.length} 位角色`;
+            }
+        }
+
+        function toggleSynergyBotSelection(bid) {
+            if (gTempSelectedSynergyBots.includes(bid)) {
+                gTempSelectedSynergyBots = gTempSelectedSynergyBots.filter(id => id !== bid);
+            } else {
+                gTempSelectedSynergyBots.push(bid);
+            }
+            renderSynergyPickerGrid();
+        }
+
+        function clearSynergySelection() {
+            gTempSelectedSynergyBots = [];
+            renderSynergyPickerGrid();
+        }
+
+        function confirmSynergyPartnerSelection() {
+            if (gActiveSynergyTargetId === 'new_ability') {
+                gNewAbSynergyBots = [...gTempSelectedSynergyBots];
+                renderNewAbSynergyChips();
+            } else if (gActiveSynergyTargetId) {
+                gSynergyPartnersMap[gActiveSynergyTargetId] = [...gTempSelectedSynergyBots];
+                renderSynergyChips(gActiveSynergyTargetId);
+                saveAbilityItem(gActiveSynergyTargetId);
+            }
+            closeSynergyPickerModal();
+        }
+
         // Open Add Ability Modal
         function openAddAbilityModal(categoryKey, categoryName) {
             document.getElementById('newAbCategory').value = categoryKey;
@@ -1699,6 +2300,14 @@
             document.getElementById('newAbPuaIconVal').value = '';
             document.getElementById('newAbPuaGlyph').innerText = '+';
             document.getElementById('newAbPuaHex').innerText = 'PUA';
+
+            const synRow = document.getElementById('newAbSynergyRow');
+            if (synRow) {
+                synRow.style.display = (categoryKey === 'synergy') ? 'block' : 'none';
+                gNewAbSynergyBots = [];
+                renderNewAbSynergyChips();
+            }
+
             document.getElementById('addAbilityModal').classList.add('active');
         }
 
@@ -1728,6 +2337,10 @@
                 pua_icon
             };
 
+            if (category === 'synergy') {
+                payload.synergy_bots = gNewAbSynergyBots;
+            }
+
             try {
                 const res = await fetch('/api/ability/new', {
                     method: 'POST',
@@ -1754,6 +2367,8 @@
                 desc.innerText = `为能力 ID #${targetId} 选择并保存 PUA 图标至数据库`;
             } else if (type === 'new_ability') {
                 desc.innerText = `为新创作能力选择 PUA 图标`;
+            } else if (type === 'new_sp') {
+                desc.innerText = `为新特殊技 [${targetId.toUpperCase()}] 选择 PUA 图标`;
             } else if (type === 'class') {
                 desc.innerText = `为职业 [${targetId}] 选择并保存 PUA 图标至 class_defaults 表`;
             } else if (type === 'faction') {
@@ -1820,6 +2435,13 @@
                     document.getElementById('newAbPuaGlyph').innerText = String.fromCharCode(icon.codepoint_dec);
                     document.getElementById('newAbPuaHex').innerText = hex;
                     showToast(`新技能图标已选用: ${icon.glyph_name} (${hex})`);
+                } else if (type === 'new_sp') {
+                    gNewSpecialPuaIcons[targetId] = hex;
+                    const glyphEl = document.getElementById(`pua_glyph_new_${targetId}`);
+                    const hexEl = document.getElementById(`pua_hex_new_${targetId}`);
+                    if (glyphEl) glyphEl.innerText = String.fromCharCode(icon.codepoint_dec);
+                    if (hexEl) hexEl.innerText = hex;
+                    showToast(`特殊技图标已选用: ${icon.glyph_name} (${hex})`);
                 } else if (type === 'class') {
                     const res = await fetch(`/api/class/${targetId}`, {
                         method: 'POST',

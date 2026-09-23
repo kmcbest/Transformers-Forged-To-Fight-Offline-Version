@@ -177,7 +177,17 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
 
             # Abilities
             ab_rows = c.execute("SELECT * FROM character_abilities WHERE bot_id = ? ORDER BY sort_order, id", (bid,)).fetchall()
-            abilities = [dict(r) for r in ab_rows]
+            abilities = []
+            for r in ab_rows:
+                ad = dict(r)
+                if "synergy_bots" in ad and ad["synergy_bots"]:
+                    try:
+                        ad["synergy_bots"] = json.loads(ad["synergy_bots"])
+                    except Exception:
+                        ad["synergy_bots"] = []
+                else:
+                    ad["synergy_bots"] = []
+                abilities.append(ad)
             cd["abilities"] = abilities
 
             conn.close()
@@ -248,11 +258,16 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
             desc_zh = payload.get("desc_zh", "")
             desc_en = payload.get("desc_en", "")
             pua_icon = payload.get("pua_icon", "")
+            synergy_bots = payload.get("synergy_bots", [])
+            if isinstance(synergy_bots, list):
+                synergy_bots_str = json.dumps(synergy_bots)
+            else:
+                synergy_bots_str = str(synergy_bots)
 
             c.execute("""
-                INSERT INTO character_abilities (bot_id, category, title_zh, title_en, desc_zh, desc_en, pua_icon, sort_order)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            """, (bot_id, category, title_zh, title_en, desc_zh, desc_en, pua_icon, 0))
+                INSERT INTO character_abilities (bot_id, category, title_zh, title_en, desc_zh, desc_en, pua_icon, synergy_bots, sort_order)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (bot_id, category, title_zh, title_en, desc_zh, desc_en, pua_icon, synergy_bots_str, 0))
             conn.commit()
             new_id = c.lastrowid
             conn.close()
@@ -282,6 +297,12 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
                 if k in payload:
                     fields.append(f"{k} = ?")
                     values.append(payload[k])
+
+            if "synergy_bots" in payload:
+                s_bots = payload["synergy_bots"]
+                s_str = json.dumps(s_bots) if isinstance(s_bots, list) else str(s_bots)
+                fields.append("synergy_bots = ?")
+                values.append(s_str)
 
             if fields:
                 values.append(aid)
