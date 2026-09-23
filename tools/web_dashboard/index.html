@@ -320,6 +320,37 @@
             transform: translateY(-2px);
         }
 
+        .card-faction-badge {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            opacity: 0.85;
+            transition: all 0.2s;
+        }
+
+        .faction-emblem-glyph {
+            font-size: 26px;
+            line-height: 1;
+            color: #94A3B8; /* 游戏中派系标志专用的浅灰色 */
+            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6));
+            transition: all 0.2s;
+        }
+
+        .character-card:hover .card-faction-badge {
+            opacity: 1;
+        }
+
+        .character-card:hover .faction-emblem-glyph {
+            color: #E2E8F0;
+            transform: scale(1.1);
+        }
+
         .card-top {
             display: flex;
             align-items: center;
@@ -346,6 +377,7 @@
         .card-info {
             flex: 1;
             min-width: 0;
+            padding-right: 36px;
         }
 
         .char-names {
@@ -1014,6 +1046,7 @@
                     <button class="filter-btn faction-filter-btn active" onclick="filterFaction('all', this)">全部阵营</button>
                     <button class="filter-btn faction-filter-btn" id="btnFilter_autobot" onclick="filterFaction('autobot', this)">汽车人</button>
                     <button class="filter-btn faction-filter-btn" id="btnFilter_decepticon" onclick="filterFaction('decepticon', this)">霸天虎</button>
+                    <button class="filter-btn faction-filter-btn" id="btnFilter_sharkticon" onclick="filterFaction('sharkticon', this)"><span class="tecnica-icon" style="margin-right: 4px;">&#xE99E;</span>饿鲨</button>
                     <button class="filter-btn faction-filter-btn" id="btnFilter_predacon" onclick="filterFaction('predacon', this)">原始兽</button>
                     <button class="filter-btn faction-filter-btn" id="btnFilter_maximal" onclick="filterFaction('maximal', this)">巨无霸</button>
                 </div>
@@ -1255,22 +1288,47 @@
             const btnR = document.getElementById('btnSource_Revival');
             if (btnR) btnR.innerText = `Revival (${revivalCount})`;
 
-            // Update faction filter buttons with PUA icons
+            // Update faction filter buttons with PUA icons and counts
+            const sharkCount = characters.filter(b => b.bot_id && b.bot_id.includes('sharkticon')).length;
+            const autoCount = characters.filter(b => b.faction === 'autobot').length;
+            const decCount = characters.filter(b => b.faction === 'decepticon' && !(b.bot_id && b.bot_id.includes('sharkticon'))).length;
+            const predCount = characters.filter(b => b.faction === 'predacon').length;
+            const maxCount = characters.filter(b => b.faction === 'maximal').length;
+
+            const factionCounts = {
+                autobot: autoCount,
+                decepticon: decCount,
+                predacon: predCount,
+                maximal: maxCount,
+            };
+
             if (gOverviewData.factions) {
                 gOverviewData.factions.forEach(f => {
                     const btn = document.getElementById(`btnFilter_${f.faction_id}`);
                     if (btn) {
+                        const count = factionCounts[f.faction_id] !== undefined ? ` (${factionCounts[f.faction_id]})` : '';
                         const fPua = f.pua_icon ? `<span class="tecnica-icon" style="margin-right: 4px;">${String.fromCharCode(parseInt(f.pua_icon, 16))}</span>` : '';
-                        btn.innerHTML = `${fPua}${f.name_zh}`;
+                        btn.innerHTML = `${fPua}${f.name_zh}${count}`;
                     }
                 });
+            }
+            const btnShark = document.getElementById('btnFilter_sharkticon');
+            if (btnShark) {
+                btnShark.innerHTML = `<span class="tecnica-icon" style="margin-right: 4px;">${String.fromCharCode(0xE99E)}</span>饿鲨 (${sharkCount})`;
             }
 
             classes.forEach(cls => {
                 const q = document.getElementById('searchInput').value.trim().toLowerCase();
                 const botsInClass = characters.filter(bot => {
                     if (bot.class !== cls.class_id) return false;
-                    if (gActiveFactionFilter !== 'all' && bot.faction !== gActiveFactionFilter) return false;
+                    const isShark = bot.bot_id && bot.bot_id.includes('sharkticon');
+                    if (gActiveFactionFilter === 'sharkticon') {
+                        if (!isShark) return false;
+                    } else if (gActiveFactionFilter === 'decepticon') {
+                        if (bot.faction !== 'decepticon' || isShark) return false;
+                    } else if (gActiveFactionFilter !== 'all') {
+                        if (bot.faction !== gActiveFactionFilter) return false;
+                    }
                     if (gActiveSourceFilter !== 'all' && bot.source !== gActiveSourceFilter) return false;
                     if (q) {
                         const matchNameZh = bot.name_zh && bot.name_zh.toLowerCase().includes(q);
@@ -1345,7 +1403,15 @@
             card.className = 'character-card';
 
             const factionObj = gOverviewData.factions.find(f => f.faction_id === bot.faction) || { name_zh: bot.faction, color_hex: '#888' };
-            const facPua = bot.pua_faction_icon || factionObj.pua_icon || '';
+            let facPua = bot.pua_faction_icon || factionObj.pua_icon || '';
+            if (!facPua) {
+                const isMovie = (bot.bot_id && (bot.bot_id.includes('_cin_') || bot.bot_id.includes('_mv_')));
+                if (bot.bot_id && bot.bot_id.includes('sharkticon')) facPua = 'E99E';
+                else if (bot.faction === 'autobot') facPua = isMovie ? 'E134' : 'E132';
+                else if (bot.faction === 'decepticon') facPua = isMovie ? 'E135' : 'E133';
+                else if (bot.faction === 'maximal') facPua = 'E160';
+                else if (bot.faction === 'predacon') facPua = 'E161';
+            }
             const isCritOverridden = bot.crit_chance !== null;
             const critDisplay = Math.round(bot.effective_crit_chance * 100);
             const isCritDmgOverridden = bot.crit_damage !== null;
@@ -1355,6 +1421,9 @@
             let meleeDisplay = Math.round(bot.effective_crit_melee * 100);
 
             card.innerHTML = `
+                <div class="card-faction-badge" title="阵营: ${factionObj.name_zh || bot.faction}">
+                    ${facPua ? `<span class="tecnica-icon faction-emblem-glyph">${String.fromCharCode(parseInt(facPua, 16))}</span>` : ''}
+                </div>
                 <div class="card-top">
                     <div class="avatar-frame">
                         <img class="avatar-img" src="${bot.portrait_url}" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'58\\' height=\\'58\\'><rect width=\\'100%\\' height=\\'100%\\' fill=\\'%23222\\'/><text x=\\'50%\\' y=\\'50%\\' fill=\\'%23666\\' font-size=\\'10\\' text-anchor=\\'middle\\' dy=\\'.3em\\'>TF</text></svg>'">

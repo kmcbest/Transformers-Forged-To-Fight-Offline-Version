@@ -814,21 +814,26 @@ MKHOOK(25) MKHOOK(26) MKHOOK(27) MKHOOK(29) MKHOOK(30)
 // with no error at all. So the mapping is done HERE ("if/switch -> PUA char"),
 // from the faction string this project authors itself
 // (Server/gamedata.py ROSTER -> blueprint `a` / AttributeBaseType @0x70).
-static int faction_icon_code(const char* faction) {
+static int faction_icon_code(const char* faction, const char* bid) {
     if (!faction || !*faction) return 0;
-    if (!strcmp(faction, "autobot"))    return 0xE134;  // Autobot
-    if (!strcmp(faction, "decepticon")) return 0xE135;  // Decepticon
+    if (bid && strstr(bid, "sharkticon")) return 0xE99E; // Sharkticon exclusive icon
+    int is_movie = (bid && (strstr(bid, "_cin_") || strstr(bid, "_mv_")));
+    if (!strcmp(faction, "autobot"))    return is_movie ? 0xE134 : 0xE132;  // Movie Autobot (0xE134) vs G1 Autobot (0xE132)
+    if (!strcmp(faction, "decepticon")) return is_movie ? 0xE135 : 0xE133;  // Movie Decepticon (0xE135) vs G1 Decepticon (0xE133)
     if (!strcmp(faction, "maximal"))    return 0xE160;  // Maximal
     if (!strcmp(faction, "predacon"))   return 0xE161;  // Predacon
     return 0;
 }
 // UTF-8 bytes of that one glyph (il2cpp_string_new takes a UTF-8 C string).
-static const char* faction_icon_glyph(const char* faction) {
-    switch (faction_icon_code(faction)) {
-        case 0xE134: return "\uE134";   // EE 84 B4
-        case 0xE135: return "\uE135";   // EE 84 B5
-        case 0xE160: return "\uE160";   // EE 85 A0
-        case 0xE161: return "\uE161";   // EE 85 A1
+static const char* faction_icon_glyph(const char* faction, const char* bid) {
+    switch (faction_icon_code(faction, bid)) {
+        case 0xE132: return "\uE132";   // EE 84 B2 (G1 Autobot)
+        case 0xE133: return "\uE133";   // EE 84 B3 (G1 Decepticon)
+        case 0xE134: return "\uE134";   // EE 84 B4 (Movie Autobot)
+        case 0xE135: return "\uE135";   // EE 84 B5 (Movie Decepticon)
+        case 0xE160: return "\uE160";   // EE 85 A0 (Maximal)
+        case 0xE161: return "\uE161";   // EE 85 A1 (Predacon)
+        case 0xE99E: return "\uE99E";   // EE A6 9E (Sharkticon)
     }
     return NULL;
 }
@@ -999,15 +1004,23 @@ static void apply_hero_portrait_deco_internal(void* hp) {
                         char bid[80]; bid[0] = 0;
                         void* bstr = *(void**)((char*)hero_data + 0x10);
                         if (obj_ok(bstr)) read_str(bstr, bid, sizeof bid);
+                        if (!bid[0]) {
+                            void* cur_bp = *(void**)((char*)hero_data + 0x48);
+                            if (!cur_bp || !obj_ok(cur_bp)) cur_bp = bp;
+                            if (cur_bp && obj_ok(cur_bp)) {
+                                void* bps = *(void**)((char*)cur_bp + 0x10);
+                                if (obj_ok(bps)) read_str(bps, bid, sizeof bid);
+                            }
+                        }
                         const char* faction = hero_faction_str(hero_data);
-                        const char* glyph = faction_icon_glyph(faction);
+                        const char* glyph = faction_icon_glyph(faction, bid);
                         if (glyph && g_strnew) {
                             void* icon_str = g_strnew(glyph);
                             if (icon_str) {
                                 ((void(*)(void*, void*, void*))(g_base + 0xDE127C))(flabel, icon_str, NULL);
                                 flog("RATEWGT %s faction='%s' glyph=U+%04X label=%p written",
                                      bid[0] ? bid : "?", faction ? faction : "<null>",
-                                     (unsigned)faction_icon_code(faction), flabel);
+                                     (unsigned)faction_icon_code(faction, bid), flabel);
                             }
                         }
                     }

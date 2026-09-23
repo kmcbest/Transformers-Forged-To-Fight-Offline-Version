@@ -117,12 +117,12 @@ def init_database():
 
     # 3. Populate Factions
     faction_rows = [
-        ("autobot",    "汽车人", "Autobot",    "#EF4444", ""),
-        ("decepticon", "霸天虎", "Decepticon", "#8B5CF6", ""),
-        ("predacon",   "原始兽", "Predacon",   "#10B981", ""),
-        ("maximal",    "巨无霸", "Maximal",    "#3B82F6", ""),
+        ("autobot",    "汽车人", "Autobot",    "#EF4444", "E132"),
+        ("decepticon", "霸天虎", "Decepticon", "#8B5CF6", "E133"),
+        ("predacon",   "原始兽", "Predacon",   "#10B981", "E161"),
+        ("maximal",    "巨无霸", "Maximal",    "#3B82F6", "E160"),
     ]
-    c.executemany("INSERT OR IGNORE INTO factions VALUES (?,?,?,?,?)", faction_rows)
+    c.executemany("INSERT OR REPLACE INTO factions VALUES (?,?,?,?,?)", faction_rows)
 
     # 4. Populate PUA Icons Cache from Font
     print("    [+] Extracting PUA glyphs from Tecnica_Bold_116.ttf...")
@@ -143,7 +143,7 @@ def init_database():
                 elif name.endswith(".sc"):
                     cat = "small_caps"
                 pua_items.append((f"0x{cp:04x}", cp, name, cat))
-        c.executemany("INSERT INTO pua_icons_cache VALUES (?,?,?,?)", pua_items)
+        c.executemany("INSERT OR IGNORE INTO pua_icons_cache VALUES (?,?,?,?)", pua_items)
         print(f"        -> Cached {len(pua_items)} PUA glyphs into database")
     except Exception as e:
         print(f"    [!] Failed to extract PUA glyphs: {e}")
@@ -272,20 +272,44 @@ def init_database():
         else:
             source = "Revival"
 
+        # Determine PUA faction icon (Sharkticon vs G1 vs Movie vs Beast Wars)
+        is_movie = ("_cin_" in bid) or ("_mv_" in bid)
+        if "sharkticon" in bid:
+            pua_faction_icon = "E99E"
+        elif faction == "autobot":
+            pua_faction_icon = "E134" if is_movie else "E132"
+        elif faction == "decepticon":
+            pua_faction_icon = "E135" if is_movie else "E133"
+        elif faction == "maximal":
+            pua_faction_icon = "E160"
+        elif faction == "predacon":
+            pua_faction_icon = "E161"
+        else:
+            pua_faction_icon = ""
+
         c.execute("""
         INSERT INTO characters (
             bot_id, name_zh, name_en, faction, class, star_default, source,
             health_mult, attack_mult, crit_chance, crit_damage,
             crit_chance_ranged, crit_chance_melee, block_proficiency, mana_gain_mult,
-            origin, desc_zh, desc_en, note
-        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            origin, desc_zh, desc_en, note, pua_faction_icon
+        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        ON CONFLICT(bot_id) DO UPDATE SET
+            pua_faction_icon=excluded.pua_faction_icon,
+            origin=excluded.origin,
+            name_zh=excluded.name_zh,
+            name_en=excluded.name_en,
+            faction=excluded.faction,
+            class=excluded.class
         """, (
             bid, name_zh, name_en, faction, klass, star, source,
             health_mult, attack_mult, crit_chance, crit_damage,
             crit_chance_ranged, crit_chance_melee, 0.5, 1.0,
-            origin, desc_zh, "", note
+            origin, desc_zh, "", note, pua_faction_icon
         ))
         char_count += 1
+
+        c.execute("DELETE FROM character_abilities WHERE bot_id=?", (bid,))
 
         # Check if official character
         if bid in OFFICIAL_BOTS_WIKI_MAP and OFFICIAL_BOTS_WIKI_MAP[bid] in wiki_all:
