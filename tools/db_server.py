@@ -20,9 +20,23 @@ def get_db():
     conn.row_factory = sqlite3.Row
     return conn
 
-def resolve_portrait_file(bid):
+def resolve_portrait_file(bid, size="small"):
     base = gamedata.art_base(bid)
-    candidates = [
+    if size == "large":
+        candidates_large = [
+            BASE_DIR / f"assets_redeco/portrait_{base}_large.png",
+            BASE_DIR / f"assets_redeco/portrait_{base}_large.jpg",
+            BASE_DIR / f"assets_netflix/portrait_{base}_large.png",
+            BASE_DIR / f"assets_netflix/portrait_{base}_large.jpg",
+            BASE_DIR / f"extracted_apk/assets/assetpack/portraits_odr/portraits/portrait_{base}_large.png",
+            BASE_DIR / f"extracted_apk/assets/assetpack/portraits_odr/portraits/portrait_{base}_large.jpg",
+            BASE_DIR / f"assets_redeco/portrait_{bid}_large.png",
+            BASE_DIR / f"assets_redeco/portrait_{bid}_large.jpg",
+        ]
+        for c in candidates_large:
+            if c.exists():
+                return c
+    candidates_small = [
         BASE_DIR / f"assets_redeco/portrait_{base}_small.jpg",
         BASE_DIR / f"assets_redeco/portrait_{base}_small.png",
         BASE_DIR / f"assets_netflix/portrait_{base}_small.jpg",
@@ -32,7 +46,7 @@ def resolve_portrait_file(bid):
         BASE_DIR / f"assets_redeco/portrait_{bid}_small.jpg",
         BASE_DIR / f"assets_redeco/portrait_{bid}_small.png",
     ]
-    for c in candidates:
+    for c in candidates_small:
         if c.exists():
             return c
     return None
@@ -60,11 +74,12 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
         url = urllib.parse.urlparse(self.path)
         path = url.path
 
-        # 1. Static Web Dashboard
-        if path in ("/", "/index.html"):
-            index_path = WEB_DIR / "index.html"
-            if index_path.exists():
-                data = index_path.read_bytes()
+        # 1. Static Web Dashboard & HTML Pages
+        if path in ("/", "/index.html") or path.endswith(".html"):
+            target_name = "index.html" if path in ("/", "/index.html") else path.lstrip("/")
+            html_path = WEB_DIR / target_name
+            if html_path.exists():
+                data = html_path.read_bytes()
                 self.send_response(200)
                 self.send_header("Content-Type", "text/html; charset=utf-8")
                 self.send_header("Content-Length", str(len(data)))
@@ -72,7 +87,7 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
                 self.wfile.write(data)
                 return
             else:
-                self.send_error(404, "index.html not found")
+                self.send_error(404, f"{target_name} not found")
                 return
 
         # 2. Font File
@@ -93,7 +108,9 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
         # 3. Portrait Endpoint: /portrait/<bid>
         elif path.startswith("/portrait/"):
             bid = path[len("/portrait/"):]
-            p_file = resolve_portrait_file(bid)
+            qs = urllib.parse.parse_qs(url.query)
+            size = "large" if qs.get("size", [""])[0] == "large" else "small"
+            p_file = resolve_portrait_file(bid, size)
             if p_file and p_file.exists():
                 data = p_file.read_bytes()
                 mime = "image/png" if p_file.suffix.lower() == ".png" else "image/jpeg"
@@ -174,6 +191,7 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
 
             cd = dict(char_row)
             cd["portrait_url"] = f"/portrait/{bid}"
+            cd["portrait_large_url"] = f"/portrait/{bid}?size=large"
 
             # Abilities
             ab_rows = c.execute("SELECT * FROM character_abilities WHERE bot_id = ? ORDER BY sort_order, id", (bid,)).fetchall()
