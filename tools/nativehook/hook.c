@@ -503,12 +503,9 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     // and transformed hid the energy swords and left vehicle form incomplete; the level-3
     // cinematic schedule still controls only those two body props.
     { 0xEA023C, "PROPGOACT", 2, 0 }, // 138 PropData.SetActiveInternal -> mirror prop state onto renderer GameObjects
-    // SP3MOVE (level-3 alternate-form resolution): this build's animator enters SpecialAttack03,
-    // but its MoveSet has no matching MoveInfo, so no authored MoveEvent can run. The SP3 asset
-    // does not exist in the bundle; resolve only that absent state to this character's real
-    // alternate-form move. Prefer its authored special moves, then any TransformMoveEvent, so the
-    // normal MoveInfo event path performs the transformation rather than a direct state-side call.
-    { 0x100A76C, "SP3MOVE", 2, 0 }, // 139 MoveSet.GetMove(int hash) -> resolve the absent SP3 move
+    // Slot 139 disabled: previously substituted S2 MoveInfo into absent SP3 move, which caused
+    // the game engine to fire S2 MoveEvents (S2 sounds, spark particles, missiles, extra damage) during S3!
+    { 0, "SP3MOVE", 0, 0 }, // 139 MoveSet.GetMove(int hash) -> disabled
     { 0xDE7CF4, "SP3XNEW", 2, 0 }, // 140 Simulation.RegisterComponents -> clear the cinematic transform latch at combat start
     { 0x117A67C, "SP3XHOLD", 2, 0 }, // 141 PlayerController.Transform(bool) -> retain cinematic latch for slot 138's schedule follower
     { 0x1174038, "SP3XIN", 2, 0 }, // 142 PlayerCinematicSpecialAttackState.OnEnter -> apply alternate form after entry reset
@@ -4734,99 +4731,12 @@ static void sp3_beat_capture(void* move){
     }
 }
 void* hook_139(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
-    void* r = H[139].orig(a0,a1,a2,a3,a4,a5,a6,a7);
-    if(r) return r;
-    PROTECT({
-        int32_t hash=(int32_t)(intptr_t)a1;
-        if(hash == -1919714467 || hash == -2049617737){
-            void* moves=fld_p(a0,0x18);
-            void* items=fld_p(moves,0x10);
-            int n=list_count(moves);
-            if(obj_ok(items) && n>0){
-                int alen=*(int32_t*)((char*)items+0x18);
-                if(alen>=0 && alen<=256 && n<=alen && n<=256){
-                    void* chosen=NULL; int rank=0; int nev=-1; int xform=0;
-                    if(!g_sp3cand_dumped){
-                        g_sp3cand_dumped=1;
-                        for(int i=0;i<n;i++){
-                            void* move=*(void**)((char*)items+0x20+8*i);
-                            if(!obj_ok(move)) continue;
-                            char name[96]; char anim[96]; name[0]=anim[0]=0;
-                            read_str(fld_p(move,0x10),name,sizeof name);
-                            read_str(fld_p(move,0x18),anim,sizeof anim);
-                            int this_nev=-1;
-                            int this_xform=sp3move_events_xform(move,&this_nev);
-                            if((this_xform || !strncmp(anim,"Base.Special",12)) && g_sp3cand_lines<40){
-                                g_sp3cand_lines++;
-                                flog("SP3CAND i=%d name=%s anim=%s nev=%d xform=%d excl=%d tms=%llu", i, name, anim,
-                                     this_nev, this_xform, sp3_is_excluded(name,anim), (unsigned long long)propgo_now_ms());
-                            }
-                        }
-                    }
-                    for(int want=1;want<=5 && !chosen;want++){
-                        for(int i=0;i<n;i++){
-                            void* move=*(void**)((char*)items+0x20+8*i);
-                            if(!obj_ok(move)) continue;
-                            char name[96]; char anim[96]; name[0]=anim[0]=0;
-                            read_str(fld_p(move,0x10),name,sizeof name);
-                            read_str(fld_p(move,0x18),anim,sizeof anim);
-                            int this_nev=-1;
-                            if(!sp3move_events_xform(move,&this_nev)) continue;
-                            if(sp3_is_excluded(name,anim)) continue;
-                            int match=(want==1 && !strcmp(anim,"Base.SpecialAttack02")) ||
-                                      (want==2 && !strcmp(anim,"Base.SpecialAttack01")) ||
-                                      (want==3 && !strcmp(anim,"Base.HeavyAttack")) ||
-                                      (want==4 && !strncmp(anim,"Base.SpecialAttack",18)) ||
-                                      (want==5 && (sp3_ci_has(name,"heavy") || sp3_ci_has(anim,"heavy") ||
-                                                   sp3_ci_has(name,"medium") || sp3_ci_has(anim,"medium") ||
-                                                   sp3_ci_has(name,"light") || sp3_ci_has(anim,"light") ||
-                                                   sp3_ci_has(name,"combo") || sp3_ci_has(anim,"combo") ||
-                                                   sp3_ci_has(name,"attack") || sp3_ci_has(anim,"attack")));
-                            if(match){ chosen=move; rank=want; nev=this_nev; xform=1; break; }
-                        }
-                    }
-                    if(!chosen){
-                        int best_nev=-1;
-                        for(int i=0;i<n;i++){
-                            void* move=*(void**)((char*)items+0x20+8*i);
-                            if(!obj_ok(move)) continue;
-                            char name[96]; char anim[96]; name[0]=anim[0]=0;
-                            read_str(fld_p(move,0x10),name,sizeof name);
-                            read_str(fld_p(move,0x18),anim,sizeof anim);
-                            int this_nev=-1;
-                            if(!sp3move_events_xform(move,&this_nev) || sp3_is_excluded(name,anim)) continue;
-                            if(this_nev>best_nev){ chosen=move; rank=6; nev=this_nev; xform=1; best_nev=this_nev; }
-                        }
-                    }
-                    for(int want=7;want<=8 && !chosen;want++){
-                        const char* target=want==7 ? "Base.SpecialAttack02" : "Base.SpecialAttack01";
-                        for(int i=0;i<n;i++){
-                            void* move=*(void**)((char*)items+0x20+8*i);
-                            if(!obj_ok(move)) continue;
-                            char name[96]; char anim[96]; name[0]=anim[0]=0;
-                            read_str(fld_p(move,0x10),name,sizeof name);
-                            read_str(fld_p(move,0x18),anim,sizeof anim);
-                            if(!sp3_is_excluded(name,anim) && !strcmp(anim,target)){
-                                chosen=move; rank=want; nev=-1; xform=sp3move_events_xform(move,&nev); break;
-                            }
-                        }
-                    }
-                    char name[96]; char anim[96]; name[0]=anim[0]=0;
-                    if(chosen){
-                        read_str(fld_p(chosen,0x10),name,sizeof name);
-                        read_str(fld_p(chosen,0x18),anim,sizeof anim);
-                        r=chosen;
-                    }else{ strcpy(name,"none"); strcpy(anim,"none"); }
-                    if(g_sp3move_lines < 20){ g_sp3move_lines++;
-                        flog("SP3MOVE hash=%d rank=%d name=%s anim=%s nev=%d xform=%d tms=%llu", hash, rank,
-                             name, anim, nev, xform, (unsigned long long)propgo_now_ms());
-                    }
-                    if(chosen) sp3_beat_capture(chosen);
-                }
-            }
-        }
-    });
-    return r;
+    // SP3MOVE: Disabled. Returning a substituted S2/Heavy MoveInfo here caused the engine to run
+    // S2 MoveEvents (S2 sounds, spark effects, missile projectiles, extra damage) concurrently in S3!
+    if (H[139].orig) {
+        return H[139].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    }
+    return NULL;
 }
 void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
     // DIAGNOSTIC ONLY -- no behavior change. Per-combat delimiter: every fight re-enters
