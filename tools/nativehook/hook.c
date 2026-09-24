@@ -134,6 +134,13 @@ static int il2cpp_object_class(void* o, char* out, int cap){
 static uintptr_t g_base;            // libil2cpp base (set in installer)
 static strnew_t g_strnew = NULL;    // il2cpp_string_new (dlsym'd in installer)
 static arraynew_t g_arraynew = NULL; // il2cpp_array_new (dlsym'd in installer)
+typedef void* (*resolve_icall_t)(const char*);
+static resolve_icall_t g_resolve_icall = NULL;
+typedef void (*fn_get_mouse_pos)(float*);
+static fn_get_mouse_pos s_get_mouse_pos = NULL;
+typedef int (*fn_get_screen_dim)();
+static fn_get_screen_dim s_get_screen_w = NULL;
+static fn_get_screen_dim s_get_screen_h = NULL;
 // A shared, empty string[] used to fill blueprint.Tags (List<string> @0xB8) when the
 // login parser leaves it null. The offline getLoginData JSON carries no `tags` key
 // (confirmed via the ==BP== field-reader log: the ctor reads a/c/cl/e/g/... but never
@@ -562,6 +569,8 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x0DAD5A4, "APPLY_DMG",          2, 0 }, // 177 PlayerAttributes.ApplyDamage -> picnic quest ranged-only damage
     { 0,         "PFS_ENEMY_HP",       2, 0 }, // 178 PrefightScreenData.GetEnemyNormalizedHealth (disabled: stock function returns 1.0f directly)
     { 0x0DAD558, "CRIT_MULT",          2, 0 }, // 179 PlayerAttributes.GetCritDamageMultiplier -> ensure 1.5x crit damage for Player 0
+    { 0x00FF063C, "FSPRESS_L",         2, 0 }, // 180 HudScreen.FullScreenPressDownLeft -> AutoFight button check
+    { 0x00FF0658, "FSPRESS_R",         2, 0 }, // 181 HudScreen.FullScreenPressDownRight -> AutoFight button check
 };
 #define NH (int)(sizeof(H)/sizeof(H[0]))
 
@@ -4977,16 +4986,27 @@ void* hook_145(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
 // CanShoot supplies availability and out-of-melee-range gates; TryExecuteAction retains
 // normal action-state, hit-stun, recovery, and blocked-action checks. No custom range/cooldown.
 void hook_146(void* self, float dT, void* method){
-    // TEST AID (marker file, see tftf_get_freeze_enemy_ai in inapk_server.c): with
-    // /sdcard/Android/media/com.kabam.bigrobot/freeze_enemy_ai present, the enemy AI's tick is
-    // skipped entirely, so it never attacks or repositions and the combo quality-gate scenarios
-    // can be played uninterrupted. Only NON-P0 controllers are frozen. With no marker file this
-    // whole block is inert and the original body behaves byte-for-byte as before.
     int frozen = 0;
+    int is_p0 = 0;
     PROTECT({
-        void* ai_pc = fld_p(self,0x90);                        // AIController.PlayerController
-        if (obj_ok(ai_pc) && *(int32_t*)((uintptr_t)ai_pc + 0xF4) != 0 && tftf_get_freeze_enemy_ai())
-            frozen = 1;
+        void* ai_pc = fld_p(self, 0x98);                        // AIController.PlayerController (@0x98)
+        if (obj_ok(ai_pc)) {
+            int32_t p_idx = *(int32_t*)((uintptr_t)ai_pc + 0xF4);
+            if (p_idx == 0) {
+                is_p0 = 1;
+                // For Player 0, only simulate if AutoFight is currently active!
+                int af_active = 0;
+                if (g_base) {
+                    af_active = ((int(*)(void*))(g_base + 0xC9CF80))(NULL); // AutoFightManager.get_AutoFightIsActive()
+                }
+                if (!af_active) {
+                    // AutoFight is OFF: human manual control, pause AI simulation
+                    return;
+                }
+            } else if (tftf_get_freeze_enemy_ai()) {
+                frozen = 1;
+            }
+        }
     });
     if (frozen) {
         static unsigned frozen_lines = 0;
@@ -4995,15 +5015,15 @@ void hook_146(void* self, float dT, void* method){
     }
     ((fn_ai_simulate)H[146].orig)(self,dT,method);
     PROTECT({
-        void* player=fld_p(self,0x90);                    // AIController.PlayerController
-        if(obj_ok(player) && *(uint8_t*)((uintptr_t)self+0x88) && // AIController._inited
-           ((int(*)(void*,void*))(g_base+0xDB07A4))(self,NULL) && // get_IsActive
-           !((int(*)(void*,void*))(g_base+0xDB025C))(self,NULL) && // get_IsPaused
+        void* player=fld_p(self, 0x98);                    // AIController.PlayerController (@0x98)
+        if(obj_ok(player) && *(uint8_t*)((uintptr_t)self+0x88) && // AIController._isActive
+           ((int(*)(void*,void*))(g_base+0xDB07F4))(self,NULL) && // get_IsActive (@0xDB07F4)
+           !((int(*)(void*,void*))(g_base+0xDB07FC))(self,NULL) && // get_IsPaused (@0xDB07FC)
            !((int(*)(void*,void*))(g_base+0x11752C8))(player,NULL) && // get_IsAttacking
            ((int(*)(void*,void*))(g_base+0x1174FEC))(player,NULL)){ // get_CanShoot
             ((void(*)(void*,int,void*))(g_base+0x1179AF4))(player,1,NULL); // Action.Attack
             static unsigned fired_lines=0;
-            if(fired_lines<100){ fired_lines++; flog("AIRANGE fired=1 ai=%p player=%p",self,player); }
+            if(fired_lines<100){ fired_lines++; flog("AIRANGE fired=1 ai=%p player=%p is_p0=%d",self,player,is_p0); }
         }
     });
 }
@@ -6014,6 +6034,47 @@ float hook_179(void* self, float opp_resist) {
     return mult;
 }
 
+static int check_and_toggle_autofight(void* hud_screen) {
+    if (!hud_screen || !obj_ok(hud_screen)) return 0;
+    void* afb = *(void**)((char*)hud_screen + 0x130);
+    if (!afb || !obj_ok(afb)) return 0;
+
+    if (s_get_mouse_pos && s_get_screen_w && s_get_screen_h) {
+        float pos[3] = {0};
+        PROTECT({ s_get_mouse_pos(pos); });
+        int sw = s_get_screen_w();
+        int sh = s_get_screen_h();
+        if (sw > 0 && sh > 0) {
+            float nx = pos[0] / (float)sw;
+            float ny = pos[1] / (float)sh;
+            // AutoFight button is bottom-center: nx ~ 0.40..0.60, ny ~ 0.00..0.22
+            if (nx >= 0.40f && nx <= 0.60f && ny <= 0.22f) {
+                int cur = ((int(*)(void*))(g_base + 0xC9CF80))(NULL); // AutoFightManager.get_AutoFightIsActive()
+                int nxt = !cur;
+                ((void(*)(int, void*))(g_base + 0xC9DBD8))(nxt, NULL); // AutoFightManager.ToggleAutoFight(nxt)
+                ((void(*)(void*, int, void*))(g_base + 0xC9BB4C))(afb, nxt, NULL); // AutoFightButton.SetActiveGlow
+                flog("AUTOFIGHT_HUD_TAP: toggled AutoFight -> %d (touch pos=%.1f, %.1f norm=%.2f, %.2f)", nxt, pos[0], pos[1], nx, ny);
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
+void* hook_180(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    if (check_and_toggle_autofight(a0)) {
+        return NULL;
+    }
+    return ((fn8)H[180].orig)(a0, a1, a2, a3, a4, a5, a6, a7);
+}
+
+void* hook_181(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    if (check_and_toggle_autofight(a0)) {
+        return NULL;
+    }
+    return ((fn8)H[181].orig)(a0, a1, a2, a3, a4, a5, a6, a7);
+}
+
 static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hook_7,hook_8,
     hook_9,hook_10,hook_11,hook_12,hook_13,hook_14,hook_15,hook_16,hook_17,hook_18,hook_19,hook_20,hook_21,
     hook_22,hook_23,hook_24,hook_25,hook_26,hook_27,hook_28,hook_29,hook_30,
@@ -6034,7 +6095,7 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     (void*)hook_159,hook_160,hook_161,hook_162,hook_163,hook_164,
     hook_165,hook_166,(void*)hook_167,hook_168,hook_169,hook_170,
     hook_171,hook_172,hook_173,hook_174,hook_175,hook_176,(void*)hook_177,(void*)hook_178,
-    (void*)hook_179 };
+    (void*)hook_179,hook_180,hook_181 };
 
 static void write_jump(uint8_t* dst, void* target){
     uint32_t* p = (uint32_t*)dst;
@@ -6157,6 +6218,26 @@ static void* hooked_set_vSyncCount(void* count, void* m, void* a2, void* a3, voi
     return NULL;
 }
 
+static fn8 orig_ToggleAutoFight = NULL;
+static void* hooked_ToggleAutoFight(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    LOG("[AUTOFIGHT] AutoFightManager.ToggleAutoFight invoked!");
+    if (orig_ToggleAutoFight) return orig_ToggleAutoFight(a0, a1, a2, a3, a4, a5, a6, a7);
+    return NULL;
+}
+
+static fn8 orig_PrefightOnToggleAutoFight = NULL;
+static void* hooked_PrefightOnToggleAutoFight(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    LOG("[AUTOFIGHT] PrefightScreenPresentation.OnToggleAutoFight invoked (self=%p)!", a0);
+    if (orig_PrefightOnToggleAutoFight) return orig_PrefightOnToggleAutoFight(a0, a1, a2, a3, a4, a5, a6, a7);
+    return NULL;
+}
+
+static fn8 orig_BattleArbiterOnToggleAutoFight = NULL;
+static void* hooked_BattleArbiterOnToggleAutoFight(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    LOG("[AUTOFIGHT] BattleArbiter.OnToggleAutoFight invoked (self=%p, a1=%p)!", a0, a1);
+    if (orig_BattleArbiterOnToggleAutoFight) return orig_BattleArbiterOnToggleAutoFight(a0, a1, a2, a3, a4, a5, a6, a7);
+    return NULL;
+}
 
 static void* installer(void* arg){
     for (int i = 0; i < 1200; i++) {           // up to 60s
@@ -6170,6 +6251,14 @@ static void* installer(void* arg){
     if (!g_strnew) { void* h = dlopen("libil2cpp.so", RTLD_NOLOAD); if (h) g_strnew = (strnew_t)dlsym(h, "il2cpp_string_new"); }
     g_arraynew = (arraynew_t)dlsym(RTLD_DEFAULT, "il2cpp_array_new");
     if (!g_arraynew) { void* h = dlopen("libil2cpp.so", RTLD_NOLOAD); if (h) g_arraynew = (arraynew_t)dlsym(h, "il2cpp_array_new"); }
+    g_resolve_icall = (resolve_icall_t)dlsym(RTLD_DEFAULT, "il2cpp_resolve_icall");
+    if (!g_resolve_icall) { void* h = dlopen("libil2cpp.so", RTLD_NOLOAD); if (h) g_resolve_icall = (resolve_icall_t)dlsym(h, "il2cpp_resolve_icall"); }
+    if (g_resolve_icall) {
+        s_get_mouse_pos = (fn_get_mouse_pos)g_resolve_icall("UnityEngine.Input::get_mousePosition_Injected");
+        s_get_screen_w = (fn_get_screen_dim)g_resolve_icall("UnityEngine.Screen::get_width");
+        s_get_screen_h = (fn_get_screen_dim)g_resolve_icall("UnityEngine.Screen::get_height");
+        LOG("[AUTOFIGHT] Icalls resolved: mouse_pos=%p, screen_w=%p, screen_h=%p", s_get_mouse_pos, s_get_screen_w, s_get_screen_h);
+    }
     for (int i = 0; i < NH; i++) {
         if (!H[i].rva) continue;
         inline_hook((void*)(g_base + H[i].rva), handlers[i], &H[i].orig);
@@ -6330,29 +6419,45 @@ static void* installer(void* arg){
 
     // 14) AutoFight (WatchFight) Global Unlock:
     // Enables the native in-combat and pre-fight AutoFight button and AI takeover
-    poke32(0xC9D454, 0x52800020);   // AutoFightManager.AutoFightIsEnabled (@0xC9D454): mov w0, #1
+    // AutoFightManager checks:
+    poke32(0xC9D04C, 0x52800020);   // AutoFightManager.get_UnlockLevel (@0xC9D04C): mov w0, #1
+    poke32(0xC9D050, 0xD65F03C0);   // ret
+    poke32(0xC9D2F4, 0x52800020);   // AutoFightManager.HasLevelRequirement (@0xC9D2F4): mov w0, #1
+    poke32(0xC9D2F8, 0xD65F03C0);   // ret
+    poke32(0xC9D3F0, 0x52800020);   // AutoFightManager.AutoFightIsEnabled (@0xC9D3F0): mov w0, #1
+    poke32(0xC9D3F4, 0xD65F03C0);   // ret
+    poke32(0xC9D454, 0x52800020);   // AutoFightManager.AutoFightIsEnabledForActiveQuest(Quest) (@0xC9D454): mov w0, #1
     poke32(0xC9D458, 0xD65F03C0);   // ret
-    poke32(0xC9BE48, 0x52800020);   // AutoFightManager.AutoFightIsEnabledForActiveQuest (@0xC9BE48): mov w0, #1
-    poke32(0xC9BE4C, 0xD65F03C0);   // ret
-    poke32(0xC9D630, 0x52800020);   // AutoFightManager.AutoFightIsEnabledForActiveQuest#2 (@0xC9D630): mov w0, #1
-    poke32(0xC9D634, 0xD65F03C0);   // ret
-    poke32(0xC9D534, 0x52800020);   // AutoFightManager.HasLevelRequirement (@0xC9D534): mov w0, #1
+    poke32(0xC9D534, 0x52800020);   // AutoFightManager.AutoFightIsEnabledForActiveQuest() (@0xC9D534): mov w0, #1
     poke32(0xC9D538, 0xD65F03C0);   // ret
-    poke32(0xC9BDF0, 0x52800020);   // AutoFightManager.get_UnlockLevel (@0xC9BDF0): mov w0, #1
-    poke32(0xC9BDF4, 0xD65F03C0);   // ret
-    poke32(0xC9BB88, 0x52800020);   // AutoFightManager.AutoFightIsEnabledForModes (@0xC9BB88): mov w0, #1
+    poke32(0xC9BE48, 0x52800020);   // AutoFightManager.AutoFightIsEnabledForModes (@0xC9BE48): mov w0, #1
+    poke32(0xC9BE4C, 0xD65F03C0);   // ret
+    poke32(0xC9BB88, 0x52800020);   // AutoFightManager.EnabledModesContain (@0xC9BB88): mov w0, #1
     poke32(0xC9BB8C, 0xD65F03C0);   // ret
-    poke32(0xC9C49C, 0x52800020);   // AutoFightManager.EnabledModesContain (@0xC9C49C): mov w0, #1
-    poke32(0xC9C4A0, 0xD65F03C0);   // ret
-    poke32(0xDB43B0, 0x52800020);   // AIProfilesManager.IsWatchFightEnabled (@0xDB43B0): mov w0, #1
+
+    // AIProfilesManager / AIWatchFight checks:
+    poke32(0xDB3FA0, 0x52800020);   // AIWatchFight.IsWatchFightEnabled (@0xDB3FA0): mov w0, #1
+    poke32(0xDB3FA4, 0xD65F03C0);   // ret
+    poke32(0xDB4268, 0x52800020);   // AIProfilesManager.IsWatchFightEnabled (@0xDB4268): mov w0, #1
+    poke32(0xDB426C, 0xD65F03C0);   // ret
+    poke32(0xDB4330, 0x52800020);   // AIProfilesManager.IsWatchFightEnabledForModes (@0xDB4330): mov w0, #1
+    poke32(0xDB4334, 0xD65F03C0);   // ret
+    poke32(0xDB43B0, 0x52800020);   // AIProfilesManager.WatchFightModesContain (@0xDB43B0): mov w0, #1
     poke32(0xDB43B4, 0xD65F03C0);   // ret
-    poke32(0xCD5444, 0x52800020);   // AIProfilesManager.IsWatchFightEnabledForModes (@0xCD5444): mov w0, #1
-    poke32(0xCD5448, 0xD65F03C0);   // ret
-    poke32(0xCD544C, 0x52800020);   // AIProfilesManager.WatchFightModesContain (@0xCD544C): mov w0, #1
-    poke32(0xCD5450, 0xD65F03C0);   // ret
+
     // Force AutoFightButton.Init (@0xC9BEA8): bypass level/quest/tutorial checks and force _enabled = 1
     poke32(0xC9BEF0, 0x52800028);   // mov w8, #1
     poke32(0xC9BEF4, 0x14000013);   // b 0xC9BF40 (sets this._enabled = 1, activates full alpha & registers delegates)
+
+    // PlayerController.InitOpponent (@0x1178548): nop tbz w0, #0, 0x117858c
+    // Forces BattleArbiter.InitAI to be called for Player 0 as well so Player 0 gets an AIController!
+    poke32(0x1178548, 0xD503201F);
+
+    // Diagnostic hooks for AutoFight actions:
+    inline_hook((void*)(g_base + 0xC9D6E8), (void*)hooked_ToggleAutoFight, &orig_ToggleAutoFight);
+    inline_hook((void*)(g_base + 0xE48C58), (void*)hooked_PrefightOnToggleAutoFight, &orig_PrefightOnToggleAutoFight);
+    inline_hook((void*)(g_base + 0xCFD384), (void*)hooked_BattleArbiterOnToggleAutoFight, &orig_BattleArbiterOnToggleAutoFight);
+
 
     LOG("install done (%d hooks)", NH);
     return NULL;
