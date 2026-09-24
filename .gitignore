@@ -31,7 +31,6 @@ __pycache__/
 # Local ffmpeg two-pass encoding artifacts.
 /ffmpeg2pass-*.log
 /ffmpeg2pass-*.log.mbtree
-.longtask/
 /toolchain/
 *.zip
 *.psd
@@ -102,6 +101,12 @@ assets_redeco/*
 !assets_redeco/portrait_fembots_quest.png
 !assets_redeco/*picnic*
 !assets_redeco/*ghost*
+!assets_redeco/*demolishor*
+
+# 3rd-party models & textures
+!3rd-party-models/**
+
+demolishor_backup/
 
 *.mkv
 cookies.txt

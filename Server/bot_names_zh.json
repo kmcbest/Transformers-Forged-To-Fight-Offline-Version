@@ -468,5 +468,11 @@
         "zh": "热链接",
         "faction": "霸天虎",
         "note": "格斗系"
+    },
+    "demolishor_gs": {
+        "en": "Demolishor",
+        "zh": "破坏者",
+        "faction": "霸天虎",
+        "note": "塞伯坦陨落·爆破系"
     }
 }

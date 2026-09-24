@@ -27,6 +27,7 @@ static const EnemyStat ENEMY_STATS[] = {
     { "cliffjumper_gs_kabam", 60873, 3182, 3202, 0.14f, 1.60f },
     { "cyclonus_gs_uw06", 55339, 3030, 2918, 0.14f, 1.50f },
     { "deadend_gs_deluxe2015", 60873, 3182, 3202, 0.14f, 1.60f },
+    { "demolishor_gs", 60873, 3182, 3202, 0.14f, 1.60f },
     { "dinobot_bw_kabam", 55339, 3030, 2918, 0.14f, 1.50f },
     { "dirge_gs_deluxe2008", 52572, 3485, 2802, 0.24f, 1.55f },
     { "dragstrip_gs_deluxe2016", 52572, 3485, 2802, 0.24f, 1.55f },
@@ -91,6 +92,6 @@ static const EnemyStat ENEMY_STATS[] = {
     { "wildrider_gs_deluxe2016", 69174, 2727, 3595, 0.08f, 1.35f },
     { "windblade_gs", 47038, 3636, 2533, 0.32f, 1.70f },
 };
-#define NUM_ENEMY_STATS 78
+#define NUM_ENEMY_STATS 79
 
 #endif // BOT_INFO_H

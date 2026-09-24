@@ -116,6 +116,7 @@ ROSTER = {
     "bonecrusher_cin_rotf":         ("decepticon", "warr", 5),
     "cyclonus_gs_uw06":             ("decepticon", "tact", 5),
     "deadend_gs_deluxe2015":        ("decepticon", "demo", 5),
+    "demolishor_gs":                ("decepticon", "demo", 5),
     "dragstrip_gs_deluxe2016":      ("decepticon", "warr", 5),
     "wildrider_gs_deluxe2016":      ("decepticon", "braw", 5),
     "breakdown_gs":                 ("decepticon", "scou", 5),
@@ -469,6 +470,7 @@ _ART_BASE = {
     "thundercracker_gs_leader2015": "thunder_gs",
     "thrust_gs_deluxe2008": "thrust",
     "waspinator_gs_deluxe": "wasp_bw",  # Only the Beast Wars-styled art ships.
+    "demolishor_gs": "demolishor_gs",
 
     # --- Sharkticon NPC variants ---
     # The generic bot has no unnamed art, so it borrows gold. brawl is large-only;
@@ -655,6 +657,7 @@ _BOT_NAMES = {
     "thundercracker_gs_leader2015": "Thundercracker",
     "tantrum_gs_kabam": "Tantrum",
     "waspinator_gs_deluxe": "Waspinator",
+    "demolishor_gs": "Demolishor",
 
     # Sharkticons
     "sharkticon_gs_kabam": "Sharkticon",
