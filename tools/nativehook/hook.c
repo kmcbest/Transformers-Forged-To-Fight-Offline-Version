@@ -134,6 +134,24 @@ static int il2cpp_object_class(void* o, char* out, int cap){
 static uintptr_t g_base;            // libil2cpp base (set in installer)
 static strnew_t g_strnew = NULL;    // il2cpp_string_new (dlsym'd in installer)
 static arraynew_t g_arraynew = NULL; // il2cpp_array_new (dlsym'd in installer)
+
+typedef void* (*il2cpp_domain_get_t)(void);
+typedef void* (*il2cpp_domain_assembly_open_t)(void*, const char*);
+typedef void* (*il2cpp_assembly_get_image_t)(void*);
+typedef void* (*il2cpp_class_from_name_t)(void*, const char*, const char*);
+typedef void* (*il2cpp_object_new_t)(void*);
+typedef void* (*il2cpp_class_get_field_from_name_t)(void*, const char*);
+typedef void (*il2cpp_field_set_value_t)(void*, void*, void*);
+typedef size_t (*il2cpp_field_get_offset_t)(void*);
+
+static il2cpp_domain_get_t g_il2cpp_domain_get = NULL;
+static il2cpp_domain_assembly_open_t g_il2cpp_domain_assembly_open = NULL;
+static il2cpp_assembly_get_image_t g_il2cpp_assembly_get_image = NULL;
+static il2cpp_class_from_name_t g_il2cpp_class_from_name = NULL;
+static il2cpp_object_new_t g_il2cpp_object_new = NULL;
+static il2cpp_class_get_field_from_name_t g_il2cpp_class_get_field_from_name = NULL;
+static il2cpp_field_set_value_t g_il2cpp_field_set_value = NULL;
+static il2cpp_field_get_offset_t g_il2cpp_field_get_offset = NULL;
 typedef void* (*resolve_icall_t)(const char*);
 static resolve_icall_t g_resolve_icall = NULL;
 typedef void (*fn_get_mouse_pos)(float*);
@@ -571,6 +589,7 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x0DAD558, "CRIT_MULT",          2, 0 }, // 179 PlayerAttributes.GetCritDamageMultiplier -> ensure 1.5x crit damage for Player 0
     { 0x00FF063C, "FSPRESS_L",         2, 0 }, // 180 HudScreen.FullScreenPressDownLeft -> AutoFight button check
     { 0x00FF0658, "FSPRESS_R",         2, 0 }, // 181 HudScreen.FullScreenPressDownRight -> AutoFight button check
+    { 0x0118F9B4, "GETGACHABOXES",     2, 0 }, // 182 GachaPurchaseModel.GetGachaBoxes(int tab)
 };
 #define NH (int)(sizeof(H)/sizeof(H[0]))
 
@@ -3287,9 +3306,9 @@ void* hook_21(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                         int st=*(int*)(sub+0x18);
                         char nm[40];
                         rdname(sub,nm);
-                        if(strcmp(nm, "RedeemerManager") == 0 && st == 1) {
+                        if((strcmp(nm, "RedeemerManager") == 0 || strcmp(nm, "GachaManager") == 0 || strcmp(nm, "GameStoreManager") == 0) && st == 1) {
                             *(int*)(sub+0x18) = 2;
-                            if(!s_redeemer_fixed){ s_redeemer_fixed = 1; flog("  FORCE CONNECTED: %s st 1 -> 2", nm); }
+                            flog("  FORCE CONNECTED: %s st 1 -> 2", nm);
                         } else if((n % 120)==0 && g_f) {
                             flog("  STUCK %s st=%d", nm, st);
                         }
@@ -6075,6 +6094,141 @@ void* hook_181(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     return ((fn8)H[181].orig)(a0, a1, a2, a3, a4, a5, a6, a7);
 }
 
+static void set_field_obj(void* klass, void* obj, const char* name, void* val) {
+    if (!klass || !obj || !name || !g_il2cpp_class_get_field_from_name || !g_il2cpp_field_set_value) return;
+    PROTECT({
+        void* field = g_il2cpp_class_get_field_from_name(klass, name);
+        if (field) {
+            g_il2cpp_field_set_value(obj, field, &val);
+        }
+    });
+}
+
+static void set_field_int(void* klass, void* obj, const char* name, int32_t val) {
+    if (!klass || !obj || !name || !g_il2cpp_class_get_field_from_name || !g_il2cpp_field_set_value) return;
+    PROTECT({
+        void* field = g_il2cpp_class_get_field_from_name(klass, name);
+        if (field) {
+            g_il2cpp_field_set_value(obj, field, &val);
+        }
+    });
+}
+
+static void set_field_bool(void* klass, void* obj, const char* name, uint8_t val) {
+    if (!klass || !obj || !name || !g_il2cpp_class_get_field_from_name || !g_il2cpp_field_set_value) return;
+    PROTECT({
+        void* field = g_il2cpp_class_get_field_from_name(klass, name);
+        if (field) {
+            g_il2cpp_field_set_value(obj, field, &val);
+        }
+    });
+}
+
+static void* get_gachabox_class(void) {
+    static void* s_box_class = NULL;
+    if (s_box_class) return s_box_class;
+    if (!g_il2cpp_domain_get || !g_il2cpp_domain_assembly_open || !g_il2cpp_assembly_get_image || !g_il2cpp_class_from_name) return NULL;
+    PROTECT({
+        void* domain = g_il2cpp_domain_get();
+        if (domain) {
+            void* asm_cs = g_il2cpp_domain_assembly_open(domain, "Assembly-CSharp");
+            if (!asm_cs) asm_cs = g_il2cpp_domain_assembly_open(domain, "Assembly-CSharp.dll");
+            if (asm_cs) {
+                void* img = g_il2cpp_assembly_get_image(asm_cs);
+                if (img) {
+                    s_box_class = g_il2cpp_class_from_name(img, "EB.Sparx", "GachaBox");
+                    if (s_box_class) {
+                        flog("GACHA_HOOK: resolved EB.Sparx.GachaBox class = %p", s_box_class);
+                    }
+                }
+            }
+        }
+    });
+    return s_box_class;
+}
+
+static void* create_gacha_box(const char* name, const char* group, const char* set,
+                              const char* disp, const char* desc, const char* token,
+                              const char* tokenModel, const char* tokenImage,
+                              int tokens, int carouselCount) {
+    void* klass = get_gachabox_class();
+    if (!klass || !g_il2cpp_object_new || !g_strnew) return NULL;
+    void* obj = g_il2cpp_object_new(klass);
+    if (!obj) return NULL;
+    
+    set_field_obj(klass, obj, "<Name>k__BackingField", g_strnew(name));
+    set_field_obj(klass, obj, "<Group>k__BackingField", g_strnew(group));
+    set_field_obj(klass, obj, "<Set>k__BackingField", g_strnew(set));
+    set_field_obj(klass, obj, "<DisplayName>k__BackingField", g_strnew(disp));
+    set_field_obj(klass, obj, "<Description>k__BackingField", g_strnew(desc));
+    set_field_obj(klass, obj, "token", g_strnew(token));
+    set_field_obj(klass, obj, "<TokenModel>k__BackingField", g_strnew(tokenModel));
+    set_field_obj(klass, obj, "<TokenImage>k__BackingField", g_strnew(tokenImage));
+    
+    set_field_int(klass, obj, "<Tokens>k__BackingField", tokens);
+    set_field_bool(klass, obj, "<CarouselEnabled>k__BackingField", 1);
+    set_field_int(klass, obj, "<CarouselCount>k__BackingField", carouselCount);
+    set_field_int(klass, obj, "<EndTime>k__BackingField", 2147483647);
+    set_field_bool(klass, obj, "<VisibleIfCantBuy>k__BackingField", 1);
+    
+    return obj;
+}
+
+void* hook_182(void* self, void* tab_arg, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    int tab = (int)(intptr_t)tab_arg;
+    void* ret = ((fn8)H[182].orig)(self, tab_arg, a2, a3, a4, a5, a6, a7);
+    flog("GACHA_HOOK: GetGachaBoxes(tab=%d) orig returned %p", tab, ret);
+    
+    if (tab == 1) { // 1 = CRYSTAL tab
+        int count = 0;
+        if (ret && obj_ok(ret)) {
+            count = *(int32_t*)((char*)ret + 0x18); // List<T>._size
+            flog("GACHA_HOOK: existing crystal list size = %d", count);
+        }
+        if (count == 0) {
+            void* box_klass = get_gachabox_class();
+            if (box_klass && g_arraynew) {
+                void* b1 = create_gacha_box(
+                    "crystal_uber_01", "CRYSTAL", "BASE",
+                    "高级水晶", "包含 2星至 4星 变形金刚汽车人与霸天虎",
+                    "crystal_uber_01",
+                    "assets/bundles/gacha/odr/crystals/crystal_uber_01.prefab",
+                    "crystal_uber_01", 1, 10
+                );
+                void* b2 = create_gacha_box(
+                    "crystal_generations", "CRYSTAL", "BASE",
+                    "经典水晶", "包含 2星至 4星 G1经典变形金刚",
+                    "crystal_generations",
+                    "assets/bundles/gacha/odr/crystals/crystal_generations.prefab",
+                    "crystal_generations", 1, 10
+                );
+                void* b3 = create_gacha_box(
+                    "crystal_spec_01", "CRYSTAL", "BASE",
+                    "特别水晶", "包含 3星至 5星 特别典藏变形金刚",
+                    "crystal_spec_01",
+                    "assets/bundles/gacha/odr/crystals/crystal_spec_01.prefab",
+                    "crystal_spec_01", 1, 10
+                );
+                
+                if (ret && obj_ok(ret)) {
+                    void* arr = g_arraynew(box_klass, 3);
+                    if (arr) {
+                        void** items = (void**)((char*)arr + 0x20);
+                        items[0] = b1;
+                        items[1] = b2;
+                        items[2] = b3;
+                        *(void**)((char*)ret + 0x10) = arr; // _items
+                        *(int32_t*)((char*)ret + 0x18) = 3;  // _size
+                        *(int32_t*)((char*)ret + 0x1C) += 1; // _version
+                        flog("GACHA_HOOK: populated 3 crystals into List %p", ret);
+                    }
+                }
+            }
+        }
+    }
+    return ret;
+}
+
 static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hook_7,hook_8,
     hook_9,hook_10,hook_11,hook_12,hook_13,hook_14,hook_15,hook_16,hook_17,hook_18,hook_19,hook_20,hook_21,
     hook_22,hook_23,hook_24,hook_25,hook_26,hook_27,hook_28,hook_29,hook_30,
@@ -6095,7 +6249,7 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     (void*)hook_159,hook_160,hook_161,hook_162,hook_163,hook_164,
     hook_165,hook_166,(void*)hook_167,hook_168,hook_169,hook_170,
     hook_171,hook_172,hook_173,hook_174,hook_175,hook_176,(void*)hook_177,(void*)hook_178,
-    (void*)hook_179,hook_180,hook_181 };
+    (void*)hook_179,hook_180,hook_181,hook_182 };
 
 static void write_jump(uint8_t* dst, void* target){
     uint32_t* p = (uint32_t*)dst;
@@ -6251,6 +6405,22 @@ static void* installer(void* arg){
     if (!g_strnew) { void* h = dlopen("libil2cpp.so", RTLD_NOLOAD); if (h) g_strnew = (strnew_t)dlsym(h, "il2cpp_string_new"); }
     g_arraynew = (arraynew_t)dlsym(RTLD_DEFAULT, "il2cpp_array_new");
     if (!g_arraynew) { void* h = dlopen("libil2cpp.so", RTLD_NOLOAD); if (h) g_arraynew = (arraynew_t)dlsym(h, "il2cpp_array_new"); }
+
+#define DLSYM_IL2CPP(name, var) do { \
+    var = dlsym(RTLD_DEFAULT, name); \
+    if (!var) { void* h = dlopen("libil2cpp.so", RTLD_NOLOAD); if (h) var = dlsym(h, name); } \
+} while(0)
+
+    DLSYM_IL2CPP("il2cpp_domain_get", g_il2cpp_domain_get);
+    DLSYM_IL2CPP("il2cpp_domain_assembly_open", g_il2cpp_domain_assembly_open);
+    DLSYM_IL2CPP("il2cpp_assembly_get_image", g_il2cpp_assembly_get_image);
+    DLSYM_IL2CPP("il2cpp_class_from_name", g_il2cpp_class_from_name);
+    DLSYM_IL2CPP("il2cpp_object_new", g_il2cpp_object_new);
+    DLSYM_IL2CPP("il2cpp_class_get_field_from_name", g_il2cpp_class_get_field_from_name);
+    DLSYM_IL2CPP("il2cpp_field_set_value", g_il2cpp_field_set_value);
+    DLSYM_IL2CPP("il2cpp_field_get_offset", g_il2cpp_field_get_offset);
+#undef DLSYM_IL2CPP
+
     g_resolve_icall = (resolve_icall_t)dlsym(RTLD_DEFAULT, "il2cpp_resolve_icall");
     if (!g_resolve_icall) { void* h = dlopen("libil2cpp.so", RTLD_NOLOAD); if (h) g_resolve_icall = (resolve_icall_t)dlsym(h, "il2cpp_resolve_icall"); }
     if (g_resolve_icall) {

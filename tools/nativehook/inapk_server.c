@@ -1389,6 +1389,60 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         args[2]=(TemplateArg){"%ATEAM%",ateam.p,ateam.n};
         v=template_spaced(o,v,n,args,3,outn);free(steam.p);free(ateam.p);return v;
     }
+    if(strstr(p, "/gacha/store")) {
+        static const unsigned char store_resp[] = 
+            "{\"error\":null,\"result\":{"
+            "\"categories\":{\"CRYSTAL\":[\"crystal_uber_01\",\"crystal_generations\",\"crystal_spec_01\"],\"SHARDS\":[\"crystal_shards_premium\",\"crystal_shards_3star\"]},"
+            "\"items\":["
+            "{\"name\":\"crystal_uber_01\",\"group\":\"CRYSTAL\",\"set\":\"BASE\",\"description\":\"包含 2星至 4星 变形金刚汽车人与霸天虎\",\"displayName\":\"高级水晶\",\"token\":\"crystal_uber_01\",\"tokens\":1,\"tokenModel\":\"assets/bundles/gacha/odr/crystals/crystal_uber_01.prefab\",\"tokenImage\":\"crystal_uber_01\",\"carouselEnabled\":true,\"carouselCount\":10,\"endTime\":2147483647,\"visibleIfCantBuy\":true},"
+            "{\"name\":\"crystal_generations\",\"group\":\"CRYSTAL\",\"set\":\"BASE\",\"description\":\"包含 2星至 4星 G1经典变形金刚\",\"displayName\":\"经典水晶\",\"token\":\"crystal_generations\",\"tokens\":1,\"tokenModel\":\"assets/bundles/gacha/odr/crystals/crystal_generations.prefab\",\"tokenImage\":\"crystal_generations\",\"carouselEnabled\":true,\"carouselCount\":10,\"endTime\":2147483647,\"visibleIfCantBuy\":true},"
+            "{\"name\":\"crystal_spec_01\",\"group\":\"CRYSTAL\",\"set\":\"BASE\",\"description\":\"包含 3星至 5星 特别典藏变形金刚\",\"displayName\":\"特别水晶\",\"token\":\"crystal_spec_01\",\"tokens\":1,\"tokenModel\":\"assets/bundles/gacha/odr/crystals/crystal_spec_01.prefab\",\"tokenImage\":\"crystal_spec_01\",\"carouselEnabled\":true,\"carouselCount\":10,\"endTime\":2147483647,\"visibleIfCantBuy\":true}"
+            "]"
+            "}}";
+        *outn = strlen((const char*)store_resp);
+        logmsg("GACHA: handled /gacha/store -> populated 3 main crystals");
+        return store_resp;
+    }
+    if(strstr(p, "/gacha/getOdds")) {
+        static const unsigned char odds_resp[] = "{\"error\":null,\"result\":{\"odds\":[]}}";
+        *outn = strlen((const char*)odds_resp);
+        logmsg("GACHA: handled /gacha/getOdds");
+        return odds_resp;
+    }
+    if(strstr(p, "/gacha/pick")) {
+        static char pick_buf[2048];
+        int hero_idx = q_rand() % ENEMY_POOL_SIZE;
+        const char *hero_bid = g_enemy_pool[hero_idx];
+        int rank = 4 + (q_rand() % 2);
+        int level = 1;
+        snprintf(pick_buf, sizeof(pick_buf),
+            "{\"error\":null,\"result\":{"
+            "\"Items\":[{\"type\":\"hero\",\"bid\":\"%s\",\"rank\":%d,\"level\":%d}],"
+            "\"Spins\":1,"
+            "\"SoftCurrentToPay\":0,"
+            "\"XpToGive\":500"
+            "}}",
+            hero_bid, rank, level
+        );
+        *outn = strlen(pick_buf);
+        logmsg("GACHA: handled /gacha/pick -> awarded %s rank=%d level=%d", hero_bid, rank, level);
+        return (const unsigned char*)pick_buf;
+    }
+    if(strstr(p, "/gacha/claimfree")) {
+        static char claim_buf[2048];
+        int hero_idx = q_rand() % ENEMY_POOL_SIZE;
+        const char *hero_bid = g_enemy_pool[hero_idx];
+        snprintf(claim_buf, sizeof(claim_buf),
+            "{\"error\":null,\"result\":{"
+            "\"Items\":[{\"type\":\"hero\",\"bid\":\"%s\",\"rank\":3,\"level\":1}],"
+            "\"Spins\":1"
+            "}}",
+            hero_bid
+        );
+        *outn = strlen(claim_buf);
+        logmsg("GACHA: handled /gacha/claimfree -> awarded %s rank=3", hero_bid);
+        return (const unsigned char*)claim_buf;
+    }
     return NULL;
 }
 
