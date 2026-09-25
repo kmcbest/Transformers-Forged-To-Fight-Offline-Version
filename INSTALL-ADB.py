@@ -1,3 +1,4 @@
+import io
 import json
 import os
 import re
@@ -6,6 +7,7 @@ import shutil
 import socket
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 import urllib.parse
@@ -253,31 +255,173 @@ def stop_http_server(httpd: ThreadingHTTPServer | None):
 
 
 # ---------------------------------------------------------------------------
-# 4. 设备截图功能
+# 4. 设备截图与剪贴板功能
 # ---------------------------------------------------------------------------
-def capture_device_screenshot(device_id: str, output_file: Path) -> tuple[bool, str]:
-    output_file = Path(output_file).resolve()
-    output_file.parent.mkdir(parents=True, exist_ok=True)
-
+def capture_device_screenshot_raw(device_id: str) -> tuple[bool, bytes, str]:
+    """从 Android 设备捕获屏幕截图原始 PNG 字节数据"""
     try:
         cmd = ["adb", "-s", device_id, "exec-out", "screencap", "-p"]
         res = subprocess.run(cmd, capture_output=True, timeout=12)
         if res.returncode == 0 and res.stdout.startswith(b"\x89PNG\r\n\x1a\n"):
-            output_file.write_bytes(res.stdout)
-            return True, f"截图已保存至: {output_file}"
+            return True, res.stdout, "截图获取成功"
     except Exception:
         pass
 
     try:
         remote_tmp = "/data/local/tmp/tftf_screencap.png"
         subprocess.run(["adb", "-s", device_id, "shell", "screencap", "-p", remote_tmp], check=True, timeout=12)
-        subprocess.run(["adb", "-s", device_id, "pull", remote_tmp, str(output_file)], check=True, timeout=12)
-        subprocess.run(["adb", "-s", device_id, "shell", "rm", "-f", remote_tmp], timeout=5)
-        if output_file.exists() and output_file.stat().st_size > 0:
-            return True, f"截图已保存至: {output_file}"
-        return False, "未能从设备拉取到有效截图文件"
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tf:
+            tmp_local = tf.name
+        try:
+            subprocess.run(["adb", "-s", device_id, "pull", remote_tmp, tmp_local], check=True, timeout=12)
+            subprocess.run(["adb", "-s", device_id, "shell", "rm", "-f", remote_tmp], timeout=5)
+            p = Path(tmp_local)
+            if p.exists() and p.stat().st_size > 0:
+                data = p.read_bytes()
+                return True, data, "截图获取成功"
+            return False, b"", "未能从设备拉取到有效截图文件"
+        finally:
+            if os.path.exists(tmp_local):
+                try:
+                    os.remove(tmp_local)
+                except Exception:
+                    pass
     except Exception as e:
-        return False, f"ADB 截图执行失败: {e}"
+        return False, b"", f"ADB 截图执行失败: {e}"
+
+
+def capture_device_screenshot(device_id: str, output_file: Path) -> tuple[bool, str]:
+    """截取屏幕并保存到本地文件"""
+    output_file = Path(output_file).resolve()
+    output_file.parent.mkdir(parents=True, exist_ok=True)
+    ok, data, msg = capture_device_screenshot_raw(device_id)
+    if ok and data:
+        try:
+            output_file.write_bytes(data)
+            return True, f"截图已保存至: {output_file}"
+        except Exception as e:
+            return False, f"写入截图文件失败: {e}"
+    return False, msg
+
+
+def set_clipboard_dib_ctypes(dib_data: bytes):
+    """使用 Windows 原生 API 将 DIB 位图数据直接写入系统剪贴板（无需外部依赖）"""
+    import ctypes
+    from ctypes import wintypes
+
+    user32 = ctypes.windll.user32
+    kernel32 = ctypes.windll.kernel32
+
+    GMEM_MOVEABLE = 0x0002
+    CF_DIB = 8
+
+    kernel32.GlobalAlloc.restype = wintypes.HGLOBAL
+    kernel32.GlobalAlloc.argtypes = [wintypes.UINT, ctypes.c_size_t]
+    kernel32.GlobalLock.restype = wintypes.LPVOID
+    kernel32.GlobalLock.argtypes = [wintypes.HGLOBAL]
+    kernel32.GlobalUnlock.restype = wintypes.BOOL
+    kernel32.GlobalUnlock.argtypes = [wintypes.HGLOBAL]
+    user32.OpenClipboard.restype = wintypes.BOOL
+    user32.OpenClipboard.argtypes = [wintypes.HWND]
+    user32.EmptyClipboard.restype = wintypes.BOOL
+    user32.SetClipboardData.restype = wintypes.HANDLE
+    user32.SetClipboardData.argtypes = [wintypes.UINT, wintypes.HANDLE]
+    user32.CloseClipboard.restype = wintypes.BOOL
+
+    h_global = kernel32.GlobalAlloc(GMEM_MOVEABLE, len(dib_data))
+    if not h_global:
+        raise ctypes.WinError()
+
+    p_data = kernel32.GlobalLock(h_global)
+    if not p_data:
+        kernel32.GlobalFree(h_global)
+        raise ctypes.WinError()
+
+    ctypes.memmove(p_data, dib_data, len(dib_data))
+    kernel32.GlobalUnlock(h_global)
+
+    if not user32.OpenClipboard(None):
+        kernel32.GlobalFree(h_global)
+        raise ctypes.WinError()
+
+    try:
+        user32.EmptyClipboard()
+        res = user32.SetClipboardData(CF_DIB, h_global)
+        if not res:
+            kernel32.GlobalFree(h_global)
+            raise ctypes.WinError()
+    finally:
+        user32.CloseClipboard()
+
+
+def copy_png_bytes_to_clipboard(png_bytes: bytes) -> tuple[bool, str]:
+    """将 PNG 图片数据转换并复制到 Windows 剪贴板"""
+    # 方案 1: PIL + win32clipboard / ctypes (纯内存转换，高效零延迟)
+    try:
+        from PIL import Image
+
+        img = Image.open(io.BytesIO(png_bytes))
+        output = io.BytesIO()
+        img.convert("RGB").save(output, "BMP")
+        dib_data = output.getvalue()[14:]  # 剥离 14 字节 BITMAPFILEHEADER 得到 DIB
+        output.close()
+
+        try:
+            import win32clipboard
+
+            win32clipboard.OpenClipboard()
+            try:
+                win32clipboard.EmptyClipboard()
+                win32clipboard.SetClipboardData(win32clipboard.CF_DIB, dib_data)
+                return True, "截图已成功复制到剪贴板！可以直接在聊天窗口按 Ctrl+V 粘贴"
+            finally:
+                win32clipboard.CloseClipboard()
+        except Exception:
+            set_clipboard_dib_ctypes(dib_data)
+            return True, "截图已成功复制到剪贴板！可以直接在聊天窗口按 Ctrl+V 粘贴"
+    except Exception:
+        pass
+
+    # 方案 2: 系统级 PowerShell 剪贴板回退方案（无需额外依赖）
+    tmp_path = ""
+    try:
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tf:
+            tmp_path = tf.name
+            tf.write(png_bytes)
+
+        escaped_path = tmp_path.replace("'", "''")
+        ps_cmd = (
+            f"[void][System.Reflection.Assembly]::LoadWithPartialName('System.Windows.Forms'); "
+            f"$img = [System.Drawing.Image]::FromFile('{escaped_path}'); "
+            f"[System.Windows.Forms.Clipboard]::SetImage($img); "
+            f"$img.Dispose()"
+        )
+        res = subprocess.run(
+            ["powershell", "-NoProfile", "-NonInteractive", "-Command", ps_cmd],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        if res.returncode == 0:
+            return True, "截图已成功复制到剪贴板！可以直接在聊天窗口按 Ctrl+V 粘贴"
+        return False, f"PowerShell 设置剪贴板失败: {res.stderr.strip()}"
+    except Exception as e:
+        return False, f"设置剪贴板失败: {e}"
+    finally:
+        if tmp_path and os.path.exists(tmp_path):
+            try:
+                os.remove(tmp_path)
+            except Exception:
+                pass
+
+
+def capture_device_screenshot_to_clipboard(device_id: str) -> tuple[bool, str, bytes]:
+    """从设备捕获截图并直接写入剪贴板"""
+    ok, data, msg = capture_device_screenshot_raw(device_id)
+    if not ok or not data:
+        return False, msg, b""
+    clip_ok, clip_msg = copy_png_bytes_to_clipboard(data)
+    return clip_ok, clip_msg, data
 
 
 # ---------------------------------------------------------------------------
@@ -492,19 +636,24 @@ class ApkInstallerApp:
         )
         self.entry_screenshot.pack(side="left", fill="x", expand=True, padx=5)
 
-        self.btn_screenshot = ttk.Button(
-            row_shot, text="📸 获取截图", command=self.start_screenshot_thread
-        )
-        self.btn_screenshot.pack(side="right", padx=5)
-
         self.btn_open_dir = ttk.Button(
             row_shot, text="📂 打开目录", command=self.open_screenshot_dir
         )
-        self.btn_open_dir.pack(side="right", padx=5)
+        self.btn_open_dir.pack(side="right", padx=4)
+
+        self.btn_screenshot_clip = ttk.Button(
+            row_shot, text="📋 截图到剪贴板", command=self.start_screenshot_clipboard_thread
+        )
+        self.btn_screenshot_clip.pack(side="right", padx=4)
+
+        self.btn_screenshot = ttk.Button(
+            row_shot, text="📸 获取截图", command=self.start_screenshot_thread
+        )
+        self.btn_screenshot.pack(side="right", padx=4)
 
         ttk.Label(
             shot_frame,
-            text="* 留空默认文件名: screenshot_YYYYMMDD_HHMMSS.png；若存在同名文件将默认直接覆盖",
+            text="* 📸 获取截图保存至 screenshots/ 目录；📋 截图到剪贴板可直接在聊天窗口 Ctrl+V 粘贴无需存盘",
             font=("TkDefaultFont", 8),
             foreground="gray",
         ).pack(anchor="w", padx=5, pady=(2, 0))
@@ -987,6 +1136,15 @@ class ApkInstallerApp:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             return base_dir / f"screenshot_{timestamp}.png"
 
+    def _reset_screenshot_buttons(self):
+        self.btn_screenshot.config(state="normal")
+        self.btn_screenshot_clip.config(state="normal")
+        self.btn_refresh.config(state="normal")
+
+    def _on_clipboard_success(self):
+        self.btn_screenshot_clip.config(text="✅ 已复制到剪贴板!")
+        self.root.after(2500, lambda: self.btn_screenshot_clip.config(text="📋 截图到剪贴板"))
+
     def start_screenshot_thread(self):
         device_id = self.get_clean_device_id()
         if not device_id:
@@ -994,6 +1152,7 @@ class ApkInstallerApp:
             return
 
         self.btn_screenshot.config(state="disabled")
+        self.btn_screenshot_clip.config(state="disabled")
         self.btn_refresh.config(state="disabled")
 
         def _worker():
@@ -1013,8 +1172,37 @@ class ApkInstallerApp:
             except Exception as e:
                 self.log(f"[异常] 截图异常: {e}")
             finally:
-                self.btn_screenshot.config(state="normal")
-                self.btn_refresh.config(state="normal")
+                self.root.after(0, self._reset_screenshot_buttons)
+
+        threading.Thread(target=_worker, daemon=True).start()
+
+    def start_screenshot_clipboard_thread(self):
+        device_id = self.get_clean_device_id()
+        if not device_id:
+            messagebox.showwarning("警告", "请先选择一个有效的已连接设备！")
+            return
+
+        self.btn_screenshot.config(state="disabled")
+        self.btn_screenshot_clip.config(state="disabled")
+        self.btn_refresh.config(state="disabled")
+
+        def _worker():
+            try:
+                self.log("=" * 50)
+                self.log(f"📋 正在从设备 {device_id} 获取屏幕截图并写入系统剪贴板...")
+                success, msg, raw_bytes = capture_device_screenshot_to_clipboard(device_id)
+                if success:
+                    size_kb = len(raw_bytes) / 1024
+                    self.log(f"🎉 {msg} (数据大小: {size_kb:.1f} KB)")
+                    self.log("💡 提示: 现已可直接在微信/QQ/钉钉/浏览器聊天框中按 Ctrl+V 粘贴图片！")
+                    self.root.after(0, self._on_clipboard_success)
+                else:
+                    self.log(f"❌ {msg}")
+                    messagebox.showerror("截图到剪贴板失败", f"截图到剪贴板执行失败！\n\n{msg}")
+            except Exception as e:
+                self.log(f"[异常] 截图到剪贴板异常: {e}")
+            finally:
+                self.root.after(0, self._reset_screenshot_buttons)
 
         threading.Thread(target=_worker, daemon=True).start()
 
@@ -1062,6 +1250,29 @@ def run_cli_screenshot(custom_name: str = "", out_dir: str = "screenshots", targ
     ok, msg = capture_device_screenshot(device, target_path)
     if ok:
         print(f"[SUCCESS] {msg} ({target_path.stat().st_size / 1024:.1f} KB)")
+    else:
+        print(f"[ERROR] {msg}")
+        sys.exit(1)
+
+
+def run_cli_screenshot_clipboard(target_device: str = ""):
+    print("=== [Automated ADB Screencap to Clipboard] ===")
+    devices = parse_adb_devices()
+    online_devices = [d["serial"] for d in devices if d["status"] == "device"]
+
+    if target_device:
+        device = target_device
+    elif online_devices:
+        device = online_devices[0]
+    else:
+        print("[ERROR] No online ADB device detected! Connect phone via USB or Wi-Fi debugging.")
+        sys.exit(1)
+
+    print(f"[*] Target device: {device} ({'Wireless' if ':' in device else 'Wired'})")
+    print("[*] Capturing screen and writing to Windows clipboard...")
+    ok, msg, data = capture_device_screenshot_to_clipboard(device)
+    if ok:
+        print(f"[SUCCESS] {msg} ({len(data) / 1024:.1f} KB)")
     else:
         print(f"[ERROR] {msg}")
         sys.exit(1)
@@ -1208,6 +1419,7 @@ if __name__ == "__main__":
     parser.add_argument("--standard", action="store_true", help="强制启用标准 ADB 流式安装")
     parser.add_argument("--device", type=str, default="", help="指定目标设备 serial 或 IP:PORT")
     parser.add_argument("--screenshot", action="store_true", help="从已连接设备截取屏幕保存到本地（默认同名覆盖）")
+    parser.add_argument("--clip", "--clipboard", dest="clipboard", action="store_true", help="从设备截取屏幕并直接复制到系统剪贴板（不落盘）")
     parser.add_argument("--name", type=str, default="", help="截图文件名（可选，默认带时间戳变量）")
     parser.add_argument("--out-dir", type=str, default="screenshots", help="截图保存目录（默认 screenshots）")
     parser.add_argument("--connect", type=str, help="连接无线调试设备 (例如 192.168.1.100:5555)")
@@ -1225,6 +1437,8 @@ if __name__ == "__main__":
         run_cli_tcpip(port=args.tcpip, target_device=args.device)
     elif args.disconnect is not None:
         run_cli_disconnect(args.disconnect)
+    elif args.clipboard:
+        run_cli_screenshot_clipboard(target_device=args.device)
     elif args.screenshot:
         run_cli_screenshot(custom_name=args.name, out_dir=args.out_dir, target_device=args.device)
     elif args.auto:
