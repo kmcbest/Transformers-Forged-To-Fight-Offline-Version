@@ -547,6 +547,7 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x1173FA4, "PCGETSPTIER",        2, 0 }, // 168 PlayerController.GetAvailableSpecialTier -> dynamic special tier
     { 0xFF05C8,  "HUDSPBTN",           2, 0 }, // 169 HudSpecialMeter.OnSpecialButtonPressed -> gesture recognition
     { 0x11CFCAC, "QUEST_TEX",          2, 0 }, // 170 SelectQuestTile.SetTexturePath -> custom quest icons
+    { 0x0DAD558, "CRIT_MULT",          2, 0 }, // 171 PlayerAttributes.GetCritDamageMultiplier -> dynamic crit damage multiplier
 };
 #define NH (int)(sizeof(H)/sizeof(H[0]))
 
@@ -2566,14 +2567,17 @@ static int g_last_enemy_pi = 3000;
 static float g_last_enemy_hp = 50000.0f;
 static float g_last_enemy_atk = 2500.0f;
 
-static void calc_enemy_stats_all(const char* bid, int rank, int level, float* out_hp, float* out_atk, int* out_pi) {
+static void calc_enemy_stats_all(const char* bid, int rank, int level, float* out_hp, float* out_atk, int* out_pi, float* out_crit_chance, float* out_crit_damage) {
     int hp = 42000, atk = 2300, rating = 44300;
+    float crit_chance = 0.14f, crit_damage = 1.50f;
     if (bid && *bid) {
         for (int i = 0; i < NUM_ENEMY_STATS; i++) {
             if (strcmp(ENEMY_STATS[i].id, bid) == 0) {
                 hp = ENEMY_STATS[i].hp;
                 atk = ENEMY_STATS[i].atk;
                 rating = ENEMY_STATS[i].rating;
+                crit_chance = ENEMY_STATS[i].crit_chance;
+                crit_damage = ENEMY_STATS[i].crit_damage;
                 break;
             }
         }
@@ -2581,16 +2585,19 @@ static void calc_enemy_stats_all(const char* bid, int rank, int level, float* ou
     if (out_hp) *out_hp = (float)hp;
     if (out_atk) *out_atk = (float)atk;
     if (out_pi) *out_pi = rating;
+    if (out_crit_chance) *out_crit_chance = crit_chance;
+    if (out_crit_damage) *out_crit_damage = crit_damage;
 }
 
 static int calc_enemy_rating(const char* bid, int rank, int level) {
     int pi = 0;
-    calc_enemy_stats_all(bid, rank, level, NULL, NULL, &pi);
+    calc_enemy_stats_all(bid, rank, level, NULL, NULL, &pi, NULL, NULL);
     return pi;
 }
 
 static float g_combat_enemy_mana_gain = 0.5f;
 static float g_combat_player_mana_gain = 1.0f;
+static float g_combat_player_crit_mult = 0.0f;
 
 static void load_combat_tuning_config(void) {
     const char* hot_paths[] = {
@@ -2628,6 +2635,16 @@ static void load_combat_tuning_config(void) {
                             float val = 1.0f;
                             if (sscanf(colon + 1, "%f", &val) == 1 && val >= 0.0f && val <= 10.0f) {
                                 g_combat_player_mana_gain = val;
+                            }
+                        }
+                    }
+                    const char* p_crit = strstr(buf, "\"player_crit_mult\"");
+                    if (p_crit) {
+                        const char* colon = strchr(p_crit, ':');
+                        if (colon) {
+                            float val = 0.0f;
+                            if (sscanf(colon + 1, "%f", &val) == 1 && val >= 0.0f && val <= 10.0f) {
+                                g_combat_player_crit_mult = val;
                             }
                         }
                     }
@@ -2720,7 +2737,10 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
             float hp_f = 50000.0f;
             float atk_f = 2500.0f;
             int pi = 3000;
-            calc_enemy_stats_all(id1, 5, 50, &hp_f, &atk_f, &pi);
+            float enemy_cc = 0.14f, enemy_cd = 1.50f;
+            float player_cc = 0.14f, player_cd = 1.50f;
+            calc_enemy_stats_all(id1, 5, 50, &hp_f, &atk_f, &pi, &enemy_cc, &enemy_cd);
+            calc_enemy_stats_all(id2, 5, 50, NULL, NULL, NULL, &player_cc, &player_cd);
             if (g_current_is_10x_challenge) {
                 float mult = tftf_get_challenge_hp_multiplier();
                 if (mult <= 0.05f) mult = 1.0f;
@@ -2742,16 +2762,19 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                 *(int32_t*)((char*)at1 + 0x38) = atk;   // Attack
                 *(int32_t*)((char*)at1 + 0x3C) = atk;   // AttackBase
                 *(float*)  ((char*)at1 + 0x40) = 0.0f;  // Armor
-                *(float*)  ((char*)at1 + 0x44) = 1.0f;  // CritChance (Forced 100% test)
-                *(float*)  ((char*)at1 + 0x48) = 1.5f;  // CritDamage
+                *(float*)  ((char*)at1 + 0x44) = enemy_cc;  // Enemy CritChance
+                *(float*)  ((char*)at1 + 0x48) = enemy_cd;  // Enemy CritDamage
                 *(float*)  ((char*)at1 + 0x50) = 0.5f;  // BlockProficiency
                 *(float*)  ((char*)at1 + 0x54) = g_combat_enemy_mana_gain;  // Dynamic enemy mana gain rate
                 *(int32_t*)((char*)at1 + 0x58) = 0;     // ManaStart = 0
+                *(float*)  ((char*)at1 + 0x8C) = 0.0f;  // Enemy CritDamageResist = 0 (allow player crits!)
             }
             if (at2 && obj_ok(at2)) {
                 *(int32_t*)((char*)at2 + 0x58) = 0;     // Player ManaStart = 0
-                *(float*)  ((char*)at2 + 0x44) = 1.0f;  // Player CritChance (Forced 100% test)
+                *(float*)  ((char*)at2 + 0x44) = player_cc;  // Player CritChance
+                *(float*)  ((char*)at2 + 0x48) = player_cd;  // Player CritDamage
                 *(float*)  ((char*)at2 + 0x54) = g_combat_player_mana_gain; // Dynamic player mana gain rate
+                *(float*)  ((char*)at2 + 0x8C) = 0.0f;  // Player CritDamageResist = 0
             }
             if (ch1 && obj_ok(ch1)) {
                 *(int32_t*)((char*)ch1 + 0x28) = 3;     // NumSpecials
@@ -2762,13 +2785,18 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                 *(int32_t*)((char*)ch1 + 0x3C) = atk;
                 *(float*)  ((char*)ch1 + 0x58) = 1.0f;  // HP multiplier in CharacterData
             }
-            LOG("FIXFIGHT_STATS: player=%d bp=%s filled hp=%d atk=%d pi=%d enemy_mana_gain=%.2f challenge_mult=%.1f",
-                 player_idx, id1, hp, atk, pi, g_combat_enemy_mana_gain, tftf_get_challenge_hp_multiplier());
+            LOG("FIXFIGHT_STATS: player=%d bp=%s filled hp=%d atk=%d pi=%d cc=%.2f cd=%.2f enemy_mana_gain=%.2f challenge_mult=%.1f",
+                 player_idx, id1, hp, atk, pi, enemy_cc, enemy_cd, g_combat_enemy_mana_gain, tftf_get_challenge_hp_multiplier());
         } else if (player_idx == 0) {
+            float player_cc = 0.14f, player_cd = 1.50f;
+            float enemy_cc = 0.14f, enemy_cd = 1.50f;
+            calc_enemy_stats_all(id1, 5, 50, NULL, NULL, NULL, &player_cc, &player_cd);
+            calc_enemy_stats_all(id2, 5, 50, NULL, NULL, NULL, &enemy_cc, &enemy_cd);
             if (at1 && obj_ok(at1)) {
-                *(float*)((char*)at1 + 0x44) = 1.0f;                      // Player 0 CritChance (Forced 100% test)
-                *(float*)((char*)at1 + 0x48) = 1.5f;                      // Player 0 CritDamage
+                *(float*)((char*)at1 + 0x44) = player_cc;                 // Player 0 CritChance
+                *(float*)((char*)at1 + 0x48) = player_cd;                 // Player 0 CritDamage
                 *(float*)((char*)at1 + 0x54) = g_combat_player_mana_gain; // Dynamic player mana gain rate
+                *(float*)((char*)at1 + 0x8C) = 0.0f;                      // Player 0 CritDamageResist = 0
                 float cur_norm_hp = *(float*)((char*)at1 + 0x34);
                 if (cur_norm_hp <= 0.0f || cur_hp <= 0) {
                     flog("FIXFIGHT: reviving Player 0 HP from %f (max=%d) to 1.0f", cur_norm_hp, cur_hp);
@@ -2784,8 +2812,10 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                 }
             }
             if (at2 && obj_ok(at2)) {
-                *(float*)((char*)at2 + 0x44) = 1.0f;                      // Enemy CritChance (Forced 100% test)
+                *(float*)((char*)at2 + 0x44) = enemy_cc;                 // Enemy CritChance
+                *(float*)((char*)at2 + 0x48) = enemy_cd;                 // Enemy CritDamage
                 *(float*)((char*)at2 + 0x54) = g_combat_enemy_mana_gain; // Enemy mana gain rate
+                *(float*)((char*)at2 + 0x8C) = 0.0f;                     // Enemy CritDamageResist = 0
             }
             if (ch1 && obj_ok(ch1)) {
                 if (*(float*)((char*)ch1 + 0x34) <= 0.0f) {
@@ -4879,14 +4909,30 @@ void* hook_155(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     return r;
 }
 void* hook_156(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
-    if (H[156].orig) {
-        H[156].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    float crit_chance = 0.14f;
+    void* owner = (a0 && obj_ok(a0)) ? *(void**)((char*)a0 + 0x28) : NULL;
+    int player_idx = (owner && obj_ok(owner)) ? *(int32_t*)((char*)owner + 0xF4) : -1;
+    const char* bid = (player_idx == 0) ? g_p0_bot_id : g_p1_bot_id;
+
+    if (bid && bid[0]) {
+        calc_enemy_stats_all(bid, 5, 50, NULL, NULL, NULL, &crit_chance, NULL);
     }
+
+    static int s_seeded = 0;
+    if (!s_seeded) {
+        srand((unsigned int)propgo_now_ms());
+        s_seeded = 1;
+    }
+
+    float roll = (float)(rand() % 10000) / 10000.0f;
+    int is_crit = (roll < crit_chance) ? 1 : 0;
+
     static int s_crit_log_cnt = 0;
-    if (s_crit_log_cnt++ < 30) {
-        flog("ROLL_CRIT: PlayerAttributes.RollForCriticalHit called on %p -> forcing true (1)", a0);
+    if (s_crit_log_cnt++ < 60) {
+        flog("ROLL_CRIT: pidx=%d bid=%s (cc=%.2f, roll=%.4f) -> is_crit=%d (a0=%p)",
+             player_idx, bid ? bid : "unknown", crit_chance, roll, is_crit, a0);
     }
-    return (void*)(intptr_t)1;
+    return (void*)(intptr_t)is_crit;
 }
 void* hook_157(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     return H[157].orig ? H[157].orig(a0, a1, a2, a3, a4, a5, a6, a7) : NULL;
@@ -5263,6 +5309,35 @@ void* hook_170(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     return H[170].orig(a0, a1, a2, a3, a4, a5, a6, a7);
 }
 
+float hook_171(void* self, float opp_resist) {
+    void* owner = (self && obj_ok(self)) ? *(void**)((char*)self + 0x28) : NULL;
+    int player_idx = (owner && obj_ok(owner)) ? *(int32_t*)((char*)owner + 0xF4) : -1;
+    const char* bid = (player_idx == 0) ? g_p0_bot_id : g_p1_bot_id;
+
+    float bot_cd = 1.50f;
+    if (bid && bid[0]) {
+        calc_enemy_stats_all(bid, 5, 50, NULL, NULL, NULL, NULL, &bot_cd);
+    }
+    if (bot_cd < 1.0f) bot_cd = 1.0f;
+
+    float mult = bot_cd;
+    if (opp_resist > 0.0f) {
+        mult -= opp_resist;
+        if (mult < 1.0f) mult = 1.0f;
+    }
+    if (player_idx == 0 && g_combat_player_crit_mult > 1.0f) {
+        if (mult < g_combat_player_crit_mult) {
+            mult = g_combat_player_crit_mult;
+        }
+    }
+    static int s_crit_mult_log = 0;
+    if (s_crit_mult_log++ < 30) {
+        flog("CRIT_MULT (0xDAD558): pidx=%d bid=%s opp_resist=%.2f -> returning multiplier=%.2f",
+             player_idx, bid ? bid : "unknown", opp_resist, mult);
+    }
+    return mult;
+}
+
 static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hook_7,hook_8,
     hook_9,hook_10,hook_11,hook_12,hook_13,hook_14,hook_15,hook_16,hook_17,hook_18,hook_19,hook_20,hook_21,
     hook_22,hook_23,hook_24,hook_25,hook_26,hook_27,hook_28,hook_29,hook_30,
@@ -5281,7 +5356,8 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     hook_145,hook_146,hook_147,hook_148,hook_149,hook_150,hook_151,
     hook_152,hook_153,hook_154,hook_155,hook_156,hook_157,hook_158,
     hook_159,hook_160,hook_161,hook_162,hook_163,hook_164,
-    hook_165,hook_166,hook_167,hook_168,hook_169,hook_170 };
+    hook_165,hook_166,hook_167,hook_168,hook_169,hook_170,
+    (void*)hook_171 };
 
 static void write_jump(uint8_t* dst, void* target){
     uint32_t* p = (uint32_t*)dst;

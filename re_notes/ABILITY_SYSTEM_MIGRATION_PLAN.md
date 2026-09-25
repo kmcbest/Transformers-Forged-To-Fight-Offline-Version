@@ -35,82 +35,90 @@
 
 ---
 
-## 二、 上游 PR #10 架构解析与优缺点评估
+### 二、 上游 PR #10 / PR #16 架构解析与关键逆向成果
 
-### 1. PR #10 的核心设计优点
+### 1. PR #10 的核心设计与基础打通
 1. **彻底打通了数据流四部曲**：
    - `build_buffs_set()`：配置全局 Buff 行为（`globalBuffs`，camelCase 字段，定义效果参数 `p`）。
    - `build_stat_modifiers()`：配置修饰器（`statMods`，缩写键，指定触发器 `tr`、几率 `c`、时长 `d`、数值 `m`、目标 `ta`、类型 `mt`）。
-   - `build_stat_mod_appears()`：配置视觉表现（`statModAppears`，关联图标字形 `t`、标题 `a`、描述 `l` 等）。
+   - `build_stat_mod_appears()`：配置视觉表现（`statModAppears`，关联图标字形 `t`、标题 `a`、描述 `l`、颜色 `tc`/`gt`/`gb` 等）。
    - **四位一体赋予**：在 `build_hero_base`、`build_hero_entry`、`build_base_hero_details` 和 **`quest_team`（关键战斗编队）** 中统一下发。
-2. **踩通并沉淀了关键坑点（见下文铁律）**。
 
-### 2. PR #10 的局限与不适配之处
-1. **语言与构建栈不兼容**：
-   - 上游使用的是其自研的 **Legible (`.lbl`)** 语言体系（`gamedata.lbl`），需要专有编译工具 `legible`。
-   - 我们的 `redeco` 分支是**标准 Python 架构**（`Server/gamedata.py`），绝不能引入 `.lbl`。
-2. **原创与数值随意（不合“官方还原”理念）**：
-   - 上游作者基于规避版权考量，完全自己编排了所谓的 `kit_bleed`、`kit_shock`、`kit_burn`，且胡乱修改了角色的职业和能力分配，这与我们**“原汁原味还原官方体验、优先以官方数据服众”**的核心理念相背离。
+### 2. PR #16 的关键突破与纠偏（dedguy21）
+上游 PR #16（`docs(abilities): correct the conditions and magnitude sections, add the instrumentation behind them`）与本地逆向实测彻底澄清了以下致命认知偏差：
+
+1. **数值 `m`（Magnitude）是绝对固定伤害总值，绝非攻击力百分比！**
+   - `Damage_BuffEffect.OnTick` 底层源码计算公式为：
+     $$\text{per\_tick} = \frac{m}{d \times 2}$$
+     （客户端默认伤害结算周期为 0.5s，即每秒 2 次 Tick，总计 $2d$ 次 Tick）。
+   - 该公式**完全不乘以角色的攻击力**！
+   - 战斗跳字系统 `HudFloatingTextController.Play` 要求传入 `int` 整型。如果服务端按照百分比下发 `m = 0.6`（持续 3 秒），每跳伤害为 $0.6 / (3 \times 2) = 0.1$，强转整型后直接截断为 `0`！这导致不仅敌人血条不扣血，跳字系统也会被完全静默，造成“Buff 生效了但毫无效果”的假象。
+   - **正确做法**：`m` 必须下发总伤害绝对数值（如 $600.0$，在 3 秒内每次跳 $100$ 伤害）。
+2. **条件表达式 `trs`（Trigger String）的底层语法完全可解析！**
+   - 客户端在 `BuffTriggerFactory.ParseConditions` 中通过正则提取条件：
+     ```regex
+     ([\w\.]+)(=|<=|>=|!=|>|<)(.+)
+     ```
+   - **关键语法契约**：
+     - 等于号为**单等号** `=`，绝不可写成 `==`！
+     - 目标前缀：支持 `self:` 或 `opponent:`，若省略则默认指向 `self:`。
+     - **支持的 12 个键名**：
+       - `arena`（当前竞技场地名称，字符串）
+       - `canAttack`（是否可攻击，布尔值）
+       - `class`（职业枚举，整数）
+       - `currAnim`（当前动画 Hash，整数）
+       - `fightType`（战斗类型枚举）
+       - `heavyType`（重击类型）
+       - `isAi`（是否为 AI 电脑，布尔值）
+       - `isFinalBoss`（是否为关卡 Boss，布尔值）
+       - `playerID`（玩家 ID）
+       - `prevAnim`（上一动作动画 Hash）
+       - `state`（玩家战斗状态机状态）
+       - `tags`（英雄标签 Tag）
+   - **局限性**：不支持内联的 `AND`/`OR` 复合布尔逻辑；条件中不能有多余空格；复杂组合需通过拆分为多个 `statMods` 叠加实现。
+3. **跳字累加器（`floating_text`）必须作为常驻被动注入**：
+   - `Damage_BuffEffect` 计算出伤害后，本身并不直接弹跳字，而是把伤害累加到 `_ftd` 变量中，由 `floating_text` 类型的被动修饰器在 `onIntroStart` 时挂载（持续时间 `d = -1.0`，`tm = "v=_ftd;s=7"`）并轮询渲染红字跳字。
+   - 缺失 `gp_dmg_ft` 时，伤害能正常扣血，但头顶不会跳出伤害数字。
 
 ---
 
-## 三、 本地 Redeco 分支的迁移技术方案（Python 版）
+## 三、 本地 Redeco 分支的落地技术规范 (Python 版)
 
-我们将采用**“底层使用 PR #10 验证成功的原生通信协议，上层使用 `tftf_all_characters.json` 官方正统数据”**的设计方案。
+我们将采用**“底层使用已验证的原生通信协议，上层使用 `tftf_all_characters.json` 官方正统数据”**的设计方案。
 
-### 1. 架构设计与单一真理源划分
+### 1. 核心数据结构字典定义规范 (Python 格式)
 
-```
-[官方数据源: tftf_all_characters.json]
-   │
-   ├── 提取: 77+ 名官方角色的职业(Class)、基础能力(Abilities)、大招特效(Special Attacks)
-   │
-   ▼
-[Server/abilities_db.py] (新增: 官方技能与效果库)
-   │  ├── GLOBAL_BUFFS: 流血/灼烧/护甲/破甲/护盾等基础引擎行为定义
-   │  ├── STAT_MOD_APPEARS: 官方图标字形(\uE4xx)与多语言文本映射
-   │  └── BOT_OFFICIAL_ABILITIES: 角色ID -> 官方技能 ID 列表
-   │
-   ▼
-[Server/gamedata.py] (全项目单一真理源)
-   │  ├── build_buffs_set()        -> 注入 loginData / account_data
-   │  ├── build_stat_modifiers()    -> 注入 loginData / account_data
-   │  ├── build_stat_mod_appears()  -> 注入 loginData / account_data
-   │  └── 统一分发至:
-   │       ├── build_hero_base()
-   │       ├── build_hero_entry()
-   │       ├── build_base_hero_details()
-   │       └── quest_team()   <-- 确保战斗副本 Squad 携带能力!
-   │
-   ▼
-[export_payload.py -> tftf_offline_payload.bin]
-   │
-   ▼
-[客户端原生执行: 伤害Tick + 跳字 + 血条下方倒计时圆环图标]
-```
-
-### 2. 核心数据结构字典定义规范 (Python 格式)
-
-#### (1) `buffs_set`（全局行为定义）
+#### (1) `buffs_set` 与 `buffs_config`
 ```python
+def build_buffs_config():
+    return {
+        "groupings": {
+            "floating_text": {"stackable": True, "active_display": False},
+            "floating_text_dmg": {"stackable": True, "active_display": False},
+            "floating_text_heal": {"stackable": True, "active_display": False},
+            "dmg_bleed": {"stackable": True, "active_display": True},
+        }
+    }
+
 def build_buffs_set():
     return {
         "globalBuffs": {
-            "dmg_bleed": {
-                "buffType": "dmg_bleed",
-                "valueType": "attack_percent",
-                "value": 0.4,
-                "displayValue": 40,
-                "hasDuration": True,
-                "time": {"amount": 6.0},
-                "group": "bleed",
-                "scope": "fight",
-                "modeAvail": "all",
-                "p": {"damage_type": "bleed"}
+            "floating_text": {
+                "id": "floating_text",
+                "buffType": "floating_text",
+                "group": "floating_text",
+                "p": {"key": "_ftd", "style": 0},
+                "hasDuration": False,
             },
-            # 依此类推：dmg_shock, dmg_burn, armor_up, armor_break, evade...
-        },
-        "userBuffs": {}
+            "dmg_bleed": {
+                "id": "dmg_bleed",
+                "buffType": "damage",
+                "group": "dmg_bleed",
+                "p": {"damage_type": "bleed"},
+                "hasDuration": True,
+                "time": {"amount": 3.0},
+            },
+        }
     }
 ```
 
@@ -118,20 +126,29 @@ def build_buffs_set():
 ```python
 def build_stat_modifiers():
     return {
-        "arcee_crit_bleed": {
+        "gp_dmg_ft": {
+            "id": "gp_dmg_ft",
+            "t": "floating_text",
+            "tm": "v=_ftd;s=7",
+            "tr": ["onIntroStart"],
+            "trr": "update",
+            "d": -1.0,
+            "ta": "self",
+            "mt": "passive",
+        },
+        "arcee_headshot_bleed": {
             "t": "dmg_bleed",             # 必须严格与 globalBuffs 的 ID 保持一致 (且伤害类以 dmg_ 开头)
-            "tr": ["onCrit"],             # 触发事件 (列表类型! 官方阿尔茜: 暴击触发流血)
-            "uit": ["onCrit"],            # UI触发 (列表类型!)
-            "a": ["appr_bleed"],          # 关联外观 (列表类型!)
+            "tr": ["onHit"],              # 触发事件 (列表类型!)
+            "uit": ["onHit"],             # UI触发 (列表类型!)
+            "a": ["arcee_headshot_bleed"],# 关联外观 (列表类型!)
             "trr": "repeat",              # 触发模式
             "c": 1.0,                     # 几率 (1.0 = 100%)
-            "m": 0.6,                     # 幅度 (60% 攻击力)
-            "d": 4.0,                     # 持续时间 (4秒)
+            "m": 600.0,                   # 绝对伤害总值 (600 / (3 * 2) = 每跳 100 点伤害)
+            "d": 3.0,                     # 持续时间 (3 秒)
             "ta": "opponent",             # 施加目标: opponent / self
             "mt": "debuff",               # 视觉分类: debuff / buff / passive
             "st": 1                       # 堆叠层数
         },
-        # 其他官方技能修饰器...
     }
 ```
 
@@ -139,52 +156,53 @@ def build_stat_modifiers():
 ```python
 def build_stat_mod_appears():
     return {
-        "appr_bleed": {
-            "t": "\uE402",                # Tecnica_Bold_116 中的真实流血字形
-            "f": "",                      # 特效预设 (可选)
-            "a": "ABILITY_BLEED_TITLE",   # 技能标题多语言键
-            "l": "ABILITY_BLEED_DESC",    # 详细说明
-            "s": "Bleed",                 # 短文本
-            "st": "Bleed"                 # 跳字/呼出文本
+        "arcee_headshot_bleed": {
+            "id": "arcee_headshot_bleed",
+            "a": "Headshot Bleed",
+            "s": "Bleed",
+            "l": "Direct bleed damage over 3 seconds.",
+            "t": "\uE401",                # Tecnica_Bold_116 真实字形: \uE401 (能量块滴液流血)
+            "st": "BLEED",                # 触发呼出横幅文字
+            "tc": "FF0000",               # 必须为纯 6 位 Hex! 严禁写 "#FF0000"!
+            "gt": "FF0000",
+            "gb": "FF0000",
         },
-        "appr_shock": {
-            "t": "\uE412",                # 感电字形
-            # ...
-        },
-        "appr_burn": {
-            "t": "\uE41D",                # 灼烧字形
-            # ...
-        }
     }
 ```
 
 ---
 
-## 四、 关键陷阱与防御守则（从上游吸收的经验）
+## 四、 关键陷阱与防御守则（逆向实测沉淀）
 
 | 序号 | 陷阱 / Bug 现象 | 根本原因 | 防护铁律 |
 | :---: | :--- | :--- | :--- |
-| **1** | 进副本战斗后技能完全不生效 | `quest_team`（副本队伍）硬编码了 `stat_mods: []`，导致即使图鉴和背包里有技能，战斗小队也未携带。 | **铁律**：角色的 abilities 列表必须通过统一函数获取，并在 `quest_team()` 中同步注入。 |
-| **2** | 技能不生效且没有任何报错 | `tr`（触发器）、`uit`（UI触发器）、`a`（外观）在客户端代码中是 `List` 访问器，若传入单字符串，客户端反序列化会静默变为空。 | **铁律**：`tr`、`uit`、`a` 字段的值必须使用 Python 数组（如 `["onHit"]`）。 |
-| **3** | 图标显示为 `@@@@` 乱码 | 客户端没有占位符替换机制，传 ASCII 标记会被字体渲染为字面字符。 | **铁律**：图标字段 `t` 必须是真实的 Unicode PUA 字符（如 `\uE402`）。Python 的 `json.dumps(..., ensure_ascii=True)` 会自动输出合法的 `\uE402`。 |
+| **1** | 进副本战斗后技能完全不生效 | `quest_team`（副本队伍）硬编码了 `stat_mods: []`，导致战斗小队未携带。 | **铁律**：角色的 abilities 列表必须通过统一函数获取，并在 `quest_team()` 中同步注入。 |
+| **2** | 技能不生效且没有任何报错 | `tr`、`uit`、`a` 在底层是 `List` 访问器，若传入单字符串，反序列化后会静默为空。 | **铁律**：`tr`、`uit`、`a` 字段的值必须使用 Python 数组（如 `["onHit"]`）。 |
+| **3** | 图标显示为乱码或空白 | 图标未真实指向 Tecnica 矢量字体的 PUA 码点。 | **铁律**：图标字段 `t` 必须是真实的 Unicode PUA 字符（如 `\uE401`）。Python 输出 JSON 时自动转义为 `\uE401`。 |
 | **4** | 伤害型技能不结算伤害 | 客户端的 `Damage_BuffEffect` 工厂类是通过类名 `dmg_` 前缀进行匹配实例化的。 | **铁律**：所有伤害结算类 Buff 的 `t` 必须以 `dmg_` 作为前缀。 |
-| **5** | 打开角色详情面板闪退 (SIGSEGV) | 觉醒等级 `sig_lvl > 0` 会强制加载客户端缺失的觉醒相关资产，导致崩溃。 | **铁律**：第一阶段暂不开启 `sig_lvl`（保持为 0），所有能力作为基础特长（Base Abilities）注入。 |
+| **5** | 技能触发但敌人不扣血、不跳字 | `m` 是绝对伤害而非百分比！若写 `0.6`，每跳伤害 $0.1$ 被强转为整型 `0`，伤害与跳字均被静默吞掉。 | **铁律**：`m` 必须配置绝对总伤害数值（例如 $600.0$）。同时必须在 `globalBuffs` 和 `statMods` 中注册被动跳字累加器 `gp_dmg_ft`。 |
+| **6** | 图标和呼出字原本设为红色却显示为**黄色** | 底层 `NGUIMath.HexToColor`（RVA `0x18AF58C`）**不会剔除开头的 `#`**，直接从 index 0 按两两字符读取。由于非 Hex 字符在 `0x18AB274` 中返回 `0xF`，输入 `"#FF0000"` 时错位解析为：`(#F)(F0)(00)` $\rightarrow$ `(0xFF, 0xF0, 0x00)` 即 $\text{RGB}(255, 240, 0)$ **纯亮黄色**！血条下的倒计时圆环与图标（`HudBuffWidget` RVA `0xC64264`）以及呼出字均取自 `tc`，故全部变黄。 | **铁律**：`statModAppears` 中的所有颜色字段（`tc`、`gt`、`gb`）**必须严格使用不带 `#` 的 6 位 Hex 字符串**（如 `"FF0000"`），绝不能带前缀 `#`！ |
+| **7** | 条件表达式 `trs` 解析失败 | 写成了双等号 `==` 或含有空格，或者使用了不受支持的键。 | **铁律**：条件表达式必须使用单等号（如 `isAi=true`），严格限制在 12 个原生支持的键名之内。 |
+| **8** | 打开角色详情面板闪退 (SIGSEGV) | 觉醒等级 `sig_lvl > 0` 会强制加载客户端缺失的觉醒相关资产，导致崩溃。 | **铁律**：第一阶段保持 `sig_lvl = 0`，所有能力作为基础特长（Base Abilities）注入。 |
 
 ---
 
-## 五、 后续实施路线图（分阶段推进）
+## 五、 后续实施路线图
 
-- [ ] **阶段 1：观察与吸收（当前阶段）**
-  - 暂不急于修改核心业务代码，等待上游 PR #10 及其后续 PR 将更多 `*_BuffEffect`（如护盾、格挡、破甲）和触发器的实测数据稳定下来。
-  - 维护并细化 `re_notes/` 这里的技术方案。
-- [ ] **阶段 2：解析官方数据并生成技能库**
+- [x] **阶段 1：底层通信协议打通与实机验证（已完成）**
+  - 在 `Server/gamedata.py` 中完整实现了 `buffs_config`、`buffs_set`、`statMods`、`statModAppears` 的协同工作链路。
+  - 在实体测试机（Xiaomi MI 8）上完成验证：
+    1. 阿尔茜普通命中 100% 触发流血效果；
+    2. 敌人头顶跳出红色 `"100"` 伤害跳字并实时扣减生命值；
+    3. 敌人血条下方正常弹出倒计时圆环与 `\uE401` 图标；
+    4. 彻底逆向搞清并修复了数值截断机制（绝对伤害 `m`）与颜色错位问题（剔除 `#`）。
+- [ ] **阶段 2：解析官方数据并生成全量技能库**
   - 编写脚本从 `d:\Agent\personal\TFTF\tftf_all_characters.json` 中结构化提取官方金刚的基础能力（如阿尔茜的暴击流血、擎天柱的近战增伤/破甲、威震天的重击灼烧等）。
-  - 构建角色 ID -> 官方技能 ID 字典。
-- [ ] **阶段 3：Python 服务端载荷注入与验证**
-  - 在 `Server/gamedata.py` 中接入上述字典，生成包含 `buffs_set` 与 `statMods` 的离线 payload。
-  - 在真机（ADB 设备 `360943c1`）上通过常规副本战斗验证：
-    1. 角色血条下方正常弹出 `\uE402` 红色流血图标；
-    2. 图标外圈倒计时正常转动；
-    3. 敌人头顶跳出伤害数字并持续掉血。
+  - 根据官方数值公式，结合角色成长曲线，将技能伤害数值映射为符合战斗强度的绝对伤害数值 `m`。
+  - 构建全角色 ID $\rightarrow$ 官方技能 ID 字典。
+- [ ] **阶段 3：全角色能力在离线服务端的全量激活**
+  - 在 `Server/gamedata.py` 中接入官方技能字典，批量生成完整的离线 payload。
+  - 覆盖副本战、竞技场以及突袭战。
 - [ ] **阶段 4：原创与魔改角色技能赋予**
   - 基于官方已经跑通的技能模板，为回春手（Lifeline）、重涂角色等自制人物配置符合其人设的技能组合。
+

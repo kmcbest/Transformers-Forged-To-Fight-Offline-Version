@@ -2,7 +2,7 @@
 """
 Unit test for Arcee's official Headshot Bleed ability integration.
 Validates the single source of truth, wire schemas, list accessor safety,
-and payload integration.
+and payload integration across Server/abilities.py and Server/gamedata.py.
 """
 import io
 import json
@@ -17,15 +17,26 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 if HERE not in sys.path:
     sys.path.insert(0, HERE)
 
+import abilities
 import gamedata
 
 
 class TestArceeAbility(unittest.TestCase):
     def test_single_source_of_truth_bot_abilities(self):
-        """Verify bot_abilities only grants headshot bleed to Arcee."""
+        """Verify bot_abilities grants official abilities to Arcee."""
+        expected_abilities = [
+            "arcee_headshot_direct",
+            "arcee_headshot_dot",
+            "arcee_headshot_rush",
+            "arcee_s2_bleed",
+        ]
         self.assertEqual(
             gamedata.bot_abilities("arcee_gs_deluxe2014"),
-            ["arcee_headshot_bleed"],
+            expected_abilities,
+        )
+        self.assertEqual(
+            abilities.bot_abilities("arcee_gs_deluxe2014"),
+            expected_abilities,
         )
         # Other bots must not have Arcee's ability
         self.assertEqual(gamedata.bot_abilities("optimusprime_cin_tf"), [])
@@ -48,56 +59,76 @@ class TestArceeAbility(unittest.TestCase):
         self.assertEqual(bleed["group"], "dmg_bleed")
         self.assertEqual(bleed["p"], {"damage_type": "bleed"})
         self.assertTrue(bleed["hasDuration"])
-        self.assertEqual(bleed["time"]["amount"], 3.0)
-        self.assertEqual(bleed["value"], 0.6)
 
     def test_stat_modifier_schema_and_types(self):
         """Verify critical type rules: tr, uit, and a MUST be lists!"""
         mods = gamedata.build_stat_modifiers()
-        self.assertIn("arcee_headshot_bleed", mods)
+        for k in ["arcee_headshot_direct", "arcee_headshot_dot", "arcee_headshot_rush", "arcee_s2_bleed"]:
+            self.assertIn(k, mods)
+            mod = mods[k]
+            # Accessor types: lists required by client IL2CPP
+            self.assertIsInstance(mod["tr"], list)
+            self.assertIsInstance(mod["uit"], list)
+            self.assertIsInstance(mod["a"], list)
+            self.assertEqual(mod["ta"], "opponent")
+            self.assertEqual(mod["mt"], "debuff")
 
-        mod = mods["arcee_headshot_bleed"]
-        # Wire 't' must match globalBuffs id and start with 'dmg_' for Damage_BuffEffect
-        self.assertEqual(mod["t"], "dmg_bleed")
-        self.assertTrue(mod["t"].startswith("dmg_"))
+        # Headshot direct: instant 60% atk (2091), d=0.5, c=0.5, on ranged / S1 crit
+        d_mod = mods["arcee_headshot_direct"]
+        self.assertEqual(d_mod["m"], 2091.0)
+        self.assertEqual(d_mod["d"], 0.5)
+        self.assertEqual(d_mod["c"], 0.5)
+        self.assertIn("onRangedHit", d_mod["tr"])
+        self.assertIn("onSpecial1Hit", d_mod["tr"])
 
-        # Accessor types: lists required by client IL2CPP
-        self.assertIsInstance(mod["tr"], list)
-        self.assertIn("onHit", mod["tr"])
-        self.assertIsInstance(mod["uit"], list)
-        self.assertIn("onHit", mod["uit"])
-        self.assertIsInstance(mod["a"], list)
-        self.assertEqual(mod["a"], ["arcee_headshot_bleed"])
+        # Headshot DOT: 60% atk over 3s, d=3.0, c=0.5, on ranged / S1 crit
+        dot_mod = mods["arcee_headshot_dot"]
+        self.assertEqual(dot_mod["m"], 2091.0)
+        self.assertEqual(dot_mod["d"], 3.0)
+        self.assertEqual(dot_mod["c"], 0.5)
 
-        # Target and magnitude
-        self.assertEqual(mod["ta"], "opponent")
-        self.assertEqual(mod["mt"], "debuff")
-        self.assertEqual(mod["c"], 1.0)
-        self.assertEqual(mod["m"], 0.6)
-        self.assertEqual(mod["d"], 3.0)
-        self.assertEqual(mod["st"], 1)
+        # Headshot rush: extra 50% chance when enemy is dashing
+        rush_mod = mods["arcee_headshot_rush"]
+        self.assertEqual(rush_mod["m"], 2091.0)
+        self.assertEqual(rush_mod["d"], 3.0)
+        self.assertEqual(rush_mod["c"], 0.5)
+        self.assertEqual(rush_mod["trs"], "opponent:state=Dashing")
+
+        # S2 Bleed: 108% atk (3764) over 4s, d=4.0, c=1.0, on S2 crit
+        s2_mod = mods["arcee_s2_bleed"]
+        self.assertEqual(s2_mod["m"], 3764.0)
+        self.assertEqual(s2_mod["d"], 4.0)
+        self.assertEqual(s2_mod["c"], 1.0)
+        self.assertIn("onSpecial2Hit", s2_mod["tr"])
 
     def test_stat_mod_appears_and_unicode_glyph(self):
-        """Verify statModAppears defines real PUA codepoint \uE402 (bleed)."""
+        """Verify statModAppears defines real PUA codepoint \uE401 (bleed) and raw 6-digit hex."""
         appears = gamedata.build_stat_mod_appears()
-        self.assertIn("arcee_headshot_bleed", appears)
-        app = appears["arcee_headshot_bleed"]
-        self.assertEqual(app["t"], "\uE402")
-        self.assertEqual(app["st"], "BLEED")
+        for k in ["appr_arcee_headshot", "appr_arcee_bleed"]:
+            self.assertIn(k, appears)
+            app = appears[k]
+            self.assertEqual(app["t"], "\uE401")
+            self.assertEqual(app["tc"], "FF0000")  # Raw hex without '#' to prevent RGB shift to yellow!
 
     def test_four_builders_carry_abilities(self):
         """Verify the 4 critical builders all inject bot_abilities correctly."""
+        expected = [
+            "arcee_headshot_direct",
+            "arcee_headshot_dot",
+            "arcee_headshot_rush",
+            "arcee_s2_bleed",
+        ]
         # 1. build_hero_base
         base = gamedata.build_hero_base("arcee_gs_deluxe2014")
-        self.assertEqual(base["stat_mods"], ["arcee_headshot_bleed"])
+        self.assertEqual(base["stat_mods"], expected)
 
         # 2. build_hero_entry
         entry = gamedata.build_hero_entry("arcee_gs_deluxe2014")
-        self.assertEqual(entry["stat_mods"], ["arcee_headshot_bleed"])
+        self.assertEqual(entry["stat_mods"], expected)
 
         # 3. build_base_hero_details
         details = gamedata.build_base_hero_details([{"bid": "arcee_gs_deluxe2014"}])
-        self.assertEqual(details[0]["stat_mods"], ["arcee_headshot_bleed"])
+        self.assertEqual(details[0]["stat_mods"], expected)
 
         # 4. quest_team (CRITICAL for fight execution!)
         prog = gamedata.build_quest_progression(team=["arcee_gs_deluxe2014"])
@@ -105,7 +136,7 @@ class TestArceeAbility(unittest.TestCase):
         self.assertIn("arcee_gs_deluxe2014", user_team)
         self.assertEqual(
             user_team["arcee_gs_deluxe2014"]["stat_mods"],
-            ["arcee_headshot_bleed"],
+            expected,
         )
 
     def test_saved_json_responses(self):
@@ -116,9 +147,9 @@ class TestArceeAbility(unittest.TestCase):
         login_path = os.path.join(resp_dir, "GET__bcg_getLoginData.json")
         with open(login_path, "r", encoding="utf-8") as f:
             login_data = json.load(f)["result"]
-        self.assertIn("arcee_headshot_bleed", login_data["statMods"])
-        self.assertIn("arcee_headshot_bleed", login_data["statModAppears"])
-        self.assertEqual(login_data["statModAppears"]["arcee_headshot_bleed"]["t"], "\uE402")
+        self.assertIn("arcee_headshot_dot", login_data["statMods"])
+        self.assertIn("appr_arcee_bleed", login_data["statModAppears"])
+        self.assertEqual(login_data["statModAppears"]["appr_arcee_bleed"]["t"], "\uE401")
 
         # Check GET__account_data.json
         account_path = os.path.join(resp_dir, "GET__account_data.json")

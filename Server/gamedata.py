@@ -157,11 +157,22 @@ ROSTER = {
 
 # Which bots the offline player owns at boot. For a preservation sandbox we grant the
 # ENTIRE roster so every screen (roster grid, hero details, team select) has content.
+import abilities
+
 OWNED = list(ROSTER)
 
 # ---------------------------------------------------------------------------
-# Authored stat curve.  All ORIGINAL, all invented for this revival.
+# Authored stat curve and class-based critical hit stats.
 # ---------------------------------------------------------------------------
+_CLASS_STATS = {
+    "tact": {"crit_chance": 0.14, "crit_damage": 1.50, "hp_mult": 1.00, "atk_mult": 1.00},
+    "braw": {"crit_chance": 0.08, "crit_damage": 1.35, "hp_mult": 1.25, "atk_mult": 0.90},
+    "warr": {"crit_chance": 0.24, "crit_damage": 1.55, "hp_mult": 0.95, "atk_mult": 1.15},
+    "scou": {"crit_chance": 0.32, "crit_damage": 1.70, "hp_mult": 0.85, "atk_mult": 1.20},
+    "tech": {"crit_chance": 0.18, "crit_damage": 1.50, "hp_mult": 1.05, "atk_mult": 0.95},
+    "demo": {"crit_chance": 0.14, "crit_damage": 1.60, "hp_mult": 1.10, "atk_mult": 1.05},
+}
+
 # Per-class flavour: brawlers tanky, warriors hit hard, scouts glassy, etc.
 # (multipliers applied on top of the star base). Original balance.
 _CLASS_MOD = {
@@ -728,10 +739,10 @@ def build_attack_values():
         }
 
     return {
-        "Light": av("Light", 0.35, 50.0, 1.0, 1.5, 0.0),
-        "Medium": av("Medium", 0.60, 75.0, 1.0, 1.5, 0.0),
-        "Heavy": av("Heavy", 1.00, 120.0, 1.0, 1.5, 0.05),
-        "Ranged": av("Ranged", 0.40, 55.0, 1.0, 1.5, 0.0),
+        "Light": av("Light", 0.35, 50.0, 0.5, 1.5, 0.0),
+        "Medium": av("Medium", 0.60, 75.0, 0.5, 1.5, 0.0),
+        "Heavy": av("Heavy", 1.00, 120.0, 0.5, 1.5, 0.05),
+        "Ranged": av("Ranged", 0.40, 55.0, 0.5, 1.5, 0.0),
     }
 
 
@@ -883,14 +894,8 @@ def build_rarity_properties():
 # 's' is the star/rarity (drives the tile's rarity frame); the rating_* fields drive the
 # RatingWidget; the rest are combat tuning that can default to 0/empty for the roster view.
 def bot_abilities(bid):
-    """Assign abilities per-bot. Single source of truth.
-
-    Arcee (arcee_gs_deluxe2014) gets her official Headshot Bleed ability
-    extracted from tftf_all_characters.json.
-    """
-    if bid == "arcee_gs_deluxe2014":
-        return ["arcee_headshot_bleed"]
-    return []
+    """Delegate bot abilities query to Server/abilities.py."""
+    return abilities.bot_abilities(bid)
 
 
 def build_hero_base(bid, rank=1):
@@ -900,6 +905,9 @@ def build_hero_base(bid, rank=1):
     level = max(1, rank * 10)
     hp, atk = base_stats(bid, rank, level)
     rating = (hp + atk) // 20
+    cls_st = _CLASS_STATS.get(klass, {"crit_chance": 0.14, "crit_damage": 1.50})
+    crit_chance = cls_st["crit_chance"]
+    crit_damage = cls_st["crit_damage"]
     return {
         "id": bid, "r": rank, "m": star, "s": star,
         "max_hp": hp, "mhpb": hp, "attack": atk, "attb": atk,
@@ -909,8 +917,8 @@ def build_hero_base(bid, rank=1):
         "rating_hp": hp // 2, "rating_attack": atk // 2,
         "rating_hp_base": hp // 2, "rating_attack_base": atk // 2,
         "ab": 1,
-        # combat-tuning floats: sensible neutral values (roster view doesn't need real balance)
-        "hp": float(hp), "armor": 0.0, "crit_chance": 1.0, "crit_damage": 1.5,
+        # combat-tuning floats: class-based authored balance
+        "hp": float(hp), "armor": 0.0, "crit_chance": crit_chance, "crit_damage": crit_damage,
         "perfect_block_chance": 0.1, "block_proficiency": 0.75, "mana_gain": _MANA_GAIN_RATE,
         "resist_magic": 0.0, "resist_physical": 0.0, "stun_chance": 0.05,
         "cr": 0.0, "rcr": 0.0, "rcd": 0.0, "spb": 0.0, "pjb": 0.0, "cpw": 0.0,
@@ -986,225 +994,22 @@ def build_heroes():
 
 def build_buffs_config():
     """Defines stackability and UI display settings for combat buff groupings."""
-    return {
-        "groupings": {
-            "floating_text_dmg": {"stackable": True, "active_display": False},
-            "floating_text_heal": {"stackable": True, "active_display": False},
-            "dmg_bleed": {"stackable": True, "active_display": True},
-        }
-    }
+    return abilities.build_buffs_config()
 
 
 def build_buffs_set():
-    """Global buff behaviors for combat arbiter.
-
-    Ids here correspond to 't' field in statMods (must match exactly).
-    """
-    return {
-        "globalBuffs": {
-            "floating_text_dmg": {
-                "id": "floating_text_dmg",
-                "iconTexture": "",
-                "image": "",
-                "images3": False,
-                "modeAvail": [],
-                "scope": "global",
-                "valueType": "absolute",
-                "displayValue": 0.0,
-                "c": 1,
-                "value": 0.0,
-                "buffType": "floating_text",
-                "group": "floating_text_dmg",
-                "p": {"key": "_ftd", "style": 0},
-                "hasDuration": False,
-                "e": 0,
-                "time": {"amount": 0},
-                "loc_name": "floating_text_dmg",
-                "loc_desc": "floating_text_dmg",
-            },
-            "floating_text_heal": {
-                "id": "floating_text_heal",
-                "iconTexture": "",
-                "image": "",
-                "images3": False,
-                "modeAvail": [],
-                "scope": "global",
-                "valueType": "absolute",
-                "displayValue": 0.0,
-                "c": 1,
-                "value": 0.0,
-                "buffType": "floating_text",
-                "group": "floating_text_heal",
-                "p": {"key": "_fth", "style": 0},
-                "hasDuration": False,
-                "e": 0,
-                "time": {"amount": 0},
-                "loc_name": "floating_text_heal",
-                "loc_desc": "floating_text_heal",
-            },
-            "dmg_bleed": {
-                "id": "dmg_bleed",
-                "iconTexture": "",
-                "image": "",
-                "images3": False,
-                "modeAvail": [],
-                "scope": "global",
-                "valueType": "percent",
-                "displayValue": 0.6,
-                "c": 1,
-                "value": 0.6,
-                "buffType": "damage",
-                "group": "dmg_bleed",
-                "p": {"damage_type": "bleed"},
-                "hasDuration": True,
-                "e": 0,
-                "time": {"amount": 3.0},
-                "loc_name": "bleed",
-                "loc_desc": "bleed",
-            },
-        },
-        "userBuffs": {},
-    }
+    """Global buff behaviors for combat arbiter."""
+    return abilities.build_buffs_set()
 
 
 def build_stat_mod_appears():
-    """Visual appearances for stat modifiers and combat buffs.
-
-    Uses genuine Unicode PUA codepoints for Tecnica_Bold_116 font:
-    \uE402 = bleed glyph
-    """
-    return {
-        "arcee_headshot_bleed": {
-            "id": "arcee_headshot_bleed",
-            "a": "Headshot Bleed",
-            "s": "Bleed",
-            "l": "Ranged strikes inflict a bleeding headshot: 60% of Attack as direct bleed damage over 3 seconds.",
-            "ss": "60% of Attack as bleed damage over 3 seconds.",
-            "t": "\uE402",
-            "f": "",
-            "st": "BLEED",
-            "ps": "Bleed",
-            "pl": "60% of Attack as bleed damage over 3 seconds.",
-            "tc": "#FFFFFF",
-            "gt": "#FFFFFF",
-            "gb": "#FFFFFF",
-        },
-        "dmg_bleed": {
-            "id": "dmg_bleed",
-            "a": "Bleed",
-            "s": "Bleed",
-            "l": "Direct damage over time ignoring armor.",
-            "ss": "Direct damage over time ignoring armor.",
-            "t": "\uE402",
-            "f": "",
-            "st": "BLEED",
-            "ps": "Bleed",
-            "pl": "Direct damage over time ignoring armor.",
-            "tc": "#FFFFFF",
-            "gt": "#FFFFFF",
-            "gb": "#FFFFFF",
-        },
-    }
+    """Visual appearances for stat modifiers and combat buffs."""
+    return abilities.build_stat_mod_appears()
 
 
 def build_stat_modifiers():
-    """Original offline stat modifiers keyed exactly as BCGStatModifierDict expects.
-
-    The complete short-key schema was captured live in seg-03.  `gp_hit_stun` is
-    registered by PlayerController.DefaultStatMods, so it intentionally needs no
-    per-hero stat_mods/buff_mods reference.
-    """
-    return {
-        "gp_hit_stun": {
-            "id": "gp_hit_stun",
-            "t": "hit_stun",
-            "tm": "",
-            "tr": [],
-            "uit": [],
-            "pri": 0,
-            "trm": 0.0,
-            "trs": "",
-            "trr": "none",
-            "c": 1.0,
-            "m": 1.0,
-            # ApplyHitStun supplies the gameplay duration.  This is only a
-            # 0.5-second authored fallback, intentionally in the observed window.
-            "d": 0.5,
-            "s": "none",
-            "ta": "self",
-            "mt": "debuff",
-            "v": "",
-            "ms": "",
-            "st": 0,
-            "g": "",
-            "gc": 0.0,
-            "gcv": "",
-            "rcv": "",
-            "ti": 0,
-            "a": [],
-            "au": [],
-            "rh": 0.0,
-            "ra": 0.0,
-        },
-        "gp_dmg_ft": {
-            "id": "gp_dmg_ft",
-            "t": "floating_text_dmg",
-            "tm": "",
-            "tr": [],
-            "uit": [],
-            "pri": 0,
-            "trm": 0.0,
-            "trs": "",
-            "trr": "none",
-            "c": 1.0,
-            "m": 1.0,
-            "d": 0.0,
-            "s": "none",
-            "ta": "self",
-            "mt": "passive",
-            "v": "",
-            "ms": "",
-            "st": 0,
-            "g": "",
-            "gc": 0.0,
-            "gcv": "",
-            "rcv": "",
-            "ti": 0,
-            "a": [],
-            "au": [],
-            "rh": 0.0,
-            "ra": 0.0,
-        },
-        "arcee_headshot_bleed": {
-            "id": "arcee_headshot_bleed",
-            "t": "dmg_bleed",
-            "tm": "",
-            "tr": ["onHit"],
-            "uit": ["onHit"],
-            "pri": 0,
-            "trm": 0.0,
-            "trs": "",
-            "trr": "repeat",
-            "c": 1.0,
-            "m": 0.6,
-            "d": 3.0,
-            "s": "none",
-            "ta": "opponent",
-            "mt": "debuff",
-            "v": "",
-            "ms": "",
-            "st": 1,
-            "g": "",
-            "gc": 0.0,
-            "gcv": "",
-            "rcv": "",
-            "ti": 0,
-            "a": ["arcee_headshot_bleed"],
-            "au": [],
-            "rh": 0.0,
-            "ra": 0.0,
-        },
-    }
+    """Original offline stat modifiers keyed exactly as BCGStatModifierDict expects."""
+    return abilities.build_stat_modifiers()
 
 
 def build_login_data(lang="en"):
@@ -2554,6 +2359,11 @@ def build_base_hero_details(req_heroes):
             hp, atk = base_stats(bid, rank, level)
             req_sig = h.get("sig_lvl")
             sig_val = int(req_sig) if req_sig is not None else 100
+            cls_st = _CLASS_STATS.get(klass, {"crit_chance": 0.14, "crit_damage": 1.50})
+            crit_chance = cls_st["crit_chance"]
+            crit_damage = cls_st["crit_damage"]
+            crit_rate = int(crit_chance * 1000)
+            crit_dmg = int(crit_damage * 1000)
             out.append({
                 "bid": bid, "rank": rank, "level": level,
                 "sig_lvl": sig_val,
@@ -2561,8 +2371,8 @@ def build_base_hero_details(req_heroes):
                 "m": model_id(bid), "mdl": model_id(bid),
                 "rating_hp": hp, "max_hp": hp,
                 "rating_attack": atk, "attack": atk,
-                "health": hp, "armor": 0, "crit_rate": 1000, "crit_dmg": 1500,
-                "crit_chance": 1.0, "crit_damage": 1.5,
+                "health": hp, "armor": 0, "crit_rate": crit_rate, "crit_dmg": crit_dmg,
+                "crit_chance": crit_chance, "crit_damage": crit_damage,
                 "block_prof": 0, "perfect_block": 0, "sig_ability": 1,
                 "special_attacks": max_special_attacks(bid, star), "user_owned": True,
                 "stat_mods": bot_abilities(bid), "sig_mods": [], "buff_mods": [],
@@ -2571,6 +2381,44 @@ def build_base_hero_details(req_heroes):
                 "synergyBonuses": [], "pvpb": {},
             })
     return out
+
+
+def export_bot_info_header():
+    """Generate tools/nativehook/bot_info.h from ROSTER and _CLASS_STATS data."""
+    header_path = os.path.join(HERE, "..", "tools", "nativehook", "bot_info.h")
+    lines = [
+        "// Auto-generated via Server/gamedata.py. DO NOT EDIT DIRECTLY.",
+        "#ifndef BOT_INFO_H",
+        "#define BOT_INFO_H",
+        "",
+        "typedef struct {",
+        "    const char* id;",
+        "    int hp;",
+        "    int atk;",
+        "    int rating;",
+        "    float crit_chance;",
+        "    float crit_damage;",
+        "} EnemyStat;",
+        "",
+        "static const EnemyStat ENEMY_STATS[] = {",
+    ]
+    bots = sorted(ROSTER.keys())
+    for bid in bots:
+        faction, klass, star = ROSTER[bid]
+        hp, atk = base_stats(bid, 5, 50)
+        pi = (hp + atk) // 20
+        cls_st = _CLASS_STATS.get(klass, {"crit_chance": 0.14, "crit_damage": 1.50})
+        crit_chance = cls_st["crit_chance"]
+        crit_damage = cls_st["crit_damage"]
+        lines.append(f'    {{ "{bid}", {hp}, {atk}, {pi}, {crit_chance:.2f}f, {crit_damage:.2f}f }},')
+    lines.append("};")
+    lines.append(f"#define NUM_ENEMY_STATS {len(bots)}")
+    lines.append("")
+    lines.append("#endif // BOT_INFO_H")
+    lines.append("")
+    with open(header_path, "w", encoding="utf-8") as f:
+        f.write("\n".join(lines))
+    print(f"wrote bot_info.h ({len(bots)} bots)")
 
 
 def build_responses():
@@ -2609,6 +2457,8 @@ def build_responses():
     with open(refresh_path, "w", encoding="utf-8") as f:
         f.write(env(build_missions_autorefresh_result()))
     print("wrote GET__autorefresh_missionsconfig_refresh.json")
+
+    export_bot_info_header()
 
 
 if __name__ == "__main__":
