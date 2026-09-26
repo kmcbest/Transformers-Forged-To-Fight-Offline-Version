@@ -5037,8 +5037,8 @@ void hook_146(void* self, float dT, void* method){
         if(obj_ok(player) && *(uint8_t*)((uintptr_t)self+0x88) && // AIController._isActive
            ((int(*)(void*,void*))(g_base+0xDB07F4))(self,NULL) && // get_IsActive (@0xDB07F4)
            !((int(*)(void*,void*))(g_base+0xDB07FC))(self,NULL) && // get_IsPaused (@0xDB07FC)
-           !((int(*)(void*,void*))(g_base+0x1175468))(player,NULL) && // get_IsAttacking (@0x1175468)
-           ((int(*)(void*,void*))(g_base+0x1175254))(player,NULL)){ // get_CanShoot (@0x1175254)
+           !((int(*)(void*,void*))(g_base+0x11752C8))(player,NULL) && // get_IsAttacking
+           ((int(*)(void*,void*))(g_base+0x1174FEC))(player,NULL)){ // get_CanShoot
             ((void(*)(void*,int,void*))(g_base+0x1179AF4))(player,1,NULL); // Action.Attack
             static unsigned fired_lines=0;
             if(fired_lines<100){ fired_lines++; flog("AIRANGE fired=1 ai=%p player=%p is_p0=%d",self,player,is_p0); }
@@ -5116,10 +5116,6 @@ static void reset_player_attack_chain(void* pc) {
     *(uint32_t*)((uintptr_t)pc + 0x1c0) = 0; // _lightAttackIndex = 0
     *(uint32_t*)((uintptr_t)pc + 0x1c4) = 0; // _mediumAttackIndex = 0
     *(uint32_t*)((uintptr_t)pc + 0x1c8) = 0; // _rangedAttackIndex = 0
-    if (g_base) {
-        // PlayerController.ResetAttackChain() at 0x117B098: removes gp_attack_chain buff
-        ((void(*)(void*,void*))(g_base + 0x117B098))(pc, NULL);
-    }
     flog("RESET_ATTACK_CHAIN on p0 pc=%p (caller=%p)", pc, __builtin_return_address(0));
 }
 
