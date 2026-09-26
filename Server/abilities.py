@@ -31,16 +31,20 @@ import os
 # ---------------------------------------------------------------------------
 def build_buffs_config():
     """定义战斗中各类 Buff 的堆叠与血条下 UI 挂件显示策略。"""
+    groups_data = {
+        # 跳字累加器：常驻不可见
+        "floating_text": {"stackable": True, "active_display": False},
+        "floating_text_dmg": {"stackable": True, "active_display": False},
+        "floating_text_heal": {"stackable": True, "active_display": False},
+        # 流血类 Debuff：可堆叠，在敌人血条下方显示倒计时圆环图标
+        "dmg_bleed": {"stackable": True, "active_display": True},
+        # 直接伤害：不显示血条下方图标
+        "dmg_direct": {"stackable": True, "active_display": False},
+    }
     return {
-        "groupings": {
-            # 跳字累加器：常驻不可见
-            "floating_text": {"stackable": True, "active_display": False},
-            "floating_text_dmg": {"stackable": True, "active_display": False},
-            "floating_text_heal": {"stackable": True, "active_display": False},
-            # 流血类 Debuff：可堆叠，在敌人血条下方显示倒计时圆环图标
-            "dmg_bleed": {"stackable": True, "active_display": True},
-            "dmg_direct": {"stackable": True, "active_display": False},
-        }
+        # 客户端 BuffsConfig.<groups>k__BackingField 期望字段名为 groups
+        "groups": groups_data,
+        "groupings": groups_data,
     }
 
 
@@ -307,14 +311,14 @@ def build_stat_modifiers():
         # 基准属性（R5 L50）：攻击力 3485，暴击率 32%，暴击伤害 1.70x
         # -------------------------------------------------------------------
         # 1. 爆头射击 (Headshot) - 远程暴击额外直接扣血 60% 攻击力 (2091点)
-        #    触发条件：普通远程射击 (onRangedHit) 或 特殊技1子弹 (onSpecial1Hit)
+        #    触发条件：普通远程射击 (onRangedHit) 或 特殊技1/3子弹 (onSpecial1Hit, onSpecial3Hit)
         #    基础几率：50% (c: 0.5)
         "arcee_headshot_direct": {
             "id": "arcee_headshot_direct",
             "t": "dmg_direct",
             "tm": "",
-            "tr": ["onRangedHit", "onSpecial1Hit"],
-            "uit": ["onRangedHit", "onSpecial1Hit"],
+            "tr": ["onRangedHit", "onSpecial1Hit", "onSpecial3Hit"],
+            "uit": ["onRangedHit", "onSpecial1Hit", "onSpecial3Hit"],
             "pri": 0,
             "trm": 0.0,
             "trs": "",
@@ -346,8 +350,8 @@ def build_stat_modifiers():
             "id": "arcee_headshot_dot",
             "t": "dmg_bleed",
             "tm": "",
-            "tr": ["onRangedHit", "onSpecial1Hit"],
-            "uit": ["onRangedHit", "onSpecial1Hit"],
+            "tr": ["onRangedHit", "onSpecial1Hit", "onSpecial3Hit"],
+            "uit": ["onRangedHit", "onSpecial1Hit", "onSpecial3Hit"],
             "pri": 0,
             "trm": 0.0,
             "trs": "",
@@ -378,8 +382,8 @@ def build_stat_modifiers():
             "id": "arcee_headshot_rush",
             "t": "dmg_bleed",
             "tm": "",
-            "tr": ["onRangedHit", "onSpecial1Hit"],
-            "uit": ["onRangedHit", "onSpecial1Hit"],
+            "tr": ["onRangedHit", "onSpecial1Hit", "onSpecial3Hit"],
+            "uit": ["onRangedHit", "onSpecial1Hit", "onSpecial3Hit"],
             "pri": 0,
             "trm": 0.0,
             "trs": "opponent:state=Dashing", # 敌人冲锋状态判定

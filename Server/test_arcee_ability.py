@@ -43,12 +43,14 @@ class TestArceeAbility(unittest.TestCase):
         self.assertEqual(gamedata.bot_abilities("megatron_gs_leader2015"), [])
 
     def test_buffs_config_and_set(self):
-        """Verify globalBuffs and groupings are properly formatted for Damage_BuffEffect."""
+        """Verify globalBuffs, groups, and groupings are properly formatted for Damage_BuffEffect."""
         cfg = gamedata.build_buffs_config()
+        self.assertIn("groups", cfg)
         self.assertIn("groupings", cfg)
-        self.assertIn("dmg_bleed", cfg["groupings"])
-        self.assertTrue(cfg["groupings"]["dmg_bleed"]["stackable"])
-        self.assertTrue(cfg["groupings"]["dmg_bleed"]["active_display"])
+        self.assertIn("dmg_bleed", cfg["groups"])
+        self.assertTrue(cfg["groups"]["dmg_bleed"]["stackable"])
+        self.assertTrue(cfg["groups"]["dmg_bleed"]["active_display"])
+        self.assertFalse(cfg["groups"]["dmg_direct"]["active_display"])
 
         buffs_set = gamedata.build_buffs_set()
         self.assertIn("globalBuffs", buffs_set)
@@ -73,13 +75,14 @@ class TestArceeAbility(unittest.TestCase):
             self.assertEqual(mod["ta"], "opponent")
             self.assertEqual(mod["mt"], "debuff")
 
-        # Headshot direct: instant 60% atk (2091), d=0.5, c=0.5, on ranged / S1 crit
+        # Headshot direct: instant 60% atk (2091), d=0.5, c=0.5, on ranged / S1 / S3 crit
         d_mod = mods["arcee_headshot_direct"]
         self.assertEqual(d_mod["m"], 2091.0)
         self.assertEqual(d_mod["d"], 0.5)
         self.assertEqual(d_mod["c"], 0.5)
         self.assertIn("onRangedHit", d_mod["tr"])
         self.assertIn("onSpecial1Hit", d_mod["tr"])
+        self.assertIn("onSpecial3Hit", d_mod["tr"])
 
         # Headshot DOT: 60% atk over 3s, d=3.0, c=0.5, on ranged / S1 crit
         dot_mod = mods["arcee_headshot_dot"]
