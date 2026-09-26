@@ -1174,7 +1174,7 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         *outn = strlen((const char*)match_ok);
         return match_ok;
     }
-    if(has_suffix(p,"/base/active")) {
+    if(strstr(p,"/base/active")) {
         g_quest_state.is_leisure = 1;
         g_matrix_war_active = 0;
         g_matrix_war_team_set = 0;
@@ -1197,7 +1197,7 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         *outn=o->n;
         return o->p;
     }
-    if(has_suffix(p,"/bcg/getBaseHeroData")) {
+    if(strstr(p,"/bcg/getBaseHeroData")) {
         logmsg("getBaseHeroData req: %.300s", body);
         const char *a=strstr(body,"\"heroes\""); const char *arr=a?strchr(a,'['):NULL; const char *q=arr?arr+1:NULL; v=lookup("@herodata:open",&n);if(!v||!out_add(o,v,n))return NULL;
         int first=1; while(q&&q<end){const char *open=strchr(q,'{'),*close;int depth=0;if(!open||open>=end)break;close=open;do{if(*close=='{')depth++;else if(*close=='}')depth--;close++;}while(close<end&&depth);if(depth)break;char hb[64]="", hk[200], sig[32];int rank=json_int(open,close,"rank",1),level=json_int(open,close,"level",1),sl=json_int(open,close,"sig_lvl",0);if(!rank)rank=1;if(!level)level=1;if(!json_string(open,close,"bid",hb,sizeof hb))if(!json_string(open,close,"character",hb,sizeof hb))json_string(open,close,"id",hb,sizeof hb);snprintf(hk,sizeof hk,"@hero:%s:%d:%d",hb,rank,level);v=lookup(hk,&n);if(!v){snprintf(hk,sizeof hk,"@hero:%s:1:1",hb);v=lookup(hk,&n);}if(!v)v=lookup("@hero:*:1:1",&n);logmsg("getBaseHeroData: hero=%s rank=%d lvl=%d lookup=%s", hb, rank, level, v ? "OK" : "NULL");if(v){snprintf(sig,sizeof sig,"%d",sl);if(!first&&!out_add(o,",",1))return NULL;if(!out_hero_detail(o,v,n,sig,0))return NULL;first=0;if(rank==5&&level==1){char hk50[200];size_t n50=0;snprintf(hk50,sizeof hk50,"@hero:%s:5:50",hb);const unsigned char *v50=lookup(hk50,&n50);if(v50){if(!out_add(o,",",1))return NULL;if(!out_hero_detail(o,v50,n50,sig,0))return NULL;logmsg("getBaseHeroData: also emitted rank 5 level 50 for %s", hb);}}}q=close;}

@@ -1138,6 +1138,7 @@ def build_login_data(lang="en"):
         "rarityProperties": build_rarity_properties(),
         "evoCosts": {},
         "curves": {},
+        "base": build_base_active(),
     }
 
 
@@ -2539,84 +2540,95 @@ BASE_BUILDINGS = {
 }
 
 # 3D Base Buildings placed via tile renderTemplate (spawned into _BaseBuildingParent):
-# Empty: Courtyard has no giant z_bldg_* buildings; native 3D fortress qb_base_top_01 provides the environment.
-BASE_3D_BUILDINGS = {}
+BASE_FUNCTIONAL_BUILDINGS = {
+    (21, 25): {"id": "bldg_away_team", "renderId": "z_bldg_away_team", "rot": 0, "name": "Away Team Station"},
+    (23, 24): {"id": "bldg_crystal_premium", "renderId": "z_bldg_gacha_other", "rot": 0, "name": "Premium Crystal Vault"},
+    (25, 23): {"id": "bldg_battle_centre", "renderId": "z_bldg_battle_centre", "rot": 0, "name": "Battle Centre"},
+    (27, 24): {"id": "bldg_crystal_free", "renderId": "z_bldg_gacha_free", "rot": 0, "name": "Free Crystal Vault"},
+    (29, 25): {"id": "bldg_alliance_help", "renderId": "z_bldg_alliance_help", "rot": 0, "name": "Alliance Relay"},
+}
 
 # Defending Bots placed on nodes via bossSocket (spawns hexagonal BossCard):
-# Matched to original base screenshot:
+# Matched to authentic 1+2+1+2+1 7-defender layout:
 BASE_DEFENDERS = {
-    (24, 16): {"bid": "shockwave_gs", "rank": 5, "level": 50, "sig": 60, "name": "Commander's Stronghold"},
-    (24, 13): {"bid": "megatron_gs_leader2015", "rank": 5, "level": 50, "sig": 60, "name": "Apex Bastion"},
-    (24, 22): {"bid": "galvatron_gs_voyager2016", "rank": 5, "level": 50, "sig": 40, "name": "Courtyard Vanguard"},
-    (21, 16): {"bid": "megatron_cin_rotf", "rank": 5, "level": 50, "sig": 30, "name": "West Bastion"},
-    (27, 16): {"bid": "blaster_gs_leader2016", "rank": 5, "level": 50, "sig": 30, "name": "East Bastion"},
-    (20, 19): {"bid": "arcee_gs_deluxe2014", "rank": 5, "level": 50, "sig": 40, "name": "West Flank Guard"},
-    (28, 19): {"bid": "optimusprime_cin_tf", "rank": 5, "level": 50, "sig": 40, "name": "East Flank Guard"},
+    (25, 30): {"bid": "megatron_gs_leader2015", "rank": 5, "level": 50, "sig": 60, "name": "Apex Bastion"},
+    (22, 33): {"bid": "megatron_cin_rotf", "rank": 5, "level": 50, "sig": 30, "name": "West Bastion"},
+    (28, 33): {"bid": "soundwave_gs", "rank": 5, "level": 50, "sig": 30, "name": "East Bastion"},
+    (22, 39): {"bid": "galvatron_gs_voyager2016", "rank": 5, "level": 50, "sig": 40, "name": "Courtyard Vanguard"},
+    (25, 35): {"bid": "megatron_cin_rotf", "rank": 5, "level": 50, "sig": 60, "name": "变5威 (Megatron ROTF)"},
+    (25, 42): {"bid": "arcee_gs_deluxe2014", "rank": 5, "level": 50, "sig": 40, "name": "West Flank Guard"},
+    (28, 39): {"bid": "shockwave_gs", "rank": 5, "level": 50, "sig": 60, "name": "Commander's Stronghold"},
 }
 
 # Defense Towers / Modules placed on nodes via towerSocket (spawns 3D tower models):
+# Placed on the EXACT SAME nodes as defenders:
 BASE_TOWERS = {
-    (24, 25): "mods_laserguidance_01",       # Bottom entrance turret
-    (22, 21): "mods_harmaccelerator_01",     # Southwest turret
-    (26, 21): "mods_strangerefractor_01",    # Southeast turret
-    (20, 17): "mods_primemodule_01",         # West module
-    (28, 17): "mods_superconductor_2000",    # East module
-    (24, 14): "mods_tacticianstrick_02",     # North center module
-    (19, 14): "mods_paralyzer_01",           # Northwest tower
-    (29, 14): "mods_brawlersfury_01",        # Northeast tower
+    (25, 30): "mods_primemodule_01",
+    (22, 33): "mods_paralyzer_01",
+    (28, 33): "mods_brawlersfury_01",
+    (25, 35): "mods_tacticianstrick_02",
+    (22, 39): "mods_harmaccelerator_01",
+    (28, 39): "mods_strangerefractor_01",
+    (25, 42): "mods_laserguidance_01",
 }
 
 # Relics placed on pedestals via relicSocket (spawns qb_relic_pedestal_01 + 3D floating relic + RelicCard):
 BASE_RELICS = {
-    (16, 19): {"id": "relic_statue_op", "model": "rlc11", "name": "Monument of Prime"},
-    (32, 19): {"id": "relic_matrix_of_leadership", "model": "rlc14", "name": "Matrix Shrine"},
+    (19, 40): {"id": "relic_unstable_energon_crystal", "model": "rlc11", "name": "Monument of Prime"},
+    (20, 33): {"id": "relic_dark_energon_crystal", "model": "rlc6", "name": "Dark Energon Shrine"},
+    (30, 33): {"id": "relic_allspark", "model": "rlc2", "name": "AllSpark Pedestal"},
+    (31, 40): {"id": "relic_matrix_of_leadership", "model": "rlc14", "name": "Matrix Shrine"},
 }
 
 # Waypoint nodes (glowing yellow circular pads with links):
 BASE_WAYPOINTS = {
-    (24, 19): "Central Relay",
-    (24, 15): "Core Conduit",
-    (21, 18): "West Conduit",
-    (27, 18): "East Conduit",
-    (24, 24): "Gate Conduit",
+    (25, 38): "Core Conduit",
+    (25, 44): "Gate Conduit",
+    (25, 31): "Apex Conduit",
+    (22, 35): "West Relay",
+    (28, 35): "East Relay",
 }
 
 # Base graph edges for bidirectional links and visual circuits
 BASE_EDGES = [
     # Main vertical spine
-    ((24, 25), (24, 24)),
-    ((24, 24), (24, 22)),
-    ((24, 22), (24, 19)),
-    ((24, 19), (24, 16)),
-    ((24, 16), (24, 15)),
-    ((24, 15), (24, 14)),
-    ((24, 14), (24, 13)),
-    # Horizontal relic cross
-    ((16, 19), (20, 19)),
-    ((20, 19), (24, 19)),
-    ((24, 19), (28, 19)),
-    ((28, 19), (32, 19)),
-    # Upper horizontal bridge
-    ((21, 16), (24, 16)),
-    ((24, 16), (27, 16)),
-    # Outer diamond
-    ((24, 22), (22, 21)),
-    ((22, 21), (20, 19)),
-    ((20, 19), (20, 17)),
-    ((20, 17), (21, 16)),
-    ((21, 16), (19, 14)),
-    ((19, 14), (24, 13)),
-    ((24, 22), (26, 21)),
-    ((26, 21), (28, 19)),
-    ((28, 19), (28, 17)),
-    ((28, 17), (27, 16)),
-    ((27, 16), (29, 14)),
-    ((29, 14), (24, 13)),
-    # Inner diamond
-    ((24, 16), (21, 18)),
-    ((21, 18), (24, 22)),
-    ((24, 16), (27, 18)),
-    ((27, 18), (24, 22)),
+    ((25, 44), (25, 42)),
+    ((25, 42), (25, 38)),
+    ((25, 38), (25, 35)),
+    ((25, 35), (25, 31)),
+    ((25, 31), (25, 30)),
+
+    # South branches (25, 42) to flanks
+    ((25, 42), (22, 39)),
+    ((25, 42), (28, 39)),
+
+    # Core (25, 38) to flanks
+    ((25, 38), (22, 39)),
+    ((25, 38), (28, 39)),
+
+    # Flanks to relays
+    ((22, 39), (22, 35)),
+    ((28, 39), (28, 35)),
+
+    # Relays to center
+    ((22, 35), (25, 35)),
+    ((28, 35), (25, 35)),
+
+    # Relays to North flanks
+    ((22, 35), (22, 33)),
+    ((28, 35), (28, 33)),
+
+    # North flanks to Apex
+    ((22, 33), (25, 30)),
+    ((28, 33), (25, 30)),
+    ((22, 33), (25, 35)),
+    ((28, 33), (25, 35)),
+
+    # Relics connections
+    ((22, 39), (19, 40)),  # SW Relic
+    ((28, 39), (31, 40)),  # SE Relic
+    ((22, 33), (20, 33)),  # NW Relic
+    ((28, 33), (30, 33)),  # NE Relic
 ]
 
 
@@ -2664,6 +2676,20 @@ def build_base_map():
                 })
                 continue
 
+            if pt in BASE_FUNCTIONAL_BUILDINGS:
+                b_info = BASE_FUNCTIONAL_BUILDINGS[pt]
+                sock_id = "sock_bldg_%d_%d" % pt
+                r.append({
+                    "walkable": False,
+                    "hidden": False,
+                    "lab": b_info["name"],
+                    "renderTemplate": {"id": b_info["renderId"], "rot": b_info["rot"]},
+                    "sockets": {
+                        sock_id: {"entityType": "building", "locked": False}
+                    },
+                })
+                continue
+
             if pt not in all_active:
                 r.append({"walkable": False, "hidden": True})
                 continue
@@ -2685,25 +2711,64 @@ def build_base_map():
             }
 
             # Start and final
-            if pt == (24, 22):
+            if pt == (25, 35):
                 tile["start"] = True
-            elif pt == (24, 16):
+            elif pt == (25, 30):
                 tile["final"] = True
 
-            # Defender bot socket
+            # Defender bot socket & entities
             if pt in BASE_DEFENDERS:
+                d = BASE_DEFENDERS[pt]
                 sock_id = "sock_boss_%d_%d" % pt
                 tile["sockets"][sock_id] = {"entityType": "boss", "locked": False}
+                tile.setdefault("entities", {})
+                tile["entities"]["boss"] = {
+                    "entityType": "boss",
+                    "parentEntityType": "bcg",
+                    "key": d["bid"],
+                    "character": d["bid"],
+                    "rank": d["rank"],
+                    "level": d["level"],
+                    "sig_lvl": d["sig"],
+                }
+                # Gold generator entity -> triggers _goldReady yellow circular disc & emissive floor
+                tile["entities"]["gold"] = {
+                    "entityType": "generator",
+                    "parentEntityType": "generator",
+                    "resourceType": "gold",
+                }
 
-            # Tower socket
+            # Tower socket & entities
             if pt in BASE_TOWERS:
+                t_key = BASE_TOWERS[pt]
                 sock_id = "sock_tower_%d_%d" % pt
                 tile["sockets"][sock_id] = {"entityType": "tower", "locked": False}
+                tile.setdefault("entities", {})
+                tile["entities"]["tower"] = {
+                    "entityType": "tower",
+                    "parentEntityType": "bcg",
+                    "key": t_key,
+                    "character": t_key,
+                    "rank": 4,
+                    "level": 50,
+                }
 
-            # Relic socket
+            # Relic socket & 3D floating relic entity
             if pt in BASE_RELICS:
+                r_info = BASE_RELICS[pt]
                 sock_id = "sock_relic_%d_%d" % pt
                 tile["sockets"][sock_id] = {"entityType": "relic", "locked": False}
+                tile.setdefault("entities", {})
+                tile["entities"]["building"] = {
+                    "entityType": "building",
+                    "parentEntityType": "building",
+                    "id": r_info["id"],
+                    "key": r_info["id"],
+                    "modelId": r_info["model"],
+                    "name": r_info["name"],
+                    "rank": 5,
+                    "level": 50,
+                }
 
             r.append(tile)
         grid.append(r)
@@ -2712,17 +2777,18 @@ def build_base_map():
 
     path_data = [
         # Main vertical spine
-        {"path": [{"x": 24, "y": 25}, {"x": 24, "y": 24}, {"x": 24, "y": 22}, {"x": 24, "y": 19}, {"x": 24, "y": 16}, {"x": 24, "y": 15}, {"x": 24, "y": 14}, {"x": 24, "y": 13}]},
-        # Horizontal relic cross
-        {"path": [{"x": 16, "y": 19}, {"x": 20, "y": 19}, {"x": 24, "y": 19}, {"x": 28, "y": 19}, {"x": 32, "y": 19}]},
-        # Upper horizontal bridge
-        {"path": [{"x": 21, "y": 16}, {"x": 24, "y": 16}, {"x": 27, "y": 16}]},
+        {"path": [{"x": 25, "y": 43}, {"x": 25, "y": 41}, {"x": 25, "y": 39}, {"x": 25, "y": 35}, {"x": 25, "y": 31}, {"x": 25, "y": 30}]},
         # Outer diamond left
-        {"path": [{"x": 24, "y": 22}, {"x": 22, "y": 21}, {"x": 20, "y": 19}, {"x": 20, "y": 17}, {"x": 21, "y": 16}, {"x": 19, "y": 14}, {"x": 24, "y": 13}]},
+        {"path": [{"x": 25, "y": 41}, {"x": 22, "y": 38}, {"x": 22, "y": 35}, {"x": 22, "y": 33}, {"x": 25, "y": 30}]},
         # Outer diamond right
-        {"path": [{"x": 24, "y": 22}, {"x": 26, "y": 21}, {"x": 28, "y": 19}, {"x": 28, "y": 17}, {"x": 27, "y": 16}, {"x": 29, "y": 14}, {"x": 24, "y": 13}]},
-        # Inner diamond loop
-        {"path": [{"x": 24, "y": 16}, {"x": 21, "y": 18}, {"x": 24, "y": 22}, {"x": 27, "y": 18}, {"x": 24, "y": 16}]},
+        {"path": [{"x": 25, "y": 41}, {"x": 28, "y": 38}, {"x": 28, "y": 35}, {"x": 28, "y": 33}, {"x": 25, "y": 30}]},
+        # Middle cross
+        {"path": [{"x": 22, "y": 35}, {"x": 25, "y": 35}, {"x": 28, "y": 35}]},
+        # Relic connections
+        {"path": [{"x": 20, "y": 38}, {"x": 22, "y": 38}]},
+        {"path": [{"x": 31, "y": 38}, {"x": 28, "y": 38}]},
+        {"path": [{"x": 21, "y": 32}, {"x": 22, "y": 33}]},
+        {"path": [{"x": 30, "y": 32}, {"x": 28, "y": 33}]},
     ]
 
     return {
@@ -2773,7 +2839,22 @@ def build_base_mission():
         placements[sock_id] = {
             "entityType": "building",
             "parentEntityType": "building",
+            "id": rel["id"],
             "key": rel["id"],
+            "modelId": rel["model"],
+            "name": rel["name"],
+            "rank": 5,
+            "level": 50,
+            "position": {"x": r, "y": c},
+        }
+
+    # 4. Functional Buildings
+    for (r, c), b_info in BASE_FUNCTIONAL_BUILDINGS.items():
+        sock_id = "sock_bldg_%d_%d" % (r, c)
+        placements[sock_id] = {
+            "entityType": "building",
+            "parentEntityType": "building",
+            "key": b_info["id"],
             "position": {"x": r, "y": c},
         }
 
@@ -2840,10 +2921,15 @@ def build_base_active():
         user_sockets["sock_tower_%d_%d" % (r, c)] = True
     for (r, c) in BASE_RELICS:
         user_sockets["sock_relic_%d_%d" % (r, c)] = True
+    for (r, c) in BASE_FUNCTIONAL_BUILDINGS:
+        user_sockets["sock_bldg_%d_%d" % (r, c)] = True
 
     user_buildings = [
         {"id": rel["id"], "key": "sock_relic_%d_%d" % (r, c)}
         for (r, c), rel in BASE_RELICS.items()
+    ] + [
+        {"id": b["id"], "key": "sock_bldg_%d_%d" % (r, c)}
+        for (r, c), b in BASE_FUNCTIONAL_BUILDINGS.items()
     ]
 
     return {
