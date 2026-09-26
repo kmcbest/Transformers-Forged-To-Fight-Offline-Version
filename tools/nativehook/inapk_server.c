@@ -1389,6 +1389,73 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         args[2]=(TemplateArg){"%ATEAM%",ateam.p,ateam.n};
         v=template_spaced(o,v,n,args,3,outn);free(steam.p);free(ateam.p);return v;
     }
+
+    /* Gacha endpoints (C# whitebox contract) */
+    if(strstr(p, "/gacha/store")) {
+        static const unsigned char store_resp[] = "{\"error\":null,\"result\":{}}";
+        *outn = strlen((const char*)store_resp);
+        logmsg("GACHA: handled /gacha/store");
+        return store_resp;
+    }
+    if(strstr(p, "/gacha/getOdds")) {
+        static const unsigned char odds_resp[] = "{\"error\":null,\"result\":{\"odds\":[]}}";
+        *outn = strlen((const char*)odds_resp);
+        logmsg("GACHA: handled /gacha/getOdds");
+        return odds_resp;
+    }
+    if(strstr(p, "/autorefresh/gacha/refresh")) {
+        v = lookup("@gacha:refresh", outn);
+        if(v) {
+            logmsg("GACHA: handled /autorefresh/gacha/refresh via lookup");
+            return v;
+        }
+    }
+    if(strstr(p, "/gacha/pick")) {
+        static char pick_buf[4096];
+        int spins = 1;
+        if (body && bn > 0) {
+            const char *sp = strstr(body, "\"spins\":");
+            if (!sp) sp = strstr(body, "spins=");
+            if (sp) {
+                while (*sp && *sp != ':' && *sp != '=') sp++;
+                if (*sp) {
+                    sp++;
+                    while (*sp == ' ' || *sp == '\"') sp++;
+                    int val = atoi(sp);
+                    if (val >= 1 && val <= 10) spins = val;
+                }
+            }
+        }
+        int pos = snprintf(pick_buf, sizeof(pick_buf), "{\"error\":null,\"result\":{\"items\":[");
+        for (int i = 0; i < spins; i++) {
+            int hero_idx = q_rand() % ENEMY_POOL_SIZE;
+            const char *hero_bid = g_enemy_pool[hero_idx];
+            pos += snprintf(pick_buf + pos, sizeof(pick_buf) - pos,
+                "%s{\"type\":\"hero\",\"data\":\"%s\",\"quantity\":1}",
+                (i > 0) ? "," : "",
+                hero_bid);
+            logmsg("GACHA: pick[%d] awarded %s", i, hero_bid);
+        }
+        snprintf(pick_buf + pos, sizeof(pick_buf) - pos, "],\"spins\":%d,\"softToPay\":0,\"xpToGive\":%d}}", spins, spins * 500);
+        *outn = strlen(pick_buf);
+        return (const unsigned char*)pick_buf;
+    }
+    if(strstr(p, "/gacha/claimfree")) {
+        static char claim_buf[2048];
+        int hero_idx = q_rand() % ENEMY_POOL_SIZE;
+        const char *hero_bid = g_enemy_pool[hero_idx];
+        snprintf(claim_buf, sizeof(claim_buf),
+            "{\"error\":null,\"result\":{"
+            "\"items\":[{\"type\":\"hero\",\"data\":\"%s\",\"quantity\":1}],"
+            "\"spins\":1"
+            "}}",
+            hero_bid
+        );
+        *outn = strlen(claim_buf);
+        logmsg("GACHA: handled /gacha/claimfree -> awarded %s", hero_bid);
+        return (const unsigned char*)claim_buf;
+    }
+
     return NULL;
 }
 

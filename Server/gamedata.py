@@ -878,6 +878,34 @@ def build_missions_account_data():
     return account_data
 
 
+def build_gacha_data():
+    """Gacha definitions adhering to TFTF 2.0.2 whitebox C# contract."""
+    import sys
+    sys_tools = os.path.join(HERE, "..")
+    if sys_tools not in sys.path:
+        sys.path.insert(0, sys_tools)
+    from tools.setup_gacha_system import get_gacha_data
+    return get_gacha_data()
+
+
+def build_gacha_autorefresh_result():
+    return build_gacha_data()
+
+
+def build_gacha_autorefresh_update():
+    res = build_gacha_autorefresh_result()
+    return {
+        "name": "gacha",
+        "error": "",
+        "check": res["check"],
+        "locHash": "",
+        "refresh": res["refresh"],
+        "data": res["gacha"],
+        "gacha": res["gacha"],
+        "cache": res["cache"],
+    }
+
+
 _CLASS_NAMES = {
     "braw": "Brawler", "tact": "Tactician", "scou": "Scout",
     "demo": "Demolitions", "warr": "Warrior", "tech": "Tech",

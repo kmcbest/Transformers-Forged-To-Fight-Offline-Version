@@ -292,8 +292,10 @@ def build_entries(listen_port: int = 8080) -> dict[str, bytes]:
                 )
                 add(f"@quest:moves:{qid}", moves)
 
-    add("@grouprefresh:missionsconfig", _envelope({"updates": [gamedata.build_missions_autorefresh_update()]}))
-    add("@grouprefresh:", _envelope({"updates": []}))
+    add("@grouprefresh:missionsconfig", _envelope({"updates": [gamedata.build_missions_autorefresh_update(), gamedata.build_gacha_autorefresh_update()]}))
+    add("@grouprefresh:", _envelope({"updates": [gamedata.build_gacha_autorefresh_update()]}))
+    add("GET /autorefresh/gacha/refresh", _envelope(gamedata.build_gacha_autorefresh_result()))
+    add("@gacha:refresh", _envelope(gamedata.build_gacha_autorefresh_result()))
     # Exact xlate snapshot routes
     for x_path in sorted(Path("assets/xlate/snapshots").rglob("*.json")):
         rel_url = "/" + str(x_path.relative_to(Path("assets"))).replace("\\", "/")
