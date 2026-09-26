@@ -2471,61 +2471,12 @@ def build_quest_movedir(qid="1.1.1", offx=1, offy=0, start=None, team=None):
 # ---------------------------------------------------------------------------
 
 BASE_ID = "user_base_1"       # ActiveMission.id -> Base.uniqueId
-BASE_THEME = "primordial"     # -> library_primordial_base (see above)
-BASE_DIM = 5                  # Map.gridDimension (square grid)
-
-# Sockets (build plots), corrected against EB.Missions.MapTile.Deserialize
-# (@0x1484C04, socket loop @0x1485704):
-#   * the tile's `sockets` dict ENTRY KEY becomes Socket.id (builder.NewSocket's
-#     first arg is key.ToString());
-#   * the entry value's `entityType` field becomes Socket.type -- NOT a `type` key
-#     (Socket.Deserialize @0x137F434 itself reads only `locked` + base `v`);
-#   * tile.sockets is then keyed by socket TYPE (dict.Add uses Socket.type@0x28),
-#     which is what Quests.MapTile.Deserialize (@0x1093E9C) looks up with the
-#     literal keys "boss"/"tower"/"building"/"relic" to pick bossSocket /
-#     towerSocket / buildingSocket. An earlier draft keyed the wire dict by socket
-#     id and put the type in a `type` field -- both wrong, the socket was never
-#     found and no building could ever attach to a tile.
-# `userSockets` (a flat id -> bool map) is the per-player unlock state overlay,
-# parsed by BaseSubManager.DeserializeUnlocks (@0x1737CA8).
-BASE_SOCKET_TYPE = "building"
+BASE_THEME = "primordial"     # -> library_primordial_base (canyon fortress terrain)
+BASE_DIM = 50                 # Map.gridDimension (50x50 canyon gameboard for native qb_base_top_01)
 
 # ---------------------------------------------------------------------------
-# Buildings.
-#
-# Wire path (all disassembled):
-#   * `userAvailableBuildings` -> BaseSubManager.DeserializeAvailableBuildings
-#     (@0x1737168): an ARRAY of dicts. Each: entityType (must be "building" --
-#     EB.Base.Builder.NewEntity @0x149B5D4 only takes the Building branch when
-#     baseType == "building"; parentEntityType defaults to entityType), then
-#     Building.Deserialize (@0x149C594) reads id / name / description / img
-#     (Dot.Loc, plain strings fine) / modelId / maxDamage / cost / comingSoon /
-#     levels / rank / level / damage / funds{upgrade,repair}. The parsed building
-#     lands in builder.availableBuildings keyed by its `id`.
-#   * `userBuildings` -> DeserializeOwnedBuildings (@0x17376D0): an ARRAY whose
-#     entries are {id, key}: `id` MUST match an available building (TryGetValue
-#     into builder.availableBuildings, else "Error deserializing owned
-#     buildingId="), the clone re-runs Deserialize on the entry (so rank/level
-#     could be overridden here) and is stored keyed by `key`.
-#   * The mission's `placements` -> Placement.Deserialize (@0x13A2DDC): a DICT
-#     keyed by SOCKET id. Each value: entityType/parentEntityType ("building"),
-#     `key` = the building id (passed as NewEntity's extraData, which is what
-#     makes the base builder CLONE availableBuildings[key]), `position` = tile
-#     coords. Placement.entities is keyed by the outer dict key.
-#   * Display: BaseNodeController.Refresh (@0xCF2D30) -> Quests.MapTile
-#     .get_building (@0x1094230) = mission.placement.entities[tile.buildingSocket
-#     .id] -- so the placements key must equal the tile's socket id -- then loads
-#     the prefab named by Building.modelId (@0x78) via GameboardBuilder
-#     .LoadBuildingObject ("buildings/prefabs/" + modelId).
-#
-# modelId therefore must be a child of the `library_buildings` prefab in the
-# APK's buildings.assetbundle. The full shipped set (dumped with UnityPy):
-#   z_bldg_alliance_help_00..03, z_bldg_away_team_00..03,
-#   z_bldg_battle_centre_00..03, z_bldg_gacha_daily_01, z_bldg_gacha_free_01,
-#   z_bldg_gacha_other_01
-# (the _00.._03 suffix is the visual upgrade tier).
+# Base Buildings & Relics catalogue
 # ---------------------------------------------------------------------------
-
 BASE_BUILDINGS = {
     "bldg_battle_centre": {
         "name": "Battle Centre",
@@ -2559,21 +2510,94 @@ BASE_BUILDINGS = {
     },
 }
 
-BASE_PLACEMENTS = {
-    (1, 1): "bldg_away_team",        # Back-Left (Away Team Station + Spaceship Shuttle)
-    (1, 2): "bldg_battle_centre",    # Back-Center (Battle Centre Command Tower)
-    (1, 3): "bldg_alliance_help",    # Back-Right (Alliance Help Radar Tower)
-    (2, 1): "bldg_crystal_free",     # Mid-Left (Free Crystal Vault)
-    (2, 3): "bldg_crystal_premium",  # Mid-Right (Premium Crystal Vault)
+# 3D Base Buildings placed via tile renderTemplate (spawned into _BaseBuildingParent):
+# Empty: Courtyard has no giant z_bldg_* buildings; native 3D fortress qb_base_top_01 provides the environment.
+BASE_3D_BUILDINGS = {}
+
+# Defending Bots placed on nodes via bossSocket (spawns hexagonal BossCard):
+# Matched to original base screenshot:
+BASE_DEFENDERS = {
+    (24, 16): {"bid": "shockwave_gs", "rank": 5, "level": 50, "sig": 60, "name": "Commander's Stronghold"},
+    (24, 13): {"bid": "megatron_gs_leader2015", "rank": 5, "level": 50, "sig": 60, "name": "Apex Bastion"},
+    (24, 22): {"bid": "galvatron_gs_voyager2016", "rank": 5, "level": 50, "sig": 40, "name": "Courtyard Vanguard"},
+    (21, 16): {"bid": "megatron_cin_rotf", "rank": 5, "level": 50, "sig": 30, "name": "West Bastion"},
+    (27, 16): {"bid": "blaster_gs_leader2016", "rank": 5, "level": 50, "sig": 30, "name": "East Bastion"},
+    (20, 19): {"bid": "arcee_gs_deluxe2014", "rank": 5, "level": 50, "sig": 40, "name": "West Flank Guard"},
+    (28, 19): {"bid": "optimusprime_cin_tf", "rank": 5, "level": 50, "sig": 40, "name": "East Flank Guard"},
 }
+
+# Defense Towers / Modules placed on nodes via towerSocket (spawns 3D tower models):
+BASE_TOWERS = {
+    (24, 25): "mods_laserguidance_01",       # Bottom entrance turret
+    (22, 21): "mods_harmaccelerator_01",     # Southwest turret
+    (26, 21): "mods_strangerefractor_01",    # Southeast turret
+    (20, 17): "mods_primemodule_01",         # West module
+    (28, 17): "mods_superconductor_2000",    # East module
+    (24, 14): "mods_tacticianstrick_02",     # North center module
+    (19, 14): "mods_paralyzer_01",           # Northwest tower
+    (29, 14): "mods_brawlersfury_01",        # Northeast tower
+}
+
+# Relics placed on pedestals via relicSocket (spawns qb_relic_pedestal_01 + 3D floating relic + RelicCard):
+BASE_RELICS = {
+    (16, 19): {"id": "relic_statue_op", "model": "rlc11", "name": "Monument of Prime"},
+    (32, 19): {"id": "relic_matrix_of_leadership", "model": "rlc14", "name": "Matrix Shrine"},
+}
+
+# Waypoint nodes (glowing yellow circular pads with links):
+BASE_WAYPOINTS = {
+    (24, 19): "Central Relay",
+    (24, 15): "Core Conduit",
+    (21, 18): "West Conduit",
+    (27, 18): "East Conduit",
+    (24, 24): "Gate Conduit",
+}
+
+# Base graph edges for bidirectional links and visual circuits
+BASE_EDGES = [
+    # Main vertical spine
+    ((24, 25), (24, 24)),
+    ((24, 24), (24, 22)),
+    ((24, 22), (24, 19)),
+    ((24, 19), (24, 16)),
+    ((24, 16), (24, 15)),
+    ((24, 15), (24, 14)),
+    ((24, 14), (24, 13)),
+    # Horizontal relic cross
+    ((16, 19), (20, 19)),
+    ((20, 19), (24, 19)),
+    ((24, 19), (28, 19)),
+    ((28, 19), (32, 19)),
+    # Upper horizontal bridge
+    ((21, 16), (24, 16)),
+    ((24, 16), (27, 16)),
+    # Outer diamond
+    ((24, 22), (22, 21)),
+    ((22, 21), (20, 19)),
+    ((20, 19), (20, 17)),
+    ((20, 17), (21, 16)),
+    ((21, 16), (19, 14)),
+    ((19, 14), (24, 13)),
+    ((24, 22), (26, 21)),
+    ((26, 21), (28, 19)),
+    ((28, 19), (28, 17)),
+    ((28, 17), (27, 16)),
+    ((27, 16), (29, 14)),
+    ((29, 14), (24, 13)),
+    # Inner diamond
+    ((24, 16), (21, 18)),
+    ((21, 18), (24, 22)),
+    ((24, 16), (27, 18)),
+    ((27, 18), (24, 22)),
+]
 
 
 def build_base_summary():
     """EB.Missions.Summary for the base, delivered as the mission's `data`.
 
     Same reader as the STORY mission summary (see build_quest_summary), so the field
-    names carry over. `theme` is the one field that must be right: it selects the
-    terrain prefab library, and for a base the client appends "_base" to it.
+    names carry over. `theme` is 'primordial', which GameboardBuilder maps to
+    'primordial_base' to load library_primordial_base and the canyon fringe mesh.
     """
     return {
         "id": BASE_ID, "setId": "", "hash": "b1",
@@ -2588,47 +2612,89 @@ def build_base_summary():
 def build_base_map():
     """The base's EB.Missions.Map."""
     dim = BASE_DIM
-    centre = dim // 2
 
-    def links_for(row, col):
-        out = []
-        for r, c in ((row - 1, col), (row + 1, col), (row, col - 1), (row, col + 1)):
-            if 0 <= r < dim and 0 <= c < dim and _base_walkable(r, c):
-                out.append({"x": r, "y": c})
-        return out
+    all_active = set(BASE_DEFENDERS.keys()) | set(BASE_TOWERS.keys()) | set(BASE_RELICS.keys()) | set(BASE_WAYPOINTS.keys())
+
+    # Build adjacency
+    adj = {pt: [] for pt in all_active}
+    for a, b in BASE_EDGES:
+        if a in adj and b in adj:
+            adj[a].append({"x": b[0], "y": b[1]})
+            adj[b].append({"x": a[0], "y": a[1]})
 
     grid = []
     for row in range(dim):
         r = []
         for col in range(dim):
-            if not _base_walkable(row, col):
+            pt = (row, col)
+            if pt == (0, 0):
+                # Native 3D canyon fortress + courtyard + shield generator + drones
+                r.append({
+                    "walkable": False,
+                    "hidden": False,
+                    "renderTemplate": {"id": "qb_base_top_01", "rot": 0},
+                })
+                continue
+
+            if pt not in all_active:
                 r.append({"walkable": False, "hidden": True})
                 continue
-            lk = links_for(row, col)
+
+            lk = adj.get(pt, [])
+            lab = "Node %d-%d" % (row, col)
+            if pt in BASE_DEFENDERS:
+                lab = BASE_DEFENDERS[pt].get("name", lab)
+            elif pt in BASE_RELICS:
+                lab = BASE_RELICS[pt].get("name", lab)
+            elif pt in BASE_WAYPOINTS:
+                lab = BASE_WAYPOINTS[pt]
+
             tile = {
-                "walkable": True, "hidden": False,
-                "lab": "Plot %d-%d" % (row, col),
+                "walkable": True, "hidden": False, "cleared": False,
+                "lab": lab,
                 "links": lk, "visibleLinks": lk,
-                "sockets": {
-                    _base_socket_id(row, col): {
-                        "entityType": BASE_SOCKET_TYPE,
-                        "locked": False,
-                    },
-                },
+                "sockets": {},
             }
-            if (row, col) == (centre, centre):
+
+            # Start and final
+            if pt == (24, 22):
                 tile["start"] = True
-                tile["lab"] = "Command Centre"
+            elif pt == (24, 16):
+                tile["final"] = True
+
+            # Defender bot socket
+            if pt in BASE_DEFENDERS:
+                sock_id = "sock_boss_%d_%d" % pt
+                tile["sockets"][sock_id] = {"entityType": "boss", "locked": False}
+
+            # Tower socket
+            if pt in BASE_TOWERS:
+                sock_id = "sock_tower_%d_%d" % pt
+                tile["sockets"][sock_id] = {"entityType": "tower", "locked": False}
+
+            # Relic socket
+            if pt in BASE_RELICS:
+                sock_id = "sock_relic_%d_%d" % pt
+                tile["sockets"][sock_id] = {"entityType": "relic", "locked": False}
+
             r.append(tile)
         grid.append(r)
 
-    walkable = sum(1 for row in range(dim) for col in range(dim)
-                   if _base_walkable(row, col))
-    # Circuit pathways connecting all 3 rows and 3 columns
+    walkable = len(all_active)
+
     path_data = [
-        {"path": [{"x": r, "y": c} for c in range(1, 4)]} for r in range(1, 4)
-    ] + [
-        {"path": [{"x": r, "y": c} for r in range(1, 4)]} for c in range(1, 4)
+        # Main vertical spine
+        {"path": [{"x": 24, "y": 25}, {"x": 24, "y": 24}, {"x": 24, "y": 22}, {"x": 24, "y": 19}, {"x": 24, "y": 16}, {"x": 24, "y": 15}, {"x": 24, "y": 14}, {"x": 24, "y": 13}]},
+        # Horizontal relic cross
+        {"path": [{"x": 16, "y": 19}, {"x": 20, "y": 19}, {"x": 24, "y": 19}, {"x": 28, "y": 19}, {"x": 32, "y": 19}]},
+        # Upper horizontal bridge
+        {"path": [{"x": 21, "y": 16}, {"x": 24, "y": 16}, {"x": 27, "y": 16}]},
+        # Outer diamond left
+        {"path": [{"x": 24, "y": 22}, {"x": 22, "y": 21}, {"x": 20, "y": 19}, {"x": 20, "y": 17}, {"x": 21, "y": 16}, {"x": 19, "y": 14}, {"x": 24, "y": 13}]},
+        # Outer diamond right
+        {"path": [{"x": 24, "y": 22}, {"x": 26, "y": 21}, {"x": 28, "y": 19}, {"x": 28, "y": 17}, {"x": 27, "y": 16}, {"x": 29, "y": 14}, {"x": 24, "y": 13}]},
+        # Inner diamond loop
+        {"path": [{"x": 24, "y": 16}, {"x": 21, "y": 18}, {"x": 24, "y": 22}, {"x": 27, "y": 18}, {"x": 24, "y": 16}]},
     ]
 
     return {
@@ -2642,24 +2708,47 @@ def build_base_map():
     }
 
 
-def _base_walkable(row, col):
-    """3x3 core grid of plots (rows 1..3, cols 1..3)."""
-    return 1 <= row <= 3 and 1 <= col <= 3
-
-
-def _base_socket_id(row, col):
-    return "sock_%d_%d" % (row, col)
-
-
 def build_base_mission():
-    """The EB.Missions.ActiveMission served as `userBase`.
+    """The EB.Missions.ActiveMission served as `userBase`."""
+    placements = {}
 
-    ActiveMission.Deserialize (@0x1514354) logs an error and gives up unless `mode`,
-    `category` and `id` are all non-empty. `uid` must be the local user id: Base.get_type
-    keys off `Id.Valid` on it to decide this is a USER base ("users") rather than an
-    alliance one, and the "users" answer is what makes ActiveQuest pick UserBaseConfig
-    and BaseBoard treat the board as the player's own.
-    """
+    # 1. Defending bots
+    for (r, c), d in BASE_DEFENDERS.items():
+        sock_id = "sock_boss_%d_%d" % (r, c)
+        placements[sock_id] = {
+            "entityType": "boss",
+            "parentEntityType": "bcg",
+            "key": d["bid"],
+            "character": d["bid"],
+            "rank": d["rank"],
+            "level": d["level"],
+            "sig_lvl": d["sig"],
+            "position": {"x": r, "y": c},
+        }
+
+    # 2. Defense towers
+    for (r, c), t_key in BASE_TOWERS.items():
+        sock_id = "sock_tower_%d_%d" % (r, c)
+        placements[sock_id] = {
+            "entityType": "tower",
+            "parentEntityType": "bcg",
+            "key": t_key,
+            "character": t_key,
+            "rank": 4,
+            "level": 50,
+            "position": {"x": r, "y": c},
+        }
+
+    # 3. Relics
+    for (r, c), rel in BASE_RELICS.items():
+        sock_id = "sock_relic_%d_%d" % (r, c)
+        placements[sock_id] = {
+            "entityType": "building",
+            "parentEntityType": "building",
+            "key": rel["id"],
+            "position": {"x": r, "y": c},
+        }
+
     return {
         "mode": "base", "category": "base", "id": BASE_ID,
         "hash": "b1", "setName": "", "setId": "",
@@ -2667,22 +2756,16 @@ def build_base_mission():
         "modes": ["base"],
         "data": build_base_summary(),
         "map": build_base_map(),
-        "placements": {
-            _base_socket_id(r, c): {
-                "entityType": "building",
-                "parentEntityType": "building",
-                "key": bid,
-                "position": {"x": r, "y": c},
-            }
-            for (r, c), bid in BASE_PLACEMENTS.items()
-        },
+        "placements": placements,
     }
 
 
 def build_base_available_buildings():
-    """The building catalogue, one entry per BASE_BUILDINGS row."""
+    """The building and relic catalogue for base."""
     out = []
+    seen = set()
     for bid, spec in BASE_BUILDINGS.items():
+        seen.add(bid)
         out.append({
             "entityType": "building",
             "id": bid,
@@ -2697,28 +2780,49 @@ def build_base_available_buildings():
             "rank": 1, "level": 1, "damage": 0,
             "funds": {"upgrade": [], "repair": []},
         })
+
+    for rel in _load_relics():
+        rid = rel["id"]
+        if rid in seen:
+            continue
+        seen.add(rid)
+        out.append({
+            "entityType": "building",
+            "id": rid,
+            "name": rel.get("name_en", rid),
+            "description": rel.get("description_en", "Ancient Cybertronian relic."),
+            "img": rel.get("portrait_base", ""),
+            "modelId": rel.get("model_id", rid),
+            "maxDamage": 100,
+            "cost": [],
+            "comingSoon": False,
+            "levels": [],
+            "rank": rel.get("default_star", 5), "level": 50, "damage": 0,
+            "funds": {"upgrade": [], "repair": []},
+        })
     return out
 
 
 def build_base_active():
-    """GET /base/active reply body (the `result`).
+    """GET /base/active reply body (the `result`)."""
+    user_sockets = {}
+    for (r, c) in BASE_DEFENDERS:
+        user_sockets["sock_boss_%d_%d" % (r, c)] = True
+    for (r, c) in BASE_TOWERS:
+        user_sockets["sock_tower_%d_%d" % (r, c)] = True
+    for (r, c) in BASE_RELICS:
+        user_sockets["sock_relic_%d_%d" % (r, c)] = True
 
-    Only the `user*` half is authored: the alliance sub-manager is fed nothing, so
-    BaseSubManager leaves the alliance base null, which is correct offline (there is
-    no alliance). The placed buildings appear twice by design: once as owned
-    entries here (id + the socket-id `key` they occupy) and once in the mission's
-    `placements`, which is the copy the board actually renders from.
-    """
+    user_buildings = [
+        {"id": rel["id"], "key": "sock_relic_%d_%d" % (r, c)}
+        for (r, c), rel in BASE_RELICS.items()
+    ]
+
     return {
         "userBase": build_base_mission(),
         "userAvailableBuildings": build_base_available_buildings(),
-        "userBuildings": [
-            {"id": bid, "key": _base_socket_id(r, c)}
-            for (r, c), bid in BASE_PLACEMENTS.items()
-        ],
-        "userSockets": {_base_socket_id(r, c): True
-                        for r in range(BASE_DIM) for c in range(BASE_DIM)
-                        if _base_walkable(r, c)},
+        "userBuildings": user_buildings,
+        "userSockets": user_sockets,
     }
 
 
