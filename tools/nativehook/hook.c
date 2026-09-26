@@ -532,8 +532,8 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x1174300, "PCSPECIAL",          2, 0 }, // 153 PlayerController.SpecialAttack(int index)
     { 0x1179AF4, "PCACTION",           2, 0 }, // 154 PlayerController.Action(int action)
     { 0x0E34640, "SPEXIT",             2, 0 }, // 155 PlayerSpecialAttackState.OnExit -> reset attack chain on special end (S1/S2)
-    { 0x0DADA6C, "ROLL_CRIT",          2, 0 }, // 156 PlayerAttributes.RollForCriticalHit -> force critical hit
-    { 0x0CCF8F0, "APPLY_STATMOD",      2, 0 }, // 157 StatModifierController.ApplyStatModifier -> crit gate for abilities
+    { 0x0DADCA8, "ROLL_CRIT",          2, 0 }, // 156 PlayerAttributes.RollForCriticalHit -> real crit roll
+    { 0x0CCF35C, "GET_STATMOD",        2, 0 }, // 157 StatModifierController.GetStatModifier -> crit gate for abilities
     { 0,          "UNUSED_158",         0, 0 }, // 158 disabled (no-op pass-through)
     { 0,          "UNUSED_159",         0, 0 }, // 159 disabled (no-op pass-through)
     { 0x0D32A00, "BLOCKENTER",         2, 0 }, // 160 PlayerBlockState.OnEnter -> arm block timer
@@ -4910,14 +4910,21 @@ void* hook_155(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
 }
 static volatile int g_p0_last_hit_is_crit = 0;
 
-void* hook_156(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
-    float crit_chance = 0.14f;
+float hook_156(void* a0, float opp_resist, int attack_type, int p3, void* method) {
+    // a0 = PlayerAttributes* self (0xDADCA8: PlayerAttributes.RollForCriticalHit)
     void* owner = (a0 && obj_ok(a0)) ? *(void**)((char*)a0 + 0x28) : NULL;
     int player_idx = (owner && obj_ok(owner)) ? *(int32_t*)((char*)owner + 0xF4) : -1;
     const char* bid = (player_idx == 0) ? g_p0_bot_id : g_p1_bot_id;
 
+    float crit_chance = 0.32f; // Default 32% (Arcee base crit chance)
     if (bid && bid[0]) {
         calc_enemy_stats_all(bid, 5, 50, NULL, NULL, NULL, &crit_chance, NULL);
+    }
+
+    float effective_cc = crit_chance;
+    if (opp_resist > 0.0f) {
+        effective_cc -= opp_resist;
+        if (effective_cc < 0.05f) effective_cc = 0.05f;
     }
 
     static int s_seeded = 0;
@@ -4927,7 +4934,7 @@ void* hook_156(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     }
 
     float roll = (float)(rand() % 10000) / 10000.0f;
-    int is_crit = (roll < crit_chance) ? 1 : 0;
+    int is_crit = (roll < effective_cc) ? 1 : 0;
 
     if (player_idx == 0) {
         g_p0_last_hit_is_crit = is_crit;
@@ -4935,19 +4942,29 @@ void* hook_156(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
 
     static int s_crit_log_cnt = 0;
     if (s_crit_log_cnt++ < 60) {
-        flog("ROLL_CRIT: pidx=%d bid=%s (cc=%.2f, roll=%.4f) -> is_crit=%d (a0=%p)",
-             player_idx, bid ? bid : "unknown", crit_chance, roll, is_crit, a0);
+        flog("ROLL_CRIT (0xDADCA8): pidx=%d bid=%s (cc=%.2f, opp_res=%.2f, roll=%.4f) -> is_crit=%d (at=%d)",
+             player_idx, bid ? bid : "unknown", crit_chance, opp_resist, roll, is_crit, attack_type);
     }
-    return (void*)(intptr_t)is_crit;
+
+    // PlayerAttributes.RollForCriticalHit returns float in s0:
+    // > 0.0f means critical hit occurred (caller does fcmp s0, #0.0; b.le not_crit).
+    if (is_crit) {
+        return 1.50f;
+    }
+    return 0.0f;
 }
-void* hook_157(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
-    // a0 = StatModifierController* self
-    // a1 = StatModifier* stat_mod
+
+typedef int (*fn_get_statmod)(void* self, void* stat_mod, void* roll_ptr, void* chance_ptr, void* trigger_params, void* method);
+
+int hook_157(void* self, void* stat_mod, void* roll_ptr, void* chance_ptr, void* trigger_params, void* method) {
+    // 0xCCF35C: StatModifierController.GetStatModifier
+    // self = StatModifierController*
+    // stat_mod = StatModifier*
     PROTECT({
-        if (a1 && obj_ok(a1)) {
-            void* modifier = *(void**)((char*)a1 + 0x38); // BCGStatModifier
+        if (stat_mod && obj_ok(stat_mod)) {
+            void* modifier = *(void**)((char*)stat_mod + 0x38); // BCGStatModifier*
             if (modifier && obj_ok(modifier)) {
-                void* id_str = *(void**)((char*)modifier + 0x20); // string ID
+                void* id_str = *(void**)((char*)modifier + 0x20); // System.String* ID
                 char mod_id[64] = "";
                 if (id_str && read_str(id_str, mod_id, sizeof(mod_id)) && mod_id[0]) {
                     // Check for Arcee's crit-dependent abilities
@@ -4955,17 +4972,18 @@ void* hook_157(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
                         if (!g_p0_last_hit_is_crit) {
                             static int s_suppress_log = 0;
                             if (s_suppress_log++ < 60) {
-                                flog("STATMOD_GATE: Blocked %s (attack was not a crit)", mod_id);
+                                flog("STATMOD_GATE: Blocked %s (attack was NOT a crit, g_p0_crit=%d)", mod_id, g_p0_last_hit_is_crit);
                             }
-                            return NULL;
+                            return 0; // Return 0 -> tbz w0, #0 branches over ApplyStatModifier!
                         }
-                        flog("STATMOD_GATE: Allowed %s (CRITICAL HIT!)", mod_id);
+                        flog("STATMOD_GATE: Allowed %s (CRITICAL HIT! g_p0_crit=%d)", mod_id, g_p0_last_hit_is_crit);
                     }
                 }
             }
         }
     });
-    return H[157].orig ? H[157].orig(a0, a1, a2, a3, a4, a5, a6, a7) : NULL;
+    fn_get_statmod orig = (fn_get_statmod)H[157].orig;
+    return orig ? orig(self, stat_mod, roll_ptr, chance_ptr, trigger_params, method) : 0;
 }
 void* hook_158(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     return H[158].orig ? H[158].orig(self, a1, a2, a3, a4, a5, a6, a7) : NULL;

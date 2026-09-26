@@ -73,7 +73,12 @@ class TestArceeAbility(unittest.TestCase):
             self.assertIsInstance(mod["uit"], list)
             self.assertIsInstance(mod["a"], list)
             self.assertEqual(mod["ta"], "opponent")
-            self.assertEqual(mod["mt"], "debuff")
+            if k == "arcee_headshot_direct":
+                self.assertEqual(mod["mt"], "passive")
+                self.assertEqual(mod["a"], [])
+            else:
+                self.assertEqual(mod["mt"], "debuff")
+                self.assertEqual(mod["a"], ["appr_arcee_bleed"])
 
         # Headshot direct: instant 60% atk (2091), d=0.5, c=0.5, on ranged / S1 / S3 crit
         d_mod = mods["arcee_headshot_direct"]

@@ -511,17 +511,17 @@ python INSTALL-ADB.py
 ### 16.3 战斗修饰器与能力执行引擎 RVA 符号地图
 | RVA (arm64-v8a) | C# 类与方法 (IL2CPP) | 参数签名 / 寄存器约定 | 核心业务行为与用途 |
 | :--- | :--- | :--- | :--- |
-| `0x0CC2E08` | `StatModifierController.ApplyStatModifiers` | `(this, actType, trigParams, updateAttr)` | 触发事件分发中心，遍历并调用条件判定 |
+| `0x0CC2E08` | `StatModifierController.ApplyStatModifiers` | `(this, actType, trigParams, updateAttr)` | 触发事件分发中心，循环内 `0xCC2E54: bl #0xccf35c; tbz w0, #0, next` 决定是否施加 |
 | `0x0CCF1FC` | `StatModifierController.GetFilteredStatModifiers` | `(this, triggerType, param)` | 按触发事件类型（如 `onRangedHit`）筛选待执行修饰器 |
-| `0x0CCF35C` | `StatModifierController.GetStatModifier` | `(this, mod, rollPtr, chancePtr, ...)` | 条件匹配与几率掷骰核心（汇编末尾 `fcmp s0, s1; cset w0, mi`），返回 1/0 |
+| `0x0CCF35C` | `StatModifierController.GetStatModifier` | `(this, stat_mod, rollPtr, chancePtr, trigParams, method)` | **Hook 157 真实挂载点**。条件匹配与几率掷骰核心，返回 `w0 = 1/0`。若未暴击直接返回 `0` 即可完全跳过 `ApplyStatModifier`！ |
+| `0x0CCF558` | `StatModifierController.ApplyStatModifier` | `(this, statMod, updateAttr, useDur, dur)` | `0xCC2E70` 处实际调用的施加函数 |
 | `0x0CCF6CC` | `StatModifierController.TestForConditionsAndRoll` | `(this, statMod, roll, chance, trigParams)` | 条件表达式匹配与概率 Roll 点（返回 bool） |
-| `0x0CCF8F0` | `StatModifierController.ApplyStatModifier` | `(this, statMod, updateAttr, useDur, dur)` | **Hook 157 挂载点**。真正实例化并施加 Buff/效果 |
 | `0x0CCFB48` | `StatModifierController.TryApplyStatModifier` | `(this, modifierID, updateAttr, useDur, dur)` | 通过 ID 动态尝试施加修饰器 |
 
 #### 内存结构关键偏移：
 - `StatModifier`（Type 8846）：
   - `+0x30`：`Owner`（持有者控制器指针）
-  - `+0x38`：`BCGStatModifier*`（修饰器数据配置指针）
+  - `+0x38`：`BCGStatModifier*`（修饰器数据配置指针，`get_Modifier` @ `0xCCDF4C`）
 - `BCGStatModifier`（Type 8306）：
   - `+0x20`：`ID`（`System.String*`，字符串长度位于 `+0x10`，UTF-16 字符数组位于 `+0x14`）
   - `+0x94`：`Stackable`（float 标志位）
@@ -529,22 +529,22 @@ python INSTALL-ADB.py
 ### 16.4 暴击判定、伤害结算与 Native Hook 门禁
 | RVA (arm64-v8a) | C# 类与方法 (IL2CPP) | 寄存器约定与关键偏移 | 核心业务行为与用途 |
 | :--- | :--- | :--- | :--- |
-| `0x0DADA6C` | `PlayerAttributes.RollForCriticalHit` | `x0` = this (`+0x28` 为 Owner Controller，`+0xF4` 为 playerIndex: 0 或 1) | **Hook 156 挂载点**。命中时判定是否出暴击（返回 1 或 0） |
+| `0x0DADCA8` | `PlayerAttributes.RollForCriticalHit` | `x0` = this (`+0x28` 为 Owner Controller，`+0xF4` 为 playerIndex: 0 或 1), `s0` = opp_resist, `w1` = attackType | **Hook 156 真实挂载点**（Method 59841，绝非 0xDADA6C 的 GetArmorDR）。返回 `s0`: `> 0.0f` 为暴击倍率，`0.0f` 为未暴击！ |
 | `0x0DAD558` | `PlayerAttributes.GetCritDamageMultiplier` | 返回 `float` 暴击伤害倍数 | **Hook 171 挂载点**。动态暴击伤害倍率计算 |
-| `0x01178C68` | `PlayerController.OnHit...` (Caller) | 调用 `0xCCF1FC` 和 `0xDADA6C` | 命中事件入口，串联暴击判定与 Buff 触发 |
+| `0x01178BA0` | `PlayerController.TryExecuteAction` (Caller) | `bl #0xdadca8; fcmp s0, #0.0; b.le not_crit` | 攻击判定核心，决定本次攻击是否显示暴击红字与增伤 |
 
 - **未暴击触发流血的根本原因**：
   客户端原生 `statMods.trs` 的 12 个条件键（`arena, canAttack, class, currAnim, fightType, heavyType, isAi, isFinalBoss, playerID, prevAnim, state, tags`）中**不存在 `isCrit`**，且 `onRangedHit`/`onSpecial1Hit` 为基础命中事件，每次受击必然广播。
 - **Hook 156 + Hook 157 双重门禁方案**：
-  1. `hook_156` 在伤害判定时捕获并更新全局状态 `g_p0_last_hit_is_crit`。
-  2. `hook_157` 挂钩 `ApplyStatModifier`（`0x0CCF8F0`），在每次尝试挂载 `arcee_headshot_*` 或 `arcee_s2_bleed` 时校验 `g_p0_last_hit_is_crit`，若未暴击直接返回 `NULL` 予以拦截。
+  1. `hook_156`（挂钩 `0x0DADCA8`）在命中时重写暴击几率（阿尔茜基准 32%），若判定为暴击返回 `1.50f` 并置 `g_p0_last_hit_is_crit = 1`；未暴击返回 `0.0f` 并置 `g_p0_last_hit_is_crit = 0`。
+  2. `hook_157`（挂钩 `0x0CCF35C`）在每次执行 `GetStatModifier` 时拦截 `arcee_headshot_*` 或 `arcee_s2_bleed`，若 `!g_p0_last_hit_is_crit` 直接返回 `0`。底层调用者 `0xCC2E58: tbz w0, #0, skip` 随即跳过施加逻辑，彻底杜绝非暴击流血！
 
 ### 16.5 HUD 状态图标堆叠与数字角标渲染机制
 | 关键类 / 字段 / RVA | 对应协议 / 机制 | 逆向关键发现与避坑要点 |
 | :--- | :--- | :--- |
 | `BuffsConfig.groups` | JSON 字段名必须是 `"groups"`（非 `"groupings"`） | C# 属性名为 `<groups>k__BackingField`。若写 `"groupings"`，反序列化后 `groups` 为空，底层 `HudBuffsGrid` 找不到分组策略，默认将其视为非堆叠（`stackable = false`），导致每次流血都生成一个全新图标 |
-| `HudBuffWidget._countLabel` | 叠加角标渲染（数字 `2`, `3`...） | 当 `groups["dmg_bleed"].stackable == true` 时，`HudBuffWidget` 会将多层同类 Buff 聚合进 `_buffs` 列表，自动激活 `_countLabel` 显示当前层数，单条到期逐层递减 |
-| `dmg_direct` 的 `active_display` | 直接伤害不占血条图标 | 爆头即时直接伤害应配置 `"active_display": false`，只结算伤害和呼出 `"HEADSHOT"` 提示，不在血条下生成冗余图标 |
+| `HudBuffWidget._countLabel` | 叠加角标渲染（数字 `2`, `3`...） | 当 `groups["dmg_bleed"].stackable == true` 且所有流血能力共享 `a: ["appr_arcee_bleed"]` 时，`HudBuffWidget` 会将多层同类 Buff 聚合进 `_buffs` 列表，自动激活 `_countLabel` 显示当前层数，单条到期逐层递减 |
+| `dmg_direct` 的 `active_display` 与 `a: []` | 直接伤害不占血条图标 | 爆头即时直接伤害应配置 `a: []` 与 `mt: "passive"`，仅结算瞬时扣血与飘字，绝不在血条下生成冗余同款流血图标 |
 | `0x018AF58C` (`NGUIMath.HexToColor`) | 颜色解析机制 | 严禁带 `#` 前缀（`#FF0000` 会错位解析成亮黄色，必须写纯 6 位 `FF0000`） |
 
 ### 16.6 特殊技（Special Moves）攻击判定与事件分发机制

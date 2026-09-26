@@ -187,7 +187,7 @@ def build_stat_mod_appears():
             "gt": "FF0000",
             "gb": "FF0000",
         },
-        # 阿尔茜流血 DOT 持续伤害外观
+        # 阿尔茜流血 DOT 持续伤害外观 (同时服务于爆头与S2流血，统一字形与颜色以支持图标数字角标堆叠)
         "appr_arcee_bleed": {
             "id": "appr_arcee_bleed",
             "a": "Bleed",
@@ -196,7 +196,7 @@ def build_stat_mod_appears():
             "ss": "Bleed damage over duration.",
             "t": "\uE401",                # 能量块流血字形（血条下方倒计时圆环图标）
             "f": "",
-            "st": "BLEED",                # 呼出大字
+            "st": "HEADSHOT",             # 命中呼出大字 HEADSHOT
             "ps": "Bleed",
             "pl": "Bleed damage ignoring armor.",
             "tc": "FF0000",               # 纯正红色 (0xFF, 0x00, 0x00)
@@ -328,16 +328,16 @@ def build_stat_modifiers():
             "d": 0.5,                    # 单 Tick 结算即时扣除
             "s": "none",
             "ta": "opponent",            # 作用于对手
-            "mt": "debuff",
+            "mt": "passive",             # 改为 passive，避免生成血条下重复图标
             "v": "",
             "ms": "",
-            "st": 1,
+            "st": 0,
             "g": "",
             "gc": 0.0,
             "gcv": "",
             "rcv": "",
             "ti": 0,
-            "a": ["appr_arcee_headshot"],# 弹出 "HEADSHOT" 红色大字
+            "a": [],                     # 空外观列表：直接伤害由跳字展现，严禁生成独立血条挂件
             "au": [],
             "rh": 0.0,
             "ra": 0.0,

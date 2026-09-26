@@ -185,7 +185,7 @@ def build_stat_mod_appears():
 | **7** | 条件表达式 `trs` 解析失败 | 写成了双等号 `==` 或含有空格，或者使用了不受支持的键。 | **铁律**：条件表达式必须使用单等号（如 `isAi=true`），严格限制在 12 个原生支持的键名之内。 |
 | **8** | 打开角色详情面板闪退 (SIGSEGV) | 觉醒等级 `sig_lvl > 0` 会强制加载客户端缺失的觉醒相关资产，导致崩溃。 | **铁律**：第一阶段保持 `sig_lvl = 0`，所有能力作为基础特长（Base Abilities）注入。 |
 | **9** | 多层流血无法堆叠，未出现数字角标且生成多个重复图标 | 客户端 `BuffsConfig` 的 C# 自动属性字段为 `<groups>k__BackingField`，反序列化**仅认 `"groups"` 键名**。若下发 `"groupings"` 会导致 `groups` 为空，底层 `HudBuffsGrid` 找不到策略默认回退为 `stackable = false`。 | **铁律**：`buffs_config` 必须提供 `"groups"` 字典（同时保留 `"groupings"` 兼容）。需堆叠的 Buff 配置 `stackable: true, active_display: true`；即时直接伤害配置 `active_display: false` 避免冗余图标。 |
-| **10** | 暴击触发技能在未暴击时依然触发（如不暴击也出流血） | 客户端 `statMods` 的触发器 `onRangedHit`/`onSpecial1Hit` 为基础受击事件，每次命中无条件广播，且 `trs` 原生支持的 12 个键中**不存在 `isCrit` 键**。 | **铁律**：暴击依赖型能力必须通过 Native Hook 门禁进行拦截。在 `hook_156`（`PlayerAttributes.RollForCriticalHit`）捕获 `g_p0_last_hit_is_crit`，在 `hook_157`（`StatModifierController.ApplyStatModifier`）中拦截对应技能 ID，未暴击直接返回 `NULL` 终止施加。 |
+| **10** | 暴击触发技能在未暴击时依然触发（如不暴击也出流血） | 客户端 `statMods` 的触发器 `onRangedHit`/`onSpecial1Hit` 为基础受击事件，每次命中无条件广播，且 `trs` 原生支持的 12 个键中**不存在 `isCrit` 键**。 | **铁律**：暴击依赖型能力必须通过 Native Hook 门禁进行拦截。在 `hook_156`（`PlayerAttributes.RollForCriticalHit`，真实 RVA `0x0DADCA8`）拦截并捕获 `g_p0_last_hit_is_crit`；在 `hook_157`（`StatModifierController.GetStatModifier`，真实 RVA `0x0CCF35C`）中拦截对应技能 ID，未暴击直接返回 `0`。底层调用者 `0xCC2E58: tbz w0, #0` 即刻分支跳过施加逻辑，彻底终止未暴击流血！ |
 
 ---
 
