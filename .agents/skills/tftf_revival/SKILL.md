@@ -471,3 +471,93 @@ python INSTALL-ADB.py
    I Unity : Calling get asset location, assetPackName: default, path: assetpack/questboard_odr/questboard/portrait_arrival_quest.png
    ```
    并通过 `python INSTALL-ADB.py --screenshot` 直观复核卡片方框内的图案渲染效果。
+
+---
+
+## 16. 战斗能力与修饰器系统（Ability, StatModifier & Buffs）架构与 IL2CPP 符号地图
+
+### 16.1 核心文件权责划分 (Where Ability Code Lives)
+为避免在多模块排查时迷失方向，战斗能力系统必须遵循清晰的单一本源与分工权责：
+1. **单一真理源定义层**：[`Server/abilities.py`](file:///e:/Agent/TFTF/Server/abilities.py)
+   - `build_buffs_config()`: 定义 Buff UI 挂件分组、是否堆叠（`stackable`）与显隐（`active_display`）。
+   - `build_buffs_set()`: 注册全局 Buff 行为模板（`globalBuffs`，如 `Damage_BuffEffect`、跳字收集器 `floating_text`）。
+   - `build_stat_modifiers()`: 配置触发事件（`tr`）、UI 事件（`uit`）、概率（`c`）、绝对伤害总值（`m`）、时长（`d`）、目标（`ta`）与修饰器类型（`mt`）。
+   - `build_stat_mod_appears()`: 配置视觉外观、Tecnica 矢量字体 Unicode PUA 字形（`t: \uE401`）、横幅呼出字（`st`）及纯 6 位 Hex 颜色（`tc: FF0000`）。
+   - `bot_abilities(bid)`: 全英雄能力挂载单一真理源字典。
+2. **服务端数据装配层**：[`Server/gamedata.py`](file:///e:/Agent/TFTF/Server/gamedata.py)
+   - 在 `build_hero_base`、`build_hero_entry`、`build_base_hero_details`，尤其是 **`quest_team`（战斗核心编队）** 中同步注入 `stat_mods` 列表。
+3. **离线载荷烘焙层**：[`Server/export_payload.py`](file:///e:/Agent/TFTF/Server/export_payload.py)
+   - 将所有 abilities/buffs 相关 JSON 烘焙压缩入 `tftf_offline_payload.bin`。
+4. **客户端底层原生门禁**：[`tools/nativehook/hook.c`](file:///e:/Agent/TFTF/tools/nativehook/hook.c)
+   - `hook_156`（`PlayerAttributes.RollForCriticalHit`，RVA `0x0DADA6C`）：捕获暴击命中状态 `g_p0_last_hit_is_crit`。
+   - `hook_157`（`StatModifierController.ApplyStatModifier`，RVA `0x0CCF8F0`）：拦截暴击依赖型技能（未暴击直接返回 NULL 拦截）。
+5. **自动化测试套件**：[`Server/test_arcee_ability.py`](file:///e:/Agent/TFTF/Server/test_arcee_ability.py)
+   - 验证单一本源、wire schemas、列表访问器类型及生成 JSON。
+
+### 16.2 IL2CPP (v27) 静态元数据定位规范与快速查表
+基于 `extracted_apk/assets/bin/Data/Managed/Metadata/global-metadata.dat`（版本 27）逆向测绘：
+- **字符串池（String Table）**：偏移 `0xB45C0`，大小 `0x179EC0`。
+- **方法定义表（MethodDefs）**：偏移 `0x273C98`，步长 32 字节（`nameIndex`, `declaringType`, `token`, `slot`, `parameterCount` 等）。
+- **形参定义表（Parameters）**：偏移 `0x5A4648`，步长 12 字节（`nameIndex`, `token`, `typeIndex`）。
+- **类型定义表（TypeDefs）**：偏移 `0x7E2528`，步长 88 字节。
+- **函数指针注册表（CodeRegistration）**：偏移 `0x2C40D90`（每项 8 字节函数 RVA）。
+- **核心类与 TypeIndex**：
+  - `StatModifier`：Type `8846`
+  - `StatModifierController`：Type `8848`
+  - `BCGStatModifier`：Type `8306`
+  - `BuffsConfig` / `BuffGroup`：Type `6942` / `6941`
+  - `HudBuffsGrid` / `HudBuffWidget`：Type `11959` / `11956`
+
+### 16.3 战斗修饰器与能力执行引擎 RVA 符号地图
+| RVA (arm64-v8a) | C# 类与方法 (IL2CPP) | 参数签名 / 寄存器约定 | 核心业务行为与用途 |
+| :--- | :--- | :--- | :--- |
+| `0x0CC2E08` | `StatModifierController.ApplyStatModifiers` | `(this, actType, trigParams, updateAttr)` | 触发事件分发中心，遍历并调用条件判定 |
+| `0x0CCF1FC` | `StatModifierController.GetFilteredStatModifiers` | `(this, triggerType, param)` | 按触发事件类型（如 `onRangedHit`）筛选待执行修饰器 |
+| `0x0CCF35C` | `StatModifierController.GetStatModifier` | `(this, mod, rollPtr, chancePtr, ...)` | 条件匹配与几率掷骰核心（汇编末尾 `fcmp s0, s1; cset w0, mi`），返回 1/0 |
+| `0x0CCF6CC` | `StatModifierController.TestForConditionsAndRoll` | `(this, statMod, roll, chance, trigParams)` | 条件表达式匹配与概率 Roll 点（返回 bool） |
+| `0x0CCF8F0` | `StatModifierController.ApplyStatModifier` | `(this, statMod, updateAttr, useDur, dur)` | **Hook 157 挂载点**。真正实例化并施加 Buff/效果 |
+| `0x0CCFB48` | `StatModifierController.TryApplyStatModifier` | `(this, modifierID, updateAttr, useDur, dur)` | 通过 ID 动态尝试施加修饰器 |
+
+#### 内存结构关键偏移：
+- `StatModifier`（Type 8846）：
+  - `+0x30`：`Owner`（持有者控制器指针）
+  - `+0x38`：`BCGStatModifier*`（修饰器数据配置指针）
+- `BCGStatModifier`（Type 8306）：
+  - `+0x20`：`ID`（`System.String*`，字符串长度位于 `+0x10`，UTF-16 字符数组位于 `+0x14`）
+  - `+0x94`：`Stackable`（float 标志位）
+
+### 16.4 暴击判定、伤害结算与 Native Hook 门禁
+| RVA (arm64-v8a) | C# 类与方法 (IL2CPP) | 寄存器约定与关键偏移 | 核心业务行为与用途 |
+| :--- | :--- | :--- | :--- |
+| `0x0DADA6C` | `PlayerAttributes.RollForCriticalHit` | `x0` = this (`+0x28` 为 Owner Controller，`+0xF4` 为 playerIndex: 0 或 1) | **Hook 156 挂载点**。命中时判定是否出暴击（返回 1 或 0） |
+| `0x0DAD558` | `PlayerAttributes.GetCritDamageMultiplier` | 返回 `float` 暴击伤害倍数 | **Hook 171 挂载点**。动态暴击伤害倍率计算 |
+| `0x01178C68` | `PlayerController.OnHit...` (Caller) | 调用 `0xCCF1FC` 和 `0xDADA6C` | 命中事件入口，串联暴击判定与 Buff 触发 |
+
+- **未暴击触发流血的根本原因**：
+  客户端原生 `statMods.trs` 的 12 个条件键（`arena, canAttack, class, currAnim, fightType, heavyType, isAi, isFinalBoss, playerID, prevAnim, state, tags`）中**不存在 `isCrit`**，且 `onRangedHit`/`onSpecial1Hit` 为基础命中事件，每次受击必然广播。
+- **Hook 156 + Hook 157 双重门禁方案**：
+  1. `hook_156` 在伤害判定时捕获并更新全局状态 `g_p0_last_hit_is_crit`。
+  2. `hook_157` 挂钩 `ApplyStatModifier`（`0x0CCF8F0`），在每次尝试挂载 `arcee_headshot_*` 或 `arcee_s2_bleed` 时校验 `g_p0_last_hit_is_crit`，若未暴击直接返回 `NULL` 予以拦截。
+
+### 16.5 HUD 状态图标堆叠与数字角标渲染机制
+| 关键类 / 字段 / RVA | 对应协议 / 机制 | 逆向关键发现与避坑要点 |
+| :--- | :--- | :--- |
+| `BuffsConfig.groups` | JSON 字段名必须是 `"groups"`（非 `"groupings"`） | C# 属性名为 `<groups>k__BackingField`。若写 `"groupings"`，反序列化后 `groups` 为空，底层 `HudBuffsGrid` 找不到分组策略，默认将其视为非堆叠（`stackable = false`），导致每次流血都生成一个全新图标 |
+| `HudBuffWidget._countLabel` | 叠加角标渲染（数字 `2`, `3`...） | 当 `groups["dmg_bleed"].stackable == true` 时，`HudBuffWidget` 会将多层同类 Buff 聚合进 `_buffs` 列表，自动激活 `_countLabel` 显示当前层数，单条到期逐层递减 |
+| `dmg_direct` 的 `active_display` | 直接伤害不占血条图标 | 爆头即时直接伤害应配置 `"active_display": false`，只结算伤害和呼出 `"HEADSHOT"` 提示，不在血条下生成冗余图标 |
+| `0x018AF58C` (`NGUIMath.HexToColor`) | 颜色解析机制 | 严禁带 `#` 前缀（`#FF0000` 会错位解析成亮黄色，必须写纯 6 位 `FF0000`） |
+
+### 16.6 特殊技（Special Moves）攻击判定与事件分发机制
+在 Unity 招式资源包（`moves.assetbundle`）的 Move 动画时间轴中：
+- **近战攻击**：使用 `HitMoveEvent`（近战碰撞盒），触发 `onHit` 与 `onMeleeHit`。
+- **远程子弹/飞弹**：使用 `ProjectileMoveEvent`（生成投掷物飞行实体，如 `projectile_arcee_sp1_bullet`），碰撞命中后触发 `onRangedHit`。
+- **特殊技能事件层级**：
+  当处于 `PlayerSpecialAttackState` 时，底层引擎会额外广播带技能槽位编号的专属事件：
+  - 特殊技 1 命中：广播 `onSpecial1Hit` 与 `onSpecialHit`。
+  - 特殊技 2 命中：广播 `onSpecial2Hit` 与 `onSpecialHit`。
+  - 特殊技 3 命中：广播 `onSpecial3Hit` 与 `onSpecialHit`。
+- **技能作者配置规范**：
+  - **S1（纯射击连发）**：配置 `tr: ["onRangedHit", "onSpecial1Hit"]`，配合 Hook 暴击门禁精准捕捉暴击子弹。
+  - **S2（近战乱舞）**：配置 `tr: ["onSpecial2Hit"]`。
+  - **S3（近战与射击混合）**：配置 `tr: ["onRangedHit", "onSpecial1Hit", "onSpecial3Hit"]`，使 S3 中的暴击子弹同样能触发 50% 爆头与流血判定。
+

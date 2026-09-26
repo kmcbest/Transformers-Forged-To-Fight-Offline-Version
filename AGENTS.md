@@ -37,5 +37,12 @@
 - Never endlessly chase machine code / disassembly in `libil2cpp.so` for combat combo logic; inspect and reason through high-level state, hooks, and variables in `hook.c` directly.
 - Verify via logcat that no `[COMBAT_RULE_VIOLATION]` assertions are triggered during combat testing.
 
+## Reverse engineering discipline & Skill knowledge accumulation
+
+- All reverse-engineering findings (IL2CPP method RVAs, class/type indices, memory offsets, calling conventions, and trigger wire contracts) must NOT be treated as one-off throwaway scripts.
+- Immediately persist and accumulate confirmed RVA symbol maps and memory layouts into `.agents/skills/tftf_revival/SKILL.md` and `re_notes/`.
+- Prioritize consulting the accumulated IL2CPP symbol dictionary in `SKILL.md` before doing repetitive low-level disassembly with `tools/il2cpp_meta.py` or Capstone.
+
+
 
 
