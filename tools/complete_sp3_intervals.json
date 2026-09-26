@@ -1,0 +1,740 @@
+{
+  "TFormStage_Arcee_gs_special03": {
+    "actor0": "Arcee_GS_Deluxe2014",
+    "bundle": "arcee_gs_deluxe2014.assetbundle",
+    "dur": 7.633,
+    "intervals": [
+      [
+        1.867,
+        3.4
+      ]
+    ],
+    "t01": "cha_arcee_gs_deluxe2014_01",
+    "t00": "cha_arcee_gs_deluxe2014_00"
+  },
+  "TFormStage_Barricade_Cin_Special03": {
+    "actor0": "Barricade_Cin_DOTM",
+    "bundle": "barricade_cin_dotm.assetbundle",
+    "dur": 6.967,
+    "intervals": [
+      [
+        1.867,
+        3.467
+      ]
+    ],
+    "t01": "cha_barricade_cin_dotm_01",
+    "t00": "cha_barricade_cin_dotm_00"
+  },
+  "TFormStage_Blaster_GS_Special03": {
+    "actor0": "Blaster_GS_Leader2016",
+    "bundle": "blaster_gs_leader2016.assetbundle",
+    "dur": 7.833,
+    "intervals": [],
+    "t01": null,
+    "t00": null
+  },
+  "TFormStage_Bludgeon_Special3": {
+    "actor0": "Bludgeon_GS_RD20",
+    "bundle": "bludgeon_gs_rd20.assetbundle",
+    "dur": 6.633,
+    "intervals": [
+      [
+        3.1,
+        5.7
+      ]
+    ],
+    "t01": "cha_bludgeon_gs_rd20_01",
+    "t00": "cha_bludgeon_gs_rd20_00"
+  },
+  "TFormStage_Bonecrusher_Special03": {
+    "actor0": "Bonecrusher_Cin_ROTF",
+    "bundle": "bonecrusher_cin_rotf.assetbundle",
+    "dur": 7.0,
+    "intervals": [
+      [
+        1.133,
+        2.633
+      ]
+    ],
+    "t01": "cha_bonecrusher_cin_rotf_01",
+    "t00": "cha_bonecrusher_cin_rotf_00"
+  },
+  "TFormStage_Bumblebee_Cin_special03": {
+    "actor0": "Bumblebee_Cin_DOTM",
+    "bundle": "bumblebee_cin_dotm.assetbundle",
+    "dur": 7.167,
+    "intervals": [
+      [
+        1.033,
+        3.833
+      ]
+    ],
+    "t01": "cha_bumblebee_cin_dotm_01",
+    "t00": "cha_bumblebee_cin_dotm_00"
+  },
+  "TFormStage_Bumblebee_GS_attackSpecial03": {
+    "actor0": "Bumblebee_GS_Kabam",
+    "bundle": "bumblebee_gs_kabam.assetbundle",
+    "dur": 7.667,
+    "intervals": [
+      [
+        0.1,
+        4.033
+      ]
+    ],
+    "t01": "cha_bumblebee_gs_kabam_01",
+    "t00": "cha_bumblebee_gs_kabam_00"
+  },
+  "TFormStage_Cheetor_BW_special03": {
+    "actor0": "Cheetor_BW_Transmetal",
+    "bundle": "cheetor_bw_transmetal.assetbundle",
+    "dur": 7.0,
+    "intervals": [
+      [
+        1.933,
+        3.433
+      ]
+    ],
+    "t01": "cha_cheetor_bw_transmetal_01",
+    "t00": "cha_cheetor_bw_transmetal_00"
+  },
+  "TFormStage_Cliffjumper_GS_Special03": {
+    "actor0": "Cliffjumper_GS_Kabam",
+    "bundle": "cliffjumper_gs_kabam.assetbundle",
+    "dur": 7.5,
+    "intervals": [
+      [
+        4.033,
+        5.867
+      ]
+    ],
+    "t01": "cha_cliffjumper_gs_kabam_01 1",
+    "t00": "cha_cliffjumper_gs_kabam_00 1"
+  },
+  "TFormStage_Cyclonus_gs_special03": {
+    "actor0": "Cyclonus_GS_UW06",
+    "bundle": "cyclonus_gs_uw06.assetbundle",
+    "dur": 7.833,
+    "intervals": [
+      [
+        0.933,
+        3.367
+      ]
+    ],
+    "t01": "cha_cyclonus_gs_uw06_01",
+    "t00": "cha_cyclonus_gs_uw06_00"
+  },
+  "TFormStage_Dinobot_bw_special03": {
+    "actor0": "Dinobot_BW_Kabam",
+    "bundle": "dinobot_bw_kabam.assetbundle",
+    "dur": 8.167,
+    "intervals": [
+      [
+        0.167,
+        5.233
+      ]
+    ],
+    "t01": "cha_dinobot_bw_kabam_01",
+    "t00": "cha_dinobot_bw_kabam_00"
+  },
+  "TFormStage_Dirge_GS_Special03": {
+    "actor0": "Dirge_GS_Deluxe2008",
+    "bundle": "dirge_gs_deluxe2008.assetbundle",
+    "dur": 7.667,
+    "intervals": [
+      [
+        0.567,
+        7.667
+      ]
+    ],
+    "t01": "cha_dirge_gs_deluxe2008_01 1",
+    "t00": "cha_prowl_gs_deluxe2016_00"
+  },
+  "TFormStage_Drift_Cin_Special3": {
+    "actor0": "Drift_Cin_AOE",
+    "bundle": "drift_cin_aoe.assetbundle",
+    "dur": 7.333,
+    "intervals": [
+      [
+        0.467,
+        1.7
+      ]
+    ],
+    "t01": "cha_drift_cin_aoe_01",
+    "t00": "cha_drift_cin_aoe_00"
+  },
+  "TFormStage_Galvatron_GS_attackSpecial03": {
+    "actor0": "Galvatron_GS_Voyager2016",
+    "bundle": "galvatron_gs_voyager2016.assetbundle",
+    "dur": 9.167,
+    "intervals": [
+      [
+        4.4,
+        7.2
+      ]
+    ],
+    "t01": "cha_galvatron_gs_voyager2016_01",
+    "t00": "cha_galvatron_gs_voyager2016_00"
+  },
+  "TFormStage_Grimlock_Special03": {
+    "actor0": "Grimlock_GS_MP08",
+    "bundle": "grimlock_gs_mp08.assetbundle",
+    "dur": 7.633,
+    "intervals": [
+      [
+        0.6,
+        6.567
+      ]
+    ],
+    "t01": "cha_grimlock_gs_mp08_01",
+    "t00": "cha_grimlock_gs_mp08_00"
+  },
+  "TFormStage_Grindor_Special03": {
+    "actor0": "Grindor_Cin_ROTF",
+    "bundle": "grindor_cin_rotf.assetbundle",
+    "dur": 7.0,
+    "intervals": [
+      [
+        2.633,
+        5.6
+      ]
+    ],
+    "t01": "cha_grindor_cin_rotf_01",
+    "t00": "cha_grindor_cin_rotf_00"
+  },
+  "TFormStage_Hotrod_cin_Special03": {
+    "actor0": "HotRod_Cin_TLK",
+    "bundle": "hotrod_cin_tlk.assetbundle",
+    "dur": 7.167,
+    "intervals": [
+      [
+        0.133,
+        2.867
+      ]
+    ],
+    "t01": "cha_hotrod_cin_tlk_01",
+    "t00": "cha_hotrod_cin_tlk_00"
+  },
+  "TFormStage_Hound_Cin_Special03": {
+    "actor0": "Hound_Cin_TLK",
+    "bundle": "hound_cin_tlk.assetbundle",
+    "dur": 8.467,
+    "intervals": [],
+    "t01": null,
+    "t00": null
+  },
+  "TFormStage_Ironhide_GS_Special03": {
+    "actor0": "Ironhide_GS_Kabam",
+    "bundle": "ironhide_gs_kabam.assetbundle",
+    "dur": 7.5,
+    "intervals": [
+      [
+        4.033,
+        5.867
+      ]
+    ],
+    "t01": "cha_ironhide_gs_kabam_01 1",
+    "t00": "cha_ironhide_gs_kabam_00 1"
+  },
+  "TFormStage_Ironhide_Special03": {
+    "actor0": "IronHide_Cin_ROTF",
+    "bundle": "ironhide_cin_rotf.assetbundle",
+    "dur": 6.167,
+    "intervals": [
+      [
+        0.333,
+        3.167
+      ]
+    ],
+    "t01": "cha_ironhide_cin_rotf_01",
+    "t00": "cha_ironhide_cin_rotf_00"
+  },
+  "TFormStage_Jazz_GS_Special03": {
+    "actor0": "Jazz_GS_TWM05",
+    "bundle": "jazz_gs_twm05.assetbundle",
+    "dur": 8.667,
+    "intervals": [
+      [
+        0.267,
+        3.0
+      ]
+    ],
+    "t01": "cha_jazz_gs_twm05_01",
+    "t00": "cha_jazz_gs_twm05_00"
+  },
+  "TFormStage_Jetfire_GS_attackSpecial03": {
+    "actor0": "Jetfire_GS_Leader2014",
+    "bundle": "jetfire_gs_leader2014.assetbundle",
+    "dur": 11.667,
+    "intervals": [
+      [
+        2.133,
+        9.567
+      ]
+    ],
+    "t01": "cha_jetfire_gs_leader2014_01",
+    "t00": "cha_jetfire_gs_leader2014_00"
+  },
+  "TFormStage_Kickback_Special03": {
+    "actor0": "Kickback_GS_Kabam",
+    "bundle": "kickback_gs_kabam.assetbundle",
+    "dur": 9.333,
+    "intervals": [
+      [
+        3.5,
+        8.733
+      ]
+    ],
+    "t01": "cha_kickback_gs_kabam_01",
+    "t00": "cha_kickback_gs_kabam_00"
+  },
+  "TFormStage_Megatron_Cin_Special03": {
+    "actor0": "Megatron_Cin_ROTF",
+    "bundle": "megatron_cin_rotf.assetbundle",
+    "dur": 5.667,
+    "intervals": [
+      [
+        2.233,
+        4.033
+      ]
+    ],
+    "t01": "cha_megatron_cin_rotf_01",
+    "t00": "cha_megatron_cin_rotf_00"
+  },
+  "TFormStage_Megatron_GS_Special03": {
+    "actor0": "Megatron_GS_Leader2015",
+    "bundle": "megatron_gs_leader2015.assetbundle",
+    "dur": 8.667,
+    "intervals": [
+      [
+        2.8,
+        5.567
+      ]
+    ],
+    "t01": "cha_megatron_gs_leader2015_01",
+    "t00": "cha_megatron_gs_leader2015_00"
+  },
+  "TFormStage_Megatronus_gs_Special03": {
+    "actor0": "Megatronus_GS_Kabam",
+    "bundle": "megatronus_gs_kabam.assetbundle",
+    "dur": 9.0,
+    "intervals": [
+      [
+        5.1,
+        6.7
+      ],
+      [
+        7.133,
+        7.467
+      ]
+    ],
+    "t01": "cha_megatronus_gs_kabam_01",
+    "t00": "cha_megatronus_gs_kabam_00"
+  },
+  "TFormStage_Mirage_Special03": {
+    "actor0": "Mirage_GS_Deluxe2016",
+    "bundle": "mirage_gs_deluxe2016.assetbundle",
+    "dur": 6.5,
+    "intervals": [
+      [
+        3.567,
+        5.1
+      ]
+    ],
+    "t01": "cha_mirage_gs_deluxe2016_01",
+    "t00": "cha_mirage_gs_deluxe2016_00"
+  },
+  "TFormStage_Mixmaster_Cin_Special03": {
+    "actor0": "Mixmaster_Cin_ROTF",
+    "bundle": "mixmaster_cin_rotf.assetbundle",
+    "dur": 6.967,
+    "intervals": [
+      [
+        2.133,
+        6.967
+      ]
+    ],
+    "t01": "cha_mixmaster_cin_rotf_01",
+    "t00": "cha_mixmaster_cin_rotf_00"
+  },
+  "TFormStage_Motormaster_GS_Special03": {
+    "actor0": "Motormaster_GS_Voyager2015",
+    "bundle": "motormaster_gs_voyager2015.assetbundle",
+    "dur": 7.667,
+    "intervals": [
+      [
+        4.467,
+        6.233
+      ]
+    ],
+    "t01": "cha_motormaster_gs_voyager2015_01",
+    "t00": "cha_motormaster_gs_voyager2015_00"
+  },
+  "TFormStage_Necrotronus_GS_Special03": {
+    "actor0": "Necrotronus_GS_Kabam",
+    "bundle": "necrotronus_gs_kabam.assetbundle",
+    "dur": 9.0,
+    "intervals": [
+      [
+        5.1,
+        6.7
+      ],
+      [
+        7.133,
+        7.467
+      ]
+    ],
+    "t01": "cha_megatronus_gs_kabam_01",
+    "t00": "cha_necrotronus_gs_kabam_00"
+  },
+  "TFormStage_NemesisPrime_GS_Special03": {
+    "actor0": "NemesisPrime_GS_Voyager2015",
+    "bundle": "nemesisprime_gs_voyager2015.assetbundle",
+    "dur": 6.333,
+    "intervals": [
+      [
+        1.067,
+        2.5
+      ]
+    ],
+    "t01": "cha_nemesisprime_gs_voyager2015_01",
+    "t00": "cha_nemesisprime_gs_voyager2015_00"
+  },
+  "TFormStage_OptimusPrimal_BW_Special03": {
+    "actor0": "OptimusPrimal_BW_MP32",
+    "bundle": "optimusprimal_bw_mp32.assetbundle",
+    "dur": 8.833,
+    "intervals": [
+      [
+        1.333,
+        7.733
+      ]
+    ],
+    "t01": "cha_optimusprimal_bw_mp32_01",
+    "t00": "cha_optimusprimal_bw_mp32_00"
+  },
+  "TFormStage_OptimusPrime_Cin_Special03": {
+    "actor0": "OptimusPrime_Cin_TF",
+    "bundle": "optimusprime_cin_tf.assetbundle",
+    "dur": 5.0,
+    "intervals": [
+      [
+        1.967,
+        2.867
+      ]
+    ],
+    "t01": "cha_optimusprime_cin_tf_01",
+    "t00": "cha_optimus_cin_tf_00"
+  },
+  "TFormStage_OptimusPrime_GSV_Special03": {
+    "actor0": "OptimusPrime_GS_V",
+    "bundle": "characters.assetbundle",
+    "dur": 6.333,
+    "intervals": [
+      [
+        1.067,
+        2.5
+      ]
+    ],
+    "t01": "cha_optimusprime_gs_voyager2015_01",
+    "t00": "cha_optimusprime_gs_voyager2015_00"
+  },
+  "TFormStage_Prowl_Special03": {
+    "actor0": "Prowl_GS_Deluxe2016",
+    "bundle": "prowl_gs_deluxe2016.assetbundle",
+    "dur": 6.667,
+    "intervals": [
+      [
+        3.067,
+        5.333
+      ]
+    ],
+    "t01": "cha_prowl_gs_deluxe2016_01",
+    "t00": "cha_prowl_gs_deluxe2016_00"
+  },
+  "TFormStage_Ramjet_GS_Special03": {
+    "actor0": "Ramjet_GS_Deluxe2008",
+    "bundle": "ramjet_gs_deluxe2008.assetbundle",
+    "dur": 7.667,
+    "intervals": [
+      [
+        0.567,
+        7.667
+      ]
+    ],
+    "t01": "cha_ramjet_gs_deluxe2008_01",
+    "t00": "cha_prowl_gs_deluxe2016_00"
+  },
+  "TFormStage_Ratchet_GS_Special03": {
+    "actor0": "Ratchet_GS_Kabam",
+    "bundle": "ratchet_gs_kabam.assetbundle",
+    "dur": 7.5,
+    "intervals": [
+      [
+        4.033,
+        5.867
+      ]
+    ],
+    "t01": "cha_ratchet_gs_kabam_01",
+    "t00": "cha_ratchet_gs_kabam_00"
+  },
+  "TFormStage_Rhinox_gs_Special03": {
+    "actor0": "Rhinox_GS_Voyager2014",
+    "bundle": "rhinox_gs_voyager2014.assetbundle",
+    "dur": 7.0,
+    "intervals": [
+      [
+        0.1,
+        2.0
+      ]
+    ],
+    "t01": "cha_rhinox_gs_voyager2014_01",
+    "t00": "cha_rhinox_gs_voyager2014_00"
+  },
+  "TFormStage_Rodimus_GS_Special03": {
+    "actor0": "RodimusPrime_GS_MP09",
+    "bundle": "rodimusprime_gs_mp09.assetbundle",
+    "dur": 5.0,
+    "intervals": [
+      [
+        1.967,
+        2.867
+      ]
+    ],
+    "t01": "cha_rodimusprime_gs_mp09_01 1",
+    "t00": "cha_rodimusprime_gs_mp09_00 1"
+  },
+  "TFormStage_Scorponok_BW_Special03": {
+    "actor0": "Scorponok_BW_Kabam",
+    "bundle": "scorponok_bw_kabam.assetbundle",
+    "dur": 6.933,
+    "intervals": [
+      [
+        1.033,
+        7.067
+      ]
+    ],
+    "t01": "cha_scorponok_bw_kabam_01",
+    "t00": "cha_scorponok_bw_kabam_00"
+  },
+  "TFormStage_Sharkticon_attackSpecial_03": {
+    "actor0": "Sharkticon_GS_Kabam",
+    "bundle": "character_matinee_procedural.assetbundle",
+    "dur": 8.5,
+    "intervals": [],
+    "t01": null,
+    "t00": null
+  },
+  "TFormStage_Shockwave_GS_Special03": {
+    "actor0": "Shockwave_GS",
+    "bundle": "shockwave_gs.assetbundle",
+    "dur": 7.0,
+    "intervals": [
+      [
+        3.533,
+        6.067
+      ]
+    ],
+    "t01": "cha_shockwave_gs_mp29_01",
+    "t00": "cha_shockwave_gs_mp29_00"
+  },
+  "TFormStage_Sideswipe_GS_Special03": {
+    "actor0": "Sideswipe_GS",
+    "bundle": "sideswipe_gs.assetbundle",
+    "dur": 6.633,
+    "intervals": [
+      [
+        0.367,
+        1.9
+      ]
+    ],
+    "t01": "cha_sideswipe_GS_Deluxe2008_01",
+    "t00": "cha_sideswipe_GS_Deluxe2008_00"
+  },
+  "TFormStage_Skywarp_GS_Special03": {
+    "actor0": "Skywarp_GS_Leader2015",
+    "bundle": "skywarp_gs_leader2015.assetbundle",
+    "dur": 6.667,
+    "intervals": [
+      [
+        2.0,
+        5.333
+      ]
+    ],
+    "t01": "cha_skywarp_gs_leader2015_01 1",
+    "t00": "cha_skywarp_gs_leader2015_00 1"
+  },
+  "TFormStage_Soundblast_GS_Special03": {
+    "actor0": "Soundblaster_GS_MP13B",
+    "bundle": "soundblaster_gs_mp13b.assetbundle",
+    "dur": 7.133,
+    "intervals": [
+      [
+        0.367,
+        5.7
+      ]
+    ],
+    "t01": "cha_soundblaster_gs_mp13b_01 1",
+    "t00": null
+  },
+  "TFormStage_Soundwave_GS_Special03": {
+    "actor0": "Soundwave_GS",
+    "bundle": "soundwave_gs.assetbundle",
+    "dur": 7.133,
+    "intervals": [
+      [
+        0.367,
+        5.7
+      ]
+    ],
+    "t01": "cha_soundwave_gs_leader2016_01",
+    "t00": null
+  },
+  "TFormStage_StarScream_GS_Leader_Special03": {
+    "actor0": "Starscream_GS",
+    "bundle": "characters.assetbundle",
+    "dur": 6.667,
+    "intervals": [
+      [
+        2.0,
+        5.333
+      ]
+    ],
+    "t01": "cha_starscream_gs_leader2015_01",
+    "t00": "cha_starscream_gs_leader2015_00"
+  },
+  "TFormStage_Sunstreak_Special3": {
+    "actor0": "Sunstreaker_GS_Deluxe2008",
+    "bundle": "sunstreaker_gs_deluxe2008.assetbundle",
+    "dur": 7.333,
+    "intervals": [
+      [
+        0.467,
+        1.7
+      ]
+    ],
+    "t01": "cha_sunstreaker_GS_Deluxe2008_01",
+    "t00": "cha_sunstreaker_GS_Deluxe2008_00"
+  },
+  "TFormStage_Tantrum_gs_attackSpecial_03": {
+    "actor0": "Tantrum_GS_Kabam",
+    "bundle": "tantrum_gs_kabam.assetbundle",
+    "dur": 8.0,
+    "intervals": [
+      [
+        0.4,
+        6.7
+      ]
+    ],
+    "t01": "cha_tantrum_gs_kabam_01",
+    "t00": "cha_tantrum_gs_kabam_00"
+  },
+  "TFormStage_Thundercracker_GS_Leader_Special03": {
+    "actor0": "Thundercracker_GS_leader2015",
+    "bundle": "thundercracker_gs_leader2015.assetbundle",
+    "dur": 6.667,
+    "intervals": [
+      [
+        2.0,
+        5.333
+      ]
+    ],
+    "t01": "cha_thundercracker_gs_leader2015_01",
+    "t00": "cha_thundercracker_gs_leader2015_00"
+  },
+  "TFormStage_UltraMagnus_GS_Special03": {
+    "actor0": "UltraMagnus_GS_Leader",
+    "bundle": "ultramagnus_gs_leader.assetbundle",
+    "dur": 8.0,
+    "intervals": [
+      [
+        2.0,
+        5.733
+      ]
+    ],
+    "t01": "cha_ultramagnus_gs_leader_01",
+    "t00": "cha_ultramagnus_gs_leader_00"
+  },
+  "TFormStage_Waspinator_BW_Special03": {
+    "actor0": "Waspinator_GS_Deluxe",
+    "bundle": "waspinator_gs_deluxe.assetbundle",
+    "dur": 8.0,
+    "intervals": [
+      [
+        1.6,
+        2.633
+      ],
+      [
+        6.4,
+        8.0
+      ]
+    ],
+    "t01": "cha_waspinator_bw_deluxe_01",
+    "t00": "cha_waspinator_bw_deluxe_00"
+  },
+  "TFormStage_Wheeljack_gs_Special03": {
+    "actor0": "Wheeljack_GS_MP20",
+    "bundle": "wheeljack_gs_mp20.assetbundle",
+    "dur": 9.167,
+    "intervals": [
+      [
+        0.267,
+        2.367
+      ]
+    ],
+    "t01": "cha_wheeljack_gs_mp20_01",
+    "t00": "cha_wheeljack_gs_mp20_00"
+  },
+  "TFormStage_chromia_gs_special03": {
+    "actor0": "Chromia_GS_Kabam",
+    "bundle": "chromia_gs_kabam.assetbundle",
+    "dur": 11.667,
+    "intervals": [
+      [
+        4.2,
+        7.4
+      ]
+    ],
+    "t01": "cha_chromia_gs_kabam_01 1",
+    "t00": "cha_chromia_gs_kabam_00_mesh"
+  },
+  "TFormStage_deadend_gs_attackspecial_03": {
+    "actor0": "Deadend_GS_Deluxe2015",
+    "bundle": "deadend_gs_deluxe2015.assetbundle",
+    "dur": 7.167,
+    "intervals": [
+      [
+        0.833,
+        3.633
+      ]
+    ],
+    "t01": "cha_deadend_gs_deluxe2015_01_car",
+    "t00": "cha_deadend_gs_deluxe2015_00_mesh"
+  },
+  "TFormStage_slipstream_gs_special03": {
+    "actor0": "Slipstream_GS",
+    "bundle": "slipstream_gs.assetbundle",
+    "dur": 7.0,
+    "intervals": [
+      [
+        1.167,
+        3.6
+      ]
+    ],
+    "t01": "cha_slipstream_gs_kabam_01 1",
+    "t00": "cha_slipstream_gs_kabam_00 1"
+  },
+  "TFormStage_windblade_gs_special03": {
+    "actor0": "WindBlade_GS",
+    "bundle": "windblade_gs.assetbundle",
+    "dur": 7.0,
+    "intervals": [
+      [
+        1.167,
+        3.6
+      ]
+    ],
+    "t01": "cha_windblade_gs_deluxe2014_01",
+    "t00": "cha_windblade_gs_deluxe2014_00"
+  }
+}
