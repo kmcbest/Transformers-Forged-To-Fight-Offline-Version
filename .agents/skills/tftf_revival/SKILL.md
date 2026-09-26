@@ -508,56 +508,66 @@ python INSTALL-ADB.py
   - `BuffsConfig` / `BuffGroup`：Type `6942` / `6941`
   - `HudBuffsGrid` / `HudBuffWidget`：Type `11959` / `11956`
 
-### 16.3 战斗修饰器与能力执行引擎 RVA 符号地图
-| RVA (arm64-v8a) | C# 类与方法 (IL2CPP) | 参数签名 / 寄存器约定 | 核心业务行为与用途 |
-| :--- | :--- | :--- | :--- |
-| `0x0CC2E08` | `StatModifierController.ApplyStatModifiers` | `(this, actType, trigParams, updateAttr)` | 触发事件分发中心，循环内 `0xCC2E54: bl #0xccf35c; tbz w0, #0, next` 决定是否施加 |
-| `0x0CCF1FC` | `StatModifierController.GetFilteredStatModifiers` | `(this, triggerType, param)` | 按触发事件类型（如 `onRangedHit`）筛选待执行修饰器 |
-| `0x0CCF35C` | `StatModifierController.GetStatModifier` | `(this, stat_mod, rollPtr, chancePtr, trigParams, method)` | **Hook 157 真实挂载点**。条件匹配与几率掷骰核心，返回 `w0 = 1/0`。若未暴击直接返回 `0` 即可完全跳过 `ApplyStatModifier`！ |
-| `0x0CCF558` | `StatModifierController.ApplyStatModifier` | `(this, statMod, updateAttr, useDur, dur)` | `0xCC2E70` 处实际调用的施加函数 |
-| `0x0CCF6CC` | `StatModifierController.TestForConditionsAndRoll` | `(this, statMod, roll, chance, trigParams)` | 条件表达式匹配与概率 Roll 点（返回 bool） |
-| `0x0CCFB48` | `StatModifierController.TryApplyStatModifier` | `(this, modifierID, updateAttr, useDur, dur)` | 通过 ID 动态尝试施加修饰器 |
+### 16.3 战斗修饰器与能力执行引擎核心契约 (基于 2.0.2 Mono C# 绝对权威源码)
 
-#### 内存结构关键偏移：
-- `StatModifier`（Type 8846）：
-  - `+0x30`：`Owner`（持有者控制器指针）
-  - `+0x38`：`BCGStatModifier*`（修饰器数据配置指针，`get_Modifier` @ `0xCCDF4C`）
-- `BCGStatModifier`（Type 8306）：
-  - `+0x20`：`ID`（`System.String*`，字符串长度位于 `+0x10`，UTF-16 字符数组位于 `+0x14`）
-  - `+0x94`：`Stackable`（float 标志位）
+从 2.0.2 完整反编译 C# 源码（`decomp_202_source/Assembly-CSharp/`）中查明之底层核心契约：
 
-### 16.4 暴击判定、伤害结算与 Native Hook 门禁
-| RVA (arm64-v8a) | C# 类与方法 (IL2CPP) | 寄存器约定与关键偏移 | 核心业务行为与用途 |
-| :--- | :--- | :--- | :--- |
-| `0x0DADCA8` | `PlayerAttributes.RollForCriticalHit` | `x0` = this (`+0x28` 为 Owner Controller，`+0xF4` 为 playerIndex: 0 或 1), `s0` = opp_resist, `w1` = attackType | **Hook 156 真实挂载点**（Method 59841，绝非 0xDADA6C 的 GetArmorDR）。返回 `s0`: `> 0.0f` 为暴击倍率，`0.0f` 为未暴击！ |
-| `0x0DAD558` | `PlayerAttributes.GetCritDamageMultiplier` | 返回 `float` 暴击伤害倍数 | **Hook 171 挂载点**。动态暴击伤害倍率计算 |
-| `0x01178BA0` | `PlayerController.TryExecuteAction` (Caller) | `bl #0xdadca8; fcmp s0, #0.0; b.le not_crit` | 攻击判定核心，决定本次攻击是否显示暴击红字与增伤 |
+#### 1. 原生 `onCrit` 触发器与 `AttackLevel` 判定
+- 在 `PlayerController.cs#L1784-L1795` 中：
+  ```csharp
+  // 1. 普通攻击事件率先广播 (此阶段尚未开始判定暴击)
+  instigator.StatModifierController.ApplyStatModifiers(TFormBuffTriggerConstants.GetTriggerTypeFromAttackLevel(hitData.AttackLevel), triggerParams);
+  // 2. 进行暴击判定
+  flag2 = !flag && attributes.RollForCriticalHit(hitData.AttackLevel, Attributes.CritRateResist);
+  if (flag2) {
+      result.Flags |= HitResultFlags.Crit;
+      if (!flag4) {
+          // 3. 只有判定暴击成功，才会原生广播 "onCrit"！
+          instigator.StatModifierController.ApplyStatModifiers("onCrit", triggerParams);
+      }
+  }
+  ```
+- **铁律与避坑**：
+  若修饰器使用 `tr: ["onRangedHit"]`，它会在 `RollForCriticalHit` 之前执行，读取到上一次攻击的残留暴击状态。
+  **暴击类能力必须使用原生 `tr: ["onCrit"]`**！因为非暴击时客户端根本不会广播 `onCrit`，从引擎底层 100% 杜绝非暴击流血！
+- **`level` 攻击等级条件过滤**：
+  `TFormBuffTriggerFactory` 将 `onCrit` 分派给 `GenericHit_BuffTrigger`，其解析 `trs: "level=..."`，调用 `Util.GetEnumValueFromString<AttackLevel>(value)`。
+  `AttackLevel` 为 `[Flags]` 枚举：`Light=1, Medium=2, Heavy=4, Ranged=8, Special1=16, Special2=32, Special3=64`。
+  因此可通过 `trs: "level=Ranged,Special1"` 完美同时匹配普通远程射击与特殊技1子弹，或用 `trs: "level=Special2"` 锁定 S2 暴击！
 
-- **未暴击触发流血的根本原因**：
-  客户端原生 `statMods.trs` 的 12 个条件键（`arena, canAttack, class, currAnim, fightType, heavyType, isAi, isFinalBoss, playerID, prevAnim, state, tags`）中**不存在 `isCrit`**，且 `onRangedHit`/`onSpecial1Hit` 为基础命中事件，每次受击必然广播。
-- **Hook 156 + Hook 157 双重门禁方案**：
-  1. `hook_156`（挂钩 `0x0DADCA8`）在命中时重写暴击几率（阿尔茜基准 32%），若判定为暴击返回 `1.50f` 并置 `g_p0_last_hit_is_crit = 1`；未暴击返回 `0.0f` 并置 `g_p0_last_hit_is_crit = 0`。
-  2. `hook_157`（挂钩 `0x0CCF35C`）在每次执行 `GetStatModifier` 时拦截 `arcee_headshot_*` 或 `arcee_s2_bleed`，若 `!g_p0_last_hit_is_crit` 直接返回 `0`。底层调用者 `0xCC2E58: tbz w0, #0, skip` 随即跳过施加逻辑，彻底杜绝非暴击流血！
+#### 2. `st` (Stackable) 参数的真实含义：`StackLimit`（最大堆叠层数）
+- 在 `BCGStatModifier.cs#L161` 中：
+  ```csharp
+  Stackable = Dot.Integer(new string[2] { "st", "stackable" }, data, 1);
+  ```
+- 在 `BuffsController.cs#L453-L460` 中：
+  ```csharp
+  if (value.Count >= value.StackLimit) {
+      if (!value.Last.IsReplaced) {
+          Buff first = value.First;
+          if (first != null) {
+              StopBuff(first, BuffRemoveFlags.replace); // 达到上限时，强制杀掉第一层并重置倒计时！
+          }
+      }
+  }
+  ```
+- **核心真相**：
+  `st` 绝非布尔值（0/1），而是**该修饰器的最大堆叠层数上限（StackLimit）**！
+  若配置 `"st": 1`，第二层流血进入时 `Count (1) >= StackLimit (1)` 为真，系统会**强制杀掉前一层流血并替换重置倒计时**，表现为“不叠层而是刷新倒计时”！
+  必须将可多层堆叠能力的 `"st"` 设为 `10`（或更大整数），`BuffStack` 才会保留多条实例并在 `HudBuffWidget` 上激活 `_countLabel` 显示角标数字！
 
-### 16.5 HUD 状态图标堆叠与数字角标渲染机制
-| 关键类 / 字段 / RVA | 对应协议 / 机制 | 逆向关键发现与避坑要点 |
-| :--- | :--- | :--- |
-| `BuffsConfig.groups` | JSON 字段名必须是 `"groups"`（非 `"groupings"`） | C# 属性名为 `<groups>k__BackingField`。若写 `"groupings"`，反序列化后 `groups` 为空，底层 `HudBuffsGrid` 找不到分组策略，默认将其视为非堆叠（`stackable = false`），导致每次流血都生成一个全新图标 |
-| `HudBuffWidget._countLabel` | 叠加角标渲染（数字 `2`, `3`...） | 当 `groups["dmg_bleed"].stackable == true` 且所有流血能力共享 `a: ["appr_arcee_bleed"]` 时，`HudBuffWidget` 会将多层同类 Buff 聚合进 `_buffs` 列表，自动激活 `_countLabel` 显示当前层数，单条到期逐层递减 |
-| `dmg_direct` 的 `active_display` 与 `a: []` | 直接伤害不占血条图标 | 爆头即时直接伤害应配置 `a: []` 与 `mt: "passive"`，仅结算瞬时扣血与飘字，绝不在血条下生成冗余同款流血图标 |
-| `0x018AF58C` (`NGUIMath.HexToColor`) | 颜色解析机制 | 严禁带 `#` 前缀（`#FF0000` 会错位解析成亮黄色，必须写纯 6 位 `FF0000`） |
+#### 3. 呼出大字（Callout）与血条图标聚合机制
+- **呼出大字**：`HudCalloutController.cs#L232` 读取 `appearance.CalloutStringID`（即 `statModAppears[id].st`）。
+  - `appr_arcee_headshot`: `"st": "HEADSHOT"`（专用于敌人前冲中枪暴击）
+  - `appr_arcee_bleed`: `"st": "BLEED"`（专用于普通远程暴击与 S2 暴击流血）
+- **血条图标聚合**：`HudBuffsGrid.cs#L119` 通过 `HudUtil.GetBuffId(buff.BuffType, buff.ModType)` 索引组件，**与 AppearanceID 无关**！
+  - 只要所有流血能力统一配置 `"t": "dmg_bleed"` 与 `"mt": "debuff"`，它们在血条下方就会自动合并到同一个倒计时圆环图标上。
+  - 多层流血并存时，`HudBuffWidget` 自动激活右下角数字角标（`Count.ToString()`），每上一层数字加 1，每到期一层数字减 1。
 
-### 16.6 特殊技（Special Moves）攻击判定与事件分发机制
-在 Unity 招式资源包（`moves.assetbundle`）的 Move 动画时间轴中：
-- **近战攻击**：使用 `HitMoveEvent`（近战碰撞盒），触发 `onHit` 与 `onMeleeHit`。
-- **远程子弹/飞弹**：使用 `ProjectileMoveEvent`（生成投掷物飞行实体，如 `projectile_arcee_sp1_bullet`），碰撞命中后触发 `onRangedHit`。
-- **特殊技能事件层级**：
-  当处于 `PlayerSpecialAttackState` 时，底层引擎会额外广播带技能槽位编号的专属事件：
-  - 特殊技 1 命中：广播 `onSpecial1Hit` 与 `onSpecialHit`。
-  - 特殊技 2 命中：广播 `onSpecial2Hit` 与 `onSpecialHit`。
-  - 特殊技 3 命中：广播 `onSpecial3Hit` 与 `onSpecialHit`。
-- **技能作者配置规范**：
-  - **S1（纯射击连发）**：配置 `tr: ["onRangedHit", "onSpecial1Hit"]`，配合 Hook 暴击门禁精准捕捉暴击子弹。
-  - **S2（近战乱舞）**：配置 `tr: ["onSpecial2Hit"]`。
-  - **S3（近战与射击混合）**：配置 `tr: ["onRangedHit", "onSpecial1Hit", "onSpecial3Hit"]`，使 S3 中的暴击子弹同样能触发 50% 爆头与流血判定。
+#### 4. 状态判断条件：`opponent:state=Dash,Run` 与 `!=` 反向匹配
+- 在 `PlayerController.cs#L2536` 中，冲刺状态注册名为 `"Dash"`（并非 `"Dashing"`）。
+- `BuffSetCondition.cs` 原生支持 `=` 与 `!=`（`BuffConditionOp.NotEqual`）：
+  - 冲锋惩罚：`trs: "level=Ranged,Special1;opponent:state=Dash,Run"` -> 必出爆头并呼出 HEADSHOT！
+  - 常规远程：`trs: "level=Ranged,Special1;opponent:state!=Dash,Run"` -> 50% 几率施加流血并呼出 BLEED！
+  两者互斥，彻底解决多重流血判定冲突！
 

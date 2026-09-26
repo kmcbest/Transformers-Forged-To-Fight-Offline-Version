@@ -187,7 +187,7 @@ def build_stat_mod_appears():
             "gt": "FF0000",
             "gb": "FF0000",
         },
-        # 阿尔茜流血 DOT 持续伤害外观 (同时服务于爆头与S2流血，统一字形与颜色以支持图标数字角标堆叠)
+        # 阿尔茜流血 DOT 持续伤害外观 (同时服务于普通远程暴击与S2暴击流血，统一字形与颜色以支持图标数字角标堆叠)
         "appr_arcee_bleed": {
             "id": "appr_arcee_bleed",
             "a": "Bleed",
@@ -196,7 +196,7 @@ def build_stat_mod_appears():
             "ss": "Bleed damage over duration.",
             "t": "\uE401",                # 能量块流血字形（血条下方倒计时圆环图标）
             "f": "",
-            "st": "HEADSHOT",             # 命中呼出大字 HEADSHOT
+            "st": "BLEED",                # 命中呼出大字 BLEED
             "ps": "Bleed",
             "pl": "Bleed damage ignoring armor.",
             "tc": "FF0000",               # 纯正红色 (0xFF, 0x00, 0x00)
@@ -310,25 +310,25 @@ def build_stat_modifiers():
         # [阿尔茜 Arcee 官方技能组]
         # 基准属性（R5 L50）：攻击力 3485，暴击率 32%，暴击伤害 1.70x
         # -------------------------------------------------------------------
-        # 1. 爆头射击 (Headshot) - 远程暴击额外直接扣血 60% 攻击力 (2091点)
-        #    触发条件：普通远程射击 (onRangedHit) 或 特殊技1/3子弹 (onSpecial1Hit, onSpecial3Hit)
+        # 1. 爆头射击 (Headshot Direct) - 远程暴击额外直接扣血 60% 攻击力 (2091点)
+        #    触发条件：暴击 (onCrit) 且为远程攻击或S1子弹 (level=Ranged,Special1)
         #    基础几率：50% (c: 0.5)
         "arcee_headshot_direct": {
             "id": "arcee_headshot_direct",
             "t": "dmg_direct",
             "tm": "",
-            "tr": ["onRangedHit", "onSpecial1Hit", "onSpecial3Hit"],
-            "uit": ["onRangedHit", "onSpecial1Hit", "onSpecial3Hit"],
+            "tr": ["onCrit"],
+            "uit": ["onCrit"],
             "pri": 0,
             "trm": 0.0,
-            "trs": "",
+            "trs": "level=Ranged,Special1",
             "trr": "repeat",
             "c": 0.5,                    # 基础 50% 触发几率
             "m": 2091.0,                 # 60% 攻击力 (3485 * 0.6 = 2091 点直接伤害)
             "d": 0.5,                    # 单 Tick 结算即时扣除
             "s": "none",
             "ta": "opponent",            # 作用于对手
-            "mt": "passive",             # 改为 passive，避免生成血条下重复图标
+            "mt": "passive",             # passive，不生成血条下重复图标
             "v": "",
             "ms": "",
             "st": 0,
@@ -337,24 +337,27 @@ def build_stat_modifiers():
             "gcv": "",
             "rcv": "",
             "ti": 0,
-            "a": [],                     # 空外观列表：直接伤害由跳字展现，严禁生成独立血条挂件
+            "a": [],                     # 空外观列表：直接伤害由跳字展现，不生成独立血条挂件
             "au": [],
             "rh": 0.0,
             "ra": 0.0,
         },
 
-        # 2. 爆头流血 (Headshot Bleed) - 远程暴击施加 3 秒流血 DOT
+        # 2. 爆头流血 (Headshot Bleed DOT) - 远程暴击施加 3 秒流血 DOT (非冲锋状态)
+        #    触发条件：暴击 (onCrit) 且为远程/S1，且敌人未前冲 (opponent:state!=Dash,Run)
+        #    呼出文字：BLEED ("appr_arcee_bleed")
         #    总伤害：60% 攻击力 (2091点)，3秒内每0.5秒一跳 (每跳 348点)
         #    基础几率：50% (c: 0.5)
+        #    最大堆叠数：st: 10 (允许多层独立流血同时存在并显示数字角标)
         "arcee_headshot_dot": {
             "id": "arcee_headshot_dot",
             "t": "dmg_bleed",
             "tm": "",
-            "tr": ["onRangedHit", "onSpecial1Hit", "onSpecial3Hit"],
-            "uit": ["onRangedHit", "onSpecial1Hit", "onSpecial3Hit"],
+            "tr": ["onCrit"],
+            "uit": ["onCrit"],
             "pri": 0,
             "trm": 0.0,
-            "trs": "",
+            "trs": "level=Ranged,Special1;opponent:state!=Dash,Run",
             "trr": "repeat",
             "c": 0.5,                    # 基础 50% 几率
             "m": 2091.0,                 # 3秒总伤害 2091 点 (每跳 348 伤害)
@@ -364,31 +367,34 @@ def build_stat_modifiers():
             "mt": "debuff",              # 敌方血条下方生成倒计时圆环图标
             "v": "",
             "ms": "",
-            "st": 1,
+            "st": 10,                    # StackLimit=10，支持多层堆叠而不是替换倒计时！
             "g": "",
             "gc": 0.0,
             "gcv": "",
             "rcv": "",
             "ti": 0,
-            "a": ["appr_arcee_bleed"],   # 关联能量块滴液流血图标与 "BLEED"
+            "a": ["appr_arcee_bleed"],   # 关联能量块滴液流血图标与呼出大字 "BLEED"
             "au": [],
             "rh": 0.0,
             "ra": 0.0,
         },
 
-        # 3. 爆头冲锋惩罚 (Headshot Rush) - 敌人冲刺 (Dashing) 中枪时 100% 必出流血
-        #    额外 50% 几率补足（与基础 50% 叠加达成 100%）
+        # 3. 爆头冲锋惩罚 (Headshot Rush) - 敌人冲刺 (Dash/Run) 中枪暴击时 100% 必出流血
+        #    触发条件：暴击 (onCrit) 且为远程/S1，且敌人正在冲刺 (opponent:state=Dash,Run)
+        #    呼出文字：HEADSHOT ("appr_arcee_headshot")
+        #    几率：100% (c: 1.0)
+        #    堆叠策略：同属 dmg_bleed，与普通流血和S2流血共享同一血条图标并累加角标数字
         "arcee_headshot_rush": {
             "id": "arcee_headshot_rush",
             "t": "dmg_bleed",
             "tm": "",
-            "tr": ["onRangedHit", "onSpecial1Hit", "onSpecial3Hit"],
-            "uit": ["onRangedHit", "onSpecial1Hit", "onSpecial3Hit"],
+            "tr": ["onCrit"],
+            "uit": ["onCrit"],
             "pri": 0,
             "trm": 0.0,
-            "trs": "opponent:state=Dashing", # 敌人冲锋状态判定
+            "trs": "level=Ranged,Special1;opponent:state=Dash,Run", # 敌人冲锋状态判定
             "trr": "repeat",
-            "c": 0.5,                    # 额外 50% 几率（叠加为 100%）
+            "c": 1.0,                    # 前冲中枪暴击 100% 必出流血！
             "m": 2091.0,
             "d": 3.0,
             "s": "none",
@@ -396,31 +402,33 @@ def build_stat_modifiers():
             "mt": "debuff",
             "v": "",
             "ms": "",
-            "st": 1,
+            "st": 10,                    # StackLimit=10
             "g": "",
             "gc": 0.0,
             "gcv": "",
             "rcv": "",
             "ti": 0,
-            "a": ["appr_arcee_bleed"],
+            "a": ["appr_arcee_headshot"],# 独占呼出大字 "HEADSHOT"
             "au": [],
             "rh": 0.0,
             "ra": 0.0,
         },
 
         # 4. S2 暴击流血 (Special Attack 2 Bleed)
-        #    触发条件：S2 命中 (onSpecial2Hit)
+        #    触发条件：S2 暴击 (onCrit, level=Special2)
+        #    呼出文字：BLEED ("appr_arcee_bleed")
         #    几率：100% (c: 1.0)
         #    总伤害：108% 攻击力 (3485 * 1.08 = 3764 点)，持续 4 秒 (每跳 470 点)
+        #    堆叠策略：同样归入 dmg_bleed，血条图标与普通流血自动合并堆叠，多层角标累加
         "arcee_s2_bleed": {
             "id": "arcee_s2_bleed",
-            "t": "dmg_bleed_s2",
+            "t": "dmg_bleed",            # 统一使用 dmg_bleed，合并至同一 HUD 图标堆叠
             "tm": "",
-            "tr": ["onSpecial2Hit"],
-            "uit": ["onSpecial2Hit"],
+            "tr": ["onCrit"],
+            "uit": ["onCrit"],
             "pri": 0,
             "trm": 0.0,
-            "trs": "",
+            "trs": "level=Special2",
             "trr": "repeat",
             "c": 1.0,                    # 100% 触发几率
             "m": 3764.0,                 # 108% 攻击力 (4秒总伤害 3764 点，每跳 470 伤害)
@@ -430,13 +438,13 @@ def build_stat_modifiers():
             "mt": "debuff",
             "v": "",
             "ms": "",
-            "st": 1,
+            "st": 10,                    # StackLimit=10
             "g": "",
             "gc": 0.0,
             "gcv": "",
             "rcv": "",
             "ti": 0,
-            "a": ["appr_arcee_bleed"],
+            "a": ["appr_arcee_bleed"],   # 关联呼出大字 "BLEED"
             "au": [],
             "rh": 0.0,
             "ra": 0.0,

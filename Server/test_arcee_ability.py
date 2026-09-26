@@ -76,47 +76,62 @@ class TestArceeAbility(unittest.TestCase):
             if k == "arcee_headshot_direct":
                 self.assertEqual(mod["mt"], "passive")
                 self.assertEqual(mod["a"], [])
+            elif k == "arcee_headshot_rush":
+                self.assertEqual(mod["mt"], "debuff")
+                self.assertEqual(mod["a"], ["appr_arcee_headshot"])
+                self.assertEqual(mod["st"], 10)
             else:
                 self.assertEqual(mod["mt"], "debuff")
                 self.assertEqual(mod["a"], ["appr_arcee_bleed"])
+                self.assertEqual(mod["st"], 10)
 
-        # Headshot direct: instant 60% atk (2091), d=0.5, c=0.5, on ranged / S1 / S3 crit
+        # Headshot direct: instant 60% atk (2091), d=0.5, c=0.5, on ranged / S1 crit
         d_mod = mods["arcee_headshot_direct"]
         self.assertEqual(d_mod["m"], 2091.0)
         self.assertEqual(d_mod["d"], 0.5)
         self.assertEqual(d_mod["c"], 0.5)
-        self.assertIn("onRangedHit", d_mod["tr"])
-        self.assertIn("onSpecial1Hit", d_mod["tr"])
-        self.assertIn("onSpecial3Hit", d_mod["tr"])
+        self.assertEqual(d_mod["tr"], ["onCrit"])
+        self.assertEqual(d_mod["trs"], "level=Ranged,Special1")
 
-        # Headshot DOT: 60% atk over 3s, d=3.0, c=0.5, on ranged / S1 crit
+        # Headshot DOT: 60% atk over 3s, d=3.0, c=0.5, on ranged / S1 crit (non-rush)
         dot_mod = mods["arcee_headshot_dot"]
         self.assertEqual(dot_mod["m"], 2091.0)
         self.assertEqual(dot_mod["d"], 3.0)
         self.assertEqual(dot_mod["c"], 0.5)
+        self.assertEqual(dot_mod["tr"], ["onCrit"])
+        self.assertEqual(dot_mod["trs"], "level=Ranged,Special1;opponent:state!=Dash,Run")
+        self.assertEqual(dot_mod["st"], 10)
 
-        # Headshot rush: extra 50% chance when enemy is dashing
+        # Headshot rush: 100% chance when enemy is dashing/running
         rush_mod = mods["arcee_headshot_rush"]
         self.assertEqual(rush_mod["m"], 2091.0)
         self.assertEqual(rush_mod["d"], 3.0)
-        self.assertEqual(rush_mod["c"], 0.5)
-        self.assertEqual(rush_mod["trs"], "opponent:state=Dashing")
+        self.assertEqual(rush_mod["c"], 1.0)
+        self.assertEqual(rush_mod["tr"], ["onCrit"])
+        self.assertEqual(rush_mod["trs"], "level=Ranged,Special1;opponent:state=Dash,Run")
+        self.assertEqual(rush_mod["a"], ["appr_arcee_headshot"])
+        self.assertEqual(rush_mod["st"], 10)
 
         # S2 Bleed: 108% atk (3764) over 4s, d=4.0, c=1.0, on S2 crit
         s2_mod = mods["arcee_s2_bleed"]
         self.assertEqual(s2_mod["m"], 3764.0)
         self.assertEqual(s2_mod["d"], 4.0)
         self.assertEqual(s2_mod["c"], 1.0)
-        self.assertIn("onSpecial2Hit", s2_mod["tr"])
+        self.assertEqual(s2_mod["tr"], ["onCrit"])
+        self.assertEqual(s2_mod["trs"], "level=Special2")
+        self.assertEqual(s2_mod["t"], "dmg_bleed")
+        self.assertEqual(s2_mod["st"], 10)
 
     def test_stat_mod_appears_and_unicode_glyph(self):
-        """Verify statModAppears defines real PUA codepoint \uE401 (bleed) and raw 6-digit hex."""
+        """Verify statModAppears defines real PUA codepoint \uE401 (bleed), callout text, and raw 6-digit hex."""
         appears = gamedata.build_stat_mod_appears()
         for k in ["appr_arcee_headshot", "appr_arcee_bleed"]:
             self.assertIn(k, appears)
             app = appears[k]
             self.assertEqual(app["t"], "\uE401")
             self.assertEqual(app["tc"], "FF0000")  # Raw hex without '#' to prevent RGB shift to yellow!
+        self.assertEqual(appears["appr_arcee_headshot"]["st"], "HEADSHOT")
+        self.assertEqual(appears["appr_arcee_bleed"]["st"], "BLEED")
 
     def test_four_builders_carry_abilities(self):
         """Verify the 4 critical builders all inject bot_abilities correctly."""
