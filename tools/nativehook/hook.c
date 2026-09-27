@@ -3692,6 +3692,11 @@ void* hook_95(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                 dump_go("BLDGSWAP-return",clone);
             } else flog("BLDGSWAP outcome=return-clone-failed key='%s' clone=%p",resolved,clone);
         }
+        if (!replacement && !r && g_strnew) {
+            flog("BLDGSWAP: fallback to DefaultRelic to prevent crash for '%s'", requested);
+            void* def_str = g_strnew("DefaultRelic");
+            r = H[95].orig(a0, def_str, a2, a3, a4, a5, a6, a7);
+        }
     });
 #endif
     return replacement ? replacement : r;

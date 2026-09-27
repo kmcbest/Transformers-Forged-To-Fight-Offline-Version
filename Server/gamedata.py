@@ -2541,11 +2541,11 @@ BASE_BUILDINGS = {
 
 # 3D Base Buildings placed via tile renderTemplate (spawned into _BaseBuildingParent):
 BASE_FUNCTIONAL_BUILDINGS = {
-    (19, 26): {"id": "bldg_away_team", "renderId": "z_bldg_away_team_03", "rot": 0, "name": "Away Team Station"},
-    (23, 24): {"id": "bldg_crystal_premium", "renderId": "z_bldg_gacha_other_01", "rot": 0, "name": "Premium Crystal Vault"},
-    (25, 23): {"id": "bldg_battle_centre", "renderId": "z_bldg_battle_centre_03", "rot": 0, "name": "Battle Centre"},
-    (27, 24): {"id": "bldg_crystal_free", "renderId": "z_bldg_gacha_free_01", "rot": 0, "name": "Free Crystal Vault"},
-    (29, 25): {"id": "bldg_alliance_help", "renderId": "z_bldg_alliance_help_03", "rot": 0, "name": "Alliance Relay"},
+    (19, 26): {"id": "bldg_away_team", "renderId": "z_bldg_away_team", "rot": 0, "name": "Away Team Station"},
+    (23, 24): {"id": "bldg_crystal_premium", "renderId": "z_bldg_gacha_other", "rot": 0, "name": "Premium Crystal Vault"},
+    (25, 23): {"id": "bldg_battle_centre", "renderId": "z_bldg_battle_centre", "rot": 0, "name": "Battle Centre"},
+    (27, 24): {"id": "bldg_crystal_free", "renderId": "z_bldg_gacha_free", "rot": 0, "name": "Free Crystal Vault"},
+    (29, 25): {"id": "bldg_alliance_help", "renderId": "z_bldg_alliance_help", "rot": 0, "name": "Alliance Relay"},
 }
 
 # Defending Bots placed on nodes via bossSocket (spawns hexagonal BossCard):
