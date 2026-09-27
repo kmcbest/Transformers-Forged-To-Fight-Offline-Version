@@ -2510,7 +2510,7 @@ BASE_BUILDINGS = {
     "bldg_battle_centre": {
         "name": "Battle Centre",
         "desc": "The command centre of your base.",
-        "model": "z_bldg_battle_centre_03",
+        "model": "z_bldg_battle_centre_01",
     },
     "bldg_away_team": {
         "name": "Away Team Station",
@@ -2552,10 +2552,10 @@ BASE_FUNCTIONAL_BUILDINGS = {
 # Matched to authentic 1+2+1+2+1 7-defender layout:
 BASE_DEFENDERS = {
     (25, 30): {"bid": "megatron_gs_leader2015", "rank": 5, "level": 50, "sig": 60, "name": "Apex Bastion"},
-    (22, 33): {"bid": "megatron_cin_rotf", "rank": 5, "level": 50, "sig": 30, "name": "West Bastion"},
+    (22, 33): {"bid": "megatronus_gs_kabam", "rank": 5, "level": 50, "sig": 60, "name": "Megatronus (West Bastion)"},
     (28, 33): {"bid": "soundwave_gs", "rank": 5, "level": 50, "sig": 30, "name": "East Bastion"},
     (22, 39): {"bid": "galvatron_gs_voyager2016", "rank": 5, "level": 50, "sig": 40, "name": "Courtyard Vanguard"},
-    (25, 35): {"bid": "megatron_cin_rotf", "rank": 5, "level": 50, "sig": 60, "name": "变5威 (Megatron ROTF)"},
+    (25, 36): {"bid": "megatron_cin_rotf", "rank": 5, "level": 50, "sig": 60, "name": "变5威 (Megatron ROTF)"},
     (25, 42): {"bid": "arcee_gs_deluxe2014", "rank": 5, "level": 50, "sig": 40, "name": "West Flank Guard"},
     (28, 39): {"bid": "shockwave_gs", "rank": 5, "level": 50, "sig": 60, "name": "Commander's Stronghold"},
 }
@@ -2566,7 +2566,7 @@ BASE_TOWERS = {
     (25, 30): "mods_primemodule_01",
     (22, 33): "mods_paralyzer_01",
     (28, 33): "mods_brawlersfury_01",
-    (25, 35): "mods_tacticianstrick_02",
+    (25, 36): "mods_tacticianstrick_02",
     (22, 39): "mods_harmaccelerator_01",
     (28, 39): "mods_strangerefractor_01",
     (25, 42): "mods_laserguidance_01",
@@ -2574,47 +2574,41 @@ BASE_TOWERS = {
 
 # Relics placed on pedestals via relicSocket (spawns qb_relic_pedestal_01 + 3D floating relic + RelicCard):
 BASE_RELICS = {
-    (19, 40): {"id": "relic_unstable_energon_crystal", "model": "rlc11", "name": "Monument of Prime"},
+    (20, 39): {"id": "relic_unstable_energon_crystal", "model": "rlc11", "name": "Monument of Prime"},
     (20, 33): {"id": "relic_dark_energon_crystal", "model": "rlc6", "name": "Dark Energon Shrine"},
     (30, 33): {"id": "relic_allspark", "model": "rlc2", "name": "AllSpark Pedestal"},
-    (31, 40): {"id": "relic_matrix_of_leadership", "model": "rlc14", "name": "Matrix Shrine"},
+    (30, 39): {"id": "relic_matrix_of_leadership", "model": "rlc14", "name": "Matrix Shrine"},
 }
 
 # Waypoint nodes (glowing yellow circular pads with links):
 BASE_WAYPOINTS = {
     (25, 44): "Gate Conduit",
-    (25, 31): "Apex Conduit",
 }
 
 # Base graph edges for bidirectional links and visual circuits
 BASE_EDGES = [
     # Main vertical spine
     ((25, 44), (25, 42)),
-    ((25, 42), (25, 35)),
-    ((25, 35), (25, 31)),
-    ((25, 31), (25, 30)),
+    ((25, 42), (25, 36)),
+    ((25, 36), (25, 30)),
 
     # South branches (25, 42) to flanks
     ((25, 42), (22, 39)),
     ((25, 42), (28, 39)),
 
     # Flanks directly to Megatron ROTF center
-    ((22, 39), (25, 35)),
-    ((28, 39), (25, 35)),
-
-    # Flanks to North flanks
-    ((22, 39), (22, 33)),
-    ((28, 39), (28, 33)),
+    ((22, 39), (25, 36)),
+    ((28, 39), (25, 36)),
 
     # North flanks to Apex & Center
     ((22, 33), (25, 30)),
     ((28, 33), (25, 30)),
-    ((22, 33), (25, 35)),
-    ((28, 33), (25, 35)),
+    ((22, 33), (25, 36)),
+    ((28, 33), (25, 36)),
 
     # Relics connections
-    ((22, 39), (19, 40)),  # SW Relic
-    ((28, 39), (31, 40)),  # SE Relic
+    ((22, 39), (20, 39)),  # SW Relic
+    ((28, 39), (30, 39)),  # SE Relic
     ((22, 33), (20, 33)),  # NW Relic
     ((28, 33), (30, 33)),  # NE Relic
 ]
@@ -2699,7 +2693,7 @@ def build_base_map():
             }
 
             # Start and final
-            if pt == (25, 35):
+            if pt == (25, 42):
                 tile["start"] = True
             elif pt == (25, 30):
                 tile["final"] = True
@@ -2765,20 +2759,22 @@ def build_base_map():
 
     path_data = [
         # Main vertical spine
-        {"path": [{"x": 25, "y": 44}, {"x": 25, "y": 42}, {"x": 25, "y": 35}, {"x": 25, "y": 31}, {"x": 25, "y": 30}]},
-        # Outer diamond left
-        {"path": [{"x": 25, "y": 42}, {"x": 22, "y": 39}, {"x": 22, "y": 33}, {"x": 25, "y": 30}]},
-        # Outer diamond right
-        {"path": [{"x": 25, "y": 42}, {"x": 28, "y": 39}, {"x": 28, "y": 33}, {"x": 25, "y": 30}]},
+        {"path": [{"x": 25, "y": 44}, {"x": 25, "y": 42}, {"x": 25, "y": 36}, {"x": 25, "y": 30}]},
+        # South flanks from Arcee
+        {"path": [{"x": 25, "y": 42}, {"x": 22, "y": 39}]},
+        {"path": [{"x": 25, "y": 42}, {"x": 28, "y": 39}]},
+        # North bastions to Apex
+        {"path": [{"x": 22, "y": 33}, {"x": 25, "y": 30}]},
+        {"path": [{"x": 28, "y": 33}, {"x": 25, "y": 30}]},
         # Direct flanks to Center Megatron ROTF
-        {"path": [{"x": 22, "y": 39}, {"x": 25, "y": 35}]},
-        {"path": [{"x": 28, "y": 39}, {"x": 25, "y": 35}]},
+        {"path": [{"x": 22, "y": 39}, {"x": 25, "y": 36}]},
+        {"path": [{"x": 28, "y": 39}, {"x": 25, "y": 36}]},
         # North Bastions to Center
-        {"path": [{"x": 22, "y": 33}, {"x": 25, "y": 35}]},
-        {"path": [{"x": 28, "y": 33}, {"x": 25, "y": 35}]},
+        {"path": [{"x": 22, "y": 33}, {"x": 25, "y": 36}]},
+        {"path": [{"x": 28, "y": 33}, {"x": 25, "y": 36}]},
         # Relic connections
-        {"path": [{"x": 19, "y": 40}, {"x": 22, "y": 39}]},
-        {"path": [{"x": 31, "y": 40}, {"x": 28, "y": 39}]},
+        {"path": [{"x": 20, "y": 39}, {"x": 22, "y": 39}]},
+        {"path": [{"x": 30, "y": 39}, {"x": 28, "y": 39}]},
         {"path": [{"x": 20, "y": 33}, {"x": 22, "y": 33}]},
         {"path": [{"x": 30, "y": 33}, {"x": 28, "y": 33}]},
     ]

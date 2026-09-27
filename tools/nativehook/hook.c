@@ -3526,7 +3526,7 @@ void* hook_93(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                     char rname[80] = {0};
                     void* name_str = obj_ok(obj_get_name) ? obj_get_name(rgo, NULL) : NULL;
                     if (obj_ok(name_str)) read_str(name_str, rname, sizeof(rname));
-                    if (strstr(rname, "reveal") != NULL || strstr(rname, "Reveal") != NULL) {
+                    if (strstr(rname, "reveal") != NULL || strstr(rname, "Reveal") != NULL || strstr(rname, "BlankTerrain") != NULL) {
                         go_set_active(rgo, 0, NULL);
                         continue;
                     }
@@ -3631,6 +3631,22 @@ void* hook_95(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                     void* rgo=obj_ok(rr)?comp_get_go(rr,NULL):NULL;
                     if(obj_ok(rgo)) go_set_active(rgo,0,NULL);
                 }
+                void* gcicmi_new = fld_p(*(void**)(g_base + 0x2C33E58), 0x0);
+                void* newrends = obj_ok(gcicmi_new) ? go_gcic(clone, gcicmi_new) : NULL;
+                int newcount = obj_ok(newrends) ? (int)*(int32_t*)((uintptr_t)newrends + 0x18) : 0;
+                for (int k = 0; k < newcount; k++) {
+                    void* rr = *(void**)((uintptr_t)newrends + 0x20 + 8*k);
+                    if (!obj_ok(rr)) continue;
+                    void* rgo = comp_get_go(rr, NULL);
+                    if (obj_ok(rgo)) {
+                        char rname[80] = {0};
+                        void* name_str = obj_ok(obj_get_name) ? obj_get_name(rgo, NULL) : NULL;
+                        if (obj_ok(name_str)) read_str(name_str, rname, sizeof(rname));
+                        if (strstr(rname, "reveal") != NULL || strstr(rname, "Reveal") != NULL || strstr(rname, "BlankTerrain") != NULL) {
+                            go_set_active(rgo, 0, NULL);
+                        }
+                    }
+                }
                 flog("BLDGSWAP outcome=anchor-swap key='%s' clone=%p hiddenRenderers=%d",resolved,clone,oldcount);
                 dump_go("BLDGSWAP-clone",clone);
             } else flog("BLDGSWAP outcome=anchor-clone-failed key='%s' clone=%p ctr=%p anchorTr=%p",resolved,clone,ctr,rtr);
@@ -3674,7 +3690,7 @@ void* hook_95(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                         char rname[80] = {0};
                         void* name_str = obj_ok(obj_get_name) ? obj_get_name(rgo, NULL) : NULL;
                         if (obj_ok(name_str)) read_str(name_str, rname, sizeof(rname));
-                        if (strstr(rname, "reveal") != NULL || strstr(rname, "Reveal") != NULL) {
+                        if (strstr(rname, "reveal") != NULL || strstr(rname, "Reveal") != NULL || strstr(rname, "BlankTerrain") != NULL) {
                             go_set_active(rgo, 0, NULL);
                             continue;
                         }
