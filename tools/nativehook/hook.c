@@ -503,14 +503,13 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     // the scroll function still runs and real picker card taps never use this no-arg delegate.
     { 0x1E5F444, "ROSTERDRAGCTX",   2, 0 }, // 136 UIScrollView.Drag -> set dynamic drag extent
     { 0x1404E6C, "ROSTERDRAGCHOKE", 2, 0 }, // 137 UIScrollView.OnDragNotification.Invoke -> skip in drag
-    // PROPGOACT (slot 138): PropData.SetActiveInternal @0xEA023C. Native Matinee timeline and curves
-    // control character_model and transformed prop rendering natively.
-    { 0xEA023C, "PROPGOACT", 2, 0 }, // 138 PropData.SetActiveInternal
+    // Slot 138: TFormMatineeStage.Update -> track MatineeContainer.runningTime for frame-accurate timing (including slowmo)
+    { 0xE6FA78, "STAGE_UPDATE", 2, 0 }, // 138 TFormMatineeStage.Update
     // Slot 139 disabled: previously substituted S2 MoveInfo into absent SP3 move, which caused
     // the game engine to fire S2 MoveEvents (S2 sounds, spark particles, missiles, extra damage) during S3!
     { 0, "SP3MOVE", 0, 0 }, // 139 MoveSet.GetMove(int hash) -> disabled
     { 0xDE7CF4, "SP3XNEW", 2, 0 }, // 140 Simulation.RegisterComponents -> clear combat combo & cinematic latch
-    { 0x117A67C, "SP3XHOLD", 2, 0 }, // 141 PlayerController.Transform(bool) -> clean passthrough
+    { 0x117A858, "SP3XHOLD", 2, 0 }, // 141 PlayerController.Transform(bool) -> clean passthrough
     { 0x1174038, "SP3XIN", 2, 0 }, // 142 PlayerCinematicSpecialAttackState.OnEnter -> record SP3 state
     { 0x1174484, "SP3XOUT", 2, 0 }, // 143 PlayerCinematicSpecialAttackState.OnExit -> clear SP3 state & reset attack chain
     // Measured after BOTS -> detail: RSEXIT fires while the detail camera is still drawing, so
@@ -518,7 +517,7 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     // return-to-base path and is the first safe point to restore precisely the recorded objects.
     { 0xE746B8, "RSHOME",  0, 0 }, // 144 TransformersHomeScreen.WindowEnter -> restore RSHIDE objects
     // Simulation.FixedUpdate: combat simulation tick, power test, combo timeout check
-    { 0xDE8750, "SP3BEAT", 2, 0 }, // 145 Simulation.FixedUpdate
+    { 0xDE8D48, "SP3BEAT", 2, 0 }, // 145 Simulation.FixedUpdate
     { 0xDB1D30, "AIRANGE", 2, 0 }, // 146 AIController.Simulate -> basic Attack while the AI can shoot at range
     { 0x14F4468, "BOTDUPEDCHECK", 2, 0 }, // 147 BotDuped check/start entry -> return 0 to suppress tutorial
     { 0x1BF0C20, "TUTUIHOOKTOGGLE", 2, 0 }, // 148 TutorialUIHook.ToggleEnabled -> suppress yellow glow
@@ -647,6 +646,9 @@ static void* g_sp3_xf[4];
 static void* g_sp3_xf_props[8];
 static int g_sp3_xf_capture_props = 0;
 static uint64_t g_sp3_xf_since_ms = 0;
+static double g_sp3_sim_elapsed_ms = 0.0;
+static void* g_sp3_active_mc = NULL;
+static float g_sp3_mc_running_time = -1.0f;
 static int g_sp3_anim_played = 0;
 static int g_sp3_xf_timeout_logged = 0;
 static int g_sp3_alt_on_ms  = 1000;
@@ -683,6 +685,9 @@ static void sp3_xf_add(void* pc) {
     for (int i = 0; i < 4; i++) if (!g_sp3_xf[i]) {
         g_sp3_xf[i] = pc;
         g_sp3_xf_since_ms = propgo_now_ms();
+        g_sp3_sim_elapsed_ms = 0.0;
+        g_sp3_active_mc = NULL;
+        g_sp3_mc_running_time = -1.0f;
         g_sp3_xf_timeout_logged = 0;
         return;
     }
@@ -693,6 +698,9 @@ static void sp3_xf_remove(void* pc) {
     if (!sp3_xf_any()) {
         sp3_xf_props_clear();
         g_sp3_xf_since_ms = 0;
+        g_sp3_sim_elapsed_ms = 0.0;
+        g_sp3_active_mc = NULL;
+        g_sp3_mc_running_time = -1.0f;
         g_sp3_anim_played = 0;
         g_sp3_xf_capture_props = 0;
         g_sp3_beat_form = -1;
@@ -704,6 +712,9 @@ static void sp3_xf_clear(void) {
     g_sp3_prop_timing_count = 0;
     g_sp3_xf_capture_props = 0;
     g_sp3_xf_since_ms = 0;
+    g_sp3_sim_elapsed_ms = 0.0;
+    g_sp3_active_mc = NULL;
+    g_sp3_mc_running_time = -1.0f;
     g_sp3_anim_played = 0;
     g_sp3_xf_timeout_logged = 0;
     g_sp3_beat_form = -1;
@@ -4238,26 +4249,37 @@ void* hook_94(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
 static void* g_sp3_renamed_go[2] = {NULL, NULL};
 static char  g_sp3_saved_name[2][128] = {{0}, {0}};
 
-typedef void (*propgo_set_bool_t)(void*, int, void*);
-static int sp3_prop_mirror(void* prop, int on){
-    int applied = 0;
-    if (!obj_ok(prop)) return 0;
-    void* arr = *(void**)((char*)prop + 0x70);
-    if (obj_ok(arr)) {
-        int n = *(int32_t*)((char*)arr + 0x18);
-        if (n > 0 && n <= 256) {
-            for (int i = 0; i < n; i++) {
-                void* rr = *(void**)((char*)arr + 0x20 + 8 * i);
-                if (obj_ok(rr)) {
-                    void* go = ((fn8)(g_base + 0x1B4BD28))(rr, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-                    if (obj_ok(go)) {
-                        ((propgo_set_bool_t)(g_base + 0x1B50CA8))(go, on, NULL);
-                        applied++;
-                    }
-                }
+static void* props_controller_get_prop(void* cpm, const char* name) {
+    if (!obj_ok(cpm) || !name || !name[0]) return NULL;
+    void* dict = *(void**)((char*)cpm + 0x18); // _props (Dictionary<string, PropData>)
+    if (!obj_ok(dict)) return NULL;
+    void* entries = *(void**)((char*)dict + 0x18); // _entries array
+    if (!obj_ok(entries)) return NULL;
+    int32_t count = *(int32_t*)((char*)dict + 0x20); // _count
+    if (count <= 0 || count > 100) return NULL;
+
+    for (int i = 0; i < count; i++) {
+        char* e = (char*)entries + 0x20 + i * 24;
+        void* key_str = *(void**)(e + 8);
+        void* val = *(void**)(e + 16);
+        if (obj_ok(key_str) && obj_ok(val)) {
+            char kbuf[64] = {0};
+            read_str(key_str, kbuf, sizeof(kbuf));
+            if (!strcmp(kbuf, name)) {
+                return val;
             }
         }
     }
+    return NULL;
+}
+
+static int sp3_prop_mirror(void* prop, int on){
+    int applied = 0;
+    if (!obj_ok(prop)) return 0;
+
+    // PropData.SetActiveInternal @0xEA023C safely sets Renderer.enabled without breaking Matinee tree
+    ((void(*)(void*, int, void*))(g_base + 0xEA023C))(prop, on, NULL);
+    applied++;
     return applied;
 }
 
@@ -4273,45 +4295,41 @@ static int sp3_beat_form_at(uint64_t elapsed_ms){
 
 static void sp3_beat_apply(int alt){
     PROTECT({
-        for (int i = 0; i < 8; i++) {
-            void* prop = g_sp3_xf_props[i];
-            if (!obj_ok(prop)) continue;
-            char name[64] = {0};
-            void* str_obj = *(void**)((char*)prop + 0x10);
-            if (!obj_ok(str_obj)) continue;
-            read_str(str_obj, name, sizeof(name));
-            int want;
-            if (!strcmp(name, "transformed")) want = alt;
-            else if (!strcmp(name, "character_model")) want = !alt;
-            else continue;
+        for (int i = 0; i < 2; i++) {
+            void* pc = (i == 0) ? g_p0_controller : g_p1_controller;
+            if (!sp3_xf_has(pc)) continue;
+            void* cpm = fld_p(pc, 0x90);
+            if (!cpm) continue;
 
-            if (H[138].orig) {
-                ((void(*)(void*,int,void*,void*,void*,void*,void*,void*))H[138].orig)
-                    (prop, want, NULL, NULL, NULL, NULL, NULL, NULL);
-            }
-            int n = sp3_prop_mirror(prop, want);
-            flog("SP3BEAT_PROP name=%s want=%d mirrored=%d", name, want, n);
+            void* prop_trans = props_controller_get_prop(cpm, "transformed");
+            void* prop_char  = props_controller_get_prop(cpm, "character_model");
 
-            if (!g_sp3_anim_played && alt && want && !strcmp(name, "transformed") && g_strnew) {
-                void* st = g_strnew("SpecialAttack03");
-                if (st)  ((void(*)(void*,void*,void*))(g_base + 0xEA05B4))(prop, st, NULL);
-                void* st2 = g_strnew("Base.SpecialAttack03");
-                if (st2) ((void(*)(void*,void*,void*))(g_base + 0xEA05B4))(prop, st2, NULL);
-                g_sp3_anim_played = 1;
-            }
+            if (prop_trans) sp3_prop_mirror(prop_trans, alt);
+            if (prop_char)  sp3_prop_mirror(prop_char, !alt);
+            flog("SP3BEAT_APPLY: pc=%p cpm=%p alt=%d trans=%p char=%p", pc, cpm, alt, prop_trans, prop_char);
         }
     });
     flog("SP3BEAT apply alt=%d on=%d off=%d tms=%llu", alt, g_sp3_alt_on_ms, g_sp3_alt_off_ms, (unsigned long long)propgo_now_ms());
 }
 
-static void sp3_beat_pump(void){
-    if (!g_sp3_xf_since_ms) return;
-    uint64_t now = propgo_now_ms();
-    uint64_t elapsed = now - g_sp3_xf_since_ms;
-    if (elapsed > 15000u) {
+static void sp3_beat_pump(float dt_sec){
+    if (!sp3_xf_any() && !g_sp3_xf_since_ms) return;
+    
+    uint64_t elapsed = 0;
+    if (g_sp3_mc_running_time >= 0.0f) {
+        // Frame-accurate Matinee timeline playback time (accounts for slow-motion / speed tracks)
+        elapsed = (uint64_t)(g_sp3_mc_running_time * 1000.0f);
+    } else {
+        // Fallback to real wall-clock time until MatineeContainer is captured
+        uint64_t wall_now = propgo_now_ms();
+        elapsed = (g_sp3_xf_since_ms && wall_now >= g_sp3_xf_since_ms) ? (wall_now - g_sp3_xf_since_ms) : 0;
+    }
+
+    // Safety timeout: 20s of cinematic duration
+    if (elapsed > 20000u) {
         if (!g_sp3_xf_timeout_logged) {
             g_sp3_xf_timeout_logged = 1;
-            flog("SP3TIMING: safety timeout at %llu ms", (unsigned long long)elapsed);
+            flog("SP3TIMING: safety timeout at elapsed=%llu ms", (unsigned long long)elapsed);
         }
         sp3_xf_clear();
         return;
@@ -4321,10 +4339,10 @@ static void sp3_beat_pump(void){
     if (want != g_sp3_beat_form) {
         g_sp3_beat_form = want;
         sp3_beat_apply(want);
+        flog("SP3_STATE_CHANGE: form=%d elapsed=%llu ms (mc_time=%.3f)", want, (unsigned long long)elapsed, g_sp3_mc_running_time);
     }
-    for (int i = 0; i < g_sp3_prop_timing_count; i++) {
-        SP3PropTiming* pt = &g_sp3_prop_timings[i];
-        if (!obj_ok(pt->prop_ptr)) continue;
+    for (int pi = 0; pi < g_sp3_prop_timing_count; pi++) {
+        SP3PropTiming* pt = &g_sp3_prop_timings[pi];
         int prop_want = 0;
         for (int k = 0; k < pt->count; k++) {
             if (elapsed >= (uint64_t)pt->on_ms[k] && elapsed < (uint64_t)pt->off_ms[k]) {
@@ -4334,12 +4352,17 @@ static void sp3_beat_pump(void){
         }
         if (prop_want != pt->is_active) {
             pt->is_active = prop_want;
-            if (H[138].orig) {
-                ((void(*)(void*,int,void*,void*,void*,void*,void*,void*))H[138].orig)
-                    (pt->prop_ptr, prop_want, NULL, NULL, NULL, NULL, NULL, NULL);
+            for (int i = 0; i < 2; i++) {
+                void* pc = (i == 0) ? g_p0_controller : g_p1_controller;
+                if (!sp3_xf_has(pc)) continue;
+                void* cpm = fld_p(pc, 0x90);
+                if (!cpm) continue;
+                void* p = props_controller_get_prop(cpm, pt->name);
+                if (p) {
+                    sp3_prop_mirror(p, prop_want);
+                    flog("SP3WEAPON_BEAT prop=%s want=%d elapsed=%llu", pt->name, prop_want, (unsigned long long)elapsed);
+                }
             }
-            sp3_prop_mirror(pt->prop_ptr, prop_want);
-            flog("SP3WEAPON_BEAT prop=%s want=%d elapsed=%llu", pt->name, prop_want, (unsigned long long)elapsed);
         }
     }
 }
@@ -4531,7 +4554,7 @@ static void sp3_load_timing_for_character(const char* bot_id) {
     sp3_set_default_timing();
     if (!bot_id || !bot_id[0]) return;
 
-    // 1. Built-in exact intervals from official UnityFS AssetBundles
+    // Built-in exact intervals directly extracted from official UnityFS AssetBundles
     const SP3BotInterval* exact = sp3_find_exact_interval(bot_id);
     if (exact && exact->count >= 0) {
         g_current_sp3_timing.count = exact->count;
@@ -4544,92 +4567,39 @@ static void sp3_load_timing_for_character(const char* bot_id) {
         flog("SP3TIMING: loaded exact intervals for %s: count=%d on0=%d off0=%d",
              bot_id, g_current_sp3_timing.count, g_current_sp3_timing.on_ms[0], g_current_sp3_timing.off_ms[0]);
     }
-
-    // 2. Try loading auxiliary weapon props / hot-reload overrides from local file
-    const char* hot_paths[] = {
-        "/data/data/com.kabam.bigrobot/files/sp3_timings.json",
-        "/sdcard/Android/media/com.kabam.bigrobot/sp3_timings.json",
-        "/sdcard/Download/sp3_timings.json",
-        "/storage/emulated/0/Download/sp3_timings.json",
-        "/data/local/tmp/sp3_timings.json"
-    };
-    for (size_t hi = 0; hi < sizeof(hot_paths)/sizeof(hot_paths[0]); hi++) {
-        FILE* fp = fopen(hot_paths[hi], "rb");
-        if (fp) {
-            fseek(fp, 0, SEEK_END);
-            long len = ftell(fp);
-            fseek(fp, 0, SEEK_SET);
-            if (len > 10 && len < 262144) {
-                char* buf = (char*)malloc(len + 1);
-                if (buf) {
-                    size_t read_bytes = fread(buf, 1, len, fp);
-                    buf[read_bytes] = 0;
-                    if (sp3_parse_intervals_from_json(buf, bot_id)) {
-                        flog("SP3TIMING: loaded from %s for %s (intervals=%d on0=%d off0=%d)",
-                             hot_paths[hi], bot_id, g_current_sp3_timing.count, g_current_sp3_timing.on_ms[0], g_current_sp3_timing.off_ms[0]);
-                        free(buf);
-                        fclose(fp);
-                        return;
-                    }
-                    free(buf);
-                }
-            }
-            fclose(fp);
-        }
-    }
-
-    // 3. Try loading from APK in-app Payload @sp3_timings
-    size_t payload_len = 0;
-    const unsigned char* pdata = tftf_payload_lookup("@sp3_timings", &payload_len);
-    if (pdata && payload_len > 10) {
-        char* pbuf = (char*)malloc(payload_len + 1);
-        if (pbuf) {
-            memcpy(pbuf, pdata, payload_len);
-            pbuf[payload_len] = 0;
-            if (sp3_parse_intervals_from_json(pbuf, bot_id)) {
-                flog("SP3TIMING: loaded from @sp3_timings payload for %s (intervals=%d on0=%d off0=%d)",
-                     bot_id, g_current_sp3_timing.count, g_current_sp3_timing.on_ms[0], g_current_sp3_timing.off_ms[0]);
-                free(pbuf);
-                return;
-            }
-            free(pbuf);
-        }
-    }
 }
 
-// PROPGOACT (slot 138): PropData.SetActiveInternal @0xEA023C.
 void* hook_138(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
-    char name[64] = {0};
-    int req = (intptr_t)a1 ? 1 : 0;
     PROTECT({
-        if (obj_ok(a0)) {
-            void* strobj = *(void**)((char*)a0 + 0x10);
-            if (obj_ok(strobj)) read_str(strobj, name, sizeof(name));
-        }
-        if (!strcmp(name, "character_model") || !strcmp(name, "transformed")) {
-            if (g_sp3_xf_capture_props) {
-                sp3_xf_props_add(a0);
-            }
-            if (sp3_xf_props_has(a0) && g_sp3_xf_since_ms) {
-                uint64_t now = propgo_now_ms();
-                if (now - g_sp3_xf_since_ms <= 15000u) {
-                    int alt = sp3_beat_form_at(now - g_sp3_xf_since_ms);
-                    int forced = !strcmp(name, "transformed") ? alt : !alt;
-                    if (req != forced) {
-                        a1 = (void*)(intptr_t)forced;
+        if (sp3_xf_any() && obj_ok(a0)) {
+            // a0 is TFormMatineeStage*
+            if (!g_sp3_active_mc || !obj_ok(g_sp3_active_mc)) {
+                for (int off = 0x70; off <= 0xE0; off += 8) {
+                    void* candidate = *(void**)((char*)a0 + off);
+                    if (obj_ok(candidate)) {
+                        float dur = *(float*)((char*)candidate + 0x1C); // MatineeContainer.duration
+                        float rt  = *(float*)((char*)candidate + 0x38); // MatineeContainer.runningTime
+                        if (dur >= 1.0f && dur <= 30.0f && rt >= 0.0f && rt <= dur + 2.0f) {
+                            g_sp3_active_mc = candidate;
+                            g_sp3_mc_running_time = rt;
+                            flog("SP3_MC_FOUND: stage=%p MatineeContainer=%p at stage+0x%x dur=%.3f rt=%.3f",
+                                 a0, candidate, off, dur, rt);
+                            break;
+                        }
                     }
+                }
+            } else {
+                float rt = *(float*)((char*)g_sp3_active_mc + 0x38);
+                if (rt >= 0.0f) {
+                    g_sp3_mc_running_time = rt;
                 }
             }
         }
     });
-    void* r = H[138].orig(a0, a1, a2, a3, a4, a5, a6, a7);
-    PROTECT({
-        if (sp3_xf_any() && obj_ok(a0)) {
-            int on = (intptr_t)a1 ? 1 : 0;
-            sp3_prop_mirror(a0, on);
-        }
-    });
-    return r;
+    if (H[138].orig) {
+        return H[138].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    }
+    return NULL;
 }
 
 void* hook_139(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
@@ -4739,57 +4709,7 @@ void* hook_142(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
 
             // Load exact intervals & weapon prop timings for this character
             sp3_load_timing_for_character(bid_to_lookup);
-
-            // Directly query transformed & character_model props from PropsController
-            void* cpm = fld_p(pc, 0x1A8); // PropsController*
-            if (cpm && g_strnew) {
-                void* prop_trans = ((void*(*)(void*,void*,void*))(g_base + 0xEA16C0))(cpm, g_strnew("transformed"), NULL);
-                void* prop_char  = ((void*(*)(void*,void*,void*))(g_base + 0xEA16C0))(cpm, g_strnew("character_model"), NULL);
-                if (prop_trans) sp3_xf_props_add(prop_trans);
-                if (prop_char)  sp3_xf_props_add(prop_char);
-                flog("SP3PROPS cpm=%p trans=%p char=%p", cpm, prop_trans, prop_char);
-
-                for (int pi = 0; pi < g_sp3_prop_timing_count; pi++) {
-                    void* p = ((void*(*)(void*,void*,void*))(g_base + 0xEA16C0))(cpm, g_strnew(g_sp3_prop_timings[pi].name), NULL);
-                    g_sp3_prop_timings[pi].prop_ptr = p;
-                    g_sp3_prop_timings[pi].is_active = 0;
-                    if (p) {
-                        if (H[138].orig) {
-                            ((void(*)(void*,int,void*,void*,void*,void*,void*,void*))H[138].orig)(p, 0, NULL,NULL,NULL,NULL,NULL,NULL);
-                        }
-                        sp3_prop_mirror(p, 0);
-                        flog("SP3WEAPON_INIT name=%s ptr=%p", g_sp3_prop_timings[pi].name, p);
-                    }
-                }
-            }
-
-            g_sp3_xf_capture_props = 1;
-            ((void(*)(void*,int,void*))(g_base + 0x117A67C))(pc, 1, NULL); // Transform(1) to capture any uncaptured props
-            g_sp3_xf_capture_props = 0;
-
-            // Start in robot form at beginning of cinematic
-            sp3_beat_apply(0);
-
-            // Pre-warm / start vehicle animation so it runs concurrently
-            if (g_strnew) {
-                for (int pi = 0; pi < 8; pi++) {
-                    void* p = g_sp3_xf_props[pi];
-                    if (!obj_ok(p)) continue;
-                    char pname[64] = {0};
-                    void* strobj = *(void**)((char*)p + 0x10);
-                    if (!obj_ok(strobj)) continue;
-                    read_str(strobj, pname, sizeof(pname));
-                    if (!strcmp(pname, "transformed")) {
-                        void* st = g_strnew("SpecialAttack03");
-                        void* st2 = g_strnew("Base.SpecialAttack03");
-                        if (st)  ((void(*)(void*,void*,void*))(g_base + 0xEA05B4))(p, st, NULL);
-                        if (st2) ((void(*)(void*,void*,void*))(g_base + 0xEA05B4))(p, st2, NULL);
-                        g_sp3_anim_played = 1;
-                        flog("SP3ANIM_START prop=transformed anim=%p tms=%llu",
-                             fld_p(p, 0x68), (unsigned long long)propgo_now_ms());
-                    }
-                }
-            }
+            flog("SP3 enter complete for bot_id='%s'", bid_to_lookup);
         }
     });
     void* r = H[142].orig(a0,a1,a2,a3,a4,a5,a6,a7);
@@ -4801,16 +4721,15 @@ static void reset_player_attack_chain(void* pc);
 void* hook_143(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
     void* pc = fld_p(a0, 0x18);
     sp3_beat_apply(0);
-    for (int i = 0; i < g_sp3_prop_timing_count; i++) {
-        SP3PropTiming* pt = &g_sp3_prop_timings[i];
-        if (obj_ok(pt->prop_ptr)) {
-            if (H[138].orig) {
-                ((void(*)(void*,int,void*,void*,void*,void*,void*,void*))H[138].orig)(pt->prop_ptr, 0, NULL,NULL,NULL,NULL,NULL,NULL);
-            }
-            sp3_prop_mirror(pt->prop_ptr, 0);
-            pt->prop_ptr = NULL;
-            pt->is_active = 0;
+    for (int pi = 0; pi < g_sp3_prop_timing_count; pi++) {
+        SP3PropTiming* pt = &g_sp3_prop_timings[pi];
+        void* cpm = fld_p(pc, 0x90);
+        if (cpm) {
+            void* p = props_controller_get_prop(cpm, pt->name);
+            if (p) sp3_prop_mirror(p, 0);
         }
+        pt->prop_ptr = NULL;
+        pt->is_active = 0;
     }
     g_sp3_prop_timing_count = 0;
     sp3_xf_remove(pc);
@@ -4833,7 +4752,6 @@ void* hook_143(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
             }
 
             flog("SP3 exit pc=%p tms=%llu", pc, (unsigned long long)propgo_now_ms());
-            ((void(*)(void*,int,void*))(g_base + 0x117A67C))(pc, 0, NULL); // Transform(0)
             reset_player_attack_chain(pc);
         }
     });
@@ -4869,7 +4787,12 @@ void* hook_145(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     PROTECT({
         give_p0_max_power();
         if (sp3_xf_any()) {
-            sp3_beat_pump();
+            float dt = 1.0f / 30.0f;
+            if (obj_ok(a0)) {
+                // Simulation.get_DeltaTime RVA 0xDE7C74
+                dt = ((float(*)(void*, void*))(g_base + 0xDE7C74))(a0, NULL);
+            }
+            sp3_beat_pump(dt);
         }
         // GATE-04: an idle gap longer than the combo window ends the chain. Nothing native was
         // observable for this -- waiting in place left l untouched and produced no reset line -- yet
