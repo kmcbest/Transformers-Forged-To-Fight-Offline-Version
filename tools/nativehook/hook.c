@@ -560,8 +560,8 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     // never fired once in any later session (so holding guard stopped clearing the chain and
     // GATE-05's 200 ms rule was dead), while 0x0D34E6C does fire but with a0+0x18 == 0, so only its
     // silent fallback did any work. Both are hooked again here, next to the newer entries.
-    { 0x1173848, "BLOCKENTER2",        2, 0 }, // 171 guard entry (fires) -> arm the guard-hold timer
-    { 0x117E4AC, "DODGEENTER2",        2, 0 }, // 172 dodge entry (fires, controller resolves) -> reset chain
+    { 0x11785B8, "RECEIVE_HIT",        2, 0 }, // 171 PlayerController.ReceiveHit -> reset attack chain on taking unblocked damage
+    { 0x117E4AC, "DODGEENTER2",        2, 0 }, // 172 PlayerCinematicState.OnExit
     { 0x141CD54, "ONHCCLICK",          2, 0 }, // 173 TransformersTopBarPresentation.OnHardCurrencyClick -> redirect to OnResourceClick
     { 0x0DA0720, "GETDEFTAB",          2, 0 }, // 174 PayoutsModel.GetDefaultTabId -> safe empty tab check
     { 0xF9A7F8,  "TS_GET_TEAM",        2, 0 }, // 175 TeamSelectModel.get_Team -> empty team on entry
@@ -5037,8 +5037,8 @@ void hook_146(void* self, float dT, void* method){
         if(obj_ok(player) && *(uint8_t*)((uintptr_t)self+0x88) && // AIController._isActive
            ((int(*)(void*,void*))(g_base+0xDB07F4))(self,NULL) && // get_IsActive (@0xDB07F4)
            !((int(*)(void*,void*))(g_base+0xDB07FC))(self,NULL) && // get_IsPaused (@0xDB07FC)
-           !((int(*)(void*,void*))(g_base+0x11752C8))(player,NULL) && // get_IsAttacking
-           ((int(*)(void*,void*))(g_base+0x1174FEC))(player,NULL)){ // get_CanShoot
+           !((int(*)(void*,void*))(g_base+0x1175468))(player,NULL) && // get_IsAttacking (@0x1175468)
+           ((int(*)(void*,void*))(g_base+0x1175254))(player,NULL)){ // get_CanShoot (@0x1175254)
             ((void(*)(void*,int,void*))(g_base+0x1179AF4))(player,1,NULL); // Action.Attack
             static unsigned fired_lines=0;
             if(fired_lines<100){ fired_lines++; flog("AIRANGE fired=1 ai=%p player=%p is_p0=%d",self,player,is_p0); }
@@ -5181,6 +5181,31 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
                 }
             } else if (action == ACT_ATTACK || action == ACT_DASH) {
                 // Action 1 = Attack (Tap: Ranged or Light); Action 32 = Dash (Swipe forward: Dash/M1 or M2)
+                int in_melee = 1;
+                if (g_base) {
+                    in_melee = ((int(*)(void*,void*))(g_base + 0x1175DF4))(self, NULL);
+                }
+                if (!in_melee) {
+                    if (action == ACT_ATTACK && (pre_l > 0 || pre_m > 0)) {
+                        // Anti-Air-Whiff: tap outside melee range with stale melee index forces CanShoot to return false.
+                        // Reset melee chain so SwitchState("Shoot") succeeds!
+                        flog("COMBAT_GATE: tap outside melee range (in_melee=0, l=%u, m=%u) -> reset chain to allow shooting", pre_l, pre_m);
+                        reset_player_attack_chain(self);
+                        did_reset = 1;
+                        pre_l = *(uint32_t*)((uintptr_t)self + 0x1c0);
+                        pre_m = *(uint32_t*)((uintptr_t)self + 0x1c4);
+                        pre_r = *(uint32_t*)((uintptr_t)self + 0x1c8);
+                    } else if (action == ACT_DASH && (pre_m > 0 || pre_r > 0)) {
+                        // GATE-04 / GATE-06: dash outside melee range requires MediumAttackIndex == 0 to enter DashState.
+                        flog("COMBAT_GATE: dash outside melee range (in_melee=0, m=%u, r=%u) -> reset chain to ensure DashState enters M1", pre_m, pre_r);
+                        reset_player_attack_chain(self);
+                        did_reset = 1;
+                        pre_l = *(uint32_t*)((uintptr_t)self + 0x1c0);
+                        pre_m = *(uint32_t*)((uintptr_t)self + 0x1c4);
+                        pre_r = *(uint32_t*)((uintptr_t)self + 0x1c8);
+                        COMBAT_ASSERT(pre_m == 0, "GATE-04", "Dash initiation must start with M1!");
+                    }
+                }
                 if (action == ACT_DASH && pre_r > 0) {
                     // GATE-06: Gun cancel into forward dash
                     flog("COMBAT_GATE: gun cancel into dash (pre_r=%u) -> reset chain to M1", pre_r);
@@ -5611,10 +5636,31 @@ void* hook_165(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     return r;
 }
 
-// slot 171 (0x1173848): PlayerAttackState.Config..ctor.
-// Guard entry is authoritatively handled in hook_154 (Action.Block == 2).
-void* hook_171(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
-    return H[171].orig ? H[171].orig(a0, a1, a2, a3, a4, a5, a6, a7) : NULL;
+// slot 171 (0x11785B8): PlayerController.ReceiveHit -> GATE-03: clear chain on unblocked hit
+void* hook_171(void* self, void* instigator, void* agent, void* hitData, void* result, void* method, void* a6, void* a7) {
+    void* r = H[171].orig ? H[171].orig(self, instigator, agent, hitData, result, method, a6, a7) : NULL;
+    PROTECT({
+        if (obj_ok(self) && *(int32_t*)((uintptr_t)self + 0xF4) == 0) {
+            int flags = (result && obj_ok(result)) ? *(int32_t*)((uintptr_t)result + 0x20) : 0;
+            int is_blocked = (flags & 4) != 0; // HitResultFlags.Blocked == 4
+            int is_hit = (flags & 1) != 0;     // HitResultFlags.Hit == 1
+            if (is_hit && !is_blocked) {
+                flog("RECEIVE_HIT (0x11785B8) on P0: unblocked hit (flags=0x%x) -> reset attack chain (GATE-03)", flags);
+                reset_player_attack_chain(self);
+                g_p0_combo_ended = 0;
+                g_p0_after_heavy = 0;
+                g_p0_block_enter_ms = 0;
+                g_p0_block_reset_done = 0;
+                COMBAT_ASSERT(*(uint32_t*)((uintptr_t)self + 0x1c0) == 0 &&
+                              *(uint32_t*)((uintptr_t)self + 0x1c4) == 0 &&
+                              *(uint32_t*)((uintptr_t)self + 0x1c8) == 0,
+                              "GATE-03", "Combo chain must be completely reset to 0 after hit reaction!");
+            } else if (is_blocked) {
+                flog("RECEIVE_HIT on P0: blocked hit (flags=0x%x) -> combo chain preserved", flags);
+            }
+        }
+    });
+    return r;
 }
 
 // slot 172 (0x117E4AC): PlayerCinematicState.OnExit.
