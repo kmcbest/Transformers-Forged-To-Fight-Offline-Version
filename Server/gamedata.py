@@ -2541,11 +2541,11 @@ BASE_BUILDINGS = {
 
 # 3D Base Buildings placed via tile renderTemplate (spawned into _BaseBuildingParent):
 BASE_FUNCTIONAL_BUILDINGS = {
-    (21, 25): {"id": "bldg_away_team", "renderId": "z_bldg_away_team", "rot": 0, "name": "Away Team Station"},
-    (23, 24): {"id": "bldg_crystal_premium", "renderId": "z_bldg_gacha_other", "rot": 0, "name": "Premium Crystal Vault"},
-    (25, 23): {"id": "bldg_battle_centre", "renderId": "z_bldg_battle_centre", "rot": 0, "name": "Battle Centre"},
-    (27, 24): {"id": "bldg_crystal_free", "renderId": "z_bldg_gacha_free", "rot": 0, "name": "Free Crystal Vault"},
-    (29, 25): {"id": "bldg_alliance_help", "renderId": "z_bldg_alliance_help", "rot": 0, "name": "Alliance Relay"},
+    (19, 26): {"id": "bldg_away_team", "renderId": "z_bldg_away_team_03", "rot": 0, "name": "Away Team Station"},
+    (23, 24): {"id": "bldg_crystal_premium", "renderId": "z_bldg_gacha_other_01", "rot": 0, "name": "Premium Crystal Vault"},
+    (25, 23): {"id": "bldg_battle_centre", "renderId": "z_bldg_battle_centre_03", "rot": 0, "name": "Battle Centre"},
+    (27, 24): {"id": "bldg_crystal_free", "renderId": "z_bldg_gacha_free_01", "rot": 0, "name": "Free Crystal Vault"},
+    (29, 25): {"id": "bldg_alliance_help", "renderId": "z_bldg_alliance_help_03", "rot": 0, "name": "Alliance Relay"},
 }
 
 # Defending Bots placed on nodes via bossSocket (spawns hexagonal BossCard):
@@ -2582,19 +2582,15 @@ BASE_RELICS = {
 
 # Waypoint nodes (glowing yellow circular pads with links):
 BASE_WAYPOINTS = {
-    (25, 38): "Core Conduit",
     (25, 44): "Gate Conduit",
     (25, 31): "Apex Conduit",
-    (22, 35): "West Relay",
-    (28, 35): "East Relay",
 }
 
 # Base graph edges for bidirectional links and visual circuits
 BASE_EDGES = [
     # Main vertical spine
     ((25, 44), (25, 42)),
-    ((25, 42), (25, 38)),
-    ((25, 38), (25, 35)),
+    ((25, 42), (25, 35)),
     ((25, 35), (25, 31)),
     ((25, 31), (25, 30)),
 
@@ -2602,23 +2598,15 @@ BASE_EDGES = [
     ((25, 42), (22, 39)),
     ((25, 42), (28, 39)),
 
-    # Core (25, 38) to flanks
-    ((25, 38), (22, 39)),
-    ((25, 38), (28, 39)),
+    # Flanks directly to Megatron ROTF center
+    ((22, 39), (25, 35)),
+    ((28, 39), (25, 35)),
 
-    # Flanks to relays
-    ((22, 39), (22, 35)),
-    ((28, 39), (28, 35)),
+    # Flanks to North flanks
+    ((22, 39), (22, 33)),
+    ((28, 39), (28, 33)),
 
-    # Relays to center
-    ((22, 35), (25, 35)),
-    ((28, 35), (25, 35)),
-
-    # Relays to North flanks
-    ((22, 35), (22, 33)),
-    ((28, 35), (28, 33)),
-
-    # North flanks to Apex
+    # North flanks to Apex & Center
     ((22, 33), (25, 30)),
     ((28, 33), (25, 30)),
     ((22, 33), (25, 35)),
@@ -2720,6 +2708,7 @@ def build_base_map():
             if pt in BASE_DEFENDERS:
                 d = BASE_DEFENDERS[pt]
                 sock_id = "sock_boss_%d_%d" % pt
+                tile["sockets"]["boss"] = {"id": sock_id, "entityType": "boss", "locked": False}
                 tile["sockets"][sock_id] = {"entityType": "boss", "locked": False}
                 tile.setdefault("entities", {})
                 tile["entities"]["boss"] = {
@@ -2742,6 +2731,7 @@ def build_base_map():
             if pt in BASE_TOWERS:
                 t_key = BASE_TOWERS[pt]
                 sock_id = "sock_tower_%d_%d" % pt
+                tile["sockets"]["tower"] = {"id": sock_id, "entityType": "tower", "locked": False}
                 tile["sockets"][sock_id] = {"entityType": "tower", "locked": False}
                 tile.setdefault("entities", {})
                 tile["entities"]["tower"] = {
@@ -2757,6 +2747,8 @@ def build_base_map():
             if pt in BASE_RELICS:
                 r_info = BASE_RELICS[pt]
                 sock_id = "sock_relic_%d_%d" % pt
+                tile["sockets"]["relic"] = {"id": sock_id, "entityType": "relic", "locked": False}
+                tile["sockets"]["building"] = {"id": sock_id, "entityType": "building", "locked": False}
                 tile["sockets"][sock_id] = {"entityType": "relic", "locked": False}
                 tile.setdefault("entities", {})
                 tile["entities"]["building"] = {
@@ -2777,18 +2769,22 @@ def build_base_map():
 
     path_data = [
         # Main vertical spine
-        {"path": [{"x": 25, "y": 43}, {"x": 25, "y": 41}, {"x": 25, "y": 39}, {"x": 25, "y": 35}, {"x": 25, "y": 31}, {"x": 25, "y": 30}]},
+        {"path": [{"x": 25, "y": 44}, {"x": 25, "y": 42}, {"x": 25, "y": 35}, {"x": 25, "y": 31}, {"x": 25, "y": 30}]},
         # Outer diamond left
-        {"path": [{"x": 25, "y": 41}, {"x": 22, "y": 38}, {"x": 22, "y": 35}, {"x": 22, "y": 33}, {"x": 25, "y": 30}]},
+        {"path": [{"x": 25, "y": 42}, {"x": 22, "y": 39}, {"x": 22, "y": 33}, {"x": 25, "y": 30}]},
         # Outer diamond right
-        {"path": [{"x": 25, "y": 41}, {"x": 28, "y": 38}, {"x": 28, "y": 35}, {"x": 28, "y": 33}, {"x": 25, "y": 30}]},
-        # Middle cross
-        {"path": [{"x": 22, "y": 35}, {"x": 25, "y": 35}, {"x": 28, "y": 35}]},
+        {"path": [{"x": 25, "y": 42}, {"x": 28, "y": 39}, {"x": 28, "y": 33}, {"x": 25, "y": 30}]},
+        # Direct flanks to Center Megatron ROTF
+        {"path": [{"x": 22, "y": 39}, {"x": 25, "y": 35}]},
+        {"path": [{"x": 28, "y": 39}, {"x": 25, "y": 35}]},
+        # North Bastions to Center
+        {"path": [{"x": 22, "y": 33}, {"x": 25, "y": 35}]},
+        {"path": [{"x": 28, "y": 33}, {"x": 25, "y": 35}]},
         # Relic connections
-        {"path": [{"x": 20, "y": 38}, {"x": 22, "y": 38}]},
-        {"path": [{"x": 31, "y": 38}, {"x": 28, "y": 38}]},
-        {"path": [{"x": 21, "y": 32}, {"x": 22, "y": 33}]},
-        {"path": [{"x": 30, "y": 32}, {"x": 28, "y": 33}]},
+        {"path": [{"x": 19, "y": 40}, {"x": 22, "y": 39}]},
+        {"path": [{"x": 31, "y": 40}, {"x": 28, "y": 39}]},
+        {"path": [{"x": 20, "y": 33}, {"x": 22, "y": 33}]},
+        {"path": [{"x": 30, "y": 33}, {"x": 28, "y": 33}]},
     ]
 
     return {

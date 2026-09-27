@@ -571,6 +571,7 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x0DAD558, "CRIT_MULT",          2, 0 }, // 179 PlayerAttributes.GetCritDamageMultiplier -> ensure 1.5x crit damage for Player 0
     { 0x00FF063C, "FSPRESS_L",         2, 0 }, // 180 HudScreen.FullScreenPressDownLeft -> AutoFight button check
     { 0x00FF0658, "FSPRESS_R",         2, 0 }, // 181 HudScreen.FullScreenPressDownRight -> AutoFight button check
+    { 0x00B6E168, "AWAY_STATE",        2, 0 }, // 182 BaseBuilding.SetAwayTeamState -> force Home (0) to keep shuttle docked
 };
 #define NH (int)(sizeof(H)/sizeof(H[0]))
 
@@ -3516,11 +3517,19 @@ void* hook_93(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
             void* gcicmi = fld_p(*(void**)(g_base + 0x2C33E58), 0x0);
             void* rends = obj_ok(gcicmi) ? go_gcic(a2, gcicmi) : NULL;
             int rn = obj_ok(rends) ? (int)*(int32_t*)((uintptr_t)rends + 0x18) : 0;
+            void* (*obj_get_name)(void*,void*) = (void*(*)(void*,void*))(g_base + 0x16A16A0);
             for (int k = 0; k < rn; k++) {
                 void* rr = *(void**)((uintptr_t)rends + 0x20 + 8*k);
                 if (!obj_ok(rr)) continue;
                 void* rgo = comp_get_go(rr, NULL);
                 if (obj_ok(rgo)) {
+                    char rname[80] = {0};
+                    void* name_str = obj_ok(obj_get_name) ? obj_get_name(rgo, NULL) : NULL;
+                    if (obj_ok(name_str)) read_str(name_str, rname, sizeof(rname));
+                    if (strstr(rname, "reveal") != NULL || strstr(rname, "Reveal") != NULL) {
+                        go_set_active(rgo, 0, NULL);
+                        continue;
+                    }
                     go_set_active(rgo, 1, NULL);
                     void* cur_tr = go_transform(rgo, NULL);
                     while (obj_ok(cur_tr) && cur_tr != ctr) {
@@ -3563,9 +3572,11 @@ void* hook_95(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
         void  (*go_set_active)(void*,int,void*) = (void(*)(void*,int,void*))(g_base + 0x1B50CA8);
         void* (*comp_get_go)(void*,void*) = (void*(*)(void*,void*))(g_base + 0x1B4BD28);
         void* (*go_gcic)(void*,void*) = (void*(*)(void*,void*))(g_base + 0x11E5B70);
+        void* (*obj_get_name)(void*,void*) = (void*(*)(void*,void*))(g_base + 0x16A16A0);
         void* lib = fld_p(a0, 0x158);
         void* cont = obj_ok(lib) ? lib_contents(lib, NULL) : NULL;
-        void* mi_has = fld_p(*(void**)(g_base + 0x2C38CC0), 0x0);
+        void* mi_has = fld_p(*(void**)(g_base + 0x2C33CC0), 0x0);
+        if (!obj_ok(mi_has)) mi_has = fld_p(*(void**)(g_base + 0x2C38CC0), 0x0);
         void* mi_get = fld_p(*(void**)(g_base + 0x2C24188), 0x0);
         void* selected_key=NULL;
         void* prefab=NULL;
@@ -3599,11 +3610,18 @@ void* hook_95(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                 V3 zero; zero.x=zero.y=zero.z=0.0f;
                 tr_set_parent(ctr,rtr,0,NULL);
                 tr_set_local_position(ctr,zero,NULL);
+                int is_relic = (strncmp(resolved, "rlc", 3) == 0 || strncmp(requested, "rlc", 3) == 0 || strstr(resolved, "relic") != NULL);
+                if (is_relic) {
+                    V3 scale; scale.x = scale.y = scale.z = 4.0f;
+                    tr_set_local_scale(ctr, scale, NULL);
+                    flog("BLDGSWAP relic anchor-swap key='%s' official scale 4.0", resolved);
+                } else {
 #if BLDGSCALE
-                V3 scale; scale.x=scale.y=scale.z=BLDGSCALE_VAL;
-                tr_set_local_scale(ctr,scale,NULL);
-                flog("BLDGSCALE applied key='%s' mult=%.2f",resolved,BLDGSCALE_VAL);
+                    V3 scale; scale.x=scale.y=scale.z=BLDGSCALE_VAL;
+                    tr_set_local_scale(ctr,scale,NULL);
+                    flog("BLDGSCALE applied key='%s' mult=%.2f",resolved,BLDGSCALE_VAL);
 #endif
+                }
                 go_set_active(clone,1,NULL);
                 char clonename[128]; snprintf(clonename,sizeof clonename,"BLDGSWAP-clone:%s",resolved);
                 void* managed_name=g_strnew?g_strnew(clonename):NULL;
@@ -3624,15 +3642,26 @@ void* hook_95(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                 if (obj_ok(a1)) obj_set_name(clone,a1,NULL);
                 void* parent_go=fld_p(a0,0xB0);
                 void* parent_tr=obj_ok(parent_go)?go_transform(parent_go,NULL):NULL;
+                int is_relic = (strncmp(resolved, "rlc", 3) == 0 || strncmp(requested, "rlc", 3) == 0 || strstr(resolved, "relic") != NULL);
                 if (obj_ok(ctr) && obj_ok(a2)) {
-                    V3 pos=tr_get_position(a2,NULL);
-                    pos.x *= 5.5f;
-                    pos.z *= 4.5f;
-                    tr_set_position(ctr,pos,NULL);
-                }
+                    if (is_relic) {
+                        V3 pos = tr_get_position(a2, NULL);
+                        tr_set_position(ctr, pos, NULL);
+                        V3 scale; scale.x = scale.y = scale.z = 4.0f;
+                        tr_set_local_scale(ctr, scale, NULL);
+                        flog("BLDGSWAP relic placed on node at official scale 4.0: key='%s'", resolved);
+                    } else {
+                        V3 pos=tr_get_position(a2,NULL);
+                        pos.x *= 5.5f;
+                        pos.z *= 4.5f;
+                        tr_set_position(ctr,pos,NULL);
 #if BLDGSCALE
-                if (obj_ok(ctr)) { V3 scale; scale.x=scale.y=scale.z=BLDGSCALE_VAL; tr_set_local_scale(ctr,scale,NULL); flog("BLDGSCALE applied key='%s' mult=%.2f",resolved,BLDGSCALE_VAL); }
+                        V3 scale; scale.x=scale.y=scale.z=BLDGSCALE_VAL;
+                        tr_set_local_scale(ctr,scale,NULL);
+                        flog("BLDGSCALE applied key='%s' mult=%.2f",resolved,BLDGSCALE_VAL);
 #endif
+                    }
+                }
                 go_set_active(clone,1,NULL);
                 void* gcicmi = fld_p(*(void**)(g_base + 0x2C33E58), 0x0);
                 void* rends = obj_ok(gcicmi) ? go_gcic(clone, gcicmi) : NULL;
@@ -3642,6 +3671,13 @@ void* hook_95(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                     if (!obj_ok(rr)) continue;
                     void* rgo = comp_get_go(rr, NULL);
                     if (obj_ok(rgo)) {
+                        char rname[80] = {0};
+                        void* name_str = obj_ok(obj_get_name) ? obj_get_name(rgo, NULL) : NULL;
+                        if (obj_ok(name_str)) read_str(name_str, rname, sizeof(rname));
+                        if (strstr(rname, "reveal") != NULL || strstr(rname, "Reveal") != NULL) {
+                            go_set_active(rgo, 0, NULL);
+                            continue;
+                        }
                         go_set_active(rgo, 1, NULL);
                         void* cur_tr = go_transform(rgo, NULL);
                         while (obj_ok(cur_tr) && cur_tr != ctr) {
@@ -3660,31 +3696,21 @@ void* hook_95(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
 #endif
     return replacement ? replacement : r;
 }
-// BLDGLEAVE (slot 96): BaseBoard.LeaveBoard is the confirmed base-board teardown path
-// (it calls SafeSetActive(false) on the regular board root).  BLDGACT is deliberately a
-// cosmetic workaround for the game's disabled-GameObject behaviour, not a root-cause fix;
-// the fallback anchors/clones it touches live under AssetManager and therefore need the same
-// explicit deactivation before a STORY board reuses the scene/camera.
+// BLDGLEAVE (slot 96): BaseBoard.SetupBoard (@0x00A6F844).
+// When SetupBoard completes, trigger RefreshNodes immediately so defending bots
+// appear on cold boot without requiring a quest roundtrip!
 void* hook_96(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
-    // RCINIT re-arms these on the next BaseBoard entry.  Clear them before the
-    // outgoing board can be torn down so ProcessTouch cannot dispatch a stale card.
     g_base_tap_card=NULL;
     g_base_tap_go=NULL;
-#if BLDGLEAVE
+    void* r = H[96].orig(a0,a1,a2,a3,a4,a5,a6,a7);
     PROTECT({
-        void (*go_set_active)(void*,int,void*) =
-            (void(*)(void*,int,void*))(g_base + 0x1B50CA8);
-        int hidden=0;
-        for (int i=0;i<g_bldg_tracked_count;i++) {
-            if (obj_ok(g_bldg_tracked[i])) { go_set_active(g_bldg_tracked[i],0,NULL); hidden++; }
+        void (*refresh_nodes)(void*,void*) = (void(*)(void*,void*))(g_base + 0x00A6F7A4);
+        if (obj_ok(a0)) {
+            flog("hook_96: BaseBoard.SetupBoard complete -> triggering RefreshNodes(%p)", a0);
+            refresh_nodes(a0, NULL);
         }
-        flog("BLDGLEAVE base=%p hidden=%d tracked=%d",a0,hidden,g_bldg_tracked_count);
-        g_bldg_tracked_count=0;
-        g_bldg_fifo_count=0;
-        g_bldg_fifo_head=0;
     });
-#endif
-    return H[96].orig(a0,a1,a2,a3,a4,a5,a6,a7);
+    return r;
 }
 // Base-builder entry markers (slots 97-101): intentionally log only, then execute originals.
 #define MK_BASEMARK(n) \
@@ -6083,6 +6109,27 @@ void* hook_181(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     return ((fn8)H[181].orig)(a0, a1, a2, a3, a4, a5, a6, a7);
 }
 
+void* hook_182(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    int state = (int)(intptr_t)a1;
+    if (state == 1) { // eAWAY_TEAM_STATE.Away -> force Home (0)
+        flog("hook_182: SetAwayTeamState Away (1) -> forcing Home (0)");
+        a1 = (void*)(intptr_t)0;
+    }
+    void* r = ((fn8)H[182].orig)(a0, a1, a2, a3, a4, a5, a6, a7);
+    PROTECT({
+        void* anim = fld_p(a0, 0x78);
+        if (obj_ok(anim)) {
+            void* (*comp_get_go)(void*,void*) = (void*(*)(void*,void*))(g_base + 0x1B4BD28);
+            void  (*go_set_active)(void*,int,void*) = (void(*)(void*,int,void*))(g_base + 0x1B50CA8);
+            void* go = comp_get_go(anim, NULL);
+            if (obj_ok(go)) {
+                go_set_active(go, 1, NULL);
+            }
+        }
+    });
+    return r;
+}
+
 static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hook_7,hook_8,
     hook_9,hook_10,hook_11,hook_12,hook_13,hook_14,hook_15,hook_16,hook_17,hook_18,hook_19,hook_20,hook_21,
     hook_22,hook_23,hook_24,hook_25,hook_26,hook_27,hook_28,hook_29,hook_30,
@@ -6103,7 +6150,7 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     (void*)hook_159,hook_160,hook_161,hook_162,hook_163,hook_164,
     hook_165,hook_166,(void*)hook_167,hook_168,hook_169,hook_170,
     hook_171,hook_172,hook_173,hook_174,hook_175,hook_176,(void*)hook_177,(void*)hook_178,
-    (void*)hook_179,hook_180,hook_181 };
+    (void*)hook_179,hook_180,hook_181,hook_182 };
 
 static void write_jump(uint8_t* dst, void* target){
     uint32_t* p = (uint32_t*)dst;
