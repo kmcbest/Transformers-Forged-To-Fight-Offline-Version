@@ -101,6 +101,7 @@ typedef void* (*fn1)(void*);
 typedef void (*fn_ai_simulate)(void*, float, void*);
 typedef void* (*strnew_t)(const char*);   // il2cpp_string_new
 typedef void* (*arraynew_t)(void*, size_t); // il2cpp_array_new(elementClass, len)
+typedef void* (*objnew_t)(void*);          // il2cpp_object_new(klass)
 
 // Validate just enough of an Il2CppObject to make a dispatch decision: object -> klass ->
 // klass.name. All three reads are speculative when this is reached from a mismatched native
@@ -134,6 +135,7 @@ static int il2cpp_object_class(void* o, char* out, int cap){
 static uintptr_t g_base;            // libil2cpp base (set in installer)
 static strnew_t g_strnew = NULL;    // il2cpp_string_new (dlsym'd in installer)
 static arraynew_t g_arraynew = NULL; // il2cpp_array_new (dlsym'd in installer)
+static objnew_t g_objnew = NULL;     // il2cpp_object_new (dlsym'd in installer)
 typedef void* (*resolve_icall_t)(const char*);
 static resolve_icall_t g_resolve_icall = NULL;
 typedef void (*fn_get_mouse_pos)(float*);
@@ -3749,22 +3751,151 @@ void* hook_##n(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
 }
 MK_POPMARK(115) MK_POPMARK(116) MK_POPMARK(117) MK_POPMARK(119) MK_POPMARK(120)
 #undef MK_POPMARK
-// The retail BaseEditBuildingPopup prefab present in this APK has no serialized
-// button SCI references.  BuildPresentation first dereferences _addButtonSCI@0x70
-// and throws; UpdatePresentation would repeat that same UI-only setup.  These two
-// hooks preserve the popup lifecycle by taking the methods' normal successful tail:
-// SafeInvoke(onReady).  They intentionally do not fabricate UI objects or alter
-// authored base data; the visible base board remains under the open popup.
+// BaseEditBuildingPopupPresentation lifecycle and UI connection:
+// In the retail prefab, _sellButtonSCI (@0x88) and occasionally _addButtonSCI (@0x70)
+// have null object references, which caused BuildPresentation (@0x121E540) and UpdatePresentation
+// (@0x121D89C) to crash with NullReferenceException when accessing SCI.Instance.
+// hook_118 populates valid dummy SCIs for missing fields so original BuildPresentation
+// can safely run and wire up all button click listeners (Swap, Remove, Close, etc.).
+// hook_121 updates the presentation state: toggles _occupiedContainer (@0x18) and
+// _unOccupiedContainer (@0x20) based on whether a relic is equipped on the node,
+// updates _buildingName (@0x30), and sets up _buildingPortraitSCI (@0xA8) to display the relic portrait.
 static void popup_safe_ready(void* onReady) {
     if (onReady) ((void(*)(void*,void*))(g_base + 0xDC8048))(onReady, NULL);
 }
-void* hook_118(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
-    LOG("POPBUILD this=%p onReady=%p (missing prefab SCI workaround)",a0,a1);
+
+void* hook_118(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    LOG("POPBUILD this=%p onReady=%p", a0, a1);
+    PROTECT({
+        if (obj_ok(a0)) {
+            void* swap_sci = *(void**)((char*)a0 + 0x80);
+            if (swap_sci && obj_ok(swap_sci)) {
+                void* klass = *(void**)swap_sci;
+                if (klass) {
+                    if (!g_objnew) {
+                        g_objnew = (objnew_t)dlsym(RTLD_DEFAULT, "il2cpp_object_new");
+                        if (!g_objnew) {
+                            void* h = dlopen("libil2cpp.so", RTLD_NOLOAD);
+                            if (h) g_objnew = (objnew_t)dlsym(h, "il2cpp_object_new");
+                        }
+                    }
+                    if (g_objnew) {
+                        // If _sellButtonSCI is null, supply dummy SCI so BuildPresentation doesn't throw NullReferenceException
+                        if (!*(void**)((char*)a0 + 0x88)) {
+                            *(void**)((char*)a0 + 0x88) = g_objnew(klass);
+                            LOG("POPBUILD populated dummy _sellButtonSCI");
+                        }
+                        // Ensure _addButtonSCI is also non-null
+                        if (!*(void**)((char*)a0 + 0x70)) {
+                            *(void**)((char*)a0 + 0x70) = g_objnew(klass);
+                            LOG("POPBUILD populated dummy _addButtonSCI");
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    void* r = NULL;
+    PROTECT({
+        r = H[118].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    });
     popup_safe_ready(a1);
-    return NULL;
+    return r;
 }
-void* hook_121(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
-    LOG("POPUPDATE this=%p onReady=%p (missing prefab SCI workaround)",a0,a1);
+
+void* hook_121(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    LOG("POPUPDATE this=%p onReady=%p", a0, a1);
+    PROTECT({
+        if (!obj_ok(a0)) {
+            popup_safe_ready(a1);
+            return NULL;
+        }
+
+        void* config = *(void**)((char*)a0 + 0xC0);
+        void* building = *(void**)((char*)a0 + 0xC8);
+
+        // If _building is null, attempt recovery from config->mapTile
+        if (!building && config && obj_ok(config)) {
+            void* tile = *(void**)((char*)config + 0x20); // EditBuildingConfig.mapTile
+            if (tile && obj_ok(tile)) {
+                building = ((void*(*)(void*, void*))(g_base + 0x1094230))(tile, NULL); // MapTile.get_building
+                if (building) {
+                    *(void**)((char*)a0 + 0xC8) = building;
+                    LOG("POPUPDATE recovered building %p from mapTile %p", building, tile);
+                }
+            }
+        }
+
+        int flag = (building != NULL) ? 1 : 0;
+        LOG("POPUPDATE building=%p flag=%d", building, flag);
+
+        void (*safe_set_active)(void*, int, void*) = (void(*)(void*, int, void*))(g_base + 0xDD4258);
+        void (*lbl_set_text)(void*, void*, void*) = (void(*)(void*, void*, void*))(g_base + 0x1B60DE0);
+
+        // 1. Toggle containers
+        void* occ = *(void**)((char*)a0 + 0x18);
+        void* unocc = *(void**)((char*)a0 + 0x20);
+
+        if (occ && obj_ok(occ)) {
+            safe_set_active(occ, flag, NULL);
+        }
+        if (unocc && obj_ok(unocc)) {
+            safe_set_active(unocc, !flag, NULL);
+        }
+
+        // 2. Hide info button
+        void* info_sci = *(void**)((char*)a0 + 0xA0);
+        if (info_sci && obj_ok(info_sci)) {
+            ((void(*)(void*, int, void*))(g_base + 0x11E51E8))(info_sci, 0, NULL);
+        }
+
+        // 3. Configure occupied details
+        if (flag && obj_ok(building)) {
+            // Set building name
+            void* name_lbl = *(void**)((char*)a0 + 0x30);
+            void* name_str = *(void**)((char*)building + 0x60); // Building.name
+            if (name_lbl && obj_ok(name_lbl) && name_str) {
+                lbl_set_text(name_lbl, name_str, NULL);
+                LOG("POPUPDATE set building name");
+            }
+
+            // Clear buff labels
+            void* buff_cat = *(void**)((char*)a0 + 0x38);
+            void* buff_lbl = *(void**)((char*)a0 + 0x40);
+            if (buff_cat && obj_ok(buff_cat) && g_strnew) {
+                lbl_set_text(buff_cat, g_strnew(""), NULL);
+            }
+            if (buff_lbl && obj_ok(buff_lbl) && g_strnew) {
+                lbl_set_text(buff_lbl, g_strnew(""), NULL);
+            }
+
+            // Update portrait
+            void* portrait_sci = *(void**)((char*)a0 + 0xA8);
+            if (portrait_sci && obj_ok(portrait_sci)) {
+                void* portrait = *(void**)((char*)portrait_sci + 0x20);
+                if (!portrait) {
+                    void** p_method = (void**)(g_base + 0x2C3A4B0);
+                    if (p_method && *p_method) {
+                        void* (*get_inst)(void*, void*) = (void*(*)(void*, void*))(g_base + 0x19C8024);
+                        portrait = get_inst(portrait_sci, *p_method);
+                    }
+                }
+                if (portrait && obj_ok(portrait)) {
+                    *(int*)((char*)portrait + 0x90) = 2; // _portraitVersion = Small (2)
+                    *(uint8_t*)((char*)portrait + 0xA0) = 1; // _started = true
+                    *(uint8_t*)((char*)portrait + 0xA4) = 0; // _showStatusIcon = false
+
+                    // Set data
+                    ((void(*)(void*, void*, void*))(g_base + 0xEF7A98))(portrait, building, NULL);
+                    // RefreshFromData
+                    ((void(*)(void*, void*))(g_base + 0xEF7B28))(portrait, NULL);
+                    LOG("POPUPDATE configured building portrait %p", portrait);
+                }
+            }
+        }
+    });
+
     popup_safe_ready(a1);
     return NULL;
 }
@@ -6327,6 +6458,8 @@ static void* installer(void* arg){
     if (!g_strnew) { void* h = dlopen("libil2cpp.so", RTLD_NOLOAD); if (h) g_strnew = (strnew_t)dlsym(h, "il2cpp_string_new"); }
     g_arraynew = (arraynew_t)dlsym(RTLD_DEFAULT, "il2cpp_array_new");
     if (!g_arraynew) { void* h = dlopen("libil2cpp.so", RTLD_NOLOAD); if (h) g_arraynew = (arraynew_t)dlsym(h, "il2cpp_array_new"); }
+    g_objnew = (objnew_t)dlsym(RTLD_DEFAULT, "il2cpp_object_new");
+    if (!g_objnew) { void* h = dlopen("libil2cpp.so", RTLD_NOLOAD); if (h) g_objnew = (objnew_t)dlsym(h, "il2cpp_object_new"); }
     g_resolve_icall = (resolve_icall_t)dlsym(RTLD_DEFAULT, "il2cpp_resolve_icall");
     if (!g_resolve_icall) { void* h = dlopen("libil2cpp.so", RTLD_NOLOAD); if (h) g_resolve_icall = (resolve_icall_t)dlsym(h, "il2cpp_resolve_icall"); }
     if (g_resolve_icall) {

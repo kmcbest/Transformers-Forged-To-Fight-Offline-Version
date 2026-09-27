@@ -2574,10 +2574,50 @@ BASE_TOWERS = {
 
 # Relics placed on pedestals via relicSocket (spawns qb_relic_pedestal_01 + 3D floating relic + RelicCard):
 BASE_RELICS = {
-    (20, 39): {"id": "relic_unstable_energon_crystal", "model": "rlc11", "name": "Monument of Prime"},
-    (20, 33): {"id": "relic_dark_energon_crystal", "model": "rlc6", "name": "Dark Energon Shrine"},
-    (30, 33): {"id": "relic_allspark", "model": "rlc2", "name": "AllSpark Pedestal"},
-    (30, 39): {"id": "relic_matrix_of_leadership", "model": "rlc14", "name": "Matrix Shrine"},
+    (20, 39): {
+        "id": "relic_unstable_energon_crystal",
+        "model": "rlc11",
+        "name": "不稳定能量晶体",
+        "name_loc": {
+            "en": "Unstable Energon Crystal",
+            "zh-Hans": "不稳定能量晶体",
+            "zh-Hant": "不穩定能量晶體",
+        },
+        "img": "unstable_energon_crystal",
+    },
+    (20, 33): {
+        "id": "relic_dark_energon_crystal",
+        "model": "rlc6",
+        "name": "黑暗能量晶体",
+        "name_loc": {
+            "en": "Dark Energon Crystal",
+            "zh-Hans": "黑暗能量晶体",
+            "zh-Hant": "黑暗能量晶體",
+        },
+        "img": "dark_energon_crystal",
+    },
+    (30, 33): {
+        "id": "relic_allspark",
+        "model": "rlc2",
+        "name": "火种源",
+        "name_loc": {
+            "en": "The AllSpark",
+            "zh-Hans": "火种源",
+            "zh-Hant": "火種源",
+        },
+        "img": "allspark",
+    },
+    (30, 39): {
+        "id": "relic_matrix_of_leadership",
+        "model": "rlc14",
+        "name": "领导模块",
+        "name_loc": {
+            "en": "Matrix of Leadership",
+            "zh-Hans": "领导模块",
+            "zh-Hant": "領導模塊",
+        },
+        "img": "matrix_of_leadership",
+    },
 }
 
 # Waypoint nodes (glowing yellow circular pads with links):
@@ -2748,6 +2788,8 @@ def build_base_map():
                     "key": r_info["id"],
                     "modelId": r_info["model"],
                     "name": r_info["name"],
+                    "name_loc": r_info.get("name_loc", {}),
+                    "img": r_info.get("img", ""),
                     "rank": 5,
                     "level": 50,
                 }
@@ -2831,6 +2873,8 @@ def build_base_mission():
             "key": rel["id"],
             "modelId": rel["model"],
             "name": rel["name"],
+            "name_loc": rel.get("name_loc", {}),
+            "img": rel.get("img", ""),
             "rank": 5,
             "level": 50,
             "position": {"x": r, "y": c},
@@ -2913,7 +2957,16 @@ def build_base_active():
         user_sockets["sock_bldg_%d_%d" % (r, c)] = True
 
     user_buildings = [
-        {"id": rel["id"], "key": "sock_relic_%d_%d" % (r, c)}
+        {
+            "id": rel["id"],
+            "key": rel["id"],
+            "modelId": rel["model"],
+            "name": rel["name"],
+            "name_loc": rel.get("name_loc", {}),
+            "img": rel.get("img", ""),
+            "rank": 5,
+            "level": 50,
+        }
         for (r, c), rel in BASE_RELICS.items()
     ] + [
         {"id": b["id"], "key": "sock_bldg_%d_%d" % (r, c)}
