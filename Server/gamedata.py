@@ -2708,7 +2708,6 @@ def build_base_map():
             if pt in BASE_DEFENDERS:
                 d = BASE_DEFENDERS[pt]
                 sock_id = "sock_boss_%d_%d" % pt
-                tile["sockets"]["boss"] = {"id": sock_id, "entityType": "boss", "locked": False}
                 tile["sockets"][sock_id] = {"entityType": "boss", "locked": False}
                 tile.setdefault("entities", {})
                 tile["entities"]["boss"] = {
@@ -2731,7 +2730,6 @@ def build_base_map():
             if pt in BASE_TOWERS:
                 t_key = BASE_TOWERS[pt]
                 sock_id = "sock_tower_%d_%d" % pt
-                tile["sockets"]["tower"] = {"id": sock_id, "entityType": "tower", "locked": False}
                 tile["sockets"][sock_id] = {"entityType": "tower", "locked": False}
                 tile.setdefault("entities", {})
                 tile["entities"]["tower"] = {
@@ -2747,8 +2745,6 @@ def build_base_map():
             if pt in BASE_RELICS:
                 r_info = BASE_RELICS[pt]
                 sock_id = "sock_relic_%d_%d" % pt
-                tile["sockets"]["relic"] = {"id": sock_id, "entityType": "relic", "locked": False}
-                tile["sockets"]["building"] = {"id": sock_id, "entityType": "building", "locked": False}
                 tile["sockets"][sock_id] = {"entityType": "relic", "locked": False}
                 tile.setdefault("entities", {})
                 tile["entities"]["building"] = {
