@@ -4298,18 +4298,35 @@ static void sp3_beat_apply(int alt){
         for (int i = 0; i < 2; i++) {
             void* pc = (i == 0) ? g_p0_controller : g_p1_controller;
             if (!sp3_xf_has(pc)) continue;
+            
+            // 1. Safe Renderer toggling & Animator activation via PropsController / PropData
             void* cpm = fld_p(pc, 0x90);
-            if (!cpm) continue;
+            if (cpm) {
+                void* prop_trans = props_controller_get_prop(cpm, "transformed");
+                void* prop_char  = props_controller_get_prop(cpm, "character_model");
+                if (prop_trans) {
+                    sp3_prop_mirror(prop_trans, alt);
+                    if (alt) {
+                        // PropData.SetAnimatorSpeed @0xEA0660
+                        ((void(*)(void*, float, void*))(g_base + 0xEA0660))(prop_trans, 1.0f, NULL);
+                        if (g_strnew) {
+                            void* st_base = g_strnew("Base.SpecialAttack03");
+                            void* st_norm = g_strnew("SpecialAttack03");
+                            // PropData.PlayAnimatorState @0xEA05B4
+                            ((void(*)(void*, void*, void*))(g_base + 0xEA05B4))(prop_trans, st_base, NULL);
+                            ((void(*)(void*, void*, void*))(g_base + 0xEA05B4))(prop_trans, st_norm, NULL);
+                        }
+                    }
+                }
+                if (prop_char) sp3_prop_mirror(prop_char, !alt);
+            }
 
-            void* prop_trans = props_controller_get_prop(cpm, "transformed");
-            void* prop_char  = props_controller_get_prop(cpm, "character_model");
-
-            if (prop_trans) sp3_prop_mirror(prop_trans, alt);
-            if (prop_char)  sp3_prop_mirror(prop_char, !alt);
-            flog("SP3BEAT_APPLY: pc=%p cpm=%p alt=%d trans=%p char=%p", pc, cpm, alt, prop_trans, prop_char);
+            // 2. Official PlayerController.Transform(alt) @0x117A67C triggers full skeletal bone transform animation & flags
+            ((void(*)(void*, int, void*))(g_base + 0x117A67C))(pc, alt, NULL);
+            flog("SP3BEAT_APPLY: pc=%p alt=%d mc_time=%.3f", pc, alt, g_sp3_mc_running_time);
         }
     });
-    flog("SP3BEAT apply alt=%d on=%d off=%d tms=%llu", alt, g_sp3_alt_on_ms, g_sp3_alt_off_ms, (unsigned long long)propgo_now_ms());
+    flog("SP3BEAT apply alt=%d on=%d off=%d tms=%llu mc_time=%.3f", alt, g_sp3_alt_on_ms, g_sp3_alt_off_ms, (unsigned long long)propgo_now_ms(), g_sp3_mc_running_time);
 }
 
 static void sp3_beat_pump(float dt_sec){
@@ -4341,6 +4358,22 @@ static void sp3_beat_pump(float dt_sec){
         sp3_beat_apply(want);
         flog("SP3_STATE_CHANGE: form=%d elapsed=%llu ms (mc_time=%.3f)", want, (unsigned long long)elapsed, g_sp3_mc_running_time);
     }
+
+    // Maintain live animator speed for active transformed prop during alt mode
+    if (want == 1) {
+        for (int i = 0; i < 2; i++) {
+            void* pc = (i == 0) ? g_p0_controller : g_p1_controller;
+            if (!sp3_xf_has(pc)) continue;
+            void* cpm = fld_p(pc, 0x90);
+            if (cpm) {
+                void* prop_trans = props_controller_get_prop(cpm, "transformed");
+                if (prop_trans) {
+                    ((void(*)(void*, float, void*))(g_base + 0xEA0660))(prop_trans, 1.0f, NULL);
+                }
+            }
+        }
+    }
+
     for (int pi = 0; pi < g_sp3_prop_timing_count; pi++) {
         SP3PropTiming* pt = &g_sp3_prop_timings[pi];
         int prop_want = 0;
@@ -4360,6 +4393,15 @@ static void sp3_beat_pump(float dt_sec){
                 void* p = props_controller_get_prop(cpm, pt->name);
                 if (p) {
                     sp3_prop_mirror(p, prop_want);
+                    if (prop_want) {
+                        ((void(*)(void*, float, void*))(g_base + 0xEA0660))(p, 1.0f, NULL);
+                        if (g_strnew) {
+                            void* st_w3 = g_strnew("Base.weaponAnim3");
+                            void* st_w3_s = g_strnew("weaponAnim3");
+                            ((void(*)(void*, void*, void*))(g_base + 0xEA05B4))(p, st_w3, NULL);
+                            ((void(*)(void*, void*, void*))(g_base + 0xEA05B4))(p, st_w3_s, NULL);
+                        }
+                    }
                     flog("SP3WEAPON_BEAT prop=%s want=%d elapsed=%llu", pt->name, prop_want, (unsigned long long)elapsed);
                 }
             }
@@ -4566,6 +4608,49 @@ static void sp3_load_timing_for_character(const char* bot_id) {
         g_sp3_alt_off_ms = g_current_sp3_timing.off_ms[0];
         flog("SP3TIMING: loaded exact intervals for %s: count=%d on0=%d off0=%d",
              bot_id, g_current_sp3_timing.count, g_current_sp3_timing.on_ms[0], g_current_sp3_timing.off_ms[0]);
+    }
+
+    // Configure auxiliary weapon props for specific bots
+    if (!strcmp(bot_id, "optimusprimal_bw_mp32")) {
+        SP3PropTiming* pt = &g_sp3_prop_timings[g_sp3_prop_timing_count++];
+        strcpy(pt->name, "shoulderguns");
+        pt->count = 1;
+        pt->on_ms[0] = 0;
+        pt->off_ms[0] = 1833;
+        pt->prop_ptr = NULL;
+        pt->is_active = 0;
+    } else if (!strcmp(bot_id, "motormaster_gs_voyager2015")) {
+        SP3PropTiming* pt = &g_sp3_prop_timings[g_sp3_prop_timing_count++];
+        strcpy(pt->name, "sword");
+        pt->count = 1;
+        pt->on_ms[0] = 0;
+        pt->off_ms[0] = 3950;
+        pt->prop_ptr = NULL;
+        pt->is_active = 0;
+    } else if (!strcmp(bot_id, "bonecrusher_cin_rotf")) {
+        SP3PropTiming* pt = &g_sp3_prop_timings[g_sp3_prop_timing_count++];
+        strcpy(pt->name, "claw");
+        pt->count = 1;
+        pt->on_ms[0] = 0;
+        pt->off_ms[0] = 2100;
+        pt->prop_ptr = NULL;
+        pt->is_active = 0;
+    } else if (!strcmp(bot_id, "bludgeon_gs_rd20")) {
+        SP3PropTiming* pt = &g_sp3_prop_timings[g_sp3_prop_timing_count++];
+        strcpy(pt->name, "sword");
+        pt->count = 1;
+        pt->on_ms[0] = 0;
+        pt->off_ms[0] = 6633;
+        pt->prop_ptr = NULL;
+        pt->is_active = 0;
+    } else if (!strcmp(bot_id, "dinobot_bw_kabam")) {
+        SP3PropTiming* pt = &g_sp3_prop_timings[g_sp3_prop_timing_count++];
+        strcpy(pt->name, "sword");
+        pt->count = 1;
+        pt->on_ms[0] = 0;
+        pt->off_ms[0] = 2000;
+        pt->prop_ptr = NULL;
+        pt->is_active = 0;
     }
 }
 
