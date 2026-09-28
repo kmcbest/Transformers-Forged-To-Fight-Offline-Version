@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TFTF Relic ↔ Model Mapper</title>
+<style>
+  :root {
+    --bg: #0f172a; --surface: #1e293b; --surface2: #334155;
+    --border: #475569; --text: #e2e8f0; --text2: #94a3b8;
+    --accent: #3b82f6; --accent2: #60a5fa; --green: #22c55e;
+    --red: #ef4444; --amber: #f59e0b; --purple: #a78bfa;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* Toolbar */
+  .toolbar {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 12px 24px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  }
+  .toolbar h1 { font-size: 18px; font-weight: 700; margin-right: auto; }
+  .toolbar h1 span { color: var(--accent2); }
+  .btn {
+    padding: 8px 16px; border: none; border-radius: 6px; font-size: 13px;
+    font-weight: 600; cursor: pointer; transition: all .15s;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-green { background: var(--green); color: #000; }
+  .btn-green:hover { opacity: .85; }
+  .btn-amber { background: var(--amber); color: #000; }
+  .btn-amber:hover { opacity: .85; }
+  .btn-outline { background: transparent; color: var(--text2); border: 1px solid var(--border); }
+  .btn-outline:hover { border-color: var(--accent); color: var(--text); }
+  .stats { font-size: 12px; color: var(--text2); padding: 4px 10px; background: var(--surface2); border-radius: 4px; }
+
+  /* Layout */
+  .container { display: flex; gap: 0; height: calc(100vh - 57px); }
+
+  /* Left: Relic List */
+  .relic-panel {
+    flex: 1; overflow-y: auto; padding: 16px;
+    border-right: 1px solid var(--border);
+  }
+  .relic-panel h2 { font-size: 14px; color: var(--text2); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+
+  .relic-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .relic-card.drag-over { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(59,130,246,.3); }
+  .relic-card.changed { border-left: 3px solid var(--amber); }
+
+  .relic-info { flex: 1; min-width: 0; }
+  .relic-id { font-size: 11px; color: var(--text2); font-family: monospace; margin-bottom: 2px; }
+  .relic-names { display: flex; gap: 6px; flex-wrap: wrap; }
+  .relic-names input {
+    background: var(--surface2); border: 1px solid transparent; border-radius: 4px;
+    color: var(--text); padding: 3px 8px; font-size: 13px; outline: none; transition: border-color .15s;
+  }
+  .relic-names input:focus { border-color: var(--accent); }
+  .relic-names input.name-en { flex: 1; min-width: 140px; }
+  .relic-names input.name-zh { width: 130px; color: var(--amber); }
+  .relic-category { font-size: 10px; color: var(--purple); margin-top: 2px; }
+
+  /* Model slot (drop zone on relic card) */
+  .model-slot {
+    min-width: 140px; height: 42px;
+    border: 2px dashed var(--border); border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; color: var(--text2); cursor: default;
+    transition: all .15s; flex-shrink: 0; position: relative;
+  }
+  .model-slot.has-model { border-style: solid; border-color: var(--green); background: rgba(34,197,94,.08); }
+  .model-slot.drag-over-slot { border-color: var(--accent); background: rgba(59,130,246,.1); }
+
+  .model-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600;
+    cursor: grab; user-select: none; white-space: nowrap;
+    background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+    transition: all .15s;
+  }
+  .model-chip:active { cursor: grabbing; }
+  .model-chip .chip-id { color: var(--accent2); font-family: monospace; }
+  .model-chip .chip-desc { color: var(--text2); font-weight: 400; font-size: 11px; }
+  .model-chip .chip-remove {
+    width: 16px; height: 16px; border-radius: 50%; border: none;
+    background: var(--red); color: #fff; font-size: 10px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; line-height: 1;
+    opacity: 0; transition: opacity .15s; flex-shrink: 0;
+  }
+  .model-slot:hover .chip-remove, .model-chip:hover .chip-remove { opacity: 1; }
+
+  /* Right: Model Palette */
+  .model-panel {
+    width: 320px; flex-shrink: 0; overflow-y: auto; padding: 16px; background: var(--surface);
+  }
+  .model-panel h2 { font-size: 14px; color: var(--text2); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+  .model-panel .hint { font-size: 11px; color: var(--text2); margin-bottom: 12px; }
+  .palette-search {
+    width: 100%; padding: 6px 10px; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 4px; color: var(--text); font-size: 13px; outline: none; margin-bottom: 12px;
+  }
+  .palette-search:focus { border-color: var(--accent); }
+
+  .palette-chip {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px; border-radius: 6px; margin-bottom: 4px;
+    background: var(--bg); border: 1px solid var(--border);
+    cursor: grab; user-select: none; transition: all .15s;
+  }
+  .palette-chip:hover { border-color: var(--accent); background: var(--surface2); }
+  .palette-chip:active { cursor: grabbing; opacity: .7; }
+  .palette-chip.used { opacity: .35; border-style: dashed; }
+  .palette-chip .p-icon { font-size: 16px; flex-shrink: 0; width: 22px; text-align: center; }
+  .palette-chip .p-id { font-family: monospace; font-size: 13px; font-weight: 700; color: var(--accent2); min-width: 70px; }
+  .palette-chip .p-desc { font-size: 11px; color: var(--text2); }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: var(--green); color: #000; padding: 10px 24px; border-radius: 8px;
+    font-size: 14px; font-weight: 600; opacity: 0; transition: opacity .3s; pointer-events: none;
+    z-index: 200;
+  }
+  .toast.show { opacity: 1; }
+
+  @media (max-width: 900px) {
+    .container { flex-direction: column; height: auto; }
+    .model-panel { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <h1>🔧 TFTF <span>Relic ↔ Model</span> Mapper</h1>
+  <span class="stats" id="statsBar">Changes: 0</span>
+  <button class="btn btn-outline" onclick="resetAll()">↺ Reset All</button>
+  <button class="btn btn-amber" onclick="exportCSV()">📄 Export CSV</button>
+  <button class="btn btn-green" onclick="exportJSON()">📦 Export JSON</button>
+</div>
+
+<div class="container">
+  <div class="relic-panel" id="relicPanel">
+    <h2>📋 Relics (drag a model onto the slot →)</h2>
+  </div>
+  <div class="model-panel" id="modelPanel">
+    <h2>🧊 3D Models (drag from here)</h2>
+    <div class="hint">Drag a model chip and drop it onto a relic's model slot on the left. Models currently in use are dimmed.</div>
+    <input class="palette-search" id="paletteSearch" placeholder="🔍 Filter models..." oninput="filterPalette()">
+    <div id="paletteList"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────────────────────────────
+const RELICS = [
+  { id:"relic_immobilizer", name_en:"Immobilizer", name_zh:"禁锢定身器", category:"Prime Artifact", model_id:"rlc3" },
+  { id:"relic_allspark", name_en:"The AllSpark", name_zh:"火种源", category:"Prime Artifact", model_id:"rlc2" },
+  { id:"relic_covenant_primus", name_en:"Covenant of Primus", name_zh:"普神之约", category:"Prime Artifact", model_id:"rlc7" },
+  { id:"relic_matrix_of_leadership", name_en:"Matrix of Leadership", name_zh:"领导模块", category:"Prime Artifact", model_id:"rlc14" },
+  { id:"relic_matrix_of_leadership_g1", name_en:"Matrix of Leadership (G1)", name_zh:"领导模块 (G1)", category:"Prime Artifact", model_id:"rlc4" },
+  { id:"relic_origin_matrix", name_en:"Origin Matrix", name_zh:"原初矩阵", category:"Prime Artifact", model_id:"rlc8" },
+  { id:"relic_ancienthead", name_en:"Ancient Titan Core", name_zh:"远古巨神核心", category:"Ancient Relic", model_id:"" },
+  { id:"relic_solus_forge", name_en:"Forge of Solus Prime", name_zh:"索拉斯之锤", category:"Prime Artifact", model_id:"rlc5" },
+  { id:"relic_dark_energon_crystal", name_en:"Dark Energon Crystal", name_zh:"黑暗超能量体水晶", category:"Cosmic Artifact", model_id:"rlc6" },
+  { id:"relic_unstable_energon_crystal", name_en:"Unstable Energon Crystal", name_zh:"不稳定超能量体水晶", category:"Cosmic Artifact", model_id:"rlc11" },
+  { id:"relic_stasis_generator", name_en:"Stasis Generator", name_zh:"停滞力场发生器", category:"Technology", model_id:"rlc20" },
+  { id:"relic_cloaking_field", name_en:"Cloaking Field Generator", name_zh:"隐形发生器", category:"Technology", model_id:"rlc19" },
+  { id:"relic_fallen_titan_hand", name_en:"Fallen Titan Hand", name_zh:"堕落泰坦之手", category:"Ancient Relic", model_id:"rlc9" },
+  { id:"relic_ancient_tablet", name_en:"Cybertronian Tablet", name_zh:"赛博坦古老石板", category:"Ancient Relic", model_id:"rlc20" },
+  { id:"relic_goldendisk", name_en:"Golden Disk", name_zh:"金盘", category:"Ancient Relic", model_id:"rlc22" },
+  { id:"relic_shattered_disk", name_en:"Shattered Disk", name_zh:"破碎之盘", category:"Ancient Relic", model_id:"rlc29" },
+  { id:"relic_statue_op", name_en:"Optimus Prime Monument", name_zh:"擎天柱纪念圣像", category:"Statue", model_id:"rlc11" },
+  { id:"relic_statue_megatron", name_en:"Megatron Monument", name_zh:"威震天纪念雕像", category:"Statue", model_id:"rlc13" },
+  { id:"relic_statue_hotrod", name_en:"Hot Rod Monument", name_zh:"热破英勇塑像", category:"Statue", model_id:"rlc14" },
+  { id:"relic_statue_solus", name_en:"Solus Prime Monument", name_zh:"索拉斯天尊塑像", category:"Statue", model_id:"rlc28" },
+  { id:"relic_jazz", name_en:"Jazz Signature Relic", name_zh:"爵士专属遗迹", category:"Signature Relic", model_id:"rlc_jazz_gs" },
+  { id:"relic_optimus_primal", name_en:"Optimus Primal Relic", name_zh:"擎天圣专属遗迹", category:"Signature Relic", model_id:"rlc34d" },
+  { id:"relic_megatron", name_en:"Megatron Signature Relic", name_zh:"威震天霸权遗迹", category:"Signature Relic", model_id:"rlc36d" },
+  { id:"relic_bumblebee", name_en:"Bumblebee Relic", name_zh:"大黄蜂专属遗迹", category:"Signature Relic", model_id:"rlc35d" },
+  { id:"relic_blaster", name_en:"Blaster Sonic Relic", name_zh:"录音机声波遗迹", category:"Signature Relic", model_id:"rlc33d" },
+  { id:"relic_cheetor", name_en:"Cheetor Velocity Relic", name_zh:"黄豹勇士极速遗迹", category:"Signature Relic", model_id:"rlc37d" },
+  { id:"relic_hound", name_en:"Hound Hologram Relic", name_zh:"探长全息遗迹", category:"Signature Relic", model_id:"rlc38d" },
+  { id:"relic_galvatron", name_en:"Galvatron Particle Relic", name_zh:"惊破天粒子遗迹", category:"Signature Relic", model_id:"rlc39d" },
+  { id:"relic_kickback", name_en:"Kickback Hive Relic", name_zh:"反冲虫巢遗迹", category:"Signature Relic", model_id:"rlc40d" },
+  { id:"relic_alliance_victory", name_en:"Alliance Victory Relic", name_zh:"联盟凯旋勋章", category:"Alliance", model_id:"rlc41d" },
+  { id:"relic_raid_champion", name_en:"Raid Champion Relic", name_zh:"突袭冠军遗迹", category:"Raid", model_id:"rlc30d" },
+];
+
+const MODELS = [
+  { id:"rlc1",  icon:"🗿", desc:"Solus Prime Statue (rock base)", mesh:"rlc_sta_solus_prime_brown_rock" },
+  { id:"rlc2",  icon:"✨", desc:"AllSpark", mesh:"rlc_allspark" },
+  { id:"rlc3",  icon:"🔒", desc:"Immobilizer", mesh:"rlc_immobilizer" },
+  { id:"rlc4",  icon:"💫", desc:"Matrix of Leadership (G1 classic)", mesh:"rlc_wpn_leadership" },
+  { id:"rlc5",  icon:"🔨", desc:"Forge of Solus Prime (hammer)", mesh:"ric_solus_forge_2" },
+  { id:"rlc6",  icon:"🗡️", desc:"Star Saber (sword)", mesh:"rlc_star_sabe_01" },
+  { id:"rlc7",  icon:"📖", desc:"Covenant of Primus (book)", mesh:"The_Covenant_of_The_Primus" },
+  { id:"rlc8",  icon:"💎", desc:"Origin Matrix", mesh:"rlc_the_origin_matrix" },
+  { id:"rlc9",  icon:"🦾", desc:"Fallen Titan Hand", mesh:"rlc_fallen_titan_hand_01" },
+  { id:"rlc10", icon:"💠", desc:"Unstable Energon Crystal (v1)", mesh:"rlc_unstable_energon_crystal" },
+  { id:"rlc11", icon:"💜", desc:"Dark Energon Crystal (v2)", mesh:"rlc_unstable_energon_crystal_2" },
+  { id:"rlc13", icon:"📜", desc:"Ancient Cybertronian Tablet", mesh:"rlc_rncient_cybertronian_tablet" },
+  { id:"rlc14", icon:"🏆", desc:"Matrix of Leadership (display)", mesh:"rlc_the_matrix_of_leadership" },
+  { id:"rlc19", icon:"🫥", desc:"Cloaking Field Generator", mesh:"rlc_cloaking_feid_generator" },
+  { id:"rlc20", icon:"⏸️", desc:"Stasis Field Generator", mesh:"rlc_stasis_feild_generator" },
+  { id:"rlc22", icon:"📀", desc:"Vok Disk (Golden Disk)", mesh:"rlc_vokdisk_01" },
+  { id:"rlc28", icon:"🗿", desc:"Hot Rod Statue", mesh:"rlc_sta_hotrod_lk_cin" },
+  { id:"rlc29", icon:"🗿", desc:"Megatron Statue", mesh:"rlc_sta_megatron_lk_cin" },
+  { id:"rlc30d", icon:"🏅", desc:"Raid Champion Crystal (T4)", mesh:"rlc_raid_crystal_t4" },
+  { id:"rlc33d", icon:"🎵", desc:"Blaster Sonic (T4)", mesh:"rlc_blaster_gs" },
+  { id:"rlc34d", icon:"🦍", desc:"Optimus Primal (T4)", mesh:"rlc_optimus_primal" },
+  { id:"rlc35d", icon:"🐝", desc:"Bumblebee (T4)", mesh:"rlc_bumblebee_gs" },
+  { id:"rlc36d", icon:"🔫", desc:"Megatron Signature (T4)", mesh:"rlc_megatron_gs" },
+  { id:"rlc37d", icon:"🐆", desc:"Cheetor (T4)", mesh:"rlc_cheetor" },
+  { id:"rlc38d", icon:"🎯", desc:"Hound Hologram (T4)", mesh:"rlc_hound_cin" },
+  { id:"rlc39d", icon:"💥", desc:"Galvatron Particle (T4)", mesh:"rlc_galvatron" },
+  { id:"rlc40d", icon:"🦗", desc:"Kickback Hive (T4)", mesh:"rlc_kickback" },
+  { id:"rlc41d", icon:"🏆", desc:"Alliance Victory (T4)", mesh:"rlc_alliance_t4" },
+  { id:"rlc_jazz_gs", icon:"🎷", desc:"Jazz Signature (GS)", mesh:"rlc_jazz_01" },
+];
+
+const modelMap = {};
+MODELS.forEach(m => modelMap[m.id] = m);
+
+// Working state: relic id -> { name_en, name_zh, model_id }
+let state = {};
+let originalState = {};
+
+function init() {
+  RELICS.forEach(r => {
+    state[r.id] = { name_en: r.name_en, name_zh: r.name_zh, model_id: r.model_id, category: r.category };
+    originalState[r.id] = { ...state[r.id] };
+  });
+  renderRelics();
+  renderPalette();
+  updateStats();
+}
+
+function renderRelics() {
+  const panel = document.getElementById('relicPanel');
+  panel.innerHTML = '<h2>📋 Relics — edit names, drag models onto slots</h2>';
+  RELICS.forEach(r => {
+    const s = state[r.id];
+    const orig = originalState[r.id];
+    const changed = s.model_id !== orig.model_id || s.name_en !== orig.name_en || s.name_zh !== orig.name_zh;
+    const m = modelMap[s.model_id];
+
+    const card = document.createElement('div');
+    card.className = 'relic-card' + (changed ? ' changed' : '');
+    card.dataset.relicId = r.id;
+
+    card.innerHTML = `
+      <div class="relic-info">
+        <div class="relic-id">${r.id}</div>
+        <div class="relic-names">
+          <input class="name-en" value="${escHtml(s.name_en)}" data-rid="${r.id}" data-field="name_en" title="English Name">
+          <input class="name-zh" value="${escHtml(s.name_zh)}" data-rid="${r.id}" data-field="name_zh" title="中文名">
+        </div>
+        <div class="relic-category">${s.category}</div>
+      </div>
+      <div class="model-slot${m ? ' has-model' : ''}" data-relic-id="${r.id}"
+           ondragover="onSlotDragOver(event)" ondragleave="onSlotDragLeave(event)" ondrop="onSlotDrop(event)">
+        ${m ? `<div class="model-chip" draggable="true" ondragstart="onChipDragStart(event, '${r.id}')" data-model-id="${s.model_id}">
+                <span class="chip-id">${m.icon} ${m.id}</span>
+                <span class="chip-desc">${m.desc}</span>
+                <button class="chip-remove" onclick="removeModel('${r.id}')" title="Remove">✕</button>
+              </div>`
+            : '<span style="font-size:11px">Drop model here</span>'}
+      </div>
+    `;
+    panel.appendChild(card);
+  });
+
+  // Attach input listeners
+  panel.querySelectorAll('input').forEach(inp => {
+    inp.addEventListener('input', e => {
+      const rid = e.target.dataset.rid;
+      const field = e.target.dataset.field;
+      state[rid][field] = e.target.value;
+      updateCardChangedState(rid);
+      updateStats();
+    });
+  });
+}
+
+function renderPalette() {
+  const list = document.getElementById('paletteList');
+  list.innerHTML = '';
+  const usedModels = new Set(Object.values(state).map(s => s.model_id));
+  const query = (document.getElementById('paletteSearch').value || '').toLowerCase();
+
+  MODELS.forEach(m => {
+    if (query && !m.id.toLowerCase().includes(query) && !m.desc.toLowerCase().includes(query) && !m.mesh.toLowerCase().includes(query)) return;
+    const used = usedModels.has(m.id);
+    const chip = document.createElement('div');
+    chip.className = 'palette-chip' + (used ? ' used' : '');
+    chip.draggable = true;
+    chip.dataset.modelId = m.id;
+    chip.addEventListener('dragstart', e => {
+      e.dataTransfer.setData('text/plain', m.id);
+      e.dataTransfer.setData('source', 'palette');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    chip.innerHTML = `
+      <span class="p-icon">${m.icon}</span>
+      <span class="p-id">${m.id}</span>
+      <span class="p-desc">${m.desc}</span>
+    `;
+    list.appendChild(chip);
+  });
+}
+
+function filterPalette() { renderPalette(); }
+
+// ─── Drag & Drop ────────────────────────────────────────────────────────────
+
+function onChipDragStart(e, relicId) {
+  e.dataTransfer.setData('text/plain', state[relicId].model_id);
+  e.dataTransfer.setData('source', 'relic:' + relicId);
+  e.dataTransfer.effectAllowed = 'move';
+}
+
+function onSlotDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  e.currentTarget.classList.add('drag-over-slot');
+}
+
+function onSlotDragLeave(e) {
+  e.currentTarget.classList.remove('drag-over-slot');
+}
+
+function onSlotDrop(e) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over-slot');
+  const targetRelicId = e.currentTarget.dataset.relicId;
+  const modelId = e.dataTransfer.getData('text/plain');
+  const source = e.dataTransfer.getData('source');
+
+  if (!modelId || !modelMap[modelId]) return;
+
+  // If dragged from another relic, clear that relic's model
+  if (source.startsWith('relic:')) {
+    const sourceRelicId = source.split(':')[1];
+    if (sourceRelicId === targetRelicId) return; // dropped on self
+    // Swap: if target already has a model, give it to source
+    const targetOldModel = state[targetRelicId].model_id;
+    state[sourceRelicId].model_id = targetOldModel || '';
+  }
+
+  state[targetRelicId].model_id = modelId;
+  renderRelics();
+  renderPalette();
+  updateStats();
+  showToast(`Assigned ${modelId} → ${targetRelicId}`);
+}
+
+function removeModel(relicId) {
+  state[relicId].model_id = '';
+  renderRelics();
+  renderPalette();
+  updateStats();
+}
+
+// ─── Helpers ────────────────────────────────────────────────────────────────
+
+function updateCardChangedState(rid) {
+  const card = document.querySelector(`.relic-card[data-relic-id="${rid}"]`);
+  if (!card) return;
+  const s = state[rid], o = originalState[rid];
+  const changed = s.model_id !== o.model_id || s.name_en !== o.name_en || s.name_zh !== o.name_zh;
+  card.classList.toggle('changed', changed);
+}
+
+function updateStats() {
+  let changes = 0;
+  RELICS.forEach(r => {
+    const s = state[r.id], o = originalState[r.id];
+    if (s.model_id !== o.model_id || s.name_en !== o.name_en || s.name_zh !== o.name_zh) changes++;
+  });
+  document.getElementById('statsBar').textContent = `Changes: ${changes}`;
+  document.getElementById('statsBar').style.color = changes > 0 ? '#f59e0b' : '#94a3b8';
+}
+
+function resetAll() {
+  if (!confirm('Reset all changes to original values?')) return;
+  RELICS.forEach(r => { state[r.id] = { ...originalState[r.id] }; });
+  renderRelics();
+  renderPalette();
+  updateStats();
+  showToast('All changes reset');
+}
+
+function escHtml(s) { return s.replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ─── Export ──────────────────────────────────────────────────────────────────
+
+function exportJSON() {
+  const data = RELICS.map(r => {
+    const s = state[r.id];
+    return {
+      id: r.id,
+      name_en: s.name_en,
+      name_zh: s.name_zh,
+      category: s.category,
+      model_id: s.model_id,
+      model_desc: modelMap[s.model_id] ? modelMap[s.model_id].desc : ''
+    };
+  });
+  downloadFile('relic_model_mapping.json', JSON.stringify(data, null, 2), 'application/json');
+  showToast('Exported relic_model_mapping.json');
+}
+
+function exportCSV() {
+  let csv = 'id,name_en,name_zh,category,model_id,model_desc\n';
+  RELICS.forEach(r => {
+    const s = state[r.id];
+    const desc = modelMap[s.model_id] ? modelMap[s.model_id].desc : '';
+    csv += `"${r.id}","${s.name_en}","${s.name_zh}","${s.category}","${s.model_id}","${desc}"\n`;
+  });
+  downloadFile('relic_model_mapping.csv', csv, 'text/csv');
+  showToast('Exported relic_model_mapping.csv');
+}
+
+function downloadFile(name, content, type) {
+  const blob = new Blob(['\uFEFF' + content], { type: type + ';charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ─── Init ───────────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>

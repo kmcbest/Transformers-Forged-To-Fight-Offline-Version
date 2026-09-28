@@ -575,7 +575,7 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x00FF0658, "FSPRESS_R",         2, 0 }, // 181 HudScreen.FullScreenPressDownRight -> AutoFight button check
     { 0x00B6E168, "AWAY_STATE",        2, 0 }, // 182 BaseBuilding.SetAwayTeamState -> force Home (0) to keep shuttle docked
     { 0x00EFA054, "BSPP_INIT",         2, 0 }, // 183 BuildingSelectPopupPresentation.OnGridItemInitialized
-    { 0x014F4048, "ISTUTCOMPLETE",     2, 0 }, // 184 TutorialManagerHelper.IsTutorialComplete
+    { 0x014F4048, "ISTUTCOMPLETE",     2, 0 }  // 184 TutorialManagerHelper.IsTutorialComplete
 };
 #define NH (int)(sizeof(H)/sizeof(H[0]))
 
@@ -3505,10 +3505,39 @@ void* hook_93(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
         uintptr_t s=(uintptr_t)a1;
         if(s>=0x100000 && !(s&7)){ int32_t l=*(int32_t*)(s+0x10); uint16_t* c=(uint16_t*)(s+0x14);
             if(l>0&&l<62){ int k=0; for(;k<l;k++) nm[k]=(c[k]<128)?(char)c[k]:'?'; nm[k]=0; } }
-        flog("ONBLDSET name=%s go=%lx", nm, (uintptr_t)a2);
+        flog("ONBLDSET name=%s go=%lx node=%p", nm, (uintptr_t)a2, a0);
         if ((uintptr_t)a2) dump_go("ONBLDSET", a2);
+
+        // 1. Deactivate old building on this node if different from a2
+        void* old_bldg = obj_ok(a0) ? *(void**)((uintptr_t)a0 + 0x28) : NULL;
+        if (obj_ok(old_bldg) && old_bldg != a2) {
+            void (*go_set_active)(void*,int,void*) = (void(*)(void*,int,void*))(g_base + 0x1B50CA8);
+            if (go_set_active) go_set_active(old_bldg, 0, NULL);
+            flog("ONBLDSET: deactivated old building %p", old_bldg);
+        }
+
+        // 2. Call NodeController.OnBuildingSet directly at g_base + 0xD80B80
+        // (Bypasses BaseNodeController.OnBuildingSet which starts crashing AnimateSetBuilding coroutine)
+        void (*nc_on_bld_set)(void*,void*,void*,void*) = (void(*)(void*,void*,void*,void*))(g_base + 0xD80B80);
+        if (nc_on_bld_set && obj_ok(a0)) {
+            nc_on_bld_set(a0, a1, a2, NULL);
+            flog("ONBLDSET: invoked NodeController.OnBuildingSet(node=%p, id=%p, go=%p)", a0, a1, a2);
+        }
+
+        // 3. Explicitly remove UiAnimation blocker from BusyBlockerManager to prevent UI freeze
+        void (*bbm_rmv)(void*,void*,void*,void*,void*) = (void(*)(void*,void*,void*,void*,void*))(g_base + 0x148CA38);
+        void* (*get_bbm)(void*) = (void*(*)(void*))(g_base + 0x148C294);
+        void* (*get_uianim)(void*) = (void*(*)(void*))(g_base + 0xDD6C3C);
+        if (bbm_rmv && get_bbm && get_uianim) {
+            void* bbm = get_bbm(NULL);
+            void* uianim = get_uianim(NULL);
+            if (bbm && uianim) {
+                bbm_rmv(bbm, uianim, NULL, NULL, NULL);
+                flog("ONBLDSET: explicitly removed UiAnimation blocker via RemoveBlocker");
+            }
+        }
     });
-    void* r = H[93].orig(a0,a1,a2,a3,a4,a5,a6,a7);
+
     PROTECT({
         if ((uintptr_t)a2) {
             void (*go_set_active)(void*,int,void*) = (void(*)(void*,int,void*))(g_base + 0x1B50CA8);
@@ -3517,8 +3546,15 @@ void* hook_93(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
             void* (*go_transform)(void*,void*) = (void*(*)(void*,void*))(g_base + 0x1B50BD8);
             void* (*tr_get_parent)(void*,void*) = (void*(*)(void*,void*))(g_base + 0x16AA7D8);
             void  (*tr_set_parent)(void*,void*,int,void*) = (void(*)(void*,void*,int,void*))(g_base + 0x16B877C);
+            void  (*tr_set_local_scale)(void*,V3,void*) = (void(*)(void*,V3,void*))(g_base + 0x16B84CC);
             void* ctr = go_transform(a2, NULL);
-            if (obj_ok(ctr)) tr_set_parent(ctr, NULL, 1, NULL);
+            if (obj_ok(ctr)) {
+                tr_set_parent(ctr, NULL, 1, NULL);
+                if (tr_set_local_scale) {
+                    V3 sc = { 1.30f, 1.30f, 1.30f };
+                    tr_set_local_scale(ctr, sc, NULL);
+                }
+            }
             go_set_active(a2, 1, NULL);
             bldg_track(a2);
             void* gcicmi = fld_p(*(void**)(g_base + 0x2C33E58), 0x0);
@@ -3549,7 +3585,7 @@ void* hook_93(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
             dump_go("ONBLDSET-post", a2);
         }
     });
-    return r;
+    return NULL;
 }
 // BLDGSWAP (slot 95): both the DefaultRelic fallback path and the later real-name refresh
 // miss the synthetic standalone path. Use the PrefabLibrary's exact child instead.
@@ -6420,6 +6456,7 @@ void* hook_183(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     return NULL;
 }
 
+
 static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hook_7,hook_8,
     hook_9,hook_10,hook_11,hook_12,hook_13,hook_14,hook_15,hook_16,hook_17,hook_18,hook_19,hook_20,hook_21,
     hook_22,hook_23,hook_24,hook_25,hook_26,hook_27,hook_28,hook_29,hook_30,
@@ -6799,6 +6836,11 @@ static void* installer(void* arg){
     // PlayerController.InitOpponent (@0x1178548): nop tbz w0, #0, 0x117858c
     // Forces BattleArbiter.InitAI to be called for Player 0 as well so Player 0 gets an AIController!
     poke32(0x1178548, 0xD503201F);
+
+    // Suppress BusyBlockerManager.AddBlocker in BaseEditBuildingPopupPresentation:
+    // Prevents full-screen blocker from permanently freezing touch input after relic swap/remove
+    poke32(0x121F5D8, 0xD503201F); // NOP bl AddBlocker in OnBuildingSelected
+    poke32(0x121FC8C, 0xD503201F); // NOP bl AddBlocker in OnRemovePressed
 
     // Diagnostic hooks for AutoFight actions:
     inline_hook((void*)(g_base + 0xC9D6E8), (void*)hooked_ToggleAutoFight, &orig_ToggleAutoFight);
