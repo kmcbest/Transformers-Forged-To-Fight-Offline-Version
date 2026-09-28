@@ -1186,6 +1186,11 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         v=lookup(key,outn);
         return v?v:lookup("GET /base/active",outn);
     }
+    if(strstr(p,"/base/place") || strstr(p,"/base/swap") || strstr(p,"/base/remove") || strstr(p,"/base/sell")) {
+        static const unsigned char base_action_ok[] = "{\"error\":null,\"result\":{\"success\":true}}";
+        *outn = strlen((const char*)base_action_ok);
+        return base_action_ok;
+    }
     if(has_suffix(p,"/tutorial/start-tutorial")||has_suffix(p,"/tutorial/start-branch")||has_suffix(p,"/tutorial/early-start-branch")||has_suffix(p,"/tutorial/complete-tutorial")) {
         if(!json_string(body,end,"tid",tid,sizeof tid))if(!json_string(body,end,"tutorialId",tid,sizeof tid))json_string(body,end,"id",tid,sizeof tid);
         if(!safe_id(tid)) return NULL;

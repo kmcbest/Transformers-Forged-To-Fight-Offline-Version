@@ -2709,6 +2709,16 @@ def build_base_map():
                     "sockets": {
                         sock_id: {"entityType": "building", "locked": False}
                     },
+                    "entities": {
+                        "building": {
+                            "entityType": "building",
+                            "parentEntityType": "building",
+                            "id": b_info["id"],
+                            "key": b_info["id"],
+                            "rank": 1,
+                            "level": 1,
+                        }
+                    },
                 })
                 continue
 
@@ -2956,8 +2966,12 @@ def build_base_active():
     for (r, c) in BASE_FUNCTIONAL_BUILDINGS:
         user_sockets["sock_bldg_%d_%d" % (r, c)] = True
 
-    user_buildings = [
-        {
+    seen_relics = set()
+    user_buildings = []
+    # 1. Currently equipped relics
+    for (r, c), rel in BASE_RELICS.items():
+        seen_relics.add(rel["id"])
+        user_buildings.append({
             "id": rel["id"],
             "key": rel["id"],
             "modelId": rel["model"],
@@ -2966,12 +2980,28 @@ def build_base_active():
             "img": rel.get("img", ""),
             "rank": 5,
             "level": 50,
-        }
-        for (r, c), rel in BASE_RELICS.items()
-    ] + [
-        {"id": b["id"], "key": "sock_bldg_%d_%d" % (r, c)}
-        for (r, c), b in BASE_FUNCTIONAL_BUILDINGS.items()
-    ]
+        })
+    # 2. All other available relics so user can swap to them
+    for rel in _load_relics():
+        rid = rel["id"]
+        if rid in seen_relics:
+            continue
+        seen_relics.add(rid)
+        name_zh = rel.get("name_zh") or rel.get("name_en", rid)
+        name_en = rel.get("name_en", rid)
+        user_buildings.append({
+            "id": rid,
+            "key": rid,
+            "modelId": rel.get("model_id", rid),
+            "name": name_zh,
+            "name_loc": {
+                "en": name_en,
+                "zh-Hans": name_zh,
+            },
+            "img": rel.get("portrait_base", ""),
+            "rank": rel.get("default_star", 5),
+            "level": 50,
+        })
 
     return {
         "userBase": build_base_mission(),

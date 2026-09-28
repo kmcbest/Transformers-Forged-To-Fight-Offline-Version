@@ -574,6 +574,7 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x00FF063C, "FSPRESS_L",         2, 0 }, // 180 HudScreen.FullScreenPressDownLeft -> AutoFight button check
     { 0x00FF0658, "FSPRESS_R",         2, 0 }, // 181 HudScreen.FullScreenPressDownRight -> AutoFight button check
     { 0x00B6E168, "AWAY_STATE",        2, 0 }, // 182 BaseBuilding.SetAwayTeamState -> force Home (0) to keep shuttle docked
+    { 0x00EFA054, "BSPP_INIT",         2, 0 }, // 183 BuildingSelectPopupPresentation.OnGridItemInitialized
 };
 #define NH (int)(sizeof(H)/sizeof(H[0]))
 
@@ -3847,7 +3848,14 @@ void* hook_121(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
         // 2. Hide info button
         void* info_sci = *(void**)((char*)a0 + 0xA0);
         if (info_sci && obj_ok(info_sci)) {
-            ((void(*)(void*, int, void*))(g_base + 0x11E51E8))(info_sci, 0, NULL);
+            void* inst = *(void**)((char*)info_sci + 0x20);
+            if (inst && obj_ok(inst)) {
+                void* (*comp_get_go)(void*, void*) = (void*(*)(void*, void*))(g_base + 0x1B4BD28);
+                void* go = comp_get_go(inst, NULL);
+                if (go && obj_ok(go)) {
+                    safe_set_active(go, 0, NULL);
+                }
+            }
         }
 
         // 3. Configure occupied details
@@ -3883,13 +3891,17 @@ void* hook_121(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
                 }
                 if (portrait && obj_ok(portrait)) {
                     *(int*)((char*)portrait + 0x90) = 2; // _portraitVersion = Small (2)
-                    *(uint8_t*)((char*)portrait + 0xA0) = 1; // _started = true
+                    *(uint8_t*)((char*)portrait + 0xA0) = 0; // _started = false (prevents GetUserBuffs NullReferenceException)
                     *(uint8_t*)((char*)portrait + 0xA4) = 0; // _showStatusIcon = false
 
-                    // Set data
-                    ((void(*)(void*, void*, void*))(g_base + 0xEF7A98))(portrait, building, NULL);
-                    // RefreshFromData
-                    ((void(*)(void*, void*))(g_base + 0xEF7B28))(portrait, NULL);
+                    // Set building data reference
+                    *(void**)((char*)portrait + 0x98) = building;
+
+                    // Load texture directly without calling RefreshFromData (which crashes on relic nodes lacking building buffs)
+                    void* img_str = *(void**)((char*)building + 0x70); // Building.imagePath
+                    if (img_str && obj_ok(img_str)) {
+                        ((void(*)(void*, void*, void*))(g_base + 0xEF87D0))(portrait, img_str, NULL);
+                    }
                     LOG("POPUPDATE configured building portrait %p", portrait);
                 }
             }
@@ -6282,6 +6294,88 @@ void* hook_182(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     return r;
 }
 
+void* hook_183(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    LOG("BSPP_INIT (hook_183) this=%p gridItem=%p", a0, a1);
+    PROTECT({
+        if (!obj_ok(a0)) return NULL;
+
+        void* gridItem = a1;
+        if (gridItem && obj_ok(gridItem)) {
+            // 1. Get Building from gridItem (BuildingPortrait.get_data @ 0xEF7A90)
+            void* (*bp_get_data)(void*, void*) = (void*(*)(void*, void*))(g_base + 0xEF7A90);
+            void* building = bp_get_data(gridItem, NULL);
+
+            if (building && obj_ok(building)) {
+                int showStatusIcon = 0;
+                void* building_key = *(void**)((char*)building + 0x30); // Entity.key
+
+                void* config = *(void**)((char*)a0 + 0x30); // _config
+                void* buildings_list = *(void**)((char*)a0 + 0x40); // _buildings
+
+                if (config && obj_ok(config) && buildings_list && obj_ok(buildings_list) && building_key && obj_ok(building_key)) {
+                    void* activeQuest = *(void**)((char*)config + 0x18);
+                    if (activeQuest && obj_ok(activeQuest)) {
+                        void* map = *(void**)((char*)activeQuest + 0x30);
+                        if (map && obj_ok(map)) {
+                            int count = *(int*)((char*)buildings_list + 0x18);
+                            void** items = *(void***)((char*)buildings_list + 0x10);
+                            void* (*map_get_tile)(void*, float, float) = (void*(*)(void*, float, float))(g_base + 0x12EDA98);
+                            void* (*tile_get_building)(void*, void*) = (void*(*)(void*, void*))(g_base + 0x1094230);
+                            int (*str_equals)(void*, void*, void*) = (int(*)(void*, void*, void*))(g_base + 0x1D5E694);
+
+                            if (items && count > 0 && count < 1000) {
+                                for (int i = 0; i < count; i++) {
+                                    void* b2 = items[i];
+                                    if (!b2 || !obj_ok(b2)) continue;
+                                    float px = *(float*)((char*)b2 + 0x40);
+                                    float py = *(float*)((char*)b2 + 0x44);
+
+                                    void* tile = map_get_tile(map, px, py);
+                                    if (!tile || !obj_ok(tile)) continue; // SAFE GUARD: prevent NullReferenceException!
+
+                                    void* tb = tile_get_building(tile, NULL);
+                                    if (!tb || !obj_ok(tb)) continue; // SAFE GUARD
+
+                                    void* tb_key = *(void**)((char*)tb + 0x30);
+                                    if (!tb_key || !obj_ok(tb_key)) continue; // SAFE GUARD
+
+                                    if (str_equals && str_equals(tb_key, building_key, NULL)) {
+                                        showStatusIcon = 1;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // 2. Set portrait size: BuildingPortrait.SetSize @ 0xEF85F8
+                // Large size: Vector2(218.0f, 291.0f)
+                void (*bp_set_size)(void*, float, float) = (void(*)(void*, float, float))(g_base + 0xEF85F8);
+                bp_set_size(gridItem, 218.0f, 291.0f);
+
+                // 3. Set portrait version: BuildingPortrait.SetPortraitVersion @ 0xEF80E8 (Large = 2)
+                void (*bp_set_ver)(void*, int, void*) = (void(*)(void*, int, void*))(g_base + 0xEF80E8);
+                bp_set_ver(gridItem, 2, NULL);
+
+                // 4. Set enabled items: BuildingPortrait.SetEnabledItems @ 0xEF80F0 (showStatusIcon, showName=true)
+                void (*bp_set_enabled)(void*, int, int, void*) = (void(*)(void*, int, int, void*))(g_base + 0xEF80F0);
+                bp_set_enabled(gridItem, showStatusIcon, 1, NULL);
+            }
+
+            // 5. _grid.uiPanel.singleFrameUpdate = true
+            void* grid = *(void**)((char*)a0 + 0x38);
+            if (grid && obj_ok(grid)) {
+                void* uiPanel = *(void**)((char*)grid + 0x58);
+                if (uiPanel && obj_ok(uiPanel)) {
+                    *(uint8_t*)((char*)uiPanel + 0xa4) = 1;
+                }
+            }
+        }
+    });
+    return NULL;
+}
+
 static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hook_7,hook_8,
     hook_9,hook_10,hook_11,hook_12,hook_13,hook_14,hook_15,hook_16,hook_17,hook_18,hook_19,hook_20,hook_21,
     hook_22,hook_23,hook_24,hook_25,hook_26,hook_27,hook_28,hook_29,hook_30,
@@ -6302,7 +6396,7 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     (void*)hook_159,hook_160,hook_161,hook_162,hook_163,hook_164,
     hook_165,hook_166,(void*)hook_167,hook_168,hook_169,hook_170,
     hook_171,hook_172,hook_173,hook_174,hook_175,hook_176,(void*)hook_177,(void*)hook_178,
-    (void*)hook_179,hook_180,hook_181,hook_182 };
+    (void*)hook_179,hook_180,hook_181,hook_182,hook_183 };
 
 static void write_jump(uint8_t* dst, void* target){
     uint32_t* p = (uint32_t*)dst;
