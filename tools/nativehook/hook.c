@@ -568,7 +568,7 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x0DA0720, "GETDEFTAB",          2, 0 }, // 174 PayoutsModel.GetDefaultTabId -> safe empty tab check
     { 0xF9A7F8,  "TS_GET_TEAM",        2, 0 }, // 175 TeamSelectModel.get_Team -> empty team on entry
     { 0xB16C54,  "ET_INIT_HEROES",     2, 0 }, // 176 EditTeamModel.InitHeroes -> filter to Rodimus
-    { 0x0DAD5A4, "APPLY_DMG",          2, 0 }, // 177 PlayerAttributes.ApplyDamage -> picnic quest ranged-only damage
+    { 0x0DAD5A4, "GET_DMG_RECV",       2, 0 }, // 177 PlayerAttributes.GetDamageReceived -> picnic quest ranged-only damage
     { 0,         "PFS_ENEMY_HP",       2, 0 }, // 178 PrefightScreenData.GetEnemyNormalizedHealth (disabled: stock function returns 1.0f directly)
     { 0x0DAD558, "CRIT_MULT",          2, 0 }, // 179 PlayerAttributes.GetCritDamageMultiplier -> ensure 1.5x crit damage for Player 0
     { 0x00FF063C, "FSPRESS_L",         2, 0 }, // 180 HudScreen.FullScreenPressDownLeft -> AutoFight button check
@@ -5833,8 +5833,26 @@ void* hook_165(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     return r;
 }
 
+static __thread int s_current_hit_is_ranged = 0;
+
 // slot 171 (0x11785B8): PlayerController.ReceiveHit -> GATE-03: clear chain on unblocked hit
 void* hook_171(void* self, void* instigator, void* agent, void* hitData, void* result, void* method, void* a6, void* a7) {
+    PROTECT({
+        if (self && obj_ok(self) && *(int32_t*)((uintptr_t)self + 0xF4) == 0) {
+            g_p0_controller = self;
+        } else if (instigator && obj_ok(instigator) && *(int32_t*)((uintptr_t)instigator + 0xF4) == 0) {
+            g_p0_controller = instigator;
+        }
+        if (tftf_is_picnic_quest_active()) {
+            if (hitData && obj_ok(hitData)) {
+                int32_t atk_type = *(int32_t*)((char*)hitData + 0x44);
+                s_current_hit_is_ranged = ((atk_type & 2) != 0);
+            } else {
+                s_current_hit_is_ranged = 0;
+            }
+        }
+    });
+
     void* r = H[171].orig ? H[171].orig(self, instigator, agent, hitData, result, method, a6, a7) : NULL;
     PROTECT({
         if (obj_ok(self) && *(int32_t*)((uintptr_t)self + 0xF4) == 0) {
@@ -5985,46 +6003,45 @@ void* hook_176(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     return res;
 }
 
-typedef float (*fn_apply_dmg)(void* self, float damage, void* method);
+typedef float (*fn_get_damage_received)(void* self, float damage, void* damageType, int32_t blocked, void* isPerfectBlock, int32_t isCrit, int32_t isArmorIgnoring, void* method, float critPenetration, float armorPenetration);
 
-// Slot 177: PlayerAttributes.ApplyDamage
+// Slot 177: PlayerAttributes.GetDamageReceived @ 0xDAD5A4
 // In Starscream's Picnic (1.1.7), only ranged attacks can deal damage to enemies.
 // Melee attacks (light combo, medium dash, heavy charge) deal 0 damage.
-float hook_177(void* self, float damage, void* method) {
+float hook_177(void* self, float damage, void* damageType, int32_t blocked, void* isPerfectBlock, int32_t isCrit, int32_t isArmorIgnoring, void* method, float critPenetration, float armorPenetration) {
     if (tftf_is_picnic_quest_active()) {
         PROTECT({
             if (self && obj_ok(self)) {
                 void* owner = *(void**)((char*)self + 0x28);
-                int is_enemy = (owner && g_p0_controller && owner != g_p0_controller);
+                // Target is enemy (P1)
+                int is_enemy = (owner && obj_ok(owner) && *(int32_t*)((char*)owner + 0xF4) == 1);
+                if (!is_enemy && owner && g_p0_controller && owner != g_p0_controller) {
+                    is_enemy = 1;
+                }
                 if (is_enemy) {
-                    int is_melee = 0;
+                    int is_melee = !s_current_hit_is_ranged;
                     if (g_p0_controller && obj_ok(g_p0_controller)) {
-                        uint32_t l = *(uint32_t*)((char*)g_p0_controller + 0x1c0);
-                        uint32_t m = *(uint32_t*)((char*)g_p0_controller + 0x1c4);
                         uint32_t r = *(uint32_t*)((char*)g_p0_controller + 0x1c8);
-                        int is_heavy = (*(uint32_t*)((char*)g_p0_controller + 0x13c) & 1) || g_p0_after_heavy;
-                        if (l > 0 || m > 0 || is_heavy) {
-                            is_melee = 1;
-                        }
-                        if (r > 0) {
-                            is_melee = 0;
-                        }
-                        static int s_dmg_log = 0;
-                        if (s_dmg_log++ < 30 || is_melee) {
-                            flog("PICNIC_DMG: enemy=%p dmg=%.1f->%.1f is_melee=%d",
-                                 self, damage, is_melee ? 0.0f : damage, is_melee);
-                        }
+                        if (r > 0) is_melee = 0;
                     }
                     if (is_melee) {
                         damage = 0.0f;
+                    }
+                    static int s_dmg_log = 0;
+                    if (s_dmg_log++ < 30 || is_melee) {
+                        flog("PICNIC_DMG: enemy=%p dmg=%.1f->%.1f is_melee=%d (is_ranged_flag=%d)",
+                             self, damage, is_melee ? 0.0f : damage, is_melee, s_current_hit_is_ranged);
                     }
                 }
             }
         });
     }
 
+    uint8_t dummy_perfect = 0;
+    if (!isPerfectBlock) isPerfectBlock = &dummy_perfect;
+
     if (!H[177].orig) return 0.0f;
-    return ((fn_apply_dmg)H[177].orig)(self, damage, method);
+    return ((fn_get_damage_received)H[177].orig)(self, damage, damageType, blocked, isPerfectBlock, isCrit, isArmorIgnoring, method, critPenetration, armorPenetration);
 }
 
 void* hook_166(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
