@@ -830,6 +830,9 @@ def build_missions_config():
                 "minClaimInterval": 60,
                 "minClaimPercentage": 0.1,
             },
+            "away": {
+                "enabled": True,
+            },
         },
     }
 
@@ -2510,7 +2513,7 @@ BASE_BUILDINGS = {
     "bldg_battle_centre": {
         "name": "Battle Centre",
         "desc": "The command centre of your base.",
-        "model": "z_bldg_battle_centre_01",
+        "model": "z_bldg_battle_centre_03",
     },
     "bldg_away_team": {
         "name": "Away Team Station",
@@ -2715,8 +2718,8 @@ def build_base_map():
                             "parentEntityType": "building",
                             "id": b_info["id"],
                             "key": b_info["id"],
-                            "rank": 1,
-                            "level": 1,
+                            "rank": 3,
+                            "level": 3,
                         }
                     },
                 })
@@ -2897,6 +2900,8 @@ def build_base_mission():
             "entityType": "building",
             "parentEntityType": "building",
             "key": b_info["id"],
+            "rank": 3,
+            "level": 3,
             "position": {"x": r, "y": c},
         }
 
@@ -2980,6 +2985,15 @@ def build_base_active():
             "img": rel.get("img", ""),
             "rank": 5,
             "level": 50,
+            "levels": [
+                {
+                    "rank": 5,
+                    "minLevel": 1,
+                    "maxLevel": 50,
+                    "rating": 100,
+                    "sellValue": [{"dn": "gold", "q": 500}],
+                }
+            ],
         })
     # 2. All other available relics so user can swap to them
     for rel in _load_relics():
@@ -3001,6 +3015,15 @@ def build_base_active():
             "img": rel.get("portrait_base", ""),
             "rank": rel.get("default_star", 5),
             "level": 50,
+            "levels": [
+                {
+                    "rank": 5,
+                    "minLevel": 1,
+                    "maxLevel": 50,
+                    "rating": 100,
+                    "sellValue": [{"dn": "gold", "q": 500}],
+                }
+            ],
         })
 
     return {

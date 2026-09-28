@@ -575,6 +575,7 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x00FF0658, "FSPRESS_R",         2, 0 }, // 181 HudScreen.FullScreenPressDownRight -> AutoFight button check
     { 0x00B6E168, "AWAY_STATE",        2, 0 }, // 182 BaseBuilding.SetAwayTeamState -> force Home (0) to keep shuttle docked
     { 0x00EFA054, "BSPP_INIT",         2, 0 }, // 183 BuildingSelectPopupPresentation.OnGridItemInitialized
+    { 0x014F4048, "ISTUTCOMPLETE",     2, 0 }, // 184 TutorialManagerHelper.IsTutorialComplete
 };
 #define NH (int)(sizeof(H)/sizeof(H[0]))
 
@@ -825,7 +826,13 @@ static void flush_keys(void){ if(g_f) fflush(g_f); }
     return H[i].orig(a0,a1,a2,a3,a4,a5,a6,a7); }
 MKHOOK(0) MKHOOK(1) MKHOOK(2) MKHOOK(3) MKHOOK(4) MKHOOK(5) MKHOOK(6) MKHOOK(7)
 MKHOOK(9) MKHOOK(10) MKHOOK(11) MKHOOK(12) MKHOOK(14) MKHOOK(15) MKHOOK(16)
-MKHOOK(17) MKHOOK(18) MKHOOK(19) MKHOOK(20)
+MKHOOK(17) MKHOOK(19) MKHOOK(20)
+static void* g_active_homeflow = NULL;
+void* hook_18(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
+    flog(">>HomeFlow.Enter this=%p", a0);
+    g_active_homeflow = a0;
+    return H[18].orig(a0,a1,a2,a3,a4,a5,a6,a7);
+}
 MKHOOK(25) MKHOOK(26) MKHOOK(27) MKHOOK(29) MKHOOK(30)
 // ---- roster faction badge ---------------------------------------------------
 // The BOTS tile's faction badge is NOT a sprite: it is a PRIVATE-USE glyph of the
@@ -1977,6 +1984,9 @@ static void log_tod_lighting(const char* tag){
     }
 #endif
 }
+static void* g_active_baseboard = NULL;
+static volatile int g_baseboard_refresh_frames = 0;
+
 // slot 79 BASEDIAG: BaseBoard.OnBaseBoardBuildComplete(this=a0). Runs after the board is fully
 // built, so dump the finished state (see the H-table comment for why each field matters).
 void* hook_79(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
@@ -2197,6 +2207,24 @@ void* hook_79(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
              t[0],t[1],t[2], la[0],la[1],la[2], po[0],po[1],po[2], st[0],st[1],st[2],
              obj_ok(cam) ? *(float*)((uintptr_t)cam+0x1A0) : -1.0f,
              obj_ok(cam) ? *(int32_t*)((uintptr_t)cam+0x1E4) : -1);
+        void (*reinit_nodes)(void*,void*) = (void(*)(void*,void*))(g_base + 0x00A6F0C4);
+        void (*refresh_nodes)(void*,void*) = (void(*)(void*,void*))(g_base + 0x00A6FBD4);
+        void (*show_cards)(void*,void*) = (void(*)(void*,void*))(g_base + 0x00A7223C);
+        void (*show_paths)(void*,void*) = (void(*)(void*,void*))(g_base + 0x00A72330);
+        if (obj_ok(a0)) {
+            g_active_baseboard = a0;
+            g_baseboard_refresh_frames = 1;
+            flog("hook_79: BaseBoard.OnBaseBoardBuildComplete -> triggering immediate + deferred refresh for %p", a0);
+            if (g_active_homeflow && obj_ok(g_active_homeflow)) {
+                void (*home_show_nodes)(void*,int,void*) = (void(*)(void*,int,void*))(g_base + 0x00C5F9B4);
+                home_show_nodes(g_active_homeflow, 1, NULL);
+                flog("hook_79: HomeFlow.ShowNodesAndPaths(true) called for homeflow=%p", g_active_homeflow);
+            }
+            reinit_nodes(a0, NULL);
+            refresh_nodes(a0, NULL);
+            show_cards(a0, NULL);
+            show_paths(a0, NULL);
+        }
     );
     return r;
 }
@@ -2267,6 +2295,29 @@ void* hook_80(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                  "zoomHeightStart=%.2f zoomHeightEnd=%.2f",
                  zoom[0],zoom[1],zoom[2],zoom[3],
                  fld_f(a0,0x1FC), fld_f(a0,0x200), fld_f(a0,0x204), fld_f(a0,0x208));
+        }
+        if (g_active_baseboard && obj_ok(g_active_baseboard) && g_baseboard_refresh_frames > 0) {
+            g_baseboard_refresh_frames++;
+            if (g_baseboard_refresh_frames == 25 || g_baseboard_refresh_frames == 50 || g_baseboard_refresh_frames == 80 || g_baseboard_refresh_frames == 120) {
+                void (*reinit_nodes)(void*,void*) = (void(*)(void*,void*))(g_base + 0x00A6F0C4);
+                void (*refresh_nodes)(void*,void*) = (void(*)(void*,void*))(g_base + 0x00A6FBD4);
+                void (*show_cards)(void*,void*) = (void(*)(void*,void*))(g_base + 0x00A7223C);
+                void (*show_paths)(void*,void*) = (void(*)(void*,void*))(g_base + 0x00A72330);
+                void (*home_show_nodes)(void*,int,void*) = (void(*)(void*,int,void*))(g_base + 0x00C5F9B4);
+
+                flog("hook_80: executing deferred baseboard refresh frame=%d board=%p homeflow=%p",
+                     g_baseboard_refresh_frames, g_active_baseboard, g_active_homeflow);
+
+                if (g_active_homeflow && obj_ok(g_active_homeflow)) {
+                    home_show_nodes(g_active_homeflow, 1, NULL);
+                }
+                reinit_nodes(g_active_baseboard, NULL);
+                refresh_nodes(g_active_baseboard, NULL);
+                show_cards(g_active_baseboard, NULL);
+                show_paths(g_active_baseboard, NULL);
+            } else if (g_baseboard_refresh_frames > 140) {
+                g_baseboard_refresh_frames = 0;
+            }
         }
     );
     return H[80].orig(a0,a1,a2,a3,a4,a5,a6,a7);
@@ -3215,53 +3266,6 @@ MKRET_INT(36) MKRET_INT(38)
 MKENT(31) MKENT(32)
 // jp=8: userOwnsBot(this=a0, bp=a1) -> log bp string + bool ret
 void* hook_42(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
-    char b[64]; b[0]=0; uintptr_t s=(uintptr_t)a1;
-    if(s>=0x100000 && !(s&7)){
-        int32_t l=*(int32_t*)(s+0x10); uint16_t*c=(uint16_t*)(s+0x14);
-        if(l>=0&&l<60){for(int i=0;i<l;i++)b[i]=(char)c[i];b[l]=0;}
-    }
-    if(strcasecmp(b, "relics") == 0 || strcasecmp(b, "relic") == 0 || strcasecmp(b, "building") == 0){
-        PROTECT(
-            // 1. Show heroesGridContainer (alpha 1.0)
-            uintptr_t hgc = *(uintptr_t*)((char*)a0 + 0x140);
-            if (hgc && !(hgc & 7)) {
-                uintptr_t p = *(uintptr_t*)(hgc + 0x70);
-                if (p && !(p & 7)) {
-                    void (*set_alpha)(void*, float) = (void(*)(void*, float))(*(uintptr_t*)(*(uintptr_t*)p + 0x1E8));
-                    if (set_alpha) set_alpha((void*)p, 1.0f);
-                }
-            }
-            // 2. Hide buildingsGridContainer (alpha 0.0)
-            uintptr_t bgc = *(uintptr_t*)((char*)a0 + 0x148);
-            if (bgc && !(bgc & 7)) {
-                uintptr_t p = *(uintptr_t*)(bgc + 0x70);
-                if (p && !(p & 7)) {
-                    void (*set_alpha)(void*, float) = (void(*)(void*, float))(*(uintptr_t*)(*(uintptr_t*)p + 0x1E8));
-                    if (set_alpha) set_alpha((void*)p, 0.0f);
-                }
-            }
-            // 3. Get all relics
-            uintptr_t str_klass = *(uintptr_t*)s;
-            static struct { uintptr_t klass; uintptr_t monitor; int32_t length; uint16_t chars[8]; } rstr;
-            rstr.klass = str_klass;
-            rstr.monitor = 0;
-            rstr.length = 5;
-            rstr.chars[0]='r'; rstr.chars[1]='e'; rstr.chars[2]='l'; rstr.chars[3]='i'; rstr.chars[4]='c'; rstr.chars[5]=0;
-            
-            void* (*get_entities)(void*, void*) = (void*(*)(void*, void*))(g_base + 0xC210D4);
-            void* entities = get_entities(&rstr, NULL);
-            *(void**)((char*)a0 + 0x158) = entities;
-            
-            // 4. Update screen type pointers on HeroesScreen
-            *(void**)((char*)a0 + 0x280) = &rstr; // _screenType = "relic" (not "building", enables HeroPortrait clicks!)
-            
-            // 5. ShowGridContainer(this=a0, animate=false, onReady=a3)
-            void (*show_grid)(void*, int, void*) = (void(*)(void*, int, void*))(g_base + 0xC58598);
-            show_grid(a0, 0, a3);
-            flog("==SETSCR== RELICS grid populated with entities=%p", entities);
-        );
-        return NULL;
-    }
     return H[42].orig(a0,a1,a2,a3,a4,a5,a6,a7);
 }
 void* hook_43(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
@@ -3666,9 +3670,7 @@ void* hook_95(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                     if (is_relic) {
                         V3 pos = tr_get_position(a2, NULL);
                         tr_set_position(ctr, pos, NULL);
-                        V3 scale; scale.x = scale.y = scale.z = 4.0f;
-                        tr_set_local_scale(ctr, scale, NULL);
-                        flog("BLDGSWAP relic placed on node at official scale 4.0: key='%s'", resolved);
+                        flog("BLDGSWAP relic placed on node at position: key='%s'", resolved);
                     } else {
                         V3 pos=tr_get_position(a2,NULL);
                         pos.x *= 5.5f;
@@ -3720,21 +3722,13 @@ void* hook_95(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
 #endif
     return replacement ? replacement : r;
 }
-// BLDGLEAVE (slot 96): BaseBoard.SetupBoard (@0x00A6F844).
-// When SetupBoard completes, trigger RefreshNodes immediately so defending bots
-// appear on cold boot without requiring a quest roundtrip!
+// BLDGLEAVE (slot 96): BaseBoard.LeaveBoard (@0x00A6F844).
 void* hook_96(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
     g_base_tap_card=NULL;
     g_base_tap_go=NULL;
-    void* r = H[96].orig(a0,a1,a2,a3,a4,a5,a6,a7);
-    PROTECT({
-        void (*refresh_nodes)(void*,void*) = (void(*)(void*,void*))(g_base + 0x00A6F7A4);
-        if (obj_ok(a0)) {
-            flog("hook_96: BaseBoard.SetupBoard complete -> triggering RefreshNodes(%p)", a0);
-            refresh_nodes(a0, NULL);
-        }
-    });
-    return r;
+    g_active_baseboard=NULL;
+    g_baseboard_refresh_frames=0;
+    return H[96].orig(a0,a1,a2,a3,a4,a5,a6,a7);
 }
 // Base-builder entry markers (slots 97-101): intentionally log only, then execute originals.
 #define MK_BASEMARK(n) \
@@ -3804,6 +3798,8 @@ void* hook_118(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     popup_safe_ready(a1);
     return r;
 }
+
+
 
 void* hook_121(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     LOG("POPUPDATE this=%p onReady=%p", a0, a1);
@@ -3907,7 +3903,6 @@ void* hook_121(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
             }
         }
     });
-
     popup_safe_ready(a1);
     return NULL;
 }
@@ -5284,7 +5279,19 @@ void* hook_151(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     int level = (boss && obj_ok(boss)) ? *(int*)((char*)boss + 0x64) : -1;
     flog("CALCULATE_NODE_RATING: card=%p boss=%p ch='%s' rank=%d lvl=%d",
          a0, boss, ch_str, rank, level);
-    return H[151].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    void* r = H[151].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    PROTECT({
+        if (a0 && obj_ok(a0)) {
+            void* aligner = *(void**)((char*)a0 + 0xF8);
+            if (aligner && obj_ok(aligner)) {
+                void (*safe_set_active)(void*, int, void*) = (void(*)(void*, int, void*))(g_base + 0xDD4258);
+                safe_set_active(aligner, 1, NULL);
+                flog("HOOK_151: activated aligner %p for card %p (boss=%s)", aligner, a0, ch_str);
+            }
+            *(uint8_t*)((char*)a0 + 0x48) = 1; // IsVisible = true
+        }
+    });
+    return r;
 }
 void* hook_152(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     if (a1 && obj_ok(a1)) {
@@ -6279,6 +6286,9 @@ void* hook_182(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
         flog("hook_182: SetAwayTeamState Away (1) -> forcing Home (0)");
         a1 = (void*)(intptr_t)0;
     }
+    if (obj_ok(a0)) {
+        *(int32_t*)((uintptr_t)a0 + 0x70) = -1;
+    }
     void* r = ((fn8)H[182].orig)(a0, a1, a2, a3, a4, a5, a6, a7);
     PROTECT({
         void* anim = fld_p(a0, 0x78);
@@ -6292,6 +6302,23 @@ void* hook_182(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
         }
     });
     return r;
+}
+
+void* hook_184(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    char tid[128]; tid[0] = 0;
+    if (obj_ok(a0) && read_str(a0, tid, sizeof tid)) {
+        if (!strcmp(tid, "RaidsTutorial") ||
+            !strcmp(tid, "BattleCenterUnlock") ||
+            !strcmp(tid, "BattleCenterVisited") ||
+            !strcmp(tid, "AwayTeamUnlock") ||
+            !strcmp(tid, "AwayTeamVisited") ||
+            !strcmp(tid, "AllianceHelpUnlock") ||
+            !strcmp(tid, "AllianceHelpVisited")) {
+            flog("hook_184: IsTutorialComplete('%s') -> forced 1", tid);
+            return (void*)(intptr_t)1;
+        }
+    }
+    return ((fn8)H[184].orig)(a0, a1, a2, a3, a4, a5, a6, a7);
 }
 
 void* hook_183(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
@@ -6396,7 +6423,7 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     (void*)hook_159,hook_160,hook_161,hook_162,hook_163,hook_164,
     hook_165,hook_166,(void*)hook_167,hook_168,hook_169,hook_170,
     hook_171,hook_172,hook_173,hook_174,hook_175,hook_176,(void*)hook_177,(void*)hook_178,
-    (void*)hook_179,hook_180,hook_181,hook_182,hook_183 };
+    (void*)hook_179,hook_180,hook_181,hook_182,hook_183,hook_184 };
 
 static void write_jump(uint8_t* dst, void* target){
     uint32_t* p = (uint32_t*)dst;
