@@ -131,6 +131,40 @@ static QuestRunState g_quest_state = {
     .pending_enemy_hp_ratio = 1.0f
 };
 
+typedef struct {
+    char bid[64];
+    int level;
+    int rank;
+} HeroLevelEntry;
+
+static HeroLevelEntry g_hero_levels[128];
+static int g_hero_level_count = 0;
+
+static int get_hero_level(const char *bid, int default_lvl) {
+    for (int i = 0; i < g_hero_level_count; i++) {
+        if (strcmp(g_hero_levels[i].bid, bid) == 0) {
+            return g_hero_levels[i].level;
+        }
+    }
+    return default_lvl;
+}
+
+static int set_hero_level(const char *bid, int new_lvl, int rank) {
+    for (int i = 0; i < g_hero_level_count; i++) {
+        if (strcmp(g_hero_levels[i].bid, bid) == 0) {
+            g_hero_levels[i].level = new_lvl;
+            return new_lvl;
+        }
+    }
+    if (g_hero_level_count < 128) {
+        snprintf(g_hero_levels[g_hero_level_count].bid, sizeof(g_hero_levels[0].bid), "%s", bid);
+        g_hero_levels[g_hero_level_count].level = new_lvl;
+        g_hero_levels[g_hero_level_count].rank = rank;
+        g_hero_level_count++;
+    }
+    return new_lvl;
+}
+
 static inline int is_quest_non_leisure(const char* qid) {
     if (!qid || !qid[0]) return 0;
     return (strcmp(qid, "1.1.3") == 0 ||
@@ -1223,10 +1257,86 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         v=lookup("@herodata:close",&n);if(!v||!out_add(o,v,n))return NULL; Out compact=*o; o->p=NULL;o->n=o->cap=0; v=json_default_spaces(compact.p,compact.n,o,outn);free(compact.p);logmsg("getBaseHeroData reply (%zu bytes): %.300s", *outn, (const char*)v);return v;
     }
     if(strstr(p, "/bcg/getHeroXPCurve")) {
-        static const unsigned char xp_resp[] = "{\"error\":null,\"result\":[]}";
+        static const unsigned char xp_resp[] =
+            "{\"error\":null,\"result\":["
+            "0,100,120,140,160,180,200,220,240,260,300,"
+            "350,400,450,500,550,600,650,700,750,800,"
+            "900,1000,1100,1200,1300,1400,1500,1600,1700,1800,"
+            "2000,2200,2400,2600,2800,3000,3200,3400,3600,3800,"
+            "4000,4300,4600,4900,5200,5500,5800,6100,6500,7000"
+            "]}";
         *outn = strlen((const char*)xp_resp);
-        logmsg("BCG: handled /bcg/getHeroXPCurve");
+        logmsg("BCG: handled /bcg/getHeroXPCurve (51 levels)");
         return xp_resp;
+    }
+    if(strstr(p, "/bcg/upgrade-hero") || strstr(p, "/bcg/upgradeHero")) {
+        char hero_bid[64] = "shockwave_gs";
+        if (body && end > body) {
+            json_string(body, end, "hero", hero_bid, sizeof(hero_bid));
+        }
+        int ore_count = 0;
+        const char *scan = body;
+        while (scan && scan < end) {
+            const char *found = strstr(scan, "ore_");
+            if (!found || found >= end) break;
+            ore_count++;
+            scan = found + 4;
+        }
+        if (ore_count <= 0) ore_count = 1;
+
+        int cur_lvl = get_hero_level(hero_bid, 10);
+        int new_lvl = cur_lvl + ore_count;
+        if (new_lvl > 50) new_lvl = 50;
+        set_hero_level(hero_bid, new_lvl, 5);
+
+        int hp = 30000 + new_lvl * 500;
+        int atk = 1500 + new_lvl * 30;
+        int rating = (hp + atk) / 20;
+
+        logmsg("BCG: upgrade-hero hero=%s old_lvl=%d new_lvl=%d (ores=%d)",
+               hero_bid, cur_lvl, new_lvl, ore_count);
+
+        char resp_buf[2048];
+        int rlen = snprintf(resp_buf, sizeof(resp_buf),
+            "{\"error\":null,\"result\":{"
+              "\"userData\":{\"blueprintsMax\":500},"
+              "\"updates\":{"
+                "\"heroes\":[{"
+                  "\"entity_type\":\"bot\",\"bid\":\"%s\","
+                  "\"rank\":5,\"level\":%d,\"sig_lvl\":100,"
+                  "\"s\":5,\"rarity\":5,\"star\":5,\"faction\":\"decepticon\","
+                  "\"required_xp\":0,\"max_xp\":100,"
+                  "\"stamina\":100,\"stamina_ts\":0,\"stamina_full_ts\":0,\"stt\":\"\","
+                  "\"max_hp\":%d,\"attack\":%d,\"rating\":%d,"
+                  "\"rating_attack\":%d,\"rating_hp\":%d,"
+                  "\"rating_attack_base\":%d,\"rating_hp_base\":%d,"
+                  "\"special_attacks\":3,\"pvpb\":{},\"exc\":{},"
+                  "\"mana_gain\":1.0,\"mana_start\":0,"
+                  "\"flvl\":100,\"req_fxp\":0,\"max_fxp\":100,\"mfl\":100"
+                "}],"
+                "\"inventory\":{"
+                  "\"bp\":{\"ore_generic_t5\":99,\"ore_brawler_t5\":99,\"ore_scout_t5\":99,\"ore_tactician_t5\":99,\"ore_demolition_t5\":99,\"ore_tech_t5\":99,\"ore_warrior_t5\":99},"
+                  "\"max\":{\"ore_generic_t5\":500,\"ore_brawler_t5\":500,\"ore_scout_t5\":500,\"ore_tactician_t5\":500,\"ore_demolition_t5\":500,\"ore_tech_t5\":500,\"ore_warrior_t5\":500}"
+                "},"
+                "\"inventory.bp\":{"
+                  "\"ore_generic_t5\":99,\"ore_brawler_t5\":99,\"ore_scout_t5\":99,\"ore_tactician_t5\":99,\"ore_demolition_t5\":99,\"ore_tech_t5\":99,\"ore_warrior_t5\":99"
+                "},"
+                "\"inventory.max\":{"
+                  "\"ore_generic_t5\":500,\"ore_brawler_t5\":500,\"ore_scout_t5\":500,\"ore_tactician_t5\":500,\"ore_demolition_t5\":500,\"ore_tech_t5\":500,\"ore_warrior_t5\":500"
+                "}"
+              "},"
+              "\"deletes\":{}"
+            "}}",
+            hero_bid, new_lvl,
+            hp, atk, rating,
+            atk / 2, hp / 2,
+            atk / 2, hp / 2
+        );
+        if (rlen > 0 && out_add(o, resp_buf, (size_t)rlen)) {
+            *outn = o->n;
+            return o->p;
+        }
+        return NULL;
     }
     if(strstr(p,"/quests/quest-detail/")) {
         snprintf(mid,sizeof mid,"%.63s",path_last(p));

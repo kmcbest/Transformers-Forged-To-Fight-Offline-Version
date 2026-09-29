@@ -355,6 +355,7 @@ def build_blueprints(lang="en"):
             "msa": max_special_attacks(bid, star),
             "ab": 100.0, "gg": 1, "mfl": 0, "nfr": 0,
             "fcpg": "", "fhpag": "",
+            "mr": 5, "max_rank": 5,
         }
     for m in _load_mods():
         mid = m["id"]
@@ -984,7 +985,7 @@ def build_hero_base(bid, rank=1):
         crit_chance = _BASE_STATS_OVERRIDE[bid].get("crit_chance", crit_chance)
         crit_damage = _BASE_STATS_OVERRIDE[bid].get("crit_damage", crit_damage)
     return {
-        "id": bid, "r": rank, "m": star, "s": star,
+        "id": bid, "r": rank, "m": 50, "max_level": 50, "s": star,
         "max_hp": hp, "mhpb": hp, "attack": atk, "attb": atk,
         "mana_start": _DIAG_MANA_START, "stun_time": 0,
         "special_attacks": max_special_attacks(bid, star),
@@ -1109,6 +1110,51 @@ def build_stat_modifiers():
     }
 
 
+def build_evo_blueprints(lang="en"):
+    """Tier 5 Ore-13 definitions for BCGManagerBase._baseEvoBlueprintData."""
+    ores = [
+        ("ore_generic_t5", "Ore_t5", "generic", "5阶通用矿-13", "Tier 5 Generic Ore-13"),
+        ("ore_brawler_t5", "Ore_Brawler_t5", "braw", "5阶格斗系矿-13", "Tier 5 Brawler Ore-13"),
+        ("ore_scout_t5", "Ore_Scout_t5", "scou", "5阶侦察系矿-13", "Tier 5 Scout Ore-13"),
+        ("ore_tactician_t5", "Ore_Tactician_t5", "tact", "5阶战术系矿-13", "Tier 5 Tactician Ore-13"),
+        ("ore_demolition_t5", "ore_demolitions_t5", "demo", "5阶爆破系矿-13", "Tier 5 Demolition Ore-13"),
+        ("ore_tech_t5", "Ore_Tech_t5", "tech", "5阶科技系矿-13", "Tier 5 Tech Ore-13"),
+        ("ore_warrior_t5", "Ore_Warrior_t5", "warr", "5阶战士系矿-13", "Tier 5 Warrior Ore-13"),
+    ]
+    out = {}
+    for eid, img, klass, zh_name, en_name in ores:
+        name = zh_name if lang == "zh" else en_name
+        desc = f"蕴含巨大能量的{zh_name}，可提供大量升级经验。" if lang == "zh" else f"High potency {en_name} providing massive XP."
+        out[eid] = {
+            "id": eid,
+            "t": "blueprint",
+            "type": "blueprint",
+            "i": img,
+            "imgID": img,
+            "f": {"zh": zh_name, "en": en_name},
+            "friendly_name": {"zh": zh_name, "en": en_name},
+            "d": {"zh": desc, "en": desc},
+            "description": {"zh": desc, "en": desc},
+            "rm": 5,
+            "rarity": "5",
+            "c": klass,
+            "class": klass,
+            "dm": 999,
+            "defaultMax": 999,
+            "iso": 5000,
+            "base_iso_value": 5000,
+            "co": 100,
+            "conversion_cost": 100,
+            "sc": 100,
+            "base_coin_value": 100,
+            "e": True,
+            "enabled": True,
+            "shc": True,
+            "showConversion": True,
+        }
+    return out
+
+
 def build_login_data(lang="en"):
     """Full getLoginData result. Preserves every top-level key from the proven
     response and only enriches blueprints / characters / attackValues plus the
@@ -1131,11 +1177,11 @@ def build_login_data(lang="en"):
         # shape + per-rank stats) is the fix. Left {} until the exact BCGHeroBase JSON is captured.
         "heroes": build_heroes(),
         "blueprints": build_blueprints(lang=lang),
-        "evoBlueprints": {},
+        "evoBlueprints": build_evo_blueprints(lang=lang),
         "characters": build_characters(lang=lang),
         "synergyBonuses": {},
         "attackValues": build_attack_values(),
-        "blueprintBonuses": {},
+        "blueprintBonuses": {"sameClassBonus": {"id": "sameClassBonus", "m": 1.2}},
         "heroClasses": build_hero_classes(),
         "staminaRegen": {},
         "rarityProperties": build_rarity_properties(),
@@ -1148,12 +1194,12 @@ def build_login_data(lang="en"):
 def build_hero_entry(bid, rank=None, level=None):
     """One owned-hero record for getUserData `updates.heroes`. Same keys as the
     proven single-hero response; entity_type MUST be 'bot'.
-    Defaults to full 5-Star Rank 5 Level 50 Awakened (sig_lvl 100, flvl 100)."""
+    Defaults to 5-Star Rank 5 Level 10 Awakened so bots can level up to 50."""
     faction, klass, star = ROSTER.get(bid, ("decepticon", "tact", 5))
     if rank is None:
         rank = max(1, star)
     if level is None:
-        level = rank * 10
+        level = 10
     hp, atk = base_stats(bid, rank, level)
     return {
         "entity_type": "bot", "bid": bid,
@@ -1589,12 +1635,33 @@ def build_user_data(team=None):
     heroes = [build_hero_entry(bid) for bid in OWNED]
     mods = [build_mod_entry(m["id"]) for m in _load_mods()]
     relics = [build_relic_entry(r["id"]) for r in _load_relics()]
+    inv_bp = {
+        "ore_generic_t5": 100,
+        "ore_brawler_t5": 100,
+        "ore_scout_t5": 100,
+        "ore_tactician_t5": 100,
+        "ore_demolition_t5": 100,
+        "ore_tech_t5": 100,
+        "ore_warrior_t5": 100,
+    }
+    inv_max = {
+        "ore_generic_t5": 500,
+        "ore_brawler_t5": 500,
+        "ore_scout_t5": 500,
+        "ore_tactician_t5": 500,
+        "ore_demolition_t5": 500,
+        "ore_tech_t5": 500,
+        "ore_warrior_t5": 500,
+    }
     return {
         # teamSizeMax expanded to 5 as requested
         "userData": {"blueprintsMax": 500, "teamSizeMax": 5, "teamCountMax": 5, "BotDupedTut": {"id": "BotDupedTut", "state": 2, "completed": True, "branch": ""}, "BotDupedTutorial": {"id": "BotDupedTutorial", "state": 2, "completed": True, "branch": ""}, "ForgeBotTut": {"id": "ForgeBotTut", "state": 2, "completed": True, "branch": ""}, "ForgeBotTutorial": {"id": "ForgeBotTutorial", "state": 2, "completed": True, "branch": ""}, "ForgeModTut": {"id": "ForgeModTut", "state": 2, "completed": True, "branch": ""}, "ForgeModTutorial": {"id": "ForgeModTutorial", "state": 2, "completed": True, "branch": ""}, "RankUpTut": {"id": "RankUpTut", "state": 2, "completed": True, "branch": ""}, "RankUpTutorial": {"id": "RankUpTutorial", "state": 2, "completed": True, "branch": ""}, "UpgradeBotsScreen": {"id": "UpgradeBotsScreen", "state": 2, "completed": True, "branch": ""}, "RelicTut": {"id": "RelicTut", "state": 2, "completed": True, "branch": ""}, "RelicsTutorial": {"id": "RelicsTutorial", "state": 2, "completed": True, "branch": ""}, "MasteryPointIntro": {"id": "MasteryPointIntro", "state": 2, "completed": True, "branch": ""}, "MasteriesTutorial": {"id": "MasteriesTutorial", "state": 2, "completed": True, "branch": ""}, "MasteryPointTutorial": {"id": "MasteryPointTutorial", "state": 2, "completed": True, "branch": ""}, "ShieldTutorial": {"id": "ShieldTutorial", "state": 2, "completed": True, "branch": ""}, "AutoFightTutorial": {"id": "AutoFightTutorial", "state": 2, "completed": True, "branch": ""}, "AvoidanceTutorial": {"id": "AvoidanceTutorial", "state": 2, "completed": True, "branch": ""}, "ClassAdvantageTutorial": {"id": "ClassAdvantageTutorial", "state": 2, "completed": True, "branch": ""}, "ClassGateTutorial": {"id": "ClassGateTutorial", "state": 2, "completed": True, "branch": ""}, "LinkNodesTutorial": {"id": "LinkNodesTutorial", "state": 2, "completed": True, "branch": ""}, "RaidsTutorial": {"id": "RaidsTutorial", "state": 2, "completed": True, "branch": ""}, "RaidTutorial": {"id": "RaidTutorial", "state": 2, "completed": True, "branch": ""}, "StashTutorial": {"id": "StashTutorial", "state": 2, "completed": True, "branch": ""}, "TreasuryTutorial": {"id": "TreasuryTutorial", "state": 2, "completed": True, "branch": ""}, "SparksTutorial": {"id": "SparksTutorial", "state": 2, "completed": True, "branch": ""}, "ArenaTutorial": {"id": "ArenaTutorial", "state": 2, "completed": True, "branch": ""}, "AllianceEventsTutorial": {"id": "AllianceEventsTutorial", "state": 2, "completed": True, "branch": ""}, "DailyMissionsTutorial": {"id": "DailyMissionsTutorial", "state": 2, "completed": True, "branch": ""}, "BotPlacementTutorial": {"id": "BotPlacementTutorial", "state": 2, "completed": True, "branch": ""}},
         "updates": {"heroes": heroes + mods + relics, "savedTeams": [build_saved_team(heroes=team)],
                     "activeTeams": [build_active_team(f"{qid}-0", heroes=team)
-                                    for qid in ALL_ACTIVE_QUEST_IDS]},
+                                    for qid in ALL_ACTIVE_QUEST_IDS],
+                    "inventory": {"bp": inv_bp, "max": inv_max},
+                    "inventory.bp": inv_bp,
+                    "inventory.max": inv_max},
         "deletes": {},
     }
 
