@@ -40,6 +40,7 @@ ARMV7 = "armeabi-v7a"
 A64_RET = bytes.fromhex("c0035fd6")           # ret
 A64_NOP = bytes.fromhex("1f2003d5")           # nop
 A64_TRUE_RET = bytes.fromhex("20008052") + A64_RET   # movz w0,#1 ; ret
+A64_LAN_RET = bytes.fromhex("40008052") + A64_RET    # movz w0,#2 ; ret
 # b #+0x24 : at 0xFC21B4 jump into the manager-registration block, past the
 # OTAConfig deref, so UserManager (& ~40 managers) register even when
 # Hub.Config.OTAConfig is null (the dead-server offline state).
@@ -74,6 +75,8 @@ TARGETS = {
         # just sets state 3 and returns silently -> the Hub treats it as connected and the
         # boot grinds past data gates (e.g. "No User Data") to the next screen/FTE.
         (0x122C680, A64_RET, "SubSystem.FatalError -> ret instead of tail-call Hub.FatalError (silence subsystem fatals)"),
+        (0x1B462F4, A64_LAN_RET, "Application.internetReachability -> ReachableViaLocalAreaNetwork"),
+        (0x1333E48, A64_TRUE_RET, "EndPoint.HasInternetConnectivity -> true"),
     ],
     ARMV7: [
         # Function entry; no frame is pushed before this point, so lr is still live.
