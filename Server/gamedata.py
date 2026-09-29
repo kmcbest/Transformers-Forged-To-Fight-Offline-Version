@@ -2579,7 +2579,7 @@ BASE_TOWERS = {
 BASE_RELICS = {
     (20, 39): {
         "id": "relic_unstable_energon_crystal",
-        "model": "rlc11",
+        "model": "rlc10",
         "name": "不稳定能量晶体",
         "name_loc": {
             "en": "Unstable Energon Crystal",
@@ -2590,7 +2590,7 @@ BASE_RELICS = {
     },
     (20, 33): {
         "id": "relic_dark_energon_crystal",
-        "model": "rlc6",
+        "model": "rlc11",
         "name": "黑暗能量晶体",
         "name_loc": {
             "en": "Dark Energon Crystal",
@@ -2611,15 +2611,15 @@ BASE_RELICS = {
         "img": "allspark",
     },
     (30, 39): {
-        "id": "relic_matrix_of_leadership",
+        "id": "relic_matrix_of_leadership_g1",
         "model": "rlc14",
-        "name": "领导模块",
+        "name": "领导模块 (G1)",
         "name_loc": {
-            "en": "Matrix of Leadership",
-            "zh-Hans": "领导模块",
-            "zh-Hant": "領導模塊",
+            "en": "Matrix of Leadership (G1)",
+            "zh-Hans": "领导模块 (G1)",
+            "zh-Hant": "領導模塊 (G1)",
         },
-        "img": "matrix_of_leadership",
+        "img": "matrix_of_leadership_class",
     },
 }
 

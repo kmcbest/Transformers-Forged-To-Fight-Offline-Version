@@ -42,9 +42,21 @@
         "category": "Prime Artifact",
         "default_star": 5,
         "portrait_base": "matrix_of_leadership",
-        "model_id": "rlc14",
+        "model_id": "rlc4",
         "description_en": "The legendary conduit of Primus' wisdom, carried by the chosen Prime.",
         "description_zh": "传承自普神意志的领袖神物，赋予持有者无穷智慧与威能。",
+        "scale": 0.12
+    },
+    {
+        "id": "relic_matrix_of_leadership_g1",
+        "name_en": "Matrix of Leadership (G1)",
+        "name_zh": "领导模块 (G1)",
+        "category": "Prime Artifact",
+        "default_star": 5,
+        "portrait_base": "matrix_of_leadership_class",
+        "model_id": "rlc14",
+        "description_en": "The legendary classic G1 Matrix of Leadership carried by the chosen Autobot Commander.",
+        "description_zh": "博派历代领袖传承的初代经典手持神物，蕴含原初领袖意志与纯净心能。",
         "scale": 0.12
     },
     {
@@ -57,18 +69,6 @@
         "model_id": "rlc8",
         "description_en": "An ancient prototype matrix containing pure primordial cosmic energon.",
         "description_zh": "蕴含纯净原初宇宙能量的远古矩阵雏形。",
-        "scale": 0.12
-    },
-    {
-        "id": "relic_ancienthead",
-        "name_en": "Ancient Titan Core",
-        "name_zh": "远古巨神核心",
-        "category": "Ancient Relic",
-        "default_star": 5,
-        "portrait_base": "ancienthead",
-        "model_id": "rlc4",
-        "description_en": "The deactivated cranial command matrix of an ancient Cybertronian Titan.",
-        "description_zh": "沉睡远古泰坦巨神的头部指令矩阵核心。",
         "scale": 0.12
     },
     {
@@ -90,7 +90,7 @@
         "category": "Cosmic Artifact",
         "default_star": 5,
         "portrait_base": "dark_energon_crystal",
-        "model_id": "rlc6",
+        "model_id": "rlc11",
         "description_en": "A potent crystal infused with the dark blood of Unicron.",
         "description_zh": "凝聚宇宙大帝暗黑邪能的强力水晶碎片。",
         "scale": 0.12
@@ -102,7 +102,7 @@
         "category": "Cosmic Artifact",
         "default_star": 5,
         "portrait_base": "unstable_energon_crystal",
-        "model_id": "rlc11",
+        "model_id": "rlc10",
         "description_en": "A volatile crystal pulsating with raw, concentrated energon output.",
         "description_zh": "不断脉动释放高能辐射的高浓缩激化能量结晶。",
         "scale": 0.12
@@ -150,7 +150,7 @@
         "category": "Ancient Relic",
         "default_star": 5,
         "portrait_base": "ancient_tablet",
-        "model_id": "rlc20",
+        "model_id": "rlc13",
         "description_en": "An inscribed ancient glyph slate revealing lost Cybertronian combat lore.",
         "description_zh": "刻有赛博坦先祖失落战斗符文的远古铭文石板。",
         "scale": 0.119
@@ -174,22 +174,10 @@
         "category": "Ancient Relic",
         "default_star": 5,
         "portrait_base": "shattered_disk_t4",
-        "model_id": "rlc29",
+        "model_id": "rlc31d",
         "description_en": "A fractured extraterrestrial artifact with residual temporal energy.",
         "description_zh": "残留微弱时间回响的异星破碎光盘遗物。",
         "scale": 0.06
-    },
-    {
-        "id": "relic_statue_op",
-        "name_en": "Optimus Prime Monument",
-        "name_zh": "擎天柱纪念圣像",
-        "category": "Statue",
-        "default_star": 5,
-        "portrait_base": "statue_op_c",
-        "model_id": "rlc11",
-        "description_en": "A glorious monument celebrating the heroic leader of the Autobots.",
-        "description_zh": "纪念博派领袖擎天柱崇高英姿的永恒圣像。",
-        "scale": 0.12
     },
     {
         "id": "relic_statue_megatron",
@@ -198,7 +186,7 @@
         "category": "Statue",
         "default_star": 5,
         "portrait_base": "statue_megatron",
-        "model_id": "rlc13",
+        "model_id": "rlc29",
         "description_en": "An imposing monolith honoring the ruthless leader of the Decepticons.",
         "description_zh": "彰显狂派霸主威震天无上威严的铁血雕像。",
         "scale": 0.108
@@ -210,7 +198,7 @@
         "category": "Statue",
         "default_star": 5,
         "portrait_base": "statue_hotrod",
-        "model_id": "rlc14",
+        "model_id": "rlc28",
         "description_en": "A memorial commemorating the fiery courage of the young warrior.",
         "description_zh": "赞颂年轻战士热破无畏勇气的荣耀雕像。",
         "scale": 0.12
@@ -222,7 +210,7 @@
         "category": "Statue",
         "default_star": 5,
         "portrait_base": "statue_solus_g",
-        "model_id": "rlc28",
+        "model_id": "rlc1",
         "description_en": "An ancient effigy carved in honor of the First Forge Master.",
         "description_zh": "铭刻初代造物天尊索拉斯神圣容姿的远古雕像。",
         "scale": 0.065
@@ -246,7 +234,7 @@
         "category": "Signature Relic",
         "default_star": 5,
         "portrait_base": "relic_optimus_primal_t4",
-        "model_id": "rlc34d",
+        "model_id": "rlc36d",
         "description_en": "A maximal signature artifact imbued with primal jungle battle instinct.",
         "description_zh": "注入原始兽林狂野战斗直觉的巨无霸首领专属遗迹。",
         "scale": 0.121
@@ -258,7 +246,7 @@
         "category": "Signature Relic",
         "default_star": 5,
         "portrait_base": "relic_megatron_t4",
-        "model_id": "rlc36d",
+        "model_id": "rlc35d",
         "description_en": "A signature relic channeling absolute power and tyrannical ambition.",
         "description_zh": "汇聚绝对力量与霸者野心的狂派霸王专属遗迹。",
         "scale": 0.121
@@ -270,7 +258,7 @@
         "category": "Signature Relic",
         "default_star": 5,
         "portrait_base": "relic_bumblebee_t4",
-        "model_id": "rlc35d",
+        "model_id": "rlc37d",
         "description_en": "A signature relic brimming with speed, agility, and steadfast loyalty.",
         "description_zh": "满溢着极速闪避与坚定忠诚信念的侦察兵遗迹。",
         "scale": 0.121
@@ -282,7 +270,7 @@
         "category": "Signature Relic",
         "default_star": 5,
         "portrait_base": "relic_blaster_t4",
-        "model_id": "rlc33d",
+        "model_id": "rlc40d",
         "description_en": "A signature sonic resonator tuned to Blaster's electrifying frequencies.",
         "description_zh": "调谐至录音机澎湃高能音波频段的特种声学遗迹。",
         "scale": 0.112
@@ -294,7 +282,7 @@
         "category": "Signature Relic",
         "default_star": 5,
         "portrait_base": "relic_cheetor_t4",
-        "model_id": "rlc37d",
+        "model_id": "rlc41d",
         "description_en": "A signature kinetic matrix granting supreme acceleration and reflex.",
         "description_zh": "赋予极限加速爆发力与敏捷反应的黄豹勇士遗迹。",
         "scale": 0.121
@@ -318,7 +306,7 @@
         "category": "Signature Relic",
         "default_star": 5,
         "portrait_base": "relic_galvatron_t4",
-        "model_id": "rlc39d",
+        "model_id": "rlc34d",
         "description_en": "A signature relic supercharged with unstable anti-matter particle bursts.",
         "description_zh": "充斥狂暴反物质粒子束能量的毁灭性惊破天遗迹。",
         "scale": 0.121
@@ -330,7 +318,7 @@
         "category": "Signature Relic",
         "default_star": 5,
         "portrait_base": "relic_kickback_t4",
-        "model_id": "rlc40d",
+        "model_id": "rlc39d",
         "description_en": "A signature insecticon relic emitting subversion and swarm frequencies.",
         "description_zh": "散发颠覆心智与虫群召唤共振波的反冲专属遗迹。",
         "scale": 0.121
@@ -342,7 +330,7 @@
         "category": "Alliance",
         "default_star": 5,
         "portrait_base": "relic_ave_t4",
-        "model_id": "rlc41d",
+        "model_id": "rlc30d",
         "description_en": "A grand emblem bestowed upon commanders for supreme alliance conquest.",
         "description_zh": "表彰指挥官在联盟远征战役中立下赫赫战功的最高荣誉勋章。",
         "scale": 0.121
@@ -354,7 +342,7 @@
         "category": "Raid",
         "default_star": 5,
         "portrait_base": "relic_raid_t4",
-        "model_id": "rlc30d",
+        "model_id": "rlc33d",
         "description_en": "An energized crystal trophy earned from triumphant enemy base raids.",
         "description_zh": "在敌方基地突袭战中斩获辉煌战果的高阶能量水晶遗迹。",
         "scale": 0.132

@@ -1,4 +1,4 @@
-﻿[
+[
   {
     "id": "relic_immobilizer",
     "name_en": "Immobilizer",
@@ -28,7 +28,7 @@
     "name_en": "Matrix of Leadership",
     "name_zh": "领导模块",
     "category": "Prime Artifact",
-    "model_id": "rlc14",
+    "model_id": "rlc4",
     "model_desc": "Matrix of Leadership (display)"
   },
   {
@@ -36,7 +36,7 @@
     "name_en": "Matrix of Leadership (G1)",
     "name_zh": "领导模块 (G1)",
     "category": "Prime Artifact",
-    "model_id": "rlc4",
+    "model_id": "rlc14",
     "model_desc": "Matrix of Leadership (G1 classic)"
   },
   {
@@ -46,14 +46,6 @@
     "category": "Prime Artifact",
     "model_id": "rlc8",
     "model_desc": "Origin Matrix"
-  },
-  {
-    "id": "relic_ancienthead",
-    "name_en": "Ancient Titan Core",
-    "name_zh": "远古巨神核心",
-    "category": "Ancient Relic",
-    "model_id": "",
-    "model_desc": ""
   },
   {
     "id": "relic_solus_forge",
@@ -124,16 +116,8 @@
     "name_en": "Shattered Disk",
     "name_zh": "破碎之盘",
     "category": "Ancient Relic",
-    "model_id": "",
-    "model_desc": ""
-  },
-  {
-    "id": "relic_statue_op",
-    "name_en": "Optimus Prime Monument",
-    "name_zh": "擎天柱纪念圣像",
-    "category": "Statue",
-    "model_id": "",
-    "model_desc": ""
+    "model_id": "rlc31d",
+    "model_desc": "Shattered Disk (T4)"
   },
   {
     "id": "relic_statue_megatron",
@@ -172,7 +156,7 @@
     "name_en": "Optimus Primal Relic",
     "name_zh": "擎天圣专属遗迹",
     "category": "Signature Relic",
-    "model_id": "rlc34d",
+    "model_id": "rlc36d",
     "model_desc": "Optimus Primal (T4)"
   },
   {
@@ -180,7 +164,7 @@
     "name_en": "Megatron Signature Relic",
     "name_zh": "威震天霸权遗迹",
     "category": "Signature Relic",
-    "model_id": "rlc36d",
+    "model_id": "rlc35d",
     "model_desc": "Megatron Signature (T4)"
   },
   {
@@ -188,7 +172,7 @@
     "name_en": "Bumblebee Relic",
     "name_zh": "大黄蜂专属遗迹",
     "category": "Signature Relic",
-    "model_id": "rlc35d",
+    "model_id": "rlc37d",
     "model_desc": "Bumblebee (T4)"
   },
   {
@@ -196,7 +180,7 @@
     "name_en": "Blaster Sonic Relic",
     "name_zh": "录音机声波遗迹",
     "category": "Signature Relic",
-    "model_id": "rlc33d",
+    "model_id": "rlc40d",
     "model_desc": "Blaster Sonic (T4)"
   },
   {
@@ -204,7 +188,7 @@
     "name_en": "Cheetor Velocity Relic",
     "name_zh": "黄豹勇士极速遗迹",
     "category": "Signature Relic",
-    "model_id": "rlc37d",
+    "model_id": "rlc41d",
     "model_desc": "Cheetor (T4)"
   },
   {
@@ -220,7 +204,7 @@
     "name_en": "Galvatron Particle Relic",
     "name_zh": "惊破天粒子遗迹",
     "category": "Signature Relic",
-    "model_id": "rlc39d",
+    "model_id": "rlc34d",
     "model_desc": "Galvatron Particle (T4)"
   },
   {
@@ -228,7 +212,7 @@
     "name_en": "Kickback Hive Relic",
     "name_zh": "反冲虫巢遗迹",
     "category": "Signature Relic",
-    "model_id": "rlc40d",
+    "model_id": "rlc39d",
     "model_desc": "Kickback Hive (T4)"
   },
   {
@@ -236,7 +220,7 @@
     "name_en": "Alliance Victory Relic",
     "name_zh": "联盟凯旋勋章",
     "category": "Alliance",
-    "model_id": "rlc41d",
+    "model_id": "rlc30d",
     "model_desc": "Alliance Victory (T4)"
   },
   {
@@ -244,7 +228,7 @@
     "name_en": "Raid Champion Relic",
     "name_zh": "突袭冠军遗迹",
     "category": "Raid",
-    "model_id": "rlc30d",
+    "model_id": "rlc33d",
     "model_desc": "Raid Champion Crystal (T4)"
   }
 ]
