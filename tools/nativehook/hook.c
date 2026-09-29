@@ -575,7 +575,8 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x00FF0658, "FSPRESS_R",         2, 0 }, // 181 HudScreen.FullScreenPressDownRight -> AutoFight button check
     { 0x00B6E168, "AWAY_STATE",        2, 0 }, // 182 BaseBuilding.SetAwayTeamState -> force Home (0) to keep shuttle docked
     { 0x00EFA054, "BSPP_INIT",         2, 0 }, // 183 BuildingSelectPopupPresentation.OnGridItemInitialized
-    { 0x014F4048, "ISTUTCOMPLETE",     2, 0 }  // 184 TutorialManagerHelper.IsTutorialComplete
+    { 0x014F4048, "ISTUTCOMPLETE",     2, 0 }, // 184 TutorialManagerHelper.IsTutorialComplete
+    { 0x0095BDD8, "SAFE_GC_SCAN",       2, 0 }  // 185 il2cpp GC scan safe guard (prevents SEGV on 0x1)
 };
 #define NH (int)(sizeof(H)/sizeof(H[0]))
 
@@ -6510,6 +6511,13 @@ void* hook_183(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     return NULL;
 }
 
+void* hook_185(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    if (!obj_ok(a0)) {
+        return NULL;
+    }
+    return H[185].orig ? H[185].orig(a0, a1, a2, a3, a4, a5, a6, a7) : NULL;
+}
+
 
 static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hook_7,hook_8,
     hook_9,hook_10,hook_11,hook_12,hook_13,hook_14,hook_15,hook_16,hook_17,hook_18,hook_19,hook_20,hook_21,
@@ -6531,7 +6539,7 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     (void*)hook_159,hook_160,hook_161,hook_162,hook_163,hook_164,
     hook_165,hook_166,(void*)hook_167,hook_168,hook_169,hook_170,
     hook_171,hook_172,hook_173,hook_174,hook_175,hook_176,(void*)hook_177,(void*)hook_178,
-    (void*)hook_179,hook_180,hook_181,hook_182,hook_183,hook_184 };
+    (void*)hook_179,hook_180,hook_181,hook_182,hook_183,hook_184,hook_185 };
 
 static void write_jump(uint8_t* dst, void* target){
     uint32_t* p = (uint32_t*)dst;
