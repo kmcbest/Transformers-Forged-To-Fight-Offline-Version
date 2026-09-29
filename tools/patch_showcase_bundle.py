@@ -59,7 +59,6 @@ def patch_character_bundle(data: bytes, bname: str) -> bytes:
                         tree["_props"] = props
                         obj.save_typetree(tree)
                         prop_added = True
-                        break
 
         # 3. Patch animator_char_fight in this bundle if present
         for obj in env.objects:

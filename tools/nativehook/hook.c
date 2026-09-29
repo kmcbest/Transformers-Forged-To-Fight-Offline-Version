@@ -4430,8 +4430,9 @@ static void set_showcase_prop_active(void* props_ctrl, const char* name, int act
     if (!obj_ok(props_ctrl) || !g_strnew) return;
     void* s = g_strnew(name);
     if (!s) return;
-    // PropsController.SetActive(this, propName, active): 0xEA1734
-    ((void(*)(void*, void*, int))(g_base + 0xEA1734))(props_ctrl, s, active ? 1 : 0);
+    // PropsController.SetActive(this, propName, active, client, method): 0xEA0DB8
+    typedef void (*fn_props_set_active)(void*, void*, int, void*, void*);
+    ((fn_props_set_active)(g_base + 0xEA0DB8))(props_ctrl, s, active ? 1 : 0, props_ctrl, NULL);
 }
 
 static void set_showcase_weapons(void* props_ctrl, const char** list, int active) {
