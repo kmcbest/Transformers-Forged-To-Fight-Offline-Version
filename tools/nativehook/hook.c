@@ -3409,6 +3409,15 @@ void* hook_90(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
     static int diag_nodes = 0;
     static int probe_nodes = 0;
     PROTECT({
+        void* card = fld_p(a0, 0x50);
+        if (obj_ok(card)) {
+            void* (*comp_get_go)(void*,void*) = (void*(*)(void*,void*))(g_base + 0x1B4BD28);
+            void  (*go_set_active)(void*,int,void*) = (void(*)(void*,int,void*))(g_base + 0x1B50CA8);
+            void* cgo = comp_get_go(card, NULL);
+            if (obj_ok(cgo)) {
+                go_set_active(cgo, 1, NULL);
+            }
+        }
         void* go = fld_p(a0, 0x28);
         if (obj_ok(go) && dumps < 24) {
             dumps++;
@@ -4249,8 +4258,66 @@ MK_RELICMARK(104) MK_RELICMARK(105) MK_RELICMARK(106) MK_RELICMARK(107) MK_RELIC
 void* hook_##n(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){ \
     LOG("%s this=%p arg1=%p",H[n].tag,a0,a1); return H[n].orig(a0,a1,a2,a3,a4,a5,a6,a7); \
 }
-MK_CARDMARK(109) MK_CARDMARK(110) MK_CARDMARK(111)
+MK_CARDMARK(109)
+MK_CARDMARK(111)
 #undef MK_CARDMARK
+
+void* hook_110(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
+    LOG("SHOWCARDS this=%p arg1=%p", a0, a1);
+    PROTECT({
+        if (obj_ok(a0)) {
+            void* nodes = *(void**)((char*)a0 + 0x58);
+            if (obj_ok(nodes)) {
+                int32_t count = *(int32_t*)((char*)nodes + 0x18);
+                void* items = *(void**)((char*)nodes + 0x10);
+                if (obj_ok(items) && count > 0 && count < 100) {
+                    void* (*comp_get_go)(void*,void*) = (void*(*)(void*,void*))(g_base + 0x1B4BD28);
+                    void  (*go_set_active)(void*,int,void*) = (void(*)(void*,int,void*))(g_base + 0x1B50CA8);
+                    for (int i = 0; i < count; i++) {
+                        void* node = *(void**)((uintptr_t)items + 0x20 + 8 * i);
+                        if (!obj_ok(node)) continue;
+                        void* card = *(void**)((char*)node + 0x50);
+                        if (!obj_ok(card)) continue;
+                        // Reset IsVisible so BossCard.Show() will execute transition
+                        *(uint8_t*)((char*)card + 0x48) = 0;
+                        void* card_go = comp_get_go(card, NULL);
+                        if (obj_ok(card_go)) {
+                            go_set_active(card_go, 1, NULL);
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    void* r = H[110].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+
+    PROTECT({
+        if (obj_ok(a0)) {
+            void* nodes = *(void**)((char*)a0 + 0x58);
+            if (obj_ok(nodes)) {
+                int32_t count = *(int32_t*)((char*)nodes + 0x18);
+                void* items = *(void**)((char*)nodes + 0x10);
+                if (obj_ok(items) && count > 0 && count < 100) {
+                    void* (*comp_get_go)(void*,void*) = (void*(*)(void*,void*))(g_base + 0x1B4BD28);
+                    void  (*go_set_active)(void*,int,void*) = (void(*)(void*,int,void*))(g_base + 0x1B50CA8);
+
+                    for (int i = 0; i < count; i++) {
+                        void* node = *(void**)((uintptr_t)items + 0x20 + 8 * i);
+                        if (!obj_ok(node)) continue;
+                        void* card = *(void**)((char*)node + 0x50);
+                        if (!obj_ok(card)) continue;
+                        void* card_go = comp_get_go(card, NULL);
+                        if (obj_ok(card_go)) {
+                            go_set_active(card_go, 1, NULL);
+                        }
+                    }
+                }
+            }
+        }
+    });
+    return r;
+}
 void* hook_112(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
     LOG("RCAWAKE card=%p",a0); void* r=H[112].orig(a0,a1,a2,a3,a4,a5,a6,a7); log_relic_card("RCAWAKE_DONE",a0); return r;
 }

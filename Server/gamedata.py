@@ -2263,16 +2263,7 @@ def build_quest_progression(qid="1.1.1", start=None, team=None):
         "currentPos": {"x": sx, "y": sy},
         "team": quest_team, "points": 0,
     }
-    if qid == "1.1.2":
-        revealed_tiles = [{"x": r, "y": c} for r, c in quest_walkable_tiles(qid)]
-    elif qid == "1.1.7":
-        revealed_tiles = [{"x": r, "y": 1} for r in range(13)]
-    elif qid == "1.1.5":
-        revealed_tiles = [{"x": r, "y": 1} for r in range(5)]
-    elif qid in ("1.1.3", "1.1.4", "1.1.6"):
-        revealed_tiles = [{"x": r, "y": 1} for r in range(6)]
-    else:
-        revealed_tiles = [{"x": r, "y": 1} for r in range(3)]
+    revealed_tiles = [{"x": r, "y": c} for r, c in quest_walkable_tiles(qid)]
     return {
         "version": 1,
         "currentPos": {"x": sx, "y": sy},
@@ -2746,47 +2737,27 @@ def build_base_map():
             }
 
             # Start and final
-            if pt == (25, 42):
+            if pt == (25, 44):
                 tile["start"] = True
             elif pt == (25, 30):
                 tile["final"] = True
 
-            # Defender bot socket & entities
+            # Defender bot socket
             if pt in BASE_DEFENDERS:
-                d = BASE_DEFENDERS[pt]
                 sock_id = "sock_boss_%d_%d" % pt
                 tile["sockets"][sock_id] = {"entityType": "boss", "locked": False}
-                tile.setdefault("entities", {})
-                tile["entities"]["boss"] = {
-                    "entityType": "boss",
-                    "parentEntityType": "bcg",
-                    "key": d["bid"],
-                    "character": d["bid"],
-                    "rank": d["rank"],
-                    "level": d["level"],
-                    "sig_lvl": d["sig"],
-                }
                 # Gold generator entity -> triggers _goldReady yellow circular disc & emissive floor
+                tile.setdefault("entities", {})
                 tile["entities"]["gold"] = {
                     "entityType": "generator",
                     "parentEntityType": "generator",
                     "resourceType": "gold",
                 }
 
-            # Tower socket & entities
+            # Tower socket
             if pt in BASE_TOWERS:
-                t_key = BASE_TOWERS[pt]
                 sock_id = "sock_tower_%d_%d" % pt
                 tile["sockets"][sock_id] = {"entityType": "tower", "locked": False}
-                tile.setdefault("entities", {})
-                tile["entities"]["tower"] = {
-                    "entityType": "tower",
-                    "parentEntityType": "bcg",
-                    "key": t_key,
-                    "character": t_key,
-                    "rank": 4,
-                    "level": 50,
-                }
 
             # Relic socket (dynamic placement via userBase.placements, no hardcoded entity)
             if pt in BASE_RELICS:

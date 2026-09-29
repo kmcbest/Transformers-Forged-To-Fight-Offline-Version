@@ -1187,12 +1187,15 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         v=lookup(key,outn);
         if(!v) v=lookup("GET /base/active",outn);
         if(v && *outn > 0) {
-            load_base_relics();
-            if(g_base_relics_modified) {
-                return inject_relics_into_base_active(v, *outn, o, outn);
-            }
+            return inject_slots_into_base_active(v, *outn, o, outn);
         }
         return v;
+    }
+    if(strstr(p, "/base/claim")) {
+        static const unsigned char claim_resp[] = "{\"error\":null,\"result\":{\"redeemers\":[]},\"redeemers\":[]}";
+        *outn = strlen((const char*)claim_resp);
+        logmsg("BASE_CLAIM: intercepted -> skip claim, open edit popup");
+        return claim_resp;
     }
     if(strstr(p,"/base/place") || strstr(p,"/base/swap") || strstr(p,"/base/remove")) {
         return handle_base_action(p, o, outn);
@@ -1218,6 +1221,12 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         const char *a=strstr(body,"\"heroes\""); const char *arr=a?strchr(a,'['):NULL; const char *q=arr?arr+1:NULL; v=lookup("@herodata:open",&n);if(!v||!out_add(o,v,n))return NULL;
         int first=1; while(q&&q<end){const char *open=strchr(q,'{'),*close;int depth=0;if(!open||open>=end)break;close=open;do{if(*close=='{')depth++;else if(*close=='}')depth--;close++;}while(close<end&&depth);if(depth)break;char hb[64]="", hk[200], sig[32];int rank=json_int(open,close,"rank",1),level=json_int(open,close,"level",1),sl=json_int(open,close,"sig_lvl",0);if(!rank)rank=1;if(!level)level=1;if(!json_string(open,close,"bid",hb,sizeof hb))if(!json_string(open,close,"character",hb,sizeof hb))json_string(open,close,"id",hb,sizeof hb);snprintf(hk,sizeof hk,"@hero:%s:%d:%d",hb,rank,level);v=lookup(hk,&n);if(!v){snprintf(hk,sizeof hk,"@hero:%s:1:1",hb);v=lookup(hk,&n);}if(!v)v=lookup("@hero:*:1:1",&n);logmsg("getBaseHeroData: hero=%s rank=%d lvl=%d lookup=%s", hb, rank, level, v ? "OK" : "NULL");if(v){snprintf(sig,sizeof sig,"%d",sl);if(!first&&!out_add(o,",",1))return NULL;if(!out_hero_detail(o,v,n,sig,0))return NULL;first=0;if(rank==5&&level==1){char hk50[200];size_t n50=0;snprintf(hk50,sizeof hk50,"@hero:%s:5:50",hb);const unsigned char *v50=lookup(hk50,&n50);if(v50){if(!out_add(o,",",1))return NULL;if(!out_hero_detail(o,v50,n50,sig,0))return NULL;logmsg("getBaseHeroData: also emitted rank 5 level 50 for %s", hb);}}}q=close;}
         v=lookup("@herodata:close",&n);if(!v||!out_add(o,v,n))return NULL; Out compact=*o; o->p=NULL;o->n=o->cap=0; v=json_default_spaces(compact.p,compact.n,o,outn);free(compact.p);logmsg("getBaseHeroData reply (%zu bytes): %.300s", *outn, (const char*)v);return v;
+    }
+    if(strstr(p, "/bcg/getHeroXPCurve")) {
+        static const unsigned char xp_resp[] = "{\"error\":null,\"result\":[]}";
+        *outn = strlen((const char*)xp_resp);
+        logmsg("BCG: handled /bcg/getHeroXPCurve");
+        return xp_resp;
     }
     if(strstr(p,"/quests/quest-detail/")) {
         snprintf(mid,sizeof mid,"%.63s",path_last(p));
