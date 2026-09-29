@@ -1,0 +1,250 @@
+﻿[
+  {
+    "id": "relic_immobilizer",
+    "name_en": "Immobilizer",
+    "name_zh": "禁锢定身器",
+    "category": "Prime Artifact",
+    "model_id": "rlc3",
+    "model_desc": "Immobilizer"
+  },
+  {
+    "id": "relic_allspark",
+    "name_en": "The AllSpark",
+    "name_zh": "火种源",
+    "category": "Prime Artifact",
+    "model_id": "rlc2",
+    "model_desc": "AllSpark"
+  },
+  {
+    "id": "relic_covenant_primus",
+    "name_en": "Covenant of Primus",
+    "name_zh": "普神之约",
+    "category": "Prime Artifact",
+    "model_id": "rlc7",
+    "model_desc": "Covenant of Primus (book)"
+  },
+  {
+    "id": "relic_matrix_of_leadership",
+    "name_en": "Matrix of Leadership",
+    "name_zh": "领导模块",
+    "category": "Prime Artifact",
+    "model_id": "rlc14",
+    "model_desc": "Matrix of Leadership (display)"
+  },
+  {
+    "id": "relic_matrix_of_leadership_g1",
+    "name_en": "Matrix of Leadership (G1)",
+    "name_zh": "领导模块 (G1)",
+    "category": "Prime Artifact",
+    "model_id": "rlc4",
+    "model_desc": "Matrix of Leadership (G1 classic)"
+  },
+  {
+    "id": "relic_origin_matrix",
+    "name_en": "Origin Matrix",
+    "name_zh": "原初矩阵",
+    "category": "Prime Artifact",
+    "model_id": "rlc8",
+    "model_desc": "Origin Matrix"
+  },
+  {
+    "id": "relic_ancienthead",
+    "name_en": "Ancient Titan Core",
+    "name_zh": "远古巨神核心",
+    "category": "Ancient Relic",
+    "model_id": "",
+    "model_desc": ""
+  },
+  {
+    "id": "relic_solus_forge",
+    "name_en": "Forge of Solus Prime",
+    "name_zh": "索拉斯之锤",
+    "category": "Prime Artifact",
+    "model_id": "rlc5",
+    "model_desc": "Forge of Solus Prime (hammer)"
+  },
+  {
+    "id": "relic_dark_energon_crystal",
+    "name_en": "Dark Energon Crystal",
+    "name_zh": "黑暗超能量体水晶",
+    "category": "Cosmic Artifact",
+    "model_id": "rlc11",
+    "model_desc": "Dark Energon Crystal (v2)"
+  },
+  {
+    "id": "relic_unstable_energon_crystal",
+    "name_en": "Unstable Energon Crystal",
+    "name_zh": "不稳定超能量体水晶",
+    "category": "Cosmic Artifact",
+    "model_id": "rlc10",
+    "model_desc": "Unstable Energon Crystal (v1)"
+  },
+  {
+    "id": "relic_stasis_generator",
+    "name_en": "Stasis Generator",
+    "name_zh": "停滞力场发生器",
+    "category": "Technology",
+    "model_id": "rlc20",
+    "model_desc": "Stasis Field Generator"
+  },
+  {
+    "id": "relic_cloaking_field",
+    "name_en": "Cloaking Field Generator",
+    "name_zh": "隐形发生器",
+    "category": "Technology",
+    "model_id": "rlc19",
+    "model_desc": "Cloaking Field Generator"
+  },
+  {
+    "id": "relic_fallen_titan_hand",
+    "name_en": "Fallen Titan Hand",
+    "name_zh": "堕落泰坦之手",
+    "category": "Ancient Relic",
+    "model_id": "rlc9",
+    "model_desc": "Fallen Titan Hand"
+  },
+  {
+    "id": "relic_ancient_tablet",
+    "name_en": "Cybertronian Tablet",
+    "name_zh": "赛博坦古老石板",
+    "category": "Ancient Relic",
+    "model_id": "rlc13",
+    "model_desc": "Ancient Cybertronian Tablet"
+  },
+  {
+    "id": "relic_goldendisk",
+    "name_en": "Golden Disk",
+    "name_zh": "金盘",
+    "category": "Ancient Relic",
+    "model_id": "rlc22",
+    "model_desc": "Vok Disk (Golden Disk)"
+  },
+  {
+    "id": "relic_shattered_disk",
+    "name_en": "Shattered Disk",
+    "name_zh": "破碎之盘",
+    "category": "Ancient Relic",
+    "model_id": "",
+    "model_desc": ""
+  },
+  {
+    "id": "relic_statue_op",
+    "name_en": "Optimus Prime Monument",
+    "name_zh": "擎天柱纪念圣像",
+    "category": "Statue",
+    "model_id": "",
+    "model_desc": ""
+  },
+  {
+    "id": "relic_statue_megatron",
+    "name_en": "Megatron Monument",
+    "name_zh": "威震天纪念雕像",
+    "category": "Statue",
+    "model_id": "rlc29",
+    "model_desc": "Megatron Statue"
+  },
+  {
+    "id": "relic_statue_hotrod",
+    "name_en": "Hot Rod Monument",
+    "name_zh": "热破英勇塑像",
+    "category": "Statue",
+    "model_id": "rlc28",
+    "model_desc": "Hot Rod Statue"
+  },
+  {
+    "id": "relic_statue_solus",
+    "name_en": "Solus Prime Monument",
+    "name_zh": "索拉斯天尊塑像",
+    "category": "Statue",
+    "model_id": "rlc1",
+    "model_desc": "Solus Prime Statue (rock base)"
+  },
+  {
+    "id": "relic_jazz",
+    "name_en": "Jazz Signature Relic",
+    "name_zh": "爵士专属遗迹",
+    "category": "Signature Relic",
+    "model_id": "rlc_jazz_gs",
+    "model_desc": "Jazz Signature (GS)"
+  },
+  {
+    "id": "relic_optimus_primal",
+    "name_en": "Optimus Primal Relic",
+    "name_zh": "擎天圣专属遗迹",
+    "category": "Signature Relic",
+    "model_id": "rlc34d",
+    "model_desc": "Optimus Primal (T4)"
+  },
+  {
+    "id": "relic_megatron",
+    "name_en": "Megatron Signature Relic",
+    "name_zh": "威震天霸权遗迹",
+    "category": "Signature Relic",
+    "model_id": "rlc36d",
+    "model_desc": "Megatron Signature (T4)"
+  },
+  {
+    "id": "relic_bumblebee",
+    "name_en": "Bumblebee Relic",
+    "name_zh": "大黄蜂专属遗迹",
+    "category": "Signature Relic",
+    "model_id": "rlc35d",
+    "model_desc": "Bumblebee (T4)"
+  },
+  {
+    "id": "relic_blaster",
+    "name_en": "Blaster Sonic Relic",
+    "name_zh": "录音机声波遗迹",
+    "category": "Signature Relic",
+    "model_id": "rlc33d",
+    "model_desc": "Blaster Sonic (T4)"
+  },
+  {
+    "id": "relic_cheetor",
+    "name_en": "Cheetor Velocity Relic",
+    "name_zh": "黄豹勇士极速遗迹",
+    "category": "Signature Relic",
+    "model_id": "rlc37d",
+    "model_desc": "Cheetor (T4)"
+  },
+  {
+    "id": "relic_hound",
+    "name_en": "Hound Hologram Relic",
+    "name_zh": "探长全息遗迹",
+    "category": "Signature Relic",
+    "model_id": "rlc38d",
+    "model_desc": "Hound Hologram (T4)"
+  },
+  {
+    "id": "relic_galvatron",
+    "name_en": "Galvatron Particle Relic",
+    "name_zh": "惊破天粒子遗迹",
+    "category": "Signature Relic",
+    "model_id": "rlc39d",
+    "model_desc": "Galvatron Particle (T4)"
+  },
+  {
+    "id": "relic_kickback",
+    "name_en": "Kickback Hive Relic",
+    "name_zh": "反冲虫巢遗迹",
+    "category": "Signature Relic",
+    "model_id": "rlc40d",
+    "model_desc": "Kickback Hive (T4)"
+  },
+  {
+    "id": "relic_alliance_victory",
+    "name_en": "Alliance Victory Relic",
+    "name_zh": "联盟凯旋勋章",
+    "category": "Alliance",
+    "model_id": "rlc41d",
+    "model_desc": "Alliance Victory (T4)"
+  },
+  {
+    "id": "relic_raid_champion",
+    "name_en": "Raid Champion Relic",
+    "name_zh": "突袭冠军遗迹",
+    "category": "Raid",
+    "model_id": "rlc30d",
+    "model_desc": "Raid Champion Crystal (T4)"
+  }
+]

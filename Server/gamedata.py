@@ -2788,24 +2788,10 @@ def build_base_map():
                     "level": 50,
                 }
 
-            # Relic socket & 3D floating relic entity
+            # Relic socket (dynamic placement via userBase.placements, no hardcoded entity)
             if pt in BASE_RELICS:
-                r_info = BASE_RELICS[pt]
                 sock_id = "sock_relic_%d_%d" % pt
                 tile["sockets"][sock_id] = {"entityType": "relic", "locked": False}
-                tile.setdefault("entities", {})
-                tile["entities"]["building"] = {
-                    "entityType": "building",
-                    "parentEntityType": "building",
-                    "id": r_info["id"],
-                    "key": r_info["id"],
-                    "modelId": r_info["model"],
-                    "name": r_info["name"],
-                    "name_loc": r_info.get("name_loc", {}),
-                    "img": r_info.get("img", ""),
-                    "rank": 5,
-                    "level": 50,
-                }
 
             r.append(tile)
         grid.append(r)

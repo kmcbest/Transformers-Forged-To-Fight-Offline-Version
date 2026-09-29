@@ -651,6 +651,7 @@ static int json_int(const char *s, const char *end, const char *want, int def) {
     while(p<end){const char*q=strstr(p,"\"");char *stop; long v;if(!q||q>=end)break;q++;if((size_t)(end-q)<wl+1||memcmp(q,want,wl)||q[wl]!='\"'){p=q;continue;}q+=wl+1;while(q<end&&isspace((unsigned char)*q))q++;if(q>=end||*q!=':'){p=q;continue;}q++;while(q<end&&isspace((unsigned char)*q))q++;errno=0;v=strtol(q,&stop,10);if(stop==q||errno)return def;return (int)v;}return def;
 }
 static int list_has(const unsigned char *s, size_t n, const char *id) { size_t l=strlen(id), i=0; while(i<n){size_t j=i;while(j<n&&s[j]!='\n')j++;if(j-i==l&&!memcmp(s+i,id,l))return 1;i=j+1;}return 0; }
+#include "base_relic_handler.h"
 /* Team capacity expanded to 5 members */
 static int team_from_lines(const unsigned char *s, size_t n, Team *team) {
     size_t i=0;
@@ -1184,9 +1185,19 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         g_current_is_10x_challenge = 0;
         snprintf(key,sizeof key,"%s /base/active",method);
         v=lookup(key,outn);
-        return v?v:lookup("GET /base/active",outn);
+        if(!v) v=lookup("GET /base/active",outn);
+        if(v && *outn > 0) {
+            load_base_relics();
+            if(g_base_relics_modified) {
+                return inject_relics_into_base_active(v, *outn, o, outn);
+            }
+        }
+        return v;
     }
-    if(strstr(p,"/base/place") || strstr(p,"/base/swap") || strstr(p,"/base/remove") || strstr(p,"/base/sell")) {
+    if(strstr(p,"/base/place") || strstr(p,"/base/swap") || strstr(p,"/base/remove")) {
+        return handle_base_action(p, o, outn);
+    }
+    if(strstr(p,"/base/sell")) {
         static const unsigned char base_action_ok[] = "{\"error\":null,\"result\":{\"success\":true}}";
         *outn = strlen((const char*)base_action_ok);
         return base_action_ok;

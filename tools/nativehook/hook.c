@@ -3523,19 +3523,6 @@ void* hook_93(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
             nc_on_bld_set(a0, a1, a2, NULL);
             flog("ONBLDSET: invoked NodeController.OnBuildingSet(node=%p, id=%p, go=%p)", a0, a1, a2);
         }
-
-        // 3. Explicitly remove UiAnimation blocker from BusyBlockerManager to prevent UI freeze
-        void (*bbm_rmv)(void*,void*,void*,void*,void*) = (void(*)(void*,void*,void*,void*,void*))(g_base + 0x148CA38);
-        void* (*get_bbm)(void*) = (void*(*)(void*))(g_base + 0x148C294);
-        void* (*get_uianim)(void*) = (void*(*)(void*))(g_base + 0xDD6C3C);
-        if (bbm_rmv && get_bbm && get_uianim) {
-            void* bbm = get_bbm(NULL);
-            void* uianim = get_uianim(NULL);
-            if (bbm && uianim) {
-                bbm_rmv(bbm, uianim, NULL, NULL, NULL);
-                flog("ONBLDSET: explicitly removed UiAnimation blocker via RemoveBlocker");
-            }
-        }
     });
 
     PROTECT({
