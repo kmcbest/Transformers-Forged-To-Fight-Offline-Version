@@ -1,0 +1,101 @@
+{
+  "_comment": "Board terrain per story quest. 'theme' selects the questboard prefab library the client loads (GameboardManager.RequestLibrary / GetBasePathForType take a themeName); 'todIndex' selects the time-of-day variant inside that theme's bundle. Four themes ship: primordial (0-5), quintessa (0-7), ruinedcity (0-2), unicron (0-7).",
+  "_shipped_board_themes": {
+    "primordial": {
+      "tods": [0, 1, 2, 3, 4, 5]
+    },
+    "quintessa": {
+      "tods": [0, 1, 2, 3, 4, 5, 6, 7]
+    },
+    "ruinedcity": {
+      "tods": [0, 1, 2]
+    },
+    "unicron": {
+      "tods": [0, 1, 2, 3, 4, 5, 6, 7]
+    }
+  },
+  "_shipped_arena_levels": {
+    "levels": [
+      "chicago",
+      "hongkong",
+      "karnak",
+      "mine",
+      "rust"
+    ],
+    "tods": [0, 1, 2]
+  },
+  "_default": {
+    "theme": "primordial",
+    "todIndex": 1
+  },
+  "quests": {
+    "1.1.1": {
+      "theme": "ruinedcity",
+      "todIndex": 0,
+      "arena": {
+        "vary": true
+      }
+    },
+    "1.1.2": {
+      "theme": "unicron",
+      "todIndex": 6,
+      "arena": {
+        "vary": true
+      }
+    },
+    "1.1.3": {
+      "theme": "ruinedcity",
+      "todIndex": 1,
+      "arena": {
+        "vary": true
+      }
+    },
+    "1.1.4": {
+      "theme": "quintessa",
+      "todIndex": 3,
+      "arena": {
+        "vary": true
+      }
+    },
+    "1.1.5": {
+      "theme": "unicron",
+      "todIndex": 7,
+      "arena": {
+        "vary": true
+      }
+    },
+    "1.1.6": {
+      "theme": "quintessa",
+      "todIndex": 5,
+      "arena": {
+        "vary": true
+      }
+    },
+    "1.1.7": {
+      "theme": "primordial",
+      "todIndex": 2,
+      "arena": {
+        "vary": true
+      }
+    },
+    "1.1.8": {
+      "theme": "ruinedcity",
+      "todIndex": 2,
+      "arena": {
+        "vary": true
+      }
+    },
+    "2.1.1": {
+      "theme": "ruinedcity",
+      "todIndex": 2
+    },
+    "2.2.1": {
+      "theme": "unicron",
+      "todIndex": 7
+    },
+    "2.3.1": {
+      "theme": "quintessa",
+      "todIndex": 4
+    }
+  }
+}

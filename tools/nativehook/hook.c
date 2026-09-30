@@ -762,6 +762,8 @@ static int g_ts_hidden_count = 0;
 static int g_ts_screen_active = 0;
 static int read_str(void* s, char* buf, int cap);
 static int obj_ok(void* p);
+static void tshide_hide(int diagnostics);
+static void tshide_restore(const char* tag);
 static void bldg_track(void* go){
     if (!obj_ok(go)) return;
     for (int i=0;i<g_bldg_tracked_count;i++) if (g_bldg_tracked[i] == go) return;
@@ -2407,6 +2409,14 @@ void* hook_83(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
 // gshared Component.GetComponentInChildren<T> (@0x11D45A4); its MethodInfo* is taken from the
 // exact GOT slot the call site uses (0x2C313D0, two derefs, same pattern as a _TypeInfo).
 void* hook_84(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
+    PROTECT({
+        if (obj_ok(a0)) {
+            int is_base = *(uint8_t*)((uintptr_t)a0 + 0x198);
+            if (!is_base) {
+                tshide_hide(0);
+            }
+        }
+    });
     // THEMESWAP -- see the toggle block. Must run BEFORE the original, since the original is
     // what reads _ThemeMaterial@0x188 and pushes its material onto the terrain renderers.
     // Base board only (isUsersBase@0x198); the story board is the control and is left alone.
@@ -3701,10 +3711,15 @@ void* hook_95(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                 int is_relic = (strncmp(resolved, "rlc", 3) == 0 || strncmp(requested, "rlc", 3) == 0 || strstr(resolved, "relic") != NULL);
                 if (obj_ok(ctr) && obj_ok(a2)) {
                     if (is_relic) {
-                        V3 pos = tr_get_position(a2, NULL);
-                        tr_set_position(ctr, pos, NULL);
-                        flog("BLDGSWAP relic placed on node at position: key='%s'", resolved);
+                        tr_set_parent(ctr, a2, 0, NULL);
+                        V3 zero; zero.x = zero.y = zero.z = 0.0f;
+                        tr_set_local_position(ctr, zero, NULL);
+                        V3 scale; scale.x = scale.y = scale.z = 4.0f;
+                        tr_set_local_scale(ctr, scale, NULL);
+                        flog("BLDGSWAP relic parented to node %p: key='%s'", a2, resolved);
                     } else {
+                        if (obj_ok(parent_tr)) tr_set_parent(ctr,parent_tr,1,NULL);
+                        else tr_set_parent(ctr, a2, 1, NULL);
                         V3 pos=tr_get_position(a2,NULL);
                         pos.x *= 5.5f;
                         pos.z *= 4.5f;
@@ -3761,6 +3776,7 @@ void* hook_96(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
     g_base_tap_go=NULL;
     g_active_baseboard=NULL;
     g_baseboard_refresh_frames=0;
+    tshide_hide(0);
     return H[96].orig(a0,a1,a2,a3,a4,a5,a6,a7);
 }
 // Base-builder entry markers (slots 97-101): intentionally log only, then execute originals.

@@ -325,6 +325,65 @@ def _load_relics():
 
 
 # ---------------------------------------------------------------------------
+# Quest terrain catalog loader
+# ---------------------------------------------------------------------------
+_QUEST_TERRAIN_CACHE = None
+
+def _load_quest_terrain():
+    global _QUEST_TERRAIN_CACHE
+    if _QUEST_TERRAIN_CACHE is not None:
+        return _QUEST_TERRAIN_CACHE
+    tpath = os.path.join(HERE, "data", "quest_terrain.json")
+    if not os.path.exists(tpath):
+        tpath = os.path.join(HERE, "quest_terrain.json")
+    if os.path.exists(tpath):
+        try:
+            with open(tpath, "r", encoding="utf-8") as f:
+                _QUEST_TERRAIN_CACHE = json.load(f)
+                return _QUEST_TERRAIN_CACHE
+        except Exception:
+            pass
+    _QUEST_TERRAIN_CACHE = {}
+    return _QUEST_TERRAIN_CACHE
+
+
+def quest_board_terrain(qid):
+    data = _load_quest_terrain()
+    default_terrain = data.get("_default", {"theme": "primordial", "todIndex": 0})
+    quests = data.get("quests", {})
+    entry = quests.get(qid, default_terrain)
+    return {
+        "theme": entry.get("theme", default_terrain.get("theme", "primordial")),
+        "todIndex": int(entry.get("todIndex", default_terrain.get("todIndex", 0))),
+    }
+
+
+def encounter_arena_for(qid, row=0, fallback_level=None, fallback_tod=None):
+    if fallback_level is None:
+        fallback_level = ARENA_LEVEL
+    if fallback_tod is None:
+        fallback_tod = ARENA_TOD_INDEX
+    data = _load_quest_terrain()
+    quests = data.get("quests", {})
+    entry = quests.get(qid, {})
+    arena_conf = entry.get("arena", {})
+    if not arena_conf.get("vary", False):
+        return {"theme": fallback_level, "todIndex": fallback_tod}
+    
+    pool = arena_conf.get("pool", ["chicago", "hongkong", "karnak", "mine", "rust"])
+    if not pool:
+        return {"theme": fallback_level, "todIndex": fallback_tod}
+    
+    digits = qid.replace(".", "")
+    base = int(digits) if digits.isdigit() else len(qid)
+    folded = base + (base // 10) + (base // 100) + (base // 1000)
+    seed = folded * 31 + row * 17 + 7
+    picked_level = pool[seed % len(pool)]
+    picked_tod = (seed // len(pool)) % 3
+    return {"theme": picked_level, "todIndex": picked_tod}
+
+
+# ---------------------------------------------------------------------------
 # JSON builders -- emit the exact proven shapes from Server/responses/.
 # ---------------------------------------------------------------------------
 def build_blueprints(lang="en"):
@@ -1770,6 +1829,7 @@ def build_quest_summary(mission_id="1.1.1", set_id="story_act1", lang="zh"):
     diff = "hard" if mission_id != "1.1.1" else "normal"
     min_xp = 10 if mission_id != "1.1.1" else 1
     max_xp = 20 if mission_id != "1.1.1" else 2
+    terrain = quest_board_terrain(mission_id)
     summary = {
         "id": mission_id, "setId": set_id, "hash": "h1",
         "act": act, "chapter": chapter, "mission": mission,
@@ -1781,7 +1841,7 @@ def build_quest_summary(mission_id="1.1.1", set_id="story_act1", lang="zh"):
         "category": "story", "difficulty": diff,
         "energyPerTile": 1, "minXpPerTile": min_xp, "maxXpPerTile": max_xp,
         "minHealthPerTile": 100, "maxHealthPerTile": 100,
-        "image": "", "theme": "primordial", "todIndex": 0,
+        "image": "", "theme": terrain["theme"], "todIndex": terrain["todIndex"],
         "isLeisure": mission_id not in ("1.1.3", "1.1.4", "1.1.5", "1.1.6", "1.1.7"),
     }
     if mission_id in ("1.1.3", "1.1.4", "1.1.5", "1.1.6"):
@@ -1850,7 +1910,9 @@ def build_quest_list(lang="zh"):
         diff = "hard" if qid != "1.1.1" else "normal"
         min_xp = 10 if qid != "1.1.1" else 1
         max_xp = 20 if qid != "1.1.1" else 2
-        theme = "primordial"
+        terrain = quest_board_terrain(qid)
+        theme = terrain["theme"]
+        tod_index = terrain["todIndex"]
         qimage = {
             "1.1.2": "questboard/poster_karmasix",
             "1.1.3": "questboard/poster_menasor",
@@ -1872,7 +1934,7 @@ def build_quest_list(lang="zh"):
             "category": "story", "difficulty": diff,
             "energyPerTile": 1, "minXpPerTile": min_xp, "maxXpPerTile": max_xp,
             "minHealthPerTile": 100, "maxHealthPerTile": 100,
-            "image": qimage, "theme": theme,
+            "image": qimage, "theme": theme, "todIndex": tod_index,
             "isLeisure": qid not in ("1.1.3", "1.1.4", "1.1.5", "1.1.6", "1.1.7"),
         }
         if qid in ("1.1.3", "1.1.4", "1.1.5", "1.1.6"):
@@ -1977,13 +2039,14 @@ def build_challenge_map(qid="1.1.2"):
                 })
             elif pt in encounters:
                 key, is_final_boss, label = encounters[pt]
+                arena = encounter_arena_for(qid, r * dim + c)
                 neighbors = [{"x": nr, "y": nc} for nr, nc in sorted(adj.get(pt, []))]
                 row.append({
                     "final": is_final_boss, "walkable": True, "hidden": False,
                     "lab": label, "links": neighbors, "visibleLinks": neighbors,
                     "boss": key,
                     "entities": {
-                        key: build_quest_enemy(key=key, is_final_boss=is_final_boss, rank=5, level=50),
+                        key: build_quest_enemy(map_override=arena["theme"], tod_index=arena["todIndex"], key=key, is_final_boss=is_final_boss, rank=5, level=50),
                     },
                 })
             elif pt in adj:
@@ -2074,12 +2137,13 @@ def _build_combiner_linear_map(qid, encounters, start_label="起点 (Start)", di
                     })
                 elif row in encounters:
                     key, is_final_boss, label = encounters[row]
+                    arena = encounter_arena_for(qid, row)
                     r.append({
                         "final": is_final_boss, "walkable": True, "hidden": False,
                         "lab": label, "links": lk, "visibleLinks": lk,
                         "boss": key,
                         "entities": {
-                            key: build_quest_enemy(key=key, is_final_boss=is_final_boss, rank=5, level=50),
+                            key: build_quest_enemy(map_override=arena["theme"], tod_index=arena["todIndex"], key=key, is_final_boss=is_final_boss, rank=5, level=50),
                         },
                     })
                 else:
@@ -2204,11 +2268,12 @@ def build_quest_map(qid="1.1.1"):
                     r.append(tile(start=True, lab="Start", links=lk, visibleLinks=lk))
                 elif row in QUEST_ENCOUNTERS:
                     key, is_final_boss, label = QUEST_ENCOUNTERS[row]
+                    arena = encounter_arena_for(qid, row)
                     r.append(tile(
                         final=(row == dim - 1), lab=label, links=lk, visibleLinks=lk,
                         boss=key,
                         entities={
-                            key: build_quest_enemy(key=key, is_final_boss=is_final_boss),
+                            key: build_quest_enemy(map_override=arena["theme"], tod_index=arena["todIndex"], key=key, is_final_boss=is_final_boss),
                         },
                     ))
                 else:
@@ -2477,11 +2542,13 @@ def build_quest_movedir(qid="1.1.1", offx=1, offy=0, start=None, team=None):
         key, is_final_boss, _ = encounter
         rank = 5 if qid in ("1.1.2", "1.1.3", "1.1.4", "1.1.5", "1.1.6", "1.1.7") else 1
         level = 50 if qid in ("1.1.2", "1.1.3", "1.1.4", "1.1.5", "1.1.6", "1.1.7") else 1
+        arena = encounter_arena_for(qid, nx)
         actions.append({
             "action": {
                 "battle": {
                     "x": nx, "y": ny, "isFinalBoss": is_final_boss,
                     "battleEnemy": build_quest_enemy(
+                        map_override=arena["theme"], tod_index=arena["todIndex"],
                         key=key, is_final_boss=is_final_boss, rank=rank, level=level,
                     ),
                 },
