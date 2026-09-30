@@ -220,7 +220,7 @@ void tftf_quest_on_combat_ended(const char* hero_bid, int player_won, float p0_r
             }
         }
     }
-    if (idx < 0 || idx >= 5) idx = 0;
+    if (idx < 0 || idx >= 5) idx = -1;
 
     pthread_mutex_lock(&g_pos_lock);
     if (g_quest_state.is_leisure) {
@@ -231,21 +231,25 @@ void tftf_quest_on_combat_ended(const char* hero_bid, int player_won, float p0_r
     if (player_won) {
         g_quest_state.pending_battle_active = 0;
         g_quest_state.pending_enemy_hp_ratio = 1.0f;
-        if (p0_remaining_hp_ratio <= 0.0f) p0_remaining_hp_ratio = 0.05f;
-        if (p0_remaining_hp_ratio > 1.0f) p0_remaining_hp_ratio = 1.0f;
-        g_quest_state.hero_hp[idx] = p0_remaining_hp_ratio;
-        logmsg("QUEST_COMBAT: Player WON! Cleared battle at (%d,%d), hero[%d] '%s' HP=%.2f",
-               g_quest_state.pending_battle_x, g_quest_state.pending_battle_y, idx,
-               hero_bid ? hero_bid : "unknown", p0_remaining_hp_ratio);
+        if (idx >= 0 && idx < 5) {
+            if (p0_remaining_hp_ratio <= 0.0f) p0_remaining_hp_ratio = 0.05f;
+            if (p0_remaining_hp_ratio > 1.0f) p0_remaining_hp_ratio = 1.0f;
+            g_quest_state.hero_hp[idx] = p0_remaining_hp_ratio;
+            logmsg("QUEST_COMBAT: Player WON! Cleared battle at (%d,%d), hero[%d] '%s' HP=%.2f",
+                   g_quest_state.pending_battle_x, g_quest_state.pending_battle_y, idx,
+                   hero_bid ? hero_bid : "unknown", p0_remaining_hp_ratio);
+        }
     } else {
         g_quest_state.pending_battle_active = 1;
         if (p1_remaining_hp_ratio <= 0.0f) p1_remaining_hp_ratio = 0.05f;
         if (p1_remaining_hp_ratio > 1.0f) p1_remaining_hp_ratio = 1.0f;
         g_quest_state.pending_enemy_hp_ratio = p1_remaining_hp_ratio;
-        g_quest_state.hero_hp[idx] = 0.0f;
-        logmsg("QUEST_COMBAT: Player LOST! Battle remains locked at (%d,%d), hero[%d] '%s' KO (HP=0.0). Enemy remaining HP ratio=%.2f",
-               g_quest_state.pending_battle_x, g_quest_state.pending_battle_y, idx,
-               hero_bid ? hero_bid : "unknown", p1_remaining_hp_ratio);
+        if (idx >= 0 && idx < 5) {
+            g_quest_state.hero_hp[idx] = 0.0f;
+            logmsg("QUEST_COMBAT: Player LOST! Battle remains locked at (%d,%d), hero[%d] '%s' KO (HP=0.0). Enemy remaining HP ratio=%.2f",
+                   g_quest_state.pending_battle_x, g_quest_state.pending_battle_y, idx,
+                   hero_bid ? hero_bid : "unknown", p1_remaining_hp_ratio);
+        }
     }
     pthread_mutex_unlock(&g_pos_lock);
 }
@@ -899,6 +903,39 @@ static const char *json_value(const char *s, const char *end, const char *want) 
     while(p<end) { const char *q=strstr(p,"\""); if(!q||q>=end)return NULL;q++;if((size_t)(end-q)<wl+1||memcmp(q,want,wl)||q[wl]!='\"'){p=q;continue;}q+=wl+1;while(q<end&&isspace((unsigned char)*q))q++;if(q>=end||*q!=':'){p=q;continue;}q++;while(q<end&&isspace((unsigned char)*q))q++;return q; }
     return NULL;
 }
+static const char *json_object_end(const char *p, const char *end) {
+    int depth=0, quoted=0, escaped=0;
+    if(!p || p>=end || *p!='{') return NULL;
+    for(;p<end;p++) { char c=*p;
+        if(quoted) { if(escaped) escaped=0; else if(c=='\\') escaped=1; else if(c=='"') quoted=0; }
+        else if(c=='"') quoted=1;
+        else if(c=='{') depth++;
+        else if(c=='}' && --depth==0) return p+1;
+    }
+    return NULL;
+}
+static float json_float(const char *s, const char *end, const char *want, float def) {
+    const char *p=s; size_t wl=strlen(want);
+    while(p<end){const char*q=strstr(p,"\"");char *stop;float v;if(!q||q>=end)break;q++;if((size_t)(end-q)<wl+1||memcmp(q,want,wl)||q[wl]!='\"'){p=q;continue;}q+=wl+1;while(q<end&&isspace((unsigned char)*q))q++;if(q>=end||*q!=':'){p=q;continue;}q++;while(q<end&&isspace((unsigned char)*q))q++;errno=0;v=strtof(q,&stop);if(stop==q||errno)return def;return v;}return def;
+}
+/* QuestsMatchResults posts the player's active fighter as player_0_stats,
+   identified by char; player_1_stats is the enemy. Only the player slot may
+   update team health: an enemy that shares a blueprint with a team bot
+   would otherwise report its own 0 health for that bot (upstream cd36bcbda0c58d9fd2a0074edc4191979707599e). */
+static float hero_health_in_report(const char *body, const char *end, const char *bid) {
+    const char *hero=json_value(body,end,bid), *hero_end=json_object_end(hero,end);
+    if(hero_end){float hp=json_float(hero,hero_end,"hp",json_float(hero,hero_end,"health",json_float(hero,hero_end,"currentHealth",-1.0f)));if(hp>1.0f&&hp<=100.0f)hp/=100.0f;if(hp>=0.0f&&hp<=1.0f)return hp;}
+    {
+        char id[64]="";const char *stats,*stats_end;float hp;
+        stats=json_value(body,end,"player_0_stats");stats_end=json_object_end(stats,end);
+        if(!stats_end||!json_string(stats,stats_end,"char",id,sizeof id)||strcmp(id,bid))return -1.0f;
+        hp=json_float(stats,stats_end,"hp_percent",-1.0f);
+        if(hp<0.0f){float remaining=json_float(stats,stats_end,"hp_remaining",-1.0f);float start=json_float(stats,stats_end,"hp_start",0.0f);if(remaining>=0.0f&&start>0.0f)hp=remaining/start;}
+        if(hp>1.0f&&hp<=100.0f)hp/=100.0f;
+        if(hp>=0.0f&&hp<=1.0f)return hp;
+    }
+    return -1.0f;
+}
 static int json_heroes(const char *s, const char *end, char bids[][64], int *count, int *invalid) {
     const char *q=json_value(s,end,"heroes");
     *count=0;*invalid=0;if(!q||q>=end||*q!='[')return 1;q++;
@@ -1160,14 +1197,35 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         if (!player_won && p1_ratio <= 0.0f) p1_ratio = 0.05f;
         if (p1_ratio > 1.0f) p1_ratio = 1.0f;
 
-        logmsg("RESOLVE_MATCH: hero='%s' p0=%.1f/%.1f (ratio=%.2f), p1=%.1f/%.1f (ratio=%.2f) -> player_won=%d",
-               g_p0_bot_id, p0, max0, p0_ratio, p1, max1, p1_ratio, player_won);
+        char active_hero[64] = {0};
+        const char *p0_stats = json_value(body_str, end, "player_0_stats");
+        const char *p0_stats_end = json_object_end(p0_stats, end);
+        if (p0_stats && p0_stats_end) {
+            json_string(p0_stats, p0_stats_end, "char", active_hero, sizeof(active_hero));
+        }
+        const char *fighter_bid = (active_hero[0] && strcmp(active_hero, "<null>") != 0) ? active_hero : g_p0_bot_id;
 
-        tftf_quest_on_combat_ended(g_p0_bot_id, player_won, p0_ratio, p1_ratio);
+        logmsg("RESOLVE_MATCH: hero='%s' (from_p0='%s', p0_bot='%s') p0=%.1f/%.1f (ratio=%.2f), p1=%.1f/%.1f (ratio=%.2f) -> player_won=%d",
+               fighter_bid, active_hero, g_p0_bot_id, p0, max0, p0_ratio, p1, max1, p1_ratio, player_won);
+
+        tftf_quest_on_combat_ended(fighter_bid, player_won, p0_ratio, p1_ratio);
 
         Team team;
         Out qteam = {0};
         if (resolve_team(&team)) {
+            // Only let the player's fighter update team bot health (upstream cd36bcbda0c58d9fd2a0074edc4191979707599e).
+            // Never check player_1_stats: prevents an enemy sharing a team bot's blueprint from zeroing that bot's health!
+            if (!g_quest_state.is_leisure) {
+                for (int h = 0; h < team.count && h < 5; h++) {
+                    float hp = hero_health_in_report(body_str, end, team.bid[h]);
+                    if (hp >= 0.0f) {
+                        if (player_won && hp <= 0.0f) hp = 0.05f;
+                        g_quest_state.hero_hp[h] = hp;
+                        logmsg("QUEST_HEALTH: Updated hero[%d] '%s' HP=%.2f strictly from player_0_stats",
+                               h, team.bid[h], hp);
+                    }
+                }
+            }
             if (strcmp(g_quest_state.qid, "1.1.5") == 0) {
                 team.count = 1;
                 snprintf(team.bid[0], sizeof team.bid[0], "rodimusprime_gs_mp09");
