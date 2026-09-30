@@ -534,7 +534,7 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x1BF0D10, "TUTUIHOOKCLICK", 2, 0 }, // 149 TutorialUIHook.Clicked -> suppress tutorial click crash
     { 0xBE2230,  "CALC_RATING_CB",     0, 0 }, // 150 <CalculateNodeRating>b__0
     { 0xE50A44,  "CALC_RATING_ENTER",  0, 0 }, // 151 BossCard.CalculateNodeRating
-    { 0xFEAFA0,  "HUD_PLAYER_INFO_INIT", 0, 0 }, // 152 HudPlayerInfo.Init
+    { 0xFEAFA0,  "HUD_PLAYER_INFO_INIT", 2, 0 }, // 152 HudPlayerInfo.Init
     { 0x1174300, "PCSPECIAL",          2, 0 }, // 153 PlayerController.SpecialAttack(int index)
     { 0x1179AF4, "PCACTION",           2, 0 }, // 154 PlayerController.Action(int action)
     { 0x0E34640, "SPEXIT",             2, 0 }, // 155 PlayerSpecialAttackState.OnExit -> reset attack chain on special end (S1/S2)
@@ -2833,7 +2833,14 @@ static void fix_blueprint_tags(void* bpv){
 // the ==BP== field-reader log), so Tags would otherwise stay null forever.
 void* hook_13(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
     void* r = H[13].orig(a0,a1,a2,a3,a4,a5,a6,a7);
-    PROTECT( ensure_empty_tags(); fix_blueprint_tags(a0); );
+    PROTECT({
+        ensure_empty_tags();
+        fix_blueprint_tags(a0);
+        if (a0 && obj_ok(a0)) {
+            int32_t* p_rarity = (int32_t*)((char*)a0 + 0x64);
+            if (*p_rarity <= 0) *p_rarity = 5;
+        }
+    });
     return r;
 }
 #include "bot_info.h"
@@ -2995,6 +3002,14 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
         void* t2a = (bp2 && ((uintptr_t)bp2>=0x100000) && !((uintptr_t)bp2&7)) ? *(void**)((uintptr_t)bp2+0xB8) : (void*)-1;
         fix_blueprint_tags(bp1);
         fix_blueprint_tags(bp2);
+        if (bp1 && ((uintptr_t)bp1>=0x100000) && !((uintptr_t)bp1&7)) {
+            int32_t* r1 = (int32_t*)((char*)bp1 + 0x64);
+            if (*r1 <= 0) *r1 = 5;
+        }
+        if (bp2 && ((uintptr_t)bp2>=0x100000) && !((uintptr_t)bp2&7)) {
+            int32_t* r2 = (int32_t*)((char*)bp2 + 0x64);
+            if (*r2 <= 0) *r2 = 5;
+        }
         void* t1b = (bp1 && ((uintptr_t)bp1>=0x100000) && !((uintptr_t)bp1&7)) ? *(void**)((uintptr_t)bp1+0xB8) : (void*)-1;
         void* t2b = (bp2 && ((uintptr_t)bp2>=0x100000) && !((uintptr_t)bp2&7)) ? *(void**)((uintptr_t)bp2+0xB8) : (void*)-1;
         char id1[80]; char id2[80]; id1[0]=id2[0]=0;
@@ -5395,6 +5410,11 @@ void* hook_152(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
             *p_rating = g_last_enemy_pi;
             LOG("HUD_RATING_OVERRIDE: fixed rating -> %d", g_last_enemy_pi);
         }
+        int* p_rarity = (int*)((char*)a1 + 0x3C);
+        if (*p_rarity <= 0) {
+            *p_rarity = 5;
+            LOG("HUD_RARITY_OVERRIDE: fixed rarity -> 5");
+        }
     }
     return H[152].orig(a0, a1, a2, a3, a4, a5, a6, a7);
 }
@@ -5683,6 +5703,7 @@ static const struct ArtBaseMap ART_BASE_MAP[] = {
     { "fte_optimus_gs_t3", "optimus_gs" },
     { "optimusprime_gs_v", "optimus_gs" },
     { "fte_stars_gs_t3", "stars_gs" },
+    { "starscream_gs", "stars_gs" },
     { "galvatron_gs_voyager2016", "galvatron_gs" },
     { "grimlock_gs_mp08", "griml_gs" },
     { "grindor_cin_rotf", "grind_c_rotf" },

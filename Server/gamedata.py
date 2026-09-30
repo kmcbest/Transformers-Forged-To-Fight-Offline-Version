@@ -409,7 +409,8 @@ def build_blueprints(lang="en"):
             "name": name, "name_s": name,
             "m": model_id(bid), "mdl": model_id(bid),
             "i": art_base(bid), "img": art_base(bid),
-            "ma": model_id(bid), "map_asset": model_id(bid),
+            "ma": art_base(bid), "map_asset": art_base(bid),
+            "rm": star, "rarityMap": star, "rarity": str(star),
             "s1": s1, "s2": s2, "s3": s3,
             "msa": max_special_attacks(bid, star),
             "ab": 100.0, "gg": 1, "mfl": 0, "nfr": 0,
@@ -430,7 +431,9 @@ def build_blueprints(lang="en"):
             "name": name, "name_s": name,
             "m": mdl, "mdl": mdl,
             "i": base, "img": base,
-            "ma": mdl, "map_asset": mdl,
+            "ma": base, "map_asset": base,
+            "rm": star, "rarityMap": star, "rarity": str(star),
+            "mr": 5, "max_rank": 5,
             "s1": 1.0, "s2": 1.0, "s3": 1.0,
             "msa": 0,
             "ab": 100.0, "gg": 1, "mfl": 0, "nfr": 0,
@@ -449,7 +452,9 @@ def build_blueprints(lang="en"):
             "name": name, "name_s": name,
             "m": mdl, "mdl": mdl,
             "i": base, "img": base,
-            "ma": mdl, "map_asset": mdl,
+            "ma": base, "map_asset": base,
+            "rm": star, "rarityMap": star, "rarity": str(star),
+            "mr": 5, "max_rank": 5,
             "s1": 1.0, "s2": 1.0, "s3": 1.0,
             "msa": 0,
             "ab": 100.0, "gg": 1, "mfl": 0, "nfr": 0,
@@ -784,7 +789,7 @@ def build_characters(lang="en"):
             # short base pointed at a non-existent bundle and forced the placeholder mesh.
             "i": base, "img": base,
             "m": model_id(bid), "mdl": model_id(bid),
-            "ma": model_id(bid), "map_asset": model_id(bid),
+            "ma": base, "map_asset": base,
             "hc": faction, "hero_colour": faction,
         }
     for m in _load_mods():
@@ -798,7 +803,7 @@ def build_characters(lang="en"):
             "sg": "", "gen": "autobot", "aip": "", "sps": "",
             "i": base, "img": base,
             "m": mdl, "mdl": mdl,
-            "ma": mdl, "map_asset": mdl,
+            "ma": base, "map_asset": base,
             "hc": "autobot", "hero_colour": "autobot",
         }
     for r in _load_relics():
@@ -812,7 +817,7 @@ def build_characters(lang="en"):
             "sg": "", "gen": "autobot", "aip": "", "sps": "",
             "i": base, "img": base,
             "m": mdl, "mdl": mdl,
-            "ma": mdl, "map_asset": mdl,
+            "ma": base, "map_asset": base,
             "hc": "autobot", "hero_colour": "autobot",
         }
     return out
@@ -1010,6 +1015,7 @@ def build_rarity_properties():
         out[str(star)] = {
             "id": str(star), "n": name, "name": name,
             "mv": star, "map_value": star,
+            "m": star, "rarityMap": star,
             "sp3qt": 0.5, "sp3_quicktime": 0.5,
             "ms": 99, "max_sig": 99,
             "frame": f"frame_portrait_rarity_{star}",
