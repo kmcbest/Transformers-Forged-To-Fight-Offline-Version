@@ -1235,8 +1235,16 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
             if (render_qteam(&qteam, &team)) {
             int cx = g_quest_state.pending_battle_x;
             int cy = g_quest_state.pending_battle_y;
-            if (!cx && !cy) {
-                cx = 0; cy = 1;
+            if (!g_quest_state.pending_battle_active && !cx && !cy) {
+                pthread_mutex_lock(&g_pos_lock);
+                for (int i = 0; i < 16; i++) {
+                    if (!strcmp(g_pos[i].qid, g_quest_state.qid)) {
+                        cx = g_pos[i].x;
+                        cy = g_pos[i].y;
+                        break;
+                    }
+                }
+                pthread_mutex_unlock(&g_pos_lock);
             }
             char head[256];
             int hlen = snprintf(head, sizeof head,
@@ -1432,7 +1440,7 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         }
         g_current_is_10x_challenge = (strcmp(qid, "1.1.2") == 0);
         int is_leisure = !is_quest_non_leisure(qid);
-        int x=0,y=1;if(strcmp(qid,"1.1.5")!=0)store_quest_team(body,end);snprintf(key,sizeof key,"@quest:start:%s",qid);v=lookup(key,&n);if(v)sscanf((const char*)v,"%d %d",&x,&y);
+        int x=0,y=0;if(strcmp(qid,"1.1.5")!=0)store_quest_team(body,end);snprintf(key,sizeof key,"@quest:start:%s",qid);v=lookup(key,&n);if(v)sscanf((const char*)v,"%d %d",&x,&y);
         char e_bid[6][64];
         for(int k=0; k<6; k++) snprintf(e_bid[k], sizeof e_bid[k], "%s", g_enemy_pool[k % ENEMY_POOL_SIZE]);
         pthread_mutex_lock(&g_pos_lock);int slot=-1;for(int i=0;i<16;i++)if(!strcmp(g_pos[i].qid,qid)||!g_pos[i].qid[0]){slot=i;break;}
@@ -1486,7 +1494,7 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         logmsg("quest-begin reply (%zu bytes): %.300s", *outn, (const char*)v);
         return v;
     }
-    if(strstr(p,"/quests/quest-movedir/")) { int dx=1,dy=0,sx=0,sy=1,nx,ny;
+    if(strstr(p,"/quests/quest-movedir/")) { int dx=1,dy=0,sx=0,sy=0,nx=0,ny=0;
         const char *z=strrchr(p,'/'); const char *yseg=z?z+1:""; const char *z2=z?NULL:NULL; if(z){z2=z-1;while(z2>p&&*z2!='/')z2--; if(*z2=='/')z2++;} if(!z||!z2)return NULL; char xs[32], ys[32], seg[96];snprintf(ys,sizeof ys,"%.31s",yseg);snprintf(xs,sizeof xs,"%.*s",(int)(z-z2),z2); const char *z3=z2-2;while(z3>p&&*z3!='/')z3--;if(*z3=='/')z3++;snprintf(seg,sizeof seg,"%.*s",(int)(z2-z3-1),z3);char *dash=strrchr(seg,'-');if(!dash)return NULL;*dash=0;snprintf(qid,sizeof qid,"%.63s",seg);
         g_current_is_10x_challenge = (strcmp(qid, "1.1.2") == 0);
         int non_leisure = is_quest_non_leisure(qid);
@@ -1497,9 +1505,20 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         char *ep;long lx=strtol(xs,&ep,10);if(*ep)lx=1;long ly=strtol(ys,&ep,10);if(*ep){lx=1;ly=0;}dx=(int)lx;dy=(int)ly;
         char e_bid[6][64];
         for(int k=0; k<6; k++) snprintf(e_bid[k], sizeof e_bid[k], "%s", g_enemy_pool[k % ENEMY_POOL_SIZE]);
-        pthread_mutex_lock(&g_pos_lock);int slot=-1;for(int i=0;i<16;i++)if(!strcmp(g_pos[i].qid,qid)){slot=i;break;}if(slot<0)for(int i=0;i<16;i++)if(!g_pos[i].qid[0]){slot=i;snprintf(g_pos[i].qid,sizeof g_pos[i].qid,"%s",qid);break;}
+        pthread_mutex_lock(&g_pos_lock);int slot=-1;for(int i=0;i<16;i++)if(!strcmp(g_pos[i].qid,qid)){slot=i;break;}
+        if(slot<0)for(int i=0;i<16;i++)if(!g_pos[i].qid[0]){
+            slot=i;
+            snprintf(g_pos[i].qid,sizeof g_pos[i].qid,"%s",qid);
+            int start_x=0, start_y=0;
+            char kstart[64]; snprintf(kstart, sizeof kstart, "@quest:start:%s", qid);
+            size_t kstart_n = 0; const void *vstart = lookup(kstart, &kstart_n);
+            if (vstart) sscanf((const char*)vstart, "%d %d", &start_x, &start_y);
+            g_pos[i].x = start_x;
+            g_pos[i].y = start_y;
+            break;
+        }
         if(slot>=0){
-            sx=g_pos[slot].x;sy=g_pos[slot].y;if(!sx&&!sy){sy=1;g_pos[slot].y=1;}
+            sx=g_pos[slot].x;sy=g_pos[slot].y;
             for(int k=0; k<6; k++) {
                 if(g_pos[slot].e_bid[k][0]) snprintf(e_bid[k], sizeof e_bid[k], "%s", g_pos[slot].e_bid[k]);
             }

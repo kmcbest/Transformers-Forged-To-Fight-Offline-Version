@@ -261,7 +261,7 @@ class H(http.server.BaseHTTPRequestHandler):
                     _saved_team = list(posted_team)
                     save_squad_config(_saved_team)
                 team = list(_saved_team) if _saved_team else []
-                _quest_positions[qid] = gamedata.quest_start(qid) if gamedata is not None else (0, 1)
+                _quest_positions[qid] = gamedata.quest_start(qid) if gamedata is not None else (0, 0)
             if gamedata is not None:
                 result = gamedata.build_quest_begin(qid, set_id, team)
             else:
@@ -281,7 +281,7 @@ class H(http.server.BaseHTTPRequestHandler):
             except Exception:
                 offx_i, offy_i = 1, 0
             with _quest_state_lock:
-                start = _quest_positions.get(qid, gamedata.quest_start(qid) if gamedata is not None else (0, 1))
+                start = _quest_positions.get(qid, gamedata.quest_start(qid) if gamedata is not None else (0, 0))
                 team = list(_saved_team) if _saved_team else []
                 candidate = (start[0] + offx_i, start[1] + offy_i)
                 if gamedata is not None and gamedata.is_quest_legal_move(qid, start, candidate):

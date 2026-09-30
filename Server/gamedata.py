@@ -1512,41 +1512,61 @@ def _get_challenge_data():
         _CHALLENGE_CACHED = _build_challenge_layout()
     return _CHALLENGE_CACHED
 
-def quest_start(qid="1.1.1"):
-    return CHALLENGE_CENTER if qid == "1.1.2" else (0, 1)
+QUEST_OCTAGON_NODES = (
+    (0, 2),  # 0: Start
+    (0, 1),  # 1: North
+    (1, 0),  # 2: NE
+    (2, 0),  # 3: East
+    (3, 1),  # 4: SE
+    (3, 2),  # 5: South
+    (2, 3),  # 6: SW
+    (1, 3),  # 7: West
+)
+
+QUEST_PICNIC_NODES = (
+    (0, 3),  # 0: Start
+    (0, 2),  # 1: North
+    (1, 1),  # 2: NE
+    (2, 0),  # 3: NE
+    (3, 0),  # 4: East
+    (4, 0),  # 5: East
+    (5, 1),  # 6: SE
+    (6, 2),  # 7: SE
+    (6, 3),  # 8: South
+    (6, 4),  # 9: South
+    (5, 5),  # 10: SW
+    (4, 6),  # 11: SW
+    (3, 6),  # 12: West
+)
 
 def quest_walkable_tiles(qid="1.1.1"):
     if qid == "1.1.2":
         _, _, _, _, walkable, _ = _get_challenge_data()
         return tuple(walkable)
     if qid == "1.1.7":
-        return tuple((r, 1) for r in range(13))
-    if qid == "1.1.5":
-        return tuple((r, 1) for r in range(5))
-    if qid in ("1.1.3", "1.1.4", "1.1.6"):
-        return tuple((r, 1) for r in range(6))
-    return tuple((r, 1) for r in range(QUEST_DIM))
+        return QUEST_PICNIC_NODES
+    count = 5 if qid == "1.1.5" else (6 if qid in ("1.1.3", "1.1.4", "1.1.6") else 7)
+    return QUEST_OCTAGON_NODES[:count]
+
+def quest_start(qid="1.1.1"):
+    if qid == "1.1.2":
+        return CHALLENGE_CENTER
+    return quest_walkable_tiles(qid)[0]
 
 def is_quest_walkable(qid, pos):
     if qid == "1.1.2":
         _, _, _, _, walkable, _ = _get_challenge_data()
         return pos in walkable
-    if qid == "1.1.7":
-        return 0 <= pos[0] < 13 and pos[1] == 1
-    if qid == "1.1.5":
-        return 0 <= pos[0] < 5 and pos[1] == 1
-    if qid in ("1.1.3", "1.1.4", "1.1.6"):
-        return 0 <= pos[0] < 6 and pos[1] == 1
-    return 0 <= pos[0] < QUEST_DIM and pos[1] == QUEST_PATH_COL
+    return pos in quest_walkable_tiles(qid)
 
 def is_quest_legal_move(qid, from_pos, to_pos):
     if qid == "1.1.2":
         _, _, adjacency, _, _, _ = _get_challenge_data()
         return to_pos in adjacency.get(from_pos, set())
-    dim = 13 if qid == "1.1.7" else (5 if qid == "1.1.5" else (6 if qid in ("1.1.3", "1.1.4", "1.1.6") else QUEST_DIM))
-    col = 1 if qid in ("1.1.3", "1.1.4", "1.1.5", "1.1.6", "1.1.7") else QUEST_PATH_COL
-    return (0 <= to_pos[0] < dim and to_pos[1] == col
-            and abs(to_pos[0] - from_pos[0]) == 1 and to_pos[1] == from_pos[1])
+    tiles = quest_walkable_tiles(qid)
+    if from_pos not in tiles or to_pos not in tiles:
+        return False
+    return abs(tiles.index(from_pos) - tiles.index(to_pos)) == 1
 
 
 
@@ -2119,52 +2139,62 @@ SEEKER_PICNIC_ENCOUNTERS = {
 
 
 def _build_combiner_linear_map(qid, encounters, start_label="起点 (Start)", dim=6):
-    path_col = 1
-
-    def links_for(row):
-        return [{"x": r, "y": path_col} for r in (row - 1, row + 1) if 0 <= r < dim]
+    tiles = quest_walkable_tiles(qid)
+    tile_to_idx = {pos: i for i, pos in enumerate(tiles)}
+    num_tiles = len(tiles)
 
     grid = []
     for row in range(dim):
         r = []
         for col in range(dim):
-            if col == path_col:
-                lk = links_for(row)
-                if row == 0:
+            pos = (row, col)
+            if pos in tile_to_idx:
+                idx = tile_to_idx[pos]
+                lk = []
+                if idx > 0:
+                    prev_p = tiles[idx - 1]
+                    lk.append({"x": prev_p[0], "y": prev_p[1]})
+                if idx < num_tiles - 1:
+                    next_p = tiles[idx + 1]
+                    lk.append({"x": next_p[0], "y": next_p[1]})
+
+                if idx == 0:
                     r.append({
                         "start": True, "walkable": True, "hidden": False,
                         "lab": start_label, "links": lk, "visibleLinks": lk,
                     })
-                elif row in encounters:
-                    key, is_final_boss, label = encounters[row]
-                    arena = encounter_arena_for(qid, row)
+                elif idx in encounters:
+                    key, is_final_boss, label = encounters[idx]
+                    arena = encounter_arena_for(qid, idx)
+                    rank = 5 if qid in ("1.1.2", "1.1.3", "1.1.4", "1.1.5", "1.1.6", "1.1.7") else 1
+                    level = 50 if qid in ("1.1.2", "1.1.3", "1.1.4", "1.1.5", "1.1.6", "1.1.7") else 1
                     r.append({
                         "final": is_final_boss, "walkable": True, "hidden": False,
                         "lab": label, "links": lk, "visibleLinks": lk,
                         "boss": key,
                         "entities": {
-                            key: build_quest_enemy(map_override=arena["theme"], tod_index=arena["todIndex"], key=key, is_final_boss=is_final_boss, rank=5, level=50),
+                            key: build_quest_enemy(map_override=arena["theme"], tod_index=arena["todIndex"], key=key, is_final_boss=is_final_boss, rank=rank, level=level),
                         },
                     })
                 else:
                     r.append({
                         "walkable": True, "hidden": False,
-                        "lab": "Node %d" % row, "links": lk, "visibleLinks": lk,
+                        "lab": "Node %d" % idx, "links": lk, "visibleLinks": lk,
                     })
             else:
                 r.append({"walkable": False, "hidden": True})
         grid.append(r)
 
     path_data = [{
-        "path": [{"x": r, "y": path_col} for r in range(dim)],
+        "path": [{"x": p[0], "y": p[1]} for p in tiles],
     }]
 
     return {
         "hash": "qm_%s" % qid, "v": 1, "mapHash": "qm_%s" % qid,
         "gridDimension": dim,
         "grid": grid,
-        "walkableCount": dim,
-        "visibleWalkableCount": dim,
+        "walkableCount": num_tiles,
+        "visibleWalkableCount": num_tiles,
         "pathData": path_data,
         "overrideZoom": 0,
     }
@@ -2187,7 +2217,7 @@ def build_fembots_map(qid="1.1.6"):
 
 
 def build_picnic_map(qid="1.1.7"):
-    return _build_combiner_linear_map(qid, SEEKER_PICNIC_ENCOUNTERS, start_label="战机停机坪 (Start)", dim=13)
+    return _build_combiner_linear_map(qid, SEEKER_PICNIC_ENCOUNTERS, start_label="战机停机坪 (Start)", dim=7)
 
 
 def build_quest_map(qid="1.1.1"):
@@ -2203,115 +2233,7 @@ def build_quest_map(qid="1.1.1"):
         return build_fembots_map(qid)
     if qid == "1.1.7":
         return build_picnic_map(qid)
-    dim = QUEST_DIM
-    """The QuestMap object (ActiveQuest.map). Disassembly of base Map.Deserialize
-    (@0x14837EC) shows the wire shape precisely:
-      - `mapHash`(String), `gridDimension`(Integer): the grid is allocated as a SQUARE
-        MapTile[gridDimension, gridDimension] 2D array.
-      - `grid`(Array): a NESTED array -- exactly gridDimension rows, each row an array of
-        exactly gridDimension tile dicts (the loop indexes outer[0..dim-1] then
-        inner[0..dim-1]; every cell must be a non-null dict or the parse errors). The tile's
-        position is taken from the (row, col) loop indices, NOT from any wire key. Each cell
-        is deserialized by QuestMapTile.Deserialize -> base MapTile.Deserialize; base
-        Serializable.Deserialize returns true unconditionally, so even `{}` is a valid tile.
-      - `walkableCount`/`visibleWalkableCount`(Integer), `pathData`(Array), `overrideZoom`(f).
-    MapTile wire keys (all optional, from MapTileJSONKeys @309090): `start`/`final`/`hidden`/
-    `walkable`(bool), `barrier`/`item`/`dialogue`/`dialoguePE`(string). start=true -> startTile,
-    final=true -> endTile. QuestMapTile adds label/timeLimit/boss/etc (LegacyDeserialize)."""
-    dim = QUEST_DIM
-
-    def tile(**kw):
-        t = {"walkable": True, "hidden": False}
-        t.update(kw)
-        return t
-
-    # 3x3 grid, indexed grid[row][col]. Straight walkable path down the middle column
-    # (col=1): start at (0,1), an encounter at (1,1), and boss/final at (2,1). Edge columns
-    # are non-walkable filler. The path now carries an encounter on the intermediate node as
-    # well as the final tile.
-    # Tile wire keys (harvested live from QuestMapTile.Deserialize via the FDS2/dA field log):
-    # base MapTile has start/final/hidden/walkable(bool); QuestMapTile adds `lab`/`lab_loc`
-    # (label), `boss`(BCGEntity)/`bossSlot`, `bt`/`db`/`pt`(arrays), `renderTemplate`, `bg`,
-    # `timeLimit`. `label`/`nodeNumber` (used before) are NOT real keys and were ignored -- the
-    # node label comes from `lab`. The final tile carries the first authored BCG encounter.
-    # `entities` is a DICTIONARY keyed by the entity's stable id. MapTile.Deserialize reads
-    # each value's `entityType` and `parentEntityType`, asks Quests.Builder.NewEntity for the
-    # concrete instance, then calls Entity/QuestBoss/BCGEntity.Deserialize on that same value.
-    # `boss` is the key of that entity and is how QuestMapTile links its encounter controller.
-    # A tile's `links` are the ABSOLUTE positions it can be moved to (its walkable neighbours).
-    # This is what makes movement possible at all: Gameboard.RequestMove(Direction) (@0xA54540)
-    # gates every move on Gameboard.IsMoveValid (@0xA547E4), which ends in
-    #     currentTile.links.Contains(player.position + GetOffsetFromDirection(dir))
-    # (links is MapTile @0x58; the tail call at 0xA548B4 is the List<Vector2>.Contains). With no
-    # links the Contains is always false, so RequestMove returns before ever posting a move --
-    # which is why the board sat inert (no node response, no client traffic at all).
-    # `links` is NOT in MapTileJSONKeys; MapTile.Deserialize reads it late (+0xf3c) through
-    # Tools.GetVector2List (@0x1242828) using a metadata-indexed literal. Harvested live with a
-    # temp hook on GetVector2List: the keys are exactly `links`, `visibleLinks` and `bt`
-    # (buffTargets), and every tile we authored was logged as `links count=0`.
-    # `visibleLinks` mirrors links (it drives the drawn path segments between nodes).
-    # Direction offsets (float tables @0x22754e0/@0x2275500, dir order N,S,E,W,NW,NE,SW,SE) are
-    # N=(0,-1) S=(0,+1) E=(+1,0) W=(-1,0) -- x is the GetTile row, y the column. Our path runs
-    # down the middle column (y=1) varying the row, so a step along it is EAST/WEST.
-    def links_for(row, col):
-        if col != 1:
-            return []
-        return [{"x": r, "y": 1} for r in (row - 1, row + 1) if 0 <= r < dim]
-
-    grid = []
-    for row in range(dim):
-        r = []
-        for col in range(dim):
-            if col == QUEST_PATH_COL:
-                lk = links_for(row, col)
-                if row == 0:
-                    r.append(tile(start=True, lab="Start", links=lk, visibleLinks=lk))
-                elif row in QUEST_ENCOUNTERS:
-                    key, is_final_boss, label = QUEST_ENCOUNTERS[row]
-                    arena = encounter_arena_for(qid, row)
-                    r.append(tile(
-                        final=(row == dim - 1), lab=label, links=lk, visibleLinks=lk,
-                        boss=key,
-                        entities={
-                            key: build_quest_enemy(map_override=arena["theme"], tod_index=arena["todIndex"], key=key, is_final_boss=is_final_boss),
-                        },
-                    ))
-                else:
-                    r.append(tile(lab="Node %d" % row, links=lk, visibleLinks=lk))
-            else:
-                r.append(tile(walkable=False, hidden=True))
-        grid.append(r)
-
-    # pathData drives Quests.Map.paths (@0x50). Map.Deserialize (@0x14837EC) reads pathData
-    # via EB.Dot.Array; if its element count < 1 it stores paths = NULL (str xzr,[map,#0x50]
-    # @0x1484084) -- which makes Quests.Presentation.PathAnalyzer.GetPathsFromMap (@0xB3C718)
-    # NRE on the `ldr x0,[map,#0x50]; cbz x0` null-check at board build (Gameboard.DoSetup).
-    # So pathData MUST have >=1 element. Each element becomes a MapPath via
-    # MapPath..ctor(map, dict) (@0x14840FC), which reads a Vector2-list wire key through
-    # GetVector2List (@0x1242828 -> EB.Dot.Array with a NON-null empty-array default). A
-    # missing/unknown key therefore yields an EMPTY (not null) tiles list -- safe: Path..ctor
-    # (@0xD2A704) `cbz tiles` short-circuits, so an empty MapPath renders without a crash.
-    # One empty path element makes paths non-null but yields a 0-tile MapPath, which
-    # leaves the board with no nodes and the DoSetup coroutine stalls on LOADING. A real
-    # path is needed: each pathData element is a MapPath dict with a `path` key (confirmed
-    # live: MapPath..ctor -> GetVector2List reads EB.Dot.Array("path")). `path` is a list of
-    # Vector2 elements, each a dict of two INTEGER keys -> (x, y) (GetVector2List reads them
-    # via EB.Dot.Integer). map.GetTile(x, y) (@0x14849c8) indexes grid[x, y] with x=row,
-    # y=col (index = x*dim + y). Our walkable path is the middle column (col=1), rows 0..2.
-    # x/y sub-key names are being confirmed live this drive; author the straight column path.
-    path_data = [{
-        "path": [{"x": r, "y": 1} for r in range(dim)],
-    }]
-
-    return {
-        "hash": "qm_%s" % qid, "v": 1, "mapHash": "qm_%s" % qid,
-        "gridDimension": dim,
-        "grid": grid,
-        "walkableCount": dim,           # 3 walkable tiles in the middle column
-        "visibleWalkableCount": dim,
-        "pathData": path_data,
-        "overrideZoom": 0,
-    }
+    return _build_combiner_linear_map(qid, QUEST_ENCOUNTERS, start_label="起点 (Start)", dim=QUEST_DIM)
 
 
 def build_quest_enemy(map_override=None, tod_index=None, key=None, is_final_boss=True, rank=1, level=1):
@@ -2516,33 +2438,33 @@ def build_quest_movedir(qid="1.1.1", offx=1, offy=0, start=None, team=None):
     # encounter entity. The name is live-confirmed from QuestActionResult's field trace. This
     # variant is not final-tile-specific: isFinalBoss is its field, so intermediate nodes use
     # the same slot-3 `battle` variant with isFinalBoss false.
-    if qid == "1.1.2":
-        _, _, _, encounters, _, _ = _get_challenge_data()
-        encounter = encounters.get((nx, ny))
-        revealed_tiles = [{"x": r, "y": c} for r, c in quest_walkable_tiles(qid)]
-    elif qid == "1.1.3":
-        encounter = MENASOR_ENCOUNTERS.get(nx) if ny == 1 else None
-        revealed_tiles = [{"x": r, "y": 1} for r in range(6)]
-    elif qid == "1.1.4":
-        encounter = SUPREME_OPTIMUS_ENCOUNTERS.get(nx) if ny == 1 else None
-        revealed_tiles = [{"x": r, "y": 1} for r in range(6)]
-    elif qid == "1.1.5":
-        encounter = MATRIX_WAR_ENCOUNTERS.get(nx) if ny == 1 else None
-        revealed_tiles = [{"x": r, "y": 1} for r in range(5)]
-    elif qid == "1.1.6":
-        encounter = FEMBOTS_ENCOUNTERS.get(nx) if ny == 1 else None
-        revealed_tiles = [{"x": r, "y": 1} for r in range(6)]
-    elif qid == "1.1.7":
-        encounter = SEEKER_PICNIC_ENCOUNTERS.get(nx) if ny == 1 else None
-        revealed_tiles = [{"x": r, "y": 1} for r in range(13)]
-    else:
-        encounter = QUEST_ENCOUNTERS.get(nx) if ny == QUEST_PATH_COL else None
-        revealed_tiles = [{"x": r, "y": 1} for r in range(QUEST_DIM)]
+    tiles = quest_walkable_tiles(qid)
+    target_pos = (nx, ny)
+    encounter = None
+    step_idx = 0
+    if target_pos in tiles:
+        step_idx = tiles.index(target_pos)
+        if qid == "1.1.2":
+            _, _, _, encounters, _, _ = _get_challenge_data()
+            encounter = encounters.get(target_pos)
+        elif qid == "1.1.3":
+            encounter = MENASOR_ENCOUNTERS.get(step_idx)
+        elif qid == "1.1.4":
+            encounter = SUPREME_OPTIMUS_ENCOUNTERS.get(step_idx)
+        elif qid == "1.1.5":
+            encounter = MATRIX_WAR_ENCOUNTERS.get(step_idx)
+        elif qid == "1.1.6":
+            encounter = FEMBOTS_ENCOUNTERS.get(step_idx)
+        elif qid == "1.1.7":
+            encounter = SEEKER_PICNIC_ENCOUNTERS.get(step_idx)
+        else:
+            encounter = QUEST_ENCOUNTERS.get(step_idx)
+    revealed_tiles = [{"x": r, "y": c} for r, c in tiles]
     if encounter is not None:
         key, is_final_boss, _ = encounter
         rank = 5 if qid in ("1.1.2", "1.1.3", "1.1.4", "1.1.5", "1.1.6", "1.1.7") else 1
         level = 50 if qid in ("1.1.2", "1.1.3", "1.1.4", "1.1.5", "1.1.6", "1.1.7") else 1
-        arena = encounter_arena_for(qid, nx)
+        arena = encounter_arena_for(qid, step_idx if qid != "1.1.2" else nx)
         actions.append({
             "action": {
                 "battle": {

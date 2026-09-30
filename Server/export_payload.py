@@ -46,7 +46,7 @@ HERE = Path(__file__).resolve().parent
 RESPONSES = HERE / "responses"
 DEFAULT_BODY = b'{"error":null,"result":{}}'
 MOVE_DIRECTIONS = ((0, 0), (1, 0), (-1, 0), (0, 1), (0, -1))
-MOVE_STARTS = tuple((r, 1) for r in range(gamedata.QUEST_DIM))
+MOVE_STARTS = tuple((r, r) for r in range(gamedata.QUEST_DIM))
 
 
 @dataclass(frozen=True)
@@ -250,7 +250,7 @@ def build_entries(listen_port: int = 8080) -> dict[str, bytes]:
             add(f"@questdetail:{qid}:en", _envelope(gamedata.build_quest_detail(qid, set_id, lang="en")))
             add(f"POST /quests/quest-begin/{qid}", _quest_begin_template(qid, set_id))
 
-            if qid in ("1.1.2", "1.1.3", "1.1.4", "1.1.5", "1.1.6", "1.1.7"):
+            if qid in ("1.1.1", "1.1.2", "1.1.3", "1.1.4", "1.1.5", "1.1.6", "1.1.7"):
                 sx, sy = gamedata.quest_start(qid)
                 add(f"@quest:start:{qid}", f"{sx} {sy}".encode())
                 legal_lines = []
