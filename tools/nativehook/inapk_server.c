@@ -1760,6 +1760,28 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
             return v;
         }
     }
+    if(strstr(p, "/autorefresh/gamestore/refresh")) {
+        int is_zh = detect_chinese_language(headers, query);
+        v = lookup(is_zh ? "@gamestore:zh" : "@gamestore:en", outn);
+        if(!v) v = lookup("@gamestore:zh", outn);
+        if(v) {
+            logmsg("GAMESTORE: handled /autorefresh/gamestore/refresh via lookup");
+            return v;
+        }
+    }
+    if(has_suffix(p, "/inventory") && !strstr(p, "/inventory/")) {
+        v = lookup("@inventory:items", outn);
+        if(v) {
+            logmsg("INVENTORY: handled /inventory via lookup");
+            return v;
+        }
+    }
+    if(has_suffix(p, "/inventory/use") || has_suffix(p, "/inventory/add") || has_suffix(p, "/inventory/purchase")) {
+        static const unsigned char ok_resp[] = "{\"error\":null,\"result\":{}}";
+        *outn = strlen((const char*)ok_resp);
+        logmsg("INVENTORY: handled %s with ok_resp", p);
+        return ok_resp;
+    }
     if(strstr(p, "/gacha/pick")) {
         static char pick_buf[4096];
         int spins = 1;

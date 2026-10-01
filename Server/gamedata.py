@@ -1175,31 +1175,44 @@ def build_stat_modifiers():
     }
 
 
+def loc_dict(zh_str, en_str):
+    return {
+        "zh": zh_str,
+        "zh-CN": zh_str,
+        "zh-Hans": zh_str,
+        "zh_CN": zh_str,
+        "zh-Hant": zh_str,
+        "en": en_str,
+        "en-US": en_str,
+    }
+
+
 def build_evo_blueprints(lang="en"):
     """Tier 5 Ore-13 and Catalysts definitions for BCGManagerBase._baseEvoBlueprintData."""
     ores = [
         ("ore_generic_t5", "Ore_t5", "generic", "5阶通用矿-13", "Tier 5 Generic Ore-13"),
-        ("ore_brawler_t5", "Ore_Brawler_t5", "braw", "5阶格斗系矿-13", "Tier 5 Brawler Ore-13"),
-        ("ore_scout_t5", "Ore_Scout_t5", "scou", "5阶侦察系矿-13", "Tier 5 Scout Ore-13"),
+        ("ore_brawler_t5", "Ore_Brawler_t5", "braw", "5阶斗士系矿-13", "Tier 5 Brawler Ore-13"),
+        ("ore_scout_t5", "Ore_Scout_t5", "scou", "5阶侦查系矿-13", "Tier 5 Scout Ore-13"),
         ("ore_tactician_t5", "Ore_Tactician_t5", "tact", "5阶战术系矿-13", "Tier 5 Tactician Ore-13"),
-        ("ore_demolition_t5", "ore_demolitions_t5", "demo", "5阶爆破系矿-13", "Tier 5 Demolition Ore-13"),
+        ("ore_demolition_t5", "ore_demolitions_t5", "demo", "5阶爆破系矿-13", "Tier 5 Demolitions Ore-13"),
         ("ore_tech_t5", "Ore_Tech_t5", "tech", "5阶科技系矿-13", "Tier 5 Tech Ore-13"),
         ("ore_warrior_t5", "Ore_Warrior_t5", "warr", "5阶战士系矿-13", "Tier 5 Warrior Ore-13"),
     ]
     out = {}
     for eid, img, klass, zh_name, en_name in ores:
         name = zh_name if lang == "zh" else en_name
-        desc = f"蕴含巨大能量的{zh_name}，可提供大量升级经验。" if lang == "zh" else f"High potency {en_name} providing massive XP."
+        zh_desc = f"蕴含巨大能量的{zh_name}，可提供大量升级经验。"
+        en_desc = f"High potency {en_name} providing massive XP."
         out[eid] = {
             "id": eid,
             "t": "blueprint",
             "type": "blueprint",
             "i": img,
             "imgID": img,
-            "f": {"zh": zh_name, "en": en_name},
-            "friendly_name": {"zh": zh_name, "en": en_name},
-            "d": {"zh": desc, "en": desc},
-            "description": {"zh": desc, "en": desc},
+            "f": loc_dict(zh_name, en_name),
+            "friendly_name": loc_dict(zh_name, en_name),
+            "d": loc_dict(zh_desc, en_desc),
+            "description": loc_dict(zh_desc, en_desc),
             "rm": 5,
             "rarity": "5",
             "c": klass,
@@ -1218,12 +1231,12 @@ def build_evo_blueprints(lang="en"):
             "showConversion": True,
         }
 
-    # Catalysts / Sparks definitions (T1 - T4 class sparks + generic + alpha)
+    # Catalysts / Sparks definitions (T1 - T5 class sparks + generic + alpha)
     class_catalysts = [
-        ("brawler", "spk_brawler", "braw", "格斗系火种", "Brawler Spark"),
-        ("scout", "spk_scout", "scou", "侦察系火种", "Scout Spark"),
+        ("brawler", "spk_brawler", "braw", "斗士系火种", "Brawler Spark"),
+        ("scout", "spk_scout", "scou", "侦查系火种", "Scout Spark"),
         ("tactician", "spk_tactician", "tact", "战术系火种", "Tactician Spark"),
-        ("demolition", "spk_demolition", "demo", "爆破系火种", "Demolition Spark"),
+        ("demolition", "spk_demolition", "demo", "爆破系火种", "Demolitions Spark"),
         ("tech", "spk_tech", "tech", "科技系火种", "Tech Spark"),
         ("warrior", "spk_warrior", "warr", "战士系火种", "Warrior Spark"),
     ]
@@ -1233,7 +1246,7 @@ def build_evo_blueprints(lang="en"):
             img = f"{img_prefix}_t{tier}"
             zh_name = f"{tier}阶{zh_base}"
             en_name = f"Tier {tier} {en_base}"
-            zh_desc = f"用于{zh_base[:3]}机器人突破升阶的稀有火种。"
+            zh_desc = f"用于{zh_base[:2]}机器人突破升阶的稀有火种。"
             en_desc = f"Catalyst used to rank up {en_base.split()[0]} bots."
             out[cid] = {
                 "id": cid,
@@ -1241,10 +1254,10 @@ def build_evo_blueprints(lang="en"):
                 "type": "evolve",
                 "i": img,
                 "imgID": img,
-                "f": {"zh": zh_name, "en": en_name},
-                "friendly_name": {"zh": zh_name, "en": en_name},
-                "d": {"zh": zh_desc, "en": en_desc},
-                "description": {"zh": zh_desc, "en": en_desc},
+                "f": loc_dict(zh_name, en_name),
+                "friendly_name": loc_dict(zh_name, en_name),
+                "d": loc_dict(zh_desc, en_desc),
+                "description": loc_dict(zh_desc, en_desc),
                 "rm": tier,
                 "rarity": str(tier),
                 "c": klass,
@@ -1269,11 +1282,12 @@ def build_evo_blueprints(lang="en"):
         img = f"spk_t{tier}"
         zh_name = f"{tier}阶基础火种"
         en_name = f"Tier {tier} Basic Spark"
+        zh_desc = "机器人突破升阶的核心通用素材。"
+        en_desc = "Core catalyst used to rank up bots."
         out[cid] = {
             "id": cid, "t": "evolve", "type": "evolve", "i": img, "imgID": img,
-            "f": {"zh": zh_name, "en": en_name}, "friendly_name": {"zh": zh_name, "en": en_name},
-            "d": {"zh": "机器人突破升阶的核心通用素材。", "en": "Core catalyst used to rank up bots."},
-            "description": {"zh": "机器人突破升阶的核心通用素材。", "en": "Core catalyst used to rank up bots."},
+            "f": loc_dict(zh_name, en_name), "friendly_name": loc_dict(zh_name, en_name),
+            "d": loc_dict(zh_desc, en_desc), "description": loc_dict(zh_desc, en_desc),
             "rm": tier, "rarity": str(tier), "c": "generic", "class": "generic",
             "dm": 999, "defaultMax": 999, "iso": 0, "base_iso_value": 0,
             "co": 100, "conversion_cost": 100, "sc": 500 * tier, "base_coin_value": 500 * tier,
@@ -1281,19 +1295,60 @@ def build_evo_blueprints(lang="en"):
         }
 
     # Alpha sparks
-    for tier in range(1, 4):
+    for tier in range(1, 6):
         cid = f"catalyst_alpha_t{tier}"
         img = f"spk_a_t{tier}"
         zh_name = f"{tier}阶阿尔法火种"
         en_name = f"Tier {tier} Alpha Spark"
+        zh_desc = "高阶机器人升阶极其罕见的纯净火种。"
+        en_desc = "Extremely rare spark required for high rank bots."
         out[cid] = {
             "id": cid, "t": "evolve", "type": "evolve", "i": img, "imgID": img,
-            "f": {"zh": zh_name, "en": en_name}, "friendly_name": {"zh": zh_name, "en": en_name},
-            "d": {"zh": "高阶机器人升阶极其罕见的纯净火种。", "en": "Extremely rare spark required for high rank bots."},
-            "description": {"zh": "高阶机器人升阶极其罕见的纯净火种。", "en": "Extremely rare spark required for high rank bots."},
+            "f": loc_dict(zh_name, en_name), "friendly_name": loc_dict(zh_name, en_name),
+            "d": loc_dict(zh_desc, en_desc), "description": loc_dict(zh_desc, en_desc),
             "rm": tier, "rarity": str(tier), "c": "generic", "class": "generic",
             "dm": 999, "defaultMax": 999, "iso": 0, "base_iso_value": 0,
             "co": 100, "conversion_cost": 100, "sc": 1000 * tier, "base_coin_value": 1000 * tier,
+            "e": True, "enabled": True, "shc": True, "showConversion": True,
+        }
+
+    # Mod sparks (Offensive, Defensive, Utility)
+    mod_catalysts = [
+        ("offense", "spk_off", "攻击模块火种", "Offensive Mod Spark", "用于突破攻击模块等级的专属火种。", "Catalyst used to rank up offensive mods."),
+        ("defense", "spk_def", "防御模块火种", "Defensive Mod Spark", "用于突破防御模块等级的专属火种。", "Catalyst used to rank up defensive mods."),
+        ("utility", "spk_utl", "通用模块火种", "Utility Mod Spark", "用于突破通用模块等级的专属火种。", "Catalyst used to rank up utility mods."),
+    ]
+    for mname, img_prefix, zh_base, en_base, zh_desc_base, en_desc_base in mod_catalysts:
+        for tier in range(1, 6):
+            cid = f"catalyst_{mname}_t{tier}"
+            img = f"{img_prefix}_t{tier}"
+            zh_name = f"{tier}阶{zh_base}"
+            en_name = f"Tier {tier} {en_base}"
+            out[cid] = {
+                "id": cid, "t": "evolve", "type": "evolve", "i": img, "imgID": img,
+                "f": loc_dict(zh_name, en_name), "friendly_name": loc_dict(zh_name, en_name),
+                "d": loc_dict(zh_desc_base, en_desc_base), "description": loc_dict(zh_desc_base, en_desc_base),
+                "rm": tier, "rarity": str(tier), "c": "generic", "class": "generic",
+                "dm": 999, "defaultMax": 999, "iso": 0, "base_iso_value": 0,
+                "co": 100, "conversion_cost": 100, "sc": 500 * tier, "base_coin_value": 500 * tier,
+                "e": True, "enabled": True, "shc": True, "showConversion": True,
+            }
+
+    # Basic mod sparks
+    for tier in range(1, 6):
+        cid = f"catalyst_mod_t{tier}"
+        img = f"spk_mod_t{tier}"
+        zh_name = f"{tier}阶基础模块火种"
+        en_name = f"Tier {tier} Mod Spark"
+        zh_desc = "用于基地防御模块突破升阶的稀有火种。"
+        en_desc = "Catalyst used to rank up base defense mods."
+        out[cid] = {
+            "id": cid, "t": "evolve", "type": "evolve", "i": img, "imgID": img,
+            "f": loc_dict(zh_name, en_name), "friendly_name": loc_dict(zh_name, en_name),
+            "d": loc_dict(zh_desc, en_desc), "description": loc_dict(zh_desc, en_desc),
+            "rm": tier, "rarity": str(tier), "c": "generic", "class": "generic",
+            "dm": 999, "defaultMax": 999, "iso": 0, "base_iso_value": 0,
+            "co": 100, "conversion_cost": 100, "sc": 500 * tier, "base_coin_value": 500 * tier,
             "e": True, "enabled": True, "shc": True, "showConversion": True,
         }
 
@@ -1846,24 +1901,15 @@ def build_user_data(team=None):
     heroes = [build_hero_entry(bid) for bid in OWNED]
     mods = [build_mod_entry(m["id"]) for m in _load_mods()]
     relics = [build_relic_entry(r["id"]) for r in _load_relics()]
-    inv_bp = {
-        "ore_generic_t5": 100,
-        "ore_brawler_t5": 100,
-        "ore_scout_t5": 100,
-        "ore_tactician_t5": 100,
-        "ore_demolition_t5": 100,
-        "ore_tech_t5": 100,
-        "ore_warrior_t5": 100,
-    }
-    inv_max = {
-        "ore_generic_t5": 500,
-        "ore_brawler_t5": 500,
-        "ore_scout_t5": 500,
-        "ore_tactician_t5": 500,
-        "ore_demolition_t5": 500,
-        "ore_tech_t5": 500,
-        "ore_warrior_t5": 500,
-    }
+    inv_bp = {}
+    inv_max = {}
+    for bp_id in build_evo_blueprints():
+        if bp_id.startswith("ore_"):
+            inv_bp[bp_id] = 100
+            inv_max[bp_id] = 500
+        elif bp_id.startswith("catalyst_"):
+            inv_bp[bp_id] = 1
+            inv_max[bp_id] = 500
     return {
         # teamSizeMax expanded to 5 as requested
         "userData": {"blueprintsMax": 500, "teamSizeMax": 5, "teamCountMax": 5, "BotDupedTut": {"id": "BotDupedTut", "state": 2, "completed": True, "branch": ""}, "BotDupedTutorial": {"id": "BotDupedTutorial", "state": 2, "completed": True, "branch": ""}, "ForgeBotTut": {"id": "ForgeBotTut", "state": 2, "completed": True, "branch": ""}, "ForgeBotTutorial": {"id": "ForgeBotTutorial", "state": 2, "completed": True, "branch": ""}, "ForgeModTut": {"id": "ForgeModTut", "state": 2, "completed": True, "branch": ""}, "ForgeModTutorial": {"id": "ForgeModTutorial", "state": 2, "completed": True, "branch": ""}, "RankUpTut": {"id": "RankUpTut", "state": 2, "completed": True, "branch": ""}, "RankUpTutorial": {"id": "RankUpTutorial", "state": 2, "completed": True, "branch": ""}, "UpgradeBotsScreen": {"id": "UpgradeBotsScreen", "state": 2, "completed": True, "branch": ""}, "RelicTut": {"id": "RelicTut", "state": 2, "completed": True, "branch": ""}, "RelicsTutorial": {"id": "RelicsTutorial", "state": 2, "completed": True, "branch": ""}, "MasteryPointIntro": {"id": "MasteryPointIntro", "state": 2, "completed": True, "branch": ""}, "MasteriesTutorial": {"id": "MasteriesTutorial", "state": 2, "completed": True, "branch": ""}, "MasteryPointTutorial": {"id": "MasteryPointTutorial", "state": 2, "completed": True, "branch": ""}, "ShieldTutorial": {"id": "ShieldTutorial", "state": 2, "completed": True, "branch": ""}, "AutoFightTutorial": {"id": "AutoFightTutorial", "state": 2, "completed": True, "branch": ""}, "AvoidanceTutorial": {"id": "AvoidanceTutorial", "state": 2, "completed": True, "branch": ""}, "ClassAdvantageTutorial": {"id": "ClassAdvantageTutorial", "state": 2, "completed": True, "branch": ""}, "ClassGateTutorial": {"id": "ClassGateTutorial", "state": 2, "completed": True, "branch": ""}, "LinkNodesTutorial": {"id": "LinkNodesTutorial", "state": 2, "completed": True, "branch": ""}, "RaidsTutorial": {"id": "RaidsTutorial", "state": 2, "completed": True, "branch": ""}, "RaidTutorial": {"id": "RaidTutorial", "state": 2, "completed": True, "branch": ""}, "StashTutorial": {"id": "StashTutorial", "state": 2, "completed": True, "branch": ""}, "TreasuryTutorial": {"id": "TreasuryTutorial", "state": 2, "completed": True, "branch": ""}, "SparksTutorial": {"id": "SparksTutorial", "state": 2, "completed": True, "branch": ""}, "ArenaTutorial": {"id": "ArenaTutorial", "state": 2, "completed": True, "branch": ""}, "AllianceEventsTutorial": {"id": "AllianceEventsTutorial", "state": 2, "completed": True, "branch": ""}, "DailyMissionsTutorial": {"id": "DailyMissionsTutorial", "state": 2, "completed": True, "branch": ""}, "BotPlacementTutorial": {"id": "BotPlacementTutorial", "state": 2, "completed": True, "branch": ""}},
@@ -3241,6 +3287,181 @@ def build_base_hero_details(req_heroes):
     return out
 
 
+PROGRAM_ITEMS = [
+    # Awakening programs (sig_state = "d")
+    ("icon_awaken_brawler", "braw", "斗士系觉醒程序", "Brawler Awakening Program", "用于觉醒斗士系机器人的招牌能力。", "Awakens the signature ability of a Brawler bot."),
+    ("icon_awaken_demolition", "demo", "爆破系觉醒程序", "Demolitions Awakening Program", "用于觉醒爆破系机器人的招牌能力。", "Awakens the signature ability of a Demolitions bot."),
+    ("icon_awaken_gen", "", "通用觉醒程序", "General Awakening Program", "用于觉醒任意职业机器人的招牌能力。", "Awakens the signature ability of any bot."),
+    ("icon_awaken_generic", "", "万能觉醒程序", "Generic Awakening Program", "用于觉醒任意机器人的招牌能力。", "Awakens the signature ability of any bot."),
+    ("icon_awaken_scout", "scou", "侦查系觉醒程序", "Scout Awakening Program", "用于觉醒侦查系机器人的招牌能力。", "Awakens the signature ability of a Scout bot."),
+    ("icon_awaken_tactician", "tact", "战术系觉醒程序", "Tactician Awakening Program", "用于觉醒战术系机器人的招牌能力。", "Awakens the signature ability of a Tactician bot."),
+    ("icon_awaken_tech", "tech", "科技系觉醒程序", "Tech Awakening Program", "用于觉醒科技系机器人的招牌能力。", "Awakens the signature ability of a Tech bot."),
+    ("icon_awaken_warrior", "warr", "战士系觉醒程序", "Warrior Awakening Program", "用于觉醒战士系机器人的招牌能力。", "Awakens the signature ability of a Warrior bot."),
+    # Signature ability upgrade programs (sig_state = "a")
+    ("icon_signature_brawler", "braw", "斗士系招牌程序", "Brawler Signature Program", "用于强化斗士系机器人的招牌能力等级。", "Increases the signature ability level of a Brawler bot."),
+    ("icon_signature_demolition", "demo", "爆破系招牌程序", "Demolitions Signature Program", "用于强化爆破系机器人的招牌能力等级。", "Increases the signature ability level of a Demolitions bot."),
+    ("icon_signature_gen", "", "通用招牌程序", "General Signature Program", "用于强化任意职业机器人的招牌能力等级。", "Increases the signature ability level of any bot."),
+    ("icon_signature_generic", "", "万能招牌程序", "Generic Signature Program", "用于强化任意机器人的招牌能力等级。", "Increases the signature ability level of any bot."),
+    ("icon_signature_scout", "scou", "侦查系招牌程序", "Scout Signature Program", "用于强化侦查系机器人的招牌能力等级。", "Increases the signature ability level of a Scout bot."),
+    ("icon_signature_tactician", "tact", "战术系招牌程序", "Tactician Signature Program", "用于强化战术系机器人的招牌能力等级。", "Increases the signature ability level of a Tactician bot."),
+    ("icon_signature_tech", "tech", "科技系招牌程序", "Tech Signature Program", "用于强化科技系机器人的招牌能力等级。", "Increases the signature ability level of a Tech bot."),
+    ("icon_signature_warrior", "warr", "战士系招牌程序", "Warrior Signature Program", "用于强化战士系机器人的招牌能力等级。", "Increases the signature ability level of a Warrior bot."),
+]
+
+CONSUMABLE_ITEMS = [
+    # Chips & Special tokens
+    ("generations_chip", "世代货币", "Generations Chip", "世代特殊代币，用于兑换珍贵物资。", "Generations special chip for exclusive rewards."),
+    ("generic_bot_chip", "通用机器人货币", "Generic Bot Chip", "通用机器人货币，用于兑换机器人相关资源。", "Generic bot chip used to exchange bot resources."),
+    ("homeicon_alliance_help", "门战求助信标", "Alliance Help Request", "请求盟友协助，加速或恢复战力。", "Request help from alliance members."),
+    ("icon_battlechip", "战斗货币", "Battle Chip", "在战斗竞技中获取的货币。", "Chips earned from combat and arena."),
+    ("icon_multiple_rewards", "多重奖励宝箱", "Multiple Rewards Pack", "开启可获取多种丰富的补给资源。", "Open to receive multiple valuable rewards."),
+    ("icon_pvpenergyfullrefill", "PvP全额体力充能", "PvP Full Energy Refill", "完全恢复所有的PvP体力。", "Completely refills PvP energy."),
+    ("icon_pvpenergyhalfrefill", "PvP半额体力充能", "PvP Half Energy Refill", "恢复一半的PvP体力。", "Restores half of PvP energy."),
+    ("icon_pvpraidchip", "突袭货币", "Raid Chip", "突袭战役中获取的专属代币。", "Chips earned from raid battles."),
+    ("icon_pvpraidticket", "突袭门票", "Raid Ticket", "参与突袭战役所需的门票凭证。", "Ticket required to participate in raids."),
+    ("icon_shield", "基地护盾", "Base Shield", "保护基地免受敌方突袭与掠夺。", "Protects your base from enemy raids."),
+    ("icon_stamina", "战役体力充能", "Mission Energy Refill", "恢复剧情与战役探索体力。", "Refills mission energy for story quests."),
+    ("icon_ticketgen", "入场门票", "Entry Ticket", "参加特殊活动副本的入场通行证。", "Pass required for special events."),
+    ("icon_xp", "经验值强化", "XP Boost", "短时间内提升获得的经验值数量。", "Increases XP earned for a limited time."),
+    ("icon_xpb1", "1阶经验值强化", "Tier 1 XP Boost", "提升获取的基础经验值加成。", "Tier 1 XP boost for bot progression."),
+    ("icon_xpb2", "2阶经验值强化", "Tier 2 XP Boost", "提升获取的中级经验值加成。", "Tier 2 XP boost for bot progression."),
+    ("icon_xpb3", "3阶经验值强化", "Tier 3 XP Boost", "提供最高额度的经验值获取加成。", "Tier 3 XP boost for bot progression."),
+    ("mastery_core_tier1", "1阶精通核心", "Tier 1 Mastery Core", "用于解锁或升级1阶精通天赋技能。", "Core used to unlock Tier 1 masteries."),
+    ("mastery_core_tier2", "2阶精通核心", "Tier 2 Mastery Core", "用于解锁或升级2阶精通天赋技能。", "Core used to unlock Tier 2 masteries."),
+    ("mastery_core_tier4", "4阶精通核心", "Tier 4 Mastery Core", "用于解锁高阶强力精通天赋技能。", "Core used to unlock Tier 4 masteries."),
+]
+
+# Add Repairs: regular, alliance, raid (t1..t5) and repair groups (t1..t5)
+for _t in range(1, 6):
+    CONSUMABLE_ITEMS.append((f"icon_repair_t{_t}", f"{_t}阶单体修复药", f"Tier {_t} Repair Kit", f"恢复单体机器人{_t * 15}%的生命值。", f"Restores single bot HP by {_t * 15}%."))
+    CONSUMABLE_ITEMS.append((f"icon_repairgroup_t{_t}", f"{_t}阶小队修复药", f"Tier {_t} Team Repair Kit", f"恢复全队所有机器人{_t * 12}%的生命值。", f"Restores team bots HP by {_t * 12}%."))
+    CONSUMABLE_ITEMS.append((f"icon_repair_alliancet{_t}", f"{_t}阶门战单体修复药", f"Tier {_t} Alliance Repair Kit", f"门战专属：恢复单体机器人{_t * 15}%生命值。", f"Alliance War: Restores single bot HP by {_t * 15}%."))
+    CONSUMABLE_ITEMS.append((f"icon_repairgroup_alliancet{_t}", f"{_t}阶门战小队修复药", f"Tier {_t} Alliance Team Repair Kit", f"门战专属：恢复小队所有机器人{_t * 12}%生命值。", f"Alliance War: Restores team bots HP by {_t * 12}%."))
+    CONSUMABLE_ITEMS.append((f"icon_repair_raidt{_t}", f"{_t}阶突袭单体修复药", f"Tier {_t} Raid Repair Kit", f"突袭专属：恢复单体机器人{_t * 15}%生命值。", f"Raid: Restores single bot HP by {_t * 15}%."))
+    CONSUMABLE_ITEMS.append((f"icon_repairgroup_raidt{_t}", f"{_t}阶突袭小队修复药", f"Tier {_t} Raid Team Repair Kit", f"突袭专属：恢复突袭小队机器人{_t * 12}%生命值。", f"Raid: Restores team bots HP by {_t * 12}%."))
+
+# Add Revives: regular, alliance, raid (t1..t5) and revive groups (t1..t5)
+for _t in range(1, 6):
+    CONSUMABLE_ITEMS.append((f"icon_revive_t{_t}", f"{_t}阶单体复活药", f"Tier {_t} Revive", f"复活一名阵亡机器人并恢复其生命值。", f"Revives a knocked out bot."))
+    CONSUMABLE_ITEMS.append((f"icon_revivegroup_t{_t}", f"{_t}阶小队复活药", f"Tier {_t} Team Revive", f"复活小队中所有阵亡机器人并恢复生命值。", f"Revives all knocked out bots in team."))
+    CONSUMABLE_ITEMS.append((f"icon_revive_alliancet{_t}", f"{_t}阶门战单体复活药", f"Tier {_t} Alliance Revive", f"门战专属：复活一名阵亡机器人。", f"Alliance War: Revives a knocked out bot."))
+    CONSUMABLE_ITEMS.append((f"icon_revivegroup_alliancet{_t}", f"{_t}阶门战小队复活药", f"Tier {_t} Alliance Team Revive", f"门战专属：复活小队所有阵亡机器人。", f"Alliance War: Revives all knocked out bots in team."))
+    CONSUMABLE_ITEMS.append((f"icon_revive_raidt{_t}", f"{_t}阶突袭单体复活药", f"Tier {_t} Raid Revive", f"突袭专属：复活一名阵亡机器人。", f"Raid: Revives a knocked out bot."))
+    CONSUMABLE_ITEMS.append((f"icon_revivegroup_raidt{_t}", f"{_t}阶突袭小队复活药", f"Tier {_t} Raid Team Revive", f"突袭专属：复活突袭小队所有阵亡机器人。", f"Raid: Revives all knocked out bots in team."))
+
+
+def _build_program_store_item(item_id, htag, zh, en, zd, ed, category, lang="zh"):
+    is_awaken = "awaken" in item_id
+    sig_state = "d" if is_awaken else "a"
+    redeemers = [
+        {
+            "type": "awk" if is_awaken else "skl",
+            "data": "1",
+            "quantity": 1,
+        }
+    ]
+    item = {
+        "version_id": "1",
+        "name": item_id,
+        "category": category,
+        "title": zh if lang == "zh" else en,
+        "desc": zd if lang == "zh" else ed,
+        "image": f"redeemers/{item_id}",
+        "enabled": True,
+        "invmax": 999,
+        "use_inv_scr": True,
+        "use_on_hero": True,
+        "sig_state": sig_state,
+        "redeemers": redeemers,
+    }
+    if htag:
+        item["h_tags"] = htag
+    return item
+
+
+def build_gamestore_data(lang="zh"):
+    """Gamestore definitions with consumable items and programs for TFTF GameStoreManager."""
+    consumable_items = [
+        {
+            "version_id": "1",
+            "name": item_id,
+            "category": "consumable",
+            "title": zh if lang == "zh" else en,
+            "desc": zd if lang == "zh" else ed,
+            "image": f"redeemers/{item_id}",
+            "enabled": True,
+            "invmax": 999,
+        }
+        for item_id, zh, en, zd, ed in CONSUMABLE_ITEMS
+    ]
+    prog_in_consumable = [
+        _build_program_store_item(item_id, htag, zh, en, zd, ed, "consumable", lang=lang)
+        for item_id, htag, zh, en, zd, ed in PROGRAM_ITEMS
+    ]
+    prog_in_program = [
+        _build_program_store_item(item_id, htag, zh, en, zd, ed, "program", lang=lang)
+        for item_id, htag, zh, en, zd, ed in PROGRAM_ITEMS
+    ]
+    return {
+        "version_id": "1",
+        "items": {
+            # Including both standard consumables and programs ensures that any subsystem
+            # querying "consumable" (e.g. InventoryHelper.GetConsumableInventory) finds them,
+            # while subsystems explicitly querying "program" also find them.
+            "consumable": consumable_items + prog_in_consumable,
+            "program": prog_in_program,
+        },
+        "inventory_config": {
+            "use_inventory_max": True,
+        },
+    }
+
+
+def build_gamestore_account_data(lang="zh"):
+    """Wrap gamestore data for account_data so AutoRefreshAPI.OnRefreshData passes check & refresh."""
+    store_data = build_gamestore_data(lang=lang)
+    return {
+        "check": "gamestore_v1",
+        "refresh": 2147483647,
+        "cache": False,
+        "version_id": store_data["version_id"],
+        "items": store_data["items"],
+        "inventory_config": store_data["inventory_config"],
+        "gamestore": store_data,
+    }
+
+
+def build_gamestore_autorefresh_result(lang="zh"):
+    return {
+        "check": "gamestore_v1",
+        "refresh": 2147483647,
+        "cache": False,
+        "gamestore": build_gamestore_data(lang=lang),
+    }
+
+
+def build_gamestore_autorefresh_update(lang="zh"):
+    res = build_gamestore_autorefresh_result(lang=lang)
+    return {
+        "name": "gamestore",
+        "error": "",
+        "check": res["check"],
+        "locHash": "",
+        "refresh": res["refresh"],
+        "data": res["gamestore"],
+        "gamestore": res["gamestore"],
+        "cache": res["cache"],
+    }
+
+
+def build_inventory_items():
+    """Return initial inventory dictionary containing 1 of each program and consumable."""
+    inv = {}
+    for item_id, *_ in PROGRAM_ITEMS + CONSUMABLE_ITEMS:
+        inv[item_id] = 1
+    return inv
+
+
 def build_responses():
     """Regenerate roster responses and merge authored combat tuning into account data.
 
@@ -3250,7 +3471,7 @@ def build_responses():
     env = lambda result: json.dumps({"error": None, "result": result},
                                      separators=(",", ":"))
     targets = {
-        "GET__bcg_getLoginData.json": build_login_data(),
+        "GET__bcg_getLoginData.json": build_login_data(lang="zh"),
         "GET__bcg_getUserData.json": build_user_data(),
     }
     for fname, result in targets.items():
@@ -3263,9 +3484,22 @@ def build_responses():
     with open(account_path, encoding="utf-8") as f:
         account = json.load(f)
     account["result"]["missionsconfig"] = build_missions_account_data()
+    account["result"]["inventory"] = build_inventory_items()
+    account["result"]["gamestore"] = build_gamestore_account_data(lang="zh")
     with open(account_path, "w", encoding="utf-8") as f:
         f.write(json.dumps(account, separators=(",", ":")))
-    print("updated GET__account_data.json missionsconfig")
+    print("updated GET__account_data.json missionsconfig, inventory, gamestore")
+
+    post_account_path = os.path.join(RESP_DIR, "POST__account_data.json")
+    if os.path.exists(post_account_path):
+        with open(post_account_path, encoding="utf-8") as f:
+            post_account = json.load(f)
+        post_account["result"]["missionsconfig"] = build_missions_account_data()
+        post_account["result"]["inventory"] = build_inventory_items()
+        post_account["result"]["gamestore"] = build_gamestore_account_data(lang="zh")
+        with open(post_account_path, "w", encoding="utf-8") as f:
+            f.write(json.dumps(post_account, separators=(",", ":")))
+        print("updated POST__account_data.json missionsconfig, inventory, gamestore")
 
     refresh_path = os.path.join(
         RESP_DIR, "GET__autorefresh_missionsconfig_refresh.json"
