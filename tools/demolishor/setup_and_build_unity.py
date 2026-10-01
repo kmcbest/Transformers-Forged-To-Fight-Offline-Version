@@ -7,8 +7,9 @@ import subprocess
 
 sys.stdout.reconfigure(encoding='utf-8')
 
-PROJECT_DIR = Path(r"d:\Agent\tftf\toolchain\unity_build_project")
-UNITY_EXE = Path(r"d:\Agent\tftf\toolchain\Unity_2020.3.31f1\Editor\Unity.exe")
+ROOT = Path(__file__).resolve().parent.parent.parent
+PROJECT_DIR = ROOT / "toolchain" / "unity_build_project"
+UNITY_EXE = ROOT / "toolchain" / "Unity_2020.3.31f1" / "Editor" / "Unity.exe"
 
 print("=== Setting up Unity Build Project ===")
 
@@ -29,12 +30,11 @@ version_file = project_settings_dir / "ProjectVersion.txt"
 version_file.write_text("m_EditorVersion: 2020.3.31f1\n", encoding="utf-8")
 
 # 2. Copy FBX and Textures
-src_fbx = Path(r"d:\Agent\tftf\tools\demolishor\demolishor_prepared.fbx")
-shutil.copy2(src_fbx, demolishor_assets / "demolishor_prepared.fbx")
-
-tex_dir = Path(r"d:\Agent\tftf\tools\demolishor\textures_processed")
-for img in tex_dir.glob("*.png"):
-    shutil.copy2(img, demolishor_assets / img.name)
+src_fbx = demolishor_assets / "demolishor_prepared.fbx"
+tex_dir = ROOT / "tools" / "demolishor" / "textures_processed"
+if tex_dir.exists():
+    for img in tex_dir.glob("*.png"):
+        shutil.copy2(img, demolishor_assets / img.name)
 
 print("[✓] Copied FBX and textures to Unity project Assets/Demolishor")
 

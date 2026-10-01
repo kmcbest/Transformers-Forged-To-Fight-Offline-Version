@@ -68,10 +68,10 @@ def transform_mesh_stream0(mesh_tree, target_name, bindposes):
         nx, ny, nz = struct.unpack_from('<3f', raw_data, offset + 12)
         tx, ty, tz, tw = struct.unpack_from('<4f', raw_data, offset + 24)
 
-        # X_new = px, Y_new = pz, Z_new = -py
-        new_px, new_py, new_pz = px, pz, -py
-        new_nx, new_ny, new_nz = nx, nz, -ny
-        new_tx, new_ty, new_tz = tx, tz, -ty
+        # X_new = px, Y_new = pz, Z_new = py (faces forward)
+        new_px, new_py, new_pz = px, pz, py
+        new_nx, new_ny, new_nz = nx, nz, ny
+        new_tx, new_ty, new_tz = tx, tz, ty
 
         struct.pack_into('<3f', raw_data, offset, new_px, new_py, new_pz)
         struct.pack_into('<3f', raw_data, offset + 12, new_nx, new_ny, new_nz)

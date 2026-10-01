@@ -11,11 +11,25 @@
         "faction": "霸天虎",
         "note": "G1 经典战术系"
     },
+    "starscream_ghost_gs": {
+        "en": "Ghost Starscream",
+        "zh": "鬼魂红蜘蛛",
+        "faction": "霸天虎",
+        "note": "经典G1 侦查系",
+        "desc": "在被惊破天的巨炮化为灰烬后，红蜘蛛那不可磨灭的火种怨念化作不死鬼魂游荡在宇宙之间。拥有穿透实体防御的幽能，以及鬼魅般的全时悬浮飞行机动。"
+    },
     "arcee_gs_deluxe2014": {
         "en": "Arcee",
         "zh": "阿尔茜",
         "faction": "汽车人",
-        "note": "勇士系"
+        "note": "经典G1 战士系"
+    },
+    "lifeline_gs_deluxe2014": {
+        "en": "Lifeline",
+        "zh": "回春手",
+        "faction": "汽车人",
+        "note": "帕拉德隆医官 科技系",
+        "desc": "回春手是帕拉德隆星上硕果仅存的医官。从火种深处来说，她是一位绝对的和平主义者，对暴力的厌恶甚至让她在救治士兵时感到不安——因为她深知，一旦将伤员治愈，他们又将被重新送回残酷的战场。然而她绝非软弱之辈；她那敏锐而务实的理性，让她能够在面对毫无生还希望、徒增痛苦的伤员时，毫不犹豫地为他们执行安乐关闭程序。"
     },
     "blaster_gs_leader2016": {
         "en": "Blaster",
@@ -172,6 +186,12 @@
         "zh": "通天晓",
         "faction": "汽车人",
         "note": "经典G1 战术系"
+    },
+    "ultramagnus_sg_leader": {
+        "en": "SG Ultra Magnus",
+        "zh": "捅天枭",
+        "faction": "汽车人",
+        "note": "碎玻璃/镜像宇宙 爆破系"
     },
     "wheeljack_gs_mp20": {
         "en": "Wheeljack",
@@ -448,5 +468,11 @@
         "zh": "热链接",
         "faction": "霸天虎",
         "note": "格斗系"
+    },
+    "demolishor_gs": {
+        "en": "Demolishor",
+        "zh": "破坏者",
+        "faction": "霸天虎",
+        "note": "塞伯坦陨落·爆破系"
     }
 }

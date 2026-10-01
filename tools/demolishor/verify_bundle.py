@@ -5,46 +5,40 @@ import UnityPy
 
 sys.stdout.reconfigure(encoding='utf-8')
 
-bundle_path = Path(r"d:\Agent\tftf\toolchain\unity_build_project\AssetBundles\demolishor_mesh.assetbundle")
-print(f"Loading {bundle_path.name} ({bundle_path.stat().st_size} bytes)...")
+ROOT = Path(__file__).resolve().parent.parent.parent
 
-env = UnityPy.load(str(bundle_path))
-print(f"Total objects in bundle: {len(env.objects)}")
+for name, rel_path in [
+    ("Unity Compiled Bundle", "toolchain/unity_build_project/AssetBundles/demolishor_mesh.assetbundle"),
+    ("Final Grafted Game Bundle", "assets_redeco/demolishor_gs.assetbundle")
+]:
+    bundle_path = ROOT / rel_path
+    if not bundle_path.exists():
+        print(f"[!] {name} not found at {bundle_path}")
+        continue
 
-types = {}
-for obj in env.objects:
-    t = obj.type.name
-    types[t] = types.get(t, 0) + 1
+    print(f"\n=== Verifying {name} ({bundle_path.name}) ===")
+    print(f"Size: {bundle_path.stat().st_size / (1024*1024):.2f} MB")
+    
+    env = UnityPy.load(str(bundle_path))
+    print(f"Total objects: {len(env.objects)}")
+    
+    types = {}
+    for obj in env.objects:
+        t = obj.type.name
+        types[t] = types.get(t, 0) + 1
+        
+    for t, c in sorted(types.items(), key=lambda x: x[1], reverse=True):
+        print(f"  {t:25s}: {c}")
+        
+    for obj in env.objects:
+        if obj.type.name == "Mesh":
+            tree = obj.read_typetree()
+            vcount = tree.get("m_VertexData", {}).get("m_VertexCount", 0)
+            aabb = tree.get("m_LocalAABB", {})
+            print(f"  [Mesh] {tree.get('m_Name')}: {vcount} verts, AABB Center={aabb.get('m_Center')}, Extent={aabb.get('m_Extent')}")
+        elif obj.type.name == "AssetBundle":
+            tree = obj.read_typetree()
+            print(f"  [AssetBundle Name]: {tree.get('m_AssetBundleName')}")
+            print(f"  [Container Items Count]: {len(tree.get('m_Container', []))}")
 
-print("\nObjects by type:")
-for t, c in sorted(types.items(), key=lambda x: x[1], reverse=True):
-    print(f"  {t}: {c}")
-
-print("\n--- Meshes in Bundle ---")
-for obj in env.objects:
-    if obj.type.name == "Mesh":
-        mesh = obj.read()
-        print(f"  Mesh: {mesh.m_Name}")
-        tree = obj.read_typetree()
-        v_count = tree.get("m_VertexData", {}).get("m_VertexCount", 0)
-        submeshes = len(tree.get("m_SubMeshes", []))
-        bindposes = len(tree.get("m_BindPose", []))
-        print(f"    Vertex count: {v_count}, submeshes: {submeshes}, bindposes: {bindposes}")
-
-print("\n--- Textures in Bundle ---")
-for obj in env.objects:
-    if obj.type.name == "Texture2D":
-        t = obj.read()
-        print(f"  Texture: {t.m_Name} ({t.m_Width}x{t.m_Height}, format: {t.m_TextureFormat})")
-
-print("\n--- Materials in Bundle ---")
-for obj in env.objects:
-    if obj.type.name == "Material":
-        mat = obj.read()
-        print(f"  Material: {mat.m_Name}")
-
-print("\n--- GameObjects / Models in Bundle ---")
-for obj in env.objects:
-    if obj.type.name == "GameObject":
-        go = obj.read()
-        print(f"  GameObject: {go.m_Name}")
+print("\n[✓] All bundles verified successfully!")

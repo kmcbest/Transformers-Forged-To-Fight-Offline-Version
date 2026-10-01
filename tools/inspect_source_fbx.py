@@ -5,7 +5,8 @@ import bpy
 
 sys.stdout.reconfigure(encoding='utf-8')
 
-fbx_path = r"d:\Agent\tftf\3rd-party-models\transformers-fall-of-cybertron-demolishor\source\transformers fall of cybertron Demolishor.fbx"
+ROOT = Path(__file__).resolve().parent.parent
+fbx_path = str(ROOT / "3rd-party-models" / "transformers-fall-of-cybertron-demolishor" / "source" / "transformers fall of cybertron Demolishor.fbx")
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
 bpy.ops.import_scene.fbx(filepath=fbx_path)
