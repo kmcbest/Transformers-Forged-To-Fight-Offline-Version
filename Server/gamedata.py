@@ -1176,7 +1176,7 @@ def build_stat_modifiers():
 
 
 def build_evo_blueprints(lang="en"):
-    """Tier 5 Ore-13 definitions for BCGManagerBase._baseEvoBlueprintData."""
+    """Tier 5 Ore-13 and Catalysts definitions for BCGManagerBase._baseEvoBlueprintData."""
     ores = [
         ("ore_generic_t5", "Ore_t5", "generic", "5阶通用矿-13", "Tier 5 Generic Ore-13"),
         ("ore_brawler_t5", "Ore_Brawler_t5", "braw", "5阶格斗系矿-13", "Tier 5 Brawler Ore-13"),
@@ -1217,7 +1217,125 @@ def build_evo_blueprints(lang="en"):
             "shc": True,
             "showConversion": True,
         }
+
+    # Catalysts / Sparks definitions (T1 - T4 class sparks + generic + alpha)
+    class_catalysts = [
+        ("brawler", "spk_brawler", "braw", "格斗系火种", "Brawler Spark"),
+        ("scout", "spk_scout", "scou", "侦察系火种", "Scout Spark"),
+        ("tactician", "spk_tactician", "tact", "战术系火种", "Tactician Spark"),
+        ("demolition", "spk_demolition", "demo", "爆破系火种", "Demolition Spark"),
+        ("tech", "spk_tech", "tech", "科技系火种", "Tech Spark"),
+        ("warrior", "spk_warrior", "warr", "战士系火种", "Warrior Spark"),
+    ]
+    for cname, img_prefix, klass, zh_base, en_base in class_catalysts:
+        for tier in range(1, 6):
+            cid = f"catalyst_{cname}_t{tier}"
+            img = f"{img_prefix}_t{tier}"
+            zh_name = f"{tier}阶{zh_base}"
+            en_name = f"Tier {tier} {en_base}"
+            zh_desc = f"用于{zh_base[:3]}机器人突破升阶的稀有火种。"
+            en_desc = f"Catalyst used to rank up {en_base.split()[0]} bots."
+            out[cid] = {
+                "id": cid,
+                "t": "evolve",
+                "type": "evolve",
+                "i": img,
+                "imgID": img,
+                "f": {"zh": zh_name, "en": en_name},
+                "friendly_name": {"zh": zh_name, "en": en_name},
+                "d": {"zh": zh_desc, "en": en_desc},
+                "description": {"zh": zh_desc, "en": en_desc},
+                "rm": tier,
+                "rarity": str(tier),
+                "c": klass,
+                "class": klass,
+                "dm": 999,
+                "defaultMax": 999,
+                "iso": 0,
+                "base_iso_value": 0,
+                "co": 100,
+                "conversion_cost": 100,
+                "sc": 500 * tier,
+                "base_coin_value": 500 * tier,
+                "e": True,
+                "enabled": True,
+                "shc": True,
+                "showConversion": True,
+            }
+
+    # Basic generic sparks
+    for tier in range(1, 6):
+        cid = f"catalyst_generic_t{tier}"
+        img = f"spk_t{tier}"
+        zh_name = f"{tier}阶基础火种"
+        en_name = f"Tier {tier} Basic Spark"
+        out[cid] = {
+            "id": cid, "t": "evolve", "type": "evolve", "i": img, "imgID": img,
+            "f": {"zh": zh_name, "en": en_name}, "friendly_name": {"zh": zh_name, "en": en_name},
+            "d": {"zh": "机器人突破升阶的核心通用素材。", "en": "Core catalyst used to rank up bots."},
+            "description": {"zh": "机器人突破升阶的核心通用素材。", "en": "Core catalyst used to rank up bots."},
+            "rm": tier, "rarity": str(tier), "c": "generic", "class": "generic",
+            "dm": 999, "defaultMax": 999, "iso": 0, "base_iso_value": 0,
+            "co": 100, "conversion_cost": 100, "sc": 500 * tier, "base_coin_value": 500 * tier,
+            "e": True, "enabled": True, "shc": True, "showConversion": True,
+        }
+
+    # Alpha sparks
+    for tier in range(1, 4):
+        cid = f"catalyst_alpha_t{tier}"
+        img = f"spk_a_t{tier}"
+        zh_name = f"{tier}阶阿尔法火种"
+        en_name = f"Tier {tier} Alpha Spark"
+        out[cid] = {
+            "id": cid, "t": "evolve", "type": "evolve", "i": img, "imgID": img,
+            "f": {"zh": zh_name, "en": en_name}, "friendly_name": {"zh": zh_name, "en": en_name},
+            "d": {"zh": "高阶机器人升阶极其罕见的纯净火种。", "en": "Extremely rare spark required for high rank bots."},
+            "description": {"zh": "高阶机器人升阶极其罕见的纯净火种。", "en": "Extremely rare spark required for high rank bots."},
+            "rm": tier, "rarity": str(tier), "c": "generic", "class": "generic",
+            "dm": 999, "defaultMax": 999, "iso": 0, "base_iso_value": 0,
+            "co": 100, "conversion_cost": 100, "sc": 1000 * tier, "base_coin_value": 1000 * tier,
+            "e": True, "enabled": True, "shc": True, "showConversion": True,
+        }
+
     return out
+
+
+# ---------------------------------------------------------------------------
+# Per-quest victory rewards configuration.
+# Each quest can have customized firstResults, replayResults, and masteryResults.
+# Default gives 6 class-specific sparks (1 of each class: Brawler, Scout, Tactician,
+# Demolition, Tech, Warrior).
+# ---------------------------------------------------------------------------
+DEFAULT_CLASS_SPARKS_REWARD = [
+    {"type": "hevl", "data": "catalyst_brawler_t3", "quantity": 1},
+    {"type": "hevl", "data": "catalyst_scout_t3", "quantity": 1},
+    {"type": "hevl", "data": "catalyst_tactician_t3", "quantity": 1},
+    {"type": "hevl", "data": "catalyst_demolition_t3", "quantity": 1},
+    {"type": "hevl", "data": "catalyst_tech_t3", "quantity": 1},
+    {"type": "hevl", "data": "catalyst_warrior_t3", "quantity": 1},
+]
+
+QUEST_REWARDS_CONFIG = {
+    # Each quest can define custom firstResults / replayResults / masteryResults.
+    # Empty entry falls back to default 6 class sparks.
+    "1.1.1": {},
+    "1.1.2": {},
+    "1.1.3": {},
+    "1.1.4": {},
+    "1.1.5": {},
+    "1.1.6": {},
+    "1.1.7": {},
+}
+
+def get_quest_rewards(qid):
+    """Return (firstResults, replayResults, masteryResults) for a quest."""
+    conf = QUEST_REWARDS_CONFIG.get(qid, {})
+    first = conf.get("firstResults", DEFAULT_CLASS_SPARKS_REWARD)
+    replay = conf.get("replayResults", DEFAULT_CLASS_SPARKS_REWARD)
+    mastery = conf.get("masteryResults", [
+        {"type": "res", "data": "hc", "quantity": 50}
+    ])
+    return first, replay, mastery
 
 
 def build_login_data(lang="en"):
@@ -1558,6 +1676,14 @@ def quest_start(qid="1.1.1"):
     if qid == "1.1.2":
         return CHALLENGE_CENTER
     return quest_walkable_tiles(qid)[0]
+
+def quest_boss_tiles(qid="1.1.1"):
+    """Return list of (x, y) coordinates for final boss encounters in a quest."""
+    if qid == "1.1.2":
+        spokes, _, _, _, _, _ = _get_challenge_data()
+        return [sp[-1] for sp in spokes]
+    walkable = quest_walkable_tiles(qid)
+    return [walkable[-1]] if walkable else []
 
 def is_quest_walkable(qid, pos):
     if qid == "1.1.2":

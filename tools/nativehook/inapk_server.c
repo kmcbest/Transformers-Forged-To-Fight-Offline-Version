@@ -120,6 +120,7 @@ typedef struct {
     int is_leisure;
     int pending_battle_active;
     int pending_battle_x, pending_battle_y;
+    int is_final_boss;
     float hero_hp[5];
     char hero_bid[5][64];
     float pending_enemy_hp_ratio;
@@ -127,6 +128,7 @@ typedef struct {
 
 static QuestRunState g_quest_state = {
     .is_leisure = 1,
+    .is_final_boss = 0,
     .hero_hp = {1.0f, 1.0f, 1.0f, 1.0f, 1.0f},
     .pending_enemy_hp_ratio = 1.0f
 };
@@ -521,6 +523,7 @@ static const unsigned char *lookup(const char *key, size_t *n) { return body_for
 const unsigned char *tftf_payload_lookup(const char *key, size_t *n) { return lookup(key, n); }
 static int out_reserve(Out *o, size_t add) { size_t cap; unsigned char *p; if (add <= o->cap-o->n) return 1; cap=o->cap?o->cap:256; while(cap-o->n<add) { if(cap>MAX_BODY*8) return 0; cap*=2; } p=realloc(o->p,cap); if(!p)return 0; o->p=p;o->cap=cap;return 1; }
 static int out_add(Out *o, const void *p, size_t n) { if(!out_reserve(o,n))return 0; memcpy(o->p+o->n,p,n);o->n+=n;return 1; }
+#define OUT_ADD_STR(o, s) out_add((o), (s), sizeof(s) - 1)
 static int out_template_args(Out *o, const unsigned char *s, size_t n, const TemplateArg *args, size_t count) {
     size_t i=0;
     while(i<n) { size_t j; int found=0;
@@ -1048,6 +1051,26 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         v = lookup("GET /quests/quest-list", outn);
         if(v) return v;
     }
+    if(strstr(p, "/quests/quest-progression")) {
+        static const unsigned char prog_resp[] =
+            "{\"error\":null,\"result\":{"
+              "\"Story\":{"
+                "\"1.1.1\":{\"unlocked\":true,\"completed\":true,\"mastered\":true,\"visibleClearedCount\":5}"
+              "},"
+              "\"Event\":{"
+                "\"1.1.2\":{\"unlocked\":true,\"completed\":true,\"mastered\":true,\"visibleClearedCount\":5},"
+                "\"1.1.3\":{\"unlocked\":true,\"completed\":true,\"mastered\":true,\"visibleClearedCount\":5},"
+                "\"1.1.4\":{\"unlocked\":true,\"completed\":true,\"mastered\":true,\"visibleClearedCount\":5},"
+                "\"1.1.5\":{\"unlocked\":true,\"completed\":true,\"mastered\":true,\"visibleClearedCount\":5},"
+                "\"1.1.6\":{\"unlocked\":true,\"completed\":true,\"mastered\":true,\"visibleClearedCount\":5},"
+                "\"1.1.7\":{\"unlocked\":true,\"completed\":true,\"mastered\":true,\"visibleClearedCount\":5},"
+                "\"1.1.8\":{\"unlocked\":true,\"completed\":true,\"mastered\":true,\"visibleClearedCount\":5}"
+              "}"
+            "}}";
+        *outn = sizeof(prog_resp) - 1;
+        logmsg("HTTP: handled /quests/quest-progression (%zu bytes)", *outn);
+        return prog_resp;
+    }
 
     /* 0. Launcher Menu API & Web UI */
     if(strstr(p, "/launcher/save") && !ci_equal(method, "GET")) {
@@ -1246,28 +1269,116 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
                 }
                 pthread_mutex_unlock(&g_pos_lock);
             }
-            char head[256];
-            int hlen = snprintf(head, sizeof head,
-                "{\"error\":null,\"result\":{\"progression\":{\"currentPos\":{\"x\":%d,\"y\":%d},"
+            char results_buf[4096];
+            int rlen = 0;
+            if (player_won) {
+                g_quest_state.pending_battle_active = 0;
+                if (g_quest_state.is_final_boss) {
+                    char kvictory[64];
+                    snprintf(kvictory, sizeof kvictory, "@quest:victory:%s", g_quest_state.qid[0] ? g_quest_state.qid : "1.1.1");
+                    size_t nvic = 0;
+                    const void *vvic = lookup(kvictory, &nvic);
+                    if (vvic && nvic > 0) {
+                        rlen = snprintf(results_buf, sizeof results_buf,
+                            "[{\"action\":{\"battlecomplete\":{\"x\":%d,\"y\":%d}},\"redeems\":[]},%.*s]",
+                            cx, cy, (int)nvic, (const char*)vvic);
+                    } else {
+                        rlen = snprintf(results_buf, sizeof results_buf,
+                            "[{\"action\":{\"battlecomplete\":{\"x\":%d,\"y\":%d}},\"redeems\":[]},"
+                            "{\"action\":{\"questcomplete\":{\"x\":%d,\"y\":%d,\"isFinalBoss\":true}},"
+                            "\"newlyCompleted\":true,\"newlyMastered\":true,\"previouslyMastered\":false,"
+                            "\"visibleClearedCount\":5,\"visibleWalkableCount\":5,"
+                            "\"firstResults\":[{\"type\":\"hevl\",\"data\":\"catalyst_brawler_t3\",\"quantity\":1},"
+                            "{\"type\":\"hevl\",\"data\":\"catalyst_scout_t3\",\"quantity\":1},"
+                            "{\"type\":\"hevl\",\"data\":\"catalyst_tactician_t3\",\"quantity\":1},"
+                            "{\"type\":\"hevl\",\"data\":\"catalyst_demolition_t3\",\"quantity\":1},"
+                            "{\"type\":\"hevl\",\"data\":\"catalyst_tech_t3\",\"quantity\":1},"
+                            "{\"type\":\"hevl\",\"data\":\"catalyst_warrior_t3\",\"quantity\":1}],"
+                            "\"replayResults\":[{\"type\":\"hevl\",\"data\":\"catalyst_brawler_t3\",\"quantity\":1},"
+                            "{\"type\":\"hevl\",\"data\":\"catalyst_scout_t3\",\"quantity\":1},"
+                            "{\"type\":\"hevl\",\"data\":\"catalyst_tactician_t3\",\"quantity\":1},"
+                            "{\"type\":\"hevl\",\"data\":\"catalyst_demolition_t3\",\"quantity\":1},"
+                            "{\"type\":\"hevl\",\"data\":\"catalyst_tech_t3\",\"quantity\":1},"
+                            "{\"type\":\"hevl\",\"data\":\"catalyst_warrior_t3\",\"quantity\":1}],"
+                            "\"masteryResults\":[{\"type\":\"res\",\"data\":\"hc\",\"quantity\":50}]}]",
+                            cx, cy, cx, cy);
+                    }
+                } else {
+                    rlen = snprintf(results_buf, sizeof results_buf,
+                        "[{\"action\":{\"battlecomplete\":{\"x\":%d,\"y\":%d}},\"redeems\":[]}]",
+                        cx, cy);
+                }
+            } else {
+                rlen = snprintf(results_buf, sizeof results_buf, "[]");
+            }
+            if (rlen >= (int)sizeof(results_buf)) {
+                rlen = (int)sizeof(results_buf) - 1;
+                results_buf[rlen] = 0;
+            }
+
+            int is_completed = (player_won && g_quest_state.is_final_boss);
+            const char *comp_str = is_completed ? "true" : "false";
+            char aid[64];
+            if (strchr(g_quest_state.qid, '-')) {
+                snprintf(aid, sizeof aid, "%s", g_quest_state.qid);
+            } else {
+                snprintf(aid, sizeof aid, "%s-0", g_quest_state.qid[0] ? g_quest_state.qid : "1.1.1");
+            }
+            const char *cur_qid = g_quest_state.qid[0] ? g_quest_state.qid : "1.1.1";
+
+            o->n = 0;
+            char sbuf[512];
+            int slen;
+
+            // 1. Result start & results
+            OUT_ADD_STR(o, "{\"error\":null,\"result\":{\"results\":");
+            out_add(o, results_buf, (size_t)rlen);
+
+            // 2. Progression
+            slen = snprintf(sbuf, sizeof sbuf,
+                ",\"progression\":{\"currentPos\":{\"x\":%d,\"y\":%d},"
+                "\"completed\":%s,\"mastered\":%s,"
                 "\"users\":{\"1000000000001\":{\"currentPos\":{\"x\":%d,\"y\":%d},"
                 "\"name\":\"Commander\",\"points\":0,\"strongestHero\":\"%s\",\"tag\":\"\",\"team\":",
-                cx, cy, cx, cy, team.bid[0]);
-            char aid[64];
-            snprintf(aid, sizeof aid, "%s-0", g_quest_state.qid[0] ? g_quest_state.qid : "1.1.1");
-            char mid_buf[128];
-            int mlen = snprintf(mid_buf, sizeof mid_buf, "}}},\"teamData\":{\"aid\":\"%s\",\"type\":\"PvE\",\"modes\":[\"PvE\"],\"heroes\":", aid);
-            if (out_reserve(o, (size_t)hlen + (size_t)mlen + qteam.n * 2 + 64)) {
-                out_add(o, head, (size_t)hlen);
-                out_add(o, qteam.p, qteam.n);
-                out_add(o, mid_buf, (size_t)mlen);
-                out_add(o, qteam.p, qteam.n);
-                out_add(o, ",\"expire\":0}}}", 14);
-                free(qteam.p);
-                *outn = o->n;
-                logmsg("HTTP_RESOLVE_MATCH: Emitted updated progression & teamData (%zu bytes)", *outn);
-                return o->p;
-            }
+                cx, cy, comp_str, comp_str, cx, cy, team.bid[0]);
+            out_add(o, sbuf, (size_t)slen);
+            out_add(o, qteam.p, qteam.n);
+
+            // 3. TeamData
+            slen = snprintf(sbuf, sizeof sbuf,
+                "}}},\"teamData\":{\"aid\":\"%s\",\"type\":\"PvE\",\"modes\":[\"PvE\"],\"heroes\":", aid);
+            out_add(o, sbuf, (size_t)slen);
+            out_add(o, qteam.p, qteam.n);
+
+            // 4. Async push event
+            OUT_ADD_STR(o, ",\"expire\":0}},\"async\":[{\"component\":\"QuestsManager\",\"message\":\"match-resolved\",\"payload\":{");
+            slen = snprintf(sbuf, sizeof sbuf,
+                "\"qid\":\"%s\",\"battleId\":\"\",\"results\":", aid);
+            out_add(o, sbuf, (size_t)slen);
+            out_add(o, results_buf, (size_t)rlen);
+
+            slen = snprintf(sbuf, sizeof sbuf,
+                ",\"progression\":{\"currentPos\":{\"x\":%d,\"y\":%d},"
+                "\"completed\":%s,\"mastered\":%s,"
+                "\"users\":{\"1000000000001\":{\"currentPos\":{\"x\":%d,\"y\":%d},"
+                "\"name\":\"Commander\",\"points\":0,\"strongestHero\":\"%s\",\"tag\":\"\",\"team\":",
+                cx, cy, comp_str, comp_str, cx, cy, team.bid[0]);
+            out_add(o, sbuf, (size_t)slen);
+            out_add(o, qteam.p, qteam.n);
+
+            slen = snprintf(sbuf, sizeof sbuf,
+                "}}},\"teamData\":{\"aid\":\"%s\",\"type\":\"PvE\",\"modes\":[\"PvE\"],\"heroes\":", aid);
+            out_add(o, sbuf, (size_t)slen);
+            out_add(o, qteam.p, qteam.n);
+
+            OUT_ADD_STR(o, ",\"expire\":0}}}]}");
+
             free(qteam.p);
+            *outn = o->n;
+            logmsg("HTTP_RESOLVE_MATCH: Emitted results (is_boss=%d, aid='%s', qid='%s'), progression & teamData with async push (%zu bytes)",
+                   g_quest_state.is_final_boss, aid, g_quest_state.qid, *outn);
+            logmsg("HTTP_RESOLVE_MATCH_TAIL: %.150s", (const char*)(o->p + (*outn > 150 ? *outn - 150 : 0)));
+            return o->p;
             }
         }
 
@@ -1277,6 +1388,7 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
     }
     if(strstr(p,"/base/active")) {
         g_quest_state.is_leisure = 1;
+        g_quest_state.is_final_boss = 0;
         g_matrix_war_active = 0;
         g_matrix_war_team_set = 0;
         g_active_quest_id[0] = 0;
@@ -1430,6 +1542,7 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
     }
     if(strstr(p,"/quests/quest-begin/")) { Team team; Out qteam={0}; TemplateArg args[8];snprintf(qid,sizeof qid,"%.63s",path_last(p));
         snprintf(g_active_quest_id, sizeof g_active_quest_id, "%s", qid);
+        g_quest_state.is_final_boss = 0;
         g_matrix_war_active = (strcmp(qid, "1.1.5") == 0);
         if (g_matrix_war_active) {
             g_matrix_war_empty_team = 1;
@@ -1499,9 +1612,7 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         g_current_is_10x_challenge = (strcmp(qid, "1.1.2") == 0);
         int non_leisure = is_quest_non_leisure(qid);
         g_quest_state.is_leisure = !non_leisure;
-        if (non_leisure) {
-            snprintf(g_quest_state.qid, sizeof g_quest_state.qid, "%s", qid);
-        }
+        snprintf(g_quest_state.qid, sizeof g_quest_state.qid, "%s", qid);
         char *ep;long lx=strtol(xs,&ep,10);if(*ep)lx=1;long ly=strtol(ys,&ep,10);if(*ep){lx=1;ly=0;}dx=(int)lx;dy=(int)ly;
         char e_bid[6][64];
         for(int k=0; k<6; k++) snprintf(e_bid[k], sizeof e_bid[k], "%s", g_enemy_pool[k % ENEMY_POOL_SIZE]);
@@ -1537,17 +1648,44 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         }
         if(found&&slot>=0){
             g_pos[slot].x=nx;g_pos[slot].y=ny;
+            g_quest_state.pending_battle_x = nx;
+            g_quest_state.pending_battle_y = ny;
+            g_quest_state.is_final_boss = 0;
             if(non_leisure && !blocked_by_battle && (nx != sx || ny != sy)){
                 g_quest_state.pending_battle_active = 1;
-                g_quest_state.pending_battle_x = nx;
-                g_quest_state.pending_battle_y = ny;
                 g_quest_state.pending_enemy_hp_ratio = 1.0f;
                 logmsg("QUEST_COMBAT: Stepped onto encounter tile (%d,%d), armed pending_battle!", nx, ny);
             }
         }
         pthread_mutex_unlock(&g_pos_lock);
         snprintf(key,sizeof key,"@movedir:%s:%d:%d:%d:%d",qid,sx,sy,dx,dy);v=lookup(key,&n);if(!v){snprintf(key,sizeof key,"@movedir:%s:%d:%d:0:0",qid,sx,sy);v=lookup(key,&n);}
-        if(v){Team team;Out qteam={0},ateam={0};TemplateArg args[9];
+        if(v){
+            if (strstr((const char*)v, "\"isFinalBoss\":true")) {
+                g_quest_state.is_final_boss = 1;
+                logmsg("QUEST_COMBAT: Encounter at (%d,%d) is final boss (via template)", nx, ny);
+            } else {
+                char kboss[64]; snprintf(kboss, sizeof kboss, "@quest:boss:%s", qid);
+                size_t kboss_n = 0; const void *vboss = lookup(kboss, &kboss_n);
+                if (vboss) {
+                    char bcopy[256];
+                    snprintf(bcopy, sizeof bcopy, "%.*s", (int)(kboss_n < sizeof(bcopy) ? kboss_n : sizeof(bcopy)-1), (const char*)vboss);
+                    char *tok = bcopy;
+                    int bx, by;
+                    while (sscanf(tok, "%d %d", &bx, &by) == 2) {
+                        if (bx == nx && by == ny) {
+                            g_quest_state.is_final_boss = 1;
+                            logmsg("QUEST_COMBAT: Encounter at (%d,%d) is final boss (via boss list)", nx, ny);
+                            break;
+                        }
+                        char *sp = strchr(tok, ' ');
+                        if (!sp) break;
+                        sp = strchr(sp + 1, ' ');
+                        if (!sp) break;
+                        tok = sp + 1;
+                    }
+                }
+            }
+            Team team;Out qteam={0},ateam={0};TemplateArg args[9];
             if(!resolve_team(&team)) return NULL;
             if(strcmp(qid, "1.1.5") == 0) {
                 team.count = 1;

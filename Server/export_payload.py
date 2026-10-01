@@ -250,6 +250,41 @@ def build_entries(listen_port: int = 8080) -> dict[str, bytes]:
             add(f"@questdetail:{qid}:en", _envelope(gamedata.build_quest_detail(qid, set_id, lang="en")))
             add(f"POST /quests/quest-begin/{qid}", _quest_begin_template(qid, set_id))
 
+            # Export quest rewards & boss coordinates
+            first, replay, mastery = gamedata.get_quest_rewards(qid)
+            rewards_payload = json.dumps({
+                "first": first,
+                "replay": replay,
+                "mastery": mastery,
+            }, separators=(",", ":")).encode()
+            add(f"@quest:rewards:{qid}", rewards_payload)
+
+            boss_tiles = gamedata.quest_boss_tiles(qid)
+            boss_str = " ".join(f"{bx} {by}" for bx, by in boss_tiles)
+            add(f"@quest:boss:{qid}", boss_str.encode())
+
+            walkable_tiles = gamedata.quest_walkable_tiles(qid)
+            num_walkable = len(walkable_tiles) if walkable_tiles else 5
+            boss_pt = boss_tiles[0] if boss_tiles else (0, 0)
+            victory_action = {
+                "action": {
+                    "questcomplete": {
+                        "x": boss_pt[0],
+                        "y": boss_pt[1],
+                        "isFinalBoss": True,
+                    }
+                },
+                "newlyCompleted": True,
+                "newlyMastered": True,
+                "previouslyMastered": False,
+                "visibleClearedCount": num_walkable,
+                "visibleWalkableCount": num_walkable,
+                "firstResults": first,
+                "replayResults": replay,
+                "masteryResults": mastery,
+            }
+            add(f"@quest:victory:{qid}", json.dumps(victory_action, separators=(",", ":")).encode())
+
             if qid in ("1.1.1", "1.1.2", "1.1.3", "1.1.4", "1.1.5", "1.1.6", "1.1.7"):
                 sx, sy = gamedata.quest_start(qid)
                 add(f"@quest:start:{qid}", f"{sx} {sy}".encode())
