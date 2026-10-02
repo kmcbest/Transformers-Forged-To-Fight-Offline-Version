@@ -259,6 +259,48 @@ def base_stats(bid, rank=1, level=1):
     return hp, atk
 
 
+HERO_RATING_ATTACK_WEIGHT = 1.0
+HERO_RATING_MAX_HP_WEIGHT = 0.075
+RATING_PRECISION = 4
+
+
+def round_to_significant_digits(d, digits=4):
+    """Port of EB.Util.RoundToSignificantDigits (decomp_310_firstpass/EB/Util.cs:777)."""
+    if d == 0:
+        return 0
+    num = math.floor(math.log10(abs(d))) + 1.0
+    if num <= digits:
+        return int(d)
+    num2 = 10.0 ** num
+    return int(num2 * round(float(d) / num2, digits))
+
+
+def calculate_hero_rating(hp, atk, sig_lvl=0):
+    """Calculate rating attributes according to official BCGHeroBase / BCGManagerBase.
+
+    Formula:
+      base_hp_rating = ceil(hp * heroRatingMaxHPWeight [0.075])
+      base_atk_rating = ceil(atk * heroRatingAttackWeight [1.0])
+      sig_bonus = 0.035 * ln(sig_lvl) (when sig_lvl > 0)
+      rating_hp = base_hp_rating + ceil(base_hp_rating * sig_bonus)
+      rating_attack = base_atk_rating + ceil(base_atk_rating * sig_bonus)
+      rating = RoundToSignificantDigits(rating_hp + rating_attack, ratingPrecision [4])
+
+    Returns:
+      (rating, rating_hp, rating_attack, rating_hp_base, rating_attack_base)
+    """
+    base_hp = math.ceil(hp * HERO_RATING_MAX_HP_WEIGHT)
+    base_atk = math.ceil(atk * HERO_RATING_ATTACK_WEIGHT)
+    r_hp = base_hp
+    r_atk = base_atk
+    if sig_lvl > 0:
+        sig_bonus = 0.035 * math.log(max(1, sig_lvl))
+        r_hp += math.ceil(base_hp * sig_bonus)
+        r_atk += math.ceil(base_atk * sig_bonus)
+    total_rating = round_to_significant_digits(r_hp + r_atk, RATING_PRECISION)
+    return total_rating, r_hp, r_atk, base_hp, base_atk
+
+
 # msa values from the proven Server/responses/GET__bcg_getLoginData.json. The intro
 # fight was verified working with these exact numbers, so we preserve them rather than
 # let the authored curve change proven-working entries.
@@ -1042,7 +1084,7 @@ def build_hero_base(bid, rank=1):
     faction, klass, star = ROSTER.get(bid, ("decepticon", "tact", 5))
     level = max(1, rank * 10)
     hp, atk = base_stats(bid, rank, level)
-    rating = (hp + atk) // 20
+    rating, r_hp, r_atk, r_hp_base, r_atk_base = calculate_hero_rating(hp, atk, sig_lvl=0)
     cls_st = _CLASS_STATS.get(klass, {"crit_chance": 0.14, "crit_damage": 1.50})
     crit_chance = cls_st["crit_chance"]
     crit_damage = cls_st["crit_damage"]
@@ -1055,8 +1097,8 @@ def build_hero_base(bid, rank=1):
         "mana_start": _DIAG_MANA_START, "stun_time": 0,
         "special_attacks": max_special_attacks(bid, star),
         "rating": rating,
-        "rating_hp": hp // 2, "rating_attack": atk // 2,
-        "rating_hp_base": hp // 2, "rating_attack_base": atk // 2,
+        "rating_hp": r_hp, "rating_attack": r_atk,
+        "rating_hp_base": r_hp_base, "rating_attack_base": r_atk_base,
         "ab": 1,
         # combat-tuning floats: sensible neutral values (roster view doesn't need real balance)
         "hp": float(hp), "armor": 0.0, "crit_chance": crit_chance, "crit_damage": crit_damage,
@@ -1084,15 +1126,15 @@ def build_heroes():
         mid = m["id"]
         star = m.get("default_star", 5)
         hp0, atk0 = _STAR_BASE.get(star, _STAR_BASE[5])
-        rating = (hp0 + atk0) // 20
+        rating, r_hp, r_atk, r_hp_base, r_atk_base = calculate_hero_rating(hp0, atk0, sig_lvl=0)
         out[mid] = {
             "1": {
                 "id": mid, "r": 1, "m": star, "s": star,
                 "max_hp": hp0, "mhpb": hp0, "attack": atk0, "attb": atk0,
                 "mana_start": 0, "stun_time": 0, "special_attacks": 0,
                 "rating": rating,
-                "rating_hp": hp0 // 2, "rating_attack": atk0 // 2,
-                "rating_hp_base": hp0 // 2, "rating_attack_base": atk0 // 2,
+                "rating_hp": r_hp, "rating_attack": r_atk,
+                "rating_hp_base": r_hp_base, "rating_attack_base": r_atk_base,
                 "ab": 0,
                 "hp": float(hp0), "armor": 500.0, "crit_chance": 0.1, "crit_damage": 1.5,
                 "perfect_block_chance": 0.1, "block_proficiency": 0.75, "mana_gain": 1.0,
@@ -1109,15 +1151,15 @@ def build_heroes():
         rid = r["id"]
         star = r.get("default_star", 5)
         hp0, atk0 = _STAR_BASE.get(star, _STAR_BASE[5])
-        rating = (hp0 + atk0) // 20
+        rating, r_hp, r_atk, r_hp_base, r_atk_base = calculate_hero_rating(hp0, atk0, sig_lvl=0)
         out[rid] = {
             "1": {
                 "id": rid, "r": 1, "m": star, "s": star,
                 "max_hp": hp0, "mhpb": hp0, "attack": atk0, "attb": atk0,
                 "mana_start": 0, "stun_time": 0, "special_attacks": 0,
                 "rating": rating,
-                "rating_hp": hp0 // 2, "rating_attack": atk0 // 2,
-                "rating_hp_base": hp0 // 2, "rating_attack_base": atk0 // 2,
+                "rating_hp": r_hp, "rating_attack": r_atk,
+                "rating_hp_base": r_hp_base, "rating_attack_base": r_atk_base,
                 "ab": 0,
                 "hp": float(hp0), "armor": 500.0, "crit_chance": 0.1, "crit_damage": 1.5,
                 "perfect_block_chance": 0.1, "block_proficiency": 0.75, "mana_gain": 1.0,
@@ -1402,7 +1444,7 @@ def build_login_data(lang="en"):
         "sigLvlMax": 99,
         "ratingPrecision": 4,
         "heroRatingAttackWeight": 1.0,
-        "heroRatingMaxHPWeight": 1.0,
+        "heroRatingMaxHPWeight": 0.075,
         "attributeGrowthDefs": [],
         "statMods": build_stat_modifiers(),
         "statModAppears": {},
@@ -1432,23 +1474,25 @@ def build_login_data(lang="en"):
 def build_hero_entry(bid, rank=None, level=None):
     """One owned-hero record for getUserData `updates.heroes`. Same keys as the
     proven single-hero response; entity_type MUST be 'bot'.
-    Defaults to 5-Star Rank 5 Level 10 Awakened so bots can level up to 50."""
+    Defaults to 5-Star Rank 5 Level 10 Awakened (sig 100) so bots can level up to 50."""
     faction, klass, star = ROSTER.get(bid, ("decepticon", "tact", 5))
     if rank is None:
         rank = max(1, star)
     if level is None:
         level = 10
     hp, atk = base_stats(bid, rank, level)
+    sig_lvl = 100
+    rating, r_hp, r_atk, r_hp_base, r_atk_base = calculate_hero_rating(hp, atk, sig_lvl=sig_lvl)
     return {
         "entity_type": "bot", "bid": bid,
-        "rank": rank, "level": level, "sig_lvl": 100,
+        "rank": rank, "level": level, "sig_lvl": sig_lvl,
         "s": star, "rarity": star, "star": star, "faction": faction,
         "required_xp": 0, "max_xp": 100,
         "stamina": 100, "stamina_ts": 0, "stamina_full_ts": 0, "stt": "",
         "max_hp": hp, "attack": atk,
-        "rating": (hp + atk) // 20,
-        "rating_attack": atk // 2, "rating_hp": hp // 2,
-        "rating_attack_base": atk // 2, "rating_hp_base": hp // 2,
+        "rating": rating,
+        "rating_attack": r_atk, "rating_hp": r_hp,
+        "rating_attack_base": r_atk_base, "rating_hp_base": r_hp_base,
         "special_attacks": max_special_attacks(bid, star), "pvpb": {}, "exc": {},
         "mana_gain": _MANA_GAIN_RATE, "mana_start": _DIAG_MANA_START,
         "flvl": 100, "req_fxp": 0, "max_fxp": 100, "mfl": 100,
@@ -1854,7 +1898,7 @@ def build_mod_entry(mid, rank=1, level=1):
     mod_info = mod_dict.get(mid, {})
     star = mod_info.get("default_star", 5)
     hp0, atk0 = _STAR_BASE.get(star, _STAR_BASE[5])
-    rating = (hp0 + atk0) // 20
+    rating, r_hp, r_atk, r_hp_base, r_atk_base = calculate_hero_rating(hp0, atk0, sig_lvl=0)
     return {
         "entity_type": "tower", "bid": mid,
         "rank": rank, "level": level, "sig_lvl": 0,
@@ -1862,8 +1906,8 @@ def build_mod_entry(mid, rank=1, level=1):
         "stamina": 100, "stamina_ts": 0, "stamina_full_ts": 0, "stt": "",
         "max_hp": hp0, "attack": atk0,
         "rating": rating,
-        "rating_attack": atk0 // 2, "rating_hp": hp0 // 2,
-        "rating_attack_base": atk0 // 2, "rating_hp_base": hp0 // 2,
+        "rating_attack": r_atk, "rating_hp": r_hp,
+        "rating_attack_base": r_atk_base, "rating_hp_base": r_hp_base,
         "special_attacks": 0, "pvpb": {}, "exc": {},
         "mana_gain": 1.0, "mana_start": 0,
         "flvl": 0, "req_fxp": 0, "max_fxp": 0, "mfl": 0,
@@ -1876,7 +1920,7 @@ def build_relic_entry(rid, rank=1, level=1):
     relic_info = relic_dict.get(rid, {})
     star = relic_info.get("default_star", 5)
     hp0, atk0 = _STAR_BASE.get(star, _STAR_BASE[5])
-    rating = (hp0 + atk0) // 20
+    rating, r_hp, r_atk, r_hp_base, r_atk_base = calculate_hero_rating(hp0, atk0, sig_lvl=0)
     return {
         "entity_type": "relic", "bid": rid,
         "rank": rank, "level": level, "sig_lvl": 0,
@@ -1884,8 +1928,8 @@ def build_relic_entry(rid, rank=1, level=1):
         "stamina": 100, "stamina_ts": 0, "stamina_full_ts": 0, "stt": "",
         "max_hp": hp0, "attack": atk0,
         "rating": rating,
-        "rating_attack": atk0 // 2, "rating_hp": hp0 // 2,
-        "rating_attack_base": atk0 // 2, "rating_hp_base": hp0 // 2,
+        "rating_attack": r_atk, "rating_hp": r_hp,
+        "rating_attack_base": r_atk_base, "rating_hp_base": r_hp_base,
         "special_attacks": 0, "pvpb": {}, "exc": {},
         "mana_gain": 1.0, "mana_start": 0,
         "flvl": 0, "req_fxp": 0, "max_fxp": 0, "mfl": 0,
@@ -3243,13 +3287,17 @@ def build_base_hero_details(req_heroes):
             hp0, atk0 = _STAR_BASE.get(star, _STAR_BASE[5])
             hp = hp0 * level
             atk = atk0 * level
+            rating, r_hp, r_atk, r_hp_base, r_atk_base = calculate_hero_rating(hp, atk, sig_lvl=0)
             out.append({
                 "bid": bid, "rank": rank, "level": level,
                 "sig_lvl": int(h.get("sig_lvl", 0) or 0),
                 "i": art_base(bid), "img": art_base(bid),
                 "m": mdl, "mdl": mdl,
-                "rating_hp": hp, "max_hp": hp,
-                "rating_attack": atk, "attack": atk,
+                "rating": rating,
+                "rating_hp": r_hp, "max_hp": hp,
+                "rating_attack": r_atk, "attack": atk,
+                "rating_hp_base": r_hp_base,
+                "rating_attack_base": r_atk_base,
                 "health": hp, "armor": 0, "crit_rate": 0, "crit_dmg": 0,
                 "block_prof": 0, "perfect_block": 0, "sig_ability": 0,
                 "special_attacks": 0, "user_owned": True,
@@ -3261,6 +3309,7 @@ def build_base_hero_details(req_heroes):
             hp, atk = base_stats(bid, rank, level)
             req_sig = h.get("sig_lvl")
             sig_val = int(req_sig) if req_sig is not None else 100
+            rating, r_hp, r_atk, r_hp_base, r_atk_base = calculate_hero_rating(hp, atk, sig_lvl=sig_val)
             cls_st = _CLASS_STATS.get(klass, {"crit_chance": 0.14, "crit_damage": 1.50})
             crit_chance = cls_st["crit_chance"]
             crit_damage = cls_st["crit_damage"]
@@ -3274,8 +3323,11 @@ def build_base_hero_details(req_heroes):
                 "sig_lvl": sig_val,
                 "i": art_base(bid), "img": art_base(bid),
                 "m": model_id(bid), "mdl": model_id(bid),
-                "rating_hp": hp, "max_hp": hp,
-                "rating_attack": atk, "attack": atk,
+                "rating": rating,
+                "rating_hp": r_hp, "max_hp": hp,
+                "rating_attack": r_atk, "attack": atk,
+                "rating_hp_base": r_hp_base,
+                "rating_attack_base": r_atk_base,
                 "health": hp, "armor": 0, "crit_rate": crit_rate, "crit_dmg": crit_dmg,
                 "crit_chance": crit_chance, "crit_damage": crit_damage,
                 "block_prof": 0, "perfect_block": 0, "sig_ability": 1,
@@ -3534,7 +3586,7 @@ def export_bot_info_header():
     for bid in bots:
         faction, klass, star = ROSTER[bid]
         hp, atk = base_stats(bid, 5, 50)
-        pi = (hp + atk) // 20
+        pi, _, _, _, _ = calculate_hero_rating(hp, atk, sig_lvl=100)
         cls_st = _CLASS_STATS.get(klass, {"crit_chance": 0.14, "crit_damage": 1.50})
         crit_chance = cls_st["crit_chance"]
         crit_damage = cls_st["crit_damage"]

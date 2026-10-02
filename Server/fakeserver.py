@@ -212,11 +212,19 @@ class H(http.server.BaseHTTPRequestHandler):
                     # fallback crude monotonic curve (gamedata module missing)
                     hp = 3000 + rank * 4000 + level * 600
                     atk = 300 + rank * 400 + level * 60
+                    r_hp_base = int(math.ceil(hp * 0.075))
+                    r_atk_base = atk
+                    r_hp = r_hp_base + int(math.ceil(r_hp_base * 0.16118))
+                    r_atk = r_atk_base + int(math.ceil(r_atk_base * 0.16118))
+                    rating = r_hp + r_atk
                     out.append({
                         "bid": h.get("bid", ""), "rank": rank, "level": level,
                         "sig_lvl": int(h.get("sig_lvl", 0) or 0),
-                        "rating_hp": hp, "max_hp": hp,
-                        "rating_attack": atk, "attack": atk,
+                        "rating": rating,
+                        "rating_hp": r_hp, "max_hp": hp,
+                        "rating_attack": r_atk, "attack": atk,
+                        "rating_hp_base": r_hp_base,
+                        "rating_attack_base": r_atk_base,
                         "health": hp, "armor": 0, "crit_rate": 0, "crit_dmg": 0,
                         "block_prof": 0, "perfect_block": 0, "sig_ability": 0,
                         # These original revival fallback values prevent zero/missing mana_gain from locking the SP meter.

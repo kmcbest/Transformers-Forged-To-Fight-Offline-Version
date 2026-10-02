@@ -1469,7 +1469,11 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
 
         int hp = 30000 + new_lvl * 500;
         int atk = 1500 + new_lvl * 30;
-        int rating = (hp + atk) / 20;
+        int base_hp_rat = (int)(hp * 0.075f + 0.999f);
+        int base_atk_rat = atk;
+        int r_hp = base_hp_rat + (int)(base_hp_rat * 0.16118f + 0.999f);
+        int r_atk = base_atk_rat + (int)(base_atk_rat * 0.16118f + 0.999f);
+        int rating = r_hp + r_atk;
 
         logmsg("BCG: upgrade-hero hero=%s old_lvl=%d new_lvl=%d (ores=%d)",
                hero_bid, cur_lvl, new_lvl, ore_count);
@@ -1507,8 +1511,8 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
             "}}",
             hero_bid, new_lvl,
             hp, atk, rating,
-            atk / 2, hp / 2,
-            atk / 2, hp / 2
+            r_atk, r_hp,
+            base_atk_rat, base_hp_rat
         );
         if (rlen > 0 && out_add(o, resp_buf, (size_t)rlen)) {
             *outn = o->n;

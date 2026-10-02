@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TFTF 官方角色 Rating / 战力评分验算器 (支持锻造等级与专精验证)</title>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: #131b2e;
+      --card-border: #1e293b;
+      --accent: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.25);
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --gold: #fbbf24;
+      --green: #4ade80;
+      --red: #f87171;
+      --purple: #c084fc;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px;
+    }
+    .container {
+      width: 100%;
+      max-width: 980px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .header {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border: 1px solid #334155;
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .header::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .title {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      color: #38bdf8;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 860px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid #1e293b;
+      padding-bottom: 10px;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #cbd5e1;
+      display: flex;
+      justify-content: space-between;
+    }
+    .val-hint {
+      font-weight: 400;
+      color: #64748b;
+      font-family: monospace;
+    }
+    input[type="number"], select {
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: #f8fafc;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 15px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input[type="number"]:focus, select:focus {
+      border-color: #38bdf8;
+    }
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    input[type="range"] {
+      flex: 1;
+      accent-color: #38bdf8;
+      cursor: pointer;
+    }
+    .btn-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .btn-pill {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #94a3b8;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-pill:hover {
+      background: #334155;
+      color: #f8fafc;
+    }
+    .btn-pill.active {
+      background: #0284c7;
+      border-color: #38bdf8;
+      color: #ffffff;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+    }
+    .btn-pill.highlight {
+      border-color: #f59e0b;
+      color: #fbbf24;
+    }
+    .btn-pill.highlight.active {
+      background: #d97706;
+      color: #fff;
+      box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+    }
+    .rating-hero-box {
+      background: radial-gradient(circle at 50% 50%, #1e293b 0%, #0f172a 100%);
+      border: 1px solid #38bdf8;
+      border-radius: 14px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 0 30px var(--accent-glow);
+      position: relative;
+    }
+    .rating-label {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #94a3b8;
+      font-weight: 700;
+    }
+    .rating-value {
+      font-size: 52px;
+      font-weight: 900;
+      color: #38bdf8;
+      text-shadow: 0 0 20px rgba(56, 189, 248, 0.6);
+      font-family: monospace, sans-serif;
+      line-height: 1.1;
+    }
+    .sub-rating-bar {
+      width: 100%;
+      background: #090d16;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+    }
+    .stat-splits {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .split-item {
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+    }
+    .split-item .lbl {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+    .split-item .val {
+      font-size: 20px;
+      font-weight: 800;
+      font-family: monospace;
+    }
+    .split-item.hp-val .val { color: #4ade80; }
+    .split-item.atk-val .val { color: #f87171; }
+    .breakdown-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-top: 4px;
+    }
+    .breakdown-table td {
+      padding: 7px 10px;
+      border-bottom: 1px solid #1e293b;
+    }
+    .breakdown-table tr:last-child td {
+      border-bottom: none;
+      font-weight: bold;
+    }
+    .breakdown-box {
+      background: #0a0f1d;
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+      padding: 14px;
+      font-size: 12.5px;
+      line-height: 1.7;
+      color: #cbd5e1;
+    }
+    .breakdown-box code {
+      background: #1e293b;
+      color: #38bdf8;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .badge-autobot { background: #991b1b; color: #fee2e2; }
+    .badge-decepticon { background: #4c1d95; color: #ede9fe; }
+    .badge-class { background: #1e293b; color: #38bdf8; border: 1px solid #334155; }
+    .badge-star { background: #854d0e; color: #fef08a; }
+    .details-toggle {
+      font-size: 12px;
+      color: #64748b;
+      cursor: pointer;
+      text-decoration: underline;
+      margin-top: 4px;
+    }
+    .advanced-settings {
+      display: none;
+      background: #0b1120;
+      border: 1px dashed #334155;
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 8px;
+      gap: 10px;
+      flex-direction: column;
+    }
+    .advanced-settings.open { display: flex; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="title">TFTF 官方角色 Rating 验算器</div>
+      <div class="subtitle">
+        基于游戏反编译 C# 源码（<code>BCGHeroBaseCommon.cs</code>、<code>BCGManagerBase.cs</code>、<code>RoundToSignificantDigits</code>）<br>
+        完整支持<strong>「原生基础血攻公式」</strong>、<strong>「觉醒等级加成」</strong>与<strong>「锻造等级系数拟合」</strong>对照验算！
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- Left Panel: Inputs -->
+      <div class="card">
+        <div class="card-title">
+          <span>⚙️</span> 角色与基础属性输入
+        </div>
+
+        <div class="form-group" style="border-bottom: 1px solid #1e293b; padding-bottom: 10px;">
+          <label>📺 原版视频 4 位 5★ 斗士快速验证</label>
+          <div class="btn-group">
+            <button class="btn-pill" onclick="loadSampleBot('optimus')">电影擎天柱 (Sig 65 → 13,740)</button>
+            <button class="btn-pill" onclick="loadSampleBot('primal')">猩猩队长 (Sig 55 → 13,740)</button>
+            <button class="btn-pill" onclick="loadSampleBot('grimlock')">钢锁 (Sig 95 → 14,440)</button>
+            <button class="btn-pill highlight" onclick="loadSampleBot('thundercracker')">惊天雷 (Sig 80 → 14,940)</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="botSelect">选择官方预设角色</label>
+          <select id="botSelect">
+            <option value="">-- 选择角色快速填入初始属性 --</option>
+          </select>
+        </div>
+
+        <div id="botMeta" style="display:none; gap:6px; flex-wrap:wrap; margin-bottom:4px;">
+          <span id="factionBadge" class="badge"></span>
+          <span id="classBadge" class="badge badge-class"></span>
+          <span id="starBadge" class="badge badge-star"></span>
+        </div>
+
+        <div class="form-group">
+          <label for="hpInput">生命值 (HP) <span class="val-hint" id="hpFormulaHint">× 0.075</span></label>
+          <input type="number" id="hpInput" value="45514" min="1" step="1">
+        </div>
+
+        <div class="form-group">
+          <label for="atkInput">攻击力 (Attack) <span class="val-hint" id="atkFormulaHint">× 1.0</span></label>
+          <input type="number" id="atkInput" value="3531" min="1" step="1">
+        </div>
+
+        <div class="form-group">
+          <label>觉醒等级 (Signature Level: 0 ~ 100)</label>
+          <div class="slider-row">
+            <input type="range" id="sigRange" min="0" max="100" value="80">
+            <input type="number" id="sigInput" min="0" max="100" value="80">
+          </div>
+          <div class="btn-group" style="margin-top:4px;">
+            <button class="btn-pill" onclick="setSig(0)">未觉醒 (0)</button>
+            <button class="btn-pill" onclick="setSig(20)">20级</button>
+            <button class="btn-pill" onclick="setSig(55)">55级 (猩猩)</button>
+            <button class="btn-pill" onclick="setSig(65)">65级 (擎天柱)</button>
+            <button class="btn-pill active" onclick="setSig(80)">80级 (惊天雷)</button>
+            <button class="btn-pill" onclick="setSig(95)">95级 (钢锁)</button>
+            <button class="btn-pill" onclick="setSig(100)">满觉 (100)</button>
+          </div>
+        </div>
+
+        <!-- 锻造等级输入区域 -->
+        <div class="form-group" style="border-top: 1px solid #1e293b; padding-top: 12px;">
+          <label>锻造等级 (Forge Level: 0 ~ 100)</label>
+          <div class="slider-row">
+            <input type="range" id="forgeRange" min="0" max="100" value="100">
+            <input type="number" id="forgeInput" min="0" max="100" value="100">
+          </div>
+          <div class="btn-group" style="margin-top:4px;">
+            <button class="btn-pill forge-btn" onclick="setForge(0)">0级 (无锻造)</button>
+            <button class="btn-pill forge-btn" onclick="setForge(50)">50级</button>
+            <button class="btn-pill forge-btn active" onclick="setForge(100)">100级 (满锻造)</button>
+          </div>
+        </div>
+
+        <!-- 专精调整区域 (精简为微调辅助) -->
+        <div class="form-group" style="border-top: 1px solid #1e293b; padding-top: 10px;">
+          <label>天赋/专精微调 (Mastery: 0% ~ 20%) <span class="val-hint" style="font-size:11px;">通常实战仅约0%~10%</span></label>
+          <div class="slider-row">
+            <input type="range" id="masteryRange" min="0" max="30" step="0.5" value="0">
+            <input type="number" id="masteryInput" min="0" max="30" step="0.5" value="0" style="width:80px;">
+            <span style="font-size:13px; color:#cbd5e1;">%</span>
+          </div>
+        </div>
+
+        <div class="details-toggle" onclick="toggleAdvanced()">高级权重配置 (官方默认与拟合参数)</div>
+        <div class="advanced-settings" id="advSettings">
+          <div class="form-group">
+            <label for="forgeScale">满级锻造战力提升系数 (Forge Multiplier @ 100):</label>
+            <input type="number" id="forgeScale" value="0.726" step="0.01">
+            <span style="font-size:11px; color:#64748b;">标准斗士为 0.726 (+72.6%)；强攻斗士如惊天雷为 0.865 (+86.5%)</span>
+          </div>
+          <div class="form-group">
+            <label for="weightAtk">攻击权重 (heroRatingAttackWeight):</label>
+            <input type="number" id="weightAtk" value="1.0" step="0.05">
+          </div>
+          <div class="form-group">
+            <label for="weightHp">生命权重 (heroRatingMaxHPWeight):</label>
+            <input type="number" id="weightHp" value="0.075" step="0.005">
+          </div>
+          <div class="form-group">
+            <label for="precision">有效数字精度 (ratingPrecision):</label>
+            <input type="number" id="precision" value="4" min="1" max="10">
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Panel: Results & Calculation -->
+      <div class="card">
+        <div class="card-title">
+          <span>📊</span> 战力评分 (Hero Rating) 计算结果
+        </div>
+
+        <div class="rating-hero-box">
+          <div class="rating-label">最终展示总战力 (DISPLAYED RATING)</div>
+          <div class="rating-value" id="resBuffedRating">14,940</div>
+          <div style="font-size:12px; color:#94a3b8;" id="resBuffedDetail">基准 8,011 × 锻造 1.73 (+72.6%)</div>
+        </div>
+
+        <div class="sub-rating-bar">
+          <span style="color:#94a3b8;">未锻造裸机战力 (Unforged Base)：</span>
+          <span style="font-size:16px; font-weight:800; color:#e2e8f0; font-family:monospace;" id="resBaseRating">8,011</span>
+        </div>
+
+        <div class="stat-splits">
+          <div class="split-item hp-val">
+            <div class="lbl">生命值评分贡献 (Rating HP)</div>
+            <div class="val" id="resRatingHp">3,938</div>
+            <div style="font-size:11px; color:#64748b; margin-top:2px;" id="resHpDetail">基准 3,414 + 觉醒 524</div>
+          </div>
+          <div class="split-item atk-val">
+            <div class="lbl">攻击力评分贡献 (Rating ATK)</div>
+            <div class="val" id="resRatingAtk">4,073</div>
+            <div style="font-size:11px; color:#64748b; margin-top:2px;" id="resAtkDetail">基准 3,531 + 觉醒 542</div>
+          </div>
+        </div>
+
+        <div class="breakdown-box">
+          <div style="font-weight:700; color:#38bdf8; margin-bottom:6px;">📋 战力构成结构分解：</div>
+          <table class="breakdown-table">
+            <tr>
+              <td style="color:#94a3b8;">🤖 原始角色基准 (HP×0.075 + ATK×1.0)</td>
+              <td style="text-align:right; font-family:monospace;" id="tbRaw">6,945</td>
+            </tr>
+            <tr>
+              <td style="color:#38bdf8;">✨ 觉醒等级加成 (Signature Bonus)</td>
+              <td style="text-align:right; font-family:monospace; color:#38bdf8;" id="tbSig">+1,066</td>
+            </tr>
+            <tr>
+              <td style="color:#f59e0b;">🔨 锻造等级放大 (Forge Multiplier)</td>
+              <td style="text-align:right; font-family:monospace; color:#f59e0b;" id="tbForge">+5,819</td>
+            </tr>
+            <tr>
+              <td style="color:#a855f7;">⚡ 专精/天赋微调 (Mastery Multiplier)</td>
+              <td style="text-align:right; font-family:monospace; color:#a855f7;" id="tbMastery">+0</td>
+            </tr>
+            <tr style="border-top:1px solid #334155; color:#38bdf8;">
+              <td>🏆 最终战力 (4位有效数字舍入)</td>
+              <td style="text-align:right; font-family:monospace; font-size:15px;" id="tbTotal">14,940</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="breakdown-box">
+          <div style="font-weight:700; color:#38bdf8; margin-bottom:6px;">📐 官方公式底层推导明细：</div>
+          <div id="step1">1. 基础评分：<code>RatingHP_base = ⌈45514 × 0.075⌉ = 3414</code>，<code>RatingAtk_base = ⌈3531 × 1.0⌉ = 3531</code></div>
+          <div id="step2">2. 觉醒加成：<code>sig_lvl = 80</code> → <code>bonus = 0.035 × ln(80) ≈ +15.34%</code> → <strong>8,011</strong></div>
+          <div id="step3">3. 锻造放大：<code>8011 × (1 + 100/100 × 0.726) = 13827.0</code></div>
+          <div id="step4">4. 舍入规则：<code>13827.0</code> (4位有效数字截断) → <code>13830</code></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let BOTS = [{"id": "acidstorm_gs_leader2015", "name_zh": "酸雨", "name_en": "Acidstorm", "faction": "decepticon", "class": "tech", "star": 5, "hp": 58106, "atk": 2878, "rating": 8403, "r_hp": 5061, "r_atk": 3342}, {"id": "arcee_gs_deluxe2014", "name_zh": "阿尔茜", "name_en": "Arcee", "faction": "autobot", "class": "warr", "star": 5, "hp": 52572, "atk": 3485, "rating": 8626, "r_hp": 4579, "r_atk": 4047}, {"id": "barricade_cin_dotm", "name_zh": "路障", "name_en": "Barricade", "faction": "decepticon", "class": "scou", "star": 5, "hp": 47038, "atk": 3636, "rating": 8320, "r_hp": 4097, "r_atk": 4223}, {"id": "bitstream_gs_leader2015", "name_zh": "比特流", "name_en": "Bitstream", "faction": "decepticon", "class": "tech", "star": 5, "hp": 58106, "atk": 2878, "rating": 8403, "r_hp": 5061, "r_atk": 3342}, {"id": "blaster_gs_leader2016", "name_zh": "录音机", "name_en": "Blaster", "faction": "autobot", "class": "tech", "star": 5, "hp": 58106, "atk": 2878, "rating": 8403, "r_hp": 5061, "r_atk": 3342}, {"id": "bludgeon_gs_rd20", "name_zh": "雷震", "name_en": "Bludgeon", "faction": "decepticon", "class": "warr", "star": 5, "hp": 52572, "atk": 3485, "rating": 8626, "r_hp": 4579, "r_atk": 4047}, {"id": "bonecrusher_cin_rotf", "name_zh": "碎骨魔", "name_en": "Bonecrusher", "faction": "decepticon", "class": "warr", "star": 5, "hp": 52572, "atk": 3485, "rating": 8626, "r_hp": 4579, "r_atk": 4047}, {"id": "breakdown_gs", "name_zh": "打击", "name_en": "Breakdown", "faction": "decepticon", "class": "scou", "star": 5, "hp": 47038, "atk": 3636, "rating": 8320, "r_hp": 4097, "r_atk": 4223}, {"id": "bumblebee_cin_dotm", "name_zh": "大黄蜂", "name_en": "Bumblebee (DOTM)", "faction": "autobot", "class": "tact", "star": 5, "hp": 55339, "atk": 3030, "rating": 8340, "r_hp": 4821, "r_atk": 3519}, {"id": "bumblebee_gs_kabam", "name_zh": "小黄蜂", "name_en": "Bumblebee", "faction": "autobot", "class": "scou", "star": 5, "hp": 47038, "atk": 3636, "rating": 8320, "r_hp": 4097, "r_atk": 4223}, {"id": "cheetor_bw_transmetal", "name_zh": "黄豹", "name_en": "Cheetor", "faction": "maximal", "class": "scou", "star": 5, "hp": 47038, "atk": 3636, "rating": 8320, "r_hp": 4097, "r_atk": 4223}, {"id": "chromia_gs_kabam", "name_zh": "克劳莉娅", "name_en": "Chromia", "faction": "autobot", "class": "warr", "star": 5, "hp": 52572, "atk": 3485, "rating": 8626, "r_hp": 4579, "r_atk": 4047}, {"id": "cliffjumper_gs_kabam", "name_zh": "飞过山", "name_en": "Cliffjumper", "faction": "autobot", "class": "demo", "star": 5, "hp": 60873, "atk": 3182, "rating": 8997, "r_hp": 5302, "r_atk": 3695}, {"id": "cyclonus_gs_uw06", "name_zh": "狂飙", "name_en": "Cyclonus", "faction": "decepticon", "class": "tact", "star": 5, "hp": 55339, "atk": 3030, "rating": 8340, "r_hp": 4821, "r_atk": 3519}, {"id": "deadend_gs_deluxe2015", "name_zh": "封锁", "name_en": "Deadend", "faction": "decepticon", "class": "demo", "star": 5, "hp": 60873, "atk": 3182, "rating": 8997, "r_hp": 5302, "r_atk": 3695}, {"id": "dinobot_bw_kabam", "name_zh": "恐龙勇士", "name_en": "Dinobot", "faction": "maximal", "class": "tact", "star": 5, "hp": 55339, "atk": 3030, "rating": 8340, "r_hp": 4821, "r_atk": 3519}, {"id": "dirge_gs_deluxe2008", "name_zh": "挽歌", "name_en": "Dirge", "faction": "decepticon", "class": "warr", "star": 5, "hp": 52572, "atk": 3485, "rating": 8626, "r_hp": 4579, "r_atk": 4047}, {"id": "dragstrip_gs_deluxe2016", "name_zh": "抢劫", "name_en": "Dragstrip", "faction": "decepticon", "class": "warr", "star": 5, "hp": 52572, "atk": 3485, "rating": 8626, "r_hp": 4579, "r_atk": 4047}, {"id": "drift_cin_aoe", "name_zh": "漂移", "name_en": "Drift", "faction": "autobot", "class": "warr", "star": 5, "hp": 52572, "atk": 3485, "rating": 8626, "r_hp": 4579, "r_atk": 4047}, {"id": "fte_optimus_gs_t3", "name_zh": "G1擎天柱", "name_en": "Optimus Prime", "faction": "autobot", "class": "tact", "star": 5, "hp": 55339, "atk": 3030, "rating": 8340, "r_hp": 4821, "r_atk": 3519}, {"id": "fte_stars_gs_t3", "name_zh": "红蜘蛛", "name_en": "Starscream", "faction": "decepticon", "class": "tact", "star": 5, "hp": 55339, "atk": 3030, "rating": 8340, "r_hp": 4821, "r_atk": 3519}, {"id": "galvatron_gs_voyager2016", "name_zh": "惊破天", "name_en": "Galvatron", "faction": "decepticon", "class": "demo", "star": 5, "hp": 60873, "atk": 3182, "rating": 8997, "r_hp": 5302, "r_atk": 3695}, {"id": "grimlock_gs_mp08", "name_zh": "钢锁", "name_en": "Grimlock", "faction": "autobot", "class": "braw", "star": 5, "hp": 69174, "atk": 2727, "rating": 9193, "r_hp": 6026, "r_atk": 3167}, {"id": "grindor_cin_rotf", "name_zh": "碾碎器", "name_en": "Grindor", "faction": "decepticon", "class": "braw", "star": 5, "hp": 69174, "atk": 2727, "rating": 9193, "r_hp": 6026, "r_atk": 3167}, {"id": "hotlink_gs_leader2015", "name_zh": "热链接", "name_en": "Hotlink", "faction": "decepticon", "class": "braw", "star": 5, "hp": 69174, "atk": 2727, "rating": 9193, "r_hp": 6026, "r_atk": 3167}, {"id": "hotrod_cin_tlk", "name_zh": "热破", "name_en": "Hot Rod", "faction": "autobot", "class": "warr", "star": 5, "hp": 52572, "atk": 3485, "rating": 8626, "r_hp": 4579, "r_atk": 4047}, {"id": "hound_cin_tlk", "name_zh": "探长", "name_en": "Hound", "faction": "autobot", "class": "warr", "star": 5, "hp": 52572, "atk": 3485, "rating": 8626, "r_hp": 4579, "r_atk": 4047}, {"id": "ionstorm_gs_leader2015", "name_zh": "离子风", "name_en": "Ionstorm", "faction": "decepticon", "class": "tact", "star": 5, "hp": 55339, "atk": 3030, "rating": 8340, "r_hp": 4821, "r_atk": 3519}, {"id": "ironhide_cin_rotf", "name_zh": "电影铁皮", "name_en": "Ironhide (ROTF)", "faction": "autobot", "class": "demo", "star": 5, "hp": 60873, "atk": 3182, "rating": 8997, "r_hp": 5302, "r_atk": 3695}, {"id": "ironhide_gs_kabam", "name_zh": "G1铁皮", "name_en": "Ironhide", "faction": "autobot", "class": "braw", "star": 5, "hp": 69174, "atk": 2727, "rating": 9193, "r_hp": 6026, "r_atk": 3167}, {"id": "jazz_gs_twm05", "name_zh": "爵士", "name_en": "Jazz", "faction": "autobot", "class": "scou", "star": 5, "hp": 47038, "atk": 3636, "rating": 8320, "r_hp": 4097, "r_atk": 4223}, {"id": "jetfire_gs_leader2014", "name_zh": "天火", "name_en": "Jetfire", "faction": "autobot", "class": "tech", "star": 5, "hp": 58106, "atk": 2878, "rating": 8403, "r_hp": 5061, "r_atk": 3342}, {"id": "kickback_gs_kabam", "name_zh": "反冲", "name_en": "Kickback", "faction": "decepticon", "class": "scou", "star": 5, "hp": 47038, "atk": 3636, "rating": 8320, "r_hp": 4097, "r_atk": 4223}, {"id": "lifeline_gs_deluxe2014", "name_zh": "回春手", "name_en": "Lifeline", "faction": "autobot", "class": "tech", "star": 5, "hp": 58106, "atk": 2878, "rating": 8403, "r_hp": 5061, "r_atk": 3342}, {"id": "megatron_cin_rotf", "name_zh": "电影威震天", "name_en": "Megatron (ROTF)", "faction": "decepticon", "class": "demo", "star": 5, "hp": 60873, "atk": 3182, "rating": 8997, "r_hp": 5302, "r_atk": 3695}, {"id": "megatron_gs_leader2015", "name_zh": "G1威震天", "name_en": "Megatron", "faction": "decepticon", "class": "tact", "star": 5, "hp": 55339, "atk": 3030, "rating": 8340, "r_hp": 4821, "r_atk": 3519}, {"id": "megatronus_gs_kabam", "name_zh": "震天尊", "name_en": "Megatronus", "faction": "decepticon", "class": "demo", "star": 5, "hp": 60873, "atk": 3182, "rating": 8997, "r_hp": 5302, "r_atk": 3695}, {"id": "mirage_gs_deluxe2016", "name_zh": "幻影", "name_en": "Mirage", "faction": "autobot", "class": "tech", "star": 5, "hp": 58106, "atk": 2878, "rating": 8403, "r_hp": 5061, "r_atk": 3342}, {"id": "mixmaster_cin_rotf", "name_zh": "搅拌者", "name_en": "Mixmaster", "faction": "decepticon", "class": "demo", "star": 5, "hp": 60873, "atk": 3182, "rating": 8997, "r_hp": 5302, "r_atk": 3695}, {"id": "motormaster_gs_voyager2015", "name_zh": "汽车大师", "name_en": "Motormaster", "faction": "decepticon", "class": "braw", "star": 5, "hp": 69174, "atk": 2727, "rating": 9193, "r_hp": 6026, "r_atk": 3167}, {"id": "necrotronus_gs_kabam", "name_zh": "亡灵天尊", "name_en": "Necrotronus", "faction": "decepticon", "class": "warr", "star": 5, "hp": 52572, "atk": 3485, "rating": 8626, "r_hp": 4579, "r_atk": 4047}, {"id": "nemesisprime_gs_voyager2015", "name_zh": "暗天陨", "name_en": "Nemesis Prime", "faction": "decepticon", "class": "tact", "star": 5, "hp": 55339, "atk": 3030, "rating": 8340, "r_hp": 4821, "r_atk": 3519}, {"id": "novastorm_gs_leader2015", "name_zh": "新星风", "name_en": "Novastorm", "faction": "decepticon", "class": "demo", "star": 5, "hp": 60873, "atk": 3182, "rating": 8997, "r_hp": 5302, "r_atk": 3695}, {"id": "optimusprimal_bw_mp32", "name_zh": "猩猩队长", "name_en": "Optimus Primal", "faction": "maximal", "class": "braw", "star": 5, "hp": 69174, "atk": 2727, "rating": 9193, "r_hp": 6026, "r_atk": 3167}, {"id": "optimusprime_cin_tf", "name_zh": "电影擎天柱", "name_en": "Optimus Prime (MV1)", "faction": "autobot", "class": "braw", "star": 5, "hp": 69174, "atk": 2727, "rating": 9193, "r_hp": 6026, "r_atk": 3167}, {"id": "optimusprime_sg_voyager2015", "name_zh": "倾天柱", "name_en": "SG Optimus Prime", "faction": "autobot", "class": "braw", "star": 5, "hp": 69174, "atk": 2727, "rating": 9193, "r_hp": 6026, "r_atk": 3167}, {"id": "prowl_gs_deluxe2016", "name_zh": "警车", "name_en": "Prowl", "faction": "autobot", "class": "scou", "star": 5, "hp": 47038, "atk": 3636, "rating": 8320, "r_hp": 4097, "r_atk": 4223}, {"id": "ramjet_gs_deluxe2008", "name_zh": "喷气机", "name_en": "Ramjet", "faction": "decepticon", "class": "demo", "star": 5, "hp": 60873, "atk": 3182, "rating": 8997, "r_hp": 5302, "r_atk": 3695}, {"id": "ratchet_gs_kabam", "name_zh": "救护车", "name_en": "Ratchet", "faction": "autobot", "class": "tech", "star": 5, "hp": 58106, "atk": 2878, "rating": 8403, "r_hp": 5061, "r_atk": 3342}, {"id": "rhinox_gs_voyager2014", "name_zh": "犀牛", "name_en": "Rhinox", "faction": "maximal", "class": "tech", "star": 5, "hp": 58106, "atk": 2878, "rating": 8403, "r_hp": 5061, "r_atk": 3342}, {"id": "rodimusprime_gs_mp09", "name_zh": "补天士", "name_en": "Rodimus Prime", "faction": "autobot", "class": "tact", "star": 5, "hp": 55339, "atk": 3030, "rating": 8340, "r_hp": 4821, "r_atk": 3519}, {"id": "scorponok_bw_kabam", "name_zh": "巨蝎勇士", "name_en": "Scorponok", "faction": "predacon", "class": "warr", "star": 5, "hp": 52572, "atk": 3485, "rating": 8626, "r_hp": 4579, "r_atk": 4047}, {"id": "sharkticon_gs_brawler", "name_zh": "饿鲨", "name_en": "Sharkticon (Brawler)", "faction": "decepticon", "class": "braw", "star": 5, "hp": 15000, "atk": 630, "rating": 2039, "r_hp": 1307, "r_atk": 732}, {"id": "sharkticon_gs_demolition", "name_zh": "饿鲨", "name_en": "Sharkticon (Demolition)", "faction": "decepticon", "class": "demo", "star": 5, "hp": 13200, "atk": 735, "rating": 2004, "r_hp": 1150, "r_atk": 854}, {"id": "sharkticon_gs_kabam", "name_zh": "饿鲨1000", "name_en": "Sharkticon", "faction": "decepticon", "class": "scou", "star": 5, "hp": 10200, "atk": 840, "rating": 1865, "r_hp": 889, "r_atk": 976}, {"id": "sharkticon_gs_scout", "name_zh": "饿鲨", "name_en": "Sharkticon (Scout)", "faction": "decepticon", "class": "scou", "star": 5, "hp": 10200, "atk": 840, "rating": 1865, "r_hp": 889, "r_atk": 976}, {"id": "sharkticon_gs_tactician", "name_zh": "饿鲨", "name_en": "Sharkticon (Tactician)", "faction": "decepticon", "class": "tact", "star": 5, "hp": 12000, "atk": 700, "rating": 1859, "r_hp": 1046, "r_atk": 813}, {"id": "sharkticon_gs_tech", "name_zh": "饿鲨", "name_en": "Sharkticon (Tech)", "faction": "decepticon", "class": "tech", "star": 5, "hp": 12600, "atk": 665, "rating": 1871, "r_hp": 1098, "r_atk": 773}, {"id": "sharkticon_gs_warrior", "name_zh": "饿鲨", "name_en": "Sharkticon (Warrior)", "faction": "decepticon", "class": "warr", "star": 5, "hp": 11400, "atk": 804, "rating": 1927, "r_hp": 993, "r_atk": 934}, {"id": "shockwave_gs", "name_zh": "震荡波", "name_en": "Shockwave", "faction": "decepticon", "class": "tech", "star": 5, "hp": 58106, "atk": 2878, "rating": 8403, "r_hp": 5061, "r_atk": 3342}, {"id": "sideswipe_gs", "name_zh": "横炮", "name_en": "Sideswipe", "faction": "autobot", "class": "scou", "star": 5, "hp": 47038, "atk": 3636, "rating": 8320, "r_hp": 4097, "r_atk": 4223}, {"id": "skywarp_gs_leader2015", "name_zh": "闹翻天", "name_en": "Skywarp", "faction": "decepticon", "class": "tech", "star": 5, "hp": 58106, "atk": 2878, "rating": 8403, "r_hp": 5061, "r_atk": 3342}, {"id": "slipstream_gs", "name_zh": "滑流", "name_en": "Slipstream", "faction": "decepticon", "class": "scou", "star": 5, "hp": 47038, "atk": 3636, "rating": 8320, "r_hp": 4097, "r_atk": 4223}, {"id": "soundblaster_gs_mp13b", "name_zh": "音板", "name_en": "Soundblaster", "faction": "decepticon", "class": "tact", "star": 5, "hp": 55339, "atk": 3030, "rating": 8340, "r_hp": 4821, "r_atk": 3519}, {"id": "soundwave_gs", "name_zh": "声波", "name_en": "Soundwave", "faction": "decepticon", "class": "tech", "star": 5, "hp": 58106, "atk": 2878, "rating": 8403, "r_hp": 5061, "r_atk": 3342}, {"id": "starsaber_gs_leader2014", "name_zh": "史达", "name_en": "Star Saber", "faction": "autobot", "class": "tact", "star": 5, "hp": 55339, "atk": 3030, "rating": 8340, "r_hp": 4821, "r_atk": 3519}, {"id": "starscream_ghost_gs", "name_zh": "鬼魂红蜘蛛", "name_en": "Ghost Starscream", "faction": "decepticon", "class": "scou", "star": 5, "hp": 44686, "atk": 4545, "rating": 9171, "r_hp": 3893, "r_atk": 5278}, {"id": "sunstorm_gs_leader2015", "name_zh": "太阳风", "name_en": "Sunstorm", "faction": "decepticon", "class": "warr", "star": 5, "hp": 52572, "atk": 3485, "rating": 8626, "r_hp": 4579, "r_atk": 4047}, {"id": "sunstreaker_gs_deluxe2008", "name_zh": "飞毛腿", "name_en": "Sunstreaker", "faction": "autobot", "class": "braw", "star": 5, "hp": 69174, "atk": 2727, "rating": 9193, "r_hp": 6026, "r_atk": 3167}, {"id": "tantrum_gs_kabam", "name_zh": "野牛", "name_en": "Tantrum", "faction": "decepticon", "class": "braw", "star": 5, "hp": 69174, "atk": 2727, "rating": 9193, "r_hp": 6026, "r_atk": 3167}, {"id": "thrust_gs_deluxe2008", "name_zh": "冲锋", "name_en": "Thrust", "faction": "decepticon", "class": "scou", "star": 5, "hp": 47038, "atk": 3636, "rating": 8320, "r_hp": 4097, "r_atk": 4223}, {"id": "thundercracker_gs_leader2015", "name_zh": "惊天雷", "name_en": "Thundercracker", "faction": "decepticon", "class": "braw", "star": 5, "hp": 69174, "atk": 2727, "rating": 9193, "r_hp": 6026, "r_atk": 3167}, {"id": "ultramagnus_gs_leader", "name_zh": "通天晓", "name_en": "Ultra Magnus", "faction": "autobot", "class": "tact", "star": 5, "hp": 55339, "atk": 3030, "rating": 8340, "r_hp": 4821, "r_atk": 3519}, {"id": "ultramagnus_sg_leader", "name_zh": "捅天枭", "name_en": "SG Ultra Magnus", "faction": "autobot", "class": "demo", "star": 5, "hp": 60873, "atk": 3182, "rating": 8997, "r_hp": 5302, "r_atk": 3695}, {"id": "waspinator_gs_deluxe", "name_zh": "黄蜂勇士", "name_en": "Waspinator", "faction": "predacon", "class": "demo", "star": 5, "hp": 60873, "atk": 3182, "rating": 8997, "r_hp": 5302, "r_atk": 3695}, {"id": "wheeljack_gs_mp20", "name_zh": "千斤顶", "name_en": "Wheeljack", "faction": "autobot", "class": "tech", "star": 5, "hp": 58106, "atk": 2878, "rating": 8403, "r_hp": 5061, "r_atk": 3342}, {"id": "wildrider_gs_deluxe2016", "name_zh": "莽撞", "name_en": "Wildrider", "faction": "decepticon", "class": "braw", "star": 5, "hp": 69174, "atk": 2727, "rating": 9193, "r_hp": 6026, "r_atk": 3167}, {"id": "windblade_gs", "name_zh": "风刃", "name_en": "Windblade", "faction": "autobot", "class": "scou", "star": 5, "hp": 47038, "atk": 3636, "rating": 8320, "r_hp": 4097, "r_atk": 4223}];
+
+    // Official round to significant digits algorithm from decomp_310_firstpass/EB/Util.cs:777
+    function roundToSignificantDigits(d, digits) {
+      if (d === 0) return 0;
+      const num = Math.floor(Math.log10(Math.abs(d))) + 1.0;
+      if (num <= digits) return d;
+      const num2 = Math.pow(10.0, num);
+      return Math.round(num2 * Math.round(d / num2 * Math.pow(10, digits)) / Math.pow(10, digits));
+    }
+
+    function calculateRating(hp, atk, sigLvl, forgeLvl, masteryPct, wHp, wAtk, precision, forgeScale) {
+      const baseHpRating = Math.ceil(hp * wHp);
+      const baseAtkRating = Math.ceil(atk * wAtk);
+
+      let rHp = baseHpRating;
+      let rAtk = baseAtkRating;
+      let sigBonus = 0;
+
+      if (sigLvl > 0) {
+        sigBonus = 0.035 * Math.log(Math.max(1, sigLvl));
+        rHp += Math.ceil(baseHpRating * sigBonus);
+        rAtk += Math.ceil(baseAtkRating * sigBonus);
+      }
+
+      const rawSum = rHp + rAtk;
+      const rawBaseRating = roundToSignificantDigits(rawSum, precision);
+
+      // 锻造加成 (满级锻造提供额外的 Rating 倍率放大)
+      const forgeMultiplier = 1.0 + (forgeLvl / 100.0) * forgeScale;
+
+      // 专精/天赋加成 (百分比)
+      const masteryMultiplier = 1.0 + (masteryPct / 100.0);
+
+      // 综合实战评分
+      const buffedRaw = rawSum * forgeMultiplier * masteryMultiplier;
+      const buffedRating = roundToSignificantDigits(buffedRaw, precision);
+      const extraDelta = buffedRating - rawBaseRating;
+
+      return {
+        baseHpRating,
+        baseAtkRating,
+        sigBonus,
+        rHp,
+        rAtk,
+        rawSum,
+        rawBaseRating,
+        buffedRating,
+        extraDelta,
+        forgeMultiplier,
+        masteryMultiplier,
+        buffedRaw
+      };
+    }
+
+    function update() {
+      const hp = parseInt(document.getElementById('hpInput').value) || 0;
+      const atk = parseInt(document.getElementById('atkInput').value) || 0;
+      const sigLvl = parseInt(document.getElementById('sigInput').value) || 0;
+      const forgeLvl = parseInt(document.getElementById('forgeInput').value) || 0;
+      const masteryPct = parseFloat(document.getElementById('masteryInput').value) || 0.0;
+      const forgeScale = parseFloat(document.getElementById('forgeScale').value) || 0.726;
+      const wHp = parseFloat(document.getElementById('weightHp').value) || 0.075;
+      const wAtk = parseFloat(document.getElementById('weightAtk').value) || 1.0;
+      const precision = parseInt(document.getElementById('precision').value) || 4;
+
+      const res = calculateRating(hp, atk, sigLvl, forgeLvl, masteryPct, wHp, wAtk, precision, forgeScale);
+
+      document.getElementById('resBuffedRating').innerText = res.buffedRating.toLocaleString();
+      document.getElementById('resBuffedDetail').innerText = `基准 ${res.rawBaseRating.toLocaleString()} × 锻造 ${res.forgeMultiplier.toFixed(2)} (+${((res.forgeMultiplier - 1)*100).toFixed(1)}%)`;
+      document.getElementById('resBaseRating').innerText = res.rawBaseRating.toLocaleString();
+      document.getElementById('resRatingHp').innerText = res.rHp.toLocaleString();
+      document.getElementById('resRatingAtk').innerText = res.rAtk.toLocaleString();
+
+      const hpSigBonusVal = res.rHp - res.baseHpRating;
+      const atkSigBonusVal = res.rAtk - res.baseAtkRating;
+      document.getElementById('resHpDetail').innerText = `基准 ${res.baseHpRating.toLocaleString()} + 觉醒 ${hpSigBonusVal.toLocaleString()}`;
+      document.getElementById('resAtkDetail').innerText = `基准 ${res.baseAtkRating.toLocaleString()} + 觉醒 ${atkSigBonusVal.toLocaleString()}`;
+
+      // Table breakdown
+      const rawBaseHpAtk = res.baseHpRating + res.baseAtkRating;
+      const sigDiff = res.rawSum - rawBaseHpAtk;
+      const forgeGain = Math.round(res.rawSum * (res.forgeMultiplier - 1));
+      const masteryGain = Math.round(res.buffedRaw - res.rawSum * res.forgeMultiplier);
+
+      document.getElementById('tbRaw').innerText = rawBaseHpAtk.toLocaleString();
+      document.getElementById('tbSig').innerText = '+' + sigDiff.toLocaleString();
+      document.getElementById('tbForge').innerText = '+' + forgeGain.toLocaleString();
+      document.getElementById('tbMastery').innerText = '+' + masteryGain.toLocaleString();
+      document.getElementById('tbTotal').innerText = res.buffedRating.toLocaleString();
+
+      // Steps explanation
+      document.getElementById('step1').innerHTML = `1. 基础评分：<code>RatingHP_base = ⌈${hp} × ${wHp}⌉ = ${res.baseHpRating}</code>，<code>RatingAtk_base = ⌈${atk} × ${wAtk}⌉ = ${res.baseAtkRating}</code>`;
+      document.getElementById('step2').innerHTML = `2. 觉醒加成：<code>sig_lvl = ${sigLvl}</code> → <code>bonus = 0.035 × ln(${sigLvl || 1}) ≈ +${(res.sigBonus * 100).toFixed(2)}%</code> → <strong>${res.rawBaseRating}</strong>`;
+      document.getElementById('step3').innerHTML = `3. 锻造放大：<code>${res.rawBaseRating} × (1 + ${forgeLvl}/100 × ${forgeScale}) = ${(res.rawSum * res.forgeMultiplier).toFixed(1)}</code>`;
+      document.getElementById('step4').innerHTML = `4. 舍入规则：<code>${(res.buffedRaw).toFixed(1)}</code> (${precision}位有效数字截断) → <code>${res.buffedRating}</code>`;
+    }
+
+    function setSig(val) {
+      document.getElementById('sigRange').value = val;
+      document.getElementById('sigInput').value = val;
+      document.querySelectorAll('#sigRange + input ~ .btn-group .btn-pill').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      update();
+    }
+
+    function setForge(val) {
+      document.getElementById('forgeRange').value = val;
+      document.getElementById('forgeInput').value = val;
+      document.querySelectorAll('.forge-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      update();
+    }
+
+    function loadSampleBot(type) {
+      if (type === 'optimus') {
+        document.getElementById('hpInput').value = 46340;
+        document.getElementById('atkInput').value = 3457;
+        document.getElementById('sigRange').value = 65;
+        document.getElementById('sigInput').value = 65;
+        document.getElementById('forgeScale').value = 0.729;
+      } else if (type === 'primal') {
+        document.getElementById('hpInput').value = 45927;
+        document.getElementById('atkInput').value = 3578;
+        document.getElementById('sigRange').value = 55;
+        document.getElementById('sigInput').value = 55;
+        document.getElementById('forgeScale').value = 0.716;
+      } else if (type === 'grimlock') {
+        document.getElementById('hpInput').value = 52123;
+        document.getElementById('atkInput').value = 3274;
+        document.getElementById('sigRange').value = 95;
+        document.getElementById('sigInput').value = 95;
+        document.getElementById('forgeScale').value = 0.734;
+      } else if (type === 'thundercracker') {
+        document.getElementById('hpInput').value = 45514;
+        document.getElementById('atkInput').value = 3531;
+        document.getElementById('sigRange').value = 80;
+        document.getElementById('sigInput').value = 80;
+        document.getElementById('forgeScale').value = 0.865;
+      }
+      document.getElementById('forgeRange').value = 100;
+      document.getElementById('forgeInput').value = 100;
+      document.getElementById('masteryRange').value = 0;
+      document.getElementById('masteryInput').value = 0;
+      update();
+    }
+
+    function toggleAdvanced() {
+      const adv = document.getElementById('advSettings');
+      adv.classList.toggle('open');
+    }
+
+    // Load bots data
+    function init() {
+      const select = document.getElementById('botSelect');
+      BOTS.forEach(b => {
+        const opt = document.createElement('option');
+        opt.value = b.id;
+        opt.textContent = `${b.name_zh} (${b.name_en}) - ${b.star}★ [${b.class.toUpperCase()}]`;
+        select.appendChild(opt);
+      });
+
+      select.addEventListener('change', () => {
+        const b = BOTS.find(item => item.id === select.value);
+        if (b) {
+          document.getElementById('hpInput').value = b.hp;
+          document.getElementById('atkInput').value = b.atk;
+          document.getElementById('botMeta').style.display = 'flex';
+          const facEl = document.getElementById('factionBadge');
+          facEl.textContent = b.faction.toUpperCase();
+          facEl.className = `badge badge-${b.faction}`;
+          document.getElementById('classBadge').textContent = b.class.toUpperCase();
+          document.getElementById('starBadge').textContent = `${b.star} ★`;
+          update();
+        }
+      });
+
+      // Bind events
+      ['hpInput', 'atkInput', 'weightAtk', 'weightHp', 'precision', 'forgeScale'].forEach(id => {
+        document.getElementById(id).addEventListener('input', update);
+      });
+
+      const sigR = document.getElementById('sigRange');
+      const sigI = document.getElementById('sigInput');
+      sigR.addEventListener('input', () => { sigI.value = sigR.value; update(); });
+      sigI.addEventListener('input', () => { sigR.value = sigI.value; update(); });
+
+      const frgR = document.getElementById('forgeRange');
+      const frgI = document.getElementById('forgeInput');
+      frgR.addEventListener('input', () => { frgI.value = frgR.value; update(); });
+      frgI.addEventListener('input', () => { frgR.value = frgI.value; update(); });
+
+      const masR = document.getElementById('masteryRange');
+      const masI = document.getElementById('masteryInput');
+      masR.addEventListener('input', () => { masI.value = masR.value; update(); });
+      masI.addEventListener('input', () => { masI.value = masR.value; update(); });
+
+      // Default select thundercracker if exists
+      const tc = BOTS.find(b => b.id.includes('thundercracker'));
+      if (tc) {
+        select.value = tc.id;
+        document.getElementById('botMeta').style.display = 'flex';
+        const facEl = document.getElementById('factionBadge');
+        facEl.textContent = tc.faction.toUpperCase();
+        facEl.className = `badge badge-${tc.faction}`;
+        document.getElementById('classBadge').textContent = tc.class.toUpperCase();
+        document.getElementById('starBadge').textContent = `${tc.star} ★`;
+      }
+
+      update();
+    }
+
+    init();
+  </script>
+</body>
+</html>
