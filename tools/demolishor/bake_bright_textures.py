@@ -49,8 +49,7 @@ print(f"    New Means:      R={final_arr[:,:,0].mean():.1f}, G={final_arr[:,:,1]
 raoe_path = OUT_DIR / "cha_demolishor_main_tform_misc_RAOE.png"
 raoe_img = Image.open(raoe_path).convert("RGB")
 raoe_arr = np.array(raoe_img)
-# G channel is AO (Ambient Occlusion). Setting AO to 215 prevents dark murky shadows
-raoe_arr[:, :, 0] = 75  # Roughness
+raoe_arr[:, :, 0] = 140 # Satin roughness, prevents chrome mirror reflections
 raoe_arr[:, :, 1] = 215 # Bright AO
 raoe_arr[:, :, 2] = np.clip(raoe_arr[:, :, 2] * 1.5, 0, 255) # Decepticon purple glow boost
 Image.fromarray(raoe_arr).save(raoe_path, format="PNG")

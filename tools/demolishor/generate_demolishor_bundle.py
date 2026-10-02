@@ -311,6 +311,16 @@ def main():
                 routed_smrs += 1
                 print(f"[✓] Re-routed Robot SMR in {pref_label}!")
 
+            go_id = smr.get("m_GameObject", {}).get("m_PathID")
+            go_name = go_dict.get(go_id, {}).get("m_Name", "")
+            if "grenade" in go_name.lower():
+                smr["m_Enabled"] = False
+                smr["m_Mesh"] = {"m_FileID": 0, "m_PathID": 0}
+                replace_str_in_tree(smr, old_cab, new_cab)
+                obj.save_typetree(smr)
+                print(f"[✓] Disabled floating weapon renderer: {go_name}")
+                continue
+
             # Vehicle SMR (47 bones)
             elif len(smr.get("m_Bones", [])) == 47 and vh_bounds is not None:
                 pref_tr = p1_transforms if obj.path_id in (8887288183430146843, 3131805236270788271) else p2_transforms
@@ -324,6 +334,45 @@ def main():
                 obj.save_typetree(smr)
                 routed_smrs += 1
                 print(f"[✓] Updated Vehicle SMR AABB bounds!")
+
+        elif obj.type.name == "Material":
+            mat = obj.read_typetree()
+            saved_props = mat.get("m_SavedProperties", {})
+            if obj.path_id == 5474742503365929845:
+                new_floats = []
+                for k, v in saved_props.get("m_Floats", []):
+                    if k == "_Mode":
+                        new_floats.append((k, 0.0)) # Opaque solid rendering
+                    elif k == "_metallic_range":
+                        new_floats.append((k, 0.0)) # Painted metal (not chrome mirror)
+                    elif k == "_roughness_range":
+                        new_floats.append((k, 1.0)) # Full satin roughness
+                    elif k == "_ZWrite":
+                        new_floats.append((k, 1.0))
+                    elif k == "_SrcBlend":
+                        new_floats.append((k, 1.0))
+                    elif k == "_DstBlend":
+                        new_floats.append((k, 0.0))
+                    else:
+                        new_floats.append((k, v))
+                saved_props["m_Floats"] = new_floats
+
+                new_colors = []
+                for k, v in saved_props.get("m_Colors", []):
+                    if k == "_base_col":
+                        new_colors.append((k, {'r': 1.0, 'g': 1.0, 'b': 1.0, 'a': 1.0}))
+                    elif k == "_Color":
+                        new_colors.append((k, {'r': 1.0, 'g': 1.0, 'b': 1.0, 'a': 1.0}))
+                    else:
+                        new_colors.append((k, v))
+                saved_props["m_Colors"] = new_colors
+
+                replace_str_in_tree(mat, old_cab, new_cab)
+                obj.save_typetree(mat)
+                print("[✓] Patched Demolishor Material to solid opaque non-mirror PBR!")
+            else:
+                replace_str_in_tree(mat, old_cab, new_cab)
+                obj.save_typetree(mat)
 
         elif obj.type.name == "Texture2D":
             t_tree = obj.read_typetree()
