@@ -102,6 +102,7 @@ assets_redeco/*
 !assets_redeco/*picnic*
 !assets_redeco/*ghost*
 !assets_redeco/*demolishor*
+!assets_redeco/*elita*
 
 # 3rd-party models & textures
 !3rd-party-models/**

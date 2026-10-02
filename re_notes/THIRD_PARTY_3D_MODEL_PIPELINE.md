@@ -344,3 +344,65 @@ python tools/<character_name>/generate_character_bundle.py
 python build_apk.py
 python INSTALL-ADB.py
 ```
+
+---
+
+## 7. 架构复盘与真机渲染失真根因分析及演进路线 (Architecture Retrospective & Runtime Distortion Root Cause)
+
+在连续经历 **Demolishor（破坏者）** 与 **Elita One（艾丽塔）** 两个不同模具（Ironhide / Arcee）的实机测试后，真机均暴露出了严重的渲染与形态缺陷：
+1. **站姿与体态畸变**：如艾丽塔在游戏展厅与战斗中呈现“双肩极度后翻、双膝向内并拢扭曲、重心严重后倾”，与母体 Arcee 的自然直立垂手站姿大相径庭；
+2. **材质透明与镂空破碎**：如艾丽塔面部、躯干大面积缺失，呈现“碎面漂浮、玻璃透明”的灾难性效果；
+3. **战斗部件隐形消失**：在战斗对抗和胜利结算特写中，多个肢体部位直接丢失。
+
+这证明了：**“在 Blender 视口中对齐动作一致，绝不等于打包成 AssetBundle 后游戏引擎能够正确读取和渲染。”**
+
+### 7.1 核心失真机理与盲区复盘
+
+#### 1. Blender 视口欺骗性与 Unity Bindpose 逆绑定矩阵冲突
+在 Blender 中通过导入的动作对齐，仅证明网格在 **Blender 内部生成的自洽骨架** 下运动平滑。但在 Unity 引擎底层，蒙皮网格顶点位置由下式决定：
+$$\text{Vertex}_{\text{world}} = \sum w_i \cdot M_{\text{bone}, i}(t) \cdot B^{-1}_i \cdot \text{Vertex}_{\text{mesh}}$$
+* **根因**：Unity Mesh 内部储存了每个骨骼的逆绑定矩阵 $B^{-1}_i$（`m_Bindpose`）。当 FBX 从 Blender 导出时，Blender 根据其自身的坐标系（Z-Up 转 Y-Up、骨骼 Roll 轴）重新烘焙了 $B^{-1}$。
+* **致命冲突**：游戏内的母体 Prefab 拥有 Kabam 官方在 3ds Max/Maya 烘焙的原始骨骼 Transform 层级 $M_{\text{bone}, i}(0)$。当这个新 Mesh 被强行嫁接到原版 Prefab 骨骼上时，$M_{\text{bone}, i}(0) \cdot B^{-1}_i \neq I$（初始状态不为单位矩阵），从而在每个关节上引入了恒定的旋转偏差 $\Delta R$。脊椎与骨盆微小的偏差向上传导导致肩膀后翻，向下传导导致膝盖内旋与重心后仰。
+
+#### 2. 着色器背面剔除（Backface Culling）与法线/顶点绕序反转
+* **根因**：Blender 实体着色视口默认通常为双面渲染。而 TFTF 手机端着色器（`Kabam/Character/...`）底层强制开启硬件背面剔除（`Cull Back`）。
+* **致命冲突**：第三方游戏（如《Galactic Trials》）提取的模型在镜像复制（如右肩镜像到左肩）、网格分离重组时，部分三角形的面法线或顶点绕序（Winding Order）发生反转。进游戏后，正对相机的面被当作背面丢弃，直接导致机体呈碎片化镂空。
+
+#### 3. 材质混合模式（Mode）与 Alpha 通道语义污染
+* **根因**：Unity Standard 材质模式有 4 种：`0 = Opaque`, `1 = Cutout`, `2 = Fade`, `3 = Transparent`。
+* **致命冲突**：
+  - 检查导出的资产包发现，部分材质的 `_Mode` 被自动识别或设为了透明/混合模式；
+  - TFTF 官方角色机体几乎全为严格的 **Opaque（不透明）**。其 Diffuse 贴图的 Alpha 通道在官方 Shader 中通常承载高光强度、金属遮罩或自发光掩模，绝不能承载镂空透明度。当第三方贴图自带了 Alpha 透明通道时，Shader 会将低 Alpha 像素当作完全透明剔除，导致整块身体“隐形”。
+
+---
+
+### 7.2 下一步演进技术路线（Roadmap）
+
+为彻底根除上述结构性盲区，后续管线必须从“Blender 闭门造车”切换为“以 Unity 真机环境为权威基准”：
+
+```
+[第三方模型 FBX]
+       │
+       ▼
+【第 1 步：拓扑与法线规范化】
+  ├─ 统一法线外向（Recalculate Outside）
+  ├─ 消除双面穿插与多材质碎片
+  └─ 漫反射贴图 Alpha 通道强制全白 (1.0 Opaque)
+       │
+       ▼
+【第 2 步：Unity 原生骨架严格对齐与 Bindpose 标定】
+  ├─ 严禁在 Blender 中篡改骨骼 Roll 角
+  ├─ 直接读取游戏 Prefab 导出的骨架层级作为唯一绝对空间
+  └─ 在 Unity 中挂载官方母体动画 Clip (idle / combat) 进行真机视口实时播放校验
+       │
+       ▼
+【第 3 步：真机渲染材质沙盒校验】
+  ├─ 材质强制锁定为 Opaque (_Mode=0, _ZWrite=1)
+  ├─ 标准 RAOE 贴图通道烘焙与 Shader 匹配
+  └─ 视口验收通过后，再行触发 AssetBundle 构建与逆向注入
+```
+
+1. **废除单纯依赖 Blender 对齐动作的验收标准**：必须在 Unity 编辑器中挂载 Arcee 的原生动画进行动态形变与法线剔除验证；
+2. **材质与贴图强制 Opaque 清洗**：所有身体 Diffuse 贴图必须清洗 Alpha 通道，材质参数必须锁死为单面不透明；
+3. **骨骼 Bindpose 逆矩阵精准拟合**：确保导出的 Mesh Bindpose 与 Prefab 骨骼的 Local Transform 完全一致。
+

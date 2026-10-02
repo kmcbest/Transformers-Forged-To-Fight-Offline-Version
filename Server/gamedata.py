@@ -84,6 +84,7 @@ ROSTER = {
     "cliffjumper_gs_kabam":         ("autobot",    "demo", 5),
     "dinobot_bw_kabam":             ("maximal",    "tact", 5),
     "drift_cin_aoe":                ("autobot",    "warr", 5),
+    "elita_one_gs":                 ("autobot",    "warr", 5),
     "grimlock_gs_mp08":             ("autobot",    "braw", 5),
     "hotrod_cin_tlk":               ("autobot",    "warr", 5),
     "hound_cin_tlk":                ("autobot",    "warr", 5),
@@ -471,6 +472,7 @@ _ART_BASE = {
     "thrust_gs_deluxe2008": "thrust",
     "waspinator_gs_deluxe": "wasp_bw",  # Only the Beast Wars-styled art ships.
     "demolishor_gs": "demolishor_gs",
+    "elita_one_gs": "elita_one_gs",
 
     # --- Sharkticon NPC variants ---
     # The generic bot has no unnamed art, so it borrows gold. brawl is large-only;
@@ -658,6 +660,7 @@ _BOT_NAMES = {
     "tantrum_gs_kabam": "Tantrum",
     "waspinator_gs_deluxe": "Waspinator",
     "demolishor_gs": "Demolishor",
+    "elita_one_gs": "Elita One",
 
     # Sharkticons
     "sharkticon_gs_kabam": "Sharkticon",

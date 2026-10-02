@@ -474,5 +474,11 @@
         "zh": "破坏者",
         "faction": "霸天虎",
         "note": "塞伯坦陨落·爆破系"
+    },
+    "elita_one_gs": {
+        "en": "Elita One",
+        "zh": "艾丽塔",
+        "faction": "汽车人",
+        "note": "银河试炼·战士"
     }
 }
