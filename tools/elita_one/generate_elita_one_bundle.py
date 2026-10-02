@@ -68,10 +68,10 @@ def transform_mesh_stream0(mesh_tree, target_name, bindposes):
         nx, ny, nz = struct.unpack_from('<3f', raw_data, offset + 12)
         tx, ty, tz, tw = struct.unpack_from('<4f', raw_data, offset + 24)
 
-        # X_new = px, Y_new = pz, Z_new = py (faces forward)
-        new_px, new_py, new_pz = px, pz, py
-        new_nx, new_ny, new_nz = nx, nz, ny
-        new_tx, new_ty, new_tz = tx, tz, ty
+        # In the new grafted FBX/asset, coordinates are ALREADY Y-up and Z-forward
+        new_px, new_py, new_pz = px, py, pz
+        new_nx, new_ny, new_nz = nx, ny, nz
+        new_tx, new_ty, new_tz = tx, ty, tz
 
         struct.pack_into('<3f', raw_data, offset, new_px, new_py, new_pz)
         struct.pack_into('<3f', raw_data, offset + 12, new_nx, new_ny, new_nz)
@@ -125,31 +125,17 @@ def main():
     print("[*] Extracting new SkinnedMesh from Elita One bundle...")
     robot_mesh_tree = None
 
-    d_path_to_name = {}
-    for obj in c_env.objects:
-        if obj.type.name == "Transform":
-            t = obj.read_typetree()
-            go_ptr = t.get("m_GameObject", {})
-            for g_obj in c_env.objects:
-                if g_obj.path_id == go_ptr.get("m_PathID") and g_obj.type.name == "GameObject":
-                    d_path_to_name[obj.path_id] = g_obj.read_typetree().get("m_Name")
-                    break
-
-    robot_bone_names = []
-
     for obj in c_env.objects:
         if obj.type.name == "Mesh":
             tree = obj.read_typetree()
-            m_name = tree.get("m_Name", "").lower()
-            if "elita_one" in m_name:
+            m_name = tree.get("m_Name", "")
+            if m_name == "cha_elita_one_grafted":
                 robot_mesh_tree = tree
-                print(f"[+] Found Elita One Robot Mesh: {tree.get('m_Name')}, vertices: {tree.get('m_VertexData', {}).get('m_VertexCount')}")
-        elif obj.type.name == "SkinnedMeshRenderer":
-            smr = obj.read_typetree()
-            bones = [d_path_to_name.get(b.get("m_PathID")) for b in smr.get("m_Bones", [])]
-            if len(bones) == 64:
-                robot_bone_names = bones
-                print(f"[+] Found compiled SMR with {len(bones)} bones.")
+                print(f"[+] Found grafted Elita One Robot Mesh: {m_name}, vertices: {tree.get('m_VertexData', {}).get('m_VertexCount')}")
+                break
+            elif "elita_one" in m_name.lower() and robot_mesh_tree is None:
+                robot_mesh_tree = tree
+                print(f"[+] Found candidate Elita One Robot Mesh: {m_name}, vertices: {tree.get('m_VertexData', {}).get('m_VertexCount')}")
 
     if robot_mesh_tree is None:
         raise ValueError("Could not find Elita One Robot Mesh in compiled bundle!")
@@ -216,20 +202,9 @@ def main():
 
     print(f"[+] Extracted {len(arcee_bindposes)} ground-truth bindposes and {len(arcee_smr_bones)} SMR bones from Arcee.")
 
-    # Reorder robot bindposes for 64 bones
-    identity_bp = {
-        'e00': 1.0, 'e01': 0.0, 'e02': 0.0, 'e03': 0.0,
-        'e10': 0.0, 'e11': 1.0, 'e12': 0.0, 'e13': 0.0,
-        'e20': 0.0, 'e21': 0.0, 'e22': 1.0, 'e23': 0.0,
-        'e30': 0.0, 'e31': 0.0, 'e32': 0.0, 'e33': 1.0
-    }
-    reordered_robot_bindposes = []
-    for bname in robot_bone_names:
-        if bname in arcee_smr_bones:
-            idx = arcee_smr_bones.index(bname)
-            reordered_robot_bindposes.append(copy.deepcopy(arcee_bindposes[idx]))
-        else:
-            reordered_robot_bindposes.append(copy.deepcopy(identity_bp))
+    # cha_elita_one_grafted is already weighted directly to Arcee's 63 bones in Arcee's order!
+    # Do NOT reorder with FBX bone order!
+    target_bindposes = arcee_bindposes
 
     # CAB remap
     old_cab = "CAB-5eb3be434313f8b01ba027da80ef0a32"
@@ -242,7 +217,7 @@ def main():
 
     # 4. Transform Robot Mesh (cha_arcee_gs_deluxe2014_00)
     print("[*] Transforming Elita One Robot mesh stream 0...")
-    robot_mesh_copy, r_bounds = transform_mesh_stream0(robot_mesh_tree, "cha_arcee_gs_deluxe2014_00", reordered_robot_bindposes)
+    robot_mesh_copy, r_bounds = transform_mesh_stream0(robot_mesh_tree, "cha_arcee_gs_deluxe2014_00", target_bindposes)
 
     # 5. Textures
     tex_dir = root / "tools" / "elita_one" / "processed_textures"
@@ -276,7 +251,7 @@ def main():
             smr = obj.read_typetree()
             mesh_pid = smr.get("m_Mesh", {}).get("m_PathID")
             
-            # Robot SMR (63 bones in base, upgrading to 64 with strict isolation)
+            # Robot SMR (63 bones in base, mapped in Arcee's exact bone order)
             if len(smr.get("m_Bones", [])) == 63:
                 # PID 8283545308434878436 is Prefab 1 (Showcase)
                 # PID 3949589716393965935 is Prefab 2 (Combat LW)
@@ -285,7 +260,7 @@ def main():
                 pref_label = "Prefab 1 (Showcase)" if is_p1 else "Prefab 2 (Combat LW)"
                 
                 new_bones = []
-                for bname in robot_bone_names:
+                for bname in arcee_smr_bones:
                     tr_id = pref_tr.get(bname, pref_tr.get("Hips"))
                     new_bones.append({"m_FileID": 0, "m_PathID": tr_id})
                 smr["m_Bones"] = new_bones
@@ -297,7 +272,7 @@ def main():
                 replace_str_in_tree(smr, old_cab, new_cab)
                 obj.save_typetree(smr)
                 routed_smrs += 1
-                print(f"[✓] Re-routed Robot SMR in {pref_label} ({len(new_bones)} bones)!")
+                print(f"[✓] Re-routed Robot SMR in {pref_label} ({len(new_bones)} bones in Arcee order)!")
             else:
                 replace_str_in_tree(smr, old_cab, new_cab)
                 obj.save_typetree(smr)

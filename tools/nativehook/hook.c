@@ -5555,6 +5555,12 @@ void* hook_162(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
             }
             return g_strnew("抢劫");
         }
+        if (strstr(k, "ELITA") || strstr(k, "elita") || strstr(k, "Elita")) {
+            if (strstr(k, "BIO") || strstr(k, "desc") || strstr(k, "DESC") || strstr(k, "Bio")) {
+                return g_strnew("艾丽塔是塞伯坦女性汽车人反抗军的勇敢领袖之一，擎天柱最信赖的战斗伴侣与挚友。她拥有敏锐卓越的战术头脑、冷酷果决的战斗技巧，以及传说中足以扭转战局的神秘时间停滞核心力场。");
+            }
+            return g_strnew("艾丽塔");
+        }
     }
     return r;
 }
