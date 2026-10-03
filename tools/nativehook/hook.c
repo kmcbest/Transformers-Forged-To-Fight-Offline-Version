@@ -6247,8 +6247,8 @@ static void* hooked_BattleArbiterOnToggleAutoFight(void* a0, void* a1, void* a2,
 
 static fn8 orig_gc_mark_finalizer = NULL;
 static void* hooked_gc_mark_finalizer(void* obj, void* ctx, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
-    if ((uintptr_t)obj < 0x10000 || ((uintptr_t)obj & 1)) {
-        LOG("[GC_GUARD] Blocked invalid object pointer in GC finalizer: %p", obj);
+    if (!obj) return NULL;
+    if (((uintptr_t)obj & 1) || (uintptr_t)obj < 0x1000) {
         return NULL;
     }
     return orig_gc_mark_finalizer(obj, ctx, a2, a3, a4, a5, a6, a7);

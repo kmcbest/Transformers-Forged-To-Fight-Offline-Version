@@ -12,26 +12,52 @@ TEX_DIR = ROOT / "3rd-party-models" / "transformers-galatic-trials-elita-one" / 
 OUT_DIR = ROOT / "tools" / "elita_one" / "processed_textures"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
-def paint_autobot_eyes(diff_np, raoe_np):
+def paint_autobot_eyes(diff_np, raoe_np, glow_path):
     """
-    Paints perfectly symmetric glowing Autobot eyes with dark charcoal eyeliner framing
+    Paints brilliant glowing Autobot eyes with crisp dark charcoal eyeliner framing
     onto the 1024x1024 diffuse and RAOE textures.
-    - Left Eye: X in [81, 105], Y in [540, 549]
-    - Right Eye: X in [123, 147], Y in [540, 549]
+    - True Head Eyes (Mirrored UV Island): X in [110, 138], Y in [395, 455]
+    - Chest / Socket details: X in [81, 147], Y in [540, 549]
     """
-    # 1. Clean eye socket background to charcoal grey [45, 45, 48]
+    from scipy.ndimage import binary_dilation
+
+    # 1. Paint True Head Eyes on Elita's face
+    if glow_path.is_file():
+        glow_img = Image.open(glow_path).resize((1024, 1024), Image.LANCZOS)
+        g_arr = np.array(glow_img)
+        patch_g = g_arr[395:455, 110:138]
+        eye_mask = np.any(patch_g > 30, axis=-1)
+        border_mask = binary_dilation(eye_mask, structure=np.ones((5, 5))) & ~eye_mask
+
+        for y in range(patch_g.shape[0]):
+            for x in range(patch_g.shape[1]):
+                gy = 395 + y
+                gx = 110 + x
+                if border_mask[y, x]:
+                    # Dark charcoal eyeliner frame
+                    diff_np[gy, gx, :3] = [20, 20, 24]
+                elif eye_mask[y, x]:
+                    # Brilliant glowing electric cyan with blazing white-cyan core
+                    cx = 123
+                    cy = 424
+                    dist = np.sqrt(((gx - cx) / 10.0)**2 + ((gy - cy) / 25.0)**2)
+                    r = int(180 * max(0.0, 1.0 - dist) + 20 * min(1.0, dist))
+                    g = int(255 * max(0.0, 1.0 - dist * 0.05) + 240 * min(1.0, dist * 0.05))
+                    b = 255
+                    diff_np[gy, gx, :3] = [r, g, b]
+                    raoe_np[gy, gx, 2] = 255
+
+    # 2. Clean socket background to charcoal grey [45, 45, 48]
     for y in range(536, 554):
         for x in range(75, 153):
             diff_np[y, x, :3] = [45, 45, 48]
             raoe_np[y, x, 2] = 0
 
     def draw_styled_eye(x1, x2, y1, y2):
-        # Eyeliner border (charcoal black [18, 18, 20])
         for y in range(y1 - 2, y2 + 3):
             for x in range(x1 - 2, x2 + 3):
                 diff_np[y, x, :3] = [18, 18, 20]
                 
-        # Eye fill: superellipse rounded corners
         w = x2 - x1 + 1
         h = y2 - y1 + 1
         cx = (x1 + x2) / 2.0
@@ -45,7 +71,6 @@ def paint_autobot_eyes(diff_np, raoe_np):
                 ny = abs((y - cy) / ry)
                 val = (nx ** 4) + (ny ** 4)
                 if val <= 1.0:
-                    # Radial glow: core is bright white-cyan [180, 255, 255], outer is electric cyan [10, 230, 255]
                     dist = np.sqrt(nx**2 + ny**2)
                     r = int(180 * max(0, 1.0 - dist) + 10 * min(1.0, dist))
                     g = int(255 * max(0, 1.0 - dist * 0.1) + 230 * min(1.0, dist * 0.1))
@@ -53,7 +78,6 @@ def paint_autobot_eyes(diff_np, raoe_np):
                     diff_np[y, x, :3] = [r, g, b]
                     raoe_np[y, x, 2] = 255
                 elif val <= 1.3:
-                    # Antialiased bloom edge in emissive mask
                     raoe_np[y, x, 2] = 160
 
     draw_styled_eye(81, 105, 540, 549)
@@ -117,7 +141,7 @@ def process_pack(suffix, out_prefix):
 
     # If processing main robot body, paint the glowing Autobot eyes on both Diffuse and RAOE!
     if suffix == "00":
-        paint_autobot_eyes(diff_np, raoe_np)
+        paint_autobot_eyes(diff_np, raoe_np, glow_path)
 
     # Save final Diffuse and RAOE
     final_diff = Image.fromarray(diff_np)
