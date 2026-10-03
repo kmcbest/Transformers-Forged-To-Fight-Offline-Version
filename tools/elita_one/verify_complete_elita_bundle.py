@@ -32,11 +32,14 @@ for obj in env.objects:
         vc = t.get("m_VertexData", {}).get("m_VertexCount", 0)
         bps = t.get("m_BindPose", [])
         hashes = t.get("m_BoneNameHashes", [])
+        aabb = t.get("m_LocalAABB", {})
         mesh_results[name] = {
             "vc": vc,
             "bps": len(bps),
             "hashes": len(hashes),
-            "hashes_list": hashes
+            "hashes_list": hashes,
+            "center": aabb.get("m_Center", {}),
+            "extent": aabb.get("m_Extent", {})
         }
 
 print("\n1. Mesh Verification:")
@@ -47,10 +50,15 @@ print(f"    BindPoses: {r_mesh['bps']} (expected 63)")
 print(f"    BoneHashes: {r_mesh['hashes']} (expected 63)")
 r_matched = sum(1 for h in r_mesh['hashes_list'] if h in r_avatar_tos)
 print(f"    TOS match: {r_matched} / {r_mesh['hashes']}")
+c_y = r_mesh['center'].get('y', 0.0)
+c_z = r_mesh['center'].get('z', 0.0)
+print(f"    Center bounds: Y={c_y:.3f} (Upright ~4.42m), Z={c_z:.3f}")
 assert r_mesh['vc'] == 52432
 assert r_mesh['bps'] == 63
 assert r_mesh['hashes'] == 63
 assert r_matched == 63
+assert c_y > 3.0, f"FATAL: Robot Mesh is lying down! Center Y={c_y}"
+assert abs(c_z) < 1.0, f"FATAL: Robot Mesh has swapped Z/Y axes! Center Z={c_z}"
 
 v_mesh = mesh_results.get("cha_arcee_gs_deluxe2014_01")
 print(f"\n  Vehicle Mesh (cha_arcee_gs_deluxe2014_01):")
@@ -73,7 +81,9 @@ for obj in env.objects:
         mats = [m.get("m_PathID") for m in t.get("m_Materials", [])]
         if len(bones) == 63:
             label = "P1 Robot" if obj.path_id == 8283545308434878436 else "P2 Robot"
-            print(f"  SMR {obj.path_id} ({label}): bones={len(bones)}, mats={mats}")
+            c_y = t.get("m_AABB", {}).get("m_Center", {}).get("y", 0.0)
+            assert c_y > 3.0, f"FATAL: SMR {obj.path_id} is lying down! Center Y={c_y}"
+            print(f"  SMR {obj.path_id} ({label}): bones={len(bones)}, mats={mats}, Center Y={c_y:.3f}")
         elif len(bones) == 25:
             label = "P1 Vehicle" if obj.path_id == -4178002549372221558 else "P2 Vehicle"
             print(f"  SMR {obj.path_id} ({label}): bones={len(bones)}, mats={mats}")

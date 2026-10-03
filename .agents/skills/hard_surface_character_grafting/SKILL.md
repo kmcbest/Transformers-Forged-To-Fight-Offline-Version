@@ -216,6 +216,28 @@ TFTF 采用定制的移动端 PBR 着色器，纹理通常拆分为三大通道�
 
 ---
 
+### 坑 7：巨石重建脚本导致已验收人形网格反复被易失中间件覆盖躺平（Monolithic Rebuild & Volatile Mesh Overwrite）
+* **故障现象**：仅想对贴图或材质参数微调（例如抬升 AO 消除黑斑、降低粗糙度增加光泽、调高眼睛自发光），结果重新执行自动化打包后，原本已经在游戏里站立正常的人形**再次躺平在地、散架扭曲**。
+* **致命根因**：
+  1. **管线职责未解耦**：将“3D 几何网格重建与骨架映射”与“材质参数/贴图纹理热补丁”混在同一个巨石脚本（如 `generate_character_bundle.py`）中。
+  2. **中间构建产物的易失性与污染传递**：巨石脚本在生成 AssetBundle 时，会盲目从上游中间件（如 `toolchain/unity_build_project/AssetBundles/mesh.assetbundle`）重新提取网格。但中间件往往来自 Blender 未烘焙空间变换、或未配置坐标轴转换的易失 FBX，处于躺平倒地或轴向错乱的未修复状态。一旦为了改贴图重新运行巨石脚本，就会无差别把游戏中原本已修好的“黄金站立网格”覆盖破坏。
+* **避坑工程规范与三重防线**：
+  - **第一道防线：职责彻底分离与原位补丁（In-Place Surgical Patching）**：
+    凡是仅涉及 Diffuse、Normal、RAOE 贴图或 Material Shader 属性的调整，**绝对禁止调用全量重建脚本**！必须使用专用的原位修补脚本（如 `patch_textures_and_materials_only.py`），对已有 AssetBundle 原位读取，**物理隔离并严格禁止修改任何 Mesh、BindPose、SMR、Transform 数据**。
+  - **第二道防线：空间几何健康度断言守门（Mesh Bounds & Orientation Hard Assertion）**：
+    在所有打包脚本与验收脚本中，必须加入模型空间高度强校验，一旦发现网格未站立（$Y$ 轴与 $Z$ 轴颠倒），立即引发异常并终止写入：
+    ```python
+    c_y = mesh["m_LocalAABB"]["m_Center"]["y"]
+    c_z = mesh["m_LocalAABB"]["m_Center"]["z"]
+    # 人形机甲站立时高度中心通常在 3.5m ~ 5.0m；若躺平则 Y 接近 0 且 Z 达到 4m+
+    assert c_y > 3.0, f"FATAL: Robot Mesh is lying down! Center Y={c_y}"
+    assert abs(c_z) < 1.0, f"FATAL: Robot Mesh coordinates swapped! Center Z={c_z}"
+    ```
+  - **第三道防线：黄金网格资产快照冻结（Golden Mesh Freezing）**：
+    一旦人形骨骼、旋转与蒙皮在真机验收无误，立即将其 typetree 固化为只读黄金快照。全量构建脚本即使被触发，也必须优先采用已冻结的权威网格，严禁无感知读取易失临时中间件。
+
+---
+
 ## 6. 阶段四：全自动 AssetBundle 合成与游戏植入
 
 ### 6.1 核心合成脚本范式 (`generate_character_bundle.py`)
@@ -299,4 +321,6 @@ if (strstr(k, "ELITA") || strstr(k, "elita") || strstr(k, "Elita")) {
 - [ ] **骨骼序列与哈希一致**：AssetBundle 内 SMR `m_Bones`、`m_BindPose` 与 `m_BoneNameHashes` 是否完全等于母壳官方骨骼表，且哈希与 Avatar TOS 100% 匹配，绝无混入外部 FBX 骨骼与哈希？
 - [ ] **SMR 双 Prefab 物理隔离**：Showcase 与 Combat LW 是否各自引用自己内部的 Transform？
 - [ ] **LZ4 压缩保护**：`save(packer="lz4")` 是否生效，AssetBundle 大小是否在 10MB 左右？
+- [ ] **空间高度正立断言**：Mesh 与 SMR 的 Center $Y$ 是否处于站立区间（$Y > 3.0\text{m}$，Extent $Y > 3.0\text{m}$），严防网格轴向颠倒躺平？
+- [ ] **贴图材质原位隔离**：后续调整贴图或 Shader 浮点参数时，是否使用了原位补丁脚本（`patch_textures_and_materials_only.py`），绝不重新运行巨石全量网格重建？
 - [ ] **全套汉化闭环**：角色名、Bio 传记、SP1~SP3 技能是否已全部通过 Hook 拦截与头文件生成？
