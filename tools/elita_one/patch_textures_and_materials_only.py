@@ -68,7 +68,7 @@ for obj in env.objects:
             elif k == "_roughness_range":
                 new_floats.append((k, 0.35))
             elif k == "_emissive_range":
-                new_floats.append((k, 0.0))
+                new_floats.append((k, 1.0))  # Master emissive enable switch!
             elif k == "_emissive_overbright_range":
                 new_floats.append((k, 120.0))  # Match Arcee's HDR bloom factor
             elif k == "_emissive_pulse_intensity_range":
@@ -88,11 +88,13 @@ for obj in env.objects:
             if k in ["_base_col", "_Color", "_base2_col"]:
                 new_colors.append((k, {'r': 1.0, 'g': 1.0, 'b': 1.0, 'a': 1.0}))
             elif k == "_emissive_intensity_col":
-                # Luminous Autobot cyan tint: blends perfectly with yellow visor and electric cyan eyes
-                new_colors.append((k, {'r': 0.8, 'g': 0.95, 'b': 1.0, 'a': 1.0}))
+                # Vibrant Autobot electric cyan: high G (0.75) and B (1.0) creates pure neon cyan bloom,
+                # while low R (0.08) strictly prevents white blowout and restores yellow visor glow!
+                new_colors.append((k, {'r': 0.08, 'g': 0.75, 'b': 1.0, 'a': 1.0}))
             else:
                 new_colors.append((k, v))
         saved_props["m_Colors"] = new_colors
+
 
         obj.save_typetree(mat)
         materials_updated += 1
