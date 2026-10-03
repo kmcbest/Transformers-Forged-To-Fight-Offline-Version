@@ -5599,6 +5599,8 @@ void* hook_155(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     });
     return r;
 }
+static volatile int g_p0_last_hit_is_crit = 0;
+
 void* hook_156(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     float crit_chance = 0.14f;
     void* owner = (a0 && obj_ok(a0)) ? *(void**)((char*)a0 + 0x28) : NULL;
@@ -5617,6 +5619,10 @@ void* hook_156(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
 
     float roll = (float)(rand() % 10000) / 10000.0f;
     int is_crit = (roll < crit_chance) ? 1 : 0;
+
+    if (player_idx == 0) {
+        g_p0_last_hit_is_crit = is_crit;
+    }
 
     static int s_crit_log_cnt = 0;
     if (s_crit_log_cnt++ < 60) {
@@ -6580,7 +6586,7 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     hook_128,hook_129,hook_130,hook_131,hook_132,hook_133,hook_134,hook_135,hook_136,hook_137,
     hook_138,hook_139,hook_140,hook_141,hook_142,hook_143,hook_144,
     hook_145,hook_146,hook_147,hook_148,hook_149,hook_150,hook_151,
-    hook_152,hook_153,hook_154,hook_155,hook_156,(void*)hook_157,(void*)hook_158,
+    hook_152,hook_153,hook_154,hook_155,(void*)hook_156,(void*)hook_157,(void*)hook_158,
     (void*)hook_159,hook_160,hook_161,hook_162,hook_163,hook_164,
     hook_165,hook_166,(void*)hook_167,hook_168,hook_169,hook_170,
     hook_171,hook_172,hook_173,hook_174,hook_175,hook_176,(void*)hook_177,(void*)hook_178,

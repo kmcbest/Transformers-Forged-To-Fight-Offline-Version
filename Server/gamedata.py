@@ -159,7 +159,14 @@ ROSTER = {
 
 # Which bots the offline player owns at boot. For a preservation sandbox we grant the
 # ENTIRE roster so every screen (roster grid, hero details, team select) has content.
+import abilities
+
 OWNED = list(ROSTER)
+
+
+def bot_abilities(bid):
+    """Delegate bot abilities query to Server/abilities.py."""
+    return abilities.bot_abilities(bid)
 
 # ---------------------------------------------------------------------------
 # Authored stat curve.  All ORIGINAL, all invented for this revival.
@@ -1108,7 +1115,7 @@ def build_hero_base(bid, rank=1):
         "ap": 0.0, "bp": 0.0, "il": 0.0, "il2": 0.0, "il3": 0.0, "is4": 0.0,
         "eg": 0.0, "fg": 0.0, "ar": 0.0, "hr": 0.0, "hm": 0.0, "am": 0.0,
         "hrhp": 0.0, "hra": 0.0,
-        "stat_mods": [], "sig_mods": [], "buff_mods": [],
+        "stat_mods": bot_abilities(bid), "sig_mods": [], "buff_mods": [],
         "i": [], "i2": [], "i3": [], "i4": [],
     }
 
@@ -1175,46 +1182,24 @@ def build_heroes():
     return out
 
 
-def build_stat_modifiers():
-    """Original offline stat modifiers keyed exactly as BCGStatModifierDict expects.
+def build_buffs_config():
+    """Defines stackability and UI display settings for combat buff groupings."""
+    return abilities.build_buffs_config()
 
-    The complete short-key schema was captured live in seg-03.  `gp_hit_stun` is
-    registered by PlayerController.DefaultStatMods, so it intentionally needs no
-    per-hero stat_mods/buff_mods reference.
-    """
-    return {
-        "gp_hit_stun": {
-            "id": "gp_hit_stun",
-            "t": "hit_stun",
-            "tm": "",
-            "tr": [],
-            "uit": [],
-            "pri": 0,
-            "trm": 0.0,
-            "trs": "",
-            "trr": "none",
-            "c": 1.0,
-            "m": 1.0,
-            # ApplyHitStun supplies the gameplay duration.  This is only a
-            # 0.5-second authored fallback, intentionally in the observed window.
-            "d": 0.5,
-            "s": "none",
-            "ta": "self",
-            "mt": "debuff",
-            "v": "",
-            "ms": "",
-            "st": 0,
-            "g": "",
-            "gc": 0.0,
-            "gcv": "",
-            "rcv": "",
-            "ti": 0,
-            "a": [],
-            "au": [],
-            "rh": 0.0,
-            "ra": 0.0,
-        },
-    }
+
+def build_buffs_set():
+    """Global buff behaviors for combat arbiter."""
+    return abilities.build_buffs_set()
+
+
+def build_stat_mod_appears():
+    """Visual appearances for stat modifiers and combat buffs."""
+    return abilities.build_stat_mod_appears()
+
+
+def build_stat_modifiers():
+    """Original offline stat modifiers keyed exactly as BCGStatModifierDict expects."""
+    return abilities.build_stat_modifiers()
 
 
 def loc_dict(zh_str, en_str):
@@ -1447,7 +1432,7 @@ def build_login_data(lang="en"):
         "heroRatingMaxHPWeight": 0.075,
         "attributeGrowthDefs": [],
         "statMods": build_stat_modifiers(),
-        "statModAppears": {},
+        "statModAppears": build_stat_mod_appears(),
         # NOTE (session 3): this map is BCGManager._baseHeroData (BCGHeroBaseDict), the per-
         # (blueprint,rank) BASE-ATTRIBUTE templates -> structure heroes[blueprintId][rank] =
         # { <BCGHeroBase fields, parsed by BCGHeroBase..ctor RVA 0xC21AC4> }. It is EMPTY here,
@@ -1494,6 +1479,7 @@ def build_hero_entry(bid, rank=None, level=None):
         "rating_attack": r_atk, "rating_hp": r_hp,
         "rating_attack_base": r_atk_base, "rating_hp_base": r_hp_base,
         "special_attacks": max_special_attacks(bid, star), "pvpb": {}, "exc": {},
+        "stat_mods": bot_abilities(bid), "sig_mods": [], "buff_mods": [],
         "mana_gain": _MANA_GAIN_RATE, "mana_start": _DIAG_MANA_START,
         "flvl": 100, "req_fxp": 0, "max_fxp": 100, "mfl": 100,
     }
@@ -2531,7 +2517,7 @@ def build_quest_progression(qid="1.1.1", start=None, team=None):
             "hp": 1.0,
             "pi": (hp + atk) // 20,
             "sig_lvl": 100,
-            "stat_mods": [],
+            "stat_mods": bot_abilities(bid),
             "sig_mods": [],
         }
     user = {
@@ -3332,6 +3318,7 @@ def build_base_hero_details(req_heroes):
                 "crit_chance": crit_chance, "crit_damage": crit_damage,
                 "block_prof": 0, "perfect_block": 0, "sig_ability": 1,
                 "special_attacks": max_special_attacks(bid, star), "user_owned": True,
+                "stat_mods": bot_abilities(bid), "sig_mods": [], "buff_mods": [],
                 "mana_gain": _MANA_GAIN_RATE, "mana_start": _DIAG_MANA_START,
                 "flvl": 100, "req_fxp": 0, "max_fxp": 100, "mfl": 100,
                 "synergyBonuses": [], "pvpb": {},
@@ -3538,9 +3525,13 @@ def build_responses():
     account["result"]["missionsconfig"] = build_missions_account_data()
     account["result"]["inventory"] = build_inventory_items()
     account["result"]["gamestore"] = build_gamestore_account_data(lang="zh")
+    account["result"]["buffs_cdn"] = ""
+    account["result"]["buffs_config"] = build_buffs_config()
+    account["result"]["buffs_set"] = build_buffs_set()
+    account["result"]["buffs"] = {}
     with open(account_path, "w", encoding="utf-8") as f:
         f.write(json.dumps(account, separators=(",", ":")))
-    print("updated GET__account_data.json missionsconfig, inventory, gamestore")
+    print("updated GET__account_data.json missionsconfig, inventory, gamestore, buffs")
 
     post_account_path = os.path.join(RESP_DIR, "POST__account_data.json")
     if os.path.exists(post_account_path):
@@ -3549,9 +3540,13 @@ def build_responses():
         post_account["result"]["missionsconfig"] = build_missions_account_data()
         post_account["result"]["inventory"] = build_inventory_items()
         post_account["result"]["gamestore"] = build_gamestore_account_data(lang="zh")
+        post_account["result"]["buffs_cdn"] = ""
+        post_account["result"]["buffs_config"] = build_buffs_config()
+        post_account["result"]["buffs_set"] = build_buffs_set()
+        post_account["result"]["buffs"] = {}
         with open(post_account_path, "w", encoding="utf-8") as f:
             f.write(json.dumps(post_account, separators=(",", ":")))
-        print("updated POST__account_data.json missionsconfig, inventory, gamestore")
+        print("updated POST__account_data.json missionsconfig, inventory, gamestore, buffs")
 
     refresh_path = os.path.join(
         RESP_DIR, "GET__autorefresh_missionsconfig_refresh.json"

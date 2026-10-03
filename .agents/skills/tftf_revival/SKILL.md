@@ -587,3 +587,102 @@ Server/gamedata.py ROSTER.faction
    adb shell rm -f /sdcard/Android/media/com.kabam.bigrobot/tftf_offline_payload.bin
    adb shell rm -rf /sdcard/Android/data/com.kabam.bigrobot/files/UnityCache
    ```
+
+---
+
+## 18. 战斗能力与修饰器系统（Ability, StatModifier & Buffs）架构与 IL2CPP 符号地图
+
+### 18.1 核心文件权责划分 (Where Ability Code Lives)
+为避免在多模块排查时迷失方向，战斗能力系统必须遵循清晰的单一本源与分工权责：
+1. **单一真理源定义层**：[`Server/abilities.py`](file:///e:/Agent/TFTF/Server/abilities.py)
+   - `build_buffs_config()`: 定义 Buff UI 挂件分组、是否堆叠（`stackable`）与显隐（`active_display`）。
+   - `build_buffs_set()`: 注册全局 Buff 行为模板（`globalBuffs`，如 `Damage_BuffEffect`、跳字收集器 `floating_text`）。
+   - `build_stat_modifiers()`: 配置触发事件（`tr`）、UI 事件（`uit`）、概率（`c`）、绝对伤害总值（`m`）、时长（`d`）、目标（`ta`）与修饰器类型（`mt`）。
+   - `build_stat_mod_appears()`: 配置视觉外观、Tecnica 矢量字体 Unicode PUA 字形（`t: \uE401`）、横幅呼出字（`st`）及纯 6 位 Hex 颜色（`tc: FF0000`）。
+   - `bot_abilities(bid)`: 全英雄能力挂载单一真理源字典。
+2. **服务端数据装配层**：[`Server/gamedata.py`](file:///e:/Agent/TFTF/Server/gamedata.py)
+   - 在 `build_hero_base`、`build_hero_entry`、`build_base_hero_details`，尤其是 **`quest_team`（战斗核心编队）** 中同步注入 `stat_mods` 列表。
+3. **离线载荷烘焙层**：[`Server/export_payload.py`](file:///e:/Agent/TFTF/Server/export_payload.py)
+   - 将所有 abilities/buffs 相关 JSON 烘焙压缩入 `tftf_offline_payload.bin`。
+4. **客户端底层原生门禁**：[`tools/nativehook/hook.c`](file:///e:/Agent/TFTF/tools/nativehook/hook.c)
+   - `hook_156`（`PlayerAttributes.RollForCriticalHit`，RVA `0x0DADCA8`）：捕获暴击命中状态 `g_p0_last_hit_is_crit`。
+   - `hook_187`（`StatModifierController.GetStatModifier`，RVA `0x0CCF35C`）：拦截暴击依赖型技能（未暴击返回 0 拦截）。
+5. **自动化测试套件**：[`Server/test_arcee_ability.py`](file:///e:/Agent/TFTF/Server/test_arcee_ability.py)
+   - 验证单一本源、wire schemas、列表访问器类型及生成 JSON。
+
+### 18.2 IL2CPP (v27) 静态元数据定位规范与快速查表
+基于 `extracted_apk/assets/bin/Data/Managed/Metadata/global-metadata.dat`（版本 27）逆向测绘：
+- **字符串池（String Table）**：偏移 `0xB45C0`，大小 `0x179EC0`。
+- **方法定义表（MethodDefs）**：偏移 `0x273C98`，步长 32 字节（`nameIndex`, `declaringType`, `token`, `slot`, `parameterCount` 等）。
+- **形参定义表（Parameters）**：偏移 `0x5A4648`，步长 12 字节（`nameIndex`, `token`, `typeIndex`）。
+- **类型定义表（TypeDefs）**：偏移 `0x7E2528`，步长 88 字节。
+- **函数指针注册表（CodeRegistration）**：偏移 `0x2C40D90`（每项 8 字节函数 RVA）。
+- **核心类与 TypeIndex**：
+  - `StatModifier`：Type `8846`
+  - `StatModifierController`：Type `8848`
+  - `BCGStatModifier`：Type `8306`
+  - `BuffsConfig` / `BuffGroup`：Type `6942` / `6941`
+  - `HudBuffsGrid` / `HudBuffWidget`：Type `11959` / `11956`
+
+### 18.3 战斗修饰器与能力执行引擎核心契约 (基于 2.0.2 Mono C# 绝对权威源码)
+
+从 2.0.2 完整反编译 C# 源码（`decomp_202_source/Assembly-CSharp/`）中查明之底层核心契约：
+
+#### 1. 原生 `onCrit` 触发器与 `AttackLevel` 判定
+- 在 `PlayerController.cs#L1784-L1795` 中：
+  ```csharp
+  // 1. 普通攻击事件率先广播 (此阶段尚未开始判定暴击)
+  instigator.StatModifierController.ApplyStatModifiers(TFormBuffTriggerConstants.GetTriggerTypeFromAttackLevel(hitData.AttackLevel), triggerParams);
+  // 2. 进行暴击判定
+  flag2 = !flag && attributes.RollForCriticalHit(hitData.AttackLevel, Attributes.CritRateResist);
+  if (flag2) {
+      result.Flags |= HitResultFlags.Crit;
+      if (!flag4) {
+          // 3. 只有判定暴击成功，才会原生广播 "onCrit"！
+          instigator.StatModifierController.ApplyStatModifiers("onCrit", triggerParams);
+      }
+  }
+  ```
+- **铁律与避坑**：
+  若修饰器使用 `tr: ["onRangedHit"]`，它会在 `RollForCriticalHit` 之前执行，读取到上一次攻击的残留暴击状态。
+  **暴击类能力必须使用原生 `tr: ["onCrit"]`**！因为非暴击时客户端根本不会广播 `onCrit`，从引擎底层 100% 杜绝非暴击流血！
+- **`level` 攻击等级条件过滤**：
+  `TFormBuffTriggerFactory` 将 `onCrit` 分派给 `GenericHit_BuffTrigger`，其解析 `trs: "level=..."`，调用 `Util.GetEnumValueFromString<AttackLevel>(value)`。
+  `AttackLevel` 为 `[Flags]` 枚举：`Light=1, Medium=2, Heavy=4, Ranged=8, Special1=16, Special2=32, Special3=64`。
+  因此可通过 `trs: "level=Ranged,Special1"` 完美同时匹配普通远程射击与特殊技1子弹，或用 `trs: "level=Special2"` 锁定 S2 暴击！
+
+#### 2. `st` (Stackable) 参数的真实含义：`StackLimit`（最大堆叠层数）
+- 在 `BCGStatModifier.cs#L161` 中：
+  ```csharp
+  Stackable = Dot.Integer(new string[2] { "st", "stackable" }, data, 1);
+  ```
+- 在 `BuffsController.cs#L453-L460` 中：
+  ```csharp
+  if (value.Count >= value.StackLimit) {
+      if (!value.Last.IsReplaced) {
+          Buff first = value.First;
+          if (first != null) {
+              StopBuff(first, BuffRemoveFlags.replace); // 达到上限时，强制杀掉第一层并重置倒计时！
+          }
+      }
+  }
+  ```
+- **核心真相**：
+  `st` 绝非布尔值（0/1），而是**该修饰器的最大堆叠层数上限（StackLimit）**！
+  若配置 `"st": 1`，第二层流血进入时 `Count (1) >= StackLimit (1)` 为真，系统会**强制杀掉前一层流血并替换重置倒计时**，表现为“不叠层而是刷新倒计时”！
+  必须将可多层堆叠能力的 `"st"` 设为 `10`（或更大整数），`BuffStack` 才会保留多条实例并在 `HudBuffWidget` 上激活 `_countLabel` 显示角标数字！
+
+#### 3. 呼出大字（Callout）与血条图标聚合机制
+- **呼出大字**：`HudCalloutController.cs#L232` 读取 `appearance.CalloutStringID`（即 `statModAppears[id].st`）。
+  - `appr_arcee_headshot`: `"st": "HEADSHOT"`（专用于敌人前冲中枪暴击）
+  - `appr_arcee_bleed`: `"st": "BLEED"`（专用于普通远程暴击与 S2 暴击流血）
+- **血条图标聚合**：`HudBuffsGrid.cs#L119` 通过 `HudUtil.GetBuffId(buff.BuffType, buff.ModType)` 索引组件，**与 AppearanceID 无关**！
+  - 只要所有流血能力统一配置 `"t": "dmg_bleed"` 与 `"mt": "debuff"`，它们在血条下方就会自动合并到同一个倒计时圆环图标上。
+  - 多层流血并存时，`HudBuffWidget` 自动激活右下角数字角标（`Count.ToString()`），每上一层数字加 1，每到期一层数字减 1。
+
+#### 4. 状态判断条件：`opponent:state=Dash,Run` 与 `!=` 反向匹配
+- 在 `PlayerController.cs#L2536` 中，冲刺状态注册名为 `"Dash"`（并非 `"Dashing"`）。
+- `BuffSetCondition.cs` 原生支持 `=` 与 `!=`（`BuffConditionOp.NotEqual`）：
+  - 冲锋惩罚：`trs: "level=Ranged,Special1;opponent:state=Dash,Run"` -> 必出爆头并呼出 HEADSHOT！
+  - 常规远程：`trs: "level=Ranged,Special1;opponent:state!=Dash,Run"` -> 50% 几率施加流血并呼出 BLEED！
+  两者互斥，彻底解决多重流血判定冲突！
