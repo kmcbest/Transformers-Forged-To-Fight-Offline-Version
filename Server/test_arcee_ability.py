@@ -23,8 +23,11 @@ import gamedata
 
 class TestArceeAbility(unittest.TestCase):
     def test_single_source_of_truth_bot_abilities(self):
-        """Verify bot_abilities grants official abilities to Arcee."""
+        """Verify bot_abilities grants official abilities to Arcee and universal SP callouts."""
         expected_abilities = [
+            "sp_callout_arcee_gs_deluxe2014_1",
+            "sp_callout_arcee_gs_deluxe2014_2",
+            "sp_callout_arcee_gs_deluxe2014_3",
             "arcee_headshot_direct",
             "arcee_headshot_dot",
             "arcee_headshot_rush",
@@ -38,9 +41,14 @@ class TestArceeAbility(unittest.TestCase):
             abilities.bot_abilities("arcee_gs_deluxe2014"),
             expected_abilities,
         )
-        # Other bots must not have Arcee's ability
-        self.assertEqual(gamedata.bot_abilities("optimusprime_cin_tf"), [])
-        self.assertEqual(gamedata.bot_abilities("megatron_gs_leader2015"), [])
+        # Other bots have universal SP callouts but must not have Arcee's specific ability
+        op_abilities = gamedata.bot_abilities("optimusprime_cin_tf")
+        self.assertEqual(op_abilities, [
+            "sp_callout_optimusprime_cin_tf_1",
+            "sp_callout_optimusprime_cin_tf_2",
+            "sp_callout_optimusprime_cin_tf_3",
+        ])
+        self.assertNotIn("arcee_headshot_direct", op_abilities)
 
     def test_buffs_config_and_set(self):
         """Verify globalBuffs, groups, and groupings are properly formatted for Damage_BuffEffect."""
@@ -136,6 +144,9 @@ class TestArceeAbility(unittest.TestCase):
     def test_four_builders_carry_abilities(self):
         """Verify the 4 critical builders all inject bot_abilities correctly."""
         expected = [
+            "sp_callout_arcee_gs_deluxe2014_1",
+            "sp_callout_arcee_gs_deluxe2014_2",
+            "sp_callout_arcee_gs_deluxe2014_3",
             "arcee_headshot_direct",
             "arcee_headshot_dot",
             "arcee_headshot_rush",

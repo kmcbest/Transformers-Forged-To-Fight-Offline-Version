@@ -36,6 +36,8 @@ def build_buffs_config():
         "floating_text": {"stackable": True, "active_display": False},
         "floating_text_dmg": {"stackable": True, "active_display": False},
         "floating_text_heal": {"stackable": True, "active_display": False},
+        # SP 技能呼出文字组：仅触发 Callout Text，不在血条下显示 Buff 图标
+        "sp_callout": {"stackable": True, "active_display": False},
         # 流血类 Debuff：可堆叠，在敌人血条下方显示倒计时圆环图标
         "dmg_bleed": {"stackable": True, "active_display": True},
         # 直接伤害：不显示血条下方图标
@@ -55,6 +57,27 @@ def build_buffs_set():
     """全局 Buff 模板库。每个 id 对应 Damage_BuffEffect 或 FloatingText_BuffEffect。"""
     return {
         "globalBuffs": {
+            # 通用 SP 技能呼出 Buff：触发时向对应角色侧派发 1 秒技能名 Callout
+            "sp_callout": {
+                "id": "sp_callout",
+                "iconTexture": "",
+                "image": "",
+                "images3": False,
+                "modeAvail": [],
+                "scope": "global",
+                "valueType": "absolute",
+                "displayValue": 0.0,
+                "c": 1,
+                "value": 0.0,
+                "buffType": "buff",
+                "group": "sp_callout",
+                "p": {},
+                "hasDuration": True,
+                "e": 0,
+                "time": {"amount": 1.0},
+                "loc_name": "sp_callout",
+                "loc_desc": "sp_callout",
+            },
             # 伤害跳字收集器：捕获 _ftd 变量累加值，弹出红色跳字 (style 7)
             "floating_text": {
                 "id": "floating_text",
@@ -166,11 +189,96 @@ def build_buffs_set():
 
 
 # ---------------------------------------------------------------------------
-# 3. 视觉表现与图标映射 (statModAppears)
+# 3. 角色 SP 特殊技本地化映射表 (BOT_SP_MAP)
+# ---------------------------------------------------------------------------
+BOT_SP_MAP = {
+    "acidstorm_gs_leader2015": ("ID_SPECIAL_ATTACK_STARS_GS_0", "ID_SPECIAL_ATTACK_STARS_GS_1", "ID_SPECIAL_ATTACK_STARS_GS_2"),
+    "arcee_gs_deluxe2014": ("ID_SPECIAL_ATTACK_ARCEE_GS_0", "ID_SPECIAL_ATTACK_ARCEE_GS_1", "ID_SPECIAL_ATTACK_ARCEE_GS_2"),
+    "barricade_cin_dotm": ("ID_SPECIAL_ATTACK_BARRI_C_0", "ID_SPECIAL_ATTACK_BARRI_C_1", "ID_SPECIAL_ATTACK_BARRI_C_2"),
+    "bitstream_gs_leader2015": ("ID_SPECIAL_ATTACK_STARS_GS_0", "ID_SPECIAL_ATTACK_STARS_GS_1", "ID_SPECIAL_ATTACK_STARS_GS_2"),
+    "blaster_gs_leader2016": ("ID_SPECIAL_ATTACK_BLASTR_GS_0", "ID_SPECIAL_ATTACK_BLASTR_GS_1", "ID_SPECIAL_ATTACK_BLASTR_GS_2"),
+    "bludgeon_gs_rd20": ("ID_SPECIAL_ATTACK_BLUDGE_GS_0", "ID_SPECIAL_ATTACK_BLUDGE_GS_1", "ID_SPECIAL_ATTACK_BLUDGE_GS_2"),
+    "bonecrusher_cin_rotf": ("ID_SPECIAL_ATTACK_BONEC_C_0", "ID_SPECIAL_ATTACK_BONEC_C_1", "ID_SPECIAL_ATTACK_BONEC_C_2"),
+    "breakdown_gs": ("ID_SPECIAL_ATTACK_SIDES_GS_0", "ID_SPECIAL_ATTACK_SIDES_GS_1", "ID_SPECIAL_ATTACK_SIDES_GS_2"),
+    "bumblebee_cin_dotm": ("ID_SPECIAL_ATTACK_BUMBL_C_0", "ID_SPECIAL_ATTACK_BUMBL_C_1", "ID_SPECIAL_ATTACK_BUMBL_C_2"),
+    "bumblebee_gs_kabam": ("ID_SPECIAL_ATTACK_BUMBL_GS_0", "ID_SPECIAL_ATTACK_BUMBL_GS_1", "ID_SPECIAL_ATTACK_BUMBL_GS_2"),
+    "cheetor_bw_transmetal": ("ID_SPECIAL_ATTACK_CHEETOR_BW_0", "ID_SPECIAL_ATTACK_CHEETOR_BW_1", "ID_SPECIAL_ATTACK_CHEETOR_BW_2"),
+    "chromia_gs_kabam": ("ID_SPECIAL_ATTACK_ARCEE_GS_0", "ID_SPECIAL_ATTACK_ARCEE_GS_1", "ID_SPECIAL_ATTACK_ARCEE_GS_2"),
+    "cliffjumper_gs_kabam": ("ID_SPECIAL_ATTACK_CLIFFJUMP_GS_0", "ID_SPECIAL_ATTACK_CLIFFJUMP_GS_1", "ID_SPECIAL_ATTACK_CLIFFJUMP_GS_2"),
+    "cyclonus_gs_uw06": ("ID_SPECIAL_ATTACK_CYCLON_GS_0", "ID_SPECIAL_ATTACK_CYCLON_GS_1", "ID_SPECIAL_ATTACK_CYCLON_GS_2"),
+    "deadend_gs_deluxe2015": ("ID_SPECIAL_ATTACK_MIRAG_GS_0", "ID_SPECIAL_ATTACK_MIRAG_GS_1", "ID_SPECIAL_ATTACK_MIRAG_GS_2"),
+    "dinobot_bw_kabam": ("ID_SPECIAL_ATTACK_DINOB_BW_0", "ID_SPECIAL_ATTACK_DINOB_BW_1", "ID_SPECIAL_ATTACK_DINOB_BW_2"),
+    "dirge_gs_deluxe2008": ("ID_SPECIAL_ATTACK_RAMJET_GS_0", "ID_SPECIAL_ATTACK_RAMJET_GS_1", "ID_SPECIAL_ATTACK_RAMJET_GS_2"),
+    "dragstrip_gs_deluxe2016": ("ID_SPECIAL_ATTACK_MIRAG_GS_0", "ID_SPECIAL_ATTACK_MIRAG_GS_1", "ID_SPECIAL_ATTACK_MIRAG_GS_2"),
+    "drift_cin_aoe": ("ID_SPECIAL_ATTACK_DRIFT_C_0", "ID_SPECIAL_ATTACK_DRIFT_C_1", "ID_SPECIAL_ATTACK_DRIFT_C_2"),
+    "fte_optimus_gs_t3": ("ID_SPECIAL_ATTACK_OPTIMUS_GS_0", "ID_SPECIAL_ATTACK_OPTIMUS_GS_1", "ID_SPECIAL_ATTACK_OPTIMUS_GS_2"),
+    "fte_stars_gs_t3": ("ID_SPECIAL_ATTACK_STARS_GS_0", "ID_SPECIAL_ATTACK_STARS_GS_1", "ID_SPECIAL_ATTACK_STARS_GS_2"),
+    "galvatron_gs_voyager2016": ("ID_SPECIAL_ATTACK_GALVATRON_GS_0", "ID_SPECIAL_ATTACK_GALVATRON_GS_1", "ID_SPECIAL_ATTACK_GALVATRON_GS_2"),
+    "grimlock_gs_mp08": ("ID_SPECIAL_ATTACK_GRIML_GS_0", "ID_SPECIAL_ATTACK_GRIML_GS_1", "ID_SPECIAL_ATTACK_GRIML_GS_2"),
+    "grindor_cin_rotf": ("ID_SPECIAL_ATTACK_GRIND_C_ROTF_0", "ID_SPECIAL_ATTACK_GRIND_C_ROTF_1", "ID_SPECIAL_ATTACK_GRIND_C_ROTF_2"),
+    "hotlink_gs_leader2015": ("ID_SPECIAL_ATTACK_STARS_GS_0", "ID_SPECIAL_ATTACK_STARS_GS_1", "ID_SPECIAL_ATTACK_STARS_GS_2"),
+    "hotrod_cin_tlk": ("ID_SPECIAL_ATTACK_HOTRO_C_0", "ID_SPECIAL_ATTACK_HOTRO_C_1", "ID_SPECIAL_ATTACK_HOTRO_C_2"),
+    "hound_cin_tlk": ("ID_SPECIAL_ATTACK_HOUND_C_0", "ID_SPECIAL_ATTACK_HOUND_C_1", "ID_SPECIAL_ATTACK_HOUND_C_2"),
+    "ionstorm_gs_leader2015": ("ID_SPECIAL_ATTACK_STARS_GS_0", "ID_SPECIAL_ATTACK_STARS_GS_1", "ID_SPECIAL_ATTACK_STARS_GS_2"),
+    "ironhide_cin_rotf": ("ID_SPECIAL_ATTACK_IRONH_C_ROTF_0", "ID_SPECIAL_ATTACK_IRONH_C_ROTF_1", "ID_SPECIAL_ATTACK_IRONH_C_ROTF_2"),
+    "ironhide_gs_kabam": ("ID_SPECIAL_ATTACK_IRONH_C_ROTF_0", "ID_SPECIAL_ATTACK_IRONH_C_ROTF_1", "ID_SPECIAL_ATTACK_IRONH_C_ROTF_2"),
+    "jazz_gs_twm05": ("ID_SPECIAL_ATTACK_JAZZ_GS_0", "ID_SPECIAL_ATTACK_JAZZ_GS_1", "ID_SPECIAL_ATTACK_JAZZ_GS_2"),
+    "jetfire_gs_leader2014": ("ID_SPECIAL_ATTACK_JETFIRE_GS_0", "ID_SPECIAL_ATTACK_JETFIRE_GS_1", "ID_SPECIAL_ATTACK_JETFIRE_GS_2"),
+    "kickback_gs_kabam": ("ID_SPECIAL_ATTACK_KICKB_GS_0", "ID_SPECIAL_ATTACK_KICKB_GS_1", "ID_SPECIAL_ATTACK_KICKB_GS_2"),
+    "lifeline_gs_deluxe2014": ("ID_SPECIAL_ATTACK_ARCEE_GS_0", "ID_SPECIAL_ATTACK_ARCEE_GS_1", "ID_SPECIAL_ATTACK_ARCEE_GS_2"),
+    "megatron_cin_rotf": ("ID_SPECIAL_ATTACK_MEGAT_C_0", "ID_SPECIAL_ATTACK_MEGAT_C_1", "ID_SPECIAL_ATTACK_MEGAT_C_2"),
+    "megatron_gs_leader2015": ("ID_SPECIAL_ATTACK_MEGAT_GS_0", "ID_SPECIAL_ATTACK_MEGAT_GS_1", "ID_SPECIAL_ATTACK_MEGAT_GS_2"),
+    "megatronus_gs_kabam": ("ID_SPECIAL_ATTACK_MEGATRO_GS_0", "ID_SPECIAL_ATTACK_MEGATRO_GS_1", "ID_SPECIAL_ATTACK_MEGATRO_GS_2"),
+    "mirage_gs_deluxe2016": ("ID_SPECIAL_ATTACK_MIRAG_GS_0", "ID_SPECIAL_ATTACK_MIRAG_GS_1", "ID_SPECIAL_ATTACK_MIRAG_GS_2"),
+    "mixmaster_cin_rotf": ("ID_SPECIAL_ATTACK_MIXMA_C_ROTF_0", "ID_SPECIAL_ATTACK_MIXMA_C_ROTF_1", "ID_SPECIAL_ATTACK_MIXMA_C_ROTF_2"),
+    "motormaster_gs_voyager2015": ("ID_SPECIAL_ATTACK_MOTORM_GS_0", "ID_SPECIAL_ATTACK_MOTORM_GS_1", "ID_SPECIAL_ATTACK_MOTORM_GS_2"),
+    "necrotronus_gs_kabam": ("ID_SPECIAL_ATTACK_NECROTRO_GS_0", "ID_SPECIAL_ATTACK_NECROTRO_GS_1", "ID_SPECIAL_ATTACK_NECROTRO_GS_2"),
+    "nemesisprime_gs_voyager2015": ("ID_SPECIAL_ATTACK_NEMESIS_GS_0", "ID_SPECIAL_ATTACK_NEMESIS_GS_1", "ID_SPECIAL_ATTACK_NEMESIS_GS_2"),
+    "novastorm_gs_leader2015": ("ID_SPECIAL_ATTACK_STARS_GS_0", "ID_SPECIAL_ATTACK_STARS_GS_1", "ID_SPECIAL_ATTACK_STARS_GS_2"),
+    "optimusprimal_bw_mp32": ("ID_SPECIAL_ATTACK_OPRIMAL_BW_0", "ID_SPECIAL_ATTACK_OPRIMAL_BW_1", "ID_SPECIAL_ATTACK_OPRIMAL_BW_2"),
+    "optimusprime_cin_tf": ("ID_SPECIAL_ATTACK_OPTIMUS_C_TF_0", "ID_SPECIAL_ATTACK_OPTIMUS_C_TF_1", "ID_SPECIAL_ATTACK_OPTIMUS_C_TF_2"),
+    "optimusprime_sg_voyager2015": ("ID_SPECIAL_ATTACK_OPTIMUS_GS_0", "ID_SPECIAL_ATTACK_OPTIMUS_GS_1", "ID_SPECIAL_ATTACK_OPTIMUS_GS_2"),
+    "prowl_gs_deluxe2016": ("ID_SPECIAL_ATTACK_PROWL_GS_0", "ID_SPECIAL_ATTACK_PROWL_GS_1", "ID_SPECIAL_ATTACK_PROWL_GS_2"),
+    "ramjet_gs_deluxe2008": ("ID_SPECIAL_ATTACK_RAMJET_GS_0", "ID_SPECIAL_ATTACK_RAMJET_GS_1", "ID_SPECIAL_ATTACK_RAMJET_GS_2"),
+    "ratchet_gs_kabam": ("ID_SPECIAL_ATTACK_RATCH_GS_0", "ID_SPECIAL_ATTACK_RATCH_GS_1", "ID_SPECIAL_ATTACK_RATCH_GS_2"),
+    "rhinox_gs_voyager2014": ("ID_SPECIAL_ATTACK_RHINO_BW_0", "ID_SPECIAL_ATTACK_RHINO_BW_1", "ID_SPECIAL_ATTACK_RHINO_BW_2"),
+    "rodimusprime_gs_mp09": ("ID_SPECIAL_ATTACK_HOTRO_C_0", "ID_SPECIAL_ATTACK_HOTRO_C_1", "ID_SPECIAL_ATTACK_HOTRO_C_2"),
+    "scorponok_bw_kabam": ("ID_SPECIAL_ATTACK_SCORPO_BW_0", "ID_SPECIAL_ATTACK_SCORPO_BW_1", "ID_SPECIAL_ATTACK_SCORPO_BW_2"),
+    "sharkticon_gs_brawler": ("ID_SPECIAL_ATTACK_NPC_SHARK_BRAW_0", "ID_SPECIAL_ATTACK_NPC_SHARK_BRAW_1", "ID_SPECIAL_ATTACK_NPC_SHARK_BRAW_2"),
+    "sharkticon_gs_demolition": ("ID_SPECIAL_ATTACK_NPC_SHARK_DEMO_0", "ID_SPECIAL_ATTACK_NPC_SHARK_DEMO_1", "ID_SPECIAL_ATTACK_NPC_SHARK_DEMO_2"),
+    "sharkticon_gs_kabam": ("ID_SPECIAL_ATTACK_NPC_SHARK_GOLD_0", "ID_SPECIAL_ATTACK_NPC_SHARK_GOLD_1", "ID_SPECIAL_ATTACK_NPC_SHARK_GOLD_2"),
+    "sharkticon_gs_scout": ("ID_SPECIAL_ATTACK_NPC_SHARK_SCOU_0", "ID_SPECIAL_ATTACK_NPC_SHARK_SCOU_1", "ID_SPECIAL_ATTACK_NPC_SHARK_SCOU_2"),
+    "sharkticon_gs_tactician": ("ID_SPECIAL_ATTACK_NPC_SHARK_TACT_0", "ID_SPECIAL_ATTACK_NPC_SHARK_TACT_1", "ID_SPECIAL_ATTACK_NPC_SHARK_TACT_2"),
+    "sharkticon_gs_tech": ("ID_SPECIAL_ATTACK_NPC_SHARK_TECH_0", "ID_SPECIAL_ATTACK_NPC_SHARK_TECH_1", "ID_SPECIAL_ATTACK_NPC_SHARK_TECH_2"),
+    "sharkticon_gs_warrior": ("ID_SPECIAL_ATTACK_NPC_SHARK_WARR_0", "ID_SPECIAL_ATTACK_NPC_SHARK_WARR_1", "ID_SPECIAL_ATTACK_NPC_SHARK_WARR_2"),
+    "shockwave_gs": ("ID_SPECIAL_ATTACK_SHOCK_C_0", "ID_SPECIAL_ATTACK_SHOCK_C_1", "ID_SPECIAL_ATTACK_SHOCK_C_2"),
+    "sideswipe_gs": ("ID_SPECIAL_ATTACK_SIDES_GS_0", "ID_SPECIAL_ATTACK_SIDES_GS_1", "ID_SPECIAL_ATTACK_SIDES_GS_2"),
+    "skywarp_gs_leader2015": ("ID_SPECIAL_ATTACK_STARS_GS_0", "ID_SPECIAL_ATTACK_STARS_GS_1", "ID_SPECIAL_ATTACK_STARS_GS_2"),
+    "slipstream_gs": ("ID_SPECIAL_ATTACK_WINDB_GS_0", "ID_SPECIAL_ATTACK_WINDB_GS_1", "ID_SPECIAL_ATTACK_WINDB_GS_2"),
+    "soundblaster_gs_mp13b": ("ID_SPECIAL_ATTACK_SOUND_GS_0", "ID_SPECIAL_ATTACK_SOUND_GS_1", "ID_SPECIAL_ATTACK_SOUND_GS_2"),
+    "soundwave_gs": ("ID_SPECIAL_ATTACK_SOUND_GS_0", "ID_SPECIAL_ATTACK_SOUND_GS_1", "ID_SPECIAL_ATTACK_SOUND_GS_2"),
+    "starsaber_gs_leader2014": ("ID_SPECIAL_ATTACK_DRIFT_C_0", "ID_SPECIAL_ATTACK_DRIFT_C_1", "ID_SPECIAL_ATTACK_DRIFT_C_2"),
+    "starscream_ghost_gs": ("ID_SPECIAL_ATTACK_STARS_GS_0", "ID_SPECIAL_ATTACK_STARS_GS_1", "ID_SPECIAL_ATTACK_STARS_GS_2"),
+    "sunstorm_gs_leader2015": ("ID_SPECIAL_ATTACK_STARS_GS_0", "ID_SPECIAL_ATTACK_STARS_GS_1", "ID_SPECIAL_ATTACK_STARS_GS_2"),
+    "sunstreaker_gs_deluxe2008": ("ID_SPECIAL_ATTACK_SIDES_GS_0", "ID_SPECIAL_ATTACK_SIDES_GS_1", "ID_SPECIAL_ATTACK_SIDES_GS_2"),
+    "tantrum_gs_kabam": ("ID_SPECIAL_ATTACK_TANTRUM_GS_0", "ID_SPECIAL_ATTACK_TANTRUM_GS_1", "ID_SPECIAL_ATTACK_TANTRUM_GS_2"),
+    "thrust_gs_deluxe2008": ("ID_SPECIAL_ATTACK_RAMJET_GS_0", "ID_SPECIAL_ATTACK_RAMJET_GS_1", "ID_SPECIAL_ATTACK_RAMJET_GS_2"),
+    "thundercracker_gs_leader2015": ("ID_SPECIAL_ATTACK_THUNDERCRACKER_GS_0", "ID_SPECIAL_ATTACK_THUNDERCRACKER_GS_1", "ID_SPECIAL_ATTACK_THUNDERCRACKER_GS_2"),
+    "ultramagnus_gs_leader": ("ID_SPECIAL_ATTACK_ULTRAM_GS_0", "ID_SPECIAL_ATTACK_ULTRAM_GS_1", "ID_SPECIAL_ATTACK_ULTRAM_GS_2"),
+    "ultramagnus_sg_leader": ("ID_SPECIAL_ATTACK_ULTRAM_GS_0", "ID_SPECIAL_ATTACK_ULTRAM_GS_1", "ID_SPECIAL_ATTACK_ULTRAM_GS_2"),
+    "waspinator_gs_deluxe": ("ID_SPECIAL_ATTACK_WASP_BW_0", "ID_SPECIAL_ATTACK_WASP_BW_1", "ID_SPECIAL_ATTACK_WASP_BW_2"),
+    "wheeljack_gs_mp20": ("ID_SPECIAL_ATTACK_WHEELJ_GS_0", "ID_SPECIAL_ATTACK_WHEELJ_GS_1", "ID_SPECIAL_ATTACK_WHEELJ_GS_2"),
+    "wildrider_gs_deluxe2016": ("ID_SPECIAL_ATTACK_SIDES_GS_0", "ID_SPECIAL_ATTACK_SIDES_GS_1", "ID_SPECIAL_ATTACK_SIDES_GS_2"),
+    "windblade_gs": ("ID_SPECIAL_ATTACK_WINDB_GS_0", "ID_SPECIAL_ATTACK_WINDB_GS_1", "ID_SPECIAL_ATTACK_WINDB_GS_2"),
+}
+
+
+# ---------------------------------------------------------------------------
+# 4. 视觉表现与图标映射 (statModAppears)
 # ---------------------------------------------------------------------------
 def build_stat_mod_appears():
     """定义修饰器的视觉效果、Unicode PUA 图标字形、呼出文字及纯 6 位 Hex 颜色。"""
-    return {
+    res = {
         # 阿尔茜爆头即时直接命中外观
         "appr_arcee_headshot": {
             "id": "appr_arcee_headshot",
@@ -205,13 +313,36 @@ def build_stat_mod_appears():
         },
     }
 
+    # 为全员 78 位英雄注册 SP1 / SP2 / SP3 技能名呼出外观
+    # 采用高亮金色 (FFE066) 配以纯白色高光渐变，呼出文字绑定官方多语言 ID
+    for bid, sp_keys in BOT_SP_MAP.items():
+        for lvl in (1, 2, 3):
+            appr_id = f"appr_sp_{bid}_{lvl}"
+            res[appr_id] = {
+                "id": appr_id,
+                "a": f"SP{lvl}",
+                "s": f"SP{lvl}",
+                "l": "",
+                "ss": "",
+                "t": "",
+                "f": "",
+                "st": sp_keys[lvl - 1],   # 客户端 UILabel 自动解析该语言键值
+                "ps": "",
+                "pl": "",
+                "tc": "FFE066",           # 纯 6 位 Hex：辉光金
+                "gt": "FFFFFF",           # 上部渐变高光纯白
+                "gb": "FFAA00",           # 下部渐变深金
+            }
+
+    return res
+
 
 # ---------------------------------------------------------------------------
 # 4. 战斗修饰器与触发器定义 (statMods)
 # ---------------------------------------------------------------------------
 def build_stat_modifiers():
     """定义具体的触发条件、几率、持续时间与作用对象。"""
-    return {
+    res = {
         # -------------------------------------------------------------------
         # [全局系统修饰器]
         # -------------------------------------------------------------------
@@ -451,6 +582,43 @@ def build_stat_modifiers():
         },
     }
 
+    # 为全员 78 位英雄注册 SP1 / SP2 / SP3 技能名呼出修饰器
+    # 挂载在 onSpecial1Activate / onSpecial2Activate / onSpecial3Activate 触发点
+    for bid in BOT_SP_MAP:
+        for lvl in (1, 2, 3):
+            mod_id = f"sp_callout_{bid}_{lvl}"
+            res[mod_id] = {
+                "id": mod_id,
+                "t": "sp_callout",
+                "tm": "",
+                "tr": [f"onSpecial{lvl}Activate"],
+                "uit": [f"onSpecial{lvl}Activate"],
+                "pri": 0,
+                "trm": 0.0,
+                "trs": "",
+                "trr": "repeat",
+                "c": 1.0,
+                "m": 0.0,
+                "d": 1.0,
+                "s": "none",
+                "ta": "self",
+                "mt": "buff",
+                "v": "",
+                "ms": "",
+                "st": 0,
+                "g": "",
+                "gc": 0.0,
+                "gcv": "",
+                "rcv": "",
+                "ti": 0,
+                "a": [f"appr_sp_{bid}_{lvl}"],
+                "au": [],
+                "rh": 0.0,
+                "ra": 0.0,
+            }
+
+    return res
+
 
 # ---------------------------------------------------------------------------
 # 5. 角色与技能绑定表 (bot_abilities)
@@ -467,5 +635,6 @@ BOT_ABILITIES_MAP = {
 
 
 def bot_abilities(bot_id):
-    """查询指定金刚拥有的全部能力修饰器 ID 列表。"""
-    return BOT_ABILITIES_MAP.get(bot_id, [])
+    """查询指定金刚拥有的全部能力修饰器 ID 列表（包含通用 SP 技名呼出与专属技能）。"""
+    sp_mods = [f"sp_callout_{bot_id}_{lvl}" for lvl in (1, 2, 3)] if bot_id in BOT_SP_MAP else []
+    return sp_mods + BOT_ABILITIES_MAP.get(bot_id, [])
