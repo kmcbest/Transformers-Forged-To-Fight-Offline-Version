@@ -1,0 +1,733 @@
+{
+  "Grimlock": {
+    "name": "Grimlock",
+    "wiki_page": "Grimlock",
+    "rank_level": "6/60",
+    "match_type": "exact",
+    "health": 39256,
+    "attack": 2490,
+    "rating": 10320,
+    "health_str": "39,256",
+    "attack_str": "2,490",
+    "rating_str": "10,320"
+  },
+  "Grindor": {
+    "name": "Grindor",
+    "wiki_page": "Grindor",
+    "rank_level": "6/60",
+    "match_type": "interpolated (from 5/50)",
+    "base_5_50": {
+      "health": 30356,
+      "attack": 2287,
+      "rating": 8546
+    },
+    "health": 34894,
+    "attack": 2629,
+    "rating": 11110,
+    "health_str": "34,894",
+    "attack_str": "2,629",
+    "rating_str": "11,110"
+  },
+  "Ironhide": {
+    "name": "Ironhide",
+    "wiki_page": "Ironhide",
+    "rank_level": "6/60",
+    "match_type": "exact",
+    "health": 33602,
+    "attack": 2531,
+    "rating": 9765,
+    "health_str": "33,602",
+    "attack_str": "2,531",
+    "rating_str": "9,765"
+  },
+  "Motormaster": {
+    "name": "Motormaster",
+    "wiki_page": "Motormaster",
+    "rank_level": "6/60",
+    "match_type": "exact",
+    "health": 34894,
+    "attack": 2629,
+    "rating": 10070,
+    "health_str": "34,894",
+    "attack_str": "2,629",
+    "rating_str": "10,070"
+  },
+  "Optimus Prime (MV1)": {
+    "name": "Optimus Prime (MV1)",
+    "wiki_page": "Optimus_Prime_(MV1)",
+    "rank_level": "6/60",
+    "match_type": "interpolated (from 5/50)",
+    "base_5_50": {
+      "health": 30885,
+      "attack": 2327,
+      "rating": 7601
+    },
+    "health": 35502,
+    "attack": 2675,
+    "rating": 9881,
+    "health_str": "35,502",
+    "attack_str": "2,675",
+    "rating_str": "9,881"
+  },
+  "Sunstreaker": {
+    "name": "Sunstreaker",
+    "wiki_page": "Sunstreaker",
+    "rank_level": "6/60",
+    "match_type": "exact (wikitext)",
+    "health": 34583,
+    "attack": 2790,
+    "rating": 8399,
+    "health_str": "34,583",
+    "attack_str": "2,790",
+    "rating_str": "8,399"
+  },
+  "Optimus Primal": {
+    "name": "Optimus Primal",
+    "wiki_page": "Optimus_Primal",
+    "rank_level": "6/60",
+    "match_type": "interpolated (estimated benchmark)",
+    "health": 32122,
+    "attack": 2572,
+    "rating": 11397,
+    "health_str": "32,122",
+    "attack_str": "2,572",
+    "rating_str": "11,397"
+  },
+  "Tantrum": {
+    "name": "Tantrum",
+    "wiki_page": "Tantrum",
+    "rank_level": "6/60",
+    "match_type": "interpolated (from 5/50)",
+    "base_5_50": {
+      "health": 30610,
+      "attack": 2470,
+      "rating": 7670
+    },
+    "health": 35186,
+    "attack": 2839,
+    "rating": 9971,
+    "health_str": "35,186",
+    "attack_str": "2,839",
+    "rating_str": "9,971"
+  },
+  "Sharkticon Brawler": {
+    "name": "Sharkticon Brawler",
+    "wiki_page": "Sharkticon_Brawler",
+    "rank_level": "6/60",
+    "match_type": "interpolated (estimated benchmark)",
+    "health": 32122,
+    "attack": 2572,
+    "rating": 11397,
+    "health_str": "32,122",
+    "attack_str": "2,572",
+    "rating_str": "11,397"
+  },
+  "Arcee": {
+    "name": "Arcee",
+    "wiki_page": "Arcee",
+    "rank_level": "6/60",
+    "match_type": "interpolated (from 5/50)",
+    "base_5_50": {
+      "health": 24123,
+      "attack": 2327,
+      "rating": 8470
+    },
+    "health": 27729,
+    "attack": 2675,
+    "rating": 11011,
+    "health_str": "27,729",
+    "attack_str": "2,675",
+    "rating_str": "11,011"
+  },
+  "Bludgeon": {
+    "name": "Bludgeon",
+    "wiki_page": "Bludgeon",
+    "rank_level": "6/60",
+    "match_type": "interpolated (from 5/50)",
+    "base_5_50": {
+      "health": 27375,
+      "attack": 2167,
+      "rating": 6869
+    },
+    "health": 31468,
+    "attack": 2491,
+    "rating": 8930,
+    "health_str": "31,468",
+    "attack_str": "2,491",
+    "rating_str": "8,930"
+  },
+  "Bonecrusher": {
+    "name": "Bonecrusher",
+    "wiki_page": "Bonecrusher",
+    "rank_level": "6/60",
+    "match_type": "interpolated (from 5/50)",
+    "base_5_50": {
+      "health": 27375,
+      "attack": 2086,
+      "rating": 8319
+    },
+    "health": 31468,
+    "attack": 2398,
+    "rating": 10815,
+    "health_str": "31,468",
+    "attack_str": "2,398",
+    "rating_str": "10,815"
+  },
+  "Chromia": {
+    "name": "Chromia",
+    "wiki_page": "Chromia",
+    "rank_level": "6/60",
+    "match_type": "interpolated (from 5/50)",
+    "base_5_50": {
+      "health": 1009,
+      "attack": 70,
+      "rating": 262
+    },
+    "health": 1160,
+    "attack": 80,
+    "rating": 341,
+    "health_str": "1,160",
+    "attack_str": "80",
+    "rating_str": "341"
+  },
+  "Dirge": {
+    "name": "Dirge",
+    "wiki_page": "Dirge",
+    "rank_level": "6/60",
+    "match_type": "exact",
+    "health": 30844,
+    "attack": 2352,
+    "rating": 10830,
+    "health_str": "30,844",
+    "attack_str": "2,352",
+    "rating_str": "10,830"
+  },
+  "Drift": {
+    "name": "Drift",
+    "wiki_page": "Drift",
+    "rank_level": "6/60",
+    "match_type": "interpolated (from 5/50)",
+    "base_5_50": {
+      "health": 26833,
+      "attack": 2046,
+      "rating": 8420
+    },
+    "health": 30845,
+    "attack": 2352,
+    "rating": 10946,
+    "health_str": "30,845",
+    "attack_str": "2,352",
+    "rating_str": "10,946"
+  },
+  "Hot Rod": {
+    "name": "Hot Rod",
+    "wiki_page": "Hot_Rod",
+    "rank_level": "6/60",
+    "match_type": "interpolated (from 5/50)",
+    "base_5_50": {
+      "health": 26291,
+      "attack": 2127,
+      "rating": 8417
+    },
+    "health": 30222,
+    "attack": 2445,
+    "rating": 10942,
+    "health_str": "30,222",
+    "attack_str": "2,445",
+    "rating_str": "10,942"
+  },
+  "Hound": {
+    "name": "Hound",
+    "wiki_page": "Hound",
+    "rank_level": "6/60",
+    "match_type": "exact",
+    "health": 33633,
+    "attack": 2349,
+    "rating": 9170,
+    "health_str": "33,633",
+    "attack_str": "2,349",
+    "rating_str": "9,170"
+  },
+  "Necrotronus": {
+    "name": "Necrotronus",
+    "wiki_page": "Necrotronus",
+    "rank_level": "6/60",
+    "match_type": "exact",
+    "health": 35484,
+    "attack": 2519,
+    "rating": 11670,
+    "health_str": "35,484",
+    "attack_str": "2,519",
+    "rating_str": "11,670"
+  },
+  "Scorponok": {
+    "name": "Scorponok",
+    "wiki_page": "Scorponok",
+    "rank_level": "6/60",
+    "match_type": "exact",
+    "health": 34867,
+    "attack": 2321,
+    "rating": 9782,
+    "health_str": "34,867",
+    "attack_str": "2,321",
+    "rating_str": "9,782"
+  },
+  "Windblade": {
+    "name": "Windblade",
+    "wiki_page": "Windblade",
+    "rank_level": "6/60",
+    "match_type": "exact",
+    "health": 26794,
+    "attack": 2583,
+    "rating": 9794,
+    "health_str": "26,794",
+    "attack_str": "2,583",
+    "rating_str": "9,794"
+  },
+  "Sharkticon Warrior": {
+    "name": "Sharkticon Warrior",
+    "wiki_page": "Sharkticon_Warrior",
+    "rank_level": "6/60",
+    "match_type": "interpolated (estimated benchmark)",
+    "health": 32122,
+    "attack": 2572,
+    "rating": 11397,
+    "health_str": "32,122",
+    "attack_str": "2,572",
+    "rating_str": "11,397"
+  },
+  "Barricade": {
+    "name": "Barricade",
+    "wiki_page": "Barricade",
+    "rank_level": "6/60",
+    "match_type": "exact",
+    "health": 26794,
+    "attack": 2698,
+    "rating": 9902,
+    "health_str": "26,794",
+    "attack_str": "2,698",
+    "rating_str": "9,902"
+  },
+  "Prowl": {
+    "name": "Prowl",
+    "wiki_page": "Prowl",
+    "rank_level": "6/60",
+    "match_type": "interpolated (from 5/50)",
+    "base_5_50": {
+      "health": 26562,
+      "attack": 2026,
+      "rating": 8455
+    },
+    "health": 30533,
+    "attack": 2329,
+    "rating": 10992,
+    "health_str": "30,533",
+    "attack_str": "2,329",
+    "rating_str": "10,992"
+  },
+  "Sideswipe": {
+    "name": "Sideswipe",
+    "wiki_page": "Sideswipe",
+    "rank_level": "6/60",
+    "match_type": "exact",
+    "health": 26794,
+    "attack": 2698,
+    "rating": 10160,
+    "health_str": "26,794",
+    "attack_str": "2,698",
+    "rating_str": "10,160"
+  },
+  "Bumblebee": {
+    "name": "Bumblebee",
+    "wiki_page": "Bumblebee",
+    "rank_level": "6/60",
+    "match_type": "exact",
+    "health": 25536,
+    "attack": 2306,
+    "rating": 10400,
+    "health_str": "25,536",
+    "attack_str": "2,306",
+    "rating_str": "10,400"
+  },
+  "Kickback": {
+    "name": "Kickback",
+    "wiki_page": "Kickback",
+    "rank_level": "6/60",
+    "match_type": "exact",
+    "health": 32533,
+    "attack": 3880,
+    "rating": 17017,
+    "health_str": "32,533",
+    "attack_str": "3,880",
+    "rating_str": "17,017"
+  },
+  "Cheetor": {
+    "name": "Cheetor",
+    "wiki_page": "Cheetor",
+    "rank_level": "6/60",
+    "match_type": "exact",
+    "health": 28245,
+    "attack": 2874,
+    "rating": 11360,
+    "health_str": "28,245",
+    "attack_str": "2,874",
+    "rating_str": "11,360"
+  },
+  "Jazz": {
+    "name": "Jazz",
+    "wiki_page": "Jazz",
+    "rank_level": "6/60",
+    "match_type": "exact",
+    "health": 28810,
+    "attack": 2721,
+    "rating": 11250,
+    "health_str": "28,810",
+    "attack_str": "2,721",
+    "rating_str": "11,250"
+  },
+  "Sharkticon Scout": {
+    "name": "Sharkticon Scout",
+    "wiki_page": "Sharkticon_Scout",
+    "rank_level": "6/60",
+    "match_type": "interpolated (estimated benchmark)",
+    "health": 32122,
+    "attack": 2572,
+    "rating": 11397,
+    "health_str": "32,122",
+    "attack_str": "2,572",
+    "rating_str": "11,397"
+  },
+  "S-1000": {
+    "name": "S-1000",
+    "wiki_page": "S-1000",
+    "rank_level": "6/60",
+    "match_type": "interpolated (estimated benchmark)",
+    "health": 32122,
+    "attack": 2572,
+    "rating": 11397,
+    "health_str": "32,122",
+    "attack_str": "2,572",
+    "rating_str": "11,397"
+  },
+  "Mirage": {
+    "name": "Mirage",
+    "wiki_page": "Mirage",
+    "rank_level": "6/60",
+    "match_type": "interpolated (from 5/50)",
+    "base_5_50": {
+      "health": 24665,
+      "attack": 1866,
+      "rating": 8441
+    },
+    "health": 28352,
+    "attack": 2145,
+    "rating": 10973,
+    "health_str": "28,352",
+    "attack_str": "2,145",
+    "rating_str": "10,973"
+  },
+  "Ratchet": {
+    "name": "Ratchet",
+    "wiki_page": "Ratchet",
+    "rank_level": "6/60",
+    "match_type": "exact",
+    "health": 28352,
+    "attack": 2029,
+    "rating": 10550,
+    "health_str": "28,352",
+    "attack_str": "2,029",
+    "rating_str": "10,550"
+  },
+  "Rhinox": {
+    "name": "Rhinox",
+    "wiki_page": "Rhinox",
+    "rank_level": "6/60",
+    "match_type": "interpolated (from 5/50)",
+    "base_5_50": {
+      "health": 26833,
+      "attack": 1786,
+      "rating": 8433
+    },
+    "health": 30845,
+    "attack": 2053,
+    "rating": 10963,
+    "health_str": "30,845",
+    "attack_str": "2,053",
+    "rating_str": "10,963"
+  },
+  "Shockwave": {
+    "name": "Shockwave",
+    "wiki_page": "Shockwave",
+    "rank_level": "6/60",
+    "match_type": "exact",
+    "health": 45732,
+    "attack": 2561,
+    "rating": 16019,
+    "health_str": "45,732",
+    "attack_str": "2,561",
+    "rating_str": "16,019"
+  },
+  "Soundwave": {
+    "name": "Soundwave",
+    "wiki_page": "Soundwave",
+    "rank_level": "6/60",
+    "match_type": "interpolated (from 5/50)",
+    "base_5_50": {
+      "health": 27917,
+      "attack": 1866,
+      "rating": 8478
+    },
+    "health": 32091,
+    "attack": 2145,
+    "rating": 11021,
+    "health_str": "32,091",
+    "attack_str": "2,145",
+    "rating_str": "11,021"
+  },
+  "Blaster": {
+    "name": "Blaster",
+    "wiki_page": "Blaster",
+    "rank_level": "6/60",
+    "match_type": "exact",
+    "health": 29910,
+    "attack": 2375,
+    "rating": 10390,
+    "health_str": "29,910",
+    "attack_str": "2,375",
+    "rating_str": "10,390"
+  },
+  "Jetfire": {
+    "name": "Jetfire",
+    "wiki_page": "Jetfire",
+    "rank_level": "6/60",
+    "match_type": "exact",
+    "health": 28975,
+    "attack": 2260,
+    "rating": 10630,
+    "health_str": "28,975",
+    "attack_str": "2,260",
+    "rating_str": "10,630"
+  },
+  "Sharkticon Tech": {
+    "name": "Sharkticon Tech",
+    "wiki_page": "Sharkticon_Tech",
+    "rank_level": "6/60",
+    "match_type": "interpolated (estimated benchmark)",
+    "health": 32122,
+    "attack": 2572,
+    "rating": 11397,
+    "health_str": "32,122",
+    "attack_str": "2,572",
+    "rating_str": "11,397"
+  },
+  "Galvatron": {
+    "name": "Galvatron",
+    "wiki_page": "Galvatron",
+    "rank_level": "6/60",
+    "match_type": "exact",
+    "health": 41552,
+    "attack": 3309,
+    "rating": 15477,
+    "health_str": "41,552",
+    "attack_str": "3,309",
+    "rating_str": "15,477"
+  },
+  "Megatron (ROTF)": {
+    "name": "Megatron (ROTF)",
+    "wiki_page": "Megatron_(ROTF)",
+    "rank_level": "6/60",
+    "match_type": "interpolated (from 5/50)",
+    "base_5_50": {
+      "health": 29814,
+      "attack": 1926,
+      "rating": 8593
+    },
+    "health": 34271,
+    "attack": 2214,
+    "rating": 11171,
+    "health_str": "34,271",
+    "attack_str": "2,214",
+    "rating_str": "11,171"
+  },
+  "Mixmaster": {
+    "name": "Mixmaster",
+    "wiki_page": "Mixmaster",
+    "rank_level": "6/60",
+    "match_type": "interpolated (from 5/50)",
+    "base_5_50": {
+      "health": 1009,
+      "attack": 70,
+      "rating": 243
+    },
+    "health": 1160,
+    "attack": 80,
+    "rating": 316,
+    "health_str": "1,160",
+    "attack_str": "80",
+    "rating_str": "316"
+  },
+  "Ramjet": {
+    "name": "Ramjet",
+    "wiki_page": "Ramjet",
+    "rank_level": "6/60",
+    "match_type": "interpolated (from 5/50)",
+    "base_5_50": {
+      "health": 28730,
+      "attack": 1946,
+      "rating": 8325
+    },
+    "health": 33025,
+    "attack": 2237,
+    "rating": 10822,
+    "health_str": "33,025",
+    "attack_str": "2,237",
+    "rating_str": "10,822"
+  },
+  "Waspinator": {
+    "name": "Waspinator",
+    "wiki_page": "Waspinator",
+    "rank_level": "6/60",
+    "match_type": "interpolated (from 5/50)",
+    "base_5_50": {
+      "health": 25749,
+      "attack": 1906,
+      "rating": 8532
+    },
+    "health": 29598,
+    "attack": 2191,
+    "rating": 11092,
+    "health_str": "29,598",
+    "attack_str": "2,191",
+    "rating_str": "11,092"
+  },
+  "Megatronus": {
+    "name": "Megatronus",
+    "wiki_page": "Megatronus",
+    "rank_level": "6/60",
+    "match_type": "exact",
+    "health": 35206,
+    "attack": 2375,
+    "rating": 11520,
+    "health_str": "35,206",
+    "attack_str": "2,375",
+    "rating_str": "11,520"
+  },
+  "Sharkticon Demolitions": {
+    "name": "Sharkticon Demolitions",
+    "wiki_page": "Sharkticon_Demolitions",
+    "rank_level": "6/60",
+    "match_type": "interpolated (estimated benchmark)",
+    "health": 32122,
+    "attack": 2572,
+    "rating": 11397,
+    "health_str": "32,122",
+    "attack_str": "2,572",
+    "rating_str": "11,397"
+  },
+  "Bumblebee (DOTM)": {
+    "name": "Bumblebee (DOTM)",
+    "wiki_page": "Bumblebee_(DOTM)",
+    "rank_level": "6/60",
+    "match_type": "exact",
+    "health": 32402,
+    "attack": 2306,
+    "rating": 10080,
+    "health_str": "32,402",
+    "attack_str": "2,306",
+    "rating_str": "10,080"
+  },
+  "Dinobot": {
+    "name": "Dinobot",
+    "wiki_page": "Dinobot",
+    "rank_level": "6/60",
+    "match_type": "exact",
+    "health": 30844,
+    "attack": 2421,
+    "rating": 9962,
+    "health_str": "30,844",
+    "attack_str": "2,421",
+    "rating_str": "9,962"
+  },
+  "Megatron": {
+    "name": "Megatron",
+    "wiki_page": "Megatron",
+    "rank_level": "6/60",
+    "match_type": "interpolated (from 5/50)",
+    "base_5_50": {
+      "health": 26833,
+      "attack": 2106,
+      "rating": 8453
+    },
+    "health": 30845,
+    "attack": 2421,
+    "rating": 10989,
+    "health_str": "30,845",
+    "attack_str": "2,421",
+    "rating_str": "10,989"
+  },
+  "Optimus Prime": {
+    "name": "Optimus Prime",
+    "wiki_page": "Optimus_Prime",
+    "rank_level": "6/60",
+    "match_type": "exact",
+    "health": 32402,
+    "attack": 2306,
+    "rating": 10140,
+    "health_str": "32,402",
+    "attack_str": "2,306",
+    "rating_str": "10,140"
+  },
+  "Starscream": {
+    "name": "Starscream",
+    "wiki_page": "Starscream",
+    "rank_level": "6/60",
+    "match_type": "exact",
+    "health": 34626,
+    "attack": 2859,
+    "rating": 18166,
+    "health_str": "34,626",
+    "attack_str": "2,859",
+    "rating_str": "18,166"
+  },
+  "Ultra Magnus": {
+    "name": "Ultra Magnus",
+    "wiki_page": "Ultra_Magnus",
+    "rank_level": "6/60",
+    "match_type": "exact",
+    "health": 32402,
+    "attack": 2306,
+    "rating": 11090,
+    "health_str": "32,402",
+    "attack_str": "2,306",
+    "rating_str": "11,090"
+  },
+  "Cyclonus": {
+    "name": "Cyclonus",
+    "wiki_page": "Cyclonus",
+    "rank_level": "6/60",
+    "match_type": "interpolated (from 5/50)",
+    "base_5_50": {
+      "health": 29543,
+      "attack": 1986,
+      "rating": 7043
+    },
+    "health": 33960,
+    "attack": 2283,
+    "rating": 9156,
+    "health_str": "33,960",
+    "attack_str": "2,283",
+    "rating_str": "9,156"
+  },
+  "Sharkticon Tactician": {
+    "name": "Sharkticon Tactician",
+    "wiki_page": "Sharkticon_Tactician",
+    "rank_level": "6/60",
+    "match_type": "interpolated (estimated benchmark)",
+    "health": 32122,
+    "attack": 2572,
+    "rating": 11397,
+    "health_str": "32,122",
+    "attack_str": "2,572",
+    "rating_str": "11,397"
+  }
+}

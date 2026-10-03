@@ -242,7 +242,8 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
             updatable = [
                 "crit_chance", "crit_damage", "crit_chance_ranged", "crit_chance_melee",
                 "health_mult", "attack_mult", "block_proficiency", "mana_gain_mult",
-                "pua_faction_icon", "pua_class_icon", "desc_zh", "note", "class", "faction", "source"
+                "pua_faction_icon", "pua_class_icon", "desc_zh", "note", "class", "faction", "source",
+                "hp", "attack", "rating"
             ]
             fields = []
             values = []
@@ -250,7 +251,7 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
                 if k in payload:
                     val = payload[k]
                     # Convert empty strings to None for numeric fields
-                    if val == "" and k in ["crit_chance", "crit_damage", "crit_chance_ranged", "crit_chance_melee"]:
+                    if val == "" and k in ["crit_chance", "crit_damage", "crit_chance_ranged", "crit_chance_melee", "hp", "attack", "rating"]:
                         val = None
                     fields.append(f"{k} = ?")
                     values.append(val)

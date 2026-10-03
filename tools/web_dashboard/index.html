@@ -324,14 +324,24 @@
             position: absolute;
             top: 14px;
             right: 14px;
-            width: 34px;
-            height: 34px;
+            width: 36px;
+            height: 36px;
             display: flex;
             align-items: center;
             justify-content: center;
             user-select: none;
             opacity: 0.85;
-            transition: all 0.2s;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            border-radius: 8px;
+            border: 1px solid transparent;
+        }
+
+        .card-faction-badge:hover {
+            opacity: 1;
+            transform: scale(1.1);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.15);
         }
 
         .faction-emblem-glyph {
@@ -342,13 +352,123 @@
             transition: all 0.2s;
         }
 
-        .character-card:hover .card-faction-badge {
-            opacity: 1;
-        }
-
         .character-card:hover .faction-emblem-glyph {
             color: #E2E8F0;
-            transform: scale(1.1);
+        }
+
+        .badge-edit-hint {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            font-size: 11px;
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(56, 189, 248, 0.6);
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transform: scale(0.6);
+            transition: all 0.2s;
+            color: #38BDF8;
+            pointer-events: none;
+        }
+
+        .card-faction-badge:hover .badge-edit-hint {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .character-card.card-editing {
+            border-color: #38BDF8 !important;
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.35) !important;
+            background: rgba(15, 23, 42, 0.98);
+        }
+
+        .card-faction-badge.editing-active {
+            opacity: 1 !important;
+            background: rgba(16, 185, 129, 0.25) !important;
+            border: 1.5px solid #10B981 !important;
+            box-shadow: 0 0 12px rgba(16, 185, 129, 0.5) !important;
+            animation: pulse-edit-badge 1.8s infinite;
+        }
+
+        .badge-save-glyph {
+            font-size: 20px;
+            line-height: 1;
+            filter: drop-shadow(0 0 4px rgba(16, 185, 129, 0.8));
+        }
+
+        @keyframes pulse-edit-badge {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); }
+            70% { box-shadow: 0 0 0 7px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        .card-stat-input {
+            width: 100%;
+            box-sizing: border-box;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            border-radius: 4px;
+            padding: 3px 2px;
+            font-size: 11px;
+            font-weight: 700;
+            text-align: center;
+            color: #F8FAFC;
+            outline: none;
+            transition: all 0.2s;
+            margin-top: 1px;
+        }
+
+        .card-stat-input:focus {
+            border-color: #38BDF8;
+            background: rgba(15, 23, 42, 1);
+            box-shadow: 0 0 6px rgba(56, 189, 248, 0.6);
+        }
+
+        .card-stat-input::-webkit-outer-spin-button,
+        .card-stat-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .card-stat-input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        .card-edit-tip {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 10px;
+            color: #38BDF8;
+            background: rgba(56, 189, 248, 0.08);
+            border-radius: 4px;
+            padding: 4px 6px;
+            margin-top: 6px;
+            letter-spacing: 0.2px;
+            animation: fadeIn 0.2s ease-in;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .edit-pulse-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #10B981;
+            box-shadow: 0 0 6px #10B981;
+            animation: blink-dot 1s infinite alternate;
+            flex-shrink: 0;
+        }
+
+        @keyframes blink-dot {
+            from { opacity: 0.3; }
+            to { opacity: 1; }
         }
 
         .card-top {
@@ -467,16 +587,30 @@
             border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        /* Stats Row */
-        .card-stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
+        /* Stats Container & Rows */
+        .card-stats-container {
+            display: flex;
+            flex-direction: column;
             gap: 6px;
             background: rgba(255,255,255,0.02);
             border: 1px solid rgba(255,255,255,0.04);
             border-radius: 8px;
-            padding: 8px;
+            padding: 8px 6px;
             font-size: 12px;
+        }
+
+        .card-stats-row-top {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4px;
+        }
+
+        .card-stats-row-bottom {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2px;
+            padding-top: 6px;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
         }
 
         .stat-item {
@@ -1513,6 +1647,18 @@
                 <!-- Editable Stats Box -->
                 <div class="char-edit-stats-box">
                     <div class="edit-stat-col">
+                        <label>生命值 (HP 6/60)</label>
+                        <input type="number" id="inpHp" placeholder="如 35484">
+                    </div>
+                    <div class="edit-stat-col">
+                        <label>攻击力 (ATK 6/60)</label>
+                        <input type="number" id="inpAttack" placeholder="如 2519">
+                    </div>
+                    <div class="edit-stat-col">
+                        <label>角色评分 (Rating 6/60)</label>
+                        <input type="number" id="inpRating" placeholder="如 11670">
+                    </div>
+                    <div class="edit-stat-col">
                         <label>生命倍率 (HP Mult)</label>
                         <input type="number" id="inpHealthMult" step="0.05">
                     </div>
@@ -1866,12 +2012,24 @@
             });
         }
 
+        const gEditingCardBots = new Set();
+
         // Create individual character card
         function createCharacterCard(bot, cls) {
             const card = document.createElement('div');
             card.className = 'character-card';
+            card.id = `card_${bot.bot_id}`;
 
-            const factionObj = gOverviewData.factions.find(f => f.faction_id === bot.faction) || { name_zh: bot.faction, color_hex: '#888' };
+            if (!cls && gOverviewData && gOverviewData.classes) {
+                cls = gOverviewData.classes.find(c => c.class_id === bot.class) || {};
+            }
+
+            const isEditing = gEditingCardBots.has(bot.bot_id);
+            if (isEditing) {
+                card.classList.add('card-editing');
+            }
+
+            const factionObj = (gOverviewData && gOverviewData.factions) ? (gOverviewData.factions.find(f => f.faction_id === bot.faction) || { name_zh: bot.faction, color_hex: '#888' }) : { name_zh: bot.faction, color_hex: '#888' };
             let facPua = bot.pua_faction_icon || factionObj.pua_icon || '';
             if (!facPua) {
                 const isMovie = (bot.bot_id && (bot.bot_id.includes('_cin_') || bot.bot_id.includes('_mv_')));
@@ -1881,17 +2039,106 @@
                 else if (bot.faction === 'maximal') facPua = 'E160';
                 else if (bot.faction === 'predacon') facPua = 'E161';
             }
-            const isCritOverridden = bot.crit_chance !== null;
-            const critDisplay = Math.round(bot.effective_crit_chance * 100);
-            const isCritDmgOverridden = bot.crit_damage !== null;
-            const critDmgDisplay = bot.effective_crit_damage.toFixed(2);
+            const isCritOverridden = bot.crit_chance !== null && bot.crit_chance !== undefined;
+            const critDisplay = Math.round((bot.effective_crit_chance !== undefined ? bot.effective_crit_chance : 0.15) * 100);
+            const isCritDmgOverridden = bot.crit_damage !== null && bot.crit_damage !== undefined;
+            const critDmgDisplay = (bot.effective_crit_damage !== undefined ? bot.effective_crit_damage : 1.5).toFixed(2);
 
-            let rangedDisplay = Math.round(bot.effective_crit_ranged * 100);
-            let meleeDisplay = Math.round(bot.effective_crit_melee * 100);
+            let rangedDisplay = Math.round((bot.effective_crit_ranged !== undefined ? bot.effective_crit_ranged : 0.15) * 100);
+            let meleeDisplay = Math.round((bot.effective_crit_melee !== undefined ? bot.effective_crit_melee : 0.15) * 100);
+
+            const hpFormatted = (bot.hp !== null && bot.hp !== undefined) ? Number(bot.hp).toLocaleString() : '-';
+            const atkFormatted = (bot.attack !== null && bot.attack !== undefined) ? Number(bot.attack).toLocaleString() : '-';
+            const ratFormatted = (bot.rating !== null && bot.rating !== undefined) ? Number(bot.rating).toLocaleString() : '-';
+
+            let statsContentHtml = '';
+            if (!isEditing) {
+                statsContentHtml = `
+                    <div class="card-stats-row-top">
+                        <div class="stat-item">
+                            <span class="lbl">生命值</span>
+                            <span class="num" style="color: #34D399;">${hpFormatted}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="lbl">攻击力</span>
+                            <span class="num" style="color: #F87171;">${atkFormatted}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="lbl">角色评分</span>
+                            <span class="num" style="color: #FBBF24;">${ratFormatted}</span>
+                        </div>
+                    </div>
+                    <div class="card-stats-row-bottom">
+                        <div class="stat-item">
+                            <span class="lbl">暴击率</span>
+                            <span class="num highlight ${isCritOverridden ? 'custom-override' : ''}">${critDisplay}%${isCritOverridden ? '*' : ''}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="lbl">暴击伤害</span>
+                            <span class="num ${isCritDmgOverridden ? 'custom-override' : ''}">${critDmgDisplay}x</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="lbl">远程暴击</span>
+                            <span class="num" style="color: #F59E0B;">${rangedDisplay}%</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="lbl">近战暴击</span>
+                            <span class="num" style="${bot.crit_chance_melee === 0.0 ? 'color: #EF4444; font-weight:800;' : ''}">${meleeDisplay}%</span>
+                        </div>
+                    </div>
+                `;
+            } else {
+                const bid = bot.bot_id;
+                statsContentHtml = `
+                    <div class="card-stats-row-top edit-mode">
+                        <div class="stat-item">
+                            <span class="lbl" style="color: #34D399;">生命值 HP</span>
+                            <input type="number" class="card-stat-input" id="cinput_hp_${bid}" value="${bot.hp !== null && bot.hp !== undefined ? bot.hp : ''}" placeholder="如 35484" style="color: #34D399;" title="5星 6/60 生命值 (HP)">
+                        </div>
+                        <div class="stat-item">
+                            <span class="lbl" style="color: #F87171;">攻击力 ATK</span>
+                            <input type="number" class="card-stat-input" id="cinput_atk_${bid}" value="${bot.attack !== null && bot.attack !== undefined ? bot.attack : ''}" placeholder="如 2519" style="color: #F87171;" title="5星 6/60 基础攻击力 (ATK)">
+                        </div>
+                        <div class="stat-item">
+                            <span class="lbl" style="color: #FBBF24;">角色评分 PI</span>
+                            <input type="number" class="card-stat-input" id="cinput_rat_${bid}" value="${bot.rating !== null && bot.rating !== undefined ? bot.rating : ''}" placeholder="如 11670" style="color: #FBBF24;" title="5星 6/60 角色评分 (Rating)">
+                        </div>
+                    </div>
+                    <div class="card-stats-row-bottom edit-mode">
+                        <div class="stat-item">
+                            <span class="lbl">暴击率 %</span>
+                            <input type="number" step="0.5" class="card-stat-input" id="cinput_crit_${bid}" value="${bot.crit_chance !== null && bot.crit_chance !== undefined ? Math.round(bot.crit_chance * 100) : ''}" placeholder="${critDisplay}%" title="基础暴击率 (留空遵循职业)">
+                        </div>
+                        <div class="stat-item">
+                            <span class="lbl">暴伤 x</span>
+                            <input type="number" step="0.05" class="card-stat-input" id="cinput_cdmg_${bid}" value="${bot.crit_damage !== null && bot.crit_damage !== undefined ? bot.crit_damage : ''}" placeholder="${critDmgDisplay}x" title="暴击伤害倍率 (留空遵循职业)">
+                        </div>
+                        <div class="stat-item">
+                            <span class="lbl">远程 %</span>
+                            <input type="number" step="0.5" class="card-stat-input" id="cinput_crange_${bid}" value="${bot.crit_chance_ranged !== null && bot.crit_chance_ranged !== undefined ? Math.round(bot.crit_chance_ranged * 100) : ''}" placeholder="${rangedDisplay}%" title="远程暴击率">
+                        </div>
+                        <div class="stat-item">
+                            <span class="lbl">近战 %</span>
+                            <input type="number" step="0.5" class="card-stat-input" id="cinput_cmelee_${bid}" value="${bot.crit_chance_melee !== null && bot.crit_chance_melee !== undefined ? Math.round(bot.crit_chance_melee * 100) : ''}" placeholder="${meleeDisplay}%" title="近战暴击率">
+                        </div>
+                    </div>
+                    <div class="card-edit-tip">
+                        <span class="edit-pulse-dot"></span>
+                        <span>编辑中 · 再点右上角标志退出并保存 (Enter保存 / Esc取消)</span>
+                    </div>
+                `;
+            }
 
             card.innerHTML = `
-                <div class="card-faction-badge" title="阵营: ${factionObj.name_zh || bot.faction}">
-                    ${facPua ? `<span class="tecnica-icon faction-emblem-glyph">${String.fromCharCode(parseInt(facPua, 16))}</span>` : ''}
+                <div class="card-faction-badge ${isEditing ? 'editing-active' : ''}" 
+                     id="badge_${bot.bot_id}" 
+                     onclick="toggleCardEditMode('${bot.bot_id}', event)" 
+                     title="${isEditing ? '正在编辑 · 再点此标志退出并保存 (或按回车)' : '阵营: ' + (factionObj.name_zh || bot.faction) + ' · 点击进入数值编辑模式'}">
+                    ${isEditing 
+                        ? `<span class="badge-save-glyph">💾</span>` 
+                        : (facPua ? `<span class="tecnica-icon faction-emblem-glyph">${String.fromCharCode(parseInt(facPua, 16))}</span>` : '')
+                    }
+                    ${!isEditing ? `<span class="badge-edit-hint" title="编辑数值">✎</span>` : ''}
                 </div>
                 <div class="card-top">
                     <div class="avatar-frame">
@@ -1913,31 +2160,8 @@
                     </div>
                 </div>
 
-                <div class="card-stats-grid">
-                    <div class="stat-item">
-                        <span class="lbl">生命倍率</span>
-                        <span class="num">${bot.health_mult.toFixed(2)}x</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="lbl">攻击倍率</span>
-                        <span class="num">${bot.attack_mult.toFixed(2)}x</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="lbl">暴击率</span>
-                        <span class="num highlight ${isCritOverridden ? 'custom-override' : ''}">${critDisplay}%${isCritOverridden ? '*' : ''}</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="lbl">暴击伤害</span>
-                        <span class="num ${isCritDmgOverridden ? 'custom-override' : ''}">${critDmgDisplay}x</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="lbl">远程暴击</span>
-                        <span class="num" style="color: #F59E0B;">${rangedDisplay}%</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="lbl">近战暴击</span>
-                        <span class="num" style="${bot.crit_chance_melee === 0.0 ? 'color: #EF4444; font-weight:800;' : ''}">${meleeDisplay}%</span>
-                    </div>
+                <div class="card-stats-container">
+                    ${statsContentHtml}
                 </div>
 
                 <div class="card-actions">
@@ -1952,7 +2176,142 @@
                     </button>
                 </div>
             `;
+
+            if (isEditing) {
+                setTimeout(() => {
+                    const inputs = card.querySelectorAll('.card-stat-input');
+                    inputs.forEach(inp => {
+                        inp.addEventListener('keydown', (e) => {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                toggleCardEditMode(bot.bot_id);
+                            } else if (e.key === 'Escape') {
+                                e.preventDefault();
+                                cancelCardEditMode(bot.bot_id);
+                            }
+                        });
+                    });
+                }, 0);
+            }
+
             return card;
+        }
+
+        // Toggle card edit mode on clicking the top-right faction badge
+        async function toggleCardEditMode(botId, event) {
+            if (event && event.stopPropagation) {
+                event.stopPropagation();
+            }
+            if (gEditingCardBots.has(botId)) {
+                await saveAndExitCardEditMode(botId);
+            } else {
+                gEditingCardBots.add(botId);
+                refreshSingleCard(botId);
+            }
+        }
+
+        // Cancel card edit mode without saving
+        function cancelCardEditMode(botId) {
+            gEditingCardBots.delete(botId);
+            refreshSingleCard(botId);
+            showToast("已取消编辑");
+        }
+
+        // Save inline card edit and exit edit mode
+        async function saveAndExitCardEditMode(botId) {
+            const bot = (gOverviewData && gOverviewData.characters) ? gOverviewData.characters.find(c => c.bot_id === botId) : null;
+            if (!bot) return;
+
+            const hpEl = document.getElementById(`cinput_hp_${botId}`);
+            const atkEl = document.getElementById(`cinput_atk_${botId}`);
+            const ratEl = document.getElementById(`cinput_rat_${botId}`);
+            const critEl = document.getElementById(`cinput_crit_${botId}`);
+            const cdmgEl = document.getElementById(`cinput_cdmg_${botId}`);
+            const crangeEl = document.getElementById(`cinput_crange_${botId}`);
+            const cmeleeEl = document.getElementById(`cinput_cmelee_${botId}`);
+
+            if (!hpEl) {
+                gEditingCardBots.delete(botId);
+                refreshSingleCard(botId);
+                return;
+            }
+
+            const hpVal = hpEl.value.trim();
+            const atkVal = atkEl.value.trim();
+            const ratVal = ratEl.value.trim();
+
+            const hp = hpVal !== '' ? parseInt(hpVal, 10) : null;
+            const attack = atkVal !== '' ? parseInt(atkVal, 10) : null;
+            const rating = ratVal !== '' ? parseInt(ratVal, 10) : null;
+
+            const payload = { hp, attack, rating };
+
+            if (critEl && critEl.value.trim() !== '') {
+                payload.crit_chance = parseFloat(critEl.value.trim()) / 100.0;
+            }
+            if (cdmgEl && cdmgEl.value.trim() !== '') {
+                payload.crit_damage = parseFloat(cdmgEl.value.trim());
+            }
+            if (crangeEl && crangeEl.value.trim() !== '') {
+                payload.crit_chance_ranged = parseFloat(crangeEl.value.trim()) / 100.0;
+            }
+            if (cmeleeEl && cmeleeEl.value.trim() !== '') {
+                payload.crit_chance_melee = parseFloat(cmeleeEl.value.trim()) / 100.0;
+            }
+
+            try {
+                const res = await fetch(`/api/character/${botId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const ret = await res.json();
+                if (ret.ok) {
+                    bot.hp = hp;
+                    bot.attack = attack;
+                    bot.rating = rating;
+                    if (payload.crit_chance !== undefined) bot.crit_chance = payload.crit_chance;
+                    if (payload.crit_damage !== undefined) bot.crit_damage = payload.crit_damage;
+                    if (payload.crit_chance_ranged !== undefined) bot.crit_chance_ranged = payload.crit_chance_ranged;
+                    if (payload.crit_chance_melee !== undefined) bot.crit_chance_melee = payload.crit_chance_melee;
+
+                    const cDef = (gOverviewData && gOverviewData.classes) ? (gOverviewData.classes.find(c => c.class_id === bot.class) || {}) : {};
+                    bot.effective_crit_chance = bot.crit_chance !== null ? bot.crit_chance : (cDef.crit_chance || 0.15);
+                    bot.effective_crit_damage = bot.crit_damage !== null ? bot.crit_damage : (cDef.crit_damage || 1.5);
+                    bot.effective_crit_ranged = bot.crit_chance_ranged !== null ? bot.crit_chance_ranged : (bot.effective_crit_chance + (cDef.ranged_crit_bonus || 0.0));
+                    bot.effective_crit_melee = bot.crit_chance_melee !== null ? bot.crit_chance_melee : bot.effective_crit_chance;
+
+                    gEditingCardBots.delete(botId);
+                    refreshSingleCard(botId);
+                    showToast(`✓ [${bot.name_zh || bot.name_en}] 属性已保存入库！`);
+                } else {
+                    alert("保存失败: " + (ret.error || "未知错误"));
+                }
+            } catch (err) {
+                console.error("Save character stats error:", err);
+                alert("保存失败，请检查网络或服务器状态");
+            }
+        }
+
+        // Re-render a single character card in the DOM
+        function refreshSingleCard(botId) {
+            const oldCard = document.getElementById(`card_${botId}`);
+            if (!oldCard) return;
+            const bot = (gOverviewData && gOverviewData.characters) ? gOverviewData.characters.find(c => c.bot_id === botId) : null;
+            if (!bot) return;
+
+            const newCard = createCharacterCard(bot);
+            oldCard.replaceWith(newCard);
+
+            if (gEditingCardBots.has(botId)) {
+                setTimeout(() => {
+                    const firstInp = document.getElementById(`cinput_hp_${botId}`);
+                    if (firstInp) {
+                        firstInp.focus();
+                        firstInp.select();
+                    }
+                }, 20);
+            }
         }
 
         // Open Character Modal
@@ -1997,6 +2356,9 @@
                 document.getElementById('mOriginalTag').style.display = (src === 'Revival') ? 'inline-block' : 'none';
 
                 // Input values
+                document.getElementById('inpHp').value = (data.hp !== null && data.hp !== undefined) ? data.hp : '';
+                document.getElementById('inpAttack').value = (data.attack !== null && data.attack !== undefined) ? data.attack : '';
+                document.getElementById('inpRating').value = (data.rating !== null && data.rating !== undefined) ? data.rating : '';
                 document.getElementById('inpHealthMult').value = data.health_mult;
                 document.getElementById('inpAttackMult').value = data.attack_mult;
                 document.getElementById('inpCritChance').value = data.crit_chance !== null ? data.crit_chance : '';
@@ -2235,6 +2597,13 @@
         async function saveCharacterStats() {
             if (!gCurBotId) return;
 
+            const hp_val = document.getElementById('inpHp').value.trim();
+            const hp = hp_val !== '' ? parseInt(hp_val, 10) : null;
+            const attack_val = document.getElementById('inpAttack').value.trim();
+            const attack = attack_val !== '' ? parseInt(attack_val, 10) : null;
+            const rating_val = document.getElementById('inpRating').value.trim();
+            const rating = rating_val !== '' ? parseInt(rating_val, 10) : null;
+
             const health_mult = parseFloat(document.getElementById('inpHealthMult').value) || 1.0;
             const attack_mult = parseFloat(document.getElementById('inpAttackMult').value) || 1.0;
             const crit_chance_val = document.getElementById('inpCritChance').value;
@@ -2248,6 +2617,9 @@
             const block_proficiency = parseFloat(document.getElementById('inpBlockProf').value) || 0.5;
 
             const payload = {
+                hp,
+                attack,
+                rating,
                 health_mult,
                 attack_mult,
                 crit_chance,
@@ -2848,7 +3220,7 @@
 
             const facGlyph = facPua ? String.fromCharCode(parseInt(facPua, 16)) : '⯁';
             const clsGlyph = classObj.pua_icon ? String.fromCharCode(parseInt(classObj.pua_icon, 16)) : '⯁';
-            const piVal = Math.round(((bot.health_mult || 1.0) * 1750 + (bot.attack_mult || 1.0) * 1550 + (bot.effective_crit_chance || 0.15) * 4200) * 1.12);
+            const piVal = bot.rating || Math.round(((bot.health_mult || 1.0) * 1750 + (bot.attack_mult || 1.0) * 1550 + (bot.effective_crit_chance || 0.15) * 4200) * 1.12);
 
             const abilities = bot.abilities || [];
             const basicAbs = abilities.filter(a => a.category === 'basic');
