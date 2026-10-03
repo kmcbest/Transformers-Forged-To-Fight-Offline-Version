@@ -6245,6 +6245,15 @@ static void* hooked_BattleArbiterOnToggleAutoFight(void* a0, void* a1, void* a2,
     return NULL;
 }
 
+static fn8 orig_gc_mark_finalizer = NULL;
+static void* hooked_gc_mark_finalizer(void* obj, void* ctx, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    if ((uintptr_t)obj < 0x10000 || ((uintptr_t)obj & 1)) {
+        LOG("[GC_GUARD] Blocked invalid object pointer in GC finalizer: %p", obj);
+        return NULL;
+    }
+    return orig_gc_mark_finalizer(obj, ctx, a2, a3, a4, a5, a6, a7);
+}
+
 static void* installer(void* arg){
     for (int i = 0; i < 1200; i++) {           // up to 60s
         g_base = 0; dl_iterate_phdr(find_cb, NULL);
@@ -6463,6 +6472,10 @@ static void* installer(void* arg){
     inline_hook((void*)(g_base + 0xC9D6E8), (void*)hooked_ToggleAutoFight, &orig_ToggleAutoFight);
     inline_hook((void*)(g_base + 0xE48C58), (void*)hooked_PrefightOnToggleAutoFight, &orig_PrefightOnToggleAutoFight);
     inline_hook((void*)(g_base + 0xCFD384), (void*)hooked_BattleArbiterOnToggleAutoFight, &orig_BattleArbiterOnToggleAutoFight);
+
+    // 15) GC Finalizer Safeguard (@0x95BDD8):
+    // Prevents SIGSEGV (fault addr 0x1) during scene unload / finalizer sweep
+    inline_hook((void*)(g_base + 0x95BDD8), (void*)hooked_gc_mark_finalizer, &orig_gc_mark_finalizer);
 
 
     LOG("install done (%d hooks)", NH);

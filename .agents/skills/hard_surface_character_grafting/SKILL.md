@@ -193,26 +193,34 @@ TFTF 采用定制的移动端 PBR 着色器，纹理通常拆分为三大通道�
 
 ---
 
-### 坑 6：Mesh 网格 `m_BoneNameHashes` 数量或哈希与母壳 Avatar 脱节导致“首次进入战斗闪退 (SIGSEGV fault addr 0x1)”
-* **故障现象**：在主界面、展厅、战队编队界面新角色模型动作完美展现；但首次点击“开战”进入副本战斗时，游戏瞬间闪退崩溃（日志报 `signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr 0x1`，崩溃堆栈位于 `libil2cpp.so` 的 Mecanim 动画骨骼解析与卸载例程）；重开游戏后由于断点恢复直接进入战斗场景，战斗却完全正常运行。
+### 坑 6：Mesh 网格 `m_BoneNameHashes` 与 SMR `m_AABB` 本地空间错位导致“首次进入战斗闪退 (SIGSEGV fault addr 0x1)”
+* **故障现象**：在主界面、展厅、战队编队界面新角色模型动作完美展现；但首次点击“开战”进入副本战斗时，游戏瞬间闪退崩溃（日志报 `signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr 0x1`，崩溃堆栈位于 `libil2cpp.so` 的 Mecanim 动画骨骼解析与卸载例程 `0x95BDEC: ldr x8, [x0]`）；重开游戏后由于断点恢复直接进入战斗场景，战斗却完全正常运行。
 * **致命根因**：
-  Unity 引擎在 C++ 底层维护 Mecanim 骨骼动画与 Avatar 时，网格（Mesh）内部必须维持严格的数学与结构一致性：
-  $$\text{BindPoses 数量} = \text{BoneNameHashes 数量} = \text{SMR Bones 数量}$$
-  新模型经外部 Unity 编译为 AssetBundle 时，其网格自带了外部 Unity 生成的骨骼哈希列表（如 64 个哈希），且这些哈希在官方母壳 Avatar 的 TOS（Transform/Skeleton 字典）中的匹配率为 **0%**。
-  若在资产包嫁接合成脚本中，只替换了 `m_BindPose`（63 阶），却遗漏了同步替换 `m_BoneNameHashes`，会导致：
-  1. 数组长度不匹配（64 vs 63）；
-  2. 网格内部所声明的骨骼哈希在当前角色 Avatar 中完全未知。
-  
-  **为什么首次进战斗崩溃、重开直接进战斗却正常？**
-  - **首次进战斗路径**：游戏在战队编队界面先加载了展厅模型（Prefab 1），点击开战后，Unity 引擎在同一个渲染帧内**销毁展厅模型并释放其动画组件**，同时加载战斗轻量模型（Prefab 2）。Mecanim 底层在遍历网格解绑 Avatar 骨骼析构时，因 `m_BoneNameHashes` 数量超出 `m_Bones` 且哈希非法，指针寻址越界触发 `fault addr 0x1` 空指针异常闪退。
-  - **重开游戏路径**：客户端重启后检测到战斗已在进行，直接恢复进入战斗场景（Prefab 2），完全跳过了展厅模型的加载与卸载销毁过程，从而掩盖了该析构越界 bug。
-* **解决守则**：
-  在从母壳提取真值时，必须同时提取母壳的 `m_BoneNameHashes`；在注入新网格时，必须强制使 `m_BoneNameHashes` 严格等于母壳真值：
-  ```python
-  robot_mesh["m_BindPose"] = arcee_bindposes
-  robot_mesh["m_BoneNameHashes"] = arcee_bone_hashes  # 必须与 arcee_bindposes 长度一致且与 Avatar TOS 100% 匹配
-  assert len(robot_mesh["m_BoneNameHashes"]) == len(robot_mesh["m_BindPose"])
-  ```
+  1. **网格与 Avatar 骨骼哈希脱节**：
+     Unity 引擎在 C++ 底层维护 Mecanim 骨骼动画与 Avatar 时，网格（Mesh）内部必须维持严格的一致性：
+     $$\text{BindPoses 数量} = \text{BoneNameHashes 数量} = \text{SMR Bones 数量}$$
+     若新模型经外部 Unity 编译为 AssetBundle 时，自带了 64 个哈希，且与官方母壳 Avatar 的 TOS 匹配率为 0%，在释放展厅模型解绑 Avatar 骨骼析构时，指针寻址越界触发 `fault addr 0x1` 空指针异常闪退。
+  2. **SMR 的 `m_AABB` 坐标空间混淆**：
+     Mesh 的 `m_LocalAABB` 是相对于角色足底原点的世界空间高度（站立时 Center Y $\approx 4.42\text{m}$）；
+     但 **SkinnedMeshRenderer (SMR) 的 `m_AABB` 是相对于挂载根骨骼（`m_RootBone` 通常为 `Hips`）的局部空间**！
+     官方母壳中 `Hips` 本身世界高度已在 4.42m，因此 SMR 的局部 Center Y 必然接近 **$0.000\text{m}$**。若在合成脚本中盲目将 Mesh 的世界 Center Y (4.42m) 赋给 SMR 的 `m_AABB`，Unity 在渲染裁剪时计算世界包围盒会叠加为 **8.84m**（高悬空中），导致相机视锥裁剪（Frustum Culling）与 Animator Culling 状态在切场景瞬间触发异常。
+  3. **底层 IL2CPP GC 析构弱校验缺陷**：
+     在同一个渲染帧内销毁展厅模型（Prefab 1）并加载战斗轻模（Prefab 2）时，Unity 触发 `PerformOverrideClipListCleanup` / `OnDidModifyAvatar` 并调用 `libil2cpp.so` 遍历对象引用表。函数 `0x95BDD8` 内部仅做了 `cbz x0`（是否为 NULL）校验，当字段中残留标记值 `0x1` 时，直接执行 `ldr x8, [x0]` 访问非法地址 `0x1` 崩溃。
+* **双重彻底根除方案（Double Shield）**：
+  1. **资产层规范（Asset Calibration）**：
+     - 网格骨骼哈希强制从母壳提取并 100% 匹配 Avatar TOS；
+     - SMR 的 `m_AABB` 严格保持母壳的 RootBone 本地空间（Center Y $\approx 0.000$），严禁误填世界坐标。
+  2. **底层防护罩（NativeHook GC Guard）**：
+     在 `tools/nativehook/hook.c` 的 `installer` 中挂载 `0x95BDD8` 拦截钩子：
+     ```c
+     static void* hooked_gc_mark_finalizer(void* obj, void* ctx, ...) {
+         if ((uintptr_t)obj < 0x10000 || ((uintptr_t)obj & 1)) {
+             return NULL; // 安全阻断非法指针，杜绝 fault addr 0x1
+         }
+         return orig_gc_mark_finalizer(obj, ctx, ...);
+     }
+     inline_hook((void*)(g_base + 0x95BDD8), (void*)hooked_gc_mark_finalizer, &orig_gc_mark_finalizer);
+     ```
 
 ---
 

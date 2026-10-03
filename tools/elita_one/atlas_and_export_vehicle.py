@@ -46,12 +46,14 @@ def make_raoe_half(suffix):
     ao_img = Image.open(TEX_DIR / f"T_VH11_{suffix}_O.png").convert("L").resize((1024, 512), Image.BILINEAR)
     glow_p = TEX_DIR / f"mat_vh{int(suffix)}_glow.tga.png"
     if glow_p.is_file():
-        e_img = Image.open(glow_p).convert("L").resize((1024, 512), Image.BILINEAR)
-        e_arr = np.clip(np.array(e_img, dtype=np.float32) * 2.0, 0, 255).astype(np.uint8)
+        g_raw = np.array(Image.open(glow_p).convert("RGB").resize((1024, 512), Image.BILINEAR))
+        e_arr = np.zeros((512, 1024), dtype=np.uint8)
+        e_arr[np.any(g_raw > 40, axis=-1)] = 255
     else:
         e_arr = np.zeros((512, 1024), dtype=np.uint8)
-    r_arr = np.clip(np.array(r_img, dtype=np.float32) * 0.85, 20, 240).astype(np.uint8)
-    ao_arr = np.array(ao_img, dtype=np.uint8)
+    r_arr = np.clip(np.array(r_img, dtype=np.float32) * 0.35, 20, 110).astype(np.uint8)
+    ao_norm = np.array(ao_img, dtype=np.float32) / 255.0
+    ao_arr = np.clip(165.0 + (ao_norm ** 0.7) * 90.0, 165, 255).astype(np.uint8)
     return np.stack([r_arr, ao_arr, e_arr], axis=-1)
 
 raoe00 = make_raoe_half("00")

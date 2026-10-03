@@ -39,29 +39,40 @@ def process_pack(suffix, out_prefix):
     norm_resized.save(out_norm)
     print(f"[✓] Saved {out_norm.name}")
 
-    # 3. RAOE packing: R=Roughness, G=AO, B=Emissive
-    r_img = Image.open(rough_path).convert("L").resize((512, 512), Image.BILINEAR)
-    ao_img = Image.open(ao_path).convert("L").resize((512, 512), Image.BILINEAR)
-    
-    r_arr = np.array(r_img, dtype=np.float32)
-    # Target roughness ~115-135 for rich satin metal
-    r_arr = np.clip(r_arr * 0.85, 20, 240).astype(np.uint8)
+    # 3. RAOE packing: R=Roughness (~50), G=Lifted AO (>=165), B=Emissive Mask (255)
+    d_raw = np.array(Image.open(diffuse_path).convert("RGB"))
+    r_raw = np.array(Image.open(rough_path).convert("L"), dtype=np.float32)
+    ao_raw = np.array(Image.open(ao_path).convert("L"), dtype=np.float32)
 
-    ao_arr = np.array(ao_img, dtype=np.uint8)
+    # 3.1 Roughness: scale to sleek automotive gloss (matching Arcee's 49.99 mean)
+    r_arr = np.clip(r_raw * 0.35, 20, 110).astype(np.uint8)
 
+    # 3.2 AO: lift shadow floor to >= 165 to eliminate black blotches under ambient light
+    ao_norm = ao_raw / 255.0
+    ao_arr = np.clip(165.0 + (ao_norm ** 0.7) * 90.0, 165, 255).astype(np.uint8)
+
+    # 3.3 Emissive Mask: combine yellow visor, cyan eyes/circuits, and glow map
+    visor_mask = (d_raw[:,:,0] > 160) & (d_raw[:,:,1] > 140) & (d_raw[:,:,2] < 90)
+    cyan_mask = (d_raw[:,:,0] < 110) & (d_raw[:,:,1] > 130) & (d_raw[:,:,2] > 150)
     if glow_path.is_file():
-        g_img = Image.open(glow_path).convert("L").resize((512, 512), Image.BILINEAR)
-        e_arr = np.array(g_img, dtype=np.uint8)
-        # Boost glow channel visibility
-        e_arr = np.clip(e_arr * 2.0, 0, 255).astype(np.uint8)
+        g_raw = np.array(Image.open(glow_path).convert("RGB"))
+        glow_mask = np.any(g_raw > 40, axis=-1)
     else:
-        e_arr = np.zeros((512, 512), dtype=np.uint8)
+        glow_mask = np.zeros(d_raw.shape[:2], dtype=bool)
 
-    raoe_arr = np.stack([r_arr, ao_arr, e_arr], axis=-1)
-    raoe_img = Image.fromarray(raoe_arr, "RGB")
+    combined_mask = visor_mask | cyan_mask | glow_mask
+    from scipy.ndimage import binary_dilation
+    dilated_mask = binary_dilation(combined_mask, structure=np.ones((3, 3)))
+
+    e_arr = np.zeros_like(r_arr)
+    e_arr[dilated_mask] = 255
+
+    # Pack RAOE into 1024x1024 for high-definition mobile rendering
+    raoe_2048 = np.stack([r_arr, ao_arr, e_arr], axis=-1)
+    raoe_img = Image.fromarray(raoe_2048, "RGB").resize((1024, 1024), Image.BILINEAR)
     out_raoe = OUT_DIR / f"{out_prefix}_raoe.png"
     raoe_img.save(out_raoe)
-    print(f"[✓] Saved {out_raoe.name} (R_mean={r_arr.mean():.1f}, AO_mean={ao_arr.mean():.1f}, E_max={e_arr.max()})")
+    print(f"[✓] Saved {out_raoe.name} (R_mean={r_arr.mean():.1f}, AO_min={ao_arr.min()}, AO_mean={ao_arr.mean():.1f}, E_pixels={np.count_nonzero(e_arr)})")
 
 print("Processing Elita One Textures...")
 process_pack("00", "elita_main")

@@ -318,16 +318,22 @@ def main():
         elif obj.type.name == "Material":
             mat = obj.read_typetree()
             saved_props = mat.get("m_SavedProperties", {})
-            # Tune the 2 main body materials to render bright & opaque
+            # Tune the 2 main body materials to render bright & opaque with HDR Bloom
             if obj.path_id in [-737396187749761411, 5182645448333425879]:
                 new_floats = []
                 for k, v in saved_props.get("m_Floats", []):
                     if k == "_Mode":
                         new_floats.append((k, 0.0))  # Opaque
                     elif k == "_metallic_range":
-                        new_floats.append((k, 0.5))  # Metallic
+                        new_floats.append((k, 0.45))  # Metallic
                     elif k == "_roughness_range":
-                        new_floats.append((k, 0.6))  # Satin finish
+                        new_floats.append((k, 0.35))  # Sleek sports car gloss
+                    elif k == "_emissive_range":
+                        new_floats.append((k, 1.0))
+                    elif k == "_emissive_overbright_range":
+                        new_floats.append((k, 40.0))
+                    elif k == "_emissive_none":
+                        new_floats.append((k, 0.0))
                     else:
                         new_floats.append((k, v))
                 saved_props["m_Floats"] = new_floats
@@ -336,13 +342,15 @@ def main():
                 for k, v in saved_props.get("m_Colors", []):
                     if k in ["_base_col", "_Color", "_base2_col"]:
                         new_colors.append((k, {'r': 1.0, 'g': 1.0, 'b': 1.0, 'a': 1.0}))
+                    elif k == "_emissive_intensity_col":
+                        new_colors.append((k, {'r': 1.0, 'g': 1.0, 'b': 1.0, 'a': 1.0}))
                     else:
                         new_colors.append((k, v))
                 saved_props["m_Colors"] = new_colors
 
                 replace_str_in_tree(mat, old_cab, new_cab)
                 obj.save_typetree(mat)
-                print(f"[✓] Tuned material {mat.get('m_Name')} for bright vibrant PBR!")
+                print(f"[✓] Tuned material {mat.get('m_Name')} for bright vibrant PBR & HDR Bloom!")
 
             elif obj.path_id == 6920099848281342549:
                 # Vehicle Material
@@ -351,9 +359,15 @@ def main():
                     if k == "_Mode":
                         new_floats.append((k, 0.0))
                     elif k == "_metallic_range":
-                        new_floats.append((k, 0.35))
+                        new_floats.append((k, 0.45))
                     elif k == "_roughness_range":
-                        new_floats.append((k, 0.55))
+                        new_floats.append((k, 0.35))
+                    elif k == "_emissive_range":
+                        new_floats.append((k, 1.0))
+                    elif k == "_emissive_overbright_range":
+                        new_floats.append((k, 40.0))
+                    elif k == "_emissive_none":
+                        new_floats.append((k, 0.0))
                     else:
                         new_floats.append((k, v))
                 saved_props["m_Floats"] = new_floats
@@ -361,6 +375,8 @@ def main():
                 new_colors = []
                 for k, v in saved_props.get("m_Colors", []):
                     if k in ["_base_col", "_Color", "_base2_col"]:
+                        new_colors.append((k, {'r': 1.0, 'g': 1.0, 'b': 1.0, 'a': 1.0}))
+                    elif k == "_emissive_intensity_col":
                         new_colors.append((k, {'r': 1.0, 'g': 1.0, 'b': 1.0, 'a': 1.0}))
                     else:
                         new_colors.append((k, v))
@@ -377,7 +393,7 @@ def main():
 
                 replace_str_in_tree(mat, old_cab, new_cab)
                 obj.save_typetree(mat)
-                print(f"[✓] Tuned Vehicle Material for crisp sports car finish!")
+                print(f"[✓] Tuned Vehicle Material for crisp sports car finish & HDR Bloom!")
 
             else:
                 replace_str_in_tree(mat, old_cab, new_cab)

@@ -82,8 +82,8 @@ for obj in env.objects:
         if len(bones) == 63:
             label = "P1 Robot" if obj.path_id == 8283545308434878436 else "P2 Robot"
             c_y = t.get("m_AABB", {}).get("m_Center", {}).get("y", 0.0)
-            assert c_y > 3.0, f"FATAL: SMR {obj.path_id} is lying down! Center Y={c_y}"
-            print(f"  SMR {obj.path_id} ({label}): bones={len(bones)}, mats={mats}, Center Y={c_y:.3f}")
+            assert abs(c_y) < 1.0, f"FATAL: SMR {obj.path_id} AABB not in RootBone local space! Center Y={c_y}"
+            print(f"  SMR {obj.path_id} ({label}): bones={len(bones)}, mats={mats}, RootBone Local Center Y={c_y:.6f}")
         elif len(bones) == 25:
             label = "P1 Vehicle" if obj.path_id == -4178002549372221558 else "P2 Vehicle"
             print(f"  SMR {obj.path_id} ({label}): bones={len(bones)}, mats={mats}")
