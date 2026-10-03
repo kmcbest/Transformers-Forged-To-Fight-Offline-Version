@@ -17,6 +17,12 @@
 - Always write logic into a script file (e.g. in `tools/` or temporary `.py` file) and run `python <script_path>.py` instead.
 - Prefer explicit PowerShell commands (e.g. `Select-String` or dedicated scripts) over GNU Unix tools like `grep` unless verified available.
 
+## Toolchain paths
+- **Blender**: `E:\Agent\TFTF-blender\toolchain\blender\blender.exe` (Blender 3.6.23 headless). Never search recursively across drives for `blender.exe`.
+- **Unity**: `E:\Agent\TFTF-blender\toolchain\Unity_2020.3.31f1\Editor\Unity.exe` (Unity 2020.3.31f1 headless).
+- **Unity Project**: `E:\Agent\TFTF-blender\toolchain\unity_build_project`.
+- **Android toolchain**: `toolchain\android-13\zipalign.exe` and `toolchain\android-13\apksigner.bat`.
+
 ## AssetBundle and UnityPy packaging guidelines
 
 - When modifying or re-saving UnityFS AssetBundles using `UnityPy`, never call `env.file.save()` without compression arguments. UnityPy defaults to uncompressed raw output (`packer=None`), which inflates APK package size from 0.9 GB to 1.35+ GB.

@@ -9,6 +9,22 @@ description: 端到端“借壳”硬表面角色模型嫁接与绑定全流程�
 
 ---
 
+## 0. 本地工具链固定路径规范 (Toolchain Standard Paths)
+
+> [!IMPORTANT]
+> **严禁在磁盘上循环/递归全盘搜索 `blender.exe` 或 `Unity.exe`！**  
+> 本工程的所有建模与构建工具链均预置在 `toolchain/` 目录下，路径恒定，必须直接调用：
+
+| 工具名称 | 物理绝对路径 / 相对路径 | 版本与用途 | 命令行调用示例 |
+| :--- | :--- | :--- | :--- |
+| **Blender** | `E:\Agent\TFTF-blender\toolchain\blender\blender.exe` | 3.6.23 (无头渲染/蒙皮/网格处理) | `& "E:\Agent\TFTF-blender\toolchain\blender\blender.exe" -b -P <script.py>` |
+| **Unity Editor** | `E:\Agent\TFTF-blender\toolchain\Unity_2020.3.31f1\Editor\Unity.exe` | 2020.3.31f1 (无头构建 AssetBundle / 动画) | `& "E:\Agent\TFTF-blender\toolchain\Unity_2020.3.31f1\Editor\Unity.exe" -batchmode -quit ...` |
+| **Unity Project** | `E:\Agent\TFTF-blender\toolchain\unity_build_project` | 标准验收与 AssetBundle 导出工程 | `-projectPath "E:\Agent\TFTF-blender\toolchain\unity_build_project"` |
+| **Zipalign** | `E:\Agent\TFTF-blender\toolchain\android-13\zipalign.exe` | APK 对齐工具 | `.\toolchain\android-13\zipalign.exe -f -p 4 ...` |
+| **Apksigner** | `E:\Agent\TFTF-blender\toolchain\android-13\apksigner.bat` | APK 签名工具 | `cmd /c ".\toolchain\android-13\apksigner.bat sign ..."` |
+
+---
+
 ## 1. 核心架构与“借壳”理念总览
 
 ### 1.1 什么是“借壳”？
