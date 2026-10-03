@@ -246,6 +246,34 @@ TFTF 采用定制的移动端 PBR 着色器，纹理通常拆分为三大通道�
 
 ---
 
+### 坑 8：外部 3D 模具贴图缺陷与 PBR 眼睛自发光 HDR 绽放失调（Asymmetric Eye UVs & Emissive Bloom Failure）
+* **故障现象**：在真机中角色眼睛不亮、眼神暗淡呈灰绿或死灰色，甚至“独眼”（一只眼亮一只眼黑）；或者自发光（Emissive）开启后发光色彩与预期严重不符（例如本应发纯蓝/青光却呈现污浊黄绿色）。
+* **致命根因**：
+  1. **外部模具贴图严重缺陷（Asymmetric / Missing Eye UVs）**：
+     许多外部 3D 资产（如从 Galactic Trials、Sketchfab 等提取的模型）在 Diffuse 贴图上存在严重手绘遗漏：UV 展开虽然给左右眼留出了两个对称眼槽，但贴图作者仅在左侧绘制了青色眼块，右侧眼槽完全是**未绘制的深灰底色**！
+  2. **TFTF PBR Shader 发光混色原理（Emissive Math）**：
+     TFTF `Character/PBR` 着色器的发光是由底色、贴图遮罩与材质系数共同决定的：
+     $$\text{Final Emissive} = \text{Diffuse BaseColor} \times \text{RAOE.B Mask} \times \text{Material Emissive Color} \times \text{Overbright}$$
+     - 若 Diffuse 底图是深灰色（如 `[45, 45, 48]`），即便 RAOE.B 设为 255，发出来的光也极其暗淡污浊；
+     - 若材质 `_emissive_intensity_col` 设为黄色（为了照顾头顶黄色护目镜），黄色乘算青色就会引发混色，使原本该发蓝光的眼睛变成灰绿；
+     - 若右眼槽底图完全为灰且 RAOE.B 未写入 255，右眼就完全沦为死黑。
+  3. **Bloom 溢出阈值（HDR Overbright Range）**：
+     官方高亮发光角色（如阿尔茜 Arcee）的 `_emissive_overbright_range` 为 **`120.0`**。若仅设为默认的 1.0~40.0，在移动端后处理中无法突破泛光阈值，产生不了如灯塔般的强光扩散晕影（Bloom Halo）。
+* **黄金眼眸绘制与调色管线（The Golden Eye Pipeline）**：
+  1. **几何多边形与 UV 对称映射测绘**：
+     通过 Blender 脚本提取双眼面片 loop UV，精确锁定眼部像素区域（例如 1024 空间下左眼 `[81, 105], Y=[540, 549]`，右眼 `[123, 147], Y=[540, 549]`）。
+  2. **Diffuse 艺术化画眼与超椭圆眼眶**：
+     在 Diffuse 贴图上采用超椭圆（Superellipse $x^4 + y^4 \le 1$）圆角矩形算法绘制高对比度眼眸：
+     - **外框眼线**：绘制深炭黑边框（`RGB = [18, 18, 20]`），使眼眸从金属脸颊与头盔中锐利凸显；
+     - **眼球主体**：高饱和汽车人电光青（`RGB = [10, 230, 255]`）；
+     - **瞳孔核心**：辐射状渐变的高亮白青核心（`RGB = [180, 255, 255]`）。
+  3. **RAOE.B 掩码与 1 像素抗锯齿羽化**：
+     在 RAOE 贴图的 Blue 通道中精准写入 255，并在边缘外扩 1 像素写入柔和过渡值（160），杜绝锯齿硬边缘。
+  4. **全兼容材质偏置与 HDR 泛光拉满**：
+     材质 `_emissive_intensity_col` 设为微偏青的超白电光色 `(0.8, 0.95, 1.0, 1.0)`，既能保证黄色护目镜呈现温润刺目的金黄爆炸辉光，又能让双眼爆发出纯正耀眼的极光青；同时将 `_emissive_overbright_range` 设定为官方标准值 **`120.0`**。
+
+---
+
 ## 6. 阶段四：全自动 AssetBundle 合成与游戏植入
 
 ### 6.1 核心合成脚本范式 (`generate_character_bundle.py`)
@@ -331,4 +359,5 @@ if (strstr(k, "ELITA") || strstr(k, "elita") || strstr(k, "Elita")) {
 - [ ] **LZ4 压缩保护**：`save(packer="lz4")` 是否生效，AssetBundle 大小是否在 10MB 左右？
 - [ ] **空间高度正立断言**：Mesh 与 SMR 的 Center $Y$ 是否处于站立区间（$Y > 3.0\text{m}$，Extent $Y > 3.0\text{m}$），严防网格轴向颠倒躺平？
 - [ ] **贴图材质原位隔离**：后续调整贴图或 Shader 浮点参数时，是否使用了原位补丁脚本（`patch_textures_and_materials_only.py`），绝不重新运行巨石全量网格重建？
+- [ ] **双眼对称自发光与 HDR 绽放**：外部模型 Diffuse 是否已补全双眼高饱和电光色（含深色眼线外框），RAOE.B 是否已写入带羽化的 255 发光掩码，材质 `_emissive_overbright_range` 是否拉满至 `120.0` 触发真机泛光？
 - [ ] **全套汉化闭环**：角色名、Bio 传记、SP1~SP3 技能是否已全部通过 Hook 拦截与头文件生成？
