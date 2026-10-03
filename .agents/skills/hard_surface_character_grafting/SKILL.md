@@ -177,6 +177,29 @@ TFTF 采用定制的移动端 PBR 着色器，纹理通常拆分为三大通道�
 
 ---
 
+### 坑 6：Mesh 网格 `m_BoneNameHashes` 数量或哈希与母壳 Avatar 脱节导致“首次进入战斗闪退 (SIGSEGV fault addr 0x1)”
+* **故障现象**：在主界面、展厅、战队编队界面新角色模型动作完美展现；但首次点击“开战”进入副本战斗时，游戏瞬间闪退崩溃（日志报 `signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr 0x1`，崩溃堆栈位于 `libil2cpp.so` 的 Mecanim 动画骨骼解析与卸载例程）；重开游戏后由于断点恢复直接进入战斗场景，战斗却完全正常运行。
+* **致命根因**：
+  Unity 引擎在 C++ 底层维护 Mecanim 骨骼动画与 Avatar 时，网格（Mesh）内部必须维持严格的数学与结构一致性：
+  $$\text{BindPoses 数量} = \text{BoneNameHashes 数量} = \text{SMR Bones 数量}$$
+  新模型经外部 Unity 编译为 AssetBundle 时，其网格自带了外部 Unity 生成的骨骼哈希列表（如 64 个哈希），且这些哈希在官方母壳 Avatar 的 TOS（Transform/Skeleton 字典）中的匹配率为 **0%**。
+  若在资产包嫁接合成脚本中，只替换了 `m_BindPose`（63 阶），却遗漏了同步替换 `m_BoneNameHashes`，会导致：
+  1. 数组长度不匹配（64 vs 63）；
+  2. 网格内部所声明的骨骼哈希在当前角色 Avatar 中完全未知。
+  
+  **为什么首次进战斗崩溃、重开直接进战斗却正常？**
+  - **首次进战斗路径**：游戏在战队编队界面先加载了展厅模型（Prefab 1），点击开战后，Unity 引擎在同一个渲染帧内**销毁展厅模型并释放其动画组件**，同时加载战斗轻量模型（Prefab 2）。Mecanim 底层在遍历网格解绑 Avatar 骨骼析构时，因 `m_BoneNameHashes` 数量超出 `m_Bones` 且哈希非法，指针寻址越界触发 `fault addr 0x1` 空指针异常闪退。
+  - **重开游戏路径**：客户端重启后检测到战斗已在进行，直接恢复进入战斗场景（Prefab 2），完全跳过了展厅模型的加载与卸载销毁过程，从而掩盖了该析构越界 bug。
+* **解决守则**：
+  在从母壳提取真值时，必须同时提取母壳的 `m_BoneNameHashes`；在注入新网格时，必须强制使 `m_BoneNameHashes` 严格等于母壳真值：
+  ```python
+  robot_mesh["m_BindPose"] = arcee_bindposes
+  robot_mesh["m_BoneNameHashes"] = arcee_bone_hashes  # 必须与 arcee_bindposes 长度一致且与 Avatar TOS 100% 匹配
+  assert len(robot_mesh["m_BoneNameHashes"]) == len(robot_mesh["m_BindPose"])
+  ```
+
+---
+
 ## 6. 阶段四：全自动 AssetBundle 合成与游戏植入
 
 ### 6.1 核心合成脚本范式 (`generate_character_bundle.py`)
@@ -257,7 +280,7 @@ if (strstr(k, "ELITA") || strstr(k, "elita") || strstr(k, "Elita")) {
 - [ ] **Unity 防穿透**：地平面是否已禁用，确认脚部足底完整展现？
 - [ ] **Unity 标签标注**：头顶 3D 浮动标签是否已正确标明新角色与母壳对照？
 - [ ] **法线无开孔**：是否已剔除错误的负体积孤岛翻转脚本，确保脸孔轮毂非空心？
-- [ ] **骨骼序列一致**：AssetBundle 内 SMR `m_Bones` 与 `m_BindPose` 是否完全等于母壳官方骨骼表，绝无混入外部 FBX 骨骼？
+- [ ] **骨骼序列与哈希一致**：AssetBundle 内 SMR `m_Bones`、`m_BindPose` 与 `m_BoneNameHashes` 是否完全等于母壳官方骨骼表，且哈希与 Avatar TOS 100% 匹配，绝无混入外部 FBX 骨骼与哈希？
 - [ ] **SMR 双 Prefab 物理隔离**：Showcase 与 Combat LW 是否各自引用自己内部的 Transform？
 - [ ] **LZ4 压缩保护**：`save(packer="lz4")` 是否生效，AssetBundle 大小是否在 10MB 左右？
 - [ ] **全套汉化闭环**：角色名、Bio 传记、SP1~SP3 技能是否已全部通过 Hook 拦截与头文件生成？

@@ -48,10 +48,12 @@ def replace_str_in_tree(tree_obj, old_s, new_s):
             else:
                 replace_str_in_tree(item, old_s, new_s)
 
-def transform_mesh_stream0(mesh_tree, target_name, bindposes):
+def transform_mesh_stream0(mesh_tree, target_name, bindposes, bone_hashes=None):
     mesh_copy = copy.deepcopy(mesh_tree)
     mesh_copy["m_Name"] = target_name
     mesh_copy["m_BindPose"] = bindposes
+    if bone_hashes:
+        mesh_copy["m_BoneNameHashes"] = bone_hashes
 
     vdata = mesh_copy.get('m_VertexData', {})
     v_count = vdata.get('m_VertexCount', 0)
@@ -121,9 +123,10 @@ def main():
     print(f"[*] Loading Arcee base bundle: {arcee_bundle_path.name}...")
     i_env = UnityPy.load(str(arcee_bundle_path))
 
-    # 1. Extract Elita One Robot Mesh typetree
-    print("[*] Extracting new SkinnedMesh from Elita One bundle...")
+    # 1. Extract Elita One Robot and Vehicle Mesh typetrees
+    print("[*] Extracting new SkinnedMeshes from Elita One bundle...")
     robot_mesh_tree = None
+    vehicle_mesh_tree = None
 
     for obj in c_env.objects:
         if obj.type.name == "Mesh":
@@ -132,13 +135,14 @@ def main():
             if m_name == "cha_elita_one_grafted":
                 robot_mesh_tree = tree
                 print(f"[+] Found grafted Elita One Robot Mesh: {m_name}, vertices: {tree.get('m_VertexData', {}).get('m_VertexCount')}")
-                break
-            elif "elita_one" in m_name.lower() and robot_mesh_tree is None:
-                robot_mesh_tree = tree
-                print(f"[+] Found candidate Elita One Robot Mesh: {m_name}, vertices: {tree.get('m_VertexData', {}).get('m_VertexCount')}")
+            elif m_name == "cha_elita_one_vehicle_grafted":
+                vehicle_mesh_tree = tree
+                print(f"[+] Found grafted Elita One Vehicle Mesh: {m_name}, vertices: {tree.get('m_VertexData', {}).get('m_VertexCount')}")
 
     if robot_mesh_tree is None:
         raise ValueError("Could not find Elita One Robot Mesh in compiled bundle!")
+    if vehicle_mesh_tree is None:
+        raise ValueError("Could not find Elita One Vehicle Mesh in compiled bundle!")
 
     # 2. Extract Transform hierarchies for both Prefab 1 and Prefab 2
     tr_to_go = {}
@@ -184,13 +188,20 @@ def main():
 
     # 3. Ground-truth bindposes from Arcee
     arcee_bindposes = None
+    arcee_bone_hashes = None
     arcee_smr_bones = []
+    arcee_v_bindposes = None
+    arcee_v_bone_hashes = None
 
     for obj in i_env.objects:
         if obj.type.name == 'Mesh':
             tree = obj.read_typetree()
             if tree.get('m_Name') == 'cha_arcee_gs_deluxe2014_00':
                 arcee_bindposes = tree.get('m_BindPose', [])
+                arcee_bone_hashes = tree.get('m_BoneNameHashes', [])
+            elif tree.get('m_Name') == 'cha_arcee_gs_deluxe2014_01':
+                arcee_v_bindposes = tree.get('m_BindPose', [])
+                arcee_v_bone_hashes = tree.get('m_BoneNameHashes', [])
         elif obj.type.name == 'SkinnedMeshRenderer':
             tree = obj.read_typetree()
             bones = tree.get('m_Bones', [])
@@ -200,10 +211,9 @@ def main():
                     go_id = tr_to_go.get(tr_id)
                     arcee_smr_bones.append(go_dict.get(go_id, {}).get('m_Name'))
 
-    print(f"[+] Extracted {len(arcee_bindposes)} ground-truth bindposes and {len(arcee_smr_bones)} SMR bones from Arcee.")
+    print(f"[+] Extracted {len(arcee_bindposes)} ground-truth robot bindposes and {len(arcee_smr_bones)} SMR bones from Arcee.")
+    print(f"[+] Extracted {len(arcee_v_bindposes)} ground-truth vehicle bindposes from Arcee.")
 
-    # cha_elita_one_grafted is already weighted directly to Arcee's 63 bones in Arcee's order!
-    # Do NOT reorder with FBX bone order!
     target_bindposes = arcee_bindposes
 
     # CAB remap
@@ -217,7 +227,16 @@ def main():
 
     # 4. Transform Robot Mesh (cha_arcee_gs_deluxe2014_00)
     print("[*] Transforming Elita One Robot mesh stream 0...")
-    robot_mesh_copy, r_bounds = transform_mesh_stream0(robot_mesh_tree, "cha_arcee_gs_deluxe2014_00", target_bindposes)
+    robot_mesh_copy, r_bounds = transform_mesh_stream0(robot_mesh_tree, "cha_arcee_gs_deluxe2014_00", target_bindposes, arcee_bone_hashes)
+
+    # 4.5 Prepare Vehicle Mesh (cha_arcee_gs_deluxe2014_01)
+    print("[*] Preparing Elita One Vehicle mesh...")
+    vehicle_mesh_copy = copy.deepcopy(vehicle_mesh_tree)
+    vehicle_mesh_copy["m_Name"] = "cha_arcee_gs_deluxe2014_01"
+    vehicle_mesh_copy["m_BindPose"] = arcee_v_bindposes
+    if arcee_v_bone_hashes:
+        vehicle_mesh_copy["m_BoneNameHashes"] = arcee_v_bone_hashes
+    v_bounds = vehicle_mesh_copy.get("m_LocalAABB", {})
 
     # 5. Textures
     tex_dir = root / "tools" / "elita_one" / "processed_textures"
@@ -225,12 +244,13 @@ def main():
     tex_normal = tex_dir / "elita_main_normal.png"
     tex_raoe = tex_dir / "elita_main_raoe.png"
 
-    vh_diffuse = tex_dir / "elita_vh_diffuse.png"
-    vh_normal = tex_dir / "elita_vh_normal.png"
-    vh_raoe = tex_dir / "elita_vh_raoe.png"
+    vh_atlas_diff = tex_dir / "elita_veh_atlas_diffuse.png"
+    vh_atlas_norm = tex_dir / "elita_veh_atlas_normal.png"
+    vh_atlas_raoe = tex_dir / "elita_veh_atlas_raoe.png"
 
     # 6. Apply replacements
     replaced_robot = False
+    replaced_vehicle = False
     routed_smrs = 0
 
     for obj in i_env.objects:
@@ -243,18 +263,21 @@ def main():
                 obj.save_typetree(robot_mesh_copy)
                 replaced_robot = True
                 print("[✓] Replaced Robot SkinnedMesh successfully!")
+            elif m_name == "cha_arcee_gs_deluxe2014_01":
+                print(f"[*] Replacing Arcee vehicle mesh with Elita One Vehicle mesh...")
+                replace_str_in_tree(vehicle_mesh_copy, old_cab, new_cab)
+                obj.save_typetree(vehicle_mesh_copy)
+                replaced_vehicle = True
+                print("[✓] Replaced Vehicle SkinnedMesh successfully!")
             else:
                 replace_str_in_tree(m_tree, old_cab, new_cab)
                 obj.save_typetree(m_tree)
 
         elif obj.type.name == "SkinnedMeshRenderer":
             smr = obj.read_typetree()
-            mesh_pid = smr.get("m_Mesh", {}).get("m_PathID")
             
             # Robot SMR (63 bones in base, mapped in Arcee's exact bone order)
             if len(smr.get("m_Bones", [])) == 63:
-                # PID 8283545308434878436 is Prefab 1 (Showcase)
-                # PID 3949589716393965935 is Prefab 2 (Combat LW)
                 is_p1 = (obj.path_id == 8283545308434878436)
                 pref_tr = p1_transforms if is_p1 else p2_transforms
                 pref_label = "Prefab 1 (Showcase)" if is_p1 else "Prefab 2 (Combat LW)"
@@ -273,6 +296,21 @@ def main():
                 obj.save_typetree(smr)
                 routed_smrs += 1
                 print(f"[✓] Re-routed Robot SMR in {pref_label} ({len(new_bones)} bones in Arcee order)!")
+            elif len(smr.get("m_Bones", [])) == 25:
+                # Vehicle SMR
+                is_p1 = (obj.path_id == -4178002549372221558)
+                pref_label = "Prefab 1 (Showcase)" if is_p1 else "Prefab 2 (Combat LW)"
+                if v_bounds:
+                    smr["m_AABB"] = copy.deepcopy(v_bounds)
+                # Map all 3 submeshes to Material 6920099848281342549 (uses tform_misc_A atlas)
+                smr["m_Materials"] = [
+                    {"m_FileID": 0, "m_PathID": 6920099848281342549},
+                    {"m_FileID": 0, "m_PathID": 6920099848281342549},
+                    {"m_FileID": 0, "m_PathID": 6920099848281342549}
+                ]
+                replace_str_in_tree(smr, old_cab, new_cab)
+                obj.save_typetree(smr)
+                print(f"[✓] Re-routed Vehicle SMR in {pref_label} to Elita Vehicle Atlas Material!")
             else:
                 replace_str_in_tree(smr, old_cab, new_cab)
                 obj.save_typetree(smr)
@@ -305,6 +343,42 @@ def main():
                 replace_str_in_tree(mat, old_cab, new_cab)
                 obj.save_typetree(mat)
                 print(f"[✓] Tuned material {mat.get('m_Name')} for bright vibrant PBR!")
+
+            elif obj.path_id == 6920099848281342549:
+                # Vehicle Material
+                new_floats = []
+                for k, v in saved_props.get("m_Floats", []):
+                    if k == "_Mode":
+                        new_floats.append((k, 0.0))
+                    elif k == "_metallic_range":
+                        new_floats.append((k, 0.35))
+                    elif k == "_roughness_range":
+                        new_floats.append((k, 0.55))
+                    else:
+                        new_floats.append((k, v))
+                saved_props["m_Floats"] = new_floats
+
+                new_colors = []
+                for k, v in saved_props.get("m_Colors", []):
+                    if k in ["_base_col", "_Color", "_base2_col"]:
+                        new_colors.append((k, {'r': 1.0, 'g': 1.0, 'b': 1.0, 'a': 1.0}))
+                    else:
+                        new_colors.append((k, v))
+                saved_props["m_Colors"] = new_colors
+
+                # Set _pbr_composite_tex to wpns_RAOE
+                new_texs = []
+                for k, v in saved_props.get("m_TexEnvs", []):
+                    if k == "_pbr_composite_tex":
+                        new_texs.append((k, {'m_Texture': {'m_FileID': 0, 'm_PathID': 3139964713313538527}, 'm_Scale': {'x': 1.0, 'y': 1.0}, 'm_Offset': {'x': 0.0, 'y': 0.0}}))
+                    else:
+                        new_texs.append((k, v))
+                saved_props["m_TexEnvs"] = new_texs
+
+                replace_str_in_tree(mat, old_cab, new_cab)
+                obj.save_typetree(mat)
+                print(f"[✓] Tuned Vehicle Material for crisp sports car finish!")
+
             else:
                 replace_str_in_tree(mat, old_cab, new_cab)
                 obj.save_typetree(mat)
@@ -328,22 +402,22 @@ def main():
                 tex.image = Image.open(tex_raoe).convert("RGB")
                 tex.save()
                 print(f"[✓] Replaced Robot RAOE: {t_name}")
-            # Vehicle / Misc Textures
-            elif t_name == "tform_misc_A" and vh_diffuse.is_file():
+            # Vehicle Textures (Atlas)
+            elif t_name == "tform_misc_A" and vh_atlas_diff.is_file():
                 tex = obj.read()
-                tex.image = Image.open(vh_diffuse).convert("RGBA")
+                tex.image = Image.open(vh_atlas_diff).convert("RGBA")
                 tex.save()
-                print(f"[✓] Replaced Misc/Vehicle Diffuse: {t_name}")
-            elif t_name == "tform_misc_NM" and vh_normal.is_file():
+                print(f"[✓] Replaced Vehicle Diffuse Atlas: {t_name}")
+            elif t_name == "tform_misc_NM" and vh_atlas_norm.is_file():
                 tex = obj.read()
-                tex.image = Image.open(vh_normal).convert("RGBA")
+                tex.image = Image.open(vh_atlas_norm).convert("RGBA")
                 tex.save()
-                print(f"[✓] Replaced Misc/Vehicle Normal: {t_name}")
-            elif t_name == "wpns_RAOE" and vh_raoe.is_file():
+                print(f"[✓] Replaced Vehicle Normal Atlas: {t_name}")
+            elif t_name == "wpns_RAOE" and vh_atlas_raoe.is_file():
                 tex = obj.read()
-                tex.image = Image.open(vh_raoe).convert("RGB")
+                tex.image = Image.open(vh_atlas_raoe).convert("RGB")
                 tex.save()
-                print(f"[✓] Replaced Weapons/Misc RAOE: {t_name}")
+                print(f"[✓] Replaced Vehicle RAOE Atlas: {t_name}")
             else:
                 tree = obj.read_typetree()
                 replace_str_in_tree(tree, old_cab, new_cab)

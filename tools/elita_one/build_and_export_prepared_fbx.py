@@ -41,11 +41,16 @@ bone_mapping["l_piston_lower_arm_start_skin_end"] = "LeftForeArm"
 bone_mapping["r_piston_lower_arm_start_skin"] = "RightForeArm"
 bone_mapping["r_piston_lower_arm_start_skin_end"] = "RightForeArm"
 
+# Hip pistons (both sleeve and cylinder belong to Hips so they never fly into empty space):
 for p_name in [
     "l_piston_leg_end_01_skin", "l_piston_leg_end_01_skin_end",
     "l_piston_leg_end_02_skin", "l_piston_leg_end_02_skin_end",
     "r_piston_leg_end_01_skin", "r_piston_leg_end_01_skin_end",
     "r_piston_leg_end_02_skin", "r_piston_leg_end_02_skin_end",
+    "l_piston_leg_start_01_skin3", "l_piston_leg_start_01_skin3_end",
+    "l_piston_leg_start_02_skin4", "l_piston_leg_start_02_skin4_end",
+    "r_piston_leg_start_01_skin7", "r_piston_leg_start_01_skin7_end",
+    "r_piston_leg_start_02_skin8", "r_piston_leg_start_02_skin8_end",
     "l_cover_hips_skin", "r_cover_hips_skin"
 ]:
     bone_mapping[p_name] = "Hips"
@@ -55,10 +60,20 @@ bone_mapping["l_shoulder_pistons_skin_end"] = "Spine1"
 bone_mapping["r_shoulder_pistons_skin"] = "Spine1"
 bone_mapping["r_shoulder_pistons_skin_end"] = "Spine1"
 
-bone_mapping["l_foot_heel_skin"] = "LeftFoot"
-bone_mapping["l_foot_heel_skin_end"] = "LeftFoot"
-bone_mapping["r_foot_heel_skin"] = "RightFoot"
-bone_mapping["r_foot_heel_skin_end"] = "RightFoot"
+# Ankle pistons (base and ball joint firmly attach to Foot so ankle never pulls apart):
+for p_name in [
+    "l_piston_leg_start_01_skin", "l_piston_leg_start_01_skin_end",
+    "l_piston_leg_start_02_skin", "l_piston_leg_start_02_skin_end",
+    "l_foot_skin", "l_foot_heel_skin", "l_foot_heel_skin_end"
+]:
+    bone_mapping[p_name] = "LeftFoot"
+
+for p_name in [
+    "r_piston_leg_start_01_skin", "r_piston_leg_start_01_skin_end",
+    "r_piston_leg_start_02_skin", "r_piston_leg_start_02_skin_end",
+    "r_foot_skin", "r_foot_heel_skin", "r_foot_heel_skin_end"
+]:
+    bone_mapping[p_name] = "RightFoot"
 
 # 2. Build Base 63-Bone Armature "character_model"
 C = mathutils.Matrix((
