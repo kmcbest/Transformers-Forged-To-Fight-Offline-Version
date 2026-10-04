@@ -32,6 +32,8 @@ class TestArceeAbility(unittest.TestCase):
             "arcee_headshot_dot",
             "arcee_headshot_rush",
             "arcee_s2_bleed",
+            "ability_arcee_gs_deluxe2014_0",
+            "ability_arcee_gs_deluxe2014_1",
         ]
         self.assertEqual(
             gamedata.bot_abilities("arcee_gs_deluxe2014"),
@@ -41,12 +43,15 @@ class TestArceeAbility(unittest.TestCase):
             abilities.bot_abilities("arcee_gs_deluxe2014"),
             expected_abilities,
         )
-        # Other bots have universal SP callouts but must not have Arcee's specific ability
+        # Other bots have universal SP callouts and UI abilities but must not have Arcee's specific ability
         op_abilities = gamedata.bot_abilities("optimusprime_cin_tf")
         self.assertEqual(op_abilities, [
             "sp_callout_optimusprime_cin_tf_1",
             "sp_callout_optimusprime_cin_tf_2",
             "sp_callout_optimusprime_cin_tf_3",
+            "ability_optimusprime_cin_tf_0",
+            "ability_optimusprime_cin_tf_1",
+            "ability_optimusprime_cin_tf_2",
         ])
         self.assertNotIn("arcee_headshot_direct", op_abilities)
 
@@ -151,6 +156,8 @@ class TestArceeAbility(unittest.TestCase):
             "arcee_headshot_dot",
             "arcee_headshot_rush",
             "arcee_s2_bleed",
+            "ability_arcee_gs_deluxe2014_0",
+            "ability_arcee_gs_deluxe2014_1",
         ]
         # 1. build_hero_base
         base = gamedata.build_hero_base("arcee_gs_deluxe2014")

@@ -160,6 +160,7 @@ ROSTER = {
 # Which bots the offline player owns at boot. For a preservation sandbox we grant the
 # ENTIRE roster so every screen (roster grid, hero details, team select) has content.
 import abilities
+import character_profiles
 
 OWNED = list(ROSTER)
 
@@ -465,6 +466,8 @@ def build_blueprints(lang="en"):
             "ab": 100.0, "gg": 1, "mfl": 0, "nfr": 0,
             "fcpg": "", "fhpag": "",
             "mr": 5, "max_rank": 5,
+            "sb": character_profiles.get_bot_synergy_ids(bid),
+            "synergy_bonuses": character_profiles.get_bot_synergy_ids(bid),
         }
     for m in _load_mods():
         mid = m["id"]
@@ -1115,7 +1118,9 @@ def build_hero_base(bid, rank=1):
         "ap": 0.0, "bp": 0.0, "il": 0.0, "il2": 0.0, "il3": 0.0, "is4": 0.0,
         "eg": 0.0, "fg": 0.0, "ar": 0.0, "hr": 0.0, "hm": 0.0, "am": 0.0,
         "hrhp": 0.0, "hra": 0.0,
-        "stat_mods": bot_abilities(bid), "sig_mods": [], "buff_mods": [],
+        "stat_mods": bot_abilities(bid),
+        "sig_mods": [character_profiles.get_bot_sig_mod_id(bid)] if character_profiles.get_bot_sig_mod_id(bid) else [],
+        "buff_mods": [],
         "i": [], "i2": [], "i3": [], "i4": [],
     }
 
@@ -1444,7 +1449,7 @@ def build_login_data(lang="en"):
         "blueprints": build_blueprints(lang=lang),
         "evoBlueprints": build_evo_blueprints(lang=lang),
         "characters": build_characters(lang=lang),
-        "synergyBonuses": {},
+        "synergyBonuses": character_profiles.build_all_synergy_bonuses(lang=lang),
         "attackValues": build_attack_values(),
         "blueprintBonuses": {"sameClassBonus": {"id": "sameClassBonus", "m": 1.2}},
         "heroClasses": build_hero_classes(),
@@ -1468,6 +1473,8 @@ def build_hero_entry(bid, rank=None, level=None):
     hp, atk = base_stats(bid, rank, level)
     sig_lvl = 100
     rating, r_hp, r_atk, r_hp_base, r_atk_base = calculate_hero_rating(hp, atk, sig_lvl=sig_lvl)
+    sig_id = character_profiles.get_bot_sig_mod_id(bid)
+    sig_mods = [sig_id] if sig_id else []
     return {
         "entity_type": "bot", "bid": bid,
         "rank": rank, "level": level, "sig_lvl": sig_lvl,
@@ -1479,7 +1486,7 @@ def build_hero_entry(bid, rank=None, level=None):
         "rating_attack": r_atk, "rating_hp": r_hp,
         "rating_attack_base": r_atk_base, "rating_hp_base": r_hp_base,
         "special_attacks": max_special_attacks(bid, star), "pvpb": {}, "exc": {},
-        "stat_mods": bot_abilities(bid), "sig_mods": [], "buff_mods": [],
+        "stat_mods": bot_abilities(bid), "sig_mods": sig_mods, "buff_mods": [],
         "mana_gain": _MANA_GAIN_RATE, "mana_start": _DIAG_MANA_START,
         "flvl": 100, "req_fxp": 0, "max_fxp": 100, "mfl": 100,
     }
@@ -2518,7 +2525,7 @@ def build_quest_progression(qid="1.1.1", start=None, team=None):
             "pi": (hp + atk) // 20,
             "sig_lvl": 100,
             "stat_mods": bot_abilities(bid),
-            "sig_mods": [],
+            "sig_mods": [character_profiles.get_bot_sig_mod_id(bid)] if character_profiles.get_bot_sig_mod_id(bid) else [],
         }
     user = {
         "name": "Commander", "tag": "", "strongestHero": bids[0],
@@ -3318,7 +3325,9 @@ def build_base_hero_details(req_heroes):
                 "crit_chance": crit_chance, "crit_damage": crit_damage,
                 "block_prof": 0, "perfect_block": 0, "sig_ability": 1,
                 "special_attacks": max_special_attacks(bid, star), "user_owned": True,
-                "stat_mods": bot_abilities(bid), "sig_mods": [], "buff_mods": [],
+                "stat_mods": bot_abilities(bid),
+                "sig_mods": [character_profiles.get_bot_sig_mod_id(bid)] if character_profiles.get_bot_sig_mod_id(bid) else [],
+                "buff_mods": [],
                 "mana_gain": _MANA_GAIN_RATE, "mana_start": _DIAG_MANA_START,
                 "flvl": 100, "req_fxp": 0, "max_fxp": 100, "mfl": 100,
                 "synergyBonuses": [], "pvpb": {},

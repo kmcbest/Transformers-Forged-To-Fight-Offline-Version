@@ -94,7 +94,7 @@ def make_bleed_statmod(
     appear = {
         "id": appr_id,
         "a": callout_text.capitalize(),
-        "s": callout_text.capitalize(),
+        "s": "",                      # ShortStringID 为空，防止被当作角色常驻被动能力列表项
         "l": f"{callout_text.capitalize()} damage over duration.",
         "ss": f"{callout_text.capitalize()} damage over duration.",
         "t": "\uE401",                # 能量块流血字形（血条下方倒计时圆环图标）

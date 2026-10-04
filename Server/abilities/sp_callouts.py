@@ -96,7 +96,7 @@ def build_sp_callout_appears():
             res[appr_id] = {
                 "id": appr_id,
                 "a": f"SP{lvl}",
-                "s": f"SP{lvl}",
+                "s": "",  # ShortStringID 必须为空，防止 CharacterStatSummaryPanel 误将其识别为机体被动能力
                 "l": "",
                 "ss": "",
                 "t": "",

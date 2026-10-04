@@ -135,13 +135,20 @@ def build_buffs_set():
 
 
 def build_stat_mod_appears():
-    """汇总全员 SP 技能呼出外观配置与各机器人专属能力表现配置。"""
+    """汇总全员 SP 技能呼出外观配置与各机器人专属能力表现配置、英雄招牌与 UI 展示能力。"""
     # 1. 78 位英雄 SP 呼出外观
     appears = build_sp_callout_appears()
 
     # 2. 各机器人注册的外观
     _, bot_appears, _ = collect_all_bot_statmods_and_appears()
     appears.update(bot_appears)
+
+    # 3. 官方英雄招牌技能外观与 UI 基础能力外观
+    try:
+        from .. import character_profiles
+    except Exception:
+        import character_profiles
+    appears.update(character_profiles.get_profile_stat_mod_appears())
 
     return appears
 
@@ -245,7 +252,7 @@ SYSTEM_GLOBAL_STATMODS = {
 
 
 def build_stat_mods():
-    """汇总全局系统底层修饰器、全员 SP 技能呼出修饰器与各机器人专属能力修饰器。"""
+    """汇总全局系统底层修饰器、全员 SP 技能呼出修饰器与各机器人专属能力修饰器、英雄招牌与 UI 展示能力。"""
     # 0. 核心底层系统修饰器 (受创硬直 gp_hit_stun、跳字累加器 gp_dmg_ft/gp_heal_ft)
     mods = dict(SYSTEM_GLOBAL_STATMODS)
 
@@ -256,6 +263,13 @@ def build_stat_mods():
     bot_mods, _, _ = collect_all_bot_statmods_and_appears()
     mods.update(bot_mods)
 
+    # 3. 官方英雄招牌技能与 UI 基础能力
+    try:
+        from .. import character_profiles
+    except Exception:
+        import character_profiles
+    mods.update(character_profiles.get_profile_stat_modifiers())
+
     return mods
 
 
@@ -264,7 +278,12 @@ build_stat_modifiers = build_stat_mods
 
 
 def bot_abilities(bot_id: str):
-    """查询指定金刚拥有的全部能力修饰器 ID 列表（包含通用 SP 技名呼出与专属技能）。"""
+    """查询指定金刚拥有的全部能力修饰器 ID 列表（包含通用 SP 技名呼出、UI 展示基础能力与专属技能）。"""
     sp_mods = [f"sp_callout_{bot_id}_{lvl}" for lvl in (1, 2, 3)] if bot_id in BOT_SP_MAP else []
     bot_custom_mods = get_bot_mod_ids(bot_id)
-    return sp_mods + bot_custom_mods
+    try:
+        from .. import character_profiles
+    except Exception:
+        import character_profiles
+    ui_mods = character_profiles.get_bot_ui_ability_ids(bot_id)
+    return sp_mods + bot_custom_mods + ui_mods

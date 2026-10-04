@@ -5883,21 +5883,40 @@ void* hook_161(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
 
 void* hook_162(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7) {
     void* r = H[162].orig(a0,a1,a2,a3,a4,a5,a6,a7);
-    if (!g_strnew || !a0) return r;
+    if (!a0) return r;
     char k[128];
     if (read_str(a0, k, sizeof(k)) && k[0]) {
         if (strncmp(k, "ID_SPECIAL_", 11) == 0 || strncmp(k, "MS_ID_SPECIAL_", 14) == 0) {
             const char* tr = lookup_special_attack_zh(k);
             if (tr) {
                 LOG("LOCALIZE sp: %s -> %s", k, tr);
-                return g_strnew(tr);
+                return g_strnew ? g_strnew(tr) : r;
             }
         }
         if (strstr(k, "DRAGSTRIP") || strstr(k, "dragstrip") || strstr(k, "Dragstrip")) {
             if (strstr(k, "BIO") || strstr(k, "desc") || strstr(k, "DESC") || strstr(k, "Bio")) {
-                return g_strnew("飞虎队成员抢劫。他是个极度渴望胜利的战士，为了获胜不惜采用一切手段。第一名就是一切，第二名就是头号输家。");
+                return g_strnew ? g_strnew("飞虎队成员抢劫。他是个极度渴望胜利的战士，为了获胜不惜采用一切手段。第一名就是一切，第二名就是头号输家。") : r;
             }
-            return g_strnew("抢劫");
+            return g_strnew ? g_strnew("抢劫") : r;
+        }
+    }
+    // Check if Localization.Get prepended "MS_" on missing string lookup
+    // If the input key was NOT an ID (i.e. does not start with "ID_" or "MS_ID_"),
+    // it was already direct human-readable text (e.g. Chinese signature name "守卫者的残暴" or synergy desc).
+    // In that case, strip the unwanted "MS_" by returning the original input string a0.
+    if (r && obj_ok(r) && obj_ok(a0)) {
+        uintptr_t pr = (uintptr_t)r;
+        uintptr_t pa = (uintptr_t)a0;
+        int32_t r_len = *(int32_t*)(pr + 0x10);
+        uint16_t* r_ch = (uint16_t*)(pr + 0x14);
+        if (r_len >= 3 && r_ch[0] == 'M' && r_ch[1] == 'S' && r_ch[2] == '_') {
+            int32_t a_len = *(int32_t*)(pa + 0x10);
+            uint16_t* a_ch = (uint16_t*)(pa + 0x14);
+            int is_id = (a_len >= 3 && a_ch[0] == 'I' && a_ch[1] == 'D' && a_ch[2] == '_');
+            int is_ms_id = (a_len >= 6 && a_ch[0] == 'M' && a_ch[1] == 'S' && a_ch[2] == '_' && a_ch[3] == 'I' && a_ch[4] == 'D' && a_ch[5] == '_');
+            if (!is_id && !is_ms_id) {
+                return a0;
+            }
         }
     }
     return r;
