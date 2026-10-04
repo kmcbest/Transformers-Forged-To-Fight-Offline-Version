@@ -62,15 +62,15 @@ for obj in env.objects:
         new_floats = []
         for k, v in saved_props.get("m_Floats", []):
             if k == "_Mode":
-                new_floats.append((k, 0.0))  # Opaque
+                new_floats.append((k, 3.0))  # Clearcoat mode, strictly matching official Kabam PBR
             elif k == "_metallic_range":
                 new_floats.append((k, 0.45))
             elif k == "_roughness_range":
                 new_floats.append((k, 0.35))
             elif k == "_emissive_range":
-                new_floats.append((k, 1.0))  # Master emissive enable switch!
+                new_floats.append((k, 0.0))  # Must be 0.0! In Character/PBR, 0.0 means 0 cutoff threshold. 1.0 kills emission!
             elif k == "_emissive_overbright_range":
-                new_floats.append((k, 120.0))  # Match Arcee's HDR bloom factor
+                new_floats.append((k, 120.0))  # Match Arcee and Optimus HDR bloom factor
             elif k == "_emissive_pulse_intensity_range":
                 new_floats.append((k, 0.10))
             elif k == "_emissive_pulse_time_range":
@@ -88,9 +88,8 @@ for obj in env.objects:
             if k in ["_base_col", "_Color", "_base2_col"]:
                 new_colors.append((k, {'r': 1.0, 'g': 1.0, 'b': 1.0, 'a': 1.0}))
             elif k == "_emissive_intensity_col":
-                # Vibrant Autobot electric cyan: high G (0.75) and B (1.0) creates pure neon cyan bloom,
-                # while low R (0.08) strictly prevents white blowout and restores yellow visor glow!
-                new_colors.append((k, {'r': 0.08, 'g': 0.75, 'b': 1.0, 'a': 1.0}))
+                # Electric cyan: R=0.04, G=0.75, B=1.0, Alpha=0.0 strictly matching official character conventions
+                new_colors.append((k, {'r': 0.04, 'g': 0.75, 'b': 1.0, 'a': 0.0}))
             else:
                 new_colors.append((k, v))
         saved_props["m_Colors"] = new_colors
