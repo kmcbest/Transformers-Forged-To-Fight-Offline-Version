@@ -40,10 +40,11 @@ def validate_statmod(mod: Dict[str, Any]):
         if val is not None and not isinstance(val, (list, tuple)):
             raise TypeError(f"StatMod [{mod_id}] 字段 '{list_field}' 必须为 List/Tuple，得到: {type(val)}")
             
-    # 3. 数值截断防护：如果具有持续时间 d 且伤害总量 m > 0
+    # 3. 数值截断防护：仅对流血/DOT伤害修饰器检测单次 Tick 伤害
+    t = str(mod.get("t", ""))
     d = float(mod.get("d", 0.0))
     m = float(mod.get("m", 0.0))
-    if d > 0 and m > 0:
+    if t.startswith("dmg_") and d > 0 and m > 0:
         ticks = d * 2.0  # 游戏每 0.5 秒结算一次
         if m / ticks < 1.0:
             print(f"[WARN][Ability Contract] StatMod [{mod_id}] 伤害数值 m={m} 在 d={d}s 下单次 Tick 伤害为 {m/ticks:.2f} < 1.0，客户端将强转截断为 0！")
@@ -189,4 +190,117 @@ def make_direct_dmg_statmod(
     }
     validate_statmod(stat_mod)
     return {mod_id: stat_mod}, {}
+
+
+def make_unstoppable_statmod(
+    mod_id: str,
+    duration: float,
+    trigger: str = "onSpecial2Activate",
+    trigger_scope: str = "",
+    appr_id: str = "appr_unstoppable",
+    callout_text: str = "ID_STAT_UNSTOPPABLE_HUD",
+    show_callout: bool = True,
+    play_vfx: bool = False,
+    vfx_move: str = "status_unstoppable",
+    pua_icon: str = "\uE915",
+    color_hex: str = "FFAA00",
+) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    """
+    通用不可阻挡 (Unstoppable / 霸体) 工厂：
+    1. 赋予 'unstoppable' BuffEffect，直接提升底层属性 _unstoppable，
+       使 PlayerController.ReceiveHit 彻底跳过 ApplyHitStun，实现受创不打断动作，
+       同时正常扣除伤害并缩放击退。
+    2. 若 play_vfx 为 True，附带 'play_move' 播放角色周身金色霸体光环与粒子特效 (status_unstoppable)。
+    3. 若 show_callout 为 True，弹出金色 "不可阻挡" / "UNSTOPPABLE" 命中呼出大字与 PUA 矢量图标。
+    """
+    validate_color_code(color_hex, "unstoppable_color")
+
+    appear = {
+        "id": appr_id,
+        "a": "ID_STAT_UNSTOPPABLE_HUD",
+        "s": "",                      # 留空，避免被误判为常规被动展示项
+        "l": "ID_STAT_UNSTOPPABLE_S",
+        "ss": "ID_STAT_UNSTOPPABLE_S",
+        "t": pua_icon,                # PUA 矢量图标：不可阻挡 (\uE915)
+        "f": "",
+        "st": callout_text if show_callout else "",
+        "ps": "ID_STAT_UNSTOPPABLE_HUD",
+        "pl": "ID_STAT_UNSTOPPABLE_S",
+        "tc": color_hex,
+        "gt": color_hex,
+        "gb": "FF8800",
+    }
+
+    stat_mod = {
+        "id": mod_id,
+        "t": "unstoppable",
+        "tm": "",
+        "tr": [trigger],
+        "uit": [trigger] if show_callout else [],
+        "pri": 0,
+        "trm": 0.0,
+        "trs": trigger_scope,
+        "trr": "repeat",
+        "c": 1.0,
+        "m": 1.0,
+        "d": float(duration),
+        "s": "none",
+        "ta": "self",
+        "mt": "buff",
+        "v": "",
+        "ms": "",
+        "st": 1,
+        "g": "",
+        "gc": 0.0,
+        "gcv": "",
+        "rcv": "",
+        "ti": 0,
+        "a": [appr_id] if show_callout else [],
+        "au": [],
+        "rh": 0.0,
+        "ra": 0.0,
+    }
+
+    validate_statmod(stat_mod)
+    validate_appear(appear)
+
+    mods = {mod_id: stat_mod}
+    appears = {appr_id: appear} if show_callout else {}
+
+    if play_vfx:
+        vfx_mod_id = f"{mod_id}_vfx"
+        vfx_mod = {
+            "id": vfx_mod_id,
+            "t": "play_move",
+            "tm": vfx_move,
+            "tr": [trigger],
+            "uit": [],
+            "pri": 0,
+            "trm": 0.0,
+            "trs": trigger_scope,
+            "trr": "repeat",
+            "c": 1.0,
+            "m": 1.0,
+            "d": float(duration),
+            "s": "none",
+            "ta": "self",
+            "mt": "buff",
+            "v": "",
+            "ms": "",
+            "st": 1,
+            "g": "",
+            "gc": 0.0,
+            "gcv": "",
+            "rcv": "",
+            "ti": 0,
+            "a": [],
+            "au": [],
+            "rh": 0.0,
+            "ra": 0.0,
+        }
+        validate_statmod(vfx_mod)
+        mods[vfx_mod_id] = vfx_mod
+
+    return mods, appears
+
 
