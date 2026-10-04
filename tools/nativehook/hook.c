@@ -5428,10 +5428,6 @@ static void reset_player_attack_chain(void* pc) {
     *(uint32_t*)((uintptr_t)pc + 0x1c0) = 0; // _lightAttackIndex = 0
     *(uint32_t*)((uintptr_t)pc + 0x1c4) = 0; // _mediumAttackIndex = 0
     *(uint32_t*)((uintptr_t)pc + 0x1c8) = 0; // _rangedAttackIndex = 0
-    void* lhr = *(void**)((uintptr_t)pc + 0x120);
-    if (lhr && obj_ok(lhr)) {
-        *(int32_t*)((uintptr_t)lhr + 0x20) = 0; // _lastHitResult.Flags = 0
-    }
     flog("RESET_ATTACK_CHAIN on p0 pc=%p (caller=%p)", pc, __builtin_return_address(0));
 }
 
@@ -5439,8 +5435,11 @@ void* hook_153(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
     int index = (int)(intptr_t)a1;
     flog("SPECIAL_ATTACK index=%d called on controller=%p (p0=%p, is_p0=%d)",
          index, self, g_p0_controller, (self == g_p0_controller));
-    if (self == g_p0_controller) {
+    if (self == g_p0_controller || (obj_ok(self) && *(int32_t*)((uintptr_t)self + 0xF4) == 0)) {
         g_intended_special_tier = 0;
+        reset_player_attack_chain(self);
+        g_p0_combo_ended = 0;
+        g_p0_after_heavy = 0;
     }
     void* r = H[153].orig(self, a1, a2, a3, a4, a5, a6, a7);
     PROTECT({
@@ -5517,7 +5516,7 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
                     pre_l = *(uint32_t*)((uintptr_t)self + 0x1c0);
                     pre_m = *(uint32_t*)((uintptr_t)self + 0x1c4);
                     COMBAT_ASSERT(pre_l == 0, "GATE-02", "Light index must be 0 after heavy attack, got %u", pre_l);
-                } else if (g_p0_combo_ended || pre_m >= 2 || pre_l >= 4) {
+                } else if ((action == 1 || action == 4) && (g_p0_combo_ended || pre_m >= 2 || pre_l >= 4)) {
                     flog("COMBAT_GATE: combo ender reached (ended_flag=%d, pre_m=%u, pre_l=%u, action=%d) -> reset chain",
                          g_p0_combo_ended, pre_m, pre_l, action);
                     reset_player_attack_chain(self);
@@ -5546,6 +5545,10 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
                 }
                 flog("PLAYER_ACTION 0x200: executing on P0 (intended_tier=%d, internal=%d)",
                      g_intended_special_tier, g_sp_dispatching_internal);
+                reset_player_attack_chain(self);
+                did_reset = 1;
+                g_p0_combo_ended = 0;
+                g_p0_after_heavy = 0;
             }
         }
     });
@@ -5591,10 +5594,14 @@ void* hook_155(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     void* pc = fld_p(a0, 0x18);
     void* r = H[155].orig(a0, a1, a2, a3, a4, a5, a6, a7);
     PROTECT({
-        if (obj_ok(pc) && *(int32_t*)((uintptr_t)pc + 0xF4) == 0) {
-            flog("SPECIAL_EXIT (0x0E34640) on P0: attack chain reset");
-            reset_player_attack_chain(pc);
-            ensure_p0_power_rounding(pc);
+        void* target = (obj_ok(pc) && *(int32_t*)((uintptr_t)pc + 0xF4) == 0) ? pc
+                     : (obj_ok(g_p0_controller) ? g_p0_controller : NULL);
+        if (target) {
+            flog("SPECIAL_EXIT (0x0E34640) on P0 (target=%p): attack chain reset", target);
+            reset_player_attack_chain(target);
+            ensure_p0_power_rounding(target);
+            g_p0_combo_ended = 0;
+            g_p0_after_heavy = 0;
         }
     });
     return r;

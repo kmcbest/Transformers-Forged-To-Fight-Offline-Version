@@ -1,0 +1,270 @@
+#!/usr/bin/env python3
+"""
+TFTF Combat Ability & Buff System Package
+=========================================
+统一对外暴露战斗能力系统的各项构建接口与数据，保持与 gamedata.py 的 100% 兼容性。
+"""
+
+from .sp_callouts import BOT_SP_MAP, build_sp_callout_appears, build_sp_callout_statmods
+from .registry import (
+    register_bot,
+    load_all_bots,
+    get_registered_bots,
+    get_bot_mod_ids,
+    collect_all_bot_statmods_and_appears,
+)
+
+
+def build_buffs_config():
+    """定义战斗中各类 Buff 的堆叠与血条下 UI 挂件显示策略。"""
+    groups_data = {
+        # 跳字累加器：常驻不可见
+        "floating_text": {"stackable": True, "active_display": False},
+        "floating_text_dmg": {"stackable": True, "active_display": False},
+        "floating_text_heal": {"stackable": True, "active_display": False},
+        # SP 技能呼出文字组：仅触发 Callout Text，不在血条下显示 Buff 图标
+        "sp_callout": {"stackable": True, "active_display": False},
+        # 流血类 Debuff：可堆叠，在敌人血条下方显示倒计时圆环图标
+        "dmg_bleed": {"stackable": True, "active_display": True},
+        # 直接伤害：不显示血条下方图标
+        "dmg_direct": {"stackable": True, "active_display": False},
+    }
+    return {
+        "groups": groups_data,
+        "groupings": groups_data,
+    }
+
+
+def build_buffs_set():
+    """全局 Buff 模板库。每个 id 对应 Damage_BuffEffect 或 FloatingText_BuffEffect。"""
+    global_buffs = {
+        # 通用 SP 技能呼出 Buff：触发时向对应角色侧派发 1 秒技能名 Callout
+        "sp_callout": {
+            "id": "sp_callout",
+            "iconTexture": "",
+            "image": "",
+            "images3": False,
+            "modeAvail": [],
+            "scope": "global",
+            "valueType": "absolute",
+            "displayValue": 0.0,
+            "c": 1,
+            "value": 0.0,
+            "buffType": "buff",
+            "group": "sp_callout",
+            "p": {},
+            "hasDuration": True,
+            "e": 0,
+            "time": {"amount": 1.0},
+            "loc_name": "sp_callout",
+            "loc_desc": "sp_callout",
+        },
+        # 伤害跳字收集器：捕获 _ftd 变量累加值，弹出红色跳字
+        "floating_text": {
+            "id": "floating_text",
+            "iconTexture": "",
+            "image": "",
+            "images3": False,
+            "modeAvail": [],
+            "scope": "global",
+            "valueType": "absolute",
+            "displayValue": 0.0,
+            "c": 1,
+            "value": 0.0,
+            "buffType": "floating_text",
+            "group": "floating_text",
+            "p": {"key": "_ftd", "style": 0},
+            "hasDuration": False,
+            "e": 0,
+            "time": {"amount": 0},
+            "loc_name": "floating_text",
+            "loc_desc": "floating_text",
+        },
+        # 伤害跳字收集器 (dmg)：红色跳字
+        "floating_text_dmg": {
+            "id": "floating_text_dmg",
+            "iconTexture": "",
+            "image": "",
+            "images3": False,
+            "modeAvail": [],
+            "scope": "global",
+            "valueType": "absolute",
+            "displayValue": 0.0,
+            "c": 1,
+            "value": 0.0,
+            "buffType": "floating_text",
+            "group": "floating_text_dmg",
+            "p": {"key": "_ftd", "style": 0},
+            "hasDuration": False,
+            "e": 0,
+            "time": {"amount": 0},
+            "loc_name": "floating_text_dmg",
+            "loc_desc": "floating_text_dmg",
+        },
+        # 治疗跳字收集器：捕获 _fth 变量累加值，弹出绿色跳字
+        "floating_text_heal": {
+            "id": "floating_text_heal",
+            "iconTexture": "",
+            "image": "",
+            "images3": False,
+            "modeAvail": [],
+            "scope": "global",
+            "valueType": "absolute",
+            "displayValue": 0.0,
+            "c": 1,
+            "value": 0.0,
+            "buffType": "floating_text",
+            "group": "floating_text_heal",
+            "p": {"key": "_fth", "style": 0},
+            "hasDuration": False,
+            "e": 0,
+            "time": {"amount": 0},
+            "loc_name": "floating_text_heal",
+            "loc_desc": "floating_text_heal",
+        },
+    }
+
+    # 动态汇入所有注册机器人提供的额外 Buff 定义
+    _, _, extra_buffs = collect_all_bot_statmods_and_appears()
+    global_buffs.update(extra_buffs)
+
+    return {
+        "globalBuffs": global_buffs,
+        "userBuffs": {},
+    }
+
+
+def build_stat_mod_appears():
+    """汇总全员 SP 技能呼出外观配置与各机器人专属能力表现配置。"""
+    # 1. 78 位英雄 SP 呼出外观
+    appears = build_sp_callout_appears()
+
+    # 2. 各机器人注册的外观
+    _, bot_appears, _ = collect_all_bot_statmods_and_appears()
+    appears.update(bot_appears)
+
+    return appears
+
+
+# ---------------------------------------------------------------------------
+# 0. 核心引擎底层全局系统修饰器 (受创硬直、伤害/治疗跳字累加器)
+# ---------------------------------------------------------------------------
+SYSTEM_GLOBAL_STATMODS = {
+    # 核心受击硬直修饰器 (内置默认)：引擎 ApplyHitStun 强依赖，确保受击方产生硬直与受创后摇
+    "gp_hit_stun": {
+        "id": "gp_hit_stun",
+        "t": "hit_stun",
+        "tm": "",
+        "tr": [],
+        "uit": [],
+        "pri": 0,
+        "trm": 0.0,
+        "trs": "",
+        "trr": "none",
+        "c": 1.0,
+        "m": 1.0,
+        # ApplyHitStun 提供运行时硬直时长，此处为 0.5s 保底配置
+        "d": 0.5,
+        "s": "none",
+        "ta": "self",
+        "mt": "debuff",
+        "v": "",
+        "ms": "",
+        "st": 0,
+        "g": "",
+        "gc": 0.0,
+        "gcv": "",
+        "rcv": "",
+        "ti": 0,
+        "a": [],
+        "au": [],
+        "rh": 0.0,
+        "ra": 0.0,
+    },
+    # 常驻伤害跳字累加器 (开局 Intro 挂载，持续 -1.0 永久生效)
+    "gp_dmg_ft": {
+        "id": "gp_dmg_ft",
+        "t": "floating_text",
+        "tm": "v=_ftd;s=7",
+        "tr": ["onIntroStart"],
+        "uit": [],
+        "pri": 0,
+        "trm": 0.0,
+        "trs": "",
+        "trr": "update",
+        "c": 1.0,
+        "m": 1.0,
+        "d": -1.0,
+        "s": "none",
+        "ta": "self",
+        "mt": "passive",
+        "v": "",
+        "ms": "",
+        "st": 0,
+        "g": "",
+        "gc": 0.0,
+        "gcv": "",
+        "rcv": "",
+        "ti": 0,
+        "a": [],
+        "au": [],
+        "rh": 0.0,
+        "ra": 0.0,
+    },
+    # 常驻治疗跳字累加器
+    "gp_heal_ft": {
+        "id": "gp_heal_ft",
+        "t": "floating_text",
+        "tm": "v=_fth;s=6",
+        "tr": ["onIntroStart"],
+        "uit": [],
+        "pri": 0,
+        "trm": 0.0,
+        "trs": "",
+        "trr": "update",
+        "c": 1.0,
+        "m": 1.0,
+        "d": -1.0,
+        "s": "none",
+        "ta": "self",
+        "mt": "passive",
+        "v": "",
+        "ms": "",
+        "st": 0,
+        "g": "",
+        "gc": 0.0,
+        "gcv": "",
+        "rcv": "",
+        "ti": 0,
+        "a": [],
+        "au": [],
+        "rh": 0.0,
+        "ra": 0.0,
+    },
+}
+
+
+def build_stat_mods():
+    """汇总全局系统底层修饰器、全员 SP 技能呼出修饰器与各机器人专属能力修饰器。"""
+    # 0. 核心底层系统修饰器 (受创硬直 gp_hit_stun、跳字累加器 gp_dmg_ft/gp_heal_ft)
+    mods = dict(SYSTEM_GLOBAL_STATMODS)
+
+    # 1. 78 位英雄 SP 呼出修饰器
+    mods.update(build_sp_callout_statmods())
+
+    # 2. 各机器人注册的修饰器
+    bot_mods, _, _ = collect_all_bot_statmods_and_appears()
+    mods.update(bot_mods)
+
+    return mods
+
+
+# 兼容 gamedata 调用的别名
+build_stat_modifiers = build_stat_mods
+
+
+def bot_abilities(bot_id: str):
+    """查询指定金刚拥有的全部能力修饰器 ID 列表（包含通用 SP 技名呼出与专属技能）。"""
+    sp_mods = [f"sp_callout_{bot_id}_{lvl}" for lvl in (1, 2, 3)] if bot_id in BOT_SP_MAP else []
+    bot_custom_mods = get_bot_mod_ids(bot_id)
+    return sp_mods + bot_custom_mods

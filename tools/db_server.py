@@ -240,9 +240,10 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
             c = conn.cursor()
 
             updatable = [
+                "name_zh", "name_en",
                 "crit_chance", "crit_damage", "crit_chance_ranged", "crit_chance_melee",
                 "health_mult", "attack_mult", "block_proficiency", "mana_gain_mult",
-                "pua_faction_icon", "pua_class_icon", "desc_zh", "note", "class", "faction", "source",
+                "pua_faction_icon", "pua_class_icon", "desc_zh", "desc_en", "note", "class", "faction", "source",
                 "hp", "attack", "rating"
             ]
             fields = []
@@ -277,6 +278,7 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
             desc_zh = payload.get("desc_zh", "")
             desc_en = payload.get("desc_en", "")
             pua_icon = payload.get("pua_icon", "")
+            status = payload.get("status", "unimplemented")
             synergy_bots = payload.get("synergy_bots", [])
             if isinstance(synergy_bots, list):
                 synergy_bots_str = json.dumps(synergy_bots)
@@ -284,9 +286,9 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
                 synergy_bots_str = str(synergy_bots)
 
             c.execute("""
-                INSERT INTO character_abilities (bot_id, category, title_zh, title_en, desc_zh, desc_en, pua_icon, synergy_bots, sort_order)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (bot_id, category, title_zh, title_en, desc_zh, desc_en, pua_icon, synergy_bots_str, 0))
+                INSERT INTO character_abilities (bot_id, category, title_zh, title_en, desc_zh, desc_en, pua_icon, synergy_bots, status, sort_order)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (bot_id, category, title_zh, title_en, desc_zh, desc_en, pua_icon, synergy_bots_str, status, 0))
             conn.commit()
             new_id = c.lastrowid
             conn.close()
@@ -312,7 +314,7 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
 
             fields = []
             values = []
-            for k in ["pua_icon", "title_zh", "title_en", "desc_zh", "desc_en"]:
+            for k in ["pua_icon", "title_zh", "title_en", "desc_zh", "desc_en", "status"]:
                 if k in payload:
                     fields.append(f"{k} = ?")
                     values.append(payload[k])

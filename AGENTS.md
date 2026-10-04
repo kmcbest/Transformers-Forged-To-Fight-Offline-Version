@@ -46,6 +46,9 @@
 - **Do Not Analyze Build Scripts for Game Logic Issues (禁止无关工具发散分析)**:
   When diagnosing gameplay, quest, or UI bugs, do NOT inspect or analyze build scripts like `build_apk.py` or `INSTALL-ADB.py`. Focus exclusively on the data flow (`gamedata.py`, `export_payload.py`), native server responses (`inapk_server.c`), and relevant hooks (`hook.c`).
 
+## Execution and decision-action guidelines (方案确认与即时执行规范)
 
-
-
+- **Immediate Execution upon Alignment (方案确认即坚决执行，严禁过度重复探查)**:
+  一旦向用户完成了原因排查与走查汇报，并明确提出了具体的修改方案，且获得了用户的同意与执行指令（如用户回复“好的直接改”、“改了编译”、“做吧”等），**必须立即执行对应的代码修改并完成编译验证**。
+- **Strictly Ban Redundant Circular Research (严禁在方案已确定后二次发散)**:
+  严禁在用户确认方案后，重新发起一轮无意义的代码大面积搜索、重复反汇编或发散性探查。方案既然已经阐明清楚，行动阶段就要做到“指哪打哪、雷厉风行、精准修改”。
