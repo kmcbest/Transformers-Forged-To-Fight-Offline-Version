@@ -1,0 +1,6916 @@
+{
+  "error": null,
+  "result": {
+    "st_status": "Enabled",
+    "treeClasses": [
+      {
+        "id": "offense",
+        "name": "ID_UI_MASTERIES_OFFENSE_BOOST",
+        "description": "ID_UI_MASTERIES_OFFENSE_BOOST",
+        "status": "Enabled"
+      },
+      {
+        "id": "defense",
+        "name": "ID_UI_MASTERIES_DEFENSE_BOOST",
+        "description": "ID_UI_MASTERIES_DEFENSE_BOOST",
+        "status": "Enabled"
+      },
+      {
+        "id": "utility",
+        "name": "ID_UI_MASTERIES_UTILITY_BOOST",
+        "description": "ID_UI_MASTERIES_UTILITY_BOOST",
+        "status": "Enabled"
+      }
+    ],
+    "trees": [
+      {
+        "id": "st_offense",
+        "classId": "offense",
+        "name": "ID_UI_MASTERIES_OFFENSE_FORMAT",
+        "description": "ID_UI_MASTERIES_OFFENSE_BOOST",
+        "layoutData": {
+          "gridDimensions": {
+            "x": 18,
+            "y": 7
+          },
+          "grid": [
+            [
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "node_off_root",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "node_seq",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "node_courage",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "node_off_low_rush",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "node_armor_p",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "node_off_up_smash",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "node_off_low_flank",
+                "walkable": true,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "node_offense_7_4",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "node_offense_7_2",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "node_starseeker",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "node_standtoge",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "node_assassin",
+                "walkable": true,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "node_glasscan",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "node_off_fury",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "node_off_exec",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "node_despair",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "node_suppression",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "node_deepwounds",
+                "walkable": true,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "node_stupefy",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              }
+            ]
+          ]
+        },
+        "nodes": [
+          "node_off_root",
+          "node_seq",
+          "node_off_low_rush",
+          "node_courage",
+          "node_armor_p",
+          "node_off_low_flank",
+          "node_off_up_smash",
+          "node_offense_7_2",
+          "node_offense_7_4",
+          "node_assassin",
+          "node_standtoge",
+          "node_starseeker",
+          "node_off_fury",
+          "node_glasscan",
+          "node_despair",
+          "node_off_exec",
+          "node_deepwounds",
+          "node_suppression",
+          "node_stupefy"
+        ]
+      },
+      {
+        "id": "st_defense",
+        "classId": "defense",
+        "name": "ID_UI_MASTERIES_DEFENSE_FORMAT",
+        "description": "ID_UI_MASTERIES_DEFENSE_BOOST",
+        "layoutData": {
+          "gridDimensions": {
+            "x": 16,
+            "y": 7
+          },
+          "grid": [
+            [
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "node_health",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "node_armor",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "node_fullmettle",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "node_resist_ranged",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "node_resist_melee",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "node_crit_resist",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "node_egy_resist",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "node_critdmg_resist",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "node_nanorepair",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "node_enh_bl",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "node_recali",
+                "walkable": true,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "node_feed",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": true,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "node_willpwr",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "node_last_stand",
+                "walkable": true,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "node_bleed_resist",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "node_sil_pl",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": true,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "node_shock_resist",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "node_perfect_bl",
+                "walkable": true,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "node_cpctr",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "node_inhibitor",
+                "walkable": true,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              }
+            ]
+          ]
+        },
+        "nodes": [
+          "node_health",
+          "node_armor",
+          "node_resist_ranged",
+          "node_fullmettle",
+          "node_resist_melee",
+          "node_egy_resist",
+          "node_crit_resist",
+          "node_critdmg_resist",
+          "node_recali",
+          "node_enh_bl",
+          "node_nanorepair",
+          "node_feed",
+          "node_last_stand",
+          "node_willpwr",
+          "node_sil_pl",
+          "node_bleed_resist",
+          "node_perfect_bl",
+          "node_shock_resist",
+          "node_cpctr",
+          "node_inhibitor"
+        ]
+      },
+      {
+        "id": "st_utility",
+        "classId": "utility",
+        "name": "ID_UI_MASTERIES_UTILITY_FORMAT",
+        "description": "ID_UI_MASTERIES_UTILITY_BOOST",
+        "layoutData": {
+          "gridDimensions": {
+            "x": 16,
+            "y": 7
+          },
+          "grid": [
+            [
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              }
+            ],
+            [
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              },
+              {
+                "node": "",
+                "walkable": false,
+                "toggleDiagonal": false
+              }
+            ]
+          ]
+        },
+        "nodes": []
+      }
+    ],
+    "nodes": [
+      {
+        "id": "node_off_root",
+        "type": "Offense",
+        "status": "Enabled",
+        "name": "伤害",
+        "description": "伤害",
+        "frame": "MasteryFrame0",
+        "icon": "",
+        "levels": [
+          {
+            "nodeId": "node_off_root",
+            "level": 1,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_off_root",
+            "level": 2,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_off_root",
+            "level": 3,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_off_root",
+            "level": 4,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [],
+            "reqClassSpend": []
+          }
+        ]
+      },
+      {
+        "id": "node_seq",
+        "type": "Offense",
+        "status": "Enabled",
+        "name": "定序器",
+        "description": "定序器",
+        "frame": "MasteryFrame0",
+        "icon": "",
+        "levels": [
+          {
+            "nodeId": "node_seq",
+            "level": 1,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_off_root",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_seq",
+            "level": 2,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_off_root",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_seq",
+            "level": 3,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_off_root",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_seq",
+            "level": 4,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_off_root",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          }
+        ]
+      },
+      {
+        "id": "node_off_low_rush",
+        "type": "Offense",
+        "status": "Enabled",
+        "name": "狙击手",
+        "description": "狙击手",
+        "frame": "MasteryFrame1",
+        "icon": "",
+        "levels": [
+          {
+            "nodeId": "node_off_low_rush",
+            "level": 1,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_seq",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_off_low_rush",
+            "level": 2,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_seq",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_off_low_rush",
+            "level": 3,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_seq",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_off_low_rush",
+            "level": 4,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_seq",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_off_low_rush",
+            "level": 5,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_seq",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          }
+        ]
+      },
+      {
+        "id": "node_courage",
+        "type": "Offense",
+        "status": "Enabled",
+        "name": "勇气",
+        "description": "勇气",
+        "frame": "MasteryFrame1",
+        "icon": "",
+        "levels": [
+          {
+            "nodeId": "node_courage",
+            "level": 1,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_seq",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_courage",
+            "level": 2,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_seq",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_courage",
+            "level": 3,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_seq",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_courage",
+            "level": 4,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_seq",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_courage",
+            "level": 5,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_seq",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          }
+        ]
+      },
+      {
+        "id": "node_armor_p",
+        "type": "Offense",
+        "status": "Enabled",
+        "name": "穿透护甲",
+        "description": "穿透护甲",
+        "frame": "MasteryFrame1",
+        "icon": "",
+        "levels": [
+          {
+            "nodeId": "node_armor_p",
+            "level": 1,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_seq",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_armor_p",
+            "level": 2,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_seq",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_armor_p",
+            "level": 3,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_seq",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_armor_p",
+            "level": 4,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_seq",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_armor_p",
+            "level": 5,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_seq",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          }
+        ]
+      },
+      {
+        "id": "node_off_low_flank",
+        "type": "Offense",
+        "status": "Enabled",
+        "name": "枪手",
+        "description": "枪手",
+        "frame": "MasteryFrame0",
+        "icon": "",
+        "levels": [
+          {
+            "nodeId": "node_off_low_flank",
+            "level": 1,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_off_low_rush",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_off_low_flank",
+            "level": 2,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_off_low_rush",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_off_low_flank",
+            "level": 3,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_off_low_rush",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_off_low_flank",
+            "level": 4,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_off_low_rush",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_off_low_flank",
+            "level": 5,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_off_low_rush",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          }
+        ]
+      },
+      {
+        "id": "node_off_up_smash",
+        "type": "Offense",
+        "status": "Enabled",
+        "name": "反击",
+        "description": "反击",
+        "frame": "MasteryFrame0",
+        "icon": "",
+        "levels": [
+          {
+            "nodeId": "node_off_up_smash",
+            "level": 1,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_courage",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_off_up_smash",
+            "level": 2,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_courage",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_off_up_smash",
+            "level": 3,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_courage",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_off_up_smash",
+            "level": 4,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_courage",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_off_up_smash",
+            "level": 5,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_courage",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          }
+        ]
+      },
+      {
+        "id": "node_offense_7_2",
+        "type": "Offense",
+        "status": "Enabled",
+        "name": "暴击伤害",
+        "description": "暴击伤害",
+        "frame": "MasteryFrame0",
+        "icon": "",
+        "levels": [
+          {
+            "nodeId": "node_offense_7_2",
+            "level": 1,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_armor_p",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_offense_7_2",
+            "level": 2,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_armor_p",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_offense_7_2",
+            "level": 3,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_armor_p",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_offense_7_2",
+            "level": 4,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_armor_p",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_offense_7_2",
+            "level": 5,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_armor_p",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          }
+        ]
+      },
+      {
+        "id": "node_offense_7_4",
+        "type": "Offense",
+        "status": "Enabled",
+        "name": "暴击几率",
+        "description": "暴击几率",
+        "frame": "MasteryFrame0",
+        "icon": "",
+        "levels": [
+          {
+            "nodeId": "node_offense_7_4",
+            "level": 1,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_armor_p",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_offense_7_4",
+            "level": 2,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_armor_p",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_offense_7_4",
+            "level": 3,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_armor_p",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_offense_7_4",
+            "level": 4,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_armor_p",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_offense_7_4",
+            "level": 5,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_armor_p",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          }
+        ]
+      },
+      {
+        "id": "node_assassin",
+        "type": "Offense",
+        "status": "Enabled",
+        "name": "暗杀",
+        "description": "暗杀",
+        "frame": "MasteryFrame1",
+        "icon": "",
+        "levels": [
+          {
+            "nodeId": "node_assassin",
+            "level": 1,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_assassin",
+            "level": 2,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_assassin",
+            "level": 3,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_assassin",
+            "level": 4,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_assassin",
+            "level": 5,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [],
+            "reqClassSpend": []
+          }
+        ]
+      },
+      {
+        "id": "node_standtoge",
+        "type": "Offense",
+        "status": "Enabled",
+        "name": "同心协力",
+        "description": "同心协力",
+        "frame": "MasteryFrame1",
+        "icon": "",
+        "levels": [
+          {
+            "nodeId": "node_standtoge",
+            "level": 1,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_standtoge",
+            "level": 2,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_standtoge",
+            "level": 3,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_standtoge",
+            "level": 4,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_standtoge",
+            "level": 5,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [],
+            "reqClassSpend": []
+          }
+        ]
+      },
+      {
+        "id": "node_starseeker",
+        "type": "Offense",
+        "status": "Enabled",
+        "name": "追星者",
+        "description": "追星者",
+        "frame": "MasteryFrame2",
+        "icon": "",
+        "levels": [
+          {
+            "nodeId": "node_starseeker",
+            "level": 1,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_starseeker",
+            "level": 2,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_starseeker",
+            "level": 3,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_starseeker",
+            "level": 4,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_starseeker",
+            "level": 5,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [],
+            "reqClassSpend": []
+          }
+        ]
+      },
+      {
+        "id": "node_off_fury",
+        "type": "Offense",
+        "status": "Enabled",
+        "name": "镇静",
+        "description": "镇静",
+        "frame": "MasteryFrame2",
+        "icon": "",
+        "levels": [
+          {
+            "nodeId": "node_off_fury",
+            "level": 1,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_starseeker",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_off_fury",
+            "level": 2,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_starseeker",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_off_fury",
+            "level": 3,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_starseeker",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_off_fury",
+            "level": 4,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_starseeker",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_off_fury",
+            "level": 5,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_starseeker",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          }
+        ]
+      },
+      {
+        "id": "node_glasscan",
+        "type": "Offense",
+        "status": "Enabled",
+        "name": "玻璃大炮",
+        "description": "玻璃大炮",
+        "frame": "MasteryFrame1",
+        "icon": "",
+        "levels": [
+          {
+            "nodeId": "node_glasscan",
+            "level": 1,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_starseeker",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_glasscan",
+            "level": 2,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_starseeker",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_glasscan",
+            "level": 3,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_starseeker",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          }
+        ]
+      },
+      {
+        "id": "node_despair",
+        "type": "Offense",
+        "status": "Enabled",
+        "name": "绝望",
+        "description": "绝望",
+        "frame": "MasteryFrame2",
+        "icon": "",
+        "levels": [
+          {
+            "nodeId": "node_despair",
+            "level": 1,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_despair",
+            "level": 2,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_despair",
+            "level": 3,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [],
+            "reqClassSpend": []
+          }
+        ]
+      },
+      {
+        "id": "node_off_exec",
+        "type": "Offense",
+        "status": "Enabled",
+        "name": "双刃剑",
+        "description": "双刃剑",
+        "frame": "MasteryFrame2",
+        "icon": "",
+        "levels": [
+          {
+            "nodeId": "node_off_exec",
+            "level": 1,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_glasscan",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_off_exec",
+            "level": 2,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_glasscan",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_off_exec",
+            "level": 3,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_glasscan",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_off_exec",
+            "level": 4,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_glasscan",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_off_exec",
+            "level": 5,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_glasscan",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          }
+        ]
+      },
+      {
+        "id": "node_deepwounds",
+        "type": "Offense",
+        "status": "Enabled",
+        "name": "深度创伤",
+        "description": "深度创伤",
+        "frame": "MasteryFrame2",
+        "icon": "",
+        "levels": [
+          {
+            "nodeId": "node_deepwounds",
+            "level": 1,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_despair",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_deepwounds",
+            "level": 2,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_despair",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_deepwounds",
+            "level": 3,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_despair",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_deepwounds",
+            "level": 4,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_despair",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_deepwounds",
+            "level": 5,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_despair",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          }
+        ]
+      },
+      {
+        "id": "node_suppression",
+        "type": "Offense",
+        "status": "Enabled",
+        "name": "镇压",
+        "description": "镇压",
+        "frame": "MasteryFrame2",
+        "icon": "",
+        "levels": [
+          {
+            "nodeId": "node_suppression",
+            "level": 1,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_despair",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_suppression",
+            "level": 2,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_despair",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_suppression",
+            "level": 3,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_despair",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_suppression",
+            "level": 4,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_despair",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_suppression",
+            "level": 5,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_despair",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          }
+        ]
+      },
+      {
+        "id": "node_stupefy",
+        "type": "Offense",
+        "status": "Enabled",
+        "name": "昏迷",
+        "description": "昏迷",
+        "frame": "MasteryFrame1",
+        "icon": "",
+        "levels": [
+          {
+            "nodeId": "node_stupefy",
+            "level": 1,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_suppression",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_stupefy",
+            "level": 2,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_suppression",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_stupefy",
+            "level": 3,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_suppression",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_stupefy",
+            "level": 4,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_suppression",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_stupefy",
+            "level": 5,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_suppression",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          }
+        ]
+      },
+      {
+        "id": "node_health",
+        "type": "Defense",
+        "status": "Enabled",
+        "name": "生命值",
+        "description": "生命值",
+        "frame": "MasteryFrame0",
+        "icon": "",
+        "levels": [
+          {
+            "nodeId": "node_health",
+            "level": 1,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_health",
+            "level": 2,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_health",
+            "level": 3,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_health",
+            "level": 4,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [],
+            "reqClassSpend": []
+          }
+        ]
+      },
+      {
+        "id": "node_armor",
+        "type": "Defense",
+        "status": "Enabled",
+        "name": "护甲",
+        "description": "护甲",
+        "frame": "MasteryFrame0",
+        "icon": "",
+        "levels": [
+          {
+            "nodeId": "node_armor",
+            "level": 1,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_health",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_armor",
+            "level": 2,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_health",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_armor",
+            "level": 3,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_health",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_armor",
+            "level": 4,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_health",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          }
+        ]
+      },
+      {
+        "id": "node_resist_ranged",
+        "type": "Defense",
+        "status": "Enabled",
+        "name": "远程抵抗",
+        "description": "远程抵抗",
+        "frame": "MasteryFrame1",
+        "icon": "",
+        "levels": [
+          {
+            "nodeId": "node_resist_ranged",
+            "level": 1,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_armor",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_resist_ranged",
+            "level": 2,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_armor",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_resist_ranged",
+            "level": 3,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_armor",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_resist_ranged",
+            "level": 4,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_armor",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          }
+        ]
+      },
+      {
+        "id": "node_fullmettle",
+        "type": "Defense",
+        "status": "Enabled",
+        "name": "气壮山河",
+        "description": "气壮山河",
+        "frame": "MasteryFrame1",
+        "icon": "",
+        "levels": [
+          {
+            "nodeId": "node_fullmettle",
+            "level": 1,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_armor",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_fullmettle",
+            "level": 2,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_armor",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_fullmettle",
+            "level": 3,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_armor",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_fullmettle",
+            "level": 4,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_armor",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_fullmettle",
+            "level": 5,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_armor",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          }
+        ]
+      },
+      {
+        "id": "node_resist_melee",
+        "type": "Defense",
+        "status": "Enabled",
+        "name": "近战抵抗",
+        "description": "近战抵抗",
+        "frame": "MasteryFrame1",
+        "icon": "",
+        "levels": [
+          {
+            "nodeId": "node_resist_melee",
+            "level": 1,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_armor",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_resist_melee",
+            "level": 2,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_armor",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_resist_melee",
+            "level": 3,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_armor",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_resist_melee",
+            "level": 4,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_armor",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          }
+        ]
+      },
+      {
+        "id": "node_egy_resist",
+        "type": "Defense",
+        "status": "Enabled",
+        "name": "能量抵抗",
+        "description": "能量抵抗",
+        "frame": "MasteryFrame0",
+        "icon": "",
+        "levels": [
+          {
+            "nodeId": "node_egy_resist",
+            "level": 1,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_resist_ranged",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_egy_resist",
+            "level": 2,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_resist_ranged",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_egy_resist",
+            "level": 3,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_resist_ranged",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_egy_resist",
+            "level": 4,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_resist_ranged",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_egy_resist",
+            "level": 5,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_resist_ranged",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          }
+        ]
+      },
+      {
+        "id": "node_crit_resist",
+        "type": "Defense",
+        "status": "Enabled",
+        "name": "暴击抗性",
+        "description": "暴击抗性",
+        "frame": "MasteryFrame0",
+        "icon": "",
+        "levels": [
+          {
+            "nodeId": "node_crit_resist",
+            "level": 1,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_resist_melee",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_crit_resist",
+            "level": 2,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_resist_melee",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_crit_resist",
+            "level": 3,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_resist_melee",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_crit_resist",
+            "level": 4,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_resist_melee",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_crit_resist",
+            "level": 5,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_resist_melee",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          }
+        ]
+      },
+      {
+        "id": "node_critdmg_resist",
+        "type": "Defense",
+        "status": "Enabled",
+        "name": "暴击伤害抗性",
+        "description": "暴击伤害抗性",
+        "frame": "MasteryFrame0",
+        "icon": "",
+        "levels": [
+          {
+            "nodeId": "node_critdmg_resist",
+            "level": 1,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_resist_melee",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_critdmg_resist",
+            "level": 2,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_resist_melee",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_critdmg_resist",
+            "level": 3,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_resist_melee",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_critdmg_resist",
+            "level": 4,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_resist_melee",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_critdmg_resist",
+            "level": 5,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_resist_melee",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          }
+        ]
+      },
+      {
+        "id": "node_recali",
+        "type": "Defense",
+        "status": "Enabled",
+        "name": "校准",
+        "description": "校准",
+        "frame": "MasteryFrame1",
+        "icon": "",
+        "levels": [
+          {
+            "nodeId": "node_recali",
+            "level": 1,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_recali",
+            "level": 2,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_recali",
+            "level": 3,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_recali",
+            "level": 4,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_recali",
+            "level": 5,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [],
+            "reqClassSpend": []
+          }
+        ]
+      },
+      {
+        "id": "node_enh_bl",
+        "type": "Defense",
+        "status": "Enabled",
+        "name": "强化格挡",
+        "description": "强化格挡",
+        "frame": "MasteryFrame1",
+        "icon": "",
+        "levels": [
+          {
+            "nodeId": "node_enh_bl",
+            "level": 1,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_enh_bl",
+            "level": 2,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_enh_bl",
+            "level": 3,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_enh_bl",
+            "level": 4,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_enh_bl",
+            "level": 5,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [],
+            "reqClassSpend": []
+          }
+        ]
+      },
+      {
+        "id": "node_nanorepair",
+        "type": "Defense",
+        "status": "Enabled",
+        "name": "纳米修复",
+        "description": "纳米修复",
+        "frame": "MasteryFrame1",
+        "icon": "",
+        "levels": [
+          {
+            "nodeId": "node_nanorepair",
+            "level": 1,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_nanorepair",
+            "level": 2,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_nanorepair",
+            "level": 3,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_nanorepair",
+            "level": 4,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_nanorepair",
+            "level": 5,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [],
+            "reqClassSpend": []
+          }
+        ]
+      },
+      {
+        "id": "node_feed",
+        "type": "Defense",
+        "status": "Enabled",
+        "name": "疯狂喂食",
+        "description": "疯狂喂食",
+        "frame": "MasteryFrame1",
+        "icon": "",
+        "levels": [
+          {
+            "nodeId": "node_feed",
+            "level": 1,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_nanorepair",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_feed",
+            "level": 2,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_nanorepair",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_feed",
+            "level": 3,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_nanorepair",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_feed",
+            "level": 4,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_nanorepair",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_feed",
+            "level": 5,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_nanorepair",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          }
+        ]
+      },
+      {
+        "id": "node_last_stand",
+        "type": "Defense",
+        "status": "Enabled",
+        "name": "背水一战",
+        "description": "背水一战",
+        "frame": "MasteryFrame2",
+        "icon": "",
+        "levels": [
+          {
+            "nodeId": "node_last_stand",
+            "level": 1,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_enh_bl",
+                "nodeLevel": 1
+              },
+              {
+                "nodeId": "node_recali",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_last_stand",
+            "level": 2,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_enh_bl",
+                "nodeLevel": 1
+              },
+              {
+                "nodeId": "node_recali",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_last_stand",
+            "level": 3,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_enh_bl",
+                "nodeLevel": 1
+              },
+              {
+                "nodeId": "node_recali",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_last_stand",
+            "level": 4,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_enh_bl",
+                "nodeLevel": 1
+              },
+              {
+                "nodeId": "node_recali",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_last_stand",
+            "level": 5,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_enh_bl",
+                "nodeLevel": 1
+              },
+              {
+                "nodeId": "node_recali",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          }
+        ]
+      },
+      {
+        "id": "node_willpwr",
+        "type": "Defense",
+        "status": "Enabled",
+        "name": "顽强意志",
+        "description": "顽强意志",
+        "frame": "MasteryFrame2",
+        "icon": "",
+        "levels": [
+          {
+            "nodeId": "node_willpwr",
+            "level": 1,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_nanorepair",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_willpwr",
+            "level": 2,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_nanorepair",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_willpwr",
+            "level": 3,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_nanorepair",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_willpwr",
+            "level": 4,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_nanorepair",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_willpwr",
+            "level": 5,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_nanorepair",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          }
+        ]
+      },
+      {
+        "id": "node_sil_pl",
+        "type": "Defense",
+        "status": "Enabled",
+        "name": "燃烧抗性",
+        "description": "燃烧抗性",
+        "frame": "MasteryFrame1",
+        "icon": "",
+        "levels": [
+          {
+            "nodeId": "node_sil_pl",
+            "level": 1,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_willpwr",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_sil_pl",
+            "level": 2,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_willpwr",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_sil_pl",
+            "level": 3,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_willpwr",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_sil_pl",
+            "level": 4,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_willpwr",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_sil_pl",
+            "level": 5,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_willpwr",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          }
+        ]
+      },
+      {
+        "id": "node_bleed_resist",
+        "type": "Defense",
+        "status": "Enabled",
+        "name": "流血抗性",
+        "description": "流血抗性",
+        "frame": "MasteryFrame1",
+        "icon": "",
+        "levels": [
+          {
+            "nodeId": "node_bleed_resist",
+            "level": 1,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_willpwr",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_bleed_resist",
+            "level": 2,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_willpwr",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_bleed_resist",
+            "level": 3,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_willpwr",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_bleed_resist",
+            "level": 4,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_willpwr",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_bleed_resist",
+            "level": 5,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_willpwr",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          }
+        ]
+      },
+      {
+        "id": "node_perfect_bl",
+        "type": "Defense",
+        "status": "Enabled",
+        "name": "完美格挡",
+        "description": "完美格挡",
+        "frame": "MasteryFrame1",
+        "icon": "",
+        "levels": [
+          {
+            "nodeId": "node_perfect_bl",
+            "level": 1,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_last_stand",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_perfect_bl",
+            "level": 2,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_last_stand",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_perfect_bl",
+            "level": 3,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_last_stand",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_perfect_bl",
+            "level": 4,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_last_stand",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_perfect_bl",
+            "level": 5,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_last_stand",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          }
+        ]
+      },
+      {
+        "id": "node_shock_resist",
+        "type": "Defense",
+        "status": "Enabled",
+        "name": "震击抗性",
+        "description": "震击抗性",
+        "frame": "MasteryFrame2",
+        "icon": "",
+        "levels": [
+          {
+            "nodeId": "node_shock_resist",
+            "level": 1,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_willpwr",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_shock_resist",
+            "level": 2,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_willpwr",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_shock_resist",
+            "level": 3,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_willpwr",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_shock_resist",
+            "level": 4,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_willpwr",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_shock_resist",
+            "level": 5,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_willpwr",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          }
+        ]
+      },
+      {
+        "id": "node_cpctr",
+        "type": "Defense",
+        "status": "Enabled",
+        "name": "电容器",
+        "description": "电容器",
+        "frame": "MasteryFrame2",
+        "icon": "",
+        "levels": [
+          {
+            "nodeId": "node_cpctr",
+            "level": 1,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_shock_resist",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_cpctr",
+            "level": 2,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_shock_resist",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_cpctr",
+            "level": 3,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_shock_resist",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_cpctr",
+            "level": 4,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_shock_resist",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_cpctr",
+            "level": 5,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_shock_resist",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          }
+        ]
+      },
+      {
+        "id": "node_inhibitor",
+        "type": "Defense",
+        "status": "Enabled",
+        "name": "抑制器",
+        "description": "抑制器",
+        "frame": "MasteryFrame2",
+        "icon": "",
+        "levels": [
+          {
+            "nodeId": "node_inhibitor",
+            "level": 1,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_shock_resist",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_inhibitor",
+            "level": 2,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_shock_resist",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_inhibitor",
+            "level": 3,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_shock_resist",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_inhibitor",
+            "level": 4,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_shock_resist",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          },
+          {
+            "nodeId": "node_inhibitor",
+            "level": 5,
+            "reqLvl": 1,
+            "cost": [
+              {
+                "type": "res",
+                "data": "sp",
+                "quantity": 1
+              }
+            ],
+            "unlockCost": [],
+            "reqNodes": [
+              {
+                "nodeId": "node_shock_resist",
+                "nodeLevel": 1
+              }
+            ],
+            "reqClassSpend": []
+          }
+        ]
+      }
+    ],
+    "progression": {
+      "treeStates": {
+        "st_offense": {
+          "investment": {
+            "res": {
+              "sp": 89
+            }
+          },
+          "nodes": {
+            "node_off_root": {
+              "1": {
+                "a": true
+              },
+              "2": {
+                "a": true
+              },
+              "3": {
+                "a": true
+              },
+              "4": {
+                "a": true
+              }
+            },
+            "node_seq": {
+              "1": {
+                "a": true
+              },
+              "2": {
+                "a": true
+              },
+              "3": {
+                "a": true
+              },
+              "4": {
+                "a": true
+              }
+            },
+            "node_off_low_rush": {
+              "1": {
+                "a": true
+              },
+              "2": {
+                "a": true
+              },
+              "3": {
+                "a": true
+              },
+              "4": {
+                "a": true
+              },
+              "5": {
+                "a": true
+              }
+            },
+            "node_courage": {
+              "1": {
+                "a": true
+              },
+              "2": {
+                "a": true
+              },
+              "3": {
+                "a": true
+              },
+              "4": {
+                "a": true
+              },
+              "5": {
+                "a": true
+              }
+            },
+            "node_armor_p": {
+              "1": {
+                "a": true
+              },
+              "2": {
+                "a": true
+              },
+              "3": {
+                "a": true
+              },
+              "4": {
+                "a": true
+              },
+              "5": {
+                "a": true
+              }
+            },
+            "node_off_low_flank": {
+              "1": {
+                "a": true
+              },
+              "2": {
+                "a": true
+              },
+              "3": {
+                "a": true
+              },
+              "4": {
+                "a": true
+              },
+              "5": {
+                "a": true
+              }
+            },
+            "node_off_up_smash": {
+              "1": {
+                "a": true
+              },
+              "2": {
+                "a": true
+              },
+              "3": {
+                "a": true
+              },
+              "4": {
+                "a": true
+              },
+              "5": {
+                "a": true
+              }
+            },
+            "node_offense_7_2": {
+              "1": {
+                "a": true
+              },
+              "2": {
+                "a": true
+              },
+              "3": {
+                "a": true
+              },
+              "4": {
+                "a": true
+              },
+              "5": {
+                "a": true
+              }
+            },
+            "node_offense_7_4": {
+              "1": {
+                "a": true
+              },
+              "2": {
+                "a": true
+              },
+              "3": {
+                "a": true
+              },
+              "4": {
+                "a": true
+              },
+              "5": {
+                "a": true
+              }
+            },
+            "node_assassin": {
+              "1": {
+                "a": true
+              },
+              "2": {
+                "a": true
+              },
+              "3": {
+                "a": true
+              },
+              "4": {
+                "a": true
+              },
+              "5": {
+                "a": true
+              }
+            },
+            "node_standtoge": {
+              "1": {
+                "a": true
+              },
+              "2": {
+                "a": true
+              },
+              "3": {
+                "a": true
+              },
+              "4": {
+                "a": true
+              },
+              "5": {
+                "a": true
+              }
+            },
+            "node_starseeker": {
+              "1": {
+                "a": true
+              },
+              "2": {
+                "a": true
+              },
+              "3": {
+                "a": true
+              },
+              "4": {
+                "a": true
+              },
+              "5": {
+                "a": true
+              }
+            },
+            "node_off_fury": {
+              "1": {
+                "a": true
+              },
+              "2": {
+                "a": true
+              },
+              "3": {
+                "a": true
+              },
+              "4": {
+                "a": true
+              },
+              "5": {
+                "a": true
+              }
+            },
+            "node_glasscan": {
+              "1": {
+                "a": true
+              },
+              "2": {
+                "a": true
+              },
+              "3": {
+                "a": true
+              }
+            },
+            "node_despair": {
+              "1": {
+                "a": true
+              },
+              "2": {
+                "a": true
+              },
+              "3": {
+                "a": true
+              }
+            },
+            "node_off_exec": {
+              "1": {
+                "a": true
+              },
+              "2": {
+                "a": true
+              },
+              "3": {
+                "a": true
+              },
+              "4": {
+                "a": true
+              },
+              "5": {
+                "a": true
+              }
+            },
+            "node_deepwounds": {
+              "1": {
+                "a": true
+              },
+              "2": {
+                "a": true
+              },
+              "3": {
+                "a": true
+              },
+              "4": {
+                "a": true
+              },
+              "5": {
+                "a": true
+              }
+            },
+            "node_suppression": {
+              "1": {
+                "a": true
+              },
+              "2": {
+                "a": true
+              },
+              "3": {
+                "a": true
+              },
+              "4": {
+                "a": true
+              },
+              "5": {
+                "a": true
+              }
+            },
+            "node_stupefy": {
+              "1": {
+                "a": true
+              },
+              "2": {
+                "a": true
+              },
+              "3": {
+                "a": true
+              },
+              "4": {
+                "a": true
+              },
+              "5": {
+                "a": true
+              }
+            }
+          }
+        },
+        "st_defense": {
+          "investment": {
+            "res": {
+              "sp": 96
+            }
+          },
+          "nodes": {
+            "node_health": {
+              "1": {
+                "a": true
+              },
+              "2": {
+                "a": true
+              },
+              "3": {
+                "a": true
+              },
+              "4": {
+                "a": true
+              }
+            },
+            "node_armor": {
+              "1": {
+                "a": true
+              },
+              "2": {
+                "a": true
+              },
+              "3": {
+                "a": true
+              },
+              "4": {
+                "a": true
+              }
+            },
+            "node_resist_ranged": {
+              "1": {
+                "a": true
+              },
+              "2": {
+                "a": true
+              },
+              "3": {
+                "a": true
+              },
+              "4": {
+                "a": true
+              }
+            },
+            "node_fullmettle": {
+              "1": {
+                "a": true
+              },
+              "2": {
+                "a": true
+              },
+              "3": {
+                "a": true
+              },
+              "4": {
+                "a": true
+              },
+              "5": {
+                "a": true
+              }
+            },
+            "node_resist_melee": {
+              "1": {
+                "a": true
+              },
+              "2": {
+                "a": true
+              },
+              "3": {
+                "a": true
+              },
+              "4": {
+                "a": true
+              }
+            },
+            "node_egy_resist": {
+              "1": {
+                "a": true
+              },
+              "2": {
+                "a": true
+              },
+              "3": {
+                "a": true
+              },
+              "4": {
+                "a": true
+              },
+              "5": {
+                "a": true
+              }
+            },
+            "node_crit_resist": {
+              "1": {
+                "a": true
+              },
+              "2": {
+                "a": true
+              },
+              "3": {
+                "a": true
+              },
+              "4": {
+                "a": true
+              },
+              "5": {
+                "a": true
+              }
+            },
+            "node_critdmg_resist": {
+              "1": {
+                "a": true
+              },
+              "2": {
+                "a": true
+              },
+              "3": {
+                "a": true
+              },
+              "4": {
+                "a": true
+              },
+              "5": {
+                "a": true
+              }
+            },
+            "node_recali": {
+              "1": {
+                "a": true
+              },
+              "2": {
+                "a": true
+              },
+              "3": {
+                "a": true
+              },
+              "4": {
+                "a": true
+              },
+              "5": {
+                "a": true
+              }
+            },
+            "node_enh_bl": {
+              "1": {
+                "a": true
+              },
+              "2": {
+                "a": true
+              },
+              "3": {
+                "a": true
+              },
+              "4": {
+                "a": true
+              },
+              "5": {
+                "a": true
+              }
+            },
+            "node_nanorepair": {
+              "1": {
+                "a": true
+              },
+              "2": {
+                "a": true
+              },
+              "3": {
+                "a": true
+              },
+              "4": {
+                "a": true
+              },
+              "5": {
+                "a": true
+              }
+            },
+            "node_feed": {
+              "1": {
+                "a": true
+              },
+              "2": {
+                "a": true
+              },
+              "3": {
+                "a": true
+              },
+              "4": {
+                "a": true
+              },
+              "5": {
+                "a": true
+              }
+            },
+            "node_last_stand": {
+              "1": {
+                "a": true
+              },
+              "2": {
+                "a": true
+              },
+              "3": {
+                "a": true
+              },
+              "4": {
+                "a": true
+              },
+              "5": {
+                "a": true
+              }
+            },
+            "node_willpwr": {
+              "1": {
+                "a": true
+              },
+              "2": {
+                "a": true
+              },
+              "3": {
+                "a": true
+              },
+              "4": {
+                "a": true
+              },
+              "5": {
+                "a": true
+              }
+            },
+            "node_sil_pl": {
+              "1": {
+                "a": true
+              },
+              "2": {
+                "a": true
+              },
+              "3": {
+                "a": true
+              },
+              "4": {
+                "a": true
+              },
+              "5": {
+                "a": true
+              }
+            },
+            "node_bleed_resist": {
+              "1": {
+                "a": true
+              },
+              "2": {
+                "a": true
+              },
+              "3": {
+                "a": true
+              },
+              "4": {
+                "a": true
+              },
+              "5": {
+                "a": true
+              }
+            },
+            "node_perfect_bl": {
+              "1": {
+                "a": true
+              },
+              "2": {
+                "a": true
+              },
+              "3": {
+                "a": true
+              },
+              "4": {
+                "a": true
+              },
+              "5": {
+                "a": true
+              }
+            },
+            "node_shock_resist": {
+              "1": {
+                "a": true
+              },
+              "2": {
+                "a": true
+              },
+              "3": {
+                "a": true
+              },
+              "4": {
+                "a": true
+              },
+              "5": {
+                "a": true
+              }
+            },
+            "node_cpctr": {
+              "1": {
+                "a": true
+              },
+              "2": {
+                "a": true
+              },
+              "3": {
+                "a": true
+              },
+              "4": {
+                "a": true
+              },
+              "5": {
+                "a": true
+              }
+            },
+            "node_inhibitor": {
+              "1": {
+                "a": true
+              },
+              "2": {
+                "a": true
+              },
+              "3": {
+                "a": true
+              },
+              "4": {
+                "a": true
+              },
+              "5": {
+                "a": true
+              }
+            }
+          }
+        },
+        "st_utility": {
+          "investment": {
+            "res": {
+              "sp": 0
+            }
+          },
+          "nodes": {}
+        }
+      },
+      "unlocked": {
+        "node_off_root": {
+          "levels": {
+            "1": true,
+            "2": true,
+            "3": true,
+            "4": true
+          }
+        },
+        "node_seq": {
+          "levels": {
+            "1": true,
+            "2": true,
+            "3": true,
+            "4": true
+          }
+        },
+        "node_off_low_rush": {
+          "levels": {
+            "1": true,
+            "2": true,
+            "3": true,
+            "4": true,
+            "5": true
+          }
+        },
+        "node_courage": {
+          "levels": {
+            "1": true,
+            "2": true,
+            "3": true,
+            "4": true,
+            "5": true
+          }
+        },
+        "node_armor_p": {
+          "levels": {
+            "1": true,
+            "2": true,
+            "3": true,
+            "4": true,
+            "5": true
+          }
+        },
+        "node_off_low_flank": {
+          "levels": {
+            "1": true,
+            "2": true,
+            "3": true,
+            "4": true,
+            "5": true
+          }
+        },
+        "node_off_up_smash": {
+          "levels": {
+            "1": true,
+            "2": true,
+            "3": true,
+            "4": true,
+            "5": true
+          }
+        },
+        "node_offense_7_2": {
+          "levels": {
+            "1": true,
+            "2": true,
+            "3": true,
+            "4": true,
+            "5": true
+          }
+        },
+        "node_offense_7_4": {
+          "levels": {
+            "1": true,
+            "2": true,
+            "3": true,
+            "4": true,
+            "5": true
+          }
+        },
+        "node_assassin": {
+          "levels": {
+            "1": true,
+            "2": true,
+            "3": true,
+            "4": true,
+            "5": true
+          }
+        },
+        "node_standtoge": {
+          "levels": {
+            "1": true,
+            "2": true,
+            "3": true,
+            "4": true,
+            "5": true
+          }
+        },
+        "node_starseeker": {
+          "levels": {
+            "1": true,
+            "2": true,
+            "3": true,
+            "4": true,
+            "5": true
+          }
+        },
+        "node_off_fury": {
+          "levels": {
+            "1": true,
+            "2": true,
+            "3": true,
+            "4": true,
+            "5": true
+          }
+        },
+        "node_glasscan": {
+          "levels": {
+            "1": true,
+            "2": true,
+            "3": true
+          }
+        },
+        "node_despair": {
+          "levels": {
+            "1": true,
+            "2": true,
+            "3": true
+          }
+        },
+        "node_off_exec": {
+          "levels": {
+            "1": true,
+            "2": true,
+            "3": true,
+            "4": true,
+            "5": true
+          }
+        },
+        "node_deepwounds": {
+          "levels": {
+            "1": true,
+            "2": true,
+            "3": true,
+            "4": true,
+            "5": true
+          }
+        },
+        "node_suppression": {
+          "levels": {
+            "1": true,
+            "2": true,
+            "3": true,
+            "4": true,
+            "5": true
+          }
+        },
+        "node_stupefy": {
+          "levels": {
+            "1": true,
+            "2": true,
+            "3": true,
+            "4": true,
+            "5": true
+          }
+        },
+        "node_health": {
+          "levels": {
+            "1": true,
+            "2": true,
+            "3": true,
+            "4": true
+          }
+        },
+        "node_armor": {
+          "levels": {
+            "1": true,
+            "2": true,
+            "3": true,
+            "4": true
+          }
+        },
+        "node_resist_ranged": {
+          "levels": {
+            "1": true,
+            "2": true,
+            "3": true,
+            "4": true
+          }
+        },
+        "node_fullmettle": {
+          "levels": {
+            "1": true,
+            "2": true,
+            "3": true,
+            "4": true,
+            "5": true
+          }
+        },
+        "node_resist_melee": {
+          "levels": {
+            "1": true,
+            "2": true,
+            "3": true,
+            "4": true
+          }
+        },
+        "node_egy_resist": {
+          "levels": {
+            "1": true,
+            "2": true,
+            "3": true,
+            "4": true,
+            "5": true
+          }
+        },
+        "node_crit_resist": {
+          "levels": {
+            "1": true,
+            "2": true,
+            "3": true,
+            "4": true,
+            "5": true
+          }
+        },
+        "node_critdmg_resist": {
+          "levels": {
+            "1": true,
+            "2": true,
+            "3": true,
+            "4": true,
+            "5": true
+          }
+        },
+        "node_recali": {
+          "levels": {
+            "1": true,
+            "2": true,
+            "3": true,
+            "4": true,
+            "5": true
+          }
+        },
+        "node_enh_bl": {
+          "levels": {
+            "1": true,
+            "2": true,
+            "3": true,
+            "4": true,
+            "5": true
+          }
+        },
+        "node_nanorepair": {
+          "levels": {
+            "1": true,
+            "2": true,
+            "3": true,
+            "4": true,
+            "5": true
+          }
+        },
+        "node_feed": {
+          "levels": {
+            "1": true,
+            "2": true,
+            "3": true,
+            "4": true,
+            "5": true
+          }
+        },
+        "node_last_stand": {
+          "levels": {
+            "1": true,
+            "2": true,
+            "3": true,
+            "4": true,
+            "5": true
+          }
+        },
+        "node_willpwr": {
+          "levels": {
+            "1": true,
+            "2": true,
+            "3": true,
+            "4": true,
+            "5": true
+          }
+        },
+        "node_sil_pl": {
+          "levels": {
+            "1": true,
+            "2": true,
+            "3": true,
+            "4": true,
+            "5": true
+          }
+        },
+        "node_bleed_resist": {
+          "levels": {
+            "1": true,
+            "2": true,
+            "3": true,
+            "4": true,
+            "5": true
+          }
+        },
+        "node_perfect_bl": {
+          "levels": {
+            "1": true,
+            "2": true,
+            "3": true,
+            "4": true,
+            "5": true
+          }
+        },
+        "node_shock_resist": {
+          "levels": {
+            "1": true,
+            "2": true,
+            "3": true,
+            "4": true,
+            "5": true
+          }
+        },
+        "node_cpctr": {
+          "levels": {
+            "1": true,
+            "2": true,
+            "3": true,
+            "4": true,
+            "5": true
+          }
+        },
+        "node_inhibitor": {
+          "levels": {
+            "1": true,
+            "2": true,
+            "3": true,
+            "4": true,
+            "5": true
+          }
+        }
+      }
+    }
+  }
+}

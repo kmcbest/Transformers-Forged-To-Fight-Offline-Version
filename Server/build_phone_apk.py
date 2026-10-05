@@ -300,6 +300,11 @@ def build(
                 data = replacement_il2cpp
             elif info.filename == "assets/bin/Data/globalgamemanagers":
                 data = patch_globalgamemanagers(data)
+            elif info.filename.startswith("assets/bin/Data/"):
+                override_f = Path("assets_overrides") / info.filename[len("assets/"):]
+                if override_f.exists():
+                    print(f"[*] Overriding {info.filename} with {override_f}")
+                    data = override_f.read_bytes()
             elif info.filename == "assets/assetpack/characters/moves.assetbundle":
                 rpath = Path("assets_redeco/moves.assetbundle")
                 mpath = Path("assets_netflix/moves.assetbundle")

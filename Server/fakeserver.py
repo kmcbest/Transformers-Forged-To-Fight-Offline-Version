@@ -152,6 +152,9 @@ class H(http.server.BaseHTTPRequestHandler):
                 separators=(",", ":"),
             ).encode()
 
+        if "/skilltrees/" in p and not p.endswith("/skilltrees/skilltrees-list"):
+            return json.dumps({"error": None, "result": {}}, separators=(",", ":")).encode()
+
         tut_eps = ("/tutorial/start-tutorial", "/tutorial/start-branch",
                    "/tutorial/early-start-branch", "/tutorial/complete-tutorial")
         if any(p.endswith(e) for e in tut_eps):

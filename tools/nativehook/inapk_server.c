@@ -1832,6 +1832,83 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         return (const unsigned char*)claim_buf;
     }
 
+    /* Player Profile & Masteries endpoints */
+    if(strstr(p, "/tuning")) {
+        static const unsigned char tuning_resp[] =
+            "{\"error\":null,\"result\":[{\"tuning\":{\"masterieskill\":false,\"masteriesminimumlevelforvisibility\":1}}]}";
+        *outn = strlen((const char*)tuning_resp);
+        logmsg("TUNING: handled /tuning (MasteriesKill=false)");
+        return tuning_resp;
+    }
+    if(strstr(p, "/userprofile")) {
+        static char userprofile_buf[4096];
+        char req_uid[64] = "1000000000001";
+        if (body && bn > 0) {
+            if (!json_string(body, end, "uid", req_uid, sizeof(req_uid))) {
+                const char *u = strstr(body, "\"uid\":");
+                if (u) {
+                    u += 6;
+                    while (u < end && (*u == ' ' || *u == '\"')) u++;
+                    size_t ui = 0;
+                    while (u < end && isdigit((unsigned char)*u) && ui + 1 < sizeof(req_uid)) {
+                        req_uid[ui++] = *u++;
+                    }
+                    if (ui > 0) req_uid[ui] = 0;
+                }
+            }
+        }
+        if (query && query[0] && strcmp(req_uid, "1000000000001") == 0) {
+            const char *uq = strstr(query, "uid=");
+            if (uq) {
+                uq += 4;
+                size_t ui = 0;
+                while (*uq && isdigit((unsigned char)*uq) && ui + 1 < sizeof(req_uid)) {
+                    req_uid[ui++] = *uq++;
+                }
+                if (ui > 0) req_uid[ui] = 0;
+            }
+        }
+
+        const char *cmd_name = tftf_get_commander_name();
+        if (!cmd_name || !cmd_name[0]) cmd_name = "Commander";
+
+        int len = snprintf(userprofile_buf, sizeof(userprofile_buf),
+            "{\"error\":null,\"result\":{"
+                "\"uid\":%s,"
+                "\"aid\":%s,"
+                "\"name\":\"%s\","
+                "\"tag\":\"CANF\","
+                "\"locale\":\"zh-CN\","
+                "\"lang\":\"zh\","
+                "\"time_last\":1500000000,"
+                "\"levelrewards\":{\"xp\":{\"level\":60,\"last_awarded_level\":60,\"xp\":0}},"
+                "\"gamestats\":{\"chp\":102,\"chi\":102,\"ushr\":13430,\"hrt\":277283}"
+            "}}",
+            req_uid, req_uid, cmd_name
+        );
+        *outn = (size_t)len;
+        logmsg("USERPROFILE: handled %s -> uid=%s name=%s (level 60)", p, req_uid, cmd_name);
+        return (const unsigned char*)userprofile_buf;
+    }
+    if(strstr(p, "/skilltrees/skilltrees-list")) {
+        v = lookup("GET /skilltrees/skilltrees-list", outn);
+        if(v) {
+            logmsg("SKILLTREES: handled /skilltrees/skilltrees-list via lookup (%zu bytes)", *outn);
+            return v;
+        }
+        static const unsigned char skilltrees_resp[] =
+            "{\"error\":null,\"result\":{\"st_status\":\"Enabled\",\"treeClasses\":[],\"trees\":[],\"nodes\":[],\"progression\":{}}}";
+        *outn = strlen((const char*)skilltrees_resp);
+        logmsg("SKILLTREES: handled /skilltrees/skilltrees-list (fallback)");
+        return skilltrees_resp;
+    }
+    if(strstr(p, "/skilltrees/")) {
+        static const unsigned char skilltrees_ok[] = "{\"error\":null,\"result\":{}}";
+        *outn = strlen((const char*)skilltrees_ok);
+        logmsg("SKILLTREES: handled %s with empty result", p);
+        return skilltrees_ok;
+    }
+
     return NULL;
 }
 

@@ -229,6 +229,9 @@ def build_entries(listen_port: int = 8080) -> dict[str, bytes]:
         method, route = _route_from_response(response)
         add(f"{method} {route}", response.read_bytes())
 
+    if "POST /userprofile" in entries:
+        add("POST /userprofile/", entries["POST /userprofile"])
+
     prefix_rules = json.loads((RESPONSES / "_prefix_rules.json").read_bytes())
     for prefix, filename in prefix_rules:
         # Prefix records themselves are built by build_payload, but reading them here

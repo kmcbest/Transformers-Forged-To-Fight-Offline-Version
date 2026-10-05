@@ -105,3 +105,6 @@ assets_redeco/*
 
 *.mkv
 cookies.txt
+
+# Overridden Unity assets
+!assets_overrides/**

@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TFTF 指挥官精通树可视化网格编辑器</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    @font-face {
+      font-family: 'GameFont';
+      src: local('Segoe UI'), local('Roboto'), sans-serif;
+    }
+    .grid-cell {
+      transition: all 0.15s ease;
+    }
+    .grid-cell:hover {
+      transform: scale(1.05);
+      z-index: 20;
+    }
+    /* Hexagonal or framed node styles */
+    .node-tier-0 {
+      border: 2px solid #22c55e;
+      box-shadow: 0 0 10px rgba(34, 197, 94, 0.4);
+    }
+    .node-tier-1 {
+      border: 2px solid #38bdf8;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.45);
+    }
+    .node-tier-2 {
+      border: 2px solid #fbbf24;
+      box-shadow: 0 0 14px rgba(251, 191, 36, 0.5);
+    }
+    .node-tier-3 {
+      border: 2px solid #c084fc;
+      box-shadow: 0 0 16px rgba(192, 132, 252, 0.6);
+    }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.1);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(100, 116, 139, 0.4);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(100, 116, 139, 0.6);
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen p-4 md:p-6 font-sans">
+  <div class="max-w-[1700px] mx-auto space-y-4">
+    <!-- Top Header -->
+    <header class="flex flex-wrap items-center justify-between gap-4 bg-slate-900/90 border border-slate-800 rounded-xl p-4 shadow-lg backdrop-blur-sm">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg bg-sky-500/20 border border-sky-500/40 flex items-center justify-center text-sky-400 font-bold text-xl shadow-inner">
+          ❖
+        </div>
+        <div>
+          <h1 class="text-lg font-bold text-slate-100 flex items-center gap-2">
+            TFTF 指挥官精通树 (Mastery Tree) 可视化编辑器
+            <span class="text-xs px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/30">v1.0</span>
+          </h1>
+          <p class="text-xs text-slate-400">点击任意格子编辑天赋名称、阶数、PUA图标与点数，并实时导出官方规格 JSON 数据</p>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-wrap items-center gap-2">
+        <button onclick="loadOfficialOffensePreset()" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-1.5 transition shadow">
+          <span>⚡</span> 载入官方进攻树参考模板
+        </button>
+        <button onclick="clearCurrentTree()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium border border-slate-700 transition">
+          清空当前树
+        </button>
+        <button onclick="openExportModal()" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1.5 transition shadow">
+          <span>📋</span> 导出 JSON
+        </button>
+        <button onclick="openImportModal()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium border border-slate-700 transition">
+          导入 JSON
+        </button>
+      </div>
+    </header>
+
+    <!-- Toolbar & Tabs -->
+    <div class="flex flex-wrap items-center justify-between gap-4 bg-slate-900/60 border border-slate-800 rounded-xl p-3">
+      <!-- Tabs (Offense / Defense / Utility) -->
+      <div class="flex items-center gap-2 bg-slate-950 p-1 rounded-lg border border-slate-800">
+        <button id="tab-offense" onclick="switchTree('st_offense')" class="px-4 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-2 bg-red-950/80 text-red-200 border border-red-700/60 shadow">
+          <span class="w-2 h-2 rounded-full bg-red-400"></span> 进攻系 (OFFENSE)
+        </button>
+        <button id="tab-defense" onclick="switchTree('st_defense')" class="px-4 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-2 text-slate-400 hover:text-slate-200">
+          <span class="w-2 h-2 rounded-full bg-blue-400"></span> 防御系 (DEFENSE)
+        </button>
+        <button id="tab-utility" onclick="switchTree('st_utility')" class="px-4 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-2 text-slate-400 hover:text-slate-200">
+          <span class="w-2 h-2 rounded-full bg-emerald-400"></span> 功能系 (UTILITY)
+        </button>
+      </div>
+
+      <!-- Grid Dimension Settings -->
+      <div class="flex items-center gap-4 text-xs text-slate-300">
+        <div class="flex items-center gap-2">
+          <span>网格宽度 (列数 X):</span>
+          <input type="number" id="grid-w" value="16" min="6" max="30" class="w-14 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-center font-mono text-sky-400" onchange="resizeGrid()">
+        </div>
+        <div class="flex items-center gap-2">
+          <span>网格高度 (行数 Y):</span>
+          <input type="number" id="grid-h" value="7" min="3" max="15" class="w-14 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-center font-mono text-sky-400" onchange="resizeGrid()">
+        </div>
+        <div class="h-4 w-px bg-slate-700"></div>
+        <div class="flex items-center gap-3">
+          <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-green-500/20 border border-green-500"></span>0阶 (绿色)</span>
+          <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-sky-500/20 border border-sky-400"></span>1阶 (蓝色)</span>
+          <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-amber-500/20 border border-amber-400"></span>2阶 (金色)</span>
+          <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-purple-500/20 border border-purple-400"></span>3阶 (紫色)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Grid Canvas Area -->
+    <div class="bg-slate-900/50 border border-slate-800 rounded-xl p-4 overflow-auto max-h-[68vh] shadow-inner relative">
+      <div id="grid-container" class="inline-grid gap-2 p-4 min-w-max select-none">
+        <!-- Cells generated by JavaScript -->
+      </div>
+    </div>
+
+    <!-- Bottom Status / Help Tips -->
+    <div class="flex flex-wrap items-center justify-between text-xs text-slate-400 px-2">
+      <div class="flex items-center gap-4">
+        <span>💡 <b>操作提示</b>：点击任意网格单元格可添加/编辑节点或切换为连线路径；横向间隔建议留出 1~2 格供闪电连线穿行。</span>
+      </div>
+      <div id="stat-summary" class="font-mono text-slate-400">
+        当前树已配置节点: <span id="node-count" class="text-sky-400 font-bold">0</span> 个
+      </div>
+    </div>
+  </div>
+
+  <!-- Node Edit Modal -->
+  <div id="edit-modal" class="fixed inset-0 bg-black/70 backdrop-blur-xs flex items-center justify-center z-50 hidden p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-xl w-full max-w-lg p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in duration-150">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
+          <span>⚙️</span> 编辑网格节点 <span id="modal-pos" class="text-xs px-2 py-0.5 rounded bg-sky-950 text-sky-400 border border-sky-800 font-mono">(X, Y)</span>
+        </h3>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
+      </div>
+
+      <div class="space-y-3.5 text-xs">
+        <!-- Node Type Selector -->
+        <div>
+          <label class="block text-slate-400 mb-1 font-semibold">格子类型：</label>
+          <div class="grid grid-cols-3 gap-2">
+            <button type="button" id="btn-type-node" onclick="setCellType('node')" class="py-2 rounded-lg font-semibold border transition text-center bg-sky-950 text-sky-300 border-sky-600">
+              ❖ 精通天赋节点
+            </button>
+            <button type="button" id="btn-type-path" onclick="setCellType('path')" class="py-2 rounded-lg font-semibold border transition text-center bg-slate-950 text-slate-400 border-slate-800">
+              ⚡ 连线路径 (Walkable)
+            </button>
+            <button type="button" id="btn-type-empty" onclick="setCellType('empty')" class="py-2 rounded-lg font-semibold border transition text-center bg-slate-950 text-slate-400 border-slate-800">
+              ∅ 空空格
+            </button>
+          </div>
+        </div>
+
+        <div id="node-fields" class="space-y-3">
+          <!-- Name & ID -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-slate-300 mb-1 font-medium">精通名称 (Name):</label>
+              <input type="text" id="node-name" placeholder="例如: 勇气 / 反击 / 刺客" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 focus:border-sky-500 outline-none">
+            </div>
+            <div>
+              <label class="block text-slate-300 mb-1 font-medium">节点唯一ID (nodeId):</label>
+              <input type="text" id="node-id" placeholder="例如: node_courage" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 font-mono focus:border-sky-500 outline-none">
+            </div>
+          </div>
+
+          <!-- Tier & PUA Icon -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-slate-300 mb-1 font-medium">精通阶数 (Tier / 决定外框):</label>
+              <select id="node-tier" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 focus:border-sky-500 outline-none">
+                <option value="0">0 阶 - MasteryFrame0 (基础绿色框)</option>
+                <option value="1">1 阶 - MasteryFrame1 (进阶蓝色框)</option>
+                <option value="2">2 阶 - MasteryFrame2 (高级金色框)</option>
+                <option value="3">3 阶 - MasteryFrame3 (特级紫色框)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-slate-300 mb-1 font-medium">图标标识 / PUA 代码 (icon):</label>
+              <input type="text" id="node-icon" placeholder="例如: courage 或 \uE001" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 font-mono focus:border-sky-500 outline-none">
+            </div>
+          </div>
+
+          <!-- Points: Current / Max -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-slate-300 mb-1 font-medium">当前点数 (Current Points):</label>
+              <input type="number" id="node-cur-pts" value="1" min="0" max="10" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 text-center font-mono focus:border-sky-500 outline-none">
+            </div>
+            <div>
+              <label class="block text-slate-300 mb-1 font-medium">最大点数 (Max Points):</label>
+              <input type="number" id="node-max-pts" value="5" min="1" max="10" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 text-center font-mono focus:border-sky-500 outline-none">
+            </div>
+          </div>
+
+          <!-- Requirements (reqNodes) -->
+          <div>
+            <label class="block text-slate-300 mb-1 font-medium">前置节点 ID (逗号分隔，用于连接闪电线):</label>
+            <input type="text" id="node-reqs" placeholder="例如: node_courage, node_spark" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 font-mono focus:border-sky-500 outline-none">
+            <p class="text-[11px] text-slate-500 mt-1">若此节点由前面的节点分叉而来，填写前驱节点的 nodeId，游戏引擎会自动生成连线。</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="flex items-center justify-between border-t border-slate-800 pt-3">
+        <button type="button" onclick="deleteCurrentNode()" class="px-3 py-1.5 rounded-lg bg-red-900/40 hover:bg-red-900/60 text-red-300 border border-red-800 text-xs font-medium transition">
+          删除 / 清空格子
+        </button>
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="closeModal()" class="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition">
+            取消
+          </button>
+          <button type="button" onclick="saveNodeModal()" class="px-5 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold transition shadow">
+            保存修改
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Export Modal -->
+  <div id="export-modal" class="fixed inset-0 bg-black/70 backdrop-blur-xs flex items-center justify-center z-50 hidden p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-xl w-full max-w-2xl p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
+          <span>📋</span> 导出精通树 JSON 配置
+        </h3>
+        <button onclick="closeExportModal()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
+      </div>
+
+      <p class="text-xs text-slate-400">
+        已生成标准游戏报文格式（包含全部进攻、防御、功能三大树、网格矩阵、节点详情与连接线配置）。点击“复制到剪贴板”或直接把内容发给我即可！
+      </p>
+
+      <textarea id="export-json-area" class="w-full h-80 bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs font-mono text-emerald-400 outline-none resize-none select-all" readonly></textarea>
+
+      <div class="flex items-center justify-between pt-2">
+        <span id="copy-tip" class="text-xs text-emerald-400 opacity-0 transition-opacity">已成功复制到剪贴板！</span>
+        <div class="flex items-center gap-2">
+          <button onclick="downloadJsonFile()" class="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 transition">
+            下载 .json 文件
+          </button>
+          <button onclick="copyExportJson()" class="px-5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition shadow">
+            一键复制 JSON
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import Modal -->
+  <div id="import-modal" class="fixed inset-0 bg-black/70 backdrop-blur-xs flex items-center justify-center z-50 hidden p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-xl w-full max-w-2xl p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
+          <span>📥</span> 导入精通树 JSON 配置
+        </h3>
+        <button onclick="closeImportModal()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
+      </div>
+
+      <p class="text-xs text-slate-400">将此前导出的 JSON 或 `GET__skilltrees_skilltrees-list.json` 内容粘贴在下方并点击导入：</p>
+
+      <textarea id="import-json-area" placeholder="在此粘贴 JSON..." class="w-full h-72 bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs font-mono text-sky-300 outline-none resize-none"></textarea>
+
+      <div class="flex items-center justify-end gap-2 pt-2">
+        <button onclick="closeImportModal()" class="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition">
+          取消
+        </button>
+        <button onclick="applyImportJson()" class="px-5 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold transition shadow">
+          确认导入
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Global State
+    let currentTreeId = 'st_offense';
+    let gridWidth = 16;
+    let gridHeight = 7;
+    let activeCellPos = null;
+    let activeCellType = 'node';
+
+    // Store tree data for all three categories
+    const treeDataStore = {
+      st_offense: {
+        id: "st_offense",
+        classId: "offense",
+        name: "ID_UI_MASTERIES_OFFENSE_FORMAT",
+        description: "ID_UI_MASTERIES_OFFENSE_BOOST",
+        gridW: 16,
+        gridH: 7,
+        cells: {} // key: "x,y" => { type: 'node'|'path', node: {...} }
+      },
+      st_defense: {
+        id: "st_defense",
+        classId: "defense",
+        name: "ID_UI_MASTERIES_DEFENSE_FORMAT",
+        description: "ID_UI_MASTERIES_DEFENSE_BOOST",
+        gridW: 16,
+        gridH: 7,
+        cells: {}
+      },
+      st_utility: {
+        id: "st_utility",
+        classId: "utility",
+        name: "ID_UI_MASTERIES_UTILITY_FORMAT",
+        description: "ID_UI_MASTERIES_UTILITY_BOOST",
+        gridW: 16,
+        gridH: 7,
+        cells: {}
+      }
+    };
+
+    // Color definitions for frames
+    const TIER_COLORS = {
+      0: { name: '0阶 (绿)', border: 'node-tier-0', bg: 'bg-emerald-950/60', text: 'text-emerald-300', frame: 'MasteryFrame0' },
+      1: { name: '1阶 (蓝)', border: 'node-tier-1', bg: 'bg-sky-950/60', text: 'text-sky-300', frame: 'MasteryFrame1' },
+      2: { name: '2阶 (金)', border: 'node-tier-2', bg: 'bg-amber-950/60', text: 'text-amber-300', frame: 'MasteryFrame2' },
+      3: { name: '3阶 (紫)', border: 'node-tier-3', bg: 'bg-purple-950/60', text: 'text-purple-300', frame: 'MasteryFrame3' },
+    };
+
+    // Initialize on load
+    window.addEventListener('DOMContentLoaded', () => {
+      loadOfficialOffensePreset();
+    });
+
+    function switchTree(treeId) {
+      currentTreeId = treeId;
+      const current = treeDataStore[currentTreeId];
+      gridWidth = current.gridW;
+      gridHeight = current.gridH;
+      document.getElementById('grid-w').value = gridWidth;
+      document.getElementById('grid-h').value = gridHeight;
+
+      // Update tab styles
+      ['st_offense', 'st_defense', 'st_utility'].forEach(id => {
+        const btn = document.getElementById(id.replace('st_', 'tab-'));
+        if (id === treeId) {
+          if (id === 'st_offense') {
+            btn.className = "px-4 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-2 bg-red-950/80 text-red-200 border border-red-700/60 shadow";
+          } else if (id === 'st_defense') {
+            btn.className = "px-4 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-2 bg-blue-950/80 text-blue-200 border border-blue-700/60 shadow";
+          } else {
+            btn.className = "px-4 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-2 bg-emerald-950/80 text-emerald-200 border border-emerald-700/60 shadow";
+          }
+        } else {
+          btn.className = "px-4 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-2 text-slate-400 hover:text-slate-200";
+        }
+      });
+
+      renderGrid();
+    }
+
+    function resizeGrid() {
+      const w = parseInt(document.getElementById('grid-w').value) || 16;
+      const h = parseInt(document.getElementById('grid-h').value) || 7;
+      gridWidth = Math.max(4, Math.min(30, w));
+      gridHeight = Math.max(3, Math.min(15, h));
+      treeDataStore[currentTreeId].gridW = gridWidth;
+      treeDataStore[currentTreeId].gridH = gridHeight;
+      renderGrid();
+    }
+
+    function renderGrid() {
+      const container = document.getElementById('grid-container');
+      container.style.gridTemplateColumns = `repeat(${gridWidth}, minmax(105px, 105px))`;
+      container.innerHTML = '';
+
+      const cellsData = treeDataStore[currentTreeId].cells;
+      let count = 0;
+
+      // Render from top row (Y = gridHeight - 1) down to row 0 (Y = 0)
+      for (let y = gridHeight - 1; y >= 0; y--) {
+        for (let x = 0; x < gridWidth; x++) {
+          const key = `${x},${y}`;
+          const cell = cellsData[key];
+          const div = document.createElement('div');
+          div.className = `grid-cell h-24 rounded-lg flex flex-col items-center justify-between p-1.5 cursor-pointer relative select-none border `;
+
+          if (cell && cell.type === 'node') {
+            count++;
+            const t = cell.node.tier || 0;
+            const tierStyle = TIER_COLORS[t] || TIER_COLORS[0];
+            div.className += `${tierStyle.border} ${tierStyle.bg} hover:brightness-125`;
+
+            div.innerHTML = `
+              <div class="w-full flex items-center justify-between text-[10px] text-slate-400 font-mono px-0.5">
+                <span class="text-[9px] text-slate-500">${x},${y}</span>
+                <span class="font-bold ${tierStyle.text}">${cell.node.tier}阶</span>
+              </div>
+              <div class="flex flex-col items-center justify-center my-auto w-full px-1">
+                <div class="text-sm font-bold ${tierStyle.text} text-center leading-tight truncate w-full" title="${cell.node.name}">
+                  ${cell.node.name || '未命名'}
+                </div>
+                <div class="text-[11px] text-white font-mono font-semibold truncate max-w-full drop-shadow-sm" title="PUA图标/标识: ${cell.node.icon || cell.node.id}">
+                  ${cell.node.icon ? (cell.node.icon.match(/^(?:\\u|u|0x)?([0-9a-fA-F]{4})$/) ? '❖ ' + cell.node.icon.toUpperCase() : cell.node.icon) : cell.node.id}
+                </div>
+              </div>
+              <div class="w-full flex items-center justify-center">
+                <span class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-slate-900/90 text-emerald-400 border border-slate-700/80 font-mono">
+                  ${cell.node.curPts || 0} / ${cell.node.maxPts || 5}
+                </span>
+              </div>
+            `;
+          } else if (cell && cell.type === 'path') {
+            div.className += `bg-sky-950/20 border-sky-800/40 border-dashed hover:border-sky-500 flex items-center justify-center`;
+            div.innerHTML = `
+              <div class="flex flex-col items-center justify-center text-sky-400/80">
+                <span class="text-lg">⚡</span>
+                <span class="text-[9px] font-mono text-sky-500/70">导线 (${x},${y})</span>
+              </div>
+            `;
+          } else {
+            div.className += `bg-slate-950/40 border-slate-800/60 hover:border-slate-600 hover:bg-slate-900/40`;
+            div.innerHTML = `
+              <span class="text-[9px] text-slate-700 font-mono self-start">${x},${y}</span>
+              <span class="text-slate-800 text-xs my-auto group-hover:text-slate-600">+</span>
+            `;
+          }
+
+          div.onclick = () => openEditModal(x, y);
+          container.appendChild(div);
+        }
+      }
+
+      document.getElementById('node-count').innerText = count;
+    }
+
+    // Modal Operations
+    function openEditModal(x, y) {
+      activeCellPos = { x, y };
+      const key = `${x},${y}`;
+      const cell = treeDataStore[currentTreeId].cells[key];
+
+      document.getElementById('modal-pos').innerText = `(${x}, ${y})`;
+
+      if (cell && cell.type === 'node') {
+        setCellType('node');
+        document.getElementById('node-name').value = cell.node.name || '';
+        document.getElementById('node-id').value = cell.node.id || `node_${x}_${y}`;
+        document.getElementById('node-tier').value = cell.node.tier !== undefined ? cell.node.tier : 0;
+        document.getElementById('node-icon').value = cell.node.icon || '';
+        document.getElementById('node-cur-pts').value = cell.node.curPts !== undefined ? cell.node.curPts : 1;
+        document.getElementById('node-max-pts').value = cell.node.maxPts !== undefined ? cell.node.maxPts : 5;
+        document.getElementById('node-reqs').value = (cell.node.reqs || []).join(', ');
+      } else if (cell && cell.type === 'path') {
+        setCellType('path');
+        resetNodeFields();
+      } else {
+        setCellType('node');
+        resetNodeFields();
+        document.getElementById('node-id').value = `node_${currentTreeId.replace('st_', '')}_${x}_${y}`;
+      }
+
+      document.getElementById('edit-modal').classList.remove('hidden');
+    }
+
+    function resetNodeFields() {
+      document.getElementById('node-name').value = '';
+      document.getElementById('node-id').value = '';
+      document.getElementById('node-tier').value = '0';
+      document.getElementById('node-icon').value = '';
+      document.getElementById('node-cur-pts').value = '1';
+      document.getElementById('node-max-pts').value = '5';
+      document.getElementById('node-reqs').value = '';
+    }
+
+    function setCellType(type) {
+      activeCellType = type;
+      const btnNode = document.getElementById('btn-type-node');
+      const btnPath = document.getElementById('btn-type-path');
+      const btnEmpty = document.getElementById('btn-type-empty');
+      const nodeFields = document.getElementById('node-fields');
+
+      [btnNode, btnPath, btnEmpty].forEach(b => {
+        b.className = "py-2 rounded-lg font-semibold border transition text-center bg-slate-950 text-slate-400 border-slate-800";
+      });
+
+      if (type === 'node') {
+        btnNode.className = "py-2 rounded-lg font-semibold border transition text-center bg-sky-950 text-sky-300 border-sky-600";
+        nodeFields.style.display = 'block';
+      } else if (type === 'path') {
+        btnPath.className = "py-2 rounded-lg font-semibold border transition text-center bg-amber-950 text-amber-300 border-amber-600";
+        nodeFields.style.display = 'none';
+      } else {
+        btnEmpty.className = "py-2 rounded-lg font-semibold border transition text-center bg-red-950 text-red-300 border-red-600";
+        nodeFields.style.display = 'none';
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('edit-modal').classList.add('hidden');
+      activeCellPos = null;
+    }
+
+    function deleteCurrentNode() {
+      if (!activeCellPos) return;
+      const key = `${activeCellPos.x},${activeCellPos.y}`;
+      delete treeDataStore[currentTreeId].cells[key];
+      closeModal();
+      renderGrid();
+    }
+
+    function saveNodeModal() {
+      if (!activeCellPos) return;
+      const key = `${activeCellPos.x},${activeCellPos.y}`;
+
+      if (activeCellType === 'empty') {
+        delete treeDataStore[currentTreeId].cells[key];
+      } else if (activeCellType === 'path') {
+        treeDataStore[currentTreeId].cells[key] = {
+          type: 'path'
+        };
+      } else {
+        const name = document.getElementById('node-name').value.trim() || '未命名';
+        let id = document.getElementById('node-id').value.trim();
+        if (!id) id = `node_${activeCellPos.x}_${activeCellPos.y}`;
+        const tier = parseInt(document.getElementById('node-tier').value) || 0;
+        const icon = document.getElementById('node-icon').value.trim() || id;
+        const curPts = parseInt(document.getElementById('node-cur-pts').value) || 0;
+        const maxPts = parseInt(document.getElementById('node-max-pts').value) || 5;
+        const reqStr = document.getElementById('node-reqs').value.trim();
+        const reqs = reqStr ? reqStr.split(',').map(s => s.trim()).filter(Boolean) : [];
+
+        treeDataStore[currentTreeId].cells[key] = {
+          type: 'node',
+          node: {
+            name,
+            id,
+            tier,
+            icon,
+            curPts,
+            maxPts,
+            reqs
+          }
+        };
+      }
+
+      closeModal();
+      renderGrid();
+    }
+
+    function clearCurrentTree() {
+      if (confirm('确认清空当前系别的全部节点配置吗？')) {
+        treeDataStore[currentTreeId].cells = {};
+        renderGrid();
+      }
+    }
+
+    // Official Offense Preset from User Screenshot
+    function loadOfficialOffensePreset() {
+      const offense = treeDataStore['st_offense'];
+      offense.gridW = 18;
+      offense.gridH = 7;
+      offense.cells = {};
+
+      // Helper to add node
+      const addNode = (x, y, id, name, tier, icon, cur, max, reqs) => {
+        offense.cells[`${x},${y}`] = {
+          type: 'node',
+          node: { id, name, tier, icon, curPts: cur, maxPts: max, reqs }
+        };
+      };
+      // Helper to add path
+      const addPath = (x, y) => {
+        offense.cells[`${x},${y}`] = { type: 'path' };
+      };
+
+      // 1. Column 0: Root Node (单刀 1/4)
+      addNode(0, 3, "node_off_root", "基础力量", 0, "courage", 1, 4, []);
+      addPath(1, 3); // 连线到爆发
+
+      // 2. Column 2: Spark Node (爆发 4/4)
+      addNode(2, 3, "node_off_burst", "强袭爆发", 0, "counterpunch", 4, 4, ["node_off_root"]);
+
+      // 分支走线：向上、向中、向下
+      addPath(3, 4); // 斜上
+      addPath(3, 3); // 水平
+      addPath(3, 2); // 斜下
+
+      // 3. Upper Branch
+      addNode(4, 5, "node_off_up_power", "力量强化", 1, "power", 5, 5, ["node_off_burst"]);
+      addPath(5, 5);
+      addNode(6, 6, "node_off_up_smash", "终极强击", 0, "smash", 0, 5, ["node_off_up_power"]);
+
+      // 4. Middle Branch
+      addNode(4, 3, "node_off_mid_pierce", "护甲穿透", 1, "pierce", 1, 5, ["node_off_burst"]);
+      addPath(5, 4);
+      addPath(5, 2);
+      addNode(6, 4, "node_off_mid_aim", "精密瞄准", 0, "aim", 5, 5, ["node_off_mid_pierce"]);
+      addNode(6, 2, "node_off_mid_crit", "暴击强化", 0, "crit", 5, 5, ["node_off_mid_pierce"]);
+
+      // 5. Lower Branch
+      addNode(4, 1, "node_off_low_rush", "极速突进", 1, "rush", 1, 5, ["node_off_burst"]);
+      addPath(5, 1);
+      addNode(6, 0, "node_off_low_flank", "战术侧袭", 0, "flank", 0, 5, ["node_off_low_rush"]);
+
+      // 6. High Tier Golden/Purple Nodes (Right side)
+      addNode(9, 5, "node_off_gold_stars", "群星之力", 2, "stars", 4, 5, []);
+      addPath(10, 5);
+      addNode(11, 6, "node_off_wound", "重伤放血", 1, "wound", 3, 3, ["node_off_gold_stars"]);
+      addNode(11, 4, "node_off_fury", "狂怒轰击", 2, "fury", 5, 5, ["node_off_gold_stars"]);
+
+      addNode(9, 2, "node_off_scroll", "古代战术", 3, "tactics", 0, 1, []);
+      addNode(9, 0, "node_off_assassin", "影袭刺客", 1, "assassin", 5, 5, []);
+      addPath(12, 5);
+      addNode(13, 5, "node_off_exec", "绝杀之刃", 3, "execute", 0, 1, ["node_off_wound"]);
+      addNode(13, 1, "node_off_skull", "致命打击", 2, "death", 1, 3, []);
+
+      switchTree('st_offense');
+    }
+
+    // Build the final full JSON payload matching Game Engine requirements
+    function buildFullExportJson() {
+      const treeClasses = [
+        {"id": "offense", "name": "ID_UI_MASTERIES_OFFENSE_BOOST", "description": "ID_UI_MASTERIES_OFFENSE_BOOST", "status": "Enabled"},
+        {"id": "defense", "name": "ID_UI_MASTERIES_DEFENSE_BOOST", "description": "ID_UI_MASTERIES_DEFENSE_BOOST", "status": "Enabled"},
+        {"id": "utility", "name": "ID_UI_MASTERIES_UTILITY_BOOST", "description": "ID_UI_MASTERIES_UTILITY_BOOST", "status": "Enabled"}
+      ];
+
+      const trees = [];
+      const allNodes = [];
+      const unlockedMap = {};
+      const treeStates = {};
+
+      ['st_offense', 'st_defense', 'st_utility'].forEach(treeId => {
+        const tData = treeDataStore[treeId];
+        const w = tData.gridW;
+        const h = tData.gridH;
+        const gridArray = [];
+        const treeNodeIds = [];
+        const treeNodesActive = {};
+        let treeSp = 0;
+
+        // In TFTF SkillTreeLayoutData.cs:
+        // Client reads layoutData.grid[x, mGridHeight - i - 1] where i=0 is screen bottom.
+        // Therefore, grid column index 0 is screen top, and index h-1 is screen bottom.
+        // We iterate y from h - 1 down to 0 so the editor's visual top matches the game's top!
+        for (let x = 0; x < w; x++) {
+          const col = [];
+          for (let y = h - 1; y >= 0; y--) {
+            const key = `${x},${y}`;
+            const cell = tData.cells[key];
+            if (cell && cell.type === 'node') {
+              col.push({
+                node: cell.node.id,
+                walkable: true,
+                toggleDiagonal: false
+              });
+              treeNodeIds.push(cell.node.id);
+
+              // Generate SkillTreeNode definition
+              const tier = cell.node.tier || 0;
+              const frameName = TIER_COLORS[tier] ? TIER_COLORS[tier].frame : 'MasteryFrame0';
+              const levels = [];
+              const maxL = cell.node.maxPts || 5;
+              for (let l = 1; l <= maxL; l++) {
+                levels.push({
+                  nodeId: cell.node.id,
+                  level: l,
+                  reqLvl: 1,
+                  cost: [{"type": "res", "data": "sp", "quantity": 1}],
+                  unlockCost: [],
+                  reqNodes: (cell.node.reqs || []).map(r => ({ nodeId: r, nodeLevel: 1 })),
+                  reqClassSpend: []
+                });
+              }
+
+              // Convert 4-hex digit strings (e.g. E224, \uE224) to unicode PUA character
+              let finalIcon = cell.node.icon || cell.node.id;
+              const hexMatch = finalIcon.match(/^(?:\\u|u|0x)?([0-9a-fA-F]{4})$/);
+              if (hexMatch) {
+                finalIcon = String.fromCharCode(parseInt(hexMatch[1], 16));
+              }
+
+              // Determine Category Type for C# enum
+              let typeEnum = "Offense";
+              if (treeId === 'st_defense') typeEnum = "Defense";
+              if (treeId === 'st_utility') typeEnum = "Utility";
+
+              allNodes.push({
+                id: cell.node.id,
+                type: typeEnum,
+                status: "Enabled",
+                name: cell.node.name,
+                description: cell.node.name,
+                frame: frameName,
+                icon: finalIcon,
+                levels: levels
+              });
+
+              // In SkillTreesDB.cs: unlocked.{node.id}.levels.{level.nodeLevel}
+              unlockedMap[cell.node.id] = { levels: {} };
+              for (let l = 1; l <= maxL; l++) {
+                unlockedMap[cell.node.id].levels[String(l)] = true;
+              }
+
+              // Active levels: treeStates.{treeId}.nodes.{node.id}.{level}.a
+              // If curPts is set, activate up to curPts; if curPts == 0 or max, activate all points so they are all lit up!
+              const activePts = (cell.node.curPts !== undefined && cell.node.curPts > 0) ? cell.node.curPts : maxL;
+              treeNodesActive[cell.node.id] = {};
+              for (let l = 1; l <= activePts; l++) {
+                treeNodesActive[cell.node.id][String(l)] = { a: true };
+                treeSp += 1;
+              }
+            } else if (cell && cell.type === 'path') {
+              col.push({
+                node: "",
+                walkable: true,
+                toggleDiagonal: false
+              });
+            } else {
+              col.push({
+                node: "",
+                walkable: false,
+                toggleDiagonal: false
+              });
+            }
+          }
+          gridArray.push(col);
+        }
+
+        trees.push({
+          id: treeId,
+          classId: tData.classId,
+          name: tData.name,
+          description: tData.description,
+          layoutData: {
+            gridDimensions: { x: w, y: h },
+            grid: gridArray
+          },
+          nodes: treeNodeIds
+        });
+
+        treeStates[treeId] = {
+          investment: { res: { sp: treeSp } },
+          nodes: treeNodesActive
+        };
+      });
+
+      return {
+        error: null,
+        result: {
+          st_status: "Enabled",
+          treeClasses: treeClasses,
+          trees: trees,
+          nodes: allNodes,
+          progression: {
+            treeStates: treeStates,
+            unlocked: unlockedMap
+          }
+        }
+      };
+    }
+
+    function openExportModal() {
+      const fullJson = buildFullExportJson();
+      const str = JSON.stringify(fullJson, null, 2);
+      document.getElementById('export-json-area').value = str;
+      document.getElementById('export-modal').classList.remove('hidden');
+    }
+
+    function closeExportModal() {
+      document.getElementById('export-modal').classList.add('hidden');
+    }
+
+    function copyExportJson() {
+      const area = document.getElementById('export-json-area');
+      area.select();
+      navigator.clipboard.writeText(area.value);
+      const tip = document.getElementById('copy-tip');
+      tip.style.opacity = '1';
+      setTimeout(() => { tip.style.opacity = '0'; }, 2000);
+    }
+
+    function downloadJsonFile() {
+      const area = document.getElementById('export-json-area');
+      const blob = new Blob([area.value], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = "GET__skilltrees_skilltrees-list.json";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function openImportModal() {
+      document.getElementById('import-json-area').value = '';
+      document.getElementById('import-modal').classList.remove('hidden');
+    }
+
+    function closeImportModal() {
+      document.getElementById('import-modal').classList.add('hidden');
+    }
+
+    function applyImportJson() {
+      const raw = document.getElementById('import-json-area').value.trim();
+      if (!raw) return;
+      try {
+        const data = JSON.parse(raw);
+        const res = data.result || data;
+        const trees = res.trees || [];
+        const nodesList = res.nodes || [];
+        const nodesDict = {};
+        nodesList.forEach(n => { nodesDict[n.id] = n; });
+
+        trees.forEach(t => {
+          if (!treeDataStore[t.id]) return;
+          const store = treeDataStore[t.id];
+          store.cells = {};
+          const layout = t.layoutData || {};
+          const dims = layout.gridDimensions || { x: 16, y: 7 };
+          store.gridW = dims.x;
+          store.gridH = dims.y;
+          const grid = layout.grid || [];
+
+          for (let x = 0; x < grid.length; x++) {
+            const col = grid[x] || [];
+            for (let y = 0; y < col.length; y++) {
+              const tile = col[y];
+              if (!tile) continue;
+              // Map in-game grid index (0=top) to editor coordinate (h-1=top)
+              const editorY = (store.gridH - 1) - y;
+              const key = `${x},${editorY}`;
+              if (tile.node && tile.node.length > 0) {
+                const nDef = nodesDict[tile.node] || {};
+                let tier = 0;
+                if (nDef.frame === 'MasteryFrame1') tier = 1;
+                if (nDef.frame === 'MasteryFrame2') tier = 2;
+                if (nDef.frame === 'MasteryFrame3') tier = 3;
+
+                // Decode unicode PUA character back to hex for clean editing
+                let iconVal = nDef.icon || tile.node;
+                if (iconVal && iconVal.length === 1) {
+                  const cp = iconVal.charCodeAt(0);
+                  if (cp >= 0xE000 && cp <= 0xF8FF) {
+                    iconVal = cp.toString(16).toUpperCase();
+                  }
+                }
+
+                store.cells[key] = {
+                  type: 'node',
+                  node: {
+                    id: tile.node,
+                    name: nDef.name || tile.node,
+                    tier: tier,
+                    icon: iconVal,
+                    curPts: 0,
+                    maxPts: (nDef.levels && nDef.levels.length) || 5,
+                    reqs: []
+                  }
+                };
+              } else if (tile.walkable) {
+                store.cells[key] = { type: 'path' };
+              }
+            }
+          }
+        });
+
+        closeImportModal();
+        switchTree(currentTreeId);
+        alert('成功导入精通树配置！');
+      } catch (err) {
+        alert('导入失败，请检查 JSON 格式是否正确: ' + err.message);
+      }
+    }
+  </script>
+</body>
+</html>
