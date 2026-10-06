@@ -349,22 +349,39 @@ def pull_from_upstash():
             print("    [+] No remote edits detected. Local is up-to-date with cloud.")
     except Exception as e:
         print(f"    [!] Remote pull check error: {e}")
-        print("\n[CRITICAL ERROR] 无法连接或拉取 Upstash KV 云端数据！")
-        print("为了绝对保护您在网页端编辑的数据不被本地旧数据覆盖，程序已紧急阻止向云端推送！")
-        print("请检查网络后重试。若确实要强制覆盖云端，请使用参数: --force-push\n")
-        if "--force-push" not in sys.argv:
-            sys.exit(1)
+        if "--push-kv" in sys.argv or "--force-push" in sys.argv:
+            print("\n[CRITICAL ERROR] 无法连接或拉取 Upstash KV 云端数据！")
+            print("为了绝对保护您在网页端编辑的数据不被本地旧数据覆盖，程序已紧急阻止向云端推送！")
+            print("请检查网络后重试。若确实要强制覆盖云端，请使用参数: --force-push\n")
+            if "--force-push" not in sys.argv:
+                sys.exit(1)
+        else:
+            print("    [!] 注意: 无法连接云端拉取最新数据。因默认不向云端推送，本地生成将继续进行。")
 
 
 def main():
-    # 0. 优先自动拉取线上最新改动，防止覆盖
+    if "--only-html" in sys.argv or "--html-only" in sys.argv:
+        print("[*] Running in HTML-only mode. Skipping DB export & Upstash sync.")
+        update_bots_html()
+        print("\n[OK] bots.html updated successfully in 0.1s!")
+        return
+
+    # 0. 优先自动拉取线上最新改动，同步到本地 SQLite & JSON
     if "--no-pull" not in sys.argv:
         pull_from_upstash()
 
     overview_data, all_bots_dict, priority_data = sync_database_data()
     update_bots_html()
-    if "--no-push-kv" not in sys.argv:
+
+    # 仅当显式指定 --push-kv 时才向 Upstash KV 推送，默认绝对不向云端推送
+    if "--push-kv" in sys.argv or "--force-push" in sys.argv:
+        print("[*] 检测到显式推送开关 (--push-kv)，正在将本地数据全量写入 Upstash KV...")
         sync_to_upstash_kv(overview_data, all_bots_dict, priority_data)
+    else:
+        print("\n    [安全防护] 云端 Upstash KV 推送已默认关闭 (线上网站为数据编辑的真理源)。")
+        print("    [安全防护] 本次仅同步至本地 SQLite、本地 JSON 与 GitHub Pages 静态回退缓存。")
+        print("    [安全防护] 若确需将本地全量数据覆盖至云端，请显式使用参数: --push-kv")
+
     print("\n[OK] All web dashboard data and bots.html synchronized successfully!")
 
 
