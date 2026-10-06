@@ -34,6 +34,8 @@
 ## Combat and combo quality gates
 
 - Any modification affecting combat input handling, attack chains, or state machines in `tools/nativehook/hook.c` must strictly adhere to the 6 quality gate test cases defined in `re_notes/combat-test-cases.md`.
+- **Combat Truth Source Protection (战斗手感与连招真理源保护原则)**:
+  `re_notes/combat_truth_source.md` 与 `tools/nativehook/combat_truth_backup.c` 是战斗手感逻辑的**黄金基线/真理源**。严禁在未经用户明确同意与门禁全绿测试前修改或弱化其中的任何规则；若后续开发不慎改坏手感，必须以真理源为标准立即对照还原。
 - Never endlessly chase machine code / disassembly in `libil2cpp.so` for combat combo logic; inspect and reason through high-level state, hooks, and variables in `hook.c` directly.
 - Verify via logcat that no `[COMBAT_RULE_VIOLATION]` assertions are triggered during combat testing.
 
