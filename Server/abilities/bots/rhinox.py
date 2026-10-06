@@ -50,22 +50,23 @@ def build_rhinox_abilities(base_hp: float = 37703.0, base_atk: float = 2187.0):
         trigger="onHit",
         trigger_scope="level=Ranged",
         appr_id="appr_rhinox_ranged_bleed",
-        callout_text="BLEED",
+        callout_text="流血",
         pua_icon="\uE401",
         buff_id="dmg_bleed",
     )
     mods.update(m_rb)
     appears.update(a_rb)
 
-    # 2. SP1 驱散 (Nullify)：100% 几率驱散目标近战、远程、特殊增益各最多 1 层
+    # 2. SP1 驱散 (Nullify)：SP1 命中 100% 几率驱散目标近战、远程、特殊增益各最多 1 层
     m_null, a_null = make_nullify_statmod(
         mod_id="rhinox_sp1_nullify",
         target_categories=["melee", "ranged", "special"],
         max_stacks_per_cat=1,
         chance=1.0,
-        trigger="onSpecial1Activate",
+        trigger="onHit",
+        trigger_scope="level=Special1",
         appr_id="appr_rhinox_sp1_nullify",
-        callout_text="NULLIFY",
+        callout_text="驱散",
         pua_icon="\uE950",
         color_hex="38BDF8",
         gradient_bottom="0284C7",
@@ -73,30 +74,32 @@ def build_rhinox_abilities(base_hp: float = 37703.0, base_atk: float = 2187.0):
     mods.update(m_null)
     appears.update(a_null)
 
-    # 3. SP1 驱散转流血：每次移除增益触发 14 秒 120% ATK 强力流血
+    # 3. SP1 驱散转流血：SP1 命中移除增益触发 14 秒 120% ATK 强力流血
     m_nb, a_nb = make_bleed_statmod(
         mod_id="rhinox_sp1_nullify_bleed",
         duration=14.0,
         total_dmg=float(round(base_atk * 1.20)),
         chance=1.0,
-        trigger="onSpecial1Activate",
+        trigger="onHit",
+        trigger_scope="level=Special1",
         appr_id="appr_rhinox_nullify_bleed",
-        callout_text="BLEED",
+        callout_text="流血",
         pua_icon="\uE401",
         buff_id="dmg_bleed",
     )
     mods.update(m_nb)
     appears.update(a_nb)
 
-    # 4. SP2 末日之机关枪流血：40% 概率触发 8 秒 60% ATK 流血
+    # 4. SP2 末日之机关枪流血：SP2 命中 40% 概率触发 8 秒 60% ATK 流血
     m_sp2, a_sp2 = make_bleed_statmod(
         mod_id="rhinox_sp2_bleed",
         duration=8.0,
         total_dmg=float(round(base_atk * 0.60)),
         chance=0.40,
-        trigger="onSpecial2Activate",
+        trigger="onHit",
+        trigger_scope="level=Special2",
         appr_id="appr_rhinox_sp2_bleed",
-        callout_text="BLEED",
+        callout_text="流血",
         pua_icon="\uE401",
         buff_id="dmg_bleed",
     )

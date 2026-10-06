@@ -38,42 +38,44 @@ def build_wheeljack_abilities(base_hp: float = 32402.0, base_atk: float = 2306.0
     appears = {}
     buffs = {}
 
-    # 为 SP1, SP2, SP3 分别装配三合一机制
+    # 为 SP1, SP2, SP3 分别装配三合一机制 (命中对手时按概率施加)
     sp_levels = [
-        ("sp1", "onSpecial1Activate", "Special 1", "原型"),
-        ("sp2", "onSpecial2Activate", "Special 2", "迭代"),
-        ("sp3", "onSpecial3Activate", "Special 3", "完美"),
+        ("sp1", "level=Special1", "Special 1", "原型"),
+        ("sp2", "level=Special2", "Special 2", "迭代"),
+        ("sp3", "level=Special3", "Special 3", "完美"),
     ]
 
-    for sp_key, trigger_ev, sp_label, sp_title in sp_levels:
-        # 1. 震击 (Shock DOT): 60% 几率 200% ATK 持续 6 秒
+    for sp_key, sp_scope, sp_label, sp_title in sp_levels:
+        # 1. 震击 (Shock DOT): 60% 几率 200% ATK 持续 6 秒 (减益红)
         m_shock, a_shock = make_shock_statmod(
             mod_id=f"wheeljack_{sp_key}_shock",
             duration=6.0,
             total_dmg=float(round(base_atk * 2.0)),
             chance=0.60,
-            trigger=trigger_ev,
+            trigger="onHit",
+            trigger_scope=sp_scope,
             appr_id=f"appr_wheeljack_{sp_key}_shock",
-            callout_text="SHOCK",
+            callout_text="震击",
             pua_icon="\uE914",
-            color_hex="00F0FF",
-            gradient_bottom="0088FF",
+            color_hex="FF0000",
+            gradient_bottom="FF0000",
         )
         mods.update(m_shock)
         appears.update(a_shock)
 
-        # 2. 能量流失 (Power Leak): 30% 几率 3 秒内抽取 40% 一格能量
+        # 2. 能量流失 (Power Leak): 30% 几率 3 秒内抽取 40% 一格能量 (减益红)
         m_leak, a_leak = make_power_leak_statmod(
             mod_id=f"wheeljack_{sp_key}_leak",
             duration=3.0,
             drain_bars=0.40,
             chance=0.30,
-            trigger=trigger_ev,
+            trigger="onHit",
+            trigger_scope=sp_scope,
             appr_id=f"appr_wheeljack_{sp_key}_leak",
-            callout_text="POWER LEAK",
+            callout_text="能量流失",
             pua_icon="\uE607",
-            color_hex="FFD700",
-            gradient_bottom="FF9900",
+            color_hex="FF0000",
+            gradient_bottom="FF0000",
         )
         mods.update(m_leak)
         appears.update(a_leak)
@@ -83,9 +85,10 @@ def build_wheeljack_abilities(base_hp: float = 32402.0, base_atk: float = 2306.0
             mod_id=f"wheeljack_{sp_key}_stun",
             duration=3.0,
             chance=0.10,
-            trigger=trigger_ev,
+            trigger="onHit",
+            trigger_scope=sp_scope,
             appr_id=f"appr_wheeljack_{sp_key}_stun",
-            callout_text="STUN",
+            callout_text="眩晕",
             pua_icon="\uE605",
             color_hex="FFE000",
             gradient_bottom="FFAA00",

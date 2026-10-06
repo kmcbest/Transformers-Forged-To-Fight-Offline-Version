@@ -142,7 +142,7 @@ def build_arcee_abilities(base_hp: float = 34850.0, base_atk: float = 3485.0):
         trigger="onCrit",
         trigger_scope="level=Ranged,Special1;opponent:state!=Dash,Run",
         appr_id="appr_arcee_bleed",
-        callout_text="BLEED",
+        callout_text="流血",
         buff_id="dmg_bleed",
     )
     mods.update(m2)
@@ -157,7 +157,7 @@ def build_arcee_abilities(base_hp: float = 34850.0, base_atk: float = 3485.0):
         trigger="onCrit",
         trigger_scope="level=Ranged,Special1;opponent:state=Dash,Run",
         appr_id="appr_arcee_headshot",
-        callout_text="HEADSHOT",
+        callout_text="爆头",
         buff_id="dmg_bleed",
     )
     mods.update(m3)
@@ -173,9 +173,10 @@ def build_arcee_abilities(base_hp: float = 34850.0, base_atk: float = 3485.0):
         duration=6.5,
         damage_bonus=0.35,
         speed_bonus=0.20,
-        trigger="onSpecial1Activate",
+        trigger="onHit",
+        trigger_scope="level=Special1",
         appr_id="appr_arcee_sp1_boost",
-        callout_text="TRICK SHOT",
+        callout_text="特技射击",
         pua_icon="\uE41B",
         color_hex="FFAA00",
         gradient_bottom="FF6600",
@@ -195,7 +196,7 @@ def build_arcee_abilities(base_hp: float = 34850.0, base_atk: float = 3485.0):
         trigger="onCrit",
         trigger_scope="level=Special2",
         appr_id="appr_arcee_bleed",
-        callout_text="BLEED",
+        callout_text="流血",
         buff_id="dmg_bleed",
     )
     mods.update(m_sp2)
@@ -209,7 +210,8 @@ def build_arcee_abilities(base_hp: float = 34850.0, base_atk: float = 3485.0):
         mod_id="arcee_sp3_snipe_direct",
         dmg=float(round(base_atk * 1.35)),
         chance=1.0,
-        trigger="onSpecial3Activate",
+        trigger="onHit",
+        trigger_scope="level=Special3",
         buff_id="dmg_direct",
     )
     mods.update(m_sp3_dir)
@@ -221,9 +223,10 @@ def build_arcee_abilities(base_hp: float = 34850.0, base_atk: float = 3485.0):
         duration=9.0,
         total_dmg=float(round(base_atk * 1.35)),
         chance=1.0,
-        trigger="onSpecial3Activate",
+        trigger="onHit",
+        trigger_scope="level=Special3",
         appr_id="appr_arcee_sp3_bleed",
-        callout_text="SNIPE",
+        callout_text="狙击",
         pua_icon="\uE401",
         buff_id="dmg_bleed",
     )

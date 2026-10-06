@@ -562,7 +562,7 @@
     <!-- Top Header -->
     <header class="top-bar">
       <div class="brand-box">
-        <div class="logo-badge">
+        <div class="logo-badge" onclick="toggleDebugModal()" style="cursor: pointer;" title="Debug Settings">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5zm0 2.18l7 3.89v4.93c0 4.54-3.08 8.79-7 9.92-3.92-1.13-7-5.38-7-9.92V8.07l7-3.89zM11 7v2h2V7h-2zm-3 4v2h8v-2H8zm1 4v2h6v-2H9z"/>
           </svg>
@@ -745,6 +745,35 @@
 
   </div>
 
+  <!-- Debug Modal (验收调试设置) -->
+  <div id="debug-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 440px;">
+      <div class="modal-header">
+        <span class="game-font" style="color: #f59e0b; font-weight: bold;" data-i18n="debug_title">🛠️ 调试与验收特权设置</span>
+        <button onclick="toggleDebugModal()" style="background:none; border:none; color:#94a3b8; cursor:pointer; font-size:16px;">✕</button>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 10px; padding: 6px 0;">
+        <label class="toggle-row" style="cursor: pointer; display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
+          <div style="padding-right: 12px;">
+            <div style="font-size: 13.5px; font-weight: bold; color: #f8fafc;" data-i18n="freeze_ai_title">敌人不动 (定身木桩)</div>
+            <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;" data-i18n="freeze_ai_desc">冻结所有敌人 AI 决策与攻击行动，便于测试连招与技能机制</div>
+          </div>
+          <input type="checkbox" id="chk-freeze-ai" onchange="toggleFreezeAi(this.checked)" style="transform: scale(1.25); accent-color: #f59e0b; cursor: pointer;">
+        </label>
+        <label class="toggle-row" style="cursor: pointer; display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
+          <div style="padding-right: 12px;">
+            <div style="font-size: 13.5px; font-weight: bold; color: #f8fafc;" data-i18n="full_power_title">我方开局三格满气</div>
+            <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;" data-i18n="full_power_desc">对局开局直接注满 3 格 SP 能量，即刻测试特殊技 SP1 / SP2 / SP3</div>
+          </div>
+          <input type="checkbox" id="chk-full-power" onchange="toggleFullPower(this.checked)" style="transform: scale(1.25); accent-color: #f59e0b; cursor: pointer;">
+        </label>
+      </div>
+      <div style="display:flex; justify-content:flex-end;">
+        <button class="btn-secondary" onclick="toggleDebugModal()" data-i18n="btn_close">关闭</button>
+      </div>
+    </div>
+  </div>
+
   <!-- JSON Modal -->
   <div id="json-modal" class="modal-overlay">
     <div class="modal-content">
@@ -767,6 +796,8 @@
       player_mana_gain: 1.0,
       target_fps: 60,
       enable_swipe_specials: true,
+      freeze_enemy_ai: false,
+      start_full_power: false,
       skip_launcher_next_time: false
     };
 
@@ -809,6 +840,11 @@
         fps_val_30: "30 FPS (原版省电)",
         skip_title: "记住我的选择，下次直接进入游戏",
         skip_desc: "下次冷启动静默跳过此菜单；可在系统应用管理「清除存储」重置",
+        debug_title: "🛠️ 调试与验收特权设置",
+        freeze_ai_title: "敌人不动 (定身木桩)",
+        freeze_ai_desc: "冻结敌人 AI 思考与行动，便于观测连招与技能机制",
+        full_power_title: "我方开局三格满气",
+        full_power_desc: "对局开场直接注满 3 格 SP 能量，即刻释放特技",
         btn_reset: "恢复默认",
         btn_json: "{ } JSON",
         btn_launch: "保存并进入方舟",
@@ -852,6 +888,11 @@
         fps_val_30: "30 FPS (Battery Saver)",
         skip_title: "Remember my choice, skip next time",
         skip_desc: "Once checked, this menu can be brought up by clearing your app data.",
+        debug_title: "🛠️ Debug & Testing Privileges",
+        freeze_ai_title: "Freeze Enemy AI (Dummy)",
+        freeze_ai_desc: "Freeze all enemy AI decisions and actions for testing combos & abilities",
+        full_power_title: "Start With 3 Full Power Bars",
+        full_power_desc: "Instantly charge 3 full SP power bars at fight start",
         btn_reset: "Reset Defaults",
         btn_json: "{ } JSON",
         btn_launch: "Save & Launch Game",
@@ -1015,10 +1056,30 @@
       updateJsonPreview();
     }
 
+    function toggleDebugModal() {
+      const m = document.getElementById('debug-modal');
+      if (m) m.classList.toggle('active');
+    }
+
+    function toggleFreezeAi(enabled) {
+      config.freeze_enemy_ai = !!enabled;
+      updateJsonPreview();
+    }
+
+    function toggleFullPower(enabled) {
+      config.start_full_power = !!enabled;
+      updateJsonPreview();
+    }
+
     function resetDefaults() {
       document.getElementById('inp-commander').value = 'Commander';
       onCommanderInput();
       document.getElementById('chk-skip-launcher').checked = false;
+
+      const chkFreeze = document.getElementById('chk-freeze-ai');
+      if (chkFreeze) { chkFreeze.checked = false; toggleFreezeAi(false); }
+      const chkPower = document.getElementById('chk-full-power');
+      if (chkPower) { chkPower.checked = false; toggleFullPower(false); }
 
       const diffPills = document.querySelectorAll('.grid-container .col:first-child .card:first-child .pill-btn');
       diffPills[2].click();
@@ -1123,6 +1184,20 @@
             if (chkSwipe) {
               chkSwipe.checked = !!parsed.enable_swipe_specials;
               config.enable_swipe_specials = !!parsed.enable_swipe_specials;
+            }
+          }
+          if (parsed.freeze_enemy_ai !== undefined) {
+            const chkFreeze = document.getElementById('chk-freeze-ai');
+            if (chkFreeze) {
+              chkFreeze.checked = !!parsed.freeze_enemy_ai;
+              config.freeze_enemy_ai = !!parsed.freeze_enemy_ai;
+            }
+          }
+          if (parsed.start_full_power !== undefined) {
+            const chkPower = document.getElementById('chk-full-power');
+            if (chkPower) {
+              chkPower.checked = !!parsed.start_full_power;
+              config.start_full_power = !!parsed.start_full_power;
             }
           }
           if (parsed.launcher_language) {

@@ -64,7 +64,7 @@ def build_bludgeon_abilities(base_hp: float = 31468.0, base_atk: float = 2491.0)
         trigger="onCrit",
         trigger_scope="level=Light,Medium,Heavy",
         appr_id="appr_bludgeon_bleed",
-        callout_text="BLEED",
+        callout_text="流血",
         buff_id="dmg_bleed",
     )
     mods.update(m1)
@@ -79,7 +79,7 @@ def build_bludgeon_abilities(base_hp: float = 31468.0, base_atk: float = 2491.0)
         trigger="onCrit",
         trigger_scope="level=Special1,Special2,Special3",
         appr_id="appr_bludgeon_bleed",
-        callout_text="BLEED",
+        callout_text="流血",
         buff_id="dmg_bleed",
     )
     mods.update(m2)

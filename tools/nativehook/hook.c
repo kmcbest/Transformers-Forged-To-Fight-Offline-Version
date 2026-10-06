@@ -613,6 +613,12 @@ volatile float g_p1_last_hp = -1.0f;
 static volatile uint64_t g_p0_last_attack_ms = 0;
 #define COMBO_IDLE_RESET_MS 900
 
+extern int tftf_get_start_full_power(void);
+static volatile int g_p0_power_seeded = 0;
+static volatile int g_p0_current_special_index = -1;
+static volatile uint64_t g_arcee_ranged_boost_end_ms = 0;
+static volatile uint64_t g_enemy_power_leak_end_ms = 0;
+
 #define COMBAT_ASSERT(cond, tag, fmt, ...) \
     do { \
         if (!(cond)) { \
@@ -5084,6 +5090,10 @@ void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     g_p0_after_heavy = 0;
     g_p0_combo_ended = 0;
     g_p0_last_attack_ms = 0;
+    g_p0_power_seeded = 0;
+    g_p0_current_special_index = -1;
+    g_arcee_ranged_boost_end_ms = 0;
+    g_enemy_power_leak_end_ms = 0;
     return H[140].orig(a0,a1,a2,a3,a4,a5,a6,a7);
 }
 void* hook_141(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
@@ -5217,7 +5227,6 @@ void* hook_143(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
 #endif
 
 static void give_p0_max_power(void) {
-#if TFTF_ENABLE_MAX_POWER_TEST
     if (sp3_xf_any()) return; // Don't interfere while casting SP3
     if (!g_p0_controller || !obj_ok(g_p0_controller)) return;
     PROTECT({
@@ -5229,7 +5238,6 @@ static void give_p0_max_power(void) {
             }
         }
     });
-#endif
 }
 
 /* SP3BEAT (shipped): per simulation tick, drive the one contiguous alternate-form block for an
@@ -5238,7 +5246,40 @@ void* hook_145(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     void* r=H[145].orig(a0,a1,a2,a3,a4,a5,a6,a7);
     PROTECT({
         sp3_beat_pump();
-        give_p0_max_power();
+
+        // 1. Start with 3 full power bars (if enabled in debug settings)
+        if (!g_p0_power_seeded && tftf_get_start_full_power()) {
+            if (g_p0_controller && obj_ok(g_p0_controller)) {
+                give_p0_max_power();
+                g_p0_power_seeded = 1;
+                flog("START_FULL_POWER: Seeded P0 with 3 full power bars at combat start");
+            }
+        }
+
+        // 2. Smoothly drain enemy power meter if Power Leak is active
+        if (g_enemy_power_leak_end_ms > 0 && g_p1_controller && obj_ok(g_p1_controller)) {
+            uint64_t now_ms = propgo_now_ms();
+            if (now_ms < g_enemy_power_leak_end_ms) {
+                void* pm = *(void**)((char*)g_p1_controller + 0x80);
+                if (obj_ok(pm)) {
+                    void* fm = *(void**)((char*)pm + 0x70);
+                    if (obj_ok(fm)) {
+                        typedef float (*fn_get_cur)(void*, void*);
+                        typedef void (*fn_set_cur)(void*, float, void*);
+                        fn_get_cur get_cur = (fn_get_cur)(g_base + 0xE2FF20);
+                        fn_set_cur set_cur = (fn_set_cur)(g_base + 0xE2FF70);
+                        float cur = get_cur(fm, NULL);
+                        if (cur > 0.0f) {
+                            float new_cur = cur - 0.00075f;
+                            if (new_cur < 0.0f) new_cur = 0.0f;
+                            set_cur(fm, new_cur, NULL);
+                        }
+                    }
+                }
+            } else {
+                g_enemy_power_leak_end_ms = 0;
+            }
+        }
         // GATE-04: an idle gap longer than the combo window ends the chain. Nothing native was
         // observable for this -- waiting in place left l untouched and produced no reset line -- yet
         // the required behaviour is that attacking again after a pause starts at L1/M1.
@@ -5437,6 +5478,7 @@ void* hook_153(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
          index, self, g_p0_controller, (self == g_p0_controller));
     if (self == g_p0_controller || (obj_ok(self) && *(int32_t*)((uintptr_t)self + 0xF4) == 0)) {
         g_intended_special_tier = 0;
+        g_p0_current_special_index = index;
         reset_player_attack_chain(self);
         g_p0_combo_ended = 0;
         g_p0_after_heavy = 0;
@@ -5605,6 +5647,7 @@ void* hook_155(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
             ensure_p0_power_rounding(target);
             g_p0_combo_ended = 0;
             g_p0_after_heavy = 0;
+            g_p0_current_special_index = -1;
         }
     });
     return r;
@@ -6154,16 +6197,16 @@ typedef float (*fn_get_damage_received)(void* self, float damage, void* damageTy
 // In Starscream's Picnic (1.1.7), only ranged attacks can deal damage to enemies.
 // Melee attacks (light combo, medium dash, heavy charge) deal 0 damage.
 float hook_177(void* self, float damage, void* damageType, int32_t blocked, void* isPerfectBlock, int32_t isCrit, int32_t isArmorIgnoring, void* method, float critPenetration, float armorPenetration) {
-    if (tftf_is_picnic_quest_active()) {
-        PROTECT({
-            if (self && obj_ok(self)) {
-                void* owner = *(void**)((char*)self + 0x28);
-                // Target is enemy (P1)
-                int is_enemy = (owner && obj_ok(owner) && *(int32_t*)((char*)owner + 0xF4) == 1);
-                if (!is_enemy && owner && g_p0_controller && owner != g_p0_controller) {
-                    is_enemy = 1;
-                }
-                if (is_enemy) {
+    PROTECT({
+        if (self && obj_ok(self)) {
+            void* owner = *(void**)((char*)self + 0x28);
+            // Target is enemy (P1)
+            int is_enemy = (owner && obj_ok(owner) && *(int32_t*)((char*)owner + 0xF4) == 1);
+            if (!is_enemy && owner && g_p0_controller && owner != g_p0_controller) {
+                is_enemy = 1;
+            }
+            if (is_enemy) {
+                if (tftf_is_picnic_quest_active()) {
                     int is_melee = !s_current_hit_is_ranged;
                     if (g_p0_controller && obj_ok(g_p0_controller)) {
                         uint32_t r = *(uint32_t*)((char*)g_p0_controller + 0x1c8);
@@ -6178,9 +6221,41 @@ float hook_177(void* self, float damage, void* damageType, int32_t blocked, void
                              self, damage, is_melee ? 0.0f : damage, is_melee, s_current_hit_is_ranged);
                     }
                 }
+
+                // If damage connected on enemy:
+                if (damage > 0.0f) {
+                    uint64_t now_ms = propgo_now_ms();
+                    // 1. Arcee SP1 hit on enemy -> activate ranged boost for 6.5s
+                    if (g_p0_current_special_index == 0 && strstr(g_p0_bot_id, "arcee") != NULL) {
+                        g_arcee_ranged_boost_end_ms = now_ms + 6500;
+                        flog("ARCEE_SP1_HIT: Ranged boost activated for 6.5s (until %llu)", (unsigned long long)g_arcee_ranged_boost_end_ms);
+                    }
+                    // 2. Wheeljack SP2 hit on enemy -> activate power leak for 3.0s
+                    if (g_p0_current_special_index == 1 && strstr(g_p0_bot_id, "wheeljack") != NULL) {
+                        g_enemy_power_leak_end_ms = now_ms + 3000;
+                        flog("WHEELJACK_SP2_HIT: Power leak activated for 3.0s (until %llu)", (unsigned long long)g_enemy_power_leak_end_ms);
+                    }
+
+                    // 3. Arcee SP1 Ranged Boost: 1.35x damage on ranged attacks
+                    if (now_ms < g_arcee_ranged_boost_end_ms && strstr(g_p0_bot_id, "arcee") != NULL) {
+                        int is_ranged = s_current_hit_is_ranged;
+                        if (g_p0_controller && obj_ok(g_p0_controller)) {
+                            uint32_t r = *(uint32_t*)((char*)g_p0_controller + 0x1c8);
+                            if (r > 0) is_ranged = 1;
+                        }
+                        if (is_ranged) {
+                            float old_dmg = damage;
+                            damage *= 1.35f;
+                            static int s_arcee_boost_cnt = 0;
+                            if (s_arcee_boost_cnt++ < 20) {
+                                flog("ARCEE_RANGED_BOOST: damage boosted 1.35x (%.1f -> %.1f)", old_dmg, damage);
+                            }
+                        }
+                    }
+                }
             }
-        });
-    }
+        }
+    });
 
     uint8_t dummy_perfect = 0;
     if (!isPerfectBlock) isPerfectBlock = &dummy_perfect;
@@ -6578,10 +6653,11 @@ void* hook_186(void* this_pc, void* hitResult, void* method) {
     if (this_pc && obj_ok(this_pc) && hitResult && obj_ok(hitResult)) {
         PROTECT({
             int p_idx = *(int32_t*)((uintptr_t)this_pc + 0xF4);
+            int atk_level = *(int32_t*)((uintptr_t)hitResult + 0x24); // HitResultData.AttackLevel
+            int flags = *(int32_t*)((uintptr_t)hitResult + 0x20);     // HitResultData.Flags
+            s_current_hit_is_ranged = (atk_level == 8);
             if (p_idx == 0) {
                 g_p0_controller = this_pc;
-                int atk_level = *(int32_t*)((uintptr_t)hitResult + 0x24); // HitResultData.AttackLevel
-                int flags = *(int32_t*)((uintptr_t)hitResult + 0x20);     // HitResultData.Flags
                 
                 // If P0 is currently executing a heavy attack (g_p0_after_heavy) and a projectile (Ranged=8)
                 // hit arrives, DO NOT update P0's LastHitResult with the projectile result!

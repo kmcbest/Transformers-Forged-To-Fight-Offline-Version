@@ -70,7 +70,7 @@ def make_bleed_statmod(
     trigger: str = "onCrit",
     trigger_scope: str = "",
     appr_id: str = "appr_bleed",
-    callout_text: str = "BLEED",
+    callout_text: str = "流血",
     is_zh: bool = True,
     stackable: bool = True,
     buff_id: str = "dmg_bleed",
@@ -89,21 +89,21 @@ def make_bleed_statmod(
     :param trigger: 触发时机 ("onCrit", "onHit", "onSpecial1Activate" 等)
     :param trigger_scope: 触发范围 ("level=Ranged", "level=Special2" 等)
     :param appr_id: 外观表现 ID
-    :param callout_text: 触发呼出文字
+    :param callout_text: 触发呼出文字 (优先使用中文，如 '流血' / '爆头')
     """
     validate_color_code("FF0000", "bleed_tc")
 
     appear = {
         "id": appr_id,
-        "a": callout_text.capitalize(),
+        "a": callout_text,
         "s": "",                      # ShortStringID 为空，防止被当作角色常驻被动能力列表项
-        "l": f"{callout_text.capitalize()} damage over duration.",
-        "ss": f"{callout_text.capitalize()} damage over duration.",
+        "l": f"{callout_text}持续伤害",
+        "ss": f"{callout_text}持续伤害",
         "t": pua_icon,                # 能量块流血字形（血条下方倒计时圆环图标）
         "f": "",
-        "st": callout_text,           # 命中呼出大字 (如 BLEED / HEADSHOT)
-        "ps": callout_text.capitalize(),
-        "pl": f"{callout_text.capitalize()} damage ignoring armor.",
+        "st": callout_text,           # 命中呼出大字 (如 流血 / 爆头)
+        "ps": callout_text,
+        "pl": f"{callout_text}生效中",
         "tc": "FF0000",               # 纯 6 位 Hex：鲜红色 (严禁带 '#')
         "gt": "FF0000",
         "gb": "FF0000",
@@ -199,7 +199,7 @@ def make_unstoppable_statmod(
     trigger: str = "onSpecial2Activate",
     trigger_scope: str = "",
     appr_id: str = "appr_unstoppable",
-    callout_text: str = "ID_STAT_UNSTOPPABLE_HUD",
+    callout_text: str = "不可阻挡",
     show_callout: bool = True,
     play_vfx: bool = False,
     vfx_move: str = "status_unstoppable",
@@ -212,21 +212,21 @@ def make_unstoppable_statmod(
        使 PlayerController.ReceiveHit 彻底跳过 ApplyHitStun，实现受创不打断动作，
        同时正常扣除伤害并缩放击退。
     2. 若 play_vfx 为 True，附带 'play_move' 播放角色周身金色霸体光环与粒子特效 (status_unstoppable)。
-    3. 若 show_callout 为 True，弹出金色 "不可阻挡" / "UNSTOPPABLE" 命中呼出大字与 PUA 矢量图标。
+    3. 若 show_callout 为 True，弹出金色 "不可阻挡" 命中呼出大字与 PUA 矢量图标。
     """
     validate_color_code(color_hex, "unstoppable_color")
 
     appear = {
         "id": appr_id,
-        "a": "ID_STAT_UNSTOPPABLE_HUD",
+        "a": callout_text,
         "s": "",                      # 留空，避免被误判为常规被动展示项
-        "l": "ID_STAT_UNSTOPPABLE_S",
-        "ss": "ID_STAT_UNSTOPPABLE_S",
+        "l": "受到攻击不会产生硬直",
+        "ss": "受到攻击不会产生硬直",
         "t": pua_icon,                # PUA 矢量图标：不可阻挡 (\uE915)
         "f": "",
         "st": callout_text if show_callout else "",
-        "ps": "ID_STAT_UNSTOPPABLE_HUD",
-        "pl": "ID_STAT_UNSTOPPABLE_S",
+        "ps": callout_text,
+        "pl": "不可阻挡生效中",
         "tc": color_hex,
         "gt": color_hex,
         "gb": "FF8800",
@@ -313,7 +313,7 @@ def make_ranged_boost_statmod(
     trigger: str = "onSpecial1Activate",
     trigger_scope: str = "",
     appr_id: str = "appr_ranged_boost",
-    callout_text: str = "RANGED BOOST",
+    callout_text: str = "远程增益",
     show_callout: bool = True,
     pua_icon: str = "\uE41B",
     color_hex: str = "FFAA00",
@@ -332,15 +332,15 @@ def make_ranged_boost_statmod(
 
     appear = {
         "id": appr_id,
-        "a": callout_text.capitalize(),
+        "a": callout_text,
         "s": "",                      # 留空防被当作常驻被动列表项
-        "l": f"{callout_text.capitalize()} - Increases ranged attack combat attributes.",
-        "ss": f"{callout_text.capitalize()} - Increases ranged attack combat attributes.",
+        "l": "提升远程攻击作战属性",
+        "ss": "提升远程攻击作战属性",
         "t": pua_icon,                # PUA 矢量图标: 飞射弹头 (\uE41B)
         "f": "",
         "st": callout_text if show_callout else "",
-        "ps": callout_text.capitalize(),
-        "pl": f"{callout_text.capitalize()} active.",
+        "ps": callout_text,
+        "pl": f"{callout_text}生效中",
         "tc": color_hex,
         "gt": color_hex,
         "gb": gradient_bottom,
@@ -391,35 +391,35 @@ def make_shock_statmod(
     trigger: str = "onHit",
     trigger_scope: str = "",
     appr_id: str = "appr_shock",
-    callout_text: str = "SHOCK",
+    callout_text: str = "震击",
     is_zh: bool = True,
     stackable: bool = True,
     target_scope: str = "none",
     target_actor: str = "opponent",
     pua_icon: str = "\uE914",
-    color_hex: str = "00F0FF",
-    gradient_bottom: str = "0088FF",
+    color_hex: str = "FF0000",
+    gradient_bottom: str = "FF0000",
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """
     通用震击 DOT 工厂 (Shock DOT):
     造成持续能量伤害 (Energy Damage over time)。
     - 绑定至 buffs_set 中的 dmg_shock。
-    - PUA 图标为雷电 (\uE914)，配色为高亮青蓝 (00F0FF / 0088FF)。
+    - PUA 图标为雷电 (\uE914)，配色为减益红色 (FF0000 / FF0000)。
     """
     validate_color_code(color_hex, "shock_tc")
     validate_color_code(gradient_bottom, "shock_gb")
 
     appear = {
         "id": appr_id,
-        "a": callout_text.capitalize(),
+        "a": callout_text,
         "s": "",
-        "l": f"{callout_text.capitalize()} energy damage over duration.",
-        "ss": f"{callout_text.capitalize()} energy damage over duration.",
+        "l": "持续造成能量伤害",
+        "ss": "持续造成能量伤害",
         "t": pua_icon,
         "f": "",
         "st": callout_text,
-        "ps": callout_text.capitalize(),
-        "pl": f"{callout_text.capitalize()} deals energy damage over duration.",
+        "ps": callout_text,
+        "pl": f"{callout_text}生效中",
         "tc": color_hex,
         "gt": color_hex,
         "gb": gradient_bottom,
@@ -465,33 +465,33 @@ def make_power_leak_statmod(
     duration: float,
     drain_bars: float = 0.40,
     chance: float = 1.0,
-    trigger: str = "onSpecial1Activate",
+    trigger: str = "onHit",
     trigger_scope: str = "",
     appr_id: str = "appr_power_leak",
-    callout_text: str = "POWER LEAK",
+    callout_text: str = "能量流失",
     pua_icon: str = "\uE607",
-    color_hex: str = "FFD700",
-    gradient_bottom: str = "FF9900",
+    color_hex: str = "FF0000",
+    gradient_bottom: str = "FF0000",
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """
     通用能量流失工厂 (Power Leak Debuff):
     在指定持续时间内持续扣除对手能量条 (Substracts power over duration)。
-    - PUA 图标为能量漏斗 (\uE607)，配色为亮金黄 (FFD700 / FF9900)。
+    - PUA 图标为能量漏斗 (\uE607)，配色为减益红色 (FF0000 / FF0000)。
     """
     validate_color_code(color_hex, "power_leak_tc")
     validate_color_code(gradient_bottom, "power_leak_gb")
 
     appear = {
         "id": appr_id,
-        "a": callout_text.capitalize(),
+        "a": callout_text,
         "s": "",
-        "l": f"{callout_text.capitalize()} - Drains opponent power over duration.",
-        "ss": f"{callout_text.capitalize()} - Drains opponent power over duration.",
+        "l": "持续扣除对手能量条",
+        "ss": "持续扣除对手能量条",
         "t": pua_icon,
         "f": "",
         "st": callout_text,
-        "ps": callout_text.capitalize(),
-        "pl": f"{callout_text.capitalize()} active.",
+        "ps": callout_text,
+        "pl": f"{callout_text}生效中",
         "tc": color_hex,
         "gt": color_hex,
         "gb": gradient_bottom,
@@ -539,7 +539,7 @@ def make_stun_statmod(
     trigger: str = "onSpecial1Activate",
     trigger_scope: str = "",
     appr_id: str = "appr_stun",
-    callout_text: str = "STUN",
+    callout_text: str = "眩晕",
     pua_icon: str = "\uE605",
     color_hex: str = "FFE000",
     gradient_bottom: str = "FFAA00",
@@ -554,15 +554,15 @@ def make_stun_statmod(
 
     appear = {
         "id": appr_id,
-        "a": callout_text.capitalize(),
+        "a": callout_text,
         "s": "",
-        "l": f"{callout_text.capitalize()} - Target is incapacitated and unable to act.",
-        "ss": f"{callout_text.capitalize()} - Target is incapacitated and unable to act.",
+        "l": "目标陷入眩晕，无法行动",
+        "ss": "目标陷入眩晕，无法行动",
         "t": pua_icon,
         "f": "",
         "st": callout_text,
-        "ps": callout_text.capitalize(),
-        "pl": f"{callout_text.capitalize()} active.",
+        "ps": callout_text,
+        "pl": f"{callout_text}生效中",
         "tc": color_hex,
         "gt": color_hex,
         "gb": gradient_bottom,
@@ -608,10 +608,10 @@ def make_nullify_statmod(
     target_categories: Optional[List[str]] = None,
     max_stacks_per_cat: int = 1,
     chance: float = 1.0,
-    trigger: str = "onSpecial1Activate",
-    trigger_scope: str = "",
+    trigger: str = "onHit",
+    trigger_scope: str = "level=Special1",
     appr_id: str = "appr_nullify",
-    callout_text: str = "NULLIFY",
+    callout_text: str = "驱散",
     pua_icon: str = "\uE950",
     color_hex: str = "38BDF8",
     gradient_bottom: str = "0284C7",
@@ -629,15 +629,15 @@ def make_nullify_statmod(
 
     appear = {
         "id": appr_id,
-        "a": callout_text.capitalize(),
+        "a": callout_text,
         "s": "",
-        "l": f"{callout_text.capitalize()} - Removes enemy positive buffs.",
-        "ss": f"{callout_text.capitalize()} - Removes enemy positive buffs.",
+        "l": "驱散目标正面增益",
+        "ss": "驱散目标正面增益",
         "t": pua_icon,
         "f": "",
         "st": callout_text,
-        "ps": callout_text.capitalize(),
-        "pl": f"{callout_text.capitalize()} active.",
+        "ps": callout_text,
+        "pl": f"{callout_text}生效中",
         "tc": color_hex,
         "gt": color_hex,
         "gb": gradient_bottom,
@@ -677,5 +677,6 @@ def make_nullify_statmod(
     validate_statmod(stat_mod)
     validate_appear(appear)
     return {mod_id: stat_mod}, {appr_id: appear}
+
 
 

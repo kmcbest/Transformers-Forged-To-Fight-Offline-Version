@@ -92,7 +92,7 @@ def build_bonecrusher_abilities(base_hp: float = 31468.0, base_atk: float = 2398
         trigger="onStruckCrit",
         trigger_scope="level=Light,Medium,Heavy",
         appr_id="appr_bonecrusher_bleed",
-        callout_text="BLEED",
+        callout_text="流血",
         stackable=True,
         buff_id="dmg_bleed",
         target_actor="opponent",
@@ -109,7 +109,7 @@ def build_bonecrusher_abilities(base_hp: float = 31468.0, base_atk: float = 2398
         trigger="onHit",
         trigger_scope="level=Heavy",
         appr_id="appr_bonecrusher_bleed",
-        callout_text="BLEED",
+        callout_text="流血",
         buff_id="dmg_bleed_heavy",
     )
     mods.update(m2)

@@ -49,7 +49,7 @@ def build_motormaster_abilities(base_hp: float = 34894.0, base_atk: float = 2629
         trigger="onPlayerStateEnter",
         trigger_scope="state=Dash",
         appr_id="appr_motormaster_dash_unstoppable",
-        callout_text="ID_STAT_UNSTOPPABLE_HUD",
+        callout_text="不可阻挡",
         show_callout=True,
         play_vfx=False,
     )
@@ -63,7 +63,7 @@ def build_motormaster_abilities(base_hp: float = 34894.0, base_atk: float = 2629
         trigger="onSpecial2Activate",
         trigger_scope="",
         appr_id="appr_motormaster_sp2_unstoppable",
-        callout_text="ID_STAT_UNSTOPPABLE_HUD",
+        callout_text="不可阻挡",
         show_callout=True,
         play_vfx=False,
     )

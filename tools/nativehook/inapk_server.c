@@ -313,6 +313,8 @@ typedef struct {
     int skip_launcher_next_time;
     int target_fps;
     int enable_swipe_specials;
+    int freeze_enemy_ai;
+    int start_full_power;
 } UserSettings;
 
 static UserSettings g_user_settings = {
@@ -323,7 +325,9 @@ static UserSettings g_user_settings = {
     .arena_randomization = 1,
     .skip_launcher_next_time = 0,
     .target_fps = 60,
-    .enable_swipe_specials = 1
+    .enable_swipe_specials = 1,
+    .freeze_enemy_ai = 0,
+    .start_full_power = 0
 };
 static int g_settings_loaded = 0;
 
@@ -406,6 +410,22 @@ static void load_user_settings(void) {
                         g_user_settings.enable_swipe_specials = !strncmp(c, "true", 4);
                     }
                 }
+                char *fai = strstr(buf, "\"freeze_enemy_ai\"");
+                if (fai) {
+                    char *c = strchr(fai, ':');
+                    if (c) {
+                        while (*c && (*c == ':' || isspace((unsigned char)*c))) c++;
+                        g_user_settings.freeze_enemy_ai = !strncmp(c, "true", 4);
+                    }
+                }
+                char *sfp = strstr(buf, "\"start_full_power\"");
+                if (sfp) {
+                    char *c = strchr(sfp, ':');
+                    if (c) {
+                        while (*c && (*c == ':' || isspace((unsigned char)*c))) c++;
+                        g_user_settings.start_full_power = !strncmp(c, "true", 4);
+                    }
+                }
                 g_settings_loaded = 1;
                 return;
             }
@@ -433,15 +453,16 @@ int tftf_get_enable_swipe_specials(void) {
     if (!g_settings_loaded) load_user_settings();
     return g_user_settings.enable_swipe_specials;
 }
+int tftf_get_start_full_power(void) {
+    if (!g_settings_loaded) load_user_settings();
+    return g_user_settings.start_full_power;
+}
 
-/* TEST AID (combo quality-gate testing): when this marker file exists, hook_146 skips the
-   enemy AI's entire tick, so the opponent never attacks and never moves -- combo sequences can
-   then be observed without being interrupted by hit reactions. Flip it on the device, no rebuild
-   and no app restart needed:
-       adb shell touch /sdcard/Android/media/com.kabam.bigrobot/freeze_enemy_ai
-       adb shell rm -f /sdcard/Android/media/com.kabam.bigrobot/freeze_enemy_ai
-   With NO marker file (the default) this returns 0 and hook_146 behaves exactly as before. */
+/* TEST AID (combo quality-gate testing): when this marker file exists or user setting is enabled,
+   hook_146 skips the enemy AI's entire tick, so the opponent never attacks and never moves. */
 int tftf_get_freeze_enemy_ai(void) {
+    if (!g_settings_loaded) load_user_settings();
+    if (g_user_settings.freeze_enemy_ai) return 1;
     static const char *paths[] = {
         "/sdcard/Android/media/com.kabam.bigrobot/freeze_enemy_ai",
         "/storage/emulated/0/Android/media/com.kabam.bigrobot/freeze_enemy_ai",

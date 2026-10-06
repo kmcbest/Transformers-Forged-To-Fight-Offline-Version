@@ -63,7 +63,7 @@ def build_windblade_abilities(base_hp: float = 26794.0, base_atk: float = 2583.0
         trigger="onCrit",
         trigger_scope="level=Light,Medium,Heavy",
         appr_id="appr_windblade_bleed",
-        callout_text="BLEED",
+        callout_text="流血",
         buff_id="dmg_bleed",
     )
     mods.update(m1)

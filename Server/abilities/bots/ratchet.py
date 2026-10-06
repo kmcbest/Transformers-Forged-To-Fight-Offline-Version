@@ -36,7 +36,7 @@ def build_ratchet_abilities(base_hp: float = 28352.0, base_atk: float = 2029.0):
     appears = {}
     buffs = {}
 
-    # 1. 战时远程暴击触发震击：持续 6.5 秒，总能量伤害 75% ATK
+    # 1. 战时远程暴击触发震击：持续 6.5 秒，总能量伤害 75% ATK (减益红)
     # (注：+20% 远程暴击率属于天然常驻属性，不在此处生成可驱散的临时 Buff)
     m_rb_shock, a_rb_shock = make_shock_statmod(
         mod_id="ratchet_ranged_shock",
@@ -46,26 +46,27 @@ def build_ratchet_abilities(base_hp: float = 28352.0, base_atk: float = 2029.0):
         trigger="onCrit",
         trigger_scope="level=Ranged",
         appr_id="appr_ratchet_ranged_shock",
-        callout_text="SHOCK",
+        callout_text="震击",
         pua_icon="\uE914",
-        color_hex="00F0FF",
-        gradient_bottom="0088FF",
+        color_hex="FF0000",
+        gradient_bottom="FF0000",
     )
     mods.update(m_rb_shock)
     appears.update(a_rb_shock)
 
-    # 2. SP3 诊断扫描震击：100% 几率施加 4 秒 97.5% ATK 震击
+    # 2. SP3 诊断扫描震击：SP3 命中时 100% 几率施加 4 秒 97.5% ATK 震击 (减益红)
     m_sp3_shock, a_sp3_shock = make_shock_statmod(
         mod_id="ratchet_sp3_shock",
         duration=4.0,
         total_dmg=float(round(base_atk * 0.975)),
         chance=1.0,
-        trigger="onSpecial3Activate",
+        trigger="onHit",
+        trigger_scope="level=Special3",
         appr_id="appr_ratchet_sp3_shock",
-        callout_text="SHOCK",
+        callout_text="震击",
         pua_icon="\uE914",
-        color_hex="00F0FF",
-        gradient_bottom="0088FF",
+        color_hex="FF0000",
+        gradient_bottom="FF0000",
     )
     mods.update(m_sp3_shock)
     appears.update(a_sp3_shock)

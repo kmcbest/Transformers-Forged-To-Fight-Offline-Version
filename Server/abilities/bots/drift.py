@@ -63,7 +63,7 @@ def build_drift_abilities(base_hp: float = 30845.0, base_atk: float = 2352.0):
         trigger="onCrit",
         trigger_scope="level=Light,Medium,Heavy,Ranged",
         appr_id="appr_drift_bleed",
-        callout_text="BLEED",
+        callout_text="流血",
         buff_id="dmg_bleed",
     )
     mods.update(m1)
