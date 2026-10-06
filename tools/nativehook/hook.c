@@ -570,14 +570,17 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0xB16C54,  "ET_INIT_HEROES",     2, 0 }, // 176 EditTeamModel.InitHeroes -> filter to Rodimus
     { 0x0DAD5A4, "GET_DMG_RECV",       2, 0 }, // 177 PlayerAttributes.GetDamageReceived -> picnic quest ranged-only damage
     { 0,         "PFS_ENEMY_HP",       2, 0 }, // 178 PrefightScreenData.GetEnemyNormalizedHealth (disabled: stock function returns 1.0f directly)
-    { 0x0DAD558, "CRIT_MULT",          2, 0 }, // 179 PlayerAttributes.GetCritDamageMultiplier -> ensure 1.5x crit damage for Player 0
+    { 0x0DAD558, "PROJ_SPEED",         2, 0 }, // 179 PlayerAttributes.GetProjectileSpeed -> projectile flight speed boost
     { 0x00FF063C, "FSPRESS_L",         2, 0 }, // 180 HudScreen.FullScreenPressDownLeft -> AutoFight button check
     { 0x00FF0658, "FSPRESS_R",         2, 0 }, // 181 HudScreen.FullScreenPressDownRight -> AutoFight button check
     { 0x00B6E168, "AWAY_STATE",        2, 0 }, // 182 BaseBuilding.SetAwayTeamState -> force Home (0) to keep shuttle docked
     { 0x00EFA054, "BSPP_INIT",         2, 0 }, // 183 BuildingSelectPopupPresentation.OnGridItemInitialized
     { 0x014F4048, "ISTUTCOMPLETE",     2, 0 }, // 184 TutorialManagerHelper.IsTutorialComplete
     { 0x0095BDD8, "SAFE_GC_SCAN",       2, 0 }, // 185 il2cpp GC scan safe guard (prevents SEGV on 0x1)
-    { 0x11785B8, "REG_HIT_RES",        2, 0 }  // 186 PlayerController.RegisterHitResult(HitResultData hitResult)
+    { 0x11785B8, "REG_HIT_RES",        2, 0 }, // 186 PlayerController.RegisterHitResult(HitResultData hitResult)
+    { 0x00DACB84, "GET_SPD_MOD",       2, 0 }, // 187 PlayerAttributes.get_SpeedModifier -> attack animation speed boost
+    { 0x00EEFF2C, "APPLY_BUFF",        2, 0 }, // 188 BuffsController.ApplyBuff -> ability gating (Rhinox bleed-on-nullify, Wheeljack final hit)
+    { 0x00EEEDD8, "REMOVE_BUFFS_INT",  2, 0 }  // 189 BuffsController.RemoveBuffsInternal -> track successful buff nullification
 };
 #define NH (int)(sizeof(H)/sizeof(H[0]))
 
@@ -616,8 +619,15 @@ static volatile uint64_t g_p0_last_attack_ms = 0;
 extern int tftf_get_start_full_power(void);
 static volatile int g_p0_power_seeded = 0;
 static volatile int g_p0_current_special_index = -1;
-static volatile uint64_t g_arcee_ranged_boost_end_ms = 0;
+static volatile uint64_t g_p0_ranged_boost_end_ms = 0;
+static volatile float g_p0_ranged_damage_bonus = 0.0f;
+static volatile float g_p0_ranged_speed_bonus = 0.0f;
+#define g_arcee_ranged_boost_end_ms g_p0_ranged_boost_end_ms
 static volatile uint64_t g_enemy_power_leak_end_ms = 0;
+static volatile int g_p1_buffs_nullified_this_attack = 0;
+static volatile int s_current_hit_is_last = 0;
+static volatile int s_last_hit_flags = 0;
+static volatile int s_last_hit_index = 0;
 
 #define COMBAT_ASSERT(cond, tag, fmt, ...) \
     do { \
@@ -5092,8 +5102,14 @@ void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     g_p0_last_attack_ms = 0;
     g_p0_power_seeded = 0;
     g_p0_current_special_index = -1;
-    g_arcee_ranged_boost_end_ms = 0;
+    g_p0_ranged_boost_end_ms = 0;
+    g_p0_ranged_damage_bonus = 0.0f;
+    g_p0_ranged_speed_bonus = 0.0f;
     g_enemy_power_leak_end_ms = 0;
+    g_p1_buffs_nullified_this_attack = 0;
+    s_current_hit_is_last = 0;
+    s_last_hit_flags = 0;
+    s_last_hit_index = 0;
     return H[140].orig(a0,a1,a2,a3,a4,a5,a6,a7);
 }
 void* hook_141(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
@@ -5230,12 +5246,11 @@ static void give_p0_max_power(void) {
     if (sp3_xf_any()) return; // Don't interfere while casting SP3
     if (!g_p0_controller || !obj_ok(g_p0_controller)) return;
     PROTECT({
-        void* c80 = *(void**)((char*)g_p0_controller + 0x80);
-        if (obj_ok(c80)) {
-            void* spec = *(void**)((char*)c80 + 0x70);
-            if (obj_ok(spec) && g_base) {
-                ((void(*)(void*, float, void*))(g_base + 0xE2FE60))(spec, 99999.0f, NULL);
-            }
+        void* p0_attr = *(void**)((char*)g_p0_controller + 0x100);
+        if (p0_attr && obj_ok(p0_attr) && g_base) {
+            typedef void (*fn_set_norm_mana)(void*, float, void*);
+            fn_set_norm_mana set_mana = (fn_set_norm_mana)(g_base + 0x00DAC7B4);
+            set_mana(p0_attr, 1.0f, NULL);
         }
     });
 }
@@ -5260,26 +5275,25 @@ void* hook_145(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
         if (g_enemy_power_leak_end_ms > 0 && g_p1_controller && obj_ok(g_p1_controller)) {
             uint64_t now_ms = propgo_now_ms();
             if (now_ms < g_enemy_power_leak_end_ms) {
-                void* pm = *(void**)((char*)g_p1_controller + 0x80);
-                if (obj_ok(pm)) {
-                    void* fm = *(void**)((char*)pm + 0x70);
-                    if (obj_ok(fm)) {
-                        typedef float (*fn_get_cur)(void*, void*);
-                        typedef void (*fn_set_cur)(void*, float, void*);
-                        fn_get_cur get_cur = (fn_get_cur)(g_base + 0xE2FF20);
-                        fn_set_cur set_cur = (fn_set_cur)(g_base + 0xE2FF70);
-                        float cur = get_cur(fm, NULL);
-                        if (cur > 0.0f) {
-                            float new_cur = cur - 0.00075f;
-                            if (new_cur < 0.0f) new_cur = 0.0f;
-                            set_cur(fm, new_cur, NULL);
-                        }
+                void* p1_attr = *(void**)((char*)g_p1_controller + 0x100);
+                if (p1_attr && obj_ok(p1_attr) && g_base) {
+                    typedef float (*fn_get_norm_mana)(void*, void*);
+                    typedef void (*fn_set_norm_mana)(void*, float, void*);
+                    fn_get_norm_mana get_mana = (fn_get_norm_mana)(g_base + 0x00DAC794);
+                    fn_set_norm_mana set_mana = (fn_set_norm_mana)(g_base + 0x00DAC7B4);
+                    float cur = get_mana(p1_attr, NULL);
+                    if (cur > 0.0f) {
+                        float drain_step = 0.0022f; // ~40% total gauge drained smoothly over 3s
+                        float new_cur = cur - drain_step;
+                        if (new_cur < 0.0f) new_cur = 0.0f;
+                        set_mana(p1_attr, new_cur, NULL);
                     }
                 }
             } else {
                 g_enemy_power_leak_end_ms = 0;
             }
         }
+
         // GATE-04: an idle gap longer than the combo window ends the chain. Nothing native was
         // observable for this -- waiting in place left l untouched and produced no reset line -- yet
         // the required behaviour is that attacking again after a pause starts at L1/M1.
@@ -5479,6 +5493,7 @@ void* hook_153(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
     if (self == g_p0_controller || (obj_ok(self) && *(int32_t*)((uintptr_t)self + 0xF4) == 0)) {
         g_intended_special_tier = 0;
         g_p0_current_special_index = index;
+        g_p1_buffs_nullified_this_attack = 0;
         reset_player_attack_chain(self);
         g_p0_combo_ended = 0;
         g_p0_after_heavy = 0;
@@ -6226,18 +6241,15 @@ float hook_177(void* self, float damage, void* damageType, int32_t blocked, void
                 if (damage > 0.0f) {
                     uint64_t now_ms = propgo_now_ms();
                     // 1. Arcee SP1 hit on enemy -> activate ranged boost for 6.5s
-                    if (g_p0_current_special_index == 0 && strstr(g_p0_bot_id, "arcee") != NULL) {
-                        g_arcee_ranged_boost_end_ms = now_ms + 6500;
-                        flog("ARCEE_SP1_HIT: Ranged boost activated for 6.5s (until %llu)", (unsigned long long)g_arcee_ranged_boost_end_ms);
-                    }
-                    // 2. Wheeljack SP2 hit on enemy -> activate power leak for 3.0s
-                    if (g_p0_current_special_index == 1 && strstr(g_p0_bot_id, "wheeljack") != NULL) {
-                        g_enemy_power_leak_end_ms = now_ms + 3000;
-                        flog("WHEELJACK_SP2_HIT: Power leak activated for 3.0s (until %llu)", (unsigned long long)g_enemy_power_leak_end_ms);
+                    if (g_p0_current_special_index == 1 && strstr(g_p0_bot_id, "arcee") != NULL) {
+                        g_p0_ranged_boost_end_ms = now_ms + 6500;
+                        g_p0_ranged_damage_bonus = 0.35f;
+                        g_p0_ranged_speed_bonus = 0.40f;
+                        flog("ARCEE_SP1_HIT: Ranged boost activated for 6.5s (until %llu)", (unsigned long long)g_p0_ranged_boost_end_ms);
                     }
 
-                    // 3. Arcee SP1 Ranged Boost: 1.35x damage on ranged attacks
-                    if (now_ms < g_arcee_ranged_boost_end_ms && strstr(g_p0_bot_id, "arcee") != NULL) {
+                    // 2. Generic Ranged Boost: damage multiplier on ranged attacks
+                    if (now_ms < g_p0_ranged_boost_end_ms && g_p0_ranged_damage_bonus > 0.0f) {
                         int is_ranged = s_current_hit_is_ranged;
                         if (g_p0_controller && obj_ok(g_p0_controller)) {
                             uint32_t r = *(uint32_t*)((char*)g_p0_controller + 0x1c8);
@@ -6245,10 +6257,10 @@ float hook_177(void* self, float damage, void* damageType, int32_t blocked, void
                         }
                         if (is_ranged) {
                             float old_dmg = damage;
-                            damage *= 1.35f;
+                            damage *= (1.0f + g_p0_ranged_damage_bonus);
                             static int s_arcee_boost_cnt = 0;
                             if (s_arcee_boost_cnt++ < 20) {
-                                flog("ARCEE_RANGED_BOOST: damage boosted 1.35x (%.1f -> %.1f)", old_dmg, damage);
+                                flog("RANGED_DAMAGE_BOOST: damage boosted %.2fx (%.1f -> %.1f)", 1.0f + g_p0_ranged_damage_bonus, old_dmg, damage);
                             }
                         }
                     }
@@ -6447,33 +6459,28 @@ float hook_178(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
     return H[178].orig ? ((fn_orig)H[178].orig)(self, a1, a2, a3, a4, a5, a6, a7) : 1.0f;
 }
 
-float hook_179(void* self, float opp_resist) {
-    void* owner = (self && obj_ok(self)) ? *(void**)((char*)self + 0x28) : NULL;
-    int player_idx = (owner && obj_ok(owner)) ? *(int32_t*)((char*)owner + 0xF4) : -1;
-    const char* bid = (player_idx == 0) ? g_p0_bot_id : g_p1_bot_id;
-
-    float bot_cd = 1.50f;
-    if (bid && bid[0]) {
-        calc_enemy_stats_all(bid, 5, 50, NULL, NULL, NULL, NULL, &bot_cd);
+float hook_179(void* self, float baseSpeed) {
+    float spd = baseSpeed;
+    if (H[179].orig) {
+        typedef float (*fn_proj_spd)(void*, float);
+        spd = ((fn_proj_spd)H[179].orig)(self, baseSpeed);
     }
-    if (bot_cd < 1.0f) bot_cd = 1.0f;
-
-    float mult = bot_cd;
-    if (opp_resist > 0.0f) {
-        mult -= opp_resist;
-        if (mult < 1.0f) mult = 1.0f;
-    }
-    if (player_idx == 0 && g_combat_player_crit_mult > 1.0f) {
-        if (mult < g_combat_player_crit_mult) {
-            mult = g_combat_player_crit_mult;
+    PROTECT({
+        void* p0_attr = (g_p0_controller && obj_ok(g_p0_controller)) ? *(void**)((char*)g_p0_controller + 0x100) : NULL;
+        if (self == p0_attr || (self && !g_p1_controller)) {
+            uint64_t now_ms = propgo_now_ms();
+            if (now_ms < g_p0_ranged_boost_end_ms && g_p0_ranged_speed_bonus > 0.0f) {
+                float old_spd = spd;
+                spd *= (1.0f + g_p0_ranged_speed_bonus);
+                static int s_spd_log = 0;
+                if (s_spd_log++ < 30) {
+                    flog("PROJECTILE_SPEED_BOOST: base=%.1f orig=%.1f boosted=%.1f (+%.0f%%)",
+                         baseSpeed, old_spd, spd, g_p0_ranged_speed_bonus * 100.0f);
+                }
+            }
         }
-    }
-    static int s_crit_mult_log = 0;
-    if (s_crit_mult_log++ < 30) {
-        flog("CRIT_MULT (0xDAD558): pidx=%d bid=%s opp_resist=%.2f -> returning multiplier=%.2f",
-             player_idx, bid ? bid : "unknown", opp_resist, mult);
-    }
-    return mult;
+    });
+    return spd;
 }
 
 static int check_and_toggle_autofight(void* hud_screen) {
@@ -6655,7 +6662,11 @@ void* hook_186(void* this_pc, void* hitResult, void* method) {
             int p_idx = *(int32_t*)((uintptr_t)this_pc + 0xF4);
             int atk_level = *(int32_t*)((uintptr_t)hitResult + 0x24); // HitResultData.AttackLevel
             int flags = *(int32_t*)((uintptr_t)hitResult + 0x20);     // HitResultData.Flags
+            int hit_idx = *(int32_t*)((uintptr_t)hitResult + 0x30);   // HitResultData.HitIndex
             s_current_hit_is_ranged = (atk_level == 8);
+            s_last_hit_flags = flags;
+            s_last_hit_index = hit_idx;
+            s_current_hit_is_last = ((flags & 0x80) != 0); // 0x80 = HitResultFlags.LastHit
             if (p_idx == 0) {
                 g_p0_controller = this_pc;
                 
@@ -6673,6 +6684,144 @@ void* hook_186(void* this_pc, void* hitResult, void* method) {
     }
     typedef void* (*fn_reg_hit)(void*, void*, void*);
     return H[186].orig ? ((fn_reg_hit)H[186].orig)(this_pc, hitResult, method) : NULL;
+}
+
+// slot 187 (0x00DACB84): PlayerAttributes.get_SpeedModifier
+float hook_187(void* self) {
+    float mod = 1.0f;
+    if (H[187].orig) {
+        typedef float (*fn_spd_mod)(void*);
+        mod = ((fn_spd_mod)H[187].orig)(self);
+    }
+    PROTECT({
+        void* p0_attr = (g_p0_controller && obj_ok(g_p0_controller)) ? *(void**)((char*)g_p0_controller + 0x100) : NULL;
+        if (self == p0_attr || (self && !g_p1_controller)) {
+            uint64_t now_ms = propgo_now_ms();
+            if (now_ms < g_p0_ranged_boost_end_ms && g_p0_ranged_speed_bonus > 0.0f) {
+                int is_shooting = 0;
+                if (g_p0_controller && obj_ok(g_p0_controller)) {
+                    // 1. Check StateMachine._state (at offset 0x28)
+                    void* cur_state = *(void**)((char*)g_p0_controller + 0x28);
+                    if (cur_state && obj_ok(cur_state)) {
+                        void* sname_obj = *(void**)((char*)cur_state + 0x10);
+                        if (sname_obj && obj_ok(sname_obj)) {
+                            char sname[32] = {0};
+                            read_str(sname_obj, sname, sizeof(sname));
+                            if (strcmp(sname, "Shoot") == 0) {
+                                is_shooting = 1;
+                            }
+                        }
+                    }
+                    // 2. Check _rangedAttackIndex (at offset 0x1c8)
+                    if (!is_shooting) {
+                        uint32_t r = *(uint32_t*)((char*)g_p0_controller + 0x1c8);
+                        if (r > 0) is_shooting = 1;
+                    }
+                }
+                if (is_shooting) {
+                    mod *= (1.0f + g_p0_ranged_speed_bonus);
+                    static int s_spd_anim_log = 0;
+                    if (s_spd_anim_log++ < 20) {
+                        flog("SHOOT_ANIM_SPEED_BOOST: speedMod=%.2f (+%.0f%%)", mod, g_p0_ranged_speed_bonus * 100.0f);
+                    }
+                }
+            }
+        }
+    });
+    return mod;
+}
+
+// slot 188 (0x00EEFF2C): BuffsController.ApplyBuff(BuffsController applicant, StatModifier statModifier, bool updateAttributes, bool useOverrideDuration, float overrideDuration)
+int hook_188(void* self, void* applicant, void* statModifier, int32_t updateAttributes, int32_t useOverrideDuration, float overrideDuration, void* method) {
+    char mod_id[80] = {0};
+    PROTECT({
+        if (statModifier && obj_ok(statModifier)) {
+            void* bcg_sm = *(void**)((char*)statModifier + 0x18);
+            if (bcg_sm && obj_ok(bcg_sm)) {
+                void* id_str_obj = *(void**)((char*)bcg_sm + 0x10);
+                if (id_str_obj && obj_ok(id_str_obj)) {
+                    read_str(id_str_obj, mod_id, sizeof(mod_id));
+                }
+            }
+        }
+
+        // Gate 1: Rhinox SP1 nullify bleed gate
+        if (mod_id[0] && strstr(mod_id, "rhinox_sp1_nullify_bleed") != NULL) {
+            if (g_p1_buffs_nullified_this_attack <= 0) {
+                flog("RHINOX_NULLIFY_GATE: suppressed bleed because 0 buffs were nullified from P1");
+                return 0; // BuffResult.Failed
+            } else {
+                flog("RHINOX_NULLIFY_GATE: permitted bleed because %d buff(s) nullified from P1", g_p1_buffs_nullified_this_attack);
+            }
+        }
+
+        // Gate 2: Wheeljack SP final hit gate (Shock, Power Leak, Stun on SP1/SP2/SP3)
+        if (mod_id[0] && strstr(mod_id, "wheeljack_") != NULL) {
+            if (strstr(mod_id, "_shock") != NULL || strstr(mod_id, "_leak") != NULL || strstr(mod_id, "_stun") != NULL) {
+                if (!s_current_hit_is_last) {
+                    flog("WHEELJACK_FINAL_HIT_GATE: suppressed %s (not final hit, flags=0x%x)", mod_id, s_last_hit_flags);
+                    return 0; // BuffResult.Failed
+                }
+                flog("WHEELJACK_FINAL_HIT_GATE: permitted %s on FINAL HIT (flags=0x%x)", mod_id, s_last_hit_flags);
+            }
+        }
+
+        // Gate 3: Arcee SP1 & SP3 kick gates
+        // SP1 hit 0 is kick (must NOT bleed)
+        // SP3 hits 0 & 1 are kicks (must NOT bleed; hits 2..6 can bleed)
+        if (mod_id[0] && strstr(mod_id, "arcee_") != NULL) {
+            if (strstr(mod_id, "sp1_") != NULL || strstr(mod_id, "headshot_") != NULL) {
+                if (g_p0_current_special_index == 1 && s_last_hit_index == 0) {
+                    flog("ARCEE_SP1_KICK_GATE: suppressed %s on hit_index=%d (kick)", mod_id, s_last_hit_index);
+                    return 0; // BuffResult.Failed
+                }
+            }
+            if (strstr(mod_id, "sp3_") != NULL) {
+                if (g_p0_current_special_index == 3 && s_last_hit_index <= 1) {
+                    flog("ARCEE_SP3_KICK_GATE: suppressed %s on hit_index=%d (kick)", mod_id, s_last_hit_index);
+                    return 0; // BuffResult.Failed
+                }
+            }
+        }
+    });
+
+    typedef int (*fn_apply_buff)(void*, void*, void*, int32_t, int32_t, float, void*);
+    int res = H[188].orig ? ((fn_apply_buff)H[188].orig)(self, applicant, statModifier, updateAttributes, useOverrideDuration, overrideDuration, method) : 0;
+
+    PROTECT({
+        if (res == 1) { // BuffResult.Success
+            uint64_t now_ms = propgo_now_ms();
+            // Arcee / Generic Ranged Boost applied (+40% bullet speed & animation speed)
+            if (mod_id[0] && strstr(mod_id, "arcee_sp1_trick_shot") != NULL) {
+                g_p0_ranged_boost_end_ms = now_ms + 6500;
+                g_p0_ranged_damage_bonus = 0.35f;
+                g_p0_ranged_speed_bonus = 0.40f;
+                flog("RANGED_BOOST_ACTIVATED: Arcee SP1 (dmg=+35%%, spd=+40%%, dur=6.5s)");
+            }
+            // Wheeljack Power Leak applied
+            if (mod_id[0] && strstr(mod_id, "wheeljack_") != NULL && strstr(mod_id, "_leak") != NULL) {
+                g_enemy_power_leak_end_ms = now_ms + 3000;
+                flog("POWER_LEAK_ACTIVATED: Wheeljack leak active for 3.0s on enemy");
+            }
+        }
+    });
+    return res;
+}
+
+// slot 189 (0x00EEEDD8): BuffsController.RemoveBuffsInternal
+int hook_189(void* self, int32_t testType, void* testParams, int32_t numBuffsToRemove, int32_t removeFlags, void* method) {
+    typedef int (*fn_remove_buffs)(void*, int32_t, void*, int32_t, int32_t, void*);
+    int res = H[189].orig ? ((fn_remove_buffs)H[189].orig)(self, testType, testParams, numBuffsToRemove, removeFlags, method) : 0;
+    PROTECT({
+        if (res != 0 && removeFlags == 1) { // 1 = BuffRemoveFlags.nullify
+            void* p0_bc = (g_p0_controller && obj_ok(g_p0_controller)) ? *(void**)((char*)g_p0_controller + 0x108) : NULL;
+            if (self != p0_bc) {
+                g_p1_buffs_nullified_this_attack++;
+                flog("NULLIFY_HIT: Successfully nullified buff from P1! count=%d", g_p1_buffs_nullified_this_attack);
+            }
+        }
+    });
+    return res;
 }
 
 static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hook_7,hook_8,
@@ -6695,7 +6844,7 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     (void*)hook_159,hook_160,hook_161,hook_162,hook_163,hook_164,
     hook_165,hook_166,(void*)hook_167,hook_168,hook_169,hook_170,
     hook_171,hook_172,hook_173,hook_174,hook_175,hook_176,(void*)hook_177,(void*)hook_178,
-    (void*)hook_179,hook_180,hook_181,hook_182,hook_183,hook_184,hook_185,hook_186 };
+    (void*)hook_179,hook_180,hook_181,hook_182,hook_183,hook_184,hook_185,hook_186,(void*)hook_187,(void*)hook_188,(void*)hook_189 };
 
 static void write_jump(uint8_t* dst, void* target){
     uint32_t* p = (uint32_t*)dst;

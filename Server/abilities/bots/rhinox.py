@@ -63,8 +63,8 @@ def build_rhinox_abilities(base_hp: float = 37703.0, base_atk: float = 2187.0):
         target_categories=["melee", "ranged", "special"],
         max_stacks_per_cat=1,
         chance=1.0,
-        trigger="onHit",
-        trigger_scope="level=Special1",
+        trigger="onSpecial1Hit",
+        trigger_scope="",
         appr_id="appr_rhinox_sp1_nullify",
         callout_text="驱散",
         pua_icon="\uE950",
@@ -74,14 +74,14 @@ def build_rhinox_abilities(base_hp: float = 37703.0, base_atk: float = 2187.0):
     mods.update(m_null)
     appears.update(a_null)
 
-    # 3. SP1 驱散转流血：SP1 命中移除增益触发 14 秒 120% ATK 强力流血
+    # 3. SP1 驱散转流血：SP1 命中移除增益时触发 14 秒 120% ATK 强力流血 (通过底层门禁仅在成功驱散时生效)
     m_nb, a_nb = make_bleed_statmod(
         mod_id="rhinox_sp1_nullify_bleed",
         duration=14.0,
         total_dmg=float(round(base_atk * 1.20)),
         chance=1.0,
-        trigger="onHit",
-        trigger_scope="level=Special1",
+        trigger="onSpecial1Hit",
+        trigger_scope="",
         appr_id="appr_rhinox_nullify_bleed",
         callout_text="流血",
         pua_icon="\uE401",
@@ -96,8 +96,8 @@ def build_rhinox_abilities(base_hp: float = 37703.0, base_atk: float = 2187.0):
         duration=8.0,
         total_dmg=float(round(base_atk * 0.60)),
         chance=0.40,
-        trigger="onHit",
-        trigger_scope="level=Special2",
+        trigger="onSpecial2Hit",
+        trigger_scope="",
         appr_id="appr_rhinox_sp2_bleed",
         callout_text="流血",
         pua_icon="\uE401",

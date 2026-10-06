@@ -31,7 +31,10 @@ class TestArceeAbility(unittest.TestCase):
             "arcee_headshot_direct",
             "arcee_headshot_dot",
             "arcee_headshot_rush",
+            "arcee_sp1_trick_shot",
             "arcee_s2_bleed",
+            "arcee_sp3_snipe_direct",
+            "arcee_sp3_snipe_bleed",
             "ability_arcee_gs_deluxe2014_0",
             "ability_arcee_gs_deluxe2014_1",
         ]
@@ -104,7 +107,7 @@ class TestArceeAbility(unittest.TestCase):
         self.assertEqual(d_mod["d"], 0.5)
         self.assertEqual(d_mod["c"], 0.5)
         self.assertEqual(d_mod["tr"], ["onCrit"])
-        self.assertEqual(d_mod["trs"], "level=Ranged,Special1")
+        self.assertEqual(d_mod["trs"], "dmgFlags=Projectile;level=Ranged,Special1")
 
         # Headshot DOT: 60% atk over 3s, d=3.0, c=0.5, on ranged / S1 crit (non-rush)
         dot_mod = mods["arcee_headshot_dot"]
@@ -112,7 +115,7 @@ class TestArceeAbility(unittest.TestCase):
         self.assertEqual(dot_mod["d"], 3.0)
         self.assertEqual(dot_mod["c"], 0.5)
         self.assertEqual(dot_mod["tr"], ["onCrit"])
-        self.assertEqual(dot_mod["trs"], "level=Ranged,Special1;opponent:state!=Dash,Run")
+        self.assertEqual(dot_mod["trs"], "dmgFlags=Projectile;level=Ranged,Special1;opponent:state!=Dash,Run")
         self.assertEqual(dot_mod["st"], 10)
 
         # Headshot rush: 100% chance when enemy is dashing/running
@@ -121,7 +124,7 @@ class TestArceeAbility(unittest.TestCase):
         self.assertEqual(rush_mod["d"], 3.0)
         self.assertEqual(rush_mod["c"], 1.0)
         self.assertEqual(rush_mod["tr"], ["onCrit"])
-        self.assertEqual(rush_mod["trs"], "level=Ranged,Special1;opponent:state=Dash,Run")
+        self.assertEqual(rush_mod["trs"], "dmgFlags=Projectile;level=Ranged,Special1;opponent:state=Dash,Run")
         self.assertEqual(rush_mod["a"], ["appr_arcee_headshot"])
         self.assertEqual(rush_mod["st"], 10)
 
@@ -143,8 +146,8 @@ class TestArceeAbility(unittest.TestCase):
             app = appears[k]
             self.assertEqual(app["t"], "\uE401")
             self.assertEqual(app["tc"], "FF0000")  # Raw hex without '#' to prevent RGB shift to yellow!
-        self.assertEqual(appears["appr_arcee_headshot"]["st"], "HEADSHOT")
-        self.assertEqual(appears["appr_arcee_bleed"]["st"], "BLEED")
+        self.assertEqual(appears["appr_arcee_headshot"]["st"], "爆头")
+        self.assertEqual(appears["appr_arcee_bleed"]["st"], "流血")
 
     def test_four_builders_carry_abilities(self):
         """Verify the 4 critical builders all inject bot_abilities correctly."""
@@ -155,7 +158,10 @@ class TestArceeAbility(unittest.TestCase):
             "arcee_headshot_direct",
             "arcee_headshot_dot",
             "arcee_headshot_rush",
+            "arcee_sp1_trick_shot",
             "arcee_s2_bleed",
+            "arcee_sp3_snipe_direct",
+            "arcee_sp3_snipe_bleed",
             "ability_arcee_gs_deluxe2014_0",
             "ability_arcee_gs_deluxe2014_1",
         ]

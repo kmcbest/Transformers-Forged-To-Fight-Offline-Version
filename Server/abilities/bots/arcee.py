@@ -122,25 +122,28 @@ def build_arcee_abilities(base_hp: float = 34850.0, base_atk: float = 3485.0):
     # 1. 保留原有被动能力：爆头与冲锋反制
     # ==========================================
     # (1) 爆头直接扣血 (60% ATK: 3485 * 0.6 = 2091)
+    # (1) 爆头直接扣血 (60% ATK: 3485 * 0.6 = 2091)
+    # 限制为飞弹/射击判定 (dmgFlags=Projectile)，排除 SP1 起手踢击
     m1, a1 = make_direct_dmg_statmod(
         mod_id="arcee_headshot_direct",
         dmg=base_atk * 0.60,
         chance=0.5,
         trigger="onCrit",
-        trigger_scope="level=Ranged,Special1",
+        trigger_scope="dmgFlags=Projectile;level=Ranged,Special1",
         buff_id="dmg_direct",
     )
     mods.update(m1)
     appears.update(a1)
 
     # (2) 爆头流血 3 秒 DOT (60% ATK, 50% 几率, 敌非前冲状态)
+    # 限制为飞弹/射击判定 (dmgFlags=Projectile)，排除 SP1 起手踢击
     m2, a2 = make_bleed_statmod(
         mod_id="arcee_headshot_dot",
         duration=3.0,
         total_dmg=base_atk * 0.60,
         chance=0.5,
         trigger="onCrit",
-        trigger_scope="level=Ranged,Special1;opponent:state!=Dash,Run",
+        trigger_scope="dmgFlags=Projectile;level=Ranged,Special1;opponent:state!=Dash,Run",
         appr_id="appr_arcee_bleed",
         callout_text="流血",
         buff_id="dmg_bleed",
@@ -149,13 +152,14 @@ def build_arcee_abilities(base_hp: float = 34850.0, base_atk: float = 3485.0):
     appears.update(a2)
 
     # (3) 爆头冲锋反制 3 秒流血 (60% ATK, 100% 必发, 敌处于 Dash/Run 状态)
+    # 限制为飞弹/射击判定 (dmgFlags=Projectile)，排除 SP1 起手踢击
     m3, a3 = make_bleed_statmod(
         mod_id="arcee_headshot_rush",
         duration=3.0,
         total_dmg=base_atk * 0.60,
         chance=1.0,
         trigger="onCrit",
-        trigger_scope="level=Ranged,Special1;opponent:state=Dash,Run",
+        trigger_scope="dmgFlags=Projectile;level=Ranged,Special1;opponent:state=Dash,Run",
         appr_id="appr_arcee_headshot",
         callout_text="爆头",
         buff_id="dmg_bleed",
@@ -166,15 +170,15 @@ def build_arcee_abilities(base_hp: float = 34850.0, base_atk: float = 3485.0):
     # ==========================================
     # 2. 特殊技 1 (SP1): 特技射击远程增益
     # ==========================================
-    # 远程伤害提升 35%，远程射速提升 20%，持续 6.5 秒
+    # 远程伤害提升 35%，远程射速/开枪速度提升 40%，持续 6.5 秒
     # 采用通用远程增益工厂，正向暖橙色 Buff，可被驱散
     m_sp1, a_sp1 = make_ranged_boost_statmod(
         mod_id="arcee_sp1_trick_shot",
         duration=6.5,
         damage_bonus=0.35,
-        speed_bonus=0.20,
-        trigger="onHit",
-        trigger_scope="level=Special1",
+        speed_bonus=0.40,
+        trigger="onSpecial1Hit",
+        trigger_scope="",
         appr_id="appr_arcee_sp1_boost",
         callout_text="特技射击",
         pua_icon="\uE41B",
@@ -205,13 +209,14 @@ def build_arcee_abilities(base_hp: float = 34850.0, base_atk: float = 3485.0):
     # ==========================================
     # 4. 特殊技 3 (SP3): 狙击爆头直伤 + 9 秒流血
     # ==========================================
+    # 前两击为体术踢腿 (index 0, 1) 不触发，后续4发手枪及1发狙击 (index 2..6) 触发
     # (1) SP3 爆头直接额外伤害 135% ATK
     m_sp3_dir, a_sp3_dir = make_direct_dmg_statmod(
         mod_id="arcee_sp3_snipe_direct",
         dmg=float(round(base_atk * 1.35)),
         chance=1.0,
-        trigger="onHit",
-        trigger_scope="level=Special3",
+        trigger="onSpecial3Hit",
+        trigger_scope="index!=0,1",
         buff_id="dmg_direct",
     )
     mods.update(m_sp3_dir)
@@ -223,8 +228,8 @@ def build_arcee_abilities(base_hp: float = 34850.0, base_atk: float = 3485.0):
         duration=9.0,
         total_dmg=float(round(base_atk * 1.35)),
         chance=1.0,
-        trigger="onHit",
-        trigger_scope="level=Special3",
+        trigger="onSpecial3Hit",
+        trigger_scope="index!=0,1",
         appr_id="appr_arcee_sp3_bleed",
         callout_text="狙击",
         pua_icon="\uE401",

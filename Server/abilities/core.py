@@ -476,6 +476,8 @@ def make_power_leak_statmod(
     """
     通用能量流失工厂 (Power Leak Debuff):
     在指定持续时间内持续扣除对手能量条 (Substracts power over duration)。
+    - 底层对接官方原生 'power_gain' BuffEffect 并传入负数值。
+    - 官方基准 1 格能量 = 300 点 Mana (3格满气共 900 点)。
     - PUA 图标为能量漏斗 (\uE607)，配色为减益红色 (FF0000 / FF0000)。
     """
     validate_color_code(color_hex, "power_leak_tc")
@@ -497,9 +499,12 @@ def make_power_leak_statmod(
         "gb": gradient_bottom,
     }
 
+    # 官方 1 格能量基准为 300 点 Mana
+    total_drain_mana = -300.0 * float(drain_bars)
+
     stat_mod = {
         "id": mod_id,
-        "t": "power_leak",
+        "t": "power_gain",
         "tm": "",
         "tr": [trigger],
         "uit": [trigger],
@@ -508,7 +513,7 @@ def make_power_leak_statmod(
         "trs": trigger_scope,
         "trr": "repeat",
         "c": float(chance),
-        "m": float(drain_bars),       # 扣除格数 (如 0.40 表示扣除一格的40%)
+        "m": float(total_drain_mana),       # 传入负数 Mana，由官方原生 PowerGain_BuffEffect 持续扣除
         "d": float(duration),
         "s": "none",
         "ta": "opponent",

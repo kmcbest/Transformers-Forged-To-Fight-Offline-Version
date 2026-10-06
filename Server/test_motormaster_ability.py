@@ -101,7 +101,7 @@ class TestMotormasterAbility(unittest.TestCase):
         appr_sp2 = appears.get("appr_motormaster_sp2_unstoppable")
         self.assertIsNotNone(appr_sp2)
         self.assertEqual(appr_sp2["t"], "\uE915")
-        self.assertEqual(appr_sp2["st"], "ID_STAT_UNSTOPPABLE_HUD")
+        self.assertEqual(appr_sp2["st"], "不可阻挡")
         self.assertFalse(appr_sp2["tc"].startswith("#"))
         self.assertEqual(len(appr_sp2["tc"]), 6)
 

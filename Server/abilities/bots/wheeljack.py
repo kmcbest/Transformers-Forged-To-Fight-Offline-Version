@@ -38,22 +38,22 @@ def build_wheeljack_abilities(base_hp: float = 32402.0, base_atk: float = 2306.0
     appears = {}
     buffs = {}
 
-    # 为 SP1, SP2, SP3 分别装配三合一机制 (命中对手时按概率施加)
+    # 为 SP1, SP2, SP3 分别装配三合一机制 (命中对手最后一击时按概率施加)
     sp_levels = [
-        ("sp1", "level=Special1", "Special 1", "原型"),
-        ("sp2", "level=Special2", "Special 2", "迭代"),
-        ("sp3", "level=Special3", "Special 3", "完美"),
+        ("sp1", "onSpecial1Hit", "Special 1", "原型"),
+        ("sp2", "onSpecial2Hit", "Special 2", "迭代"),
+        ("sp3", "onSpecial3Hit", "Special 3", "完美"),
     ]
 
-    for sp_key, sp_scope, sp_label, sp_title in sp_levels:
-        # 1. 震击 (Shock DOT): 60% 几率 200% ATK 持续 6 秒 (减益红)
+    for sp_key, sp_trigger, sp_label, sp_title in sp_levels:
+        # 1. 震击 (Shock DOT): 60% 几率 200% ATK 持续 6 秒 (减益红, 仅在最后一击命中时计算)
         m_shock, a_shock = make_shock_statmod(
             mod_id=f"wheeljack_{sp_key}_shock",
             duration=6.0,
             total_dmg=float(round(base_atk * 2.0)),
             chance=0.60,
-            trigger="onHit",
-            trigger_scope=sp_scope,
+            trigger=sp_trigger,
+            trigger_scope="dmgFlags=LastHit",
             appr_id=f"appr_wheeljack_{sp_key}_shock",
             callout_text="震击",
             pua_icon="\uE914",
@@ -63,14 +63,16 @@ def build_wheeljack_abilities(base_hp: float = 32402.0, base_atk: float = 2306.0
         mods.update(m_shock)
         appears.update(a_shock)
 
-        # 2. 能量流失 (Power Leak): 30% 几率 3 秒内抽取 40% 一格能量 (减益红)
+        # 2. 能量流失 (Power Leak): SP2 为招牌 100% 几率抽取整整一格能量 (300 Mana); SP1 为 50% 抽取半格; SP3 为 100% 抽取整格
+        leak_chance = 1.0 if sp_key in ("sp2", "sp3") else 0.50
+        leak_drain = 1.0 if sp_key in ("sp2", "sp3") else 0.50
         m_leak, a_leak = make_power_leak_statmod(
             mod_id=f"wheeljack_{sp_key}_leak",
             duration=3.0,
-            drain_bars=0.40,
-            chance=0.30,
-            trigger="onHit",
-            trigger_scope=sp_scope,
+            drain_bars=leak_drain,
+            chance=leak_chance,
+            trigger=sp_trigger,
+            trigger_scope="dmgFlags=LastHit",
             appr_id=f"appr_wheeljack_{sp_key}_leak",
             callout_text="能量流失",
             pua_icon="\uE607",
@@ -80,13 +82,13 @@ def build_wheeljack_abilities(base_hp: float = 32402.0, base_atk: float = 2306.0
         mods.update(m_leak)
         appears.update(a_leak)
 
-        # 3. 眩晕 (Stun): 10% 几率造成 3 秒眩晕
+        # 3. 眩晕 (Stun): 10% 几率造成 3 秒眩晕 (仅在最后一击命中时计算)
         m_stun, a_stun = make_stun_statmod(
             mod_id=f"wheeljack_{sp_key}_stun",
             duration=3.0,
             chance=0.10,
-            trigger="onHit",
-            trigger_scope=sp_scope,
+            trigger=sp_trigger,
+            trigger_scope="dmgFlags=LastHit",
             appr_id=f"appr_wheeljack_{sp_key}_stun",
             callout_text="眩晕",
             pua_icon="\uE605",
