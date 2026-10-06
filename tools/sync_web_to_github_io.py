@@ -117,8 +117,54 @@ def sync_database_data():
         }, f, ensure_ascii=False, indent=2)
     print(f"    [+] Wrote {all_abilities_file} ({len(all_bots_dict)} bots bundled)")
 
+    # Priority abilities export
+    priority_rows = c.execute("""
+        SELECT 
+            ca.id,
+            ca.bot_id,
+            c.name_zh AS bot_name_zh,
+            c.name_en AS bot_name_en,
+            c.class AS bot_class,
+            c.faction AS bot_faction,
+            c.source AS bot_source,
+            ca.category,
+            ca.title_zh,
+            ca.title_en,
+            ca.desc_zh,
+            ca.desc_en,
+            ca.pua_icon,
+            ca.synergy_bots,
+            ca.status,
+            ca.sort_order
+        FROM character_abilities ca
+        LEFT JOIN characters c ON ca.bot_id = c.bot_id
+        WHERE ca.status = 'priority'
+        ORDER BY c.class, ca.bot_id, ca.category, ca.sort_order, ca.id
+    """).fetchall()
+    priority_items = []
+    for r in priority_rows:
+        ad = dict(r)
+        if ad.get("synergy_bots"):
+            try:
+                ad["synergy_bots"] = json.loads(ad["synergy_bots"])
+            except Exception:
+                ad["synergy_bots"] = []
+        else:
+            ad["synergy_bots"] = []
+        priority_items.append(ad)
+
+    priority_file = TARGET_DATA_DIR / "priority_abilities.json"
+    priority_data = {
+        "total": len(priority_items),
+        "status": "priority",
+        "abilities": priority_items
+    }
+    with open(priority_file, "w", encoding="utf-8") as f:
+        json.dump(priority_data, f, ensure_ascii=False, indent=2)
+    print(f"    [+] Wrote {priority_file} ({len(priority_items)} priority abilities)")
+
     conn.close()
-    return overview_data, all_bots_dict
+    return overview_data, all_bots_dict, priority_data
 
 
 def update_bots_html():
@@ -204,8 +250,28 @@ def update_bots_html():
     print(f"    [+] Successfully updated {TARGET_BOTS_HTML} ({len(html)} bytes)")
 
 
-def sync_to_upstash_kv(overview_data, all_bots_dict):
+def sync_to_upstash_kv(overview_data, all_bots_dict, priority_data=None):
     print("[*] Synchronizing latest SQLite database into Upstash KV...")
+    # 0. 安全防线：在覆盖前自动备份当前云端全量数据至本地快照目录
+    try:
+        from datetime import datetime
+        backup_dir = REPO_ROOT / "tools" / "cloud_backups"
+        backup_dir.mkdir(parents=True, exist_ok=True)
+        ts_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+        backup_file = backup_dir / f"upstash_backup_{ts_str}.json"
+        
+        # 拉取当前 overview 作为快照元信息
+        req_chk = urllib.request.Request(
+            f"{UPSTASH_URL}/get/tftf:overview",
+            headers={"Authorization": f"Bearer {UPSTASH_TOKEN}"}
+        )
+        with urllib.request.urlopen(req_chk, timeout=8) as r:
+            cur_cloud = json.loads(r.read().decode("utf-8"))
+            backup_file.write_text(json.dumps(cur_cloud, ensure_ascii=False, indent=2), encoding="utf-8")
+        print(f"    [+] [安全防护] 已在推送前对云端数据生成自动快照: {backup_file.name}")
+    except Exception as be:
+        print(f"    [!] [安全防护] 快照创建跳过 (网络或初次部署): {be}")
+
     try:
         # Sync overview
         req = urllib.request.Request(
@@ -220,6 +286,21 @@ def sync_to_upstash_kv(overview_data, all_bots_dict):
         with urllib.request.urlopen(req, timeout=10) as resp:
             ret = json.loads(resp.read().decode("utf-8"))
             print(f"    [+] Synced tftf:overview -> {ret.get('result')}")
+
+        # Sync priority abilities
+        if priority_data:
+            req = urllib.request.Request(
+                f"{UPSTASH_URL}/set/tftf:priority_abilities",
+                data=json.dumps(priority_data).encode("utf-8"),
+                headers={
+                    "Authorization": f"Bearer {UPSTASH_TOKEN}",
+                    "Content-Type": "application/json"
+                },
+                method="POST"
+            )
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                ret = json.loads(resp.read().decode("utf-8"))
+                print(f"    [+] Synced tftf:priority_abilities -> {ret.get('result')}")
 
         # Sync characters
         success_count = 0
@@ -240,10 +321,50 @@ def sync_to_upstash_kv(overview_data, all_bots_dict):
         print(f"    [!] Upstash KV sync error (non-fatal, static CDN fallback is ready): {e}")
 
 
+def pull_from_upstash():
+    print("[*] Checking Upstash KV for any remote online edits before sync...")
+    try:
+        import sync_from_upstash
+        keys = sync_from_upstash.fetch_all_keys()
+        all_data = sync_from_upstash.fetch_pipeline_batch(keys)
+        synced_count = 0
+        for bot_id, up_data in all_data.items():
+            loc_path = sync_from_upstash.CHAR_DIR / f"{bot_id}.json"
+            if not loc_path.exists():
+                continue
+            try:
+                loc_data = json.loads(loc_path.read_text(encoding="utf-8"))
+            except Exception:
+                loc_data = {}
+            up_str = json.dumps(up_data, sort_keys=True, ensure_ascii=False)
+            loc_str = json.dumps(loc_data, sort_keys=True, ensure_ascii=False)
+            if up_str != loc_str:
+                print(f"    [*] Found remote edits for [{bot_id}], merging into local SQLite & JSON...")
+                sync_from_upstash.sync_bot_to_local_json(bot_id, up_data)
+                sync_from_upstash.sync_bot_to_sqlite(bot_id, up_data)
+                synced_count += 1
+        if synced_count > 0:
+            print(f"    [+] Successfully merged {synced_count} remote bot edits into local SQLite!")
+        else:
+            print("    [+] No remote edits detected. Local is up-to-date with cloud.")
+    except Exception as e:
+        print(f"    [!] Remote pull check error: {e}")
+        print("\n[CRITICAL ERROR] 无法连接或拉取 Upstash KV 云端数据！")
+        print("为了绝对保护您在网页端编辑的数据不被本地旧数据覆盖，程序已紧急阻止向云端推送！")
+        print("请检查网络后重试。若确实要强制覆盖云端，请使用参数: --force-push\n")
+        if "--force-push" not in sys.argv:
+            sys.exit(1)
+
+
 def main():
-    overview_data, all_bots_dict = sync_database_data()
+    # 0. 优先自动拉取线上最新改动，防止覆盖
+    if "--no-pull" not in sys.argv:
+        pull_from_upstash()
+
+    overview_data, all_bots_dict, priority_data = sync_database_data()
     update_bots_html()
-    sync_to_upstash_kv(overview_data, all_bots_dict)
+    if "--no-push-kv" not in sys.argv:
+        sync_to_upstash_kv(overview_data, all_bots_dict, priority_data)
     print("\n[OK] All web dashboard data and bots.html synchronized successfully!")
 
 
