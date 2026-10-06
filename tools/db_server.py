@@ -221,6 +221,88 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
             self.serve_json({"icons": icons})
             return
 
+        # 7. API: Priority Abilities & Abilities Query: /api/abilities/priority, /api/ability/priority, /api/abilities
+        elif path in ("/api/abilities/priority", "/api/ability/priority", "/api/abilities"):
+            qs = urllib.parse.parse_qs(url.query)
+            target_status = "priority"
+            if path == "/api/abilities":
+                target_status = qs.get("status", [None])[0] if "status" in qs else "priority"
+
+            filter_bot = qs.get("bot_id", [None])[0]
+            filter_cat = qs.get("category", [None])[0]
+
+            conn = get_db()
+            c = conn.cursor()
+
+            query = """
+                SELECT 
+                    ca.id,
+                    ca.bot_id,
+                    c.name_zh AS bot_name_zh,
+                    c.name_en AS bot_name_en,
+                    c.class AS bot_class,
+                    c.faction AS bot_faction,
+                    c.source AS bot_source,
+                    ca.category,
+                    ca.title_zh,
+                    ca.title_en,
+                    ca.desc_zh,
+                    ca.desc_en,
+                    ca.pua_icon,
+                    ca.synergy_bots,
+                    ca.status,
+                    ca.sort_order
+                FROM character_abilities ca
+                LEFT JOIN characters c ON ca.bot_id = c.bot_id
+            """
+            conditions = []
+            params = []
+            if target_status and target_status.lower() != "all":
+                conditions.append("ca.status = ?")
+                params.append(target_status)
+            if filter_bot:
+                conditions.append("ca.bot_id = ?")
+                params.append(filter_bot)
+            if filter_cat:
+                conditions.append("ca.category = ?")
+                params.append(filter_cat)
+
+            if conditions:
+                query += " WHERE " + " AND ".join(conditions)
+
+            query += """
+                ORDER BY 
+                    CASE 
+                        WHEN ca.status = 'priority' THEN 0 
+                        WHEN ca.status = 'partial' THEN 1 
+                        WHEN ca.status = 'unimplemented' THEN 2 
+                        ELSE 3 
+                    END,
+                    c.class, ca.bot_id, ca.category, ca.sort_order, ca.id
+            """
+
+            rows = c.execute(query, params).fetchall()
+            items = []
+            for r in rows:
+                ad = dict(r)
+                if "synergy_bots" in ad and ad["synergy_bots"]:
+                    try:
+                        ad["synergy_bots"] = json.loads(ad["synergy_bots"])
+                    except Exception:
+                        ad["synergy_bots"] = []
+                else:
+                    ad["synergy_bots"] = []
+                items.append(ad)
+
+            conn.close()
+            self.serve_json({
+                "ok": True,
+                "total": len(items),
+                "status_filter": target_status,
+                "abilities": items
+            })
+            return
+
         self.send_error(404, "Not Found")
 
     def do_POST(self):
@@ -244,7 +326,8 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
                 "crit_chance", "crit_damage", "crit_chance_ranged", "crit_chance_melee",
                 "health_mult", "attack_mult", "block_proficiency", "mana_gain_mult",
                 "pua_faction_icon", "pua_class_icon", "desc_zh", "desc_en", "note", "class", "faction", "source",
-                "hp", "attack", "rating"
+                "hp", "attack", "rating",
+                "sp1_name_zh", "sp1_name_en", "sp2_name_zh", "sp2_name_en", "sp3_name_zh", "sp3_name_en"
             ]
             fields = []
             values = []
@@ -314,7 +397,7 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
 
             fields = []
             values = []
-            for k in ["pua_icon", "title_zh", "title_en", "desc_zh", "desc_en", "status"]:
+            for k in ["category", "pua_icon", "title_zh", "title_en", "desc_zh", "desc_en", "status"]:
                 if k in payload:
                     fields.append(f"{k} = ?")
                     values.append(payload[k])
