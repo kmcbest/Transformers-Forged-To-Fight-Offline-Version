@@ -646,12 +646,19 @@ static void combat_overlay_show_hud(const char* text) {
         return;
     }
     if (g_active_hud_screen && obj_ok(g_active_hud_screen) && g_base && g_strnew) {
+        void* announcer = *(void**)((char*)g_active_hud_screen + 0x138);
+        if (!announcer || !obj_ok(announcer)) {
+            flog("OVERLAY_HUD: _announcer at +0x138 is NULL or invalid: %p (hud=%p)", announcer, g_active_hud_screen);
+            return;
+        }
         typedef void (*fn_announcement)(void*, void*, float, void*);
-        fn_announcement show_anno = (fn_announcement)(g_base + 0x00FED554);
+        // HudScreen.ShowAnnouncement is at 0x00FED428 (loads _announcer from +0x138 and jumps to HudAnnouncer.Show at 0x00C63AF0)
+        fn_announcement show_anno = (fn_announcement)(g_base + 0x00FED428);
         void* str_obj = g_strnew(text);
         if (str_obj) {
-            show_anno(g_active_hud_screen, str_obj, 1.8f, NULL);
-            flog("OVERLAY_HUD: ShowAnnouncement called on hud=%p with '%s'", g_active_hud_screen, text);
+            show_anno(g_active_hud_screen, str_obj, 2.5f, NULL);
+            flog("OVERLAY_HUD: ShowAnnouncement(0x00FED428) called on hud=%p announcer=%p with '%s'",
+                 g_active_hud_screen, announcer, text);
         } else {
             flog("OVERLAY_HUD: g_strnew returned NULL for '%s'", text);
         }
