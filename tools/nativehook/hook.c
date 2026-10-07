@@ -571,8 +571,8 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x0DAD5A4, "GET_DMG_RECV",       2, 0 }, // 177 PlayerAttributes.GetDamageReceived -> picnic quest ranged-only damage
     { 0,         "PFS_ENEMY_HP",       2, 0 }, // 178 PrefightScreenData.GetEnemyNormalizedHealth (disabled: stock function returns 1.0f directly)
     { 0x0DAD558, "PROJ_SPEED",         2, 0 }, // 179 PlayerAttributes.GetProjectileSpeed -> projectile flight speed boost
-    { 0x00FF063C, "FSPRESS_L",         2, 0 }, // 180 HudScreen.FullScreenPressDownLeft -> AutoFight button check
-    { 0x00FF0658, "FSPRESS_R",         2, 0 }, // 181 HudScreen.FullScreenPressDownRight -> AutoFight button check
+    { 0x00FEDEA8, "FSPRESS_L",         2, 0 }, // 180 HudScreen.FullScreenPressDownLeft -> AutoFight button check & HudScreen cache
+    { 0x00FF0674, "FSPRESS_R",         2, 0 }, // 181 HudScreen.FullScreenPressDownRight -> AutoFight button check & HudScreen cache
     { 0x00B6E168, "AWAY_STATE",        2, 0 }, // 182 BaseBuilding.SetAwayTeamState -> force Home (0) to keep shuttle docked
     { 0x00EFA054, "BSPP_INIT",         2, 0 }, // 183 BuildingSelectPopupPresentation.OnGridItemInitialized
     { 0x014F4048, "ISTUTCOMPLETE",     2, 0 }, // 184 TutorialManagerHelper.IsTutorialComplete
@@ -641,13 +641,23 @@ static pthread_mutex_t g_overlay_lock = PTHREAD_MUTEX_INITIALIZER;
 
 static void combat_overlay_show_hud(const char* text) {
     if (!text || !text[0]) return;
+    if (!g_active_hud_screen) {
+        flog("OVERLAY_HUD: g_active_hud_screen is NULL, text='%s'", text);
+        return;
+    }
     if (g_active_hud_screen && obj_ok(g_active_hud_screen) && g_base && g_strnew) {
         typedef void (*fn_announcement)(void*, void*, float, void*);
         fn_announcement show_anno = (fn_announcement)(g_base + 0x00FED554);
         void* str_obj = g_strnew(text);
         if (str_obj) {
             show_anno(g_active_hud_screen, str_obj, 1.8f, NULL);
+            flog("OVERLAY_HUD: ShowAnnouncement called on hud=%p with '%s'", g_active_hud_screen, text);
+        } else {
+            flog("OVERLAY_HUD: g_strnew returned NULL for '%s'", text);
         }
+    } else {
+        flog("OVERLAY_HUD: hud=%p obj_ok=%d base=%p strnew=%p",
+             g_active_hud_screen, obj_ok(g_active_hud_screen), (void*)g_base, (void*)g_strnew);
     }
 }
 
@@ -7143,10 +7153,34 @@ static void* hooked_BattleArbiterUpdate(void* arbiter, void* a1, void* a2, void*
     if (arbiter && obj_ok(arbiter)) {
         void* hud = *(void**)((char*)arbiter + 0x88);
         if (hud && obj_ok(hud)) {
+            static int s_logged_hud = 0;
+            if (s_logged_hud++ == 0) {
+                flog("BATTLE_ARBITER_UPDATE: cached g_active_hud_screen=%p from arbiter=%p", hud, arbiter);
+            }
             g_active_hud_screen = hud;
         }
     }
     if (orig_BattleArbiterUpdate) return orig_BattleArbiterUpdate(arbiter, a1, a2, a3, a4, a5, a6, a7);
+    return NULL;
+}
+
+static fn8 orig_HudScreenAwake = NULL;
+static void* hooked_HudScreenAwake(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    if (self && obj_ok(self)) {
+        g_active_hud_screen = self;
+        flog("HUD_SCREEN_AWAKE: captured g_active_hud_screen=%p", self);
+    }
+    if (orig_HudScreenAwake) return orig_HudScreenAwake(self, a1, a2, a3, a4, a5, a6, a7);
+    return NULL;
+}
+
+static fn8 orig_HudScreenSetupWindow = NULL;
+static void* hooked_HudScreenSetupWindow(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    if (self && obj_ok(self)) {
+        g_active_hud_screen = self;
+        flog("HUD_SCREEN_SETUP_WINDOW: captured g_active_hud_screen=%p", self);
+    }
+    if (orig_HudScreenSetupWindow) return orig_HudScreenSetupWindow(self, a1, a2, a3, a4, a5, a6, a7);
     return NULL;
 }
 
@@ -7374,6 +7408,8 @@ static void* installer(void* arg){
     inline_hook((void*)(g_base + 0xE48C58), (void*)hooked_PrefightOnToggleAutoFight, &orig_PrefightOnToggleAutoFight);
     inline_hook((void*)(g_base + 0xCFD384), (void*)hooked_BattleArbiterOnToggleAutoFight, &orig_BattleArbiterOnToggleAutoFight);
     inline_hook((void*)(g_base + 0x00CFE400), (void*)hooked_BattleArbiterUpdate, &orig_BattleArbiterUpdate);
+    inline_hook((void*)(g_base + 0x00FEF8D8), (void*)hooked_HudScreenAwake, &orig_HudScreenAwake);
+    inline_hook((void*)(g_base + 0x00FEDEF4), (void*)hooked_HudScreenSetupWindow, &orig_HudScreenSetupWindow);
 
     LOG("install done (%d hooks)", NH);
     return NULL;
