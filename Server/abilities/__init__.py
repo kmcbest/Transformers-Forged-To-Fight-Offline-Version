@@ -44,6 +44,12 @@ def build_buffs_config():
         "stun": {"stackable": False, "active_display": True},
         # 驱散效果器：瞬时结算，不显示血条下方图标
         "nullify": {"stackable": True, "active_display": False},
+        # 近战规避 Buff：在血条下方显示绿色倒计时/常驻圆环图标
+        "evade_melee": {"stackable": False, "active_display": True},
+        # 远程规避 Buff：在血条下方显示绿色倒计时/常驻圆环图标
+        "evade_ranged": {"stackable": False, "active_display": True},
+        # 暴击几率增益 Buff：在血条下方显示金色倒计时圆环图标
+        "crit_rate": {"stackable": True, "active_display": True},
     }
     return {
         "groups": groups_data,
@@ -306,6 +312,90 @@ def build_buffs_set():
             "loc_name": "nullify",
             "loc_desc": "nullify",
         },
+        # 近战规避 Buff：可规避基础近战与特技近战攻击 (由底层仲裁规避与呼出文字)
+        "evade_melee": {
+            "id": "evade_melee",
+            "iconTexture": "",
+            "image": "",
+            "images3": False,
+            "modeAvail": [],
+            "scope": "global",
+            "valueType": "absolute",
+            "displayValue": 1.0,
+            "c": 1,
+            "value": 1.0,
+            "buffType": "buff",
+            "group": "evade_melee",
+            "p": {},
+            "hasDuration": True,
+            "e": 0,
+            "time": {"amount": 3.0},
+            "loc_name": "evade_melee",
+            "loc_desc": "evade_melee",
+        },
+        # 远程规避 Buff：可规避基础远程与特技远程攻击 (由底层仲裁规避与呼出文字)
+        "evade_ranged": {
+            "id": "evade_ranged",
+            "iconTexture": "",
+            "image": "",
+            "images3": False,
+            "modeAvail": [],
+            "scope": "global",
+            "valueType": "absolute",
+            "displayValue": 1.0,
+            "c": 1,
+            "value": 1.0,
+            "buffType": "buff",
+            "group": "evade_ranged",
+            "p": {},
+            "hasDuration": True,
+            "e": 0,
+            "time": {"amount": 3.0},
+            "loc_name": "evade_ranged",
+            "loc_desc": "evade_ranged",
+        },
+        # 消耗型规避充能 Buff：无倒计时，血条下方常驻绿色圆环图标，触发规避后消耗
+        "evade_charge": {
+            "id": "evade_charge",
+            "iconTexture": "",
+            "image": "",
+            "images3": False,
+            "modeAvail": [],
+            "scope": "global",
+            "valueType": "absolute",
+            "displayValue": 1.0,
+            "c": 1,
+            "value": 1.0,
+            "buffType": "buff",
+            "group": "evade_melee",
+            "p": {},
+            "hasDuration": False,
+            "e": 0,
+            "time": {"amount": 0.0},
+            "loc_name": "evade_charge",
+            "loc_desc": "evade_charge",
+        },
+        # 暴击几率增益 Buff
+        "crit_rate": {
+            "id": "crit_rate",
+            "iconTexture": "",
+            "image": "",
+            "images3": False,
+            "modeAvail": [],
+            "scope": "global",
+            "valueType": "multiplier",
+            "displayValue": 1.0,
+            "c": 1,
+            "value": 1.0,
+            "buffType": "crit_rate",
+            "group": "crit_rate",
+            "p": {},
+            "hasDuration": True,
+            "e": 0,
+            "time": {"amount": 7.5},
+            "loc_name": "crit_rate",
+            "loc_desc": "crit_rate",
+        },
     }
 
     # 动态汇入所有注册机器人提供的额外 Buff 定义
@@ -334,13 +424,60 @@ def build_stat_mod_appears():
         import character_profiles
     appears.update(character_profiles.get_profile_stat_mod_appears())
 
+    # 4. 全局规避呼出文字外观
+    appears["appr_evade_callout"] = {
+        "id": "appr_evade_callout",
+        "a": "规避",
+        "s": "",
+        "l": "",
+        "ss": "",
+        "t": "\uE509",
+        "f": "",
+        "st": "规避",
+        "ps": "",
+        "pl": "",
+        "tc": "10B981",
+        "gt": "FFFFFF",
+        "gb": "059669",
+    }
+
     return appears
 
 
 # ---------------------------------------------------------------------------
-# 0. 核心引擎底层全局系统修饰器 (受创硬直、伤害/治疗跳字累加器)
+# 0. 核心引擎底层全局系统修饰器 (受创硬直、伤害/治疗跳字累加器、规避 Callout)
 # ---------------------------------------------------------------------------
 SYSTEM_GLOBAL_STATMODS = {
+    # 全局规避呼出修饰器：规避成功触发时由底层 StatModifierController.ApplyStatModifier 呼出绿色“规避”大字
+    "gp_evade_callout": {
+        "id": "gp_evade_callout",
+        "t": "sp_callout",
+        "tm": "",
+        "tr": [],
+        "uit": [],
+        "pri": 0,
+        "trm": 0.0,
+        "trs": "",
+        "trr": "repeat",
+        "c": 1.0,
+        "m": 0.0,
+        "d": 1.0,
+        "s": "none",
+        "ta": "self",
+        "mt": "buff",
+        "v": "",
+        "ms": "",
+        "st": 0,
+        "g": "",
+        "gc": 0.0,
+        "gcv": "",
+        "rcv": "",
+        "ti": 0,
+        "a": ["appr_evade_callout"],
+        "au": [],
+        "rh": 0.0,
+        "ra": 0.0,
+    },
     # 核心受击硬直修饰器 (内置默认)：引擎 ApplyHitStun 强依赖，确保受击方产生硬直与受创后摇
     "gp_hit_stun": {
         "id": "gp_hit_stun",
@@ -530,4 +667,4 @@ def bot_abilities(bot_id: str):
     except Exception:
         import character_profiles
     ui_mods = character_profiles.get_bot_ui_ability_ids(bot_id)
-    return sp_mods + bot_custom_mods + ui_mods
+    return ["gp_evade_callout"] + sp_mods + bot_custom_mods + ui_mods

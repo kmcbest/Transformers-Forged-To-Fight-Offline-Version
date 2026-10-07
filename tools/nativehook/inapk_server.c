@@ -315,6 +315,7 @@ typedef struct {
     int enable_swipe_specials;
     int freeze_enemy_ai;
     int start_full_power;
+    int enable_combat_debug_overlay;
 } UserSettings;
 
 static UserSettings g_user_settings = {
@@ -327,7 +328,8 @@ static UserSettings g_user_settings = {
     .target_fps = 60,
     .enable_swipe_specials = 1,
     .freeze_enemy_ai = 0,
-    .start_full_power = 0
+    .start_full_power = 0,
+    .enable_combat_debug_overlay = 0
 };
 static int g_settings_loaded = 0;
 
@@ -426,6 +428,14 @@ static void load_user_settings(void) {
                         g_user_settings.start_full_power = !strncmp(c, "true", 4);
                     }
                 }
+                char *cdo = strstr(buf, "\"enable_combat_debug_overlay\"");
+                if (cdo) {
+                    char *c = strchr(cdo, ':');
+                    if (c) {
+                        while (*c && (*c == ':' || isspace((unsigned char)*c))) c++;
+                        g_user_settings.enable_combat_debug_overlay = !strncmp(c, "true", 4);
+                    }
+                }
                 g_settings_loaded = 1;
                 return;
             }
@@ -456,6 +466,10 @@ int tftf_get_enable_swipe_specials(void) {
 int tftf_get_start_full_power(void) {
     if (!g_settings_loaded) load_user_settings();
     return g_user_settings.start_full_power;
+}
+int tftf_get_combat_debug_overlay(void) {
+    if (!g_settings_loaded) load_user_settings();
+    return g_user_settings.enable_combat_debug_overlay;
 }
 
 /* TEST AID (combo quality-gate testing): when this marker file exists or user setting is enabled,

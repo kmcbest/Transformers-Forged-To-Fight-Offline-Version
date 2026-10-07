@@ -767,6 +767,13 @@
           </div>
           <input type="checkbox" id="chk-full-power" onchange="toggleFullPower(this.checked)" style="transform: scale(1.25); accent-color: #f59e0b; cursor: pointer;">
         </label>
+        <label class="toggle-row" style="cursor: pointer; display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
+          <div style="padding-right: 12px;">
+            <div style="font-size: 13.5px; font-weight: bold; color: #f8fafc;" data-i18n="combat_overlay_title">战斗判定悬浮战报 (Combat Overlay)</div>
+            <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;" data-i18n="combat_overlay_desc">屏幕实时显示技能掷骰概率、暴击/闪避判定与Buff施加，便于录屏分析</div>
+          </div>
+          <input type="checkbox" id="chk-combat-overlay" onchange="toggleCombatOverlay(this.checked)" style="transform: scale(1.25); accent-color: #f59e0b; cursor: pointer;">
+        </label>
       </div>
       <div style="display:flex; justify-content:flex-end;">
         <button class="btn-secondary" onclick="toggleDebugModal()" data-i18n="btn_close">关闭</button>
@@ -798,6 +805,7 @@
       enable_swipe_specials: true,
       freeze_enemy_ai: false,
       start_full_power: false,
+      enable_combat_debug_overlay: false,
       skip_launcher_next_time: false
     };
 
@@ -845,6 +853,8 @@
         freeze_ai_desc: "冻结敌人 AI 思考与行动，便于观测连招与技能机制",
         full_power_title: "我方开局三格满气",
         full_power_desc: "对局开场直接注满 3 格 SP 能量，即刻释放特技",
+        combat_overlay_title: "战斗判定悬浮战报 (Combat Overlay)",
+        combat_overlay_desc: "屏幕实时显示技能掷骰概率、暴击/闪避判定与Buff施加，便于录屏分析",
         btn_reset: "恢复默认",
         btn_json: "{ } JSON",
         btn_launch: "保存并进入方舟",
@@ -893,6 +903,8 @@
         freeze_ai_desc: "Freeze all enemy AI decisions and actions for testing combos & abilities",
         full_power_title: "Start With 3 Full Power Bars",
         full_power_desc: "Instantly charge 3 full SP power bars at fight start",
+        combat_overlay_title: "Combat Trigger Overlay",
+        combat_overlay_desc: "Display real-time ability dice rolls, crit/evade procs, and buff events on-screen for video debugging",
         btn_reset: "Reset Defaults",
         btn_json: "{ } JSON",
         btn_launch: "Save & Launch Game",
@@ -1071,6 +1083,11 @@
       updateJsonPreview();
     }
 
+    function toggleCombatOverlay(enabled) {
+      config.enable_combat_debug_overlay = !!enabled;
+      updateJsonPreview();
+    }
+
     function resetDefaults() {
       document.getElementById('inp-commander').value = 'Commander';
       onCommanderInput();
@@ -1080,6 +1097,8 @@
       if (chkFreeze) { chkFreeze.checked = false; toggleFreezeAi(false); }
       const chkPower = document.getElementById('chk-full-power');
       if (chkPower) { chkPower.checked = false; toggleFullPower(false); }
+      const chkOverlay = document.getElementById('chk-combat-overlay');
+      if (chkOverlay) { chkOverlay.checked = false; toggleCombatOverlay(false); }
 
       const diffPills = document.querySelectorAll('.grid-container .col:first-child .card:first-child .pill-btn');
       diffPills[2].click();
@@ -1198,6 +1217,13 @@
             if (chkPower) {
               chkPower.checked = !!parsed.start_full_power;
               config.start_full_power = !!parsed.start_full_power;
+            }
+          }
+          if (parsed.enable_combat_debug_overlay !== undefined) {
+            const chkOverlay = document.getElementById('chk-combat-overlay');
+            if (chkOverlay) {
+              chkOverlay.checked = !!parsed.enable_combat_debug_overlay;
+              config.enable_combat_debug_overlay = !!parsed.enable_combat_debug_overlay;
             }
           }
           if (parsed.launcher_language) {

@@ -580,9 +580,13 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x11785B8, "REG_HIT_RES",        2, 0 }, // 186 PlayerController.RegisterHitResult(HitResultData hitResult)
     { 0x00DACB84, "GET_SPD_MOD",       2, 0 }, // 187 PlayerAttributes.get_SpeedModifier -> attack animation speed boost
     { 0x00EEFF2C, "APPLY_BUFF",        2, 0 }, // 188 BuffsController.ApplyBuff -> ability gating (Rhinox bleed-on-nullify, Wheeljack final hit)
-    { 0x00EEEDD8, "REMOVE_BUFFS_INT",  2, 0 }  // 189 BuffsController.RemoveBuffsInternal -> track successful buff nullification
+    { 0x00EEEDD8, "REMOVE_BUFFS_INT",  2, 0 }, // 189 BuffsController.RemoveBuffsInternal -> track successful buff nullification
+    { 0x00DACC74, "GET_EVADE_MELEE",   2, 0 }, // 190 PlayerAttributes.get_EvadeMelee -> probabilistic melee evade
+    { 0x00DACCA4, "GET_EVADE_RANGED",  2, 0 }  // 191 PlayerAttributes.get_EvadeRanged -> probabilistic ranged evade
 };
+
 #define NH (int)(sizeof(H)/sizeof(H[0]))
+
 
 // Set only while inside BCGHeroBase..ctor (slot 45 brackets it). When set, every
 // key read is prefixed "HB " so the ctor's exact field keys can be grepped out of
@@ -617,6 +621,58 @@ static volatile uint64_t g_p0_last_attack_ms = 0;
 #define COMBO_IDLE_RESET_MS 900
 
 extern int tftf_get_start_full_power(void);
+extern int tftf_get_combat_debug_overlay(void);
+static uint64_t propgo_now_ms(void);
+static int obj_ok(void* p);
+static void* g_active_hud_screen = NULL;
+
+#define COMBAT_OVERLAY_MAX_LINES 6
+#define COMBAT_OVERLAY_LINE_LEN  128
+
+typedef struct {
+    char text[COMBAT_OVERLAY_LINE_LEN];
+    uint64_t timestamp_ms;
+    int is_active;
+} CombatOverlayEntry;
+
+static CombatOverlayEntry g_overlay_lines[COMBAT_OVERLAY_MAX_LINES];
+static int g_overlay_head = 0;
+static pthread_mutex_t g_overlay_lock = PTHREAD_MUTEX_INITIALIZER;
+
+static void combat_overlay_show_hud(const char* text) {
+    if (!text || !text[0]) return;
+    if (g_active_hud_screen && obj_ok(g_active_hud_screen) && g_base && g_strnew) {
+        typedef void (*fn_announcement)(void*, void*, float, void*);
+        fn_announcement show_anno = (fn_announcement)(g_base + 0x00FED554);
+        void* str_obj = g_strnew(text);
+        if (str_obj) {
+            show_anno(g_active_hud_screen, str_obj, 1.8f, NULL);
+        }
+    }
+}
+
+static void combat_overlay_push(const char *fmt, ...) {
+    if (!tftf_get_combat_debug_overlay()) return;
+
+    char buf[COMBAT_OVERLAY_LINE_LEN];
+    va_list args;
+    va_start(args, fmt);
+    vsnprintf(buf, sizeof(buf), fmt, args);
+    va_end(args);
+
+    pthread_mutex_lock(&g_overlay_lock);
+    int idx = g_overlay_head % COMBAT_OVERLAY_MAX_LINES;
+    strncpy(g_overlay_lines[idx].text, buf, COMBAT_OVERLAY_LINE_LEN - 1);
+    g_overlay_lines[idx].text[COMBAT_OVERLAY_LINE_LEN - 1] = '\0';
+    g_overlay_lines[idx].timestamp_ms = propgo_now_ms();
+    g_overlay_lines[idx].is_active = 1;
+    g_overlay_head++;
+    pthread_mutex_unlock(&g_overlay_lock);
+
+    flog("[OVERLAY] %s", buf);
+    combat_overlay_show_hud(buf);
+}
+
 static volatile int g_p0_power_seeded = 0;
 static volatile int g_p0_current_special_index = -1;
 static volatile uint64_t g_p0_ranged_boost_end_ms = 0;
@@ -5697,6 +5753,10 @@ void* hook_156(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
         flog("ROLL_CRIT: pidx=%d bid=%s (cc=%.2f, roll=%.4f) -> is_crit=%d (a0=%p)",
              player_idx, bid ? bid : "unknown", crit_chance, roll, is_crit, a0);
     }
+    if (is_crit) {
+        combat_overlay_push("P%d [%s] CRIT! (Roll: %.1f%% <= CC: %.1f%%)",
+                            player_idx, bid ? bid : "bot", roll * 100.0f, crit_chance * 100.0f);
+    }
     return (void*)(intptr_t)is_crit;
 }
 void* hook_157(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
@@ -6485,6 +6545,7 @@ float hook_179(void* self, float baseSpeed) {
 
 static int check_and_toggle_autofight(void* hud_screen) {
     if (!hud_screen || !obj_ok(hud_screen)) return 0;
+    g_active_hud_screen = hud_screen;
     void* afb = *(void**)((char*)hud_screen + 0x130);
     if (!afb || !obj_ok(afb)) return 0;
 
@@ -6511,6 +6572,7 @@ static int check_and_toggle_autofight(void* hud_screen) {
 }
 
 void* hook_180(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    if (a0 && obj_ok(a0)) g_active_hud_screen = a0;
     if (check_and_toggle_autofight(a0)) {
         return NULL;
     }
@@ -6518,6 +6580,7 @@ void* hook_180(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
 }
 
 void* hook_181(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    if (a0 && obj_ok(a0)) g_active_hud_screen = a0;
     if (check_and_toggle_autofight(a0)) {
         return NULL;
     }
@@ -6790,6 +6853,10 @@ int hook_188(void* self, void* applicant, void* statModifier, int32_t updateAttr
 
     PROTECT({
         if (res == 1) { // BuffResult.Success
+            void* p0_bc = (g_p0_controller && obj_ok(g_p0_controller)) ? *(void**)((char*)g_p0_controller + 0x108) : NULL;
+            int is_target_p0 = (self == p0_bc);
+            combat_overlay_push("BUFF -> %s on %s (APPLIED)", mod_id[0] ? mod_id : "unknown", is_target_p0 ? "P0" : "P1");
+
             uint64_t now_ms = propgo_now_ms();
             // Arcee / Generic Ranged Boost applied (+40% bullet speed & animation speed)
             if (mod_id[0] && strstr(mod_id, "arcee_sp1_trick_shot") != NULL) {
@@ -6824,6 +6891,87 @@ int hook_189(void* self, int32_t testType, void* testParams, int32_t numBuffsToR
     return res;
 }
 
+// slot 190 (0x00DACC74): PlayerAttributes.get_EvadeMelee
+int hook_190(void* self) {
+    if (!self || !obj_ok(self)) return 0;
+    float val = 0.0f;
+    PROTECT({
+        void* stat_attr = *(void**)((uintptr_t)self + 0x1C0);
+        if (stat_attr && obj_ok(stat_attr)) {
+            void* vtable = *(void**)stat_attr;
+            if (vtable) {
+                typedef float (*fn_get_val)(void*, void*);
+                fn_get_val fn_get = *(fn_get_val*)((uintptr_t)vtable + 0x178);
+                void* mi = *(void**)((uintptr_t)vtable + 0x180);
+                if (fn_get) {
+                    val = fn_get(stat_attr, mi);
+                }
+            }
+        }
+    });
+    if (val <= 0.0001f) return 0;
+    void* p0_attr = (g_p0_controller && obj_ok(g_p0_controller)) ? *(void**)((char*)g_p0_controller + 0x100) : NULL;
+    int is_p0 = (self == p0_attr);
+    const char* who = is_p0 ? (g_p0_bot_id[0] ? g_p0_bot_id : "P0") : (g_p1_bot_id[0] ? g_p1_bot_id : "P1");
+
+    if (val >= 1.0f) {
+        flog("EVADE_MELEE_CHECK: guaranteed 100%% (val=%.3f)", val);
+        combat_overlay_push("[%s] EVADE Melee (100%% GUARANTEED)", who);
+        return 1;
+    }
+    float r = ((float)rand()) / (float)RAND_MAX;
+    if (r < val) {
+        flog("EVADE_MELEE_CHECK: SUCCESS! roll=%.3f < chance=%.3f (TRIGGERED)", r, val);
+        combat_overlay_push("[%s] EVADE Melee PASS! (Roll: %.1f%% < %.1f%%)", who, r * 100.0f, val * 100.0f);
+        return 1;
+    } else {
+        flog("EVADE_MELEE_CHECK: MISSED! roll=%.3f >= chance=%.3f (NORMAL HIT)", r, val);
+        combat_overlay_push("[%s] EVADE Melee FAIL (Roll: %.1f%% >= %.1f%%)", who, r * 100.0f, val * 100.0f);
+        return 0;
+    }
+}
+
+// slot 191 (0x00DACCA4): PlayerAttributes.get_EvadeRanged
+int hook_191(void* self) {
+    if (!self || !obj_ok(self)) return 0;
+    float val = 0.0f;
+    PROTECT({
+        void* stat_attr = *(void**)((uintptr_t)self + 0x1C8);
+        if (stat_attr && obj_ok(stat_attr)) {
+            void* vtable = *(void**)stat_attr;
+            if (vtable) {
+                typedef float (*fn_get_val)(void*, void*);
+                fn_get_val fn_get = *(fn_get_val*)((uintptr_t)vtable + 0x178);
+                void* mi = *(void**)((uintptr_t)vtable + 0x180);
+                if (fn_get) {
+                    val = fn_get(stat_attr, mi);
+                }
+            }
+        }
+    });
+    if (val <= 0.0001f) return 0;
+    void* p0_attr = (g_p0_controller && obj_ok(g_p0_controller)) ? *(void**)((char*)g_p0_controller + 0x100) : NULL;
+    int is_p0 = (self == p0_attr);
+    const char* who = is_p0 ? (g_p0_bot_id[0] ? g_p0_bot_id : "P0") : (g_p1_bot_id[0] ? g_p1_bot_id : "P1");
+
+    if (val >= 1.0f) {
+        flog("EVADE_RANGED_CHECK: guaranteed 100%% (val=%.3f)", val);
+        combat_overlay_push("[%s] EVADE Ranged (100%% GUARANTEED)", who);
+        return 1;
+    }
+    float r = ((float)rand()) / (float)RAND_MAX;
+    if (r < val) {
+        flog("EVADE_RANGED_CHECK: SUCCESS! roll=%.3f < chance=%.3f (TRIGGERED)", r, val);
+        combat_overlay_push("[%s] EVADE Ranged PASS! (Roll: %.1f%% < %.1f%%)", who, r * 100.0f, val * 100.0f);
+        return 1;
+    } else {
+        flog("EVADE_RANGED_CHECK: MISSED! roll=%.3f >= chance=%.3f (NORMAL HIT)", r, val);
+        combat_overlay_push("[%s] EVADE Ranged FAIL (Roll: %.1f%% >= %.1f%%)", who, r * 100.0f, val * 100.0f);
+        return 0;
+    }
+}
+
+
 static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hook_7,hook_8,
     hook_9,hook_10,hook_11,hook_12,hook_13,hook_14,hook_15,hook_16,hook_17,hook_18,hook_19,hook_20,hook_21,
     hook_22,hook_23,hook_24,hook_25,hook_26,hook_27,hook_28,hook_29,hook_30,
@@ -6844,7 +6992,9 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     (void*)hook_159,hook_160,hook_161,hook_162,hook_163,hook_164,
     hook_165,hook_166,(void*)hook_167,hook_168,hook_169,hook_170,
     hook_171,hook_172,hook_173,hook_174,hook_175,hook_176,(void*)hook_177,(void*)hook_178,
-    (void*)hook_179,hook_180,hook_181,hook_182,hook_183,hook_184,hook_185,hook_186,(void*)hook_187,(void*)hook_188,(void*)hook_189 };
+    (void*)hook_179,hook_180,hook_181,hook_182,hook_183,hook_184,hook_185,hook_186,(void*)hook_187,(void*)hook_188,(void*)hook_189,
+    (void*)hook_190,(void*)hook_191 };
+
 
 static void write_jump(uint8_t* dst, void* target){
     uint32_t* p = (uint32_t*)dst;
@@ -6985,6 +7135,18 @@ static fn8 orig_BattleArbiterOnToggleAutoFight = NULL;
 static void* hooked_BattleArbiterOnToggleAutoFight(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     LOG("[AUTOFIGHT] BattleArbiter.OnToggleAutoFight invoked (self=%p, a1=%p)!", a0, a1);
     if (orig_BattleArbiterOnToggleAutoFight) return orig_BattleArbiterOnToggleAutoFight(a0, a1, a2, a3, a4, a5, a6, a7);
+    return NULL;
+}
+
+static fn8 orig_BattleArbiterUpdate = NULL;
+static void* hooked_BattleArbiterUpdate(void* arbiter, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    if (arbiter && obj_ok(arbiter)) {
+        void* hud = *(void**)((char*)arbiter + 0x88);
+        if (hud && obj_ok(hud)) {
+            g_active_hud_screen = hud;
+        }
+    }
+    if (orig_BattleArbiterUpdate) return orig_BattleArbiterUpdate(arbiter, a1, a2, a3, a4, a5, a6, a7);
     return NULL;
 }
 
@@ -7211,7 +7373,7 @@ static void* installer(void* arg){
     inline_hook((void*)(g_base + 0xC9D6E8), (void*)hooked_ToggleAutoFight, &orig_ToggleAutoFight);
     inline_hook((void*)(g_base + 0xE48C58), (void*)hooked_PrefightOnToggleAutoFight, &orig_PrefightOnToggleAutoFight);
     inline_hook((void*)(g_base + 0xCFD384), (void*)hooked_BattleArbiterOnToggleAutoFight, &orig_BattleArbiterOnToggleAutoFight);
-
+    inline_hook((void*)(g_base + 0x00CFE400), (void*)hooked_BattleArbiterUpdate, &orig_BattleArbiterUpdate);
 
     LOG("install done (%d hooks)", NH);
     return NULL;

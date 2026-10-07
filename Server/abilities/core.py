@@ -684,4 +684,316 @@ def make_nullify_statmod(
     return {mod_id: stat_mod}, {appr_id: appear}
 
 
+def make_evade_grant_statmod(
+    mod_id: str,
+    evade_type: str = "melee",          # "melee" or "ranged"
+    grant_chance: float = 1.0,          # 获得此 Buff 的概率 (例如后闪 1.0，被击倒 0.85)
+    evade_chance: float = 1.0,          # 触发规避的概率 (例如小黄蜂 0.32，路障 1.0)
+    duration: float = 3.0,              # >0 为倒计时型; <=0 为消耗型 (无倒计时，血条下方常驻)
+    trigger: str = "onPlayerStateEnter",# 获得触发事件
+    trigger_scope: str = "state=Dodge", # 获得触发条件范围
+    appr_id: str = "",
+    callout_text: str = "",             # "近战规避" 或 "远程规避"
+    pua_icon: str = "",
+    color_hex: str = "10B981",          # 纯6位十六进制绿色 (严禁带 '#')
+    gradient_bottom: str = "059669",
+    show_callout: bool = False,         # 获得时通常不弹字 (触发规避免伤时再呼出“规避”)
+) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    """
+    规避获得修饰器工厂 (Evade Grant StatMod Factory):
+    - 明确区分两层概率：
+      1. grant_chance: 角色采取特定行动或遭遇特定事件时，获得规避 Buff 的概率 (写入 'c')；
+      2. evade_chance: 拥有该 Buff 后，受到攻击时真正成功躲避免伤的概率 (写入 'm')。
+    - 图标显示为绿色圆环 (Buff)，PUA 图标：近战规避 0xe509 (\uE509)，远程规避 0xe518 (\uE518)；
+    - 分倒计时型 (duration > 0) 与消耗型 (duration <= 0, 无倒计时, 触发规避后消耗)。
+    """
+    if not appr_id:
+        appr_id = f"appr_{mod_id}"
+
+    is_melee = (evade_type.lower() == "melee")
+    if not callout_text:
+        callout_text = "近战规避" if is_melee else "远程规避"
+    if not pua_icon:
+        pua_icon = "\uE509" if is_melee else "\uE518"
+
+    validate_color_code(color_hex, "evade_tc")
+    validate_color_code(gradient_bottom, "evade_gb")
+
+    buff_type = "evade_melee" if is_melee else "evade_ranged"
+    desc_text = "规避对手近战攻击并中断动作" if is_melee else "规避对手远程攻击并中断动作"
+
+    appear = {
+        "id": appr_id,
+        "a": callout_text,
+        "s": "",                      # 留空，避免被误判为常规被动展示项
+        "l": desc_text,
+        "ss": desc_text,
+        "t": pua_icon,                # PUA 矢量图标: 近战 0xe509 / 远程 0xe518
+        "f": "",
+        "st": callout_text if show_callout else "",
+        "ps": callout_text,
+        "pl": f"{callout_text}生效中",
+        "tc": color_hex,
+        "gt": color_hex,
+        "gb": gradient_bottom,
+    }
+
+    # 倒计时型使用实际 duration，消耗型 (无倒计时) 设置 duration = -1.0 (常驻直至被触发消耗)
+    eff_duration = float(duration) if duration > 0 else -1.0
+    buff_template_id = buff_type
+
+    stat_mod = {
+        "id": mod_id,
+        "t": buff_template_id,
+        "tm": "",
+        "tr": [trigger],
+        "uit": [trigger],
+        "pri": 0,
+        "trm": 0.0,
+        "trs": trigger_scope,
+        "trr": "repeat",
+        "c": float(grant_chance),     # 获得 Buff 的概率
+        "m": float(evade_chance),     # 受击时触发规避的概率 (0.32 或 1.0)
+        "d": eff_duration,
+        "s": "none",
+        "ta": "self",                 # 作用于自身
+        "mt": "buff",                 # 正向增益
+        "v": "",
+        "ms": "",
+        "st": 1,                      # 不堆叠层数
+        "g": buff_type,               # 增益类别组: evade_melee 或 evade_ranged
+        "gc": 0.0,
+        "gcv": "",
+        "rcv": "",
+        "ti": 0,
+        "a": [appr_id],
+        "au": [],
+        "rh": 0.0,
+        "ra": 0.0,
+        "consume_on_evade": (duration <= 0),
+        "evade_type": "melee" if is_melee else "ranged",
+    }
+
+    validate_statmod(stat_mod)
+    validate_appear(appear)
+    return {mod_id: stat_mod}, {appr_id: appear}
+
+
+def make_evade_consume_statmod(
+    mod_id: str,
+    target_mod_id: str,
+    evade_type: str = "melee",
+    callout_text: str = "规避",
+    appr_id: str = "",
+    pua_icon: str = "",
+    color_hex: str = "10B981",
+    gradient_bottom: str = "059669",
+    show_callout: bool = True,
+) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    """
+    规避成功消耗与弹字工厂 (Evade Consume StatMod Factory):
+    - 真正进入规避动作状态时 (state=EvadeMelee / EvadeRanged)，
+      原生调用 Remove_BuffEffect 精准移除 target_mod_id，并呼出绿色大字 '规避'！
+    """
+    is_melee = (evade_type.lower() == "melee")
+    target_state = "EvadeMelee" if is_melee else "EvadeRanged"
+    if not pua_icon:
+        pua_icon = "\uE509" if is_melee else "\uE518"
+
+    return make_remove_statmod(
+        mod_id=mod_id,
+        target_mod_id=target_mod_id,
+        trigger="onPlayerStateEnter",
+        trigger_scope=f"state={target_state}",
+        callout_text=callout_text,
+        appr_id=appr_id,
+        pua_icon=pua_icon,
+        color_hex=color_hex,
+        gradient_bottom=gradient_bottom,
+        show_callout=show_callout,
+    )
+
+
+def make_evade_statmod(
+    mod_id: str,
+    evade_type: str = "melee",
+    duration: float = 3.0,
+    chance: float = 1.0,
+    trigger: str = "onPlayerStateEnter",
+    trigger_scope: str = "state=Dodge",
+    appr_id: str = "",
+    callout_text: str = "",
+    consume_on_trigger: bool = False,
+    pua_icon: str = "",
+    color_hex: str = "10B981",
+    gradient_bottom: str = "059669",
+    show_callout: bool = True,
+) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    """兼容旧接口的规避工厂封装"""
+    return make_evade_grant_statmod(
+        mod_id=mod_id,
+        evade_type=evade_type,
+        grant_chance=chance,
+        evade_chance=1.0,
+        duration=duration,
+        trigger=trigger,
+        trigger_scope=trigger_scope,
+        appr_id=appr_id,
+        callout_text=callout_text,
+        pua_icon=pua_icon,
+        color_hex=color_hex,
+        gradient_bottom=gradient_bottom,
+        show_callout=show_callout,
+    )
+
+
+
+def make_crit_rate_statmod(
+    mod_id: str,
+    duration: float = 7.5,
+    crit_bonus: float = 0.30,
+    chance: float = 1.0,
+    trigger: str = "onPlayerStateEnter",
+    trigger_scope: str = "state=Knockdown",
+    appr_id: str = "",
+    callout_text: str = "暴击几率",
+    pua_icon: str = "\uE406",
+    color_hex: str = "F59E0B",
+    gradient_bottom: str = "D97706",
+) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    """
+    通用暴击几率增益工厂 (Crit Rate Boost Buff):
+    在指定持续时间内提升自身暴击几率。
+    - PUA 图标为暴击标志 (\uE406)，配色为金黄琥珀色 (F59E0B / D97706)。
+    """
+    if not appr_id:
+        appr_id = f"appr_{mod_id}"
+
+    validate_color_code(color_hex, "crit_rate_tc")
+    validate_color_code(gradient_bottom, "crit_rate_gb")
+
+    appear = {
+        "id": appr_id,
+        "a": callout_text,
+        "s": "",
+        "l": f"暴击几率提升{int(crit_bonus*100)}%",
+        "ss": f"暴击几率提升{int(crit_bonus*100)}%",
+        "t": pua_icon,
+        "f": "",
+        "st": callout_text,
+        "ps": callout_text,
+        "pl": f"{callout_text}生效中",
+        "tc": color_hex,
+        "gt": color_hex,
+        "gb": gradient_bottom,
+    }
+
+    stat_mod = {
+        "id": mod_id,
+        "t": "crit_rate",
+        "tm": "",
+        "tr": [trigger],
+        "uit": [trigger],
+        "pri": 0,
+        "trm": 0.0,
+        "trs": trigger_scope,
+        "trr": "repeat",
+        "c": float(chance),
+        "m": float(crit_bonus),
+        "d": float(duration),
+        "s": "none",
+        "ta": "self",
+        "mt": "buff",
+        "v": "",
+        "ms": "",
+        "st": 1,
+        "g": "crit_rate",
+        "gc": 0.0,
+        "gcv": "",
+        "rcv": "",
+        "ti": 0,
+        "a": [appr_id],
+        "au": [],
+        "rh": 0.0,
+        "ra": 0.0,
+    }
+
+    validate_statmod(stat_mod)
+    validate_appear(appear)
+    return {mod_id: stat_mod}, {appr_id: appear}
+
+
+def make_remove_statmod(
+    mod_id: str,
+    target_mod_id: str,
+    trigger: str = "onPlayerStateEnter",
+    trigger_scope: str = "state=EvadeMelee",
+    callout_text: str = "规避",
+    appr_id: str = "",
+    pua_icon: str = "\uE509",
+    color_hex: str = "10B981",
+    gradient_bottom: str = "059669",
+    show_callout: bool = True,
+) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    """
+    通用移除 Buff 修饰器工厂 (Remove Buff StatMod Factory):
+    - 当满足特定触发条件时 (如进入 EvadeMelee / EvadeRanged 状态)，
+      通过客户端原生 Remove_BuffEffect 移除指定的 Buff (target_mod_id)；
+    - 可配置 callout 呼出文字 (如 '规避') 与 PUA 图标。
+    """
+    if not appr_id:
+        appr_id = f"appr_{mod_id}"
+
+    validate_color_code(color_hex, "remove_tc")
+    validate_color_code(gradient_bottom, "remove_gb")
+
+    appear = {
+        "id": appr_id,
+        "a": callout_text,
+        "s": "",
+        "l": f"触发{callout_text}",
+        "ss": f"触发{callout_text}",
+        "t": pua_icon,
+        "f": "",
+        "st": callout_text if show_callout else "",
+        "ps": callout_text,
+        "pl": f"{callout_text}生效中",
+        "tc": color_hex,
+        "gt": color_hex,
+        "gb": gradient_bottom,
+    }
+
+    stat_mod = {
+        "id": mod_id,
+        "t": "remove",
+        "tm": target_mod_id,
+        "tr": [trigger],
+        "uit": [trigger],
+        "pri": 0,
+        "trm": 0.0,
+        "trs": trigger_scope,
+        "trr": "repeat",
+        "c": 1.0,
+        "m": 1.0,
+        "d": 0.0,
+        "s": "none",
+        "ta": "self",
+        "mt": "buff",
+        "v": "",
+        "ms": "",
+        "st": 1,
+        "g": "",
+        "gc": 0.0,
+        "gcv": "",
+        "rcv": "",
+        "ti": 0,
+        "a": [appr_id],
+        "au": [],
+        "rh": 0.0,
+        "ra": 0.0,
+    }
+
+    validate_statmod(stat_mod)
+    validate_appear(appear)
+    return {mod_id: stat_mod}, {appr_id: appear}
 

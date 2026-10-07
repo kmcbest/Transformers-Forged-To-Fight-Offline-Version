@@ -24,6 +24,8 @@ const char* tftf_get_commander_name(void);
 int tftf_get_target_fps(void);
 int tftf_get_enable_swipe_specials(void);
 int tftf_get_freeze_enemy_ai(void);
+int tftf_get_start_full_power(void);
+int tftf_get_combat_debug_overlay(void);
 void tftf_reload_user_settings(void);
 
 int tftf_quest_is_leisure(void);
