@@ -135,7 +135,7 @@ def build_ultramagnus_abilities(base_hp: float = 30000.0, base_atk: float = 3000
         mod_id="ultramagnus_heavy_burn",
         duration=12.0,
         total_dmg=burn_dmg,
-        chance=1.0,                    # 底层由 Native Hook 仲裁 65% 掷骰并弹出 HUD 显示
+        chance=0.65,
         trigger="onHit",
         trigger_scope="level=Heavy",
         appr_id="appr_ultramagnus_heavy_burn",
@@ -150,7 +150,7 @@ def build_ultramagnus_abilities(base_hp: float = 30000.0, base_atk: float = 3000
         mod_id="ultramagnus_sp2_burn",
         duration=12.0,
         total_dmg=burn_dmg,
-        chance=1.0,                    # 底层由 Native Hook 仲裁 65% 掷骰并弹出 HUD 显示
+        chance=0.65,
         trigger="onHit",
         trigger_scope="level=Special2;dmgFlags=LastHit",
         appr_id="appr_ultramagnus_sp2_burn",
@@ -165,7 +165,7 @@ def build_ultramagnus_abilities(base_hp: float = 30000.0, base_atk: float = 3000
         mod_id="ultramagnus_sp3_burn",
         duration=12.0,
         total_dmg=burn_dmg,
-        chance=1.0,                    # 底层由 Native Hook 仲裁 65% 掷骰并弹出 HUD 显示
+        chance=0.65,
         trigger="onHit",
         trigger_scope="level=Special3;index=1,2,3,4,5",
         appr_id="appr_ultramagnus_sp3_burn",

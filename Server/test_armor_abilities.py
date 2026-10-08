@@ -58,8 +58,8 @@ class TestArmorAbilities(unittest.TestCase):
         a_armor = appears.get("appr_optimus_block_armor")
         self.assertIsNotNone(a_armor)
         self.assertEqual(a_armor["t"], "\uE517")  # 完整胸甲 PUA
-        self.assertEqual(a_armor["tc"], "2BDAF6") # 官方电光青色 (真机取色)
-        self.assertEqual(a_armor["gb"], "0284C7")
+        self.assertEqual(a_armor["tc"], "29EBF4") # 官方电光青色 (真机取色)
+        self.assertEqual(a_armor["gb"], "00C5E8")
         self.assertNotIn("#", a_armor["tc"])
 
         # 2. SP1 破甲 (ID 2354) - 仅后两击巨斧劈砍 (index=1,2)
@@ -153,12 +153,12 @@ class TestArmorAbilities(unittest.TestCase):
         self.assertIsNotNone(m_sp3_burn)
         self.assertEqual(m_sp3_burn["trs"], "level=Special3;index=1,2,3,4,5")
 
-        # 重击燃烧 (ID 2874) - 底层由 Native Hook 接管 65% 掷骰与 HUD 显示
+        # 重击燃烧 (ID 2874) - 65% 概率
         m_h_burn = stat_mods.get("ultramagnus_heavy_burn")
         self.assertIsNotNone(m_h_burn)
         self.assertEqual(m_h_burn["t"], "dmg_burn")
         self.assertEqual(m_h_burn["trs"], "level=Heavy")
-        self.assertEqual(m_h_burn["c"], 1.0)
+        self.assertEqual(m_h_burn["c"], 0.65)
         self.assertEqual(m_h_burn["d"], 12.0)
 
         a_burn = appears.get("appr_ultramagnus_heavy_burn")
@@ -177,19 +177,19 @@ class TestArmorAbilities(unittest.TestCase):
         stat_mods = build_stat_mods()
         appears = build_stat_mod_appears()
 
-        # 受创护甲 (ID 3056) - 底层由 Native Hook 接管 8% 掷骰与 HUD 显示
+        # 受创护甲 (ID 3056) - 8% 概率
         m_armor = stat_mods.get("grindor_hit_armor")
         self.assertIsNotNone(m_armor)
         self.assertEqual(m_armor["t"], "armor_up")
         self.assertEqual(m_armor["tr"], ["onPreDamage"])
-        self.assertEqual(m_armor["c"], 1.0)
+        self.assertEqual(m_armor["c"], 0.08)
         self.assertEqual(m_armor["m"], 0.41)
         self.assertEqual(m_armor["d"], 6.0)
 
         a_armor = appears.get("appr_grindor_hit_armor")
         self.assertIsNotNone(a_armor)
         self.assertEqual(a_armor["t"], "\uE517")  # 完整胸甲 PUA
-        self.assertEqual(a_armor["tc"], "2BDAF6") # 官方电光青色
+        self.assertEqual(a_armor["tc"], "29EBF4") # 官方电光青色
 
         # 重击暴击燃烧 (ID 3072)
         m_burn = stat_mods.get("grindor_heavy_crit_burn")

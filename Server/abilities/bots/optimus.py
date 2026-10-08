@@ -88,8 +88,8 @@ def build_optimus_abilities(base_hp: float = 30000.0, base_atk: float = 3000.0):
         callout_text="护甲",
         show_callout=True,
         pua_icon="\uE517",
-        color_hex="2BDAF6",
-        gradient_bottom="0284C7",
+        color_hex="29EBF4",
+        gradient_bottom="00C5E8",
         stackable=True,
         max_stacks=5,
     )
@@ -101,7 +101,7 @@ def build_optimus_abilities(base_hp: float = 30000.0, base_atk: float = 3000.0):
         mod_id="optimus_sp1_armor_break",
         duration=3.5,
         break_amount=0.20,
-        chance=1.0,                    # 底层由 Native Hook 仲裁 92% 掷骰并弹出 HUD 显示
+        chance=0.92,
         trigger="onHit",
         trigger_scope="level=Special1;index=1,2",
         appr_id="appr_optimus_sp1_armor_break",
@@ -141,7 +141,7 @@ def build_optimus_abilities(base_hp: float = 30000.0, base_atk: float = 3000.0):
         mod_id="optimus_sp2_armor_break",
         duration=6.0,
         break_amount=0.35,
-        chance=1.0,                    # 底层由 Native Hook 仲裁 92% 掷骰并弹出 HUD 显示
+        chance=0.92,
         trigger="onHit",
         trigger_scope="level=Special2",
         appr_id="appr_optimus_sp2_armor_break",
@@ -161,7 +161,7 @@ def build_optimus_abilities(base_hp: float = 30000.0, base_atk: float = 3000.0):
         mod_id="optimus_sp3_armor_break",
         duration=-1.0,                 # 永久破甲，无倒计时
         break_amount=0.35,
-        chance=1.0,                    # 底层由 Native Hook 仲裁 92% 掷骰并弹出 HUD 显示
+        chance=0.92,
         trigger="onHit",
         trigger_scope="level=Special3;dmgFlags=LastHit",
         appr_id="appr_optimus_sp3_armor_break",

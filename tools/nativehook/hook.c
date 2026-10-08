@@ -582,7 +582,8 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x00EEFF2C, "APPLY_BUFF",        2, 0 }, // 188 BuffsController.ApplyBuff -> ability gating (Rhinox bleed-on-nullify, Wheeljack final hit)
     { 0x00EEEDD8, "REMOVE_BUFFS_INT",  2, 0 }, // 189 BuffsController.RemoveBuffsInternal -> track successful buff nullification
     { 0x00DACC74, "GET_EVADE_MELEE",   2, 0 }, // 190 PlayerAttributes.get_EvadeMelee -> probabilistic melee evade
-    { 0x00DACCA4, "GET_EVADE_RANGED",  2, 0 }  // 191 PlayerAttributes.get_EvadeRanged -> probabilistic ranged evade
+    { 0x00DACCA4, "GET_EVADE_RANGED",  2, 0 }, // 191 PlayerAttributes.get_EvadeRanged -> probabilistic ranged evade
+    { 0x00CCF35C, "GET_STAT_MOD",      2, 0 }  // 192 StatModifierController.GetStatModifier -> universal dice roll HUD
 };
 
 #define NH (int)(sizeof(H)/sizeof(H[0]))
@@ -6888,143 +6889,6 @@ int hook_188(void* self, void* applicant, void* statModifier, int32_t updateAttr
             }
         }
 
-        int applicant_p0 = is_player0_bc(applicant);
-        const char* who = applicant_p0 ? "P0" : "P1";
-
-        // Gate 4: G1 擎天柱 (fte_optimus_gs_t3)
-        if (mod_id[0] && strstr(mod_id, "optimus_") != NULL) {
-            // SP1 破甲: 仅后两击巨斧劈砍 (hit 1, 2) 触发，第一击 (hit 0) 绝不破甲
-            if (strstr(mod_id, "optimus_sp1_armor_break") != NULL) {
-                if (s_last_hit_index == 0) {
-                    flog("OPTIMUS_SP1_GATE: suppressed %s on hit 0 (punch/kick)", mod_id);
-                    suppress_buff = 1;
-                    goto buff_gate_done;
-                }
-                float roll = (float)(rand() % 10000) / 10000.0f;
-                if (roll < 0.92f) {
-                    combat_overlay_push("[%s] 擎天柱 破甲 PASS! (Roll: %.1f%% < 92.0%%)", who, roll * 100.0f);
-                } else {
-                    combat_overlay_push("[%s] 擎天柱 破甲 FAIL (Roll: %.1f%% >= 92.0%%)", who, roll * 100.0f);
-                    suppress_buff = 1;
-                    goto buff_gate_done;
-                }
-            }
-            // SP2 破甲: 92% 概率
-            else if (strstr(mod_id, "optimus_sp2_armor_break") != NULL) {
-                float roll = (float)(rand() % 10000) / 10000.0f;
-                if (roll < 0.92f) {
-                    combat_overlay_push("[%s] 擎天柱 破甲 PASS! (Roll: %.1f%% < 92.0%%)", who, roll * 100.0f);
-                } else {
-                    combat_overlay_push("[%s] 擎天柱 破甲 FAIL (Roll: %.1f%% >= 92.0%%)", who, roll * 100.0f);
-                    suppress_buff = 1;
-                    goto buff_gate_done;
-                }
-            }
-            // SP3 破甲: 仅最后一击触发永久破甲
-            else if (strstr(mod_id, "optimus_sp3_armor_break") != NULL) {
-                if (!s_current_hit_is_last) {
-                    flog("OPTIMUS_SP3_GATE: suppressed %s on non-last hit", mod_id);
-                    suppress_buff = 1;
-                    goto buff_gate_done;
-                }
-                float roll = (float)(rand() % 10000) / 10000.0f;
-                if (roll < 0.92f) {
-                    combat_overlay_push("[%s] 擎天柱 永久破甲 PASS! (Roll: %.1f%% < 92.0%%)", who, roll * 100.0f);
-                } else {
-                    combat_overlay_push("[%s] 擎天柱 永久破甲 FAIL (Roll: %.1f%% >= 92.0%%)", who, roll * 100.0f);
-                    suppress_buff = 1;
-                    goto buff_gate_done;
-                }
-            }
-            // 觉醒技【突破口】: 对手破甲时暴击触发流血
-            else if (strstr(mod_id, "optimus_sig_armor_break_bleed") != NULL) {
-                combat_overlay_push("[%s] 擎天柱 【突破口】暴击流血! (140%% ATK)", who);
-            }
-            // 格挡护甲
-            else if (strstr(mod_id, "optimus_block_armor") != NULL) {
-                combat_overlay_push("[%s] 擎天柱 护甲+16.5%% (格挡姿态)", who);
-            }
-        }
-
-        // Gate 5: 通天晓 (ultramagnus_gs_leader)
-        if (mod_id[0] && strstr(mod_id, "ultramagnus_") != NULL) {
-            // SP2 破甲: 仅第一下槌击 (hit 0) 触发
-            if (strstr(mod_id, "ultramagnus_sp2_armor_break") != NULL) {
-                if (s_last_hit_index != 0) {
-                    suppress_buff = 1;
-                    goto buff_gate_done;
-                }
-                combat_overlay_push("[%s] 通天晓 槌击破甲 (16.2%%)", who);
-            }
-            // SP2 燃烧: 仅第二下 (最后一下) 导弹触发 (65% 概率)
-            else if (strstr(mod_id, "ultramagnus_sp2_burn") != NULL) {
-                if (!s_current_hit_is_last && s_last_hit_index == 0) {
-                    suppress_buff = 1;
-                    goto buff_gate_done;
-                }
-                float roll = (float)(rand() % 10000) / 10000.0f;
-                if (roll < 0.65f) {
-                    combat_overlay_push("[%s] 通天晓 导弹燃烧 PASS! (Roll: %.1f%% < 65.0%%)", who, roll * 100.0f);
-                } else {
-                    combat_overlay_push("[%s] 通天晓 导弹燃烧 FAIL (Roll: %.1f%% >= 65.0%%)", who, roll * 100.0f);
-                    suppress_buff = 1;
-                    goto buff_gate_done;
-                }
-            }
-            // SP3 破甲: 仅第一下槌击 (hit 0) 触发
-            else if (strstr(mod_id, "ultramagnus_sp3_armor_break") != NULL) {
-                if (s_last_hit_index != 0) {
-                    suppress_buff = 1;
-                    goto buff_gate_done;
-                }
-                combat_overlay_push("[%s] 通天晓 槌击破甲 (16.2%%)", who);
-            }
-            // SP3 燃烧: 后面几下导弹触发 (65% 概率)
-            else if (strstr(mod_id, "ultramagnus_sp3_burn") != NULL) {
-                if (s_last_hit_index == 0) {
-                    suppress_buff = 1;
-                    goto buff_gate_done;
-                }
-                float roll = (float)(rand() % 10000) / 10000.0f;
-                if (roll < 0.65f) {
-                    combat_overlay_push("[%s] 通天晓 导弹燃烧 PASS! (Roll: %.1f%% < 65.0%%)", who, roll * 100.0f);
-                } else {
-                    combat_overlay_push("[%s] 通天晓 导弹燃烧 FAIL (Roll: %.1f%% >= 65.0%%)", who, roll * 100.0f);
-                    suppress_buff = 1;
-                    goto buff_gate_done;
-                }
-            }
-            // 重击燃烧: 65% 概率
-            else if (strstr(mod_id, "ultramagnus_heavy_burn") != NULL) {
-                float roll = (float)(rand() % 10000) / 10000.0f;
-                if (roll < 0.65f) {
-                    combat_overlay_push("[%s] 通天晓 重击燃烧 PASS! (Roll: %.1f%% < 65.0%%)", who, roll * 100.0f);
-                } else {
-                    combat_overlay_push("[%s] 通天晓 重击燃烧 FAIL (Roll: %.1f%% >= 65.0%%)", who, roll * 100.0f);
-                    suppress_buff = 1;
-                    goto buff_gate_done;
-                }
-            }
-            // SP1 破甲: 100%
-            else if (strstr(mod_id, "ultramagnus_sp1_armor_break") != NULL) {
-                combat_overlay_push("[%s] 通天晓 破甲 (16.2%%)", who);
-            }
-        }
-
-        // Gate 6: 碾碎器 (grindor_cin_rotf)
-        if (mod_id[0] && strstr(mod_id, "grindor_") != NULL) {
-            // 受击护甲: 8% 概率
-            if (strstr(mod_id, "grindor_hit_armor") != NULL) {
-                float roll = (float)(rand() % 10000) / 10000.0f;
-                if (roll < 0.08f) {
-                    combat_overlay_push("[%s] 碾碎器 护甲 PASS! (Roll: %.1f%% < 8.0%%)", who, roll * 100.0f);
-                } else {
-                    combat_overlay_push("[%s] 碾碎器 护甲 FAIL (Roll: %.1f%% >= 8.0%%)", who, roll * 100.0f);
-                    suppress_buff = 1;
-                    goto buff_gate_done;
-                }
-            }
-        }
 buff_gate_done: ;
     });
 
@@ -7197,6 +7061,107 @@ int hook_191(void* self) {
     }
 }
 
+// slot 192 (0x00CCF35C): StatModifierController.TestForConditionsAndRoll
+int hook_192(void* self, void* statModifier, float* pRoll, float* pChance, void* triggerParams, void* method) {
+    char mod_id[80] = {0};
+    PROTECT({
+        if (statModifier && obj_ok(statModifier)) {
+            void* bcg_sm = *(void**)((char*)statModifier + 0x18);
+            if (bcg_sm && obj_ok(bcg_sm)) {
+                void* id_str_obj = *(void**)((char*)bcg_sm + 0x10);
+                if (id_str_obj && obj_ok(id_str_obj)) {
+                    read_str(id_str_obj, mod_id, sizeof(mod_id));
+                }
+            }
+        }
+    });
+
+    // 动作分段打击过滤 (Action Hit Gating)
+    // 1. 擎天柱 SP1 破甲: 仅后两击巨斧劈砍 (hit 1, 2) 破甲，第一击 (hit 0) 拳击不破甲
+    if (mod_id[0] && strstr(mod_id, "optimus_sp1_armor_break") != NULL) {
+        if (s_last_hit_index == 0) {
+            flog("OPTIMUS_SP1_GATE: hit 0 is punch, skip armor break roll");
+            return 0;
+        }
+    }
+    // 2. 擎天柱 SP3 破甲: 仅最后一击触发永久破甲
+    if (mod_id[0] && strstr(mod_id, "optimus_sp3_armor_break") != NULL) {
+        if (!s_current_hit_is_last) {
+            flog("OPTIMUS_SP3_GATE: non-last hit, skip armor break roll");
+            return 0;
+        }
+    }
+    // 3. 通天晓 SP2: 第一下槌击 (hit 0) 破甲，第二下 (最后一下) 导弹燃烧
+    if (mod_id[0] && strstr(mod_id, "ultramagnus_sp2_armor_break") != NULL) {
+        if (s_last_hit_index != 0) return 0;
+    }
+    if (mod_id[0] && strstr(mod_id, "ultramagnus_sp2_burn") != NULL) {
+        if (!s_current_hit_is_last && s_last_hit_index == 0) return 0;
+    }
+    // 4. 通天晓 SP3: 第一下槌击 (hit 0) 破甲，后面几下 (hit > 0) 导弹燃烧
+    if (mod_id[0] && strstr(mod_id, "ultramagnus_sp3_armor_break") != NULL) {
+        if (s_last_hit_index != 0) return 0;
+    }
+    if (mod_id[0] && strstr(mod_id, "ultramagnus_sp3_burn") != NULL) {
+        if (s_last_hit_index == 0) return 0;
+    }
+
+    typedef int (*fn_test_roll)(void*, void*, float*, float*, void*, void*);
+    int res = H[192].orig ? ((fn_test_roll)H[192].orig)(self, statModifier, pRoll, pChance, triggerParams, method) : 0;
+
+    // 通用技能概率掷骰 HUD 播报 (全游戏通用拦截，对所有机器人全自动生效)
+    PROTECT({
+        if (pChance && *pChance < 0.999f && *pChance > 0.0001f && pRoll) {
+            float roll = *pRoll;
+            float chance = *pChance;
+            int pass = res;
+
+            void* owner_bc = statModifier && obj_ok(statModifier) ? *(void**)((char*)statModifier + 0x10) : NULL;
+            int is_p0 = is_player0_bc(owner_bc);
+            const char* bot_id = is_p0 ? (g_p0_bot_id[0] ? g_p0_bot_id : "P0") : (g_p1_bot_id[0] ? g_p1_bot_id : "P1");
+
+            const char* hero = "英雄";
+            if (strstr(bot_id, "optimus") != NULL) hero = "擎天柱";
+            else if (strstr(bot_id, "ultramagnus") != NULL) hero = "通天晓";
+            else if (strstr(bot_id, "grindor") != NULL) hero = "碾碎器";
+            else if (strstr(bot_id, "bumblebee") != NULL) hero = "大黄蜂";
+            else if (strstr(bot_id, "barricade") != NULL) hero = "路障";
+            else if (strstr(bot_id, "megatron") != NULL) hero = "威震天";
+            else if (strstr(bot_id, "rhinox") != NULL) hero = "犀牛";
+            else if (strstr(bot_id, "arcee") != NULL) hero = "阿尔茜";
+            else if (strstr(bot_id, "wheeljack") != NULL) hero = "千斤顶";
+            else if (strstr(bot_id, "soundwave") != NULL) hero = "声波";
+            else if (strstr(bot_id, "starscream") != NULL) hero = "红蜘蛛";
+            else if (strstr(bot_id, "shockwave") != NULL) hero = "震荡波";
+            else if (strstr(bot_id, "ironhide") != NULL) hero = "铁皮";
+            else if (strstr(bot_id, "ratchet") != NULL) hero = "救护车";
+            else if (strstr(bot_id, "windblade") != NULL) hero = "风刃";
+            else if (strstr(bot_id, "drift") != NULL) hero = "漂移";
+            else if (bot_id[0]) hero = bot_id;
+
+            const char* skill = "技能";
+            if (strstr(mod_id, "armor_break") != NULL) skill = "破甲";
+            else if (strstr(mod_id, "armor") != NULL) skill = "护甲";
+            else if (strstr(mod_id, "burn") != NULL) skill = "燃烧";
+            else if (strstr(mod_id, "bleed") != NULL) skill = "流血";
+            else if (strstr(mod_id, "stun") != NULL) skill = "眩晕";
+            else if (strstr(mod_id, "shock") != NULL) skill = "冲击";
+            else if (strstr(mod_id, "leak") != NULL) skill = "能量汲取";
+            else if (strstr(mod_id, "evade") != NULL) skill = "规避";
+            else if (mod_id[0]) skill = mod_id;
+
+            if (pass) {
+                flog("ROLL_DICE_PASS: [%s] %s PASS! (Roll: %.1f%% < %.1f%%, mod=%s)", hero, skill, roll * 100.0f, chance * 100.0f, mod_id);
+                combat_overlay_push("[%s] %s PASS! (Roll: %.1f%% < %.1f%%)", hero, skill, roll * 100.0f, chance * 100.0f);
+            } else {
+                flog("ROLL_DICE_FAIL: [%s] %s FAIL (Roll: %.1f%% >= %.1f%%, mod=%s)", hero, skill, roll * 100.0f, chance * 100.0f, mod_id);
+                combat_overlay_push("[%s] %s FAIL (Roll: %.1f%% >= %.1f%%)", hero, skill, roll * 100.0f, chance * 100.0f);
+            }
+        }
+    });
+
+    return res;
+}
 
 static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hook_7,hook_8,
     hook_9,hook_10,hook_11,hook_12,hook_13,hook_14,hook_15,hook_16,hook_17,hook_18,hook_19,hook_20,hook_21,
@@ -7219,7 +7184,7 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     hook_165,hook_166,(void*)hook_167,hook_168,hook_169,hook_170,
     hook_171,hook_172,hook_173,hook_174,hook_175,hook_176,(void*)hook_177,(void*)hook_178,
     (void*)hook_179,hook_180,hook_181,hook_182,hook_183,hook_184,hook_185,hook_186,(void*)hook_187,(void*)hook_188,(void*)hook_189,
-    (void*)hook_190,(void*)hook_191 };
+    (void*)hook_190,(void*)hook_191,(void*)hook_192 };
 
 
 static void write_jump(uint8_t* dst, void* target){
