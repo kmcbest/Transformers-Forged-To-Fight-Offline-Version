@@ -997,3 +997,324 @@ def make_remove_statmod(
     validate_appear(appear)
     return {mod_id: stat_mod}, {appr_id: appear}
 
+
+def make_armor_up_statmod(
+    mod_id: str,
+    duration: float,
+    armor_bonus: float = 0.165,
+    chance: float = 1.0,
+    trigger: str = "onPlayerStateEnter",
+    trigger_scope: str = "state=Block",
+    appr_id: str = "",
+    callout_text: str = "护甲",
+    show_callout: bool = True,
+    pua_icon: str = "\uE517",
+    color_hex: str = "3B82F6",
+    gradient_bottom: str = "1D4ED8",
+    stackable: bool = True,
+    max_stacks: int = 10,
+) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    """
+    通用护甲增益工厂 (Armor Up Buff Factory):
+    提升目标 ArmorUpModifier，降低受到的伤害（减伤）。
+    公式: damage *= (1.0 - GetArmorDR())，GetArmorDR() 累加 ArmorUpModifier。
+    - PUA 矢量图标: 护盾 (\uE517)
+    - 配色: 护盾蓝 (3B82F6 / 1D4ED8)
+    """
+    if not appr_id:
+        appr_id = f"appr_{mod_id}"
+
+    validate_color_code(color_hex, "armor_up_tc")
+    validate_color_code(gradient_bottom, "armor_up_gb")
+
+    appear = {
+        "id": appr_id,
+        "a": callout_text,
+        "s": "",
+        "l": f"获得护甲增益，降低受到伤害的{int(armor_bonus*100)}%",
+        "ss": f"获得护甲增益，降低受到伤害的{int(armor_bonus*100)}%",
+        "t": pua_icon,
+        "f": "",
+        "st": callout_text if show_callout else "",
+        "ps": callout_text,
+        "pl": f"{callout_text}生效中",
+        "tc": color_hex,
+        "gt": color_hex,
+        "gb": gradient_bottom,
+    }
+
+    stat_mod = {
+        "id": mod_id,
+        "t": "armor_up",
+        "tm": "",
+        "tr": [trigger],
+        "uit": [trigger] if show_callout else [],
+        "pri": 0,
+        "trm": 0.0,
+        "trs": trigger_scope,
+        "trr": "repeat",
+        "c": float(chance),
+        "m": float(armor_bonus),
+        "d": float(duration),
+        "s": "none",
+        "ta": "self",
+        "mt": "buff",
+        "v": "",
+        "ms": "",
+        "st": max_stacks if stackable else 1,
+        "g": "armor_up",
+        "gc": 0.0,
+        "gcv": "",
+        "rcv": "",
+        "ti": 0,
+        "a": [appr_id] if show_callout else [],
+        "au": [],
+        "rh": 0.0,
+        "ra": 0.0,
+    }
+
+    validate_statmod(stat_mod)
+    validate_appear(appear)
+    return {mod_id: stat_mod}, {appr_id: appear}
+
+
+def make_armor_break_statmod(
+    mod_id: str,
+    duration: float,
+    break_amount: float = 0.20,
+    chance: float = 1.0,
+    trigger: str = "onHit",
+    trigger_scope: str = "level=Special1",
+    appr_id: str = "",
+    callout_text: str = "破甲",
+    show_callout: bool = True,
+    pua_icon: str = "\uE516",
+    color_hex: str = "EF4444",
+    gradient_bottom: str = "B91C1C",
+    stackable: bool = True,
+    max_stacks: int = 10,
+) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    """
+    通用破甲减益工厂 (Armor Break Debuff Factory):
+    施加于对手，提升 ArmorBreakModifier，放大对手受到的伤害。
+    同时底层 ArmorBreak_BuffEffect.OnAdd 自动移除对手 1 层 armor_up 护甲增益。
+    - PUA 矢量图标: 破甲碎盾 (\uE516)
+    - 配色: 减益红/深红 (EF4444 / B91C1C)
+    """
+    if not appr_id:
+        appr_id = f"appr_{mod_id}"
+
+    validate_color_code(color_hex, "armor_break_tc")
+    validate_color_code(gradient_bottom, "armor_break_gb")
+
+    appear = {
+        "id": appr_id,
+        "a": callout_text,
+        "s": "",
+        "l": f"受到破甲减益，承受伤害增加{int(break_amount*100)}%",
+        "ss": f"受到破甲减益，承受伤害增加{int(break_amount*100)}%",
+        "t": pua_icon,
+        "f": "",
+        "st": callout_text if show_callout else "",
+        "ps": callout_text,
+        "pl": f"{callout_text}生效中",
+        "tc": color_hex,
+        "gt": color_hex,
+        "gb": gradient_bottom,
+    }
+
+    stat_mod = {
+        "id": mod_id,
+        "t": "armor_break",
+        "tm": "",
+        "tr": [trigger],
+        "uit": [trigger] if show_callout else [],
+        "pri": 0,
+        "trm": 0.0,
+        "trs": trigger_scope,
+        "trr": "repeat",
+        "c": float(chance),
+        "m": float(break_amount),
+        "d": float(duration),
+        "s": "none",
+        "ta": "opponent",
+        "mt": "debuff",
+        "v": "",
+        "ms": "",
+        "st": max_stacks if stackable else 1,
+        "g": "armor_break",
+        "gc": 0.0,
+        "gcv": "",
+        "rcv": "",
+        "ti": 0,
+        "a": [appr_id] if show_callout else [],
+        "au": [],
+        "rh": 0.0,
+        "ra": 0.0,
+    }
+
+    validate_statmod(stat_mod)
+    validate_appear(appear)
+    return {mod_id: stat_mod}, {appr_id: appear}
+
+
+def make_attack_boost_statmod(
+    mod_id: str,
+    duration: float,
+    attack_bonus: float = 0.20,
+    chance: float = 1.0,
+    trigger: str = "onSpecial1Activate",
+    trigger_scope: str = "",
+    appr_id: str = "",
+    callout_text: str = "攻击加成",
+    show_callout: bool = True,
+    pua_icon: str = "\uE406",
+    color_hex: str = "F59E0B",
+    gradient_bottom: str = "D97706",
+    stackable: bool = True,
+    max_stacks: int = 5,
+) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    """
+    通用攻击力增益工厂 (Attack Boost Buff Factory):
+    提升自身攻击力倍率。
+    - PUA 矢量图标: 剑/暴击 (\uE406)
+    - 配色: 金色/琥珀 (F59E0B / D97706)
+    """
+    if not appr_id:
+        appr_id = f"appr_{mod_id}"
+
+    validate_color_code(color_hex, "attack_boost_tc")
+    validate_color_code(gradient_bottom, "attack_boost_gb")
+
+    appear = {
+        "id": appr_id,
+        "a": callout_text,
+        "s": "",
+        "l": f"攻击力提升{int(attack_bonus*100)}%",
+        "ss": f"攻击力提升{int(attack_bonus*100)}%",
+        "t": pua_icon,
+        "f": "",
+        "st": callout_text if show_callout else "",
+        "ps": callout_text,
+        "pl": f"{callout_text}生效中",
+        "tc": color_hex,
+        "gt": color_hex,
+        "gb": gradient_bottom,
+    }
+
+    stat_mod = {
+        "id": mod_id,
+        "t": "attack_buff",
+        "tm": "",
+        "tr": [trigger],
+        "uit": [trigger] if show_callout else [],
+        "pri": 0,
+        "trm": 0.0,
+        "trs": trigger_scope,
+        "trr": "repeat",
+        "c": float(chance),
+        "m": float(attack_bonus),
+        "d": float(duration),
+        "s": "none",
+        "ta": "self",
+        "mt": "buff",
+        "v": "",
+        "ms": "",
+        "st": max_stacks if stackable else 1,
+        "g": "attack_buff",
+        "gc": 0.0,
+        "gcv": "",
+        "rcv": "",
+        "ti": 0,
+        "a": [appr_id] if show_callout else [],
+        "au": [],
+        "rh": 0.0,
+        "ra": 0.0,
+    }
+
+    validate_statmod(stat_mod)
+    validate_appear(appear)
+    return {mod_id: stat_mod}, {appr_id: appear}
+
+
+def make_burn_statmod(
+    mod_id: str,
+    duration: float,
+    total_dmg: float,
+    chance: float = 1.0,
+    trigger: str = "onHit",
+    trigger_scope: str = "level=Heavy",
+    appr_id: str = "",
+    callout_text: str = "燃烧",
+    is_zh: bool = True,
+    stackable: bool = True,
+    max_stacks: int = 10,
+    target_scope: str = "none",
+    target_actor: str = "opponent",
+    pua_icon: str = "\uE41D",
+    color_hex: str = "FF6600",
+    gradient_bottom: str = "CC3300",
+) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    """
+    通用燃烧 DOT 工厂 (Burn DOT Factory):
+    造成持续火焰/能量伤害 (Energy Damage over time)。
+    - PUA 矢量图标: 火焰 (\uE41D)
+    - 配色: 亮橙/深橙红 (FF6600 / CC3300)
+    """
+    if not appr_id:
+        appr_id = f"appr_{mod_id}"
+
+    validate_color_code(color_hex, "burn_tc")
+    validate_color_code(gradient_bottom, "burn_gb")
+
+    appear = {
+        "id": appr_id,
+        "a": callout_text,
+        "s": "",
+        "l": f"{callout_text}持续能量伤害",
+        "ss": f"{callout_text}持续能量伤害",
+        "t": pua_icon,
+        "f": "",
+        "st": callout_text,
+        "ps": callout_text,
+        "pl": f"{callout_text}生效中",
+        "tc": color_hex,
+        "gt": color_hex,
+        "gb": gradient_bottom,
+    }
+
+    stat_mod = {
+        "id": mod_id,
+        "t": "dmg_burn",
+        "tm": "",
+        "tr": [trigger],
+        "uit": [trigger],
+        "pri": 0,
+        "trm": 0.0,
+        "trs": trigger_scope,
+        "trr": "repeat",
+        "c": float(chance),
+        "m": float(total_dmg),
+        "d": float(duration),
+        "s": target_scope,
+        "ta": target_actor,
+        "mt": "debuff",
+        "v": "",
+        "ms": "",
+        "st": max_stacks if stackable else 1,
+        "g": "dmg_burn",
+        "gc": 0.0,
+        "gcv": "",
+        "rcv": "",
+        "ti": 0,
+        "a": [appr_id],
+        "au": [],
+        "rh": 0.0,
+        "ra": 0.0,
+    }
+
+    validate_statmod(stat_mod)
+    validate_appear(appear)
+    return {mod_id: stat_mod}, {appr_id: appear}
+
+
