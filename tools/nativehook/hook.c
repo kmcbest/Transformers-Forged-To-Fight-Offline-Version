@@ -5770,10 +5770,6 @@ void* hook_156(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
         flog("ROLL_CRIT: pidx=%d bid=%s (cc=%.2f, roll=%.4f) -> is_crit=%d (a0=%p)",
              player_idx, bid ? bid : "unknown", crit_chance, roll, is_crit, a0);
     }
-    if (is_crit) {
-        combat_overlay_push("P%d [%s] CRIT! (Roll: %.1f%% <= CC: %.1f%%)",
-                            player_idx, bid ? bid : "bot", roll * 100.0f, crit_chance * 100.0f);
-    }
     return (void*)(intptr_t)is_crit;
 }
 void* hook_157(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
