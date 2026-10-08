@@ -88,22 +88,22 @@ def build_optimus_abilities(base_hp: float = 30000.0, base_atk: float = 3000.0):
         callout_text="护甲",
         show_callout=True,
         pua_icon="\uE517",
-        color_hex="3B82F6",
-        gradient_bottom="1D4ED8",
+        color_hex="2BDAF6",
+        gradient_bottom="0284C7",
         stackable=True,
         max_stacks=5,
     )
     mods.update(m_armor)
     appears.update(a_armor)
 
-    # 2. ID 2354: SP1 命中 92% 概率施加 20% 破甲，持续 3.5s
+    # 2. ID 2354: SP1 仅后两击巨斧劈砍 (hit 1, 2) 命中 92% 概率施加 20% 破甲，持续 3.5s
     m_sp1_break, a_sp1_break = make_armor_break_statmod(
         mod_id="optimus_sp1_armor_break",
         duration=3.5,
         break_amount=0.20,
-        chance=0.92,
+        chance=1.0,                    # 底层由 Native Hook 仲裁 92% 掷骰并弹出 HUD 显示
         trigger="onHit",
-        trigger_scope="level=Special1",
+        trigger_scope="level=Special1;index=1,2",
         appr_id="appr_optimus_sp1_armor_break",
         callout_text="破甲",
         show_callout=True,
@@ -141,7 +141,7 @@ def build_optimus_abilities(base_hp: float = 30000.0, base_atk: float = 3000.0):
         mod_id="optimus_sp2_armor_break",
         duration=6.0,
         break_amount=0.35,
-        chance=0.92,
+        chance=1.0,                    # 底层由 Native Hook 仲裁 92% 掷骰并弹出 HUD 显示
         trigger="onHit",
         trigger_scope="level=Special2",
         appr_id="appr_optimus_sp2_armor_break",
@@ -156,14 +156,14 @@ def build_optimus_abilities(base_hp: float = 30000.0, base_atk: float = 3000.0):
     mods.update(m_sp2_break)
     appears.update(a_sp2_break)
 
-    # 5. ID 2359: SP3 命中 92% 概率施加 35% 破甲，持续 6.0s
+    # 5. ID 2359: SP3 仅最后一击命中 92% 概率施加 35% 永久破甲 (无倒计时, duration=-1.0)
     m_sp3_break, a_sp3_break = make_armor_break_statmod(
         mod_id="optimus_sp3_armor_break",
-        duration=6.0,
+        duration=-1.0,                 # 永久破甲，无倒计时
         break_amount=0.35,
-        chance=0.92,
+        chance=1.0,                    # 底层由 Native Hook 仲裁 92% 掷骰并弹出 HUD 显示
         trigger="onHit",
-        trigger_scope="level=Special3",
+        trigger_scope="level=Special3;dmgFlags=LastHit",
         appr_id="appr_optimus_sp3_armor_break",
         callout_text="破甲",
         show_callout=True,

@@ -25,6 +25,7 @@ class TestArceeAbility(unittest.TestCase):
     def test_single_source_of_truth_bot_abilities(self):
         """Verify bot_abilities grants official abilities to Arcee and universal SP callouts."""
         expected_abilities = [
+            "gp_evade_callout",
             "sp_callout_arcee_gs_deluxe2014_1",
             "sp_callout_arcee_gs_deluxe2014_2",
             "sp_callout_arcee_gs_deluxe2014_3",
@@ -49,6 +50,7 @@ class TestArceeAbility(unittest.TestCase):
         # Other bots have universal SP callouts and UI abilities but must not have Arcee's specific ability
         op_abilities = gamedata.bot_abilities("optimusprime_cin_tf")
         self.assertEqual(op_abilities, [
+            "gp_evade_callout",
             "sp_callout_optimusprime_cin_tf_1",
             "sp_callout_optimusprime_cin_tf_2",
             "sp_callout_optimusprime_cin_tf_3",
@@ -152,6 +154,7 @@ class TestArceeAbility(unittest.TestCase):
     def test_four_builders_carry_abilities(self):
         """Verify the 4 critical builders all inject bot_abilities correctly."""
         expected = [
+            "gp_evade_callout",
             "sp_callout_arcee_gs_deluxe2014_1",
             "sp_callout_arcee_gs_deluxe2014_2",
             "sp_callout_arcee_gs_deluxe2014_3",

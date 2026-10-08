@@ -42,15 +42,15 @@ def build_grindor_abilities(base_hp: float = 30000.0, base_atk: float = 3000.0):
         mod_id="grindor_hit_armor",
         duration=6.0,
         armor_bonus=0.41,
-        chance=0.08,
+        chance=1.0,                    # 底层由 Native Hook 仲裁 8% 掷骰并弹出 HUD 显示
         trigger="onPreDamage",
         trigger_scope="",
         appr_id="appr_grindor_hit_armor",
         callout_text="护甲",
         show_callout=True,
         pua_icon="\uE517",
-        color_hex="3B82F6",
-        gradient_bottom="1D4ED8",
+        color_hex="2BDAF6",
+        gradient_bottom="0284C7",
         stackable=True,
         max_stacks=3,
     )

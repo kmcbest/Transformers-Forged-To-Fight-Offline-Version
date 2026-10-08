@@ -57,15 +57,16 @@ class TestArmorAbilities(unittest.TestCase):
 
         a_armor = appears.get("appr_optimus_block_armor")
         self.assertIsNotNone(a_armor)
-        self.assertEqual(a_armor["t"], "\uE517")  # 护甲 PUA
-        self.assertEqual(a_armor["tc"], "3B82F6") # 蓝色
+        self.assertEqual(a_armor["t"], "\uE517")  # 完整胸甲 PUA
+        self.assertEqual(a_armor["tc"], "2BDAF6") # 官方电光青色 (真机取色)
+        self.assertEqual(a_armor["gb"], "0284C7")
         self.assertNotIn("#", a_armor["tc"])
 
-        # 2. SP1 破甲 (ID 2354)
+        # 2. SP1 破甲 (ID 2354) - 仅后两击巨斧劈砍 (index=1,2)
         m_sp1_break = stat_mods.get("optimus_sp1_armor_break")
         self.assertIsNotNone(m_sp1_break)
         self.assertEqual(m_sp1_break["t"], "armor_break")
-        self.assertEqual(m_sp1_break["trs"], "level=Special1")
+        self.assertEqual(m_sp1_break["trs"], "level=Special1;index=1,2")
         self.assertEqual(m_sp1_break["m"], 0.20)
         self.assertEqual(m_sp1_break["d"], 3.5)
         self.assertEqual(m_sp1_break["ta"], "opponent")
@@ -73,7 +74,7 @@ class TestArmorAbilities(unittest.TestCase):
 
         a_sp1_break = appears.get("appr_optimus_sp1_armor_break")
         self.assertIsNotNone(a_sp1_break)
-        self.assertEqual(a_sp1_break["t"], "\uE516")  # 破甲 PUA
+        self.assertEqual(a_sp1_break["t"], "\uE516")  # 碎裂胸甲破甲 PUA
         self.assertEqual(a_sp1_break["tc"], "EF4444") # 红色
         self.assertNotIn("#", a_sp1_break["tc"])
 
@@ -90,11 +91,12 @@ class TestArmorAbilities(unittest.TestCase):
         self.assertEqual(m_sp2_break["m"], 0.35)
         self.assertEqual(m_sp2_break["d"], 6.0)
 
-        # 5. SP3 破甲 (ID 2359)
+        # 5. SP3 破甲 (ID 2359) - 仅最后一击触发永久破甲 (d=-1.0)
         m_sp3_break = stat_mods.get("optimus_sp3_armor_break")
         self.assertIsNotNone(m_sp3_break)
+        self.assertEqual(m_sp3_break["trs"], "level=Special3;dmgFlags=LastHit")
         self.assertEqual(m_sp3_break["m"], 0.35)
-        self.assertEqual(m_sp3_break["d"], 6.0)
+        self.assertEqual(m_sp3_break["d"], -1.0) # 永久破甲，无倒计时
 
         # 6. 觉醒技【突破口】(ID 2335): 对手破甲时暴击造成流血
         m_sig = stat_mods.get("optimus_sig_armor_break_bleed")
@@ -131,12 +133,32 @@ class TestArmorAbilities(unittest.TestCase):
         self.assertEqual(m_sp1["m"], 0.162)
         self.assertEqual(m_sp1["d"], 10.0)
 
-        # 重击燃烧 (ID 2874)
+        # SP2 第一击槌击破甲 (ID 2880)
+        m_sp2_break = stat_mods.get("ultramagnus_sp2_armor_break")
+        self.assertIsNotNone(m_sp2_break)
+        self.assertEqual(m_sp2_break["trs"], "level=Special2;index=0")
+
+        # SP2 第二下导弹燃烧 (ID 2875)
+        m_sp2_burn = stat_mods.get("ultramagnus_sp2_burn")
+        self.assertIsNotNone(m_sp2_burn)
+        self.assertEqual(m_sp2_burn["trs"], "level=Special2;dmgFlags=LastHit")
+
+        # SP3 第一击槌击破甲 (ID 2881)
+        m_sp3_break = stat_mods.get("ultramagnus_sp3_armor_break")
+        self.assertIsNotNone(m_sp3_break)
+        self.assertEqual(m_sp3_break["trs"], "level=Special3;index=0")
+
+        # SP3 后面几下导弹燃烧 (ID 2876)
+        m_sp3_burn = stat_mods.get("ultramagnus_sp3_burn")
+        self.assertIsNotNone(m_sp3_burn)
+        self.assertEqual(m_sp3_burn["trs"], "level=Special3;index=1,2,3,4,5")
+
+        # 重击燃烧 (ID 2874) - 底层由 Native Hook 接管 65% 掷骰与 HUD 显示
         m_h_burn = stat_mods.get("ultramagnus_heavy_burn")
         self.assertIsNotNone(m_h_burn)
         self.assertEqual(m_h_burn["t"], "dmg_burn")
         self.assertEqual(m_h_burn["trs"], "level=Heavy")
-        self.assertEqual(m_h_burn["c"], 0.65)
+        self.assertEqual(m_h_burn["c"], 1.0)
         self.assertEqual(m_h_burn["d"], 12.0)
 
         a_burn = appears.get("appr_ultramagnus_heavy_burn")
@@ -155,14 +177,19 @@ class TestArmorAbilities(unittest.TestCase):
         stat_mods = build_stat_mods()
         appears = build_stat_mod_appears()
 
-        # 受创护甲 (ID 3056)
+        # 受创护甲 (ID 3056) - 底层由 Native Hook 接管 8% 掷骰与 HUD 显示
         m_armor = stat_mods.get("grindor_hit_armor")
         self.assertIsNotNone(m_armor)
         self.assertEqual(m_armor["t"], "armor_up")
         self.assertEqual(m_armor["tr"], ["onPreDamage"])
-        self.assertEqual(m_armor["c"], 0.08)
+        self.assertEqual(m_armor["c"], 1.0)
         self.assertEqual(m_armor["m"], 0.41)
         self.assertEqual(m_armor["d"], 6.0)
+
+        a_armor = appears.get("appr_grindor_hit_armor")
+        self.assertIsNotNone(a_armor)
+        self.assertEqual(a_armor["t"], "\uE517")  # 完整胸甲 PUA
+        self.assertEqual(a_armor["tc"], "2BDAF6") # 官方电光青色
 
         # 重击暴击燃烧 (ID 3072)
         m_burn = stat_mods.get("grindor_heavy_crit_burn")

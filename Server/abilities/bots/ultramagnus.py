@@ -89,14 +89,14 @@ def build_ultramagnus_abilities(base_hp: float = 30000.0, base_atk: float = 3000
     mods.update(m_sp1_break)
     appears.update(a_sp1_break)
 
-    # 2. ID 2880: SP2 命中施加 16.2% 破甲，持续 10.0s
+    # 2. ID 2880: SP2 第一击槌击 (hit 0) 施加 16.2% 破甲，持续 10.0s
     m_sp2_break, a_sp2_break = make_armor_break_statmod(
         mod_id="ultramagnus_sp2_armor_break",
         duration=10.0,
         break_amount=0.162,
         chance=1.0,
         trigger="onHit",
-        trigger_scope="level=Special2",
+        trigger_scope="level=Special2;index=0",
         appr_id="appr_ultramagnus_sp2_armor_break",
         callout_text="破甲",
         show_callout=True,
@@ -109,14 +109,14 @@ def build_ultramagnus_abilities(base_hp: float = 30000.0, base_atk: float = 3000
     mods.update(m_sp2_break)
     appears.update(a_sp2_break)
 
-    # 3. ID 2881: SP3 命中施加 16.2% 破甲，持续 10.0s
+    # 3. ID 2881: SP3 第一击槌击 (hit 0) 施加 16.2% 破甲，持续 10.0s
     m_sp3_break, a_sp3_break = make_armor_break_statmod(
         mod_id="ultramagnus_sp3_armor_break",
         duration=10.0,
         break_amount=0.162,
         chance=1.0,
         trigger="onHit",
-        trigger_scope="level=Special3",
+        trigger_scope="level=Special3;index=0",
         appr_id="appr_ultramagnus_sp3_armor_break",
         callout_text="破甲",
         show_callout=True,
@@ -135,7 +135,7 @@ def build_ultramagnus_abilities(base_hp: float = 30000.0, base_atk: float = 3000
         mod_id="ultramagnus_heavy_burn",
         duration=12.0,
         total_dmg=burn_dmg,
-        chance=0.65,
+        chance=1.0,                    # 底层由 Native Hook 仲裁 65% 掷骰并弹出 HUD 显示
         trigger="onHit",
         trigger_scope="level=Heavy",
         appr_id="appr_ultramagnus_heavy_burn",
@@ -145,14 +145,14 @@ def build_ultramagnus_abilities(base_hp: float = 30000.0, base_atk: float = 3000
     mods.update(m_h_burn)
     appears.update(a_h_burn)
 
-    # 5. ID 2875: SP2 命中 65% 几率燃烧 (80% 攻击力伤害，持续 12s)
+    # 5. ID 2875: SP2 第二下 (最后一下) 导弹命中 65% 几率燃烧 (80% 攻击力伤害，持续 12s)
     m_sp2_burn, a_sp2_burn = make_burn_statmod(
         mod_id="ultramagnus_sp2_burn",
         duration=12.0,
         total_dmg=burn_dmg,
-        chance=0.65,
+        chance=1.0,                    # 底层由 Native Hook 仲裁 65% 掷骰并弹出 HUD 显示
         trigger="onHit",
-        trigger_scope="level=Special2",
+        trigger_scope="level=Special2;dmgFlags=LastHit",
         appr_id="appr_ultramagnus_sp2_burn",
         callout_text="燃烧",
         pua_icon="\uE41D",
@@ -160,14 +160,14 @@ def build_ultramagnus_abilities(base_hp: float = 30000.0, base_atk: float = 3000
     mods.update(m_sp2_burn)
     appears.update(a_sp2_burn)
 
-    # 6. ID 2876: SP3 命中 65% 几率燃烧 (80% 攻击力伤害，持续 12s)
+    # 6. ID 2876: SP3 后面几下导弹命中 65% 几率燃烧 (80% 攻击力伤害，持续 12s)
     m_sp3_burn, a_sp3_burn = make_burn_statmod(
         mod_id="ultramagnus_sp3_burn",
         duration=12.0,
         total_dmg=burn_dmg,
-        chance=0.65,
+        chance=1.0,                    # 底层由 Native Hook 仲裁 65% 掷骰并弹出 HUD 显示
         trigger="onHit",
-        trigger_scope="level=Special3",
+        trigger_scope="level=Special3;index=1,2,3,4,5",
         appr_id="appr_ultramagnus_sp3_burn",
         callout_text="燃烧",
         pua_icon="\uE41D",

@@ -1009,8 +1009,8 @@ def make_armor_up_statmod(
     callout_text: str = "护甲",
     show_callout: bool = True,
     pua_icon: str = "\uE517",
-    color_hex: str = "3B82F6",
-    gradient_bottom: str = "1D4ED8",
+    color_hex: str = "2BDAF6",
+    gradient_bottom: str = "0284C7",
     stackable: bool = True,
     max_stacks: int = 10,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
@@ -1018,8 +1018,8 @@ def make_armor_up_statmod(
     通用护甲增益工厂 (Armor Up Buff Factory):
     提升目标 ArmorUpModifier，降低受到的伤害（减伤）。
     公式: damage *= (1.0 - GetArmorDR())，GetArmorDR() 累加 ArmorUpModifier。
-    - PUA 矢量图标: 护盾 (\uE517)
-    - 配色: 护盾蓝 (3B82F6 / 1D4ED8)
+    - PUA 矢量图标: 完整胸甲 (\uE517)
+    - 配色: 官方电光青/青蓝 (2BDAF6 / 0284C7)
     """
     if not appr_id:
         appr_id = f"appr_{mod_id}"
