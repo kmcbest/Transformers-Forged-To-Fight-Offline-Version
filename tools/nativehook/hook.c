@@ -5319,7 +5319,7 @@ static void give_p0_max_power(void) {
     if (sp3_xf_any()) return; // Don't interfere while casting SP3
     if (!g_p0_controller || !obj_ok(g_p0_controller)) return;
     PROTECT({
-        void* p0_attr = *(void**)((char*)g_p0_controller + 0x100);
+        void* p0_attr = *(void**)((char*)g_p0_controller + 0x80);
         if (p0_attr && obj_ok(p0_attr) && g_base) {
             typedef void (*fn_set_norm_mana)(void*, float, void*);
             fn_set_norm_mana set_mana = (fn_set_norm_mana)(g_base + 0x00DAC7B4);
@@ -5348,7 +5348,7 @@ void* hook_145(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
         if (g_enemy_power_leak_end_ms > 0 && g_p1_controller && obj_ok(g_p1_controller)) {
             uint64_t now_ms = propgo_now_ms();
             if (now_ms < g_enemy_power_leak_end_ms) {
-                void* p1_attr = *(void**)((char*)g_p1_controller + 0x100);
+                void* p1_attr = *(void**)((char*)g_p1_controller + 0x80);
                 if (p1_attr && obj_ok(p1_attr) && g_base) {
                     typedef float (*fn_get_norm_mana)(void*, void*);
                     typedef void (*fn_set_norm_mana)(void*, float, void*);
@@ -6543,7 +6543,7 @@ float hook_179(void* self, float baseSpeed) {
         spd = ((fn_proj_spd)H[179].orig)(self, baseSpeed);
     }
     PROTECT({
-        void* p0_attr = (g_p0_controller && obj_ok(g_p0_controller)) ? *(void**)((char*)g_p0_controller + 0x100) : NULL;
+        void* p0_attr = (g_p0_controller && obj_ok(g_p0_controller)) ? *(void**)((char*)g_p0_controller + 0x80) : NULL;
         if (self == p0_attr || (self && !g_p1_controller)) {
             uint64_t now_ms = propgo_now_ms();
             if (now_ms < g_p0_ranged_boost_end_ms && g_p0_ranged_speed_bonus > 0.0f) {
@@ -6735,6 +6735,28 @@ void* hook_185(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
 }
 
 
+static int is_player0_attr(void* self) {
+    if (!self) return 0;
+    void* p0_attr = (g_p0_controller && obj_ok(g_p0_controller)) ? *(void**)((char*)g_p0_controller + 0x80) : NULL;
+    void* p1_attr = (g_p1_controller && obj_ok(g_p1_controller)) ? *(void**)((char*)g_p1_controller + 0x80) : NULL;
+    if (p0_attr && self == p0_attr) return 1;
+    if (p1_attr && self == p1_attr) return 0;
+    if (p0_attr && !p1_attr) return (self == p0_attr);
+    if (!p0_attr && p1_attr) return (self != p1_attr);
+    return 1;
+}
+
+static int is_player0_bc(void* self) {
+    if (!self) return 0;
+    void* p0_bc = (g_p0_controller && obj_ok(g_p0_controller)) ? *(void**)((char*)g_p0_controller + 0x88) : NULL;
+    void* p1_bc = (g_p1_controller && obj_ok(g_p1_controller)) ? *(void**)((char*)g_p1_controller + 0x88) : NULL;
+    if (p0_bc && self == p0_bc) return 1;
+    if (p1_bc && self == p1_bc) return 0;
+    if (p0_bc && !p1_bc) return (self == p0_bc);
+    if (!p0_bc && p1_bc) return (self != p1_bc);
+    return 1;
+}
+
 // slot 186 (0x11785B8): PlayerController.RegisterHitResult(HitResultData hitResult)
 void* hook_186(void* this_pc, void* hitResult, void* method) {
     if (this_pc && obj_ok(this_pc) && hitResult && obj_ok(hitResult)) {
@@ -6759,6 +6781,8 @@ void* hook_186(void* this_pc, void* hitResult, void* method) {
                          atk_level, flags);
                     return NULL;
                 }
+            } else if (p_idx == 1) {
+                g_p1_controller = this_pc;
             }
         });
     }
@@ -6774,8 +6798,7 @@ float hook_187(void* self) {
         mod = ((fn_spd_mod)H[187].orig)(self);
     }
     PROTECT({
-        void* p0_attr = (g_p0_controller && obj_ok(g_p0_controller)) ? *(void**)((char*)g_p0_controller + 0x100) : NULL;
-        if (self == p0_attr || (self && !g_p1_controller)) {
+        if (is_player0_attr(self)) {
             uint64_t now_ms = propgo_now_ms();
             if (now_ms < g_p0_ranged_boost_end_ms && g_p0_ranged_speed_bonus > 0.0f) {
                 int is_shooting = 0;
@@ -6870,8 +6893,7 @@ int hook_188(void* self, void* applicant, void* statModifier, int32_t updateAttr
 
     PROTECT({
         if (res == 1) { // BuffResult.Success
-            void* p0_bc = (g_p0_controller && obj_ok(g_p0_controller)) ? *(void**)((char*)g_p0_controller + 0x108) : NULL;
-            int is_target_p0 = (self == p0_bc);
+            int is_target_p0 = is_player0_bc(self);
             combat_overlay_push("BUFF -> %s on %s (APPLIED)", mod_id[0] ? mod_id : "unknown", is_target_p0 ? "P0" : "P1");
 
             uint64_t now_ms = propgo_now_ms();
@@ -6898,8 +6920,7 @@ int hook_189(void* self, int32_t testType, void* testParams, int32_t numBuffsToR
     int res = H[189].orig ? ((fn_remove_buffs)H[189].orig)(self, testType, testParams, numBuffsToRemove, removeFlags, method) : 0;
     PROTECT({
         if (res != 0 && removeFlags == 1) { // 1 = BuffRemoveFlags.nullify
-            void* p0_bc = (g_p0_controller && obj_ok(g_p0_controller)) ? *(void**)((char*)g_p0_controller + 0x108) : NULL;
-            if (self != p0_bc) {
+            if (!is_player0_bc(self)) {
                 g_p1_buffs_nullified_this_attack++;
                 flog("NULLIFY_HIT: Successfully nullified buff from P1! count=%d", g_p1_buffs_nullified_this_attack);
             }
@@ -6911,39 +6932,61 @@ int hook_189(void* self, int32_t testType, void* testParams, int32_t numBuffsToR
 // slot 190 (0x00DACC74): PlayerAttributes.get_EvadeMelee
 int hook_190(void* self) {
     if (!self || !obj_ok(self)) return 0;
-    float val = 0.0f;
-    PROTECT({
-        void* stat_attr = *(void**)((uintptr_t)self + 0x1C0);
-        if (stat_attr && obj_ok(stat_attr)) {
-            void* vtable = *(void**)stat_attr;
-            if (vtable) {
-                typedef float (*fn_get_val)(void*, void*);
-                fn_get_val fn_get = *(fn_get_val*)((uintptr_t)vtable + 0x178);
-                void* mi = *(void**)((uintptr_t)vtable + 0x180);
-                if (fn_get) {
-                    val = fn_get(stat_attr, mi);
-                }
-            }
-        }
-    });
-    if (val <= 0.0001f) return 0;
-    void* p0_attr = (g_p0_controller && obj_ok(g_p0_controller)) ? *(void**)((char*)g_p0_controller + 0x100) : NULL;
-    int is_p0 = (self == p0_attr);
+    typedef int (*fn_get_bool)(void*);
+    int orig_evade = H[190].orig ? ((fn_get_bool)H[190].orig)(self) : 0;
+    if (!orig_evade) return 0;
+
+    int is_p0 = is_player0_attr(self);
     const char* who = is_p0 ? (g_p0_bot_id[0] ? g_p0_bot_id : "P0") : (g_p1_bot_id[0] ? g_p1_bot_id : "P1");
 
-    if (val >= 1.0f) {
-        flog("EVADE_MELEE_CHECK: guaranteed 100%% (val=%.3f)", val);
+    uint64_t now_ms = propgo_now_ms();
+    static uint64_t s_last_melee_ms_p0 = 0;
+    static int s_last_melee_res_p0 = 0;
+    static uint64_t s_last_melee_ms_p1 = 0;
+    static int s_last_melee_res_p1 = 0;
+
+    uint64_t* last_ms = is_p0 ? &s_last_melee_ms_p0 : &s_last_melee_ms_p1;
+    int* last_res = is_p0 ? &s_last_melee_res_p0 : &s_last_melee_res_p1;
+
+    if (now_ms - *last_ms < 80) {
+        return *last_res;
+    }
+
+    float chance = 1.0f;
+    if (strstr(who, "bumblebee") != NULL) {
+        chance = 0.32f;
+    } else if (strstr(who, "barricade") != NULL) {
+        chance = 0.85f;
+    } else {
+        PROTECT({
+            void* stat_attr = *(void**)((uintptr_t)self + 0x1C0);
+            if (stat_attr && obj_ok(stat_attr)) {
+                float attr_val = *(float*)((char*)stat_attr + 0x28);
+                if (attr_val > 0.001f && attr_val <= 1.0f) {
+                    chance = attr_val;
+                }
+            }
+        });
+    }
+
+    *last_ms = now_ms;
+    if (chance >= 1.0f) {
+        flog("EVADE_MELEE_CHECK: guaranteed 100%% for %s (chance=%.3f)", who, chance);
         combat_overlay_push("[%s] EVADE Melee (100%% GUARANTEED)", who);
+        *last_res = 1;
         return 1;
     }
+
     float r = ((float)rand()) / (float)RAND_MAX;
-    if (r < val) {
-        flog("EVADE_MELEE_CHECK: SUCCESS! roll=%.3f < chance=%.3f (TRIGGERED)", r, val);
-        combat_overlay_push("[%s] EVADE Melee PASS! (Roll: %.1f%% < %.1f%%)", who, r * 100.0f, val * 100.0f);
+    if (r < chance) {
+        flog("EVADE_MELEE_CHECK: SUCCESS! [%s] roll=%.3f < chance=%.3f (TRIGGERED)", who, r, chance);
+        combat_overlay_push("[%s] EVADE Melee PASS! (Roll: %.1f%% < %.1f%%)", who, r * 100.0f, chance * 100.0f);
+        *last_res = 1;
         return 1;
     } else {
-        flog("EVADE_MELEE_CHECK: MISSED! roll=%.3f >= chance=%.3f (NORMAL HIT)", r, val);
-        combat_overlay_push("[%s] EVADE Melee FAIL (Roll: %.1f%% >= %.1f%%)", who, r * 100.0f, val * 100.0f);
+        flog("EVADE_MELEE_CHECK: MISSED! [%s] roll=%.3f >= chance=%.3f (NORMAL HIT)", who, r, chance);
+        combat_overlay_push("[%s] EVADE Melee FAIL (Roll: %.1f%% >= %.1f%%)", who, r * 100.0f, chance * 100.0f);
+        *last_res = 0;
         return 0;
     }
 }
@@ -6951,39 +6994,59 @@ int hook_190(void* self) {
 // slot 191 (0x00DACCA4): PlayerAttributes.get_EvadeRanged
 int hook_191(void* self) {
     if (!self || !obj_ok(self)) return 0;
-    float val = 0.0f;
-    PROTECT({
-        void* stat_attr = *(void**)((uintptr_t)self + 0x1C8);
-        if (stat_attr && obj_ok(stat_attr)) {
-            void* vtable = *(void**)stat_attr;
-            if (vtable) {
-                typedef float (*fn_get_val)(void*, void*);
-                fn_get_val fn_get = *(fn_get_val*)((uintptr_t)vtable + 0x178);
-                void* mi = *(void**)((uintptr_t)vtable + 0x180);
-                if (fn_get) {
-                    val = fn_get(stat_attr, mi);
-                }
-            }
-        }
-    });
-    if (val <= 0.0001f) return 0;
-    void* p0_attr = (g_p0_controller && obj_ok(g_p0_controller)) ? *(void**)((char*)g_p0_controller + 0x100) : NULL;
-    int is_p0 = (self == p0_attr);
+    typedef int (*fn_get_bool)(void*);
+    int orig_evade = H[191].orig ? ((fn_get_bool)H[191].orig)(self) : 0;
+    if (!orig_evade) return 0;
+
+    int is_p0 = is_player0_attr(self);
     const char* who = is_p0 ? (g_p0_bot_id[0] ? g_p0_bot_id : "P0") : (g_p1_bot_id[0] ? g_p1_bot_id : "P1");
 
-    if (val >= 1.0f) {
-        flog("EVADE_RANGED_CHECK: guaranteed 100%% (val=%.3f)", val);
+    uint64_t now_ms = propgo_now_ms();
+    static uint64_t s_last_ranged_ms_p0 = 0;
+    static int s_last_ranged_res_p0 = 0;
+    static uint64_t s_last_ranged_ms_p1 = 0;
+    static int s_last_ranged_res_p1 = 0;
+
+    uint64_t* last_ms = is_p0 ? &s_last_ranged_ms_p0 : &s_last_ranged_ms_p1;
+    int* last_res = is_p0 ? &s_last_ranged_res_p0 : &s_last_ranged_res_p1;
+
+    if (now_ms - *last_ms < 80) {
+        return *last_res;
+    }
+
+    float chance = 1.0f;
+    if (strstr(who, "barricade") != NULL) {
+        chance = 0.85f;
+    } else {
+        PROTECT({
+            void* stat_attr = *(void**)((uintptr_t)self + 0x1C8);
+            if (stat_attr && obj_ok(stat_attr)) {
+                float attr_val = *(float*)((char*)stat_attr + 0x28);
+                if (attr_val > 0.001f && attr_val <= 1.0f) {
+                    chance = attr_val;
+                }
+            }
+        });
+    }
+
+    *last_ms = now_ms;
+    if (chance >= 1.0f) {
+        flog("EVADE_RANGED_CHECK: guaranteed 100%% for %s (chance=%.3f)", who, chance);
         combat_overlay_push("[%s] EVADE Ranged (100%% GUARANTEED)", who);
+        *last_res = 1;
         return 1;
     }
+
     float r = ((float)rand()) / (float)RAND_MAX;
-    if (r < val) {
-        flog("EVADE_RANGED_CHECK: SUCCESS! roll=%.3f < chance=%.3f (TRIGGERED)", r, val);
-        combat_overlay_push("[%s] EVADE Ranged PASS! (Roll: %.1f%% < %.1f%%)", who, r * 100.0f, val * 100.0f);
+    if (r < chance) {
+        flog("EVADE_RANGED_CHECK: SUCCESS! [%s] roll=%.3f < chance=%.3f (TRIGGERED)", who, r, chance);
+        combat_overlay_push("[%s] EVADE Ranged PASS! (Roll: %.1f%% < %.1f%%)", who, r * 100.0f, chance * 100.0f);
+        *last_res = 1;
         return 1;
     } else {
-        flog("EVADE_RANGED_CHECK: MISSED! roll=%.3f >= chance=%.3f (NORMAL HIT)", r, val);
-        combat_overlay_push("[%s] EVADE Ranged FAIL (Roll: %.1f%% >= %.1f%%)", who, r * 100.0f, val * 100.0f);
+        flog("EVADE_RANGED_CHECK: MISSED! [%s] roll=%.3f >= chance=%.3f (NORMAL HIT)", who, r, chance);
+        combat_overlay_push("[%s] EVADE Ranged FAIL (Roll: %.1f%% >= %.1f%%)", who, r * 100.0f, chance * 100.0f);
+        *last_res = 0;
         return 0;
     }
 }
