@@ -103,9 +103,14 @@ for ab in bot.get("abilities", []):
 
 ---
 
-### 步骤 2：在 `Server/abilities/bots/` 创建独立 py 文件
+### 步骤 2：在 `Server/abilities/bots/` 创建或增量追加独立 py 文件
 
-以 `arcee.py` 为标准模板，创建 `Server/abilities/bots/<hero_alias>.py`。
+以 `arcee.py` 为标准模板，创建或更新 `Server/abilities/bots/<hero_alias>.py`。
+
+> [!IMPORTANT]
+> **已有机器人文件增量追加与冲突保护铁律 (Append Only, Never Overwrite)**：
+> 1. **增量追加，严禁覆盖 (Append Only)**：当目标机器人在 `Server/abilities/bots/` 已经存在相应的 `.py` 实现文件时，**严禁直接全量覆盖原有文件**！必须在现有 `build_<hero>_abilities()` 函数中增量追加新技能或新机制，完好保留此前已实现并通过门禁验收的既有能力。
+> 2. **存在冲突，立即暂停询问用户 (Pause on Conflict)**：如果在追加新技能时发现与现有逻辑存在冲突（包括但不限于：`mod_id` 命名冲突、触发器 `tr`/`trs` 互斥或竞争、机制数值矛盾、或者官方真理源描述与当前已有代码存在设计歧义），**严禁擅自做主进行强行覆盖或篡改，必须立即暂停执行并向用户说明冲突详情与备选方案，待用户明确指示后再继续**。
 
 #### 核心代码规范要求：
 1. **模块文档字符串 (Docstring)**：必须逐字列出真理源的官方中文描述，并清晰注明对应的代码实现方案。

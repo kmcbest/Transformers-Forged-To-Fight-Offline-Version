@@ -50,6 +50,8 @@ def build_buffs_config():
         "evade_ranged": {"stackable": False, "active_display": True},
         # 暴击几率增益 Buff：在血条下方显示金色倒计时圆环图标
         "crit_rate": {"stackable": True, "active_display": True},
+        # 暴击伤害增益 Buff：在血条下方显示金色倒计时圆环图标
+        "crit_damage": {"stackable": True, "active_display": True},
         # 护甲增益 Buff：在血条下方显示蓝色倒计时圆环图标
         "armor_up": {"stackable": True, "active_display": True},
         # 破甲减益 Debuff：在敌人血条下方显示红色倒计时圆环图标
@@ -403,6 +405,27 @@ def build_buffs_set():
             "time": {"amount": 7.5},
             "loc_name": "crit_rate",
             "loc_desc": "crit_rate",
+        },
+        # 暴击伤害增益 Buff
+        "crit_damage": {
+            "id": "crit_damage",
+            "iconTexture": "",
+            "image": "",
+            "images3": False,
+            "modeAvail": [],
+            "scope": "global",
+            "valueType": "multiplier",
+            "displayValue": 1.0,
+            "c": 1,
+            "value": 1.0,
+            "buffType": "crit_damage",
+            "group": "crit_damage",
+            "p": {},
+            "hasDuration": True,
+            "e": 0,
+            "time": {"amount": 4.0},
+            "loc_name": "crit_damage",
+            "loc_desc": "crit_damage",
         },
         # 护甲增益 Buff：提升 ArmorUpModifier，降低受到伤害
         "armor_up": {

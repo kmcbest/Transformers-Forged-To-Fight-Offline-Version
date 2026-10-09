@@ -543,6 +543,7 @@ def make_stun_statmod(
     chance: float = 1.0,
     trigger: str = "onSpecial1Activate",
     trigger_scope: str = "",
+    target_actor: str = "opponent",
     appr_id: str = "appr_stun",
     callout_text: str = "眩晕",
     pua_icon: str = "\uE605",
@@ -587,7 +588,7 @@ def make_stun_statmod(
         "m": 1.0,
         "d": float(duration),
         "s": "none",
-        "ta": "opponent",
+        "ta": target_actor,
         "mt": "debuff",
         "v": "",
         "ms": "",
@@ -908,6 +909,81 @@ def make_crit_rate_statmod(
         "ms": "",
         "st": 1,
         "g": "crit_rate",
+        "gc": 0.0,
+        "gcv": "",
+        "rcv": "",
+        "ti": 0,
+        "a": [appr_id],
+        "au": [],
+        "rh": 0.0,
+        "ra": 0.0,
+    }
+
+    validate_statmod(stat_mod)
+    validate_appear(appear)
+    return {mod_id: stat_mod}, {appr_id: appear}
+
+
+def make_crit_damage_statmod(
+    mod_id: str,
+    duration: float = 4.0,
+    crit_dmg_bonus: float = 0.75,
+    chance: float = 1.0,
+    trigger: str = "onSpecial2Activate",
+    trigger_scope: str = "",
+    appr_id: str = "",
+    callout_text: str = "暴击伤害",
+    pua_icon: str = "\uE406",
+    color_hex: str = "F59E0B",
+    gradient_bottom: str = "D97706",
+) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    """
+    通用暴击伤害增益工厂 (Crit Damage Boost Buff):
+    在指定持续时间内提升自身暴击伤害倍率。
+    - PUA 图标为暴击标志 (\uE406)，配色为金黄琥珀色 (F59E0B / D97706)。
+    """
+    if not appr_id:
+        appr_id = f"appr_{mod_id}"
+
+    validate_color_code(color_hex, "crit_damage_tc")
+    validate_color_code(gradient_bottom, "crit_damage_gb")
+
+    appear = {
+        "id": appr_id,
+        "a": callout_text,
+        "s": "",
+        "l": f"暴击伤害提升{int(crit_dmg_bonus*100)}%",
+        "ss": f"暴击伤害提升{int(crit_dmg_bonus*100)}%",
+        "t": pua_icon,
+        "f": "",
+        "st": callout_text,
+        "ps": callout_text,
+        "pl": f"{callout_text}生效中",
+        "tc": color_hex,
+        "gt": color_hex,
+        "gb": gradient_bottom,
+    }
+
+    stat_mod = {
+        "id": mod_id,
+        "t": "crit_damage",
+        "tm": "",
+        "tr": [trigger],
+        "uit": [trigger],
+        "pri": 0,
+        "trm": 0.0,
+        "trs": trigger_scope,
+        "trr": "repeat",
+        "c": float(chance),
+        "m": float(crit_dmg_bonus),
+        "d": float(duration),
+        "s": "none",
+        "ta": "self",
+        "mt": "buff",
+        "v": "",
+        "ms": "",
+        "st": 1,
+        "g": "crit_damage",
         "gc": 0.0,
         "gcv": "",
         "rcv": "",
