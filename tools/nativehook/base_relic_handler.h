@@ -497,3 +497,55 @@ static const unsigned char* inject_slots_into_base_active(const unsigned char *s
     *outn = o->n;
     return (const unsigned char*)o->p;
 }
+
+static const struct {
+    int x;
+    int y;
+    const char *boss_token;
+    const char *tower_token;
+    const char *def_boss;
+    const char *def_tower;
+} g_raid_slot_defs[7] = {
+    { 25, 30, "%RB0%", "%RT0%", "megatron_gs_leader2015",   "mods_primemodule_01" },
+    { 22, 33, "%RB1%", "%RT1%", "megatronus_gs_kabam",      "mods_paralyzer_01" },
+    { 28, 33, "%RB2%", "%RT2%", "soundwave_gs",             "mods_brawlersfury_01" },
+    { 25, 36, "%RB3%", "%RT3%", "megatron_cin_rotf",        "mods_tacticianstrick_02" },
+    { 22, 39, "%RB4%", "%RT4%", "galvatron_gs_voyager2016", "mods_harmaccelerator_01" },
+    { 28, 39, "%RB5%", "%RT5%", "shockwave_gs",            "mods_strangerefractor_01" },
+    { 25, 42, "%RB6%", "%RT6%", "arcee_gs_deluxe2014",       "mods_laserguidance_01" }
+};
+
+static const struct {
+    int x;
+    int y;
+    const char *relic_token;
+    const char *model_token;
+    const char *def_relic;
+    const char *def_model;
+} g_raid_relic_defs[4] = {
+    { 20, 33, "%RR0%", "%RM0%", "relic_dark_energon_crystal",     "rlc11" },
+    { 20, 39, "%RR1%", "%RM1%", "relic_unstable_energon_crystal", "rlc10" },
+    { 30, 33, "%RR2%", "%RM2%", "relic_allspark",                 "rlc2" },
+    { 30, 39, "%RR3%", "%RM3%", "relic_matrix_of_leadership_g1",  "rlc14" }
+};
+
+static int get_raid_template_args(TemplateArg *args, int max_args) {
+    if (max_args < 22) return 0;
+    load_base_defenders();
+    load_base_relics();
+    int count = 0;
+    for (int s = 0; s < 7; s++) {
+        const char *b = g_base_defender_slots[s].boss_id[0] ? g_base_defender_slots[s].boss_id : g_raid_slot_defs[s].def_boss;
+        const char *t = g_base_defender_slots[s].tower_id[0] ? g_base_defender_slots[s].tower_id : g_raid_slot_defs[s].def_tower;
+        args[count++] = (TemplateArg){ g_raid_slot_defs[s].boss_token, (const unsigned char*)b, strlen(b) };
+        args[count++] = (TemplateArg){ g_raid_slot_defs[s].tower_token, (const unsigned char*)t, strlen(t) };
+    }
+    for (int r = 0; r < 4; r++) {
+        const char *rel = g_base_relic_slots[r].relic_id[0] ? g_base_relic_slots[r].relic_id : g_raid_relic_defs[r].def_relic;
+        const RelicDef *def = find_relic_def(rel);
+        const char *mdl = (def && def->model_id) ? def->model_id : g_raid_relic_defs[r].def_model;
+        args[count++] = (TemplateArg){ g_raid_relic_defs[r].relic_token, (const unsigned char*)rel, strlen(rel) };
+        args[count++] = (TemplateArg){ g_raid_relic_defs[r].model_token, (const unsigned char*)mdl, strlen(mdl) };
+    }
+    return count;
+}

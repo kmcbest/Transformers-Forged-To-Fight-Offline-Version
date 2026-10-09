@@ -242,6 +242,17 @@ def build_entries(listen_port: int = 8080) -> dict[str, bytes]:
     if "POST /userprofile" in entries:
         add("POST /userprofile/", entries["POST /userprofile"])
 
+    # Ensure account data carries fresh missionsconfig (including raid pvp config)
+    missions_account = gamedata.build_missions_account_data()
+    for acc_route in ["GET /account/data", "POST /account/data"]:
+        if acc_route in entries:
+            try:
+                acc_obj = json.loads(entries[acc_route].decode("utf-8"))
+                acc_obj.setdefault("result", {})["missionsconfig"] = missions_account
+                entries[acc_route] = json.dumps(acc_obj, separators=(",", ":")).encode("utf-8")
+            except Exception:
+                pass
+
     prefix_rules = json.loads((RESPONSES / "_prefix_rules.json").read_bytes())
     for prefix, filename in prefix_rules:
         # Prefix records themselves are built by build_payload, but reading them here

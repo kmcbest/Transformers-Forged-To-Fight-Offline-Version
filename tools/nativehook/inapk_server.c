@@ -1438,6 +1438,9 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         return match_ok;
     }
     if(strstr(p, "/matches/find-match")) {
+        load_base_defenders();
+        const char *top_b = g_base_defender_slots[0].boss_id[0] ? g_base_defender_slots[0].boss_id : "megatron_gs_leader2015";
+        const char *top_t = g_base_defender_slots[0].tower_id[0] ? g_base_defender_slots[0].tower_id : "mods_primemodule_01";
         static char find_match_buf[4096];
         long now = (long)time(NULL);
         long expiry = now + 1800;
@@ -1461,14 +1464,14 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
                     "},"
                     "{"
                         "\"uid\":10002,"
-                        "\"n\":\"Megatron\","
+                        "\"n\":\"Base Defender\","
                         "\"t\":\"DECP\","
                         "\"s\":1500,"
                         "\"sd\":45,"
                         "\"rc\":1600,"
                         "\"bs\":8500,"
-                        "\"td\":\"megatron_gs_leader2015\","
-                        "\"tt\":\"\","
+                        "\"td\":\"%s\","
+                        "\"tt\":\"%s\","
                         "\"pi\":4200,"
                         "\"layout\":{\"type\":\"userBase\",\"category\":\"base\",\"id\":\"base_10002\",\"hash\":\"bm_10002\"}"
                     "},"
@@ -1487,10 +1490,10 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
                     "}"
                 "]"
             "}}",
-            now, expiry
+            now, expiry, top_b, top_t
         );
         *outn = (size_t)len;
-        logmsg("FIND_MATCH: handled %s -> expiry=%ld", p, expiry);
+        logmsg("FIND_MATCH: handled %s -> expiry=%ld top_b=%s", p, expiry, top_b);
         return (const unsigned char*)find_match_buf;
     }
     if(strstr(p, "/matches/activate-match")) {
@@ -1522,7 +1525,10 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
 
         const void *v = lookup("@matches:activate_raid", outn);
         if (v) {
-            logmsg("ACTIVATE_MATCH: returned @matches:activate_raid (%zu bytes)", *outn);
+            TemplateArg rargs[24];
+            int rc = get_raid_template_args(rargs, 24);
+            v = template_spaced(o, (const unsigned char*)v, *outn, rargs, rc, outn);
+            logmsg("ACTIVATE_MATCH: returned dynamic @matches:activate_raid (%zu bytes)", *outn);
             return (const unsigned char*)v;
         }
         static const unsigned char match_ok[] = "{\"error\":null,\"result\":{}}";
@@ -1685,6 +1691,11 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         v = lookup(lkey, &n);
         if(!v) { snprintf(key,sizeof key,"%s /quests/quest-detail/%s",method,mid); v=lookup(key,&n); }
         if(!v) { snprintf(key,sizeof key,"POST /quests/quest-detail/%s",mid); v=lookup(key,&n); }
+        if (strcmp(mid, "raid_base") == 0 && v) {
+            TemplateArg rargs[24];
+            int rc = get_raid_template_args(rargs, 24);
+            return template_spaced(o, (const unsigned char*)v, n, rargs, rc, outn);
+        }
         return v?json_default_spaces(v,n,o,outn):NULL;
     }
     if(strstr(p, "/quests/quest-join/")) {
@@ -1779,7 +1790,7 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         logmsg("HTTP_QUEST_QUIT: default quit handled");
         return default_quit_resp;
     }
-    if(strstr(p,"/quests/quest-begin/")) { Team team; Out qteam={0}; TemplateArg args[8];snprintf(qid,sizeof qid,"%.63s",path_last(p));
+    if(strstr(p,"/quests/quest-begin/")) { Team team; Out qteam={0}; TemplateArg args[32];snprintf(qid,sizeof qid,"%.63s",path_last(p));
         snprintf(g_active_quest_id, sizeof g_active_quest_id, "%s", qid);
         g_quest_state.is_final_boss = 0;
         g_matrix_war_active = (strcmp(qid, "1.1.5") == 0);
@@ -1836,13 +1847,20 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         }
         args[0]=(TemplateArg){"%LEAD%",(const unsigned char*)team.bid[0],strlen(team.bid[0])};
         args[1]=(TemplateArg){"%QTEAM%",qteam.p,qteam.n};
-        args[2]=(TemplateArg){"%EB0%",(const unsigned char*)e_bid[0],strlen(e_bid[0])};
-        args[3]=(TemplateArg){"%EB1%",(const unsigned char*)e_bid[1],strlen(e_bid[1])};
-        args[4]=(TemplateArg){"%EB2%",(const unsigned char*)e_bid[2],strlen(e_bid[2])};
-        args[5]=(TemplateArg){"%EB3%",(const unsigned char*)e_bid[3],strlen(e_bid[3])};
-        args[6]=(TemplateArg){"%EB4%",(const unsigned char*)e_bid[4],strlen(e_bid[4])};
-        args[7]=(TemplateArg){"%EB5%",(const unsigned char*)e_bid[5],strlen(e_bid[5])};
-        v=template_spaced(o,v,n,args,8,outn);free(qteam.p);
+        int arg_count = 2;
+        if(strcmp(qid, "raid_base") == 0) {
+            int rc = get_raid_template_args(args + 2, 24);
+            arg_count += rc;
+        } else {
+            args[2]=(TemplateArg){"%EB0%",(const unsigned char*)e_bid[0],strlen(e_bid[0])};
+            args[3]=(TemplateArg){"%EB1%",(const unsigned char*)e_bid[1],strlen(e_bid[1])};
+            args[4]=(TemplateArg){"%EB2%",(const unsigned char*)e_bid[2],strlen(e_bid[2])};
+            args[5]=(TemplateArg){"%EB3%",(const unsigned char*)e_bid[3],strlen(e_bid[3])};
+            args[6]=(TemplateArg){"%EB4%",(const unsigned char*)e_bid[4],strlen(e_bid[4])};
+            args[7]=(TemplateArg){"%EB5%",(const unsigned char*)e_bid[5],strlen(e_bid[5])};
+            arg_count = 8;
+        }
+        v=template_spaced(o,v,n,args,arg_count,outn);free(qteam.p);
         logmsg("quest-begin reply (%zu bytes): %.300s", *outn, (const char*)v);
         return v;
     }
@@ -1924,7 +1942,7 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
                     }
                 }
             }
-            Team team;Out qteam={0},ateam={0};TemplateArg args[9];
+            Team team;Out qteam={0},ateam={0};TemplateArg args[32];
             if(!resolve_team(&team)) return NULL;
             if(strcmp(qid, "1.1.5") == 0) {
                 team.count = 1;
@@ -1938,13 +1956,20 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
             args[0]=(TemplateArg){"%LEAD%",(const unsigned char*)team.bid[0],strlen(team.bid[0])};
             args[1]=(TemplateArg){"%QTEAM%",qteam.p,qteam.n};
             args[2]=(TemplateArg){"%ATEAM%",ateam.p,ateam.n};
-            args[3]=(TemplateArg){"%EB0%",(const unsigned char*)e_bid[0],strlen(e_bid[0])};
-            args[4]=(TemplateArg){"%EB1%",(const unsigned char*)e_bid[1],strlen(e_bid[1])};
-            args[5]=(TemplateArg){"%EB2%",(const unsigned char*)e_bid[2],strlen(e_bid[2])};
-            args[6]=(TemplateArg){"%EB3%",(const unsigned char*)e_bid[3],strlen(e_bid[3])};
-            args[7]=(TemplateArg){"%EB4%",(const unsigned char*)e_bid[4],strlen(e_bid[4])};
-            args[8]=(TemplateArg){"%EB5%",(const unsigned char*)e_bid[5],strlen(e_bid[5])};
-            v=template_spaced(o,v,n,args,9,outn);free(qteam.p);free(ateam.p);
+            int arg_count = 3;
+            if(strcmp(qid, "raid_base") == 0) {
+                int rc = get_raid_template_args(args + 3, 24);
+                arg_count += rc;
+            } else {
+                args[3]=(TemplateArg){"%EB0%",(const unsigned char*)e_bid[0],strlen(e_bid[0])};
+                args[4]=(TemplateArg){"%EB1%",(const unsigned char*)e_bid[1],strlen(e_bid[1])};
+                args[5]=(TemplateArg){"%EB2%",(const unsigned char*)e_bid[2],strlen(e_bid[2])};
+                args[6]=(TemplateArg){"%EB3%",(const unsigned char*)e_bid[3],strlen(e_bid[3])};
+                args[7]=(TemplateArg){"%EB4%",(const unsigned char*)e_bid[4],strlen(e_bid[4])};
+                args[8]=(TemplateArg){"%EB5%",(const unsigned char*)e_bid[5],strlen(e_bid[5])};
+                arg_count = 9;
+            }
+            v=template_spaced(o,v,n,args,arg_count,outn);free(qteam.p);free(ateam.p);
             logmsg("quest-movedir reply (%zu bytes): %.300s", *outn, (const char*)v);
             return v;
         }

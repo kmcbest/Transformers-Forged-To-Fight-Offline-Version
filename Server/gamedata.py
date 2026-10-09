@@ -1837,14 +1837,31 @@ def raid_step_target(start, offx, offy):
     return RAID_STEP_MAP.get((tuple(start), int(offx), int(offy)), start)
 
 
+RAID_SLOT_DEFS = {
+    (25, 30): ("%RB0%", "%RT0%"),  # Slot 0: 巅峰王座 (Final Boss)
+    (22, 33): ("%RB1%", "%RT1%"),  # Slot 1: 西侧内圈守将
+    (28, 33): ("%RB2%", "%RT2%"),  # Slot 2: 东侧内圈守将
+    (25, 36): ("%RB3%", "%RT3%"),  # Slot 3: 中枢守将
+    (22, 39): ("%RB4%", "%RT4%"),  # Slot 4: 西侧外圈守将
+    (28, 39): ("%RB5%", "%RT5%"),  # Slot 5: 东侧外圈守将
+    (25, 42): ("%RB6%", "%RT6%"),  # Slot 6: 基地大门前哨守将
+}
+
+RAID_RELIC_DEFS = {
+    (20, 33): ("%RR0%", "%RM0%"),  # 圣物台 0
+    (20, 39): ("%RR1%", "%RM1%"),  # 圣物台 1
+    (30, 33): ("%RR2%", "%RM2%"),  # 圣物台 2
+    (30, 39): ("%RR3%", "%RM3%"),  # 圣物台 3
+}
+
 RAID_BASE_ENCOUNTERS = {
-    (25, 42): ("arcee_gs_deluxe2014", False, "1号哨戒位·阿尔茜 (Arcee)"),
-    (22, 39): ("galvatron_gs_voyager2016", False, "2号外院先锋·惊破天 (Galvatron)"),
-    (28, 39): ("shockwave_gs", False, "3号东侧指挥所·震荡波 (Shockwave)"),
-    (25, 36): ("megatron_cin_rotf", False, "4号中枢重镇·变5威 (Megatron ROTF)"),
-    (22, 33): ("megatronus_gs_kabam", False, "5号西侧壁垒·灭尔坦 (Megatronus)"),
-    (28, 33): ("soundwave_gs", False, "6号东侧壁垒·声波 (Soundwave)"),
-    (25, 30): ("megatron_gs_leader2015", True, "7号巅峰王座·G1威震天 (Megatron Leader)"),
+    (25, 42): ("%RB6%", False, "1号哨戒位 (Guard)"),
+    (22, 39): ("%RB4%", False, "2号外院先锋 (Vanguard)"),
+    (28, 39): ("%RB5%", False, "3号战术堡垒 (Bastion)"),
+    (25, 36): ("%RB3%", False, "4号中枢重镇 (Central Keep)"),
+    (22, 33): ("%RB1%", False, "5号内圈守卫 (Inner Guard)"),
+    (28, 33): ("%RB2%", False, "6号内圈壁垒 (Inner Bulwark)"),
+    (25, 30): ("%RB0%", True,  "7号巅峰王座 (Apex Throne)"),
 }
 
 def quest_walkable_tiles(qid="1.1.1"):
@@ -3278,6 +3295,15 @@ def build_raid_summary():
             map_override="primordial_base", tod_index=0,
             key=key, is_final_boss=is_final, rank=5, level=50
         )
+    for pos, (b_token, t_token) in RAID_SLOT_DEFS.items():
+        bosses[t_token] = {
+            "key": t_token,
+            "entityType": "tower",
+            "parentEntityType": "bcg",
+            "characters": [t_token],
+            "rank": 4, "level": 50, "sig_lvl": 0, "flvl": 0,
+            "aiType": 0, "aiString": "default", "aiPer": "default",
+        }
     return {
         "id": RAID_QID, "setId": "raid", "hash": "r1",
         "category": "raid",
@@ -3334,6 +3360,29 @@ def build_raid_map():
                     "links": [], "visibleLinks": [], "sockets": {},
                 })
                 continue
+            if pt in RAID_RELIC_DEFS:
+                r_token, m_token = RAID_RELIC_DEFS[pt]
+                sock_id = "sock_relic_%d_%d" % pt
+                r.append({
+                    "walkable": False, "hidden": False,
+                    "lab": "Relic",
+                    "sockets": {
+                        sock_id: {"entityType": "relic", "locked": False}
+                    },
+                    "entities": {
+                        r_token: {
+                            "entityType": "relic",
+                            "parentEntityType": "building",
+                            "id": r_token,
+                            "key": r_token,
+                            "modelId": m_token,
+                            "name": "Relic",
+                            "rank": 5,
+                            "level": 50,
+                        }
+                    }
+                })
+                continue
             if pt not in real_nodes:
                 r.append({"walkable": False, "hidden": True})
                 continue
@@ -3362,6 +3411,18 @@ def build_raid_map():
                         key=key, is_final_boss=is_final, rank=5, level=50
                     )
                 }
+                if pt in RAID_SLOT_DEFS:
+                    _, t_key = RAID_SLOT_DEFS[pt]
+                    sock_tower = "sock_tower_%d_%d" % pt
+                    tile["sockets"][sock_tower] = {"entityType": "tower", "locked": False}
+                    tile["entities"][t_key] = {
+                        "entityType": "tower",
+                        "parentEntityType": "bcg",
+                        "key": t_key,
+                        "character": t_key,
+                        "rank": 4,
+                        "level": 50,
+                    }
             r.append(tile)
         grid.append(r)
 
