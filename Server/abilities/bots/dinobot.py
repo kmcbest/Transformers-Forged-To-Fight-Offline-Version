@@ -38,7 +38,7 @@ def build_dinobot_abilities(base_hp: float = 30844.0, base_atk: float = 2421.0):
         trigger="onCrit",
         trigger_scope="level=Heavy",
         appr_id="appr_dinobot_bleed",
-        callout_text="BLEED",
+        callout_text="流血",
         buff_id="dmg_bleed",
     )
     mods.update(m1)

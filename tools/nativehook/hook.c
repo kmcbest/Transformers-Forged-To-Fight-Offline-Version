@@ -702,6 +702,9 @@ static volatile int g_p1_buffs_nullified_this_attack = 0;
 static volatile int s_current_hit_is_last = 0;
 static volatile int s_last_hit_flags = 0;
 static volatile int s_last_hit_index = 0;
+static volatile int s_ironhide_burned_this_hit = 0;
+static volatile uint64_t s_p0_burn_expire_ms = 0;
+static volatile uint64_t s_p1_burn_expire_ms = 0;
 
 #define COMBAT_ASSERT(cond, tag, fmt, ...) \
     do { \
@@ -5184,6 +5187,7 @@ void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     s_current_hit_is_last = 0;
     s_last_hit_flags = 0;
     s_last_hit_index = 0;
+    s_ironhide_burned_this_hit = 0;
     return H[140].orig(a0,a1,a2,a3,a4,a5,a6,a7);
 }
 void* hook_141(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
@@ -6766,6 +6770,7 @@ void* hook_186(void* this_pc, void* hitResult, void* method) {
             s_last_hit_flags = flags;
             s_last_hit_index = hit_idx;
             s_current_hit_is_last = ((flags & 0x80) != 0); // 0x80 = HitResultFlags.LastHit
+            s_ironhide_burned_this_hit = 0;
             if (p_idx == 0) {
                 g_p0_controller = this_pc;
                 
@@ -6918,6 +6923,28 @@ buff_gate_done: ;
             if (mod_id[0] && strstr(mod_id, "wheeljack_") != NULL && strstr(mod_id, "_leak") != NULL) {
                 g_enemy_power_leak_end_ms = now_ms + 3000;
                 flog("POWER_LEAK_ACTIVATED: Wheeljack leak active for 3.0s on enemy");
+            }
+            // Ramjet SP1 random 1~4 layers of burn (35% ATK)
+            if (mod_id[0] && strstr(mod_id, "ramjet_s1_burn") != NULL) {
+                static int s_ramjet_recursing = 0;
+                if (!s_ramjet_recursing) {
+                    s_ramjet_recursing = 1;
+                    int extra_stacks = rand() % 4; // 0, 1, 2, or 3 extra stacks -> total 1 to 4 stacks
+                    for (int s = 0; s < extra_stacks; s++) {
+                        ((fn_apply_buff)H[188].orig)(self, applicant, statModifier, updateAttributes, useOverrideDuration, overrideDuration, method);
+                    }
+                    s_ramjet_recursing = 0;
+                    combat_overlay_push("[喷气机] SP1 燃烧 +%d层! (35%% ATK)", 1 + extra_stacks);
+                    flog("RAMJET_SP1_BURN: applied %d stacks (1 base + %d extra)", 1 + extra_stacks, extra_stacks);
+                }
+            }
+            // 跟踪目标燃烧状态过期时间 (默认 4.2 秒窗口)
+            if (mod_id[0] && strstr(mod_id, "burn") != NULL) {
+                if (is_target_p0) {
+                    s_p0_burn_expire_ms = now_ms + 4200;
+                } else {
+                    s_p1_burn_expire_ms = now_ms + 4200;
+                }
             }
         }
     });
@@ -7105,9 +7132,80 @@ int hook_192(void* self, void* statModifier, float* pRoll, float* pChance, void*
     if (mod_id[0] && strstr(mod_id, "ultramagnus_sp3_burn") != NULL) {
         if (s_last_hit_index == 0) return 0;
     }
+    // 5. 电影铁皮 (Ironhide ROTF):
+    // a) SP1 仅最后一击算导弹攻击 (前置近战拳脚不触发燃烧与导弹暴击)
+    if (mod_id[0] && strstr(mod_id, "ironhide_missile_") != NULL) {
+        if (g_p0_current_special_index == 1 && !s_current_hit_is_last) {
+            flog("IRONHIDE_GATE: SP1 non-last hit, skip missile roll: %s", mod_id);
+            return 0;
+        }
+    }
+    // b) 初次燃烧与叠层燃烧互斥逻辑:
+    // 官方真理源: "若对手在燃烧中，则燃烧可叠加，每层伤害为30%; 未在燃烧中则施加80%"
+    // 单次打击绝对不能同时施加 80% 和 30% 燃烧
+    if (mod_id[0] && strstr(mod_id, "ironhide_missile_burn") != NULL) {
+        void* owner_bc = (statModifier && obj_ok(statModifier)) ? *(void**)((char*)statModifier + 0x10) : NULL;
+        int is_p0 = is_player0_bc(owner_bc);
+        uint64_t target_burn_exp = is_p0 ? s_p1_burn_expire_ms : s_p0_burn_expire_ms;
+        int target_already_burning = (propgo_now_ms() < target_burn_exp);
+
+        if (strstr(mod_id, "ironhide_missile_burn_stack") != NULL) {
+            // 叠层燃烧: 若目标在本次打击前并未处于燃烧状态，或者本次打击已经施加过燃烧，直接跳过
+            if (!target_already_burning || s_ironhide_burned_this_hit) {
+                flog("IRONHIDE_GATE: skip burn_stack (target_burning=%d, burned_this_hit=%d)", target_already_burning, s_ironhide_burned_this_hit);
+                return 0;
+            }
+        } else {
+            // 初次燃烧 (80% ATK): 若目标在本次打击前已经处于燃烧状态，跳过初次燃烧，留给 stack 判定
+            if (target_already_burning) {
+                flog("IRONHIDE_GATE: skip initial burn because target is already burning");
+                return 0;
+            }
+        }
+    }
+
+    // 6. 横炮 (Sideswipe):
+    // SP1 仅最后一击闪踢 ROLL DICE 眩晕; SP2 和 SP3 仅最后一击 ROLL DICE 燃烧
+    if (mod_id[0] && (strstr(mod_id, "sideswipe_s1_stun") != NULL ||
+                      strstr(mod_id, "sideswipe_s2_burn") != NULL ||
+                      strstr(mod_id, "sideswipe_s3_burn") != NULL)) {
+        if (!s_current_hit_is_last) {
+            flog("SIDESWIPE_GATE: non-last hit, skip roll: %s", mod_id);
+            return 0;
+        }
+    }
+    // SP3 驱散: 除最后一击外，每一击概率驱散
+    if (mod_id[0] && strstr(mod_id, "sideswipe_s3_nullify") != NULL) {
+        if (s_current_hit_is_last) {
+            flog("SIDESWIPE_GATE: last hit, skip nullify roll: %s", mod_id);
+            return 0;
+        }
+    }
+
+    // 7. 搅拌者 (Mixmaster ROTF):
+    // SP2 后面两击 (hit > 0) ROLL DICE 燃烧，第 1 击近战拳击 (hit 0) 不燃烧
+    if (mod_id[0] && strstr(mod_id, "mixmaster_s2_burn") != NULL) {
+        if (s_last_hit_index == 0) {
+            flog("MIXMASTER_GATE: hit 0 is punch, skip burn roll");
+            return 0;
+        }
+    }
+
+    // 8. 黄蜂勇士 (Waspinator):
+    // SP3 仅最后一击施加燃烧，前面的攻击不 ROLL DICE 燃烧
+    if (mod_id[0] && strstr(mod_id, "waspinator_s3_burn") != NULL) {
+        if (!s_current_hit_is_last) {
+            flog("WASPINATOR_GATE: non-last hit, skip burn roll");
+            return 0;
+        }
+    }
 
     typedef int (*fn_test_roll)(void*, void*, float*, float*, void*, void*);
     int res = H[192].orig ? ((fn_test_roll)H[192].orig)(self, statModifier, pRoll, pChance, triggerParams, method) : 0;
+
+    if (res && mod_id[0] && strstr(mod_id, "ironhide_missile_burn") != NULL) {
+        s_ironhide_burned_this_hit = 1;
+    }
 
     // 通用技能概率掷骰 HUD 播报 (全游戏通用拦截，对所有机器人全自动生效)
     PROTECT({
@@ -7137,6 +7235,14 @@ int hook_192(void* self, void* statModifier, float* pRoll, float* pChance, void*
             else if (strstr(bot_id, "ratchet") != NULL) hero = "救护车";
             else if (strstr(bot_id, "windblade") != NULL) hero = "风刃";
             else if (strstr(bot_id, "drift") != NULL) hero = "漂移";
+            else if (strstr(bot_id, "dinobot") != NULL) hero = "恐龙勇士";
+            else if (strstr(bot_id, "scorponok") != NULL) hero = "巨蝎勇士";
+            else if (strstr(bot_id, "sideswipe") != NULL) hero = "横炮";
+            else if (strstr(bot_id, "ramjet") != NULL) hero = "喷气机";
+            else if (strstr(bot_id, "mixmaster") != NULL) hero = "搅拌者";
+            else if (strstr(bot_id, "waspinator") != NULL) hero = "黄蜂勇士";
+            else if (strstr(bot_id, "bonecrusher") != NULL) hero = "碎骨魔";
+            else if (strstr(bot_id, "motormaster") != NULL) hero = "汽车大师";
             else if (bot_id[0]) hero = bot_id;
 
             const char* skill = "技能";
@@ -7148,6 +7254,7 @@ int hook_192(void* self, void* statModifier, float* pRoll, float* pChance, void*
             else if (strstr(mod_id, "shock") != NULL) skill = "冲击";
             else if (strstr(mod_id, "leak") != NULL) skill = "能量汲取";
             else if (strstr(mod_id, "evade") != NULL) skill = "规避";
+            else if (strstr(mod_id, "nullify") != NULL) skill = "驱散";
             else if (mod_id[0]) skill = mod_id;
 
             if (pass) {

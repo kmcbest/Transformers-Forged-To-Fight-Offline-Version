@@ -59,27 +59,27 @@ def build_sideswipe_abilities(base_hp: float = 26794.0, base_atk: float = 2698.0
     mods.update(m1)
     appears.update(a1)
 
-    # 2. SP1 眩晕 (40% 几率, 持续 2.5 秒)
+    # 2. SP1 眩晕 (仅最后一击闪踢 40% 几率, 持续 2.5 秒)
     m2, a2 = make_stun_statmod(
         mod_id="sideswipe_s1_stun",
         duration=2.5,
         chance=0.40,
         trigger="onHit",
-        trigger_scope="level=Special1",
+        trigger_scope="level=Special1;dmgFlags=LastHit",
         callout_text="眩晕",
         pua_icon="\uE605",
     )
     mods.update(m2)
     appears.update(a2)
 
-    # 3. SP2 燃烧 (80% ATK: 2698 * 0.8 = 2158, 持续 6 秒, 100% 几率)
+    # 3. SP2 燃烧 (仅最后一击 80% ATK: 2698 * 0.8 = 2158, 持续 6 秒, 100% 几率)
     m3, a3 = make_burn_statmod(
         mod_id="sideswipe_s2_burn",
         duration=6.0,
         total_dmg=float(round(base_atk * 0.80)),
         chance=1.0,
         trigger="onHit",
-        trigger_scope="level=Special2",
+        trigger_scope="level=Special2;dmgFlags=LastHit",
         callout_text="燃烧",
         stackable=True,
         pua_icon="\uE41D",
@@ -87,14 +87,14 @@ def build_sideswipe_abilities(base_hp: float = 26794.0, base_atk: float = 2698.0
     mods.update(m3)
     appears.update(a3)
 
-    # 4. SP3 燃烧 (100% ATK: 2698 * 1.0 = 2698, 持续 4 秒, 100% 几率)
+    # 4. SP3 燃烧 (仅最后一击 100% ATK: 2698 * 1.0 = 2698, 持续 4 秒, 100% 几率)
     m4, a4 = make_burn_statmod(
         mod_id="sideswipe_s3_burn",
         duration=4.0,
         total_dmg=float(round(base_atk * 1.00)),
         chance=1.0,
         trigger="onHit",
-        trigger_scope="level=Special3",
+        trigger_scope="level=Special3;dmgFlags=LastHit",
         callout_text="燃烧",
         stackable=True,
         pua_icon="\uE41D",

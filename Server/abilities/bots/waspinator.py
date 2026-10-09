@@ -33,7 +33,7 @@ def build_waspinator_abilities(base_hp: float = 29598.0, base_atk: float = 2191.
         total_dmg=float(round(base_atk * 1.00)),
         chance=1.0,
         trigger="onHit",
-        trigger_scope="level=Special3",
+        trigger_scope="level=Special3;dmgFlags=LastHit",
         callout_text="燃烧",
         stackable=True,
         pua_icon="\uE41D",
