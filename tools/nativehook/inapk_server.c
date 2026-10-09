@@ -173,7 +173,8 @@ static inline int is_quest_non_leisure(const char* qid) {
             strcmp(qid, "1.1.4") == 0 ||
             strcmp(qid, "1.1.5") == 0 ||
             strcmp(qid, "1.1.6") == 0 ||
-            strcmp(qid, "1.1.7") == 0);
+            strcmp(qid, "1.1.7") == 0 ||
+            strcmp(qid, "raid_base") == 0);
 }
 
 int tftf_is_matrix_war_active(void) {
@@ -1289,6 +1290,8 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
                 snprintf(team.bid[0], sizeof team.bid[0], "rodimusprime_gs_mp09");
             } else if (strcmp(g_quest_state.qid, "1.1.6") == 0) {
                 if (team.count > 1) team.count = 1;
+            } else if (strcmp(g_quest_state.qid, "raid_base") == 0) {
+                if (team.count > 3) team.count = 3;
             }
             if (render_qteam(&qteam, &team)) {
             int cx = g_quest_state.pending_battle_x;
@@ -1406,7 +1409,20 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
             out_add(o, sbuf, (size_t)slen);
             out_add(o, qteam.p, qteam.n);
 
-            OUT_ADD_STR(o, ",\"expire\":0}}}]}");
+            OUT_ADD_STR(o, ",\"expire\":0}}}");
+            if (is_completed && strcmp(cur_qid, "raid_base") == 0) {
+                OUT_ADD_STR(o, ",{\"component\":\"RaidManager\",\"message\":\"raid-end\",\"payload\":{"
+                               "\"raidResult\":{\"_id\":\"raid_res_win\",\"qid\":\"raid_base-0\","
+                               "\"category\":\"raid\",\"s\":\"c\",\"attacker\":\"1000000000001\","
+                               "\"defender\":\"10002\",\"attackerWon\":true,"
+                               "\"attackerRewards\":["
+                               "{\"type\":\"res\",\"data\":\"mdl\",\"quantity\":15},"
+                               "{\"type\":\"res\",\"data\":\"rc\",\"quantity\":150},"
+                               "{\"type\":\"res\",\"data\":\"gold\",\"quantity\":10000}],"
+                               "\"defenderRewards\":[],\"rewardsClaimed\":true,\"claimableRewards\":[],"
+                               "\"startTime\":0,\"endTime\":0}}}");
+            }
+            OUT_ADD_STR(o, "]}");
 
             free(qteam.p);
             *outn = o->n;
@@ -1417,6 +1433,98 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
             }
         }
 
+        static const unsigned char match_ok[] = "{\"error\":null,\"result\":{}}";
+        *outn = strlen((const char*)match_ok);
+        return match_ok;
+    }
+    if(strstr(p, "/matches/find-match")) {
+        static char find_match_buf[4096];
+        long now = (long)time(NULL);
+        long expiry = now + 1800;
+        int len = snprintf(find_match_buf, sizeof(find_match_buf),
+            "{\"error\":null,\"result\":{"
+                "\"matchID\":\"raid_match_%ld\","
+                "\"expiry\":%ld,"
+                "\"matches\":["
+                    "{"
+                        "\"uid\":10001,"
+                        "\"n\":\"Shockwave\","
+                        "\"t\":\"DECP\","
+                        "\"s\":1200,"
+                        "\"sd\":35,"
+                        "\"rc\":1200,"
+                        "\"bs\":6500,"
+                        "\"td\":\"shockwave_gs\","
+                        "\"tt\":\"\","
+                        "\"pi\":3200,"
+                        "\"layout\":{\"type\":\"userBase\",\"category\":\"base\",\"id\":\"base_10001\",\"hash\":\"bm_10001\"}"
+                    "},"
+                    "{"
+                        "\"uid\":10002,"
+                        "\"n\":\"Megatron\","
+                        "\"t\":\"DECP\","
+                        "\"s\":1500,"
+                        "\"sd\":45,"
+                        "\"rc\":1600,"
+                        "\"bs\":8500,"
+                        "\"td\":\"megatron_gs_leader2015\","
+                        "\"tt\":\"\","
+                        "\"pi\":4200,"
+                        "\"layout\":{\"type\":\"userBase\",\"category\":\"base\",\"id\":\"base_10002\",\"hash\":\"bm_10002\"}"
+                    "},"
+                    "{"
+                        "\"uid\":10003,"
+                        "\"n\":\"Soundwave\","
+                        "\"t\":\"DECP\","
+                        "\"s\":1800,"
+                        "\"sd\":55,"
+                        "\"rc\":2000,"
+                        "\"bs\":10500,"
+                        "\"td\":\"soundwave_gs\","
+                        "\"tt\":\"\","
+                        "\"pi\":5200,"
+                        "\"layout\":{\"type\":\"userBase\",\"category\":\"base\",\"id\":\"base_10003\",\"hash\":\"bm_10003\"}"
+                    "}"
+                "]"
+            "}}",
+            now, expiry
+        );
+        *outn = (size_t)len;
+        logmsg("FIND_MATCH: handled %s -> expiry=%ld", p, expiry);
+        return (const unsigned char*)find_match_buf;
+    }
+    if(strstr(p, "/matches/activate-match")) {
+        pthread_mutex_lock(&g_pos_lock);
+        snprintf(g_active_quest_id, sizeof g_active_quest_id, "raid_base");
+        snprintf(g_quest_state.qid, sizeof g_quest_state.qid, "raid_base");
+        g_quest_state.is_leisure = 0;
+        g_quest_state.is_final_boss = 0;
+        g_quest_state.pending_battle_active = 0;
+        g_quest_state.pending_battle_x = 0;
+        g_quest_state.pending_battle_y = 0;
+        g_quest_state.pending_enemy_hp_ratio = 1.0f;
+        for (int i = 0; i < 5; i++) {
+            g_quest_state.hero_hp[i] = 1.0f;
+        }
+        int slot = -1;
+        for (int i = 0; i < 16; i++) {
+            if (!strcmp(g_pos[i].qid, "raid_base") || !g_pos[i].qid[0]) {
+                slot = i;
+                break;
+            }
+        }
+        if (slot >= 0) {
+            snprintf(g_pos[slot].qid, sizeof g_pos[slot].qid, "raid_base");
+            g_pos[slot].x = 25;
+            g_pos[slot].y = 44;
+        }
+        pthread_mutex_unlock(&g_pos_lock);
+
+        const void *v = lookup("@matches:activate_raid", outn);
+        if (v) {
+            logmsg("ACTIVATE_MATCH: returned @matches:activate_raid (%zu bytes)", *outn);
+            return (const unsigned char*)v;
+        }
         static const unsigned char match_ok[] = "{\"error\":null,\"result\":{}}";
         *outn = strlen((const char*)match_ok);
         return match_ok;
@@ -1579,6 +1687,98 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         if(!v) { snprintf(key,sizeof key,"POST /quests/quest-detail/%s",mid); v=lookup(key,&n); }
         return v?json_default_spaces(v,n,o,outn):NULL;
     }
+    if(strstr(p, "/quests/quest-join/")) {
+        store_quest_team(body, end);
+        Team team;
+        Out qteam = {0}, ateam = {0};
+        if (!resolve_team(&team)) return NULL;
+        if (team.count > 3) team.count = 3;
+        for (int h = 0; h < 5; h++) {
+            g_quest_state.hero_hp[h] = 1.0f;
+        }
+        for (int h = 0; h < team.count && h < 5; h++) {
+            snprintf(g_quest_state.hero_bid[h], sizeof(g_quest_state.hero_bid[h]), "%s", team.bid[h]);
+        }
+        if (!render_qteam(&qteam, &team)) { free(qteam.p); return NULL; }
+        if (!render_ateam(&ateam, &team)) { free(qteam.p); return NULL; }
+
+        char aid[64];
+        snprintf(aid, sizeof aid, "%.63s", path_last(p));
+
+        o->n = 0;
+        char sbuf[512];
+        int slen;
+        OUT_ADD_STR(o, "{\"error\":null,\"result\":{\"results\":[],");
+        slen = snprintf(sbuf, sizeof sbuf,
+            "\"progression\":{\"currentPos\":{\"x\":25,\"y\":44},"
+            "\"completed\":false,\"mastered\":false,"
+            "\"users\":{\"1000000000001\":{\"currentPos\":{\"x\":25,\"y\":44},"
+            "\"name\":\"Commander\",\"points\":0,\"strongestHero\":\"%s\",\"tag\":\"\",\"team\":",
+            team.bid[0]);
+        out_add(o, sbuf, (size_t)slen);
+        out_add(o, qteam.p, qteam.n);
+        slen = snprintf(sbuf, sizeof sbuf,
+            "}}},\"updates\":{\"activeTeams\":[{\"aid\":\"%s\",\"type\":\"PvE\",\"modes\":[\"PvE\"],\"heroes\":", aid);
+        out_add(o, sbuf, (size_t)slen);
+        out_add(o, ateam.p, ateam.n);
+        slen = snprintf(sbuf, sizeof sbuf,
+            ",\"expire\":0},{\"aid\":\"raid_base\",\"type\":\"PvE\",\"modes\":[\"PvE\"],\"heroes\":");
+        out_add(o, sbuf, (size_t)slen);
+        out_add(o, ateam.p, ateam.n);
+        slen = snprintf(sbuf, sizeof sbuf,
+            ",\"expire\":0}]},\"teamData\":{\"aid\":\"%s\",\"type\":\"PvE\",\"modes\":[\"PvE\"],\"heroes\":", aid);
+        out_add(o, sbuf, (size_t)slen);
+        out_add(o, ateam.p, ateam.n);
+        slen = snprintf(sbuf, sizeof sbuf,
+            ",\"expire\":0,\"updates\":{\"activeTeams\":[{\"aid\":\"%s\",\"type\":\"PvE\",\"modes\":[\"PvE\"],\"heroes\":", aid);
+        out_add(o, sbuf, (size_t)slen);
+        out_add(o, ateam.p, ateam.n);
+        slen = snprintf(sbuf, sizeof sbuf,
+            ",\"expire\":0},{\"aid\":\"raid_base\",\"type\":\"PvE\",\"modes\":[\"PvE\"],\"heroes\":");
+        out_add(o, sbuf, (size_t)slen);
+        out_add(o, ateam.p, ateam.n);
+        OUT_ADD_STR(o, ",\"expire\":0}]}}}}");
+        free(qteam.p);
+        free(ateam.p);
+        *outn = o->n;
+        logmsg("HTTP_QUEST_JOIN: handled %s -> %zu bytes", p, *outn);
+        return o->p;
+    }
+    if(strstr(p, "/quests/quest-quit/")) {
+        pthread_mutex_lock(&g_pos_lock);
+        g_quest_state.is_leisure = 1;
+        g_quest_state.pending_battle_active = 0;
+        g_quest_state.pending_battle_x = 0;
+        g_quest_state.pending_battle_y = 0;
+        g_quest_state.is_final_boss = 0;
+        g_quest_state.qid[0] = 0;
+        g_active_quest_id[0] = 0;
+        for (int i = 0; i < 16; i++) {
+            if (strcmp(g_pos[i].qid, "raid_base") == 0) {
+                g_pos[i].qid[0] = 0;
+                break;
+            }
+        }
+        pthread_mutex_unlock(&g_pos_lock);
+
+        if (strstr(p, "raid_base")) {
+            static const unsigned char raid_quit_resp[] =
+                "{\"error\":null,\"result\":{\"teamData\":null},"
+                "\"async\":[{\"component\":\"RaidManager\",\"message\":\"raid-end\","
+                "\"payload\":{\"raidResult\":{\"_id\":\"raid_res_loss\",\"qid\":\"raid_base-0\","
+                "\"category\":\"raid\",\"s\":\"q\",\"attacker\":\"1000000000001\",\"defender\":\"10002\","
+                "\"attackerWon\":false,\"attackerRewards\":[],\"defenderRewards\":[],"
+                "\"rewardsClaimed\":false,\"claimableRewards\":[],\"startTime\":0,\"endTime\":0}}}]}";
+            *outn = strlen((const char*)raid_quit_resp);
+            logmsg("HTTP_QUEST_QUIT: raid quit -> emitted raid-end loss result");
+            return raid_quit_resp;
+        }
+
+        static const unsigned char default_quit_resp[] = "{\"error\":null,\"result\":{\"teamData\":null}}";
+        *outn = strlen((const char*)default_quit_resp);
+        logmsg("HTTP_QUEST_QUIT: default quit handled");
+        return default_quit_resp;
+    }
     if(strstr(p,"/quests/quest-begin/")) { Team team; Out qteam={0}; TemplateArg args[8];snprintf(qid,sizeof qid,"%.63s",path_last(p));
         snprintf(g_active_quest_id, sizeof g_active_quest_id, "%s", qid);
         g_quest_state.is_final_boss = 0;
@@ -1731,6 +1931,8 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
                 snprintf(team.bid[0], sizeof team.bid[0], "rodimusprime_gs_mp09");
             } else if(strcmp(qid, "1.1.6") == 0) {
                 if (team.count > 1) team.count = 1;
+            } else if(strcmp(qid, "raid_base") == 0) {
+                if (team.count > 3) team.count = 3;
             }
             if(!render_qteam(&qteam,&team)||!render_ateam(&ateam,&team)){free(qteam.p);free(ateam.p);return NULL;}
             args[0]=(TemplateArg){"%LEAD%",(const unsigned char*)team.bid[0],strlen(team.bid[0])};

@@ -132,9 +132,14 @@ def _hero_detail(bid: str, rank: int, level: int) -> bytes:
 
 
 def _move_body(qid: str, start: tuple[int, int], dx: int, dy: int) -> bytes:
-    nx, ny = start[0] + dx, start[1] + dy
-    if not gamedata.is_quest_legal_move(qid, start, (nx, ny)):
-        dx = dy = 0
+    if qid == gamedata.RAID_QID:
+        nx, ny = gamedata.raid_step_target(start, dx, dy)
+        if not gamedata.is_quest_legal_move(qid, start, (nx, ny)):
+            dx = dy = 0
+    else:
+        nx, ny = start[0] + dx, start[1] + dy
+        if not gamedata.is_quest_legal_move(qid, start, (nx, ny)):
+            dx = dy = 0
     return _envelope(gamedata.build_quest_movedir(qid, dx, dy, start=start))
 
 
@@ -148,7 +153,12 @@ def _replace_exact(body: bytes, old: bytes, new: bytes, expected: int, label: st
 
 def _team_values(team: list[str] | None = None, qid: str | None = None) -> tuple[bytes, bytes, bytes]:
     """Return compact saved, active, and quest team JSON values from gamedata."""
-    bids = ["rodimusprime_gs_mp09"] if qid == "1.1.5" else gamedata.resolve_team(team)
+    if qid == "1.1.5":
+        bids = ["rodimusprime_gs_mp09"]
+    elif qid == "raid_base":
+        bids = gamedata.resolve_team(team)[:3]
+    else:
+        bids = gamedata.resolve_team(team)
     saved = json.dumps([gamedata.build_hero_entry(bid) for bid in bids], separators=(",", ":")).encode()
     active = json.dumps({bid: gamedata.build_hero_entry(bid) for bid in bids}, separators=(",", ":")).encode()
     quest = json.dumps(
@@ -179,7 +189,7 @@ def _movedir_template(qid: str, start: tuple[int, int], dx: int, dy: int) -> byt
                           f"movedir {qid}/{start}/{dx},{dy} lead")
     body = _replace_exact(body, quest, b"%QTEAM%", 1, f"movedir {qid}/{start}/{dx},{dy} quest team")
     body = _replace_exact(body, active, b"%ATEAM%", 1, f"movedir {qid}/{start}/{dx},{dy} active team")
-    if qid not in ("1.1.2", "1.1.3", "1.1.4", "1.1.5", "1.1.6", "1.1.7"):
+    if qid not in ("1.1.2", "1.1.3", "1.1.4", "1.1.5", "1.1.6", "1.1.7", "raid_base"):
         for i, sentinel in enumerate(gamedata.ENCOUNTER_SENTINELS):
             if sentinel.encode() in body:
                 body = _replace_exact(body, sentinel.encode(), f"%EB{i}%".encode(), 5, f"movedir {qid} enemy {i}")
@@ -329,6 +339,63 @@ def build_entries(listen_port: int = 8080) -> dict[str, bytes]:
                     ("%d %d %d %d %d %d\n" % line).encode() for line in sorted(legal_lines)
                 )
                 add(f"@quest:moves:{qid}", moves)
+
+    # --- Raid Base Export ---
+    raid_qid = gamedata.RAID_QID
+    add("@matches:activate_raid", _envelope(gamedata.build_raid_activate_match_response()))
+    add(f"POST /quests/quest-detail/{raid_qid}", _envelope(gamedata.build_quest_detail(raid_qid, "raid", lang="zh")))
+    add(f"@questdetail:{raid_qid}:zh", _envelope(gamedata.build_quest_detail(raid_qid, "raid", lang="zh")))
+    add(f"@questdetail:{raid_qid}:en", _envelope(gamedata.build_quest_detail(raid_qid, "raid", lang="en")))
+    first_r, replay_r, mastery_r = gamedata.get_quest_rewards(raid_qid)
+    rewards_payload = json.dumps({
+        "first": first_r,
+        "replay": replay_r,
+        "mastery": mastery_r,
+    }, separators=(",", ":")).encode()
+    add(f"@quest:rewards:{raid_qid}", rewards_payload)
+    boss_tiles = gamedata.quest_boss_tiles(raid_qid)
+    boss_str = " ".join(f"{bx} {by}" for bx, by in boss_tiles)
+    add(f"@quest:boss:{raid_qid}", boss_str.encode())
+    add(f"@quest:start:{raid_qid}", b"25 44")
+
+    walkable_raid = gamedata.quest_walkable_tiles(raid_qid)
+    num_walkable_raid = len(walkable_raid)
+    victory_action_raid = {
+        "action": {
+            "questcomplete": {
+                "x": 25,
+                "y": 30,
+                "isFinalBoss": True,
+            }
+        },
+        "newlyCompleted": True,
+        "newlyMastered": True,
+        "previouslyMastered": False,
+        "visibleClearedCount": num_walkable_raid,
+        "visibleWalkableCount": num_walkable_raid,
+        "firstResults": first_r,
+        "replayResults": replay_r,
+        "masteryResults": mastery_r,
+    }
+    add(f"@quest:victory:{raid_qid}", json.dumps(victory_action_raid, separators=(",", ":")).encode())
+
+    legal_lines_raid = []
+    for start in walkable_raid:
+        legal_lines_raid.append((start[0], start[1], 0, 0, start[0], start[1]))
+        add(
+            f"@movedir:{raid_qid}:{start[0]}:{start[1]}:0:0",
+            _movedir_template(raid_qid, start, 0, 0),
+        )
+    for ((sx, sy), dx, dy), (nx, ny) in gamedata.RAID_STEP_MAP.items():
+        legal_lines_raid.append((sx, sy, dx, dy, nx, ny))
+        add(
+            f"@movedir:{raid_qid}:{sx}:{sy}:{dx}:{dy}",
+            _movedir_template(raid_qid, (sx, sy), dx, dy),
+        )
+    moves_raid = b"".join(
+        ("%d %d %d %d %d %d\n" % line).encode() for line in sorted(legal_lines_raid)
+    )
+    add(f"@quest:moves:{raid_qid}", moves_raid)
 
     add("@grouprefresh:missionsconfig", _envelope({"updates": [gamedata.build_missions_autorefresh_update(), gamedata.build_gacha_autorefresh_update(), gamedata.build_gamestore_autorefresh_update(lang="zh")]}))
     add("@grouprefresh:", _envelope({"updates": [gamedata.build_gacha_autorefresh_update(), gamedata.build_gamestore_autorefresh_update(lang="zh")]}))

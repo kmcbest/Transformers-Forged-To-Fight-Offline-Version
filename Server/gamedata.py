@@ -950,6 +950,18 @@ def build_missions_config():
             "away": {
                 "enabled": True,
             },
+            "pvp": {
+                "enabled": True,
+                "attackTeamSizeMin": 1,
+                "attackTeamSizeMax": 3,
+                "attackPhaseTimeLength": 300,
+                "maxConsumablesPerPlayer": 5,
+                "revengeValidTime": 86400,
+                "maxRevengeChain": 3,
+                "leaderboardId": "raid",
+                "DisabledLevels": "",
+                "bucketSettings": [],
+            },
         },
     }
 
@@ -1412,6 +1424,20 @@ QUEST_REWARDS_CONFIG = {
     "1.1.5": {},
     "1.1.6": {},
     "1.1.7": {},
+    "raid_base": {
+        "firstResults": [
+            {"type": "res", "data": "gold", "quantity": 10000},
+            {"type": "res", "data": "rc", "quantity": 150},
+            {"type": "res", "data": "mdl", "quantity": 15},
+        ],
+        "replayResults": [
+            {"type": "res", "data": "gold", "quantity": 5000},
+            {"type": "res", "data": "rc", "quantity": 50},
+        ],
+        "masteryResults": [
+            {"type": "res", "data": "hc", "quantity": 100},
+        ],
+    },
 }
 
 def get_quest_rewards(qid):
@@ -1481,6 +1507,7 @@ def build_hero_entry(bid, rank=None, level=None):
         "s": star, "rarity": star, "star": star, "faction": faction,
         "required_xp": 0, "max_xp": 100,
         "stamina": 100, "stamina_ts": 0, "stamina_full_ts": 0, "stt": "",
+        "hp": 1.0,
         "max_hp": hp, "attack": atk,
         "rating": rating,
         "rating_attack": r_atk, "rating_hp": r_hp,
@@ -1755,7 +1782,74 @@ QUEST_PICNIC_NODES = (
     (3, 6),  # 12: West
 )
 
+RAID_QID = "raid_base"
+
+RAID_WALKABLE_NODES = (
+    (25, 44),  # 0: Entrance (Start)
+    (25, 42),  # 1: Node 1 (West Flank Guard - Arcee)
+    (22, 39),  # 2: Node 2 (Courtyard Vanguard - Galvatron)
+    (28, 39),  # 3: Node 3 (Commander's Stronghold - Shockwave)
+    (25, 36),  # 4: Node 4 (变5威 - Megatron ROTF)
+    (22, 33),  # 5: Node 5 (West Bastion - Megatronus)
+    (28, 33),  # 6: Node 6 (East Bastion - Soundwave)
+    (25, 30),  # 7: Node 7 (Apex Bastion - Megatron Leader, Final Boss)
+)
+
+RAID_EDGES = [
+    ((25, 44), (25, 42)),  # Entrance -> Node 1
+    ((25, 42), (22, 39)),  # Node 1 -> Node 2 (Left)
+    ((25, 42), (28, 39)),  # Node 1 -> Node 3 (Right)
+    ((22, 39), (25, 36)),  # Node 2 -> Node 4
+    ((28, 39), (25, 36)),  # Node 3 -> Node 4
+    ((25, 36), (22, 33)),  # Node 4 -> Node 5 (Left)
+    ((25, 36), (28, 33)),  # Node 4 -> Node 6 (Right)
+    ((22, 33), (25, 30)),  # Node 5 -> Node 7
+    ((28, 33), (25, 30)),  # Node 6 -> Node 7
+]
+
+RAID_STEP_MAP = {
+    ((25, 44), 0, -1): (25, 42),   # North -> Node 1
+    ((25, 42), -1, -1): (22, 39),  # NorthWest -> Node 2
+    ((25, 42), 1, -1): (28, 39),   # NorthEast -> Node 3
+    ((22, 39), 1, -1): (25, 36),   # NorthEast -> Node 4
+    ((28, 39), -1, -1): (25, 36),  # NorthWest -> Node 4
+    ((25, 36), -1, -1): (22, 33),  # NorthWest -> Node 5
+    ((25, 36), 1, -1): (28, 33),   # NorthEast -> Node 6
+    ((22, 33), 1, -1): (25, 30),   # NorthEast -> Node 7
+    ((28, 33), -1, -1): (25, 30),  # NorthWest -> Node 7
+}
+
+RAID_INTERMEDIATE_NODES = (
+    (25, 43),  # (25, 44) -> (25, 42)
+    (24, 41),  # (25, 42) -> (22, 39)
+    (26, 41),  # (25, 42) -> (28, 39)
+    (23, 38),  # (22, 39) -> (25, 36)
+    (27, 38),  # (28, 39) -> (25, 36)
+    (24, 35),  # (25, 36) -> (22, 33)
+    (26, 35),  # (25, 36) -> (28, 33)
+    (23, 32),  # (22, 33) -> (25, 30)
+    (27, 32),  # (28, 33) -> (25, 30)
+)
+
+def raid_step_target(start, offx, offy):
+    if offx == 0 and offy == 0:
+        return start
+    return RAID_STEP_MAP.get((tuple(start), int(offx), int(offy)), start)
+
+
+RAID_BASE_ENCOUNTERS = {
+    (25, 42): ("arcee_gs_deluxe2014", False, "1号哨戒位·阿尔茜 (Arcee)"),
+    (22, 39): ("galvatron_gs_voyager2016", False, "2号外院先锋·惊破天 (Galvatron)"),
+    (28, 39): ("shockwave_gs", False, "3号东侧指挥所·震荡波 (Shockwave)"),
+    (25, 36): ("megatron_cin_rotf", False, "4号中枢重镇·变5威 (Megatron ROTF)"),
+    (22, 33): ("megatronus_gs_kabam", False, "5号西侧壁垒·灭尔坦 (Megatronus)"),
+    (28, 33): ("soundwave_gs", False, "6号东侧壁垒·声波 (Soundwave)"),
+    (25, 30): ("megatron_gs_leader2015", True, "7号巅峰王座·G1威震天 (Megatron Leader)"),
+}
+
 def quest_walkable_tiles(qid="1.1.1"):
+    if qid == "raid_base":
+        return RAID_WALKABLE_NODES
     if qid == "1.1.2":
         _, _, _, _, walkable, _ = _get_challenge_data()
         return tuple(walkable)
@@ -1765,12 +1859,16 @@ def quest_walkable_tiles(qid="1.1.1"):
     return QUEST_OCTAGON_NODES[:count]
 
 def quest_start(qid="1.1.1"):
+    if qid == "raid_base":
+        return (25, 44)
     if qid == "1.1.2":
         return CHALLENGE_CENTER
     return quest_walkable_tiles(qid)[0]
 
 def quest_boss_tiles(qid="1.1.1"):
     """Return list of (x, y) coordinates for final boss encounters in a quest."""
+    if qid == "raid_base":
+        return [(25, 30)]
     if qid == "1.1.2":
         spokes, _, _, _, _, _ = _get_challenge_data()
         return [sp[-1] for sp in spokes]
@@ -1778,12 +1876,16 @@ def quest_boss_tiles(qid="1.1.1"):
     return [walkable[-1]] if walkable else []
 
 def is_quest_walkable(qid, pos):
+    if qid == "raid_base":
+        return pos in RAID_WALKABLE_NODES
     if qid == "1.1.2":
         _, _, _, _, walkable, _ = _get_challenge_data()
         return pos in walkable
     return pos in quest_walkable_tiles(qid)
 
 def is_quest_legal_move(qid, from_pos, to_pos):
+    if qid == "raid_base":
+        return (from_pos, to_pos) in RAID_EDGES or (from_pos == to_pos)
     if qid == "1.1.2":
         _, _, adjacency, _, _, _ = _get_challenge_data()
         return to_pos in adjacency.get(from_pos, set())
@@ -2051,6 +2153,8 @@ def build_quest_summary(mission_id="1.1.1", set_id="story_act1", lang="zh"):
     """The detailed mission Summary (result["data"] of quest-detail; also ActiveQuest.data
     in quest-begin). Fields mirror the quest-list availableQuests entry plus detail-only
     battle/map data, discovered empirically from the client's FDS2 field-name log."""
+    if mission_id == RAID_QID:
+        return build_raid_summary()
     parts = mission_id.split(".")
     act = int(parts[0]) if len(parts) > 0 and parts[0].isdigit() else 1
     chapter = int(parts[1]) if len(parts) > 1 and parts[1].isdigit() else 1
@@ -2118,6 +2222,12 @@ def build_quest_detail(mission_id="1.1.1", set_id="story_act1", lang="zh"):
     FDS2 reader), then Legacy.QuestSet.AddQuestDetails (0x103A0E4) reads result["progression"]
     and a second maps object (literal @0x2c2b590, key name being confirmed live). Empty
     progression/maps for now -- the structure is being discovered empirically."""
+    if mission_id == RAID_QID:
+        return {
+            "data": build_raid_summary(),
+            "map": build_raid_map(),
+            "progression": {},
+        }
     result = {
         "data": build_quest_summary(mission_id, set_id, lang=lang),
         "progression": {},
@@ -2436,6 +2546,8 @@ def build_picnic_map(qid="1.1.7"):
 
 
 def build_quest_map(qid="1.1.1"):
+    if qid == RAID_QID:
+        return build_raid_map()
     if qid == "1.1.2":
         return build_challenge_map(qid)
     if qid == "1.1.3":
@@ -2510,6 +2622,8 @@ def build_quest_progression(qid="1.1.1", start=None, team=None):
     sx, sy = start
     if qid == "1.1.5":
         bids = ["rodimusprime_gs_mp09"]
+    elif qid == RAID_QID:
+        bids = resolve_team(team)[:3]
     else:
         bids = resolve_team(team)
     quest_team = {}
@@ -2555,6 +2669,8 @@ def build_active_quest(qid="1.1.1", set_id="story_act1", team=None, lang="zh"):
     under the Dot.Array key, plus (b) the quest fields ActiveQuest.ctor reads (data/map/category).
     The Dot.Array key is being harvested live (hook slot 78); until confirmed, emit the array under
     several candidate keys so at least one matches and BuildActiveQuest fires -> ctor keys log."""
+    if qid == RAID_QID:
+        return build_raid_active_quest(team=team)
     qmap = build_quest_map(qid)
     instance = {
         "id": qid, "qid": qid, "index": 0, "instanceIndex": 0,
@@ -2632,7 +2748,10 @@ def build_quest_movedir(qid="1.1.1", offx=1, offy=0, start=None, team=None):
     if start is None:
         start = quest_start(qid)
     sx, sy = start
-    nx, ny = sx + int(offx), sy + int(offy)          # new tile (row, col)
+    if qid == RAID_QID:
+        nx, ny = raid_step_target(start, offx, offy)
+    else:
+        nx, ny = sx + int(offx), sy + int(offy)          # new tile (row, col)
 
     # A single MOVE_TO action. The exact nested shape the ctor descends:
     #   { "action": { "moveto": { "x": <row>, "y": <col> } } }
@@ -2659,7 +2778,9 @@ def build_quest_movedir(qid="1.1.1", offx=1, offy=0, start=None, team=None):
     step_idx = 0
     if target_pos in tiles:
         step_idx = tiles.index(target_pos)
-        if qid == "1.1.2":
+        if qid == RAID_QID:
+            encounter = RAID_BASE_ENCOUNTERS.get(target_pos)
+        elif qid == "1.1.2":
             _, _, _, encounters, _, _ = _get_challenge_data()
             encounter = encounters.get(target_pos)
         elif qid == "1.1.3":
@@ -2677,8 +2798,8 @@ def build_quest_movedir(qid="1.1.1", offx=1, offy=0, start=None, team=None):
     revealed_tiles = [{"x": r, "y": c} for r, c in tiles]
     if encounter is not None:
         key, is_final_boss, _ = encounter
-        rank = 5 if qid in ("1.1.2", "1.1.3", "1.1.4", "1.1.5", "1.1.6", "1.1.7") else 1
-        level = 50 if qid in ("1.1.2", "1.1.3", "1.1.4", "1.1.5", "1.1.6", "1.1.7") else 1
+        rank = 5 if qid in ("1.1.2", "1.1.3", "1.1.4", "1.1.5", "1.1.6", "1.1.7", RAID_QID) else 1
+        level = 50 if qid in ("1.1.2", "1.1.3", "1.1.4", "1.1.5", "1.1.6", "1.1.7", RAID_QID) else 1
         arena = encounter_arena_for(qid, step_idx if qid != "1.1.2" else nx)
         actions.append({
             "action": {
@@ -2717,7 +2838,12 @@ def build_quest_movedir(qid="1.1.1", offx=1, offy=0, start=None, team=None):
         })
 
     # teamData -> QuestsManager.UpdateActiveTeam. Reuse the active-team shape; harmless if unread.
-    movedir_heroes = ["rodimusprime_gs_mp09"] if qid == "1.1.5" else resolve_team(team)
+    if qid == "1.1.5":
+        movedir_heroes = ["rodimusprime_gs_mp09"]
+    elif qid == RAID_QID:
+        movedir_heroes = resolve_team(team)[:3]
+    else:
+        movedir_heroes = resolve_team(team)
     team_data = build_active_team("%s-0" % qid, heroes=movedir_heroes)
 
     return {
@@ -3141,6 +3267,202 @@ def build_base_mission():
         "data": build_base_summary(),
         "map": build_base_map(),
         "placements": placements,
+    }
+
+
+def build_raid_summary():
+    """Summary for Raid mode targeting the player base."""
+    bosses = {}
+    for pos, (key, is_final, lab) in RAID_BASE_ENCOUNTERS.items():
+        bosses[key] = build_quest_enemy(
+            map_override="primordial_base", tod_index=0,
+            key=key, is_final_boss=is_final, rank=5, level=50
+        )
+    return {
+        "id": RAID_QID, "setId": "raid", "hash": "r1",
+        "category": "raid",
+        "friendlyName": "基地突袭 (Base Raid)",
+        "description": "防守模拟演习：向巅峰王座发起进攻！",
+        "energyPerTile": 0, "minXpPerTile": 0, "maxXpPerTile": 0,
+        "minHealthPerTile": 0, "maxHealthPerTile": 0,
+        "image": "", "theme": "primordial", "todIndex": 0,
+        "recommendedPartyPI": 12000,
+        "teamSizeMin": 1, "teamSizeMax": 3,
+        "teamSettings": {
+            "v": 1,
+            "minTeamSize": 1,
+            "maxTeamSize": 3,
+            "teamSizeMin": 1,
+            "teamSizeMax": 3,
+            "presetTeam": False,
+        },
+        "bosses": bosses,
+    }
+
+
+def build_raid_map():
+    """EB.Missions.Map for Raid mode."""
+    dim = BASE_DIM
+    real_nodes = set(RAID_WALKABLE_NODES)
+    inter_nodes = set(RAID_INTERMEDIATE_NODES)
+    all_walkable = real_nodes | inter_nodes
+
+    adj = {pt: [] for pt in real_nodes}
+    for a, b in RAID_EDGES:
+        if a in adj and b in adj:
+            adj[a].append({"x": b[0], "y": b[1]})
+
+    step_adj = {pt: [] for pt in real_nodes}
+    for ((sx, sy), offx, offy), target in RAID_STEP_MAP.items():
+        if (sx, sy) in step_adj:
+            step_adj[(sx, sy)].append({"x": sx + offx, "y": sy + offy})
+
+    grid = []
+    for row in range(dim):
+        r = []
+        for col in range(dim):
+            pt = (row, col)
+            if pt == (0, 0):
+                r.append({
+                    "walkable": False, "hidden": False,
+                    "renderTemplate": {"id": "qb_base_top_01", "rot": 0},
+                })
+                continue
+            if pt in inter_nodes:
+                r.append({
+                    "walkable": True, "hidden": True, "cleared": False,
+                    "links": [], "visibleLinks": [], "sockets": {},
+                })
+                continue
+            if pt not in real_nodes:
+                r.append({"walkable": False, "hidden": True})
+                continue
+
+            vis_lk = adj.get(pt, [])
+            step_lk = step_adj.get(pt, [])
+            tile = {
+                "walkable": True, "hidden": False, "cleared": False,
+                "links": vis_lk + step_lk, "visibleLinks": vis_lk,
+                "sockets": {},
+            }
+            if pt == (25, 44):
+                tile["start"] = True
+                tile["lab"] = "基地入口 (Gate Conduit)"
+            elif pt in RAID_BASE_ENCOUNTERS:
+                key, is_final, lab = RAID_BASE_ENCOUNTERS[pt]
+                tile["lab"] = lab
+                tile["boss"] = key
+                if is_final:
+                    tile["final"] = True
+                sock_id = "sock_boss_%d_%d" % pt
+                tile["sockets"][sock_id] = {"entityType": "boss", "locked": False}
+                tile["entities"] = {
+                    key: build_quest_enemy(
+                        map_override="primordial_base", tod_index=0,
+                        key=key, is_final_boss=is_final, rank=5, level=50
+                    )
+                }
+            r.append(tile)
+        grid.append(r)
+
+    path_data = [
+        {"path": [{"x": 25, "y": 44}, {"x": 25, "y": 43}, {"x": 25, "y": 42}]},
+        {"path": [{"x": 25, "y": 42}, {"x": 24, "y": 41}, {"x": 22, "y": 39}, {"x": 23, "y": 38}, {"x": 25, "y": 36}]},
+        {"path": [{"x": 25, "y": 42}, {"x": 26, "y": 41}, {"x": 28, "y": 39}, {"x": 27, "y": 38}, {"x": 25, "y": 36}]},
+        {"path": [{"x": 25, "y": 36}, {"x": 24, "y": 35}, {"x": 22, "y": 33}, {"x": 23, "y": 32}, {"x": 25, "y": 30}]},
+        {"path": [{"x": 25, "y": 36}, {"x": 26, "y": 35}, {"x": 28, "y": 33}, {"x": 27, "y": 32}, {"x": 25, "y": 30}]},
+    ]
+    return {
+        "hash": "qm_%s" % RAID_QID, "v": 1, "mapHash": "qm_%s" % RAID_QID,
+        "gridDimension": dim,
+        "grid": grid,
+        "walkableCount": len(all_walkable),
+        "visibleWalkableCount": len(real_nodes),
+        "pathData": path_data,
+        "overrideZoom": 0,
+    }
+
+
+def build_raid_active_quest(team=None):
+    """ActiveQuest representation of the raid mission for PVPRaidFlow."""
+    qmap = build_raid_map()
+    summary = build_raid_summary()
+    bids = resolve_team(team)
+    if len(bids) > 3:
+        bids = bids[:3]
+    quest_team = {}
+    for bid in bids:
+        faction, klass, star = ROSTER.get(bid, ("decepticon", "tact", 5))
+        rank = max(1, star)
+        level = rank * 10
+        hp, atk = base_stats(bid, rank, level)
+        quest_team[bid] = {
+            "hp": 1.0,
+            "pi": (hp + atk) // 20,
+            "sig_lvl": 100,
+            "stat_mods": bot_abilities(bid),
+            "sig_mods": [character_profiles.get_bot_sig_mod_id(bid)] if character_profiles.get_bot_sig_mod_id(bid) else [],
+        }
+    user = {
+        "name": "Commander", "tag": "", "strongestHero": bids[0] if bids else "optimusprime_cin_tf",
+        "currentPos": {"x": 25, "y": 44},
+        "team": quest_team, "points": 0,
+    }
+    revealed = [{"x": r, "y": c} for r, c in (set(RAID_WALKABLE_NODES) | set(RAID_INTERMEDIATE_NODES))]
+    progression = {
+        "version": 1,
+        "currentPos": {"x": 25, "y": 44},
+        "cleared": [],
+        "previouslyCleared": [],
+        "revealed": revealed,
+        "users": {LOCAL_UID: user},
+    }
+    now = 1700000000
+    expiry = 2000000000
+    instance = {
+        "id": RAID_QID, "qid": RAID_QID, "index": 0, "instanceIndex": 0,
+        "phase": 0, "startTime": now, "expiryTime": expiry, "expiry": expiry,
+        "data": summary,
+        "map": qmap,
+        "progression": progression,
+        "scaledBossTable": summary.get("bosses", {}),
+    }
+    instance.update(progression)
+    return {
+        "uniqueId": RAID_QID, "qid": RAID_QID, "id": RAID_QID,
+        "_id": RAID_QID,
+        "category": "raid", "mode": "pvp",
+        "setId": "raid", "hash": "r1", "phase": 0,
+        "t": now,
+        "expiry": expiry,
+        "expiryTime": expiry,
+        "warnTime": 7200,
+        "critTime": 3600,
+        "data": summary,
+        "map": qmap,
+        "progression": {},
+        "instances": [instance],
+        "uid": LOCAL_UID,
+        "opponent": LOCAL_UID,
+        "teamSizeMin": 1,
+        "teamSizeMax": 3,
+    }
+
+
+def build_raid_activate_match_response(team=None):
+    """Response payload for POST /matches/activate-match in raid mode."""
+    bids = resolve_team(team)[:3]
+    return {
+        "activeQuests": {
+            RAID_QID: build_raid_active_quest(team=team)
+        },
+        "updates": {
+            "activeTeams": [
+                build_active_team("raid_base-0", heroes=bids),
+                build_active_team("raid_base", heroes=bids),
+            ]
+        },
+        "historicalResults": []
     }
 
 
