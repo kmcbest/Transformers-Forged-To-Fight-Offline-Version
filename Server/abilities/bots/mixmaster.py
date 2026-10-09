@@ -38,7 +38,7 @@ def build_mixmaster_abilities(base_hp: float = 32402.0, base_atk: float = 2306.0
         total_dmg=float(round(base_atk * 1.00)),
         chance=0.60,
         trigger="onHit",
-        trigger_scope="level=Special2;index=1,2",
+        trigger_scope="level=Special2",
         callout_text="燃烧",
         stackable=True,
         pua_icon="\uE41D",

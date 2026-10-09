@@ -72,7 +72,7 @@ def build_ramjet_abilities(base_hp: float = 33025.0, base_atk: float = 2237.0):
     mods.update(m2)
     appears.update(a2)
 
-    # 3. SP1 燃烧 (35% ATK: 2237 * 0.35 = 783, 持续 6 秒, 60% 几率, 可堆叠)
+    # 3. SP1 燃烧 (35% ATK: 2237 * 0.35 = 783, 持续 6 秒, 60% 几率, 随机 1~4 层)
     m3, a3 = make_burn_statmod(
         mod_id="ramjet_s1_burn",
         duration=6.0,
@@ -86,6 +86,21 @@ def build_ramjet_abilities(base_hp: float = 33025.0, base_atk: float = 2237.0):
     )
     mods.update(m3)
     appears.update(a3)
+
+    for i in range(2, 5):
+        m_s, a_s = make_burn_statmod(
+            mod_id=f"ramjet_s1_burn_stack_{i}",
+            duration=6.0,
+            total_dmg=float(round(base_atk * 0.35)),
+            chance=1.0,
+            trigger="onHit",
+            trigger_scope="level=Special1",
+            callout_text="燃烧",
+            stackable=True,
+            pua_icon="\uE41D",
+        )
+        mods.update(m_s)
+        appears.update(a_s)
 
     # 4. SP2 燃烧 (70% ATK: 2237 * 0.7 = 1566, 持续 6 秒, 100% 几率)
     m4, a4 = make_burn_statmod(

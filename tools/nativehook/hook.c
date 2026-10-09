@@ -703,6 +703,7 @@ static volatile int s_current_hit_is_last = 0;
 static volatile int s_last_hit_flags = 0;
 static volatile int s_last_hit_index = 0;
 static volatile int s_ironhide_burned_this_hit = 0;
+static volatile int s_ramjet_s1_stacks = 0;
 static volatile uint64_t s_p0_burn_expire_ms = 0;
 static volatile uint64_t s_p1_burn_expire_ms = 0;
 
@@ -5188,6 +5189,7 @@ void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     s_last_hit_flags = 0;
     s_last_hit_index = 0;
     s_ironhide_burned_this_hit = 0;
+    s_ramjet_s1_stacks = 0;
     return H[140].orig(a0,a1,a2,a3,a4,a5,a6,a7);
 }
 void* hook_141(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
@@ -6771,6 +6773,7 @@ void* hook_186(void* this_pc, void* hitResult, void* method) {
             s_last_hit_index = hit_idx;
             s_current_hit_is_last = ((flags & 0x80) != 0); // 0x80 = HitResultFlags.LastHit
             s_ironhide_burned_this_hit = 0;
+            s_ramjet_s1_stacks = 0;
             if (p_idx == 0) {
                 g_p0_controller = this_pc;
                 
@@ -6923,20 +6926,6 @@ buff_gate_done: ;
             if (mod_id[0] && strstr(mod_id, "wheeljack_") != NULL && strstr(mod_id, "_leak") != NULL) {
                 g_enemy_power_leak_end_ms = now_ms + 3000;
                 flog("POWER_LEAK_ACTIVATED: Wheeljack leak active for 3.0s on enemy");
-            }
-            // Ramjet SP1 random 1~4 layers of burn (35% ATK)
-            if (mod_id[0] && strstr(mod_id, "ramjet_s1_burn") != NULL) {
-                static int s_ramjet_recursing = 0;
-                if (!s_ramjet_recursing) {
-                    s_ramjet_recursing = 1;
-                    int extra_stacks = rand() % 4; // 0, 1, 2, or 3 extra stacks -> total 1 to 4 stacks
-                    for (int s = 0; s < extra_stacks; s++) {
-                        ((fn_apply_buff)H[188].orig)(self, applicant, statModifier, updateAttributes, useOverrideDuration, overrideDuration, method);
-                    }
-                    s_ramjet_recursing = 0;
-                    combat_overlay_push("[喷气机] SP1 燃烧 +%d层! (35%% ATK)", 1 + extra_stacks);
-                    flog("RAMJET_SP1_BURN: applied %d stacks (1 base + %d extra)", 1 + extra_stacks, extra_stacks);
-                }
             }
             // 跟踪目标燃烧状态过期时间 (默认 4.2 秒窗口)
             if (mod_id[0] && strstr(mod_id, "burn") != NULL) {
@@ -7183,9 +7172,9 @@ int hook_192(void* self, void* statModifier, float* pRoll, float* pChance, void*
     }
 
     // 7. 搅拌者 (Mixmaster ROTF):
-    // SP2 后面两击 (hit > 0) ROLL DICE 燃烧，第 1 击近战拳击 (hit 0) 不燃烧
+    // SP2 仅后面两击 (Molotov idx=100 与地雷 LastHit) ROLL DICE 燃烧，第 1 击近战拳击 (hit 0 且非末击) 不燃烧
     if (mod_id[0] && strstr(mod_id, "mixmaster_s2_burn") != NULL) {
-        if (s_last_hit_index == 0) {
+        if (s_last_hit_index == 0 && !s_current_hit_is_last) {
             flog("MIXMASTER_GATE: hit 0 is punch, skip burn roll");
             return 0;
         }
@@ -7200,11 +7189,33 @@ int hook_192(void* self, void* statModifier, float* pRoll, float* pChance, void*
         }
     }
 
+    // 9. 喷气机 (Ramjet):
+    // SP1 额外燃烧叠层门禁: 依赖主燃烧判定决定的目标总层数 (1~4)
+    if (mod_id[0] && strstr(mod_id, "ramjet_s1_burn_stack_") != NULL) {
+        int stack_idx = 2;
+        if (strstr(mod_id, "stack_3") != NULL) stack_idx = 3;
+        else if (strstr(mod_id, "stack_4") != NULL) stack_idx = 4;
+        if (s_ramjet_s1_stacks < stack_idx) {
+            return 0; // 随机层数未达此阶，跳过
+        }
+        return 1; // 达到此阶，通过引擎原生机制自然叠加
+    }
+
     typedef int (*fn_test_roll)(void*, void*, float*, float*, void*, void*);
     int res = H[192].orig ? ((fn_test_roll)H[192].orig)(self, statModifier, pRoll, pChance, triggerParams, method) : 0;
 
     if (res && mod_id[0] && strstr(mod_id, "ironhide_missile_burn") != NULL) {
         s_ironhide_burned_this_hit = 1;
+    }
+
+    // 喷气机 SP1 主燃烧掷骰判定: 成功时随机抽取本发导弹的总层数 (1~4 层)
+    if (mod_id[0] && strcmp(mod_id, "ramjet_s1_burn") == 0) {
+        if (res) {
+            s_ramjet_s1_stacks = 1 + (rand() % 4); // 随机 1~4 层
+            flog("RAMJET_SP1_ROLL: passed, decided target stacks = %d", s_ramjet_s1_stacks);
+        } else {
+            s_ramjet_s1_stacks = 0;
+        }
     }
 
     // 通用技能概率掷骰 HUD 播报 (全游戏通用拦截，对所有机器人全自动生效)
@@ -7258,11 +7269,21 @@ int hook_192(void* self, void* statModifier, float* pRoll, float* pChance, void*
             else if (mod_id[0]) skill = mod_id;
 
             if (pass) {
-                flog("ROLL_DICE_PASS: [%s] %s PASS! (Roll: %.1f%% < %.1f%%, mod=%s)", hero, skill, roll * 100.0f, chance * 100.0f, mod_id);
-                combat_overlay_push("[%s] %s PASS! (Roll: %.1f%% < %.1f%%)", hero, skill, roll * 100.0f, chance * 100.0f);
+                if (strcmp(mod_id, "ramjet_s1_burn") == 0) {
+                    flog("ROLL_DICE_PASS: [%s] SP1 燃烧 PASS! +%d层! (Roll: %.1f%% < %.1f%%, mod=%s)", hero, s_ramjet_s1_stacks, roll * 100.0f, chance * 100.0f, mod_id);
+                    combat_overlay_push("[喷气机] SP1 燃烧 PASS! +%d层! (Roll: %.1f%% < %.1f%%)", s_ramjet_s1_stacks, roll * 100.0f, chance * 100.0f);
+                } else {
+                    flog("ROLL_DICE_PASS: [%s] %s PASS! (Roll: %.1f%% < %.1f%%, mod=%s)", hero, skill, roll * 100.0f, chance * 100.0f, mod_id);
+                    combat_overlay_push("[%s] %s PASS! (Roll: %.1f%% < %.1f%%)", hero, skill, roll * 100.0f, chance * 100.0f);
+                }
             } else {
-                flog("ROLL_DICE_FAIL: [%s] %s FAIL (Roll: %.1f%% >= %.1f%%, mod=%s)", hero, skill, roll * 100.0f, chance * 100.0f, mod_id);
-                combat_overlay_push("[%s] %s FAIL (Roll: %.1f%% >= %.1f%%)", hero, skill, roll * 100.0f, chance * 100.0f);
+                if (strcmp(mod_id, "ramjet_s1_burn") == 0) {
+                    flog("ROLL_DICE_FAIL: [%s] SP1 燃烧 FAIL (Roll: %.1f%% >= %.1f%%, mod=%s)", hero, roll * 100.0f, chance * 100.0f, mod_id);
+                    combat_overlay_push("[喷气机] SP1 燃烧 FAIL (Roll: %.1f%% >= %.1f%%)", roll * 100.0f, chance * 100.0f);
+                } else {
+                    flog("ROLL_DICE_FAIL: [%s] %s FAIL (Roll: %.1f%% >= %.1f%%, mod=%s)", hero, skill, roll * 100.0f, chance * 100.0f, mod_id);
+                    combat_overlay_push("[%s] %s FAIL (Roll: %.1f%% >= %.1f%%)", hero, skill, roll * 100.0f, chance * 100.0f);
+                }
             }
         }
     });
