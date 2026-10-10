@@ -713,6 +713,31 @@ static volatile int s_ramjet_s1_stacks = 0;
 static volatile uint64_t s_p0_burn_expire_ms = 0;
 static volatile uint64_t s_p1_burn_expire_ms = 0;
 
+// Prowl Melee Buff, Evade, and Good Cop state tracking (symmetric)
+static volatile int g_p0_prowl_charging = 0;
+static volatile uint64_t g_p0_prowl_charge_start_ms = 0;
+static volatile int g_p0_prowl_charge_stacks = 0;
+static volatile uint64_t g_p0_prowl_melee_buff_end_ms = 0;
+static volatile int g_p0_prowl_melee_buff_stacks = 0;
+
+static volatile int g_p1_prowl_charging = 0;
+static volatile uint64_t g_p1_prowl_charge_start_ms = 0;
+static volatile int g_p1_prowl_charge_stacks = 0;
+static volatile uint64_t g_p1_prowl_melee_buff_end_ms = 0;
+static volatile int g_p1_prowl_melee_buff_stacks = 0;
+
+static void* s_prowl_charge_sm_p0 = NULL;
+static void* s_prowl_charge_sm_p1 = NULL;
+static void* s_prowl_passive_sm_p0 = NULL;
+static void* s_prowl_passive_sm_p1 = NULL;
+
+// BuffsController.ApplyBuff(BuffsController this, BuffsController applicant, StatModifier statModifier, bool updateAttributes, bool useOverrideDuration, float overrideDuration, void* method) @ RVA 0x00EEFB44
+typedef void* (*fn_apply_statmod_buff)(void* this_bc, void* applicant_bc, void* statModifier, int32_t updateAttributes, int32_t useOverrideDuration, float overrideDuration, void* method);
+
+static inline int prowl_is_charging(int is_p0) {
+    return is_p0 ? g_p0_prowl_charging : g_p1_prowl_charging;
+}
+
 #define COMBAT_ASSERT(cond, tag, fmt, ...) \
     do { \
         if (!(cond)) { \
@@ -3136,6 +3161,16 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
         g_p0_power_lock_mana = 0.0f;
         g_p1_power_lock_end_ms = 0;
         g_p1_power_lock_mana = 0.0f;
+        g_p0_prowl_charging = 0;
+        g_p0_prowl_charge_start_ms = 0;
+        g_p0_prowl_charge_stacks = 0;
+        g_p0_prowl_melee_buff_end_ms = 0;
+        g_p0_prowl_melee_buff_stacks = 0;
+        g_p1_prowl_charging = 0;
+        g_p1_prowl_charge_start_ms = 0;
+        g_p1_prowl_charge_stacks = 0;
+        g_p1_prowl_melee_buff_end_ms = 0;
+        g_p1_prowl_melee_buff_stacks = 0;
         load_combat_tuning_config();
         int32_t cur_hp = (at1 && obj_ok(at1)) ? *(int32_t*)((char*)at1 + 0x2C) : 0;
         if (player_idx == 1 || (player_idx != 0 && cur_hp <= 0)) {
@@ -5200,6 +5235,16 @@ void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     g_p0_power_lock_mana = 0.0f;
     g_p1_power_lock_end_ms = 0;
     g_p1_power_lock_mana = 0.0f;
+    g_p0_prowl_charging = 0;
+    g_p0_prowl_charge_start_ms = 0;
+    g_p0_prowl_charge_stacks = 0;
+    g_p0_prowl_melee_buff_end_ms = 0;
+    g_p0_prowl_melee_buff_stacks = 0;
+    g_p1_prowl_charging = 0;
+    g_p1_prowl_charge_start_ms = 0;
+    g_p1_prowl_charge_stacks = 0;
+    g_p1_prowl_melee_buff_end_ms = 0;
+    g_p1_prowl_melee_buff_stacks = 0;
     g_p1_buffs_nullified_this_attack = 0;
     s_current_hit_is_last = 0;
     s_last_hit_flags = 0;
@@ -5338,15 +5383,176 @@ void* hook_143(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
 #define TFTF_ENABLE_MAX_POWER_TEST 0
 #endif
 
+static void expire_prowl_charge_buffs(void* pc, void* bc) {
+    if (!bc || !obj_ok(bc)) return;
+    PROTECT({
+        // In il2cpp ARM64, BuffsController._buffs is at offset 0x40 (fallback 0x20)
+        void* list = *(void**)((char*)bc + 0x40);
+        if (!list || !obj_ok(list)) {
+            list = *(void**)((char*)bc + 0x20);
+        }
+        if (list && obj_ok(list)) {
+            void* items = *(void**)((char*)list + 0x10); // Array
+            int32_t size = *(int32_t*)((char*)list + 0x18);
+            if (items && obj_ok(items) && size > 0 && size < 128) {
+                typedef void (*fn_pc_remove_buff)(void*, void*, void*);
+                typedef void (*fn_bc_stop_buff)(void*, void*, int32_t, void*);
+                typedef void (*fn_action_buff_invoke)(void*, void*, void*);
+
+                fn_pc_remove_buff pc_remove = g_base ? (fn_pc_remove_buff)(g_base + 0x0117D8B0) : NULL;
+                fn_bc_stop_buff bc_stop = g_base ? (fn_bc_stop_buff)(g_base + 0x00EED3C8) : NULL;
+                fn_action_buff_invoke del_inv = g_base ? (fn_action_buff_invoke)(g_base + 0x01539C40) : NULL;
+                void* del = *(void**)((char*)bc + 0x20); // BuffRemoved delegate
+
+                for (int i = size - 1; i >= 0; i--) {
+                    void* buff = *(void**)((char*)items + 0x20 + i * 8);
+                    if (buff && obj_ok(buff)) {
+                        void* id_str_obj = *(void**)((char*)buff + 0x28);
+                        void* app_str_obj = *(void**)((char*)buff + 0x38);
+                        char b_id[64] = {0};
+                        char a_id[64] = {0};
+                        if (id_str_obj && obj_ok(id_str_obj)) read_str(id_str_obj, b_id, sizeof(b_id));
+                        if (app_str_obj && obj_ok(app_str_obj)) read_str(app_str_obj, a_id, sizeof(a_id));
+
+                        if (strstr(b_id, "prowl_melee_charge") != NULL || strstr(a_id, "prowl_melee_charge") != NULL) {
+                            flog("EXPIRE_CHARGE: hiding gray icon & expiring buff %p (id='%s' app='%s')", buff, b_id, a_id);
+                            // 1. Notify HUD immediately to remove gray icon
+                            if (pc && obj_ok(pc) && pc_remove) {
+                                pc_remove(pc, buff, NULL);
+                            }
+                            if (del && obj_ok(del) && del_inv) {
+                                del_inv(del, buff, NULL);
+                            }
+                            // 2. Stop buff in BuffsController
+                            if (bc_stop) {
+                                bc_stop(bc, buff, 0, NULL);
+                            }
+                            // 3. Mark expired and stopped
+                            float dur = *(float*)((char*)buff + 0x48);
+                            *(float*)((char*)buff + 0x50) = dur + 10.0f;
+                            *(uint8_t*)((char*)buff + 0x6c) = 1;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+static void prowl_start_charge(int is_p0) {
+    uint64_t now_ms = propgo_now_ms();
+    uint64_t buff_end = is_p0 ? g_p0_prowl_melee_buff_end_ms : g_p1_prowl_melee_buff_end_ms;
+    int charging = is_p0 ? g_p0_prowl_charging : g_p1_prowl_charging;
+    if (charging || now_ms < buff_end) {
+        return;
+    }
+    const char* who = is_p0 ? "P0" : "P1";
+    if (is_p0) {
+        g_p0_prowl_charging = 1;
+        g_p0_prowl_charge_start_ms = now_ms;
+        g_p0_prowl_charge_stacks = 1;
+    } else {
+        g_p1_prowl_charging = 1;
+        g_p1_prowl_charge_start_ms = now_ms;
+        g_p1_prowl_charge_stacks = 1;
+    }
+
+    void* pc = is_p0 ? g_p0_controller : g_p1_controller;
+    void* bc = (pc && obj_ok(pc)) ? *(void**)((char*)pc + 0x88) : NULL;
+    void* sm = is_p0 ? s_prowl_charge_sm_p0 : s_prowl_charge_sm_p1;
+    flog("PROWL_CHARGE_START: who=%s pc=%p bc=%p sm=%p", who, pc, bc, sm);
+    if (sm && obj_ok(sm) && bc && obj_ok(bc) && g_base) {
+        PROTECT({
+            fn_apply_statmod_buff apply_buff = (fn_apply_statmod_buff)(g_base + 0x00EEFB44);
+            apply_buff(bc, bc, sm, 1, 1, 6.0f, NULL);
+            flog("PROWL_CHARGE_START: [%s] applied initial charge buff", who);
+        });
+    }
+
+    flog("PROWL_CHARGE_START: [%s] started Melee Buff charge (1/10 stacks, 54%% evade)", who);
+    combat_overlay_push("[%s] 立即投降！(近战充能: 1/10层, 规避率: 54%%)", who);
+}
+
+static void prowl_finish_charge(int is_p0, const char* reason) {
+    int charging = is_p0 ? g_p0_prowl_charging : g_p1_prowl_charging;
+    if (!charging) return;
+
+    uint64_t now_ms = propgo_now_ms();
+    int stacks = is_p0 ? g_p0_prowl_charge_stacks : g_p1_prowl_charge_stacks;
+    if (stacks < 1) stacks = 1;
+    if (stacks > 10) stacks = 10;
+
+    const char* who = is_p0 ? "P0" : "P1";
+    if (is_p0) {
+        g_p0_prowl_charging = 0;
+        g_p0_prowl_melee_buff_end_ms = now_ms + 6000;
+        g_p0_prowl_melee_buff_stacks = stacks;
+    } else {
+        g_p1_prowl_charging = 0;
+        g_p1_prowl_melee_buff_end_ms = now_ms + 6000;
+        g_p1_prowl_melee_buff_stacks = stacks;
+    }
+
+    void* pc = is_p0 ? g_p0_controller : g_p1_controller;
+    void* bc = (pc && obj_ok(pc)) ? *(void**)((char*)pc + 0x88) : NULL;
+
+    // 1. 移除灰色充能 Buff (通过 pc 通知 HUD 移除灰色图标，并在 bc 中彻底 Stop)
+    expire_prowl_charge_buffs(pc, bc);
+
+    // 2. 挂载橙色近战增益 (prowl_passive_melee_buff): 持续 6 秒，叠加 stacks 层
+    void* p_sm = is_p0 ? s_prowl_passive_sm_p0 : s_prowl_passive_sm_p1;
+    flog("PROWL_CHARGE_FINISH: who=%s pc=%p bc=%p p_sm=%p stacks=%d", who, pc, bc, p_sm, stacks);
+    if (p_sm && obj_ok(p_sm) && bc && obj_ok(bc) && g_base) {
+        PROTECT({
+            fn_apply_statmod_buff apply_buff = (fn_apply_statmod_buff)(g_base + 0x00EEFB44);
+            for (int s = 0; s < stacks; s++) {
+                apply_buff(bc, bc, p_sm, 1, 1, 6.0f, NULL);
+            }
+            flog("PROWL_CHARGE_FINISH: [%s] applied %d stacks of orange melee buff (6.0s)", who, stacks);
+        });
+    }
+
+    flog("PROWL_CHARGE_FINISH: [%s] reason='%s' -> activated %d stacks melee buff (+%d%% melee dmg, 6.0s)",
+         who, reason, stacks, stacks * 11);
+    combat_overlay_push("[%s] 近战增益激活: %d层 (+%d%% 近战伤害, 持续6.0s)", who, stacks, stacks * 11);
+
+    // 3. Signature: 好警察 (Good Cop / ID 2734)
+    // 每次近战充能完毕（变橙色图标）时，每层充能获得4%的能量（以满能量槽计算）
+    if (pc && obj_ok(pc) && g_base) {
+        PROTECT({
+            void* pm = *(void**)((char*)pc + 0x80);
+            if (pm && obj_ok(pm)) {
+                void* res_attr = *(void**)((char*)pm + 0x70);
+                if (res_attr && obj_ok(res_attr)) {
+                    typedef float (*fn_get_norm_mana)(void*, void*);
+                    typedef void (*fn_set_norm_mana)(void*, float, void*);
+                    fn_get_norm_mana get_mana = (fn_get_norm_mana)(g_base + 0x00E2FF20);
+                    fn_set_norm_mana set_mana = (fn_set_norm_mana)(g_base + 0x00E2FF70);
+                    float cur = get_mana(res_attr, NULL);
+                    float gain = 0.04f * (float)stacks; // 4% max mana per stack
+                    float new_mana = cur + gain;
+                    if (new_mana > 1.0f) new_mana = 1.0f;
+                    set_mana(res_attr, new_mana, NULL);
+                    flog("PROWL_GOOD_COP: [%s] cur=%.2f gain=+%.2f new=%.2f (%d stacks * 4%%)", who, cur, gain, new_mana, stacks);
+                    combat_overlay_push("[%s] 好警察: 获得 +%.0f%% 能量 (%d层)", who, gain * 100.0f, stacks);
+                }
+            }
+        });
+    }
+}
+
 static void give_p0_max_power(void) {
     if (sp3_xf_any()) return; // Don't interfere while casting SP3
     if (!g_p0_controller || !obj_ok(g_p0_controller)) return;
     PROTECT({
-        void* p0_attr = *(void**)((char*)g_p0_controller + 0x80);
-        if (p0_attr && obj_ok(p0_attr) && g_base) {
-            typedef void (*fn_set_norm_mana)(void*, float, void*);
-            fn_set_norm_mana set_mana = (fn_set_norm_mana)(g_base + 0x00DAC7B4);
-            set_mana(p0_attr, 1.0f, NULL);
+        void* pm = *(void**)((char*)g_p0_controller + 0x80);
+        if (pm && obj_ok(pm) && g_base) {
+            void* res_attr = *(void**)((char*)pm + 0x70);
+            if (res_attr && obj_ok(res_attr)) {
+                typedef void (*fn_set_norm_mana)(void*, float, void*);
+                fn_set_norm_mana set_mana = (fn_set_norm_mana)(g_base + 0x00E2FF70);
+                set_mana(res_attr, 1.0f, NULL);
+            }
         }
     });
 }
@@ -5371,20 +5577,23 @@ void* hook_145(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
         if (g_enemy_power_leak_end_ms > 0 && g_p1_controller && obj_ok(g_p1_controller)) {
             uint64_t now_ms = propgo_now_ms();
             if (now_ms < g_enemy_power_leak_end_ms) {
-                void* p1_attr = *(void**)((char*)g_p1_controller + 0x80);
-                if (p1_attr && obj_ok(p1_attr) && g_base) {
-                    typedef float (*fn_get_norm_mana)(void*, void*);
-                    typedef void (*fn_set_norm_mana)(void*, float, void*);
-                    fn_get_norm_mana get_mana = (fn_get_norm_mana)(g_base + 0x00DAC794);
-                    fn_set_norm_mana set_mana = (fn_set_norm_mana)(g_base + 0x00DAC7B4);
-                    float cur = get_mana(p1_attr, NULL);
-                    if (cur > 0.0f) {
-                        float drain_step = g_enemy_power_leak_step;
-                        float new_cur = cur - drain_step;
-                        if (new_cur < 0.0f) new_cur = 0.0f;
-                        set_mana(p1_attr, new_cur, NULL);
-                        if (g_p1_power_lock_end_ms > 0 && new_cur < g_p1_power_lock_mana) {
-                            g_p1_power_lock_mana = new_cur;
+                void* pm = *(void**)((char*)g_p1_controller + 0x80);
+                if (pm && obj_ok(pm) && g_base) {
+                    void* res_attr = *(void**)((char*)pm + 0x70);
+                    if (res_attr && obj_ok(res_attr)) {
+                        typedef float (*fn_get_norm_mana)(void*, void*);
+                        typedef void (*fn_set_norm_mana)(void*, float, void*);
+                        fn_get_norm_mana get_mana = (fn_get_norm_mana)(g_base + 0x00E2FF20);
+                        fn_set_norm_mana set_mana = (fn_set_norm_mana)(g_base + 0x00E2FF70);
+                        float cur = get_mana(res_attr, NULL);
+                        if (cur > 0.0f) {
+                            float drain_step = g_enemy_power_leak_step;
+                            float new_cur = cur - drain_step;
+                            if (new_cur < 0.0f) new_cur = 0.0f;
+                            set_mana(res_attr, new_cur, NULL);
+                            if (g_p1_power_lock_end_ms > 0 && new_cur < g_p1_power_lock_mana) {
+                                g_p1_power_lock_mana = new_cur;
+                            }
                         }
                     }
                 }
@@ -5434,6 +5643,61 @@ void* hook_145(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
                     g_p0_power_lock_end_ms = 0;
                     flog("POWER_LOCK_EXPIRED: P0 (Player) power lock expired");
                 }
+            }
+        }
+
+        // 4. Prowl Melee Buff charging progression (0.5s = 500ms per stack, up to 10 stacks)
+        uint64_t now_ms = propgo_now_ms();
+        if (g_p0_prowl_charging) {
+            uint64_t elapsed = now_ms - g_p0_prowl_charge_start_ms;
+            int new_stacks = 1 + (int)(elapsed / 500);
+            if (new_stacks > 10) new_stacks = 10;
+
+            if (new_stacks > g_p0_prowl_charge_stacks) {
+                int diff = new_stacks - g_p0_prowl_charge_stacks;
+                g_p0_prowl_charge_stacks = new_stacks;
+                void* pc = g_p0_controller;
+                void* bc = (pc && obj_ok(pc)) ? *(void**)((char*)pc + 0x88) : NULL;
+                void* sm = s_prowl_charge_sm_p0;
+                if (sm && obj_ok(sm) && bc && obj_ok(bc) && g_base) {
+                    PROTECT({
+                        fn_apply_statmod_buff apply_buff = (fn_apply_statmod_buff)(g_base + 0x00EEFB44);
+                        for (int s = 0; s < diff; s++) {
+                            apply_buff(bc, bc, sm, 1, 1, 6.0f, NULL);
+                        }
+                    });
+                }
+                flog("PROWL_CHARGE: P0 stack increased to %d/10", new_stacks);
+                combat_overlay_push("[P0] 近战充能: %d/10层 (规避率: 54%%)", new_stacks);
+            }
+            if (new_stacks >= 10 && elapsed >= 5000) {
+                prowl_finish_charge(1, "max 10 stacks reached");
+            }
+        }
+        if (g_p1_prowl_charging) {
+            uint64_t elapsed = now_ms - g_p1_prowl_charge_start_ms;
+            int new_stacks = 1 + (int)(elapsed / 500);
+            if (new_stacks > 10) new_stacks = 10;
+
+            if (new_stacks > g_p1_prowl_charge_stacks) {
+                int diff = new_stacks - g_p1_prowl_charge_stacks;
+                g_p1_prowl_charge_stacks = new_stacks;
+                void* pc = g_p1_controller;
+                void* bc = (pc && obj_ok(pc)) ? *(void**)((char*)pc + 0x88) : NULL;
+                void* sm = s_prowl_charge_sm_p1;
+                if (sm && obj_ok(sm) && bc && obj_ok(bc) && g_base) {
+                    PROTECT({
+                        fn_apply_statmod_buff apply_buff = (fn_apply_statmod_buff)(g_base + 0x00EEFB44);
+                        for (int s = 0; s < diff; s++) {
+                            apply_buff(bc, bc, sm, 1, 1, 6.0f, NULL);
+                        }
+                    });
+                }
+                flog("PROWL_CHARGE: P1 stack increased to %d/10", new_stacks);
+                combat_overlay_push("[P1] 近战充能: %d/10层 (规避率: 54%%)", new_stacks);
+            }
+            if (new_stacks >= 10 && elapsed >= 5000) {
+                prowl_finish_charge(0, "max 10 stacks reached");
             }
         }
 
@@ -5747,6 +6011,29 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
                 did_reset = 1;
                 g_p0_combo_ended = 0;
                 g_p0_after_heavy = 0;
+            }
+        }
+
+        // Prowl Melee Buff:
+        // Action.Dodge = 8 (後闪 / swipe back) starts charge.
+        // Action.Dash = 0x20 (32, 前冲) interrupts charge.
+        // Prowl Melee Buff:
+        // Action.Dodge = 8 (后闪 / swipe back) starts charge.
+        // Shooting (ranged taps) does NOT interrupt charge.
+        // Charge is interrupted when a melee hit connects with opponent (in hook_186) or on SP (0x200).
+        int is_p0_act = (self == g_p0_controller) || (obj_ok(self) && *(int32_t*)((uintptr_t)self + 0xF4) == 0);
+        int is_p1_act = (self == g_p1_controller) || (obj_ok(self) && *(int32_t*)((uintptr_t)self + 0xF4) == 1);
+        if (action == 8) { // Action.Dodge ONLY (Swipe back / 后闪)
+            if (is_p0_act && strstr(g_p0_bot_id, "prowl") != NULL) {
+                prowl_start_charge(1);
+            } else if (is_p1_act && strstr(g_p1_bot_id, "prowl") != NULL) {
+                prowl_start_charge(0);
+            }
+        } else if (action == 0x200) { // 特殊技 (SP1/SP2/SP3)
+            if (is_p0_act && strstr(g_p0_bot_id, "prowl") != NULL && g_p0_prowl_charging) {
+                prowl_finish_charge(1, "special attack");
+            } else if (is_p1_act && strstr(g_p1_bot_id, "prowl") != NULL && g_p1_prowl_charging) {
+                prowl_finish_charge(0, "special attack");
             }
         }
     });
@@ -6848,6 +7135,16 @@ void* hook_186(void* this_pc, void* hitResult, void* method) {
             s_current_hit_is_last = ((flags & 0x80) != 0); // 0x80 = HitResultFlags.LastHit
             s_ironhide_burned_this_hit = 0;
             s_ramjet_s1_stacks = 0;
+            int is_hit = ((flags & 5) != 0); // Hit (1) or Blocked (4)
+            int is_melee_hit = is_hit && (atk_level != 8) && ((flags & 0x100) == 0);
+            if (is_melee_hit) {
+                if (p_idx == 0 && strstr(g_p0_bot_id, "prowl") != NULL && g_p0_prowl_charging) {
+                    prowl_finish_charge(1, "melee attack hit opponent");
+                } else if (p_idx == 1 && strstr(g_p1_bot_id, "prowl") != NULL && g_p1_prowl_charging) {
+                    prowl_finish_charge(0, "melee attack hit opponent");
+                }
+            }
+
             if (p_idx == 0) {
                 g_p0_controller = this_pc;
                 
@@ -7062,6 +7359,9 @@ int hook_190(void* self) {
     if (!orig_evade) return 0;
 
     int is_p0 = is_player0_attr(self);
+    int charging = prowl_is_charging(is_p0);
+    if (!orig_evade && !charging) return 0;
+
     const char* who = is_p0 ? (g_p0_bot_id[0] ? g_p0_bot_id : "P0") : (g_p1_bot_id[0] ? g_p1_bot_id : "P1");
 
     uint64_t now_ms = propgo_now_ms();
@@ -7078,7 +7378,9 @@ int hook_190(void* self) {
     }
 
     float chance = 1.0f;
-    if (strstr(who, "bumblebee") != NULL) {
+    if (charging) {
+        chance = 0.54f; // 警车充能期间 54% 概率规避
+    } else if (strstr(who, "bumblebee") != NULL) {
         chance = 0.32f;
     } else if (strstr(who, "barricade") != NULL) {
         chance = 0.85f;
@@ -7099,6 +7401,9 @@ int hook_190(void* self) {
         flog("EVADE_MELEE_CHECK: guaranteed 100%% for %s (chance=%.3f)", who, chance);
         combat_overlay_push("[%s] EVADE Melee (100%% GUARANTEED)", who);
         *last_res = 1;
+        if (charging) {
+            prowl_finish_charge(is_p0, "evade melee triggered");
+        }
         return 1;
     }
 
@@ -7107,6 +7412,9 @@ int hook_190(void* self) {
         flog("EVADE_MELEE_CHECK: SUCCESS! [%s] roll=%.3f < chance=%.3f (TRIGGERED)", who, r, chance);
         combat_overlay_push("[%s] EVADE Melee PASS! (Roll: %.1f%% < %.1f%%)", who, r * 100.0f, chance * 100.0f);
         *last_res = 1;
+        if (charging) {
+            prowl_finish_charge(is_p0, "evade melee triggered");
+        }
         return 1;
     } else {
         flog("EVADE_MELEE_CHECK: MISSED! [%s] roll=%.3f >= chance=%.3f (NORMAL HIT)", who, r, chance);
@@ -7121,9 +7429,11 @@ int hook_191(void* self) {
     if (!self || !obj_ok(self)) return 0;
     typedef int (*fn_get_bool)(void*);
     int orig_evade = H[191].orig ? ((fn_get_bool)H[191].orig)(self) : 0;
-    if (!orig_evade) return 0;
 
     int is_p0 = is_player0_attr(self);
+    int charging = prowl_is_charging(is_p0);
+    if (!orig_evade && !charging) return 0;
+
     const char* who = is_p0 ? (g_p0_bot_id[0] ? g_p0_bot_id : "P0") : (g_p1_bot_id[0] ? g_p1_bot_id : "P1");
 
     uint64_t now_ms = propgo_now_ms();
@@ -7140,7 +7450,9 @@ int hook_191(void* self) {
     }
 
     float chance = 1.0f;
-    if (strstr(who, "barricade") != NULL) {
+    if (charging) {
+        chance = 0.54f; // 警车充能期间 54% 概率规避
+    } else if (strstr(who, "barricade") != NULL) {
         chance = 0.85f;
     } else {
         PROTECT({
@@ -7159,6 +7471,9 @@ int hook_191(void* self) {
         flog("EVADE_RANGED_CHECK: guaranteed 100%% for %s (chance=%.3f)", who, chance);
         combat_overlay_push("[%s] EVADE Ranged (100%% GUARANTEED)", who);
         *last_res = 1;
+        if (charging) {
+            prowl_finish_charge(is_p0, "evade ranged triggered");
+        }
         return 1;
     }
 
@@ -7167,6 +7482,9 @@ int hook_191(void* self) {
         flog("EVADE_RANGED_CHECK: SUCCESS! [%s] roll=%.3f < chance=%.3f (TRIGGERED)", who, r, chance);
         combat_overlay_push("[%s] EVADE Ranged PASS! (Roll: %.1f%% < %.1f%%)", who, r * 100.0f, chance * 100.0f);
         *last_res = 1;
+        if (charging) {
+            prowl_finish_charge(is_p0, "evade ranged triggered");
+        }
         return 1;
     } else {
         flog("EVADE_RANGED_CHECK: MISSED! [%s] roll=%.3f >= chance=%.3f (NORMAL HIT)", who, r, chance);
@@ -7298,6 +7616,69 @@ int hook_192(void* self, void* statModifier, float* pRoll, float* pChance, void*
             return 0; // 随机层数未达此阶，跳过
         }
         return 1; // 达到此阶，通过引擎原生机制自然叠加
+    }
+
+    // 10. 警车 (Prowl):
+    // a) 充能与近战增益门禁:
+    if (mod_id[0] && strstr(mod_id, "prowl_melee_charge") != NULL) {
+        void* owner_bc = (statModifier && obj_ok(statModifier)) ? *(void**)((char*)statModifier + 0x10) : NULL;
+        int is_p0 = is_player0_bc(owner_bc);
+        if (is_p0) {
+            s_prowl_charge_sm_p0 = statModifier;
+        } else {
+            s_prowl_charge_sm_p1 = statModifier;
+        }
+        flog("PROWL_CAPTURE_SM: melee_charge captured for %s -> sm=%p (owner_bc=%p)",
+             is_p0 ? "P0" : "P1", statModifier, owner_bc);
+        return 0; // 阻止开局与原生自动触发，由玩家主动后闪时通过 prowl_start_charge 施加
+    }
+    if (mod_id[0] && strstr(mod_id, "prowl_passive_melee_buff") != NULL) {
+        void* owner_bc = (statModifier && obj_ok(statModifier)) ? *(void**)((char*)statModifier + 0x10) : NULL;
+        int is_p0 = is_player0_bc(owner_bc);
+        if (is_p0) {
+            s_prowl_passive_sm_p0 = statModifier;
+        } else {
+            s_prowl_passive_sm_p1 = statModifier;
+        }
+        flog("PROWL_CAPTURE_SM: passive_melee_buff captured for %s -> sm=%p (owner_bc=%p)",
+             is_p0 ? "P0" : "P1", statModifier, owner_bc);
+        return 0; // 阻止原生自动触发，由 prowl_finish_charge 统一施加
+    }
+    // b) 远程眩晕: 仅远程射击生效 (s_current_hit_is_ranged); 连开三枪仅第一枪 roll dice; 充能中几率 80%，否则 10%
+    if (mod_id[0] && strstr(mod_id, "prowl_ranged_stun") != NULL) {
+        if (!s_current_hit_is_ranged) {
+            return 0; // 严格门禁：近战普通攻击绝不触发远程眩晕判定
+        }
+        void* owner_bc = (statModifier && obj_ok(statModifier)) ? *(void**)((char*)statModifier + 0x10) : NULL;
+        int is_p0 = is_player0_bc(owner_bc);
+        uint64_t now_ms = propgo_now_ms();
+        static uint64_t s_prowl_last_shot_ms_p0 = 0;
+        static uint64_t s_prowl_last_shot_ms_p1 = 0;
+        uint64_t* last_shot_ms = is_p0 ? &s_prowl_last_shot_ms_p0 : &s_prowl_last_shot_ms_p1;
+
+        if (now_ms - *last_shot_ms < 1000) {
+            flog("PROWL_RANGED_STUN: skipping non-first shot in volley (elapsed=%llu ms)", (unsigned long long)(now_ms - *last_shot_ms));
+            return 0;
+        }
+        *last_shot_ms = now_ms;
+
+        int is_charging = prowl_is_charging(is_p0);
+        float chance = is_charging ? 0.80f : 0.10f;
+        if (pChance) *pChance = chance;
+
+        float r = ((float)rand()) / (float)RAND_MAX;
+        if (pRoll) *pRoll = r;
+
+        flog("PROWL_RANGED_STUN_ROLL: [%s] charging=%d chance=%.2f roll=%.3f",
+             is_p0 ? "P0" : "P1", is_charging, chance, r);
+        if (r < chance) {
+            flog("PROWL_RANGED_STUN: STUN TRIGGERED! (1.5s)");
+            combat_overlay_push("[%s] 远程眩晕命中！(几率: %.0f%%)", is_p0 ? "P0" : "P1", chance * 100.0f);
+            return 1;
+        } else {
+            flog("PROWL_RANGED_STUN: roll failed");
+            return 0;
+        }
     }
 
     typedef int (*fn_test_roll)(void*, void*, float*, float*, void*, void*);

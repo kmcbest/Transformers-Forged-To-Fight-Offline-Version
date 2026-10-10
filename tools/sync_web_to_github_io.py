@@ -16,7 +16,11 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 TFTF_DB = REPO_ROOT / "Server" / "tftf_database.db"
 LOCAL_INDEX = REPO_ROOT / "tools" / "web_dashboard" / "index.html"
 
-TARGET_DIR = Path(r"D:\docforall\GitHub\kmcbest.github.io\tftfr")
+candidate_dirs = [
+    Path(r"D:\#E\Personal\kmcbest.github.io\tftfr"),
+    Path(r"D:\docforall\GitHub\kmcbest.github.io\tftfr")
+]
+TARGET_DIR = next((d for d in candidate_dirs if d.exists()), candidate_dirs[0])
 TARGET_DATA_DIR = TARGET_DIR / "data"
 TARGET_CHARS_DIR = TARGET_DATA_DIR / "characters"
 TARGET_BOTS_HTML = TARGET_DIR / "bots.html"
@@ -162,6 +166,19 @@ def sync_database_data():
     with open(priority_file, "w", encoding="utf-8") as f:
         json.dump(priority_data, f, ensure_ascii=False, indent=2)
     print(f"    [+] Wrote {priority_file} ({len(priority_items)} priority abilities)")
+
+    # PUA Icons Cache export
+    pua_rows = c.execute("SELECT * FROM pua_icons_cache ORDER BY codepoint_dec").fetchall()
+    pua_icons = [dict(r) for r in pua_rows]
+    pua_file = TARGET_DATA_DIR / "pua_icons.json"
+    with open(pua_file, "w", encoding="utf-8") as f:
+        json.dump({"icons": pua_icons}, f, ensure_ascii=False, indent=2)
+    print(f"    [+] Wrote {pua_file} ({len(pua_icons)} icons with annotations)")
+
+    dash_pua_file = REPO_ROOT / "tools" / "web_dashboard" / "data" / "pua_icons.json"
+    dash_pua_file.parent.mkdir(parents=True, exist_ok=True)
+    with open(dash_pua_file, "w", encoding="utf-8") as f:
+        json.dump({"icons": pua_icons}, f, ensure_ascii=False, indent=2)
 
     conn.close()
     return overview_data, all_bots_dict, priority_data

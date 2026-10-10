@@ -45,6 +45,9 @@ class TestPriorityAbilities(unittest.TestCase):
             "prowl_s1_power_burn",
             "prowl_s2_ranged_boost",
             "prowl_s3_power_lock",
+            "prowl_melee_charge",
+            "prowl_passive_melee_buff",
+            "prowl_ranged_stun",
         ]
         for m in expected:
             self.assertIn(m, mod_ids)
@@ -141,6 +144,9 @@ class TestPriorityAbilities(unittest.TestCase):
             "prowl_s1_power_burn",
             "prowl_s2_ranged_boost",
             "prowl_s3_power_lock",
+            "prowl_melee_charge",
+            "prowl_passive_melee_buff",
+            "prowl_ranged_stun",
         ]
 
         for mid in all_target_mods:
@@ -160,6 +166,9 @@ class TestPriorityAbilities(unittest.TestCase):
                         self.assertFalse(color.startswith("#"), f"Color {ckey} cannot start with #: {color}")
                         self.assertEqual(len(color), 6, f"Color {ckey} must be 6 hex digits: {color}")
 
+        # Check signature appearance exists
+        self.assertIn("appr_prowl_sig_good_cop", all_appears)
+
     def test_gamedata_integration(self):
         # Ensure gamedata builds without error
         stat_mods = gamedata.build_stat_modifiers()
@@ -177,6 +186,9 @@ class TestPriorityAbilities(unittest.TestCase):
         self.assertIn("prowl_s1_power_burn", prowl_data["stat_mods"])
         self.assertIn("prowl_s2_ranged_boost", prowl_data["stat_mods"])
         self.assertIn("prowl_s3_power_lock", prowl_data["stat_mods"])
+        self.assertIn("prowl_melee_charge", prowl_data["stat_mods"])
+        self.assertIn("prowl_passive_melee_buff", prowl_data["stat_mods"])
+        self.assertIn("prowl_ranged_stun", prowl_data["stat_mods"])
 
 
 if __name__ == "__main__":

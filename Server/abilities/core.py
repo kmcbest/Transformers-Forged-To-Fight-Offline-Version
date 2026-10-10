@@ -699,6 +699,8 @@ def make_evade_grant_statmod(
     color_hex: str = "10B981",          # 纯6位十六进制绿色 (严禁带 '#')
     gradient_bottom: str = "059669",
     show_callout: bool = False,         # 获得时通常不弹字 (触发规避免伤时再呼出“规避”)
+    stackable: bool = False,
+    max_stacks: int = 1,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """
     规避获得修饰器工厂 (Evade Grant StatMod Factory):
@@ -761,7 +763,7 @@ def make_evade_grant_statmod(
         "mt": "buff",                 # 正向增益
         "v": "",
         "ms": "",
-        "st": 1,                      # 不堆叠层数
+        "st": max_stacks if stackable else 1,
         "g": buff_type,               # 增益类别组: evade_melee 或 evade_ranged
         "gc": 0.0,
         "gcv": "",

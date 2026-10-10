@@ -24,13 +24,21 @@ Bot ID: prowl_gs_deluxe2016
 -----------------------------------------------------------------------------
 """
 
-from ..core import make_power_leak_statmod, make_ranged_boost_statmod, make_power_lock_statmod
+from ..core import (
+    make_power_leak_statmod,
+    make_ranged_boost_statmod,
+    make_power_lock_statmod,
+    make_stun_statmod,
+    make_attack_boost_statmod,
+    make_evade_grant_statmod,
+    validate_appear,
+)
 from ..registry import register_bot
 
 BOT_ID = "prowl_gs_deluxe2016"
 
 
-@register_bot(BOT_ID, name_zh="警车", desc="侦查系神射副官，SP1第一击强力烧能、SP2高速加伤连射、SP3长效锁定对手能量")
+@register_bot(BOT_ID, name_zh="警车", desc="侦查系神射副官，SP1强力烧能、SP2连射增益、SP3能量锁定，后闪充能近战增益与规避，首发开枪眩晕，觉醒好警察能量灌注")
 def build_prowl_abilities(base_hp: float = 30533.0, base_atk: float = 2329.0):
     """
     根据基准属性生成警车全部专属能力修饰器。
@@ -89,4 +97,85 @@ def build_prowl_abilities(base_hp: float = 30533.0, base_atk: float = 2329.0):
     mods.update(m3)
     appears.update(a3)
 
+    # 4. 被动: 近战增益 (Melee Buff / ID 2727)
+    # 后闪充能，每0.5s一层最多10层；充到10层或打断后转化为橙色近战增益，每层+11%近战伤害，持续6秒
+    # 4a. 近战充能规避 (亮银灰拳头图标，立即投降！54% 规避几率，充能期间全程显示，最多叠加10层)
+    m_charge, a_charge = make_evade_grant_statmod(
+        mod_id="prowl_melee_charge",
+        evade_type="melee",
+        grant_chance=1.0,
+        evade_chance=0.54,
+        duration=6.0,
+        trigger="onPlayerStateEnter",
+        trigger_scope="state=Dodge",
+        appr_id="appr_prowl_melee_charge",
+        callout_text="立即投降！",
+        pua_icon="\uE406",
+        color_hex="CBD5E1",
+        gradient_bottom="94A3B8",
+        show_callout=True,
+        stackable=True,
+        max_stacks=10,
+    )
+    mods.update(m_charge)
+    appears.update(a_charge)
+
+    # 4b. 橙色近战增益 (伤害加成 11%/层，最多 10 层，持续 6 秒)
+    m4, a4 = make_attack_boost_statmod(
+        mod_id="prowl_passive_melee_buff",
+        duration=6.0,
+        attack_bonus=0.11,
+        chance=1.0,
+        trigger="onPlayerStateEnter",
+        trigger_scope="state=Dodge",
+        appr_id="appr_prowl_passive_melee_buff",
+        callout_text="近战增益",
+        show_callout=True,
+        pua_icon="\uE406",
+        color_hex="FF8800",
+        gradient_bottom="DD6600",
+        stackable=True,
+        max_stacks=10,
+    )
+    mods.update(m4)
+    appears.update(a4)
+
+    # 5. 被动: 远程眩晕 (Ranged Stun / ID 2728)
+    # 远程第一枪10%概率眩晕对手1.5秒；充能中概率提升至80% (在 hook_192 中过滤第一枪与动态80%几率)
+    m5, a5 = make_stun_statmod(
+        mod_id="prowl_ranged_stun",
+        duration=1.5,
+        chance=0.10,
+        trigger="onHit",
+        trigger_scope="level=Ranged",
+        appr_id="appr_prowl_ranged_stun",
+        callout_text="眩晕",
+        pua_icon="\uE605",
+        color_hex="FFE000",
+        gradient_bottom="FFAA00",
+    )
+    mods.update(m5)
+    appears.update(a5)
+
+    # 6. 觉醒能力: 好警察 (Good Cop / ID 2734)
+    # 近战充能完毕变橙色图标时，每层充能获得4%满槽能量 (10层获得40%)
+    appr_good_cop = {
+        "id": "appr_prowl_sig_good_cop",
+        "a": "好警察",
+        "s": "",
+        "l": "近战充能完毕获得能量，每层4%",
+        "ss": "好警察",
+        "t": "\uE608",
+        "f": "",
+        "st": "好警察",
+        "ps": "好警察",
+        "pl": "好警察生效中",
+        "tc": "38BDF8",
+        "gt": "38BDF8",
+        "gb": "0284C7",
+    }
+    validate_appear(appr_good_cop)
+    appears["appr_prowl_sig_good_cop"] = appr_good_cop
+
     return mods, appears, buffs
+
