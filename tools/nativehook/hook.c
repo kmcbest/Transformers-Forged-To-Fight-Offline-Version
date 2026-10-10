@@ -698,6 +698,12 @@ static volatile float g_p0_ranged_damage_bonus = 0.0f;
 static volatile float g_p0_ranged_speed_bonus = 0.0f;
 #define g_arcee_ranged_boost_end_ms g_p0_ranged_boost_end_ms
 static volatile uint64_t g_enemy_power_leak_end_ms = 0;
+static volatile float g_enemy_power_leak_step = 0.0022f;
+static volatile uint64_t g_p0_power_lock_end_ms = 0; // P0 is power locked (cannot gain power)
+static volatile float g_p0_power_lock_mana = 0.0f;
+static volatile uint64_t g_p1_power_lock_end_ms = 0; // P1 is power locked (cannot gain power)
+static volatile float g_p1_power_lock_mana = 0.0f;
+#define g_enemy_power_lock_end_ms g_p1_power_lock_end_ms
 static volatile int g_p1_buffs_nullified_this_attack = 0;
 static volatile int s_current_hit_is_last = 0;
 static volatile int s_last_hit_flags = 0;
@@ -3125,6 +3131,11 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
             strncpy(g_p1_bot_id, id1, sizeof(g_p1_bot_id) - 1);
             g_p1_bot_id[sizeof(g_p1_bot_id) - 1] = 0;
         }
+        g_enemy_power_leak_end_ms = 0;
+        g_p0_power_lock_end_ms = 0;
+        g_p0_power_lock_mana = 0.0f;
+        g_p1_power_lock_end_ms = 0;
+        g_p1_power_lock_mana = 0.0f;
         load_combat_tuning_config();
         int32_t cur_hp = (at1 && obj_ok(at1)) ? *(int32_t*)((char*)at1 + 0x2C) : 0;
         if (player_idx == 1 || (player_idx != 0 && cur_hp <= 0)) {
@@ -5184,6 +5195,11 @@ void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     g_p0_ranged_damage_bonus = 0.0f;
     g_p0_ranged_speed_bonus = 0.0f;
     g_enemy_power_leak_end_ms = 0;
+    g_enemy_power_leak_step = 0.0022f;
+    g_p0_power_lock_end_ms = 0;
+    g_p0_power_lock_mana = 0.0f;
+    g_p1_power_lock_end_ms = 0;
+    g_p1_power_lock_mana = 0.0f;
     g_p1_buffs_nullified_this_attack = 0;
     s_current_hit_is_last = 0;
     s_last_hit_flags = 0;
@@ -5351,7 +5367,7 @@ void* hook_145(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
             }
         }
 
-        // 2. Smoothly drain enemy power meter if Power Leak is active
+        // 2. Smoothly drain enemy power meter if Power Leak / Burn is active
         if (g_enemy_power_leak_end_ms > 0 && g_p1_controller && obj_ok(g_p1_controller)) {
             uint64_t now_ms = propgo_now_ms();
             if (now_ms < g_enemy_power_leak_end_ms) {
@@ -5363,14 +5379,61 @@ void* hook_145(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
                     fn_set_norm_mana set_mana = (fn_set_norm_mana)(g_base + 0x00DAC7B4);
                     float cur = get_mana(p1_attr, NULL);
                     if (cur > 0.0f) {
-                        float drain_step = 0.0022f; // ~40% total gauge drained smoothly over 3s
+                        float drain_step = g_enemy_power_leak_step;
                         float new_cur = cur - drain_step;
                         if (new_cur < 0.0f) new_cur = 0.0f;
                         set_mana(p1_attr, new_cur, NULL);
+                        if (g_p1_power_lock_end_ms > 0 && new_cur < g_p1_power_lock_mana) {
+                            g_p1_power_lock_mana = new_cur;
+                        }
                     }
                 }
             } else {
                 g_enemy_power_leak_end_ms = 0;
+            }
+        }
+
+        // 3. Power Lock: prevent locked fighters from gaining any power while locked
+        if (g_p1_power_lock_end_ms > 0 && g_p1_controller && obj_ok(g_p1_controller)) {
+            uint64_t now_ms = propgo_now_ms();
+            void* p1_attr = *(void**)((char*)g_p1_controller + 0x80);
+            if (p1_attr && obj_ok(p1_attr) && g_base) {
+                if (now_ms < g_p1_power_lock_end_ms) {
+                    typedef float (*fn_get_norm_mana)(void*, void*);
+                    typedef void (*fn_set_norm_mana)(void*, float, void*);
+                    fn_get_norm_mana get_mana = (fn_get_norm_mana)(g_base + 0x00DAC794);
+                    fn_set_norm_mana set_mana = (fn_set_norm_mana)(g_base + 0x00DAC7B4);
+                    float cur = get_mana(p1_attr, NULL);
+                    if (cur > g_p1_power_lock_mana) {
+                        set_mana(p1_attr, g_p1_power_lock_mana, NULL);
+                    } else if (cur < g_p1_power_lock_mana) {
+                        g_p1_power_lock_mana = cur;
+                    }
+                } else {
+                    g_p1_power_lock_end_ms = 0;
+                    flog("POWER_LOCK_EXPIRED: P1 (Enemy) power lock expired");
+                }
+            }
+        }
+        if (g_p0_power_lock_end_ms > 0 && g_p0_controller && obj_ok(g_p0_controller)) {
+            uint64_t now_ms = propgo_now_ms();
+            void* p0_attr = *(void**)((char*)g_p0_controller + 0x80);
+            if (p0_attr && obj_ok(p0_attr) && g_base) {
+                if (now_ms < g_p0_power_lock_end_ms) {
+                    typedef float (*fn_get_norm_mana)(void*, void*);
+                    typedef void (*fn_set_norm_mana)(void*, float, void*);
+                    fn_get_norm_mana get_mana = (fn_get_norm_mana)(g_base + 0x00DAC794);
+                    fn_set_norm_mana set_mana = (fn_set_norm_mana)(g_base + 0x00DAC7B4);
+                    float cur = get_mana(p0_attr, NULL);
+                    if (cur > g_p0_power_lock_mana) {
+                        set_mana(p0_attr, g_p0_power_lock_mana, NULL);
+                    } else if (cur < g_p0_power_lock_mana) {
+                        g_p0_power_lock_mana = cur;
+                    }
+                } else {
+                    g_p0_power_lock_end_ms = 0;
+                    flog("POWER_LOCK_EXPIRED: P0 (Player) power lock expired");
+                }
             }
         }
 
@@ -6069,13 +6132,24 @@ void* hook_163(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     float amt;
     __asm__ volatile ("fmov %w0, s0" : "=r"(amt));
     if (obj_ok(a0)) {
-        int32_t p_idx = *(int32_t*)((uintptr_t)a0 + 0xF4);
-        if (p_idx != 0) {
-            // Enemy / AI player: apply dynamic enemy mana gain multiplier
-            amt *= g_combat_enemy_mana_gain;
+        uint64_t now_ms = propgo_now_ms();
+        int is_p0 = (a0 == g_p0_controller) || (obj_ok(a0) && *(int32_t*)((uintptr_t)a0 + 0xF4) == 0);
+        float rate = 1.0f;
+        if (is_p0) {
+            if (g_p0_power_lock_end_ms > 0 && now_ms < g_p0_power_lock_end_ms) {
+                rate = 0.0f; // P0 is power locked: rate drops to 0!
+            } else {
+                rate = g_combat_player_mana_gain;
+            }
         } else {
-            // Player 0: apply player multiplier
-            amt *= g_combat_player_mana_gain;
+            if (g_p1_power_lock_end_ms > 0 && now_ms < g_p1_power_lock_end_ms) {
+                rate = 0.0f; // P1 is power locked: rate drops to 0!
+            } else {
+                rate = g_combat_enemy_mana_gain;
+            }
+        }
+        if (amt > 0.0f) {
+            amt *= rate;
         }
     }
     __asm__ volatile ("fmov s0, %w0" : : "r"(amt));
@@ -6908,24 +6982,49 @@ buff_gate_done: ;
     int res = H[188].orig ? ((fn_apply_buff)H[188].orig)(self, applicant, statModifier, updateAttributes, useOverrideDuration, overrideDuration, method) : 0;
 
     PROTECT({
-        if (res == 1) { // BuffResult.Success
+        if (res == 3 || res != 0) { // 3 = BuffResult.Success
             int is_target_p0 = is_player0_bc(self);
             if (strstr(mod_id, "optimus_") == NULL && strstr(mod_id, "ultramagnus_") == NULL && strstr(mod_id, "grindor_") == NULL) {
                 combat_overlay_push("BUFF -> %s on %s (APPLIED)", mod_id[0] ? mod_id : "unknown", is_target_p0 ? "P0" : "P1");
             }
 
             uint64_t now_ms = propgo_now_ms();
-            // Arcee / Generic Ranged Boost applied (+40% bullet speed & animation speed)
+            // Arcee / Prowl Ranged Boost applied
             if (mod_id[0] && strstr(mod_id, "arcee_sp1_trick_shot") != NULL) {
                 g_p0_ranged_boost_end_ms = now_ms + 6500;
                 g_p0_ranged_damage_bonus = 0.35f;
                 g_p0_ranged_speed_bonus = 0.40f;
                 flog("RANGED_BOOST_ACTIVATED: Arcee SP1 (dmg=+35%%, spd=+40%%, dur=6.5s)");
             }
+            if (mod_id[0] && strstr(mod_id, "prowl_s2_ranged_boost") != NULL) {
+                g_p0_ranged_boost_end_ms = now_ms + 6000;
+                g_p0_ranged_damage_bonus = 0.50f;
+                g_p0_ranged_speed_bonus = 0.50f;
+                flog("RANGED_BOOST_ACTIVATED: Prowl SP2 (dmg=+50%%, spd=+50%%, dur=6.0s)");
+            }
             // Wheeljack Power Leak applied
             if (mod_id[0] && strstr(mod_id, "wheeljack_") != NULL && strstr(mod_id, "_leak") != NULL) {
                 g_enemy_power_leak_end_ms = now_ms + 3000;
+                g_enemy_power_leak_step = 0.0022f;
                 flog("POWER_LEAK_ACTIVATED: Wheeljack leak active for 3.0s on enemy");
+            }
+            // Power Lock applied (symmetric: supports P0 locking P1, or P1 locking P0)
+            if (mod_id[0] && strstr(mod_id, "power_lock") != NULL) {
+                uint64_t lock_dur_ms = (uint64_t)(overrideDuration > 0.0f ? overrideDuration * 1000.0f : 16000.0f);
+                int target_is_p0 = is_player0_bc(self);
+                typedef float (*fn_get_norm_mana)(void*, void*);
+                fn_get_norm_mana get_mana = (fn_get_norm_mana)(g_base + 0x00DAC794);
+                if (target_is_p0) {
+                    g_p0_power_lock_end_ms = now_ms + lock_dur_ms;
+                    void* p0_attr = (g_p0_controller && obj_ok(g_p0_controller)) ? *(void**)((char*)g_p0_controller + 0x80) : NULL;
+                    g_p0_power_lock_mana = (p0_attr && obj_ok(p0_attr) && g_base) ? get_mana(p0_attr, NULL) : 0.0f;
+                    flog("POWER_LOCK_ACTIVATED on P0 (Player): rate=0.0 for %.1fs (locked_mana=%.2f)", lock_dur_ms / 1000.0f, g_p0_power_lock_mana);
+                } else {
+                    g_p1_power_lock_end_ms = now_ms + lock_dur_ms;
+                    void* p1_attr = (g_p1_controller && obj_ok(g_p1_controller)) ? *(void**)((char*)g_p1_controller + 0x80) : NULL;
+                    g_p1_power_lock_mana = (p1_attr && obj_ok(p1_attr) && g_base) ? get_mana(p1_attr, NULL) : 0.0f;
+                    flog("POWER_LOCK_ACTIVATED on P1 (Enemy): rate=0.0 for %.1fs (locked_mana=%.2f)", lock_dur_ms / 1000.0f, g_p1_power_lock_mana);
+                }
             }
             // 跟踪目标燃烧状态过期时间 (默认 4.2 秒窗口)
             if (mod_id[0] && strstr(mod_id, "burn") != NULL) {

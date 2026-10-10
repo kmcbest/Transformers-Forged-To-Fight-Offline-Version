@@ -34,9 +34,20 @@ class TestPriorityAbilities(unittest.TestCase):
             "ramjet_gs_deluxe2008",
             "mixmaster_cin_rotf",
             "waspinator_gs_deluxe",
+            "prowl_gs_deluxe2016",
         ]
         for bid in expected:
             self.assertIn(bid, registered, f"Bot {bid} should be registered in ability registry")
+
+    def test_prowl_abilities(self):
+        mod_ids = abilities.bot_abilities("prowl_gs_deluxe2016")
+        expected = [
+            "prowl_s1_power_burn",
+            "prowl_s2_ranged_boost",
+            "prowl_s3_power_lock",
+        ]
+        for m in expected:
+            self.assertIn(m, mod_ids)
 
     def test_ironhide_abilities(self):
         mod_ids = abilities.bot_abilities("ironhide_cin_rotf")
@@ -127,6 +138,9 @@ class TestPriorityAbilities(unittest.TestCase):
             "mixmaster_s2_burn",
             "mixmaster_s3_burn",
             "waspinator_s3_burn",
+            "prowl_s1_power_burn",
+            "prowl_s2_ranged_boost",
+            "prowl_s3_power_lock",
         ]
 
         for mid in all_target_mods:
@@ -156,6 +170,13 @@ class TestPriorityAbilities(unittest.TestCase):
         hero_data = gamedata.build_hero_entry("ironhide_cin_rotf", 5, 50)
         self.assertIn("stat_mods", hero_data)
         self.assertTrue(len(hero_data["stat_mods"]) > 0)
+
+        # Check prowl hero entry
+        prowl_data = gamedata.build_hero_entry("prowl_gs_deluxe2016", 5, 50)
+        self.assertIn("stat_mods", prowl_data)
+        self.assertIn("prowl_s1_power_burn", prowl_data["stat_mods"])
+        self.assertIn("prowl_s2_ranged_boost", prowl_data["stat_mods"])
+        self.assertIn("prowl_s3_power_lock", prowl_data["stat_mods"])
 
 
 if __name__ == "__main__":

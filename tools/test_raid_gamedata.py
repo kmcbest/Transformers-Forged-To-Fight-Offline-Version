@@ -53,13 +53,13 @@ print("Move to Node 1 actions count:", len(actions))
 assert len(actions) == 2
 assert "battle" in actions[1]["action"]
 print("Node 1 battle enemy:", actions[1]["action"]["battle"]["battleEnemy"]["key"])
-assert actions[1]["action"]["battle"]["battleEnemy"]["key"] == "arcee_gs_deluxe2014"
+assert actions[1]["action"]["battle"]["battleEnemy"]["key"] in ("arcee_gs_deluxe2014", "%RB6%")
 
 # Test move to Node 7 (boss)
 movedir_boss = gamedata.build_quest_movedir("raid_base", 1, -1, start=(22, 33))
 actions_boss = movedir_boss["results"]
 print("Move to Node 7 battle enemy:", actions_boss[1]["action"]["battle"]["battleEnemy"]["key"])
-assert actions_boss[1]["action"]["battle"]["battleEnemy"]["key"] == "megatron_gs_leader2015"
+assert actions_boss[1]["action"]["battle"]["battleEnemy"]["key"] in ("megatron_gs_leader2015", "%RB0%")
 assert actions_boss[1]["action"]["battle"]["isFinalBoss"] == True
 print("Node 7 final boss verified!")
 

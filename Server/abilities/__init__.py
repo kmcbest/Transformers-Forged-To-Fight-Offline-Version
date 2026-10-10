@@ -40,6 +40,8 @@ def build_buffs_config():
         "dmg_shock": {"stackable": True, "active_display": True},
         # 能量流失 Debuff：可堆叠，在敌人血条下方显示倒计时圆环图标
         "power_leak": {"stackable": True, "active_display": True},
+        # 能量锁定 Debuff：不可堆叠，在敌人血条下方显示倒计时圆环图标
+        "power_lock": {"stackable": False, "active_display": True},
         # 眩晕控制 Debuff：不可堆叠，在敌人血条下方显示倒计时圆环图标
         "stun": {"stackable": False, "active_display": True},
         # 驱散效果器：瞬时结算，不显示血条下方图标
@@ -279,6 +281,27 @@ def build_buffs_set():
             "time": {"amount": 3.0},
             "loc_name": "power_leak",
             "loc_desc": "power_leak",
+        },
+        # 能量锁定 Debuff
+        "power_lock": {
+            "id": "power_lock",
+            "iconTexture": "",
+            "image": "",
+            "images3": False,
+            "modeAvail": [],
+            "scope": "global",
+            "valueType": "absolute",
+            "displayValue": 0.0,
+            "c": 1,
+            "value": 0.0,
+            "buffType": "debuff",
+            "group": "power_lock",
+            "p": {"drain_type": "lock"},
+            "hasDuration": True,
+            "e": 0,
+            "time": {"amount": 16.0},
+            "loc_name": "power_lock",
+            "loc_desc": "power_lock",
         },
         # 眩晕硬控
         "stun": {

@@ -1394,3 +1394,76 @@ def make_burn_statmod(
     return {mod_id: stat_mod}, {appr_id: appear}
 
 
+def make_power_lock_statmod(
+    mod_id: str,
+    duration: float = 16.0,
+    chance: float = 1.0,
+    trigger: str = "onSpecial3Activate",
+    trigger_scope: str = "",
+    appr_id: str = "appr_power_lock",
+    callout_text: str = "能量锁定",
+    pua_icon: str = "\uE523",
+    color_hex: str = "FF0000",
+    gradient_bottom: str = "FF0000",
+) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    """
+    通用能量锁定工厂 (Power Lock Debuff):
+    在指定持续时间内阻止对手获得能量 (Prevents opponent from gaining power over duration)。
+    - 底层对接官方原生 'power_gain' BuffEffect 并传入微量负值(-0.01)压制气槽，同时由 Native Hook 拦截 AddMana 归零。
+    - PUA 图标为能量锁定 (\uE523)，配色为减益红 (FF0000 / FF0000)。
+    """
+    validate_color_code(color_hex, "power_lock_tc")
+    validate_color_code(gradient_bottom, "power_lock_gb")
+
+    appear = {
+        "id": appr_id,
+        "a": callout_text,
+        "s": "",
+        "l": "阻止对手获得能量",
+        "ss": "阻止对手获得能量",
+        "t": pua_icon,
+        "f": "",
+        "st": callout_text,
+        "ps": callout_text,
+        "pl": f"{callout_text}生效中",
+        "tc": color_hex,
+        "gt": color_hex,
+        "gb": gradient_bottom,
+    }
+
+    stat_mod = {
+        "id": mod_id,
+        "t": "power_lock",
+        "tm": "",
+        "tr": [trigger],
+        "uit": [trigger],
+        "pri": 0,
+        "trm": 0.0,
+        "trs": trigger_scope,
+        "trr": "repeat",
+        "c": float(chance),
+        "m": 1.0,  # 1.0 sets PowerLock = 1.0 so (1f - PowerLock) becomes 0.0 in PlayerAttributes.ApplyManaGain
+        "d": float(duration),
+        "s": "none",
+        "ta": "opponent",
+        "mt": "debuff",
+        "v": "",
+        "ms": "",
+        "st": 1,
+        "g": "power_lock_debuff",
+        "gc": 0.0,
+        "gcv": "",
+        "rcv": "",
+        "ti": 0,
+        "a": [appr_id],
+        "au": [],
+        "rh": 0.0,
+        "ra": 0.0,
+    }
+
+    validate_statmod(stat_mod)
+    validate_appear(appear)
+    return {mod_id: stat_mod}, {appr_id: appear}
+
+
+
