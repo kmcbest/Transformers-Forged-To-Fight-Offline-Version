@@ -62,9 +62,13 @@ static const BotSkillModule* find_module_by_modifier(const char* mod_id) {
 
 void skill_dispatch_hit_connected(SkillHitContext* ctx) {
     if (!ctx) return;
-    const BotSkillModule* mod = find_module_by_bot(ctx->attacker_bot_id);
-    if (mod && mod->on_hit_connected) {
-        mod->on_hit_connected(ctx);
+    const BotSkillModule* att_mod = find_module_by_bot(ctx->attacker_bot_id);
+    if (att_mod && att_mod->on_hit_connected) {
+        att_mod->on_hit_connected(ctx);
+    }
+    const BotSkillModule* tgt_mod = find_module_by_bot(ctx->target_bot_id);
+    if (tgt_mod && tgt_mod != att_mod && tgt_mod->on_hit_connected) {
+        tgt_mod->on_hit_connected(ctx);
     }
 }
 

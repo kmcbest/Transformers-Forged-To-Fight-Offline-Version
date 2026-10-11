@@ -42,7 +42,8 @@ def main():
     subprocess.run([sys.executable, "tools/build_hook.py"], check=True, cwd=ROOT)
 
     # 2. Export offline payload
-    print("\n[2/5] Exporting offline payload...")
+    print("\n[2/5] Regenerating responses and exporting offline payload...")
+    subprocess.run([sys.executable, "Server/gamedata.py"], check=True, cwd=ROOT)
     payload_bin = BUILD_DIR / "payload_test.bin"
     subprocess.run([
         sys.executable, "Server/export_payload.py", "--out", str(payload_bin)

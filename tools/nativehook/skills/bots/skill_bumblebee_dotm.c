@@ -91,8 +91,8 @@ static void bumblebee_dotm_on_hit_connected(SkillHitContext* ctx) {
             ctx->modified_damage *= atk_mult;
         }
 
-        // 击倒判定 (SP 最终击或重击)
-        int is_kd = ctx->is_last_hit && (ctx->special_index > 0);
+        // 击倒判定 (重击或 SP 最终击造成击倒)
+        int is_kd = ctx->is_last_hit;
         if (is_kd) {
             if (s_dotm_kd_stacks[ap] < 15) {
                 s_dotm_kd_stacks[ap]++;

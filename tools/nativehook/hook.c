@@ -7501,7 +7501,6 @@ int hook_190(void* self) {
     if (!self || !obj_ok(self)) return 0;
     typedef int (*fn_get_bool)(void*);
     int orig_evade = H[190].orig ? ((fn_get_bool)H[190].orig)(self) : 0;
-    if (!orig_evade) return 0;
 
     int is_p0 = is_player0_attr(self);
     const char* who = is_p0 ? (g_p0_bot_id[0] ? g_p0_bot_id : "P0") : (g_p1_bot_id[0] ? g_p1_bot_id : "P1");

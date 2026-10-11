@@ -195,7 +195,9 @@ class TestPriorityAbilities(unittest.TestCase):
         expected = [
             "optimusprime_cin_tf_block_armor",
             "optimusprime_cin_tf_melee_buff",
+            "optimusprime_cin_tf_willpower",
             "optimusprime_cin_tf_sp1_bleed",
+            "optimusprime_cin_tf_sp1_dynamic_boost",
             "optimusprime_cin_tf_sp2_bleed",
         ]
         for m in expected:
