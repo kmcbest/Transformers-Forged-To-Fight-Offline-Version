@@ -21,6 +21,8 @@
 #include <dlfcn.h>
 #include <time.h>
 #include "inapk_server.h"
+#include "skills/skill_dispatcher.h"
+#include "skills/skill_env.h"
 #include <jni.h>
 #include <math.h>
 
@@ -5252,6 +5254,7 @@ void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     s_last_hit_index = 0;
     s_ironhide_burned_this_hit = 0;
     s_ramjet_s1_stacks = 0;
+    skill_dispatch_fight_reset();
     return H[140].orig(a0,a1,a2,a3,a4,a5,a6,a7);
 }
 void* hook_141(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
@@ -7225,6 +7228,70 @@ float hook_187(void* self) {
     return mod;
 }
 
+// ---------------------------------------------------------------------------
+// Decoupled Skill Architecture Environment Bridge
+// ---------------------------------------------------------------------------
+void skill_log(const char* fmt, ...) {
+    char buf[1024];
+    va_list ap; va_start(ap, fmt); vsnprintf(buf, sizeof buf, fmt, ap); va_end(ap);
+    __android_log_print(ANDROID_LOG_INFO, "TFTFHOOK", "%s", buf);
+    flog("%s", buf);
+}
+
+void skill_overlay(const char* fmt, ...) {
+    char buf[256];
+    va_list ap; va_start(ap, fmt); vsnprintf(buf, sizeof buf, fmt, ap); va_end(ap);
+    combat_overlay_push("%s", buf);
+}
+
+uint64_t skill_now_ms(void) {
+    return propgo_now_ms();
+}
+
+float skill_random_float(void) {
+    return ((float)rand()) / (float)RAND_MAX;
+}
+
+int skill_is_p0_bc(void* bc) {
+    return is_player0_bc(bc);
+}
+
+int skill_is_p0_attr(void* attr) {
+    return is_player0_attr(attr);
+}
+
+int skill_obj_ok(void* ptr) {
+    return obj_ok(ptr);
+}
+
+int skill_get_p1_buffs_nullified(void) {
+    return g_p1_buffs_nullified_this_attack;
+}
+
+void skill_set_p1_buffs_nullified(int val) {
+    g_p1_buffs_nullified_this_attack = val;
+}
+
+void skill_set_ranged_boost(int player_index, uint64_t duration_ms, float dmg_bonus, float spd_bonus) {
+    if (player_index == 0) {
+        g_p0_ranged_boost_end_ms = propgo_now_ms() + duration_ms;
+        g_p0_ranged_damage_bonus = dmg_bonus;
+        g_p0_ranged_speed_bonus = spd_bonus;
+    }
+}
+
+void skill_set_power_leak(int player_index, uint64_t duration_ms, float step) {
+    if (player_index == 1) {
+        g_enemy_power_leak_end_ms = propgo_now_ms() + duration_ms;
+        g_enemy_power_leak_step = step;
+    }
+}
+
+void skill_set_power_lock(int target_player_index, uint64_t duration_ms) {
+    (void)target_player_index;
+    (void)duration_ms;
+}
+
 // slot 188 (0x00EEFF2C): BuffsController.ApplyBuff(BuffsController applicant, StatModifier statModifier, bool updateAttributes, bool useOverrideDuration, float overrideDuration)
 int hook_188(void* self, void* applicant, void* statModifier, int32_t updateAttributes, int32_t useOverrideDuration, float overrideDuration, void* method) {
     char mod_id[80] = {0};
@@ -7240,43 +7307,26 @@ int hook_188(void* self, void* applicant, void* statModifier, int32_t updateAttr
             }
         }
 
-        // Gate 1: Rhinox SP1 nullify bleed gate
-        if (mod_id[0] && strstr(mod_id, "rhinox_sp1_nullify_bleed") != NULL) {
-            if (g_p1_buffs_nullified_this_attack <= 0) {
-                flog("RHINOX_NULLIFY_GATE: suppressed bleed because 0 buffs were nullified from P1");
-                suppress_buff = 1;
-                goto buff_gate_done;
-            } else {
-                flog("RHINOX_NULLIFY_GATE: permitted bleed because %d buff(s) nullified from P1", g_p1_buffs_nullified_this_attack);
-            }
-        }
-
-        // Gate 2: Wheeljack SP final hit gate (Shock, Power Leak, Stun on SP1/SP2/SP3)
-        if (mod_id[0] && strstr(mod_id, "wheeljack_") != NULL) {
-            if (strstr(mod_id, "_shock") != NULL || strstr(mod_id, "_leak") != NULL || strstr(mod_id, "_stun") != NULL) {
-                if (!s_current_hit_is_last) {
-                    flog("WHEELJACK_FINAL_HIT_GATE: suppressed %s (not final hit, flags=0x%x)", mod_id, s_last_hit_flags);
-                    suppress_buff = 1;
-                    goto buff_gate_done;
-                }
-                flog("WHEELJACK_FINAL_HIT_GATE: permitted %s on FINAL HIT (flags=0x%x)", mod_id, s_last_hit_flags);
-            }
-        }
-
-        // Gate 3: Arcee SP1 & SP3 kick gates
-        // SP1 hit 0 is kick (must NOT bleed)
-        // SP3 hits 0 & 1 are kicks (must NOT bleed; hits 2..6 can bleed)
-        if (mod_id[0] && strstr(mod_id, "arcee_") != NULL) {
-            if (strstr(mod_id, "sp1_") != NULL || strstr(mod_id, "headshot_") != NULL) {
-                if (g_p0_current_special_index == 1 && s_last_hit_index == 0) {
-                    flog("ARCEE_SP1_KICK_GATE: suppressed %s on hit_index=%d (kick)", mod_id, s_last_hit_index);
-                    suppress_buff = 1;
-                    goto buff_gate_done;
-                }
-            }
-            if (strstr(mod_id, "sp3_") != NULL) {
-                if (g_p0_current_special_index == 3 && s_last_hit_index <= 1) {
-                    flog("ARCEE_SP3_KICK_GATE: suppressed %s on hit_index=%d (kick)", mod_id, s_last_hit_index);
+        // 统一委托给解耦的角色技能模块进行门禁判定 (Decoupled Skill Modules)
+        if (mod_id[0]) {
+            int is_target_p0 = is_player0_bc(self);
+            SkillBuffGateContext gate_ctx = {
+                .buffs_controller = self,
+                .applicant = applicant,
+                .stat_modifier = statModifier,
+                .modifier_id = mod_id,
+                .target_bot_id = is_target_p0 ? g_p0_bot_id : g_p1_bot_id,
+                .target_player_index = is_target_p0 ? 0 : 1,
+                .attacker_player_index = is_target_p0 ? 1 : 0,
+                .current_special_index = g_p0_current_special_index,
+                .last_hit_index = s_last_hit_index,
+                .current_hit_is_last = (s_current_hit_is_last != 0),
+                .last_hit_flags = s_last_hit_flags,
+                .allow_application = true
+            };
+            int gate_allowed = 1;
+            if (skill_dispatch_buff_gate(&gate_ctx, &gate_allowed)) {
+                if (!gate_allowed) {
                     suppress_buff = 1;
                     goto buff_gate_done;
                 }
@@ -7301,24 +7351,20 @@ buff_gate_done: ;
             }
 
             uint64_t now_ms = propgo_now_ms();
-            // Arcee / Prowl Ranged Boost applied
-            if (mod_id[0] && strstr(mod_id, "arcee_sp1_trick_shot") != NULL) {
-                g_p0_ranged_boost_end_ms = now_ms + 6500;
-                g_p0_ranged_damage_bonus = 0.35f;
-                g_p0_ranged_speed_bonus = 0.40f;
-                flog("RANGED_BOOST_ACTIVATED: Arcee SP1 (dmg=+35%%, spd=+40%%, dur=6.5s)");
-            }
-            if (mod_id[0] && strstr(mod_id, "prowl_s2_ranged_boost") != NULL) {
-                g_p0_ranged_boost_end_ms = now_ms + 6000;
-                g_p0_ranged_damage_bonus = 0.50f;
-                g_p0_ranged_speed_bonus = 0.50f;
-                flog("RANGED_BOOST_ACTIVATED: Prowl SP2 (dmg=+50%%, spd=+50%%, dur=6.0s)");
-            }
-            // Wheeljack Power Leak applied
-            if (mod_id[0] && strstr(mod_id, "wheeljack_") != NULL && strstr(mod_id, "_leak") != NULL) {
-                g_enemy_power_leak_end_ms = now_ms + 3000;
-                g_enemy_power_leak_step = 0.0022f;
-                flog("POWER_LEAK_ACTIVATED: Wheeljack leak active for 3.0s on enemy");
+
+            // 统一委托给解耦的角色技能模块处理施加后的激活与状态 (Decoupled Skill Modules)
+            if (mod_id[0]) {
+                SkillBuffAppliedContext app_ctx = {
+                    .buffs_controller = self,
+                    .applicant = applicant,
+                    .stat_modifier = statModifier,
+                    .modifier_id = mod_id,
+                    .target_player_index = is_target_p0 ? 0 : 1,
+                    .attacker_player_index = is_target_p0 ? 1 : 0,
+                    .override_duration = overrideDuration,
+                    .now_ms = now_ms
+                };
+                skill_dispatch_buff_applied(&app_ctx);
             }
             // Power Lock applied (symmetric: supports P0 locking P1, or P1 locking P0)
             if (mod_id[0] && strstr(mod_id, "power_lock") != NULL) {
@@ -8393,6 +8439,7 @@ static void* installer(void* arg){
     // inline_hook((void*)(g_base + 0x00E39500), (void*)hooked_PreFightScreen_WindowEnter, &orig_PreFightScreen_WindowEnter);
 
     LOG("install done (%d hooks)", NH);
+    skill_dispatcher_init(g_base);
     return NULL;
 }
 
