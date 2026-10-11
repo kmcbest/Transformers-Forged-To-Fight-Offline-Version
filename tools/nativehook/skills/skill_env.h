@@ -28,6 +28,11 @@ void skill_set_ranged_boost(int player_index, uint64_t duration_ms, float dmg_bo
 void skill_set_power_leak(int player_index, uint64_t duration_ms, float step);
 void skill_set_power_lock(int target_player_index, uint64_t duration_ms);
 
+// 生命值与能量操作
+float skill_get_hp_ratio(int player_index);
+void skill_heal(int player_index, float amount);
+void skill_add_mana(int player_index, float norm_mana);
+
 #ifdef __cplusplus
 }
 #endif

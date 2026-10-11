@@ -6725,6 +6725,27 @@ float hook_177(void* self, float damage, void* damageType, int32_t blocked, void
                     }
                 }
             }
+
+            // Decoupled Bot Skill Hit Dispatch:
+            SkillHitContext hit_ctx = {
+                .attacker_entity = is_enemy ? g_p0_controller : g_p1_controller,
+                .target_entity = owner,
+                .attacker_bot_id = is_enemy ? g_p0_bot_id : g_p1_bot_id,
+                .target_bot_id = is_enemy ? g_p1_bot_id : g_p0_bot_id,
+                .attacker_player_index = is_enemy ? 0 : 1,
+                .target_player_index = is_enemy ? 1 : 0,
+                .special_index = is_enemy ? g_p0_current_special_index : 0,
+                .hit_index = s_last_hit_index,
+                .is_last_hit = (s_current_hit_is_last != 0),
+                .is_ranged = (s_current_hit_is_ranged != 0),
+                .is_crit = (isCrit != 0),
+                .is_blocked = (blocked != 0),
+                .base_damage = damage,
+                .modified_damage = damage,
+                .hit_flags = s_last_hit_flags
+            };
+            skill_dispatch_hit_connected(&hit_ctx);
+            damage = hit_ctx.modified_damage;
         }
     });
 
@@ -7292,6 +7313,69 @@ void skill_set_power_lock(int target_player_index, uint64_t duration_ms) {
     (void)duration_ms;
 }
 
+float skill_get_hp_ratio(int player_index) {
+    void* pc = (player_index == 0) ? g_p0_controller : g_p1_controller;
+    if (pc && obj_ok(pc)) {
+        void* attr = *(void**)((char*)pc + 0x80);
+        if (attr && obj_ok(attr) && g_base) {
+            typedef float (*fn_get_hp)(void*, void*);
+            fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC6CC);
+            typedef float (*fn_get_max)(void*, void*);
+            fn_get_max get_max = (fn_get_max)(g_base + 0xDAC698);
+            float cur = get_hp(attr, NULL);
+            float max_val = get_max(attr, NULL);
+            if (max_val > 0.0f) {
+                float r = cur / max_val;
+                return (r < 0.0f) ? 0.0f : ((r > 1.0f) ? 1.0f : r);
+            }
+        }
+    }
+    return 1.0f;
+}
+
+void skill_heal(int player_index, float amount) {
+    if (amount <= 0.0f) return;
+    void* pc = (player_index == 0) ? g_p0_controller : g_p1_controller;
+    if (pc && obj_ok(pc)) {
+        void* attr = *(void**)((char*)pc + 0x80);
+        if (attr && obj_ok(attr) && g_base) {
+            typedef float (*fn_get_hp)(void*, void*);
+            fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC6CC);
+            typedef float (*fn_get_max)(void*, void*);
+            fn_get_max get_max = (fn_get_max)(g_base + 0xDAC698);
+            typedef void (*fn_set_norm)(void*, float, void*);
+            fn_set_norm set_norm = (fn_set_norm)(g_base + 0xDAC720);
+            float cur = get_hp(attr, NULL);
+            float max_val = get_max(attr, NULL);
+            if (max_val > 0.0f) {
+                float next_hp = cur + amount;
+                if (next_hp > max_val) next_hp = max_val;
+                set_norm(attr, next_hp / max_val, NULL);
+                flog("SKILL_HEAL: Player %d healed +%.1f (HP: %.1f -> %.1f / %.1f)", player_index, amount, cur, next_hp, max_val);
+            }
+        }
+    }
+}
+
+void skill_add_mana(int player_index, float norm_mana) {
+    void* pc = (player_index == 0) ? g_p0_controller : g_p1_controller;
+    if (pc && obj_ok(pc)) {
+        void* attr = *(void**)((char*)pc + 0x80);
+        if (attr && obj_ok(attr) && g_base) {
+            typedef float (*fn_get_norm_mana)(void*, void*);
+            fn_get_norm_mana get_mana = (fn_get_norm_mana)(g_base + 0x00DAC794);
+            typedef void (*fn_set_norm_mana)(void*, float, void*);
+            fn_set_norm_mana set_mana = (fn_set_norm_mana)(g_base + 0x00DAC7B4);
+            float cur = get_mana(attr, NULL);
+            float next_mana = cur + norm_mana;
+            if (next_mana > 3.0f) next_mana = 3.0f;
+            if (next_mana < 0.0f) next_mana = 0.0f;
+            set_mana(attr, next_mana, NULL);
+            flog("SKILL_ADD_MANA: Player %d mana +%.2f (Mana: %.2f -> %.2f)", player_index, norm_mana, cur, next_mana);
+        }
+    }
+}
+
 // slot 188 (0x00EEFF2C): BuffsController.ApplyBuff(BuffsController applicant, StatModifier statModifier, bool updateAttributes, bool useOverrideDuration, float overrideDuration)
 int hook_188(void* self, void* applicant, void* statModifier, int32_t updateAttributes, int32_t useOverrideDuration, float overrideDuration, void* method) {
     char mod_id[80] = {0};
@@ -7420,10 +7504,26 @@ int hook_190(void* self) {
     if (!orig_evade) return 0;
 
     int is_p0 = is_player0_attr(self);
+    const char* who = is_p0 ? (g_p0_bot_id[0] ? g_p0_bot_id : "P0") : (g_p1_bot_id[0] ? g_p1_bot_id : "P1");
+
+    // Decoupled Skill Module Evade Check:
+    SkillEvadeContext ev_ctx = {
+        .entity_attr = self,
+        .bot_id = who,
+        .player_index = is_p0 ? 0 : 1,
+        .is_ranged = false,
+        .original_evade_result = orig_evade,
+        .base_chance = 0.0f,
+        .modified_chance = 0.0f,
+        .force_guaranteed = false
+    };
+    int evade_res = 0;
+    if (skill_dispatch_evade_check(&ev_ctx, &evade_res)) {
+        return evade_res;
+    }
+
     int charging = prowl_is_charging(is_p0);
     if (!orig_evade && !charging) return 0;
-
-    const char* who = is_p0 ? (g_p0_bot_id[0] ? g_p0_bot_id : "P0") : (g_p1_bot_id[0] ? g_p1_bot_id : "P1");
 
     uint64_t now_ms = propgo_now_ms();
     static uint64_t s_last_melee_ms_p0 = 0;
@@ -7492,10 +7592,26 @@ int hook_191(void* self) {
     int orig_evade = H[191].orig ? ((fn_get_bool)H[191].orig)(self) : 0;
 
     int is_p0 = is_player0_attr(self);
+    const char* who = is_p0 ? (g_p0_bot_id[0] ? g_p0_bot_id : "P0") : (g_p1_bot_id[0] ? g_p1_bot_id : "P1");
+
+    // Decoupled Skill Module Evade Check:
+    SkillEvadeContext ev_ctx = {
+        .entity_attr = self,
+        .bot_id = who,
+        .player_index = is_p0 ? 0 : 1,
+        .is_ranged = true,
+        .original_evade_result = orig_evade,
+        .base_chance = 0.0f,
+        .modified_chance = 0.0f,
+        .force_guaranteed = false
+    };
+    int evade_res = 0;
+    if (skill_dispatch_evade_check(&ev_ctx, &evade_res)) {
+        return evade_res;
+    }
+
     int charging = prowl_is_charging(is_p0);
     if (!orig_evade && !charging) return 0;
-
-    const char* who = is_p0 ? (g_p0_bot_id[0] ? g_p0_bot_id : "P0") : (g_p1_bot_id[0] ? g_p1_bot_id : "P1");
 
     uint64_t now_ms = propgo_now_ms();
     static uint64_t s_last_ranged_ms_p0 = 0;

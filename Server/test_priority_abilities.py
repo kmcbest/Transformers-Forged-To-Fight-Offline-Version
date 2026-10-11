@@ -190,6 +190,37 @@ class TestPriorityAbilities(unittest.TestCase):
         self.assertIn("prowl_passive_melee_buff", prowl_data["stat_mods"])
         self.assertIn("prowl_ranged_stun", prowl_data["stat_mods"])
 
+    def test_movie_optimus_prime_abilities(self):
+        mod_ids = abilities.bot_abilities("optimusprime_cin_tf")
+        expected = [
+            "optimusprime_cin_tf_block_armor",
+            "optimusprime_cin_tf_melee_buff",
+            "optimusprime_cin_tf_sp1_bleed",
+            "optimusprime_cin_tf_sp2_bleed",
+        ]
+        for m in expected:
+            self.assertIn(m, mod_ids, f"Modifier {m} must be registered for optimusprime_cin_tf")
+
+        opt_data = gamedata.build_hero_entry("optimusprime_cin_tf", 5, 50)
+        self.assertIn("stat_mods", opt_data)
+        for m in expected:
+            self.assertIn(m, opt_data["stat_mods"])
+
+    def test_movie_bumblebee_dotm_abilities(self):
+        mod_ids = abilities.bot_abilities("bumblebee_cin_dotm")
+        expected = [
+            "bumblebee_cin_dotm_knockdown_atk",
+            "bumblebee_cin_dotm_calib_melee",
+            "bumblebee_cin_dotm_calib_ranged",
+        ]
+        for m in expected:
+            self.assertIn(m, mod_ids, f"Modifier {m} must be registered for bumblebee_cin_dotm")
+
+        bee_data = gamedata.build_hero_entry("bumblebee_cin_dotm", 5, 50)
+        self.assertIn("stat_mods", bee_data)
+        for m in expected:
+            self.assertIn(m, bee_data["stat_mods"])
+
 
 if __name__ == "__main__":
     unittest.main()

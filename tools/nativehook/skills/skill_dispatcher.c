@@ -10,12 +10,16 @@ extern BotSkillModule g_module_arcee;
 extern BotSkillModule g_module_rhinox;
 extern BotSkillModule g_module_wheeljack;
 extern BotSkillModule g_module_prowl;
+extern BotSkillModule g_module_optimus_mv;
+extern BotSkillModule g_module_bumblebee_dotm;
 
 static const BotSkillModule* s_registry[] = {
     &g_module_arcee,
     &g_module_rhinox,
     &g_module_wheeljack,
     &g_module_prowl,
+    &g_module_optimus_mv,
+    &g_module_bumblebee_dotm,
     NULL
 };
 
