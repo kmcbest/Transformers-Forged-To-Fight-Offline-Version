@@ -38,19 +38,8 @@ def main():
     print(f"Target APK: {output_apk_path}")
 
     # 1. Compile native hook
-    ndk_dir = ROOT / "toolchain" / "android-ndk-r26b"
-    if not ndk_dir.exists():
-        ndk_dir = ROOT / "toolchain" / "android-ndk-r26d"
-    clang = ndk_dir / "toolchains" / "llvm" / "prebuilt" / "windows-x86_64" / "bin" / "aarch64-linux-android28-clang.cmd"
-    hook_so = ROOT / "tools" / "nativehook" / "libdothook.so"
-    hook_c = ROOT / "tools" / "nativehook" / "hook.c"
-    inapk_server_c = ROOT / "tools" / "nativehook" / "inapk_server.c"
-
     print("\n[1/5] Compiling libdothook.so...")
-    subprocess.run([
-        str(clang), "-shared", "-O2", "-fPIC", "-Wl,-soname,libdothook.so",
-        "-o", str(hook_so), str(hook_c), str(inapk_server_c), "-llog"
-    ], check=True, cwd=ROOT)
+    subprocess.run([sys.executable, "tools/build_hook.py"], check=True, cwd=ROOT)
 
     # 2. Export offline payload
     print("\n[2/5] Exporting offline payload...")
