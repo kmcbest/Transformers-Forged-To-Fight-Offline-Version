@@ -583,7 +583,8 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x00EEEDD8, "REMOVE_BUFFS_INT",  2, 0 }, // 189 BuffsController.RemoveBuffsInternal -> track successful buff nullification
     { 0x00DACC74, "GET_EVADE_MELEE",   2, 0 }, // 190 PlayerAttributes.get_EvadeMelee -> probabilistic melee evade
     { 0x00DACCA4, "GET_EVADE_RANGED",  2, 0 }, // 191 PlayerAttributes.get_EvadeRanged -> probabilistic ranged evade
-    { 0x00CCF35C, "GET_STAT_MOD",      2, 0 }  // 192 StatModifierController.GetStatModifier -> universal dice roll HUD
+    { 0x00CCF35C, "GET_STAT_MOD",      2, 0 }, // 192 StatModifierController.GetStatModifier -> universal dice roll HUD
+    { 0x00E3D980, "PFS_IS_TEAM_DEAD",  2, 0 }  // 193 PrefightScreenData.IsTeamDead -> bool (0=alive, never dead)
 };
 
 #define NH (int)(sizeof(H)/sizeof(H[0]))
@@ -6129,8 +6130,22 @@ void* hook_156(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     }
     return (void*)(intptr_t)is_crit;
 }
-void* hook_157(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
-    return H[157].orig ? H[157].orig(a0, a1, a2, a3, a4, a5, a6, a7) : NULL;
+float hook_157(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    typedef float (*fn_orig)(void*, void*, void*, void*, void*, void*, void*, void*);
+    float hp = 1.0f;
+    PROTECT({
+        if (H[157].orig) {
+            hp = ((fn_orig)H[157].orig)(self, a1, a2, a3, a4, a5, a6, a7);
+        }
+    });
+    if (hp <= 0.001f || isnan(hp)) {
+        hp = 1.0f;
+    }
+    static int s_log_hp157 = 0;
+    if (s_log_hp157++ < 30) {
+        flog("PREFIGHT_HP (0x0E3D8CC): self=%p slot=%d -> hp=%.2f", self, (int)(intptr_t)a1, hp);
+    }
+    return hp;
 }
 int32_t hook_158(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     int slot = (int)(intptr_t)a1;
@@ -7771,6 +7786,14 @@ int hook_192(void* self, void* statModifier, float* pRoll, float* pChance, void*
     return res;
 }
 
+int32_t hook_193(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    static int s_log_dead = 0;
+    if (s_log_dead++ < 20) {
+        flog("PFS_IS_TEAM_DEAD (0x0E3D980): self=%p -> returning 0 (alive)", self);
+    }
+    return 0;
+}
+
 static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hook_7,hook_8,
     hook_9,hook_10,hook_11,hook_12,hook_13,hook_14,hook_15,hook_16,hook_17,hook_18,hook_19,hook_20,hook_21,
     hook_22,hook_23,hook_24,hook_25,hook_26,hook_27,hook_28,hook_29,hook_30,
@@ -7792,7 +7815,8 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     hook_165,hook_166,(void*)hook_167,hook_168,hook_169,hook_170,
     hook_171,hook_172,hook_173,hook_174,hook_175,hook_176,(void*)hook_177,(void*)hook_178,
     (void*)hook_179,hook_180,hook_181,hook_182,hook_183,hook_184,hook_185,hook_186,(void*)hook_187,(void*)hook_188,(void*)hook_189,
-    (void*)hook_190,(void*)hook_191,(void*)hook_192 };
+    (void*)hook_190,(void*)hook_191,(void*)hook_192,(void*)hook_193 };
+_Static_assert(sizeof(handlers)/sizeof(handlers[0]) == sizeof(H)/sizeof(H[0]), "handlers count must match H count");
 
 
 static void write_jump(uint8_t* dst, void* target){
@@ -7923,6 +7947,160 @@ static void* hooked_ToggleAutoFight(void* a0, void* a1, void* a2, void* a3, void
     return NULL;
 }
 
+typedef void* (*fn_get_gameObject)(void*);
+typedef void (*fn_SetActive)(void*, int);
+typedef int (*fn_get_activeSelf)(void*);
+typedef int (*fn_get_activeInHierarchy)(void*);
+typedef void* (*fn_get_transform)(void*);
+typedef void* (*fn_GetParent)(void*);
+
+static fn_get_gameObject s_get_gameObject = NULL;
+static fn_SetActive s_SetActive = NULL;
+static fn_get_activeSelf s_get_activeSelf = NULL;
+static fn_get_activeInHierarchy s_get_activeInHierarchy = NULL;
+static fn_get_transform s_get_transform = NULL;
+static fn_GetParent s_GetParent = NULL;
+
+static fn8 orig_il2cpp_GameObject_SetActive = NULL;
+static void* hooked_il2cpp_GameObject_SetActive(void* go, void* active_arg, void* method, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    if (orig_il2cpp_GameObject_SetActive) {
+        return orig_il2cpp_GameObject_SetActive(go, active_arg, method, a3, a4, a5, a6, a7);
+    }
+    return NULL;
+}
+
+static fn_SetActive orig_unity_GameObject_SetActive = NULL;
+static void hooked_unity_GameObject_SetActive(void* go, int active) {
+    if (orig_unity_GameObject_SetActive) {
+        orig_unity_GameObject_SetActive(go, active);
+    }
+}
+
+static void ensure_active_hierarchy(void* comp, const char* context);
+
+typedef void* (*fn_StartCoroutineManaged2)(void*, void*);
+static fn_StartCoroutineManaged2 orig_StartCoroutineManaged2 = NULL;
+static void* hooked_StartCoroutineManaged2(void* mb, void* enumerator) {
+    if (orig_StartCoroutineManaged2) {
+        return orig_StartCoroutineManaged2(mb, enumerator);
+    }
+    return NULL;
+}
+
+typedef void* (*fn_StartCoroutineManaged)(void*, void*, void*);
+static fn_StartCoroutineManaged orig_StartCoroutineManaged = NULL;
+static void* hooked_StartCoroutineManaged(void* mb, void* method_name, void* val) {
+    if (orig_StartCoroutineManaged) {
+        return orig_StartCoroutineManaged(mb, method_name, val);
+    }
+    return NULL;
+}
+
+static void install_unity_icall_hooks(void) {
+    // Disabled: hooking SetActive/StartCoroutine corrupted object lifecycle and UI deactivation
+    return;
+}
+
+static void resolve_unity_icalls_lazy(void) {
+    if (s_get_gameObject && s_SetActive) {
+        install_unity_icall_hooks();
+        return;
+    }
+    if (!g_resolve_icall) {
+        g_resolve_icall = (resolve_icall_t)dlsym(RTLD_DEFAULT, "il2cpp_resolve_icall");
+        if (!g_resolve_icall) {
+            void* h = dlopen("libil2cpp.so", RTLD_NOLOAD);
+            if (h) g_resolve_icall = (resolve_icall_t)dlsym(h, "il2cpp_resolve_icall");
+        }
+    }
+    if (g_resolve_icall) {
+        s_get_gameObject = (fn_get_gameObject)g_resolve_icall("UnityEngine.Component::get_gameObject()");
+        s_SetActive = (fn_SetActive)g_resolve_icall("UnityEngine.GameObject::SetActive(System.Boolean)");
+        s_get_activeSelf = (fn_get_activeSelf)g_resolve_icall("UnityEngine.GameObject::get_activeSelf()");
+        s_get_activeInHierarchy = (fn_get_activeInHierarchy)g_resolve_icall("UnityEngine.GameObject::get_activeInHierarchy()");
+        s_get_transform = (fn_get_transform)g_resolve_icall("UnityEngine.Component::get_transform()");
+        s_GetParent = (fn_GetParent)g_resolve_icall("UnityEngine.Transform::GetParent()");
+        flog("LAZY_ICALLS: go=%p, act=%p, self=%p, hier=%p, trans=%p, parent=%p",
+             s_get_gameObject, s_SetActive, s_get_activeSelf, s_get_activeInHierarchy, s_get_transform, s_GetParent);
+        install_unity_icall_hooks();
+    }
+}
+
+static void ensure_active_hierarchy(void* comp, const char* context) {
+    if (!comp) return;
+    resolve_unity_icalls_lazy();
+    if (!s_get_gameObject || !s_SetActive) {
+        flog("PREFIGHT_ACTIVE [%s]: icalls still NULL (go=%p, act=%p)", context ? context : "unknown", s_get_gameObject, s_SetActive);
+        return;
+    }
+    PROTECT({
+        void* go = s_get_gameObject(comp);
+        if (!go) return;
+
+        int is_act_self = s_get_activeSelf ? s_get_activeSelf(go) : 0;
+        int is_act_hier = s_get_activeInHierarchy ? s_get_activeInHierarchy(go) : 0;
+        if (!is_act_self || !is_act_hier) {
+            flog("PREFIGHT_ACTIVE [%s]: target go=%p activeSelf=%d activeInHierarchy=%d -> activating self!",
+                 context ? context : "unknown", go, is_act_self, is_act_hier);
+            if (orig_unity_GameObject_SetActive) orig_unity_GameObject_SetActive(go, 1);
+            else s_SetActive(go, 1);
+        }
+
+        if (s_get_transform && s_GetParent) {
+            void* t = s_get_transform(comp);
+            int depth = 0;
+            while (t && depth++ < 20) {
+                void* p = s_GetParent(t);
+                if (!p) break;
+                void* pgo = s_get_gameObject ? s_get_gameObject(p) : NULL;
+                if (pgo) {
+                    int p_self = s_get_activeSelf ? s_get_activeSelf(pgo) : 0;
+                    if (!p_self) {
+                        flog("PREFIGHT_ACTIVE [%s]: parent go=%p (depth %d) is inactive -> activating parent!",
+                             context ? context : "unknown", pgo, depth);
+                        if (orig_unity_GameObject_SetActive) orig_unity_GameObject_SetActive(pgo, 1);
+                        else s_SetActive(pgo, 1);
+                    }
+                }
+                t = p;
+            }
+        }
+
+        int final_hier = s_get_activeInHierarchy ? s_get_activeInHierarchy(go) : 1;
+        flog("PREFIGHT_ACTIVE [%s]: completed, final activeInHierarchy=%d", context ? context : "unknown", final_hier);
+    });
+}
+
+static fn8 orig_PrefightScreenPresentation_Init = NULL;
+static void* hooked_PrefightScreenPresentation_Init(void* self, void* config, void* onReadyCallback, void* method, void* a4, void* a5, void* a6, void* a7) {
+    flog("PREFIGHT_INIT (0x0E44930): self=%p config=%p onReadyCallback=%p", self, config, onReadyCallback);
+    ensure_active_hierarchy(self, "PrefightScreenPresentation.Init");
+    if (orig_PrefightScreenPresentation_Init) {
+        return orig_PrefightScreenPresentation_Init(self, config, onReadyCallback, method, a4, a5, a6, a7);
+    }
+    return NULL;
+}
+
+static fn8 orig_PrefightScreenPresentation_Setup = NULL;
+static void* hooked_PrefightScreenPresentation_Setup(void* self, void* controller, void* method, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    flog("PREFIGHT_SETUP (0x0E392F8): self=%p controller=%p", self, controller);
+    ensure_active_hierarchy(self, "PrefightScreenPresentation.Setup");
+    if (orig_PrefightScreenPresentation_Setup) {
+        return orig_PrefightScreenPresentation_Setup(self, controller, method, a3, a4, a5, a6, a7);
+    }
+    return NULL;
+}
+
+static fn8 orig_PreFightScreen_WindowEnter = NULL;
+static void* hooked_PreFightScreen_WindowEnter(void* self, void* isFirstEntry, void* method, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    flog("PREFIGHT_WINDOW_ENTER (0x0E39500): self=%p isFirstEntry=%p", self, isFirstEntry);
+    ensure_active_hierarchy(self, "PreFightScreen.WindowEnter");
+    if (orig_PreFightScreen_WindowEnter) {
+        return orig_PreFightScreen_WindowEnter(self, isFirstEntry, method, a3, a4, a5, a6, a7);
+    }
+    return NULL;
+}
+
 static fn8 orig_PrefightOnToggleAutoFight = NULL;
 static void* hooked_PrefightOnToggleAutoFight(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     LOG("[AUTOFIGHT] PrefightScreenPresentation.OnToggleAutoFight invoked (self=%p)!", a0);
@@ -7993,7 +8171,15 @@ static void* installer(void* arg){
         s_get_mouse_pos = (fn_get_mouse_pos)g_resolve_icall("UnityEngine.Input::get_mousePosition_Injected");
         s_get_screen_w = (fn_get_screen_dim)g_resolve_icall("UnityEngine.Screen::get_width");
         s_get_screen_h = (fn_get_screen_dim)g_resolve_icall("UnityEngine.Screen::get_height");
+        s_get_gameObject = (fn_get_gameObject)g_resolve_icall("UnityEngine.Component::get_gameObject()");
+        s_SetActive = (fn_SetActive)g_resolve_icall("UnityEngine.GameObject::SetActive(System.Boolean)");
+        s_get_activeSelf = (fn_get_activeSelf)g_resolve_icall("UnityEngine.GameObject::get_activeSelf()");
+        s_get_activeInHierarchy = (fn_get_activeInHierarchy)g_resolve_icall("UnityEngine.GameObject::get_activeInHierarchy()");
+        s_get_transform = (fn_get_transform)g_resolve_icall("UnityEngine.Component::get_transform()");
+        s_GetParent = (fn_GetParent)g_resolve_icall("UnityEngine.Transform::GetParent()");
         LOG("[AUTOFIGHT] Icalls resolved: mouse_pos=%p, screen_w=%p, screen_h=%p", s_get_mouse_pos, s_get_screen_w, s_get_screen_h);
+        LOG("[PREFIGHT_FIX] Icalls resolved: go=%p, act=%p, self=%p, hier=%p, trans=%p, parent=%p",
+            s_get_gameObject, s_SetActive, s_get_activeSelf, s_get_activeInHierarchy, s_get_transform, s_GetParent);
     }
     for (int i = 0; i < NH; i++) {
         if (!H[i].rva) continue;
@@ -8194,11 +8380,17 @@ static void* installer(void* arg){
 
     // Diagnostic hooks for AutoFight actions:
     inline_hook((void*)(g_base + 0xC9D6E8), (void*)hooked_ToggleAutoFight, &orig_ToggleAutoFight);
-    inline_hook((void*)(g_base + 0xE48C58), (void*)hooked_PrefightOnToggleAutoFight, &orig_PrefightOnToggleAutoFight);
+    inline_hook((void*)(g_base + 0x00E48D54), (void*)hooked_PrefightOnToggleAutoFight, &orig_PrefightOnToggleAutoFight);
     inline_hook((void*)(g_base + 0xCFD384), (void*)hooked_BattleArbiterOnToggleAutoFight, &orig_BattleArbiterOnToggleAutoFight);
     inline_hook((void*)(g_base + 0x00CFE400), (void*)hooked_BattleArbiterUpdate, &orig_BattleArbiterUpdate);
     inline_hook((void*)(g_base + 0x00FEF8D8), (void*)hooked_HudScreenAwake, &orig_HudScreenAwake);
     inline_hook((void*)(g_base + 0x00FEDEF4), (void*)hooked_HudScreenSetupWindow, &orig_HudScreenSetupWindow);
+
+    // Prefight screen GameObject activation hooks (disabled: caused sticky 3D bots & leaks across scenes):
+    // inline_hook((void*)(g_base + 0x1B50CA8), (void*)hooked_il2cpp_GameObject_SetActive, &orig_il2cpp_GameObject_SetActive);
+    // inline_hook((void*)(g_base + 0x00E44930), (void*)hooked_PrefightScreenPresentation_Init, &orig_PrefightScreenPresentation_Init);
+    // inline_hook((void*)(g_base + 0x00E392F8), (void*)hooked_PrefightScreenPresentation_Setup, &orig_PrefightScreenPresentation_Setup);
+    // inline_hook((void*)(g_base + 0x00E39500), (void*)hooked_PreFightScreen_WindowEnter, &orig_PreFightScreen_WindowEnter);
 
     LOG("install done (%d hooks)", NH);
     return NULL;

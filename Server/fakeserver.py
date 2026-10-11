@@ -331,7 +331,7 @@ class H(http.server.BaseHTTPRequestHandler):
                 team = {"TeamID": team_id, "teamID": team_id, "id": team_id,
                         "TeamHeroes": list(heroes), "heroes": list(heroes)}
                 active_teams = [
-                    {"aid": "%s-%s" % (q, team_id), "type": "PvE", "modes": ["PvE"],
+                    {"aid": "%s-%s" % (q, team_id), "type": "pve", "modes": ["pve"],
                      "heroes": {bid: {"bid": bid} for bid in heroes[:2]}, "expire": 0}
                     for q in ("1.1.1", "1.1.2", "1.1.3", "1.1.4", "1.1.5", "1.1.6", "1.1.7")
                 ]

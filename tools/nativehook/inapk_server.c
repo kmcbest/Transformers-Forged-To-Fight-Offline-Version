@@ -81,7 +81,7 @@ static unsigned int q_rand(void) {
 static Blob g_blob;
 static tftf_log_fn g_log;
 static pthread_mutex_t g_start_lock = PTHREAD_MUTEX_INITIALIZER;
-static pthread_mutex_t g_pos_lock = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t g_pos_lock = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 static pthread_mutex_t g_conn_lock = PTHREAD_MUTEX_INITIALIZER;
 static Position g_pos[16];
 static char g_saved_team[5][64];
@@ -1497,6 +1497,8 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         return (const unsigned char*)find_match_buf;
     }
     if(strstr(p, "/matches/activate-match")) {
+        Team team;
+        int have_team = resolve_team(&team);
         pthread_mutex_lock(&g_pos_lock);
         snprintf(g_active_quest_id, sizeof g_active_quest_id, "raid_base");
         snprintf(g_quest_state.qid, sizeof g_quest_state.qid, "raid_base");
@@ -1508,6 +1510,12 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         g_quest_state.pending_enemy_hp_ratio = 1.0f;
         for (int i = 0; i < 5; i++) {
             g_quest_state.hero_hp[i] = 1.0f;
+            g_quest_state.hero_bid[i][0] = 0;
+        }
+        if (have_team) {
+            for (int h = 0; h < team.count && h < 5; h++) {
+                snprintf(g_quest_state.hero_bid[h], sizeof(g_quest_state.hero_bid[h]), "%s", team.bid[h]);
+            }
         }
         int slot = -1;
         for (int i = 0; i < 16; i++) {
@@ -1728,24 +1736,25 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
             team.bid[0]);
         out_add(o, sbuf, (size_t)slen);
         out_add(o, qteam.p, qteam.n);
+        const char *ttype = (strstr(aid, "raid") || strstr(p, "raid")) ? "raid" : "pve";
         slen = snprintf(sbuf, sizeof sbuf,
-            "}}},\"updates\":{\"activeTeams\":[{\"aid\":\"%s\",\"type\":\"PvE\",\"modes\":[\"PvE\"],\"heroes\":", aid);
+            "}}},\"updates\":{\"activeTeams\":[{\"aid\":\"%s\",\"type\":\"%s\",\"modes\":[\"%s\"],\"heroes\":", aid, ttype, ttype);
         out_add(o, sbuf, (size_t)slen);
         out_add(o, ateam.p, ateam.n);
         slen = snprintf(sbuf, sizeof sbuf,
-            ",\"expire\":0},{\"aid\":\"raid_base\",\"type\":\"PvE\",\"modes\":[\"PvE\"],\"heroes\":");
+            ",\"expire\":0},{\"aid\":\"raid_base\",\"type\":\"raid\",\"modes\":[\"raid\"],\"heroes\":");
         out_add(o, sbuf, (size_t)slen);
         out_add(o, ateam.p, ateam.n);
         slen = snprintf(sbuf, sizeof sbuf,
-            ",\"expire\":0}]},\"teamData\":{\"aid\":\"%s\",\"type\":\"PvE\",\"modes\":[\"PvE\"],\"heroes\":", aid);
+            ",\"expire\":0}]},\"teamData\":{\"aid\":\"%s\",\"type\":\"%s\",\"modes\":[\"%s\"],\"heroes\":", aid, ttype, ttype);
         out_add(o, sbuf, (size_t)slen);
         out_add(o, ateam.p, ateam.n);
         slen = snprintf(sbuf, sizeof sbuf,
-            ",\"expire\":0,\"updates\":{\"activeTeams\":[{\"aid\":\"%s\",\"type\":\"PvE\",\"modes\":[\"PvE\"],\"heroes\":", aid);
+            ",\"expire\":0,\"updates\":{\"activeTeams\":[{\"aid\":\"%s\",\"type\":\"%s\",\"modes\":[\"%s\"],\"heroes\":", aid, ttype, ttype);
         out_add(o, sbuf, (size_t)slen);
         out_add(o, ateam.p, ateam.n);
         slen = snprintf(sbuf, sizeof sbuf,
-            ",\"expire\":0},{\"aid\":\"raid_base\",\"type\":\"PvE\",\"modes\":[\"PvE\"],\"heroes\":");
+            ",\"expire\":0},{\"aid\":\"raid_base\",\"type\":\"raid\",\"modes\":[\"raid\"],\"heroes\":");
         out_add(o, sbuf, (size_t)slen);
         out_add(o, ateam.p, ateam.n);
         OUT_ADD_STR(o, ",\"expire\":0}]}}}}");
@@ -1951,6 +1960,9 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
                 if (team.count > 1) team.count = 1;
             } else if(strcmp(qid, "raid_base") == 0) {
                 if (team.count > 3) team.count = 3;
+                for (int h = 0; h < 5; h++) {
+                    if (g_quest_state.hero_hp[h] <= 0.0f) g_quest_state.hero_hp[h] = 1.0f;
+                }
             }
             if(!render_qteam(&qteam,&team)||!render_ateam(&ateam,&team)){free(qteam.p);free(ateam.p);return NULL;}
             args[0]=(TemplateArg){"%LEAD%",(const unsigned char*)team.bid[0],strlen(team.bid[0])};
@@ -2103,7 +2115,41 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         return tuning_resp;
     }
     if(strstr(p, "/userprofile")) {
-        static char userprofile_buf[4096];
+        static char userprofile_buf[8192];
+        const char *cmd_name = tftf_get_commander_name();
+        if (!cmd_name || !cmd_name[0]) cmd_name = "Commander";
+
+        if (strstr(p, "bulk")) {
+            char u2[64] = "1000000000002";
+            if (body && bn > 0) {
+                const char *pos = (const char*)body;
+                while (pos < end) {
+                    while (pos < end && !isdigit((unsigned char)*pos)) pos++;
+                    if (pos >= end) break;
+                    const char *start_num = pos;
+                    while (pos < end && isdigit((unsigned char)*pos)) pos++;
+                    size_t nlen = (size_t)(pos - start_num);
+                    if (nlen >= 8 && (nlen != 13 || memcmp(start_num, "1000000000001", 13) != 0)) {
+                        if (nlen < sizeof(u2)) {
+                            memcpy(u2, start_num, nlen);
+                            u2[nlen] = 0;
+                            break;
+                        }
+                    }
+                }
+            }
+            int len = snprintf(userprofile_buf, sizeof(userprofile_buf),
+                "{\"error\":null,\"result\":{\"users\":["
+                "{\"uid\":1000000000001,\"aid\":1000000000001,\"name\":\"%s\",\"tag\":\"CANF\",\"locale\":\"zh-CN\",\"lang\":\"zh\",\"time_last\":1500000000,\"levelrewards\":{\"xp\":{\"level\":60,\"last_awarded_level\":60,\"xp\":0}},\"gamestats\":{\"chp\":102,\"chi\":102,\"ushr\":13430,\"hrt\":277283}},"
+                "{\"uid\":%s,\"aid\":%s,\"name\":\"Commander\",\"tag\":\"DEF\",\"locale\":\"zh-CN\",\"lang\":\"zh\",\"time_last\":1500000000,\"levelrewards\":{\"xp\":{\"level\":60,\"last_awarded_level\":60,\"xp\":0}},\"gamestats\":{\"chp\":102,\"chi\":102,\"ushr\":13430,\"hrt\":277283}}"
+                "]}}",
+                cmd_name, u2, u2
+            );
+            *outn = (size_t)len;
+            logmsg("USERPROFILE_BULK: handled %s -> 1000000000001 and %s", p, u2);
+            return (const unsigned char*)userprofile_buf;
+        }
+
         char req_uid[64] = "1000000000001";
         if (body && bn > 0) {
             if (!json_string(body, end, "uid", req_uid, sizeof(req_uid))) {
@@ -2130,9 +2176,6 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
                 if (ui > 0) req_uid[ui] = 0;
             }
         }
-
-        const char *cmd_name = tftf_get_commander_name();
-        if (!cmd_name || !cmd_name[0]) cmd_name = "Commander";
 
         int len = snprintf(userprofile_buf, sizeof(userprofile_buf),
             "{\"error\":null,\"result\":{"

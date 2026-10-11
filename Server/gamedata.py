@@ -1991,15 +1991,17 @@ def build_saved_team(team_id="0", heroes=None):
 # ctor reads `heroes` with Dot.Object and enumerates the dictionary values before constructing
 # each BCGHeroDetails. Sending an array makes Dot.Object fall back to an empty dictionary, which
 # leaves TeamData with no lead character and prevents QuestPlayerController from loading an actor.
-def build_active_team(activity_id="1.1.1-0", heroes=None):
+def build_active_team(activity_id="1.1.1-0", heroes=None, team_type=None):
     if heroes is not None:
         bids = [b for b in heroes if isinstance(b, str) and b in ROSTER]
     else:
         bids = resolve_team(heroes)
     hero_dicts = {b: build_hero_entry(b) for b in bids}
+    if team_type is None:
+        team_type = "raid" if "raid" in activity_id else "pve"
     return {
         "aid": activity_id,
-        "type": "PvE", "modes": ["PvE"],
+        "type": team_type, "modes": [team_type],
         "heroes": hero_dicts, "expire": 0,
     }
 
@@ -2861,7 +2863,8 @@ def build_quest_movedir(qid="1.1.1", offx=1, offy=0, start=None, team=None):
         movedir_heroes = resolve_team(team)[:3]
     else:
         movedir_heroes = resolve_team(team)
-    team_data = build_active_team("%s-0" % qid, heroes=movedir_heroes)
+    aid = RAID_QID if qid == RAID_QID else ("%s-0" % qid)
+    team_data = build_active_team(aid, heroes=movedir_heroes)
 
     return {
         # `results` is the AddActionResultsAndUpdateProgression Dot.Array key (live-confirmed);
