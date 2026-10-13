@@ -134,6 +134,19 @@ static int optimus_mv_on_buff_gated(SkillBuffGateContext* ctx) {
     return 0;
 }
 
+static void optimus_mv_on_buff_applied(SkillBuffAppliedContext* ctx) {
+    if (!ctx || !ctx->modifier_id) return;
+    uint64_t now_ms = skill_now_ms();
+    if (strstr(ctx->modifier_id, "bleed") != NULL &&
+        ctx->target_bot_id && strstr(ctx->target_bot_id, "optimusprime_cin_tf") != NULL) {
+        int tp = ctx->target_player_index;
+        float dur = (ctx->override_duration > 0.0f) ? ctx->override_duration : 4.0f;
+        s_opt_bleeding_end_ms[tp] = now_ms + (uint64_t)(dur * 1000.0f);
+        skill_overlay("[%s] 意志力生效中：造成伤害 35%% 转化为生命！", tp == 0 ? "电影擎天柱" : "敌方擎天柱");
+    }
+}
+
+
 static void optimus_mv_on_fight_reset(int player_index) {
     if (player_index >= 0 && player_index < 2) {
         s_opt_armor_buff_end_ms[player_index] = 0;
@@ -146,7 +159,7 @@ BotSkillModule g_module_optimus_mv = {
     .bot_prefix = "optimusprime_cin_tf",
     .on_hit_connected = optimus_mv_on_hit_connected,
     .on_buff_gated = optimus_mv_on_buff_gated,
-    .on_buff_applied = NULL,
+    .on_buff_applied = optimus_mv_on_buff_applied,
     .on_evade_check = NULL,
     .on_test_roll = NULL,
     .on_fight_reset = optimus_mv_on_fight_reset

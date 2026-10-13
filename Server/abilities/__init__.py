@@ -62,6 +62,10 @@ def build_buffs_config():
         "attack_buff": {"stackable": True, "active_display": True},
         # 燃烧类 Debuff：可堆叠，在敌人血条下方显示倒计时圆环图标
         "dmg_burn": {"stackable": True, "active_display": True},
+        # 持续治疗/战地修复 Buff：在血条下方显示绿色倒计时圆环图标
+        "heal": {"stackable": True, "active_display": True},
+        # 即时治疗/自我诊断修复：瞬时结算，不显示倒计时圆环
+        "heal_instant": {"stackable": True, "active_display": False},
     }
     return {
         "groups": groups_data,
@@ -533,6 +537,48 @@ def build_buffs_set():
             "time": {"amount": 6.0},
             "loc_name": "dmg_burn",
             "loc_desc": "dmg_burn",
+        },
+        # 持续治疗/战地修复 Buff: 绑定客户端 Heal_BuffEffect，驱动 _player.ApplyHealing 与 _fth 绿字跳字
+        "heal": {
+            "id": "heal",
+            "iconTexture": "",
+            "image": "",
+            "images3": False,
+            "modeAvail": [],
+            "scope": "global",
+            "valueType": "absolute",
+            "displayValue": 0.0,
+            "c": 1,
+            "value": 0.0,
+            "buffType": "heal",
+            "group": "heal",
+            "p": {},
+            "hasDuration": True,
+            "e": 0,
+            "time": {"amount": 5.0},
+            "loc_name": "heal",
+            "loc_desc": "heal",
+        },
+        # 即时治疗/自我修复 Buff: 瞬时结算
+        "heal_instant": {
+            "id": "heal_instant",
+            "iconTexture": "",
+            "image": "",
+            "images3": False,
+            "modeAvail": [],
+            "scope": "global",
+            "valueType": "absolute",
+            "displayValue": 0.0,
+            "c": 1,
+            "value": 0.0,
+            "buffType": "heal",
+            "group": "heal_instant",
+            "p": {},
+            "hasDuration": False,
+            "e": 0,
+            "time": {"amount": 0.0},
+            "loc_name": "heal_instant",
+            "loc_desc": "heal_instant",
         },
     }
 

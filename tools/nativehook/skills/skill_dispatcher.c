@@ -12,6 +12,13 @@ extern BotSkillModule g_module_wheeljack;
 extern BotSkillModule g_module_prowl;
 extern BotSkillModule g_module_optimus_mv;
 extern BotSkillModule g_module_bumblebee_dotm;
+extern BotSkillModule g_module_scorponok;
+extern BotSkillModule g_module_hotrod;
+extern BotSkillModule g_module_megatron;
+extern BotSkillModule g_module_grimlock;
+extern BotSkillModule g_module_thundercracker;
+extern BotSkillModule g_module_cyclonus;
+extern BotSkillModule g_module_nemesis;
 
 static const BotSkillModule* s_registry[] = {
     &g_module_arcee,
@@ -20,6 +27,13 @@ static const BotSkillModule* s_registry[] = {
     &g_module_prowl,
     &g_module_optimus_mv,
     &g_module_bumblebee_dotm,
+    &g_module_scorponok,
+    &g_module_hotrod,
+    &g_module_megatron,
+    &g_module_grimlock,
+    &g_module_thundercracker,
+    &g_module_cyclonus,
+    &g_module_nemesis,
     NULL
 };
 
@@ -92,10 +106,14 @@ int skill_dispatch_buff_gate(SkillBuffGateContext* ctx, int* out_allowed) {
 void skill_dispatch_buff_applied(SkillBuffAppliedContext* ctx) {
     if (!ctx) return;
     const BotSkillModule* mod = find_module_by_modifier(ctx->modifier_id);
+    if (!mod && ctx->target_bot_id) {
+        mod = find_module_by_bot(ctx->target_bot_id);
+    }
     if (mod && mod->on_buff_applied) {
         mod->on_buff_applied(ctx);
     }
 }
+
 
 int skill_dispatch_evade_check(SkillEvadeContext* ctx, int* out_evade) {
     if (!ctx || !out_evade) return 0;

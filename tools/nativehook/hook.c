@@ -6746,6 +6746,9 @@ float hook_177(void* self, float damage, void* damageType, int32_t blocked, void
             };
             skill_dispatch_hit_connected(&hit_ctx);
             damage = hit_ctx.modified_damage;
+            if (!hit_ctx.is_crit) {
+                isCrit = 0;
+            }
         }
     });
 
@@ -7351,6 +7354,18 @@ void skill_heal(int player_index, float amount) {
                 float next_hp = cur + amount;
                 if (next_hp > max_val) next_hp = max_val;
                 set_norm(attr, next_hp / max_val, NULL);
+
+                // 驱动绿色跳字 (PlayerController.IncrementCachedValue("_fth", amount)):
+                if (g_strnew) {
+                    typedef void (*fn_inc_cached)(void*, void*, float, void*);
+                    fn_inc_cached inc_cached = (fn_inc_cached)(g_base + 0x01173B14);
+                    void* fth_key = g_strnew("_fth");
+                    if (fth_key) {
+                        inc_cached(pc, fth_key, amount, NULL);
+                    }
+                }
+
+                combat_overlay_push("%s +%.0f HP (回血/吸血)", player_index == 0 ? "P0" : "P1", amount);
                 flog("SKILL_HEAL: Player %d healed +%.1f (HP: %.1f -> %.1f / %.1f)", player_index, amount, cur, next_hp, max_val);
             }
         }
@@ -7443,12 +7458,14 @@ buff_gate_done: ;
                     .applicant = applicant,
                     .stat_modifier = statModifier,
                     .modifier_id = mod_id,
+                    .target_bot_id = is_target_p0 ? g_p0_bot_id : g_p1_bot_id,
                     .target_player_index = is_target_p0 ? 0 : 1,
                     .attacker_player_index = is_target_p0 ? 1 : 0,
                     .override_duration = overrideDuration,
                     .now_ms = now_ms
                 };
                 skill_dispatch_buff_applied(&app_ctx);
+
             }
             // Power Lock applied (symmetric: supports P0 locking P1, or P1 locking P0)
             if (mod_id[0] && strstr(mod_id, "power_lock") != NULL) {

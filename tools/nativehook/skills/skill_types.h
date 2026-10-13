@@ -48,11 +48,13 @@ typedef struct {
     void* applicant;
     void* stat_modifier;
     const char* modifier_id;
+    const char* target_bot_id;
     int target_player_index;
     int attacker_player_index;
     float override_duration;
     uint64_t now_ms;
 } SkillBuffAppliedContext;
+
 
 // 闪避概率结算上下文 (hook_190 近战, hook_191 远程)
 typedef struct {

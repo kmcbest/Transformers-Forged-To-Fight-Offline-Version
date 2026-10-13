@@ -399,6 +399,8 @@ def make_shock_statmod(
     pua_icon: str = "\uE914",
     color_hex: str = "FF0000",
     gradient_bottom: str = "FF0000",
+    show_callout: bool = True,
+    **kwargs,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """
     通用震击 DOT 工厂 (Shock DOT):
@@ -549,6 +551,8 @@ def make_stun_statmod(
     pua_icon: str = "\uE605",
     color_hex: str = "FFE000",
     gradient_bottom: str = "FFAA00",
+    show_callout: bool = True,
+    **kwargs,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """
     通用眩晕硬控工厂 (Stun Debuff):
@@ -621,6 +625,9 @@ def make_nullify_statmod(
     pua_icon: str = "\uE950",
     color_hex: str = "38BDF8",
     gradient_bottom: str = "0284C7",
+    target_actor: str = "opponent",
+    show_callout: bool = True,
+    **kwargs,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """
     通用驱散工厂 (Nullify / Dispel):
@@ -1332,6 +1339,8 @@ def make_burn_statmod(
     pua_icon: str = "\uE41D",
     color_hex: str = "FF6600",
     gradient_bottom: str = "CC3300",
+    show_callout: bool = True,
+    **kwargs,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """
     通用燃烧 DOT 工厂 (Burn DOT Factory):
@@ -1466,6 +1475,94 @@ def make_power_lock_statmod(
     validate_statmod(stat_mod)
     validate_appear(appear)
     return {mod_id: stat_mod}, {appr_id: appear}
+
+
+def make_heal_statmod(
+    mod_id: str,
+    duration: float,
+    heal_amount: float,
+    chance: float = 1.0,
+    trigger: str = "onHit",
+    trigger_scope: str = "",
+    appr_id: str = "",
+    callout_text: str = "修复",
+    is_zh: bool = True,
+    stackable: bool = True,
+    max_stacks: int = 5,
+    buff_id: str = "",
+    target_scope: str = "none",
+    target_actor: str = "self",
+    pua_icon: str = "\uE503",
+    color_hex: str = "10B981",
+    gradient_bottom: str = "059669",
+    show_callout: bool = True,
+    **kwargs,
+) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    """
+    通用治疗/修复工厂 (Heal Buff Factory):
+    - 绑定至客户端 Heal_BuffEffect (buffType: 'heal')，直接驱动 PlayerController.ApplyHealing
+      与 _fth 绿字跳字累加渲染。
+    - PUA 矢量图标: 修复/回血 (\uE503 或 \uE60E)
+    - 配色: 医疗翠绿 (10B981 / 059669)
+    """
+    if not appr_id:
+        appr_id = f"appr_{mod_id}"
+    if not buff_id:
+        buff_id = "heal"
+
+    validate_color_code(color_hex, "heal_tc")
+    validate_color_code(gradient_bottom, "heal_gb")
+
+    appear = {
+        "id": appr_id,
+        "a": callout_text,
+        "s": callout_text,
+        "l": f"{callout_text}恢复生命值",
+        "ss": callout_text,
+        "t": pua_icon,
+        "f": "",
+        "st": callout_text if show_callout else "",
+        "ps": callout_text,
+        "pl": f"{callout_text}生效中",
+        "tc": color_hex,
+        "gt": color_hex,
+        "gb": gradient_bottom,
+    }
+
+    stat_mod = {
+        "id": mod_id,
+        "t": buff_id,
+        "tm": "",
+        "tr": [trigger],
+        "uit": [trigger] if show_callout else [],
+        "pri": 0,
+        "trm": 0.0,
+        "trs": trigger_scope,
+        "trr": "repeat",
+        "c": float(chance),
+        "m": float(heal_amount),
+        "d": float(duration),
+        "s": target_scope,
+        "ta": target_actor,
+        "mt": "buff",
+        "v": "",
+        "ms": "",
+        "st": max_stacks if stackable else 1,
+        "g": "heal",
+        "gc": 0.0,
+        "gcv": "",
+        "rcv": "",
+        "ti": 0,
+        "a": [appr_id],
+        "au": [],
+        "rh": 0.0,
+        "ra": 0.0,
+    }
+
+    validate_statmod(stat_mod)
+    validate_appear(appear)
+    return {mod_id: stat_mod}, {appr_id: appear}
+
 
 
 

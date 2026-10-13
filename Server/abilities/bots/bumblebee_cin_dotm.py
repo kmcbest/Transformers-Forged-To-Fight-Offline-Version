@@ -11,7 +11,7 @@ Bot ID: bumblebee_cin_dotm
    - 官方描述: "开局自动获得一个近战规避，无倒计时。25.5%的概率规避对手的近战攻击。如果拥有远程规避时被对手近战攻击击中，则出现灰色的近战规避倒计时图标1.5秒，结束后重新获得近战规避。"
    - 实现方案:
      bumblebee_cin_dotm_calib_melee:
-       触发 onFightStart, 获得常驻近战规避 buff (25.5% 规避几率),
+       触发 always, 获得常驻近战规避 buff (25.5% 规避几率),
        配合 Native C (skill_bumblebee_dotm.c) 实现受远程攻击后 1.5s 切换到远程校准。
 
 2. [被动 - 远程校准 / Ranged Calibration] (ID: 2422, pua_icon: 0xe518, category: passive)
@@ -27,24 +27,46 @@ Bot ID: bumblebee_cin_dotm
      bumblebee_cin_dotm_knockdown_atk:
        触发 onHit, isLastHit=true (重击或必杀技末击造成击倒),
        获得永久攻击增益 (+13.5% 攻击力)，最多堆叠 15 层。
+
+4. [SP1 - 破甲 / Armor Break] (ID: 2426, pua_icon: 0xe516, category: sp1)
+   - 官方描述: "每一击都有60%的概率施加破甲，移除对方身上所有护甲增益，并施加35%的破甲减益，持续6秒。"
+   - 实现方案:
+     bumblebee_cin_dotm_sp1_armor_break:
+       触发 onHit, level=Special1, 60% 概率施加 6 秒破甲 (降低 35% 护甲，移除对方所有护甲增益)。
+
+5. [SP2 - 震击 / Shock] (ID: 2427, pua_icon: 0xe914, category: sp2)
+   - 官方描述: "最后一击施加震击，造成攻击力80%的伤害，持续10秒，对方身上如果有护甲，震击伤害增加"
+   - 实现方案:
+     bumblebee_cin_dotm_sp2_shock:
+       触发 onHit, level=Special2;isLastHit=true, 施加 10 秒震击 (80% ATK 伤害),
+       配合 Native C (skill_bumblebee_dotm.c) 若目标有护甲增益则额外增幅伤害。
+
+6. [SP3 - 震击 / Shock] (ID: 2436, pua_icon: 0xe914, category: sp3)
+   - 官方描述: "最后一击施加震击，造成攻击力80%的伤害，持续10秒，对方身上如果有护甲，震击伤害变为攻击力的180%"
+   - 实现方案:
+     bumblebee_cin_dotm_sp3_shock:
+       触发 onHit, level=Special3;isLastHit=true, 施加 10 秒震击 (80% ATK 伤害),
+       配合 Native C (skill_bumblebee_dotm.c) 若目标有护甲则伤害变更为 180% ATK。
 -----------------------------------------------------------------------------
 """
 
 from ..core import (
     make_attack_boost_statmod,
     make_evade_grant_statmod,
+    make_armor_break_statmod,
+    make_shock_statmod,
 )
 from ..registry import register_bot
 
 BOT_ID = "bumblebee_cin_dotm"
 
 
-@register_bot(BOT_ID, name_zh="大黄蜂", desc="战术系特工，双模校准规避对手近战/远程攻击，击倒对手无上限叠加攻击增益")
+@register_bot(BOT_ID, name_zh="大黄蜂", desc="战术系特工，双模校准规避对手近战/远程攻击，击倒对手无上限叠加攻击增益，多段特技破甲与感电震击")
 def build_bumblebee_cin_dotm_abilities(base_hp: float = 28550.0, base_atk: float = 2280.0):
     mods = {}
     appears = {}
 
-    # 1. 击倒对手获得永久攻击增益 (+13.5% 攻击力)，最多 15 层
+    # 1. 击倒对手获得永久攻击增益 (+13.5% 攻击力)，最多 15 层 (ID: 2424)
     m_kd, a_kd = make_attack_boost_statmod(
         mod_id="bumblebee_cin_dotm_knockdown_atk",
         duration=0.0,  # 永久常驻
@@ -95,5 +117,53 @@ def build_bumblebee_cin_dotm_abilities(base_hp: float = 28550.0, base_atk: float
     )
     mods.update(m_ev_r)
     appears.update(a_ev_r)
+
+    # 4. SP1 破甲 (ID: 2426): 每一击 60% 施加 35% 破甲 6 秒，移除对方护甲增益
+    m_sp1_ab, a_sp1_ab = make_armor_break_statmod(
+        mod_id="bumblebee_cin_dotm_sp1_armor_break",
+        duration=6.0,
+        break_amount=0.35,
+        chance=0.60,
+        trigger="onHit",
+        trigger_scope="level=Special1",
+        appr_id="appr_bumblebee_cin_dotm_sp1_armor_break",
+        callout_text="破甲",
+        show_callout=True,
+        pua_icon="\uE516",
+    )
+    mods.update(m_sp1_ab)
+    appears.update(a_sp1_ab)
+
+    # 5. SP2 震击 (ID: 2427): 最后一击 100% 施加 10 秒震击 (80% ATK 伤害)
+    m_sp2_shk, a_sp2_shk = make_shock_statmod(
+        mod_id="bumblebee_cin_dotm_sp2_shock",
+        duration=10.0,
+        total_dmg=float(round(base_atk * 0.80)),
+        chance=1.0,
+        trigger="onHit",
+        trigger_scope="level=Special2;isLastHit=true",
+        appr_id="appr_bumblebee_cin_dotm_sp2_shock",
+        callout_text="震击",
+        show_callout=True,
+        pua_icon="\uE914",
+    )
+    mods.update(m_sp2_shk)
+    appears.update(a_sp2_shk)
+
+    # 6. SP3 震击 (ID: 2436): 最后一击 100% 施加 10 秒震击 (80% ATK 伤害)
+    m_sp3_shk, a_sp3_shk = make_shock_statmod(
+        mod_id="bumblebee_cin_dotm_sp3_shock",
+        duration=10.0,
+        total_dmg=float(round(base_atk * 0.80)),
+        chance=1.0,
+        trigger="onHit",
+        trigger_scope="level=Special3;isLastHit=true",
+        appr_id="appr_bumblebee_cin_dotm_sp3_shock",
+        callout_text="震击",
+        show_callout=True,
+        pua_icon="\uE914",
+    )
+    mods.update(m_sp3_shk)
+    appears.update(a_sp3_shk)
 
     return mods, appears
