@@ -3010,64 +3010,14 @@ static float g_combat_player_mana_gain = 1.0f;
 static float g_combat_player_crit_mult = 0.0f;
 
 static void load_combat_tuning_config(void) {
-    const char* hot_paths[] = {
-        "/data/data/com.kabam.bigrobot/files/sp3_timings.json",
-        "/sdcard/Android/media/com.kabam.bigrobot/sp3_timings.json",
-        "/sdcard/Download/sp3_timings.json",
-        "/storage/emulated/0/Download/sp3_timings.json",
-        "/data/local/tmp/sp3_timings.json"
-    };
-    for (size_t hi = 0; hi < sizeof(hot_paths)/sizeof(hot_paths[0]); hi++) {
-        FILE* fp = fopen(hot_paths[hi], "rb");
-        if (fp) {
-            fseek(fp, 0, SEEK_END);
-            long len = ftell(fp);
-            fseek(fp, 0, SEEK_SET);
-            if (len > 10 && len < 262144) {
-                char* buf = (char*)malloc(len + 1);
-                if (buf) {
-                    size_t read_bytes = fread(buf, 1, len, fp);
-                    buf[read_bytes] = 0;
-                    const char* p_enemy = strstr(buf, "\"enemy_mana_gain\"");
-                    if (p_enemy) {
-                        const char* colon = strchr(p_enemy, ':');
-                        if (colon) {
-                            float val = 0.5f;
-                            if (sscanf(colon + 1, "%f", &val) == 1 && val >= 0.0f && val <= 10.0f) {
-                                g_combat_enemy_mana_gain = val;
-                            }
-                        }
-                    }
-                    const char* p_player = strstr(buf, "\"player_mana_gain\"");
-                    if (p_player) {
-                        const char* colon = strchr(p_player, ':');
-                        if (colon) {
-                            float val = 1.0f;
-                            if (sscanf(colon + 1, "%f", &val) == 1 && val >= 0.0f && val <= 10.0f) {
-                                g_combat_player_mana_gain = val;
-                            }
-                        }
-                    }
-                    const char* p_crit = strstr(buf, "\"player_crit_mult\"");
-                    if (p_crit) {
-                        const char* colon = strchr(p_crit, ':');
-                        if (colon) {
-                            float val = 1.5f;
-                            if (sscanf(colon + 1, "%f", &val) == 1 && val >= 1.0f && val <= 10.0f) {
-                                g_combat_player_crit_mult = val;
-                            }
-                        }
-                    }
-                    free(buf);
-                    fclose(fp);
-                    return;
-                }
-            }
-            fclose(fp);
-        }
-    }
+    // Purge any residual hot-reload files from storage to prevent stale config override
+    unlink("/data/data/com.kabam.bigrobot/files/sp3_timings.json");
+    unlink("/sdcard/Download/sp3_timings.json");
+    unlink("/sdcard/Android/media/com.kabam.bigrobot/sp3_timings.json");
+    unlink("/storage/emulated/0/Download/sp3_timings.json");
+    unlink("/data/local/tmp/sp3_timings.json");
 
-    // 2. Try loading from APK in-app Payload @sp3_timings
+    // Load from APK in-app Payload @sp3_timings
     size_t payload_len = 0;
     const unsigned char* pdata = tftf_payload_lookup("@sp3_timings", &payload_len);
     if (pdata && payload_len > 10) {
@@ -4928,40 +4878,14 @@ static void sp3_load_timing_for_character(const char* bot_id) {
     sp3_set_default_timing();
     if (!bot_id || !bot_id[0]) return;
 
-    // 1. Try loading from local hot-reload file
-    const char* hot_paths[] = {
-        "/data/data/com.kabam.bigrobot/files/sp3_timings.json",
-        "/sdcard/Android/media/com.kabam.bigrobot/sp3_timings.json",
-        "/sdcard/Download/sp3_timings.json",
-        "/storage/emulated/0/Download/sp3_timings.json",
-        "/data/local/tmp/sp3_timings.json"
-    };
-    for (size_t hi = 0; hi < sizeof(hot_paths)/sizeof(hot_paths[0]); hi++) {
-        FILE* fp = fopen(hot_paths[hi], "rb");
-        if (fp) {
-            fseek(fp, 0, SEEK_END);
-            long len = ftell(fp);
-            fseek(fp, 0, SEEK_SET);
-            if (len > 10 && len < 262144) {
-                char* buf = (char*)malloc(len + 1);
-                if (buf) {
-                    size_t read_bytes = fread(buf, 1, len, fp);
-                    buf[read_bytes] = 0;
-                    if (sp3_parse_intervals_from_json(buf, bot_id)) {
-                        flog("SP3TIMING: loaded from %s for %s (intervals=%d on0=%d off0=%d)",
-                             hot_paths[hi], bot_id, g_current_sp3_timing.count, g_current_sp3_timing.on_ms[0], g_current_sp3_timing.off_ms[0]);
-                        free(buf);
-                        fclose(fp);
-                        return;
-                    }
-                    free(buf);
-                }
-            }
-            fclose(fp);
-        }
-    }
+    // Purge any residual external hot-reload files to avoid stale config override
+    unlink("/data/data/com.kabam.bigrobot/files/sp3_timings.json");
+    unlink("/sdcard/Download/sp3_timings.json");
+    unlink("/sdcard/Android/media/com.kabam.bigrobot/sp3_timings.json");
+    unlink("/storage/emulated/0/Download/sp3_timings.json");
+    unlink("/data/local/tmp/sp3_timings.json");
 
-    // 2. Try loading from APK in-app Payload @sp3_timings
+    // 1. Load from APK in-app Payload @sp3_timings
     size_t payload_len = 0;
     const unsigned char* pdata = tftf_payload_lookup("@sp3_timings", &payload_len);
     if (pdata && payload_len > 10) {
@@ -4979,19 +4903,36 @@ static void sp3_load_timing_for_character(const char* bot_id) {
         }
     }
 
-    // 3. Built-in C fallback table
-    if (strstr(bot_id, "optimusprime")) {
+    // 3. Built-in C fallback table (aligned to official Matinee curves)
+    if (strstr(bot_id, "motormaster")) {
         g_current_sp3_timing.count = 1;
-        g_current_sp3_timing.on_ms[0] = 1150;
-        g_current_sp3_timing.off_ms[0] = 3200;
+        g_current_sp3_timing.on_ms[0] = 4466;
+        g_current_sp3_timing.off_ms[0] = 6233;
+    } else if (strstr(bot_id, "optimusprimal")) {
+        g_current_sp3_timing.count = 1;
+        g_current_sp3_timing.on_ms[0] = 1333;
+        g_current_sp3_timing.off_ms[0] = 7733;
+    } else if (strstr(bot_id, "bonecrusher")) {
+        g_current_sp3_timing.count = 1;
+        g_current_sp3_timing.on_ms[0] = 1133;
+        g_current_sp3_timing.off_ms[0] = 2633;
+    } else if (strstr(bot_id, "soundwave") || strstr(bot_id, "blaster") || strstr(bot_id, "soundblaster")) {
+        // Non-transforming bots: never hide body
+        g_current_sp3_timing.count = 0;
+        g_current_sp3_timing.on_ms[0] = 0;
+        g_current_sp3_timing.off_ms[0] = 0;
+    } else if (strstr(bot_id, "optimusprime")) {
+        g_current_sp3_timing.count = 1;
+        g_current_sp3_timing.on_ms[0] = 1966;
+        g_current_sp3_timing.off_ms[0] = 2866;
     } else if (strstr(bot_id, "starscream")) {
         g_current_sp3_timing.count = 1;
         g_current_sp3_timing.on_ms[0] = 850;
         g_current_sp3_timing.off_ms[0] = 2650;
     } else if (strstr(bot_id, "bumblebee")) {
         g_current_sp3_timing.count = 1;
-        g_current_sp3_timing.on_ms[0] = 1300;
-        g_current_sp3_timing.off_ms[0] = 2900;
+        g_current_sp3_timing.on_ms[0] = 100;
+        g_current_sp3_timing.off_ms[0] = 4033;
     }
     g_sp3_alt_on_ms = g_current_sp3_timing.on_ms[0];
     g_sp3_alt_off_ms = g_current_sp3_timing.off_ms[0];
@@ -5016,6 +4957,16 @@ static int sp3_beat_form_at(uint64_t elapsed_ms){
    either "transformed" (the alternate body) or "character_model" (the robot body). */
 static void sp3_beat_apply(int alt){
     PROTECT({
+        int has_trans_prop = 0;
+        for(int i=0;i<8;i++){
+            void* prop=g_sp3_xf_props[i];
+            if(!obj_ok(prop)) continue;
+            void* str_obj = *(void**)((char*)prop+0x10);
+            if(!obj_ok(str_obj)) continue;
+            char name[64]; name[0]=0;
+            read_str(str_obj, name, sizeof name);
+            if(!strcmp(name,"transformed")) { has_trans_prop = 1; break; }
+        }
         for(int i=0;i<8;i++){
             void* prop=g_sp3_xf_props[i];
             if(!obj_ok(prop)) continue;
@@ -5026,7 +4977,7 @@ static void sp3_beat_apply(int alt){
             read_str(str_obj, name, sizeof name);
             int want;
             if(!strcmp(name,"transformed")) want=alt;
-            else if(!strcmp(name,"character_model")) want=!alt;
+            else if(!strcmp(name,"character_model")) want = has_trans_prop ? !alt : 1;
             else continue;
             ((void(*)(void*,int,void*,void*,void*,void*,void*,void*))H[138].orig)
                 (prop,want,NULL,NULL,NULL,NULL,NULL,NULL);
