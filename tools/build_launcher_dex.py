@@ -192,16 +192,17 @@ public class WebView extends View {
     shutil.copy(launcher_src, target_java)
 
     # 3. Compile
-    javac = shutil.which("javac")
+    javac = None
+    for cand in [
+        ROOT / "toolchain" / "jdk-17" / "bin" / "javac.exe",
+        Path("C:/Program Files/Java/jdk-17/bin/javac.exe"),
+        Path("C:/Program Files/Microsoft/jdk-17.0.20.8-hotspot/bin/javac.exe"),
+    ]:
+        if cand.exists():
+            javac = str(cand)
+            break
     if not javac:
-        for cand in [
-            ROOT / "toolchain" / "jdk-17" / "bin" / "javac.exe",
-            Path("C:/Program Files/Java/jdk-17/bin/javac.exe"),
-            Path("C:/Program Files/Microsoft/jdk-17.0.20.8-hotspot/bin/javac.exe"),
-        ]:
-            if cand.exists():
-                javac = str(cand)
-                break
+        javac = shutil.which("javac")
     if not javac:
         raise FileNotFoundError("javac not found in toolchain or system JDK paths")
 
@@ -222,16 +223,17 @@ public class WebView extends View {
             shutil.rmtree(d)
 
     # 4. Convert to DEX with D8
-    java = shutil.which("java")
+    java = None
+    for cand in [
+        ROOT / "toolchain" / "jdk-17" / "bin" / "java.exe",
+        Path("C:/Program Files/Java/jdk-17/bin/java.exe"),
+        Path("C:/Program Files/Microsoft/jdk-17.0.20.8-hotspot/bin/java.exe"),
+    ]:
+        if cand.exists():
+            java = str(cand)
+            break
     if not java:
-        for cand in [
-            ROOT / "toolchain" / "jdk-17" / "bin" / "java.exe",
-            Path("C:/Program Files/Java/jdk-17/bin/java.exe"),
-            Path("C:/Program Files/Microsoft/jdk-17.0.20.8-hotspot/bin/java.exe"),
-        ]:
-            if cand.exists():
-                java = str(cand)
-                break
+        java = shutil.which("java")
     if not java:
         raise FileNotFoundError("java not found in toolchain or system JDK paths")
 

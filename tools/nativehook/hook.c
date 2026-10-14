@@ -3330,12 +3330,12 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                 int is_fembots = (cur_qid && strcmp(cur_qid, "1.1.6") == 0);
                 if (is_fembots) {
                     typedef void (*fn_set_mana)(void*, float, void*);
-                    fn_set_mana set_mana = (fn_set_mana)(g_base + 0xDAC774); // set_Mana
+                    fn_set_mana set_mana = (fn_set_mana)(g_base + 0xDAC704); // set_Mana
                     set_mana(a0, 0.0f, NULL);
                 }
                 g_p0_combat_character = a0;
                 typedef float (*fn_get_max)(void*, void*);
-                fn_get_max get_max = (fn_get_max)(g_base + 0xDAC698); // get_MaxHealth
+                fn_get_max get_max = (fn_get_max)(g_base + 0xDAC628); // get_MaxHealth
                 float max_val = get_max(a0, NULL);
                 if (max_val > 0.0f) g_p0_max_hp = max_val;
 
@@ -3344,20 +3344,20 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                     if (hp_ratio > 1.0f) hp_ratio = 1.0f;
                     if (hp_ratio <= 0.0f) hp_ratio = 0.0f;
                     typedef void (*fn_set_norm)(void*, float, void*);
-                    fn_set_norm set_norm = (fn_set_norm)(g_base + 0xDAC720); // set_NormalizedHealth
+                    fn_set_norm set_norm = (fn_set_norm)(g_base + 0xDAC6B0); // set_NormalizedHealth
                     set_norm(a0, hp_ratio, NULL);
                     typedef float (*fn_get_hp)(void*, void*);
-                    fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC6CC); // get_Health
+                    fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC660); // get_Health
                     g_p0_last_hp = get_hp(a0, NULL);
                     flog("FIXFIGHT: Player 0 '%s' combat HP initialized to %.1f / %.1f (ratio=%.2f)",
                          g_p0_bot_id, g_p0_last_hp, g_p0_max_hp, hp_ratio);
                 } else {
                     typedef float (*fn_get_hp)(void*, void*);
-                    fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC6CC);
+                    fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC660);
                     float cur_hp_val = get_hp(a0, NULL);
                     if (cur_hp_val <= 0.0f) {
                         typedef void (*fn_set_norm)(void*, float, void*);
-                        fn_set_norm set_norm = (fn_set_norm)(g_base + 0xDAC720);
+                        fn_set_norm set_norm = (fn_set_norm)(g_base + 0xDAC6B0);
                         set_norm(a0, 1.0f, NULL);
                         cur_hp_val = get_hp(a0, NULL);
                     }
@@ -3366,7 +3366,7 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
             } else if (player_idx == 1) {
                 g_p1_combat_character = a0;
                 typedef float (*fn_get_max)(void*, void*);
-                fn_get_max get_max = (fn_get_max)(g_base + 0xDAC698); // get_MaxHealth
+                fn_get_max get_max = (fn_get_max)(g_base + 0xDAC628); // get_MaxHealth
                 float max_val = get_max(a0, NULL);
                 if (max_val > 0.0f) g_p1_max_hp = max_val;
 
@@ -3375,16 +3375,16 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                     if (enemy_hp_ratio < 0.05f) enemy_hp_ratio = 0.05f;
                     if (enemy_hp_ratio > 1.0f) enemy_hp_ratio = 1.0f;
                     typedef void (*fn_set_norm)(void*, float, void*);
-                    fn_set_norm set_norm = (fn_set_norm)(g_base + 0xDAC720); // set_NormalizedHealth
+                    fn_set_norm set_norm = (fn_set_norm)(g_base + 0xDAC6B0); // set_NormalizedHealth
                     set_norm(a0, enemy_hp_ratio, NULL);
                     typedef float (*fn_get_hp)(void*, void*);
-                    fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC6CC); // get_Health
+                    fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC660); // get_Health
                     g_p1_last_hp = get_hp(a0, NULL);
                     flog("FIXFIGHT: Enemy '%s' combat HP initialized to %.1f / %.1f (ratio=%.2f)",
                          g_p1_bot_id, g_p1_last_hp, g_p1_max_hp, enemy_hp_ratio);
                 } else {
                     typedef float (*fn_get_hp)(void*, void*);
-                    fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC6CC);
+                    fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC660);
                     g_p1_last_hp = get_hp(a0, NULL);
                 }
             }
@@ -5743,7 +5743,7 @@ void* hook_145(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
         }
         if (g_p0_combat_character && obj_ok(g_p0_combat_character)) {
             typedef float (*fn_get_hp)(void*, void*);
-            fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC6CC); // get_Health
+            fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC660); // get_Health
             float cur_hp = get_hp(g_p0_combat_character, NULL);
             if (g_p0_last_hp >= 0.0f && cur_hp < g_p0_last_hp - 0.01f) {
                 if (g_p0_block_enter_ms == 0) {
@@ -5766,8 +5766,20 @@ void* hook_145(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
         }
         if (g_p1_combat_character && obj_ok(g_p1_combat_character)) {
             typedef float (*fn_get_hp)(void*, void*);
-            fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC6CC); // get_Health
+            fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC660); // get_Health
             float cur_hp = get_hp(g_p1_combat_character, NULL);
+            if (g_p1_last_hp >= 0.0f && cur_hp < g_p1_last_hp - 0.01f) {
+                if (g_p1_block_enter_ms == 0) {
+                    flog("COMBAT_GATE: P1 took unblocked damage (%.1f -> %.1f) -> hit reaction resets attack chain",
+                         g_p1_last_hp, cur_hp);
+                    if (g_p1_controller) {
+                        reset_player_attack_chain(g_p1_controller);
+                    }
+                } else {
+                    flog("COMBAT_GATE: P1 took block chip damage (%.1f -> %.1f) while guarding -> combo chain preserved",
+                         g_p1_last_hp, cur_hp);
+                }
+            }
             g_p1_last_hp = cur_hp;
         }
     });
@@ -5902,13 +5914,20 @@ void* hook_152(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
 static void reset_player_attack_chain(void* pc) {
     if (!obj_ok(pc)) return;
     int32_t p_idx = *(int32_t*)((uintptr_t)pc + 0xF4);
-    if (p_idx != 0) return; // local player P0 only
-    g_p0_controller = pc;
-    g_p0_last_attack_ms = 0;                 // the idle window restarts from the next attack
-    *(uint32_t*)((uintptr_t)pc + 0x1c0) = 0; // _lightAttackIndex = 0
-    *(uint32_t*)((uintptr_t)pc + 0x1c4) = 0; // _mediumAttackIndex = 0
-    *(uint32_t*)((uintptr_t)pc + 0x1c8) = 0; // _rangedAttackIndex = 0
-    flog("RESET_ATTACK_CHAIN on p0 pc=%p (caller=%p)", pc, __builtin_return_address(0));
+    if (p_idx == 0) {
+        g_p0_controller = pc;
+        g_p0_last_attack_ms = 0;                 // the idle window restarts from the next attack
+        *(uint32_t*)((uintptr_t)pc + 0x1c0) = 0; // _lightAttackIndex = 0
+        *(uint32_t*)((uintptr_t)pc + 0x1c4) = 0; // _mediumAttackIndex = 0
+        *(uint32_t*)((uintptr_t)pc + 0x1c8) = 0; // _rangedAttackIndex = 0
+        flog("RESET_ATTACK_CHAIN on p0 pc=%p (caller=%p)", pc, __builtin_return_address(0));
+    } else if (p_idx == 1) {
+        g_p1_controller = pc;
+        *(uint32_t*)((uintptr_t)pc + 0x1c0) = 0; // _lightAttackIndex = 0
+        *(uint32_t*)((uintptr_t)pc + 0x1c4) = 0; // _mediumAttackIndex = 0
+        *(uint32_t*)((uintptr_t)pc + 0x1c8) = 0; // _rangedAttackIndex = 0
+        flog("RESET_ATTACK_CHAIN on p1 pc=%p (caller=%p)", pc, __builtin_return_address(0));
+    }
 }
 
 void* hook_153(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7){
@@ -5922,6 +5941,8 @@ void* hook_153(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
         reset_player_attack_chain(self);
         g_p0_combo_ended = 0;
         g_p0_after_heavy = 0;
+    } else if (self == g_p1_controller || (obj_ok(self) && *(int32_t*)((uintptr_t)self + 0xF4) == 1)) {
+        reset_player_attack_chain(self);
     }
     void* r = H[153].orig(self, a1, a2, a3, a4, a5, a6, a7);
     PROTECT({
@@ -6041,6 +6062,16 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
         // Charge is interrupted when a melee hit connects with opponent (in hook_186) or on SP (0x200).
         int is_p0_act = (self == g_p0_controller) || (obj_ok(self) && *(int32_t*)((uintptr_t)self + 0xF4) == 0);
         int is_p1_act = (self == g_p1_controller) || (obj_ok(self) && *(int32_t*)((uintptr_t)self + 0xF4) == 1);
+        if (is_p1_act) {
+            g_p1_controller = self;
+            if (action == 4 || action == 1 || action == 32 || action == 0x100) {
+                g_p1_block_enter_ms = 0;
+            }
+            if (action == 8 || action == 64 || action == 128 || (action & 192) || action == 0x100 || action == 0x200) {
+                g_p1_block_enter_ms = 0;
+                reset_player_attack_chain(self);
+            }
+        }
         if (action == 8) { // Action.Dodge ONLY (Swipe back / 后闪)
             if (is_p0_act && strstr(g_p0_bot_id, "prowl") != NULL) {
                 prowl_start_charge(1);
@@ -6102,15 +6133,19 @@ void* hook_155(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     void* pc = fld_p(a0, 0x18);
     void* r = H[155].orig(a0, a1, a2, a3, a4, a5, a6, a7);
     PROTECT({
-        void* target = (obj_ok(pc) && *(int32_t*)((uintptr_t)pc + 0xF4) == 0) ? pc
-                     : (obj_ok(g_p0_controller) ? g_p0_controller : NULL);
-        if (target) {
+        int pidx = (obj_ok(pc)) ? *(int32_t*)((uintptr_t)pc + 0xF4) : -1;
+        if (pidx == 0 || (!obj_ok(pc) && obj_ok(g_p0_controller))) {
+            void* target = (pidx == 0) ? pc : g_p0_controller;
             flog("SPECIAL_EXIT (0x0E34640) on P0 (target=%p): attack chain reset", target);
             reset_player_attack_chain(target);
             ensure_p0_power_rounding(target);
             g_p0_combo_ended = 0;
             g_p0_after_heavy = 0;
             g_p0_current_special_index = -1;
+        } else if (pidx == 1) {
+            flog("SPECIAL_EXIT (0x0E34640) on P1 (target=%p): attack chain reset", pc);
+            reset_player_attack_chain(pc);
+            g_p1_block_enter_ms = 0;
         }
     });
     return r;
@@ -6506,17 +6541,22 @@ void* hook_165(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     void* r = H[165].orig(a0, a1, a2, a3, a4, a5, a6, a7);
     PROTECT({
         void* pc = fld_p(a0, 0x18);
-        g_p0_block_enter_ms = 0;
-        g_p0_block_reset_done = 0;
-        if (obj_ok(pc) && *(int32_t*)((uintptr_t)pc + 0xF4) == 0) {
-            flog("DODGE_ENTER (0x0D34E6C) on P0: reset attack chain to allow shooting");
-            reset_player_attack_chain(pc);
+        if (obj_ok(pc)) {
+            int32_t pidx = *(int32_t*)((uintptr_t)pc + 0xF4);
+            if (pidx == 0) {
+                g_p0_block_enter_ms = 0;
+                g_p0_block_reset_done = 0;
+                flog("DODGE_ENTER (0x0D34E6C) on P0: reset attack chain to allow shooting");
+                reset_player_attack_chain(pc);
+            } else if (pidx == 1) {
+                g_p1_block_enter_ms = 0;
+                flog("DODGE_ENTER (0x0D34E6C) on P1: reset attack chain");
+                reset_player_attack_chain(pc);
+            }
         } else if (obj_ok(g_p0_controller)) {
-            // DIAGNOSTIC: in every measured session the branch above NEVER fired -- DODGE_ENTER was
-            // absent from the log entirely while dodges did clear the chain, i.e. a0+0x18 does not
-            // resolve to the P0 controller and this fallback does all the work. Log it so "who
-            // cleared my chain" can never be invisible again.
-            flog("DODGE_ENTER (0x0D34E6C): a0+0x18 did not resolve to P0 (pc=%p) -> reset via cached g_p0_controller", pc);
+            g_p0_block_enter_ms = 0;
+            g_p0_block_reset_done = 0;
+            flog("DODGE_ENTER (0x0D34E6C): a0+0x18 did not resolve (pc=%p) -> reset via cached g_p0_controller", pc);
             reset_player_attack_chain(g_p0_controller);
         }
     });
@@ -6535,14 +6575,24 @@ void* hook_171(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     void* pc = fld_p(a0, 0x18);
     void* r = H[171].orig(a0, a1, a2, a3, a4, a5, a6, a7);
     PROTECT({
-        void* target = (obj_ok(pc) && *(int32_t*)((uintptr_t)pc + 0xF4) == 0) ? pc
-                     : (obj_ok(g_p0_controller) ? g_p0_controller : NULL);
-        if (target) {
-            g_p0_controller = target;
+        if (obj_ok(pc)) {
+            int32_t pidx = *(int32_t*)((uintptr_t)pc + 0xF4);
+            if (pidx == 0) {
+                g_p0_controller = pc;
+                g_p0_block_enter_ms = propgo_now_ms();
+                g_p0_block_reset_done = 0;
+                flog("BLOCK_ENTER (0x1173848): P0 started guarding at %llu ms (timer armed, hold >= 200ms required)",
+                     (unsigned long long)g_p0_block_enter_ms);
+            } else if (pidx == 1) {
+                g_p1_controller = pc;
+                g_p1_block_enter_ms = propgo_now_ms();
+                flog("BLOCK_ENTER (0x1173848): P1 started guarding at %llu ms",
+                     (unsigned long long)g_p1_block_enter_ms);
+            }
+        } else if (obj_ok(g_p0_controller)) {
             g_p0_block_enter_ms = propgo_now_ms();
             g_p0_block_reset_done = 0;
-            flog("BLOCK_ENTER (0x1173848): P0 started guarding at %llu ms (timer armed, hold >= 200ms required)",
-                 (unsigned long long)g_p0_block_enter_ms);
+            flog("BLOCK_ENTER (0x1173848): pc unresolvable -> fallback to P0 guard timer");
         }
     });
     return r;
@@ -6554,13 +6604,22 @@ void* hook_172(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     void* r = H[172].orig(a0, a1, a2, a3, a4, a5, a6, a7);
     PROTECT({
         void* pc = fld_p(a0, 0x18);
-        g_p0_block_enter_ms = 0;
-        g_p0_block_reset_done = 0;
-        if (obj_ok(pc) && *(int32_t*)((uintptr_t)pc + 0xF4) == 0) {
-            flog("DODGE_ENTER (0x117E4AC) on P0: reset attack chain to allow shooting");
-            reset_player_attack_chain(pc);
+        if (obj_ok(pc)) {
+            int32_t pidx = *(int32_t*)((uintptr_t)pc + 0xF4);
+            if (pidx == 0) {
+                g_p0_block_enter_ms = 0;
+                g_p0_block_reset_done = 0;
+                flog("DODGE_ENTER (0x117E4AC) on P0: reset attack chain to allow shooting");
+                reset_player_attack_chain(pc);
+            } else if (pidx == 1) {
+                g_p1_block_enter_ms = 0;
+                flog("DODGE_ENTER (0x117E4AC) on P1: reset attack chain");
+                reset_player_attack_chain(pc);
+            }
         } else if (obj_ok(g_p0_controller)) {
-            flog("DODGE_ENTER (0x117E4AC): a0+0x18 did not resolve to P0 (pc=%p) -> reset via cached g_p0_controller", pc);
+            g_p0_block_enter_ms = 0;
+            g_p0_block_reset_done = 0;
+            flog("DODGE_ENTER (0x117E4AC): a0+0x18 did not resolve (pc=%p) -> reset via cached g_p0_controller", pc);
             reset_player_attack_chain(g_p0_controller);
         }
     });
@@ -7201,6 +7260,23 @@ void* hook_186(void* this_pc, void* hitResult, void* method) {
             s_ironhide_burned_this_hit = 0;
             s_ramjet_s1_stacks = 0;
             int is_hit = ((flags & 5) != 0); // Hit (1) or Blocked (4)
+            int is_unblocked_hit = ((flags & 1) != 0);
+            if (is_unblocked_hit) {
+                if (p_idx == 0) {
+                    g_p1_block_enter_ms = 0;
+                    if (g_p1_controller) {
+                        reset_player_attack_chain(g_p1_controller);
+                    }
+                } else if (p_idx == 1) {
+                    if (g_p0_block_enter_ms == 0) {
+                        if (g_p0_controller) {
+                            reset_player_attack_chain(g_p0_controller);
+                            g_p0_combo_ended = 0;
+                            g_p0_after_heavy = 0;
+                        }
+                    }
+                }
+            }
             int is_melee_hit = is_hit && (atk_level != 8) && ((flags & 0x100) == 0);
             if (is_melee_hit) {
                 if (p_idx == 0 && strstr(g_p0_bot_id, "prowl") != NULL && g_p0_prowl_charging) {
@@ -7359,9 +7435,9 @@ float skill_get_hp_ratio(int player_index) {
         void* attr = *(void**)((char*)pc + 0x80);
         if (attr && obj_ok(attr) && g_base) {
             typedef float (*fn_get_hp)(void*, void*);
-            fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC6CC);
+            fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC660);
             typedef float (*fn_get_max)(void*, void*);
-            fn_get_max get_max = (fn_get_max)(g_base + 0xDAC698);
+            fn_get_max get_max = (fn_get_max)(g_base + 0xDAC628);
             float cur = get_hp(attr, NULL);
             float max_val = get_max(attr, NULL);
             if (max_val > 0.0f) {
@@ -7380,11 +7456,11 @@ void skill_heal(int player_index, float amount) {
         void* attr = *(void**)((char*)pc + 0x80);
         if (attr && obj_ok(attr) && g_base) {
             typedef float (*fn_get_hp)(void*, void*);
-            fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC6CC);
+            fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC660);
             typedef float (*fn_get_max)(void*, void*);
-            fn_get_max get_max = (fn_get_max)(g_base + 0xDAC698);
+            fn_get_max get_max = (fn_get_max)(g_base + 0xDAC628);
             typedef void (*fn_set_norm)(void*, float, void*);
-            fn_set_norm set_norm = (fn_set_norm)(g_base + 0xDAC720);
+            fn_set_norm set_norm = (fn_set_norm)(g_base + 0xDAC6B0);
             float cur = get_hp(attr, NULL);
             float max_val = get_max(attr, NULL);
             if (max_val > 0.0f) {
@@ -7415,9 +7491,9 @@ void skill_add_mana(int player_index, float norm_mana) {
         void* attr = *(void**)((char*)pc + 0x80);
         if (attr && obj_ok(attr) && g_base) {
             typedef float (*fn_get_norm_mana)(void*, void*);
-            fn_get_norm_mana get_mana = (fn_get_norm_mana)(g_base + 0x00DAC794);
+            fn_get_norm_mana get_mana = (fn_get_norm_mana)(g_base + 0xDAC720);
             typedef void (*fn_set_norm_mana)(void*, float, void*);
-            fn_set_norm_mana set_mana = (fn_set_norm_mana)(g_base + 0x00DAC7B4);
+            fn_set_norm_mana set_mana = (fn_set_norm_mana)(g_base + 0xDAC73C);
             float cur = get_mana(attr, NULL);
             float next_mana = cur + norm_mana;
             if (next_mana > 3.0f) next_mana = 3.0f;
@@ -7435,11 +7511,11 @@ void skill_deal_damage(int target_player_index, float damage) {
         void* attr = *(void**)((char*)pc + 0x80);
         if (attr && obj_ok(attr) && g_base) {
             typedef float (*fn_get_hp)(void*, void*);
-            fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC6CC);
+            fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC660);
             typedef float (*fn_get_max)(void*, void*);
-            fn_get_max get_max = (fn_get_max)(g_base + 0xDAC698);
+            fn_get_max get_max = (fn_get_max)(g_base + 0xDAC628);
             typedef void (*fn_set_norm)(void*, float, void*);
-            fn_set_norm set_norm = (fn_set_norm)(g_base + 0xDAC720);
+            fn_set_norm set_norm = (fn_set_norm)(g_base + 0xDAC6B0);
             float cur = get_hp(attr, NULL);
             float max_val = get_max(attr, NULL);
             if (max_val > 0.0f) {
