@@ -587,7 +587,9 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x00DACCA4, "GET_EVADE_RANGED",  2, 0 }, // 191 PlayerAttributes.get_EvadeRanged -> probabilistic ranged evade
     { 0x00CCF35C, "GET_STAT_MOD",      2, 0 }, // 192 StatModifierController.TestForConditionsAndRoll -> universal dice roll HUD
     { 0x00E3D84C, "PFS_IS_TEAM_DEAD",  2, 0 }, // 193 PrefightScreenData.IsTeamDead -> bool (0=alive, never dead)
-    { 0x00DACB84, "GET_UNSTOPPABLE",   2, 0 }  // 194 PlayerAttributes.get_Unstoppable -> unstoppable armor & buff
+    { 0x00DACB84, "GET_UNSTOPPABLE",   2, 0 }, // 194 PlayerAttributes.get_Unstoppable -> unstoppable armor & buff
+    { 0x00DACA4C, "GET_POWER_GAIN_RATE", 2, 0 }, // 195 PlayerAttributes.get_PowerGainRate -> power rate boost
+    { 0x00DACB04, "GET_REFLECT_PROJ",    2, 0 }  // 196 PlayerAttributes.get_ReflectProjectileModifier -> projectile reflection
 };
 
 #define NH (int)(sizeof(H)/sizeof(H[0]))
@@ -609,6 +611,7 @@ static void* g_p1_controller = NULL;
 char g_p0_bot_id[80] = {0};
 char g_p1_bot_id[80] = {0};
 static volatile uint64_t g_p0_block_enter_ms = 0;
+static volatile uint64_t g_p1_block_enter_ms = 0;
 static volatile int g_p0_block_reset_done = 0;
 static volatile int g_p0_after_heavy = 0;
 static volatile int g_p0_combo_ended = 0;
@@ -736,6 +739,9 @@ static void* s_prowl_charge_sm_p0 = NULL;
 static void* s_prowl_charge_sm_p1 = NULL;
 static void* s_prowl_passive_sm_p0 = NULL;
 static void* s_prowl_passive_sm_p1 = NULL;
+
+static void* s_jetfire_charge_sm_p0 = NULL;
+static void* s_jetfire_charge_sm_p1 = NULL;
 
 // BuffsController.ApplyBuff(BuffsController this, BuffsController applicant, StatModifier statModifier, bool updateAttributes, bool useOverrideDuration, float overrideDuration, void* method) @ RVA 0x00EEFB44
 typedef void* (*fn_apply_statmod_buff)(void* this_bc, void* applicant_bc, void* statModifier, int32_t updateAttributes, int32_t useOverrideDuration, float overrideDuration, void* method);
@@ -5226,6 +5232,9 @@ void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     g_intended_special_tier = 0;
     g_sp_touch_tracking = 0;
     g_p0_block_enter_ms = 0;
+    g_p1_block_enter_ms = 0;
+    s_jetfire_charge_sm_p0 = NULL;
+    s_jetfire_charge_sm_p1 = NULL;
     g_p0_block_reset_done = 0;
     g_p0_after_heavy = 0;
     g_p0_combo_ended = 0;
@@ -6192,12 +6201,18 @@ void* hook_160(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     void* pc = fld_p(a0, 0x18);
     void* r = H[160].orig(a0, a1, a2, a3, a4, a5, a6, a7);
     PROTECT({
-        if (obj_ok(pc) && *(int32_t*)((uintptr_t)pc + 0xF4) == 0) {
-            g_p0_controller = pc;
-            g_p0_block_enter_ms = propgo_now_ms();
-            g_p0_block_reset_done = 0;
-            flog("BLOCK_ENTER (0x0D32A00): P0 started guarding at %llu ms (timer armed, hold >= 200ms required)",
-                 (unsigned long long)g_p0_block_enter_ms);
+        if (obj_ok(pc)) {
+            int32_t pidx = *(int32_t*)((uintptr_t)pc + 0xF4);
+            if (pidx == 0) {
+                g_p0_controller = pc;
+                g_p0_block_enter_ms = propgo_now_ms();
+                g_p0_block_reset_done = 0;
+                flog("BLOCK_ENTER (0x0D32A00): P0 started guarding at %llu ms (timer armed, hold >= 200ms required)",
+                     (unsigned long long)g_p0_block_enter_ms);
+            } else if (pidx == 1) {
+                g_p1_controller = pc;
+                g_p1_block_enter_ms = propgo_now_ms();
+            }
         }
     });
     return r;
@@ -6509,6 +6524,7 @@ void* hook_165(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
 }
 
 static __thread int s_current_hit_is_ranged = 0;
+static __thread int s_current_hit_is_heavy = 0;
 
 // slot 171 BLOCKENTER2 (0x1173848): the guard entry that actually fires in this binary. Slot 160's
 // 0x0D32A00 never fired once in any measured session, which is exactly why holding guard stopped
@@ -6743,6 +6759,7 @@ float hook_177(void* self, float damage, void* damageType, int32_t blocked, void
                 .hit_index = s_last_hit_index,
                 .is_last_hit = (s_current_hit_is_last != 0),
                 .is_ranged = (s_current_hit_is_ranged != 0),
+                .is_heavy = (s_current_hit_is_heavy != 0),
                 .is_crit = (isCrit != 0),
                 .is_blocked = (blocked != 0),
                 .base_damage = damage,
@@ -7177,6 +7194,7 @@ void* hook_186(void* this_pc, void* hitResult, void* method) {
             int flags = *(int32_t*)((uintptr_t)hitResult + 0x20);     // HitResultData.Flags
             int hit_idx = *(int32_t*)((uintptr_t)hitResult + 0x30);   // HitResultData.HitIndex
             s_current_hit_is_ranged = (atk_level == 8);
+            s_current_hit_is_heavy = (atk_level == 4) || (p_idx == 0 && g_p0_after_heavy);
             s_last_hit_flags = flags;
             s_last_hit_index = hit_idx;
             s_current_hit_is_last = ((flags & 0x80) != 0); // 0x80 = HitResultFlags.LastHit
@@ -7408,6 +7426,100 @@ void skill_add_mana(int player_index, float norm_mana) {
             flog("SKILL_ADD_MANA: Player %d mana +%.2f (Mana: %.2f -> %.2f)", player_index, norm_mana, cur, next_mana);
         }
     }
+}
+
+void skill_deal_damage(int target_player_index, float damage) {
+    if (damage <= 0.0f) return;
+    void* pc = (target_player_index == 0) ? g_p0_controller : g_p1_controller;
+    if (pc && obj_ok(pc)) {
+        void* attr = *(void**)((char*)pc + 0x80);
+        if (attr && obj_ok(attr) && g_base) {
+            typedef float (*fn_get_hp)(void*, void*);
+            fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC6CC);
+            typedef float (*fn_get_max)(void*, void*);
+            fn_get_max get_max = (fn_get_max)(g_base + 0xDAC698);
+            typedef void (*fn_set_norm)(void*, float, void*);
+            fn_set_norm set_norm = (fn_set_norm)(g_base + 0xDAC720);
+            float cur = get_hp(attr, NULL);
+            float max_val = get_max(attr, NULL);
+            if (max_val > 0.0f) {
+                float next_hp = cur - damage;
+                if (next_hp < 0.0f) next_hp = 0.0f;
+                set_norm(attr, next_hp / max_val, NULL);
+                combat_overlay_push("%s -%.0f (招架反伤)", target_player_index == 0 ? "P0" : "P1", damage);
+                flog("SKILL_DEAL_DAMAGE: Player %d took -%.1f reflected damage (HP: %.1f -> %.1f / %.1f)",
+                     target_player_index, damage, cur, next_hp, max_val);
+            }
+        }
+    }
+}
+
+void skill_stun_player(int target_player_index, float duration_s) {
+    if (duration_s <= 0.0f) return;
+    void* pc = (target_player_index == 0) ? g_p0_controller : g_p1_controller;
+    if (pc && obj_ok(pc) && g_base) {
+        typedef void (*fn_apply_hit_stun)(void*, float, void*);
+        fn_apply_hit_stun apply_hit_stun = (fn_apply_hit_stun)(g_base + 0x1179730);
+        apply_hit_stun(pc, duration_s, NULL);
+        combat_overlay_push("%s 眩晕 %.1f秒！", target_player_index == 0 ? "P0" : "P1", duration_s);
+        flog("SKILL_STUN: Player %d stunned for %.1fs via ApplyHitStun(0x1179730)", target_player_index, duration_s);
+    }
+}
+
+uint64_t skill_get_block_enter_ms(int player_index) {
+    return (player_index == 0) ? g_p0_block_enter_ms : g_p1_block_enter_ms;
+}
+
+void skill_apply_buff(int player_index, const char* mod_id) {
+    if (!mod_id || !g_base) return;
+    void* pc = (player_index == 0) ? g_p0_controller : g_p1_controller;
+    if (!pc || !obj_ok(pc)) return;
+    void* bc = *(void**)((char*)pc + 0x88);
+    if (!bc || !obj_ok(bc)) return;
+
+    // 1. Direct apply if StatModifier pointer was captured
+    void* sm = (player_index == 0) ? s_jetfire_charge_sm_p0 : s_jetfire_charge_sm_p1;
+    if (sm && obj_ok(sm)) {
+        PROTECT({
+            fn_apply_statmod_buff apply_buff = (fn_apply_statmod_buff)(g_base + 0x00EEFB44);
+            apply_buff(bc, bc, sm, 1, 1, -1.0f, NULL);
+            flog("SKILL_APPLY_BUFF: Direct ApplyBuff for '%s' on P%d", mod_id, player_index);
+        });
+        return;
+    }
+
+    // 2. Otherwise apply via StatModifierController.ApplyStatModifier(string)
+    void* smc = *(void**)((char*)bc + 0xA8);
+    if (smc && obj_ok(smc) && g_strnew) {
+        PROTECT({
+            void* id_str = g_strnew(mod_id);
+            if (id_str) {
+                typedef void (*fn_apply_sm)(void* smc, void* id_str, int32_t updateAttr, int32_t useOverrideDur, float overrideDur, void* method);
+                fn_apply_sm apply_sm = (fn_apply_sm)(g_base + 0x00CCF67C);
+                apply_sm(smc, id_str, 1, 0, 0.0f, NULL);
+                flog("SKILL_APPLY_BUFF: SMC.ApplyStatModifier for '%s' on P%d", mod_id, player_index);
+            }
+        });
+    }
+}
+
+void skill_consume_buff(int player_index, const char* mod_id, int count) {
+    if (!mod_id || !g_base || !g_strnew) return;
+    void* pc = (player_index == 0) ? g_p0_controller : g_p1_controller;
+    if (!pc || !obj_ok(pc)) return;
+    void* bc = *(void**)((char*)pc + 0x88);
+    if (!bc || !obj_ok(bc)) return;
+
+    PROTECT({
+        void* id_str = g_strnew(mod_id);
+        if (id_str) {
+            typedef bool (*fn_remove_buffs_by_id)(void* bc, void* id_str, int32_t numToRemove, int32_t removeFlags, int32_t source, int32_t cloneCondition, void* method);
+            fn_remove_buffs_by_id remove_fn = (fn_remove_buffs_by_id)(g_base + 0x00EEE8F0);
+            remove_fn(bc, id_str, count > 0 ? count : 1, 4, 0, 0, NULL);
+            flog("SKILL_CONSUME_BUFF: Removed %d stack(s) of '%s' from P%d via RemoveBuffsByID(0xEEE8F0)",
+                 count > 0 ? count : 1, mod_id, player_index);
+        }
+    });
 }
 
 // slot 188 (0x00EEFB44): BuffsController.ApplyBuff(BuffsController applicant, StatModifier statModifier, bool updateAttributes, bool useOverrideDuration, float overrideDuration)
@@ -7744,6 +7856,16 @@ int hook_192(void* self, void* statModifier, float* pRoll, float* pChance, void*
     });
 
     // 动作分段打击过滤 (Action Hit Gating)
+    if (mod_id[0] && strstr(mod_id, "jetfire_energy_charge") != NULL) {
+        void* owner_bc = *(void**)((char*)statModifier + 0x10);
+        int is_p0 = is_player0_bc(owner_bc);
+        if (is_p0) s_jetfire_charge_sm_p0 = statModifier;
+        else s_jetfire_charge_sm_p1 = statModifier;
+        flog("JETFIRE_CAPTURE_SM: energy_charge captured for %s -> sm=%p (owner_bc=%p)",
+             is_p0 ? "P0" : "P1", statModifier, owner_bc);
+        return 0; // 手动招架触发，阻止自动掷骰施加
+    }
+
     // 1. 擎天柱 SP1 破甲: 仅后两击巨斧劈砍 (hit 1, 2) 破甲，第一击 (hit 0) 拳击不破甲
     if (mod_id[0] && strstr(mod_id, "optimus_sp1_armor_break") != NULL) {
         if (s_last_hit_index == 0) {
@@ -8077,6 +8199,35 @@ int hook_194(void* self) {
     return 0;
 }
 
+// slot 195 (0x00DACA4C): PlayerAttributes.get_PowerGainRate -> power rate boost
+float hook_195(void* self) {
+    if (!self || !obj_ok(self)) return 1.0f;
+    typedef float (*fn_get_float)(void*);
+    float orig_rate = H[195].orig ? ((fn_get_float)H[195].orig)(self) : 1.0f;
+    int is_p0 = is_player0_attr(self);
+    float mod = skill_dispatch_power_gain_rate_mod(is_p0 ? 0 : 1);
+    if (mod > 0.0f) {
+        orig_rate *= mod;
+    }
+    return orig_rate;
+}
+
+// slot 196 (0x00DACB04): PlayerAttributes.get_ReflectProjectileModifier -> projectile reflection
+float hook_196(void* self) {
+    if (!self || !obj_ok(self)) return 0.0f;
+    typedef float (*fn_get_float)(void*);
+    float orig_val = H[196].orig ? ((fn_get_float)H[196].orig)(self) : 0.0f;
+    if (orig_val > 0.0f) return orig_val;
+
+    int is_p0 = is_player0_attr(self);
+    int pidx = is_p0 ? 0 : 1;
+    float reflect_mod = 0.0f;
+    if (skill_dispatch_reflect_proj(pidx, &reflect_mod)) {
+        return reflect_mod;
+    }
+    return 0.0f;
+}
+
 static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hook_7,hook_8,
     hook_9,hook_10,hook_11,hook_12,hook_13,hook_14,hook_15,hook_16,hook_17,hook_18,hook_19,hook_20,hook_21,
     hook_22,hook_23,hook_24,hook_25,hook_26,hook_27,hook_28,hook_29,hook_30,
@@ -8098,7 +8249,7 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     hook_165,hook_166,(void*)hook_167,hook_168,hook_169,hook_170,
     hook_171,hook_172,hook_173,hook_174,hook_175,hook_176,(void*)hook_177,(void*)hook_178,
     (void*)hook_179,hook_180,hook_181,hook_182,hook_183,hook_184,hook_185,hook_186,(void*)hook_187,(void*)hook_188,(void*)hook_189,
-    (void*)hook_190,(void*)hook_191,(void*)hook_192,(void*)hook_193,(void*)hook_194 };
+    (void*)hook_190,(void*)hook_191,(void*)hook_192,(void*)hook_193,(void*)hook_194,(void*)hook_195,(void*)hook_196 };
 _Static_assert(sizeof(handlers)/sizeof(handlers[0]) == sizeof(H)/sizeof(H[0]), "handlers count must match H count");
 
 

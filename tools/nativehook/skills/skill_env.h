@@ -35,7 +35,16 @@ int skill_is_unstoppable(int player_index);
 // 生命值与能量操作
 float skill_get_hp_ratio(int player_index);
 void skill_heal(int player_index, float amount);
+void skill_deal_damage(int target_player_index, float damage);
 void skill_add_mana(int player_index, float norm_mana);
+
+// 格挡与控制
+uint64_t skill_get_block_enter_ms(int player_index);
+void skill_stun_player(int target_player_index, float duration_s);
+
+// Buff 与修饰器主动施加与消耗
+void skill_apply_buff(int player_index, const char* mod_id);
+void skill_consume_buff(int player_index, const char* mod_id, int count);
 
 #ifdef __cplusplus
 }

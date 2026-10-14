@@ -19,6 +19,7 @@ typedef struct {
     int hit_index;               // 当前段数 (0-indexed)
     bool is_last_hit;            // 是否为当前动作的收招最终击
     bool is_ranged;              // 是否为远程射击
+    bool is_heavy;               // 是否为重击 (Heavy Attack)
     bool is_crit;                // 是否暴击
     bool is_blocked;             // 是否被格挡
     float base_damage;           // 原始计算伤害
@@ -106,6 +107,12 @@ typedef struct {
 
     // TestRoll 触发判定 (返回 1 表示已接管判定并输出 *out_res; 返回 0 表示非本模块管辖)
     int (*on_test_roll)(SkillTestRollContext* ctx, int* out_res);
+
+    // 能量获取率倍率修正 (返回 1 表示已处理并输出 *out_mult, 返回 0 表示非本模块管辖)
+    int (*on_power_gain_rate)(int player_index, float* out_mult);
+
+    // 远程子弹反射检定 (返回 1 表示已接管并输出 *out_reflect_mod; 返回 0 表示非本模块管辖)
+    int (*on_reflect_proj)(int player_index, float* out_reflect_mod);
 
     // 战斗重置/回合开始 (清理私有冷却和状态变量)
     void (*on_fight_reset)(int player_index);

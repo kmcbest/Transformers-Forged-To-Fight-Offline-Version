@@ -66,6 +66,10 @@ def build_buffs_config():
         "heal": {"stackable": True, "active_display": True},
         # 即时治疗/自我诊断修复：瞬时结算，不显示倒计时圆环
         "heal_instant": {"stackable": True, "active_display": False},
+        # 招架护盾：在血条下方显示倒计时圆环图标
+        "parry_shield": {"stackable": False, "active_display": True},
+        # 能量充能：可堆叠，在血条下方显示紫色图标
+        "energy_charge": {"stackable": True, "active_display": True},
     }
     return {
         "groups": groups_data,

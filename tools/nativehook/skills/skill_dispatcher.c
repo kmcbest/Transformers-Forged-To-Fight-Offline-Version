@@ -19,6 +19,7 @@ extern BotSkillModule g_module_grimlock;
 extern BotSkillModule g_module_thundercracker;
 extern BotSkillModule g_module_cyclonus;
 extern BotSkillModule g_module_nemesis;
+extern BotSkillModule g_module_jetfire;
 
 static const BotSkillModule* s_registry[] = {
     &g_module_arcee,
@@ -34,6 +35,7 @@ static const BotSkillModule* s_registry[] = {
     &g_module_thundercracker,
     &g_module_cyclonus,
     &g_module_nemesis,
+    &g_module_jetfire,
     NULL
 };
 
@@ -135,3 +137,29 @@ int skill_dispatch_test_roll(SkillTestRollContext* ctx, int* out_res) {
     }
     return 0;
 }
+
+extern char g_p0_bot_id[80];
+extern char g_p1_bot_id[80];
+
+float skill_dispatch_power_gain_rate_mod(int player_index) {
+    const char* bot_id = (player_index == 0) ? g_p0_bot_id : g_p1_bot_id;
+    const BotSkillModule* mod = find_module_by_bot(bot_id);
+    if (mod && mod->on_power_gain_rate) {
+        float mult = 1.0f;
+        if (mod->on_power_gain_rate(player_index, &mult)) {
+            return mult;
+        }
+    }
+    return 1.0f;
+}
+
+int skill_dispatch_reflect_proj(int player_index, float* out_reflect_mod) {
+    if (player_index < 0 || player_index >= 2 || !out_reflect_mod) return 0;
+    const char* bot_id = (player_index == 0) ? g_p0_bot_id : g_p1_bot_id;
+    const BotSkillModule* mod = find_module_by_bot(bot_id);
+    if (mod && mod->on_reflect_proj) {
+        return mod->on_reflect_proj(player_index, out_reflect_mod);
+    }
+    return 0;
+}
+
