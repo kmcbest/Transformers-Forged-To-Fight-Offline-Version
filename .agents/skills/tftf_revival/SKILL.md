@@ -686,3 +686,38 @@ Server/gamedata.py ROSTER.faction
   - 冲锋惩罚：`trs: "level=Ranged,Special1;opponent:state=Dash,Run"` -> 必出爆头并呼出 HEADSHOT！
   - 常规远程：`trs: "level=Ranged,Special1;opponent:state!=Dash,Run"` -> 50% 几率施加流血并呼出 BLEED！
   两者互斥，彻底解决多重流血判定冲突！
+
+---
+
+## 19. 现代逆向工具链与分析工作流规范 (Modern RE Toolchain & Analysis Workflow)
+
+> 详细配置与演进指南参考：[`re_notes/MODERN_RE_TOOLCHAIN_SETUP_AND_MIGRATION_GUIDE.md`](file:///d:/Agent/tftf/re_notes/MODERN_RE_TOOLCHAIN_SETUP_AND_MIGRATION_GUIDE.md)
+
+### 19.1 工具定位与技术分工界限 (Toolchain Boundary)
+在离线逆向与运行时架构之间确立严格边界：
+
+| 阶段 | 核心工具 | 核心职责 | 规范与策略 |
+| :--- | :--- | :--- | :--- |
+| **逻辑分析与逆向阶段**<br>*(Investigation Phase)* | **Ghidra 12.1.4 / JADX 1.5.6 / REA (MCP) / UnityPy** | 分析 ARM64 算法、还原 C 伪代码、恢复 IL2CPP 符号、提取 APK 内部关卡/数值表/AssetBundle | **全面升级**：坚决淘汰临时编写的裸汇编脚本（如 `tools/disas_*.py`），严禁人眼猜测寄存器与通信字段，全面改用反编译与智能体驱动 |
+| **真机运行时拦截阶段**<br>*(Runtime Patching)* | **NativeHook (`hook.c` + NDK)** | 注入 Android 内存、微秒级函数跳板（Trampoline）、轻量离线服务端响应 | **严禁替换**：真机端绝不引入任何重型解释框架，保持纯 C 轻量高效架构（`libdothook.so`） |
+| **手感与连招真理源**<br>*(Combat Truth Source)* | **`combat_truth_backup.c` + `combat-test-cases.md`** | 6 大门禁测试（GATE-01 ~ GATE-06） | **神圣基线**：逆向仅用于理解机制，严禁因逆向修改弱化官方手感 |
+
+### 19.2 统一工具链目录与空间规范 (Toolchain Directory Convention)
+为避免占用紧张的 C: 盘空间，所有重型工具链统一存放在 D: 盘，并通过系统目录联接（NTFS Junction）实现无缝映射：
+
+1. **物理存放路径**：
+   - 基础根目录：`d:\Agent\tftf\toolchain\`
+   - Android NDK：`d:\Agent\tftf\toolchain\android-ndk-r26d`（映射别名 `android-ndk-r25c`）
+   - OpenJDK 21 LTS：`d:\Agent\tftf\toolchain\jdk-21` (Ghidra 12.1.4 强依赖)
+   - Ghidra：`d:\Agent\tftf\toolchain\ghidra` (v12.1.4 PUBLIC)
+   - JADX：`d:\Agent\tftf\toolchain\jadx` (v1.5.6)
+   - Il2CppDumper：`d:\Agent\tftf\toolchain\Il2CppDumper` (v6.7.46)
+   - REA Agents：Node 全局包与 MCP 服务（v6.4.0）
+2. **系统级映射与环境变量**：
+   - `C:\Tools` 已建立软链（NTFS Junction）直通 `d:\Agent\tftf\toolchain\`，默认指向 `C:\Tools\...` 的配置和脚本可透明运行，零占用 C 盘空间。
+   - `JAVA_HOME` 指向 `d:\Agent\tftf\toolchain\jdk-21`
+   - `ANDROID_NDK_HOME` 指向 `d:\Agent\tftf\toolchain\android-ndk-r26d`
+   - `GHIDRA_INSTALL_DIR` / `GHIDRA_PATH` 指向 `d:\Agent\tftf\toolchain\ghidra`
+   - `JADX_PATH` 指向 `d:\Agent\tftf\toolchain\jadx\bin\jadx.bat`
+   - NativeHook 编译一律使用：`python tools/build_hook.py`
+

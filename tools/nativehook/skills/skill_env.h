@@ -28,6 +28,10 @@ void skill_set_ranged_boost(int player_index, uint64_t duration_ms, float dmg_bo
 void skill_set_power_leak(int player_index, uint64_t duration_ms, float step);
 void skill_set_power_lock(int target_player_index, uint64_t duration_ms);
 
+// 不可阻挡霸体状态设置与查询
+void skill_set_unstoppable(int player_index, uint64_t duration_ms);
+int skill_is_unstoppable(int player_index);
+
 // 生命值与能量操作
 float skill_get_hp_ratio(int player_index);
 void skill_heal(int player_index, float amount);

@@ -580,13 +580,14 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x014F4048, "ISTUTCOMPLETE",     2, 0 }, // 184 TutorialManagerHelper.IsTutorialComplete
     { 0x0095BDD8, "SAFE_GC_SCAN",       2, 0 }, // 185 il2cpp GC scan safe guard (prevents SEGV on 0x1)
     { 0x11785B8, "REG_HIT_RES",        2, 0 }, // 186 PlayerController.RegisterHitResult(HitResultData hitResult)
-    { 0x00DACB84, "GET_SPD_MOD",       2, 0 }, // 187 PlayerAttributes.get_SpeedModifier -> attack animation speed boost
-    { 0x00EEFF2C, "APPLY_BUFF",        2, 0 }, // 188 BuffsController.ApplyBuff -> ability gating (Rhinox bleed-on-nullify, Wheeljack final hit)
-    { 0x00EEEDD8, "REMOVE_BUFFS_INT",  2, 0 }, // 189 BuffsController.RemoveBuffsInternal -> track successful buff nullification
+    { 0x00DACAAC, "GET_SPD_MOD",       2, 0 }, // 187 PlayerAttributes.get_SpeedModifier -> attack animation speed boost
+    { 0x00EEFB44, "APPLY_BUFF",        2, 0 }, // 188 BuffsController.ApplyBuff -> ability gating (Rhinox bleed-on-nullify, Wheeljack final hit, Unstoppable window)
+    { 0x00EEE57C, "REMOVE_BUFFS_INT",  2, 0 }, // 189 BuffsController.RemoveBuffsInternal -> track successful buff nullification
     { 0x00DACC74, "GET_EVADE_MELEE",   2, 0 }, // 190 PlayerAttributes.get_EvadeMelee -> probabilistic melee evade
     { 0x00DACCA4, "GET_EVADE_RANGED",  2, 0 }, // 191 PlayerAttributes.get_EvadeRanged -> probabilistic ranged evade
-    { 0x00CCF35C, "GET_STAT_MOD",      2, 0 }, // 192 StatModifierController.GetStatModifier -> universal dice roll HUD
-    { 0x00E3D980, "PFS_IS_TEAM_DEAD",  2, 0 }  // 193 PrefightScreenData.IsTeamDead -> bool (0=alive, never dead)
+    { 0x00CCF35C, "GET_STAT_MOD",      2, 0 }, // 192 StatModifierController.TestForConditionsAndRoll -> universal dice roll HUD
+    { 0x00E3D84C, "PFS_IS_TEAM_DEAD",  2, 0 }, // 193 PrefightScreenData.IsTeamDead -> bool (0=alive, never dead)
+    { 0x00DACB84, "GET_UNSTOPPABLE",   2, 0 }  // 194 PlayerAttributes.get_Unstoppable -> unstoppable armor & buff
 };
 
 #define NH (int)(sizeof(H)/sizeof(H[0]))
@@ -707,6 +708,8 @@ static volatile float g_p0_power_lock_mana = 0.0f;
 static volatile uint64_t g_p1_power_lock_end_ms = 0; // P1 is power locked (cannot gain power)
 static volatile float g_p1_power_lock_mana = 0.0f;
 #define g_enemy_power_lock_end_ms g_p1_power_lock_end_ms
+static volatile uint64_t g_p0_unstoppable_end_ms = 0; // P0 unstoppable (immune to hit reaction/stun)
+static volatile uint64_t g_p1_unstoppable_end_ms = 0; // P1 unstoppable (immune to hit reaction/stun)
 static volatile int g_p1_buffs_nullified_this_attack = 0;
 static volatile int s_current_hit_is_last = 0;
 static volatile int s_last_hit_flags = 0;
@@ -5238,6 +5241,8 @@ void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     g_p0_power_lock_mana = 0.0f;
     g_p1_power_lock_end_ms = 0;
     g_p1_power_lock_mana = 0.0f;
+    g_p0_unstoppable_end_ms = 0;
+    g_p1_unstoppable_end_ms = 0;
     g_p0_prowl_charging = 0;
     g_p0_prowl_charge_start_ms = 0;
     g_p0_prowl_charge_stacks = 0;
@@ -7208,7 +7213,7 @@ void* hook_186(void* this_pc, void* hitResult, void* method) {
     return H[186].orig ? ((fn_reg_hit)H[186].orig)(this_pc, hitResult, method) : NULL;
 }
 
-// slot 187 (0x00DACB84): PlayerAttributes.get_SpeedModifier
+// slot 187 (0x00DACAAC): PlayerAttributes.get_SpeedModifier
 float hook_187(void* self) {
     float mod = 1.0f;
     if (H[187].orig) {
@@ -7221,8 +7226,8 @@ float hook_187(void* self) {
             if (now_ms < g_p0_ranged_boost_end_ms && g_p0_ranged_speed_bonus > 0.0f) {
                 int is_shooting = 0;
                 if (g_p0_controller && obj_ok(g_p0_controller)) {
-                    // 1. Check StateMachine._state (at offset 0x28)
-                    void* cur_state = *(void**)((char*)g_p0_controller + 0x28);
+                    // 1. Check StateMachine._state (at offset 0x48)
+                    void* cur_state = *(void**)((char*)g_p0_controller + 0x48);
                     if (cur_state && obj_ok(cur_state)) {
                         void* sname_obj = *(void**)((char*)cur_state + 0x10);
                         if (sname_obj && obj_ok(sname_obj)) {
@@ -7316,6 +7321,20 @@ void skill_set_power_lock(int target_player_index, uint64_t duration_ms) {
     (void)duration_ms;
 }
 
+void skill_set_unstoppable(int player_index, uint64_t duration_ms) {
+    uint64_t end = propgo_now_ms() + duration_ms;
+    if (player_index == 0) {
+        if (end > g_p0_unstoppable_end_ms) g_p0_unstoppable_end_ms = end;
+    } else {
+        if (end > g_p1_unstoppable_end_ms) g_p1_unstoppable_end_ms = end;
+    }
+}
+
+int skill_is_unstoppable(int player_index) {
+    uint64_t now_ms = propgo_now_ms();
+    return (player_index == 0) ? (now_ms < g_p0_unstoppable_end_ms) : (now_ms < g_p1_unstoppable_end_ms);
+}
+
 float skill_get_hp_ratio(int player_index) {
     void* pc = (player_index == 0) ? g_p0_controller : g_p1_controller;
     if (pc && obj_ok(pc)) {
@@ -7391,13 +7410,14 @@ void skill_add_mana(int player_index, float norm_mana) {
     }
 }
 
-// slot 188 (0x00EEFF2C): BuffsController.ApplyBuff(BuffsController applicant, StatModifier statModifier, bool updateAttributes, bool useOverrideDuration, float overrideDuration)
+// slot 188 (0x00EEFB44): BuffsController.ApplyBuff(BuffsController applicant, StatModifier statModifier, bool updateAttributes, bool useOverrideDuration, float overrideDuration)
 int hook_188(void* self, void* applicant, void* statModifier, int32_t updateAttributes, int32_t useOverrideDuration, float overrideDuration, void* method) {
     char mod_id[80] = {0};
+    void* bcg_sm = NULL;
     int suppress_buff = 0;
     PROTECT({
         if (statModifier && obj_ok(statModifier)) {
-            void* bcg_sm = *(void**)((char*)statModifier + 0x18);
+            bcg_sm = *(void**)((char*)statModifier + 0x18);
             if (bcg_sm && obj_ok(bcg_sm)) {
                 void* id_str_obj = *(void**)((char*)bcg_sm + 0x10);
                 if (id_str_obj && obj_ok(id_str_obj)) {
@@ -7493,12 +7513,33 @@ buff_gate_done: ;
                     s_p1_burn_expire_ms = now_ms + 4200;
                 }
             }
+            // 不可阻挡霸体生效时间窗口跟踪 (Unstoppable Buff Activated)
+            if (mod_id[0] && strstr(mod_id, "unstoppable") != NULL) {
+                float dur_sec = 0.0f;
+                if (useOverrideDuration && overrideDuration > 0.0f) {
+                    dur_sec = overrideDuration;
+                } else if (bcg_sm && obj_ok(bcg_sm)) {
+                    dur_sec = *(float*)((char*)bcg_sm + 0xA4);
+                }
+                if (dur_sec <= 0.0f) dur_sec = 1.2f;
+                uint64_t dur_ms = (uint64_t)(dur_sec * 1000.0f);
+                if (dur_ms < 700) dur_ms = 700;
+                if (is_target_p0) {
+                    g_p0_unstoppable_end_ms = now_ms + dur_ms;
+                    combat_overlay_push("P0 获得不可阻挡 (霸体) %.1fs", dur_ms / 1000.0f);
+                    flog("UNSTOPPABLE_ACTIVATED: P0 gains unstoppable for %llu ms (mod=%s dur=%.2fs)", (unsigned long long)dur_ms, mod_id, dur_sec);
+                } else {
+                    g_p1_unstoppable_end_ms = now_ms + dur_ms;
+                    combat_overlay_push("P1 获得不可阻挡 (霸体) %.1fs", dur_ms / 1000.0f);
+                    flog("UNSTOPPABLE_ACTIVATED: P1 gains unstoppable for %llu ms (mod=%s dur=%.2fs)", (unsigned long long)dur_ms, mod_id, dur_sec);
+                }
+            }
         }
     });
     return res;
 }
 
-// slot 189 (0x00EEEDD8): BuffsController.RemoveBuffsInternal
+// slot 189 (0x00EEE57C): BuffsController.RemoveBuffsInternal
 int hook_189(void* self, int32_t testType, void* testParams, int32_t numBuffsToRemove, int32_t removeFlags, void* method) {
     typedef int (*fn_remove_buffs)(void*, int32_t, void*, int32_t, int32_t, void*);
     int res = H[189].orig ? ((fn_remove_buffs)H[189].orig)(self, testType, testParams, numBuffsToRemove, removeFlags, method) : 0;
@@ -7967,8 +8008,72 @@ int hook_192(void* self, void* statModifier, float* pRoll, float* pChance, void*
 int32_t hook_193(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     static int s_log_dead = 0;
     if (s_log_dead++ < 20) {
-        flog("PFS_IS_TEAM_DEAD (0x0E3D980): self=%p -> returning 0 (alive)", self);
+        flog("PFS_IS_TEAM_DEAD (0x00E3D84C): self=%p -> returning 0 (alive)", self);
     }
+    return 0;
+}
+
+// slot 194 (0x00DACB84): PlayerAttributes.get_Unstoppable -> unstoppable armor (immune to hit react / flinch)
+int hook_194(void* self) {
+    if (!self || !obj_ok(self)) return 0;
+    typedef int (*fn_get_bool)(void*);
+    int orig_val = H[194].orig ? ((fn_get_bool)H[194].orig)(self) : 0;
+    if (orig_val) return 1;
+
+    int is_p0 = is_player0_attr(self);
+    uint64_t now_ms = propgo_now_ms();
+
+    // 1. Buff timer check (activated via ApplyBuff for motormaster_dash_unstoppable, motormaster_sp2_unstoppable, etc.)
+    if (is_p0 && now_ms < g_p0_unstoppable_end_ms) {
+        static uint64_t s_last_u_buff_p0 = 0;
+        if (now_ms - s_last_u_buff_p0 > 400) {
+            s_last_u_buff_p0 = now_ms;
+            flog("GET_UNSTOPPABLE: returning 1 for P0 (buff window active, rem=%llu ms)", (unsigned long long)(g_p0_unstoppable_end_ms - now_ms));
+        }
+        return 1;
+    }
+    if (!is_p0 && now_ms < g_p1_unstoppable_end_ms) {
+        static uint64_t s_last_u_buff_p1 = 0;
+        if (now_ms - s_last_u_buff_p1 > 400) {
+            s_last_u_buff_p1 = now_ms;
+            flog("GET_UNSTOPPABLE: returning 1 for P1 (buff window active, rem=%llu ms)", (unsigned long long)(g_p1_unstoppable_end_ms - now_ms));
+        }
+        return 1;
+    }
+
+    // 2. Real-time StateMachine check (zero-delay safety net for Dash & Heavy)
+    void* pc = is_p0 ? g_p0_controller : g_p1_controller;
+    const char* bot_id = is_p0 ? g_p0_bot_id : g_p1_bot_id;
+    if (pc && obj_ok(pc) && bot_id && bot_id[0]) {
+        void* cur_state = *(void**)((char*)pc + 0x48);
+        if (cur_state && obj_ok(cur_state)) {
+            void* sname_obj = *(void**)((char*)cur_state + 0x10);
+            if (sname_obj && obj_ok(sname_obj)) {
+                char sname[32] = {0};
+                read_str(sname_obj, sname, sizeof(sname));
+                // Motormaster dashing:
+                if (strstr(bot_id, "motormaster") != NULL && strcmp(sname, "Dash") == 0) {
+                    static uint64_t s_last_u_dash = 0;
+                    if (now_ms - s_last_u_dash > 400) {
+                        s_last_u_dash = now_ms;
+                        flog("GET_UNSTOPPABLE: returning 1 for %s (p%d state=Dash)", bot_id, is_p0 ? 0 : 1);
+                    }
+                    return 1;
+                }
+                // Ramjet heavy attack charge or flight:
+                if (strstr(bot_id, "ramjet") != NULL && 
+                    (strcmp(sname, "HeavyCharge") == 0 || strcmp(sname, "HeavyAttack") == 0)) {
+                    return 1;
+                }
+                // Grimlock heavy attack:
+                if (strstr(bot_id, "grimlock") != NULL && 
+                    (strcmp(sname, "HeavyCharge") == 0 || strcmp(sname, "HeavyAttack") == 0)) {
+                    return 1;
+                }
+            }
+        }
+    }
+
     return 0;
 }
 
@@ -7993,7 +8098,7 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     hook_165,hook_166,(void*)hook_167,hook_168,hook_169,hook_170,
     hook_171,hook_172,hook_173,hook_174,hook_175,hook_176,(void*)hook_177,(void*)hook_178,
     (void*)hook_179,hook_180,hook_181,hook_182,hook_183,hook_184,hook_185,hook_186,(void*)hook_187,(void*)hook_188,(void*)hook_189,
-    (void*)hook_190,(void*)hook_191,(void*)hook_192,(void*)hook_193 };
+    (void*)hook_190,(void*)hook_191,(void*)hook_192,(void*)hook_193,(void*)hook_194 };
 _Static_assert(sizeof(handlers)/sizeof(handlers[0]) == sizeof(H)/sizeof(H[0]), "handlers count must match H count");
 
 

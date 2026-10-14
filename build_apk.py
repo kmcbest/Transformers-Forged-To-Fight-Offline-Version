@@ -96,6 +96,7 @@ def main():
     if "JAVA_HOME" not in env:
         # Check default Microsoft / Oracle JDK paths if needed
         jdk_candidates = [
+            ROOT / "toolchain" / "jdk-21",
             Path("C:/Program Files/Microsoft/jdk-17.0.20.8-hotspot"),
             Path("C:/Program Files/Java/jdk-17"),
         ]
