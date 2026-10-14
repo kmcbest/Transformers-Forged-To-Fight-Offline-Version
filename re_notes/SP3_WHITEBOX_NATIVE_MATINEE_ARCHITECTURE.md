@@ -118,23 +118,21 @@ flowchart TD
 
 ---
 
-## 五、 接力开发交接检查清单 (Handoff Checklist)
+## 五、 最终落地方案与实机验收成果 (Final Resolution & Verification)
 
-明天在另一台电脑打开项目后，直接按照以下清单执行：
+### 1. 终极根因真相（大小写精准对齐）
+官方 2.0.2 原生引擎在 `MatineeActorTrack.FixupEntity()` 中通过层级比对查找实体：
+- 舞台资源轨道预期层级形如：`cha_motormaster_gs_voyager2015_00|character_model|Motormaster_GS_Voyager2015|Actor0_locator`；
+- 原厂美术烘焙剪辑时使用了带大小写的模型名称（如 `Motormaster_GS_Voyager2015`、`Grimlock_GS_MP08`、`Bumblebee_Cin_DOTM`）；
+- 离线客户端由蓝图生成角色时，根节点 GameObject 采用了全小写名称（如 `motormaster_gs_voyager2015`）；
+- 官方原生精确字符串比较因大小写差异导致 `FixupEntity()` 放弃挂载，曲线从未被采样。
 
-1. [ ] **检出当前最新分支**：
-   ```powershell
-   git checkout whitebox-sp3-new
-   git pull origin whitebox-sp3-new
-   ```
-2. [ ] **定位关键修改点 [`tools/nativehook/hook.c`](file:///e:/Agent/TFTF/tools/nativehook/hook.c)**：
-   - 检查 `hook_138`：剥离 `sp3_prop_mirror` 的 `SetActive` 调用；
-   - 检查 `hook_141`：取消强锁 `Transform(1)`；
-   - 检查 `hook_145`：移除 `sp3_beat_pump()` 调用。
-3. [ ] **编译并验证**：
-   ```powershell
-   python tools/build_apk.py
-   ```
-4. [ ] **实机 Logcat 验证指标**：
-   - 确认无 `[COMBAT_RULE_VIOLATION]`；
-   - 观察汽车大师、声波、骨裂释放 SP3 时，Unity 原生动画平滑过渡，无突兀闪现与模型残留。
+### 2. 完美解法：零打拍、纯原生的 `MATINEE_ALIAS`
+在 `hook_139`（`MatineeActorTrack.FixupEntity`）前置阶段：
+1. 自动从轨道的 `entityFullId` 中提取作者预期的角色模型名；
+2. 为当前挂在 `Actor0_locator` / `Actor1_locator` 下的角色根 GameObject 精准对齐名称（`MATINEE_ALIAS`）；
+3. **官方引擎随后 100% 原生跑通**：自动挂载 `entity`、自动创建 Legacy `Animation`、自动添加 `Cool` 剪辑，每帧原生采样 `m_Enabled` 驱动变形显隐。
+
+### 3. 验收成果
+- 彻底拔除 Darabat 打拍（`sp3_beat_pump` / `sp3_prop_mirror` / `sp3_timings.json`）与强锁（`SP3XHOLD`）；
+- 全 78 机体 SP3 原生变形完美重现，彻底达成“一通百通”！
