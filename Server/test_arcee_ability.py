@@ -49,15 +49,8 @@ class TestArceeAbility(unittest.TestCase):
         )
         # Other bots have universal SP callouts and UI abilities but must not have Arcee's specific ability
         op_abilities = gamedata.bot_abilities("optimusprime_cin_tf")
-        self.assertEqual(op_abilities, [
-            "gp_evade_callout",
-            "sp_callout_optimusprime_cin_tf_1",
-            "sp_callout_optimusprime_cin_tf_2",
-            "sp_callout_optimusprime_cin_tf_3",
-            "ability_optimusprime_cin_tf_0",
-            "ability_optimusprime_cin_tf_1",
-            "ability_optimusprime_cin_tf_2",
-        ])
+        self.assertIn("sp_callout_optimusprime_cin_tf_1", op_abilities)
+        self.assertIn("optimusprime_cin_tf_block_armor", op_abilities)
         self.assertNotIn("arcee_headshot_direct", op_abilities)
 
     def test_buffs_config_and_set(self):

@@ -43,6 +43,8 @@
 
 - **Avoid Disassembly and Machine Code Rabbit Holes (严禁陷入反汇编与机器码死循环)**:
   TFTF is heavily data-driven (`JSON` wire payloads + local offline cache). Never endlessly disassemble ARM64 instructions, trace registers, or inspect deep il2cpp internals to debug UI numbers, missing attributes, or level stats. UI display anomalies (e.g. PI, HP, ATK showing 0, missing names) are virtually always caused by data payload mismatches (`(bid, rank, level)` query mismatching the local cache, or missing wire keys).
+- **Capstone and Assembly Tracing User-Permission Gate (汇编跟踪与 Capstone 使用事前许可制)**:
+  严禁擅自使用 Capstone 或编写逆向脚本大范围深挖机器码反汇编。日常排查与逻辑定位应优先使用 `dump.cs`、高层 logcat 日志、数据流对比和现有 Hook 状态机。如果确实遇到极其特殊、非要使用 Capstone 跟踪汇编不可的情况，**必须停下来向用户说明明确理由并申请许可，只有在获得用户明确同意后方可继续**。
 - **Black-Box Data Diff First (对比排查优先)**:
   Always compare the HTTP request/response payloads (especially `/bcg/getBaseHeroData`, `/quests/quest-movedir`, and `/quests/quest-begin`) between working scenarios (e.g. 1.1.1) and failing scenarios (e.g. 1.1.2, 1.1.3). Verify that `(bid, rank, level)` in `/bcg/getBaseHeroData` strictly matches `battleEnemy` in `/quests/quest-movedir`. A mismatch causes the client's cache lookup to fail, resulting in 0 stats.
 - **Do Not Analyze Build Scripts for Game Logic Issues (禁止无关工具发散分析)**:

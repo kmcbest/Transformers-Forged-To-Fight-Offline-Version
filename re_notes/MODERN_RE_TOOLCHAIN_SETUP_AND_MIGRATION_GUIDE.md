@@ -2,20 +2,24 @@
 *(Modern Reverse Engineering Toolchain Setup & Migration Guide)*
 
 > **文档定位**：本文档为开发者换机或新机器环境搭建时的一站式安装指南与工具演进标准。记录了如何从过去“纯 Capstone 裸汇编”的刀耕火种时代，平滑过渡并升级到“Ghidra 反编译 + REA (Reverse Engineer Anything) MCP 智能体驱动”的现代逆向分析工作流，同时明确界定了“分析期现代工具链”与“真机运行时 NativeHook”的严格边界。
+> 
+> **物理磁盘规范**：所有重型工具链一律装在 `E:\Agent\TFTF\toolchain\`，绝不污染或占用 C 盘空间；在 `C:\Tools` 建立轻量目录联接（Directory Junctions），实现透明跨盘访问。
 
 ---
 
 ## 目录
 1. [核心原则与技术分工界限](#一核心原则与技术分工界限)
-2. [新机器完整工具链安装清单](#二新机器完整工具链安装清单)
+2. [E 盘专属工具链物理布局与目录联接](#二e-盘专属工具链物理布局与目录联接)
+3. [一键全自动安装与验证脚本](#三一键全自动安装与验证脚本)
+4. [核心工具链清单与详细说明](#四核心工具链清单与详细说明)
    - [1. 基础开发与编译环境](#1-基础开发与编译环境)
    - [2. 现代逆向分析与反编译工具链](#2-现代逆向分析与反编译工具链)
-   - [3. REA (Reverse Engineer Anything) 与 MCP 智能体配置](#3-rea-reverse-engineer-anything-与-mcp-智能体配置)
-3. [新旧工具平滑过渡与替换实操规范](#三新旧工具平滑过渡与替换实操规范)
+   - [3. REA (Reverse Engineer Anything) 智能体配置与 MCP 接入](#3-rea-reverse-engineer-anything-智能体配置与-mcp-接入)
+5. [新旧工具平滑过渡与替换实操规范](#五新旧工具平滑过渡与替换实操规范)
    - [1. 淘汰与弃用工具清单 (Deprecated List)](#1-淘汰与弃用工具清单-deprecated-list)
    - [2. 典型实战场景替换对照表](#2-典型实战场景替换对照表)
    - [3. 绝对严禁替换的真理源底线](#3-绝对严禁替换的真理源底线)
-4. [新机环境冒烟测试清单 (Smoke Test)](#四新机环境冒烟测试清单-smoke-test)
+6. [冒烟测试清单 (Smoke Test)](#六冒烟测试清单-smoke-test)
 
 ---
 
@@ -30,74 +34,88 @@
 
 ---
 
-## 二、新机器完整工具链安装清单
+## 二、E 盘专属工具链物理布局与目录联接
 
-在新机器上按以下分类顺序完成安装与环境变量配置：
+为避免 C 盘空间膨胀，本项目所有逆向工具实体均位于 `E:\Agent\TFTF\toolchain\`，并通过 NTFS Junction 映射到 `C:\Tools`：
+
+```text
+E:\Agent\TFTF\toolchain\
+├── ghidra\            <=== [实体] Ghidra 12.1.4 (反编译器核心)
+├── jdk-21\            <=== [实体] Adoptium OpenJDK 21 (Ghidra 12+ 强依赖)
+├── jadx\              <=== [实体] JADX 1.5.6 (DEX/Java 反编译)
+├── Il2CppDumper\      <=== [实体] Il2CppDumper 6.7.46 (符号与结构体导出)
+├── rea\               <=== [实体] REA 6.4.0 (Model Context Protocol 逆向智能体服务)
+├── rea.bat            <=== REA CLI 快速启动批处理
+└── install_modern_re_tools.py <=== 一键自动安装与软链同步脚本
+
+C:\Tools\ (仅占符号链接，0 字节物理占用)
+├── ghidra        <junction> ==> E:\Agent\TFTF\toolchain\ghidra
+├── jdk-21        <junction> ==> E:\Agent\TFTF\toolchain\jdk-21
+├── jadx          <junction> ==> E:\Agent\TFTF\toolchain\jadx
+├── Il2CppDumper  <junction> ==> E:\Agent\TFTF\toolchain\Il2CppDumper
+├── rea           <junction> ==> E:\Agent\TFTF\toolchain\rea
+└── rea.bat       <shim>     ==> 调用 E:\Agent\TFTF\toolchain\rea.bat
+```
+
+---
+
+## 三、一键全自动安装与验证脚本
+
+在新机器上克隆仓库后，仅需运行一行命令，脚本会自动下载各工具 Release Zip、解压至 E 盘、配置独立便携式 JDK 21 并建立 `C:\Tools` 联接：
+
+```powershell
+python "tools/install_modern_re_tools.py"
+```
+
+---
+
+## 四、核心工具链清单与详细说明
 
 ### 1. 基础开发与编译环境
 
-1. **Git**
-   - 官方下载并安装，配置用户名与邮箱。
-2. **Python 3.10+** (推荐 3.10.x 或 3.11.x)
-   - 安装时勾选 `Add Python to PATH`。
-   - 常用依赖库安装（克隆仓库后在终端执行）：
-     ```powershell
-     pip install UnityPy capstone colorama requests flask
-     ```
-3. **Android NDK** (推荐 `r25c` 或 `r23c`)
-   - 解压至推荐路径：`C:\Tools\android-ndk-r25c`
-   - 将 NDK 目录添加到系统环境变量 `PATH`，并在系统变量中设置 `ANDROID_NDK_HOME`。
-4. **Android SDK Platform-Tools (ADB)**
-   - 确保 `adb` 命令在 PowerShell 中可直接运行。
+1. **Python 3.10+** (推荐 3.10.x 或 3.11.x)
+   - 依赖项：`pip install UnityPy capstone colorama requests flask`
+2. **Android NDK** (本项目现成位于 `E:\Agent\TFTF\toolchain\android-ndk-r26b`)
+3. **Android SDK Platform-Tools (ADB)** (现成位于 `E:\Agent\TFTF\toolchain\android-sdk\platform-tools`)
 
 ---
 
 ### 2. 现代逆向分析与反编译工具链
 
-1. **Java JDK (17 或 21 LTS)**
-   - Ghidra 强依赖 Java 17+。推荐安装 OpenJDK 17 或 21（如 Microsoft OpenJDK 或 Temurin）。
-   - 配置系统环境变量 `JAVA_HOME` 指向 JDK 安装目录（如 `C:\Program Files\Eclipse Adoptium\jdk-17...`），并将 `%JAVA_HOME%\bin` 添加到 `PATH`。
-2. **Ghidra (v11.x+)**
-   - **下载与解压**：从 GitHub 官方发布页下载最新 release，解压至推荐路径 `C:\Tools\ghidra`。
-   - **验证无头模式**：检查 `C:\Tools\ghidra\support\analyzeHeadless.bat` 是否存在。
-   - **功能定位**：ARM64 机器码的终极分析引擎，负责生成清晰可读的 C 语言伪代码（Decompiled C Pseudocode）、函数交叉引用（XRefs）与结构体对齐恢复。
-3. **JADX (v1.5.x+)**
-   - 从 GitHub 下载 `jadx-gui` 与 CLI 压缩包，解压至 `C:\Tools\jadx`。
-   - 将 `C:\Tools\jadx\bin` 添加到系统 `PATH`。
-   - **功能定位**：Android APK 的 Java/DEX 层一键反编译利器。
-4. **Il2CppDumper (v6.7.x+)**
-   - 下载并放置在 `C:\Tools\Il2CppDumper`。
-   - **功能定位**：针对 Unity IL2CPP，读取 `libil2cpp.so` 和 `global-metadata.dat`，输出 `dump.cs`、`script.json` 和符号映射。
-   - **Ghidra 符号联动**：使用 Il2CppDumper 目录下的 `ghidra_with_struct.py` 脚本直接导入 Ghidra，秒级将 9.2.0 所有无名函数恢复出官方类名与方法名！
+1. **Adoptium OpenJDK 21** (`E:\Agent\TFTF\toolchain\jdk-21`)
+   - **注意**：Ghidra 12+ **强依赖 JDK 21+**（系统自带的 JDK 17 会报错）。
+   - 本方案采用便携式独立部署，并在 `ghidra/support/launch.properties` 中指定了 `JAVA_HOME_OVERRIDE=E:/Agent/TFTF/toolchain/jdk-21`，**完全不污染系统默认 Java 环境**。
+2. **Ghidra (v12.x+)** (`E:\Agent\TFTF\toolchain\ghidra`)
+   - **无头分析程序**：`support\analyzeHeadless.bat`。
+   - **功能定位**：ARM64 机器码分析引擎，直接输出人类可读的 C 伪代码。
+3. **JADX (v1.5.x+)** (`E:\Agent\TFTF\toolchain\jadx`)
+   - CLI 执行入口：`bin\jadx.bat`；GUI 界面入口：`bin\jadx-gui.bat`。
+4. **Il2CppDumper (v6.7.x+)** (`E:\Agent\TFTF\toolchain\Il2CppDumper`)
+   - **配合 Ghidra**：运行后生成的 `script.json` 与 `ghidra_with_struct.py` 可直接导入 Ghidra，一键为 9.2.0 所有方法恢复官方命名。
 
 ---
 
-### 3. REA (Reverse Engineer Anything) 与 MCP 智能体配置
+### 3. REA (Reverse Engineer Anything) 智能体配置与 MCP 接入
 
-REA 是连接 AI 智能体（Cursor / Claude Code / Antigravity / Codex）与底层逆向工具链（Ghidra、JADX）的桥梁。
+REA 是连接 AI 智能体（Cursor / Claude Code / Antigravity / Codex）与底层逆向工具链（Ghidra、JADX）的 MCP 协议桥梁。
 
-1. **Node.js (LTS v18 或更高)**
-   - 官方下载安装，确保 `node` 和 `npm` 可用。
-2. **安装 REA 代理服务**：
-   在 PowerShell 中运行全局安装或直接使用 npx：
+1. **本地运行方式**：
+   在任意终端输入以下命令均可直接调用 REA：
    ```powershell
-   npm install --global rea-agents
+   & "E:\Agent\TFTF\toolchain\rea.bat" --version
+   # 或通过 C:\Tools 联接调用
+   & "C:\Tools\rea.bat" --version
    ```
-3. **初始化与 MCP 配置**：
-   运行官方交互式设置向导：
-   ```powershell
-   rea setup
-   ```
-   或者在支持 MCP 的客户端（例如 Cursor / Claude Desktop / Antigravity）配置文件中手动声明 REA MCP Server：
+2. **MCP 配置文件设置**（以 Cursor / Claude Desktop / Antigravity 的 `mcp_config.json` 为例）：
    ```json
    {
      "mcpServers": {
        "rea": {
-         "command": "npx",
-         "args": ["-y", "rea-agents@latest"],
+         "command": "cmd",
+         "args": ["/c", "E:\\Agent\\TFTF\\toolchain\\rea.bat", "--mcp"],
          "env": {
-           "GHIDRA_PATH": "C:\\Tools\\ghidra",
-           "JADX_PATH": "C:\\Tools\\jadx\\bin\\jadx.bat"
+           "GHIDRA_PATH": "E:\\Agent\\TFTF\\toolchain\\ghidra",
+           "JADX_PATH": "E:\\Agent\\TFTF\\toolchain\\jadx\\bin\\jadx.bat"
          }
        }
      }
@@ -106,7 +124,7 @@ REA 是连接 AI 智能体（Cursor / Claude Code / Antigravity / Codex）与底
 
 ---
 
-## 三、新旧工具平滑过渡与替换实操规范
+## 五、新旧工具平滑过渡与替换实操规范
 
 ### 1. 淘汰与弃用工具清单 (Deprecated List)
 
@@ -156,28 +174,27 @@ REA 是连接 AI 智能体（Cursor / Claude Code / Antigravity / Codex）与底
 
 ---
 
-## 四、新机环境冒烟测试清单 (Smoke Test)
+## 六、冒烟测试清单 (Smoke Test)
 
-换机后，在新环境的终端中按序执行以下命令，全绿即代表现代逆向工具链就绪：
+在终端中执行以下验证命令，全部通过即代表整套工具链安装完备：
 
 ```powershell
 # 1. 验证基础编译底座
-git --version
 python --version
-ndk-build --version
-adb version
+node --version
 
-# 2. 验证 Java 与 Ghidra
-java -version
-Test-Path "C:\Tools\ghidra\support\analyzeHeadless.bat"
+# 2. 验证 Ghidra、JDK21 与 JADX
+& "E:\Agent\TFTF\toolchain\jdk-21\bin\java.exe" -version
+& "E:\Agent\TFTF\toolchain\jadx\bin\jadx.bat" --version
+Test-Path "E:\Agent\TFTF\toolchain\ghidra\support\analyzeHeadless.bat"
 
-# 3. 验证 REA 工具与 Node
-node -version
-npx rea-agents --version
+# 3. 验证 REA
+& "E:\Agent\TFTF\toolchain\rea.bat" --version
 
-# 4. 验证既有 NativeHook 能正常编译出动态库
-cd e:\Agent\TFTF\tools\nativehook
-ndk-build clean
+# 4. 验证 C:\Tools 联接可用性
+Get-ChildItem "C:\Tools"
+
+# 5. 验证 NativeHook 编译
+cd E:\Agent\TFTF\tools\nativehook
 ndk-build
-# 检查 libs/arm64-v8a/libnativehook.so 是否成功生成！
 ```
