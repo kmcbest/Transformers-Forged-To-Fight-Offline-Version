@@ -1035,6 +1035,13 @@ def build_missions_config():
                 # authored feel is the buffered-input window in seconds: leaving it unset
                 # makes it 0, so queued attacks never execute.
                 "maxQueuedActionTime": 0.2,
+                # TuningGameplay.AttackChainResetTime @0x40: official native idle combo timeout (seconds)
+                # Client automatically resets attack chain to L1/M1 when idle time exceeds this value.
+                "attackChainResetTime": 0.8,
+                # TuningGameplay.DefaultProjectileSpeed @0x68: official asset default in f7b90d535e1204a6cb674963d3d6c73b is 110.0.
+                # Setting 140.0 gives projectiles enough speed to reach across full-screen distance before their Move timeline expires.
+                # All other fields (DefaultAnimatorScale=6.808, GrenadeGravity=-250, etc.) are omitted so they retain their native asset values.
+                "defaultProjectileSpeed": 140.0,
             },
             "user-base": {
                 "minClaimInterval": 60,

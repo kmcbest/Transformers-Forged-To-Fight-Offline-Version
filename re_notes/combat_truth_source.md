@@ -67,20 +67,21 @@ static void reset_player_attack_chain(void* pc) {
 }
 ```
 
-### 2. 闪避与侧闪清链 (Dodge & Sidestep)
-玩家向后滑步（`action == 8`）、向上侧闪（`action == 64`）或向下侧闪（`action == 128`）起手时，**必须立即清链**：
+### 2. 闪避、侧闪与受击状态原生切入 (Dodge, Sidestep & Hit React)
+彻底告别过去将 `0x117E4AC`（实际为 `PlayerDashState.OnEnter` 前冲）误当 Dodge 的历史错误。原厂四路状态机切入点严格对应原生 RVA：
+- **后退闪避 (`hook_172 @ 0x0117F614`)**：`PlayerDodgeState.OnEnter`，向后滑步立即清链；
+- **侧滑翻滚 (`hook_160 @ 0x00E3349C`)**：`PlayerSidestepState.OnEnter`，向上/向下侧闪立即清链；
+- **真实受击 (`hook_165 @ 0x0117FEC4`)**：`PlayerHitReactState.OnEnter`，受到非格挡实体伤害进入硬直时立即清链（彻底移除过去在 FixedUpdate 里每帧轮询血量下降的粗暴 hack，避免格挡削减伤害误清链）；
+- **前冲冲刺 (`0x117E4AC`)**：保持原生 `PlayerDashState` 完整状态机，**严禁挂钩清链**，确保前冲突进、滑步取消及 M1 正常衔接！
+
 ```c
-if (action == 8 || action == 64 || action == 128 || (action & 192)) {
-    g_p0_block_enter_ms = 0;
-    g_p0_block_reset_done = 0;
-    flog("PLAYER_ACTION dodge/sidestep (action=%d) on P0: reset attack chain", action);
-    reset_player_attack_chain(self);
-    did_reset = 1;
-    g_p0_combo_ended = 0;
-    g_p0_after_heavy = 0;
-}
+// 侧闪入口 (0x00E3349C) 与真实闪避入口 (0x0117F614)
+g_p0_block_enter_ms = 0;
+g_p0_block_reset_done = 0;
+g_p0_combo_ended = 0;
+g_p0_after_heavy = 0;
+reset_player_attack_chain(pc);
 ```
-* **效果**：确保玩家侧闪/后闪避开敌方招式后，反击的第一拳严格为 **L1** 或前冲 **M1**，绝不会在侧闪后误打出硬直大的 L2/L3 或原地出 M2。
 
 ### 3. 重击状态与后置衔接 (Heavy Attack & GATE-02 / GATE-07)
 长按重击（`action == 0x100`）起手时，强制重置双索引并立起 `g_p0_after_heavy = 1`：
@@ -97,9 +98,10 @@ if (action == 0x100) {
                   *(uint32_t*)((uintptr_t)self + 0x1c4));
 }
 ```
-* 当重击击飞对手后，玩家按下 Tap 或前划（`action == 1 || action == 4 || action == 32`）时，消费 `g_p0_after_heavy`，首击严格归零：
+* 当重击击飞对手后，玩家按下 Tap 或前划（`action == 1 || action == 32`）时，消费 `g_p0_after_heavy`，首击严格归零：
   - 点击必打出 **L1**（TC-GATE-02）
   - 前划必打出 **前冲 M1**（TC-GATE-07，严禁出后段 M2）
+  - （注：修正了将 `action == 4` 误作前冲的历史笔误，动作码 4 严格为松开格挡 `ReleaseBlock`）
 
 ### 4. 必杀技三路清链保障 (Special Attack Enter & Exit)
 彻底解决 SP 特技施放后右滑误出 M2 的问题：
@@ -107,13 +109,14 @@ if (action == 0x100) {
 - **输入层 (`hook_154 action 0x200`)**：玩家点击必杀技按键瞬间，执行 `reset_player_attack_chain(self)`；
 - **退出层 (`hook_155`)**：`PlayerSpecialAttackState.OnExit` 状态退出时，通过 `g_p0_controller` 兜底强行清链。
 
-### 5. 900ms 空等超时与倒地保护机制 (TC-GATE-04)
+### 5. 原生 TuningGameplay 调优与 900ms 超时保护机制 (TC-GATE-04)
+- **Server 数据配置层（根本解）**：
+  在 `Server/gamedata.py` 的 `bcg-combat` 中下发 `attackChainResetTime = 0.8` 以及完整战斗调优参数，激活客户端原厂 `TuningGameplay` 内置的连招空等重置机制。
 - **POST 阶段更新时间戳**：
   必须在原生引擎真正接受并执行了攻击动作时（`int action_ok = ((uintptr_t)r != 0);` 且 `action == 1 || action == 32 || action == 0x100`），才记录 `g_p0_last_attack_ms = propgo_now_ms()`。
   - **关键保护**：当角色处于受创硬直或倒地期间，玩家盲目狂点屏幕右侧 Tap 时，底层由于 `CanAttack == false` 会返回 `action_ok == 0`，**绝不刷新时间戳**！
-- **FixedUpdate 轮询清链 (`hook_145`)**：
-  当角色倒地、受击无法攻击、或者站立停顿超过 `COMBO_IDLE_RESET_MS`（900ms）后，`hook_145` 自动执行 `reset_player_attack_chain(g_p0_controller)`。
-  - **效果**：角色倒地 1~2 秒起身后，攻击链在地面上就已被清零，起身后还手首击**百分之百为 L1 / M1**！
+- **FixedUpdate 轮询兜底 (`hook_145`)**：
+  当角色倒地、受击无法攻击、或者站立停顿超过 `COMBO_IDLE_RESET_MS`（900ms）后，`hook_145` 兜底执行 `reset_player_attack_chain(g_p0_controller)`。
 
 ### 6. 格挡长短按区分机制 (TC-GATE-05)
 - **短按格挡（< 200ms）**：松开或接反击（`action == 4 || action == 1 || action == 32 || action == 0x100`）时立即 abort block timer，连招进度完整保留；
