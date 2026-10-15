@@ -210,6 +210,88 @@ _BASE_STATS_OVERRIDE = {
     },
 }
 
+# Per-bot baseline 5-star max (rank=5, level=50 / 100-forge) stats (HP, ATK) from Excel J & K columns
+_BOT_BASE_STATS = {
+    "acidstorm_gs_leader2015": (36950, 2755),
+    "arcee_gs_deluxe2014": (43750, 3070),
+    "barricade_cin_dotm": (40250, 3040),
+    "bitstream_gs_leader2015": (37400, 2770),
+    "blaster_gs_leader2016": (37850, 2780),
+    "bludgeon_gs_rd20": (44820, 3040),
+    "bonecrusher_cin_rotf": (45450, 2965),
+    "breakdown_gs": (40150, 3020),
+    "bumblebee_cin_dotm": (37100, 2810),
+    "bumblebee_gs_kabam": (39400, 2960),
+    "cheetor_bw_transmetal": (39200, 3085),
+    "chromia_gs_kabam": (44500, 2985),
+    "cliffjumper_gs_kabam": (44300, 3060),
+    "cyclonus_gs_uw06": (38100, 2740),
+    "deadend_gs_deluxe2015": (44150, 3040),
+    "dinobot_bw_kabam": (37600, 2790),
+    "dirge_gs_deluxe2008": (44950, 2945),
+    "dragstrip_gs_deluxe2016": (44100, 3050),
+    "drift_cin_aoe": (44250, 3060),
+    "fte_optimus_gs_t3": (38400, 2780),
+    "fte_stars_gs_t3": (37251, 2669),
+    "galvatron_gs_voyager2016": (46250, 3085),
+    "grimlock_gs_mp08": (46320, 3465),
+    "grindor_cin_rotf": (45720, 3480),
+    "hotlink_gs_leader2015": (44920, 3525),
+    "hotrod_cin_tlk": (43900, 3080),
+    "hound_cin_tlk": (44665, 3089),
+    "ionstorm_gs_leader2015": (36950, 2755),
+    "ironhide_cin_rotf": (45850, 3045),
+    "ironhide_gs_kabam": (44620, 3470),
+    "jazz_gs_twm05": (39600, 3075),
+    "jetfire_gs_leader2014": (38250, 2795),
+    "kickback_gs_kabam": (40650, 3080),
+    "lifeline_gs_deluxe2014": (37150, 2740),
+    "megatron_cin_rotf": (45512, 2911),
+    "megatron_gs_leader2015": (38250, 2795),
+    "megatronus_gs_kabam": (46753, 3123),
+    "mirage_gs_deluxe2016": (37640, 2821),
+    "mixmaster_cin_rotf": (44750, 2965),
+    "motormaster_gs_voyager2015": (45380, 3515),
+    "necrotronus_gs_kabam": (46150, 3075),
+    "nemesisprime_gs_voyager2015": (38200, 2785),
+    "novastorm_gs_leader2015": (45200, 2980),
+    "optimusprimal_bw_mp32": (45927, 3578),
+    "optimusprime_cin_tf": (46340, 3457),
+    "optimusprime_sg_voyager2015": (45150, 3495),
+    "prowl_gs_deluxe2016": (40556, 3063),
+    "ramjet_gs_deluxe2008": (43857, 2942),
+    "ratchet_gs_kabam": (37651, 2668),
+    "rhinox_gs_voyager2014": (38450, 2715),
+    "rodimusprime_gs_mp09": (37800, 2770),
+    "scorponok_bw_kabam": (45100, 2972),
+    "sharkticon_gs_brawler": (44780, 3445),
+    "sharkticon_gs_demolition": (44550, 2995),
+    "sharkticon_gs_kabam": (39900, 2970),
+    "sharkticon_gs_scout": (40300, 2990),
+    "sharkticon_gs_tactician": (37350, 2735),
+    "sharkticon_gs_tech": (37300, 2735),
+    "sharkticon_gs_warrior": (44700, 2990),
+    "shockwave_gs": (38600, 2825),
+    "sideswipe_gs": (39800, 3050),
+    "skywarp_gs_leader2015": (37200, 2765),
+    "slipstream_gs": (40800, 2980),
+    "soundblaster_gs_mp13b": (37450, 2765),
+    "soundwave_gs": (38100, 2760),
+    "starsaber_gs_leader2014": (37900, 2775),
+    "starscream_ghost_gs": (41100, 3060),
+    "sunstorm_gs_leader2015": (45300, 2950),
+    "sunstreaker_gs_deluxe2008": (44250, 3560),
+    "tantrum_gs_kabam": (44850, 3590),
+    "thrust_gs_deluxe2008": (40400, 2950),
+    "thundercracker_gs_leader2015": (45514, 3531),
+    "ultramagnus_gs_leader": (38500, 2760),
+    "ultramagnus_sg_leader": (45650, 3025),
+    "waspinator_gs_deluxe": (43800, 2955),
+    "wheeljack_gs_mp20": (36838, 2729),
+    "wildrider_gs_deluxe2016": (44380, 3545),
+    "windblade_gs": (39100, 3070),
+}
+
 # Synchronize with SQLite database (Server/tftf_database.db) if available
 _DB_PATH = os.path.join(HERE, "tftf_database.db")
 if os.path.exists(_DB_PATH):
@@ -225,8 +307,8 @@ if os.path.exists(_DB_PATH):
                 "atk_mult": float(atkm),
             }
             _CLASS_MOD[cid] = (float(hpm), float(atkm))
-        for row in _c.execute("SELECT bot_id, health_mult, attack_mult, crit_chance, crit_damage FROM characters"):
-            bid, hm, am, cc, cd = row
+        for row in _c.execute("SELECT bot_id, health_mult, attack_mult, crit_chance, crit_damage, hp, attack FROM characters"):
+            bid, hm, am, cc, cd, hp_val, atk_val = row
             d = _BASE_STATS_OVERRIDE.get(bid, {})
             if hm is not None and hm != 1.0:
                 d["health_mult"] = float(hm)
@@ -238,6 +320,8 @@ if os.path.exists(_DB_PATH):
                 d["crit_damage"] = float(cd)
             if d:
                 _BASE_STATS_OVERRIDE[bid] = d
+            if hp_val is not None and atk_val is not None:
+                _BOT_BASE_STATS[bid] = (int(hp_val), int(atk_val))
         _conn.close()
     except Exception as e:
         print(f"Warning: Failed to load stats from {_DB_PATH}: {e}")
@@ -246,6 +330,15 @@ if os.path.exists(_DB_PATH):
 def base_stats(bid, rank=1, level=1):
     """Authored HP/attack for a bot at a given rank/level. Pure, deterministic,
     and original. Scaled so enemy encounters and player squad are evenly matched."""
+    if bid in _BOT_BASE_STATS:
+        max_hp, max_atk = _BOT_BASE_STATS[bid]
+        if rank == 5 and level == 50:
+            return max_hp, max_atk
+        rank_mult = 1.0 + 0.05 * (max(1, rank) - 1)
+        level_add = (max(1, level) - 1) / 500.0
+        scale = (rank_mult * (1.0 + level_add)) / 1.3176
+        return int(round(max_hp * scale)), int(round(max_atk * scale))
+
     faction, klass, star = ROSTER.get(bid, ("decepticon", "tact", 5))
     if bid.startswith("sharkticon_"):
         # Lore constraint: Sharkticons are cannon-fodder ("水货").
