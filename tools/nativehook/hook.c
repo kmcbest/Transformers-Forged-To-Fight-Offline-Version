@@ -5109,15 +5109,22 @@ void* hook_145(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
         // GATE-04: an idle gap longer than the combo window ends the chain. Nothing native was
         // observable for this -- waiting in place left l untouched and produced no reset line -- yet
         // the required behaviour is that attacking again after a pause starts at L1/M1.
-        if (g_p0_last_attack_ms && obj_ok(g_p0_controller)) {
-            uint64_t idle = propgo_now_ms() - g_p0_last_attack_ms;
-            if (idle >= COMBO_IDLE_RESET_MS) {
-                g_p0_last_attack_ms = 0;
-                flog("COMBAT_IDLE: %llu ms without an attack (>= %d ms window) -> reset attack chain to L1",
-                     (unsigned long long)idle, COMBO_IDLE_RESET_MS);
-                reset_player_attack_chain(g_p0_controller);
-                g_p0_combo_ended = 0;
-                g_p0_after_heavy = 0;
+        if (g_p0_controller && obj_ok(g_p0_controller)) {
+            typedef int (*fn_is_attacking)(void*, void*);
+            fn_is_attacking is_atk = (fn_is_attacking)(g_base + 0x11752C8);
+            if (is_atk && is_atk(g_p0_controller, NULL)) {
+                // While P0 is actively attacking or in attack recovery, keep the combo window fresh
+                g_p0_last_attack_ms = propgo_now_ms();
+            } else if (g_p0_last_attack_ms) {
+                uint64_t idle = propgo_now_ms() - g_p0_last_attack_ms;
+                if (idle >= COMBO_IDLE_RESET_MS) {
+                    g_p0_last_attack_ms = 0;
+                    flog("COMBAT_IDLE: %llu ms without an attack (>= %d ms window) -> reset attack chain to L1",
+                         (unsigned long long)idle, COMBO_IDLE_RESET_MS);
+                    reset_player_attack_chain(g_p0_controller);
+                    g_p0_combo_ended = 0;
+                    g_p0_after_heavy = 0;
+                }
             }
         }
         if (g_p0_block_enter_ms > 0 && !g_p0_block_reset_done && g_p0_controller) {
@@ -5605,13 +5612,6 @@ void* hook_160(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
                 g_p1_block_enter_ms = 0;
                 reset_player_attack_chain(pc);
             }
-        } else if (obj_ok(g_p0_controller)) {
-            g_p0_block_enter_ms = 0;
-            g_p0_block_reset_done = 0;
-            g_p0_combo_ended = 0;
-            g_p0_after_heavy = 0;
-            flog("SIDESTEP_ENTER (0x00E3349C): fallback reset via cached g_p0_controller");
-            reset_player_attack_chain(g_p0_controller);
         }
     });
     return r;
@@ -5920,13 +5920,6 @@ void* hook_165(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
                 flog("HITREACT_ENTER (0x0117FEC4) on P1: hit reaction resets attack chain");
                 reset_player_attack_chain(pc);
             }
-        } else if (obj_ok(g_p0_controller)) {
-            g_p0_block_enter_ms = 0;
-            g_p0_block_reset_done = 0;
-            g_p0_combo_ended = 0;
-            g_p0_after_heavy = 0;
-            flog("HITREACT_ENTER (0x0117FEC4): fallback reset via cached g_p0_controller");
-            reset_player_attack_chain(g_p0_controller);
         }
     });
     return r;
@@ -5954,10 +5947,6 @@ void* hook_171(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
                 flog("BLOCK_ENTER (0x1173848): P1 started guarding at %llu ms",
                      (unsigned long long)g_p1_block_enter_ms);
             }
-        } else if (obj_ok(g_p0_controller)) {
-            g_p0_block_enter_ms = propgo_now_ms();
-            g_p0_block_reset_done = 0;
-            flog("BLOCK_ENTER (0x1173848): pc unresolvable -> fallback to P0 guard timer");
         }
     });
     return r;
@@ -5983,13 +5972,6 @@ void* hook_172(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
                 flog("DODGE_ENTER (0x0117F614) on P1: real dodge resets attack chain");
                 reset_player_attack_chain(pc);
             }
-        } else if (obj_ok(g_p0_controller)) {
-            g_p0_block_enter_ms = 0;
-            g_p0_block_reset_done = 0;
-            g_p0_combo_ended = 0;
-            g_p0_after_heavy = 0;
-            flog("DODGE_ENTER (0x0117F614): a0+0x18 did not resolve (pc=%p) -> reset via cached g_p0_controller", pc);
-            reset_player_attack_chain(g_p0_controller);
         }
     });
     return r;

@@ -114,9 +114,10 @@ if (action == 0x100) {
   在 `Server/gamedata.py` 的 `bcg-combat` 中下发 `attackChainResetTime = 0.8` 以及完整战斗调优参数，激活客户端原厂 `TuningGameplay` 内置的连招空等重置机制。
 - **POST 阶段更新时间戳**：
   必须在原生引擎真正接受并执行了攻击动作时（`int action_ok = ((uintptr_t)r != 0);` 且 `action == 1 || action == 32 || action == 0x100`），才记录 `g_p0_last_attack_ms = propgo_now_ms()`。
-  - **关键保护**：当角色处于受创硬直或倒地期间，玩家盲目狂点屏幕右侧 Tap 时，底层由于 `CanAttack == false` 会返回 `action_ok == 0`，**绝不刷新时间戳**！
-- **FixedUpdate 轮询兜底 (`hook_145`)**：
-  当角色倒地、受击无法攻击、或者站立停顿超过 `COMBO_IDLE_RESET_MS`（900ms）后，`hook_145` 兜底执行 `reset_player_attack_chain(g_p0_controller)`。
+- **出招/后摇期间保鲜与 FixedUpdate 轮询兜底 (`hook_145`)**：
+  在 `hook_145` 中通过 `PlayerController.get_IsAttacking()` (0x011752C8) 实时检测攻击状态：只要 P0 处于出招或后摇恢复中，持续刷新 `g_p0_last_attack_ms`，防止空挥或被对手规避（Evade）后因动作较长导致 900ms 窗口提前过期。只有在角色完全动作恢复为可行动 Idle、且停顿发呆超过 `COMBO_IDLE_RESET_MS`（900ms）后，才执行 `reset_player_attack_chain(g_p0_controller)`。
+- **敌我状态机严格隔离（对手规避不破连招）**：
+  在 `hook_160` (Sidestep), `hook_165` (HitReact), `hook_171` (Block), `hook_172` (Dodge/Evade) 中，严格仅在状态机归属于 P0（`pidx == 0`）时才清空 P0 连招链；彻底移除所有跨角色降级回退到 `g_p0_controller` 的有毒逻辑，确保对手 P1 规避/后撤时不误清 P0 的连击计数。
 
 ### 6. 格挡长短按区分机制 (TC-GATE-05)
 - **短按格挡（< 200ms）**：松开或接反击（`action == 4 || action == 1 || action == 32 || action == 0x100`）时立即 abort block timer，连招进度完整保留；

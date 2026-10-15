@@ -49,27 +49,23 @@ static void truth_reset_player_attack_chain(void* pc) {
  * ======================================================== */
 void truth_combat_fixed_update(void) {
     // GATE-04: 900ms 空等超时清链
-    // 当角色停顿不攻击、或被击倒在地超过 900ms 时，自动重置攻击链为 L1/M1
-    if (g_p0_last_attack_ms && obj_ok(g_p0_controller)) {
-        uint64_t idle = propgo_now_ms() - g_p0_last_attack_ms;
-        if (idle >= COMBO_IDLE_RESET_MS) {
-            g_p0_last_attack_ms = 0;
-            flog("COMBAT_IDLE: %llu ms without an attack (>= %d ms window) -> reset attack chain to L1",
-                 (unsigned long long)idle, COMBO_IDLE_RESET_MS);
-            reset_player_attack_chain(g_p0_controller);
-            g_p0_combo_ended = 0;
-            g_p0_after_heavy = 0;
-        }
-    }
-
-    // GATE-05: 格挡长按（>=200ms）清链，短按（<200ms）保留连招
-    if (g_p0_block_enter_ms > 0 && !g_p0_block_reset_done && g_p0_controller) {
-        uint64_t held = propgo_now_ms() - g_p0_block_enter_ms;
-        if (held >= 200) {
-            g_p0_block_reset_done = 1;
-            flog("BLOCK_HELD: P0 held guard stance for %llu ms >= 200ms -> attack chain reset to L1",
-                 (unsigned long long)held);
-            reset_player_attack_chain(g_p0_controller);
+    // 当角色出招/后摇时持续刷新时间戳；只有在完全动作恢复、停顿不攻击、或被击倒在地超过 900ms 时，才自动重置攻击链为 L1/M1
+    if (g_p0_controller && obj_ok(g_p0_controller)) {
+        typedef int (*fn_is_attacking)(void*, void*);
+        fn_is_attacking is_atk = (fn_is_attacking)(g_base + 0x11752C8);
+        if (is_atk && is_atk(g_p0_controller, NULL)) {
+            // While P0 is actively attacking or in attack recovery, keep the combo window fresh
+            g_p0_last_attack_ms = propgo_now_ms();
+        } else if (g_p0_last_attack_ms) {
+            uint64_t idle = propgo_now_ms() - g_p0_last_attack_ms;
+            if (idle >= COMBO_IDLE_RESET_MS) {
+                g_p0_last_attack_ms = 0;
+                flog("COMBAT_IDLE: %llu ms without an attack (>= %d ms window) -> reset attack chain to L1",
+                     (unsigned long long)idle, COMBO_IDLE_RESET_MS);
+                reset_player_attack_chain(g_p0_controller);
+                g_p0_combo_ended = 0;
+                g_p0_after_heavy = 0;
+            }
         }
     }
 
@@ -93,7 +89,7 @@ void* truth_hook_160(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5,
     void* pc = fld_p(a0, 0x18);
     void* r = H[160].orig(a0, a1, a2, a3, a4, a5, a6, a7);
     PROTECT({
-        void* target = (obj_ok(pc) && *(int32_t*)((uintptr_t)pc + 0xF4) == 0) ? pc : (obj_ok(g_p0_controller) ? g_p0_controller : NULL);
+        void* target = (obj_ok(pc) && *(int32_t*)((uintptr_t)pc + 0xF4) == 0) ? pc : NULL;
         if (target) {
             g_p0_block_enter_ms = 0;
             g_p0_block_reset_done = 0;
@@ -111,7 +107,7 @@ void* truth_hook_165(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5,
     void* pc = fld_p(a0, 0x18);
     void* r = H[165].orig(a0, a1, a2, a3, a4, a5, a6, a7);
     PROTECT({
-        void* target = (obj_ok(pc) && *(int32_t*)((uintptr_t)pc + 0xF4) == 0) ? pc : (obj_ok(g_p0_controller) ? g_p0_controller : NULL);
+        void* target = (obj_ok(pc) && *(int32_t*)((uintptr_t)pc + 0xF4) == 0) ? pc : NULL;
         if (target) {
             g_p0_block_enter_ms = 0;
             g_p0_block_reset_done = 0;
@@ -129,7 +125,7 @@ void* truth_hook_171(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5,
     void* pc = fld_p(a0, 0x18);
     void* r = H[171].orig(a0, a1, a2, a3, a4, a5, a6, a7);
     PROTECT({
-        void* target = (obj_ok(pc) && *(int32_t*)((uintptr_t)pc + 0xF4) == 0) ? pc : (obj_ok(g_p0_controller) ? g_p0_controller : NULL);
+        void* target = (obj_ok(pc) && *(int32_t*)((uintptr_t)pc + 0xF4) == 0) ? pc : NULL;
         if (target) {
             g_p0_controller = target;
             g_p0_block_enter_ms = propgo_now_ms();
@@ -145,7 +141,7 @@ void* truth_hook_172(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5,
     void* pc = fld_p(a0, 0x18);
     void* r = H[172].orig(a0, a1, a2, a3, a4, a5, a6, a7);
     PROTECT({
-        void* target = (obj_ok(pc) && *(int32_t*)((uintptr_t)pc + 0xF4) == 0) ? pc : (obj_ok(g_p0_controller) ? g_p0_controller : NULL);
+        void* target = (obj_ok(pc) && *(int32_t*)((uintptr_t)pc + 0xF4) == 0) ? pc : NULL;
         if (target) {
             g_p0_block_enter_ms = 0;
             g_p0_block_reset_done = 0;
