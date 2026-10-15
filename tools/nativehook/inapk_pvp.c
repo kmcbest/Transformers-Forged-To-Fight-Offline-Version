@@ -289,7 +289,7 @@ static int build_standard_pvp_response(char *buf, size_t max_len) {
     if (s_pvp.state != 0 && s_pvp.state != 0x40) {
         /* Append bcgData to update activeTeams for arena_versus */
         n = snprintf(buf + offset, max_len - offset,
-            ",\"bcgData\":[{\"activeTeams\":[{\"aid\":\"%s\",\"type\":\"pvp\",\"modes\":[\"pvp\"],\"expire\":-1,\"heroes\":{",
+            ",\"bcgData\":[{\"updates\":{\"activeTeams\":[{\"aid\":\"%s\",\"type\":\"pvp\",\"modes\":[\"pvp\"],\"expire\":-1,\"heroes\":{",
             s_pvp.pvp_id);
         if (n < 0 || (size_t)n >= max_len - offset) return -1;
         offset += n;
@@ -317,17 +317,28 @@ static int build_standard_pvp_response(char *buf, size_t max_len) {
                 offset += n;
             }
             if (hv && vn > 0) {
-                n = snprintf(buf + offset, max_len - offset, "\"%s\":%.*s", s_pvp.user_heroes[h], (int)vn, hv);
+                const char *p_pvpb = strstr((const char*)hv, "\"pvpb\":{}");
+                if (p_pvpb && (size_t)(p_pvpb - (const char*)hv) < vn) {
+                    size_t pre_len = (size_t)(p_pvpb - (const char*)hv);
+                    size_t post_len = vn - pre_len - 9;
+                    n = snprintf(buf + offset, max_len - offset,
+                        "\"%s\":%.*s\"pvpb\":{\"m\":1.0}%.*s",
+                        s_pvp.user_heroes[h],
+                        (int)pre_len, hv,
+                        (int)post_len, p_pvpb + 9);
+                } else {
+                    n = snprintf(buf + offset, max_len - offset, "\"%s\":%.*s", s_pvp.user_heroes[h], (int)vn, hv);
+                }
             } else {
                 n = snprintf(buf + offset, max_len - offset,
-                    "\"%s\":{\"bid\":\"%s\",\"rank\":4,\"level\":40,\"sig_lvl\":20,\"rating_hp\":2000,\"max_hp\":2000,\"rating_attack\":500,\"attack\":500}",
+                    "\"%s\":{\"bid\":\"%s\",\"rank\":4,\"level\":40,\"sig_lvl\":20,\"rating_hp\":2000,\"max_hp\":2000,\"rating_attack\":500,\"attack\":500,\"pvpb\":{\"m\":1.0}}",
                     s_pvp.user_heroes[h], s_pvp.user_heroes[h]);
             }
             if (n < 0 || (size_t)n >= max_len - offset) return -1;
             offset += n;
         }
 
-        n = snprintf(buf + offset, max_len - offset, "}}]}]}}");
+        n = snprintf(buf + offset, max_len - offset, "}}]}}]}}");
         if (n < 0 || (size_t)n >= max_len - offset) return -1;
         return offset + n;
     } else {
@@ -484,7 +495,7 @@ const unsigned char *handle_pvp_request(const char *method, const char *p, const
         g_p1_last_hp = g_p1_max_hp;
 
         int offset = snprintf(s_resp_buf, sizeof s_resp_buf,
-            "{\"error\":null,\"result\":{},\"async\":[{\"component\":\"pvp\",\"message\":\"match-activated\",\"payload\":{"
+            "{\"error\":null,\"result\":{},\"async\":[{\"component\":\"PVPManager\",\"message\":\"match-activated\",\"payload\":{"
             "\"matchAttributes\":{"
                 "\"userHero\":{\"bid\":\"%s\",\"rank\":5,\"level\":50,\"sig_lvl\":100,\"max_hp\":%d,\"attack\":%d,\"rating_hp\":%d,\"rating_attack\":%d,\"special_attacks\":0},"
                 "\"opponentHero\":{\"bid\":\"%s\",\"rank\":4,\"level\":40,\"sig_lvl\":20,\"max_hp\":%d,\"attack\":%d,\"rating_hp\":%d,\"rating_attack\":%d,\"special_attacks\":0}"
@@ -541,7 +552,7 @@ const unsigned char *handle_pvp_request(const char *method, const char *p, const
         }
 
         int offset = snprintf(s_resp_buf, sizeof s_resp_buf,
-            "{\"error\":null,\"result\":{},\"async\":[{\"component\":\"pvp\",\"message\":\"match-resolved\",\"payload\":{"
+            "{\"error\":null,\"result\":{},\"async\":[{\"component\":\"PVPManager\",\"message\":\"match-resolved\",\"payload\":{"
             "\"pvpMatchData\":[");
         offset = append_pvp_match_data_json(s_resp_buf, sizeof s_resp_buf, offset);
         if (offset > 0) {

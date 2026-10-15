@@ -7890,6 +7890,29 @@ static void* hooked_PVPPlayerContestantItem_Init(void* this_ptr, void* p, void* 
     return ret;
 }
 
+static fn8 orig_PVPPlaceHeroWidget_Init = NULL;
+static void* hooked_PVPPlaceHeroWidget_Init(void* this_ptr, void* data, void* completed, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    LOG("[PVP] PVPPlaceHeroWidget.Init: this=%p data=%p completed=%p", this_ptr, data, completed);
+    if (!data) {
+        typedef void* (*fn_GetSavedTeam)(void*, void*);
+        fn_GetSavedTeam get_saved = (fn_GetSavedTeam)(g_base + 0x00C200EC);
+        if (get_saved && g_strnew) {
+            void* sid = g_strnew("0");
+            PROTECT(
+                data = get_saved(sid, NULL);
+            );
+            LOG("[PVP] PVPPlaceHeroWidget.Init: data was NULL, patched with GetSavedTeam('0')=%p", data);
+        }
+    }
+    void* ret = NULL;
+    PROTECT(
+        if (orig_PVPPlaceHeroWidget_Init) {
+            ret = orig_PVPPlaceHeroWidget_Init(this_ptr, data, completed, a3, a4, a5, a6, a7);
+        }
+    );
+    return ret;
+}
+
 typedef void* (*fn_get_gameObject)(void*);
 typedef void (*fn_SetActive)(void*, int);
 typedef int (*fn_get_activeSelf)(void*);
@@ -8332,6 +8355,7 @@ static void* installer(void* arg){
     // PVP hooks:
     inline_hook((void*)(g_base + 0x11FCD30), (void*)hooked_GetPVPArenaCost, &orig_GetPVPArenaCost);
     inline_hook((void*)(g_base + 0x00F19D60), (void*)hooked_PVPPlayerContestantItem_Init, &orig_PVPPlayerContestantItem_Init);
+    inline_hook((void*)(g_base + 0x1204900), (void*)hooked_PVPPlaceHeroWidget_Init, &orig_PVPPlaceHeroWidget_Init);
 
     // Prefight screen GameObject activation hooks (disabled: caused sticky 3D bots & leaks across scenes):
     // inline_hook((void*)(g_base + 0x1B50CA8), (void*)hooked_il2cpp_GameObject_SetActive, &orig_il2cpp_GameObject_SetActive);
