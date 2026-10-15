@@ -262,6 +262,18 @@ def build(
     other_abi_prefix = f"lib/{ARMV7 if abi == ARM64 else ARM64}/"
 
     with zipfile.ZipFile(source, "r") as zin, zipfile.ZipFile(destination, "w") as zout:
+        orig_writestr = zout.writestr
+        written_names = set()
+
+        def safe_writestr(zinfo_or_name, data, *args, **kwargs):
+            fname = zinfo_or_name.filename if isinstance(zinfo_or_name, zipfile.ZipInfo) else str(zinfo_or_name)
+            if fname in written_names:
+                return
+            written_names.add(fname)
+            return orig_writestr(zinfo_or_name, data, *args, **kwargs)
+
+        zout.writestr = safe_writestr
+
         names = set(zin.namelist())
         for required in (
             "AndroidManifest.xml", METADATA, SPARX_MANIFEST, ENDPOINT_CONFIG,
@@ -408,7 +420,7 @@ def build(
                     _rdir = Path("assets_redeco")
                     if _rdir.is_dir():
                         for _b in _rdir.glob("*.assetbundle"):
-                            if _b.stem not in ("towers", "relics", "buildings", "primordial_base", "character_audio", "moves", "character_fx_procedural", "chinesesimplified"):
+                            if _b.stem not in ("towers", "relics", "buildings", "primordial_base", "character_audio", "character_fx", "character_fx_procedural", "moves", "chinesesimplified"):
                                 packs[f"{_b.stem}_odr"] = f"{_b.stem}_odr"
                     pdict["packs"] = packs
                     data = json.dumps(pdict, indent=4).encode("utf-8")
@@ -599,8 +611,10 @@ def build(
 
         # Inject Netflix Edition characters: Chromia and Dead End
         netflix_dir = Path("assets_netflix")
+        redeco_dir = Path("assets_redeco")
         if netflix_dir.is_dir():
-            chromia_bundle = netflix_dir / "chromia_gs_kabam.assetbundle"
+            chromia_redeco = redeco_dir / "chromia_gs_kabam.assetbundle"
+            chromia_bundle = chromia_redeco if chromia_redeco.exists() else (netflix_dir / "chromia_gs_kabam.assetbundle")
             if chromia_bundle.exists():
                 cdata = chromia_bundle.read_bytes()
                 zout.writestr("assets/assetpack/chromia_gs_kabam_odr/chromia_gs_kabam.assetbundle", cdata)
@@ -618,7 +632,7 @@ def build(
                                 "bundles/characters/merged/chromia_gs_kabam_lw": "Assets/Bundles/Characters/Merged/Chromia_GS_Kabam/Chromia_GS_Kabam_lw.prefab",
                                 "bundles/characters/merged/chromia_gs_kabam": "Assets/Bundles/Characters/Merged/Chromia_GS_Kabam/Chromia_GS_Kabam.prefab"
                             },
-                            "directory": "odr", "deps": ["character_fx", "moves", "character_audio"],
+                            "directory": "odr", "deps": ["character_fx", "character_fx_procedural", "moves", "character_audio"],
                             "contenthash": None, "size": len(cdata), "hash": 0, "parent": "", "mount": "None"
                         }
                     },
@@ -644,7 +658,7 @@ def build(
                                 "bundles/characters/merged/deadend_gs_deluxe2015_lw": "Assets/Bundles/Characters/Merged/DeadEnd_GS_Deluxe2015/Deadend_GS_Deluxe2015_lw.prefab",
                                 "bundles/characters/merged/deadend_gs_deluxe2015": "Assets/Bundles/Characters/Merged/DeadEnd_GS_Deluxe2015/Deadend_GS_Deluxe2015.prefab"
                             },
-                            "directory": "odr", "deps": ["character_fx", "moves", "character_audio"],
+                            "directory": "odr", "deps": ["character_fx", "character_fx_procedural", "moves", "character_audio"],
                             "contenthash": None, "size": len(ddata), "hash": 0, "parent": "", "mount": "None"
                         }
                     },
@@ -670,7 +684,7 @@ def build(
         if redeco_dir.is_dir():
             for bpath in redeco_dir.glob("*.assetbundle"):
                 bot_id = bpath.stem
-                if bot_id in ("towers", "relics", "buildings", "primordial_base", "character_audio", "moves", "character_fx_procedural", "chinesesimplified"):
+                if bot_id in ("towers", "relics", "buildings", "primordial_base", "character_audio", "character_fx", "moves", "character_fx_procedural", "chinesesimplified", "chromia_gs_kabam", "deadend_gs_deluxe2015"):
                     continue
                 bdata = bpath.read_bytes()
                 bundle_target = f"assets/assetpack/{bot_id}_odr/{bot_id}.assetbundle"

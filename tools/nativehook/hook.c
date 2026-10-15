@@ -4615,7 +4615,7 @@ static void sync_actor_name_for_track(void* track) {
     if (!obj_ok(track) || !g_strnew) return;
     void* f_str = *(void**)((char*)track + 0x28); // entityFullId
     if (!f_str || !obj_ok(f_str)) return;
-    char fullId[128] = {0};
+    char fullId[512] = {0};
     if (!read_str(f_str, fullId, sizeof(fullId)) || !fullId[0]) return;
 
     void* mc = *(void**)((char*)track + 0x80); // parentContainer
@@ -4681,7 +4681,7 @@ void* hook_139(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     PROTECT({
         if (obj_ok(a0)) {
             char name[64] = {0};
-            char fullId[128] = {0};
+            char fullId[512] = {0};
             void* n_str = *(void**)((char*)a0 + 0x18); // entityName
             void* f_str = *(void**)((char*)a0 + 0x28); // entityFullId
             if (n_str && obj_ok(n_str)) read_str(n_str, name, sizeof(name));
