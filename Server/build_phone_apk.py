@@ -640,7 +640,8 @@ def build(
                 }, indent=4)
                 zout.writestr("assets/chromia_gs_kabam_odr/toc.txt", chromia_toc)
 
-            deadend_bundle = netflix_dir / "deadend_gs_deluxe2015.assetbundle"
+            deadend_redeco = redeco_dir / "deadend_gs_deluxe2015.assetbundle"
+            deadend_bundle = deadend_redeco if deadend_redeco.exists() else (netflix_dir / "deadend_gs_deluxe2015.assetbundle")
             if deadend_bundle.exists():
                 ddata = deadend_bundle.read_bytes()
                 zout.writestr("assets/assetpack/deadend_gs_deluxe2015_odr/deadend_gs_deluxe2015.assetbundle", ddata)
