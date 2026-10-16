@@ -7848,9 +7848,72 @@ static void* hooked_ToggleAutoFight(void* a0, void* a1, void* a2, void* a3, void
     return NULL;
 }
 
+static void* s_pvp_manager_instance = NULL;
+static void* s_last_arena_event = NULL;
+
+static fn8 orig_QuitArena = NULL;
+static void* hooked_QuitArena(void* this_ptr, void* arenaID, void* onComplete, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    LOG("[PVP] PVPManager.QuitArena: this=%p arenaID=%p onComplete=%p", this_ptr, arenaID, onComplete);
+    if (this_ptr) {
+        s_pvp_manager_instance = this_ptr;
+        *(void**)((uintptr_t)this_ptr + 0x38) = NULL;
+    }
+    void* ret = NULL;
+    PROTECT(
+        if (orig_QuitArena) {
+            ret = orig_QuitArena(this_ptr, arenaID, onComplete, a3, a4, a5, a6, a7);
+        }
+    );
+    return ret;
+}
+
+static fn8 orig_get_Arena = NULL;
+static void* hooked_get_Arena(void* this_ptr, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    void* ret = NULL;
+    PROTECT(
+        if (orig_get_Arena) {
+            ret = orig_get_Arena(this_ptr, a1, a2, a3, a4, a5, a6, a7);
+        }
+    );
+    if (ret) {
+        s_last_arena_event = ret;
+    } else if (s_last_arena_event) {
+        LOG("[PVP] PVPArenaResultsScreenModel.get_Arena: Match was null, returning cached s_last_arena_event=%p", s_last_arena_event);
+        ret = s_last_arena_event;
+    }
+    return ret;
+}
+
+static fn8 orig_SelectArena = NULL;
+static void* hooked_SelectArena(void* this_ptr, void* arena, void* scene, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    LOG("[PVP] PVPFlow.SelectArena: this=%p arena=%p scene=%p", this_ptr, arena, scene);
+    if (arena) {
+        s_last_arena_event = arena;
+    } else if (s_last_arena_event) {
+        LOG("[PVP] PVPFlow.SelectArena: arena was NULL, substituting cached s_last_arena_event=%p", s_last_arena_event);
+        arena = s_last_arena_event;
+    }
+
+    /* Clear _currentMatchData on PVPManager so AdvanceFlowState() triggers FindMatch for the new series */
+    if (s_pvp_manager_instance) {
+        LOG("[PVP] PVPFlow.SelectArena: clearing _currentMatchData on PVPManager %p", s_pvp_manager_instance);
+        *(void**)((uintptr_t)s_pvp_manager_instance + 0x38) = NULL;
+    }
+
+    void* ret = NULL;
+    PROTECT(
+        if (orig_SelectArena) {
+            ret = orig_SelectArena(this_ptr, arena, scene, a3, a4, a5, a6, a7);
+        }
+    );
+    return ret;
+}
+
 static fn8 orig_GetPVPArenaCost = NULL;
 static void* hooked_GetPVPArenaCost(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     LOG("[PVP] PVPManager.GetPVPArenaCost: this=%p pid=%p arena=%p", a0, a1, a2);
+    if (a0) s_pvp_manager_instance = a0;
+    if (a2) s_last_arena_event = a2;
     if (!a2) return NULL;
     void* ret = NULL;
     PROTECT(
@@ -8353,6 +8416,9 @@ static void* installer(void* arg){
     inline_hook((void*)(g_base + 0x00FEDEF4), (void*)hooked_HudScreenSetupWindow, &orig_HudScreenSetupWindow);
 
     // PVP hooks:
+    inline_hook((void*)(g_base + 0x11FA254), (void*)hooked_QuitArena, &orig_QuitArena);
+    inline_hook((void*)(g_base + 0xD90670), (void*)hooked_get_Arena, &orig_get_Arena);
+    inline_hook((void*)(g_base + 0x11F9B6C), (void*)hooked_SelectArena, &orig_SelectArena);
     inline_hook((void*)(g_base + 0x11FCD30), (void*)hooked_GetPVPArenaCost, &orig_GetPVPArenaCost);
     inline_hook((void*)(g_base + 0x00F19D60), (void*)hooked_PVPPlayerContestantItem_Init, &orig_PVPPlayerContestantItem_Init);
     inline_hook((void*)(g_base + 0x1204900), (void*)hooked_PVPPlaceHeroWidget_Init, &orig_PVPPlaceHeroWidget_Init);

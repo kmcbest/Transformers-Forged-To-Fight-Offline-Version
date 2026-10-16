@@ -1682,6 +1682,35 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         }
         return NULL;
     }
+    if (strstr(p, "/bcg/buy-stamina") || strstr(p, "/bcg/use-stamina-item")) {
+        char hero_bid[64] = "";
+        json_string(body, end, "hero", hero_bid, sizeof hero_bid);
+        logmsg("BCG: buy-stamina hero=%s", hero_bid);
+        size_t vn = 0;
+        char hkey[96];
+        snprintf(hkey, sizeof(hkey), "@savedteam:hero:%s", hero_bid);
+        const unsigned char *hv = lookup(hkey, &vn);
+        char resp_buf[2048];
+        int rlen = 0;
+        if (hv && vn > 0) {
+            rlen = snprintf(resp_buf, sizeof(resp_buf),
+                "{\"error\":null,\"result\":{\"updates\":{\"heroes\":[%.*s]}}}",
+                (int)vn, hv);
+        } else {
+            rlen = snprintf(resp_buf, sizeof(resp_buf),
+                "{\"error\":null,\"result\":{\"updates\":{\"heroes\":[{"
+                "\"entity_type\":\"bot\",\"bid\":\"%s\",\"rank\":5,\"level\":50,\"sig_lvl\":100,"
+                "\"stamina\":100,\"stamina_ts\":0,\"stamina_full_ts\":0,\"stt\":\"\","
+                "\"max_hp\":2000,\"attack\":500,\"rating\":2000,\"rating_hp\":2000,\"rating_attack\":500,"
+                "\"special_attacks\":3,\"pvpb\":{},\"exc\":{}"
+                "}]}}}", hero_bid);
+        }
+        if (rlen > 0 && out_add(o, resp_buf, (size_t)rlen)) {
+            *outn = o->n;
+            return o->p;
+        }
+        return NULL;
+    }
     if(strstr(p,"/quests/quest-detail/")) {
         snprintf(mid,sizeof mid,"%.63s",path_last(p));
         snprintf(g_active_quest_id, sizeof g_active_quest_id, "%s", mid);

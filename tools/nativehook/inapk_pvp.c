@@ -229,7 +229,7 @@ static int append_pvp_match_data_json(char *buf, size_t max_len, int offset) {
 
         for (int b = 0; b < 3; b++) {
             n = snprintf(buf + offset, max_len - offset,
-                "%s{\"entity_type\":\"bot\",\"bid\":\"%s\",\"rank\":%d,\"level\":%d,\"sig_lvl\":20,\"max_hp\":%d,\"attack\":%d,\"rating\":%d,\"rating_hp\":%d,\"rating_attack\":%d,\"special_attacks\":0}",
+                "%s{\"entity_type\":\"bot\",\"bid\":\"%s\",\"rank\":%d,\"level\":%d,\"sig_lvl\":20,\"max_hp\":%d,\"attack\":%d,\"rating\":%d,\"rating_hp\":%d,\"rating_attack\":%d,\"special_attacks\":3}",
                 (b > 0 ? "," : ""),
                 s_pvp.opponents[o].bot_bids[b],
                 s_pvp.opponents[o].bot_ranks[b],
@@ -272,9 +272,9 @@ static int append_pvp_match_data_json(char *buf, size_t max_len, int offset) {
     return offset + n;
 }
 
-static int build_standard_pvp_response(char *buf, size_t max_len) {
+static int build_standard_pvp_response(char *buf, size_t max_len, int is_quit) {
     int offset = snprintf(buf, max_len, "{\"error\":null,\"result\":{\"pvpMatchData\":[");
-    if (s_pvp.state != 0 && s_pvp.state != 0x40) {
+    if (!is_quit && s_pvp.state != 0 && s_pvp.state != 0x40) {
         offset = append_pvp_match_data_json(buf, max_len, offset);
         if (offset < 0) return -1;
     }
@@ -286,7 +286,63 @@ static int build_standard_pvp_response(char *buf, size_t max_len) {
     if (n < 0 || (size_t)n >= max_len - offset) return -1;
     offset += n;
 
-    if (s_pvp.state != 0 && s_pvp.state != 0x40) {
+    if (is_quit) {
+        long now = (long)time(NULL);
+        long cd_expiry = now + 3600; /* 1 hour cooldown */
+
+        n = snprintf(buf + offset, max_len - offset,
+            ",\"bcgData\":[{\"deletes\":{\"activeTeams\":[{\"aid\":\"%s\"},{\"aid\":\"arena_versus\"}]},"
+            "\"updates\":{\"heroes\":[",
+            s_pvp.pvp_id);
+        if (n < 0 || (size_t)n >= max_len - offset) return -1;
+        offset += n;
+
+        int hero_count = s_pvp.user_heroes_count;
+        int emitted = 0;
+        for (int h = 0; h < hero_count && h < 3; h++) {
+            if (!s_pvp.user_heroes[h][0]) continue;
+            size_t vn = 0;
+            char hkey[96];
+            snprintf(hkey, sizeof(hkey), "@savedteam:hero:%s", s_pvp.user_heroes[h]);
+            const unsigned char *hv = tftf_payload_lookup(hkey, &vn);
+            if (emitted > 0) {
+                n = snprintf(buf + offset, max_len - offset, ",");
+                if (n < 0 || (size_t)n >= max_len - offset) return -1;
+                offset += n;
+            }
+            if (hv && vn > 0) {
+                const char *p_stam = strstr((const char*)hv, "\"stamina\":");
+                const char *p_after = p_stam ? strstr(p_stam, ",\"stt\":") : NULL;
+                if (p_stam && p_after) {
+                    size_t pre_len = (size_t)(p_stam - (const char*)hv);
+                    size_t after_offset = (size_t)(p_after - (const char*)hv);
+                    size_t post_len = vn - after_offset;
+                    n = snprintf(buf + offset, max_len - offset,
+                        "%.*s\"stamina\":0,\"stamina_ts\":%ld,\"stamina_full_ts\":%ld%.*s",
+                        (int)pre_len, hv,
+                        cd_expiry, cd_expiry,
+                        (int)post_len, p_after);
+                } else {
+                    n = snprintf(buf + offset, max_len - offset, "%.*s", (int)vn, hv);
+                }
+            } else {
+                const EnemyStat *st = find_stat_or_default(s_pvp.user_heroes[h]);
+                n = snprintf(buf + offset, max_len - offset,
+                    "{\"entity_type\":\"bot\",\"bid\":\"%s\",\"rank\":4,\"level\":40,\"sig_lvl\":20,"
+                    "\"stamina\":0,\"stamina_ts\":%ld,\"stamina_full_ts\":%ld,\"rating_hp\":%d,\"max_hp\":%d,"
+                    "\"rating_attack\":%d,\"attack\":%d,\"special_attacks\":3,\"pvpb\":{\"m\":1.0}}",
+                    s_pvp.user_heroes[h], cd_expiry, cd_expiry,
+                    st->hp, st->hp, st->atk, st->atk);
+            }
+            if (n < 0 || (size_t)n >= max_len - offset) return -1;
+            offset += n;
+            emitted++;
+        }
+
+        n = snprintf(buf + offset, max_len - offset, "]}}]}}");
+        if (n < 0 || (size_t)n >= max_len - offset) return -1;
+        return offset + n;
+    } else if (s_pvp.state != 0 && s_pvp.state != 0x40) {
         /* Append bcgData to update activeTeams for arena_versus */
         n = snprintf(buf + offset, max_len - offset,
             ",\"bcgData\":[{\"updates\":{\"activeTeams\":[{\"aid\":\"%s\",\"type\":\"pvp\",\"modes\":[\"pvp\"],\"expire\":-1,\"heroes\":{",
@@ -331,7 +387,7 @@ static int build_standard_pvp_response(char *buf, size_t max_len) {
                 }
             } else {
                 n = snprintf(buf + offset, max_len - offset,
-                    "\"%s\":{\"bid\":\"%s\",\"rank\":4,\"level\":40,\"sig_lvl\":20,\"rating_hp\":2000,\"max_hp\":2000,\"rating_attack\":500,\"attack\":500,\"pvpb\":{\"m\":1.0}}",
+                    "\"%s\":{\"bid\":\"%s\",\"rank\":4,\"level\":40,\"sig_lvl\":20,\"rating_hp\":2000,\"max_hp\":2000,\"rating_attack\":500,\"attack\":500,\"special_attacks\":3,\"pvpb\":{\"m\":1.0}}",
                     s_pvp.user_heroes[h], s_pvp.user_heroes[h]);
             }
             if (n < 0 || (size_t)n >= max_len - offset) return -1;
@@ -355,7 +411,7 @@ const unsigned char *handle_pvp_request(const char *method, const char *p, const
     if (strstr(p, "/pvp/clear-invalid-teams")) {
         pthread_mutex_lock(&s_pvp_lock);
         /* Preserve current match state; do NOT wipe s_pvp.state = 0 */
-        int len = build_standard_pvp_response(s_resp_buf, sizeof s_resp_buf);
+        int len = build_standard_pvp_response(s_resp_buf, sizeof s_resp_buf, 0);
         pthread_mutex_unlock(&s_pvp_lock);
         if (len > 0) {
             *outn = (size_t)len;
@@ -397,7 +453,7 @@ const unsigned char *handle_pvp_request(const char *method, const char *p, const
         s_pvp.state = 0x80; /* selecting */
         s_pvp.opponent_index = 0;
         s_pvp.current_round = 0;
-        int len = build_standard_pvp_response(s_resp_buf, sizeof s_resp_buf);
+        int len = build_standard_pvp_response(s_resp_buf, sizeof s_resp_buf, 0);
         pthread_mutex_unlock(&s_pvp_lock);
         if (len > 0) {
             *outn = (size_t)len;
@@ -415,7 +471,7 @@ const unsigned char *handle_pvp_request(const char *method, const char *p, const
             if (idx >= 0 && idx < 3) s_pvp.opponent_index = idx;
         }
         s_pvp.state = 0x100; /* locking_in */
-        int len = build_standard_pvp_response(s_resp_buf, sizeof s_resp_buf);
+        int len = build_standard_pvp_response(s_resp_buf, sizeof s_resp_buf, 0);
         pthread_mutex_unlock(&s_pvp_lock);
         if (len > 0) {
             *outn = (size_t)len;
@@ -444,7 +500,7 @@ const unsigned char *handle_pvp_request(const char *method, const char *p, const
         }
         s_pvp.state = 2; /* active */
         s_pvp.current_round = 0;
-        int len = build_standard_pvp_response(s_resp_buf, sizeof s_resp_buf);
+        int len = build_standard_pvp_response(s_resp_buf, sizeof s_resp_buf, 0);
         pthread_mutex_unlock(&s_pvp_lock);
         if (len > 0) {
             *outn = (size_t)len;
@@ -464,9 +520,30 @@ const unsigned char *handle_pvp_request(const char *method, const char *p, const
     /* 6. Quit Arena */
     if (strstr(p, "/pvp/quit")) {
         pthread_mutex_lock(&s_pvp_lock);
-        s_pvp.state = 0x40; /* quit */
+        if (body && bn > 0) {
+            const char *aid = strstr(body, "\"pid\":");
+            if (!aid) aid = strstr(body, "\"arenaID\":");
+            if (aid) {
+                aid = strchr(aid, ':');
+                if (aid) {
+                    while (*aid == ':' || *aid == ' ' || *aid == '\"') aid++;
+                    const char *end_aid = aid;
+                    while (*end_aid && *end_aid != '\"' && *end_aid != ',' && *end_aid != '}') end_aid++;
+                    size_t aid_len = end_aid - aid;
+                    if (aid_len > 0 && aid_len < sizeof(s_pvp.pvp_id)) {
+                        strncpy(s_pvp.pvp_id, aid, aid_len);
+                        s_pvp.pvp_id[aid_len] = '\0';
+                    }
+                }
+            }
+        }
+        s_pvp.state = 0; /* reset to none */
+        s_pvp.current_round = 0;
         s_pvp.win_streak = 0;
-        int len = build_standard_pvp_response(s_resp_buf, sizeof s_resp_buf);
+        int len = build_standard_pvp_response(s_resp_buf, sizeof s_resp_buf, 1 /* is_quit */);
+        /* Clear user heroes for the next series selection */
+        s_pvp.user_heroes_count = 0;
+        memset(s_pvp.user_heroes, 0, sizeof(s_pvp.user_heroes));
         pthread_mutex_unlock(&s_pvp_lock);
         if (len > 0) {
             *outn = (size_t)len;
@@ -480,6 +557,7 @@ const unsigned char *handle_pvp_request(const char *method, const char *p, const
         pthread_mutex_lock(&s_pvp_lock);
         int cur_opp = s_pvp.opponent_index;
         int r = s_pvp.current_round;
+        s_pvp.opponents[cur_opp].matchup_state[r] = 1; /* inprogress */
         const char *u_bid = s_pvp.opponents[cur_opp].matchup_user[r];
         const char *o_bid = s_pvp.opponents[cur_opp].matchup_opponent[r];
         if (!u_bid || !u_bid[0]) u_bid = "optimusprime_cin_tf";
@@ -497,8 +575,8 @@ const unsigned char *handle_pvp_request(const char *method, const char *p, const
         int offset = snprintf(s_resp_buf, sizeof s_resp_buf,
             "{\"error\":null,\"result\":{},\"async\":[{\"component\":\"PVPManager\",\"message\":\"match-activated\",\"payload\":{"
             "\"matchAttributes\":{"
-                "\"userHero\":{\"bid\":\"%s\",\"rank\":5,\"level\":50,\"sig_lvl\":100,\"max_hp\":%d,\"attack\":%d,\"rating_hp\":%d,\"rating_attack\":%d,\"special_attacks\":0},"
-                "\"opponentHero\":{\"bid\":\"%s\",\"rank\":4,\"level\":40,\"sig_lvl\":20,\"max_hp\":%d,\"attack\":%d,\"rating_hp\":%d,\"rating_attack\":%d,\"special_attacks\":0}"
+                "\"userHero\":{\"bid\":\"%s\",\"rank\":5,\"level\":50,\"sig_lvl\":100,\"max_hp\":%d,\"attack\":%d,\"rating_hp\":%d,\"rating_attack\":%d,\"special_attacks\":3,\"pvpb\":{},\"exc\":{},\"mana_gain\":1.0,\"mana_start\":0},"
+                "\"opponentHero\":{\"bid\":\"%s\",\"rank\":4,\"level\":40,\"sig_lvl\":20,\"max_hp\":%d,\"attack\":%d,\"rating_hp\":%d,\"rating_attack\":%d,\"special_attacks\":3,\"pvpb\":{},\"exc\":{},\"mana_gain\":1.0,\"mana_start\":0}"
             "},"
             "\"pvpMatchData\":[",
             u_bid, u_stat->hp, u_stat->atk, u_stat->hp, u_stat->atk,
@@ -532,7 +610,9 @@ const unsigned char *handle_pvp_request(const char *method, const char *p, const
 
         if (r < 2) {
             s_pvp.current_round = r + 1;
-            s_pvp.opponents[cur_opp].matchup_state[r + 1] = 1; /* inprogress */
+            /* Do not set matchup_state[r + 1] = 1 here!
+             * It remains 0 (none) so FightResultsPopup calculates GetCurrentMatchupIndex() == r.
+             * matchup_state[r + 1] will be set to 1 in activate-match when the next fight actually starts. */
             s_pvp.state = 2; /* active */
         } else {
             /* 3-round series finished */
