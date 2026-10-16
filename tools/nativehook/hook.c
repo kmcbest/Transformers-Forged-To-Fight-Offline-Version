@@ -4593,6 +4593,10 @@ static int ci_streq(const char* a, const char* b) {
         if (cb >= 'A' && cb <= 'Z') cb += 'a' - 'A';
         if (ca != cb) return 0;
     }
+    if (*b == '\0') {
+        if (*a == '\0') return 1;
+        if (!strncmp(a, "(Clone)", 7) || !strncmp(a, "(clone)", 7)) return 1;
+    }
     return (*a == *b);
 }
 
@@ -4611,12 +4615,103 @@ static int extract_actor_expected_name(const char* fullId, const char* locator_s
     return 1;
 }
 
+static char s_saved_actor0_name[64] = {0};
+static void* s_saved_actor0_obj = NULL;
+static char s_saved_actor1_name[64] = {0};
+static void* s_saved_actor1_obj = NULL;
+
+static int str_replace_first(const char* src, const char* from, const char* to, char* dst, size_t dst_sz) {
+    if (!src || !from || !to || !dst || dst_sz == 0) return 0;
+    const char* p = strstr(src, from);
+    if (!p) return 0;
+    size_t prefix_len = p - src;
+    size_t from_len = strlen(from);
+    size_t to_len = strlen(to);
+    size_t suffix_len = strlen(p + from_len);
+    if (prefix_len + to_len + suffix_len >= dst_sz) return 0;
+    memcpy(dst, src, prefix_len);
+    memcpy(dst + prefix_len, to, to_len);
+    memcpy(dst + prefix_len + to_len, p + from_len, suffix_len + 1);
+    return 1;
+}
+
+static void remap_track_for_redeco(void* track, const char* fullId, const char* bot) {
+    if (!track || !fullId || !bot || !g_strnew) return;
+    char new_fullId[512] = {0};
+    int replaced = 0;
+
+    // 1. Lifeline (borrows Arcee)
+    if (strstr(bot, "lifeline")) {
+        if (str_replace_first(fullId, "arcee_gs_deluxe2014", "lifeline_gs_deluxe2014", new_fullId, sizeof(new_fullId))) {
+            replaced = 1;
+        }
+    }
+    // 2. Thrust (borrows Dirge)
+    else if (strstr(bot, "thrust")) {
+        if (str_replace_first(fullId, "dirge_gs_deluxe2008", "thrust_gs_deluxe2008", new_fullId, sizeof(new_fullId))) {
+            replaced = 1;
+        }
+    }
+    // 3. SG Optimus Prime (borrows Nemesis Prime & Optimus Prime)
+    else if (strstr(bot, "optimusprime_sg")) {
+        char temp[512] = {0};
+        const char* cur = fullId;
+        if (str_replace_first(cur, "OptimusPrime_GS_V", "NemesisPrime_GS_Voyager2015", temp, sizeof(temp))) {
+            cur = temp;
+            replaced = 1;
+        }
+        if (str_replace_first(cur, "nemesisprime_gs_voyager2015", "optimusprime_sg_gs_voyager2015", new_fullId, sizeof(new_fullId))) {
+            replaced = 1;
+        } else if (replaced) {
+            strncpy(new_fullId, temp, sizeof(new_fullId) - 1);
+        }
+    }
+    // 4. Seekers (Hotlink, Acidstorm, Sunstorm, Ionstorm, Novastorm, Bitstream, Ghost Starscream borrow Thundercracker)
+    else if (strstr(bot, "hotlink") || strstr(bot, "acidstorm") || strstr(bot, "sunstorm") ||
+             strstr(bot, "ionstorm") || strstr(bot, "novastorm") || strstr(bot, "bitstream") ||
+             strstr(bot, "starscream_ghost")) {
+        if (str_replace_first(fullId, "thundercracker_gs_leader2015", bot, new_fullId, sizeof(new_fullId))) {
+            replaced = 1;
+        }
+    }
+    // 5. Star Saber (borrows Jetfire)
+    else if (strstr(bot, "starsaber")) {
+        char temp[512] = {0};
+        const char* cur = fullId;
+        if (str_replace_first(cur, "jetfire_gs_leader2014", "starsaber_gs_leader2014", temp, sizeof(temp))) {
+            cur = temp;
+            replaced = 1;
+        }
+        if (str_replace_first(cur, "trail_jetfire_gs", "trail_starsaber_gs", new_fullId, sizeof(new_fullId))) {
+            replaced = 1;
+        } else if (replaced) {
+            strncpy(new_fullId, temp, sizeof(new_fullId) - 1);
+        }
+    }
+
+    if (replaced && new_fullId[0]) {
+        void* new_f_str = g_strnew(new_fullId);
+        if (new_f_str && obj_ok(new_f_str)) {
+            *(void**)((char*)track + 0x28) = new_f_str;
+            flog("MATINEE_REMAP_TRACK bot='%s': '%s' -> '%s'", bot, fullId, new_fullId);
+        }
+    }
+}
+
 static void sync_actor_name_for_track(void* track) {
     if (!obj_ok(track) || !g_strnew) return;
     void* f_str = *(void**)((char*)track + 0x28); // entityFullId
     if (!f_str || !obj_ok(f_str)) return;
     char fullId[512] = {0};
     if (!read_str(f_str, fullId, sizeof(fullId)) || !fullId[0]) return;
+
+    // Check standalone tracks (e.g. trails, effects) that don't specify Actor0/Actor1 locator
+    const char* cur_bot0 = s_saved_actor0_name[0] ? s_saved_actor0_name : g_p0_bot_id;
+    if (cur_bot0 && cur_bot0[0] && !strstr(fullId, "|Actor0_locator") && !strstr(fullId, "|Actor1_locator")) {
+        remap_track_for_redeco(track, fullId, cur_bot0);
+        f_str = *(void**)((char*)track + 0x28);
+        if (f_str && obj_ok(f_str)) read_str(f_str, fullId, sizeof(fullId));
+    }
 
     void* mc = *(void**)((char*)track + 0x80); // parentContainer
     if (!mc || !obj_ok(mc)) return;
@@ -4634,15 +4729,34 @@ static void sync_actor_name_for_track(void* track) {
         if (info0 && obj_ok(info0)) {
             void* actor0 = *(void**)((char*)info0 + 0x38); // ActorInfo.actor
             if (actor0 && obj_ok(actor0)) {
+                // 1. Capture true original bot name on first inspection
+                if (s_saved_actor0_obj != actor0) {
+                    void* cur_n_str = ((void*(*)(void*,void*))(g_base + 0x16A16A0))(actor0, NULL);
+                    char cur_name[64] = {0};
+                    if (cur_n_str && obj_ok(cur_n_str)) read_str(cur_n_str, cur_name, sizeof(cur_name));
+                    s_saved_actor0_obj = actor0;
+                    strncpy(s_saved_actor0_name, cur_name, sizeof(s_saved_actor0_name) - 1);
+                    s_saved_actor0_name[sizeof(s_saved_actor0_name) - 1] = '\0';
+                }
+
+                // 2. Remap child mesh paths in entityFullId for redeco characters
+                const char* real_bot = s_saved_actor0_name[0] ? s_saved_actor0_name : g_p0_bot_id;
+                remap_track_for_redeco(track, fullId, real_bot);
+
+                // 3. Re-read entityFullId if remapped
+                f_str = *(void**)((char*)track + 0x28);
+                if (f_str && obj_ok(f_str)) read_str(f_str, fullId, sizeof(fullId));
+
+                // 4. Align Actor0 root GameObject name to what the track expects
                 char exp_name[64] = {0};
                 if (extract_actor_expected_name(fullId, "|Actor0_locator", exp_name, sizeof(exp_name))) {
                     void* cur_n_str = ((void*(*)(void*,void*))(g_base + 0x16A16A0))(actor0, NULL);
                     char cur_name[64] = {0};
                     if (cur_n_str && obj_ok(cur_n_str)) read_str(cur_n_str, cur_name, sizeof(cur_name));
-                    if (strcmp(cur_name, exp_name) != 0 && ci_streq(cur_name, exp_name)) {
+                    if (strcmp(cur_name, exp_name) != 0) {
                         void* new_name_str = g_strnew(exp_name);
                         ((void(*)(void*,void*,void*))(g_base + 0x16A1760))(actor0, new_name_str, NULL);
-                        flog("MATINEE_ALIAS actor0: '%s' -> '%s'", cur_name, exp_name);
+                        flog("MATINEE_ALIAS actor0: '%s' -> '%s' (orig '%s')", cur_name, exp_name, s_saved_actor0_name);
                     }
                 }
             }
@@ -4661,9 +4775,14 @@ static void sync_actor_name_for_track(void* track) {
                     char cur_name[64] = {0};
                     if (cur_n_str && obj_ok(cur_n_str)) read_str(cur_n_str, cur_name, sizeof(cur_name));
                     if (strcmp(cur_name, exp_name) != 0 && ci_streq(cur_name, exp_name)) {
+                        if (s_saved_actor1_obj != actor1) {
+                            s_saved_actor1_obj = actor1;
+                            strncpy(s_saved_actor1_name, cur_name, sizeof(s_saved_actor1_name) - 1);
+                            s_saved_actor1_name[sizeof(s_saved_actor1_name) - 1] = '\0';
+                        }
                         void* new_name_str = g_strnew(exp_name);
                         ((void(*)(void*,void*,void*))(g_base + 0x16A1760))(actor1, new_name_str, NULL);
-                        flog("MATINEE_ALIAS actor1: '%s' -> '%s'", cur_name, exp_name);
+                        flog("MATINEE_ALIAS actor1: '%s' -> '%s' (orig '%s')", cur_name, exp_name, s_saved_actor1_name);
                     }
                 }
             }
@@ -4705,6 +4824,10 @@ void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     // marks "chain state is fresh from here" and lets a raw log be split into test rounds
     // (one quality-gate scenario per fight). Logging only.
     flog("COMBAT_START: Simulation.RegisterComponents -> all P0 combo state cleared");
+    s_saved_actor0_obj = NULL;
+    s_saved_actor0_name[0] = 0;
+    s_saved_actor1_obj = NULL;
+    s_saved_actor1_name[0] = 0;
     sp3_xf_clear();
     g_p0_controller = NULL;
     g_p1_controller = NULL;
@@ -4757,6 +4880,75 @@ void* hook_141(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     return H[141].orig(a0,a1,a2,a3,a4,a5,a6,a7);
 }
 
+static void set_prop_active_full(void* props_ctrl, const char* name, int active) {
+    if (!obj_ok(props_ctrl) || !g_strnew || !name || !name[0]) return;
+    void* s = g_strnew(name);
+    if (!s) return;
+
+    // 1. Get PropData: PropsController.GetProp(name) @0xEA16C0
+    void* prop_data = ((void*(*)(void*, void*, void*))(g_base + 0xEA16C0))(props_ctrl, s, NULL);
+    if (!prop_data || !obj_ok(prop_data)) {
+        return;
+    }
+
+    // 2. Call PropsController.SetActive(this, propName, active, client, method) @0xEA0DB8
+    typedef void (*fn_props_set_active)(void*, void*, int, void*, void*);
+    ((fn_props_set_active)(g_base + 0xEA0DB8))(props_ctrl, s, active ? 1 : 0, props_ctrl, NULL);
+
+    // 3. Ensure GameObject is also active: GameObject.SetActive @0x1B50CA8
+    void* go = *(void**)((char*)prop_data + 0x60); // PropData._instance
+    if (go && obj_ok(go)) {
+        ((void(*)(void*, int, void*))(g_base + 0x1B50CA8))(go, active ? 1 : 0, NULL);
+    }
+    flog("SP3_PROP_ACTIVE: prop='%s' active=%d data=%p go=%p", name, active, prop_data, go);
+}
+
+static void sp3_update_character_weapons(void* pc, int active) {
+    if (!obj_ok(pc)) return;
+    void* props_ctrl = *(void**)((char*)pc + 0x90);
+    if (!obj_ok(props_ctrl)) return;
+
+    int32_t pidx = *(int32_t*)((uintptr_t)pc + 0xF4);
+    const char* bid = (pidx == 0) ? g_p0_bot_id : g_p1_bot_id;
+
+    int is_optimus = 0;
+    int is_ironhide = 0;
+
+    if (bid && bid[0]) {
+        if ((strstr(bid, "optimus") || strstr(bid, "nemesis") || strstr(bid, "ultramagnus")) &&
+            strstr(bid, "primal") == NULL && strstr(bid, "cin") == NULL) {
+            is_optimus = 1;
+        }
+        if (strstr(bid, "ironhide") && strstr(bid, "cin") == NULL) {
+            is_ironhide = 1;
+        }
+    }
+
+    // Fallback: check GameObject name if bot_id is empty or inconclusive
+    if (!is_optimus && !is_ironhide) {
+        void* go = ((void*(*)(void*, void*))(g_base + 0x169FF58))(pc, NULL);
+        if (go && obj_ok(go)) {
+            void* n_str = ((void*(*)(void*, void*))(g_base + 0x16A16A0))(go, NULL);
+            char gname[64] = {0};
+            if (n_str && obj_ok(n_str)) read_str(n_str, gname, sizeof(gname));
+            if ((strstr(gname, "Optimus") || strstr(gname, "optimus") || strstr(gname, "Nemesis") || strstr(gname, "UltraMagnus")) &&
+                strstr(gname, "Primal") == NULL && strstr(gname, "primal") == NULL && strstr(gname, "cin") == NULL) {
+                is_optimus = 1;
+            }
+            if ((strstr(gname, "Ironhide") || strstr(gname, "ironhide")) && strstr(gname, "cin") == NULL) {
+                is_ironhide = 1;
+            }
+        }
+    }
+
+    if (is_optimus) {
+        set_prop_active_full(props_ctrl, "axe", active);
+    }
+    if (is_ironhide) {
+        set_prop_active_full(props_ctrl, "gun", active);
+    }
+}
+
 void* hook_142(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
     void* r = H[142].orig(a0,a1,a2,a3,a4,a5,a6,a7);
     PROTECT({
@@ -4766,6 +4958,7 @@ void* hook_142(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
                 g_intended_special_tier = 0;
             }
             sp3_xf_add(pc);
+            sp3_update_character_weapons(pc, 1);
             flog("SP3_ENTER pc=%p tms=%llu", pc, (unsigned long long)propgo_now_ms());
         }
     });
@@ -4781,7 +4974,22 @@ void* hook_143(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     PROTECT({
         if (obj_ok(pc)) {
             flog("SP3_EXIT pc=%p tms=%llu", pc, (unsigned long long)propgo_now_ms());
+            sp3_update_character_weapons(pc, 0);
             reset_player_attack_chain(pc);
+        }
+        if (s_saved_actor0_obj && obj_ok(s_saved_actor0_obj) && s_saved_actor0_name[0] && g_strnew) {
+            void* orig_name_str = g_strnew(s_saved_actor0_name);
+            ((void(*)(void*,void*,void*))(g_base + 0x16A1760))(s_saved_actor0_obj, orig_name_str, NULL);
+            flog("MATINEE_ALIAS_RESTORE actor0 -> '%s'", s_saved_actor0_name);
+            s_saved_actor0_obj = NULL;
+            s_saved_actor0_name[0] = 0;
+        }
+        if (s_saved_actor1_obj && obj_ok(s_saved_actor1_obj) && s_saved_actor1_name[0] && g_strnew) {
+            void* orig_name_str = g_strnew(s_saved_actor1_name);
+            ((void(*)(void*,void*,void*))(g_base + 0x16A1760))(s_saved_actor1_obj, orig_name_str, NULL);
+            flog("MATINEE_ALIAS_RESTORE actor1 -> '%s'", s_saved_actor1_name);
+            s_saved_actor1_obj = NULL;
+            s_saved_actor1_name[0] = 0;
         }
     });
     return r;
