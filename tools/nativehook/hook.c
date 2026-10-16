@@ -542,28 +542,24 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x0E3D8CC, "PREFIGHT_HP",        2, 0 }, // 157 PrefightScreenData.GetTeamMemberHealth -> residual HP
     { 0x10E1E54, "TEAMDATA_IS_KO",     2, 0 }, // 158 TeamData.IsKnockedOut -> bool (1=KO, 0=alive)
     { 0x10E1AE4, "TEAMDATA_GET_HP",    2, 0 }, // 159 TeamData.GetHP -> float residual HP
-    { 0x0D32A00, "BLOCKENTER",         2, 0 }, // 160 PlayerBlockState.OnEnter -> arm block timer
+    { 0x00E3349C,"SIDESTEPENTER",      2, 0 }, // 160 PlayerSidestepState.OnEnter -> reset attack chain on swipe up/down
     { 0xC16688,  "GET_MAP_ASSET_ID",   2, 0 }, // 161 BCGBlueprintBase.get_MapAssetID -> resolve to real portrait resource name
     { 0x127F794, "LOCALIZE",           2, 0 }, // 162 Localization.Get
     { 0x11794A4, "ADDMANA",            2, 0 }, // 163 PlayerController.AddMana -> scale enemy mana gain dynamically
     { 0xC1F2B8,  "GET_TOP_HERO_ID",    2, 0 }, // 164 BCGHelper.GetTopHeroId -> squad leader avatar
-    { 0x0D34E6C, "DODGEENTER",         2, 0 }, // 165 PlayerDodgeState.OnEnter -> reset attack chain on dodge (swipe back)
+    { 0x0117FEC4,"HITREACTENTER",      2, 0 }, // 165 PlayerHitReactState.OnEnter -> reset attack chain on real hit reaction
     { 0x00C2BE04, "ACT_NAME",          2, 0 }, // 166 ActPanel.get_panelDisplayNameText -> return "重生" / "Revived"
     { 0x0E8F33C, "PORTRAIT_GET_HP",    2, 0 }, // 167 HeroPortrait.get_healthPercentage -> residual HP
     { 0x1173FA4, "PCGETSPTIER",        2, 0 }, // 168 PlayerController.GetAvailableSpecialTier -> dynamic special tier
     { 0xFF05C8,  "HUDSPBTN",           2, 0 }, // 169 HudSpecialMeter.OnSpecialButtonPressed -> gesture recognition
     { 0x11CFCAC, "QUEST_TEX",          2, 0 }, // 170 SelectQuestTile.SetTexturePath -> custom quest icons
-    // ---- guard / dodge entries restored (2026-09-16, device-measured) ----
-    // These two addresses are the ones that DEMONSTRABLY fire in this binary: the repo's earlier logs
-    // contain "BLOCK_ENTER (0x1173848): P0 started guarding ..." followed by a successful
-    // "BLOCK_HELD ... >= 200ms -> attack chain reset", and "DODGE_ENTER (0x117E4AC) a0=.. pc=<P0
-    // controller>" with the controller resolving correctly. Commit 0ae8498 replaced both with the
-    // 0x0D3xxxxx state-entry addresses instead of adding them, which silently broke guard: 0x0D32A00
-    // never fired once in any later session (so holding guard stopped clearing the chain and
-    // GATE-05's 200 ms rule was dead), while 0x0D34E6C does fire but with a0+0x18 == 0, so only its
-    // silent fallback did any work. Both are hooked again here, next to the newer entries.
-    { 0x1173848, "BLOCKENTER2",        2, 0 }, // 171 guard entry (fires) -> arm the guard-hold timer
-    { 0x117E4AC, "DODGEENTER2",        2, 0 }, // 172 dodge entry (fires, controller resolves) -> reset chain
+    // ---- native combat state entries (2026-10-15 whitebox reform) ----
+    // 0x1173848: PlayerBlockState.OnEnter (arms guard hold timer >= 200ms)
+    // 0x0117F614: PlayerDodgeState.OnEnter (real dodge / swipe back, resets chain)
+    // Note: 0x117E4AC was formerly hooked as DODGEENTER2 but is actually PlayerDashState.OnEnter (Dash/Forward Swipe)!
+    // Removing 0x117E4AC prevents forward dash from falsely triggering dodge resets.
+    { 0x1173848, "BLOCKENTER",         2, 0 }, // 171 PlayerBlockState.OnEnter (fires) -> arm the guard-hold timer
+    { 0x0117F614,"DODGEENTER",         2, 0 }, // 172 PlayerDodgeState.OnEnter -> real dodge (swipe back) resets chain
     { 0x141CD54, "ONHCCLICK",          2, 0 }, // 173 TransformersTopBarPresentation.OnHardCurrencyClick -> redirect to OnResourceClick
     { 0x0DA0720, "GETDEFTAB",          2, 0 }, // 174 PayoutsModel.GetDefaultTabId -> safe empty tab check
     { 0xF9A7F8,  "TS_GET_TEAM",        2, 0 }, // 175 TeamSelectModel.get_Team -> empty team on entry
@@ -5321,15 +5317,22 @@ void* hook_145(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
         // GATE-04: an idle gap longer than the combo window ends the chain. Nothing native was
         // observable for this -- waiting in place left l untouched and produced no reset line -- yet
         // the required behaviour is that attacking again after a pause starts at L1/M1.
-        if (g_p0_last_attack_ms && obj_ok(g_p0_controller)) {
-            uint64_t idle = propgo_now_ms() - g_p0_last_attack_ms;
-            if (idle >= COMBO_IDLE_RESET_MS) {
-                g_p0_last_attack_ms = 0;
-                flog("COMBAT_IDLE: %llu ms without an attack (>= %d ms window) -> reset attack chain to L1",
-                     (unsigned long long)idle, COMBO_IDLE_RESET_MS);
-                reset_player_attack_chain(g_p0_controller);
-                g_p0_combo_ended = 0;
-                g_p0_after_heavy = 0;
+        if (g_p0_controller && obj_ok(g_p0_controller)) {
+            typedef int (*fn_is_attacking)(void*, void*);
+            fn_is_attacking is_atk = (fn_is_attacking)(g_base + 0x11752C8);
+            if (is_atk && is_atk(g_p0_controller, NULL)) {
+                // While P0 is actively attacking or in attack recovery, keep the combo window fresh
+                g_p0_last_attack_ms = propgo_now_ms();
+            } else if (g_p0_last_attack_ms) {
+                uint64_t idle = propgo_now_ms() - g_p0_last_attack_ms;
+                if (idle >= COMBO_IDLE_RESET_MS) {
+                    g_p0_last_attack_ms = 0;
+                    flog("COMBAT_IDLE: %llu ms without an attack (>= %d ms window) -> reset attack chain to L1",
+                         (unsigned long long)idle, COMBO_IDLE_RESET_MS);
+                    reset_player_attack_chain(g_p0_controller);
+                    g_p0_combo_ended = 0;
+                    g_p0_after_heavy = 0;
+                }
             }
         }
         if (g_p0_block_enter_ms > 0 && !g_p0_block_reset_done && g_p0_controller) {
@@ -5340,46 +5343,16 @@ void* hook_145(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
                 reset_player_attack_chain(g_p0_controller);
             }
         }
+        // HP tracking (Hit reactions are natively handled via slot 165 PlayerHitReactState.OnEnter)
         if (g_p0_combat_character && obj_ok(g_p0_combat_character)) {
             typedef float (*fn_get_hp)(void*, void*);
             fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC660); // get_Health
-            float cur_hp = get_hp(g_p0_combat_character, NULL);
-            if (g_p0_last_hp >= 0.0f && cur_hp < g_p0_last_hp - 0.01f) {
-                if (g_p0_block_enter_ms == 0) {
-                    flog("COMBAT_GATE: P0 took unblocked damage (%.1f -> %.1f) -> hit reaction resets attack chain",
-                         g_p0_last_hp, cur_hp);
-                    if (g_p0_controller) {
-                        reset_player_attack_chain(g_p0_controller);
-                        g_p0_combo_ended = 0;
-                        g_p0_after_heavy = 0;
-                        COMBAT_ASSERT(*(uint32_t*)((uintptr_t)g_p0_controller + 0x1c0) == 0 &&
-                                      *(uint32_t*)((uintptr_t)g_p0_controller + 0x1c4) == 0,
-                                      "GATE-03", "Combo chain must be reset after hit reaction");
-                    }
-                } else {
-                    flog("COMBAT_GATE: P0 took block chip damage (%.1f -> %.1f) while guarding -> combo chain preserved",
-                         g_p0_last_hp, cur_hp);
-                }
-            }
-            g_p0_last_hp = cur_hp;
+            g_p0_last_hp = get_hp(g_p0_combat_character, NULL);
         }
         if (g_p1_combat_character && obj_ok(g_p1_combat_character)) {
             typedef float (*fn_get_hp)(void*, void*);
             fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC660); // get_Health
-            float cur_hp = get_hp(g_p1_combat_character, NULL);
-            if (g_p1_last_hp >= 0.0f && cur_hp < g_p1_last_hp - 0.01f) {
-                if (g_p1_block_enter_ms == 0) {
-                    flog("COMBAT_GATE: P1 took unblocked damage (%.1f -> %.1f) -> hit reaction resets attack chain",
-                         g_p1_last_hp, cur_hp);
-                    if (g_p1_controller) {
-                        reset_player_attack_chain(g_p1_controller);
-                    }
-                } else {
-                    flog("COMBAT_GATE: P1 took block chip damage (%.1f -> %.1f) while guarding -> combo chain preserved",
-                         g_p1_last_hp, cur_hp);
-                }
-            }
-            g_p1_last_hp = cur_hp;
+            g_p1_last_hp = get_hp(g_p1_combat_character, NULL);
         }
     });
     return r;
@@ -5601,13 +5574,9 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
                               "Medium index must be 0 after heavy attack so the next swipe is M1, got %u",
                               *(uint32_t*)((uintptr_t)self + 0x1c4));
             }
-            if (action == 1 || action == 4 || action == 32) {
-                // 1 = attack / tap, 4 = forward dash (swipe forward), 32 = the medium-attack state the
-                // game re-dispatches every frame. All three must consume the after-heavy latch: the old
-                // {1,4} set let it stay armed through a post-heavy forward swipe (measured
-                // 2026-09-16), so a later forward dash (4) fired it and pulled the medium counter back
-                // to 0 -- turning a required M2 into M1. Consuming it on the first post-heavy attack
-                // keeps the latch to exactly the one attack it was meant for.
+            if (action == 1 || action == 32) {
+                // 1 = attack / tap (Light attack L1~L4), 32 (0x20) = Dash (Forward Swipe / Medium attack M1~M2).
+                // Note: action 4 is ReleaseBlock, NOT forward dash!
                 if (g_p0_after_heavy) {
                     flog("COMBAT_GATE: attack following heavy attack (action=%d) -> reset attack chain to L1/M1", action);
                     reset_player_attack_chain(self);
@@ -5616,7 +5585,7 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
                     pre_l = *(uint32_t*)((uintptr_t)self + 0x1c0);
                     pre_m = *(uint32_t*)((uintptr_t)self + 0x1c4);
                     COMBAT_ASSERT(pre_l == 0, "GATE-02", "Light index must be 0 after heavy attack, got %u", pre_l);
-                } else if ((action == 1 || action == 4) && (g_p0_combo_ended || pre_m >= 2 || pre_l >= 4)) {
+                } else if ((action == 1 || action == 32) && (g_p0_combo_ended || pre_m >= 2 || pre_l >= 4)) {
                     flog("COMBAT_GATE: combo ender reached (ended_flag=%d, pre_m=%u, pre_l=%u, action=%d) -> reset chain",
                          g_p0_combo_ended, pre_m, pre_l, action);
                     reset_player_attack_chain(self);
@@ -5831,6 +5800,7 @@ float hook_159(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
     }
     return 1.0f;
 }
+// slot 160 SIDESTEPENTER (0x00E3349C): PlayerSidestepState.OnEnter -> reset attack chain on swipe up/down
 void* hook_160(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     void* pc = fld_p(a0, 0x18);
     void* r = H[160].orig(a0, a1, a2, a3, a4, a5, a6, a7);
@@ -5839,13 +5809,16 @@ void* hook_160(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
             int32_t pidx = *(int32_t*)((uintptr_t)pc + 0xF4);
             if (pidx == 0) {
                 g_p0_controller = pc;
-                g_p0_block_enter_ms = propgo_now_ms();
+                g_p0_block_enter_ms = 0;
                 g_p0_block_reset_done = 0;
-                flog("BLOCK_ENTER (0x0D32A00): P0 started guarding at %llu ms (timer armed, hold >= 200ms required)",
-                     (unsigned long long)g_p0_block_enter_ms);
+                g_p0_combo_ended = 0;
+                g_p0_after_heavy = 0;
+                flog("SIDESTEP_ENTER (0x00E3349C) on P0: reset attack chain");
+                reset_player_attack_chain(pc);
             } else if (pidx == 1) {
                 g_p1_controller = pc;
-                g_p1_block_enter_ms = propgo_now_ms();
+                g_p1_block_enter_ms = 0;
+                reset_player_attack_chain(pc);
             }
         }
     });
@@ -6136,27 +6109,25 @@ void* hook_164(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     return H[164].orig(a0, a1, a2, a3, a4, a5, a6, a7);
 }
 
+// slot 165 HITREACTENTER (0x0117FEC4): PlayerHitReactState.OnEnter -> reset attack chain on real hit reaction
 void* hook_165(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    void* pc = fld_p(a0, 0x18);
     void* r = H[165].orig(a0, a1, a2, a3, a4, a5, a6, a7);
     PROTECT({
-        void* pc = fld_p(a0, 0x18);
         if (obj_ok(pc)) {
             int32_t pidx = *(int32_t*)((uintptr_t)pc + 0xF4);
             if (pidx == 0) {
                 g_p0_block_enter_ms = 0;
                 g_p0_block_reset_done = 0;
-                flog("DODGE_ENTER (0x0D34E6C) on P0: reset attack chain to allow shooting");
+                g_p0_combo_ended = 0;
+                g_p0_after_heavy = 0;
+                flog("HITREACT_ENTER (0x0117FEC4) on P0: unblocked hit reaction resets attack chain");
                 reset_player_attack_chain(pc);
             } else if (pidx == 1) {
                 g_p1_block_enter_ms = 0;
-                flog("DODGE_ENTER (0x0D34E6C) on P1: reset attack chain");
+                flog("HITREACT_ENTER (0x0117FEC4) on P1: hit reaction resets attack chain");
                 reset_player_attack_chain(pc);
             }
-        } else if (obj_ok(g_p0_controller)) {
-            g_p0_block_enter_ms = 0;
-            g_p0_block_reset_done = 0;
-            flog("DODGE_ENTER (0x0D34E6C): a0+0x18 did not resolve (pc=%p) -> reset via cached g_p0_controller", pc);
-            reset_player_attack_chain(g_p0_controller);
         }
     });
     return r;
@@ -6165,11 +6136,7 @@ void* hook_165(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
 static __thread int s_current_hit_is_ranged = 0;
 static __thread int s_current_hit_is_heavy = 0;
 
-// slot 171 BLOCKENTER2 (0x1173848): the guard entry that actually fires in this binary. Slot 160's
-// 0x0D32A00 never fired once in any measured session, which is exactly why holding guard stopped
-// clearing the chain (measured 2026-09-16: TAP, guard, TAP, guard gave L1,L2 instead of L1,L1).
-// Same body as slot 160, plus a cached-controller fallback so the timer is armed even when a0+0x18
-// cannot be resolved.
+// slot 171 BLOCKENTER (0x1173848): PlayerBlockState.OnEnter
 void* hook_171(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     void* pc = fld_p(a0, 0x18);
     void* r = H[171].orig(a0, a1, a2, a3, a4, a5, a6, a7);
@@ -6188,17 +6155,13 @@ void* hook_171(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
                 flog("BLOCK_ENTER (0x1173848): P1 started guarding at %llu ms",
                      (unsigned long long)g_p1_block_enter_ms);
             }
-        } else if (obj_ok(g_p0_controller)) {
-            g_p0_block_enter_ms = propgo_now_ms();
-            g_p0_block_reset_done = 0;
-            flog("BLOCK_ENTER (0x1173848): pc unresolvable -> fallback to P0 guard timer");
         }
     });
     return r;
 }
 
-// slot 172 DODGEENTER2 (0x117E4AC): the dodge entry whose controller resolves. Slot 165's 0x0D34E6C
-// does fire, but with a0+0x18 == 0, so only its silent fallback ever did any work.
+// slot 172 DODGEENTER (0x0117F614): PlayerDodgeState.OnEnter -> real dodge (swipe back) resets attack chain
+// (Note: former 0x117E4AC was PlayerDashState.OnEnter, which falsely treated forward dashes as dodges!)
 void* hook_172(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     void* r = H[172].orig(a0, a1, a2, a3, a4, a5, a6, a7);
     PROTECT({
@@ -6208,18 +6171,15 @@ void* hook_172(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
             if (pidx == 0) {
                 g_p0_block_enter_ms = 0;
                 g_p0_block_reset_done = 0;
-                flog("DODGE_ENTER (0x117E4AC) on P0: reset attack chain to allow shooting");
+                g_p0_combo_ended = 0;
+                g_p0_after_heavy = 0;
+                flog("DODGE_ENTER (0x0117F614) on P0: real dodge resets attack chain");
                 reset_player_attack_chain(pc);
             } else if (pidx == 1) {
                 g_p1_block_enter_ms = 0;
-                flog("DODGE_ENTER (0x117E4AC) on P1: reset attack chain");
+                flog("DODGE_ENTER (0x0117F614) on P1: real dodge resets attack chain");
                 reset_player_attack_chain(pc);
             }
-        } else if (obj_ok(g_p0_controller)) {
-            g_p0_block_enter_ms = 0;
-            g_p0_block_reset_done = 0;
-            flog("DODGE_ENTER (0x117E4AC): a0+0x18 did not resolve (pc=%p) -> reset via cached g_p0_controller", pc);
-            reset_player_attack_chain(g_p0_controller);
         }
     });
     return r;

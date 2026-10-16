@@ -49,16 +49,23 @@ static void truth_reset_player_attack_chain(void* pc) {
  * ======================================================== */
 void truth_combat_fixed_update(void) {
     // GATE-04: 900ms 空等超时清链
-    // 当角色停顿不攻击、或被击倒在地超过 900ms 时，自动重置攻击链为 L1/M1
-    if (g_p0_last_attack_ms && obj_ok(g_p0_controller)) {
-        uint64_t idle = propgo_now_ms() - g_p0_last_attack_ms;
-        if (idle >= COMBO_IDLE_RESET_MS) {
-            g_p0_last_attack_ms = 0;
-            flog("COMBAT_IDLE: %llu ms without an attack (>= %d ms window) -> reset attack chain to L1",
-                 (unsigned long long)idle, COMBO_IDLE_RESET_MS);
-            reset_player_attack_chain(g_p0_controller);
-            g_p0_combo_ended = 0;
-            g_p0_after_heavy = 0;
+    // 当角色出招/后摇时持续刷新时间戳；只有在完全动作恢复、停顿不攻击、或被击倒在地超过 900ms 时，才自动重置攻击链为 L1/M1
+    if (g_p0_controller && obj_ok(g_p0_controller)) {
+        typedef int (*fn_is_attacking)(void*, void*);
+        fn_is_attacking is_atk = (fn_is_attacking)(g_base + 0x11752C8);
+        if (is_atk && is_atk(g_p0_controller, NULL)) {
+            // While P0 is actively attacking or in attack recovery, keep the combo window fresh
+            g_p0_last_attack_ms = propgo_now_ms();
+        } else if (g_p0_last_attack_ms) {
+            uint64_t idle = propgo_now_ms() - g_p0_last_attack_ms;
+            if (idle >= COMBO_IDLE_RESET_MS) {
+                g_p0_last_attack_ms = 0;
+                flog("COMBAT_IDLE: %llu ms without an attack (>= %d ms window) -> reset attack chain to L1",
+                     (unsigned long long)idle, COMBO_IDLE_RESET_MS);
+                reset_player_attack_chain(g_p0_controller);
+                g_p0_combo_ended = 0;
+                g_p0_after_heavy = 0;
+            }
         }
     }
 
@@ -72,31 +79,79 @@ void truth_combat_fixed_update(void) {
             reset_player_attack_chain(g_p0_controller);
         }
     }
+}
 
-    // GATE-03: 受创扣血清链（非格挡削血）
-    if (g_p0_combat_character && obj_ok(g_p0_combat_character)) {
-        typedef float (*fn_get_hp)(void*, void*);
-        fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC6CC); // get_Health
-        float cur_hp = get_hp(g_p0_combat_character, NULL);
-        if (g_p0_last_hp >= 0.0f && cur_hp < g_p0_last_hp - 0.01f) {
-            if (g_p0_block_enter_ms == 0) {
-                flog("COMBAT_GATE: P0 took unblocked damage (%.1f -> %.1f) -> hit reaction resets attack chain",
-                     g_p0_last_hp, cur_hp);
-                if (g_p0_controller) {
-                    reset_player_attack_chain(g_p0_controller);
-                    g_p0_combo_ended = 0;
-                    g_p0_after_heavy = 0;
-                    COMBAT_ASSERT(*(uint32_t*)((uintptr_t)g_p0_controller + 0x1c0) == 0 &&
-                                  *(uint32_t*)((uintptr_t)g_p0_controller + 0x1c4) == 0,
-                                  "GATE-03", "Combo chain must be reset after hit reaction");
-                }
-            } else {
-                flog("COMBAT_GATE: P0 took block chip damage (%.1f -> %.1f) while guarding -> combo chain preserved",
-                     g_p0_last_hp, cur_hp);
-            }
+/* ========================================================
+ * 3.5 原生状态机切入点 (Dodge, Sidestep, HitReact, Block)
+ * ======================================================== */
+// slot 160 SIDESTEPENTER (0x00E3349C): PlayerSidestepState.OnEnter -> reset attack chain on swipe up/down
+void* truth_hook_160(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    void* pc = fld_p(a0, 0x18);
+    void* r = H[160].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    PROTECT({
+        void* target = (obj_ok(pc) && *(int32_t*)((uintptr_t)pc + 0xF4) == 0) ? pc : NULL;
+        if (target) {
+            g_p0_block_enter_ms = 0;
+            g_p0_block_reset_done = 0;
+            g_p0_combo_ended = 0;
+            g_p0_after_heavy = 0;
+            flog("SIDESTEP_ENTER (0x00E3349C) on P0: reset attack chain");
+            reset_player_attack_chain(target);
         }
-        g_p0_last_hp = cur_hp;
-    }
+    });
+    return r;
+}
+
+// slot 165 HITREACTENTER (0x0117FEC4): PlayerHitReactState.OnEnter -> reset attack chain on real hit reaction
+void* truth_hook_165(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    void* pc = fld_p(a0, 0x18);
+    void* r = H[165].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    PROTECT({
+        void* target = (obj_ok(pc) && *(int32_t*)((uintptr_t)pc + 0xF4) == 0) ? pc : NULL;
+        if (target) {
+            g_p0_block_enter_ms = 0;
+            g_p0_block_reset_done = 0;
+            g_p0_combo_ended = 0;
+            g_p0_after_heavy = 0;
+            flog("HITREACT_ENTER (0x0117FEC4) on P0: unblocked hit reaction resets attack chain");
+            reset_player_attack_chain(target);
+        }
+    });
+    return r;
+}
+
+// slot 171 BLOCKENTER (0x1173848): PlayerBlockState.OnEnter
+void* truth_hook_171(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    void* pc = fld_p(a0, 0x18);
+    void* r = H[171].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    PROTECT({
+        void* target = (obj_ok(pc) && *(int32_t*)((uintptr_t)pc + 0xF4) == 0) ? pc : NULL;
+        if (target) {
+            g_p0_controller = target;
+            g_p0_block_enter_ms = propgo_now_ms();
+            g_p0_block_reset_done = 0;
+            flog("BLOCK_ENTER (0x1173848) on P0: started guarding at %llu ms (timer armed)", (unsigned long long)g_p0_block_enter_ms);
+        }
+    });
+    return r;
+}
+
+// slot 172 DODGEENTER (0x0117F614): PlayerDodgeState.OnEnter -> real dodge (swipe back) resets attack chain
+void* truth_hook_172(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    void* pc = fld_p(a0, 0x18);
+    void* r = H[172].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    PROTECT({
+        void* target = (obj_ok(pc) && *(int32_t*)((uintptr_t)pc + 0xF4) == 0) ? pc : NULL;
+        if (target) {
+            g_p0_block_enter_ms = 0;
+            g_p0_block_reset_done = 0;
+            g_p0_combo_ended = 0;
+            g_p0_after_heavy = 0;
+            flog("DODGE_ENTER (0x0117F614) on P0: real dodge resets attack chain");
+            reset_player_attack_chain(target);
+        }
+    });
+    return r;
 }
 
 /* ========================================================
@@ -163,8 +218,8 @@ void* truth_hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a
                               "Medium index must be 0 after heavy attack so the next swipe is M1, got %u",
                               *(uint32_t*)((uintptr_t)self + 0x1c4));
             }
-            if (action == 1 || action == 4 || action == 32) {
-                // 普攻 / 冲刺消费逻辑
+            if (action == 1 || action == 32) {
+                // 普攻 / 冲刺消费逻辑 (32 = Dash, 4 = ReleaseBlock)
                 if (g_p0_after_heavy) {
                     flog("COMBAT_GATE: attack following heavy attack (action=%d) -> reset attack chain to L1/M1", action);
                     reset_player_attack_chain(self);
@@ -174,7 +229,7 @@ void* truth_hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a
                     pre_l = *(uint32_t*)((uintptr_t)self + 0x1c0);
                     pre_m = *(uint32_t*)((uintptr_t)self + 0x1c4);
                     COMBAT_ASSERT(pre_l == 0, "GATE-02", "Light index must be 0 after heavy attack, got %u", pre_l);
-                } else if ((action == 1 || action == 4) && (g_p0_combo_ended || pre_m >= 2 || pre_l >= 4)) {
+                } else if ((action == 1 || action == 32) && (g_p0_combo_ended || pre_m >= 2 || pre_l >= 4)) {
                     flog("COMBAT_GATE: combo ender reached (ended_flag=%d, pre_m=%u, pre_l=%u, action=%d) -> reset chain",
                          g_p0_combo_ended, pre_m, pre_l, action);
                     reset_player_attack_chain(self);
