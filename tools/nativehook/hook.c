@@ -8025,6 +8025,22 @@ static void poke32(uintptr_t rva, uint32_t word){
     LOG("poked 0x%lx : %08x -> %08x", (long)rva, old, word);
 }
 
+typedef void (*fn_set_fixedDeltaTime)(float);
+static fn_set_fixedDeltaTime orig_set_fixedDeltaTime = NULL;
+
+static void hooked_set_fixedDeltaTime(float value) {
+    int target_fps = tftf_get_target_fps();
+    if (target_fps >= 120) {
+        // High-framerate decoupling (Option A):
+        // Lock physics step to 60Hz (1/60s = 0.0166667s) so that state machines,
+        // hit reactions, and heavy attack charging stay 1:1 anchored to wall-clock time.
+        value = 1.0f / 60.0f;
+    }
+    if (orig_set_fixedDeltaTime) {
+        orig_set_fixedDeltaTime(value);
+    }
+}
+
 static fn8 orig_set_targetFrameRate = NULL;
 static void* hooked_set_targetFrameRate(void* fps, void* m, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7){
     int req_fps = (int)(intptr_t)fps;
@@ -8477,9 +8493,13 @@ static void* installer(void* arg){
     int target_fps = tftf_get_target_fps();
     LOG("Applying target_fps setting: %d", target_fps);
 
-    // 1) PerformanceManager..cctor (@0xDA5168): default targetFrameRate (30 or 60) & vSyncCount 0 (was 2)
+    // 1) PerformanceManager..cctor (@0xDA5168): default targetFrameRate (30, 60, 120, 144) & vSyncCount 0 (was 2)
     if (target_fps == 30) {
         poke32(0xDA52E0, 0x528003C0);   // mov w0, #30 (0x1e)
+    } else if (target_fps == 120) {
+        poke32(0xDA52E0, 0x52800F00);   // mov w0, #120 (0x78)
+    } else if (target_fps == 144) {
+        poke32(0xDA52E0, 0x52801200);   // mov w0, #144 (0x90)
     } else {
         poke32(0xDA52E0, 0x52800780);   // mov w0, #60 (0x3c)
     }
@@ -8570,9 +8590,11 @@ static void* installer(void* arg){
     poke32(0xDA6978, 0x52800055);   // csel w21, w8, w10, lo -> mov w21, #2 (force EBParticlePal.quality = High)
     poke32(0xDA69F4, 0x52800055);   // csel w21, w8, w10, lo -> mov w21, #2 (force TrailQuality = High)
 
-    // 13) Global hooks on Application.set_targetFrameRate (@0x1B46108) and QualitySettings.set_vSyncCount (@0x16A71C0)
+    // 13) Global hooks on Application.set_targetFrameRate (@0x1B46108), QualitySettings.set_vSyncCount (@0x16A71C0),
+    // and Time.set_fixedDeltaTime (@0x16B6D0C) for high-framerate physics decoupling
     inline_hook((void*)(g_base + 0x1B46108), (void*)hooked_set_targetFrameRate, &orig_set_targetFrameRate);
     inline_hook((void*)(g_base + 0x16A71C0), (void*)hooked_set_vSyncCount, &orig_set_vSyncCount);
+    inline_hook((void*)(g_base + 0x16B6D0C), (void*)hooked_set_fixedDeltaTime, (fn8*)&orig_set_fixedDeltaTime);
 
     // 14) AutoFight (WatchFight) Global Unlock:
     // Enables the native in-combat and pre-fight AutoFight button and AI takeover

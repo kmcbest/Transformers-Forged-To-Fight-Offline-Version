@@ -403,7 +403,7 @@ static void load_user_settings(void) {
                     char *c = strchr(fps, ':');
                     if (c) {
                         int v = (int)strtol(c + 1, NULL, 10);
-                        if (v == 30 || v == 60) g_user_settings.target_fps = v;
+                        if (v == 30 || v == 60 || v == 120 || v == 144) g_user_settings.target_fps = v;
                     }
                 }
                 char *ss = strstr(buf, "\"enable_swipe_specials\"");
