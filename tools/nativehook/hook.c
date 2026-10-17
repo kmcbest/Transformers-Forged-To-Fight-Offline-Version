@@ -624,6 +624,8 @@ static volatile uint64_t g_p0_last_attack_ms = 0;
 
 extern int tftf_get_start_full_power(void);
 extern int tftf_get_combat_debug_overlay(void);
+extern int tftf_quest_is_leisure(void);
+extern int tftf_pvp_is_active(void);
 static uint64_t propgo_now_ms(void);
 static int obj_ok(void* p);
 static void* g_active_hud_screen = NULL;
@@ -885,7 +887,34 @@ static void flush_keys(void){ if(g_f) fflush(g_f); }
     return H[i].orig(a0,a1,a2,a3,a4,a5,a6,a7); }
 MKHOOK(0) MKHOOK(1) MKHOOK(2) MKHOOK(3) MKHOOK(4) MKHOOK(5) MKHOOK(6) MKHOOK(7)
 MKHOOK(9) MKHOOK(10) MKHOOK(11) MKHOOK(12) MKHOOK(14) MKHOOK(15) MKHOOK(16)
-MKHOOK(17) MKHOOK(19) MKHOOK(20)
+static volatile int g_in_fight_load = 0;
+int tftf_is_in_fight_load(void) {
+    return g_in_fight_load;
+}
+
+void* hook_17(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    PROTECT({
+        char b[64]; void* r = a2; int n = 0;
+        if ((uintptr_t)r >= 0x100000 && !((uintptr_t)r & 7)) {
+            int32_t l = *(int32_t*)((char*)r + 0x10);
+            uint16_t* c = (uint16_t*)((char*)r + 0x14);
+            if (l >= 0 && l < 60) {
+                for (; n < l; n++) b[n] = (char)c[n];
+            }
+        }
+        b[n] = 0;
+        flog("LOADSCR show=%ld reason=%s", (long)a1, b);
+        if (a1) {
+            if (strstr(b, "Fight") != NULL || strstr(b, "PVPLOAD") != NULL) {
+                g_in_fight_load = 1;
+            }
+        } else {
+            g_in_fight_load = 0;
+        }
+    });
+    return H[17].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+}
+MKHOOK(19) MKHOOK(20)
 static void* g_active_homeflow = NULL;
 void* hook_18(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
     flog(">>HomeFlow.Enter this=%p", a0);
@@ -937,6 +966,9 @@ static const char* hero_faction_str(void* hero_data) {
     static char buf[24];
     buf[0] = 0;
     if (!obj_ok(hero_data)) return NULL;
+    char hd_cname[64];
+    if (!il2cpp_object_class(hero_data, hd_cname, sizeof(hd_cname)) || strstr(hd_cname, "HeroData") == NULL) return NULL;
+
     void* bp = *(void**)((char*)hero_data + 0x48);
     if (obj_ok(bp)) {
         void* a = *(void**)((char*)bp + 0x70);
@@ -963,16 +995,26 @@ static void apply_hero_portrait_deco_internal(void* hp) {
     void* hero_data = *(void**)((char*)hp + 0xE0);
     if (!hero_data || !obj_ok(hero_data)) return;
 
+    char hd_cname[64];
+    if (!il2cpp_object_class(hero_data, hd_cname, sizeof(hd_cname)) || strstr(hd_cname, "HeroData") == NULL) return;
+
+    void* bp = *(void**)((char*)hero_data + 0x48);
+    if (!bp || !obj_ok(bp)) {
+        void* hb = *(void**)((char*)hero_data + 0x40);
+        if (hb && obj_ok(hb)) {
+            void* bid = *(void**)((char*)hb + 0x10);
+            if (bid && obj_ok(bid)) {
+                bp = ((void*(*)(void*, void*))(g_base + 0xC1B364))(bid, NULL);
+                if (bp && obj_ok(bp)) *(void**)((char*)hero_data + 0x48) = bp;
+            }
+        }
+    }
+
     if (tftf_is_matrix_war_active()) {
         char bid_check[80]; bid_check[0] = 0;
-        void* bid_str = *(void**)((char*)hero_data + 0x10);
-        if (obj_ok(bid_str)) read_str(bid_str, bid_check, sizeof(bid_check));
-        if (!bid_check[0] || strstr(bid_check, "rodimus") == NULL) {
-            void* bp_chk = *(void**)((char*)hero_data + 0x48);
-            if (obj_ok(bp_chk)) {
-                void* bps = *(void**)((char*)bp_chk + 0x10);
-                if (obj_ok(bps)) read_str(bps, bid_check, sizeof(bid_check));
-            }
+        if (bp && obj_ok(bp)) {
+            void* bps = *(void**)((char*)bp + 0x10);
+            if (obj_ok(bps)) read_str(bps, bid_check, sizeof(bid_check));
         }
         if (strstr(bid_check, "rodimus") == NULL) {
             ngui_set_active(hp, 0, NULL);
@@ -980,22 +1022,15 @@ static void apply_hero_portrait_deco_internal(void* hp) {
         }
     }
 
-    // Ensure mUserOwned is 1 so any internal getters treat it as owned
-    *(uint8_t*)((char*)hero_data + 0x68) = 1;
+    // Ensure mUserOwned and mValid are set so internal getters treat it as valid/owned
+    *(uint8_t*)((char*)hero_data + 0x68) = 1; // mValid
+    *(uint8_t*)((char*)hero_data + 0x80) = 1; // mUserOwned
 
     // Ensure isRendering is 1
     *(uint8_t*)((char*)hp + 0xFA) = 1;
 
     // 2. Resolve rarity from blueprint (+0x48)
     int rarity = 5;
-    void* bp = *(void**)((char*)hero_data + 0x48);
-    if (!bp || !obj_ok(bp)) {
-        void* bid = *(void**)((char*)hero_data + 0x10);
-        if (bid && obj_ok(bid)) {
-            bp = ((void*(*)(void*, void*))(g_base + 0xC1B364))(bid, NULL);
-            if (bp && obj_ok(bp)) *(void**)((char*)hero_data + 0x48) = bp;
-        }
-    }
     if (bp && obj_ok(bp)) {
         int r = *(int*)((char*)bp + 0x64);
         if (r >= 1 && r <= 5) rarity = r;
@@ -1013,11 +1048,9 @@ static void apply_hero_portrait_deco_internal(void* hp) {
 
     // 4. Restore alive / KO state (_isKnockedOut at +0x101: 1 = alive, 0 = KO)
     float h_ratio = 1.0f;
-    if (!tftf_quest_is_leisure()) {
+    if (!tftf_quest_is_leisure() && !tftf_pvp_is_active()) {
         char h_bid[80]; h_bid[0] = 0;
-        void* bid_str = *(void**)((char*)hero_data + 0x10);
-        if (obj_ok(bid_str)) read_str(bid_str, h_bid, sizeof(h_bid));
-        if (!h_bid[0] && bp && obj_ok(bp)) {
+        if (bp && obj_ok(bp)) {
             void* bps = *(void**)((char*)bp + 0x10);
             if (obj_ok(bps)) read_str(bps, h_bid, sizeof(h_bid));
         }
@@ -1094,15 +1127,11 @@ static void apply_hero_portrait_deco_internal(void* hp) {
                     if (flabel && obj_ok(flabel)) {
                         ngui_set_active(flabel, 1, NULL);
                         char bid[80]; bid[0] = 0;
-                        void* bstr = *(void**)((char*)hero_data + 0x10);
-                        if (obj_ok(bstr)) read_str(bstr, bid, sizeof bid);
-                        if (!bid[0]) {
-                            void* cur_bp = *(void**)((char*)hero_data + 0x48);
-                            if (!cur_bp || !obj_ok(cur_bp)) cur_bp = bp;
-                            if (cur_bp && obj_ok(cur_bp)) {
-                                void* bps = *(void**)((char*)cur_bp + 0x10);
-                                if (obj_ok(bps)) read_str(bps, bid, sizeof bid);
-                            }
+                        void* cur_bp = *(void**)((char*)hero_data + 0x48);
+                        if (!cur_bp || !obj_ok(cur_bp)) cur_bp = bp;
+                        if (cur_bp && obj_ok(cur_bp)) {
+                            void* bps = *(void**)((char*)cur_bp + 0x10);
+                            if (obj_ok(bps)) read_str(bps, bid, sizeof bid);
                         }
                         const char* faction = hero_faction_str(hero_data);
                         const char* glyph = faction_icon_glyph(faction, bid);
@@ -1128,6 +1157,7 @@ static void apply_hero_portrait_deco_internal(void* hp) {
 }
 
 static void apply_hero_portrait_deco(void* hp) {
+    if (g_in_fight_load) return;
     static int s_apply_deco_depth = 0;
     if (s_apply_deco_depth > 0) return;
     s_apply_deco_depth = 1;
@@ -6417,19 +6447,19 @@ void* hook_166(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
 }
 
 float hook_167(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    if (g_in_fight_load || tftf_pvp_is_active()) {
+        typedef float (*fn_orig)(void*, void*, void*, void*, void*, void*, void*, void*);
+        return H[167].orig ? ((fn_orig)H[167].orig)(self, a1, a2, a3, a4, a5, a6, a7) : 1.0f;
+    }
     if (!tftf_quest_is_leisure()) {
         char bid[80]; bid[0] = 0;
         if (self && obj_ok(self)) {
             void* hero_data = *(void**)((char*)self + 0xE0);
             if (hero_data && obj_ok(hero_data)) {
-                void* s10 = *(void**)((char*)hero_data + 0x10);
-                if (obj_ok(s10)) read_str(s10, bid, sizeof(bid));
-                if (!bid[0]) {
-                    void* bp = *(void**)((char*)hero_data + 0x48);
-                    if (obj_ok(bp)) {
-                        void* bps = *(void**)((char*)bp + 0x10);
-                        if (obj_ok(bps)) read_str(bps, bid, sizeof(bid));
-                    }
+                void* bp = *(void**)((char*)hero_data + 0x48);
+                if (obj_ok(bp)) {
+                    void* bps = *(void**)((char*)bp + 0x10);
+                    if (obj_ok(bps)) read_str(bps, bid, sizeof(bid));
                 }
             }
         }
@@ -8016,6 +8046,134 @@ static void* hooked_ToggleAutoFight(void* a0, void* a1, void* a2, void* a3, void
     return NULL;
 }
 
+static void* s_pvp_manager_instance = NULL;
+static void* s_last_arena_event = NULL;
+
+static fn8 orig_QuitArena = NULL;
+static void* hooked_QuitArena(void* this_ptr, void* arenaID, void* onComplete, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    LOG("[PVP] PVPManager.QuitArena: this=%p arenaID=%p onComplete=%p", this_ptr, arenaID, onComplete);
+    if (this_ptr) {
+        s_pvp_manager_instance = this_ptr;
+        *(void**)((uintptr_t)this_ptr + 0x38) = NULL;
+    }
+    void* ret = NULL;
+    PROTECT(
+        if (orig_QuitArena) {
+            ret = orig_QuitArena(this_ptr, arenaID, onComplete, a3, a4, a5, a6, a7);
+        }
+    );
+    return ret;
+}
+
+static fn8 orig_get_Arena = NULL;
+static void* hooked_get_Arena(void* this_ptr, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    void* ret = NULL;
+    PROTECT(
+        if (orig_get_Arena) {
+            ret = orig_get_Arena(this_ptr, a1, a2, a3, a4, a5, a6, a7);
+        }
+    );
+    if (ret) {
+        s_last_arena_event = ret;
+    } else if (s_last_arena_event) {
+        LOG("[PVP] PVPArenaResultsScreenModel.get_Arena: Match was null, returning cached s_last_arena_event=%p", s_last_arena_event);
+        ret = s_last_arena_event;
+    }
+    return ret;
+}
+
+static fn8 orig_SelectArena = NULL;
+static void* hooked_SelectArena(void* this_ptr, void* arena, void* scene, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    LOG("[PVP] PVPFlow.SelectArena: this=%p arena=%p scene=%p", this_ptr, arena, scene);
+    if (arena) {
+        s_last_arena_event = arena;
+    } else if (s_last_arena_event) {
+        LOG("[PVP] PVPFlow.SelectArena: arena was NULL, substituting cached s_last_arena_event=%p", s_last_arena_event);
+        arena = s_last_arena_event;
+    }
+
+    /* Clear _currentMatchData on PVPManager so AdvanceFlowState() triggers FindMatch for the new series */
+    if (s_pvp_manager_instance) {
+        LOG("[PVP] PVPFlow.SelectArena: clearing _currentMatchData on PVPManager %p", s_pvp_manager_instance);
+        *(void**)((uintptr_t)s_pvp_manager_instance + 0x38) = NULL;
+    }
+
+    void* ret = NULL;
+    PROTECT(
+        if (orig_SelectArena) {
+            ret = orig_SelectArena(this_ptr, arena, scene, a3, a4, a5, a6, a7);
+        }
+    );
+    return ret;
+}
+
+static fn8 orig_GetPVPArenaCost = NULL;
+static void* hooked_GetPVPArenaCost(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    LOG("[PVP] PVPManager.GetPVPArenaCost: this=%p pid=%p arena=%p", a0, a1, a2);
+    if (a0) s_pvp_manager_instance = a0;
+    if (a2) s_last_arena_event = a2;
+    if (!a2) return NULL;
+    void* ret = NULL;
+    PROTECT(
+        if (orig_GetPVPArenaCost) {
+            ret = orig_GetPVPArenaCost(a0, a1, a2, a3, a4, a5, a6, a7);
+        }
+    );
+    if (!ret) {
+        ret = *(void**)((uintptr_t)a2 + 0x110); /* arena->FindOpponentCost */
+        LOG("[PVP] GetPVPArenaCost fallback to FindOpponentCost=%p", ret);
+    }
+    return ret;
+}
+
+static fn8 orig_PVPPlayerContestantItem_Init = NULL;
+static void* hooked_PVPPlayerContestantItem_Init(void* this_ptr, void* p, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    if (p) {
+        void** p_team = (void**)((uintptr_t)p + 0x20);
+        if (!*p_team) {
+            typedef void* (*fn_GetSavedTeam)(void*, void*);
+            fn_GetSavedTeam get_saved = (fn_GetSavedTeam)(g_base + 0x00C200EC);
+            if (get_saved && g_strnew) {
+                void* sid = g_strnew("0");
+                PROTECT(
+                    *p_team = get_saved(sid, NULL);
+                );
+                LOG("[PVP] PVPPlayerContestantItem.Init: p->Team was NULL, patched with GetSavedTeam('0')=%p", *p_team);
+            }
+        }
+    }
+    void* ret = NULL;
+    PROTECT(
+        if (orig_PVPPlayerContestantItem_Init) {
+            ret = orig_PVPPlayerContestantItem_Init(this_ptr, p, a2, a3, a4, a5, a6, a7);
+        }
+    );
+    return ret;
+}
+
+static fn8 orig_PVPPlaceHeroWidget_Init = NULL;
+static void* hooked_PVPPlaceHeroWidget_Init(void* this_ptr, void* data, void* completed, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    LOG("[PVP] PVPPlaceHeroWidget.Init: this=%p data=%p completed=%p", this_ptr, data, completed);
+    if (!data) {
+        typedef void* (*fn_GetSavedTeam)(void*, void*);
+        fn_GetSavedTeam get_saved = (fn_GetSavedTeam)(g_base + 0x00C200EC);
+        if (get_saved && g_strnew) {
+            void* sid = g_strnew("0");
+            PROTECT(
+                data = get_saved(sid, NULL);
+            );
+            LOG("[PVP] PVPPlaceHeroWidget.Init: data was NULL, patched with GetSavedTeam('0')=%p", data);
+        }
+    }
+    void* ret = NULL;
+    PROTECT(
+        if (orig_PVPPlaceHeroWidget_Init) {
+            ret = orig_PVPPlaceHeroWidget_Init(this_ptr, data, completed, a3, a4, a5, a6, a7);
+        }
+    );
+    return ret;
+}
+
 typedef void* (*fn_get_gameObject)(void*);
 typedef void (*fn_SetActive)(void*, int);
 typedef int (*fn_get_activeSelf)(void*);
@@ -8454,6 +8612,14 @@ static void* installer(void* arg){
     inline_hook((void*)(g_base + 0x00CFE400), (void*)hooked_BattleArbiterUpdate, &orig_BattleArbiterUpdate);
     inline_hook((void*)(g_base + 0x00FEF8D8), (void*)hooked_HudScreenAwake, &orig_HudScreenAwake);
     inline_hook((void*)(g_base + 0x00FEDEF4), (void*)hooked_HudScreenSetupWindow, &orig_HudScreenSetupWindow);
+
+    // PVP hooks:
+    inline_hook((void*)(g_base + 0x11FA254), (void*)hooked_QuitArena, &orig_QuitArena);
+    inline_hook((void*)(g_base + 0xD90670), (void*)hooked_get_Arena, &orig_get_Arena);
+    inline_hook((void*)(g_base + 0x11F9B6C), (void*)hooked_SelectArena, &orig_SelectArena);
+    inline_hook((void*)(g_base + 0x11FCD30), (void*)hooked_GetPVPArenaCost, &orig_GetPVPArenaCost);
+    inline_hook((void*)(g_base + 0x00F19D60), (void*)hooked_PVPPlayerContestantItem_Init, &orig_PVPPlayerContestantItem_Init);
+    inline_hook((void*)(g_base + 0x1204900), (void*)hooked_PVPPlaceHeroWidget_Init, &orig_PVPPlaceHeroWidget_Init);
 
     // Prefight screen GameObject activation hooks (disabled: caused sticky 3D bots & leaks across scenes):
     // inline_hook((void*)(g_base + 0x1B50CA8), (void*)hooked_il2cpp_GameObject_SetActive, &orig_il2cpp_GameObject_SetActive);

@@ -8,6 +8,7 @@ if not ndk_clang.exists():
 sources = [
     "tools/nativehook/hook.c",
     "tools/nativehook/inapk_server.c",
+    "tools/nativehook/inapk_pvp.c",
 ]
 skills_dir = Path("tools/nativehook/skills")
 if skills_dir.exists():

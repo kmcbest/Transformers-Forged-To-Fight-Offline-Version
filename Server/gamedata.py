@@ -1584,6 +1584,30 @@ def build_login_data(lang="en"):
         "evoCosts": {},
         "curves": {},
         "base": build_base_active(),
+        "pvp": {
+            "userData": [
+                {
+                    "pid": "arena_versus",
+                    "winStreak": 0,
+                    "wins": 0,
+                    "losses": 0,
+                    "longestStreak": 0,
+                    "findAttempts": 0
+                }
+            ],
+            "pvpUserData": [
+                {
+                    "pid": "arena_versus",
+                    "winStreak": 0,
+                    "wins": 0,
+                    "losses": 0,
+                    "longestStreak": 0,
+                    "findAttempts": 0
+                }
+            ],
+            "pvpMatchData": [],
+            "duel": {}
+        },
     }
 
 
@@ -3996,6 +4020,68 @@ def build_inventory_items():
     return inv
 
 
+def build_arena_events():
+    return [
+        {
+            "_id": "arena_versus",
+            "id": "arena_versus",
+            "name": "arena_versus",
+            "serverName": "arena_versus",
+            "eventtype": "arena",
+            "type": "arena",
+            "comptype": "users",
+            "priority": 100,
+            "showscores": False,
+            "state": "Running",
+            "finalized": False,
+            "paidOut": False,
+            "start": 1,
+            "end": 2147480000,
+            "final": 2147483000,
+            "estPayoutCompletion": 2147483000,
+            "expSoon": 0,
+            "minAllianceMembership": 0,
+            "cdn": "",
+            "lr": 0,
+            "lb": "",
+            "messaging": {
+                "cdn": "",
+                "name": "3V3 竞技切磋",
+                "short": "3V3 竞技场",
+                "long": "组建你的3人小队，与塞伯坦各路霸天虎/汽车人切磋对决！",
+                "banner": "",
+                "banner2": "",
+                "color1": "#FFFFFF",
+                "color2": "#FFFFFF"
+            },
+            "featured": [],
+            "top": [],
+            "local": [],
+            "total": 0,
+            "mustContribute": False,
+            "sub_events": [],
+            "modes": ["pvp"],
+            "classes": {"whitelist": [], "blacklist": []},
+            "rarity": {"whitelist": [], "blacklist": []},
+            "arena": {
+                "quickmatch": False,
+                "teamSize": 3,
+                "winStreakMax": 10,
+                "winstreakMods": [1.0, 1.25, 1.5, 2.0, 3.0],
+                "findOpponentCost": [],
+                "newOpponentCost": [[], [], []],
+                "fightRewardsWin": [],
+                "fightRewardsLose": [],
+                "seriesCompleteRewards": [[], [], []],
+                "whitelist": {"classes": [], "rarity": []},
+                "blacklist": {"classes": [], "rarity": []}
+            },
+            "milestones": {},
+            "rankedprizes": {}
+        }
+    ]
+
+
 def build_responses():
     """Regenerate roster responses and merge authored combat tuning into account data.
 
@@ -4014,6 +4100,35 @@ def build_responses():
             f.write(env(result))
         print(f"wrote {fname}  ({len(OWNED) if 'UserData' in fname else len(ROSTER)} entries)")
 
+    events_refresh = {
+        "events": build_arena_events(),
+        "check": "offline-v1",
+        "refresh": 0
+    }
+    with open(os.path.join(RESP_DIR, "GET__events_refresh.json"), "w", encoding="utf-8") as f:
+        f.write(env(events_refresh))
+    with open(os.path.join(RESP_DIR, "POST__events_refresh.json"), "w", encoding="utf-8") as f:
+        f.write(env(events_refresh))
+    print("wrote GET__events_refresh.json and POST__events_refresh.json")
+
+    pvp_user_data = [
+        {
+            "pid": "arena_versus",
+            "winStreak": 0,
+            "wins": 0,
+            "losses": 0,
+            "longestStreak": 0,
+            "findAttempts": 0
+        }
+    ]
+    with open(os.path.join(RESP_DIR, "GET__pvp_get-login-data.json"), "w", encoding="utf-8") as f:
+        f.write(env({"userData": pvp_user_data, "pvpUserData": pvp_user_data, "pvpMatchData": [], "duel": {}}))
+    with open(os.path.join(RESP_DIR, "GET__pvp_get-user-data.json"), "w", encoding="utf-8") as f:
+        f.write(env(pvp_user_data))
+    with open(os.path.join(RESP_DIR, "POST__pvp_clear-invalid-teams.json"), "w", encoding="utf-8") as f:
+        f.write(env({"pvpMatchData": []}))
+    print("wrote GET__pvp_get-login-data.json, GET__pvp_get-user-data.json, POST__pvp_clear-invalid-teams.json")
+
     account_path = os.path.join(RESP_DIR, "GET__account_data.json")
     with open(account_path, encoding="utf-8") as f:
         account = json.load(f)
@@ -4024,9 +4139,10 @@ def build_responses():
     account["result"]["buffs_config"] = build_buffs_config()
     account["result"]["buffs_set"] = build_buffs_set()
     account["result"]["buffs"] = {}
+    account["result"]["events"] = events_refresh
     with open(account_path, "w", encoding="utf-8") as f:
         f.write(json.dumps(account, separators=(",", ":")))
-    print("updated GET__account_data.json missionsconfig, inventory, gamestore, buffs")
+    print("updated GET__account_data.json missionsconfig, inventory, gamestore, buffs, events")
 
     post_account_path = os.path.join(RESP_DIR, "POST__account_data.json")
     if os.path.exists(post_account_path):
@@ -4039,9 +4155,10 @@ def build_responses():
         post_account["result"]["buffs_config"] = build_buffs_config()
         post_account["result"]["buffs_set"] = build_buffs_set()
         post_account["result"]["buffs"] = {}
+        post_account["result"]["events"] = events_refresh
         with open(post_account_path, "w", encoding="utf-8") as f:
             f.write(json.dumps(post_account, separators=(",", ":")))
-        print("updated POST__account_data.json missionsconfig, inventory, gamestore, buffs")
+        print("updated POST__account_data.json missionsconfig, inventory, gamestore, buffs, events")
 
     refresh_path = os.path.join(
         RESP_DIR, "GET__autorefresh_missionsconfig_refresh.json"

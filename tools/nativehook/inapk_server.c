@@ -5,6 +5,7 @@
 
 #define _POSIX_C_SOURCE 200809L
 #include "inapk_server.h"
+#include "inapk_pvp.h"
 
 #include <arpa/inet.h>
 #include <ctype.h>
@@ -1071,6 +1072,16 @@ static int detect_and_store_lang(const char *headers, const char *query) {
 }
 
 static const unsigned char *dynamic(const char *headers, const char *method, const char *p, const char *query, const char *body, size_t bn, Out *o, size_t *outn) {
+    /* PVP Arena endpoints */
+    const unsigned char *pvp_resp = handle_pvp_request(method, p, body, bn, outn);
+    if (pvp_resp) {
+        if (out_add(o, pvp_resp, *outn)) {
+            *outn = o->n;
+            return o->p;
+        }
+        return pvp_resp;
+    }
+
     char key[256], tid[64]="", bid[64]="", mid[64], qid[64]; const unsigned char *v; size_t n; const char *end=body+bn;
     if(strstr(p,"/quests/quest-list")) {
         g_current_is_10x_challenge = 0;
@@ -1671,6 +1682,35 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
             r_atk, r_hp,
             base_atk_rat, base_hp_rat
         );
+        if (rlen > 0 && out_add(o, resp_buf, (size_t)rlen)) {
+            *outn = o->n;
+            return o->p;
+        }
+        return NULL;
+    }
+    if (strstr(p, "/bcg/buy-stamina") || strstr(p, "/bcg/use-stamina-item")) {
+        char hero_bid[64] = "";
+        json_string(body, end, "hero", hero_bid, sizeof hero_bid);
+        logmsg("BCG: buy-stamina hero=%s", hero_bid);
+        size_t vn = 0;
+        char hkey[96];
+        snprintf(hkey, sizeof(hkey), "@savedteam:hero:%s", hero_bid);
+        const unsigned char *hv = lookup(hkey, &vn);
+        char resp_buf[2048];
+        int rlen = 0;
+        if (hv && vn > 0) {
+            rlen = snprintf(resp_buf, sizeof(resp_buf),
+                "{\"error\":null,\"result\":{\"updates\":{\"heroes\":[%.*s]}}}",
+                (int)vn, hv);
+        } else {
+            rlen = snprintf(resp_buf, sizeof(resp_buf),
+                "{\"error\":null,\"result\":{\"updates\":{\"heroes\":[{"
+                "\"entity_type\":\"bot\",\"bid\":\"%s\",\"rank\":5,\"level\":50,\"sig_lvl\":100,"
+                "\"stamina\":100,\"stamina_ts\":0,\"stamina_full_ts\":0,\"stt\":\"\","
+                "\"max_hp\":2000,\"attack\":500,\"rating\":2000,\"rating_hp\":2000,\"rating_attack\":500,"
+                "\"special_attacks\":3,\"pvpb\":{},\"exc\":{}"
+                "}]}}}", hero_bid);
+        }
         if (rlen > 0 && out_add(o, resp_buf, (size_t)rlen)) {
             *outn = o->n;
             return o->p;
