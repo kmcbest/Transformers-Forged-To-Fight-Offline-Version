@@ -647,6 +647,50 @@ static int out_hero_detail(Out *o, const unsigned char *s, size_t n, const char 
     return 1;
 }
 
+int tftf_format_hero_detail(const char *bid, int rank, int level, int sig_lvl, char *out, size_t max_out) {
+    if (!bid || !bid[0] || !out || max_out < 64) return 0;
+    if (rank <= 0) rank = 5;
+    if (level <= 0) level = 50;
+    if (sig_lvl <= 0) sig_lvl = 100;
+
+    char hk[128];
+    size_t n = 0;
+    snprintf(hk, sizeof hk, "@hero:%s:%d:%d", bid, rank, level);
+    const unsigned char *tpl = lookup(hk, &n);
+    if (!tpl) {
+        snprintf(hk, sizeof hk, "@hero:%s:5:50", bid);
+        tpl = lookup(hk, &n);
+    }
+    if (!tpl) {
+        snprintf(hk, sizeof hk, "@hero:%s:1:1", bid);
+        tpl = lookup(hk, &n);
+    }
+    if (!tpl) {
+        tpl = lookup("@hero:*:1:1", &n);
+    }
+
+    if (tpl && n > 0) {
+        char sig_str[32];
+        snprintf(sig_str, sizeof sig_str, "%d", sig_lvl);
+        Out o = {0};
+        if (out_hero_detail(&o, tpl, n, sig_str, 0)) {
+            if (o.n < max_out) {
+                memcpy(out, o.p, o.n);
+                out[o.n] = '\0';
+                int ret = (int)o.n;
+                free(o.p);
+                return ret;
+            }
+            free(o.p);
+        }
+    }
+
+    return snprintf(out, max_out,
+        "{\"bid\":\"%s\",\"rank\":%d,\"level\":%d,\"sig_lvl\":%d,\"health\":30000,\"max_hp\":30000,\"attack\":1500,"
+        "\"rating_hp\":3000,\"rating_attack\":1500,\"special_attacks\":3,\"stat_mods\":[],\"sig_mods\":[],\"buff_mods\":[],\"pvpb\":{}}",
+        bid, rank, level, sig_lvl);
+}
+
 static const unsigned char *replace_commander_name(const unsigned char *s, size_t n, Out *o, size_t *outn) {
     if (g_user_settings.commander_name[0] && strcmp(g_user_settings.commander_name, "Commander") != 0) {
         const char *orig = (const char*)s;

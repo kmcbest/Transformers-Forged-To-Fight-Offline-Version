@@ -12,6 +12,7 @@
 #define pvplog(...) __android_log_print(ANDROID_LOG_INFO, PVP_TAG, __VA_ARGS__)
 
 extern char g_p0_bot_id[80];
+extern char g_p1_bot_id[80];
 extern volatile float g_p0_max_hp;
 extern volatile float g_p1_max_hp;
 extern volatile float g_p0_last_hp;
@@ -20,6 +21,7 @@ extern volatile float g_p1_last_hp;
 typedef struct { int count; char bid[5][64]; } Team;
 int tftf_get_current_team(Team *team);
 const unsigned char *tftf_payload_lookup(const char *key, size_t *n);
+int tftf_format_hero_detail(const char *bid, int rank, int level, int sig_lvl, char *out, size_t max_out);
 
 typedef struct {
     char pvp_id[64];
@@ -671,24 +673,35 @@ const unsigned char *handle_pvp_request(const char *method, const char *p, const
         if (!u_bid || !u_bid[0]) u_bid = "optimusprime_cin_tf";
         if (!o_bid || !o_bid[0]) o_bid = "megatron_cin_rotf";
 
+        int o_rank = s_pvp.opponents[cur_opp].bot_ranks[r];
+        int o_level = s_pvp.opponents[cur_opp].bot_levels[r];
+        if (o_rank <= 0) o_rank = 4;
+        if (o_level <= 0) o_level = 40;
+
         const EnemyStat *u_stat = find_stat_or_default(u_bid);
         const EnemyStat *o_stat = find_stat_or_default(o_bid);
 
         snprintf(g_p0_bot_id, sizeof g_p0_bot_id, "%s", u_bid);
+        snprintf(g_p1_bot_id, sizeof g_p1_bot_id, "%s", o_bid);
         g_p0_max_hp = (float)u_stat->hp;
         g_p1_max_hp = (float)o_stat->hp;
         g_p0_last_hp = g_p0_max_hp;
         g_p1_last_hp = g_p1_max_hp;
 
+        static char u_hero_json[4096];
+        static char o_hero_json[4096];
+        tftf_format_hero_detail(u_bid, 5, 50, 100, u_hero_json, sizeof u_hero_json);
+        tftf_format_hero_detail(o_bid, o_rank, o_level, 20, o_hero_json, sizeof o_hero_json);
+
         int offset = snprintf(s_resp_buf, sizeof s_resp_buf,
             "{\"error\":null,\"result\":{},\"async\":[{\"component\":\"PVPManager\",\"message\":\"match-activated\",\"payload\":{"
             "\"matchAttributes\":{"
-                "\"userHero\":{\"bid\":\"%s\",\"rank\":5,\"level\":50,\"sig_lvl\":100,\"max_hp\":%d,\"attack\":%d,\"rating_hp\":%d,\"rating_attack\":%d,\"special_attacks\":3,\"pvpb\":{},\"exc\":{},\"mana_gain\":1.0,\"mana_start\":0},"
-                "\"opponentHero\":{\"bid\":\"%s\",\"rank\":4,\"level\":40,\"sig_lvl\":20,\"max_hp\":%d,\"attack\":%d,\"rating_hp\":%d,\"rating_attack\":%d,\"special_attacks\":3,\"pvpb\":{},\"exc\":{},\"mana_gain\":1.0,\"mana_start\":0}"
+                "\"userHero\":%s,"
+                "\"opponentHero\":%s"
             "},"
             "\"pvpMatchData\":[",
-            u_bid, u_stat->hp, u_stat->atk, u_stat->hp, u_stat->atk,
-            o_bid, o_stat->hp, o_stat->atk, o_stat->hp, o_stat->atk);
+            u_hero_json,
+            o_hero_json);
 
         offset = append_pvp_match_data_json(s_resp_buf, sizeof s_resp_buf, offset);
         if (offset > 0) {

@@ -12,6 +12,7 @@ int tftf_apk_candidates(const char *maps_path, const char *cmdline_path,
                         char out[][4096], int max);
 int tftf_server_start_from_apk(void);
 const unsigned char *tftf_payload_lookup(const char *key, size_t *n);
+int tftf_format_hero_detail(const char *bid, int rank, int level, int sig_lvl, char *out, size_t max_out);
 
 typedef struct { char bid[5][64]; int count; } Team;
 

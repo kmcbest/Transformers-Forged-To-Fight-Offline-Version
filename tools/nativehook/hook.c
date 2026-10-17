@@ -3066,6 +3066,14 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
         void* at1=fld_p((void*)fd,0x30); void* at2=fld_p((void*)ofd,0x30);
         void* ch1=fld_p((void*)fd,0x38); void* ch2=fld_p((void*)ofd,0x38);
         int player_idx = obj_ok(a1) ? *(int32_t*)((uintptr_t)a1+0xF4) : -1;
+        if (fd >= 0x100000 && !(fd & 7)) {
+            int32_t *sig1 = (int32_t*)((char*)fd + 0x48);
+            if (*sig1 <= 0) *sig1 = (player_idx == 1) ? 20 : 100;
+        }
+        if (ofd >= 0x100000 && !(ofd & 7)) {
+            int32_t *sig2 = (int32_t*)((char*)ofd + 0x48);
+            if (*sig2 <= 0) *sig2 = (player_idx == 1) ? 100 : 20;
+        }
         if (player_idx == 0 || (player_idx != 1 && g_p0_controller == NULL)) {
             g_p0_controller = a1;
             strncpy(g_p0_bot_id, id1, sizeof(g_p0_bot_id) - 1);
