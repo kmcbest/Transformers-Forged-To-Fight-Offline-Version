@@ -36,6 +36,7 @@ def build_launcher_dex(output_dex: Path) -> Path:
     (stub_dir / "android/graphics/drawable").mkdir(parents=True)
     (stub_dir / "android/os").mkdir(parents=True)
     (stub_dir / "android/util").mkdir(parents=True)
+    (stub_dir / "android/net").mkdir(parents=True)
 
     (stub_dir / "android/os/Build.java").write_text("""package android.os;
 public class Build {
@@ -105,6 +106,24 @@ import java.io.File;
 public class Context {
     public File getFilesDir() { return null; }
     public File getExternalFilesDir(String type) { return null; }
+    public void startActivity(Intent intent) {}
+}
+""", encoding="utf-8")
+
+    (stub_dir / "android/content/Intent.java").write_text("""package android.content;
+import android.net.Uri;
+public class Intent {
+    public static final String ACTION_VIEW = "android.intent.action.VIEW";
+    public static final int FLAG_ACTIVITY_NEW_TASK = 0x10000000;
+    public Intent(String action, Uri uri) {}
+    public Intent addFlags(int flags) { return this; }
+}
+""", encoding="utf-8")
+
+    (stub_dir / "android/net/Uri.java").write_text("""package android.net;
+public class Uri {
+    public static Uri parse(String uriString) { return null; }
+    public String toString() { return ""; }
 }
 """, encoding="utf-8")
 
@@ -167,8 +186,19 @@ public class WebChromeClient {
 }
 """, encoding="utf-8")
 
+    (stub_dir / "android/webkit/WebResourceRequest.java").write_text("""package android.webkit;
+import android.net.Uri;
+public interface WebResourceRequest {
+    Uri getUrl();
+}
+""", encoding="utf-8")
+
     (stub_dir / "android/webkit/WebViewClient.java").write_text("""package android.webkit;
-public class WebViewClient {}
+public class WebViewClient {
+    public void onPageFinished(WebView view, String url) {}
+    public boolean shouldOverrideUrlLoading(WebView view, String url) { return false; }
+    public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) { return false; }
+}
 """, encoding="utf-8")
 
     (stub_dir / "android/webkit/WebView.java").write_text("""package android.webkit;
@@ -182,6 +212,8 @@ public class WebView extends View {
     public void setWebViewClient(WebViewClient client) {}
     public void setWebChromeClient(WebChromeClient client) {}
     public void loadUrl(String url) {}
+    public boolean isHardwareAccelerated() { return true; }
+    public Context getContext() { return null; }
 }
 """, encoding="utf-8")
 
