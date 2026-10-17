@@ -629,6 +629,54 @@ extern int tftf_pvp_is_active(void);
 static uint64_t propgo_now_ms(void);
 static int obj_ok(void* p);
 static void* g_active_hud_screen = NULL;
+static volatile int s_hud_hidden = 0;
+static volatile uint64_t s_last_portrait_tap_ms = 0;
+static volatile uint64_t s_last_touch_frame_ms = 0;
+
+static int is_portrait_area(float nx, float ny) {
+    // Player portrait is top-left: nx ~ 0.00..0.30, ny ~ 0.65..1.00
+    return (nx <= 0.30f && ny >= 0.65f);
+}
+
+static int on_portrait_press_down(void* hud_screen) {
+    if (hud_screen && obj_ok(hud_screen)) g_active_hud_screen = hud_screen;
+    if (s_get_mouse_pos && s_get_screen_w && s_get_screen_h) {
+        float pos[3] = {0};
+        PROTECT({ s_get_mouse_pos(pos); });
+        int sw = s_get_screen_w();
+        int sh = s_get_screen_h();
+        if (sw > 0 && sh > 0) {
+            float nx = pos[0] / (float)sw;
+            float ny = pos[1] / (float)sh;
+            if (is_portrait_area(nx, ny)) {
+                uint64_t now = propgo_now_ms();
+                if (s_last_touch_frame_ms > 0 && (now - s_last_touch_frame_ms) < 50) {
+                    return 1; // Same touch event processed by another hook on this frame
+                }
+                s_last_touch_frame_ms = now;
+
+                flog("PORTRAIT_PRESS: touch at (%.1f, %.1f) norm=(%.2f, %.2f) delta=%llu ms",
+                     pos[0], pos[1], nx, ny, (unsigned long long)(now - s_last_portrait_tap_ms));
+                if (s_last_portrait_tap_ms > 0 && (now - s_last_portrait_tap_ms) <= 750 && (now - s_last_portrait_tap_ms) >= 80) {
+                    s_hud_hidden = !s_hud_hidden;
+                    s_last_portrait_tap_ms = 0;
+                    if (g_active_hud_screen && obj_ok(g_active_hud_screen)) {
+                        typedef void (*fn_set_visible)(void*, int);
+                        fn_set_visible set_vis = (fn_set_visible)(g_base + 0x00FEC11C);
+                        set_vis(g_active_hud_screen, !s_hud_hidden);
+                        flog("HUD_SCREEN_TOGGLE: Success! Double-tap toggled HUD -> visible=%d (hud=%p)", !s_hud_hidden, g_active_hud_screen);
+                    } else {
+                        flog("HUD_SCREEN_TOGGLE: g_active_hud_screen is NULL or invalid (%p)!", g_active_hud_screen);
+                    }
+                } else {
+                    s_last_portrait_tap_ms = now;
+                }
+                return 1; // absorb tap so it doesn't trigger block
+            }
+        }
+    }
+    return 0;
+}
 
 #define COMBAT_OVERLAY_MAX_LINES 6
 #define COMBAT_OVERLAY_LINE_LEN  128
@@ -5392,6 +5440,15 @@ void* hook_145(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
             fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC660); // get_Health
             g_p1_last_hp = get_hp(g_p1_combat_character, NULL);
         }
+
+        // Poll GetMouseButtonDown in hook_145 for resilient portrait double-tap detection (HUD visible or hidden)
+        if (g_base) {
+            typedef int (*fn_get_mouse_down)(int);
+            fn_get_mouse_down get_mouse_down = (fn_get_mouse_down)(g_base + 0x21BBEF8);
+            if (get_mouse_down && get_mouse_down(0)) {
+                on_portrait_press_down(g_active_hud_screen);
+            }
+        }
     });
     return r;
 }
@@ -6675,6 +6732,9 @@ static int check_and_toggle_autofight(void* hud_screen) {
 void* hook_180(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     if (a0 && obj_ok(a0)) g_active_hud_screen = a0;
     if (check_and_toggle_autofight(a0)) {
+        return NULL;
+    }
+    if (on_portrait_press_down(a0)) {
         return NULL;
     }
     return ((fn8)H[180].orig)(a0, a1, a2, a3, a4, a5, a6, a7);
@@ -8366,26 +8426,14 @@ static void* hooked_BattleArbiterOnToggleAutoFight(void* a0, void* a1, void* a2,
     return NULL;
 }
 
-static fn8 orig_BattleArbiterUpdate = NULL;
-static void* hooked_BattleArbiterUpdate(void* arbiter, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
-    if (arbiter && obj_ok(arbiter)) {
-        void* hud = *(void**)((char*)arbiter + 0x88);
-        if (hud && obj_ok(hud)) {
-            static int s_logged_hud = 0;
-            if (s_logged_hud++ == 0) {
-                flog("BATTLE_ARBITER_UPDATE: cached g_active_hud_screen=%p from arbiter=%p", hud, arbiter);
-            }
-            g_active_hud_screen = hud;
-        }
-    }
-    if (orig_BattleArbiterUpdate) return orig_BattleArbiterUpdate(arbiter, a1, a2, a3, a4, a5, a6, a7);
-    return NULL;
-}
 
 static fn8 orig_HudScreenAwake = NULL;
 static void* hooked_HudScreenAwake(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     if (self && obj_ok(self)) {
         g_active_hud_screen = self;
+        s_hud_hidden = 0;
+        s_last_portrait_tap_ms = 0;
+        s_last_touch_frame_ms = 0;
         flog("HUD_SCREEN_AWAKE: captured g_active_hud_screen=%p", self);
     }
     if (orig_HudScreenAwake) return orig_HudScreenAwake(self, a1, a2, a3, a4, a5, a6, a7);
@@ -8396,6 +8444,9 @@ static fn8 orig_HudScreenSetupWindow = NULL;
 static void* hooked_HudScreenSetupWindow(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     if (self && obj_ok(self)) {
         g_active_hud_screen = self;
+        s_hud_hidden = 0;
+        s_last_portrait_tap_ms = 0;
+        s_last_touch_frame_ms = 0;
         flog("HUD_SCREEN_SETUP_WINDOW: captured g_active_hud_screen=%p", self);
     }
     if (orig_HudScreenSetupWindow) return orig_HudScreenSetupWindow(self, a1, a2, a3, a4, a5, a6, a7);
@@ -8418,17 +8469,20 @@ static void* installer(void* arg){
     if (!g_objnew) { void* h = dlopen("libil2cpp.so", RTLD_NOLOAD); if (h) g_objnew = (objnew_t)dlsym(h, "il2cpp_object_new"); }
     g_resolve_icall = (resolve_icall_t)dlsym(RTLD_DEFAULT, "il2cpp_resolve_icall");
     if (!g_resolve_icall) { void* h = dlopen("libil2cpp.so", RTLD_NOLOAD); if (h) g_resolve_icall = (resolve_icall_t)dlsym(h, "il2cpp_resolve_icall"); }
+    
+    // Direct RVAs for robust input and screen geometry:
+    s_get_mouse_pos = (fn_get_mouse_pos)(g_base + 0x21BC22C);
+    s_get_screen_w = (fn_get_screen_dim)(g_base + 0x16AFBF8);
+    s_get_screen_h = (fn_get_screen_dim)(g_base + 0x16AFC2C);
+    LOG("[AUTOFIGHT] Direct RVAs resolved: mouse_pos=%p, screen_w=%p, screen_h=%p", s_get_mouse_pos, s_get_screen_w, s_get_screen_h);
+
     if (g_resolve_icall) {
-        s_get_mouse_pos = (fn_get_mouse_pos)g_resolve_icall("UnityEngine.Input::get_mousePosition_Injected");
-        s_get_screen_w = (fn_get_screen_dim)g_resolve_icall("UnityEngine.Screen::get_width");
-        s_get_screen_h = (fn_get_screen_dim)g_resolve_icall("UnityEngine.Screen::get_height");
         s_get_gameObject = (fn_get_gameObject)g_resolve_icall("UnityEngine.Component::get_gameObject()");
         s_SetActive = (fn_SetActive)g_resolve_icall("UnityEngine.GameObject::SetActive(System.Boolean)");
         s_get_activeSelf = (fn_get_activeSelf)g_resolve_icall("UnityEngine.GameObject::get_activeSelf()");
         s_get_activeInHierarchy = (fn_get_activeInHierarchy)g_resolve_icall("UnityEngine.GameObject::get_activeInHierarchy()");
         s_get_transform = (fn_get_transform)g_resolve_icall("UnityEngine.Component::get_transform()");
         s_GetParent = (fn_GetParent)g_resolve_icall("UnityEngine.Transform::GetParent()");
-        LOG("[AUTOFIGHT] Icalls resolved: mouse_pos=%p, screen_w=%p, screen_h=%p", s_get_mouse_pos, s_get_screen_w, s_get_screen_h);
         LOG("[PREFIGHT_FIX] Icalls resolved: go=%p, act=%p, self=%p, hier=%p, trans=%p, parent=%p",
             s_get_gameObject, s_SetActive, s_get_activeSelf, s_get_activeInHierarchy, s_get_transform, s_GetParent);
     }
@@ -8637,11 +8691,9 @@ static void* installer(void* arg){
 
     // Diagnostic hooks for AutoFight actions:
     inline_hook((void*)(g_base + 0xC9D6E8), (void*)hooked_ToggleAutoFight, &orig_ToggleAutoFight);
-    inline_hook((void*)(g_base + 0x00E48D54), (void*)hooked_PrefightOnToggleAutoFight, &orig_PrefightOnToggleAutoFight);
     inline_hook((void*)(g_base + 0xCFD384), (void*)hooked_BattleArbiterOnToggleAutoFight, &orig_BattleArbiterOnToggleAutoFight);
-    inline_hook((void*)(g_base + 0x00CFE400), (void*)hooked_BattleArbiterUpdate, &orig_BattleArbiterUpdate);
-    inline_hook((void*)(g_base + 0x00FEF8D8), (void*)hooked_HudScreenAwake, &orig_HudScreenAwake);
-    inline_hook((void*)(g_base + 0x00FEDEF4), (void*)hooked_HudScreenSetupWindow, &orig_HudScreenSetupWindow);
+    inline_hook((void*)(g_base + 0x00FEFC24), (void*)hooked_HudScreenAwake, &orig_HudScreenAwake);
+    inline_hook((void*)(g_base + 0x00FEDEC4), (void*)hooked_HudScreenSetupWindow, &orig_HudScreenSetupWindow);
 
     // PVP hooks:
     inline_hook((void*)(g_base + 0x11FA254), (void*)hooked_QuitArena, &orig_QuitArena);
