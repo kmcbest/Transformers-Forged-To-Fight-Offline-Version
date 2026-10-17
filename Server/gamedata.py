@@ -4119,7 +4119,7 @@ def build_responses():
     with open(os.path.join(RESP_DIR, "GET__pvp_get-user-data.json"), "w", encoding="utf-8") as f:
         f.write(env(pvp_user_data))
     with open(os.path.join(RESP_DIR, "POST__pvp_clear-invalid-teams.json"), "w", encoding="utf-8") as f:
-        f.write(env({"pvpMatchData": [], "pvpUserData": pvp_user_data, "userData": pvp_user_data}))
+        f.write(env({"pvpMatchData": []}))
     print("wrote GET__pvp_get-login-data.json, GET__pvp_get-user-data.json, POST__pvp_clear-invalid-teams.json")
 
     account_path = os.path.join(RESP_DIR, "GET__account_data.json")

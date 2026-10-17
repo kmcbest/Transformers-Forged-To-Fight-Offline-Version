@@ -1074,7 +1074,13 @@ static int detect_and_store_lang(const char *headers, const char *query) {
 static const unsigned char *dynamic(const char *headers, const char *method, const char *p, const char *query, const char *body, size_t bn, Out *o, size_t *outn) {
     /* PVP Arena endpoints */
     const unsigned char *pvp_resp = handle_pvp_request(method, p, body, bn, outn);
-    if (pvp_resp) return pvp_resp;
+    if (pvp_resp) {
+        if (out_add(o, pvp_resp, *outn)) {
+            *outn = o->n;
+            return o->p;
+        }
+        return pvp_resp;
+    }
 
     char key[256], tid[64]="", bid[64]="", mid[64], qid[64]; const unsigned char *v; size_t n; const char *end=body+bn;
     if(strstr(p,"/quests/quest-list")) {

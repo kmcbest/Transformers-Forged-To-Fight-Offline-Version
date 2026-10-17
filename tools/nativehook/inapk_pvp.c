@@ -70,6 +70,65 @@ static TFTF_PVPState s_pvp = {
 static pthread_mutex_t s_pvp_lock = PTHREAD_MUTEX_INITIALIZER;
 static char s_resp_buf[65536];
 
+int tftf_pvp_is_active(void) {
+    return (s_pvp.state != 0);
+}
+
+static void pvp_save_streak(void) {
+    const char *save_paths[] = {
+        "/data/data/com.kabam.bigrobot/files/pvp_streak.json",
+        "/data/user/0/com.kabam.bigrobot/files/pvp_streak.json",
+        "/sdcard/Android/data/com.kabam.bigrobot/files/pvp_streak.json",
+        NULL
+    };
+    for (int i = 0; save_paths[i]; i++) {
+        FILE *f = fopen(save_paths[i], "w");
+        if (f) {
+            fprintf(f, "{\"win_streak\":%d,\"total_wins\":%d,\"total_losses\":%d,\"longest_streak\":%d}\n",
+                    s_pvp.win_streak, s_pvp.total_wins, s_pvp.total_losses, s_pvp.longest_streak);
+            fclose(f);
+            pvplog("PVP: saved streak to %s (streak=%d, longest=%d, W/L=%d/%d)",
+                   save_paths[i], s_pvp.win_streak, s_pvp.longest_streak, s_pvp.total_wins, s_pvp.total_losses);
+        }
+    }
+}
+
+static void pvp_load_streak(void) {
+    static int s_loaded = 0;
+    if (s_loaded) return;
+    s_loaded = 1;
+
+    const char *paths[] = {
+        "/data/data/com.kabam.bigrobot/files/pvp_streak.json",
+        "/data/user/0/com.kabam.bigrobot/files/pvp_streak.json",
+        "/sdcard/Android/data/com.kabam.bigrobot/files/pvp_streak.json",
+        "/storage/emulated/0/Android/data/com.kabam.bigrobot/files/pvp_streak.json",
+        NULL
+    };
+    for (int i = 0; paths[i]; i++) {
+        FILE *f = fopen(paths[i], "r");
+        if (f) {
+            char buf[256];
+            if (fgets(buf, sizeof(buf), f)) {
+                int ws = 0, tw = 0, tl = 0, ls = 0;
+                const char *p;
+                if ((p = strstr(buf, "\"win_streak\":"))) ws = atoi(p + 13);
+                if ((p = strstr(buf, "\"total_wins\":"))) tw = atoi(p + 13);
+                if ((p = strstr(buf, "\"total_losses\":"))) tl = atoi(p + 15);
+                if ((p = strstr(buf, "\"longest_streak\":"))) ls = atoi(p + 17);
+                s_pvp.win_streak = ws;
+                s_pvp.total_wins = tw;
+                s_pvp.total_losses = tl;
+                s_pvp.longest_streak = ls;
+                pvplog("PVP: loaded streak from %s (streak=%d, longest=%d, W/L=%d/%d)",
+                       paths[i], s_pvp.win_streak, s_pvp.longest_streak, s_pvp.total_wins, s_pvp.total_losses);
+            }
+            fclose(f);
+            break;
+        }
+    }
+}
+
 static unsigned int s_rand_seed = 987654321;
 static unsigned int pvp_rand(void) {
     if (s_rand_seed == 987654321) {
@@ -278,11 +337,27 @@ static int build_standard_pvp_response(char *buf, size_t max_len, int is_quit) {
         offset = append_pvp_match_data_json(buf, max_len, offset);
         if (offset < 0) return -1;
     }
-    int n = snprintf(buf + offset, max_len - offset,
-        "],\"pvpUserData\":[{\"pid\":\"%s\",\"winStreak\":%d,\"wins\":%d,\"losses\":%d,\"longestStreak\":%d,\"findAttempts\":0}],"
-        "\"userData\":[{\"pid\":\"%s\",\"winStreak\":%d,\"wins\":%d,\"losses\":%d,\"longestStreak\":%d,\"findAttempts\":0}]",
-        s_pvp.pvp_id, s_pvp.win_streak, s_pvp.total_wins, s_pvp.total_losses, s_pvp.longest_streak,
-        s_pvp.pvp_id, s_pvp.win_streak, s_pvp.total_wins, s_pvp.total_losses, s_pvp.longest_streak);
+    int n;
+    if (strcmp(s_pvp.pvp_id, "arena_versus") != 0) {
+        n = snprintf(buf + offset, max_len - offset,
+            "],\"pvpUserData\":["
+            "{\"pid\":\"%s\",\"winStreak\":%d,\"wins\":%d,\"losses\":%d,\"longestStreak\":%d,\"findAttempts\":0},"
+            "{\"pid\":\"arena_versus\",\"winStreak\":%d,\"wins\":%d,\"losses\":%d,\"longestStreak\":%d,\"findAttempts\":0}"
+            "],\"userData\":["
+            "{\"pid\":\"%s\",\"winStreak\":%d,\"wins\":%d,\"losses\":%d,\"longestStreak\":%d,\"findAttempts\":0},"
+            "{\"pid\":\"arena_versus\",\"winStreak\":%d,\"wins\":%d,\"losses\":%d,\"longestStreak\":%d,\"findAttempts\":0}"
+            "]",
+            s_pvp.pvp_id, s_pvp.win_streak, s_pvp.total_wins, s_pvp.total_losses, s_pvp.longest_streak,
+            s_pvp.win_streak, s_pvp.total_wins, s_pvp.total_losses, s_pvp.longest_streak,
+            s_pvp.pvp_id, s_pvp.win_streak, s_pvp.total_wins, s_pvp.total_losses, s_pvp.longest_streak,
+            s_pvp.win_streak, s_pvp.total_wins, s_pvp.total_losses, s_pvp.longest_streak);
+    } else {
+        n = snprintf(buf + offset, max_len - offset,
+            "],\"pvpUserData\":[{\"pid\":\"arena_versus\",\"winStreak\":%d,\"wins\":%d,\"losses\":%d,\"longestStreak\":%d,\"findAttempts\":0}],"
+            "\"userData\":[{\"pid\":\"arena_versus\",\"winStreak\":%d,\"wins\":%d,\"losses\":%d,\"longestStreak\":%d,\"findAttempts\":0}]",
+            s_pvp.win_streak, s_pvp.total_wins, s_pvp.total_losses, s_pvp.longest_streak,
+            s_pvp.win_streak, s_pvp.total_wins, s_pvp.total_losses, s_pvp.longest_streak);
+    }
     if (n < 0 || (size_t)n >= max_len - offset) return -1;
     offset += n;
 
@@ -406,6 +481,7 @@ static int build_standard_pvp_response(char *buf, size_t max_len, int is_quit) {
 
 const unsigned char *handle_pvp_request(const char *method, const char *p, const char *body, size_t bn, size_t *outn) {
     if (!p) return NULL;
+    pvp_load_streak();
 
     /* 1. Clear Invalid Teams */
     if (strstr(p, "/pvp/clear-invalid-teams")) {
@@ -457,7 +533,7 @@ const unsigned char *handle_pvp_request(const char *method, const char *p, const
         pthread_mutex_unlock(&s_pvp_lock);
         if (len > 0) {
             *outn = (size_t)len;
-            pvplog("PVP: handled %s -> 3 opponents generated, state=selecting (%d bytes)", p, len);
+            pvplog("PVP: handled %s -> 3 opponents generated, win_streak=%d state=selecting (%d bytes)", p, s_pvp.win_streak, len);
             return (const unsigned char*)s_resp_buf;
         }
     }
@@ -537,9 +613,41 @@ const unsigned char *handle_pvp_request(const char *method, const char *p, const
                 }
             }
         }
+        /* Calculate how many wins and how many fights have been started/resolved */
+        int cur_opp = s_pvp.opponent_index;
+        int series_wins = 0;
+        int series_fights_started = 0;
+        for (int i = 0; i < 3; i++) {
+            if (s_pvp.opponents[cur_opp].matchup_outcome[i] == 1) series_wins++;
+            if (s_pvp.opponents[cur_opp].matchup_state[i] != 0) series_fights_started++;
+        }
+
+        /* Check forfeit condition:
+         * In TFTF arena, win streak is NEVER reset by backing out of team select (state==0x100)
+         * or opponent selection (state==0x80) or series complete (state==0x20).
+         * Even in active state (state==2), if the player has NOT actually initiated any fight
+         * (series_fights_started == 0), backing out is completely penalty-free!
+         * If the player already achieved 2 wins (series victory), award/keep the streak!
+         */
+        if (s_pvp.state == 2 && series_fights_started > 0 && series_wins < 2) {
+            pvplog("PVP: forfeited active fight series (state=0x%x, fights=%d, wins=%d) -> win_streak reset to 0",
+                   s_pvp.state, series_fights_started, series_wins);
+            s_pvp.win_streak = 0;
+            s_pvp.total_losses++;
+            pvp_save_streak();
+        } else if (series_wins >= 2 && s_pvp.state == 2) {
+            /* Player achieved 2 wins and quit without fighting 3rd match -> award win streak! */
+            s_pvp.win_streak++;
+            if (s_pvp.win_streak > s_pvp.longest_streak) s_pvp.longest_streak = s_pvp.win_streak;
+            s_pvp.total_wins++;
+            pvp_save_streak();
+            pvplog("PVP: series completed with 2 wins early -> win_streak incremented to %d", s_pvp.win_streak);
+        } else {
+            pvplog("PVP: quit handled without penalty (state=0x%x, fights=%d, series_wins=%d, win_streak=%d)",
+                   s_pvp.state, series_fights_started, series_wins, s_pvp.win_streak);
+        }
         s_pvp.state = 0; /* reset to none */
         s_pvp.current_round = 0;
-        s_pvp.win_streak = 0;
         int len = build_standard_pvp_response(s_resp_buf, sizeof s_resp_buf, 1 /* is_quit */);
         /* Clear user heroes for the next series selection */
         s_pvp.user_heroes_count = 0;
@@ -629,6 +737,7 @@ const unsigned char *handle_pvp_request(const char *method, const char *p, const
                 s_pvp.total_losses++;
             }
             s_pvp.state = 4; /* rewarding */
+            pvp_save_streak();
         }
 
         int offset = snprintf(s_resp_buf, sizeof s_resp_buf,
@@ -636,9 +745,20 @@ const unsigned char *handle_pvp_request(const char *method, const char *p, const
             "\"pvpMatchData\":[");
         offset = append_pvp_match_data_json(s_resp_buf, sizeof s_resp_buf, offset);
         if (offset > 0) {
-            int n = snprintf(s_resp_buf + offset, sizeof(s_resp_buf) - offset,
-                "],\"pvpUserData\":[{\"pid\":\"%s\",\"winStreak\":%d,\"wins\":%d,\"losses\":%d,\"longestStreak\":%d,\"findAttempts\":0}]}}]}",
-                s_pvp.pvp_id, s_pvp.win_streak, s_pvp.total_wins, s_pvp.total_losses, s_pvp.longest_streak);
+            int n;
+            if (strcmp(s_pvp.pvp_id, "arena_versus") != 0) {
+                n = snprintf(s_resp_buf + offset, sizeof(s_resp_buf) - offset,
+                    "],\"pvpUserData\":["
+                    "{\"pid\":\"%s\",\"winStreak\":%d,\"wins\":%d,\"losses\":%d,\"longestStreak\":%d,\"findAttempts\":0},"
+                    "{\"pid\":\"arena_versus\",\"winStreak\":%d,\"wins\":%d,\"losses\":%d,\"longestStreak\":%d,\"findAttempts\":0}"
+                    "]}}]}",
+                    s_pvp.pvp_id, s_pvp.win_streak, s_pvp.total_wins, s_pvp.total_losses, s_pvp.longest_streak,
+                    s_pvp.win_streak, s_pvp.total_wins, s_pvp.total_losses, s_pvp.longest_streak);
+            } else {
+                n = snprintf(s_resp_buf + offset, sizeof(s_resp_buf) - offset,
+                    "],\"pvpUserData\":[{\"pid\":\"arena_versus\",\"winStreak\":%d,\"wins\":%d,\"losses\":%d,\"longestStreak\":%d,\"findAttempts\":0}]}}]}",
+                    s_pvp.win_streak, s_pvp.total_wins, s_pvp.total_losses, s_pvp.longest_streak);
+            }
             if (n > 0) offset += n;
         }
         pthread_mutex_unlock(&s_pvp_lock);
@@ -647,6 +767,70 @@ const unsigned char *handle_pvp_request(const char *method, const char *p, const
             *outn = (size_t)offset;
             pvplog("PVP: handled resolve-match/pvp_fight -> round=%d is_win=%d streak=%d next_state=%s (%d bytes)",
                    r, is_win, s_pvp.win_streak, state_to_string(s_pvp.state), offset);
+            return (const unsigned char*)s_resp_buf;
+        }
+    }
+
+    /* 9. Get User Data */
+    if (strstr(p, "/pvp/get-user-data")) {
+        pthread_mutex_lock(&s_pvp_lock);
+        int len;
+        if (strcmp(s_pvp.pvp_id, "arena_versus") != 0) {
+            len = snprintf(s_resp_buf, sizeof s_resp_buf,
+                "{\"error\":null,\"result\":["
+                "{\"pid\":\"%s\",\"winStreak\":%d,\"wins\":%d,\"losses\":%d,\"longestStreak\":%d,\"findAttempts\":0},"
+                "{\"pid\":\"arena_versus\",\"winStreak\":%d,\"wins\":%d,\"losses\":%d,\"longestStreak\":%d,\"findAttempts\":0}"
+                "]}",
+                s_pvp.pvp_id, s_pvp.win_streak, s_pvp.total_wins, s_pvp.total_losses, s_pvp.longest_streak,
+                s_pvp.win_streak, s_pvp.total_wins, s_pvp.total_losses, s_pvp.longest_streak);
+        } else {
+            len = snprintf(s_resp_buf, sizeof s_resp_buf,
+                "{\"error\":null,\"result\":["
+                "{\"pid\":\"arena_versus\",\"winStreak\":%d,\"wins\":%d,\"losses\":%d,\"longestStreak\":%d,\"findAttempts\":0}"
+                "]}",
+                s_pvp.win_streak, s_pvp.total_wins, s_pvp.total_losses, s_pvp.longest_streak);
+        }
+        pthread_mutex_unlock(&s_pvp_lock);
+        if (len > 0) {
+            *outn = (size_t)len;
+            pvplog("PVP: handled /pvp/get-user-data -> streak=%d (%d bytes)", s_pvp.win_streak, len);
+            return (const unsigned char*)s_resp_buf;
+        }
+    }
+
+    /* 10. Get Login Data */
+    if (strstr(p, "/pvp/get-login-data")) {
+        pthread_mutex_lock(&s_pvp_lock);
+        int len;
+        if (strcmp(s_pvp.pvp_id, "arena_versus") != 0) {
+            len = snprintf(s_resp_buf, sizeof s_resp_buf,
+                "{\"error\":null,\"result\":{"
+                "\"userData\":["
+                "{\"pid\":\"%s\",\"winStreak\":%d,\"wins\":%d,\"losses\":%d,\"longestStreak\":%d,\"findAttempts\":0},"
+                "{\"pid\":\"arena_versus\",\"winStreak\":%d,\"wins\":%d,\"losses\":%d,\"longestStreak\":%d,\"findAttempts\":0}"
+                "],"
+                "\"pvpUserData\":["
+                "{\"pid\":\"%s\",\"winStreak\":%d,\"wins\":%d,\"losses\":%d,\"longestStreak\":%d,\"findAttempts\":0},"
+                "{\"pid\":\"arena_versus\",\"winStreak\":%d,\"wins\":%d,\"losses\":%d,\"longestStreak\":%d,\"findAttempts\":0}"
+                "],"
+                "\"pvpMatchData\":[],\"duel\":{}}}",
+                s_pvp.pvp_id, s_pvp.win_streak, s_pvp.total_wins, s_pvp.total_losses, s_pvp.longest_streak,
+                s_pvp.win_streak, s_pvp.total_wins, s_pvp.total_losses, s_pvp.longest_streak,
+                s_pvp.pvp_id, s_pvp.win_streak, s_pvp.total_wins, s_pvp.total_losses, s_pvp.longest_streak,
+                s_pvp.win_streak, s_pvp.total_wins, s_pvp.total_losses, s_pvp.longest_streak);
+        } else {
+            len = snprintf(s_resp_buf, sizeof s_resp_buf,
+                "{\"error\":null,\"result\":{"
+                "\"userData\":[{\"pid\":\"arena_versus\",\"winStreak\":%d,\"wins\":%d,\"losses\":%d,\"longestStreak\":%d,\"findAttempts\":0}],"
+                "\"pvpUserData\":[{\"pid\":\"arena_versus\",\"winStreak\":%d,\"wins\":%d,\"losses\":%d,\"longestStreak\":%d,\"findAttempts\":0}],"
+                "\"pvpMatchData\":[],\"duel\":{}}}",
+                s_pvp.win_streak, s_pvp.total_wins, s_pvp.total_losses, s_pvp.longest_streak,
+                s_pvp.win_streak, s_pvp.total_wins, s_pvp.total_losses, s_pvp.longest_streak);
+        }
+        pthread_mutex_unlock(&s_pvp_lock);
+        if (len > 0) {
+            *outn = (size_t)len;
+            pvplog("PVP: handled /pvp/get-login-data -> streak=%d (%d bytes)", s_pvp.win_streak, len);
             return (const unsigned char*)s_resp_buf;
         }
     }
