@@ -17,6 +17,7 @@ int tftf_format_hero_detail(const char *bid, int rank, int level, int sig_lvl, c
 typedef struct { char bid[5][64]; int count; } Team;
 
 extern int g_current_is_10x_challenge;
+extern int g_selected_raid_opponent;
 int tftf_get_current_team(Team *team);
 
 float tftf_get_challenge_hp_multiplier(void);

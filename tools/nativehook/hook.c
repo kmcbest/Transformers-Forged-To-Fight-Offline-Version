@@ -940,9 +940,13 @@ int tftf_is_in_fight_load(void) {
     return g_in_fight_load;
 }
 
+static void* g_saved_raidstart_str = NULL;
+static void* g_wm_instance = NULL;
+
 void* hook_17(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    char b[64]; void* r = a2; int n = 0;
     PROTECT({
-        char b[64]; void* r = a2; int n = 0;
+        g_wm_instance = a0;
         if ((uintptr_t)r >= 0x100000 && !((uintptr_t)r & 7)) {
             int32_t l = *(int32_t*)((char*)r + 0x10);
             uint16_t* c = (uint16_t*)((char*)r + 0x14);
@@ -956,11 +960,29 @@ void* hook_17(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* 
             if (strstr(b, "Fight") != NULL || strstr(b, "PVPLOAD") != NULL) {
                 g_in_fight_load = 1;
             }
+            if (strcmp(b, "RaidStart") == 0) {
+                g_saved_raidstart_str = a2;
+            }
         } else {
             g_in_fight_load = 0;
+            if (strcmp(b, "RaidStart") == 0) {
+                g_saved_raidstart_str = NULL;
+            }
         }
     });
-    return H[17].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+
+    void* ret = H[17].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+
+    PROTECT({
+        if (!a1 && strcmp(b, "raidflow") == 0 && g_saved_raidstart_str) {
+            flog("LOADSCR: auto-dismissing leaked 'RaidStart' (bypassed TeamSelect in raid more)");
+            void* saved = g_saved_raidstart_str;
+            g_saved_raidstart_str = NULL;
+            H[17].orig(a0, (void*)0, saved, a3, a4, a5, a6, a7);
+        }
+    });
+
+    return ret;
 }
 MKHOOK(19) MKHOOK(20)
 static void* g_active_homeflow = NULL;
@@ -8793,6 +8815,7 @@ static void* hooked_FightFlow_OnMatchInit(void* self, void* err, void* result, v
     return NULL;
 }
 
+static int s_raid_needs_team_select = 0;
 static fn8 orig_PVPRaidFlow_OnError = NULL;
 static void* hooked_PVPRaidFlow_OnError(void* self, void* err, void* source, void* method, void* a4, void* a5, void* a6, void* a7) {
     char s_err[256] = "<null>"; char s_source[128] = "<null>";
@@ -8800,6 +8823,7 @@ static void* hooked_PVPRaidFlow_OnError(void* self, void* err, void* source, voi
     PROTECT(read_str_utf8(source, s_source, sizeof(s_source)););
     uintptr_t caller = (uintptr_t)__builtin_return_address(0) - g_base;
     flog("PVPRAIDFLOW_ON_ERROR: err='%s' source='%s' caller=0x%lx", s_err, s_source, caller);
+    s_raid_needs_team_select = 0;
     if (strstr(s_err, "alliance") || strstr(s_err, "Kicked")) {
         flog("PVPRAIDFLOW_ON_ERROR: SUPPRESSED '%s'", s_err);
         return NULL;
@@ -8887,6 +8911,165 @@ static void* hooked_PlayerRaidDisplay_Init(void* self, void* profile, void* topB
     }
     return NULL;
 }
+
+static void* s_opponent_gameboard_user_info = NULL;
+
+static fn8 orig_GameboardUserInfo_Init_Uid = NULL;
+static void* hooked_GameboardUserInfo_Init_Uid(void* self, void* uid, void* mdlChange, void* layout, void* onComplete, void* a5, void* a6, void* a7) {
+    int64_t uid_val = (uid && obj_ok(uid)) ? *(int64_t*)((char*)uid + 0x10) : 0;
+    flog("GAMEBOARD_USER_INFO_INIT_UID: self=%p uid_val=%lld g_selected_raid_opponent=%d", self, (long long)uid_val, g_selected_raid_opponent);
+    if (uid_val == 10001 || uid_val == 10003 || (uid_val != 1000000000001LL && uid_val > 0)) {
+        s_opponent_gameboard_user_info = self;
+    }
+    if (orig_GameboardUserInfo_Init_Uid) {
+        return orig_GameboardUserInfo_Init_Uid(self, uid, mdlChange, layout, onComplete, a5, a6, a7);
+    }
+    return NULL;
+}
+
+static fn8 orig_GameboardUserInfo_Init_Profile = NULL;
+static void* hooked_GameboardUserInfo_Init_Profile(void* self, void* profile, void* mdlChange, void* onComplete, void* a4, void* a5, void* a6, void* a7) {
+    flog("GAMEBOARD_USER_INFO_INIT_PROFILE: self=%p profile=%p g_selected_raid_opponent=%d", self, profile, g_selected_raid_opponent);
+    void* res = NULL;
+    if (orig_GameboardUserInfo_Init_Profile) {
+        res = orig_GameboardUserInfo_Init_Profile(self, profile, mdlChange, onComplete, a4, a5, a6, a7);
+    }
+    PROTECT({
+        if (self && obj_ok(self)) {
+            void* name_label = *(void**)((char*)self + 0x20);
+            void* tag_label = *(void**)((char*)self + 0x28);
+            void (*lbl_set_text)(void*, void*, void*) = (void(*)(void*, void*, void*))(g_base + 0x1B60DE0);
+
+            int is_opp = 0;
+            if (self == s_opponent_gameboard_user_info) {
+                is_opp = 1;
+            }
+            if (profile && obj_ok(profile)) {
+                void* sparx = *(void**)((char*)profile + 0x10);
+                if (sparx && obj_ok(sparx)) {
+                    void* uid_obj = *(void**)((char*)sparx + 0x10);
+                    if (uid_obj && obj_ok(uid_obj)) {
+                        int64_t uid_val = *(int64_t*)((char*)uid_obj + 0x10);
+                        if (uid_val == 10001 || uid_val == 10003) is_opp = 1;
+                    }
+                }
+            }
+
+            if (is_opp && lbl_set_text && g_strnew) {
+                const char* target_name = NULL;
+                const char* target_tag = NULL;
+                if (g_selected_raid_opponent == 0) {
+                    target_name = "龙欣";
+                    target_tag = "塞伯坦之魂";
+                } else if (g_selected_raid_opponent == 2) {
+                    target_name = "十三元祖随机";
+                    target_tag = "塞伯坦联盟";
+                }
+                if (target_name && name_label && obj_ok(name_label)) {
+                    lbl_set_text(name_label, g_strnew(target_name), NULL);
+                    flog("GAMEBOARD_USER_INFO_INIT_PROFILE: enforced opponent name='%s' on label %p", target_name, name_label);
+                }
+                if (target_tag && tag_label && obj_ok(tag_label)) {
+                    lbl_set_text(tag_label, g_strnew(target_tag), NULL);
+                    flog("GAMEBOARD_USER_INFO_INIT_PROFILE: enforced opponent tag='%s' on label %p", target_tag, tag_label);
+                }
+            }
+        }
+    });
+    return res;
+}
+
+static fn8 orig_PVPRaidFlow_SelectOpponent = NULL;
+static void* hooked_PVPRaidFlow_SelectOpponent(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    int index = (int)(intptr_t)a1;
+    flog("PVPRAIDFLOW_SELECT_OPPONENT: self=%p index=%d", self, index);
+    PROTECT({
+        g_selected_raid_opponent = index;
+        s_raid_needs_team_select = 1;
+        s_opponent_gameboard_user_info = NULL;
+        if (self && obj_ok(self)) {
+            *(uint8_t*)((char*)self + 0xB8) = 0; // _bcgDataUpdated = false
+            *(void**)((char*)self + 0x60) = NULL; // _teamData = NULL
+        }
+    });
+    if (orig_PVPRaidFlow_SelectOpponent) {
+        return orig_PVPRaidFlow_SelectOpponent(self, a1, a2, a3, a4, a5, a6, a7);
+    }
+    return NULL;
+}
+
+static fn8 orig_PVPRaidFlow_QuitRaid = NULL;
+static void* hooked_PVPRaidFlow_QuitRaid(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    flog("PVPRAIDFLOW_QUIT_RAID: self=%p", self);
+    s_raid_needs_team_select = 0;
+    s_opponent_gameboard_user_info = NULL;
+    if (orig_PVPRaidFlow_QuitRaid) return orig_PVPRaidFlow_QuitRaid(self, a1, a2, a3, a4, a5, a6, a7);
+    return NULL;
+}
+
+static fn8 orig_PVPRaidFlow_GameBoardReady = NULL;
+static void* hooked_PVPRaidFlow_GameBoardReady(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    flog("PVPRAIDFLOW_GAMEBOARD_READY: self=%p", self);
+    s_raid_needs_team_select = 0;
+    void* res = NULL;
+    if (orig_PVPRaidFlow_GameBoardReady) {
+        res = orig_PVPRaidFlow_GameBoardReady(self, a1, a2, a3, a4, a5, a6, a7);
+    }
+    PROTECT({
+        if (g_saved_raidstart_str && g_wm_instance) {
+            flog("PVPRAIDFLOW_GAMEBOARD_READY: auto-dismissing leaked 'RaidStart'!");
+            void* saved = g_saved_raidstart_str;
+            g_saved_raidstart_str = NULL;
+            H[17].orig(g_wm_instance, (void*)0, saved, NULL, NULL, NULL, NULL, NULL);
+        }
+    });
+    return res;
+}
+
+static fn8 orig_PVPRaidFlow_LeaveFlow = NULL;
+static void* hooked_PVPRaidFlow_LeaveFlow(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    flog("PVPRAIDFLOW_LEAVE_FLOW: self=%p", self);
+    s_raid_needs_team_select = 0;
+    s_opponent_gameboard_user_info = NULL;
+    PROTECT({
+        if (g_saved_raidstart_str && g_wm_instance) {
+            flog("PVPRAIDFLOW_LEAVE_FLOW: auto-dismissing leaked 'RaidStart'!");
+            void* saved = g_saved_raidstart_str;
+            g_saved_raidstart_str = NULL;
+            H[17].orig(g_wm_instance, (void*)0, saved, NULL, NULL, NULL, NULL, NULL);
+        }
+    });
+    if (orig_PVPRaidFlow_LeaveFlow) return orig_PVPRaidFlow_LeaveFlow(self, a1, a2, a3, a4, a5, a6, a7);
+    return NULL;
+}
+
+static fn8 orig_PVPRaidFlow_CalculateFlowState = NULL;
+static void* hooked_PVPRaidFlow_CalculateFlowState(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    void* res = NULL;
+    if (orig_PVPRaidFlow_CalculateFlowState) {
+        res = orig_PVPRaidFlow_CalculateFlowState(self, a1, a2, a3, a4, a5, a6, a7);
+    }
+    void* activeQuest = self ? *(void**)((char*)self + 0x58) : NULL;
+    void* teamData = self ? *(void**)((char*)self + 0x60) : NULL;
+    int selOpp = self ? *(int*)((char*)self + 0x68) : -1;
+    uintptr_t caller = (uintptr_t)__builtin_return_address(0) - g_base;
+    flog("PVPRAIDFLOW_CALC_STATE: self=%p -> state=%ld (activeQuest=%p, teamData=%p, selOpp=%d, caller=0x%lx, needs_ts=%d)",
+         self, (long)res, activeQuest, teamData, selOpp, caller, s_raid_needs_team_select);
+
+    if (s_raid_needs_team_select && activeQuest) {
+        if (!teamData) {
+            flog("PVPRAIDFLOW_CALC_STATE: overriding state %ld -> 3 (TeamSelect)", (long)res);
+            return (void*)3;
+        } else {
+            s_raid_needs_team_select = 0;
+            flog("PVPRAIDFLOW_CALC_STATE: teamData=%p selected, overriding state %ld -> 4 (AddTeamData)", teamData, (long)res);
+            return (void*)4;
+        }
+    }
+
+    return res;
+}
+
 
 
 
@@ -9201,6 +9384,14 @@ static void* installer(void* arg){
     inline_hook((void*)(g_base + 0x011FCBCC), (void*)hooked_PVPFlow_HandleError, &orig_PVPFlow_HandleError);
     inline_hook((void*)(g_base + 0x00B272CC), (void*)hooked_PVPRaidResultsData_GetOpponentTopBot, &orig_PVPRaidResultsData_GetOpponentTopBot);
     inline_hook((void*)(g_base + 0x00E3112C), (void*)hooked_PlayerRaidDisplay_Init, &orig_PlayerRaidDisplay_Init);
+    inline_hook((void*)(g_base + 0x00F20410), (void*)hooked_PVPRaidFlow_GameBoardReady, &orig_PVPRaidFlow_GameBoardReady);
+    inline_hook((void*)(g_base + 0x00F1EB9C), (void*)hooked_PVPRaidFlow_LeaveFlow, &orig_PVPRaidFlow_LeaveFlow);
+    inline_hook((void*)(g_base + 0x00F1F158), (void*)hooked_PVPRaidFlow_CalculateFlowState, &orig_PVPRaidFlow_CalculateFlowState);
+    inline_hook((void*)(g_base + 0x00F1ED64), (void*)hooked_PVPRaidFlow_SelectOpponent, &orig_PVPRaidFlow_SelectOpponent);
+    inline_hook((void*)(g_base + 0x00F1E8BC), (void*)hooked_PVPRaidFlow_QuitRaid, &orig_PVPRaidFlow_QuitRaid);
+    inline_hook((void*)(g_base + 0x00B6CB44), (void*)hooked_GameboardUserInfo_Init_Uid, &orig_GameboardUserInfo_Init_Uid);
+    inline_hook((void*)(g_base + 0x00B6CD1C), (void*)hooked_GameboardUserInfo_Init_Profile, &orig_GameboardUserInfo_Init_Profile);
+
 
 
     LOG("install done (%d hooks)", NH);

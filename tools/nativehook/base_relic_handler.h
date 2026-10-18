@@ -529,11 +529,199 @@ static const struct {
     { 30, 39, "%RR3%", "%RM3%", "relic_matrix_of_leadership_g1",  "rlc14" }
 };
 
+extern int g_selected_raid_opponent;
+
+static const char *s_all_raid_mods[] = {
+    "mods_primemodule_01",
+    "mods_harmaccelerator_01",
+    "mods_EMImodule_01",
+    "mods_repairmodule_01",
+    "mods_strangerefractor_01",
+    "mods_superconductor_1000",
+    "mods_superconductor_2000",
+    "mods_paralyzer_01",
+    "mods_laserguidance_01",
+    "mods_nightbirdsmark_01",
+    "mods_brawlersfury_01",
+    "mods_demolitionscache_01",
+    "mods_exofilter_01",
+    "mods_fluxincapacitator_01",
+    "mods_robotresource_01",
+    "mods_scoutssentry_01",
+    "mods_security_01",
+    "mods_tacticianstrick_02",
+    "mods_techconsole_01",
+    "mods_warriorscall",
+    "mods_generic_off_01",
+    "mods_generic_def_01",
+    "mods_generic_utl_01",
+    "mods_attack_01",
+    "mods_health_01"
+};
+
+static const char *s_all_raid_bots[] = {
+    "megatronus_gs_kabam",
+    "optimusprime_cin_aoe",
+    "optimusprime_gs_v",
+    "megatron_gs_leader2015",
+    "galvatron_gs_voyager2016",
+    "shockwave_gs",
+    "soundwave_gs",
+    "grimlock_gs_mp08",
+    "dinobot_bw_kabam",
+    "scorponok_bw_kabam",
+    "rhinox_bw_kabam",
+    "cheetor_bw_transmetal",
+    "waspinator_bw_kabam",
+    "starscream_cin_movie1",
+    "starscream_gs_leader2015",
+    "thundercracker_gs_leader2015",
+    "skywarp_gs_leader2015",
+    "sunstorm_gs_leader2015",
+    "ramjet_gs_voyager2015",
+    "thrust_gs_voyager2015",
+    "dirge_gs_voyager2015",
+    "cyclonus_gs_cw",
+    "bludgeon_gs_rotf",
+    "drift_cin_aoe",
+    "hound_cin_tlk",
+    "hotrod_cin_tlk",
+    "ironhide_gs_kabam",
+    "ironhide_cin_rotf",
+    "prowl_gs_kabam",
+    "ratchet_cin_movie1",
+    "wheeljack_gs_kabam",
+    "arcee_gs_deluxe2014",
+    "chromia_gs_kabam",
+    "windblade_gs_deluxe2014",
+    "mirage_gs_deluxe2016",
+    "sideswipe_cin_rotf",
+    "bumblebee_cin_dotm",
+    "bumblebee_gs_kabam",
+    "cliffjumper_gs_kabam",
+    "barricade_cin_movie1",
+    "bonecrusher_cin_movie1",
+    "brawl_cin_movie1",
+    "grindor_cin_rotf",
+    "scrapper_cin_rotf",
+    "mixmaster_cin_rotf",
+    "longhaul_cin_rotf",
+    "scavenger_cin_rotf",
+    "rampage_cin_rotf",
+    "overload_cin_rotf",
+    "hightower_cin_rotf",
+    "motormaster_gs_cw",
+    "dragstrip_gs_deluxe2016",
+    "deadend_gs_cw",
+    "breakdown_gs_cw",
+    "ultra_magnus_gs_leader2015",
+    "nemesis_prime_gs",
+    "necrotronus_gs_kabam",
+    "blaster_gs_leader2016"
+};
+
+static const char *s_all_raid_relics[][2] = {
+    { "relic_dark_energon_crystal", "rlc11" },
+    { "relic_unstable_energon_crystal", "rlc10" },
+    { "relic_allspark", "rlc2" },
+    { "relic_matrix_of_leadership_g1", "rlc14" },
+    { "relic_hound", "rlc38d" },
+    { "relic_forge_of_solus_prime", "rlc8" },
+    { "relic_apex_armor", "rlc4" },
+    { "relic_enigma_of_combination", "rlc7" },
+    { "relic_star_saber", "rlc16" }
+};
+
+static char s_longxin_mods[7][64];
+static char s_thirteen_bots[7][64];
+static char s_thirteen_mods[7][64];
+static char s_thirteen_relics[4][64];
+static char s_thirteen_models[4][64];
+static int s_opponents_generated = 0;
+
+static void generate_random_raid_opponents(void) {
+    int num_mods = sizeof(s_all_raid_mods) / sizeof(s_all_raid_mods[0]);
+    int num_bots = sizeof(s_all_raid_bots) / sizeof(s_all_raid_bots[0]);
+    int num_rels = sizeof(s_all_raid_relics) / sizeof(s_all_raid_relics[0]);
+
+    for (int i = 0; i < 7; i++) {
+        snprintf(s_longxin_mods[i], sizeof(s_longxin_mods[i]), "%s", s_all_raid_mods[rand() % num_mods]);
+    }
+
+    for (int i = 0; i < 7; i++) {
+        snprintf(s_thirteen_bots[i], sizeof(s_thirteen_bots[i]), "%s", s_all_raid_bots[rand() % num_bots]);
+        snprintf(s_thirteen_mods[i], sizeof(s_thirteen_mods[i]), "%s", s_all_raid_mods[rand() % num_mods]);
+    }
+
+    for (int i = 0; i < 4; i++) {
+        int r = rand() % num_rels;
+        snprintf(s_thirteen_relics[i], sizeof(s_thirteen_relics[i]), "%s", s_all_raid_relics[r][0]);
+        snprintf(s_thirteen_models[i], sizeof(s_thirteen_models[i]), "%s", s_all_raid_relics[r][1]);
+    }
+    s_opponents_generated = 1;
+}
+
 static int get_raid_template_args(TemplateArg *args, int max_args) {
-    if (max_args < 22) return 0;
+    if (max_args < 23) return 0;
+    if (!s_opponents_generated) {
+        generate_random_raid_opponents();
+    }
     load_base_defenders();
     load_base_relics();
     int count = 0;
+
+    // Opponent 0: [塞伯坦之魂]龙欣
+    // 7 Sharkticons: slot 6 is warrior, slot 0 is 1000, 1-5 other sharkticons.
+    // 4 Hound relics: all relic_hound with model rlc38d.
+    if (g_selected_raid_opponent == 0) {
+        static const char *longxin_sharks[7] = {
+            "sharkticon_gs_kabam",      // Slot 0 (25, 30): 饿鲨1000守底
+            "sharkticon_gs_tactician",  // Slot 1 (22, 33): 战术饿鲨
+            "sharkticon_gs_tech",       // Slot 2 (28, 33): 科技饿鲨
+            "sharkticon_gs_demolition", // Slot 3 (25, 36): 爆破饿鲨
+            "sharkticon_gs_brawler",    // Slot 4 (22, 39): 格斗饿鲨
+            "sharkticon_gs_scout",      // Slot 5 (28, 39): 侦察饿鲨
+            "sharkticon_gs_warrior"     // Slot 6 (25, 42): 战士饿鲨第一只 (Entry)
+        };
+        for (int s = 0; s < 7; s++) {
+            const char *b = longxin_sharks[s];
+            const char *t = s_longxin_mods[s][0] ? s_longxin_mods[s] : g_raid_slot_defs[s].def_tower;
+            args[count++] = (TemplateArg){ g_raid_slot_defs[s].boss_token, (const unsigned char*)b, strlen(b) };
+            args[count++] = (TemplateArg){ g_raid_slot_defs[s].tower_token, (const unsigned char*)t, strlen(t) };
+        }
+        for (int r = 0; r < 4; r++) {
+            const char *rel = "relic_hound";
+            const char *mdl = "rlc38d";
+            args[count++] = (TemplateArg){ g_raid_relic_defs[r].relic_token, (const unsigned char*)rel, strlen(rel) };
+            args[count++] = (TemplateArg){ g_raid_relic_defs[r].model_token, (const unsigned char*)mdl, strlen(mdl) };
+        }
+        const char *opp_uid = "10001";
+        args[count++] = (TemplateArg){ "%ROPP%", (const unsigned char*)opp_uid, strlen(opp_uid) };
+        return count;
+    }
+
+    // Opponent 2: [塞伯坦联盟]十三元祖随机
+    // Random bots and random mods
+    if (g_selected_raid_opponent == 2) {
+        for (int s = 0; s < 7; s++) {
+            const char *b = s_thirteen_bots[s][0] ? s_thirteen_bots[s] : g_raid_slot_defs[s].def_boss;
+            const char *t = s_thirteen_mods[s][0] ? s_thirteen_mods[s] : g_raid_slot_defs[s].def_tower;
+            args[count++] = (TemplateArg){ g_raid_slot_defs[s].boss_token, (const unsigned char*)b, strlen(b) };
+            args[count++] = (TemplateArg){ g_raid_slot_defs[s].tower_token, (const unsigned char*)t, strlen(t) };
+        }
+        for (int r = 0; r < 4; r++) {
+            const char *rel = s_thirteen_relics[r][0] ? s_thirteen_relics[r] : g_raid_relic_defs[r].def_relic;
+            const char *mdl = s_thirteen_models[r][0] ? s_thirteen_models[r] : g_raid_relic_defs[r].def_model;
+            args[count++] = (TemplateArg){ g_raid_relic_defs[r].relic_token, (const unsigned char*)rel, strlen(rel) };
+            args[count++] = (TemplateArg){ g_raid_relic_defs[r].model_token, (const unsigned char*)mdl, strlen(mdl) };
+        }
+        const char *opp_uid = "10003";
+        args[count++] = (TemplateArg){ "%ROPP%", (const unsigned char*)opp_uid, strlen(opp_uid) };
+        return count;
+    }
+
+    // Opponent 1: [重生]我的基地
+    // Player's own base setup
     for (int s = 0; s < 7; s++) {
         const char *b = g_base_defender_slots[s].boss_id[0] ? g_base_defender_slots[s].boss_id : g_raid_slot_defs[s].def_boss;
         const char *t = g_base_defender_slots[s].tower_id[0] ? g_base_defender_slots[s].tower_id : g_raid_slot_defs[s].def_tower;
@@ -547,5 +735,7 @@ static int get_raid_template_args(TemplateArg *args, int max_args) {
         args[count++] = (TemplateArg){ g_raid_relic_defs[r].relic_token, (const unsigned char*)rel, strlen(rel) };
         args[count++] = (TemplateArg){ g_raid_relic_defs[r].model_token, (const unsigned char*)mdl, strlen(mdl) };
     }
+    const char *opp_uid = "1000000000001";
+    args[count++] = (TemplateArg){ "%ROPP%", (const unsigned char*)opp_uid, strlen(opp_uid) };
     return count;
 }

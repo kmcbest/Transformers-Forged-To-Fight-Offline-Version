@@ -70,6 +70,8 @@ static const char * const g_arena_pool[] = {
 };
 #define ARENA_POOL_SIZE (sizeof(g_arena_pool) / sizeof(g_arena_pool[0]))
 
+int g_selected_raid_opponent = 1;
+
 static unsigned int g_rand_seed = 123456789;
 static unsigned int q_rand(void) {
     if (g_rand_seed == 123456789) {
@@ -1494,8 +1496,12 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
     }
     if(strstr(p, "/matches/find-match")) {
         load_base_defenders();
+        generate_random_raid_opponents();
         const char *top_b = g_base_defender_slots[0].boss_id[0] ? g_base_defender_slots[0].boss_id : "megatron_gs_leader2015";
         const char *top_t = g_base_defender_slots[0].tower_id[0] ? g_base_defender_slots[0].tower_id : "mods_primemodule_01";
+        const char *longxin_mod = s_longxin_mods[0][0] ? s_longxin_mods[0] : "mods_primemodule_01";
+        const char *thirteen_b = s_thirteen_bots[0][0] ? s_thirteen_bots[0] : "megatronus_gs_kabam";
+        const char *thirteen_t = s_thirteen_mods[0][0] ? s_thirteen_mods[0] : "mods_harmaccelerator_01";
         static char find_match_buf[4096];
         long now = (long)time(NULL);
         long expiry = now + 1800;
@@ -1506,21 +1512,21 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
                 "\"matches\":["
                     "{"
                         "\"uid\":10001,"
-                        "\"n\":\"Shockwave\","
-                        "\"t\":\"DECP\","
+                        "\"n\":\"龙欣\","
+                        "\"t\":\"塞伯坦之魂\","
                         "\"s\":1200,"
                         "\"sd\":35,"
                         "\"rc\":1200,"
                         "\"bs\":6500,"
-                        "\"td\":\"shockwave_gs\","
-                        "\"tt\":\"\","
+                        "\"td\":\"sharkticon_gs_kabam\","
+                        "\"tt\":\"%s\","
                         "\"pi\":3200,"
                         "\"layout\":{\"type\":\"userBase\",\"category\":\"base\",\"id\":\"base_10001\",\"hash\":\"bm_10001\"}"
                     "},"
                     "{"
                         "\"uid\":10002,"
-                        "\"n\":\"Base Defender\","
-                        "\"t\":\"DECP\","
+                        "\"n\":\"我的基地\","
+                        "\"t\":\"重生\","
                         "\"s\":1500,"
                         "\"sd\":45,"
                         "\"rc\":1600,"
@@ -1532,26 +1538,31 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
                     "},"
                     "{"
                         "\"uid\":10003,"
-                        "\"n\":\"Soundwave\","
-                        "\"t\":\"DECP\","
+                        "\"n\":\"十三元祖随机\","
+                        "\"t\":\"塞伯坦联盟\","
                         "\"s\":1800,"
                         "\"sd\":55,"
                         "\"rc\":2000,"
                         "\"bs\":10500,"
-                        "\"td\":\"soundwave_gs\","
-                        "\"tt\":\"\","
+                        "\"td\":\"%s\","
+                        "\"tt\":\"%s\","
                         "\"pi\":5200,"
                         "\"layout\":{\"type\":\"userBase\",\"category\":\"base\",\"id\":\"base_10003\",\"hash\":\"bm_10003\"}"
                     "}"
                 "]"
             "}}",
-            now, expiry, top_b, top_t
+            now, expiry, longxin_mod, top_b, top_t, thirteen_b, thirteen_t
         );
         *outn = (size_t)len;
         logmsg("FIND_MATCH: handled %s -> expiry=%ld top_b=%s", p, expiry, top_b);
         return (const unsigned char*)find_match_buf;
     }
     if(strstr(p, "/matches/activate-match")) {
+        if (body && bn > 0) {
+            if (strstr(body, "10001")) g_selected_raid_opponent = 0;
+            else if (strstr(body, "10003")) g_selected_raid_opponent = 2;
+            else if (strstr(body, "10002")) g_selected_raid_opponent = 1;
+        }
         if(strstr(p, "fight")) {
             static const unsigned char fight_match_ok[] = "{\"error\":null,\"result\":{\"matchID\":\"quests_fight_match_1\",\"matchId\":\"quests_fight_match_1\",\"status\":\"active\",\"timeout\":180,\"matchTimeout\":180,\"matchAttributes\":{}}}";
             *outn = strlen((const char*)fight_match_ok);
@@ -1594,8 +1605,8 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
 
         const void *v = lookup("@matches:activate_raid", outn);
         if (v) {
-            TemplateArg rargs[24];
-            int rc = get_raid_template_args(rargs, 24);
+            TemplateArg rargs[32];
+            int rc = get_raid_template_args(rargs, 32);
             v = template_spaced(o, (const unsigned char*)v, *outn, rargs, rc, outn);
             logmsg("ACTIVATE_MATCH: returned dynamic @matches:activate_raid (%zu bytes)", *outn);
             return (const unsigned char*)v;
@@ -2275,9 +2286,21 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
                 , cmd_name
             );
             for (int i = 0; i < uid_count; i++) {
+                const char *uname = "Base Defender";
+                const char *utag = "DEF";
+                if (strcmp(uids[i], "10001") == 0) {
+                    uname = "龙欣";
+                    utag = "塞伯坦之魂";
+                } else if (strcmp(uids[i], "10002") == 0) {
+                    uname = "我的基地";
+                    utag = "重生";
+                } else if (strcmp(uids[i], "10003") == 0) {
+                    uname = "十三元祖随机";
+                    utag = "塞伯坦联盟";
+                }
                 off += snprintf(userprofile_buf + off, sizeof(userprofile_buf) - off,
-                    ",{\"uid\":%s,\"aid\":%s,\"name\":\"Base Defender\",\"tag\":\"DEF\",\"locale\":\"zh-CN\",\"lang\":\"zh\",\"time_last\":1500000000,\"levelrewards\":{\"xp\":{\"level\":60,\"last_awarded_level\":60,\"xp\":0}},\"gamestats\":{\"chp\":102,\"chi\":102,\"ushr\":13430,\"hrt\":277283}}"
-                    , uids[i], uids[i]
+                    ",{\"uid\":%s,\"aid\":%s,\"name\":\"%s\",\"tag\":\"%s\",\"locale\":\"zh-CN\",\"lang\":\"zh\",\"time_last\":1500000000,\"levelrewards\":{\"xp\":{\"level\":60,\"last_awarded_level\":60,\"xp\":0}},\"gamestats\":{\"chp\":102,\"chi\":102,\"ushr\":13430,\"hrt\":277283}}"
+                    , uids[i], uids[i], uname, utag
                 );
             }
             off += snprintf(userprofile_buf + off, sizeof(userprofile_buf) - off, "]}}");
@@ -2316,6 +2339,16 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         int is_self = (strcmp(req_uid, "1000000000001") == 0);
         const char *display_name = is_self ? cmd_name : "Base Defender";
         const char *display_tag = is_self ? "CANF" : "DEF";
+        if (strcmp(req_uid, "10001") == 0) {
+            display_name = "龙欣";
+            display_tag = "塞伯坦之魂";
+        } else if (strcmp(req_uid, "10002") == 0) {
+            display_name = "我的基地";
+            display_tag = "重生";
+        } else if (strcmp(req_uid, "10003") == 0) {
+            display_name = "十三元祖随机";
+            display_tag = "塞伯坦联盟";
+        }
 
         int len = snprintf(userprofile_buf, sizeof(userprofile_buf),
             "{\"error\":null,\"result\":{"

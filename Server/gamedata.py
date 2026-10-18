@@ -3633,6 +3633,7 @@ def build_raid_active_quest(team=None):
         "map": qmap,
         "progression": progression,
         "scaledBossTable": summary.get("bosses", {}),
+        "opponent": "%ROPP%",
     }
     instance.update(progression)
     return {
@@ -3650,7 +3651,7 @@ def build_raid_active_quest(team=None):
         "progression": {},
         "instances": [instance],
         "uid": LOCAL_UID,
-        "opponent": LOCAL_UID,
+        "opponent": "%ROPP%",
         "teamSizeMin": 1,
         "teamSizeMax": 3,
     }
