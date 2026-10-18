@@ -429,7 +429,7 @@ def max_special_attacks(bid, star):
 # transform land no harder than a Heavy and only ~1.7x a Medium -- the "transforms don't
 # hit harder" report. The escalating curve below keeps SP1 < SP2 < SP3 and puts every
 # special above the Heavy normal attack.
-_SPECIAL_DAMAGE_RATIOS = (1.75, 2.50, 3.50)
+_SPECIAL_DAMAGE_RATIOS = (1.50, 3.00, 3.00)
 
 
 def special_damage_ratios(bid, star):
@@ -995,10 +995,10 @@ def build_attack_values():
         }
 
     return {
-        "Light": av("Light", 0.35, 50.0, 0.5, 1.5, 0.0),
-        "Medium": av("Medium", 0.60, 75.0, 0.5, 1.5, 0.0),
-        "Heavy": av("Heavy", 1.00, 120.0, 0.5, 1.5, 0.05),
-        "Ranged": av("Ranged", 0.40, 55.0, 0.5, 1.5, 0.0),
+        "Light": av("Light", 0.20, 50.0, 0.5, 1.5, 0.0),
+        "Medium": av("Medium", 0.40, 75.0, 0.5, 1.5, 0.0),
+        "Heavy": av("Heavy", 0.80, 120.0, 0.5, 1.5, 0.05),
+        "Ranged": av("Ranged", 0.20, 55.0, 0.5, 1.5, 0.0),
     }
 
 
