@@ -1474,7 +1474,7 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
                                "{\"type\":\"res\",\"data\":\"mdl\",\"quantity\":15},"
                                "{\"type\":\"res\",\"data\":\"rc\",\"quantity\":150},"
                                "{\"type\":\"res\",\"data\":\"gold\",\"quantity\":10000}],"
-                               "\"defenderRewards\":[],\"rewardsClaimed\":true,\"claimableRewards\":[],"
+                               "\"defenderRewards\":[{\"type\":\"res\",\"data\":\"mdl\",\"quantity\":0}],\"rewardsClaimed\":true,\"claimableRewards\":[],"
                                "\"startTime\":0,\"endTime\":0}}}");
             }
             OUT_ADD_STR(o, "]}");
@@ -1552,6 +1552,12 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         return (const unsigned char*)find_match_buf;
     }
     if(strstr(p, "/matches/activate-match")) {
+        if(strstr(p, "fight")) {
+            static const unsigned char fight_match_ok[] = "{\"error\":null,\"result\":{\"matchID\":\"quests_fight_match_1\",\"matchId\":\"quests_fight_match_1\",\"status\":\"active\",\"timeout\":180,\"matchTimeout\":180,\"matchAttributes\":{}}}";
+            *outn = strlen((const char*)fight_match_ok);
+            logmsg("ACTIVATE_MATCH: fight match ok -> %s (with matchID/matchTimeout)", p);
+            return fight_match_ok;
+        }
         Team team;
         int have_team = resolve_team(&team);
         pthread_mutex_lock(&g_pos_lock);
@@ -1597,6 +1603,24 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         static const unsigned char match_ok[] = "{\"error\":null,\"result\":{}}";
         *outn = strlen((const char*)match_ok);
         return match_ok;
+    }
+    if(strstr(p, "/matches/match-loaded") || strstr(p, "/pvp/match-loaded")) {
+        static const unsigned char match_loaded_ok[] = "{\"error\":null,\"result\":{}}";
+        *outn = strlen((const char*)match_loaded_ok);
+        logmsg("MATCH_LOADED: ok -> %s", p);
+        return match_loaded_ok;
+    }
+    if(strstr(p, "/quests/quest-reset-battle-timeout")) {
+        static const unsigned char reset_timeout_ok[] = "{\"error\":null,\"result\":{\"battleLockExpiry\":2000000000,\"timeout\":180}}";
+        *outn = strlen((const char*)reset_timeout_ok);
+        logmsg("RESET_BATTLE_TIMEOUT: ok -> %s", p);
+        return reset_timeout_ok;
+    }
+    if(strstr(p, "/quests/quest-unlock-battle")) {
+        static const unsigned char unlock_battle_ok[] = "{\"error\":null,\"result\":{}}";
+        *outn = strlen((const char*)unlock_battle_ok);
+        logmsg("UNLOCK_BATTLE: ok -> %s", p);
+        return unlock_battle_ok;
     }
     if(strstr(p,"/base/active")) {
         g_quest_state.is_leisure = 1;
@@ -1871,8 +1895,10 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
                 "\"async\":[{\"component\":\"RaidManager\",\"message\":\"raid-end\","
                 "\"payload\":{\"raidResult\":{\"_id\":\"raid_res_loss\",\"qid\":\"raid_base-0\","
                 "\"category\":\"raid\",\"s\":\"q\",\"attacker\":\"1000000000001\",\"defender\":\"10002\","
-                "\"attackerWon\":false,\"attackerRewards\":[],\"defenderRewards\":[],"
-                "\"rewardsClaimed\":false,\"claimableRewards\":[],\"startTime\":0,\"endTime\":0}}}]}";
+                "\"attackerWon\":false,"
+                "\"attackerRewards\":[{\"type\":\"res\",\"data\":\"mdl\",\"quantity\":0},{\"type\":\"res\",\"data\":\"rc\",\"quantity\":0},{\"type\":\"res\",\"data\":\"gold\",\"quantity\":0}],"
+                "\"defenderRewards\":[{\"type\":\"res\",\"data\":\"mdl\",\"quantity\":15}],"
+                "\"rewardsClaimed\":true,\"claimableRewards\":[],\"startTime\":0,\"endTime\":0}}}]}";
             *outn = strlen((const char*)raid_quit_resp);
             logmsg("HTTP_QUEST_QUIT: raid quit -> emitted raid-end loss result");
             return raid_quit_resp;
@@ -2204,33 +2230,59 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         if (!cmd_name || !cmd_name[0]) cmd_name = "Commander";
 
         if (strstr(p, "bulk")) {
-            char u2[64] = "1000000000002";
-            if (body && bn > 0) {
-                const char *pos = (const char*)body;
-                while (pos < end) {
-                    while (pos < end && !isdigit((unsigned char)*pos)) pos++;
-                    if (pos >= end) break;
+            char uids[16][64];
+            int uid_count = 0;
+            // Always ensure 10002 (raid base defender) is present
+            strcpy(uids[0], "10002");
+            uid_count = 1;
+
+            const char *bufs[2] = { (const char*)body, query };
+            const char *ends[2] = { end, query ? query + strlen(query) : NULL };
+            for (int bi = 0; bi < 2; bi++) {
+                const char *pos = bufs[bi];
+                const char *bend = ends[bi];
+                if (!pos || !bend) continue;
+                while (pos < bend) {
+                    while (pos < bend && !isdigit((unsigned char)*pos)) pos++;
+                    if (pos >= bend) break;
                     const char *start_num = pos;
-                    while (pos < end && isdigit((unsigned char)*pos)) pos++;
+                    while (pos < bend && isdigit((unsigned char)*pos)) pos++;
                     size_t nlen = (size_t)(pos - start_num);
-                    if (nlen >= 8 && (nlen != 13 || memcmp(start_num, "1000000000001", 13) != 0)) {
-                        if (nlen < sizeof(u2)) {
-                            memcpy(u2, start_num, nlen);
-                            u2[nlen] = 0;
-                            break;
+                    if (nlen >= 4 && nlen < 64 && (start_num == bufs[bi] || *(start_num - 1) != '%')) {
+                        if (nlen == 13 && memcmp(start_num, "1000000000001", 13) == 0) {
+                            // Player UID is always emitted as the primary user
+                        } else {
+                            int exists = 0;
+                            for (int i = 0; i < uid_count; i++) {
+                                if (strlen(uids[i]) == nlen && memcmp(uids[i], start_num, nlen) == 0) {
+                                    exists = 1;
+                                    break;
+                                }
+                            }
+                            if (!exists && uid_count < 16) {
+                                memcpy(uids[uid_count], start_num, nlen);
+                                uids[uid_count][nlen] = 0;
+                                uid_count++;
+                            }
                         }
                     }
                 }
             }
-            int len = snprintf(userprofile_buf, sizeof(userprofile_buf),
+
+            int off = snprintf(userprofile_buf, sizeof(userprofile_buf),
                 "{\"error\":null,\"result\":{\"users\":["
-                "{\"uid\":1000000000001,\"aid\":1000000000001,\"name\":\"%s\",\"tag\":\"CANF\",\"locale\":\"zh-CN\",\"lang\":\"zh\",\"time_last\":1500000000,\"levelrewards\":{\"xp\":{\"level\":60,\"last_awarded_level\":60,\"xp\":0}},\"gamestats\":{\"chp\":102,\"chi\":102,\"ushr\":13430,\"hrt\":277283}},"
-                "{\"uid\":%s,\"aid\":%s,\"name\":\"Commander\",\"tag\":\"DEF\",\"locale\":\"zh-CN\",\"lang\":\"zh\",\"time_last\":1500000000,\"levelrewards\":{\"xp\":{\"level\":60,\"last_awarded_level\":60,\"xp\":0}},\"gamestats\":{\"chp\":102,\"chi\":102,\"ushr\":13430,\"hrt\":277283}}"
-                "]}}",
-                cmd_name, u2, u2
+                "{\"uid\":1000000000001,\"aid\":1000000000001,\"name\":\"%s\",\"tag\":\"CANF\",\"locale\":\"zh-CN\",\"lang\":\"zh\",\"time_last\":1500000000,\"levelrewards\":{\"xp\":{\"level\":60,\"last_awarded_level\":60,\"xp\":0}},\"gamestats\":{\"chp\":102,\"chi\":102,\"ushr\":13430,\"hrt\":277283}}"
+                , cmd_name
             );
-            *outn = (size_t)len;
-            logmsg("USERPROFILE_BULK: handled %s -> 1000000000001 and %s", p, u2);
+            for (int i = 0; i < uid_count; i++) {
+                off += snprintf(userprofile_buf + off, sizeof(userprofile_buf) - off,
+                    ",{\"uid\":%s,\"aid\":%s,\"name\":\"Base Defender\",\"tag\":\"DEF\",\"locale\":\"zh-CN\",\"lang\":\"zh\",\"time_last\":1500000000,\"levelrewards\":{\"xp\":{\"level\":60,\"last_awarded_level\":60,\"xp\":0}},\"gamestats\":{\"chp\":102,\"chi\":102,\"ushr\":13430,\"hrt\":277283}}"
+                    , uids[i], uids[i]
+                );
+            }
+            off += snprintf(userprofile_buf + off, sizeof(userprofile_buf) - off, "]}}");
+            *outn = (size_t)off;
+            logmsg("USERPROFILE_BULK: handled %s -> player + %d defenders (first: %s)", p, uid_count, uids[0]);
             return (const unsigned char*)userprofile_buf;
         }
 
@@ -2261,22 +2313,26 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
             }
         }
 
+        int is_self = (strcmp(req_uid, "1000000000001") == 0);
+        const char *display_name = is_self ? cmd_name : "Base Defender";
+        const char *display_tag = is_self ? "CANF" : "DEF";
+
         int len = snprintf(userprofile_buf, sizeof(userprofile_buf),
             "{\"error\":null,\"result\":{"
                 "\"uid\":%s,"
                 "\"aid\":%s,"
                 "\"name\":\"%s\","
-                "\"tag\":\"CANF\","
+                "\"tag\":\"%s\","
                 "\"locale\":\"zh-CN\","
                 "\"lang\":\"zh\","
                 "\"time_last\":1500000000,"
                 "\"levelrewards\":{\"xp\":{\"level\":60,\"last_awarded_level\":60,\"xp\":0}},"
                 "\"gamestats\":{\"chp\":102,\"chi\":102,\"ushr\":13430,\"hrt\":277283}"
             "}}",
-            req_uid, req_uid, cmd_name
+            req_uid, req_uid, display_name, display_tag
         );
         *outn = (size_t)len;
-        logmsg("USERPROFILE: handled %s -> uid=%s name=%s (level 60)", p, req_uid, cmd_name);
+        logmsg("USERPROFILE: handled %s -> uid=%s name=%s (level 60)", p, req_uid, display_name);
         return (const unsigned char*)userprofile_buf;
     }
     if(strstr(p, "/skilltrees/skilltrees-list")) {

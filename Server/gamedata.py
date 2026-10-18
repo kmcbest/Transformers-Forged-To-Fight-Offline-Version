@@ -2123,10 +2123,11 @@ def build_active_team(activity_id="1.1.1-0", heroes=None, team_type=None):
     hero_dicts = {b: build_hero_entry(b) for b in bids}
     if team_type is None:
         team_type = "raid" if "raid" in activity_id else "pve"
+    expire = 2000000000 if team_type == "raid" else 0
     return {
         "aid": activity_id,
         "type": team_type, "modes": [team_type],
-        "heroes": hero_dicts, "expire": 0,
+        "heroes": hero_dicts, "expire": expire,
     }
 
 
@@ -2944,15 +2945,33 @@ def build_quest_movedir(qid="1.1.1", offx=1, offy=0, start=None, team=None):
         rank = 5 if qid in ("1.1.2", "1.1.3", "1.1.4", "1.1.5", "1.1.6", "1.1.7", RAID_QID) else 1
         level = 50 if qid in ("1.1.2", "1.1.3", "1.1.4", "1.1.5", "1.1.6", "1.1.7", RAID_QID) else 1
         arena = encounter_arena_for(qid, step_idx if qid != "1.1.2" else nx)
+        battle_dict = {
+            "x": nx, "y": ny, "isFinalBoss": is_final_boss,
+            "battleEnemy": build_quest_enemy(
+                map_override=arena["theme"], tod_index=arena["todIndex"],
+                key=key, is_final_boss=is_final_boss, rank=rank, level=level,
+            ),
+        }
+        if qid == RAID_QID and target_pos in RAID_SLOT_DEFS:
+            _, t_token = RAID_SLOT_DEFS[target_pos]
+            battle_dict["battleTower"] = {
+                "key": t_token,
+                "entityType": "tower",
+                "parentEntityType": "bcg",
+                "characters": [t_token],
+                "rank": 1,
+                "level": 1,
+                "sig_lvl": 0,
+                "flvl": 0,
+                "aiType": 0,
+                "aiString": "default",
+                "aiPer": "default",
+                "mapOverride": arena["theme"],
+                "todIndex": arena["todIndex"],
+            }
         actions.append({
             "action": {
-                "battle": {
-                    "x": nx, "y": ny, "isFinalBoss": is_final_boss,
-                    "battleEnemy": build_quest_enemy(
-                        map_override=arena["theme"], tod_index=arena["todIndex"],
-                        key=key, is_final_boss=is_final_boss, rank=rank, level=level,
-                    ),
-                },
+                "battle": battle_dict,
             },
         })
 
@@ -3369,8 +3388,8 @@ def build_base_mission():
             "parentEntityType": "bcg",
             "key": t_key,
             "character": t_key,
-            "rank": 4,
-            "level": 50,
+            "rank": 1,
+            "level": 1,
             "position": {"x": r, "y": c},
         }
 
@@ -3428,7 +3447,7 @@ def build_raid_summary():
             "entityType": "tower",
             "parentEntityType": "bcg",
             "characters": [t_token],
-            "rank": 4, "level": 50, "sig_lvl": 0, "flvl": 0,
+            "rank": 1, "level": 1, "sig_lvl": 0, "flvl": 0,
             "aiType": 0, "aiString": "default", "aiPer": "default",
         }
     return {
@@ -3547,8 +3566,8 @@ def build_raid_map():
                         "parentEntityType": "bcg",
                         "key": t_key,
                         "character": t_key,
-                        "rank": 4,
-                        "level": 50,
+                        "rank": 1,
+                        "level": 1,
                     }
             r.append(tile)
         grid.append(r)

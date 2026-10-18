@@ -539,7 +539,7 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x1179AF4, "PCACTION",           2, 0 }, // 154 PlayerController.Action(int action)
     { 0x0E34640, "SPEXIT",             2, 0 }, // 155 PlayerSpecialAttackState.OnExit -> reset attack chain on special end (S1/S2)
     { 0x0DADA6C, "ROLL_CRIT",          2, 0 }, // 156 PlayerAttributes.RollForCriticalHit -> force critical hit
-    { 0x0E3D8CC, "PREFIGHT_HP",        2, 0 }, // 157 PrefightScreenData.GetTeamMemberHealth -> residual HP
+    { 0,         "PREFIGHT_HP",        2, 0 }, // 157 PrefightScreenData.GetTeamMemberHealth (disabled: 0x0E3D8CC was actually SetCurrentHero!)
     { 0x10E1E54, "TEAMDATA_IS_KO",     2, 0 }, // 158 TeamData.IsKnockedOut -> bool (1=KO, 0=alive)
     { 0x10E1AE4, "TEAMDATA_GET_HP",    2, 0 }, // 159 TeamData.GetHP -> float residual HP
     { 0x00E3349C,"SIDESTEPENTER",      2, 0 }, // 160 PlayerSidestepState.OnEnter -> reset attack chain on swipe up/down
@@ -549,7 +549,7 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0xC1F2B8,  "GET_TOP_HERO_ID",    2, 0 }, // 164 BCGHelper.GetTopHeroId -> squad leader avatar
     { 0x0117FEC4,"HITREACTENTER",      2, 0 }, // 165 PlayerHitReactState.OnEnter -> reset attack chain on real hit reaction
     { 0x00C2BE04, "ACT_NAME",          2, 0 }, // 166 ActPanel.get_panelDisplayNameText -> return "重生" / "Revived"
-    { 0x0E8F33C, "PORTRAIT_GET_HP",    2, 0 }, // 167 HeroPortrait.get_healthPercentage -> residual HP
+    { 0,         "PORTRAIT_GET_HP",    2, 0 }, // 167 HeroPortrait.get_healthPercentage (disabled: 0x0E8F33C was actually get_currentStatus!)
     { 0x1173FA4, "PCGETSPTIER",        2, 0 }, // 168 PlayerController.GetAvailableSpecialTier -> dynamic special tier
     { 0xFF05C8,  "HUDSPBTN",           2, 0 }, // 169 HudSpecialMeter.OnSpecialButtonPressed -> gesture recognition
     { 0x11CFCAC, "QUEST_TEX",          2, 0 }, // 170 SelectQuestTile.SetTexturePath -> custom quest icons
@@ -1111,13 +1111,13 @@ static void apply_hero_portrait_deco_internal(void* hp) {
     if (h_ratio <= 0.001f) {
         *(uint8_t*)((char*)hp + 0x112) = 1; // _isClickDisabled = 1
         *(uint8_t*)((char*)hp + 0x113) = 1; // _isDragDisabled = 1
-        *(uint8_t*)((char*)hp + 0x101) = 0; // _isKnockedOut (0 = KO)
+        *(uint8_t*)((char*)hp + 0x101) = 1; // _isKnockedOut = true (1 = knocked out)
         *(float*)((char*)hp + 0x104) = 0.0f; // _healthPercentage
         if (ko_tab && obj_ok(ko_tab)) ngui_set_active(ko_tab, 1, NULL);
     } else {
         *(uint8_t*)((char*)hp + 0x112) = 0; // _isClickDisabled = 0 (CLICKABLE!)
         *(uint8_t*)((char*)hp + 0x113) = 0; // _isDragDisabled = 0 (DRAGGABLE!)
-        *(uint8_t*)((char*)hp + 0x101) = 1; // _isKnockedOut (1 = alive)
+        *(uint8_t*)((char*)hp + 0x101) = 0; // _isKnockedOut = false (0 = alive)
         *(float*)((char*)hp + 0x104) = h_ratio; // _healthPercentage
         if (ko_tab && obj_ok(ko_tab)) ngui_set_active(ko_tab, 0, NULL);
     }
@@ -1131,10 +1131,16 @@ static void apply_hero_portrait_deco_internal(void* hp) {
             for (int i = 0; i < count; i++) {
                 void* w = *(void**)((char*)items + 0x20 + i * 8);
                 if (!w || !obj_ok(w)) continue;
-                ngui_set_active(w, 1, NULL);
 
                 char cname[64];
                 if (!il2cpp_object_class(w, cname, sizeof(cname))) continue;
+
+                // Never activate KO widget if hero is alive!
+                if (strstr(cname, "KOWidget") != NULL || strstr(cname, "KnockedOut") != NULL) {
+                    ngui_set_active(w, (h_ratio <= 0.001f) ? 1 : 0, NULL);
+                    continue;
+                }
+                ngui_set_active(w, 1, NULL);
 
                 // If RarityWidget, explicitly activate and configure star UISprites!
                 if (strstr(cname, "RarityWidget")) {
@@ -1344,6 +1350,31 @@ static int read_str(void* s, char* buf, int cap){
     buf[0]=0; uintptr_t p=(uintptr_t)s; if(p<0x100000 || (p&7)) return 0;
     int32_t len=*(int32_t*)(p+0x10); if(len<0||len>cap-1) return 0;
     uint16_t* ch=(uint16_t*)(p+0x14); int i; for(i=0;i<len;i++) buf[i]=(ch[i]<128)?(char)ch[i]:'?'; buf[len]=0; return 1;
+}
+static int read_str_utf8(void* s, char* buf, int cap) {
+    if (!buf || cap <= 0) return 0;
+    buf[0] = 0;
+    uintptr_t p = (uintptr_t)s;
+    if (p < 0x100000 || (p & 7)) return 0;
+    int32_t len = *(int32_t*)(p + 0x10);
+    if (len < 0 || len > 2048) return 0;
+    uint16_t* ch = (uint16_t*)(p + 0x14);
+    int out = 0;
+    for (int i = 0; i < len && out < cap - 4; i++) {
+        uint32_t c = ch[i];
+        if (c < 0x80) {
+            buf[out++] = (char)c;
+        } else if (c < 0x800) {
+            buf[out++] = (char)(0xC0 | (c >> 6));
+            buf[out++] = (char)(0x80 | (c & 0x3F));
+        } else {
+            buf[out++] = (char)(0xE0 | (c >> 12));
+            buf[out++] = (char)(0x80 | ((c >> 6) & 0x3F));
+            buf[out++] = (char)(0x80 | (c & 0x3F));
+        }
+    }
+    buf[out] = 0;
+    return 1;
 }
 // slot 8: EB.Fast.Dot.Single(JSONPath name, JSONPath altPath, object data, float def, MethodInfo* method)
 typedef float (*fn_fast_dot_single_alt)(void*, void*, void*, float, void*);
@@ -8314,26 +8345,17 @@ static void install_unity_icall_hooks(void) {
 
 static void resolve_unity_icalls_lazy(void) {
     if (s_get_gameObject && s_SetActive) {
-        install_unity_icall_hooks();
         return;
     }
-    if (!g_resolve_icall) {
-        g_resolve_icall = (resolve_icall_t)dlsym(RTLD_DEFAULT, "il2cpp_resolve_icall");
-        if (!g_resolve_icall) {
-            void* h = dlopen("libil2cpp.so", RTLD_NOLOAD);
-            if (h) g_resolve_icall = (resolve_icall_t)dlsym(h, "il2cpp_resolve_icall");
-        }
-    }
-    if (g_resolve_icall) {
-        s_get_gameObject = (fn_get_gameObject)g_resolve_icall("UnityEngine.Component::get_gameObject()");
-        s_SetActive = (fn_SetActive)g_resolve_icall("UnityEngine.GameObject::SetActive(System.Boolean)");
-        s_get_activeSelf = (fn_get_activeSelf)g_resolve_icall("UnityEngine.GameObject::get_activeSelf()");
-        s_get_activeInHierarchy = (fn_get_activeInHierarchy)g_resolve_icall("UnityEngine.GameObject::get_activeInHierarchy()");
-        s_get_transform = (fn_get_transform)g_resolve_icall("UnityEngine.Component::get_transform()");
-        s_GetParent = (fn_GetParent)g_resolve_icall("UnityEngine.Transform::GetParent()");
-        flog("LAZY_ICALLS: go=%p, act=%p, self=%p, hier=%p, trans=%p, parent=%p",
+    if (g_base) {
+        s_get_gameObject = (fn_get_gameObject)(g_base + 0x1B4BD28);
+        s_SetActive = (fn_SetActive)(g_base + 0x1B50CA8);
+        s_get_activeSelf = (fn_get_activeSelf)(g_base + 0x1B50CF8);
+        s_get_activeInHierarchy = (fn_get_activeInHierarchy)(g_base + 0x1B50D38);
+        s_get_transform = (fn_get_transform)(g_base + 0x1B4BCE8);
+        s_GetParent = (fn_GetParent)(g_base + 0x16AA7D8);
+        flog("DIRECT_UNITY_CALLS: go=%p, act=%p, self=%p, hier=%p, trans=%p, parent=%p",
              s_get_gameObject, s_SetActive, s_get_activeSelf, s_get_activeInHierarchy, s_get_transform, s_GetParent);
-        install_unity_icall_hooks();
     }
 }
 
@@ -8360,7 +8382,8 @@ static void ensure_active_hierarchy(void* comp, const char* context) {
         if (s_get_transform && s_GetParent) {
             void* t = s_get_transform(comp);
             int depth = 0;
-            while (t && depth++ < 20) {
+            // Only traverse immediate parent (depth < 3) to ensure Window/SCI is active, never root/scene!
+            while (t && depth++ < 3) {
                 void* p = s_GetParent(t);
                 if (!p) break;
                 void* pgo = s_get_gameObject ? s_get_gameObject(p) : NULL;
@@ -8383,18 +8406,18 @@ static void ensure_active_hierarchy(void* comp, const char* context) {
 }
 
 static fn8 orig_PrefightScreenPresentation_Init = NULL;
-static void* hooked_PrefightScreenPresentation_Init(void* self, void* config, void* onReadyCallback, void* method, void* a4, void* a5, void* a6, void* a7) {
-    flog("PREFIGHT_INIT (0x0E44930): self=%p config=%p onReadyCallback=%p", self, config, onReadyCallback);
+static void* hooked_PrefightScreenPresentation_Init(void* self, void* dataProvider, void* config, void* onReadyCallback, void* method, void* a5, void* a6, void* a7) {
+    flog("PREFIGHT_INIT (0x0E419A8): self=%p dataProvider=%p config=%p onReadyCallback=%p", self, dataProvider, config, onReadyCallback);
     ensure_active_hierarchy(self, "PrefightScreenPresentation.Init");
     if (orig_PrefightScreenPresentation_Init) {
-        return orig_PrefightScreenPresentation_Init(self, config, onReadyCallback, method, a4, a5, a6, a7);
+        return orig_PrefightScreenPresentation_Init(self, dataProvider, config, onReadyCallback, method, a5, a6, a7);
     }
     return NULL;
 }
 
 static fn8 orig_PrefightScreenPresentation_Setup = NULL;
 static void* hooked_PrefightScreenPresentation_Setup(void* self, void* controller, void* method, void* a3, void* a4, void* a5, void* a6, void* a7) {
-    flog("PREFIGHT_SETUP (0x0E392F8): self=%p controller=%p", self, controller);
+    flog("PREFIGHT_SETUP (0x0E40F90): self=%p controller=%p", self, controller);
     ensure_active_hierarchy(self, "PrefightScreenPresentation.Setup");
     if (orig_PrefightScreenPresentation_Setup) {
         return orig_PrefightScreenPresentation_Setup(self, controller, method, a3, a4, a5, a6, a7);
@@ -8404,10 +8427,217 @@ static void* hooked_PrefightScreenPresentation_Setup(void* self, void* controlle
 
 static fn8 orig_PreFightScreen_WindowEnter = NULL;
 static void* hooked_PreFightScreen_WindowEnter(void* self, void* isFirstEntry, void* method, void* a3, void* a4, void* a5, void* a6, void* a7) {
-    flog("PREFIGHT_WINDOW_ENTER (0x0E39500): self=%p isFirstEntry=%p", self, isFirstEntry);
+    flog("PREFIGHT_WINDOW_ENTER (0x0E3915C): self=%p isFirstEntry=%p", self, isFirstEntry);
     ensure_active_hierarchy(self, "PreFightScreen.WindowEnter");
     if (orig_PreFightScreen_WindowEnter) {
         return orig_PreFightScreen_WindowEnter(self, isFirstEntry, method, a3, a4, a5, a6, a7);
+    }
+    return NULL;
+}
+
+static fn8 orig_PreFightScreen_WindowExit = NULL;
+static void* hooked_PreFightScreen_WindowExit(void* self, void* method, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    flog("PREFIGHT_WINDOW_EXIT (0x0E395BC): self=%p", self);
+    PROTECT({
+        if (self && obj_ok(self)) {
+            void* pres = *(void**)((char*)self + 0xA0); // _presentation
+            if (pres && obj_ok(pres)) {
+                void (*unuse_bots)(void*, void*) = (void(*)(void*, void*))(g_base + 0x00E46074);
+                if (unuse_bots) {
+                    flog("PREFIGHT_WINDOW_EXIT: calling UnuseBots on presentation=%p", pres);
+                    unuse_bots(pres, NULL);
+                }
+            }
+        }
+    });
+    if (orig_PreFightScreen_WindowExit) {
+        return orig_PreFightScreen_WindowExit(self, method, a2, a3, a4, a5, a6, a7);
+    }
+    return NULL;
+}
+
+static fn8 orig_PreFightScreen_ReleaseResources = NULL;
+static void* hooked_PreFightScreen_ReleaseResources(void* self, void* method, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    flog("PREFIGHT_RELEASE_RESOURCES (0x0E395E4): self=%p", self);
+    PROTECT({
+        if (self && obj_ok(self)) {
+            void* pres = *(void**)((char*)self + 0xA0); // _presentation
+            if (pres && obj_ok(pres)) {
+                void (*unuse_bots)(void*, void*) = (void(*)(void*, void*))(g_base + 0x00E46074);
+                if (unuse_bots) {
+                    flog("PREFIGHT_RELEASE_RESOURCES: calling UnuseBots on presentation=%p", pres);
+                    unuse_bots(pres, NULL);
+                }
+            }
+        }
+    });
+    if (orig_PreFightScreen_ReleaseResources) {
+        return orig_PreFightScreen_ReleaseResources(self, method, a2, a3, a4, a5, a6, a7);
+    }
+    return NULL;
+}
+
+static fn8 orig_PrefightScreenData_IsAboutToExpire = NULL;
+static void* hooked_PrefightScreenData_IsAboutToExpire(void* self, void* method, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    flog("PFS_IS_ABOUT_TO_EXPIRE (0x00E3E778): self=%p caller=%p -> returning 0 (NEVER EXPIRE)", self, __builtin_return_address(0));
+    return (void*)0;
+}
+
+static fn8 orig_PrefightScreenData_QuitRaidFlow = NULL;
+static void* hooked_PrefightScreenData_QuitRaidFlow(void* self, void* method, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    flog("PFS_QUIT_RAID_FLOW (0x00E3E9F8): self=%p caller=%p -> SUPPRESSED!", self, __builtin_return_address(0));
+    return NULL;
+}
+
+static fn8 orig_PrefightScreenData_ForceClose = NULL;
+static void* hooked_PrefightScreenData_ForceClose(void* self, void* method, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    flog("PFS_FORCE_CLOSE (0x00E3EB6C): self=%p caller=%p -> SUPPRESSED!", self, __builtin_return_address(0));
+    return NULL;
+}
+
+static fn8 orig_PrefightScreenData_RequestQuitOrCancel = NULL;
+static void* hooked_PrefightScreenData_RequestQuitOrCancel(void* self, void* method, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    flog("PFS_REQUEST_QUIT_OR_CANCEL (0x00E3E850): self=%p caller=%p -> SUPPRESSED!", self, __builtin_return_address(0));
+    return NULL;
+}
+
+static fn8 orig_PrefightScreenData_CheckTeamDeathEarlyOut = NULL;
+static void* hooked_PrefightScreenData_CheckTeamDeathEarlyOut(void* self, void* method, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    flog("PFS_CHECK_TEAM_DEATH (0x00E3E3AC): self=%p caller=%p", self, __builtin_return_address(0));
+    if (orig_PrefightScreenData_CheckTeamDeathEarlyOut) {
+        return orig_PrefightScreenData_CheckTeamDeathEarlyOut(self, method, a2, a3, a4, a5, a6, a7);
+    }
+    return NULL;
+}
+
+static fn8 orig_PreFightScreen_OnForceClose = NULL;
+static void* hooked_PreFightScreen_OnForceClose(void* self, void* method, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    flog("PREFIGHT_ON_FORCE_CLOSE (0x00E39FEC): self=%p caller=%p -> SUPPRESSED!", self, __builtin_return_address(0));
+    return NULL;
+}
+
+static fn8 orig_PreFightScreen_OnError = NULL;
+static void* hooked_PreFightScreen_OnError(void* self, void* err, void* method, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    char buf[256];
+    if (!read_str(err, buf, sizeof(buf))) strcpy(buf, "<null>");
+    flog("PREFIGHT_ON_ERROR (0x00E3A0AC): self=%p error='%s' caller=%p", self, buf, __builtin_return_address(0));
+    if (orig_PreFightScreen_OnError) {
+        return orig_PreFightScreen_OnError(self, err, method, a3, a4, a5, a6, a7);
+    }
+    return NULL;
+}
+
+static fn8 orig_PreFightScreen_WindowReady = NULL;
+static void* hooked_PreFightScreen_WindowReady(void* self, void* method, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    flog("PREFIGHT_WINDOW_READY (0x00E39078): self=%p caller=%p", self, __builtin_return_address(0));
+    ensure_active_hierarchy(self, "PreFightScreen.WindowReady");
+    if (orig_PreFightScreen_WindowReady) {
+        return orig_PreFightScreen_WindowReady(self, method, a2, a3, a4, a5, a6, a7);
+    }
+    return NULL;
+}
+
+static fn8 orig_PreFightScreen_OnIntroTransitionComplete = NULL;
+static void* hooked_PreFightScreen_OnIntroTransitionComplete(void* self, void* method, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    flog("PREFIGHT_INTRO_COMPLETE (0x00E393C0): self=%p caller=%p", self, __builtin_return_address(0));
+    ensure_active_hierarchy(self, "PreFightScreen.OnIntroTransitionComplete");
+    if (orig_PreFightScreen_OnIntroTransitionComplete) {
+        return orig_PreFightScreen_OnIntroTransitionComplete(self, method, a2, a3, a4, a5, a6, a7);
+    }
+    return NULL;
+}
+
+static fn8 orig_PrefightScreenPresentation_InitTowers = NULL;
+static void* hooked_PrefightScreenPresentation_InitTowers(void* self, void* method, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    flog("PREFIGHT_INIT_TOWERS (0x00E42EB0): self=%p caller=%p", self, __builtin_return_address(0));
+    if (orig_PrefightScreenPresentation_InitTowers) {
+        return orig_PrefightScreenPresentation_InitTowers(self, method, a2, a3, a4, a5, a6, a7);
+    }
+    return NULL;
+}
+
+static fn8 orig_PrefightScreenPresentation_InitButtons = NULL;
+static void* hooked_PrefightScreenPresentation_InitButtons(void* self, void* method, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    flog("PREFIGHT_INIT_BUTTONS (0x00E43614): self=%p caller=%p", self, __builtin_return_address(0));
+    if (orig_PrefightScreenPresentation_InitButtons) {
+        return orig_PrefightScreenPresentation_InitButtons(self, method, a2, a3, a4, a5, a6, a7);
+    }
+    return NULL;
+}
+
+static fn8 orig_Gameboard_SetupBoard = NULL;
+static void* g_current_raid_opponent_data = NULL;
+static void* hooked_Gameboard_SetupBoard(void* self, void* aq, void* preview, void* initialSetup, void* onComplete, void* onQuestComplete, void* modeSpecificData, void* forceReuse) {
+    flog("GAMEBOARD_SETUP_BOARD (0x00A50A20): self=%p aq=%p modeSpecificData=%p", self, aq, modeSpecificData);
+    if (modeSpecificData) {
+        g_current_raid_opponent_data = modeSpecificData;
+    }
+    if (orig_Gameboard_SetupBoard) {
+        return orig_Gameboard_SetupBoard(self, aq, preview, initialSetup, onComplete, onQuestComplete, modeSpecificData, forceReuse);
+    }
+    return NULL;
+}
+
+static fn8 orig_PreFightScreen_OnFight = NULL;
+static void* hooked_PreFightScreen_OnFight(void* self, void* method, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    flog("PREFIGHT_ON_FIGHT_CLICK (0x00E397BC): self=%p", self);
+    if (self && obj_ok(self)) {
+        void** p_config = (void**)((uintptr_t)self + 0x88);
+        if (p_config && *p_config && obj_ok(*p_config)) {
+            void* cfg = *p_config;
+            void** p_modeData = (void**)((uintptr_t)cfg + 0x30);
+            flog("  PreFightScreen._config=%p ModeSpecificData=%p g_current_raid_opponent_data=%p",
+                 cfg, *p_modeData, g_current_raid_opponent_data);
+            if (!*p_modeData && g_current_raid_opponent_data) {
+                flog("  Injecting cached ModeSpecificData into PreFightParams!");
+                *p_modeData = g_current_raid_opponent_data;
+            }
+        }
+    }
+    if (orig_PreFightScreen_OnFight) {
+        return orig_PreFightScreen_OnFight(self, method, a2, a3, a4, a5, a6, a7);
+    }
+    return NULL;
+}
+
+typedef void* (*fn_pfs_onfight)(
+    void* self, void* player, void* opponent, void* questEnemy,
+    void* sceneName, void* currentTeam, void* aiProfileName, void* aiPersonalityName,
+    void* activeQuest, void* mapTile, int timeOfDay, void* modeSpecificData,
+    void* opponentTower, void* postFightDialogue, void* methodInfo
+);
+static fn_pfs_onfight orig_PrefightScreenData_OnFight = NULL;
+
+static void* hooked_PrefightScreenData_OnFight(
+    void* self, void* player, void* opponent, void* questEnemy,
+    void* sceneName, void* currentTeam, void* aiProfileName, void* aiPersonalityName,
+    void* activeQuest, void* mapTile, int timeOfDay, void* modeSpecificData,
+    void* opponentTower, void* postFightDialogue, void* methodInfo
+) {
+    char s_scene[64] = "<null>";
+    char s_aiprof[64] = "<null>";
+    char s_aiper[64] = "<null>";
+    read_str(sceneName, s_scene, sizeof(s_scene));
+    read_str(aiProfileName, s_aiprof, sizeof(s_aiprof));
+    read_str(aiPersonalityName, s_aiper, sizeof(s_aiper));
+
+    flog("PREFIGHT_SCREENDATA_ON_FIGHT (0x00E3EBA8):");
+    flog("  self=%p player=%p opp=%p qEnemy=%p", self, player, opponent, questEnemy);
+    flog("  scene='%s' team=%p aiProf='%s' aiPer='%s'", s_scene, currentTeam, s_aiprof, s_aiper);
+    flog("  aq=%p mapTile=%p tod=%d modeSpecificData=%p oppTower=%p dialogue=%p",
+         activeQuest, mapTile, timeOfDay, modeSpecificData, opponentTower, postFightDialogue);
+
+    if (!modeSpecificData && g_current_raid_opponent_data) {
+        flog("  Recovered modeSpecificData from g_current_raid_opponent_data (%p)", g_current_raid_opponent_data);
+        modeSpecificData = g_current_raid_opponent_data;
+    }
+
+    if (orig_PrefightScreenData_OnFight) {
+        return orig_PrefightScreenData_OnFight(
+            self, player, opponent, questEnemy, sceneName, currentTeam,
+            aiProfileName, aiPersonalityName, activeQuest, mapTile,
+            timeOfDay, modeSpecificData, opponentTower, postFightDialogue, methodInfo
+        );
     }
     return NULL;
 }
@@ -8425,6 +8655,239 @@ static void* hooked_BattleArbiterOnToggleAutoFight(void* a0, void* a1, void* a2,
     if (orig_BattleArbiterOnToggleAutoFight) return orig_BattleArbiterOnToggleAutoFight(a0, a1, a2, a3, a4, a5, a6, a7);
     return NULL;
 }
+
+// ==================== FightFlow / Error Diagnostics ====================
+static fn8 orig_WindowManager_ShowError1 = NULL;
+static void* hooked_WindowManager_ShowError1(void* self, void* desc, void* cb, void* method, void* a4, void* a5, void* a6, void* a7) {
+    char s_desc[256] = "<null>";
+    PROTECT(read_str_utf8(desc, s_desc, sizeof(s_desc)););
+    uintptr_t caller = (uintptr_t)__builtin_return_address(0) - g_base;
+    flog("SHOW_ERROR_1: desc='%s' caller=0x%lx", s_desc, caller);
+    if (orig_WindowManager_ShowError1) return orig_WindowManager_ShowError1(self, desc, cb, method, a4, a5, a6, a7);
+    return NULL;
+}
+
+static fn8 orig_WindowManager_ShowError2 = NULL;
+static void* hooked_WindowManager_ShowError2(void* self, void* title, void* desc, void* cb, void* method, void* a5, void* a6, void* a7) {
+    char s_title[128] = "<null>"; char s_desc[256] = "<null>";
+    PROTECT(read_str_utf8(title, s_title, sizeof(s_title)););
+    PROTECT(read_str_utf8(desc, s_desc, sizeof(s_desc)););
+    uintptr_t caller = (uintptr_t)__builtin_return_address(0) - g_base;
+    flog("SHOW_ERROR_2: title='%s' desc='%s' caller=0x%lx", s_title, s_desc, caller);
+    if (orig_WindowManager_ShowError2) return orig_WindowManager_ShowError2(self, title, desc, cb, method, a5, a6, a7);
+    return NULL;
+}
+
+static fn8 orig_WindowManager_ShowError3 = NULL;
+static void* hooked_WindowManager_ShowError3(void* self, void* title, void* desc, void* buttons, void* cb, void* method, void* a6, void* a7) {
+    char s_title[128] = "<null>"; char s_desc[256] = "<null>";
+    PROTECT(read_str_utf8(title, s_title, sizeof(s_title)););
+    PROTECT(read_str_utf8(desc, s_desc, sizeof(s_desc)););
+    uintptr_t caller = (uintptr_t)__builtin_return_address(0) - g_base;
+    flog("SHOW_ERROR_3: title='%s' desc='%s' caller=0x%lx", s_title, s_desc, caller);
+    if (orig_WindowManager_ShowError3) return orig_WindowManager_ShowError3(self, title, desc, buttons, cb, method, a6, a7);
+    return NULL;
+}
+
+static void* g_saved_fight_onComplete = NULL;
+
+static void invoke_on_complete(void* onComplete) {
+    if (!onComplete) return;
+    typedef void (*fn_action_bool_invoke)(void* self, int val, void* method);
+    fn_action_bool_invoke action_invoke = (fn_action_bool_invoke)(g_base + 0x15390D4);
+    flog("INVOKING_ON_COMPLETE: calling EB.Action<bool>.Invoke(%p, true)", onComplete);
+    action_invoke(onComplete, 1, NULL);
+}
+
+static fn8 orig_FightFlow_OnFightLoadComplete = NULL;
+static void* hooked_FightFlow_OnFightLoadComplete(void* self, void* onComplete, void* method, void* a4, void* a5, void* a6, void* a7, void* a8) {
+    g_saved_fight_onComplete = onComplete;
+    flog("FIGHTFLOW_ON_FIGHT_LOAD_COMPLETE: self=%p onComplete=%p", self, onComplete);
+    if (orig_FightFlow_OnFightLoadComplete) {
+        return orig_FightFlow_OnFightLoadComplete(self, onComplete, method, a4, a5, a6, a7, a8);
+    }
+    return NULL;
+}
+
+
+static fn8 orig_FightFlow_OnError = NULL;
+static void* hooked_FightFlow_OnError(void* self, void* err, void* source, void* method, void* a4, void* a5, void* a6, void* a7) {
+    char s_err[256] = "<null>"; char s_source[128] = "<null>";
+    PROTECT(read_str_utf8(err, s_err, sizeof(s_err)););
+    PROTECT(read_str_utf8(source, s_source, sizeof(s_source)););
+    uintptr_t caller = (uintptr_t)__builtin_return_address(0) - g_base;
+    flog("FIGHTFLOW_ON_ERROR: err='%s' source='%s' caller=0x%lx", s_err, s_source, caller);
+    if (!strcmp(s_source, "OnFightLoadComplete") || strstr(s_err, "alliance") || strstr(s_err, "Kicked")) {
+        flog("FIGHTFLOW_ON_ERROR: SUPPRESSED '%s' from '%s' -> forcing onComplete(true)", s_err, s_source);
+        if (g_saved_fight_onComplete) {
+            void* cb = g_saved_fight_onComplete;
+            g_saved_fight_onComplete = NULL;
+            invoke_on_complete(cb);
+        }
+        return NULL;
+    }
+    if (orig_FightFlow_OnError) return orig_FightFlow_OnError(self, err, source, method, a4, a5, a6, a7);
+    return NULL;
+}
+
+static fn8 orig_FightFlow_OnFightLoadComplete_b0 = NULL;
+static void* hooked_FightFlow_OnFightLoadComplete_b0(void* self, void* err, void* expiry, void* method, void* a4, void* a5, void* a6, void* a7) {
+    char s_err[256] = "<null>";
+    PROTECT(read_str_utf8(err, s_err, sizeof(s_err)););
+    uintptr_t caller = (uintptr_t)__builtin_return_address(0) - g_base;
+    flog("ONFIGHTLOADCOMPLETE_B0: err='%s' expiry=%ld caller=0x%lx", s_err, (long)(intptr_t)expiry, caller);
+    if (err != NULL) {
+        flog("ONFIGHTLOADCOMPLETE_B0: SUPPRESSED err='%s' -> setting err=NULL", s_err);
+        err = NULL;
+    }
+    if ((int32_t)(uintptr_t)expiry <= 0) {
+        expiry = (void*)(uintptr_t)2147483647;
+    }
+    if (orig_FightFlow_OnFightLoadComplete_b0) {
+        return orig_FightFlow_OnFightLoadComplete_b0(self, err, expiry, method, a4, a5, a6, a7);
+    }
+    return NULL;
+}
+
+static fn8 orig_ActiveQuest_ResetBattleTimeout_b0 = NULL;
+static void* hooked_ActiveQuest_ResetBattleTimeout_b0(void* self, void* err, void* expiry, void* method, void* a4, void* a5, void* a6, void* a7) {
+    char s_err[256] = "<null>";
+    PROTECT(read_str_utf8(err, s_err, sizeof(s_err)););
+    uintptr_t caller = (uintptr_t)__builtin_return_address(0) - g_base;
+    flog("ACTIVEQUEST_RESETBATTLETIMEOUT_B0: err='%s' expiry=%ld caller=0x%lx", s_err, (long)(intptr_t)expiry, caller);
+    if (err != NULL) {
+        flog("ACTIVEQUEST_RESETBATTLETIMEOUT_B0: SUPPRESSED err='%s' -> setting err=NULL", s_err);
+        err = NULL;
+    }
+    if ((int32_t)(uintptr_t)expiry <= 0) {
+        expiry = (void*)(uintptr_t)2147483647;
+    }
+    if (orig_ActiveQuest_ResetBattleTimeout_b0) {
+        return orig_ActiveQuest_ResetBattleTimeout_b0(self, err, expiry, method, a4, a5, a6, a7);
+    }
+    return NULL;
+}
+
+static fn8 orig_FightFlow_OnPVPRaidFightComplete_b0 = NULL;
+static void* hooked_FightFlow_OnPVPRaidFightComplete_b0(void* self, void* err, void* res, void* method, void* a4, void* a5, void* a6, void* a7) {
+    char s_err[256] = "<null>";
+    PROTECT(read_str_utf8(err, s_err, sizeof(s_err)););
+    flog("FIGHTFLOW_ONPVPRAIDFIGHTCOMPLETE_B0: err='%s' res=%p", s_err, res);
+    if (err != NULL) {
+        flog("FIGHTFLOW_ONPVPRAIDFIGHTCOMPLETE_B0: SUPPRESSED err='%s' -> setting err=NULL", s_err);
+        err = NULL;
+    }
+    if (orig_FightFlow_OnPVPRaidFightComplete_b0) {
+        return orig_FightFlow_OnPVPRaidFightComplete_b0(self, err, res, method, a4, a5, a6, a7);
+    }
+    return NULL;
+}
+
+static fn8 orig_FightFlow_OnMatchInit = NULL;
+static void* hooked_FightFlow_OnMatchInit(void* self, void* err, void* result, void* method, void* a4, void* a5, void* a6, void* a7) {
+    char s_err[256] = "<null>";
+    PROTECT(read_str_utf8(err, s_err, sizeof(s_err)););
+    uintptr_t caller = (uintptr_t)__builtin_return_address(0) - g_base;
+    flog("FIGHTFLOW_ON_MATCH_INIT: err='%s' result=%p caller=0x%lx", s_err, result, caller);
+    if (orig_FightFlow_OnMatchInit) return orig_FightFlow_OnMatchInit(self, err, result, method, a4, a5, a6, a7);
+    return NULL;
+}
+
+static fn8 orig_PVPRaidFlow_OnError = NULL;
+static void* hooked_PVPRaidFlow_OnError(void* self, void* err, void* source, void* method, void* a4, void* a5, void* a6, void* a7) {
+    char s_err[256] = "<null>"; char s_source[128] = "<null>";
+    PROTECT(read_str_utf8(err, s_err, sizeof(s_err)););
+    PROTECT(read_str_utf8(source, s_source, sizeof(s_source)););
+    uintptr_t caller = (uintptr_t)__builtin_return_address(0) - g_base;
+    flog("PVPRAIDFLOW_ON_ERROR: err='%s' source='%s' caller=0x%lx", s_err, s_source, caller);
+    if (strstr(s_err, "alliance") || strstr(s_err, "Kicked")) {
+        flog("PVPRAIDFLOW_ON_ERROR: SUPPRESSED '%s'", s_err);
+        return NULL;
+    }
+    if (orig_PVPRaidFlow_OnError) return orig_PVPRaidFlow_OnError(self, err, source, method, a4, a5, a6, a7);
+    return NULL;
+}
+
+static fn8 orig_ActiveQuest_ActivateMatch_cb = NULL;
+static void* hooked_ActiveQuest_ActivateMatch_cb(void* self, void* err, void* result, void* method, void* a4, void* a5, void* a6, void* a7) {
+    char s_err[256] = "<null>";
+    PROTECT(read_str_utf8(err, s_err, sizeof(s_err)););
+    flog("ACTIVEQUEST_ACTIVATEMATCH_CB: err='%s' result=%p", s_err, result);
+    if (orig_ActiveQuest_ActivateMatch_cb) return orig_ActiveQuest_ActivateMatch_cb(self, err, result, method, a4, a5, a6, a7);
+    return NULL;
+}
+
+static fn8 orig_PVPUtil_HandleError = NULL;
+static void* hooked_PVPUtil_HandleError(void* errId, void* locErr, void* res, void* method, void* a4, void* a5, void* a6, void* a7) {
+    char s_err[128] = "<null>"; char s_loc[128] = "<null>";
+    PROTECT(read_str_utf8(errId, s_err, sizeof(s_err)););
+    PROTECT(read_str_utf8(locErr, s_loc, sizeof(s_loc)););
+    uintptr_t caller = (uintptr_t)__builtin_return_address(0) - g_base;
+    flog("PVPUTIL_HANDLE_ERROR: errId='%s' locErr='%s' caller=0x%lx", s_err, s_loc, caller);
+    if (orig_PVPUtil_HandleError) return orig_PVPUtil_HandleError(errId, locErr, res, method, a4, a5, a6, a7);
+    return NULL;
+}
+
+static fn8 orig_PVPFlow_HandleError = NULL;
+static void* hooked_PVPFlow_HandleError(void* self, void* errId, void* locErr, void* res, void* method, void* a5, void* a6, void* a7) {
+    char s_err[128] = "<null>"; char s_loc[128] = "<null>";
+    PROTECT(read_str_utf8(errId, s_err, sizeof(s_err)););
+    PROTECT(read_str_utf8(locErr, s_loc, sizeof(s_loc)););
+    uintptr_t caller = (uintptr_t)__builtin_return_address(0) - g_base;
+    flog("PVPFLOW_HANDLE_ERROR: errId='%s' locErr='%s' caller=0x%lx", s_err, s_loc, caller);
+    if (orig_PVPFlow_HandleError) return orig_PVPFlow_HandleError(self, errId, locErr, res, method, a5, a6, a7);
+    return NULL;
+}
+
+static fn8 orig_PVPRaidResultsData_GetOpponentTopBot = NULL;
+static void* g_saved_player_top_bot = NULL;
+static void* g_saved_player_medals = NULL;
+
+static void* hooked_PVPRaidResultsData_GetOpponentTopBot(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    void* res = NULL;
+    if (orig_PVPRaidResultsData_GetOpponentTopBot) {
+        res = orig_PVPRaidResultsData_GetOpponentTopBot(self, a1, a2, a3, a4, a5, a6, a7);
+    }
+    if (!res && self) {
+        typedef void* (*fn_get_player_top_bot)(void*);
+        fn_get_player_top_bot get_player_top = (fn_get_player_top_bot)(g_base + 0xB272F0);
+        res = get_player_top(self);
+        flog("GET_OPPONENT_TOP_BOT: opponent topBot is null -> fallback to player topBot %p", res);
+    }
+    if (res) g_saved_player_top_bot = res;
+    return res;
+}
+
+static fn8 orig_PlayerRaidDisplay_Init = NULL;
+static void* hooked_PlayerRaidDisplay_Init(void* self, void* profile, void* topBot, void* won, void* medals, void* teamRating, void* a6, void* a7) {
+    flog("PLAYER_RAID_DISPLAY_INIT: self=%p profile=%p topBot=%p won=%ld medals=%p teamRating=%ld",
+         self, profile, topBot, (long)won, medals, (long)teamRating);
+
+    if (topBot) {
+        g_saved_player_top_bot = topBot;
+    } else if (g_saved_player_top_bot) {
+        flog("PLAYER_RAID_DISPLAY_INIT: topBot is null -> fallback to saved %p", g_saved_player_top_bot);
+        topBot = g_saved_player_top_bot;
+    }
+
+    if (medals) {
+        g_saved_player_medals = medals;
+    } else if (g_saved_player_medals) {
+        flog("PLAYER_RAID_DISPLAY_INIT: medals is null -> fallback to saved %p", g_saved_player_medals);
+        medals = g_saved_player_medals;
+    }
+
+    if (!topBot || !medals || !self) {
+        flog("PLAYER_RAID_DISPLAY_INIT: still missing topBot (%p) or medals (%p), skipping to prevent crash", topBot, medals);
+        return NULL;
+    }
+
+    if (orig_PlayerRaidDisplay_Init) {
+        return orig_PlayerRaidDisplay_Init(self, profile, topBot, won, medals, teamRating, a6, a7);
+    }
+    return NULL;
+}
+
 
 
 static fn8 orig_HudScreenAwake = NULL;
@@ -8476,16 +8939,14 @@ static void* installer(void* arg){
     s_get_screen_h = (fn_get_screen_dim)(g_base + 0x16AFC2C);
     LOG("[AUTOFIGHT] Direct RVAs resolved: mouse_pos=%p, screen_w=%p, screen_h=%p", s_get_mouse_pos, s_get_screen_w, s_get_screen_h);
 
-    if (g_resolve_icall) {
-        s_get_gameObject = (fn_get_gameObject)g_resolve_icall("UnityEngine.Component::get_gameObject()");
-        s_SetActive = (fn_SetActive)g_resolve_icall("UnityEngine.GameObject::SetActive(System.Boolean)");
-        s_get_activeSelf = (fn_get_activeSelf)g_resolve_icall("UnityEngine.GameObject::get_activeSelf()");
-        s_get_activeInHierarchy = (fn_get_activeInHierarchy)g_resolve_icall("UnityEngine.GameObject::get_activeInHierarchy()");
-        s_get_transform = (fn_get_transform)g_resolve_icall("UnityEngine.Component::get_transform()");
-        s_GetParent = (fn_GetParent)g_resolve_icall("UnityEngine.Transform::GetParent()");
-        LOG("[PREFIGHT_FIX] Icalls resolved: go=%p, act=%p, self=%p, hier=%p, trans=%p, parent=%p",
-            s_get_gameObject, s_SetActive, s_get_activeSelf, s_get_activeInHierarchy, s_get_transform, s_GetParent);
-    }
+    s_get_gameObject = (fn_get_gameObject)(g_base + 0x1B4BD28);
+    s_SetActive = (fn_SetActive)(g_base + 0x1B50CA8);
+    s_get_activeSelf = (fn_get_activeSelf)(g_base + 0x1B50CF8);
+    s_get_activeInHierarchy = (fn_get_activeInHierarchy)(g_base + 0x1B50D38);
+    s_get_transform = (fn_get_transform)(g_base + 0x1B4BCE8);
+    s_GetParent = (fn_GetParent)(g_base + 0x16AA7D8);
+    LOG("[PREFIGHT_FIX] Direct RVAs resolved: go=%p, act=%p, self=%p, hier=%p, trans=%p, parent=%p",
+        s_get_gameObject, s_SetActive, s_get_activeSelf, s_get_activeInHierarchy, s_get_transform, s_GetParent);
     for (int i = 0; i < NH; i++) {
         if (!H[i].rva) continue;
         inline_hook((void*)(g_base + H[i].rva), handlers[i], &H[i].orig);
@@ -8703,11 +9164,44 @@ static void* installer(void* arg){
     inline_hook((void*)(g_base + 0x00F19D60), (void*)hooked_PVPPlayerContestantItem_Init, &orig_PVPPlayerContestantItem_Init);
     inline_hook((void*)(g_base + 0x1204900), (void*)hooked_PVPPlaceHeroWidget_Init, &orig_PVPPlaceHeroWidget_Init);
 
-    // Prefight screen GameObject activation hooks (disabled: caused sticky 3D bots & leaks across scenes):
-    // inline_hook((void*)(g_base + 0x1B50CA8), (void*)hooked_il2cpp_GameObject_SetActive, &orig_il2cpp_GameObject_SetActive);
-    // inline_hook((void*)(g_base + 0x00E44930), (void*)hooked_PrefightScreenPresentation_Init, &orig_PrefightScreenPresentation_Init);
-    // inline_hook((void*)(g_base + 0x00E392F8), (void*)hooked_PrefightScreenPresentation_Setup, &orig_PrefightScreenPresentation_Setup);
-    // inline_hook((void*)(g_base + 0x00E39500), (void*)hooked_PreFightScreen_WindowEnter, &orig_PreFightScreen_WindowEnter);
+    // Prefight screen GameObject activation & lifecycle hooks:
+    inline_hook((void*)(g_base + 0x00E419A8), (void*)hooked_PrefightScreenPresentation_Init, &orig_PrefightScreenPresentation_Init);
+    inline_hook((void*)(g_base + 0x00E40F90), (void*)hooked_PrefightScreenPresentation_Setup, &orig_PrefightScreenPresentation_Setup);
+    inline_hook((void*)(g_base + 0x00E3915C), (void*)hooked_PreFightScreen_WindowEnter, &orig_PreFightScreen_WindowEnter);
+    inline_hook((void*)(g_base + 0x00E395BC), (void*)hooked_PreFightScreen_WindowExit, &orig_PreFightScreen_WindowExit);
+    inline_hook((void*)(g_base + 0x00E395E4), (void*)hooked_PreFightScreen_ReleaseResources, &orig_PreFightScreen_ReleaseResources);
+    inline_hook((void*)(g_base + 0x00E3E778), (void*)hooked_PrefightScreenData_IsAboutToExpire, &orig_PrefightScreenData_IsAboutToExpire);
+    inline_hook((void*)(g_base + 0x00E3E9F8), (void*)hooked_PrefightScreenData_QuitRaidFlow, &orig_PrefightScreenData_QuitRaidFlow);
+    inline_hook((void*)(g_base + 0x00E3EB6C), (void*)hooked_PrefightScreenData_ForceClose, &orig_PrefightScreenData_ForceClose);
+    inline_hook((void*)(g_base + 0x00E3E850), (void*)hooked_PrefightScreenData_RequestQuitOrCancel, &orig_PrefightScreenData_RequestQuitOrCancel);
+    inline_hook((void*)(g_base + 0x00E3E3AC), (void*)hooked_PrefightScreenData_CheckTeamDeathEarlyOut, &orig_PrefightScreenData_CheckTeamDeathEarlyOut);
+    inline_hook((void*)(g_base + 0x00E39FEC), (void*)hooked_PreFightScreen_OnForceClose, &orig_PreFightScreen_OnForceClose);
+    inline_hook((void*)(g_base + 0x00E3A0AC), (void*)hooked_PreFightScreen_OnError, &orig_PreFightScreen_OnError);
+    inline_hook((void*)(g_base + 0x00E39078), (void*)hooked_PreFightScreen_WindowReady, &orig_PreFightScreen_WindowReady);
+    inline_hook((void*)(g_base + 0x00E393C0), (void*)hooked_PreFightScreen_OnIntroTransitionComplete, &orig_PreFightScreen_OnIntroTransitionComplete);
+    inline_hook((void*)(g_base + 0x00E42EB0), (void*)hooked_PrefightScreenPresentation_InitTowers, &orig_PrefightScreenPresentation_InitTowers);
+    inline_hook((void*)(g_base + 0x00E43614), (void*)hooked_PrefightScreenPresentation_InitButtons, &orig_PrefightScreenPresentation_InitButtons);
+    inline_hook((void*)(g_base + 0x00A50A20), (void*)hooked_Gameboard_SetupBoard, &orig_Gameboard_SetupBoard);
+    inline_hook((void*)(g_base + 0x00E397BC), (void*)hooked_PreFightScreen_OnFight, &orig_PreFightScreen_OnFight);
+    inline_hook((void*)(g_base + 0x00E3EBA8), (void*)hooked_PrefightScreenData_OnFight, (fn8*)&orig_PrefightScreenData_OnFight);
+
+    // FightFlow & Error UI diagnostics:
+    inline_hook((void*)(g_base + 0x158C4C4), (void*)hooked_WindowManager_ShowError1, &orig_WindowManager_ShowError1);
+    inline_hook((void*)(g_base + 0x158C528), (void*)hooked_WindowManager_ShowError2, &orig_WindowManager_ShowError2);
+    inline_hook((void*)(g_base + 0x158C600), (void*)hooked_WindowManager_ShowError3, &orig_WindowManager_ShowError3);
+    inline_hook((void*)(g_base + 0x00B5CDB4), (void*)hooked_FightFlow_OnError, &orig_FightFlow_OnError);
+    inline_hook((void*)(g_base + 0x00B5D4D0), (void*)hooked_FightFlow_OnFightLoadComplete, &orig_FightFlow_OnFightLoadComplete);
+    inline_hook((void*)(g_base + 0x00AE76BC), (void*)hooked_FightFlow_OnFightLoadComplete_b0, &orig_FightFlow_OnFightLoadComplete_b0);
+    inline_hook((void*)(g_base + 0x00C8112C), (void*)hooked_ActiveQuest_ResetBattleTimeout_b0, &orig_ActiveQuest_ResetBattleTimeout_b0);
+    inline_hook((void*)(g_base + 0x00AE7F88), (void*)hooked_FightFlow_OnPVPRaidFightComplete_b0, &orig_FightFlow_OnPVPRaidFightComplete_b0);
+    inline_hook((void*)(g_base + 0x00B5C620), (void*)hooked_FightFlow_OnMatchInit, &orig_FightFlow_OnMatchInit);
+    inline_hook((void*)(g_base + 0x00F20FF4), (void*)hooked_PVPRaidFlow_OnError, &orig_PVPRaidFlow_OnError);
+    inline_hook((void*)(g_base + 0x00C80FB4), (void*)hooked_ActiveQuest_ActivateMatch_cb, &orig_ActiveQuest_ActivateMatch_cb);
+    inline_hook((void*)(g_base + 0x00B35318), (void*)hooked_PVPUtil_HandleError, &orig_PVPUtil_HandleError);
+    inline_hook((void*)(g_base + 0x011FCBCC), (void*)hooked_PVPFlow_HandleError, &orig_PVPFlow_HandleError);
+    inline_hook((void*)(g_base + 0x00B272CC), (void*)hooked_PVPRaidResultsData_GetOpponentTopBot, &orig_PVPRaidResultsData_GetOpponentTopBot);
+    inline_hook((void*)(g_base + 0x00E3112C), (void*)hooked_PlayerRaidDisplay_Init, &orig_PlayerRaidDisplay_Init);
+
 
     LOG("install done (%d hooks)", NH);
     skill_dispatcher_init(g_base);
