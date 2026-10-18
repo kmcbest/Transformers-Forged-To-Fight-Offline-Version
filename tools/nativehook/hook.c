@@ -8605,11 +8605,11 @@ static void* installer(void* arg){
     poke32(0xDA79F8, 0xD65F03C0);   // ret
 
     // 6) PostFX, Bloom & Tone Mapping (iOS High Quality)
-    poke32(0xDA7840, 0x52800020);   // RemapPostFXQuality (@0xDA7840): mov w0, #1 (High)
+    poke32(0xDA7840, 0x2A1F03E0);   // RemapPostFXQuality (@0xDA7840): mov w0, wzr (Base = 0)
     poke32(0xDA7844, 0xD65F03C0);   // ret
-    // In LoadPostFXConfig (@0xDA8048): bypass throttle disable (0xDA8154) and force PostFX Quality = 2 (0xDA8170-0xDA8174)
+    // In LoadPostFXConfig (@0xDA8048): bypass throttle disable (0xDA8154) and force PostFX Quality = Base (0xDA8170-0xDA8174)
     poke32(0xDA8154, 0x14000004);   // b 0xDA8164 (bypass w9 = -1 disable branch)
-    poke32(0xDA8170, 0x52800049);   // mov w9, #2 (force PostFX Quality = 2: Bloom + ToneMapping + ColorGrading)
+    poke32(0xDA8170, 0x2A1F03E9);   // mov w9, wzr (force PostFX Quality = Base: 0)
     poke32(0xDA8174, 0x14000003);   // b 0xDA8180
 
     // 7) Planar Reflections & MSAA Anti-Aliasing (iOS High Quality)

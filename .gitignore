@@ -36,6 +36,8 @@ __pycache__/
 *.zip
 *.psd
 assets_netflix/
+assets_ios/
+*.ipa
 extracted_optimus/
 extracted_apk/
 *.bin

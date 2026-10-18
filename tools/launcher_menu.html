@@ -860,19 +860,19 @@
       challenge_hp_multiplier: 10.0,
       enemy_mana_gain: 0.5,
       player_mana_gain: 1.0,
-      graphics_render_scale: 0,
-      graphics_msaa: 0,
-      graphics_shadows: 0,
-      graphics_reflections: 0,
-      graphics_effects: 0,
-      graphics_postfx: 0,
-      graphics_filtering: 0,
-      graphics_reflection_resolution: 0,
-      graphics_bloom_resolution: 0,
-      graphics_fx_resolution: 0,
-      graphics_lighting: 0,
-      graphics_glow: 0,
-      graphics_added_lights: 0,
+      graphics_render_scale: 100,
+      graphics_msaa: 2,
+      graphics_shadows: 4,
+      graphics_reflections: 3,
+      graphics_effects: 3,
+      graphics_postfx: 2,
+      graphics_filtering: 2,
+      graphics_reflection_resolution: 512,
+      graphics_bloom_resolution: 1,
+      graphics_fx_resolution: 1,
+      graphics_lighting: 2,
+      graphics_glow: 2,
+      graphics_added_lights: 2,
       target_fps: 60,
       player_invincible: false,
       enable_swipe_specials: true,
@@ -1151,7 +1151,7 @@
       updateJsonPreview();
     }
     function resetDefaults() {
-      setGraphicsPreset('stock');
+      setGraphicsPreset('enhanced114');
       document.getElementById('inp-commander').value = 'Commander';
       onCommanderInput();
       document.getElementById('chk-skip-launcher').checked = false;
@@ -1302,7 +1302,11 @@
         let savedLang = null;
         if (saved) {
           const parsed = (typeof saved === 'string') ? JSON.parse(saved) : saved;
-          loadGraphicsSettings(parsed);
+          if (parsed.graphics_postfx === undefined || (parsed.graphics_postfx === 0 && parsed.graphics_glow === 0 && !parsed.graphics_explicit_stock)) {
+            loadGraphicsSettings(graphicsPresets.enhanced114);
+          } else {
+            loadGraphicsSettings(parsed);
+          }
           if (parsed.commander_name) {
             document.getElementById('inp-commander').value = parsed.commander_name;
           }
