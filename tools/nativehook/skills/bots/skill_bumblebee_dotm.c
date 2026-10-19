@@ -84,15 +84,14 @@ static void bumblebee_dotm_on_hit_connected(SkillHitContext* ctx) {
             }
         }
 
-        // 应用攻击增益加成 (+13.5% 每层)
-        int effective_stacks = s_dotm_kd_stacks[ap];
-        if (effective_stacks > 0) {
-            float atk_mult = 1.0f + (0.135f * effective_stacks);
-            ctx->modified_damage *= atk_mult;
+        // 第 1-15 层永久增益由客户端引擎原生 Attribute_BuffEffect 处理 (+13.5%/层)
+        // 此处仅在激活第 16 层溢出爆发时，赋予额外的 +13.5% 伤害增益
+        if (s_dotm_kd_stacks[ap] >= 16) {
+            ctx->modified_damage *= 1.135f;
         }
 
-        // 击倒判定 (重击或 SP 最终击造成击倒)
-        int is_kd = ctx->is_last_hit;
+        // 击倒判定 (仅重击或 SP 最终击造成击倒)
+        int is_kd = ctx->is_last_hit && (ctx->is_heavy || ctx->special_index > 0);
         if (is_kd) {
             if (s_dotm_kd_stacks[ap] < 15) {
                 s_dotm_kd_stacks[ap]++;
@@ -167,6 +166,45 @@ static int bumblebee_dotm_on_evade_check(SkillEvadeContext* ctx, int* out_evade)
     return 1; // 电影大黄蜂规避检定已接管
 }
 
+static int bumblebee_dotm_on_buff_gated(SkillBuffGateContext* ctx) {
+    if (!ctx || !ctx->modifier_id) return 0;
+
+    // 1. 击倒攻击增益: 仅重击或 SP 最终击 (造成击倒) 施加
+    if (strstr(ctx->modifier_id, "bumblebee_cin_dotm_knockdown_atk") != NULL) {
+        if (!ctx->current_hit_is_last) {
+            skill_log("BUMBLEBEE_DOTM: Suppressed knockdown atk buff on non-last hit (hit=%d)", ctx->last_hit_index);
+            ctx->allow_application = false;
+            return 1;
+        }
+        ctx->allow_application = true;
+        return 1;
+    }
+
+    // 2. SP2 震击: 仅最后一击施加
+    if (strstr(ctx->modifier_id, "bumblebee_cin_dotm_sp2_shock") != NULL) {
+        if (!ctx->current_hit_is_last) {
+            skill_log("BUMBLEBEE_DOTM: Suppressed SP2 shock on non-last hit (hit=%d)", ctx->last_hit_index);
+            ctx->allow_application = false;
+            return 1;
+        }
+        ctx->allow_application = true;
+        return 1;
+    }
+
+    // 3. SP3 震击: 仅最后一击施加
+    if (strstr(ctx->modifier_id, "bumblebee_cin_dotm_sp3_shock") != NULL) {
+        if (!ctx->current_hit_is_last) {
+            skill_log("BUMBLEBEE_DOTM: Suppressed SP3 shock on non-last hit (hit=%d)", ctx->last_hit_index);
+            ctx->allow_application = false;
+            return 1;
+        }
+        ctx->allow_application = true;
+        return 1;
+    }
+
+    return 0;
+}
+
 static void bumblebee_dotm_on_fight_reset(int player_index) {
     if (player_index >= 0 && player_index < 2) {
         s_dotm_mode[player_index]              = CALIB_MODE_MELEE; // 开局默认近战模式
@@ -180,7 +218,7 @@ static void bumblebee_dotm_on_fight_reset(int player_index) {
 BotSkillModule g_module_bumblebee_dotm = {
     .bot_prefix = "bumblebee_cin_dotm",
     .on_hit_connected = bumblebee_dotm_on_hit_connected,
-    .on_buff_gated = NULL,
+    .on_buff_gated = bumblebee_dotm_on_buff_gated,
     .on_buff_applied = NULL,
     .on_evade_check = bumblebee_dotm_on_evade_check,
     .on_test_roll = NULL,

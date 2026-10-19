@@ -116,4 +116,12 @@ typedef struct {
 
     // 战斗重置/回合开始 (清理私有冷却和状态变量)
     void (*on_fight_reset)(int player_index);
+
+    // 每帧物理模拟时钟驱动
+    void (*on_simulation_tick)(uint64_t now_ms);
+
+    // 动作状态进入与退出回调 (格挡、闪避、受击等)
+    void (*on_block_state)(int player_index, int entered); // entered=1 进入格挡, entered=0 退出格挡
+    void (*on_dodge_enter)(int player_index);
+    void (*on_hitreact_enter)(int player_index);
 } BotSkillModule;

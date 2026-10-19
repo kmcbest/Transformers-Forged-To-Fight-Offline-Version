@@ -20,6 +20,7 @@ extern BotSkillModule g_module_thundercracker;
 extern BotSkillModule g_module_cyclonus;
 extern BotSkillModule g_module_nemesis;
 extern BotSkillModule g_module_jetfire;
+extern BotSkillModule g_module_tantrum;
 
 static const BotSkillModule* s_registry[] = {
     &g_module_arcee,
@@ -36,6 +37,7 @@ static const BotSkillModule* s_registry[] = {
     &g_module_cyclonus,
     &g_module_nemesis,
     &g_module_jetfire,
+    &g_module_tantrum,
     NULL
 };
 
@@ -162,4 +164,40 @@ int skill_dispatch_reflect_proj(int player_index, float* out_reflect_mod) {
     }
     return 0;
 }
+
+void skill_dispatch_simulation_tick(uint64_t now_ms) {
+    for (int i = 0; s_registry[i] != NULL; i++) {
+        if (s_registry[i]->on_simulation_tick) {
+            s_registry[i]->on_simulation_tick(now_ms);
+        }
+    }
+}
+
+void skill_dispatch_block_state(int player_index, int entered) {
+    if (player_index < 0 || player_index >= 2) return;
+    const char* bot_id = (player_index == 0) ? g_p0_bot_id : g_p1_bot_id;
+    const BotSkillModule* mod = find_module_by_bot(bot_id);
+    if (mod && mod->on_block_state) {
+        mod->on_block_state(player_index, entered);
+    }
+}
+
+void skill_dispatch_dodge_enter(int player_index) {
+    if (player_index < 0 || player_index >= 2) return;
+    const char* bot_id = (player_index == 0) ? g_p0_bot_id : g_p1_bot_id;
+    const BotSkillModule* mod = find_module_by_bot(bot_id);
+    if (mod && mod->on_dodge_enter) {
+        mod->on_dodge_enter(player_index);
+    }
+}
+
+void skill_dispatch_hitreact_enter(int player_index) {
+    if (player_index < 0 || player_index >= 2) return;
+    const char* bot_id = (player_index == 0) ? g_p0_bot_id : g_p1_bot_id;
+    const BotSkillModule* mod = find_module_by_bot(bot_id);
+    if (mod && mod->on_hitreact_enter) {
+        mod->on_hitreact_enter(player_index);
+    }
+}
+
 

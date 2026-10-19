@@ -32,6 +32,14 @@ float skill_dispatch_power_gain_rate_mod(int player_index);
 // 远程子弹反射检定分发 (返回 1 表示已被某技能接管判定，*out_reflect_mod 为反弹倍率；返回 0 表示走原生逻辑)
 int skill_dispatch_reflect_proj(int player_index, float* out_reflect_mod);
 
+// 每帧模拟驱动
+void skill_dispatch_simulation_tick(uint64_t now_ms);
+
+// 动作状态变化分发
+void skill_dispatch_block_state(int player_index, int entered);
+void skill_dispatch_dodge_enter(int player_index);
+void skill_dispatch_hitreact_enter(int player_index);
+
 #ifdef __cplusplus
 }
 #endif

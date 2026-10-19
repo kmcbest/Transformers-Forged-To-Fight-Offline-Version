@@ -5538,6 +5538,7 @@ void* hook_145(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
                 reset_player_attack_chain(g_p0_controller);
             }
         }
+        skill_dispatch_simulation_tick(propgo_now_ms());
         // HP tracking (Hit reactions are natively handled via slot 165 PlayerHitReactState.OnEnter)
         if (g_p0_combat_character && obj_ok(g_p0_combat_character)) {
             typedef float (*fn_get_hp)(void*, void*);
@@ -5805,6 +5806,7 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
                 if (g_p0_block_enter_ms > 0) {
                     uint64_t held = propgo_now_ms() - g_p0_block_enter_ms;
                     g_p0_block_enter_ms = 0;
+                    skill_dispatch_block_state(0, 0);
                     if (!g_p0_block_reset_done) {
                         flog("PLAYER_ACTION abort block (action=%d) on P0: held for %llu ms (< 200ms) -> combo chain preserved",
                              action, (unsigned long long)held);
@@ -6352,10 +6354,12 @@ void* hook_165(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
                 g_p0_after_heavy = 0;
                 flog("HITREACT_ENTER (0x0117FEC4) on P0: unblocked hit reaction resets attack chain");
                 reset_player_attack_chain(pc);
+                skill_dispatch_hitreact_enter(0);
             } else if (pidx == 1) {
                 g_p1_block_enter_ms = 0;
                 flog("HITREACT_ENTER (0x0117FEC4) on P1: hit reaction resets attack chain");
                 reset_player_attack_chain(pc);
+                skill_dispatch_hitreact_enter(1);
             }
         }
     });
@@ -6378,11 +6382,13 @@ void* hook_171(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
                 g_p0_block_reset_done = 0;
                 flog("BLOCK_ENTER (0x1173848): P0 started guarding at %llu ms (timer armed, hold >= 200ms required)",
                      (unsigned long long)g_p0_block_enter_ms);
+                skill_dispatch_block_state(0, 1);
             } else if (pidx == 1) {
                 g_p1_controller = pc;
                 g_p1_block_enter_ms = propgo_now_ms();
                 flog("BLOCK_ENTER (0x1173848): P1 started guarding at %llu ms",
                      (unsigned long long)g_p1_block_enter_ms);
+                skill_dispatch_block_state(1, 1);
             }
         }
     });
@@ -6404,10 +6410,12 @@ void* hook_172(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
                 g_p0_after_heavy = 0;
                 flog("DODGE_ENTER (0x0117F614) on P0: real dodge resets attack chain");
                 reset_player_attack_chain(pc);
+                skill_dispatch_dodge_enter(0);
             } else if (pidx == 1) {
                 g_p1_block_enter_ms = 0;
                 flog("DODGE_ENTER (0x0117F614) on P1: real dodge resets attack chain");
                 reset_player_attack_chain(pc);
+                skill_dispatch_dodge_enter(1);
             }
         }
     });
@@ -7405,15 +7413,17 @@ void skill_apply_buff(int player_index, const char* mod_id) {
     void* bc = *(void**)((char*)pc + 0x88);
     if (!bc || !obj_ok(bc)) return;
 
-    // 1. Direct apply if StatModifier pointer was captured
-    void* sm = (player_index == 0) ? s_jetfire_charge_sm_p0 : s_jetfire_charge_sm_p1;
-    if (sm && obj_ok(sm)) {
-        PROTECT({
-            fn_apply_statmod_buff apply_buff = (fn_apply_statmod_buff)(g_base + 0x00EEFB44);
-            apply_buff(bc, bc, sm, 1, 1, -1.0f, NULL);
-            flog("SKILL_APPLY_BUFF: Direct ApplyBuff for '%s' on P%d", mod_id, player_index);
-        });
-        return;
+    // 1. Direct apply if StatModifier pointer was captured for Jetfire
+    if (strstr(mod_id, "jetfire") != NULL) {
+        void* sm = (player_index == 0) ? s_jetfire_charge_sm_p0 : s_jetfire_charge_sm_p1;
+        if (sm && obj_ok(sm)) {
+            PROTECT({
+                fn_apply_statmod_buff apply_buff = (fn_apply_statmod_buff)(g_base + 0x00EEFB44);
+                apply_buff(bc, bc, sm, 1, 1, -1.0f, NULL);
+                flog("SKILL_APPLY_BUFF: Direct ApplyBuff for '%s' on P%d", mod_id, player_index);
+            });
+            return;
+        }
     }
 
     // 2. Otherwise apply via StatModifierController.ApplyStatModifier(string)
@@ -7961,6 +7971,28 @@ int hook_192(void* self, void* statModifier, float* pRoll, float* pChance, void*
             return 1;
         } else {
             flog("PROWL_RANGED_STUN: roll failed");
+            return 0;
+        }
+    }
+
+    // 11. 电影大黄蜂 (Bumblebee DOTM):
+    // SP2 和 SP3 仅最后一击施加震击；击倒攻击增益仅最后一击 (击倒) 施加
+    if (mod_id[0] && (strstr(mod_id, "bumblebee_cin_dotm_sp2_shock") != NULL ||
+                      strstr(mod_id, "bumblebee_cin_dotm_sp3_shock") != NULL ||
+                      strstr(mod_id, "bumblebee_cin_dotm_knockdown_atk") != NULL)) {
+        if (!s_current_hit_is_last) {
+            flog("BUMBLEBEE_GATE: non-last hit, skip roll for %s", mod_id);
+            return 0;
+        }
+    }
+
+    // 12. 野牛 (Tantrum):
+    // 防御蓄力灰色图标门禁: 若当前身上已有不可阻挡，阻止生成灰色蓄力
+    if (mod_id[0] && strstr(mod_id, "tantrum_block_charge") != NULL) {
+        void* owner_bc = (statModifier && obj_ok(statModifier)) ? *(void**)((char*)statModifier + 0x10) : NULL;
+        int is_p0 = is_player0_bc(owner_bc);
+        if (skill_is_unstoppable(is_p0 ? 0 : 1)) {
+            flog("TANTRUM_GATE: already unstoppable, skip block charge roll");
             return 0;
         }
     }

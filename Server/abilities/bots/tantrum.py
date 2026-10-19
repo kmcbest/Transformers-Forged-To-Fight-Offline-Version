@@ -38,16 +38,36 @@ def build_tantrum_abilities(base_hp: float = 36000.0, base_atk: float = 2150.0):
     mods = {}
     appears = {}
 
-    # 1. 防御不可阻挡 (ID: 3438): 防御 1.5s 后获得 4.5s 霸体
+    # 1a. 防御蓄力 (ID: 3438a): 防御进入时触发灰色倒计时图标 1.5 秒
+    m_charge, a_charge = make_attack_boost_statmod(
+        mod_id="tantrum_block_charge",
+        duration=1.5,
+        attack_bonus=0.0,
+        chance=1.0,
+        trigger="onPlayerStateEnter",
+        trigger_scope="state=Block",
+        appr_id="appr_tantrum_block_charge",
+        callout_text="",
+        show_callout=False,
+        pua_icon="\uE915",
+        color_hex="CBD5E1",
+        gradient_bottom="64748B",
+        stackable=False,
+    )
+    mods.update(m_charge)
+    appears.update(a_charge)
+
+    # 1b. 防御不可阻挡 (ID: 3438b): 防御持续 1.5s 后由 NativeHook 主动施加 4.5s 霸体
     m_unstop, a_unstop = make_unstoppable_statmod(
         mod_id="tantrum_block_unstoppable",
         duration=4.5,
-        trigger="onPlayerStateEnter",
-        trigger_scope="state=Block",
+        trigger="manual",
+        trigger_scope="",
         appr_id="appr_tantrum_block_unstoppable",
         callout_text="不可阻挡",
         show_callout=True,
         pua_icon="\uE915",
+        color_hex="FFAA00",
     )
     mods.update(m_unstop)
     appears.update(a_unstop)
