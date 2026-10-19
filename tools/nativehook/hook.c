@@ -4515,7 +4515,11 @@ void* hook_112(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
 }
 void* hook_113(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
     LOG("UICLICK listener=%p onClick=%p",a0,obj_ok(a0)?*(void**)((uintptr_t)a0+0x28):NULL);
-    return H[113].orig(a0,a1,a2,a3,a4,a5,a6,a7);
+    void* r = NULL;
+    PROTECT({
+        r = H[113].orig(a0,a1,a2,a3,a4,a5,a6,a7);
+    });
+    return r;
 }
 static uint64_t propgo_now_ms(void){
     struct timespec ts;
@@ -9061,7 +9065,7 @@ static void* hooked_PVPRaidFlow_SelectOpponent(void* self, void* a1, void* a2, v
 
 static fn8 orig_PVPRaidFlow_QuitRaid = NULL;
 static void* hooked_PVPRaidFlow_QuitRaid(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
-    flog("PVPRAIDFLOW_QUIT_RAID: self=%p", self);
+    flog("PVPRAIDFLOW_QUIT_RAID: self=%p reqCheck=%ld", self, (long)a1);
     s_raid_needs_team_select = 0;
     s_opponent_gameboard_user_info = NULL;
     if (orig_PVPRaidFlow_QuitRaid) return orig_PVPRaidFlow_QuitRaid(self, a1, a2, a3, a4, a5, a6, a7);
@@ -9510,7 +9514,7 @@ static void* installer(void* arg){
     inline_hook((void*)(g_base + 0x00F1EB9C), (void*)hooked_PVPRaidFlow_LeaveFlow, &orig_PVPRaidFlow_LeaveFlow);
     inline_hook((void*)(g_base + 0x00F1F158), (void*)hooked_PVPRaidFlow_CalculateFlowState, &orig_PVPRaidFlow_CalculateFlowState);
     inline_hook((void*)(g_base + 0x00F1ED64), (void*)hooked_PVPRaidFlow_SelectOpponent, &orig_PVPRaidFlow_SelectOpponent);
-    inline_hook((void*)(g_base + 0x00F1E8BC), (void*)hooked_PVPRaidFlow_QuitRaid, &orig_PVPRaidFlow_QuitRaid);
+    inline_hook((void*)(g_base + 0x00F1E8C4), (void*)hooked_PVPRaidFlow_QuitRaid, &orig_PVPRaidFlow_QuitRaid);
     inline_hook((void*)(g_base + 0x00B6CB44), (void*)hooked_GameboardUserInfo_Init_Uid, &orig_GameboardUserInfo_Init_Uid);
     inline_hook((void*)(g_base + 0x00B6CD1C), (void*)hooked_GameboardUserInfo_Init_Profile, &orig_GameboardUserInfo_Init_Profile);
 
