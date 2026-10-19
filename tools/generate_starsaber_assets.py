@@ -380,6 +380,61 @@ def generate_starsaber_assets(apk_path: str | None = None, output_dir: str = "as
                 else:
                     replace_str_in_tree(item, old_s, new_s)
 
+    # -------------------------------------------------------------
+    # Import Windblade Heavy Attack Audio into Star Saber Bundle
+    # -------------------------------------------------------------
+    import copy
+    w_sf = list(w_env.file.files.values())[0]
+    j_sf = list(bf.files.values())[0]
+
+    w_res_file = None
+    for name, f in w_env.file.files.items():
+        if name.endswith(".resource"):
+            w_res_file = f
+            break
+
+    from UnityPy.streams import EndianBinaryReader
+    j_res_name = None
+    j_res_file = None
+    for name, f in bf.files.items():
+        if name.endswith(".resource"):
+            j_res_name = name
+            j_res_file = f
+            break
+
+    wb_clip1_data = w_res_file.bytes[149760 : 149760 + 14368]
+    wb_clip2_data = w_res_file.bytes[170016 : 170016 + 15200]
+
+    old_res_len = len(j_res_file.bytes)
+    offset1 = old_res_len
+    offset2 = old_res_len + len(wb_clip1_data)
+    combined_res_bytes = j_res_file.bytes + wb_clip1_data + wb_clip2_data
+    new_res_reader = EndianBinaryReader(combined_res_bytes)
+    new_res_reader.flags = getattr(j_res_file, "flags", 0)
+    bf.files[j_res_name] = new_res_reader
+    print(f"[*] Appended Windblade heavy audio clips to Star Saber .resource: +{len(wb_clip1_data)+len(wb_clip2_data)} bytes")
+
+    # Update Jetfire heavy attack AudioClips to point to Windblade's audio data
+    clip_heavy = j_sf.objects[6510216056584927456]
+    t_heavy = clip_heavy.read_typetree()
+    t_heavy["m_Resource"] = {
+        "m_Source": f"archive:/{new_cab}/{new_cab}.resource",
+        "m_Offset": offset1,
+        "m_Size": len(wb_clip1_data)
+    }
+    clip_heavy.save_typetree(t_heavy)
+
+    for pid in [-6040142654073938373, -1683915847129078070, 6184518808667980096]:
+        clip_hit = j_sf.objects[pid]
+        t_hit = clip_hit.read_typetree()
+        t_hit["m_Resource"] = {
+            "m_Source": f"archive:/{new_cab}/{new_cab}.resource",
+            "m_Offset": offset2,
+            "m_Size": len(wb_clip2_data)
+        }
+        clip_hit.save_typetree(t_hit)
+    print("[+] Patched Star Saber heavy attack audio clips with Windblade audio data!")
+
     for obj in j_env.objects:
         if obj.path_id == -4439679313609908059 and obj.type.name == "Mesh" and sword_mesh_tree is not None:
             tree = sword_mesh_tree
@@ -548,6 +603,38 @@ def generate_starsaber_assets(apk_path: str | None = None, output_dir: str = "as
             replace_str_in_tree(tree, old_cab, new_cab)
             obj.save_typetree(tree)
             print("[+] Configured weapon Material with glowing cybertronian cyan-blue emissive effect!")
+        elif obj.path_id == -1461777177113225753 and obj.type.name == "MonoBehaviour":
+            tree = obj.read_typetree()
+            tree["_categories"] = ["Swords", "Generations"]
+
+            event_overrides = {
+                "gen_attack_1": "",
+                "gen_attack_hit_1": "",
+                "gen_attack_2": "",
+                "gen_attack_hit_2": "",
+                "gen_attack_3": "",
+                "gen_attack_hit_3": "",
+                "gen_attack_4": "",
+                "gen_attack_hit_4": "",
+                "gen_attack_5": "",
+                "gen_attack_hit_5": "",
+                "gen_attack_6": "",
+                "gen_attack_hit_6": "",
+                "gen_attack_heavy": "jetfire_attack_heavy",
+                "gen_attack_heavy_hit": "jetfire_attack_heavy_hit",
+                "gen_special_3": "jetfire_special_3",
+                "gen_block": "",
+                "gen_block_react": "",
+            }
+            events = tree.get("_events", [])
+            for ev in events:
+                gen_name = ev.get("_genEvent")
+                if gen_name in event_overrides:
+                    ev["_override"] = event_overrides[gen_name]
+            tree["_events"] = events
+            replace_str_in_tree(tree, old_cab, new_cab)
+            obj.save_typetree(tree)
+            print("[+] Successfully configured Star Saber CharacterAudio (Swords category + Windblade heavy + Jetfire SP3)!")
         elif obj.type.name == "AssetBundle":
             tree = obj.read_typetree()
             tree["m_Name"] = "data/starsaber_gs_leader2014_odr/starsaber_gs_leader2014.assetbundle"
@@ -566,7 +653,7 @@ def generate_starsaber_assets(apk_path: str | None = None, output_dir: str = "as
                 pass
             elif "cha_jetfire_gs_leader2014_wpns_rifle_right" in gname:
                 tree["m_Name"] = "cha_starsaber_gs_leader2014_wpns_sword"
-            elif any(p in gname.lower() for p in ["projectile", "muzzle_flash", "gun_charge", "impact", "ironman_beam"]):
+            elif any(p in gname.lower() for p in ["projectile", "muzzle_flash", "gun_charge", "impact", "ironman_beam", "special_3", "attack_heavy"]):
                 pass
             elif "jetfire" in gname.lower():
                 tree["m_Name"] = gname.replace("Jetfire", "StarSaber").replace("jetfire", "starsaber")

@@ -83,6 +83,7 @@ def make_zero_scale_curve(bone_path: str, duration: float) -> dict:
 
 LIFELINE_S1_PID = -8888888888888888881
 LIFELINE_S2_PID = -8888888888888888882
+LIFELINE_M1_PID = -8888888888888888883
 
 
 def patch_character_fx_assetbundle(cfx_bundle_data: bytes, out_dir: Path) -> None:
@@ -117,7 +118,7 @@ def patch_character_fx_assetbundle(cfx_bundle_data: bytes, out_dir: Path) -> Non
                                 patched += 1
 
     if patched > 0:
-        saved_cfx = cfx_env.file.save()
+        saved_cfx = cfx_env.file.save(packer="lz4")
         cfx_out = out_dir / "character_fx.assetbundle"
         cfx_out.write_bytes(saved_cfx)
         print(f"[+] Successfully saved patched character_fx.assetbundle ({len(saved_cfx)} bytes) with long-range laser beam to {cfx_out}")
@@ -229,10 +230,28 @@ def patch_moves_assetbundle(moves_bundle_data: bytes, out_dir: Path) -> None:
     moves_file.objects[LIFELINE_S2_PID] = s2_reader
     s2_reader.save_typetree(s2_move)
 
+    # Clone Lifeline M1 (based on Optimus Primal M1, remapped to gen_attack_6 and gen_attack_hit_6)
+    m1_reader = moves_file.objects[-6973531985879257707]
+    m1_move = copy.deepcopy(m1_reader.read_typetree())
+    m1_move["m_Name"] = "move_lifeline_attack_medium_01"
+    m1_data = json.loads(m1_move["m_Script"])
+    m1_data["moves"]["m_Name"] = "move_lifeline_attack_medium_01"
+    for ev in m1_data.get("moves", {}).get("events", []):
+        if ev.get("type") == "CharacterAudioMoveEvent":
+            if ev.get("en") == "gen_attack_5":
+                ev["en"] = "gen_attack_6"
+            elif ev.get("en") == "gen_attack_hit_5":
+                ev["en"] = "gen_attack_hit_6"
+    m1_move["m_Script"] = json.dumps(m1_data)
+    m1_reader_copy = copy.copy(m1_reader)
+    m1_reader_copy.path_id = LIFELINE_M1_PID
+    moves_file.objects[LIFELINE_M1_PID] = m1_reader_copy
+    m1_reader_copy.save_typetree(m1_move)
+
     if ab_obj:
         ab_tree = ab_obj.read_typetree()
         container = ab_tree.get("m_Container", [])
-        container = [c for c in container if "move_lifeline_special" not in c[0]]
+        container = [c for c in container if "move_lifeline_" not in c[0]]
         container.append([
             "assets/bundles/movedata/move_lifeline_special_01.txt",
             {"preloadIndex": 0, "preloadSize": 0, "asset": {"m_FileID": 0, "m_PathID": LIFELINE_S1_PID}}
@@ -241,13 +260,17 @@ def patch_moves_assetbundle(moves_bundle_data: bytes, out_dir: Path) -> None:
             "assets/bundles/movedata/move_lifeline_special_02.txt",
             {"preloadIndex": 0, "preloadSize": 0, "asset": {"m_FileID": 0, "m_PathID": LIFELINE_S2_PID}}
         ])
+        container.append([
+            "assets/bundles/movedata/move_lifeline_attack_medium_01.txt",
+            {"preloadIndex": 0, "preloadSize": 0, "asset": {"m_FileID": 0, "m_PathID": LIFELINE_M1_PID}}
+        ])
         ab_tree["m_Container"] = container
         ab_obj.save_typetree(ab_tree)
 
     saved_moves = moves_env.file.save(packer="lz4")
     moves_out_file = out_dir / "moves.assetbundle"
     moves_out_file.write_bytes(saved_moves)
-    print(f"[+] Successfully saved patched moves.assetbundle ({len(saved_moves)} bytes) with move_lifeline_special_01 & 02 to {moves_out_file}")
+    print(f"[+] Successfully saved patched moves.assetbundle ({len(saved_moves)} bytes) with Lifeline moves to {moves_out_file}")
 
 
 def generate_lifeline_assets(apk_path: str | None = None, output_dir: str = "assets_redeco") -> None:
@@ -643,8 +666,8 @@ def generate_lifeline_assets(apk_path: str | None = None, output_dir: str = "ass
             moves[2] = {"_name": "move_military_attack_light_03", "_animStateName": "Base.LightAttack03", "_asset": {"m_FileID": 7, "m_PathID": 2319864737932337275}}
             # [3] Base.LightAttack04 -> Windblade L4
             moves[3] = {"_name": "move_sword_attack_light_04", "_animStateName": "Base.LightAttack04", "_asset": {"m_FileID": 7, "m_PathID": 4145453135915101152}}
-            # [4] Base.MediumAttack01 -> Optimus Primal M1
-            moves[4] = {"_name": "move_primal_attack_medium_01", "_animStateName": "Base.MediumAttack01", "_asset": {"m_FileID": 7, "m_PathID": -6973531985879257707}}
+            # [4] Base.MediumAttack01 -> Lifeline M1 (Optimus Primal M1 remapped to gen_attack_6)
+            moves[4] = {"_name": "move_lifeline_attack_medium_01", "_animStateName": "Base.MediumAttack01", "_asset": {"m_FileID": 7, "m_PathID": LIFELINE_M1_PID}}
             # [5] Base.MediumAttack02 -> Bonecrusher M2
             moves[5] = {"_name": "move_feral_attack_medium_02", "_animStateName": "Base.MediumAttack02", "_asset": {"m_FileID": 7, "m_PathID": 5917300479849172794}}
             # [6] Base.SpecialAttack01 -> Lifeline S1 (Long-range horizontal visor laser beam)
@@ -656,6 +679,36 @@ def generate_lifeline_assets(apk_path: str | None = None, output_dir: str = "ass
             replace_str_in_tree(tree, old_cab, new_cab)
             obj.save_typetree(tree)
             print("[+] Successfully rewired MoveSet with stitched MoveInfo assets!")
+
+        # 4b. CharacterAudio (MonoBehaviour): Swords category & custom melee sound assignments
+        elif obj.path_id == 1333899456797858168 and obj.type.name == "MonoBehaviour":
+            tree = obj.read_typetree()
+            tree["_categories"] = ["Swords", "Generations"]
+            event_overrides = {
+                "gen_attack_1": "",
+                "gen_attack_hit_1": "",
+                "gen_attack_2": "",
+                "gen_attack_hit_2": "",
+                "gen_attack_3": "gen_attack_3_agl",
+                "gen_attack_hit_3": "gen_attack_hit_3_agl",
+                "gen_attack_4": "",
+                "gen_attack_hit_4": "",
+                "gen_attack_5": "",
+                "gen_attack_hit_5": "",
+                "gen_attack_6": "",
+                "gen_attack_hit_6": "",
+                "gen_block": "",
+                "gen_block_react": "",
+            }
+            events = tree.get("_events", [])
+            for ev in events:
+                gen_name = ev.get("_genEvent")
+                if gen_name in event_overrides:
+                    ev["_override"] = event_overrides[gen_name]
+            tree["_events"] = events
+            replace_str_in_tree(tree, old_cab, new_cab)
+            obj.save_typetree(tree)
+            print("[+] Successfully rewired CharacterAudio with Swords category and custom melee sound overrides!")
 
         # 5. Textures
         elif obj.type.name == "Texture2D":
@@ -747,7 +800,11 @@ def generate_lifeline_assets(apk_path: str | None = None, output_dir: str = "ass
         elif obj.type.name == "GameObject":
             tree = obj.read_typetree()
             gname = tree.get("m_Name", "")
-            if "arcee" in gname.lower():
+            # Preserve audio GameObjects so Fabric finds their event targets by name!
+            is_audio_go = any(gname.startswith(p) for p in [
+                "arcee_special_", "arcee_attack_heavy", "arcee_projectile_"
+            ])
+            if "arcee" in gname.lower() and not is_audio_go:
                 tree["m_Name"] = gname.replace("Arcee", "Lifeline").replace("arcee", "lifeline")
             replace_str_in_tree(tree, old_cab, new_cab)
             obj.save_typetree(tree)

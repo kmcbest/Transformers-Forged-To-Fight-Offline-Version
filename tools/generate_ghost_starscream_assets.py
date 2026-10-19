@@ -896,7 +896,7 @@ def generate_ghost_starscream_bundle():
                 tree["m_Name"] = gname.replace("Thundercracker_GS_leader2015", "Starscream_Ghost_GS").replace("thundercracker_gs_leader2015", "starscream_ghost_gs")
             replace_str_in_tree(tree, old_cab, new_cab)
             o.save_typetree(tree)
-        elif o.type.name in ["MonoBehaviour", "Material", "Texture2D", "Mesh"]:
+        else:
             try:
                 tree = o.read_typetree()
                 replace_str_in_tree(tree, old_cab, new_cab)

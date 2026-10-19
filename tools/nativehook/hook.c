@@ -5049,6 +5049,7 @@ static void sp3_update_character_weapons(void* pc, int active) {
     int is_optimus = 0;
     int is_ironhide = 0;
     int is_lifeline = 0;
+    int is_starsaber = 0;
 
     if (bid && bid[0]) {
         if ((strstr(bid, "optimus") || strstr(bid, "nemesis") || strstr(bid, "ultramagnus")) &&
@@ -5061,10 +5062,13 @@ static void sp3_update_character_weapons(void* pc, int active) {
         if (strstr(bid, "lifeline") && strstr(bid, "cin") == NULL) {
             is_lifeline = 1;
         }
+        if (strstr(bid, "starsaber") && strstr(bid, "cin") == NULL) {
+            is_starsaber = 1;
+        }
     }
 
     // Fallback: check GameObject name if bot_id is empty or inconclusive
-    if (!is_optimus && !is_ironhide && !is_lifeline) {
+    if (!is_optimus && !is_ironhide && !is_lifeline && !is_starsaber) {
         void* go = ((void*(*)(void*, void*))(g_base + 0x169FF58))(pc, NULL);
         if (go && obj_ok(go)) {
             void* n_str = ((void*(*)(void*, void*))(g_base + 0x16A16A0))(go, NULL);
@@ -5080,6 +5084,9 @@ static void sp3_update_character_weapons(void* pc, int active) {
             if ((strstr(gname, "Lifeline") || strstr(gname, "lifeline")) && strstr(gname, "cin") == NULL) {
                 is_lifeline = 1;
             }
+            if ((strstr(gname, "StarSaber") || strstr(gname, "starsaber")) && strstr(gname, "cin") == NULL) {
+                is_starsaber = 1;
+            }
         }
     }
 
@@ -5093,6 +5100,11 @@ static void sp3_update_character_weapons(void* pc, int active) {
         int sword_active = active ? 0 : 1;
         set_prop_active_full(props_ctrl, "swordLeft", sword_active);
         set_prop_active_full(props_ctrl, "swordRight", sword_active);
+    }
+    if (is_starsaber) {
+        int sword_active = active ? 0 : 1;
+        set_prop_active_full(props_ctrl, "sword", sword_active);
+        flog("SP3_WEAPON_STARSABER: sword -> %d (active=%d)", sword_active, active);
     }
 }
 
@@ -9148,6 +9160,71 @@ static void* hooked_HudScreenSetupWindow(void* self, void* a1, void* a2, void* a
     return NULL;
 }
 
+static fn8 orig_CharacterAudio_LoadGenAudio = NULL;
+typedef bool (*fn_hashset_add)(void*, void*, void*);
+static fn_hashset_add s_hashset_string_add = NULL;
+
+static void* hooked_CharacterAudio_LoadGenAudio(void* bLoad, void* categories, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    flog("[AUDIO_LOADGEN] LoadGenAudio bLoad=%ld categories=%p", (long)(uintptr_t)bLoad, categories);
+    if (categories && obj_ok(categories)) {
+        if (!s_hashset_string_add) {
+            s_hashset_string_add = (fn_hashset_add)(g_base + 0x12AADF4);
+        }
+        if (s_hashset_string_add && g_strnew) {
+            void* agile_str = g_strnew("Agile");
+            void* swords_str = g_strnew("Swords");
+            s_hashset_string_add(categories, agile_str, NULL);
+            s_hashset_string_add(categories, swords_str, NULL);
+            flog("[AUDIO_LOADGEN] Ensured 'Agile' & 'Swords' preloaded into charGenAudioCategories");
+        }
+    }
+    if (orig_CharacterAudio_LoadGenAudio) return orig_CharacterAudio_LoadGenAudio(bLoad, categories, a2, a3, a4, a5, a6, a7);
+    return NULL;
+}
+
+static fn8 orig_CharacterAudio_PlayRawAudioEvent = NULL;
+static void* hooked_CharacterAudio_PlayRawAudioEvent(void* self, void* audioEventRaw, void* eAction, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    char ev_buf[128] = {0};
+    if (audioEventRaw && obj_ok(audioEventRaw)) {
+        read_str(audioEventRaw, ev_buf, sizeof(ev_buf));
+    }
+    flog("[AUDIO_PLAY] CharacterAudio=%p ev='%s' action=%ld", self, ev_buf, (long)(uintptr_t)eAction);
+    if (orig_CharacterAudio_PlayRawAudioEvent) return orig_CharacterAudio_PlayRawAudioEvent(self, audioEventRaw, eAction, a3, a4, a5, a6, a7);
+    return NULL;
+}
+
+static fn8 orig_CharacterAudio_TranslateEvent = NULL;
+static void* hooked_CharacterAudio_TranslateEvent(void* self, void* audioEvent, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    char in_buf[128] = {0};
+    if (audioEvent && obj_ok(audioEvent)) {
+        read_str(audioEvent, in_buf, sizeof(in_buf));
+    }
+    void* ret = NULL;
+    if (orig_CharacterAudio_TranslateEvent) {
+        ret = orig_CharacterAudio_TranslateEvent(self, audioEvent, a2, a3, a4, a5, a6, a7);
+    }
+    if (ret && obj_ok(ret)) {
+        uintptr_t p = (uintptr_t)ret;
+        int32_t len = *(int32_t*)(p + 0x18);
+        if (len > 0 && len <= 16) {
+            void** items = (void**)(p + 0x20);
+            char out_buf[512] = {0};
+            int pos = 0;
+            for (int i = 0; i < len; i++) {
+                char s[64] = {0};
+                if (items[i] && obj_ok(items[i])) read_str(items[i], s, sizeof(s));
+                pos += snprintf(out_buf + pos, sizeof(out_buf) - pos, "%s'%s'", (i > 0 ? ", " : ""), s);
+            }
+            flog("[AUDIO_XLATE] in='%s' -> [%s]", in_buf, out_buf);
+        } else {
+            flog("[AUDIO_XLATE] in='%s' -> len=%d", in_buf, len);
+        }
+    } else {
+        flog("[AUDIO_XLATE] in='%s' -> NULL", in_buf);
+    }
+    return ret;
+}
+
 static void* installer(void* arg){
     for (int i = 0; i < 1200; i++) {           // up to 60s
         g_base = 0; dl_iterate_phdr(find_cb, NULL);
@@ -9437,7 +9514,10 @@ static void* installer(void* arg){
     inline_hook((void*)(g_base + 0x00B6CB44), (void*)hooked_GameboardUserInfo_Init_Uid, &orig_GameboardUserInfo_Init_Uid);
     inline_hook((void*)(g_base + 0x00B6CD1C), (void*)hooked_GameboardUserInfo_Init_Profile, &orig_GameboardUserInfo_Init_Profile);
 
-
+    // CharacterAudio diagnostics & category preload:
+    inline_hook((void*)(g_base + 0x00D16648), (void*)hooked_CharacterAudio_LoadGenAudio, &orig_CharacterAudio_LoadGenAudio);
+    inline_hook((void*)(g_base + 0x00D1759C), (void*)hooked_CharacterAudio_PlayRawAudioEvent, &orig_CharacterAudio_PlayRawAudioEvent);
+    inline_hook((void*)(g_base + 0x00D17678), (void*)hooked_CharacterAudio_TranslateEvent, &orig_CharacterAudio_TranslateEvent);
 
     LOG("install done (%d hooks)", NH);
     skill_dispatcher_init(g_base);
