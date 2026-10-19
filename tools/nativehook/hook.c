@@ -567,8 +567,8 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x0DAD5A4, "GET_DMG_RECV",       2, 0 }, // 177 PlayerAttributes.GetDamageReceived -> picnic quest ranged-only damage
     { 0,         "PFS_ENEMY_HP",       2, 0 }, // 178 PrefightScreenData.GetEnemyNormalizedHealth (disabled: stock function returns 1.0f directly)
     { 0x0DAD558, "PROJ_SPEED",         2, 0 }, // 179 PlayerAttributes.GetProjectileSpeed -> projectile flight speed boost
-    { 0x00FEDEA8, "FSPRESS_L",         2, 0 }, // 180 HudScreen.FullScreenPressDownLeft -> AutoFight button check & HudScreen cache
-    { 0x00FF0674, "FSPRESS_R",         2, 0 }, // 181 HudScreen.FullScreenPressDownRight -> AutoFight button check & HudScreen cache
+    { 0x00FEDEA8, "FSPRESS_L",         2, 0 }, // 180 HudScreen.PauseButtonClicked
+    { 0x00FF0674, "FSPRESS_R",         2, 0 }, // 181 HudScreen.PlayerSpecialButtonClicked
     { 0x00B6E168, "AWAY_STATE",        2, 0 }, // 182 BaseBuilding.SetAwayTeamState -> force Home (0) to keep shuttle docked
     { 0x00EFA054, "BSPP_INIT",         2, 0 }, // 183 BuildingSelectPopupPresentation.OnGridItemInitialized
     { 0x014F4048, "ISTUTCOMPLETE",     2, 0 }, // 184 TutorialManagerHelper.IsTutorialComplete
@@ -6768,13 +6768,50 @@ static int check_and_toggle_autofight(void* hud_screen) {
         if (sw > 0 && sh > 0) {
             float nx = pos[0] / (float)sw;
             float ny = pos[1] / (float)sh;
-            // AutoFight button is bottom-center: nx ~ 0.40..0.60, ny ~ 0.00..0.22
-            if (nx >= 0.40f && nx <= 0.60f && ny <= 0.22f) {
-                int cur = ((int(*)(void*))(g_base + 0xC9CF80))(NULL); // AutoFightManager.get_AutoFightIsActive()
-                int nxt = !cur;
-                ((void(*)(int, void*))(g_base + 0xC9DBD8))(nxt, NULL); // AutoFightManager.ToggleAutoFight(nxt)
-                ((void(*)(void*, int, void*))(g_base + 0xC9BB4C))(afb, nxt, NULL); // AutoFightButton.SetActiveGlow
-                flog("AUTOFIGHT_HUD_TAP: toggled AutoFight -> %d (touch pos=%.1f, %.1f norm=%.2f, %.2f)", nxt, pos[0], pos[1], nx, ny);
+            // AutoFight button is bottom-center: nx ~ 0.42..0.62, ny ~ 0.00..0.22
+            if (nx >= 0.42f && nx <= 0.62f && ny <= 0.22f) {
+                static uint64_t s_last_af_tap_ms = 0;
+                uint64_t now_ms = propgo_now_ms();
+                if (now_ms - s_last_af_tap_ms < 300) {
+                    return 1; // 300ms debounce
+                }
+                s_last_af_tap_ms = now_ms;
+
+                PROTECT({
+                    // Toggle state through native AutoFightManager.ToggleAutoFight()
+                    typedef void (*fn_toggle_af)(void);
+                    fn_toggle_af toggle_af = (fn_toggle_af)(g_base + 0x00C9C540);
+                    if (toggle_af) {
+                        toggle_af();
+                    }
+
+                    // Query new state
+                    typedef int (*fn_get_af)(void*);
+                    fn_get_af get_af = (fn_get_af)(g_base + 0x00C9CEB0);
+                    int is_active = get_af ? get_af(NULL) : 0;
+
+                    // Fail-safe 1: refresh AutoFightButton glow immediately
+                    typedef void (*fn_set_glow)(void*, int, void*);
+                    fn_set_glow set_glow = (fn_set_glow)(g_base + 0x00C9BB4C);
+                    if (set_glow && afb && obj_ok(afb)) {
+                        set_glow(afb, is_active, NULL);
+                    }
+
+                    // Fail-safe 2: notify BattleArbiter.Instance immediately
+                    typedef void* (*fn_get_arbiter)(void*);
+                    fn_get_arbiter get_arbiter = (fn_get_arbiter)(g_base + 0x00CF91DC);
+                    void* arbiter = get_arbiter ? get_arbiter(NULL) : NULL;
+                    if (arbiter && obj_ok(arbiter)) {
+                        typedef void (*fn_arbiter_toggle)(void*, int, void*);
+                        fn_arbiter_toggle arbiter_toggle = (fn_arbiter_toggle)(g_base + 0x00CFD23C);
+                        if (arbiter_toggle) {
+                            arbiter_toggle(arbiter, is_active, NULL);
+                        }
+                    }
+
+                    flog("AUTOFIGHT_HUD_TAP: toggled AutoFight -> %d (touch pos=%.1f, %.1f norm=%.2f, %.2f arbiter=%p)",
+                         is_active, pos[0], pos[1], nx, ny, arbiter);
+                });
                 return 1;
             }
         }
@@ -9297,36 +9334,34 @@ static void* installer(void* arg){
     // 14) AutoFight (WatchFight) Global Unlock:
     // Enables the native in-combat and pre-fight AutoFight button and AI takeover
     // AutoFightManager checks:
-    poke32(0xC9D04C, 0x52800020);   // AutoFightManager.get_UnlockLevel (@0xC9D04C): mov w0, #1
-    poke32(0xC9D050, 0xD65F03C0);   // ret
-    poke32(0xC9D2F4, 0x52800020);   // AutoFightManager.HasLevelRequirement (@0xC9D2F4): mov w0, #1
+    poke32(0xC9CF80, 0x52800020);   // AutoFightManager.get_UnlockLevel (@0xC9CF80): mov w0, #1
+    poke32(0xC9CF84, 0xD65F03C0);   // ret
+    poke32(0xC9C5E4, 0x52800020);   // AutoFightManager.HasLevelRequirement (@0xC9C5E4): mov w0, #1
+    poke32(0xC9C5E8, 0xD65F03C0);   // ret
+    poke32(0xC9BDF0, 0x52800020);   // AutoFightManager.AutoFightIsEnabled (@0xC9BDF0): mov w0, #1
+    poke32(0xC9BDF4, 0xD65F03C0);   // ret
+    poke32(0xC9D2F4, 0x52800020);   // AutoFightManager.AutoFightIsEnabledForActiveQuest() (@0xC9D2F4): mov w0, #1
     poke32(0xC9D2F8, 0xD65F03C0);   // ret
-    poke32(0xC9D3F0, 0x52800020);   // AutoFightManager.AutoFightIsEnabled (@0xC9D3F0): mov w0, #1
+    poke32(0xC9D3F0, 0x52800020);   // AutoFightManager.AutoFightIsEnabledForActiveQuest(Quest) (@0xC9D3F0): mov w0, #1
     poke32(0xC9D3F4, 0xD65F03C0);   // ret
-    poke32(0xC9D454, 0x52800020);   // AutoFightManager.AutoFightIsEnabledForActiveQuest(Quest) (@0xC9D454): mov w0, #1
-    poke32(0xC9D458, 0xD65F03C0);   // ret
-    poke32(0xC9D534, 0x52800020);   // AutoFightManager.AutoFightIsEnabledForActiveQuest() (@0xC9D534): mov w0, #1
+    poke32(0xC9D534, 0x52800020);   // AutoFightManager.AutoFightIsEnabledForModes (@0xC9D534): mov w0, #1
     poke32(0xC9D538, 0xD65F03C0);   // ret
-    poke32(0xC9BE48, 0x52800020);   // AutoFightManager.AutoFightIsEnabledForModes (@0xC9BE48): mov w0, #1
+    poke32(0xC9BE48, 0x52800020);   // AutoFightManager.EnabledModesContain (@0xC9BE48): mov w0, #1
     poke32(0xC9BE4C, 0xD65F03C0);   // ret
-    poke32(0xC9BB88, 0x52800020);   // AutoFightManager.EnabledModesContain (@0xC9BB88): mov w0, #1
-    poke32(0xC9BB8C, 0xD65F03C0);   // ret
 
     // AIProfilesManager / AIWatchFight checks:
-    poke32(0xDB3FA0, 0x52800020);   // AIWatchFight.IsWatchFightEnabled (@0xDB3FA0): mov w0, #1
-    poke32(0xDB3FA4, 0xD65F03C0);   // ret
-    poke32(0xDB4268, 0x52800020);   // AIProfilesManager.IsWatchFightEnabled (@0xDB4268): mov w0, #1
+    poke32(0xDB4128, 0x52800020);   // AIWatchFight.IsWatchFightEnabled (@0xDB4128): mov w0, #1
+    poke32(0xDB412C, 0xD65F03C0);   // ret
+    poke32(0xDB4118, 0x52800020);   // AIProfilesManager.IsWatchFightEnabled (@0xDB4118): mov w0, #1
+    poke32(0xDB411C, 0xD65F03C0);   // ret
+    poke32(0xDB4190, 0x52800020);   // AIProfilesManager.IsWatchFightEnabledForModes (@0xDB4190): mov w0, #1
+    poke32(0xDB4194, 0xD65F03C0);   // ret
+    poke32(0xDB4268, 0x52800020);   // AIProfilesManager.WatchFightModesContain (@0xDB4268): mov w0, #1
     poke32(0xDB426C, 0xD65F03C0);   // ret
-    poke32(0xDB4330, 0x52800020);   // AIProfilesManager.IsWatchFightEnabledForModes (@0xDB4330): mov w0, #1
-    poke32(0xDB4334, 0xD65F03C0);   // ret
-    poke32(0xDB43B0, 0x52800020);   // AIProfilesManager.WatchFightModesContain (@0xDB43B0): mov w0, #1
-    poke32(0xDB43B4, 0xD65F03C0);   // ret
 
     // Force AutoFightButton.Init (@0xC9BEA8): bypass level/quest/tutorial checks and force _enabled = 1
     poke32(0xC9BEF0, 0x52800028);   // mov w8, #1
     poke32(0xC9BEF4, 0x14000013);   // b 0xC9BF40 (sets this._enabled = 1, activates full alpha & registers delegates)
-
-
 
     // Suppress BusyBlockerManager.AddBlocker in BaseEditBuildingPopupPresentation:
     // Prevents full-screen blocker from permanently freezing touch input after relic swap/remove
@@ -9334,8 +9369,6 @@ static void* installer(void* arg){
     poke32(0x121FC8C, 0xD503201F); // NOP bl AddBlocker in OnRemovePressed
 
     // Diagnostic hooks for AutoFight actions:
-    inline_hook((void*)(g_base + 0xC9D6E8), (void*)hooked_ToggleAutoFight, &orig_ToggleAutoFight);
-    inline_hook((void*)(g_base + 0xCFD384), (void*)hooked_BattleArbiterOnToggleAutoFight, &orig_BattleArbiterOnToggleAutoFight);
     inline_hook((void*)(g_base + 0x00FEFC24), (void*)hooked_HudScreenAwake, &orig_HudScreenAwake);
     inline_hook((void*)(g_base + 0x00FEDEC4), (void*)hooked_HudScreenSetupWindow, &orig_HudScreenSetupWindow);
 
