@@ -90,6 +90,7 @@ assets_redeco/*
 !assets_redeco/breakdown_gs.assetbundle
 !assets_redeco/*breakdown*
 !assets_redeco/moves.assetbundle
+!assets_redeco/character_audio.assetbundle
 !assets_redeco/character_fx.assetbundle
 !assets_redeco/character_fx_procedural.assetbundle
 !assets_redeco/chromia_gs_kabam.assetbundle
