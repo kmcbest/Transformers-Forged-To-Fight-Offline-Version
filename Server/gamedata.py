@@ -174,12 +174,12 @@ def bot_abilities(bid):
 # ---------------------------------------------------------------------------
 # Per-class flavour and crit curve: loaded from tftf_database.db (or original defaults).
 _CLASS_STATS = {
-    "tact": {"crit_chance": 0.14, "crit_damage": 1.50, "hp_mult": 1.00, "atk_mult": 1.00},
-    "braw": {"crit_chance": 0.08, "crit_damage": 1.35, "hp_mult": 1.25, "atk_mult": 0.90},
-    "warr": {"crit_chance": 0.24, "crit_damage": 1.55, "hp_mult": 0.95, "atk_mult": 1.15},
-    "scou": {"crit_chance": 0.32, "crit_damage": 1.70, "hp_mult": 0.85, "atk_mult": 1.20},
-    "tech": {"crit_chance": 0.18, "crit_damage": 1.50, "hp_mult": 1.05, "atk_mult": 0.95},
-    "demo": {"crit_chance": 0.14, "crit_damage": 1.60, "hp_mult": 1.10, "atk_mult": 1.05},
+    "tact": {"crit_chance": 0.16, "crit_damage": 1.50, "hp_mult": 1.00, "atk_mult": 1.00},
+    "braw": {"crit_chance": 0.08, "crit_damage": 1.30, "hp_mult": 1.25, "atk_mult": 0.90},
+    "warr": {"crit_chance": 0.16, "crit_damage": 1.50, "hp_mult": 0.95, "atk_mult": 1.15},
+    "scou": {"crit_chance": 0.24, "crit_damage": 1.50, "hp_mult": 0.85, "atk_mult": 1.20},
+    "tech": {"crit_chance": 0.16, "crit_damage": 1.50, "hp_mult": 1.05, "atk_mult": 0.95},
+    "demo": {"crit_chance": 0.16, "crit_damage": 1.50, "hp_mult": 1.10, "atk_mult": 1.05},
 }
 
 _CLASS_MOD = {
@@ -4205,6 +4205,7 @@ def export_bot_info_header():
         "    int rating;",
         "    float crit_chance;",
         "    float crit_damage;",
+        "    const char* klass;",
         "} EnemyStat;",
         "",
         "static const EnemyStat ENEMY_STATS[] = {",
@@ -4214,13 +4215,13 @@ def export_bot_info_header():
         faction, klass, star = ROSTER[bid]
         hp, atk = base_stats(bid, 5, 50)
         pi, _, _, _, _ = calculate_hero_rating(hp, atk, sig_lvl=100)
-        cls_st = _CLASS_STATS.get(klass, {"crit_chance": 0.14, "crit_damage": 1.50})
+        cls_st = _CLASS_STATS.get(klass, {"crit_chance": 0.16, "crit_damage": 1.50})
         crit_chance = cls_st["crit_chance"]
         crit_damage = cls_st["crit_damage"]
         if bid in _BASE_STATS_OVERRIDE:
             crit_chance = _BASE_STATS_OVERRIDE[bid].get("crit_chance", crit_chance)
             crit_damage = _BASE_STATS_OVERRIDE[bid].get("crit_damage", crit_damage)
-        lines.append(f'    {{ "{bid}", {hp}, {atk}, {pi}, {crit_chance:.2f}f, {crit_damage:.2f}f }},')
+        lines.append(f'    {{ "{bid}", {hp}, {atk}, {pi}, {crit_chance:.2f}f, {crit_damage:.2f}f, "{klass}" }},')
     lines.append("};")
     lines.append(f"#define NUM_ENEMY_STATS {len(bots)}")
     lines.append("")
