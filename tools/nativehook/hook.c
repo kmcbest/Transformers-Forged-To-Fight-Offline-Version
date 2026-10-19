@@ -5048,6 +5048,7 @@ static void sp3_update_character_weapons(void* pc, int active) {
 
     int is_optimus = 0;
     int is_ironhide = 0;
+    int is_lifeline = 0;
 
     if (bid && bid[0]) {
         if ((strstr(bid, "optimus") || strstr(bid, "nemesis") || strstr(bid, "ultramagnus")) &&
@@ -5057,10 +5058,13 @@ static void sp3_update_character_weapons(void* pc, int active) {
         if (strstr(bid, "ironhide") && strstr(bid, "cin") == NULL) {
             is_ironhide = 1;
         }
+        if (strstr(bid, "lifeline") && strstr(bid, "cin") == NULL) {
+            is_lifeline = 1;
+        }
     }
 
     // Fallback: check GameObject name if bot_id is empty or inconclusive
-    if (!is_optimus && !is_ironhide) {
+    if (!is_optimus && !is_ironhide && !is_lifeline) {
         void* go = ((void*(*)(void*, void*))(g_base + 0x169FF58))(pc, NULL);
         if (go && obj_ok(go)) {
             void* n_str = ((void*(*)(void*, void*))(g_base + 0x16A16A0))(go, NULL);
@@ -5073,6 +5077,9 @@ static void sp3_update_character_weapons(void* pc, int active) {
             if ((strstr(gname, "Ironhide") || strstr(gname, "ironhide")) && strstr(gname, "cin") == NULL) {
                 is_ironhide = 1;
             }
+            if ((strstr(gname, "Lifeline") || strstr(gname, "lifeline")) && strstr(gname, "cin") == NULL) {
+                is_lifeline = 1;
+            }
         }
     }
 
@@ -5081,6 +5088,11 @@ static void sp3_update_character_weapons(void* pc, int active) {
     }
     if (is_ironhide) {
         set_prop_active_full(props_ctrl, "gun", active);
+    }
+    if (is_lifeline) {
+        int sword_active = active ? 0 : 1;
+        set_prop_active_full(props_ctrl, "swordLeft", sword_active);
+        set_prop_active_full(props_ctrl, "swordRight", sword_active);
     }
 }
 
