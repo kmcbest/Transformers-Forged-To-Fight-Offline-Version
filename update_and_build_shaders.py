@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-shaders_dir = Path(r"E:\Agent\TFTF-blender\toolchain\unity_build_project\Assets\Shaders")
+shaders_dir = Path(os.environ.get("UNITY_SHADERS_DIR", r"D:\Agent\tftf-darabat\unity_build_project\Assets\Shaders"))
 shaders_dir.mkdir(parents=True, exist_ok=True)
 
 # 1. Standard Unclipped Text Shader Template
@@ -163,14 +163,19 @@ text_softclip_template = '''Shader "{shader_name}"
                 fixed4 tint = (_Color.a > 0.001 ? _Color : fixed4(1,1,1,1));
                 o.color = v.color * tint;
                 o.texcoord = v.texcoord;
-                o.worldPos = TRANSFORM_TEX(v.vertex.xy, _MainTex);
+                o.worldPos = v.vertex.xy * _MainTex_ST.xy + _MainTex_ST.zw;
                 return o;
             }}
 
             fixed4 frag(v2f i) : SV_Target
             {{
+                // NGUI SoftClip formula with safety clamp (fallback gracefully if not clipped)
                 float2 factor = (float2(1.0, 1.0) - abs(i.worldPos)) * _ClipSharpness;
                 float f = clamp(min(factor.x, factor.y), 0.0, 1.0);
+                if (_MainTex_ST.x == 1.0 && _MainTex_ST.y == 1.0 && _MainTex_ST.z == 0.0 && _MainTex_ST.w == 0.0)
+                {{
+                    f = 1.0;
+                }}
                 fixed4 col = i.color;
                 col.a *= tex2D(_MainTex, i.texcoord).a * f;
                 return col;
@@ -278,7 +283,7 @@ ui_softclip_template = '''Shader "{shader_name}"
                 o.texcoord = i.texcoord;
                 fixed4 tint = (_Color.a > 0.001 ? _Color : fixed4(1,1,1,1));
                 o.color = i.color * tint;
-                o.worldPos = TRANSFORM_TEX(i.vertex.xy, _MainTex);
+                o.worldPos = i.vertex.xy * _MainTex_ST.xy + _MainTex_ST.zw;
                 return o;
             }}
 
@@ -286,6 +291,10 @@ ui_softclip_template = '''Shader "{shader_name}"
             {{
                 float2 factor = (float2(1.0, 1.0) - abs(i.worldPos)) * _ClipSharpness;
                 float f = clamp(min(factor.x, factor.y), 0.0, 1.0);
+                if (_MainTex_ST.x == 1.0 && _MainTex_ST.y == 1.0 && _MainTex_ST.z == 0.0 && _MainTex_ST.w == 0.0)
+                {{
+                    f = 1.0;
+                }}
                 fixed4 col = tex2D(_MainTex, i.texcoord);
                 if (col.r == 0.0 && col.g == 0.0 && col.b == 0.0 && col.a > 0.0)
                 {{
@@ -406,7 +415,6 @@ ui_unclipped_template = '''Shader "{shader_name}"
 
 ui_unclipped_list = [
     ("EBG_UI_BlendColored.shader", "EBG/UI/BlendColored"),
-    ("EBG_UI_BlendColoredMask.shader", "EBG/UI/BlendColoredMask"),
     ("EBG_UI_BlendFlat.shader", "EBG/UI/BlendFlat"),
     ("EBG_UI_Opaque.shader", "EBG/UI/Opaque"),
     ("EBG_UI_OpaqueFlat.shader", "EBG/UI/OpaqueFlat"),
@@ -419,5 +427,101 @@ ui_unclipped_list = [
 for fname, sname in ui_unclipped_list:
     (shaders_dir / fname).write_text(ui_unclipped_template.format(shader_name=sname), encoding="utf-8")
     print(f"Updated unclipped UI shader: {fname} -> '{sname}'")
+
+# 7. Masked UI Shader Template (EBG/UI/BlendColoredMask)
+ui_masked_template = '''Shader "{shader_name}"
+{{
+    Properties
+    {{
+        [PerRendererData] _MainTex ("Texture", 2D) = "white" {{}}
+        _MaskTex ("Mask", 2D) = "white" {{}}
+        _Color ("Tint", Color) = (1,1,1,1)
+        _StencilComp ("Stencil Comparison", Float) = 8
+        _Stencil ("Stencil ID", Float) = 0
+        _StencilOp ("Stencil Operation", Float) = 0
+        _StencilWriteMask ("Stencil Write Mask", Float) = 255
+        _StencilReadMask ("Stencil Read Mask", Float) = 255
+        _ColorMask ("Color Mask", Float) = 15
+    }}
+    SubShader
+    {{
+        Tags
+        {{
+            "Queue"="Transparent"
+            "IgnoreProjector"="True"
+            "RenderType"="Transparent"
+            "PreviewType"="Plane"
+            "CanUseSpriteAtlas"="True"
+        }}
+        Stencil
+        {{
+            Ref [_Stencil]
+            Comp [_StencilComp]
+            Pass [_StencilOp]
+            ReadMask [_StencilReadMask]
+            WriteMask [_StencilWriteMask]
+        }}
+        Cull Off
+        Lighting Off
+        ZWrite Off
+        ZTest [unity_GUIZTestMode]
+        Blend SrcAlpha OneMinusSrcAlpha
+        ColorMask [_ColorMask]
+
+        Pass
+        {{
+            CGPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag
+            #include "UnityCG.cginc"
+
+            struct appdata_t
+            {{
+                float4 vertex : POSITION;
+                fixed4 color : COLOR;
+                float2 texcoord : TEXCOORD0;
+                float2 texcoord1 : TEXCOORD1;
+            }};
+
+            struct v2f
+            {{
+                float4 vertex : SV_POSITION;
+                fixed4 color : COLOR;
+                float2 texcoord : TEXCOORD0;
+                float2 texcoord1 : TEXCOORD1;
+            }};
+
+            sampler2D _MainTex;
+            sampler2D _MaskTex;
+            fixed4 _Color;
+
+            v2f vert(appdata_t i)
+            {{
+                v2f o;
+                o.vertex = UnityObjectToClipPos(i.vertex);
+                o.texcoord = i.texcoord;
+                o.texcoord1 = i.texcoord1;
+                fixed4 tint = (_Color.a > 0.001 ? _Color : fixed4(1,1,1,1));
+                o.color = i.color * tint;
+                return o;
+            }}
+
+            fixed4 frag(v2f i) : SV_Target
+            {{
+                fixed4 col = tex2D(_MainTex, i.texcoord);
+                fixed4 mask = tex2D(_MaskTex, i.texcoord1);
+                fixed4 outCol = col * i.color;
+                outCol.a *= mask.a;
+                return outCol;
+            }}
+            ENDCG
+        }}
+    }}
+    Fallback Off
+}}
+'''
+
+(shaders_dir / "EBG_UI_BlendColoredMask.shader").write_text(ui_masked_template.format(shader_name="EBG/UI/BlendColoredMask"), encoding="utf-8")
+print("Updated masked UI shader: EBG_UI_BlendColoredMask.shader -> 'EBG/UI/BlendColoredMask'")
 
 print("All shaders updated successfully!")

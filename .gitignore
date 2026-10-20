@@ -56,3 +56,5 @@
 __pycache__/
 /tools/port202/bin/
 /tools/port202/obj/
+/android/
+/unity_build_project/
