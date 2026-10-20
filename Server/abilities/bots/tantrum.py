@@ -27,6 +27,7 @@ from ..core import (
     make_unstoppable_statmod,
     validate_color_code,
     validate_statmod,
+    validate_appear,
 )
 from ..registry import register_bot
 
@@ -38,24 +39,56 @@ def build_tantrum_abilities(base_hp: float = 36000.0, base_atk: float = 2150.0):
     mods = {}
     appears = {}
 
-    # 1a. 防御蓄力 (ID: 3438a): 防御进入时触发灰色倒计时图标 1.5 秒
-    m_charge, a_charge = make_attack_boost_statmod(
-        mod_id="tantrum_block_charge",
-        duration=1.5,
-        attack_bonus=0.0,
-        chance=1.0,
-        trigger="onPlayerStateEnter",
-        trigger_scope="state=Block",
-        appr_id="appr_tantrum_block_charge",
-        callout_text="",
-        show_callout=False,
-        pua_icon="\uE915",
-        color_hex="CBD5E1",
-        gradient_bottom="64748B",
-        stackable=False,
-    )
-    mods.update(m_charge)
-    appears.update(a_charge)
+    # 1a. 防御蓄力 (ID: 3438a): 防御进入时触发灰色倒计时图标 1.5 秒 (参考 Prowl 充能灰色图标机制)
+    appr_charge = {
+        "id": "appr_tantrum_block_charge",
+        "a": "",
+        "s": "",
+        "l": "坚守防御1.5秒获得不可阻挡",
+        "ss": "坚守防御1.5秒获得不可阻挡",
+        "t": "\uE915",  # 不可阻挡图标
+        "f": "",
+        "st": "",
+        "ps": "不可阻挡充能",
+        "pl": "蓄力中",
+        "tc": "CBD5E1",  # 银灰/灰色
+        "gt": "CBD5E1",
+        "gb": "94A3B8",  # 板岩灰
+    }
+    validate_appear(appr_charge)
+    appears["appr_tantrum_block_charge"] = appr_charge
+
+    mod_charge = {
+        "id": "tantrum_block_charge",
+        "t": "attack_buff",
+        "tm": "",
+        "tr": ["manual"],
+        "uit": [],
+        "pri": 0,
+        "trm": 0.0,
+        "trs": "",
+        "trr": "repeat",
+        "c": 1.0,
+        "m": 0.0,
+        "d": 1.5,
+        "s": "none",
+        "ta": "self",
+        "mt": "buff",
+        "v": "",
+        "ms": "",
+        "st": 1,
+        "g": "tantrum_charge",
+        "gc": 0.0,
+        "gcv": "",
+        "rcv": "",
+        "ti": 0,
+        "a": ["appr_tantrum_block_charge"],
+        "au": [],
+        "rh": 0.0,
+        "ra": 0.0,
+    }
+    validate_statmod(mod_charge)
+    mods["tantrum_block_charge"] = mod_charge
 
     # 1b. 防御不可阻挡 (ID: 3438b): 防御持续 1.5s 后由 NativeHook 主动施加 4.5s 霸体
     m_unstop, a_unstop = make_unstoppable_statmod(

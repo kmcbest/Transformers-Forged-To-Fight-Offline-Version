@@ -786,6 +786,10 @@ static void* s_prowl_passive_sm_p1 = NULL;
 
 static void* s_jetfire_charge_sm_p0 = NULL;
 static void* s_jetfire_charge_sm_p1 = NULL;
+static void* s_tantrum_charge_sm_p0 = NULL;
+static void* s_tantrum_charge_sm_p1 = NULL;
+static void* s_tantrum_unstop_sm_p0 = NULL;
+static void* s_tantrum_unstop_sm_p1 = NULL;
 
 // BuffsController.ApplyBuff(BuffsController this, BuffsController applicant, StatModifier statModifier, bool updateAttributes, bool useOverrideDuration, float overrideDuration, void* method) @ RVA 0x00EEFB44
 typedef void* (*fn_apply_statmod_buff)(void* this_bc, void* applicant_bc, void* statModifier, int32_t updateAttributes, int32_t useOverrideDuration, float overrideDuration, void* method);
@@ -5004,6 +5008,10 @@ void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     g_p1_block_enter_ms = 0;
     s_jetfire_charge_sm_p0 = NULL;
     s_jetfire_charge_sm_p1 = NULL;
+    s_tantrum_charge_sm_p0 = NULL;
+    s_tantrum_charge_sm_p1 = NULL;
+    s_tantrum_unstop_sm_p0 = NULL;
+    s_tantrum_unstop_sm_p1 = NULL;
     g_p0_block_reset_done = 0;
     g_p0_after_heavy = 0;
     g_p0_combo_ended = 0;
@@ -5192,8 +5200,8 @@ void* hook_143(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
 #define TFTF_ENABLE_MAX_POWER_TEST 0
 #endif
 
-static void expire_prowl_charge_buffs(void* pc, void* bc) {
-    if (!bc || !obj_ok(bc)) return;
+static void expire_charge_buffs(void* pc, void* bc, const char* match_str) {
+    if (!bc || !obj_ok(bc) || !match_str || !match_str[0]) return;
     PROTECT({
         // In il2cpp ARM64, BuffsController._buffs is at offset 0x40 (fallback 0x20)
         void* list = *(void**)((char*)bc + 0x40);
@@ -5223,8 +5231,9 @@ static void expire_prowl_charge_buffs(void* pc, void* bc) {
                         if (id_str_obj && obj_ok(id_str_obj)) read_str(id_str_obj, b_id, sizeof(b_id));
                         if (app_str_obj && obj_ok(app_str_obj)) read_str(app_str_obj, a_id, sizeof(a_id));
 
-                        if (strstr(b_id, "prowl_melee_charge") != NULL || strstr(a_id, "prowl_melee_charge") != NULL) {
-                            flog("EXPIRE_CHARGE: hiding gray icon & expiring buff %p (id='%s' app='%s')", buff, b_id, a_id);
+                        if (strstr(b_id, match_str) != NULL || strstr(a_id, match_str) != NULL) {
+                            flog("EXPIRE_CHARGE: hiding icon & expiring buff %p (id='%s' app='%s' match='%s')",
+                                 buff, b_id, a_id, match_str);
                             // 1. Notify HUD immediately to remove gray icon
                             if (pc && obj_ok(pc) && pc_remove) {
                                 pc_remove(pc, buff, NULL);
@@ -5246,6 +5255,10 @@ static void expire_prowl_charge_buffs(void* pc, void* bc) {
             }
         }
     });
+}
+
+static void expire_prowl_charge_buffs(void* pc, void* bc) {
+    expire_charge_buffs(pc, bc, "prowl_melee_charge");
 }
 
 static void prowl_start_charge(int is_p0) {
@@ -6395,6 +6408,33 @@ void* hook_171(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     return r;
 }
 
+// PlayerBlockState.OnExit (0x01173B28)
+static fn8 orig_PlayerBlockState_OnExit = NULL;
+static void* hooked_PlayerBlockState_OnExit(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    void* pc = fld_p(a0, 0x18);
+    PROTECT({
+        if (obj_ok(pc)) {
+            int32_t pidx = *(int32_t*)((uintptr_t)pc + 0xF4);
+            if (pidx == 0) {
+                if (g_p0_block_enter_ms > 0) {
+                    g_p0_block_enter_ms = 0;
+                }
+                skill_dispatch_block_state(0, 0);
+            } else if (pidx == 1) {
+                if (g_p1_block_enter_ms > 0) {
+                    g_p1_block_enter_ms = 0;
+                }
+                skill_dispatch_block_state(1, 0);
+            }
+        }
+    });
+    void* r = NULL;
+    if (orig_PlayerBlockState_OnExit) {
+        r = orig_PlayerBlockState_OnExit(a0, a1, a2, a3, a4, a5, a6, a7);
+    }
+    return r;
+}
+
 // slot 172 DODGEENTER (0x0117F614): PlayerDodgeState.OnEnter -> real dodge (swipe back) resets attack chain
 // (Note: former 0x117E4AC was PlayerDashState.OnEnter, which falsely treated forward dashes as dodges!)
 void* hook_172(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
@@ -7413,7 +7453,7 @@ void skill_apply_buff(int player_index, const char* mod_id) {
     void* bc = *(void**)((char*)pc + 0x88);
     if (!bc || !obj_ok(bc)) return;
 
-    // 1. Direct apply if StatModifier pointer was captured for Jetfire
+    // 1. Direct apply if StatModifier pointer was captured
     if (strstr(mod_id, "jetfire") != NULL) {
         void* sm = (player_index == 0) ? s_jetfire_charge_sm_p0 : s_jetfire_charge_sm_p1;
         if (sm && obj_ok(sm)) {
@@ -7421,6 +7461,28 @@ void skill_apply_buff(int player_index, const char* mod_id) {
                 fn_apply_statmod_buff apply_buff = (fn_apply_statmod_buff)(g_base + 0x00EEFB44);
                 apply_buff(bc, bc, sm, 1, 1, -1.0f, NULL);
                 flog("SKILL_APPLY_BUFF: Direct ApplyBuff for '%s' on P%d", mod_id, player_index);
+            });
+            return;
+        }
+    }
+    if (strstr(mod_id, "tantrum_block_charge") != NULL) {
+        void* sm = (player_index == 0) ? s_tantrum_charge_sm_p0 : s_tantrum_charge_sm_p1;
+        if (sm && obj_ok(sm)) {
+            PROTECT({
+                fn_apply_statmod_buff apply_buff = (fn_apply_statmod_buff)(g_base + 0x00EEFB44);
+                apply_buff(bc, bc, sm, 1, 1, 1.5f, NULL);
+                flog("SKILL_APPLY_BUFF: Direct ApplyBuff for '%s' on P%d (dur=1.5f)", mod_id, player_index);
+            });
+            return;
+        }
+    }
+    if (strstr(mod_id, "tantrum_block_unstoppable") != NULL) {
+        void* sm = (player_index == 0) ? s_tantrum_unstop_sm_p0 : s_tantrum_unstop_sm_p1;
+        if (sm && obj_ok(sm)) {
+            PROTECT({
+                fn_apply_statmod_buff apply_buff = (fn_apply_statmod_buff)(g_base + 0x00EEFB44);
+                apply_buff(bc, bc, sm, 1, 1, 4.5f, NULL);
+                flog("SKILL_APPLY_BUFF: Direct ApplyBuff for '%s' on P%d (dur=4.5f)", mod_id, player_index);
             });
             return;
         }
@@ -7449,6 +7511,8 @@ void skill_consume_buff(int player_index, const char* mod_id, int count) {
     if (!bc || !obj_ok(bc)) return;
 
     PROTECT({
+        expire_charge_buffs(pc, bc, mod_id);
+
         void* id_str = g_strnew(mod_id);
         if (id_str) {
             typedef bool (*fn_remove_buffs_by_id)(void* bc, void* id_str, int32_t numToRemove, int32_t removeFlags, int32_t source, int32_t cloneCondition, void* method);
@@ -7987,14 +8051,29 @@ int hook_192(void* self, void* statModifier, float* pRoll, float* pChance, void*
     }
 
     // 12. 野牛 (Tantrum):
-    // 防御蓄力灰色图标门禁: 若当前身上已有不可阻挡，阻止生成灰色蓄力
     if (mod_id[0] && strstr(mod_id, "tantrum_block_charge") != NULL) {
         void* owner_bc = (statModifier && obj_ok(statModifier)) ? *(void**)((char*)statModifier + 0x10) : NULL;
         int is_p0 = is_player0_bc(owner_bc);
-        if (skill_is_unstoppable(is_p0 ? 0 : 1)) {
-            flog("TANTRUM_GATE: already unstoppable, skip block charge roll");
-            return 0;
+        if (is_p0) {
+            s_tantrum_charge_sm_p0 = statModifier;
+        } else {
+            s_tantrum_charge_sm_p1 = statModifier;
         }
+        flog("TANTRUM_CAPTURE_SM: block_charge captured for %s -> sm=%p (owner_bc=%p)",
+             is_p0 ? "P0" : "P1", statModifier, owner_bc);
+        return 0; // 阻止开局与原生自动触发，由防御状态驱动通过 skill_apply_buff 施加
+    }
+    if (mod_id[0] && strstr(mod_id, "tantrum_block_unstoppable") != NULL) {
+        void* owner_bc = (statModifier && obj_ok(statModifier)) ? *(void**)((char*)statModifier + 0x10) : NULL;
+        int is_p0 = is_player0_bc(owner_bc);
+        if (is_p0) {
+            s_tantrum_unstop_sm_p0 = statModifier;
+        } else {
+            s_tantrum_unstop_sm_p1 = statModifier;
+        }
+        flog("TANTRUM_CAPTURE_SM: block_unstoppable captured for %s -> sm=%p (owner_bc=%p)",
+             is_p0 ? "P0" : "P1", statModifier, owner_bc);
+        return 0; // 阻止原生自动触发，由 1.5s 蓄力完成后统一施加
     }
 
     typedef int (*fn_test_roll)(void*, void*, float*, float*, void*, void*);
@@ -9687,6 +9766,8 @@ static void* installer(void* arg){
     inline_hook((void*)(g_base + 0x00D9FF50), (void*)hooked_PayoutsModel_GetDefaultTabId, &orig_PayoutsModel_GetDefaultTabId);
     // Fix Crystal / Gacha poster expansion freeze when store items empty:
     inline_hook((void*)(g_base + 0x010D24C4), (void*)hooked_TFormGachaPurchaseItem_SetupStoreItems, &orig_TFormGachaPurchaseItem_SetupStoreItems);
+    // Hook PlayerBlockState.OnExit (0x01173B28) for symmetric block state exit dispatch:
+    inline_hook((void*)(g_base + 0x01173B28), (void*)hooked_PlayerBlockState_OnExit, &orig_PlayerBlockState_OnExit);
 
     LOG("install done (%d hooks)", NH);
     skill_dispatcher_init(g_base);

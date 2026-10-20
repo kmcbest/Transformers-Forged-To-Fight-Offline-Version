@@ -29,7 +29,8 @@ static void tantrum_on_block_state(int p, int entered) {
         }
         s_tantrum_block_start_ms[p] = now_ms;
         s_tantrum_charge_active[p] = 1;
-        skill_log("TANTRUM: P%d entered block stance, armed 1.5s Unstoppable charge", p);
+        skill_apply_buff(p, "tantrum_block_charge");
+        skill_log("TANTRUM: P%d entered block stance, armed 1.5s Unstoppable charge & applied gray icon", p);
     } else {
         // 退出防御姿态: 若正在蓄力且未满 1.5s，则打断蓄力并移除灰色图标
         if (s_tantrum_charge_active[p]) {
