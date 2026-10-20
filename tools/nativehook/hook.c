@@ -8418,6 +8418,58 @@ static void* hooked_SelectArena(void* this_ptr, void* arena, void* scene, void* 
     return ret;
 }
 
+// ============================================================================
+// FIX: Prevent crash when opening Energon store with empty / null payments tabs
+// EB.UI.Payouts.PayoutsModel.GetDefaultTabId (RVA: 0x00D9FF50)
+// ============================================================================
+static fn8 orig_PayoutsModel_GetDefaultTabId = NULL;
+static void* hooked_PayoutsModel_GetDefaultTabId(void* self, void* tabs, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    if (!tabs || !obj_ok(tabs)) {
+        flog("[PAYOUTS] PayoutsModel.GetDefaultTabId: tabs is null/invalid -> return empty string");
+        return g_strnew ? g_strnew("") : NULL;
+    }
+    // In IL2CPP 64-bit array, max_length is at offset 0x18
+    int32_t len = *(int32_t*)((char*)tabs + 0x18);
+    if (len <= 0) {
+        flog("[PAYOUTS] PayoutsModel.GetDefaultTabId: tabs is empty (len=%d) -> return empty string", len);
+        return g_strnew ? g_strnew("") : NULL;
+    }
+    void* ret = NULL;
+    PROTECT(
+        if (orig_PayoutsModel_GetDefaultTabId) {
+            ret = orig_PayoutsModel_GetDefaultTabId(self, tabs, a2, a3, a4, a5, a6, a7);
+        }
+    );
+    return ret;
+}
+
+// ============================================================================
+// FIX: Prevent UI freeze when expanding Crystal (Gacha) poster/card
+// EB.UI.Gacha.TFormGachaPurchaseItem.SetupStoreItems (RVA: 0x10D24C4)
+// When gachaGameStoreItems is empty, _storeItemsInitialized remains false forever
+// and WaitForStoreItems hangs in while(!_storeItemsInitialized) yield return null,
+// leaving BusyBlockerManager (UiAnimation) permanently blocking touch input.
+// ============================================================================
+static fn8 orig_TFormGachaPurchaseItem_SetupStoreItems = NULL;
+static void* hooked_TFormGachaPurchaseItem_SetupStoreItems(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    void* ret = NULL;
+    PROTECT(
+        if (orig_TFormGachaPurchaseItem_SetupStoreItems) {
+            ret = orig_TFormGachaPurchaseItem_SetupStoreItems(self, a1, a2, a3, a4, a5, a6, a7);
+        }
+    );
+    if (obj_ok(self)) {
+        void* config = *(void**)((char*)self + 0x258);
+        void* list = (config && obj_ok(config)) ? *(void**)((char*)config + 0x20) : NULL;
+        int32_t count = (list && obj_ok(list)) ? *(int32_t*)((char*)list + 0x18) : 0;
+        if (count <= 0) {
+            *(uint8_t*)((char*)self + 0x2B8) = 1; // _storeItemsInitialized = true
+            flog("[GACHA] SetupStoreItems: empty store items (count=%d) -> force _storeItemsInitialized=1", count);
+        }
+    }
+    return ret;
+}
+
 static fn8 orig_GetPVPArenaCost = NULL;
 static void* hooked_GetPVPArenaCost(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     LOG("[PVP] PVPManager.GetPVPArenaCost: this=%p pid=%p arena=%p", a0, a1, a2);
@@ -9631,6 +9683,10 @@ static void* installer(void* arg){
     inline_hook((void*)(g_base + 0x00D16648), (void*)hooked_CharacterAudio_LoadGenAudio, &orig_CharacterAudio_LoadGenAudio);
     inline_hook((void*)(g_base + 0x00D1759C), (void*)hooked_CharacterAudio_PlayRawAudioEvent, &orig_CharacterAudio_PlayRawAudioEvent);
     inline_hook((void*)(g_base + 0x00D17678), (void*)hooked_CharacterAudio_TranslateEvent, &orig_CharacterAudio_TranslateEvent);
+    // Fix Energon / Payouts store empty tab crash:
+    inline_hook((void*)(g_base + 0x00D9FF50), (void*)hooked_PayoutsModel_GetDefaultTabId, &orig_PayoutsModel_GetDefaultTabId);
+    // Fix Crystal / Gacha poster expansion freeze when store items empty:
+    inline_hook((void*)(g_base + 0x010D24C4), (void*)hooked_TFormGachaPurchaseItem_SetupStoreItems, &orig_TFormGachaPurchaseItem_SetupStoreItems);
 
     LOG("install done (%d hooks)", NH);
     skill_dispatcher_init(g_base);

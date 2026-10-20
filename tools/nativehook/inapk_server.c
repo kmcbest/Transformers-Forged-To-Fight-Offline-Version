@@ -1678,7 +1678,22 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
     if(strstr(p,"/bcg/getBaseHeroData")) {
         logmsg("getBaseHeroData req: %.300s", body);
         const char *a=strstr(body,"\"heroes\""); const char *arr=a?strchr(a,'['):NULL; const char *q=arr?arr+1:NULL; v=lookup("@herodata:open",&n);if(!v||!out_add(o,v,n))return NULL;
-        int first=1; while(q&&q<end){const char *open=strchr(q,'{'),*close;int depth=0;if(!open||open>=end)break;close=open;do{if(*close=='{')depth++;else if(*close=='}')depth--;close++;}while(close<end&&depth);if(depth)break;char hb[64]="", hk[200], sig[32];int rank=json_int(open,close,"rank",1),level=json_int(open,close,"level",1),sl=json_int(open,close,"sig_lvl",0);if(!rank)rank=1;if(!level)level=1;if(!json_string(open,close,"bid",hb,sizeof hb))if(!json_string(open,close,"character",hb,sizeof hb))json_string(open,close,"id",hb,sizeof hb);snprintf(hk,sizeof hk,"@hero:%s:%d:%d",hb,rank,level);v=lookup(hk,&n);if(!v){snprintf(hk,sizeof hk,"@hero:%s:1:1",hb);v=lookup(hk,&n);}if(!v)v=lookup("@hero:*:1:1",&n);logmsg("getBaseHeroData: hero=%s rank=%d lvl=%d lookup=%s", hb, rank, level, v ? "OK" : "NULL");if(v){snprintf(sig,sizeof sig,"%d",sl);if(!first&&!out_add(o,",",1))return NULL;if(!out_hero_detail(o,v,n,sig,0))return NULL;first=0;if(rank==5&&level==1){char hk50[200];size_t n50=0;snprintf(hk50,sizeof hk50,"@hero:%s:5:50",hb);const unsigned char *v50=lookup(hk50,&n50);if(v50){if(!out_add(o,",",1))return NULL;if(!out_hero_detail(o,v50,n50,sig,0))return NULL;logmsg("getBaseHeroData: also emitted rank 5 level 50 for %s", hb);}}}q=close;}
+        int first=1; while(q&&q<end){const char *open=strchr(q,'{'),*close;int depth=0;if(!open||open>=end)break;close=open;do{if(*close=='{')depth++;else if(*close=='}')depth--;close++;}while(close<end&&depth);if(depth)break;char hb[64]="", hk[200], sig[32];int rank=json_int(open,close,"rank",1),level=json_int(open,close,"level",1),sl=json_int(open,close,"sig_lvl",0);if(!rank)rank=1;if(!level)level=1;if(!json_string(open,close,"bid",hb,sizeof hb))if(!json_string(open,close,"character",hb,sizeof hb))json_string(open,close,"id",hb,sizeof hb);
+            if(!strcmp(hb,"starscream_gs")) strcpy(hb,"starscream_ghost_gs");
+            snprintf(hk,sizeof hk,"@hero:%s:%d:%d",hb,rank,level);v=lookup(hk,&n);
+            if(!v){snprintf(hk,sizeof hk,"@hero:%s:1:1",hb);v=lookup(hk,&n);}
+            int is_wildcard=0;
+            if(!v){v=lookup("@hero:*:1:1",&n);is_wildcard=1;}
+            logmsg("getBaseHeroData: hero=%s rank=%d lvl=%d lookup=%s%s", hb, rank, level, v ? "OK" : "NULL", is_wildcard ? " (wildcard)" : "");
+            if(v){
+                snprintf(sig,sizeof sig,"%d",sl);
+                if(!first&&!out_add(o,",",1))return NULL;
+                if(is_wildcard) {
+                    if(!out_template(o,v,n,"%SIG%",sig,"__unknown_bid__",hb))return NULL;
+                } else {
+                    if(!out_hero_detail(o,v,n,sig,0))return NULL;
+                }
+                first=0;if(rank==5&&level==1){char hk50[200];size_t n50=0;snprintf(hk50,sizeof hk50,"@hero:%s:5:50",hb);const unsigned char *v50=lookup(hk50,&n50);if(v50){if(!out_add(o,",",1))return NULL;if(!out_hero_detail(o,v50,n50,sig,0))return NULL;logmsg("getBaseHeroData: also emitted rank 5 level 50 for %s", hb);}}}q=close;}
         v=lookup("@herodata:close",&n);if(!v||!out_add(o,v,n))return NULL; Out compact=*o; o->p=NULL;o->n=o->cap=0; v=json_default_spaces(compact.p,compact.n,o,outn);free(compact.p);logmsg("getBaseHeroData reply (%zu bytes): %.300s", *outn, (const char*)v);return v;
     }
     if(strstr(p, "/bcg/getHeroXPCurve")) {
@@ -2385,6 +2400,27 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         *outn = strlen((const char*)skilltrees_ok);
         logmsg("SKILLTREES: handled %s with empty result", p);
         return skilltrees_ok;
+    }
+
+    if(strstr(p, "/payments/payouts") || strstr(p, "/store/payouts")) {
+        static const unsigned char payouts_resp[] =
+            "{\"error\":null,\"result\":{\"data\":{\"tabs\":[{\"name\":\"default\",\"localized_name\":\"ID_UI_STORE_HARD_CURRENCY_TITLE\",\"selected\":true,\"show_invisible\":false,\"hide_if_empty\":false,\"empty_text\":\"ID_UI_STORE_EMPTY\"}],\"payoutSets\":[{\"payouts\":[]}]}}}";
+        *outn = strlen((const char*)payouts_resp);
+        logmsg("PAYMENTS: handled %s with empty payouts (%zu bytes)", p, *outn);
+        return payouts_resp;
+    }
+    if(strstr(p, "/payments/")) {
+        static const unsigned char payments_ok[] = "{\"error\":null,\"result\":{}}";
+        *outn = strlen((const char*)payments_ok);
+        logmsg("PAYMENTS: handled %s with empty result", p);
+        return payments_ok;
+    }
+
+    if(strstr(p, "/gamestore/buy") || strstr(p, "/gamestore/gift")) {
+        static const unsigned char gamestore_buy_ok[] = "{\"error\":null,\"result\":{\"redeemers\":[]}}";
+        *outn = strlen((const char*)gamestore_buy_ok);
+        logmsg("GAMESTORE: handled %s with empty redeemers", p);
+        return gamestore_buy_ok;
     }
 
     return NULL;

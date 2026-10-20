@@ -53,7 +53,7 @@ def get_boxes():
             "ppl": ["cat_bots"],
             "featured": [
                 {"type": "hero", "data": "grimlock_gs_mp08", "quantity": 1},
-                {"type": "hero", "data": "starscream_gs", "quantity": 1}
+                {"type": "hero", "data": "starscream_ghost_gs", "quantity": 1}
             ],
             "gamespecific": {"tab": "Crystals"}
         },
@@ -194,8 +194,8 @@ def get_gacha_data():
 def main():
     gacha_data = get_gacha_data()
     targets = [
-        Path(r"e:\Agent\TFTF\Server\responses\GET__account_data.json"),
-        Path(r"e:\Agent\TFTF\Server\responses\POST__account_data.json")
+        Path(__file__).resolve().parent.parent / "Server" / "responses" / "GET__account_data.json",
+        Path(__file__).resolve().parent.parent / "Server" / "responses" / "POST__account_data.json"
     ]
     for tf in targets:
         if not tf.exists():
