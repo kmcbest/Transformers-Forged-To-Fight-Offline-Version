@@ -39,6 +39,7 @@ typedef struct {
     int current_special_index;   // 正在释放的 SP (0, 1, 2, 3)
     int last_hit_index;          // 当前 hit index
     bool current_hit_is_last;    // 是否为收招最终击
+    bool is_heavy;               // 是否为重击 (Heavy Attack)
     uint32_t last_hit_flags;     // 命中标志位
     bool allow_application;      // 输出：是否允许施加 (true=放行, false=阻止)
 } SkillBuffGateContext;

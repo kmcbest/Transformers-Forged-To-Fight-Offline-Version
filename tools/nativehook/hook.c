@@ -790,6 +790,8 @@ static void* s_tantrum_charge_sm_p0 = NULL;
 static void* s_tantrum_charge_sm_p1 = NULL;
 static void* s_tantrum_unstop_sm_p0 = NULL;
 static void* s_tantrum_unstop_sm_p1 = NULL;
+static void* s_bumblebee_burst_sm_p0 = NULL;
+static void* s_bumblebee_burst_sm_p1 = NULL;
 
 // BuffsController.ApplyBuff(BuffsController this, BuffsController applicant, StatModifier statModifier, bool updateAttributes, bool useOverrideDuration, float overrideDuration, void* method) @ RVA 0x00EEFB44
 typedef void* (*fn_apply_statmod_buff)(void* this_bc, void* applicant_bc, void* statModifier, int32_t updateAttributes, int32_t useOverrideDuration, float overrideDuration, void* method);
@@ -5012,6 +5014,8 @@ void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     s_tantrum_charge_sm_p1 = NULL;
     s_tantrum_unstop_sm_p0 = NULL;
     s_tantrum_unstop_sm_p1 = NULL;
+    s_bumblebee_burst_sm_p0 = NULL;
+    s_bumblebee_burst_sm_p1 = NULL;
     g_p0_block_reset_done = 0;
     g_p0_after_heavy = 0;
     g_p0_combo_ended = 0;
@@ -7487,6 +7491,17 @@ void skill_apply_buff(int player_index, const char* mod_id) {
             return;
         }
     }
+    if (strstr(mod_id, "bumblebee_cin_dotm_burst_atk") != NULL) {
+        void* sm = (player_index == 0) ? s_bumblebee_burst_sm_p0 : s_bumblebee_burst_sm_p1;
+        if (sm && obj_ok(sm)) {
+            PROTECT({
+                fn_apply_statmod_buff apply_buff = (fn_apply_statmod_buff)(g_base + 0x00EEFB44);
+                apply_buff(bc, bc, sm, 1, 1, 3.0f, NULL);
+                flog("SKILL_APPLY_BUFF: Direct ApplyBuff for '%s' on P%d (dur=3.0f)", mod_id, player_index);
+            });
+            return;
+        }
+    }
 
     // 2. Otherwise apply via StatModifierController.ApplyStatModifier(string)
     void* smc = *(void**)((char*)bc + 0xA8);
@@ -7524,6 +7539,16 @@ void skill_consume_buff(int player_index, const char* mod_id, int count) {
     });
 }
 
+int skill_get_prowl_melee_stacks(int player_index) {
+    uint64_t now_ms = propgo_now_ms();
+    if (player_index == 0) {
+        if (now_ms < g_p0_prowl_melee_buff_end_ms) return g_p0_prowl_melee_buff_stacks;
+    } else if (player_index == 1) {
+        if (now_ms < g_p1_prowl_melee_buff_end_ms) return g_p1_prowl_melee_buff_stacks;
+    }
+    return 0;
+}
+
 // slot 188 (0x00EEFB44): BuffsController.ApplyBuff(BuffsController applicant, StatModifier statModifier, bool updateAttributes, bool useOverrideDuration, float overrideDuration)
 int hook_188(void* self, void* applicant, void* statModifier, int32_t updateAttributes, int32_t useOverrideDuration, float overrideDuration, void* method) {
     char mod_id[80] = {0};
@@ -7554,6 +7579,7 @@ int hook_188(void* self, void* applicant, void* statModifier, int32_t updateAttr
                 .current_special_index = g_p0_current_special_index,
                 .last_hit_index = s_last_hit_index,
                 .current_hit_is_last = (s_current_hit_is_last != 0),
+                .is_heavy = (s_current_hit_is_heavy != 0),
                 .last_hit_flags = s_last_hit_flags,
                 .allow_application = true
             };
@@ -8039,11 +8065,31 @@ int hook_192(void* self, void* statModifier, float* pRoll, float* pChance, void*
         }
     }
 
-    // 11. 电影大黄蜂 (Bumblebee DOTM):
-    // SP2 和 SP3 仅最后一击施加震击；击倒攻击增益仅最后一击 (击倒) 施加
+        // 11. 电影大黄蜂 (Bumblebee DOTM):
+    // a) 第 16 层爆发增益: 捕获 StatModifier，由满 15 层后通过 skill_apply_buff 施加
+    if (mod_id[0] && strstr(mod_id, "bumblebee_cin_dotm_burst_atk") != NULL) {
+        void* owner_bc = (statModifier && obj_ok(statModifier)) ? *(void**)((char*)statModifier + 0x10) : NULL;
+        int is_p0 = is_player0_bc(owner_bc);
+        if (is_p0) {
+            s_bumblebee_burst_sm_p0 = statModifier;
+        } else {
+            s_bumblebee_burst_sm_p1 = statModifier;
+        }
+        flog("BUMBLEBEE_CAPTURE_SM: burst_atk captured for %s -> sm=%p (owner_bc=%p)",
+             is_p0 ? "P0" : "P1", statModifier, owner_bc);
+        return 0; // 手动触发，阻止自动掷骰施加
+    }
+    // b) 击倒攻击增益: 必须为重击或必杀技最终击 (造成击倒)
+    if (mod_id[0] && strstr(mod_id, "bumblebee_cin_dotm_knockdown_atk") != NULL) {
+        if (!s_current_hit_is_last || (!s_current_hit_is_heavy && g_p0_current_special_index <= 0)) {
+            flog("BUMBLEBEE_GATE: non-knockdown hit, skip roll for %s (last=%d heavy=%d sp=%d)",
+                 mod_id, s_current_hit_is_last, s_current_hit_is_heavy, g_p0_current_special_index);
+            return 0;
+        }
+    }
+    // c) SP2 和 SP3 震击: 仅最后一击施加
     if (mod_id[0] && (strstr(mod_id, "bumblebee_cin_dotm_sp2_shock") != NULL ||
-                      strstr(mod_id, "bumblebee_cin_dotm_sp3_shock") != NULL ||
-                      strstr(mod_id, "bumblebee_cin_dotm_knockdown_atk") != NULL)) {
+                      strstr(mod_id, "bumblebee_cin_dotm_sp3_shock") != NULL)) {
         if (!s_current_hit_is_last) {
             flog("BUMBLEBEE_GATE: non-last hit, skip roll for %s", mod_id);
             return 0;

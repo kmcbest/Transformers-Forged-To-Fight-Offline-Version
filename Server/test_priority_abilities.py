@@ -86,6 +86,7 @@ class TestAllPriorityAbilities(unittest.TestCase):
             ],
             "bumblebee_cin_dotm": [
                 "bumblebee_cin_dotm_knockdown_atk",
+                "bumblebee_cin_dotm_burst_atk",
                 "bumblebee_cin_dotm_calib_melee",
                 "bumblebee_cin_dotm_calib_ranged",
                 "bumblebee_cin_dotm_sp1_armor_break",

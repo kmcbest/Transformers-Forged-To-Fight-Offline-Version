@@ -1287,6 +1287,8 @@ def make_attack_boost_statmod(
         "gb": gradient_bottom,
     }
 
+    eff_duration = float(duration) if duration > 0 else -1.0
+
     stat_mod = {
         "id": mod_id,
         "t": "attack_buff",
@@ -1299,7 +1301,7 @@ def make_attack_boost_statmod(
         "trr": "repeat",
         "c": float(chance),
         "m": float(attack_bonus),
-        "d": float(duration),
+        "d": eff_duration,
         "s": "none",
         "ta": "self",
         "mt": "buff",

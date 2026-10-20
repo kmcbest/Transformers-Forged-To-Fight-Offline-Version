@@ -71,44 +71,24 @@ static void bumblebee_dotm_on_hit_connected(SkillHitContext* ctx) {
     }
 
     // -----------------------------------------------------------------------
-    // B. 电影大黄蜂作为攻击方 (Attacker) -> 伤害加成与击倒叠层
+    // B. 电影大黄蜂作为攻击方 (Attacker) -> 应用击倒攻击增益加成 (+13.5% per stack)
     // -----------------------------------------------------------------------
     if (ctx->attacker_bot_id && strstr(ctx->attacker_bot_id, "bumblebee_cin_dotm") != NULL) {
         int ap = ctx->attacker_player_index;
-
-        // 检查第 16 层倒计时
-        if (s_dotm_kd_stacks[ap] >= 16) {
-            if (now_ms >= s_dotm_stack16_expire_ms[ap]) {
-                s_dotm_kd_stacks[ap] = 15;
-                s_dotm_stack16_expire_ms[ap] = 0;
-            }
+        float boost = 1.0f;
+        if (s_dotm_stack16_expire_ms[ap] > 0 && now_ms < s_dotm_stack16_expire_ms[ap]) {
+            // 第 16 层爆发增益 (+216.0% 攻击加成)
+            boost = 1.0f + (0.135f * 16.0f);
+        } else if (s_dotm_kd_stacks[ap] > 0) {
+            // 常驻击倒增益 (+13.5% 每层，最多15层)
+            boost = 1.0f + (0.135f * (float)s_dotm_kd_stacks[ap]);
         }
-
-        // 第 1-15 层永久增益由客户端引擎原生 Attribute_BuffEffect 处理 (+13.5%/层)
-        // 此处仅在激活第 16 层溢出爆发时，赋予额外的 +13.5% 伤害增益
-        if (s_dotm_kd_stacks[ap] >= 16) {
-            ctx->modified_damage *= 1.135f;
-        }
-
-        // 击倒判定 (仅重击或 SP 最终击造成击倒)
-        int is_kd = ctx->is_last_hit && (ctx->is_heavy || ctx->special_index > 0);
-        if (is_kd) {
-            if (s_dotm_kd_stacks[ap] < 15) {
-                s_dotm_kd_stacks[ap]++;
-                skill_overlay("[%s] 击倒对手！获得攻击增益第 %d 层 (+%.1f%%)",
-                              ap == 0 ? "电影大黄蜂" : "敌方大黄蜂",
-                              s_dotm_kd_stacks[ap], s_dotm_kd_stacks[ap] * 13.5f);
-            } else if (s_dotm_kd_stacks[ap] == 15) {
-                // 激活第 16 层 (3.0s 倒计时)
-                s_dotm_kd_stacks[ap] = 16;
-                s_dotm_stack16_expire_ms[ap] = now_ms + 3000;
-                skill_overlay("[%s] 击倒满溢！第 16 层爆发增益 (+216.0%%, 3s)",
-                              ap == 0 ? "电影大黄蜂" : "敌方大黄蜂");
-            } else if (s_dotm_kd_stacks[ap] >= 16) {
-                // 刷新第 16 层时间
-                s_dotm_stack16_expire_ms[ap] = now_ms + 3000;
-            }
-            skill_log("BUMBLEBEE_DOTM: Knockdown triggered by P%d! current stacks=%d", ap, s_dotm_kd_stacks[ap]);
+        if (boost > 1.0f) {
+            float old_dmg = ctx->modified_damage;
+            ctx->modified_damage *= boost;
+            skill_log("BUMBLEBEE_DOTM: Damage boosted x%.3f (%.1f -> %.1f, stacks=%d, s16=%d) on P%d",
+                      boost, old_dmg, ctx->modified_damage, s_dotm_kd_stacks[ap],
+                      (s_dotm_stack16_expire_ms[ap] > 0 && now_ms < s_dotm_stack16_expire_ms[ap]), ap);
         }
     }
 }
@@ -169,13 +149,28 @@ static int bumblebee_dotm_on_evade_check(SkillEvadeContext* ctx, int* out_evade)
 static int bumblebee_dotm_on_buff_gated(SkillBuffGateContext* ctx) {
     if (!ctx || !ctx->modifier_id) return 0;
 
-    // 1. 击倒攻击增益: 仅重击或 SP 最终击 (造成击倒) 施加
+    // 1. 击倒攻击增益: 仅重击或 SP 最终击 (造成对手击倒) 施加
     if (strstr(ctx->modifier_id, "bumblebee_cin_dotm_knockdown_atk") != NULL) {
-        if (!ctx->current_hit_is_last) {
-            skill_log("BUMBLEBEE_DOTM: Suppressed knockdown atk buff on non-last hit (hit=%d)", ctx->last_hit_index);
+        int is_kd_hit = ctx->current_hit_is_last && (ctx->is_heavy || ctx->current_special_index > 0);
+        if (!is_kd_hit) {
+            skill_log("BUMBLEBEE_DOTM: Suppressed knockdown atk buff on non-kd hit (hit=%d, last=%d, heavy=%d, sp=%d)",
+                      ctx->last_hit_index, ctx->current_hit_is_last, ctx->is_heavy, ctx->current_special_index);
             ctx->allow_application = false;
             return 1;
         }
+
+        int ap = ctx->target_player_index; // 增益施加给大黄蜂自身
+        if (s_dotm_kd_stacks[ap] >= 15) {
+            // 已满 15 层常驻增益，阻止继续堆叠永久 buff，转为施加/刷新第 16 层 3 秒倒计时爆发增益
+            ctx->allow_application = false;
+            skill_apply_buff(ap, "bumblebee_cin_dotm_burst_atk");
+            s_dotm_stack16_expire_ms[ap] = skill_now_ms() + 3000;
+            skill_overlay("[%s] 击倒满溢！第 16 层爆发增益 (+216.0%%, 3秒倒计时)",
+                          ap == 0 ? "电影大黄蜂" : "敌方大黄蜂");
+            skill_log("BUMBLEBEE_DOTM: P%d at 15 stacks, applied 16th burst atk buff (3s)", ap);
+            return 1;
+        }
+
         ctx->allow_application = true;
         return 1;
     }
@@ -205,6 +200,20 @@ static int bumblebee_dotm_on_buff_gated(SkillBuffGateContext* ctx) {
     return 0;
 }
 
+static void bumblebee_dotm_on_buff_applied(SkillBuffAppliedContext* ctx) {
+    if (!ctx || !ctx->modifier_id) return;
+    if (strstr(ctx->modifier_id, "bumblebee_cin_dotm_knockdown_atk") != NULL) {
+        int ap = ctx->target_player_index; // 增益施加给大黄蜂自身
+        if (s_dotm_kd_stacks[ap] < 15) {
+            s_dotm_kd_stacks[ap]++;
+            skill_overlay("[%s] 击倒对手！获得攻击增益第 %d 层 (+%.1f%%)",
+                          ap == 0 ? "电影大黄蜂" : "敌方大黄蜂",
+                          s_dotm_kd_stacks[ap], s_dotm_kd_stacks[ap] * 13.5f);
+            skill_log("BUMBLEBEE_DOTM: Knockdown atk buff applied to P%d! current stacks=%d", ap, s_dotm_kd_stacks[ap]);
+        }
+    }
+}
+
 static void bumblebee_dotm_on_fight_reset(int player_index) {
     if (player_index >= 0 && player_index < 2) {
         s_dotm_mode[player_index]              = CALIB_MODE_MELEE; // 开局默认近战模式
@@ -219,7 +228,7 @@ BotSkillModule g_module_bumblebee_dotm = {
     .bot_prefix = "bumblebee_cin_dotm",
     .on_hit_connected = bumblebee_dotm_on_hit_connected,
     .on_buff_gated = bumblebee_dotm_on_buff_gated,
-    .on_buff_applied = NULL,
+    .on_buff_applied = bumblebee_dotm_on_buff_applied,
     .on_evade_check = bumblebee_dotm_on_evade_check,
     .on_test_roll = NULL,
     .on_fight_reset = bumblebee_dotm_on_fight_reset

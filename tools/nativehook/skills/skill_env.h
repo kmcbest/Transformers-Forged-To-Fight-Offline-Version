@@ -46,6 +46,9 @@ void skill_stun_player(int target_player_index, float duration_s);
 void skill_apply_buff(int player_index, const char* mod_id);
 void skill_consume_buff(int player_index, const char* mod_id, int count);
 
+// 警车近战增益层数查询
+int skill_get_prowl_melee_stacks(int player_index);
+
 #ifdef __cplusplus
 }
 #endif

@@ -16,6 +16,33 @@
 
 static uint64_t s_tantrum_block_start_ms[2] = {0, 0};
 static int      s_tantrum_charge_active[2]  = {0, 0};
+static int      s_tantrum_dash_stacks[2]    = {0, 0};
+
+static void tantrum_on_hit_connected(SkillHitContext* ctx) {
+    if (!ctx) return;
+    if (ctx->attacker_bot_id && strstr(ctx->attacker_bot_id, "tantrum") != NULL) {
+        int ap = ctx->attacker_player_index;
+        // 野牛前冲近战增益 (+24% 近战伤害每层，最多10层)
+        if (!ctx->is_ranged && s_tantrum_dash_stacks[ap] > 0) {
+            float boost = 1.0f + (0.24f * (float)s_tantrum_dash_stacks[ap]);
+            float old_dmg = ctx->modified_damage;
+            ctx->modified_damage *= boost;
+            skill_log("TANTRUM: Melee damage boosted x%.2f (%.1f -> %.1f, stacks=%d) on P%d",
+                      boost, old_dmg, ctx->modified_damage, s_tantrum_dash_stacks[ap], ap);
+        }
+    }
+}
+
+static void tantrum_on_buff_applied(SkillBuffAppliedContext* ctx) {
+    if (!ctx || !ctx->modifier_id) return;
+    if (strstr(ctx->modifier_id, "tantrum_dash_melee_buff") != NULL) {
+        int tp = ctx->target_player_index;
+        if (s_tantrum_dash_stacks[tp] < 10) {
+            s_tantrum_dash_stacks[tp]++;
+            skill_log("TANTRUM: Dash melee buff applied to P%d! current stacks=%d", tp, s_tantrum_dash_stacks[tp]);
+        }
+    }
+}
 
 static void tantrum_on_block_state(int p, int entered) {
     if (p < 0 || p >= 2) return;
@@ -91,6 +118,7 @@ static void tantrum_on_dodge_enter(int p) {
 
     // 2. [3450] 若野牛后闪且身上没有不可阻挡状态，则失去所有近战增益
     if (!skill_is_unstoppable(p)) {
+        s_tantrum_dash_stacks[p] = 0;
         skill_consume_buff(p, "tantrum_dash_melee_buff", 10);
         skill_log("TANTRUM: P%d dodged while NOT unstoppable, removed all dash melee buffs", p);
     }
@@ -118,14 +146,15 @@ static void tantrum_on_fight_reset(int player_index) {
     if (player_index >= 0 && player_index < 2) {
         s_tantrum_block_start_ms[player_index] = 0;
         s_tantrum_charge_active[player_index]  = 0;
+        s_tantrum_dash_stacks[player_index]   = 0;
     }
 }
 
 BotSkillModule g_module_tantrum = {
     .bot_prefix          = "tantrum",
-    .on_hit_connected    = NULL,
+    .on_hit_connected    = tantrum_on_hit_connected,
     .on_buff_gated       = tantrum_on_buff_gated,
-    .on_buff_applied     = NULL,
+    .on_buff_applied     = tantrum_on_buff_applied,
     .on_evade_check      = NULL,
     .on_test_roll        = NULL,
     .on_power_gain_rate  = NULL,

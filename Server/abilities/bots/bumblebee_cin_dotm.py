@@ -69,7 +69,7 @@ def build_bumblebee_cin_dotm_abilities(base_hp: float = 28550.0, base_atk: float
     # 1. 击倒对手获得永久攻击增益 (+13.5% 攻击力)，最多 15 层 (ID: 2424)
     m_kd, a_kd = make_attack_boost_statmod(
         mod_id="bumblebee_cin_dotm_knockdown_atk",
-        duration=0.0,  # 永久常驻
+        duration=-1.0,  # 负数持续时间表示永久无倒计时堆叠buff (IsIndefinite=true)
         attack_bonus=0.135,
         chance=1.0,
         trigger="onHit",
@@ -85,6 +85,26 @@ def build_bumblebee_cin_dotm_abilities(base_hp: float = 28550.0, base_atk: float
     )
     mods.update(m_kd)
     appears.update(a_kd)
+
+    # 1b. 第 16 层满溢爆发攻击增益 (+13.5% 攻击力)，持续 3.0 秒 (ID: 2424b)
+    m_burst, a_burst = make_attack_boost_statmod(
+        mod_id="bumblebee_cin_dotm_burst_atk",
+        duration=3.0,  # 3秒倒计时
+        attack_bonus=0.135,
+        chance=1.0,
+        trigger="manual",  # 由 NativeHook 在满 15 层后击倒对手时施加
+        trigger_scope="",
+        appr_id="appr_bumblebee_cin_dotm_burst_atk",
+        callout_text="攻击加成",
+        show_callout=True,
+        pua_icon="\uE406",
+        color_hex="EF4444",
+        gradient_bottom="DC2626",
+        stackable=False,
+        max_stacks=1,
+    )
+    mods.update(m_burst)
+    appears.update(a_burst)
 
     # 2. 近战校准规避 (ID: 2421): 开局自动获得近战规避 (常驻无倒计时, 25.5% 规避率)
     m_ev_m, a_ev_m = make_evade_grant_statmod(
