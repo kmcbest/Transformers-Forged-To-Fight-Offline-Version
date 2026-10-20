@@ -56,8 +56,19 @@ def main():
         f"-r:{managed_engine / 'UnityEngine.AssetBundleModule.dll'}",
     ]
 
-    # Compile ShadersHelperFull.cs
+    # Sync C# source files from upstream repo to TFTF310Upstream scratch
+    src_sh = upstream_dir / "tools" / "firstpass_patch" / "ShadersHelperFull.cs"
+    src_tf = upstream_dir / "tools" / "firstpass_patch" / "TestFixMaterials.cs"
+    src_patch_py = upstream_dir / "tools" / "firstpass_patch" / "patch_firstpass_il.py"
     sh_cs = tftf310_dir / "tools" / "scratch" / "ShadersHelperFull.cs"
+    tf_cs = tftf310_dir / "tools" / "scratch" / "TestFixMaterials.cs"
+    dst_patch_py = tftf310_dir / "tools" / "patch_firstpass_il.py"
+    shutil.copy2(src_sh, sh_cs)
+    shutil.copy2(src_tf, tf_cs)
+    shutil.copy2(src_patch_py, dst_patch_py)
+    print("Synced C# and Python patch files to TFTF310Upstream.")
+
+    # Compile ShadersHelperFull.cs
     sh_dll = tftf310_dir / "ShadersHelperFull.dll"
     sh_il = tftf310_dir / "ShadersHelperFull.il"
     cmd_mcs_sh = [str(mcs_bat), "-noconfig", "-nostdlib+", "-target:library", f"-out:{sh_dll}"] + refs + [str(sh_cs)]
@@ -83,6 +94,37 @@ def main():
     subprocess.run([str(ildasm_exe), "/text", "/nobar", f"/out={tf_il}", str(tf_dll)], check=True)
     print(f"Compiled & disassembled TestFixMaterials.il ({tf_il.stat().st_size} bytes)")
 
+    # Compile target launcher classes (TftfInstaller v3, TftfLauncher, OdrWadBuilder, JsonLite, Convert)
+    launcher_src_dir = upstream_dir / "mono310" / "launcher" / "shell" / "Tftf"
+    launcher_files = [
+        launcher_src_dir / "TftfInstaller.cs",
+        launcher_src_dir / "TftfLauncher.cs",
+        launcher_src_dir / "Odr" / "JsonLite.cs",
+        launcher_src_dir / "Odr" / "OdrWadBuilder.cs",
+        launcher_src_dir / "Convert" / "Bytes.cs",
+        launcher_src_dir / "Convert" / "PlayerDataConverter.cs",
+        launcher_src_dir / "Convert" / "SerializedFile.cs",
+        launcher_src_dir / "Convert" / "TreeNode.cs",
+        launcher_src_dir / "Convert" / "TypeWalker.cs",
+        launcher_src_dir / "Convert" / "UnityFsWriter.cs",
+    ]
+    launcher_refs = refs + [
+        f"-r:{managed_engine / 'UnityEngine.IMGUIModule.dll'}",
+        f"-r:{managed_engine / 'UnityEngine.UnityWebRequestModule.dll'}",
+        f"-r:{managed_engine / 'UnityEngine.UnityWebRequestTextureModule.dll'}",
+        f"-r:{managed_engine / 'UnityEngine.AnimationModule.dll'}",
+        f"-r:{managed_engine / 'UnityEngine.TextRenderingModule.dll'}",
+    ]
+    tgt_dll = tftf310_dir / "target_launcher_classes.dll"
+    tgt_il = tftf310_dir / "target_launcher_classes.il"
+    cmd_mcs_tgt = [str(mcs_bat), "-noconfig", "-nostdlib+", "-target:library", f"-out:{tgt_dll}"] + launcher_refs + [str(f) for f in launcher_files]
+    res = subprocess.run(cmd_mcs_tgt, capture_output=True, text=True)
+    if res.returncode != 0:
+        print(f"mcs error for target_launcher_classes: {res.stderr}\n{res.stdout}")
+        sys.exit(1)
+    subprocess.run([str(ildasm_exe), "/text", "/nobar", f"/out={tgt_il}", str(tgt_dll)], check=True)
+    print(f"Compiled & disassembled target_launcher_classes.il ({tgt_il.stat().st_size} bytes)")
+
     # 4. Patch firstpass IL and reassemble Assembly-CSharp-firstpass.dll
     print("\n--- [4/5] Patching and assembling Assembly-CSharp-firstpass.dll ---")
     patch_script = tftf310_dir / "tools" / "patch_firstpass_il.py"
@@ -92,6 +134,16 @@ def main():
         print(f"ERROR: {firstpass_dll} was not created!")
         sys.exit(1)
     print(f"Assembly-CSharp-firstpass.dll verified: {firstpass_dll.stat().st_size} bytes")
+
+    # 4b. Patch Assembly-CSharp IL and reassemble Assembly-CSharp.dll
+    print("\n--- [4b/5] Patching and assembling Assembly-CSharp.dll ---")
+    patch_csharp_script = upstream_dir / "tools" / "patch_and_assemble_assembly.py"
+    subprocess.run([sys.executable, str(patch_csharp_script)], check=True)
+    patch_csharp = tftf310_dir / "patched_dlls" / "Assembly-CSharp.dll"
+    if not patch_csharp.exists():
+        print(f"ERROR: {patch_csharp} was not created!")
+        sys.exit(1)
+    print(f"Assembly-CSharp.dll verified: {patch_csharp.stat().st_size} bytes")
 
     # 5. Package and Sign APK
     print("\n--- [5/5] Packaging, aligning, and signing final APK ---")

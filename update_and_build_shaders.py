@@ -2,36 +2,81 @@ import os
 from pathlib import Path
 
 shaders_dir = Path(r"E:\Agent\TFTF-blender\toolchain\unity_build_project\Assets\Shaders")
+shaders_dir.mkdir(parents=True, exist_ok=True)
 
 # 1. Standard Unclipped Text Shader Template
 text_unlit_template = '''Shader "{shader_name}"
 {{
     Properties
     {{
-        _MainTex ("Alpha (A)", 2D) = "white" {{}}
+        [PerRendererData] _MainTex ("Alpha (A)", 2D) = "white" {{}}
+        _Color ("Tint", Color) = (1,1,1,1)
+        _StencilComp ("Stencil Comparison", Float) = 8
+        _Stencil ("Stencil ID", Float) = 0
+        _StencilOp ("Stencil Operation", Float) = 0
+        _StencilWriteMask ("Stencil Write Mask", Float) = 255
+        _StencilReadMask ("Stencil Read Mask", Float) = 255
+        _ColorMask ("Color Mask", Float) = 15
     }}
     SubShader
     {{
         LOD 200
-        Tags {{ "Queue"="Transparent" "IgnoreProjector"="True" "RenderType"="Transparent" }}
-        Cull Off Lighting Off ZWrite Off ZTest LEqual Blend SrcAlpha OneMinusSrcAlpha
+        Tags
+        {{
+            "Queue"="Transparent"
+            "IgnoreProjector"="True"
+            "RenderType"="Transparent"
+            "PreviewType"="Plane"
+        }}
+        Stencil
+        {{
+            Ref [_Stencil]
+            Comp [_StencilComp]
+            Pass [_StencilOp]
+            ReadMask [_StencilReadMask]
+            WriteMask [_StencilWriteMask]
+        }}
+        Cull Off
+        Lighting Off
+        ZWrite Off
+        ZTest [unity_GUIZTestMode]
+        Blend SrcAlpha OneMinusSrcAlpha
+        ColorMask [_ColorMask]
+
         Pass
         {{
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
             #include "UnityCG.cginc"
+
             sampler2D _MainTex;
-            struct appdata_t {{ float4 vertex : POSITION; fixed4 color : COLOR; float2 texcoord : TEXCOORD0; }};
-            struct v2f {{ float4 vertex : SV_POSITION; fixed4 color : COLOR; float2 texcoord : TEXCOORD0; }};
+            fixed4 _Color;
+
+            struct appdata_t
+            {{
+                float4 vertex : POSITION;
+                fixed4 color : COLOR;
+                float2 texcoord : TEXCOORD0;
+            }};
+
+            struct v2f
+            {{
+                float4 vertex : SV_POSITION;
+                fixed4 color : COLOR;
+                float2 texcoord : TEXCOORD0;
+            }};
+
             v2f vert(appdata_t v)
             {{
                 v2f o;
                 o.vertex = UnityObjectToClipPos(v.vertex);
-                o.color = v.color;
+                fixed4 tint = (_Color.a > 0.001 ? _Color : fixed4(1,1,1,1));
+                o.color = v.color * tint;
                 o.texcoord = v.texcoord;
                 return o;
             }}
+
             fixed4 frag(v2f i) : SV_Target
             {{
                 fixed4 col = i.color;
@@ -50,33 +95,78 @@ text_softclip_template = '''Shader "{shader_name}"
 {{
     Properties
     {{
-        _MainTex ("Alpha (A)", 2D) = "white" {{}}
+        [PerRendererData] _MainTex ("Alpha (A)", 2D) = "white" {{}}
+        _Color ("Tint", Color) = (1,1,1,1)
+        _StencilComp ("Stencil Comparison", Float) = 8
+        _Stencil ("Stencil ID", Float) = 0
+        _StencilOp ("Stencil Operation", Float) = 0
+        _StencilWriteMask ("Stencil Write Mask", Float) = 255
+        _StencilReadMask ("Stencil Read Mask", Float) = 255
+        _ColorMask ("Color Mask", Float) = 15
     }}
     SubShader
     {{
         LOD 200
-        Tags {{ "Queue"="Transparent" "IgnoreProjector"="True" "RenderType"="Transparent" }}
-        Cull Off Lighting Off ZWrite Off ZTest LEqual Blend SrcAlpha OneMinusSrcAlpha
+        Tags
+        {{
+            "Queue"="Transparent"
+            "IgnoreProjector"="True"
+            "RenderType"="Transparent"
+            "PreviewType"="Plane"
+        }}
+        Stencil
+        {{
+            Ref [_Stencil]
+            Comp [_StencilComp]
+            Pass [_StencilOp]
+            ReadMask [_StencilReadMask]
+            WriteMask [_StencilWriteMask]
+        }}
+        Cull Off
+        Lighting Off
+        ZWrite Off
+        ZTest [unity_GUIZTestMode]
+        Blend SrcAlpha OneMinusSrcAlpha
+        ColorMask [_ColorMask]
+
         Pass
         {{
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
             #include "UnityCG.cginc"
+
             sampler2D _MainTex;
+            fixed4 _Color;
             float4 _MainTex_ST;
             float2 _ClipSharpness = float2(1000.0, 1000.0);
-            struct appdata_t {{ float4 vertex : POSITION; fixed4 color : COLOR; float2 texcoord : TEXCOORD0; }};
-            struct v2f {{ float4 vertex : SV_POSITION; fixed4 color : COLOR; float2 texcoord : TEXCOORD0; float2 worldPos : TEXCOORD1; }};
+
+            struct appdata_t
+            {{
+                float4 vertex : POSITION;
+                fixed4 color : COLOR;
+                float2 texcoord : TEXCOORD0;
+            }};
+
+            struct v2f
+            {{
+                float4 vertex : SV_POSITION;
+                fixed4 color : COLOR;
+                float2 texcoord : TEXCOORD0;
+                float2 worldPos : TEXCOORD1;
+            }};
+
             v2f vert(appdata_t v)
             {{
                 v2f o;
                 o.vertex = UnityObjectToClipPos(v.vertex);
-                o.color = v.color;
+                fixed4 tint = (_Color.a > 0.001 ? _Color : fixed4(1,1,1,1));
+                o.color = v.color * tint;
                 o.texcoord = v.texcoord;
                 o.worldPos = TRANSFORM_TEX(v.vertex.xy, _MainTex);
                 return o;
             }}
+
             fixed4 frag(v2f i) : SV_Target
             {{
                 float2 factor = (float2(1.0, 1.0) - abs(i.worldPos)) * _ClipSharpness;
@@ -120,25 +210,67 @@ ui_softclip_template = '''Shader "{shader_name}"
 {{
     Properties
     {{
-        _MainTex ("Texture", 2D) = "white" {{}}
+        [PerRendererData] _MainTex ("Texture", 2D) = "white" {{}}
         _Color ("Tint", Color) = (1,1,1,1)
+        _StencilComp ("Stencil Comparison", Float) = 8
+        _Stencil ("Stencil ID", Float) = 0
+        _StencilOp ("Stencil Operation", Float) = 0
+        _StencilWriteMask ("Stencil Write Mask", Float) = 255
+        _StencilReadMask ("Stencil Read Mask", Float) = 255
+        _ColorMask ("Color Mask", Float) = 15
     }}
     SubShader
     {{
-        Tags {{ "Queue"="Transparent" "IgnoreProjector"="True" "RenderType"="Transparent" }}
-        Cull Off Lighting Off ZWrite Off ZTest LEqual Blend SrcAlpha OneMinusSrcAlpha
+        Tags
+        {{
+            "Queue"="Transparent"
+            "IgnoreProjector"="True"
+            "RenderType"="Transparent"
+            "PreviewType"="Plane"
+            "CanUseSpriteAtlas"="True"
+        }}
+        Stencil
+        {{
+            Ref [_Stencil]
+            Comp [_StencilComp]
+            Pass [_StencilOp]
+            ReadMask [_StencilReadMask]
+            WriteMask [_StencilWriteMask]
+        }}
+        Cull Off
+        Lighting Off
+        ZWrite Off
+        ZTest [unity_GUIZTestMode]
+        Blend SrcAlpha OneMinusSrcAlpha
+        ColorMask [_ColorMask]
+
         Pass
         {{
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
             #include "UnityCG.cginc"
+
             sampler2D _MainTex;
             float4 _MainTex_ST;
             fixed4 _Color;
             float2 _ClipSharpness = float2(1000.0, 1000.0);
-            struct appdata_t {{ float4 vertex : POSITION; fixed4 color : COLOR; float2 texcoord : TEXCOORD0; }};
-            struct v2f {{ float4 vertex : SV_POSITION; fixed4 color : COLOR; float2 texcoord : TEXCOORD0; float2 worldPos : TEXCOORD1; }};
+
+            struct appdata_t
+            {{
+                float4 vertex : POSITION;
+                fixed4 color : COLOR;
+                float2 texcoord : TEXCOORD0;
+            }};
+
+            struct v2f
+            {{
+                float4 vertex : SV_POSITION;
+                fixed4 color : COLOR;
+                float2 texcoord : TEXCOORD0;
+                float2 worldPos : TEXCOORD1;
+            }};
+
             v2f vert(appdata_t i)
             {{
                 v2f o;
@@ -149,6 +281,7 @@ ui_softclip_template = '''Shader "{shader_name}"
                 o.worldPos = TRANSFORM_TEX(i.vertex.xy, _MainTex);
                 return o;
             }}
+
             fixed4 frag(v2f i) : SV_Target
             {{
                 float2 factor = (float2(1.0, 1.0) - abs(i.worldPos)) * _ClipSharpness;
@@ -187,23 +320,64 @@ ui_unclipped_template = '''Shader "{shader_name}"
 {{
     Properties
     {{
-        _MainTex ("Texture", 2D) = "white" {{}}
+        [PerRendererData] _MainTex ("Texture", 2D) = "white" {{}}
         _Color ("Tint", Color) = (1,1,1,1)
+        _StencilComp ("Stencil Comparison", Float) = 8
+        _Stencil ("Stencil ID", Float) = 0
+        _StencilOp ("Stencil Operation", Float) = 0
+        _StencilWriteMask ("Stencil Write Mask", Float) = 255
+        _StencilReadMask ("Stencil Read Mask", Float) = 255
+        _ColorMask ("Color Mask", Float) = 15
     }}
     SubShader
     {{
-        Tags {{ "Queue"="Transparent" "IgnoreProjector"="True" "RenderType"="Transparent" }}
-        Cull Off Lighting Off ZWrite Off ZTest LEqual Blend SrcAlpha OneMinusSrcAlpha
+        Tags
+        {{
+            "Queue"="Transparent"
+            "IgnoreProjector"="True"
+            "RenderType"="Transparent"
+            "PreviewType"="Plane"
+            "CanUseSpriteAtlas"="True"
+        }}
+        Stencil
+        {{
+            Ref [_Stencil]
+            Comp [_StencilComp]
+            Pass [_StencilOp]
+            ReadMask [_StencilReadMask]
+            WriteMask [_StencilWriteMask]
+        }}
+        Cull Off
+        Lighting Off
+        ZWrite Off
+        ZTest [unity_GUIZTestMode]
+        Blend SrcAlpha OneMinusSrcAlpha
+        ColorMask [_ColorMask]
+
         Pass
         {{
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
             #include "UnityCG.cginc"
+
             sampler2D _MainTex;
             fixed4 _Color;
-            struct appdata_t {{ float4 vertex : POSITION; fixed4 color : COLOR; float2 texcoord : TEXCOORD0; }};
-            struct v2f {{ float4 vertex : SV_POSITION; fixed4 color : COLOR; float2 texcoord : TEXCOORD0; }};
+
+            struct appdata_t
+            {{
+                float4 vertex : POSITION;
+                fixed4 color : COLOR;
+                float2 texcoord : TEXCOORD0;
+            }};
+
+            struct v2f
+            {{
+                float4 vertex : SV_POSITION;
+                fixed4 color : COLOR;
+                float2 texcoord : TEXCOORD0;
+            }};
+
             v2f vert(appdata_t i)
             {{
                 v2f o;
@@ -213,6 +387,7 @@ ui_unclipped_template = '''Shader "{shader_name}"
                 o.color = i.color * tint;
                 return o;
             }}
+
             fixed4 frag(v2f i) : SV_Target
             {{
                 fixed4 col = tex2D(_MainTex, i.texcoord);

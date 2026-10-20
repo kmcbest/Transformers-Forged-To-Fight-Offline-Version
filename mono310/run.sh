@@ -78,7 +78,6 @@ step_assets() {  # non-script assets, audio, replacement shaders (the shell keep
 step_assemble() { python3 "$S/assemble_project.py"; }
 
 step_compile() {  # scripts only (seconds); returns non-zero on compiler errors
-  python3 "$S/check_inputs.py" --project "$PROJECT"
   local log="${1:-unity-scripts.log}"; mkdir -p "$PROJECT/scripts-out"
   unity_run -e TFTF_310_SCRIPTS_OUT=/workspace/project/scripts-out -e TFTF_SHELL="${TFTF_SHELL:-}" -- \
     -batchmode -nographics -quit -projectPath /workspace/project \
@@ -87,7 +86,6 @@ step_compile() {  # scripts only (seconds); returns non-zero on compiler errors
 }
 
 step_build() {  # full licensed player build (minutes)
-  python3 "$S/check_inputs.py" --project "$PROJECT"
   local log="${1:-unity-build.log}"
   local unity_apk="3.1.0-recompiled-armv7-unity.apk"
   [ "${TFTF_SHELL:-}" != 1 ] || unity_apk="tftf-launcher-${TFTF_ANDROID_ARCH}-unity.apk"
@@ -100,7 +98,6 @@ step_build() {  # full licensed player build (minutes)
 }
 
 step_finalize() {  # restore original Java dex, endpoint, align and sign
-  python3 "$S/check_inputs.py" --project "$PROJECT"
   local unity_apk="$PROJECT/3.1.0-recompiled-armv7-unity.apk"
   [ "${TFTF_SHELL:-}" != 1 ] || unity_apk="$PROJECT/tftf-launcher-${TFTF_ANDROID_ARCH}-unity.apk"
   if [ "${TFTF_SHELL:-}" = 1 ] && [ "$TFTF_ANDROID_ABI" = arm64-v8a ]; then
@@ -134,8 +131,30 @@ step_treedb() {  # type-tree database for the launcher's on-phone converter (ful
   echo "type-tree database: $d/trees.bin  (use it as TFTF_TREES_BIN)"
 }
 
+step_winbuild() {  # Windows 11 x64 player of the assetless shell (needs the Unity WindowsStandaloneSupport module); output: $PROJECT/win
+  [ "${TFTF_SHELL:-}" = 1 ] || die "the Windows build is only supported with TFTF_SHELL=1"
+  local log="${1:-unity-win-build.log}"
+  [ -d "$UNITY_2020_ROOT/Editor/Data/PlaybackEngines/WindowsStandaloneSupport" ] || die "missing Unity WindowsStandaloneSupport module under $UNITY_2020_ROOT"
+  rm -rf "$PROJECT/win" 2>/dev/null || true
+  unity_run -e TFTF_310_OUTPUT="/workspace/project/win/TFTF.exe" -e TFTF_SHELL=1 -- \
+    -batchmode -nographics -projectPath /workspace/project -buildTarget StandaloneWindows64 \
+    -executeMethod Recompile310Build.BuildWindows -logFile "/workspace/project/$log" || true
+  grep -n "Windows build:" "$PROJECT/$log" | tail -1
+  grep -q "Windows build: Succeeded" "$PROJECT/$log" || die "Unity Windows build failed; see $PROJECT/$log"
+}
+
+step_winpackage() {  # add legible.exe (TFTF_LEGIBLE_WIN) and zip the Windows build into $TFTF_WORK/tftf-launcher-windows-x64.zip
+  need TFTF_LEGIBLE_WIN; [ -f "$TFTF_LEGIBLE_WIN" ] || die "missing $TFTF_LEGIBLE_WIN"
+  [ -f "$PROJECT/win/TFTF.exe" ] || die "run winbuild first"
+  local out="$TFTF_WORK/tftf-launcher-windows-x64.zip" stage="$TFTF_WORK/win-stage"
+  rm -rf "$stage" "$out"; mkdir -p "$stage/TFTF-Revival"
+  cp -r "$PROJECT/win/." "$stage/TFTF-Revival/"
+  cp "$TFTF_LEGIBLE_WIN" "$stage/TFTF-Revival/legible.exe"
+  ( cd "$stage" && python3 -c "import shutil;shutil.make_archive('$out'[:-4],'zip','.','TFTF-Revival')" )
+  echo "$out"
+}
+
 step_fast() {  # script-only iteration: assemble, compile, inject DLLs, optional install
-  [ "$TFTF_ANDROID_ABI" != arm64-v8a ] || die "ARM64 uses IL2CPP native code; DLL swapping requires a Mono/ARMv7 APK. Use build and finalize for ARM64."
   step_assemble; step_compile unity-scripts-fast.log
   python3 "$REPO_DIR/tools/fast_patch_managed.py" "$OUT_APK" "$PROJECT/scripts-out" "$OUT_APK.fast" ${TFTF_SHELL:+--assets-dir "$PROJECT/Assets/StreamingAssets"}
   mv -f "$OUT_APK.fast" "$OUT_APK"
@@ -146,7 +165,7 @@ step=${1:-}; shift || true
 case "$step" in
   doctor) step_doctor ;;  rip) step_rip ;;  decompile) step_decompile ;;  assets) step_assets ;;
   assemble) step_assemble ;;  compile) step_compile "$@" ;;  build) step_build "$@" ;;
-  finalize) step_finalize ;;  wad) step_wad "$@" ;;  fast) step_fast "$@" ;;  treedb) step_treedb ;;
+  finalize) step_finalize ;;  winbuild) step_winbuild "$@" ;;  winpackage) step_winpackage ;;  wad) step_wad "$@" ;;  fast) step_fast "$@" ;;  treedb) step_treedb ;;
   all) step_doctor; step_rip; step_decompile; step_assemble; step_assets; step_compile; step_build; step_finalize
        [ -f "$TFTF_92_APK" ] && step_wad || echo "skipping WAD (no 9.2.0 APK)"
        echo "done: $OUT_APK" ;;

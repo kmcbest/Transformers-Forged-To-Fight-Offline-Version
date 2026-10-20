@@ -5,45 +5,32 @@ using UnityEngine;
 
 public static class TftfShaders
 {
-    public static AssetBundle Bundle;
+    public static AssetBundle Bundle { get; private set; }
 
     public static void EnsureLoaded()
     {
         if (Bundle != null) return;
 
-        try
+        // Try load from local file next to app/data
+        string localPath = Path.Combine(Application.dataPath, "shaders.bundle");
+        if (File.Exists(localPath))
         {
-            string p = Path.Combine(Application.streamingAssetsPath, "shaders.bundle");
-            Bundle = AssetBundle.LoadFromFile(p);
-            if (Bundle != null)
+            try
             {
-                Debug.Log("[TFTF] Shaders loaded from streamingAssets: " + p);
-                return;
-            }
-        }
-        catch (Exception e)
-        {
-            Debug.LogWarning("[TFTF] streamingAssets failed: " + e.Message);
-        }
-
-        try
-        {
-            string p = Path.Combine(Application.persistentDataPath, "tftf", "shaders.bundle");
-            if (File.Exists(p))
-            {
-                Bundle = AssetBundle.LoadFromFile(p);
+                Bundle = AssetBundle.LoadFromFile(localPath);
                 if (Bundle != null)
                 {
-                    Debug.Log("[TFTF] Shaders loaded from persistentDataPath: " + p);
+                    Debug.Log("[TFTF] Shaders loaded from local file: " + localPath);
                     return;
                 }
             }
-        }
-        catch (Exception e)
-        {
-            Debug.LogWarning("[TFTF] persistentDataPath failed: " + e.Message);
+            catch (Exception e)
+            {
+                Debug.LogWarning("[TFTF] Local load failed: " + e.Message);
+            }
         }
 
+        // Try load from APK zip entry "assets/shaders.bundle" directly in memory
         try
         {
             string apkPath = Application.dataPath;
@@ -82,26 +69,7 @@ public static class ShaderFallback
 
         TftfShaders.EnsureLoaded();
 
-        if (name.IndexOf("PBRTerrain", StringComparison.OrdinalIgnoreCase) >= 0 ||
-            name.IndexOf("Terrain", StringComparison.OrdinalIgnoreCase) >= 0)
-        {
-            Shader s = Shader.Find("EB/PBRTerrain");
-            if (s != null) return s;
-        }
-
-        if (name.IndexOf("GridReveal", StringComparison.OrdinalIgnoreCase) >= 0)
-        {
-            Shader s = Shader.Find("Hidden/GridReveal");
-            if (s != null) return s;
-        }
-
-        if (name.IndexOf("PBR", StringComparison.OrdinalIgnoreCase) >= 0 ||
-            name.IndexOf("Lit", StringComparison.OrdinalIgnoreCase) >= 0)
-        {
-            Shader s = Shader.Find("TFTF/LitTex");
-            if (s != null) return s;
-        }
-
+        // 1. Text & Font shaders (Must be before Lit to avoid "Unlit" matching "Lit"!)
         if (name.IndexOf("Text", StringComparison.OrdinalIgnoreCase) >= 0 ||
             name.IndexOf("Font", StringComparison.OrdinalIgnoreCase) >= 0)
         {
@@ -110,15 +78,21 @@ public static class ShaderFallback
                 Shader sClip = Shader.Find("Hidden/Unlit/Text (SoftClip)");
                 if (sClip == null) sClip = Shader.Find("Unlit/Text (SoftClip)");
                 if (sClip == null) sClip = Shader.Find("GUI/Text Shader (SoftClip)");
+                if (sClip == null) sClip = Shader.Find("Hidden/GUI/Text Shader (SoftClip)");
+                if (sClip == null) sClip = Shader.Find("TFTF/Text (SoftClip)");
+                if (sClip == null) sClip = Shader.Find("Hidden/EBG/UI/BlendColored (SoftClip)");
+                if (sClip == null) sClip = Shader.Find("EBG/UI/BlendColored (SoftClip)");
                 if (sClip != null) return sClip;
             }
 
             Shader sText = Shader.Find("Unlit/Text");
             if (sText == null) sText = Shader.Find("GUI/Text Shader");
             if (sText == null) sText = Shader.Find("TFTF/Text");
+            if (sText == null) sText = Shader.Find("EBG/UI/BlendColored");
             if (sText != null) return sText;
         }
 
+        // 2. UI shaders
         if (name.IndexOf("UI", StringComparison.OrdinalIgnoreCase) >= 0)
         {
             if (name.IndexOf("SoftClip", StringComparison.OrdinalIgnoreCase) >= 0)
@@ -134,6 +108,29 @@ public static class ShaderFallback
             if (sUI != null) return sUI;
         }
 
+        // 3. Terrain & Specialized shaders
+        if (name.IndexOf("PBRTerrain", StringComparison.OrdinalIgnoreCase) >= 0 ||
+            name.IndexOf("Terrain", StringComparison.OrdinalIgnoreCase) >= 0)
+        {
+            Shader s = Shader.Find("EB/PBRTerrain");
+            if (s != null) return s;
+        }
+
+        if (name.IndexOf("GridReveal", StringComparison.OrdinalIgnoreCase) >= 0)
+        {
+            Shader s = Shader.Find("Hidden/GridReveal");
+            if (s != null) return s;
+        }
+
+        // 4. PBR & 3D Lit shaders (Strictly exclude Unlit!)
+        if (name.IndexOf("PBR", StringComparison.OrdinalIgnoreCase) >= 0 ||
+            (name.IndexOf("Lit", StringComparison.OrdinalIgnoreCase) >= 0 && name.IndexOf("Unlit", StringComparison.OrdinalIgnoreCase) < 0))
+        {
+            Shader s = Shader.Find("TFTF/LitTex");
+            if (s != null) return s;
+        }
+
+        // 5. Particles
         if (name.IndexOf("Particle", StringComparison.OrdinalIgnoreCase) >= 0 ||
             name.IndexOf("Additive", StringComparison.OrdinalIgnoreCase) >= 0)
         {
@@ -141,6 +138,18 @@ public static class ShaderFallback
             if (sPart != null) return sPart;
         }
 
+        // 6. UI / 2D universal fallback
+        if (name.IndexOf("UI", StringComparison.OrdinalIgnoreCase) >= 0 ||
+            name.IndexOf("Text", StringComparison.OrdinalIgnoreCase) >= 0 ||
+            name.IndexOf("Font", StringComparison.OrdinalIgnoreCase) >= 0 ||
+            name.IndexOf("Sprite", StringComparison.OrdinalIgnoreCase) >= 0 ||
+            name.IndexOf("NGUI", StringComparison.OrdinalIgnoreCase) >= 0)
+        {
+            Shader sUI = Shader.Find("EBG/UI/BlendColored");
+            if (sUI != null) return sUI;
+        }
+
+        // 7. 3D default fallback
         Shader sDef = Shader.Find("TFTF/LitTex");
         if (sDef != null) return sDef;
 

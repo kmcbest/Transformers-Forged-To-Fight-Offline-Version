@@ -2,6 +2,8 @@
 
 ## Table of contents
 
+- [0.6.0](#060)
+- [0.5.2](#052)
 - [0.5.0](#050)
 - [0.4.3](#043)
 - [0.4.2 (development snapshot)](#042-development-snapshot)
@@ -11,16 +13,49 @@
 - [0.2.0](#020)
 - [0.1.0 (internal, never released)](#010-internal-never-released)
 
+## 0.6.0
+
+First Windows release: the same assetless launcher as a Windows 10/11 x64 program (Mono, Unity 2020.3.31f1), built natively
+with `mono310/winbuild.ps1`. Unzip `TFTF-Revival`, run `TFTF.exe`, pick your own 3.1.0 and 9.2.0 APKs; the game server
+(`legible.exe`) runs next to it. The Android builds are unchanged apart from the shared fixes below.
+
+**Added (Windows)**
+
+- The installer restamps every bundle it copies from the APKs for the PC player and transcodes their ETC1 textures to
+  DXT1 in place (same block size); the PC player refuses Android bundles and cannot sample ETC1.
+- Android-only code (JNI glue, Play Games, signal and APK-protection libraries) is stubbed after the build
+  (`launcher/tools/jnistub.cs`); permission requests answer "granted".
+- Mouse input on the story map, base and in fights: the left button is one finger (click to tap or attack, drag to pan
+  or swipe, hold to block).
+
+**Fixed**
+
+- Bundle paths inside the content package and its cache file name use the separators the game expects on Windows.
+- The Windows server is built from legible-lang's development branch: older interpreters evaluate both sides of
+  `and`/`or` and crashed on every login.
+
+**Known gaps (Windows)**
+
+- No mouse-wheel zoom on the map (pinch only); two-finger fight inputs need a touch screen.
+- Three ETC2 textures are not transcoded.
+- The game server listens on all network interfaces (this interpreter build has no `LEGIBLE_BIND`); the game itself
+  only connects to 127.0.0.1.
+
+## 0.5.2
+
+The 0.5.0 code again, with two fixes. An unreleased 0.5.1 had changed the bundled server profile and the content package, which altered the story data, the starting squad and the base data; those changes are not part of this release.
+
+**Fixed**
+
+- The release code builds against the current ripped game sources (a callback signature in the asset-bundle loading patch).
+- Robust fallback loading of `trees.bin` directly from the APK zip or app storage when the streaming-assets request fails on Android, so "Install and play" does not stay disabled.
+- Guard the boot-screen capture against runtime capture exceptions, which could hang the transition while the home screen loads.
+- Keep launcher warning messages when selecting files and add the specific I/O error to APK validation failures.
+
 ## 0.5.0
 
 **Fixed**
 
-- Reject build caches from another game track. Mixing 2.0.2 scripts with 3.1.0 assets broke shared UI references and home-screen loading.
-- Pin the bundled server to 3.1.0 responses even when a request omits its build number, restoring account resources and level data.
-- Include every donor ODR catalog and its loose files, including the newer tower and relic assets.
-- Load base building models from the donor buildings library and release their instances correctly.
-- Keep a 256 MB asset memory budget when the phone has no benchmark entry.
-- Avoid querying an absent sky texture property every frame.
 - The Karnak arena's sky was magenta: its donor sky shader does not compile on the phone's GPU. The sky dome now uses its own texture
   on an unlit background shader (`TFTF/SkyLite`); when the broken material exposes no texture it is found by name.
 - Fight lighting is closer to the original: distance haze and ambient/reflection colour taken from each arena's sky texture, a warm
