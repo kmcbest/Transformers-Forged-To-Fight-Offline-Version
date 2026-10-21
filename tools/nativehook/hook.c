@@ -4845,6 +4845,36 @@ static void remap_track_for_redeco(void* track, const char* fullId, const char* 
             strncpy(new_fullId, temp, sizeof(new_fullId) - 1);
         }
     }
+    // 6. Dragstrip (borrows Bumblebee GS)
+    else if (strstr(bot, "dragstrip") ||
+             (g_p0_bot_id[0] && strstr(g_p0_bot_id, "dragstrip")) ||
+             (g_p1_bot_id[0] && strstr(g_p1_bot_id, "dragstrip"))) {
+        char buf1[512] = {0};
+        char buf2[512] = {0};
+        const char* cur = fullId;
+        if (str_replace_first(cur, "cha_bumblebee_gs_kabam_01", "cha_mirage_gs_deluxe2016_01", buf1, sizeof(buf1))) {
+            cur = buf1;
+            replaced = 1;
+        }
+        if (str_replace_first(cur, "cha_bumblebee_gs_kabam_00", "cha_mirage_gs_deluxe2016_00", buf2, sizeof(buf2))) {
+            cur = buf2;
+            replaced = 1;
+        }
+        if (strstr(cur, "cha_bumblebee_gs_kabam_wpns_pistol_right|leftgun")) {
+            if (str_replace_first(cur, "cha_bumblebee_gs_kabam_wpns_pistol_right|leftgun", "cha_mirage_gs_deluxe2016_wpns_blaster_left|leftgun", buf1, sizeof(buf1))) {
+                cur = buf1;
+                replaced = 1;
+            }
+        } else if (strstr(cur, "cha_bumblebee_gs_kabam_wpns_pistol_right|rightgun")) {
+            if (str_replace_first(cur, "cha_bumblebee_gs_kabam_wpns_pistol_right|rightgun", "cha_mirage_gs_deluxe2016_wpns_blaster_right|rightgun", buf1, sizeof(buf1))) {
+                cur = buf1;
+                replaced = 1;
+            }
+        }
+        if (replaced) {
+            strncpy(new_fullId, cur, sizeof(new_fullId) - 1);
+        }
+    }
 
     if (replaced && new_fullId[0]) {
         void* new_f_str = g_strnew(new_fullId);
@@ -4947,6 +4977,9 @@ static void sync_actor_name_for_track(void* track) {
     }
 }
 
+static void* s_dragstrip_car_go = NULL;
+static void* s_dragstrip_car_tr = NULL;
+
 void* hook_139(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
     PROTECT({
         sync_actor_name_for_track(a0);
@@ -4967,6 +5000,16 @@ void* hook_139(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
             if (entity) {
                 flog("FIXUP_BOUND track=%p name='%s' fullId='%s' entity=%p anim=%p",
                      a0, name, fullId, entity, anim);
+                if (strcmp(name, "transformed") == 0 &&
+                    ((g_p0_bot_id[0] && strstr(g_p0_bot_id, "dragstrip")) ||
+                     (g_p1_bot_id[0] && strstr(g_p1_bot_id, "dragstrip")) ||
+                     strstr(fullId, "dragstrip") || strstr(fullId, "Bumblebee_GS_Kabam"))) {
+                    s_dragstrip_car_go = entity;
+                    if (g_base) {
+                        s_dragstrip_car_tr = ((void*(*)(void*, void*))(g_base + 0x1B50BD8))(entity, NULL);
+                    }
+                    flog("DRAGSTRIP_CAR_CAPTURED: go=%p tr=%p", s_dragstrip_car_go, s_dragstrip_car_tr);
+                }
             } else {
                 flog("FIXUP_UNBOUND track=%p name='%s' fullId='%s'",
                      a0, name, fullId);
@@ -4985,6 +5028,8 @@ void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     s_saved_actor0_name[0] = 0;
     s_saved_actor1_obj = NULL;
     s_saved_actor1_name[0] = 0;
+    s_dragstrip_car_go = NULL;
+    s_dragstrip_car_tr = NULL;
     sp3_xf_clear();
     g_p0_controller = NULL;
     g_p1_controller = NULL;
@@ -5550,6 +5595,56 @@ void* hook_145(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
             typedef float (*fn_get_hp)(void*, void*);
             fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC660); // get_Health
             g_p1_last_hp = get_hp(g_p1_combat_character, NULL);
+        }
+
+        // Dragstrip S3 vehicle height grounding:
+        // Enforce that the transformed car rests on the arena ground plane
+        if (s_dragstrip_car_go && s_dragstrip_car_tr && sp3_xf_any() && g_base) {
+            typedef bool (*fn_get_active)(void*, void*);
+            fn_get_active get_active = (fn_get_active)(g_base + 0x1B50D38);
+            if (get_active(s_dragstrip_car_go, NULL)) {
+                typedef void (*fn_get_pos)(void*, V3*, void*);
+                typedef void (*fn_set_pos)(void*, V3*, void*);
+                fn_get_pos get_pos = (fn_get_pos)(g_base + 0x16B7C64);
+                fn_set_pos set_pos = (fn_set_pos)(g_base + 0x16B7D0C);
+
+                V3 car_pos = {0};
+                get_pos(s_dragstrip_car_tr, &car_pos, NULL);
+
+                float ground_y = 0.0f;
+                void* ref_pc = g_p0_controller ? g_p0_controller : g_p1_controller;
+                if (ref_pc && obj_ok(ref_pc)) {
+                    void* p_go = ((void*(*)(void*, void*))(g_base + 0x169FF58))(ref_pc, NULL);
+                    if (p_go && obj_ok(p_go)) {
+                        void* p_tr = ((void*(*)(void*, void*))(g_base + 0x1B50BD8))(p_go, NULL);
+                        if (p_tr && obj_ok(p_tr)) {
+                            V3 p_pos = {0};
+                            get_pos(p_tr, &p_pos, NULL);
+                            ground_y = p_pos.y;
+                        }
+                    }
+                }
+
+                // Dragstrip's car mesh (cha_mirage_gs_deluxe2016_01) has tires bottom at -0.013.
+                // Target world height = ground_y + 0.02 (perfectly resting on the asphalt).
+                float target_y = ground_y + 0.02f;
+                float diff_y = target_y - car_pos.y;
+
+                static uint64_t s_last_drag_car_log = 0;
+                uint64_t now_ms = propgo_now_ms();
+                if (now_ms - s_last_drag_car_log > 250) {
+                    s_last_drag_car_log = now_ms;
+                    V3 lpos = {0};
+                    ((fn_get_pos)(g_base + 0x16B7DBC))(s_dragstrip_car_tr, &lpos, NULL);
+                    flog("DRAGSTRIP_GROUND_PIN: cur_y=%.3f target_y=%.3f diff=%.3f lpos=(%.3f, %.3f, %.3f)",
+                         car_pos.y, target_y, diff_y, lpos.x, lpos.y, lpos.z);
+                }
+
+                if (fabsf(diff_y) > 0.005f) {
+                    car_pos.y = target_y;
+                    set_pos(s_dragstrip_car_tr, &car_pos, NULL);
+                }
+            }
         }
 
         // Poll GetMouseButtonDown in hook_145 for resilient portrait double-tap detection (HUD visible or hidden)

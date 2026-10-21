@@ -113,16 +113,49 @@ def generate_dragstrip_assets(apk_path: str | None = None, output_dir: str = "as
             clip_s2["m_Name"] = "dragstrip_Normal_attackSpecial_02"
             break
 
-    # Bumblebee S3: bumblebee_gs_attackSpecial_03 (3809667128409547372) and HitReaction (-9071274386392300993)
-    clip_s3 = None
-    clip_s3_hit = None
-    for obj in b_env.objects:
-        if obj.path_id == 3809667128409547372 and obj.type.name == "AnimationClip":
-            clip_s3 = obj.read_typetree()
-            clip_s3["m_Name"] = "dragstrip_gs_attackSpecial_03"
-        elif obj.path_id == -9071274386392300993 and obj.type.name == "AnimationClip":
-            clip_s3_hit = obj.read_typetree()
-            clip_s3_hit["m_Name"] = "dragstrip_gs_attackSpecial_03_hitReaction"
+    # Extract Bumblebee GS S3 Stage & AnimationClips
+    print("[*] Extracting Bumblebee GS S3 stage and animation clips...")
+    b_sf = list(b_env.files.values())[0]
+    b_asset = list(b_env.assets)[0]
+
+    stage_root_pid = 3762158464405546467
+    stage_pids = set()
+
+    def collect_pids(go_pid):
+        if go_pid in stage_pids or go_pid not in b_asset.objects:
+            return
+        stage_pids.add(go_pid)
+        go = b_asset.objects[go_pid]
+        gt = go.read_typetree()
+        tr_pid = None
+        for c in gt.get("m_Component", []):
+            c_pid = c["component"]["m_PathID"]
+            if c_pid in b_asset.objects:
+                stage_pids.add(c_pid)
+                co = b_asset.objects[c_pid]
+                if co.type.name == "Transform":
+                    tr_pid = c_pid
+                elif co.type.name == "MonoBehaviour":
+                    ct = co.read_typetree()
+                    if "matineeData" in ct:
+                        stage_pids.add(ct["matineeData"]["m_PathID"])
+        if tr_pid and tr_pid in b_asset.objects:
+            tr = b_asset.objects[tr_pid].read_typetree()
+            for ch in tr.get("m_Children", []):
+                cho = b_asset.objects.get(ch["m_PathID"])
+                if cho:
+                    ch_go = cho.read_typetree().get("m_GameObject", {}).get("m_PathID")
+                    if ch_go:
+                        collect_pids(ch_go)
+
+    collect_pids(stage_root_pid)
+    extra_stage_pids = [-1767523468763978618, 8197582645721335554, -5794361538478127441, -4825011313146336194]
+    for ep in extra_stage_pids:
+        stage_pids.add(ep)
+    bee_clip_pids = [3809667128409547372, -9071274386392300993, 1332696529797843162]
+    for cp in bee_clip_pids:
+        stage_pids.add(cp)
+    print(f"[+] Total Bumblebee S3 stage & clip objects collected: {len(stage_pids)}")
 
     # Jazz L3: Jazz_GS_attackLight_03_leftKick (6919999024148056483)
     # Jazz L4: Jazz_GS_attackLight_04_KickBackFlip (-491266744809317325)
@@ -203,6 +236,55 @@ def generate_dragstrip_assets(apk_path: str | None = None, output_dir: str = "as
         new_obj.save_typetree(ctree)
         m_asset.objects[pid] = new_obj
     print(f"[+] Injected {len(new_clips)} new AnimationClips as standalone objects into asset!")
+
+    # Graft Bumblebee S3 Stage and AnimationClips directly into Dragstrip bundle
+    bee_cab = "CAB-f48eb1f9fe83a540c77c339585eedaa4"
+    for subfname in b_sf.files.keys():
+        if subfname.startswith("CAB-") and not subfname.endswith((".resS", ".resource")):
+            bee_cab = subfname
+            break
+
+    def remap_stage_file_ids(tree):
+        if isinstance(tree, dict):
+            if "m_FileID" in tree and "m_PathID" in tree:
+                if tree["m_FileID"] == 1:
+                    tree["m_FileID"] = 3
+            else:
+                for v in tree.values():
+                    remap_stage_file_ids(v)
+        elif isinstance(tree, list):
+            for item in tree:
+                remap_stage_file_ids(item)
+
+    # Build type mapping from b_asset to m_asset to avoid TypeTree desync
+    type_map = {}
+    for b_idx, b_type in enumerate(b_asset.types):
+        for m_idx, m_type in enumerate(m_asset.types):
+            if b_type.class_id == m_type.class_id:
+                if b_type.class_id == 114:
+                    if getattr(b_type, 'script_id', None) == getattr(m_type, 'script_id', None):
+                        type_map[b_idx] = m_idx
+                        break
+                else:
+                    type_map[b_idx] = m_idx
+                    break
+
+    for pid in stage_pids:
+        src_obj = b_asset.objects[pid]
+        new_obj = copy.copy(src_obj)
+        new_obj.assets_file = m_asset
+        new_obj.type_id = type_map.get(src_obj.type_id, src_obj.type_id)
+
+        try:
+            tree = src_obj.read_typetree()
+            remap_stage_file_ids(tree)
+            replace_str_in_tree(tree, bee_cab, new_cab)
+            new_obj.save_typetree(tree)
+        except Exception:
+            pass
+
+        m_asset.objects[pid] = new_obj
+    print(f"[+] Successfully grafted all {len(stage_pids)} Bumblebee S3 stage & clip objects into Dragstrip!")
 
     # Projectile bullet entities injection:
     # 1. Cliffjumper Heavy: projectile_megatron_gs_bullet (GameObject: 9003878510878022874 + 5 components)
@@ -287,7 +369,9 @@ def generate_dragstrip_assets(apk_path: str | None = None, output_dir: str = "as
             # S1: Mirage S1 (Preserved in Slot 4: -8916200897996993922)
             # S2: Hot Rod S2
             clips[5]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": PID_S2}
-            # S3 & S3 Hit: Mirage S3 (Preserved in Slots 31 & 32 so TFormStage_Mirage_Special03 finds them)
+            # S3 & S3 Hit: Bumblebee S3 (Slots 31 & 32)
+            clips[31]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": 3809667128409547372}
+            clips[32]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": -9071274386392300993}
             # Victory Pose: Preserve Mirage's Agile_Backflip_Victory (Slots 39 & 40)
             # MatineeStage PreInitializeMatinee requires Agile_Backflip_Victory to match VictoryStagePrefab
             clips[39]["m_OverrideClip"] = {"m_FileID": 2, "m_PathID": -3005405672129804380}
@@ -309,12 +393,23 @@ def generate_dragstrip_assets(apk_path: str | None = None, output_dir: str = "as
             print("[+] Configured Dragstrip Fight AOC with all custom combat animations & Sideswipe victory pose!")
 
         # Vehicle / Car AnimatorOverrideController (PathID=-6155136737816236521)
-        # Keep ALL original car animation slot overrides intact so BattleIntro & car transitions work!
         elif obj.path_id == -6155136737816236521 and obj.type.name == "AnimatorOverrideController":
             tree = obj.read_typetree()
+            clips = tree.get("m_Clips", [])
+            # Slot 67: S3 transformed (Bumblebee GS: bumblebee_gs_attackSpecial_03_transformed)
+            clips[67]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": 1332696529797843162}
+            tree["m_Clips"] = clips
             replace_str_in_tree(tree, old_cab, new_cab)
             obj.save_typetree(tree)
-            print("[+] Preserved Dragstrip Car AOC with pristine BattleIntro & vehicle rig bindings!")
+            print("[+] Configured Dragstrip Car AOC with Bumblebee S3 vehicle clip!")
+
+        # PlayerReferences: PathID=4096334063275124727
+        elif obj.path_id == 4096334063275124727 and obj.type.name == "MonoBehaviour":
+            tree = obj.read_typetree()
+            tree["SpecialStagePrefab"] = {"m_FileID": 0, "m_PathID": stage_root_pid}
+            replace_str_in_tree(tree, old_cab, new_cab)
+            obj.save_typetree(tree)
+            print("[+] Retargeted Dragstrip PlayerReferences SpecialStagePrefab to Bumblebee S3 stage!")
 
         # Configure MoveSet: PathID=1840605340213205441
         elif obj.path_id == 1840605340213205441 and obj.type.name == "MonoBehaviour":
@@ -383,8 +478,8 @@ def generate_dragstrip_assets(apk_path: str | None = None, output_dir: str = "as
             obj.save_typetree(tree)
             print("[+] Extended root PrefabList with projectile pools for Cliffjumper Heavy & Hot Rod S2!")
 
-        # Root Props Manager: PathID=-3532403574792160156
-        elif obj.path_id == -3532403574792160156 and obj.type.name == "MonoBehaviour":
+        # Root Props Managers: PathID=-3532403574792160156 (main), PathID=7448022809538486323 (_lw)
+        elif obj.path_id in [-3532403574792160156, 7448022809538486323] and obj.type.name == "MonoBehaviour":
             tree = obj.read_typetree()
             props = tree.get("_props", {})
             keys = props.get("_serializedKeys", [])
@@ -397,9 +492,22 @@ def generate_dragstrip_assets(apk_path: str | None = None, output_dir: str = "as
                         keys.append("gunRight")
                         values.append(gun_right_val)
                         break
+            for val in values:
+                if val.get("Name") == "transformed":
+                    val["RotationOffset"] = {"x": 0.0, "y": 0.0, "z": 90.0}
+                    val["PositionOffset"] = {"x": 0.0, "y": 0.0, "z": 0.0}
             replace_str_in_tree(tree, old_cab, new_cab)
             obj.save_typetree(tree)
-            print("[+] Configured gunRight weapon alias in root _props!")
+            print("[+] Configured gunRight alias and horizontal vehicle offsets in _props!")
+
+        # Transform of 'transformed': PathID=828565684115226195 (lw), PathID=8243059050666694823 (main)
+        elif obj.path_id in [828565684115226195, 8243059050666694823] and obj.type.name == "Transform":
+            tree = obj.read_typetree()
+            tree["m_LocalRotation"] = {"x": 0.0, "y": 0.0, "z": 0.7071068, "w": 0.7071068}
+            tree["m_LocalPosition"] = {"x": 0.0, "y": 0.0, "z": 0.0}
+            replace_str_in_tree(tree, old_cab, new_cab)
+            obj.save_typetree(tree)
+            print("[+] Configured horizontal vehicle Transform localRotation & localPosition for Dragstrip!")
 
         elif obj.type.name == "AssetBundle":
             tree = obj.read_typetree()
@@ -408,7 +516,7 @@ def generate_dragstrip_assets(apk_path: str | None = None, output_dir: str = "as
             tree["m_AssetBundleName"] = bundle_name
 
             orig_table = tree.get("m_PreloadTable", [])
-            all_new_pids = [pid for pid, _ in new_clips] + injected_proj_pids
+            all_new_pids = [pid for pid, _ in new_clips] + injected_proj_pids + list(stage_pids)
             new_entries = [{"m_FileID": 0, "m_PathID": pid} for pid in all_new_pids]
 
             # In Mirage, main prefab preloaded 1124 items (index 0..1123), lw prefab preloaded 507 items (index 1124..1630).
@@ -444,204 +552,204 @@ def generate_dragstrip_assets(apk_path: str | None = None, output_dir: str = "as
             replace_str_in_tree(tree, old_cab, new_cab)
             obj.save_typetree(tree)
 
-        # Texture compositing:
-        # 1. Recolor Mirage main body from Blue to Dragstrip Yellow
-        # 2. Recolor Mirage head helmet from Blue to Dragstrip Red (with clean silver faceplate & glowing ruby red optic)
-        # 3. Recolor weapons from gray to Decepticon Purple
-        from PIL import ImageDraw
+    # Texture compositing:
+    # 1. Recolor Mirage main body from Blue to Dragstrip Yellow
+    # 2. Recolor Mirage head helmet from Blue to Dragstrip Red (with clean silver faceplate & glowing ruby red optic)
+    # 3. Recolor weapons from gray to Decepticon Purple
+    from PIL import ImageDraw
 
-        # A. Recolor and blend main_a
-        user_main_path = out_dir / "cha_dragstrip_gs_deluxe2016_main_a.png"
-        for obj in m_env.objects:
-            if obj.type.name == "Texture2D" and obj.read_typetree().get("m_Name") == "cha_mirage_gs_deluxe2016_main_a":
-                tex = obj.read()
-                if user_main_path.is_file():
-                    print(f"[*] Using existing custom Dragstrip main texture: {user_main_path}")
-                    tex.image = Image.open(user_main_path).convert("RGBA")
-                    tex.save()
-                    break
-
-                m_img = tex.image.convert("RGBA")
-                m_arr = np.array(m_img).astype(np.float32)
-
-                r = m_arr[:, :, 0] / 255.0
-                g = m_arr[:, :, 1] / 255.0
-                b = m_arr[:, :, 2] / 255.0
-                mx = np.maximum(np.maximum(r, g), b)
-                mn = np.minimum(np.minimum(r, g), b)
-                df = mx - mn
-
-                sat = np.zeros_like(mx)
-                nz = mx > 1e-5
-                sat[nz] = df[nz] / mx[nz]
-
-                hue = np.zeros_like(mx)
-                mr = (mx == r) & (df > 1e-5)
-                mg = (mx == g) & (df > 1e-5)
-                mb = (mx == b) & (df > 1e-5)
-                hue[mr] = (60.0 * ((g[mr] - b[mr]) / df[mr]) + 360.0) % 360.0
-                hue[mg] = (60.0 * ((b[mg] - r[mg]) / df[mg]) + 120.0) % 360.0
-                hue[mb] = (60.0 * ((r[mb] - g[mb]) / df[mb]) + 240.0) % 360.0
-
-                # 1. Blue paint mask: captures all blue body parts & reflections
-                blue_mask = (hue >= 160.0) & (hue <= 275.0) & (sat > 0.10) & (mx > 0.10)
-
-                # 2. White / light armor mask: captures all white body panels (excluding dark mechanical frame)
-                # Keep faction insignia (red) if present
-                is_red_insignia = ((hue < 25.0) | (hue > 335.0)) & (sat > 0.25) & (mx > 0.5)
-                white_mask = (sat < 0.25) & (mx >= 0.42) & (~is_red_insignia)
-
-                yellow_mask = blue_mask | white_mask
-
-                # Mirage Head: Recolor helmet from Blue to Dragstrip Red (Hue = 356 deg) & optics to glowing ruby red
-                head_box = np.zeros_like(mx, dtype=bool)
-                head_box[:300, :510] = True
-
-                optics_box = np.zeros_like(mx, dtype=bool)
-                optics_box[20:65, 80:135] = True
-                optics_mask = (hue >= 170.0) & (hue <= 220.0) & (sat > 0.45) & (mx > 0.45) & optics_box
-
-                helmet_blue = head_box & blue_mask & (~optics_mask)
-
-                # Red helmet target (Hue = 356 deg)
-                th = 356.0 / 360.0
-                ts = np.clip(np.maximum(sat * 1.2, 0.85), 0.0, 1.0)
-                tv = np.clip(mx * 0.95, 0.0, 1.0)
-                rc = tv * ts
-                rx = rc * (1.0 - np.abs((th * 6.0) % 2.0 - 1.0))
-                rm = tv - rc
-                red_r = np.clip((rc + rm) * 255.0, 0, 255).astype(np.uint8)
-                red_g = np.clip((rx + rm) * 255.0, 0, 255).astype(np.uint8)
-                red_b = np.clip(rm * 255.0, 0, 255).astype(np.uint8)
-
-                # Exclude head area from yellow body paint
-                yellow_mask = yellow_mask & (~head_box)
-
-                # Target Dragstrip Warm Canary Yellow (Hue = 44 deg)
-                target_h = 44.0 / 360.0
-                target_s = np.where(blue_mask, np.clip(np.maximum(sat * 1.15, 0.88), 0.0, 1.0), 0.88)
-                target_v = np.clip(mx * 0.96, 0.0, 1.0)
-
-                c = target_v * target_s
-                x_val = c * (1.0 - np.abs((target_h * 6.0) % 2.0 - 1.0))
-                m_val = target_v - c
-
-                new_r = np.clip((c + m_val) * 255.0, 0, 255)
-                new_g = np.clip((x_val + m_val) * 255.0, 0, 255)
-                new_b = np.clip((m_val) * 255.0, 0, 255)
-
-                res_arr = np.array(m_img).copy()
-                res_arr[yellow_mask, 0] = new_r[yellow_mask].astype(np.uint8)
-                res_arr[yellow_mask, 1] = new_g[yellow_mask].astype(np.uint8)
-                res_arr[yellow_mask, 2] = new_b[yellow_mask].astype(np.uint8)
-
-                # Apply red helmet and ruby red optics
-                res_arr[helmet_blue, 0] = red_r[helmet_blue]
-                res_arr[helmet_blue, 1] = red_g[helmet_blue]
-                res_arr[helmet_blue, 2] = red_b[helmet_blue]
-
-                res_arr[optics_mask, 0] = 255
-                res_arr[optics_mask, 1] = 20
-                res_arr[optics_mask, 2] = 30
-                print("[+] Applied Mirage red-helmet head (Metallic Red Helmet, Ruby Red Optics, Silver Face)!")
-
-                tex.image = Image.fromarray(res_arr)
+    # A. Recolor and blend main_a
+    user_main_path = out_dir / "cha_dragstrip_gs_deluxe2016_main_a.png"
+    for obj in m_env.objects:
+        if obj.type.name == "Texture2D" and obj.read_typetree().get("m_Name") == "cha_mirage_gs_deluxe2016_main_a":
+            tex = obj.read()
+            if user_main_path.is_file():
+                print(f"[*] Using existing custom Dragstrip main texture: {user_main_path}")
+                tex.image = Image.open(user_main_path).convert("RGBA")
                 tex.save()
-                print(f"[+] Converted {np.sum(yellow_mask)} body pixels to Dragstrip Yellow on main_a!")
                 break
 
-        # B. Recolor and Blend onto tform_misc_A (back, feet, spoiler, misc chassis)
-        user_misc_path = out_dir / "cha_dragstrip_gs_deluxe2016_tform_misc_a.png"
-        for obj in m_env.objects:
-            if obj.type.name == "Texture2D" and obj.read_typetree().get("m_Name") == "tform_misc_A":
-                tex = obj.read()
-                if user_misc_path.is_file():
-                    print(f"[*] Using existing custom Dragstrip vehicle texture: {user_misc_path}")
-                    tex.image = Image.open(user_misc_path).convert("RGBA")
-                    tex.save()
-                    break
+            m_img = tex.image.convert("RGBA")
+            m_arr = np.array(m_img).astype(np.float32)
 
-                misc_img = tex.image.convert("RGBA")
-                misc_arr = np.array(misc_img).astype(np.float32)
+            r = m_arr[:, :, 0] / 255.0
+            g = m_arr[:, :, 1] / 255.0
+            b = m_arr[:, :, 2] / 255.0
+            mx = np.maximum(np.maximum(r, g), b)
+            mn = np.minimum(np.minimum(r, g), b)
+            df = mx - mn
 
-                mr = misc_arr[:, :, 0] / 255.0
-                mg = misc_arr[:, :, 1] / 255.0
-                mb = misc_arr[:, :, 2] / 255.0
-                mmx = np.maximum(np.maximum(mr, mg), mb)
-                mmn = np.minimum(np.minimum(mr, mg), mb)
-                mdf = mmx - mmn
+            sat = np.zeros_like(mx)
+            nz = mx > 1e-5
+            sat[nz] = df[nz] / mx[nz]
 
-                msat = np.zeros_like(mmx)
-                mnz = mmx > 1e-5
-                msat[mnz] = mdf[mnz] / mmx[mnz]
+            hue = np.zeros_like(mx)
+            mr = (mx == r) & (df > 1e-5)
+            mg = (mx == g) & (df > 1e-5)
+            mb = (mx == b) & (df > 1e-5)
+            hue[mr] = (60.0 * ((g[mr] - b[mr]) / df[mr]) + 360.0) % 360.0
+            hue[mg] = (60.0 * ((b[mg] - r[mg]) / df[mg]) + 120.0) % 360.0
+            hue[mb] = (60.0 * ((r[mb] - g[mb]) / df[mb]) + 240.0) % 360.0
 
-                mhue = np.zeros_like(mmx)
-                mmr = (mmx == mr) & (mdf > 1e-5)
-                mmg = (mmx == mg) & (mdf > 1e-5)
-                mmb = (mmx == mb) & (mdf > 1e-5)
-                mhue[mmr] = (60.0 * ((mg[mmr] - mb[mmr]) / mdf[mmr]) + 360.0) % 360.0
-                mhue[mmg] = (60.0 * ((mb[mmg] - mr[mmg]) / mdf[mmg]) + 120.0) % 360.0
-                mhue[mmb] = (60.0 * ((mr[mmb] - mg[mmb]) / mdf[mmb]) + 240.0) % 360.0
+            # 1. Blue paint mask: captures all blue body parts & reflections
+            blue_mask = (hue >= 160.0) & (hue <= 275.0) & (sat > 0.10) & (mx > 0.10)
 
-                # All blue pixels in tform_misc_A (back, soles/feet, chassis)
-                misc_blue_mask = (mhue >= 160.0) & (mhue <= 275.0) & (msat > 0.08) & (mmx > 0.10)
+            # 2. White / light armor mask: captures all white body panels (excluding dark mechanical frame)
+            # Keep faction insignia (red) if present
+            is_red_insignia = ((hue < 25.0) | (hue > 335.0)) & (sat > 0.25) & (mx > 0.5)
+            white_mask = (sat < 0.25) & (mx >= 0.42) & (~is_red_insignia)
 
-                # All white/light armor panels (back, rear wing, body panels)
-                # Keep red insignia if present
-                is_red_insignia = ((mhue < 25.0) | (mhue > 335.0)) & (msat > 0.25) & (mmx > 0.5)
-                misc_white_mask = (msat < 0.25) & (mmx >= 0.42) & (~is_red_insignia)
+            yellow_mask = blue_mask | white_mask
 
-                misc_yellow_mask = misc_blue_mask | misc_white_mask
-                target_h = 44.0 / 360.0
-                target_s = np.where(misc_blue_mask, np.clip(np.maximum(msat * 1.15, 0.88), 0.0, 1.0), 0.88)
-                target_v = np.clip(mmx * 0.96, 0.0, 1.0)
+            # Mirage Head: Recolor helmet from Blue to Dragstrip Red (Hue = 356 deg) & optics to glowing ruby red
+            head_box = np.zeros_like(mx, dtype=bool)
+            head_box[:300, :510] = True
 
-                c = target_v * target_s
-                x_val = c * (1.0 - np.abs((target_h * 6.0) % 2.0 - 1.0))
-                m_val = target_v - c
+            optics_box = np.zeros_like(mx, dtype=bool)
+            optics_box[20:65, 80:135] = True
+            optics_mask = (hue >= 170.0) & (hue <= 220.0) & (sat > 0.45) & (mx > 0.45) & optics_box
 
-                new_r = np.clip((c + m_val) * 255.0, 0, 255)
-                new_g = np.clip((x_val + m_val) * 255.0, 0, 255)
-                new_b = np.clip((m_val) * 255.0, 0, 255)
+            helmet_blue = head_box & blue_mask & (~optics_mask)
 
-                res_misc = np.array(misc_img).copy()
-                res_misc[misc_yellow_mask, 0] = new_r[misc_yellow_mask].astype(np.uint8)
-                res_misc[misc_yellow_mask, 1] = new_g[misc_yellow_mask].astype(np.uint8)
-                res_misc[misc_yellow_mask, 2] = new_b[misc_yellow_mask].astype(np.uint8)
+            # Red helmet target (Hue = 356 deg)
+            th = 356.0 / 360.0
+            ts = np.clip(np.maximum(sat * 1.2, 0.85), 0.0, 1.0)
+            tv = np.clip(mx * 0.95, 0.0, 1.0)
+            rc = tv * ts
+            rx = rc * (1.0 - np.abs((th * 6.0) % 2.0 - 1.0))
+            rm = tv - rc
+            red_r = np.clip((rc + rm) * 255.0, 0, 255).astype(np.uint8)
+            red_g = np.clip((rx + rm) * 255.0, 0, 255).astype(np.uint8)
+            red_b = np.clip(rm * 255.0, 0, 255).astype(np.uint8)
 
-                tex.image = Image.fromarray(res_misc)
+            # Exclude head area from yellow body paint
+            yellow_mask = yellow_mask & (~head_box)
+
+            # Target Dragstrip Warm Canary Yellow (Hue = 44 deg)
+            target_h = 44.0 / 360.0
+            target_s = np.where(blue_mask, np.clip(np.maximum(sat * 1.15, 0.88), 0.0, 1.0), 0.88)
+            target_v = np.clip(mx * 0.96, 0.0, 1.0)
+
+            c = target_v * target_s
+            x_val = c * (1.0 - np.abs((target_h * 6.0) % 2.0 - 1.0))
+            m_val = target_v - c
+
+            new_r = np.clip((c + m_val) * 255.0, 0, 255)
+            new_g = np.clip((x_val + m_val) * 255.0, 0, 255)
+            new_b = np.clip((m_val) * 255.0, 0, 255)
+
+            res_arr = np.array(m_img).copy()
+            res_arr[yellow_mask, 0] = new_r[yellow_mask].astype(np.uint8)
+            res_arr[yellow_mask, 1] = new_g[yellow_mask].astype(np.uint8)
+            res_arr[yellow_mask, 2] = new_b[yellow_mask].astype(np.uint8)
+
+            # Apply red helmet and ruby red optics
+            res_arr[helmet_blue, 0] = red_r[helmet_blue]
+            res_arr[helmet_blue, 1] = red_g[helmet_blue]
+            res_arr[helmet_blue, 2] = red_b[helmet_blue]
+
+            res_arr[optics_mask, 0] = 255
+            res_arr[optics_mask, 1] = 20
+            res_arr[optics_mask, 2] = 30
+            print("[+] Applied Mirage red-helmet head (Metallic Red Helmet, Ruby Red Optics, Silver Face)!")
+
+            tex.image = Image.fromarray(res_arr)
+            tex.save()
+            print(f"[+] Converted {np.sum(yellow_mask)} body pixels to Dragstrip Yellow on main_a!")
+            break
+
+    # B. Recolor and Blend onto tform_misc_A (back, feet, spoiler, misc chassis)
+    user_misc_path = out_dir / "cha_dragstrip_gs_deluxe2016_tform_misc_a.png"
+    for obj in m_env.objects:
+        if obj.type.name == "Texture2D" and obj.read_typetree().get("m_Name") == "tform_misc_A":
+            tex = obj.read()
+            if user_misc_path.is_file():
+                print(f"[*] Using existing custom Dragstrip vehicle texture: {user_misc_path}")
+                tex.image = Image.open(user_misc_path).convert("RGBA")
                 tex.save()
-                print(f"[+] Converted {np.sum(misc_yellow_mask)} pixels (back, feet, white panels) to Dragstrip Yellow on tform_misc_A!")
                 break
 
-        # C. Recolor weapons (cha_mirage_gs_deluxe2016_wpns_a) to Decepticon Purple
-        user_wpns_path = out_dir / "cha_dragstrip_gs_deluxe2016_wpns_a.png"
-        for obj in m_env.objects:
-            if obj.type.name == "Texture2D" and obj.read_typetree().get("m_Name") == "cha_mirage_gs_deluxe2016_wpns_a":
-                tex = obj.read()
-                if user_wpns_path.is_file():
-                    print(f"[*] Using existing custom Dragstrip weapons texture: {user_wpns_path}")
-                    tex.image = Image.open(user_wpns_path).convert("RGBA")
-                    tex.save()
-                    break
+            misc_img = tex.image.convert("RGBA")
+            misc_arr = np.array(misc_img).astype(np.float32)
 
-                w_img = tex.image.convert("RGBA")
-                w_arr = np.array(w_img).astype(np.float32)
-                # Compute luminance
-                w_gray = (0.299 * w_arr[:, :, 0] + 0.587 * w_arr[:, :, 1] + 0.114 * w_arr[:, :, 2]) / 255.0
-                # Decepticon weapon purple tint (R: 95, G: 45, B: 155)
-                purp_r = np.clip(w_gray * 95, 0, 255).astype(np.uint8)
-                purp_g = np.clip(w_gray * 45, 0, 255).astype(np.uint8)
-                purp_b = np.clip(w_gray * 155, 0, 255).astype(np.uint8)
+            mr = misc_arr[:, :, 0] / 255.0
+            mg = misc_arr[:, :, 1] / 255.0
+            mb = misc_arr[:, :, 2] / 255.0
+            mmx = np.maximum(np.maximum(mr, mg), mb)
+            mmn = np.minimum(np.minimum(mr, mg), mb)
+            mdf = mmx - mmn
 
-                out_w = np.array(w_img).copy()
-                out_w[:, :, 0] = purp_r
-                out_w[:, :, 1] = purp_g
-                out_w[:, :, 2] = purp_b
-                tex.image = Image.fromarray(out_w)
+            msat = np.zeros_like(mmx)
+            mnz = mmx > 1e-5
+            msat[mnz] = mdf[mnz] / mmx[mnz]
+
+            mhue = np.zeros_like(mmx)
+            mmr = (mmx == mr) & (mdf > 1e-5)
+            mmg = (mmx == mg) & (mdf > 1e-5)
+            mmb = (mmx == mb) & (mdf > 1e-5)
+            mhue[mmr] = (60.0 * ((mg[mmr] - mb[mmr]) / mdf[mmr]) + 360.0) % 360.0
+            mhue[mmg] = (60.0 * ((mb[mmg] - mr[mmg]) / mdf[mmg]) + 120.0) % 360.0
+            mhue[mmb] = (60.0 * ((mr[mmb] - mg[mmb]) / mdf[mmb]) + 240.0) % 360.0
+
+            # All blue pixels in tform_misc_A (back, soles/feet, chassis)
+            misc_blue_mask = (mhue >= 160.0) & (mhue <= 275.0) & (msat > 0.08) & (mmx > 0.10)
+
+            # All white/light armor panels (back, rear wing, body panels)
+            # Keep red insignia if present
+            is_red_insignia = ((mhue < 25.0) | (mhue > 335.0)) & (msat > 0.25) & (mmx > 0.5)
+            misc_white_mask = (msat < 0.25) & (mmx >= 0.42) & (~is_red_insignia)
+
+            misc_yellow_mask = misc_blue_mask | misc_white_mask
+            target_h = 44.0 / 360.0
+            target_s = np.where(misc_blue_mask, np.clip(np.maximum(msat * 1.15, 0.88), 0.0, 1.0), 0.88)
+            target_v = np.clip(mmx * 0.96, 0.0, 1.0)
+
+            c = target_v * target_s
+            x_val = c * (1.0 - np.abs((target_h * 6.0) % 2.0 - 1.0))
+            m_val = target_v - c
+
+            new_r = np.clip((c + m_val) * 255.0, 0, 255)
+            new_g = np.clip((x_val + m_val) * 255.0, 0, 255)
+            new_b = np.clip((m_val) * 255.0, 0, 255)
+
+            res_misc = np.array(misc_img).copy()
+            res_misc[misc_yellow_mask, 0] = new_r[misc_yellow_mask].astype(np.uint8)
+            res_misc[misc_yellow_mask, 1] = new_g[misc_yellow_mask].astype(np.uint8)
+            res_misc[misc_yellow_mask, 2] = new_b[misc_yellow_mask].astype(np.uint8)
+
+            tex.image = Image.fromarray(res_misc)
+            tex.save()
+            print(f"[+] Converted {np.sum(misc_yellow_mask)} pixels (back, feet, white panels) to Dragstrip Yellow on tform_misc_A!")
+            break
+
+    # C. Recolor weapons (cha_mirage_gs_deluxe2016_wpns_a) to Decepticon Purple
+    user_wpns_path = out_dir / "cha_dragstrip_gs_deluxe2016_wpns_a.png"
+    for obj in m_env.objects:
+        if obj.type.name == "Texture2D" and obj.read_typetree().get("m_Name") == "cha_mirage_gs_deluxe2016_wpns_a":
+            tex = obj.read()
+            if user_wpns_path.is_file():
+                print(f"[*] Using existing custom Dragstrip weapons texture: {user_wpns_path}")
+                tex.image = Image.open(user_wpns_path).convert("RGBA")
                 tex.save()
-                print("[+] Recolored Dragstrip blasters to Decepticon Purple!")
                 break
+
+            w_img = tex.image.convert("RGBA")
+            w_arr = np.array(w_img).astype(np.float32)
+            # Compute luminance
+            w_gray = (0.299 * w_arr[:, :, 0] + 0.587 * w_arr[:, :, 1] + 0.114 * w_arr[:, :, 2]) / 255.0
+            # Decepticon weapon purple tint (R: 95, G: 45, B: 155)
+            purp_r = np.clip(w_gray * 95, 0, 255).astype(np.uint8)
+            purp_g = np.clip(w_gray * 45, 0, 255).astype(np.uint8)
+            purp_b = np.clip(w_gray * 155, 0, 255).astype(np.uint8)
+
+            out_w = np.array(w_img).copy()
+            out_w[:, :, 0] = purp_r
+            out_w[:, :, 1] = purp_g
+            out_w[:, :, 2] = purp_b
+            tex.image = Image.fromarray(out_w)
+            tex.save()
+            print("[+] Recolored Dragstrip blasters to Decepticon Purple!")
+            break
 
     # Save rebuilt AssetBundle
     new_files = {}
