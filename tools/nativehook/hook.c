@@ -583,7 +583,9 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x00E3D84C, "PFS_IS_TEAM_DEAD",  2, 0 }, // 193 PrefightScreenData.IsTeamDead -> bool (0=alive, never dead)
     { 0x00DACB84, "GET_UNSTOPPABLE",   2, 0 }, // 194 PlayerAttributes.get_Unstoppable -> unstoppable armor & buff
     { 0x00DACA4C, "GET_POWER_GAIN_RATE", 2, 0 }, // 195 PlayerAttributes.get_PowerGainRate -> power rate boost
-    { 0x00DACB04, "GET_REFLECT_PROJ",    2, 0 }  // 196 PlayerAttributes.get_ReflectProjectileModifier -> projectile reflection
+    { 0x00DACB04, "GET_REFLECT_PROJ",    2, 0 }, // 196 PlayerAttributes.get_ReflectProjectileModifier -> projectile reflection
+    { 0x00DADB68, "GET_ATK_MANA",        2, 0 }, // 197 PlayerAttributes.GetAttackerManaGain
+    { 0x00DADCA8, "GET_DEF_MANA",        2, 0 }  // 198 PlayerAttributes.GetDefenderManaGain
 };
 
 #define NH (int)(sizeof(H)/sizeof(H[0]))
@@ -3076,24 +3078,6 @@ static void calc_enemy_stats_all(const char* bid, int rank, int level, float* ou
     if (out_crit_damage) *out_crit_damage = crit_damage;
 }
 
-static int is_demolitions_bot(const char* bid) {
-    if (!bid || !*bid) return 0;
-    for (int i = 0; i < NUM_ENEMY_STATS; i++) {
-        if (strcmp(ENEMY_STATS[i].id, bid) == 0) {
-            return (ENEMY_STATS[i].klass && strcmp(ENEMY_STATS[i].klass, "demo") == 0);
-        }
-    }
-    if (strstr(bid, "cliffjumper_") || strstr(bid, "deadend_") ||
-        strstr(bid, "galvatron_") || strstr(bid, "ironhide_cin_") ||
-        strstr(bid, "megatron_cin_") || strstr(bid, "megatronus_") ||
-        strstr(bid, "mixmaster_") || strstr(bid, "novastorm_") ||
-        strstr(bid, "ramjet_") || strstr(bid, "_demolition") ||
-        strstr(bid, "ultramagnus_sg_") || strstr(bid, "waspinator_")) {
-        return 1;
-    }
-    return 0;
-}
-
 static int calc_enemy_rating(const char* bid, int rank, int level) {
     int pi = 0;
     calc_enemy_stats_all(bid, rank, level, NULL, NULL, &pi, NULL, NULL);
@@ -3267,14 +3251,14 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                 *(float*)  ((char*)at1 + 0x44) = enemy_cc;  // Enemy CritChance from database
                 *(float*)  ((char*)at1 + 0x48) = enemy_cd;  // Enemy CritDamage from database
                 *(float*)  ((char*)at1 + 0x50) = 0.5f;  // BlockProficiency
-                *(float*)  ((char*)at1 + 0x54) = g_combat_enemy_mana_gain;  // Dynamic enemy mana gain rate
+                *(float*)  ((char*)at1 + 0x54) = 1.0f;  // Dynamic enemy mana gain rate (baseline 1.0)
                 *(int32_t*)((char*)at1 + 0x58) = 0;     // ManaStart = 0
             }
             if (at2 && obj_ok(at2)) {
                 *(int32_t*)((char*)at2 + 0x58) = 0;     // Player ManaStart = 0
                 *(float*)  ((char*)at2 + 0x44) = player_cc; // Player CritChance from database
                 *(float*)  ((char*)at2 + 0x48) = player_cd; // Player CritDamage from database
-                *(float*)  ((char*)at2 + 0x54) = g_combat_player_mana_gain; // Dynamic player mana gain rate
+                *(float*)  ((char*)at2 + 0x54) = 1.0f; // Dynamic player mana gain rate (baseline 1.0)
             }
             if (ch1 && obj_ok(ch1)) {
                 *(int32_t*)((char*)ch1 + 0x28) = 3;     // NumSpecials
@@ -3307,7 +3291,7 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                     *(int32_t*)((char*)at1 + 0x28) = 0;    // SpecialAttackCount = 0 (大招槽数量归零/锁定)
                     flog("FIXFIGHT: Fembots (1.1.6) disabled player special attacks and mana gain!");
                 } else {
-                    *(float*)((char*)at1 + 0x54) = g_combat_player_mana_gain; // Dynamic player mana gain rate
+                    *(float*)((char*)at1 + 0x54) = 1.0f; // Dynamic player mana gain rate (baseline 1.0)
                 }
                 if (!tftf_quest_is_leisure()) {
                     float hp_ratio = tftf_quest_get_hero_hp_ratio_by_bid(id1);
@@ -3336,7 +3320,7 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
             if (at2 && obj_ok(at2)) {
                 *(float*)((char*)at2 + 0x44) = enemy_cc;                  // Enemy CritChance from database
                 *(float*)((char*)at2 + 0x48) = enemy_cd;                  // Enemy CritDamage from database
-                *(float*)((char*)at2 + 0x54) = g_combat_enemy_mana_gain; // Enemy mana gain rate
+                *(float*)((char*)at2 + 0x54) = 1.0f; // Enemy mana gain rate (baseline 1.0)
             }
             if (ch1 && obj_ok(ch1)) {
                 const char* cur_qid = tftf_quest_get_current_qid();
@@ -5965,18 +5949,6 @@ void* hook_156(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     }
 
     int atk_level = (int)(intptr_t)a1;
-    if (is_demolitions_bot(bid)) {
-        // 爆破系专门暴击率设定：重击 64%，远程 16%，近战 (Light=1, Medium=2) 8%
-        if (atk_level == 4 || (atk_level & 4)) {
-            crit_chance = 0.64f;
-        } else if (atk_level == 8 || (atk_level & 8)) {
-            crit_chance = 0.16f;
-        } else if (atk_level == 1 || atk_level == 2 || (atk_level & 3)) {
-            crit_chance = 0.08f;
-        } else {
-            crit_chance = 0.16f;
-        }
-    }
 
     static int s_seeded = 0;
     if (!s_seeded) {
@@ -6314,22 +6286,14 @@ void* hook_163(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     if (obj_ok(a0)) {
         uint64_t now_ms = propgo_now_ms();
         int is_p0 = (a0 == g_p0_controller) || (obj_ok(a0) && *(int32_t*)((uintptr_t)a0 + 0xF4) == 0);
-        float rate = 1.0f;
         if (is_p0) {
             if (g_p0_power_lock_end_ms > 0 && now_ms < g_p0_power_lock_end_ms) {
-                rate = 0.0f; // P0 is power locked: rate drops to 0!
-            } else {
-                rate = g_combat_player_mana_gain;
+                amt = 0.0f; // P0 is power locked: amount drops to 0!
             }
         } else {
             if (g_p1_power_lock_end_ms > 0 && now_ms < g_p1_power_lock_end_ms) {
-                rate = 0.0f; // P1 is power locked: rate drops to 0!
-            } else {
-                rate = g_combat_enemy_mana_gain;
+                amt = 0.0f; // P1 is power locked: amount drops to 0!
             }
-        }
-        if (amt > 0.0f) {
-            amt *= rate;
         }
     }
     __asm__ volatile ("fmov s0, %w0" : : "r"(amt));
@@ -8313,6 +8277,355 @@ float hook_196(void* self) {
     return 0.0f;
 }
 
+typedef struct {
+    const char* name;
+    uint8_t hits;
+} SPMoveHitEntry;
+
+static const SPMoveHitEntry s_sp_moves[] = {
+    { "move_arcee_special_01", 1 },
+    { "move_arcee_special_02", 2 },
+    { "move_barricade_special_01", 2 },
+    { "move_barricade_special_02", 3 },
+    { "move_blaster_special_01", 1 },
+    { "move_blaster_special_02", 3 },
+    { "move_bludgeon_special_01", 4 },
+    { "move_bludgeon_special_02", 3 },
+    { "move_bonecrusher_special_01", 2 },
+    { "move_bonecrusher_special_02", 3 },
+    { "move_bumblebee_gs_special_01", 2 },
+    { "move_bumblebee_gs_special_02", 2 },
+    { "move_bumblebee_special_01", 3 },
+    { "move_bumblebee_special_02", 3 },
+    { "move_cheetor_special_01", 2 },
+    { "move_cheetor_special_02", 2 },
+    { "move_cliffjumper_special_01", 1 },
+    { "move_cyclonus_special_01", 2 },
+    { "move_cyclonus_special_02", 1 },
+    { "move_deadend_special_01", 3 },
+    { "move_deadend_special_02", 2 },
+    { "move_dinobot_special_01", 3 },
+    { "move_dinobot_special_02", 4 },
+    { "move_dirge_special_01", 2 },
+    { "move_dirge_special_02", 2 },
+    { "move_drift_special_01", 2 },
+    { "move_drift_special_02", 2 },
+    { "move_galvatron_special_01", 1 },
+    { "move_galvatron_special_02", 1 },
+    { "move_grimlock_special_01", 2 },
+    { "move_grimlock_special_02", 2 },
+    { "move_grindor_special_01", 2 },
+    { "move_grindor_special_02", 3 },
+    { "move_hotrod_special_01", 2 },
+    { "move_hotrod_special_02", 2 },
+    { "move_hound_special_01", 1 },
+    { "move_ironhide_gs_special_01", 3 },
+    { "move_ironhide_gs_special_02", 2 },
+    { "move_ironhide_special_01", 2 },
+    { "move_jazz_special_01", 3 },
+    { "move_jazz_special_02", 1 },
+    { "move_jetfire_special_01", 1 },
+    { "move_jetfire_special_02", 3 },
+    { "move_kickback_special_01", 2 },
+    { "move_kickback_special_02", 10 },
+    { "move_lifeline_special_01", 2 },
+    { "move_lifeline_special_02", 3 },
+    { "move_megatron_gs_special_01", 2 },
+    { "move_megatron_gs_special_02", 1 },
+    { "move_megatron_special_01", 2 },
+    { "move_megatron_special_02", 1 },
+    { "move_megatronus_special_01", 1 },
+    { "move_megatronus_special_02", 2 },
+    { "move_mirage_special_01", 2 },
+    { "move_mirage_special_02", 2 },
+    { "move_mirage_special_02_alt", 1 },
+    { "move_mirage_special_02_alt_v2", 1 },
+    { "move_mixmaster_special_01", 1 },
+    { "move_mixmaster_special_02", 1 },
+    { "move_motormaster_special_02", 3 },
+    { "move_necrotronus_special_01", 7 },
+    { "move_necrotronus_special_02", 9 },
+    { "move_nemesis_gs_special_01", 3 },
+    { "move_nemesis_gs_special_02", 3 },
+    { "move_optimus_gs_special_01", 3 },
+    { "move_optimus_gs_special_02", 3 },
+    { "move_optimus_special_01", 1 },
+    { "move_optimus_special_02", 3 },
+    { "move_primal_special_01", 1 },
+    { "move_primal_special_02", 4 },
+    { "move_prowl_special_01", 4 },
+    { "move_prowl_special_02", 2 },
+    { "move_ramjet_special_02", 1 },
+    { "move_ratchet_special_01", 2 },
+    { "move_ratchet_special_02", 3 },
+    { "move_rhinox_special_01", 2 },
+    { "move_rhinox_special_02", 11 },
+    { "move_rodimus_gs_special_02", 1 },
+    { "move_scorponok_special_02", 1 },
+    { "move_sharkticon_brawler_special_01", 2 },
+    { "move_sharkticon_brawler_special_02", 3 },
+    { "move_sharkticon_demolitions_special_01", 2 },
+    { "move_sharkticon_demolitions_special_02", 1 },
+    { "move_sharkticon_gold_special_02", 2 },
+    { "move_sharkticon_scout_special_01", 4 },
+    { "move_sharkticon_scout_special_02", 2 },
+    { "move_sharkticon_tactician_special_01", 3 },
+    { "move_sharkticon_tactician_special_02", 3 },
+    { "move_sharkticon_tech_special_01", 1 },
+    { "move_sharkticon_tech_special_02", 1 },
+    { "move_sharkticon_warrior_special_01", 4 },
+    { "move_sharkticon_warrior_special_02", 2 },
+    { "move_shockwave_special_01", 1 },
+    { "move_shockwave_special_02", 3 },
+    { "move_sideswipe_special_01", 4 },
+    { "move_sideswipe_special_02", 3 },
+    { "move_skywarp_special_01", 1 },
+    { "move_skywarp_special_01_alt", 2 },
+    { "move_skywarp_special_02", 2 },
+    { "move_skywarp_special_02_alt", 2 },
+    { "move_slipstream_special_01", 3 },
+    { "move_slipstream_special_02", 3 },
+    { "move_soundblast_special_01", 2 },
+    { "move_soundblast_special_02", 2 },
+    { "move_soundwave_special_01", 1 },
+    { "move_soundwave_special_02", 1 },
+    { "move_starscream_special_01", 1 },
+    { "move_starscream_special_02", 2 },
+    { "move_sunstreak_special_01", 2 },
+    { "move_sunstreak_special_02", 4 },
+    { "move_tantrum_special_01", 3 },
+    { "move_tantrum_special_02", 1 },
+    { "move_thundercracker_special_01", 1 },
+    { "move_thundercracker_special_02", 2 },
+    { "move_ultramagnus_special_02", 1 },
+    { "move_waspinator_special_01", 4 },
+    { "move_waspinator_special_02", 1 },
+    { "move_wheeljack_special_01", 1 },
+    { "move_windblade_special_01", 2 },
+    { "move_windblade_special_02", 2 },
+};
+
+static int get_sp_move_hits(void* attacker_pc, const char* attacker_bot, int sp_tier) {
+    if (attacker_pc && obj_ok(attacker_pc)) {
+        void* move_seq = *(void**)((char*)attacker_pc + 0xA8);
+        if (move_seq && obj_ok(move_seq)) {
+            void* move_info = *(void**)((char*)move_seq + 0x20);
+            if (move_info && obj_ok(move_info)) {
+                void* name_obj = *(void**)((char*)move_info + 0x10);
+                if (name_obj && obj_ok(name_obj)) {
+                    char mname[64] = {0};
+                    if (read_str(name_obj, mname, sizeof(mname)) && mname[0]) {
+                        int n = (int)(sizeof(s_sp_moves) / sizeof(s_sp_moves[0]));
+                        for (int i = 0; i < n; ++i) {
+                            if (strcmp(s_sp_moves[i].name, mname) == 0) {
+                                return s_sp_moves[i].hits;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if (attacker_bot && attacker_bot[0]) {
+        const char* suffix = (sp_tier == 1) ? "_special_01" : "_special_02";
+        int n = (int)(sizeof(s_sp_moves) / sizeof(s_sp_moves[0]));
+        for (int i = 0; i < n; ++i) {
+            if (strstr(s_sp_moves[i].name, suffix)) {
+                char base_id[32] = {0};
+                const char* us = strchr(attacker_bot, '_');
+                size_t len = us ? (size_t)(us - attacker_bot) : strlen(attacker_bot);
+                if (len > 0 && len < sizeof(base_id)) {
+                    strncpy(base_id, attacker_bot, len);
+                    base_id[len] = 0;
+                    if (strstr(s_sp_moves[i].name, base_id)) {
+                        return s_sp_moves[i].hits;
+                    }
+                }
+            }
+        }
+    }
+    return (sp_tier == 1) ? 2 : 2;
+}
+
+// slot 197 (0x00DADB68): PlayerAttributes.GetAttackerManaGain
+float hook_197(void* self, int32_t attack_level, float mana_gain_pct, int32_t blocked, void* method) {
+    if (!self || !obj_ok(self)) return 0.0f;
+    float gain = 0.0f;
+
+    // S技不加能量
+    if (attack_level & 0x70) {
+        return 0.0f;
+    }
+
+    int is_p0 = is_player0_attr(self);
+
+    if (is_p0 && g_combat_enemy_mana_gain < 0.8f) {
+        // 重生快充 / 畅快压制：我方（P0）加气速度保留上游作者非官方速度（5个近战连击加一格，即 3倍速）
+        // 远程小枪 55点, 近战轻 50点, 近战中 75点, 重击 120点
+        // (一格 300 点: M 75 + L 50 + L 50 + L 50 + M 75 = 300)
+        if (attack_level & 8) { // Ranged
+            gain = 55.0f;
+        } else if (attack_level & 1) { // Light
+            gain = 50.0f;
+        } else if (attack_level & 2) { // Medium
+            gain = 75.0f;
+        } else if (attack_level & 4) { // Heavy
+            gain = 120.0f;
+        } else {
+            return 0.0f;
+        }
+    } else {
+        // 官方原版数值（或敌方攻击）：
+        // 远程小枪 0.05格 = 15点, 近战轻 0.05格 = 15点, 近战中 0.1格 = 30点, 重击 0.2格 = 60点
+        if (attack_level & 8) { // Ranged
+            gain = 15.0f;
+        } else if (attack_level & 1) { // Light
+            gain = 15.0f;
+        } else if (attack_level & 2) { // Medium
+            gain = 30.0f;
+        } else if (attack_level & 4) { // Heavy
+            gain = 60.0f;
+        } else {
+            return 0.0f;
+        }
+    }
+
+    if (mana_gain_pct > 0.0f && mana_gain_pct < 1.0f) {
+        gain *= mana_gain_pct;
+    }
+
+    // 攻击若被成功格挡，攻击方能量获取减少 50%
+    if (blocked) {
+        gain *= 0.5f;
+    }
+
+    // PowerGainRate modifier
+    float pgr = hook_195(self);
+    if (pgr > 0.0f) {
+        gain *= pgr;
+    }
+
+    uint64_t now_ms = propgo_now_ms();
+    if (is_p0) {
+        if (g_p0_power_lock_end_ms > 0 && now_ms < g_p0_power_lock_end_ms) {
+            gain = 0.0f;
+        }
+    } else {
+        if (g_p1_power_lock_end_ms > 0 && now_ms < g_p1_power_lock_end_ms) {
+            gain = 0.0f;
+        }
+    }
+
+    static int s_atk_mana_log = 0;
+    if (s_atk_mana_log++ < 25) {
+        flog("GET_ATK_MANA: is_p0=%d al=%d blk=%d pct=%.2f gain=%.2f (mode=%.2f)", is_p0, attack_level, blocked, mana_gain_pct, gain, g_combat_enemy_mana_gain);
+    }
+    return gain;
+}
+
+// slot 198 (0x00DADCA8): PlayerAttributes.GetDefenderManaGain
+float hook_198(void* self, int32_t attack_level, float mana_gain_pct, int32_t blocked, void* method) {
+    if (!self || !obj_ok(self)) return 0.0f;
+    float gain = 0.0f;
+
+    int is_p0 = is_player0_attr(self);
+    void* defender_owner = *(void**)((char*)self + 0x28);
+    void* attacker_pc = (defender_owner && obj_ok(defender_owner)) ? *(void**)((char*)defender_owner + 0xF8) : NULL;
+    if (!attacker_pc) {
+        attacker_pc = is_p0 ? g_p1_controller : g_p0_controller;
+    }
+    const char* attacker_bot = is_p0 ? g_p1_bot_id : g_p0_bot_id;
+
+    if (attack_level & 0x10) {
+        // S1: 0.2格 = 60点 (所有HITS打完的总能量，多HITS的每一HIT平摊)
+        int hits = get_sp_move_hits(attacker_pc, attacker_bot, 1);
+        if (hits < 1) hits = 1;
+        gain = 60.0f / (float)hits;
+    } else if (attack_level & 0x20) {
+        // S2: 0.4格 = 120点 (所有HITS打完的总能量，多HITS的每一HIT平摊)
+        int hits = get_sp_move_hits(attacker_pc, attacker_bot, 2);
+        if (hits < 1) hits = 1;
+        gain = 120.0f / (float)hits;
+    } else if (attack_level & 0x40) {
+        // S3: 0.5格 = 150点 (所有HITS打完的总能量，按damagePercent平摊)
+        float pct = (mana_gain_pct > 0.001f) ? mana_gain_pct : (1.0f / 3.0f);
+        gain = 150.0f * pct;
+    } else {
+        // 普攻受击
+        if (is_p0 && g_combat_enemy_mana_gain < 0.8f) {
+            // 重生快充 / 畅快压制：我方（P0）在攻击方上游非官方速度基础上提升 20%
+            // 远程小枪 55 * 1.2 = 66点
+            // 近战轻 50 * 1.2 = 60点
+            // 近战中 75 * 1.2 = 90点
+            // 重击 120 * 1.2 = 144点
+            if (attack_level & 8) { // Ranged
+                gain = 66.0f;
+            } else if (attack_level & 1) { // Light
+                gain = 60.0f;
+            } else if (attack_level & 2) { // Medium
+                gain = 90.0f;
+            } else if (attack_level & 4) { // Heavy
+                gain = 144.0f;
+            } else {
+                return 0.0f;
+            }
+        } else {
+            // 官方基准：在官方攻击方基础提升 20%
+            // 远程小枪 15 * 1.2 = 18点
+            // 近战轻 15 * 1.2 = 18点
+            // 近战中 30 * 1.2 = 36点
+            // 重击 60 * 1.2 = 72点
+            if (attack_level & 8) { // Ranged
+                gain = 18.0f;
+            } else if (attack_level & 1) { // Light
+                gain = 18.0f;
+            } else if (attack_level & 2) { // Medium
+                gain = 36.0f;
+            } else if (attack_level & 4) { // Heavy
+                gain = 72.0f;
+            } else {
+                return 0.0f;
+            }
+        }
+
+        if (mana_gain_pct > 0.0f && mana_gain_pct < 1.0f) {
+            gain *= mana_gain_pct;
+        }
+    }
+
+    // 攻击若被成功格挡，受击方能量获取不变 (不扣减)
+
+    // PowerGainRate modifier
+    float pgr = hook_195(self);
+    if (pgr > 0.0f) {
+        gain *= pgr;
+    }
+
+    // 敌方受击加气倍率 (官方原版 1.0x, 重生快充 0.5x, 畅快压制 0.2x)
+    if (!is_p0) {
+        gain *= g_combat_enemy_mana_gain;
+    } else {
+        gain *= g_combat_player_mana_gain;
+    }
+
+    uint64_t now_ms = propgo_now_ms();
+    if (is_p0) {
+        if (g_p0_power_lock_end_ms > 0 && now_ms < g_p0_power_lock_end_ms) {
+            gain = 0.0f;
+        }
+    } else {
+        if (g_p1_power_lock_end_ms > 0 && now_ms < g_p1_power_lock_end_ms) {
+            gain = 0.0f;
+        }
+    }
+
+    static int s_def_mana_log = 0;
+    if (s_def_mana_log++ < 25) {
+        flog("GET_DEF_MANA: is_p0=%d al=%d blk=%d enemy_mult=%.2f gain=%.2f", is_p0, attack_level, blocked, g_combat_enemy_mana_gain, gain);
+    }
+    return gain;
+}
+
 static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hook_7,hook_8,
     hook_9,hook_10,hook_11,hook_12,hook_13,hook_14,hook_15,hook_16,hook_17,hook_18,hook_19,hook_20,hook_21,
     hook_22,hook_23,hook_24,hook_25,hook_26,hook_27,hook_28,hook_29,hook_30,
@@ -8334,7 +8647,7 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     hook_165,hook_166,(void*)hook_167,hook_168,hook_169,hook_170,
     hook_171,hook_172,hook_173,hook_174,hook_175,hook_176,(void*)hook_177,(void*)hook_178,
     (void*)hook_179,hook_180,hook_181,hook_182,hook_183,hook_184,hook_185,hook_186,(void*)hook_187,(void*)hook_188,(void*)hook_189,
-    (void*)hook_190,(void*)hook_191,(void*)hook_192,(void*)hook_193,(void*)hook_194,(void*)hook_195,(void*)hook_196 };
+    (void*)hook_190,(void*)hook_191,(void*)hook_192,(void*)hook_193,(void*)hook_194,(void*)hook_195,(void*)hook_196,(void*)hook_197,(void*)hook_198 };
 _Static_assert(sizeof(handlers)/sizeof(handlers[0]) == sizeof(H)/sizeof(H[0]), "handlers count must match H count");
 
 

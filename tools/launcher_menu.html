@@ -283,7 +283,8 @@
       font-weight: bold;
     }
     .pill-badge {
-      font-size: 12px;
+      font-size: 11px;
+      white-space: nowrap;
       padding: 2px 6px;
       border-radius: 4px;
     }
@@ -599,14 +600,14 @@
             </div>
           </div>
         </div>
-        <!-- 2. 敌方加气速率 (Enemy Mana Gain) -->
+        <!-- 2. 能量加气模式 (Power Charge Mode) -->
         <div class="card">
           <div class="card-header">
             <div class="card-title">
               <span class="dot" style="background: var(--cyan);"></span>
-              <span data-i18n="mana_title">敌方受击加气倍率</span>
+              <span data-i18n="mana_title">能量加气模式</span>
             </div>
-            <span class="current-val game-font" id="txt-mana-val">0.5x (减半推荐)</span>
+            <span class="current-val game-font" id="txt-mana-val">重生快充 (我方3倍速，敌方0.5)</span>
           </div>
           <div class="pills-group">
             <div class="pill-btn" onclick="setMana(1.0, this)">
@@ -614,12 +615,12 @@
               <span class="pill-badge bg-amber game-font" data-i18n="mana_1_badge">1.0x (原速)</span>
             </div>
             <div class="pill-btn active" onclick="setMana(0.5, this)">
-              <span class="pill-name c-cyan" data-i18n="mana_half">减半推荐</span>
-              <span class="pill-badge bg-cyan game-font" data-i18n="mana_half_badge">0.5x (稳健)</span>
+              <span class="pill-name c-cyan" data-i18n="mana_half">重生快充</span>
+              <span class="pill-badge bg-cyan game-font" data-i18n="mana_half_badge">我方3倍速，敌方0.5</span>
             </div>
             <div class="pill-btn" onclick="setMana(0.2, this)">
               <span class="pill-name c-green" data-i18n="mana_slow">畅快压制</span>
-              <span class="pill-badge bg-green game-font" data-i18n="mana_slow_badge">0.2x (慢充)</span>
+              <span class="pill-badge bg-green game-font" data-i18n="mana_slow_badge">我方3倍速，敌方0.2</span>
             </div>
           </div>
         </div>
@@ -896,16 +897,16 @@
         diff_val_1: "1.0x HP (正常剧情)",
         diff_val_5: "5.0x HP (狂暴进阶)",
         diff_val_10: "10.0x HP (六道极意)",
-        mana_title: "敌方受击加气倍率",
+        mana_title: "能量加气模式",
         mana_1: "官方原版",
         mana_1_badge: "1.0x (原速)",
-        mana_half: "减半推荐",
-        mana_half_badge: "0.5x (稳健)",
+        mana_half: "重生快充",
+        mana_half_badge: "我方3倍速，敌方0.5",
         mana_slow: "畅快压制",
-        mana_slow_badge: "0.2x (慢充)",
+        mana_slow_badge: "我方3倍速，敌方0.2",
         mana_val_1: "1.0x (官方原版)",
-        mana_val_half: "0.5x (减半推荐)",
-        mana_val_slow: "0.2x (畅快压制)",
+        mana_val_half: "重生快充 (我方3倍速，敌方0.5)",
+        mana_val_slow: "畅快压制 (我方3倍速，敌方0.2)",
         swipe_title: "必杀技滑动手势 (右滑S1 / 上滑S2)",
         swipe_desc: "按住大招按钮右滑即放S1，上滑即放S2，点按放最高可用大招；关闭后恢复原版纯点按模式。",
         cmdr_title: "指挥官代号",
@@ -954,16 +955,16 @@
         diff_val_1: "1.0x HP (Normal Story)",
         diff_val_5: "5.0x HP (Furious Rage)",
         diff_val_10: "10.0x HP (Extreme Samsara)",
-        mana_title: "Enemy Mana Gain Rate",
+        mana_title: "Power Charge Mode",
         mana_1: "Official Stock",
         mana_1_badge: "1.0x (Stock)",
-        mana_half: "Half (Rec.)",
-        mana_half_badge: "0.5x (Balanced)",
+        mana_half: "Revival Rush",
+        mana_half_badge: "Player 3x, Enemy 0.5x",
         mana_slow: "Suppression",
-        mana_slow_badge: "0.2x (Slow)",
+        mana_slow_badge: "Player 3x, Enemy 0.2x",
         mana_val_1: "1.0x (Official Stock)",
-        mana_val_half: "0.5x (Half Rate)",
-        mana_val_slow: "0.2x (Suppression)",
+        mana_val_half: "Revival Rush (Player 3x, Enemy 0.5x)",
+        mana_val_slow: "Suppression (Player 3x, Enemy 0.2x)",
         swipe_title: "Special Attack Swipe Gestures (Swipe S1 / S2)",
         swipe_desc: "Hold SP & swipe right for SP1, swipe up for SP2, tap for highest SP; disable to restore classic tap-only mode.",
         cmdr_title: "Commander Name",
