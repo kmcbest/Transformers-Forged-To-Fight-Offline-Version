@@ -1,6 +1,6 @@
 ---
 name: tftf_ability_authoring
-description: Standard authoring pipeline and quality gate guide for implementing character abilities in Transformers: Forged to Fight (TFTF). Use when creating or updating bot-specific abilities under Server/abilities/bots/, querying official Chinese skill descriptions from the database, adhering to IL2CPP combat contracts, and validating via tools/validate_bot_ability.py.
+description: "Standard authoring pipeline and quality gate guide for implementing character abilities in Transformers: Forged to Fight (TFTF). Use when creating or updating bot-specific abilities under Server/abilities/bots/, querying official Chinese skill descriptions from the database, adhering to IL2CPP combat contracts, and validating via tools/validate_bot_ability.py."
 ---
 
 # TFTF Character Ability Authoring Guide & Standard Protocol

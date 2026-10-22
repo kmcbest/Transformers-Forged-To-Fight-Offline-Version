@@ -585,7 +585,9 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x00DACA4C, "GET_POWER_GAIN_RATE", 2, 0 }, // 195 PlayerAttributes.get_PowerGainRate -> power rate boost
     { 0x00DACB04, "GET_REFLECT_PROJ",    2, 0 }, // 196 PlayerAttributes.get_ReflectProjectileModifier -> projectile reflection
     { 0x00DADB68, "GET_ATK_MANA",        2, 0 }, // 197 PlayerAttributes.GetAttackerManaGain
-    { 0x00DADCA8, "GET_DEF_MANA",        2, 0 }  // 198 PlayerAttributes.GetDefenderManaGain
+    { 0x00DADCA8, "GET_DEF_MANA",        2, 0 }, // 198 PlayerAttributes.GetDefenderManaGain
+    { 0x00DE8F08, "SIM_LATE_UPDATE",     2, 0 }, // 199 Simulation.LateUpdate -> pin S3 vehicle height after animation
+    { 0x01A94F10, "MATINEE_LATE_UPDATE", 2, 0 }  // 200 MatineeContainer.LateUpdate -> ensure pin after cinematic track update
 };
 
 #define NH (int)(sizeof(H)/sizeof(H[0]))
@@ -4980,6 +4982,72 @@ static void sync_actor_name_for_track(void* track) {
 static void* s_dragstrip_car_go = NULL;
 static void* s_dragstrip_car_tr = NULL;
 
+static void* get_dragstrip_car_tr(void) {
+    if (s_dragstrip_car_tr && obj_ok(s_dragstrip_car_tr)) {
+        return s_dragstrip_car_tr;
+    }
+    // Fallback: look up via PlayerController -> PropsController -> GetProp("transformed")
+    if (!g_base || !g_strnew) return NULL;
+    void* pc = g_sp3_xf[0] ? g_sp3_xf[0] : (g_p0_controller ? g_p0_controller : g_p1_controller);
+    if (!pc || !obj_ok(pc)) return NULL;
+
+    void* props_ctrl = *(void**)((uintptr_t)pc + 0x90);
+    if (!props_ctrl || !obj_ok(props_ctrl)) return NULL;
+
+    typedef void* (*fn_get_prop)(void*, void*, void*);
+    fn_get_prop get_prop = (fn_get_prop)(g_base + 0xEA16C0);
+    void* prop_data = get_prop(props_ctrl, g_strnew("transformed"), NULL);
+    if (!prop_data || !obj_ok(prop_data)) return NULL;
+
+    void* car_go = *(void**)((uintptr_t)prop_data + 0x60); // _instance
+    if (!car_go || !obj_ok(car_go)) return NULL;
+
+    typedef void* (*fn_get_transform)(void*, void*);
+    fn_get_transform get_tr = (fn_get_transform)(g_base + 0x1B50BD8);
+    void* car_tr = get_tr(car_go, NULL);
+    if (car_tr) {
+        s_dragstrip_car_go = car_go;
+        s_dragstrip_car_tr = car_tr;
+        flog("DRAGSTRIP_CAR_RECOVERED: pc=%p props=%p prop_data=%p go=%p tr=%p",
+             pc, props_ctrl, prop_data, car_go, car_tr);
+    }
+    return car_tr;
+}
+
+static void dragstrip_pin_car_height_late(const char* caller_tag) {
+    if (!sp3_xf_any() || !g_base) return;
+    void* car_tr = get_dragstrip_car_tr();
+    if (!car_tr || !obj_ok(car_tr)) return;
+
+    V3 (*tr_get_pos)(void*, void*) = (V3(*)(void*, void*))(g_base + 0x16B7C04);
+    void (*tr_set_position)(void*, V3, void*) = (void(*)(void*, V3, void*))(g_base + 0x16B7CB4);
+
+    if (tr_get_pos && tr_set_position) {
+        V3 car_pos = tr_get_pos(car_tr, NULL);
+
+        // In TFTF, combat arena ground plane is always world y = 0.0f.
+        // Dragstrip's car mesh (cha_mirage_gs_deluxe2016_01) has tires bottom at -0.013.
+        // Target world height = 0.02 (tires rest directly on the asphalt at +0.007).
+        float target_y = 0.02f;
+        float diff_y = target_y - car_pos.y;
+
+        static uint64_t s_last_drag_car_log = 0;
+        uint64_t now_ms = propgo_now_ms();
+        if (now_ms - s_last_drag_car_log > 200) {
+            s_last_drag_car_log = now_ms;
+            V3 (*tr_get_lpos)(void*, void*) = (V3(*)(void*, void*))(g_base + 0x16B7D5C);
+            V3 lpos = tr_get_lpos ? tr_get_lpos(car_tr, NULL) : (V3){0};
+            flog("DRAGSTRIP_LATE_PIN [%s]: cur_y=%.3f target_y=%.3f diff=%.3f lpos=(%.3f, %.3f, %.3f)",
+                 caller_tag, car_pos.y, target_y, diff_y, lpos.x, lpos.y, lpos.z);
+        }
+
+        if (fabsf(diff_y) > 0.005f) {
+            car_pos.y = target_y;
+            tr_set_position(car_tr, car_pos, NULL);
+        }
+    }
+}
+
 void* hook_139(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
     PROTECT({
         sync_actor_name_for_track(a0);
@@ -5140,7 +5208,7 @@ static void sp3_update_character_weapons(void* pc, int active) {
 
     // Fallback: check GameObject name if bot_id is empty or inconclusive
     if (!is_optimus && !is_ironhide && !is_lifeline && !is_starsaber) {
-        void* go = ((void*(*)(void*, void*))(g_base + 0x169FF58))(pc, NULL);
+        void* go = ((void*(*)(void*, void*))(g_base + 0x1B4BD28))(pc, NULL);
         if (go && obj_ok(go)) {
             void* n_str = ((void*(*)(void*, void*))(g_base + 0x16A16A0))(go, NULL);
             char gname[64] = {0};
@@ -5189,7 +5257,8 @@ void* hook_142(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
             }
             sp3_xf_add(pc);
             sp3_update_character_weapons(pc, 1);
-            flog("SP3_ENTER pc=%p tms=%llu", pc, (unsigned long long)propgo_now_ms());
+            void* c_tr = get_dragstrip_car_tr();
+            flog("SP3_ENTER pc=%p tms=%llu car_tr=%p", pc, (unsigned long long)propgo_now_ms(), c_tr);
         }
     });
     return r;
@@ -5200,6 +5269,8 @@ static void reset_player_attack_chain(void* pc);
 void* hook_143(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
     void* pc = fld_p(a0, 0x18);
     sp3_xf_remove(pc);
+    s_dragstrip_car_go = NULL;
+    s_dragstrip_car_tr = NULL;
     void* r = H[143].orig(a0,a1,a2,a3,a4,a5,a6,a7);
     PROTECT({
         if (obj_ok(pc)) {
@@ -5596,50 +5667,7 @@ void* hook_145(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
         }
 
         // Dragstrip S3 vehicle height grounding:
-        // Enforce that the transformed car rests on the arena ground plane
-        if (s_dragstrip_car_go && s_dragstrip_car_tr && sp3_xf_any() && g_base) {
-            typedef void (*fn_get_pos)(void*, V3*, void*);
-            typedef void (*fn_set_pos)(void*, V3*, void*);
-            fn_get_pos get_pos = (fn_get_pos)(g_base + 0x16B7C64);
-            fn_set_pos set_pos = (fn_set_pos)(g_base + 0x16B7D0C);
-
-            V3 car_pos = {0};
-            get_pos(s_dragstrip_car_tr, &car_pos, NULL);
-
-            float ground_y = 0.0f;
-            void* ref_pc = g_p0_controller ? g_p0_controller : g_p1_controller;
-            if (ref_pc && obj_ok(ref_pc)) {
-                void* p_go = ((void*(*)(void*, void*))(g_base + 0x169FF58))(ref_pc, NULL);
-                if (p_go && obj_ok(p_go)) {
-                    void* p_tr = ((void*(*)(void*, void*))(g_base + 0x1B50BD8))(p_go, NULL);
-                    if (p_tr && obj_ok(p_tr)) {
-                        V3 p_pos = {0};
-                        get_pos(p_tr, &p_pos, NULL);
-                        ground_y = p_pos.y;
-                    }
-                }
-            }
-
-            // Dragstrip's car mesh (cha_mirage_gs_deluxe2016_01) has tires bottom at -0.013.
-            // Target world height = ground_y + 0.02 (perfectly resting on the asphalt).
-            float target_y = ground_y + 0.02f;
-            float diff_y = target_y - car_pos.y;
-
-            static uint64_t s_last_drag_car_log = 0;
-            uint64_t now_ms = propgo_now_ms();
-            if (now_ms - s_last_drag_car_log > 200) {
-                s_last_drag_car_log = now_ms;
-                V3 lpos = {0};
-                ((fn_get_pos)(g_base + 0x16B7DBC))(s_dragstrip_car_tr, &lpos, NULL);
-                flog("DRAGSTRIP_GROUND_PIN: cur_y=%.3f target_y=%.3f diff=%.3f lpos=(%.3f, %.3f, %.3f)",
-                     car_pos.y, target_y, diff_y, lpos.x, lpos.y, lpos.z);
-            }
-
-            if (fabsf(diff_y) > 0.005f) {
-                car_pos.y = target_y;
-                set_pos(s_dragstrip_car_tr, &car_pos, NULL);
-            }
-        }
+        dragstrip_pin_car_height_late("SIM_FIXED_UPDATE");
 
         // Poll GetMouseButtonDown in hook_145 for resilient portrait double-tap detection (HUD visible or hidden)
         if (g_base) {
@@ -8715,6 +8743,24 @@ float hook_198(void* self, int32_t attack_level, float mana_gain_pct, int32_t bl
     return gain;
 }
 
+// slot 199 (0x00DE8F08): Simulation.LateUpdate
+void* hook_199(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    void* r = H[199].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    PROTECT({
+        dragstrip_pin_car_height_late("SIM_LATE_UPDATE");
+    });
+    return r;
+}
+
+// slot 200 (0x01A94F10): MatineeContainer.LateUpdate
+void* hook_200(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    void* r = H[200].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    PROTECT({
+        dragstrip_pin_car_height_late("MATINEE_LATE_UPDATE");
+    });
+    return r;
+}
+
 static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hook_7,hook_8,
     hook_9,hook_10,hook_11,hook_12,hook_13,hook_14,hook_15,hook_16,hook_17,hook_18,hook_19,hook_20,hook_21,
     hook_22,hook_23,hook_24,hook_25,hook_26,hook_27,hook_28,hook_29,hook_30,
@@ -8736,7 +8782,7 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     hook_165,hook_166,(void*)hook_167,hook_168,hook_169,hook_170,
     hook_171,hook_172,hook_173,hook_174,hook_175,hook_176,(void*)hook_177,(void*)hook_178,
     (void*)hook_179,hook_180,hook_181,hook_182,hook_183,hook_184,hook_185,hook_186,(void*)hook_187,(void*)hook_188,(void*)hook_189,
-    (void*)hook_190,(void*)hook_191,(void*)hook_192,(void*)hook_193,(void*)hook_194,(void*)hook_195,(void*)hook_196,(void*)hook_197,(void*)hook_198 };
+    (void*)hook_190,(void*)hook_191,(void*)hook_192,(void*)hook_193,(void*)hook_194,(void*)hook_195,(void*)hook_196,(void*)hook_197,(void*)hook_198,(void*)hook_199,(void*)hook_200 };
 _Static_assert(sizeof(handlers)/sizeof(handlers[0]) == sizeof(H)/sizeof(H[0]), "handlers count must match H count");
 
 

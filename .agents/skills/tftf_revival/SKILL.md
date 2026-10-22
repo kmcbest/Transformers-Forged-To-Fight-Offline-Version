@@ -1,6 +1,6 @@
 ---
 name: tftf_revival
-description: Comprehensive knowledge base and pitfall avoidance guide for Transformers: Forged to Fight (TFTF) offline revival development, including Unity assetbundle modifications, IL2CPP native hooking, 3D character/mod/relic scaling and camera alignment, gamedata payload generation, and APK packaging.
+description: "Comprehensive knowledge base and pitfall avoidance guide for Transformers: Forged to Fight (TFTF) offline revival development, including Unity assetbundle modifications, IL2CPP native hooking, 3D character/mod/relic scaling and camera alignment, gamedata payload generation, and APK packaging."
 ---
 
 # Transformers: Forged to Fight (TFTF) Revival Development & Pitfall Guide
