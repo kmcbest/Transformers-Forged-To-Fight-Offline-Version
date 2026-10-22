@@ -6641,7 +6641,39 @@ float hook_177(void* self, float damage, void* damageType, int32_t blocked, void
     if (!isPerfectBlock) isPerfectBlock = &dummy_perfect;
 
     if (!H[177].orig) return 0.0f;
-    return ((fn_get_damage_received)H[177].orig)(self, damage, damageType, blocked, isPerfectBlock, isCrit, isArmorIgnoring, method, critPenetration, armorPenetration);
+    float res = ((fn_get_damage_received)H[177].orig)(self, damage, damageType, blocked, isPerfectBlock, isCrit, isArmorIgnoring, method, critPenetration, armorPenetration);
+
+    if (blocked && res > 0.0f) {
+        float bp = 0.0f;
+        if (g_base && self && obj_ok(self)) {
+            void* stat_attr = *(void**)((char*)self + 0x108);
+            if (stat_attr && obj_ok(stat_attr)) {
+                typedef float (*fn_get_bp_t)(void*, void*);
+                static fn_get_bp_t fn_get_bp = NULL;
+                if (!fn_get_bp) {
+                    fn_get_bp = (fn_get_bp_t)(g_base + 0xDAC90C);
+                }
+                if (fn_get_bp) {
+                    bp = fn_get_bp(self, NULL);
+                }
+            }
+        }
+        // If client BlockProficiency is 0 (or unconfigured), enforce official 50% block reduction fallback
+        if (bp <= 0.001f) {
+            float old_dmg = res;
+            res *= 0.5f;
+            static int s_block_log = 0;
+            if (s_block_log++ < 30) {
+                flog("DEFENSE_DAMAGE: blocked=1, bp=%.2f (unconfigured) -> fallback 50%% reduction: %.1f -> %.1f", bp, old_dmg, res);
+            }
+        } else {
+            static int s_block_log2 = 0;
+            if (s_block_log2++ < 30) {
+                flog("DEFENSE_DAMAGE: blocked=1, official bp=%.2f active -> damage=%.1f", bp, res);
+            }
+        }
+    }
+    return res;
 }
 
 void* hook_166(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
