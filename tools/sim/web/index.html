@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TFTF 战斗技能沙盒模拟器 (Combat Ability Simulator)</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="top-nav">
+        <div class="logo">
+            <span class="icon">🤖</span>
+            <div class="title-group">
+                <h1>TFTF 战斗技能沙盒模拟器</h1>
+                <span class="subtitle">Revival C & Python 源码直通调试环境</span>
+            </div>
+        </div>
+
+        <div class="clock-panel">
+            <div class="timer-display" id="timerDisplay">00:01.000</div>
+            <div class="timer-controls">
+                <button id="btnPlay" class="btn btn-primary">▶ 开始模拟</button>
+                <button id="btnPause" class="btn btn-secondary">⏸ 暂停</button>
+                <button id="btnStep" class="btn btn-secondary" title="单步向前推进 100ms">⏭ 步进+100ms</button>
+                <button id="btnReset" class="btn btn-danger" title="重置本局血量与状态">🔄 重置战斗</button>
+            </div>
+        </div>
+
+        <div class="dev-tools">
+            <button id="btnRecompile" class="btn btn-accent" title="立即使用 clang 重新编译 sim_skills.dll (0.3s)">⚡ 热重载技能代码</button>
+        </div>
+    </header>
+
+    <!-- 顶部 HUD 技能广播横幅 -->
+    <div class="announcement-banner" id="announcementBanner">
+        <span class="anno-icon">📢</span>
+        <span id="announcementText">战场就绪。选择角色或预设场景开始模拟。</span>
+    </div>
+
+    <!-- 主战场视区 -->
+    <main class="battle-arena">
+        <!-- 1P 角色面板 -->
+        <section class="combatant-card p0-card">
+            <div class="card-header">
+                <span class="badge badge-p0">1P 我方配置</span>
+                <select id="p0BotSelect" class="bot-select"></select>
+            </div>
+
+            <div class="avatar-container">
+                <div class="avatar-ring p0-ring">
+                    <div class="avatar-img" id="p0Avatar">⚔️</div>
+                </div>
+                <div class="combatant-title">
+                    <h2 id="p0Name">电影擎天柱</h2>
+                    <span class="bot-id-tag" id="p0BotId">optimusprime_cin_tf</span>
+                </div>
+            </div>
+
+            <!-- 基础属性指标 -->
+            <div class="stat-badges-row">
+                <div class="stat-badge"><span class="stat-k">ATK</span><span class="stat-v" id="p0AtkVal">1000</span></div>
+                <div class="stat-badge"><span class="stat-k">CRIT</span><span class="stat-v" id="p0CritVal">20%</span></div>
+                <div class="stat-badge"><span class="stat-k">BLOCK</span><span class="stat-v">-50%</span></div>
+            </div>
+
+            <!-- 1P Buffs 托盘 -->
+            <div class="buff-tray-container">
+                <div class="buff-tray-header">
+                    <span>激活状态 (Buffs / Debuffs)</span>
+                    <button class="btn-tiny" id="btnInjectP0">+ 注入状态</button>
+                </div>
+                <div class="buff-tray" id="p0BuffTray">
+                    <span class="buff-empty">暂无状态</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 视觉格斗大屏幕 (格斗主视窗) -->
+        <section class="combat-stage" id="stage">
+            <!-- 1. 格斗顶部 HUD: 头像 + 血条 + 3段能量槽 + 计时器与VS -->
+            <div class="stage-hud-top">
+                <!-- 1P HUD (左侧，向内延伸) -->
+                <div class="stage-p0-hud">
+                    <div class="stage-avatar-wrap p0-avatar-wrap">
+                        <div class="stage-avatar" id="stageP0Avatar">⚔️</div>
+                        <div class="stage-p-tag p0-tag">P0</div>
+                    </div>
+                    <div class="stage-bars-col">
+                        <div class="stage-name-row">
+                            <span class="stage-p-name" id="stageP0Name">电影擎天柱</span>
+                            <span class="stage-hp-num" id="stageP0HpText">15000 / 15000</span>
+                        </div>
+                        <div class="stage-bar-outer hp-bar-outer">
+                            <div class="stage-bar-fill stage-hp-p0" id="stageP0HpFill" style="width: 100%;"></div>
+                        </div>
+                        <!-- 3段能量槽 -->
+                        <div class="stage-mana-row p0-mana-row">
+                            <div class="stage-mana-seg" id="p0ManaSeg1"><div class="seg-fill"></div><span class="seg-label">SP1</span></div>
+                            <div class="stage-mana-seg" id="p0ManaSeg2"><div class="seg-fill"></div><span class="seg-label">SP2</span></div>
+                            <div class="stage-mana-seg" id="p0ManaSeg3"><div class="seg-fill"></div><span class="seg-label">SP3</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VS 标志 & 竞技计时器 (中央) -->
+                <div class="stage-center-hud">
+                    <div class="stage-vs-badge">VS</div>
+                    <div class="stage-match-timer" id="stageTimerDisplay">00:01.000</div>
+                </div>
+
+                <!-- 2P HUD (右侧，向内镜像延伸) -->
+                <div class="stage-p1-hud">
+                    <div class="stage-bars-col p1-bars-col">
+                        <div class="stage-name-row p1-name-row">
+                            <span class="stage-hp-num" id="stageP1HpText">15000 / 15000</span>
+                            <span class="stage-p-name" id="stageP1Name">碎骨魔</span>
+                        </div>
+                        <div class="stage-bar-outer hp-bar-outer">
+                            <div class="stage-bar-fill stage-hp-p1" id="stageP1HpFill" style="width: 100%;"></div>
+                        </div>
+                        <!-- 3段能量槽 -->
+                        <div class="stage-mana-row p1-mana-row">
+                            <div class="stage-mana-seg" id="p1ManaSeg3"><div class="seg-fill"></div><span class="seg-label">SP3</span></div>
+                            <div class="stage-mana-seg" id="p1ManaSeg2"><div class="seg-fill"></div><span class="seg-label">SP2</span></div>
+                            <div class="stage-mana-seg" id="p1ManaSeg1"><div class="seg-fill"></div><span class="seg-label">SP1</span></div>
+                        </div>
+                    </div>
+                    <div class="stage-avatar-wrap p1-avatar-wrap">
+                        <div class="stage-avatar" id="stageP1Avatar">🛡️</div>
+                        <div class="stage-p-tag p1-tag">P1</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. 屏幕中央 HUD 技能广播通知横幅 -->
+            <div class="stage-center-announcement" id="stageCenterAnno">
+                <div class="anno-banner-inner" id="stageCenterAnnoText">
+                    ⚡ 战场就绪，点击出招或后闪/侧闪开始战斗
+                </div>
+            </div>
+
+            <!-- 3. 擂台战区 (网格地面与人形对峙) -->
+            <div class="stage-arena-floor">
+                <div class="cyber-grid-floor"></div>
+
+                <!-- P0 战士形象 (左) -->
+                <div class="fighter-wrapper fighter-p0" id="fighterP0">
+                    <div class="block-shield" id="shieldP0">
+                        <svg viewBox="0 0 100 120" class="shield-svg"><polygon points="50,5 95,25 80,105 50,118 20,105 5,25" fill="rgba(88,166,255,0.3)" stroke="#58a6ff" stroke-width="3"/></svg>
+                    </div>
+                    <!-- 机甲人形 SVG -->
+                    <div class="mech-silhouette" id="mechP0">
+                        <svg viewBox="0 0 160 260" class="mech-svg p0-mech">
+                            <defs>
+                                <filter id="glow-p0" x="-20%" y="-20%" width="140%" height="140%">
+                                    <feGaussianBlur stdDeviation="3" result="blur" />
+                                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                                </filter>
+                            </defs>
+                            <!-- 头部与头冠 -->
+                            <polygon points="70,25 90,25 100,45 80,62 60,45" fill="#131e2e" stroke="#58a6ff" stroke-width="2.5" />
+                            <polygon points="75,15 85,15 88,25 72,25" fill="#1a2d47" stroke="#58a6ff" stroke-width="1.5" />
+                            <!-- 蓝色发光眼罩 / 视镜 -->
+                            <polygon points="68,36 92,36 88,44 72,44" fill="#58a6ff" filter="url(#glow-p0)" />
+                            <!-- 躯干装甲与胸部核心 -->
+                            <polygon points="46,65 114,65 128,122 80,138 32,122" fill="#182538" stroke="#58a6ff" stroke-width="2.5" />
+                            <circle cx="80" cy="95" r="14" fill="#0d1b2a" stroke="#58a6ff" stroke-width="2" />
+                            <circle cx="80" cy="95" r="7" fill="#58a6ff" filter="url(#glow-p0)" />
+                            <!-- 胸甲标记 P0 -->
+                            <text x="80" y="125" text-anchor="middle" font-size="14" font-weight="900" fill="#58a6ff" letter-spacing="1">P0</text>
+                            <!-- 肩甲与双臂 (防守待发格斗姿态) -->
+                            <polygon points="32,68 46,65 34,110 16,98" fill="#1c2d42" stroke="#58a6ff" stroke-width="2" />
+                            <polygon points="128,68 114,65 126,110 144,98" fill="#1c2d42" stroke="#58a6ff" stroke-width="2" />
+                            <polygon points="16,98 34,110 28,150 12,138" fill="#162436" stroke="#388bfd" stroke-width="2" />
+                            <polygon points="144,98 126,110 132,150 148,138" fill="#162436" stroke="#388bfd" stroke-width="2" />
+                            <!-- 腰部与战裙 -->
+                            <polygon points="52,138 108,138 98,165 62,165" fill="#121d2b" stroke="#58a6ff" stroke-width="2" />
+                            <!-- 腿部与脚部战靴 -->
+                            <polygon points="52,165 74,165 68,230 42,245 36,230" fill="#162436" stroke="#388bfd" stroke-width="2.5" />
+                            <polygon points="86,165 108,165 124,230 118,245 92,230" fill="#162436" stroke="#388bfd" stroke-width="2.5" />
+                            <!-- 脚底光环 -->
+                            <ellipse cx="54" cy="246" rx="22" ry="5" fill="none" stroke="#58a6ff" stroke-width="2" filter="url(#glow-p0)" />
+                            <ellipse cx="108" cy="246" rx="22" ry="5" fill="none" stroke="#58a6ff" stroke-width="2" filter="url(#glow-p0)" />
+                        </svg>
+                    </div>
+                    <div class="fighter-tag-plate p0-plate">
+                        <span>1P 我方 (P0)</span>
+                    </div>
+                </div>
+
+                <!-- 擂台中心轴线 -->
+                <div class="arena-center-axis"></div>
+
+                <!-- P1 战士形象 (右) -->
+                <div class="fighter-wrapper fighter-p1" id="fighterP1">
+                    <div class="block-shield" id="shieldP1">
+                        <svg viewBox="0 0 100 120" class="shield-svg"><polygon points="50,5 95,25 80,105 50,118 20,105 5,25" fill="rgba(248,81,73,0.3)" stroke="#f85149" stroke-width="3"/></svg>
+                    </div>
+                    <!-- 机甲人形 SVG -->
+                    <div class="mech-silhouette" id="mechP1">
+                        <svg viewBox="0 0 160 260" class="mech-svg p1-mech">
+                            <defs>
+                                <filter id="glow-p1" x="-20%" y="-20%" width="140%" height="140%">
+                                    <feGaussianBlur stdDeviation="3" result="blur" />
+                                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                                </filter>
+                            </defs>
+                            <!-- 头部与头冠 -->
+                            <polygon points="70,25 90,25 100,45 80,62 60,45" fill="#291417" stroke="#f85149" stroke-width="2.5" />
+                            <polygon points="75,15 85,15 88,25 72,25" fill="#3b171c" stroke="#f85149" stroke-width="1.5" />
+                            <!-- 红色发光眼罩 / 视镜 -->
+                            <polygon points="68,36 92,36 88,44 72,44" fill="#f85149" filter="url(#glow-p1)" />
+                            <!-- 躯干装甲与胸部核心 -->
+                            <polygon points="46,65 114,65 128,122 80,138 32,122" fill="#36171b" stroke="#f85149" stroke-width="2.5" />
+                            <circle cx="80" cy="95" r="14" fill="#1f0e11" stroke="#f85149" stroke-width="2" />
+                            <circle cx="80" cy="95" r="7" fill="#f85149" filter="url(#glow-p1)" />
+                            <!-- 胸甲标记 P1 -->
+                            <text x="80" y="125" text-anchor="middle" font-size="14" font-weight="900" fill="#f85149" letter-spacing="1">P1</text>
+                            <!-- 肩甲与双臂 -->
+                            <polygon points="32,68 46,65 34,110 16,98" fill="#421a1f" stroke="#f85149" stroke-width="2" />
+                            <polygon points="128,68 114,65 126,110 144,98" fill="#421a1f" stroke="#f85149" stroke-width="2" />
+                            <polygon points="16,98 34,110 28,150 12,138" fill="#36171b" stroke="#da3633" stroke-width="2" />
+                            <polygon points="144,98 126,110 132,150 148,138" fill="#36171b" stroke="#da3633" stroke-width="2" />
+                            <!-- 腰部与战裙 -->
+                            <polygon points="52,138 108,138 98,165 62,165" fill="#2b1013" stroke="#f85149" stroke-width="2" />
+                            <!-- 腿部与脚部战靴 -->
+                            <polygon points="52,165 74,165 68,230 42,245 36,230" fill="#36171b" stroke="#da3633" stroke-width="2.5" />
+                            <polygon points="86,165 108,165 124,230 118,245 92,230" fill="#36171b" stroke="#da3633" stroke-width="2.5" />
+                            <!-- 脚底光环 -->
+                            <ellipse cx="54" cy="246" rx="22" ry="5" fill="none" stroke="#f85149" stroke-width="2" filter="url(#glow-p1)" />
+                            <ellipse cx="108" cy="246" rx="22" ry="5" fill="none" stroke="#f85149" stroke-width="2" filter="url(#glow-p1)" />
+                        </svg>
+                    </div>
+                    <div class="fighter-tag-plate p1-plate">
+                        <span>2P 敌方 (P1)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. 战斗浮字层 (锚定在人物上方) -->
+            <div class="floater-container" id="floaterContainer"></div>
+        </section>
+
+        <!-- 2P 角色面板 -->
+        <section class="combatant-card p1-card">
+            <div class="card-header">
+                <span class="badge badge-p1">2P 敌方配置</span>
+                <select id="p1BotSelect" class="bot-select"></select>
+            </div>
+
+            <div class="avatar-container">
+                <div class="avatar-ring p1-ring">
+                    <div class="avatar-img" id="p1Avatar">🛡️</div>
+                </div>
+                <div class="combatant-title">
+                    <h2 id="p1Name">碎骨魔</h2>
+                    <span class="bot-id-tag" id="p1BotId">bonecrusher_cin_rotf</span>
+                </div>
+            </div>
+
+            <!-- 基础属性指标 -->
+            <div class="stat-badges-row">
+                <div class="stat-badge"><span class="stat-k">ATK</span><span class="stat-v" id="p1AtkVal">1000</span></div>
+                <div class="stat-badge"><span class="stat-k">CRIT</span><span class="stat-v" id="p1CritVal">16%</span></div>
+                <div class="stat-badge"><span class="stat-k">BLOCK</span><span class="stat-v">-50%</span></div>
+            </div>
+
+            <!-- 2P Buffs 托盘 -->
+            <div class="buff-tray-container">
+                <div class="buff-tray-header">
+                    <span>激活状态 (Buffs / Debuffs)</span>
+                    <button class="btn-tiny" id="btnInjectP1">+ 注入状态</button>
+                </div>
+                <div class="buff-tray" id="p1BuffTray">
+                    <span class="buff-empty">暂无状态</span>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 下半部：出招操作台 + 场景预设 + 实时终端日志 -->
+    <footer class="bottom-panel">
+        <!-- 1P 动作按钮群 -->
+        <div class="deck-section action-deck">
+            <div class="deck-title">🕹️ 1P 出招与闪避操作面板 (即时出招)</div>
+            <div class="action-grid">
+                <button class="btn-action act-light" data-action="1" data-last="0">L1 轻击1</button>
+                <button class="btn-action act-light" data-action="1" data-last="0">L2 轻击2</button>
+                <button class="btn-action act-light" data-action="1" data-last="0">L3 轻击3</button>
+                <button class="btn-action act-light" data-action="1" data-last="1">L4 终结击</button>
+
+                <button class="btn-action act-med" data-action="2" data-last="0">M1 中击1</button>
+                <button class="btn-action act-med" data-action="2" data-last="1">M2 终结击</button>
+                <button class="btn-action act-heavy" data-action="4" data-last="1">💥 破防重击</button>
+                <button class="btn-action act-block" id="btnToggleBlock">🛡️ 切换格挡</button>
+
+                <!-- 新增：后闪与侧闪按键 -->
+                <button class="btn-action act-dodge" id="btnDashBack">💨 后闪 (Dash)</button>
+                <button class="btn-action act-dodge" id="btnSidestep">💨 侧闪 (Step)</button>
+                <button class="btn-action act-sp" id="btnSP1" data-action="16" data-last="1">⚡ SP1 (1格)</button>
+                <button class="btn-action act-sp" id="btnSP2" data-action="32" data-last="1">⚡⚡ SP2 (2格)</button>
+
+                <button class="btn-action act-sp" id="btnSP3" data-action="64" data-last="1">⚡⚡⚡ SP3 (3格)</button>
+                <button class="btn-action act-macro" id="btnCombo5">⚡ 5连击 (L-L-L-M-M)</button>
+            </div>
+        </div>
+
+        <!-- 场景快速预设与沙盒注入 -->
+        <div class="deck-section preset-deck">
+            <div class="deck-title">🧪 场景一键测试剧本 (免手机复原战场)</div>
+            <div class="preset-buttons">
+                <button class="btn-preset" id="presetOptimus">
+                    <span class="p-title">📌 电影擎天柱意志力吸血</span>
+                    <span class="p-desc">挂2层流血，1s后自动净化1层+10%气，普攻吸血35%</span>
+                </button>
+                <button class="btn-preset" id="presetMegatron">
+                    <span class="p-title">📌 G1 威震天减益融合</span>
+                    <span class="p-desc">满充能，敌方感电+破甲，重击固化永久减益</span>
+                </button>
+                <button class="btn-preset" id="presetProwl">
+                    <span class="p-title">📌 警车后闪充能与近战增益</span>
+                    <span class="p-desc">点击后闪开始每0.5s蓄力，攻击时转化为橙色增益</span>
+                </button>
+                <button class="btn-preset" id="presetBumblebee">
+                    <span class="p-title">📌 小黄蜂规避与侧闪暴击</span>
+                    <span class="p-desc">后闪获得32%常驻规避，侧闪叠加暴击率增益(最高+84%)</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 实时底层日志终端 -->
+        <div class="deck-section log-deck">
+            <div class="deck-title">
+                <span>📜 实时底层日志 (TFTF Native & Skills)</span>
+                <button class="btn-tiny" id="btnClearLogs">清空日志</button>
+            </div>
+            <div class="log-terminal" id="logTerminal"></div>
+        </div>
+    </footer>
+
+    <!-- 注入 Buff 简易弹窗 -->
+    <div class="modal-overlay" id="injectModal" style="display: none;">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 id="modalTitle">💉 手动注入状态</h3>
+                <button class="modal-close" id="btnModalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>状态类型 (Mod ID):</label>
+                    <select id="modalBuffSelect">
+                        <option value="dmg_bleed">🩸 流血 (dmg_bleed, 40% ATK DOT)</option>
+                        <option value="megatron_sp3_shock">⚡ 震击 (megatron_sp3_shock, 50% ATK DOT)</option>
+                        <option value="megatron_sp1_armor_break">🛡️ 破甲 (armor_break)</option>
+                        <option value="megatron_sp2_atk_debuff">⚔️ 攻击减益 (atk_debuff)</option>
+                        <option value="stun">💫 眩晕 (stun)</option>
+                        <option value="custom">✏️ 自定义输入...</option>
+                    </select>
+                </div>
+                <div class="form-group" id="customBuffGroup" style="display: none;">
+                    <label>自定义 Modifier ID:</label>
+                    <input type="text" id="modalCustomBuffId" placeholder="例如: gp_dmg_ft">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>持续时间 (秒, -1为永久):</label>
+                        <input type="number" id="modalBuffDur" value="6.0" step="0.5">
+                    </div>
+                    <div class="form-group">
+                        <label>层数 (Stacks):</label>
+                        <input type="number" id="modalBuffStacks" value="1" min="1" max="20">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="btnModalCancel">取消</button>
+                <button class="btn btn-primary" id="btnModalApply">立即施加</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 浮动通知 Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
