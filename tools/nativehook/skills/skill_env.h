@@ -44,7 +44,9 @@ void skill_stun_player(int target_player_index, float duration_s);
 
 // Buff 与修饰器主动施加与消耗
 void skill_apply_buff(int player_index, const char* mod_id);
+void skill_apply_buff_dur(int player_index, const char* mod_id, float override_dur);
 void skill_consume_buff(int player_index, const char* mod_id, int count);
+int skill_fuse_target_debuffs(int target_player_index);
 
 // 警车近战增益层数查询
 int skill_get_prowl_melee_stacks(int player_index);

@@ -11,15 +11,15 @@ Bot ID: bumblebee_cin_dotm
    - 官方描述: "开局自动获得一个近战规避，无倒计时。25.5%的概率规避对手的近战攻击。如果拥有远程规避时被对手近战攻击击中，则出现灰色的近战规避倒计时图标1.5秒，结束后重新获得近战规避。"
    - 实现方案:
      bumblebee_cin_dotm_calib_melee:
-       触发 always, 获得常驻近战规避 buff (25.5% 规避几率),
-       配合 Native C (skill_bumblebee_dotm.c) 实现受远程攻击后 1.5s 切换到远程校准。
+       触发 onStart, 获得常驻近战规避 buff (25.5% 规避几率, d=-1.0),
+       配合 Native C (skill_bumblebee_dotm.c) 实现受远程攻击后 1.5s 灰色倒计时切换到远程校准。
 
 2. [被动 - 远程校准 / Ranged Calibration] (ID: 2422, pua_icon: 0xe518, category: passive)
    - 官方描述: "拥有近战规避时被对手远程攻击击中，近战规避消失，出现灰色的远程规避倒计时图标1.5秒，结束后获得远程规避，无倒计时，25.5%的概率规避对手的远程攻击。近战规避消失。"
    - 实现方案:
      bumblebee_cin_dotm_calib_ranged:
-       作为切换后获得的常驻远程规避 buff (25.5% 规避几率),
-       配合 Native C (skill_bumblebee_dotm.c) 实现受近战攻击后 1.5s 切换到近战校准。
+       作为切换后获得的常驻远程规避 buff (25.5% 规避几率, d=-1.0),
+       配合 Native C (skill_bumblebee_dotm.c) 实现受近战攻击后 1.5s 灰色倒计时切换到近战校准。
 
 3. [被动 - 击倒攻击增益 / Attack Buff on Knockdown] (ID: 2424, pua_icon: 0xe406, category: passive)
    - 官方描述: "每击倒对手一次：获得一个永久攻击增益，攻击力增加13.5%。永远增益最多堆叠15 层，第16层开始出现倒计时，3秒后消失。"
@@ -51,6 +51,7 @@ Bot ID: bumblebee_cin_dotm
 """
 
 from ..core import (
+    AbilityColor,
     make_attack_boost_statmod,
     make_evade_grant_statmod,
     make_armor_break_statmod,
@@ -78,8 +79,8 @@ def build_bumblebee_cin_dotm_abilities(base_hp: float = 28550.0, base_atk: float
         callout_text="攻击加成",
         show_callout=True,
         pua_icon="\uE406",
-        color_hex="F59E0B",
-        gradient_bottom="D97706",
+        color_hex=AbilityColor.ORANGE_DAMAGE_TC,
+        gradient_bottom=AbilityColor.ORANGE_DAMAGE_GB,
         stackable=True,
         max_stacks=15,
     )
@@ -92,28 +93,28 @@ def build_bumblebee_cin_dotm_abilities(base_hp: float = 28550.0, base_atk: float
         duration=3.0,  # 3秒倒计时
         attack_bonus=0.135,
         chance=1.0,
-        trigger="manual",  # 由 NativeHook 在满 15 层后击倒对手时施加
+        trigger="onStart",  # 开局在 hook_192 捕获指针并阻止自动施加，满 15 层后击倒对手时主动施加
         trigger_scope="",
         appr_id="appr_bumblebee_cin_dotm_burst_atk",
         callout_text="攻击加成",
         show_callout=True,
         pua_icon="\uE406",
-        color_hex="EF4444",
-        gradient_bottom="DC2626",
+        color_hex=AbilityColor.RED_DEBUFF_TC,
+        gradient_bottom=AbilityColor.RED_DEBUFF_GB,
         stackable=False,
         max_stacks=1,
     )
     mods.update(m_burst)
     appears.update(a_burst)
 
-    # 2. 近战校准规避 (ID: 2421): 开局自动获得近战规避 (常驻无倒计时, 25.5% 规避率)
+    # 2. 近战校准规避 (ID: 2421): 开局自动获得近战规避 (常驻无倒计时 d=-1.0, 25.5% 规避率)
     m_ev_m, a_ev_m = make_evade_grant_statmod(
         mod_id="bumblebee_cin_dotm_calib_melee",
         evade_type="melee",
         grant_chance=1.0,
         evade_chance=0.255,
-        duration=0.0,  # 常驻无倒计时
-        trigger="always",
+        duration=0.0,  # 常驻无倒计时 (内部自动转为 -1.0)
+        trigger="onStart",
         trigger_scope="",
         appr_id="appr_bumblebee_cin_dotm_calib_melee",
         callout_text="近战校准",
@@ -122,21 +123,61 @@ def build_bumblebee_cin_dotm_abilities(base_hp: float = 28550.0, base_atk: float
     mods.update(m_ev_m)
     appears.update(a_ev_m)
 
-    # 3. 远程校准规避 (ID: 2422): 受到远程攻击切换为远程校准 (常驻无倒计时, 25.5% 规避率)
+    # 2b. 近战校准切换倒计时 (1.5秒灰色近战规避倒计时图标 \uE509)
+    m_ev_m_cd, a_ev_m_cd = make_evade_grant_statmod(
+        mod_id="bumblebee_cin_dotm_calib_melee_cd",
+        evade_type="melee",
+        grant_chance=1.0,
+        evade_chance=0.0,
+        duration=1.5,
+        trigger="onStart",
+        trigger_scope="",
+        appr_id="appr_bumblebee_cin_dotm_calib_melee_cd",
+        callout_text="近战校准切换",
+        pua_icon="\uE509",
+        color_hex=AbilityColor.GRAY_COOLDOWN_TC,
+        gradient_bottom=AbilityColor.GRAY_COOLDOWN_GB,
+        show_callout=False,
+    )
+    m_ev_m_cd["bumblebee_cin_dotm_calib_melee_cd"]["g"] = "dotm_calib_melee_cd"
+    mods.update(m_ev_m_cd)
+    appears.update(a_ev_m_cd)
+
+    # 3. 远程校准规避 (ID: 2422): 受到远程攻击 1.5s 后切换为远程校准 (常驻无倒计时 d=-1.0, 25.5% 规避率)
     m_ev_r, a_ev_r = make_evade_grant_statmod(
         mod_id="bumblebee_cin_dotm_calib_ranged",
         evade_type="ranged",
         grant_chance=1.0,
         evade_chance=0.255,
-        duration=0.0,
-        trigger="onPreDamage",
-        trigger_scope="level=Ranged",
+        duration=0.0,  # 常驻无倒计时 (内部自动转为 -1.0)
+        trigger="onStart",
+        trigger_scope="",
         appr_id="appr_bumblebee_cin_dotm_calib_ranged",
         callout_text="远程校准",
         show_callout=True,
     )
     mods.update(m_ev_r)
     appears.update(a_ev_r)
+
+    # 3b. 远程校准切换倒计时 (1.5秒灰色远程规避倒计时图标 \uE518)
+    m_ev_r_cd, a_ev_r_cd = make_evade_grant_statmod(
+        mod_id="bumblebee_cin_dotm_calib_ranged_cd",
+        evade_type="ranged",
+        grant_chance=1.0,
+        evade_chance=0.0,
+        duration=1.5,
+        trigger="onStart",
+        trigger_scope="",
+        appr_id="appr_bumblebee_cin_dotm_calib_ranged_cd",
+        callout_text="远程校准切换",
+        pua_icon="\uE518",
+        color_hex=AbilityColor.GRAY_COOLDOWN_TC,
+        gradient_bottom=AbilityColor.GRAY_COOLDOWN_GB,
+        show_callout=False,
+    )
+    m_ev_r_cd["bumblebee_cin_dotm_calib_ranged_cd"]["g"] = "dotm_calib_ranged_cd"
+    mods.update(m_ev_r_cd)
+    appears.update(a_ev_r_cd)
 
     # 4. SP1 破甲 (ID: 2426): 每一击 60% 施加 35% 破甲 6 秒，移除对方护甲增益
     m_sp1_ab, a_sp1_ab = make_armor_break_statmod(

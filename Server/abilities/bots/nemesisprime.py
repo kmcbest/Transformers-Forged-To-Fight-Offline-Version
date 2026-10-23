@@ -7,18 +7,21 @@ Bot ID: nemesisprime_gs_voyager2015
 
 【官方技能真理源对照 (来自 Upstash KV 聚合 Priorities 清单)】：
 -----------------------------------------------------------------------------
-1. [被动 - 黑暗能量] (ID: 3209, pua_icon: 0xe90a)
+1. [被动 - 暗能量] (ID: 3209, pua_icon: 0xe90a)
    - 暗天陨血量在50~100%时每10秒获得一个黑暗能量充能，15~50%时每7秒获得一个，低于15%时每5秒获得一个，最多获得10层。
+   - 开局显现紫色 (#D204F6) 倒计时图标 (\uE407)，倒计时走完获得紫色 (\uE90A) 层数图标，满10层后倒计时图标消失，少于10层时恢复倒计时。
 2. [被动 - 重击驱散] (ID: 3218, pua_icon: 0xe950)
-   - 重击命中时随机驱散对手一个近战增益或护甲增益。每多一层黑暗能量，重击伤害+5%。
+   - 重击命中时驱散一个近战或护甲增益。每有一个黑暗能量充能，重击伤害+5%。
 3. [觉醒 - 赝品领导模块] (ID: 3221, pua_icon: 0xe503)
-   - 暗天陨将所有特殊技造成伤害的25%变成自己的生命值 (跳绿字)。
+   - 将特殊技造成伤害的25%转化为生命值 (吸血)。
 4. [SP3 - 不可防御] (ID: 3224, pua_icon: 0xe41f)
-   - 技能结束后，暗天陨的基础攻击全部不可防御，持续7秒，每多一层黑暗能量持续时间增加0.5秒。消耗全部黑暗能量。
+   - 技能结束后，暗天陨的普通攻击全部不可防御，持续7秒，每有一个黑暗能量充能，持续时间增加0.5秒。消耗全部黑暗能量充能。
 -----------------------------------------------------------------------------
 """
 
 from ..core import (
+    AbilityColor,
+    make_statmod_appearance,
     make_heal_statmod,
     validate_color_code,
     validate_statmod,
@@ -33,40 +36,76 @@ def build_nemesisprime_abilities(base_hp: float = 31500.0, base_atk: float = 238
     mods = {}
     appears = {}
 
-    # 1. 黑暗能量 (ID: 3209): 随血量每 10s/7s/5s 充能 1 层 (上限 10 层)
-    validate_color_code("7C3AED", "dark_energy_tc")
-    validate_color_code("5B21B6", "dark_energy_gb")
-    appr_dark = {
-        "id": "appr_nemesisprime_dark_energy",
-        "a": "黑暗能量",
-        "s": "黑暗能量",
-        "l": "血量越低充能越快(上限10层)，每层提升重击伤害5%",
-        "ss": "黑暗能量充能",
-        "t": "\uE90A",
-        "f": "",
-        "st": "黑暗能量",
-        "ps": "黑暗能量",
-        "pl": "黑暗能量生效中",
-        "tc": "7C3AED",
-        "gt": "7C3AED",
-        "gb": "5B21B6",
-    }
-    mod_dark = {
-        "id": "nemesisprime_dark_energy",
-        "t": "passive",
+    # 1a. 黑暗能量充能倒计时: 开局即显现深紫色 \uE407 倒计时图标 (10s / 7s / 5s)
+    appr_dark_cd = make_statmod_appearance(
+        appr_id="appr_nemesisprime_dark_cd",
+        desc="随血量每10秒/7秒/5秒充能一层黑暗能量",
+        short_desc="黑暗能量充能倒计时",
+        pua_icon="\uE407",
+        color=AbilityColor.DARK_PURPLE_SPECIAL,
+        show_callout=False,
+        active_desc="黑暗能量充能中",
+    )
+    mod_dark_cd = {
+        "id": "nemesisprime_dark_cd",
+        "t": "attack_buff",
         "tm": "",
-        "tr": ["always"],
-        "uit": ["always"],
+        "tr": ["onStart"],
+        "uit": ["onStart"],
         "pri": 0,
         "trm": 0.0,
         "trs": "",
         "trr": "repeat",
         "c": 1.0,
-        "m": 1.0,
-        "d": 0.0,
+        "m": 0.0,
+        "d": 10.0,
         "s": "none",
         "ta": "self",
-        "mt": "passive",
+        "mt": "buff",
+        "v": "",
+        "ms": "",
+        "st": 1,
+        "g": "dark_energy_cd",
+        "gc": 0.0,
+        "gcv": "",
+        "rcv": "",
+        "ti": 0,
+        "a": ["appr_nemesisprime_dark_cd"],
+        "au": [],
+        "rh": 0.0,
+        "ra": 0.0,
+    }
+    validate_statmod(mod_dark_cd)
+    mods["nemesisprime_dark_cd"] = mod_dark_cd
+    appears["appr_nemesisprime_dark_cd"] = appr_dark_cd
+
+    # 1b. 黑暗能量层数 (ID: 3209): 深紫色 \uE90A 图标，无倒计时 (d=-1.0)，上限 10 层
+    appr_dark = make_statmod_appearance(
+        appr_id="appr_nemesisprime_dark_energy",
+        callout_text="黑暗能量",
+        desc="血量越低充能越快(上限10层)，每层提升重击伤害5%",
+        short_desc="黑暗能量充能",
+        pua_icon="\uE90A",
+        color=AbilityColor.DARK_PURPLE_SPECIAL,
+        show_callout=True,
+        active_desc="黑暗能量生效中",
+    )
+    mod_dark = {
+        "id": "nemesisprime_dark_energy",
+        "t": "attack_buff",
+        "tm": "",
+        "tr": ["onStart"],
+        "uit": ["onStart"],
+        "pri": 0,
+        "trm": 0.0,
+        "trs": "",
+        "trr": "repeat",
+        "c": 1.0,
+        "m": 0.0,
+        "d": -1.0,
+        "s": "none",
+        "ta": "self",
+        "mt": "buff",
         "v": "",
         "ms": "",
         "st": 10,
@@ -85,21 +124,16 @@ def build_nemesisprime_abilities(base_hp: float = 31500.0, base_atk: float = 238
     appears["appr_nemesisprime_dark_energy"] = appr_dark
 
     # 2. 重击驱散 (ID: 3218): 重击命中驱散近战/护甲增益
-    appr_dispel = {
-        "id": "appr_nemesisprime_heavy_dispel",
-        "a": "重击驱散",
-        "s": "重击驱散",
-        "l": "重击驱散目标一个近战或护甲增益",
-        "ss": "重击增益驱散",
-        "t": "\uE950",
-        "f": "",
-        "st": "驱散",
-        "ps": "重击驱散",
-        "pl": "重击驱散生效中",
-        "tc": "EF4444",
-        "gt": "EF4444",
-        "gb": "B91C1C",
-    }
+    appr_dispel = make_statmod_appearance(
+        appr_id="appr_nemesisprime_heavy_dispel",
+        callout_text="重击驱散",
+        desc="重击驱散目标一个近战或护甲增益",
+        short_desc="重击增益驱散",
+        pua_icon="\uE950",
+        color=AbilityColor.RED_DEBUFF,
+        show_callout=True,
+        active_desc="重击驱散生效中",
+    )
     mod_dispel = {
         "id": "nemesisprime_heavy_dispel",
         "t": "passive",
@@ -135,23 +169,16 @@ def build_nemesisprime_abilities(base_hp: float = 31500.0, base_atk: float = 238
 
     # 3. 觉醒赝品领导模块 (ID: 3221, pua_icon: 0xe503):
     # a) 特殊技激活时显现 6 秒生命汲取增益 (血条下方显现 E503 倒计时圆环图标与呼出条)
-    validate_color_code("10B981", "nemesis_matrix_tc")
-    validate_color_code("059669", "nemesis_matrix_gb")
-    appr_mat_buff = {
-        "id": "appr_nemesisprime_matrix_buff",
-        "a": "赝品领导模块",
-        "s": "生命汲取",
-        "l": "特殊技造成伤害的25%转化为生命值",
-        "ss": "特技吸血25%",
-        "t": "\uE503",
-        "f": "",
-        "st": "生命汲取",
-        "ps": "赝品领导模块",
-        "pl": "生命汲取生效中",
-        "tc": "10B981",
-        "gt": "10B981",
-        "gb": "059669",
-    }
+    appr_mat_buff = make_statmod_appearance(
+        appr_id="appr_nemesisprime_matrix_buff",
+        callout_text="赝品领导模块",
+        desc="特殊技造成伤害的25%转化为生命值",
+        short_desc="特技吸血25%",
+        pua_icon="\uE503",
+        color=AbilityColor.GREEN_HEALTH,
+        show_callout=True,
+        active_desc="生命汲取生效中",
+    )
     mod_mat_buff = {
         "id": "nemesisprime_matrix_buff",
         "t": "buff",
@@ -203,26 +230,17 @@ def build_nemesisprime_abilities(base_hp: float = 31500.0, base_atk: float = 238
     mods.update(m_matrix)
     appears.update(a_matrix)
 
-
-
     # 4. SP3 不可防御 (ID: 3224): 基础攻击不可防御 7s (+0.5s/层)
-    validate_color_code("DC2626", "unblockable_tc")
-    validate_color_code("991B1B", "unblockable_gb")
-    appr_unbl = {
-        "id": "appr_nemesisprime_sp3_unblockable",
-        "a": "绝对破防",
-        "s": "不可防御",
-        "l": "技能结束后基础攻击全部不可防御，持续7秒以上",
-        "ss": "全攻击破防",
-        "t": "\uE41F",
-        "f": "",
-        "st": "不可防御",
-        "ps": "绝对破防",
-        "pl": "绝对破防生效中",
-        "tc": "DC2626",
-        "gt": "DC2626",
-        "gb": "991B1B",
-    }
+    appr_unbl = make_statmod_appearance(
+        appr_id="appr_nemesisprime_sp3_unblockable",
+        callout_text="绝对破防",
+        desc="技能结束后基础攻击全部不可防御，持续7秒以上",
+        short_desc="全攻击破防",
+        pua_icon="\uE41F",
+        color=AbilityColor.ORANGE_DAMAGE,
+        show_callout=True,
+        active_desc="绝对破防生效中",
+    )
     mod_unbl = {
         "id": "nemesisprime_sp3_unblockable",
         "t": "buff",

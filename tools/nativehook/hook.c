@@ -794,6 +794,26 @@ static void* s_tantrum_unstop_sm_p0 = NULL;
 static void* s_tantrum_unstop_sm_p1 = NULL;
 static void* s_bumblebee_burst_sm_p0 = NULL;
 static void* s_bumblebee_burst_sm_p1 = NULL;
+static void* s_bumblebee_calib_melee_sm_p0 = NULL;
+static void* s_bumblebee_calib_melee_sm_p1 = NULL;
+static void* s_bumblebee_calib_ranged_sm_p0 = NULL;
+static void* s_bumblebee_calib_ranged_sm_p1 = NULL;
+static void* s_bumblebee_calib_melee_cd_sm_p0 = NULL;
+static void* s_bumblebee_calib_melee_cd_sm_p1 = NULL;
+static void* s_bumblebee_calib_ranged_cd_sm_p0 = NULL;
+static void* s_bumblebee_calib_ranged_cd_sm_p1 = NULL;
+static void* s_megatron_fusion_cd_sm_p0 = NULL;
+static void* s_megatron_fusion_cd_sm_p1 = NULL;
+static void* s_megatron_fusion_stack_sm_p0 = NULL;
+static void* s_megatron_fusion_stack_sm_p1 = NULL;
+static void* s_megatron_debuff_fusion_sm_p0 = NULL;
+static void* s_megatron_debuff_fusion_sm_p1 = NULL;
+static void* s_megatron_overload_sm_p0 = NULL;
+static void* s_megatron_overload_sm_p1 = NULL;
+static void* s_nemesis_dark_cd_sm_p0 = NULL;
+static void* s_nemesis_dark_cd_sm_p1 = NULL;
+static void* s_nemesis_dark_stack_sm_p0 = NULL;
+static void* s_nemesis_dark_stack_sm_p1 = NULL;
 
 // BuffsController.ApplyBuff(BuffsController this, BuffsController applicant, StatModifier statModifier, bool updateAttributes, bool useOverrideDuration, float overrideDuration, void* method) @ RVA 0x00EEFB44
 typedef void* (*fn_apply_statmod_buff)(void* this_bc, void* applicant_bc, void* statModifier, int32_t updateAttributes, int32_t useOverrideDuration, float overrideDuration, void* method);
@@ -5000,6 +5020,26 @@ void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     s_tantrum_unstop_sm_p1 = NULL;
     s_bumblebee_burst_sm_p0 = NULL;
     s_bumblebee_burst_sm_p1 = NULL;
+    s_bumblebee_calib_melee_sm_p0 = NULL;
+    s_bumblebee_calib_melee_sm_p1 = NULL;
+    s_bumblebee_calib_ranged_sm_p0 = NULL;
+    s_bumblebee_calib_ranged_sm_p1 = NULL;
+    s_bumblebee_calib_melee_cd_sm_p0 = NULL;
+    s_bumblebee_calib_melee_cd_sm_p1 = NULL;
+    s_bumblebee_calib_ranged_cd_sm_p0 = NULL;
+    s_bumblebee_calib_ranged_cd_sm_p1 = NULL;
+    s_megatron_fusion_cd_sm_p0 = NULL;
+    s_megatron_fusion_cd_sm_p1 = NULL;
+    s_megatron_fusion_stack_sm_p0 = NULL;
+    s_megatron_fusion_stack_sm_p1 = NULL;
+    s_megatron_debuff_fusion_sm_p0 = NULL;
+    s_megatron_debuff_fusion_sm_p1 = NULL;
+    s_megatron_overload_sm_p0 = NULL;
+    s_megatron_overload_sm_p1 = NULL;
+    s_nemesis_dark_cd_sm_p0 = NULL;
+    s_nemesis_dark_cd_sm_p1 = NULL;
+    s_nemesis_dark_stack_sm_p0 = NULL;
+    s_nemesis_dark_stack_sm_p1 = NULL;
     g_p0_block_reset_done = 0;
     g_p0_after_heavy = 0;
     g_p0_combo_ended = 0;
@@ -7446,6 +7486,50 @@ uint64_t skill_get_block_enter_ms(int player_index) {
     return (player_index == 0) ? g_p0_block_enter_ms : g_p1_block_enter_ms;
 }
 
+void skill_apply_buff_dur(int player_index, const char* mod_id, float override_dur) {
+    if (!mod_id || !g_base) return;
+    void* pc = (player_index == 0) ? g_p0_controller : g_p1_controller;
+    if (!pc || !obj_ok(pc)) return;
+    void* bc = *(void**)((char*)pc + 0x88);
+    if (!bc || !obj_ok(bc)) return;
+
+    void* sm = NULL;
+    if (strcmp(mod_id, "bumblebee_cin_dotm_calib_melee") == 0) {
+        sm = (player_index == 0) ? s_bumblebee_calib_melee_sm_p0 : s_bumblebee_calib_melee_sm_p1;
+    } else if (strcmp(mod_id, "bumblebee_cin_dotm_calib_ranged") == 0) {
+        sm = (player_index == 0) ? s_bumblebee_calib_ranged_sm_p0 : s_bumblebee_calib_ranged_sm_p1;
+    } else if (strcmp(mod_id, "bumblebee_cin_dotm_calib_melee_cd") == 0) {
+        sm = (player_index == 0) ? s_bumblebee_calib_melee_cd_sm_p0 : s_bumblebee_calib_melee_cd_sm_p1;
+    } else if (strcmp(mod_id, "bumblebee_cin_dotm_calib_ranged_cd") == 0) {
+        sm = (player_index == 0) ? s_bumblebee_calib_ranged_cd_sm_p0 : s_bumblebee_calib_ranged_cd_sm_p1;
+    } else if (strcmp(mod_id, "bumblebee_cin_dotm_burst_atk") == 0) {
+        sm = (player_index == 0) ? s_bumblebee_burst_sm_p0 : s_bumblebee_burst_sm_p1;
+    } else if (strcmp(mod_id, "megatron_fusion_cd") == 0) {
+        sm = (player_index == 0) ? s_megatron_fusion_cd_sm_p0 : s_megatron_fusion_cd_sm_p1;
+    } else if (strcmp(mod_id, "megatron_fusion_cannon") == 0) {
+        sm = (player_index == 0) ? s_megatron_fusion_stack_sm_p0 : s_megatron_fusion_stack_sm_p1;
+    } else if (strcmp(mod_id, "megatron_debuff_fusion") == 0) {
+        sm = (player_index == 0) ? s_megatron_debuff_fusion_sm_p0 : s_megatron_debuff_fusion_sm_p1;
+    } else if (strcmp(mod_id, "megatron_fusion_overload") == 0) {
+        sm = (player_index == 0) ? s_megatron_overload_sm_p0 : s_megatron_overload_sm_p1;
+    } else if (strcmp(mod_id, "nemesisprime_dark_cd") == 0) {
+        sm = (player_index == 0) ? s_nemesis_dark_cd_sm_p0 : s_nemesis_dark_cd_sm_p1;
+    } else if (strcmp(mod_id, "nemesisprime_dark_energy") == 0) {
+        sm = (player_index == 0) ? s_nemesis_dark_stack_sm_p0 : s_nemesis_dark_stack_sm_p1;
+    }
+
+    if (sm && obj_ok(sm)) {
+        PROTECT({
+            fn_apply_statmod_buff apply_buff = (fn_apply_statmod_buff)(g_base + 0x00EEFB44);
+            apply_buff(bc, bc, sm, 1, 1, override_dur, NULL);
+            flog("SKILL_APPLY_BUFF_DUR: Direct ApplyBuff for '%s' on P%d (dur=%.2f)", mod_id, player_index, override_dur);
+        });
+        return;
+    }
+
+    skill_apply_buff(player_index, mod_id);
+}
+
 void skill_apply_buff(int player_index, const char* mod_id) {
     if (!mod_id || !g_base) return;
     void* pc = (player_index == 0) ? g_p0_controller : g_p1_controller;
@@ -7533,6 +7617,65 @@ void skill_consume_buff(int player_index, const char* mod_id, int count) {
                  count > 0 ? count : 1, mod_id, player_index);
         }
     });
+}
+
+int skill_fuse_target_debuffs(int target_player_index) {
+    if (!g_base) return 0;
+    void* pc = (target_player_index == 0) ? g_p0_controller : g_p1_controller;
+    if (!pc || !obj_ok(pc)) return 0;
+    void* bc = *(void**)((char*)pc + 0x88);
+    if (!bc || !obj_ok(bc)) return 0;
+
+    int fused_count = 0;
+    PROTECT({
+        void* list = *(void**)((char*)bc + 0x40);
+        if (!list || !obj_ok(list)) {
+            list = *(void**)((char*)bc + 0x20);
+        }
+        if (list && obj_ok(list)) {
+            void* items = *(void**)((char*)list + 0x10);
+            int32_t size = *(int32_t*)((char*)list + 0x18);
+            if (items && obj_ok(items) && size > 0 && size < 128) {
+                for (int i = 0; i < size; i++) {
+                    void* buff = *(void**)((char*)items + 0x20 + i * 8);
+                    if (!buff || !obj_ok(buff)) continue;
+
+                    bool is_stopped = *(uint8_t*)((char*)buff + 0x6C);
+                    if (is_stopped) continue;
+
+                    int32_t mod_type = *(int32_t*)((char*)buff + 0x18);
+                    float dur = *(float*)((char*)buff + 0x48);
+
+                    void* id_str_obj = *(void**)((char*)buff + 0x28);
+                    char b_id[64] = {0};
+                    if (id_str_obj && obj_ok(id_str_obj)) read_str(id_str_obj, b_id, sizeof(b_id));
+
+                    int is_debuff = (mod_type == 2);
+                    if (!is_debuff) {
+                        if (strstr(b_id, "debuff") != NULL ||
+                            strstr(b_id, "armor_break") != NULL ||
+                            strstr(b_id, "shock") != NULL ||
+                            strstr(b_id, "bleed") != NULL ||
+                            strstr(b_id, "leak") != NULL ||
+                            strstr(b_id, "burn") != NULL ||
+                            strstr(b_id, "weakness") != NULL) {
+                            is_debuff = 1;
+                        }
+                    }
+
+                    if (is_debuff && dur > 0.0f) {
+                        *(float*)((char*)buff + 0x48) = -1.0f;
+                        *(float*)((char*)buff + 0x4C) = -1.0f;
+                        *(float*)((char*)buff + 0x50) = 0.0f;
+                        fused_count++;
+                        flog("SKILL_FUSE: Fused debuff '%s' on P%d to PERMANENT (-1.0s)", b_id, target_player_index);
+                    }
+                }
+            }
+        }
+    });
+
+    return fused_count;
 }
 
 int skill_get_prowl_melee_stacks(int player_index) {
@@ -8061,7 +8204,92 @@ int hook_192(void* self, void* statModifier, float* pRoll, float* pChance, void*
         }
     }
 
-        // 11. 电影大黄蜂 (Bumblebee DOTM):
+        // 11. 电影大黄蜂 / G1威震天 / 暗天陨 开局与动态 Buff 捕获及门禁:
+    if (mod_id[0] && strcmp(mod_id, "bumblebee_cin_dotm_calib_melee") == 0) {
+        void* owner_bc = (statModifier && obj_ok(statModifier)) ? *(void**)((char*)statModifier + 0x10) : NULL;
+        int is_p0 = is_player0_bc(owner_bc);
+        if (is_p0) s_bumblebee_calib_melee_sm_p0 = statModifier;
+        else s_bumblebee_calib_melee_sm_p1 = statModifier;
+        if (pChance) *pChance = 1.0f;
+        if (pRoll) *pRoll = 0.0f;
+        flog("BUMBLEBEE_CAPTURE_SM: calib_melee captured & applied at start for %s -> sm=%p", is_p0 ? "P0" : "P1", statModifier);
+        return 1; // 开局自动激活近战规避图标
+    }
+    if (mod_id[0] && strcmp(mod_id, "bumblebee_cin_dotm_calib_ranged") == 0) {
+        void* owner_bc = (statModifier && obj_ok(statModifier)) ? *(void**)((char*)statModifier + 0x10) : NULL;
+        int is_p0 = is_player0_bc(owner_bc);
+        if (is_p0) s_bumblebee_calib_ranged_sm_p0 = statModifier;
+        else s_bumblebee_calib_ranged_sm_p1 = statModifier;
+        flog("BUMBLEBEE_CAPTURE_SM: calib_ranged captured for %s -> sm=%p", is_p0 ? "P0" : "P1", statModifier);
+        return 0; // 开局不激活，待受到远程攻击 1.5s 后施加
+    }
+    if (mod_id[0] && strcmp(mod_id, "bumblebee_cin_dotm_calib_melee_cd") == 0) {
+        void* owner_bc = (statModifier && obj_ok(statModifier)) ? *(void**)((char*)statModifier + 0x10) : NULL;
+        int is_p0 = is_player0_bc(owner_bc);
+        if (is_p0) s_bumblebee_calib_melee_cd_sm_p0 = statModifier;
+        else s_bumblebee_calib_melee_cd_sm_p1 = statModifier;
+        return 0;
+    }
+    if (mod_id[0] && strcmp(mod_id, "bumblebee_cin_dotm_calib_ranged_cd") == 0) {
+        void* owner_bc = (statModifier && obj_ok(statModifier)) ? *(void**)((char*)statModifier + 0x10) : NULL;
+        int is_p0 = is_player0_bc(owner_bc);
+        if (is_p0) s_bumblebee_calib_ranged_cd_sm_p0 = statModifier;
+        else s_bumblebee_calib_ranged_cd_sm_p1 = statModifier;
+        return 0;
+    }
+    if (mod_id[0] && strcmp(mod_id, "megatron_fusion_cd") == 0) {
+        void* owner_bc = (statModifier && obj_ok(statModifier)) ? *(void**)((char*)statModifier + 0x10) : NULL;
+        int is_p0 = is_player0_bc(owner_bc);
+        if (is_p0) s_megatron_fusion_cd_sm_p0 = statModifier;
+        else s_megatron_fusion_cd_sm_p1 = statModifier;
+        if (pChance) *pChance = 1.0f;
+        if (pRoll) *pRoll = 0.0f;
+        flog("MEGATRON_CAPTURE_SM: fusion_cd captured & applied at start for %s -> sm=%p", is_p0 ? "P0" : "P1", statModifier);
+        return 1; // 开局自动激活 6 秒灰色融合炮倒计时图标
+    }
+    if (mod_id[0] && strcmp(mod_id, "megatron_fusion_cannon") == 0) {
+        void* owner_bc = (statModifier && obj_ok(statModifier)) ? *(void**)((char*)statModifier + 0x10) : NULL;
+        int is_p0 = is_player0_bc(owner_bc);
+        if (is_p0) s_megatron_fusion_stack_sm_p0 = statModifier;
+        else s_megatron_fusion_stack_sm_p1 = statModifier;
+        flog("MEGATRON_CAPTURE_SM: fusion_cannon stack captured for %s -> sm=%p", is_p0 ? "P0" : "P1", statModifier);
+        return 0; // 开局不激活，待每 6 秒倒计时走完后叠加
+    }
+    if (mod_id[0] && strcmp(mod_id, "megatron_debuff_fusion") == 0) {
+        void* owner_bc = (statModifier && obj_ok(statModifier)) ? *(void**)((char*)statModifier + 0x10) : NULL;
+        int is_p0 = is_player0_bc(owner_bc);
+        if (is_p0) s_megatron_debuff_fusion_sm_p0 = statModifier;
+        else s_megatron_debuff_fusion_sm_p1 = statModifier;
+        flog("MEGATRON_CAPTURE_SM: debuff_fusion captured for %s -> sm=%p", is_p0 ? "P0" : "P1", statModifier);
+        return 0; // 开局绝不激活！仅在有融合炮重击命中成功融合对手减益时由 skill_apply_buff 触发
+    }
+    if (mod_id[0] && strcmp(mod_id, "megatron_fusion_overload") == 0) {
+        void* owner_bc = (statModifier && obj_ok(statModifier)) ? *(void**)((char*)statModifier + 0x10) : NULL;
+        int is_p0 = is_player0_bc(owner_bc);
+        if (is_p0) s_megatron_overload_sm_p0 = statModifier;
+        else s_megatron_overload_sm_p1 = statModifier;
+        flog("MEGATRON_CAPTURE_SM: fusion_overload captured for %s -> sm=%p", is_p0 ? "P0" : "P1", statModifier);
+        return 0; // 开局绝不激活！仅在 SP3 施放时由 skill_apply_buff 触发
+    }
+    if (mod_id[0] && strcmp(mod_id, "nemesisprime_dark_cd") == 0) {
+        void* owner_bc = (statModifier && obj_ok(statModifier)) ? *(void**)((char*)statModifier + 0x10) : NULL;
+        int is_p0 = is_player0_bc(owner_bc);
+        if (is_p0) s_nemesis_dark_cd_sm_p0 = statModifier;
+        else s_nemesis_dark_cd_sm_p1 = statModifier;
+        if (pChance) *pChance = 1.0f;
+        if (pRoll) *pRoll = 0.0f;
+        flog("NEMESIS_CAPTURE_SM: dark_cd captured & applied at start for %s -> sm=%p", is_p0 ? "P0" : "P1", statModifier);
+        return 1; // 开局自动激活紫色 E407 倒计时图标
+    }
+    if (mod_id[0] && strcmp(mod_id, "nemesisprime_dark_energy") == 0) {
+        void* owner_bc = (statModifier && obj_ok(statModifier)) ? *(void**)((char*)statModifier + 0x10) : NULL;
+        int is_p0 = is_player0_bc(owner_bc);
+        if (is_p0) s_nemesis_dark_stack_sm_p0 = statModifier;
+        else s_nemesis_dark_stack_sm_p1 = statModifier;
+        flog("NEMESIS_CAPTURE_SM: dark_energy stack captured for %s -> sm=%p", is_p0 ? "P0" : "P1", statModifier);
+        return 0; // 开局不激活，待倒计时走完后叠加紫色 E90A 层数图标
+    }
+
     // a) 第 16 层爆发增益: 捕获 StatModifier，由满 15 层后通过 skill_apply_buff 施加
     if (mod_id[0] && strstr(mod_id, "bumblebee_cin_dotm_burst_atk") != NULL) {
         void* owner_bc = (statModifier && obj_ok(statModifier)) ? *(void**)((char*)statModifier + 0x10) : NULL;

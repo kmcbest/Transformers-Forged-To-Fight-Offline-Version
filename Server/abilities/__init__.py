@@ -6,6 +6,7 @@ TFTF Combat Ability & Buff System Package
 """
 
 from .sp_callouts import BOT_SP_MAP, build_sp_callout_appears, build_sp_callout_statmods
+from .core import AbilityColor, make_statmod_appearance
 from .registry import (
     register_bot,
     load_all_bots,

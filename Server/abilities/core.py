@@ -9,11 +9,56 @@ TFTF Combat Ability Core Engine & Mechanic Templates
   3. 执行严格的底层契约与类型安全校验（颜色纯6位十六进制、数值截断防护、列表包装等）。
 """
 
-from typing import Dict, Any, Tuple, List, Optional
+from typing import Dict, Any, Tuple, List, Optional, Union
+
+
+# ===========================================================================
+# TFTF Standard Ability Icon Color Palette (官方战斗 HUD 标准调色板)
+# ===========================================================================
+class AbilityColor:
+    # 红色图标 (减益类): 一般表示减益，如流血、震击、破甲、焚烧、能量流失、攻击削弱
+    RED_DEBUFF = {"tc": "EF4444", "gt": "EF4444", "gb": "B91C1C"}
+    RED_DEBUFF_TC = "EF4444"
+    RED_DEBUFF_GB = "B91C1C"
+
+    # 橙色图标 (伤害类增益): 一般表示伤害类增益，如近战加成、特殊技伤害、狂怒、远程增益、暴击强化
+    ORANGE_DAMAGE = {"tc": "FF8800", "gt": "FF8800", "gb": "DD6600"}
+    ORANGE_DAMAGE_TC = "FF8800"
+    ORANGE_DAMAGE_GB = "DD6600"
+
+    # 黄色图标 (状态/控制类): 用得不多，不可阻挡的状态是黄色，眩晕/失控等控制状态
+    YELLOW_STATUS = {"tc": "FFE000", "gt": "FFE000", "gb": "FFAA00"}
+    YELLOW_STATUS_TC = "FFE000"
+    YELLOW_STATUS_GB = "FFAA00"
+
+    # 蓝色图标 (防御类增益): 一般表示防御类增益，如护甲提升、力场护盾、伤害抗性
+    BLUE_DEFENSE = {"tc": "29EBF4", "gt": "29EBF4", "gb": "00C5E8"}
+    BLUE_DEFENSE_TC = "29EBF4"
+    BLUE_DEFENSE_GB = "00C5E8"
+
+    # 绿色图标 (生命类与规避): 一般表示生命类增益，如修复、急救、近战规避、远程规避
+    GREEN_HEALTH = {"tc": "10B981", "gt": "10B981", "gb": "059669"}
+    GREEN_HEALTH_TC = "10B981"
+    GREEN_HEALTH_GB = "059669"
+
+    # 浅紫色图标 (能量类增益): 一般表示能量类增益，如能量获取、能量功率提升、能量充满
+    LIGHT_PURPLE_POWER = {"tc": "C4BBF8", "gt": "C4BBF8", "gb": "7E22CE"}
+    LIGHT_PURPLE_POWER_TC = "C4BBF8"
+    LIGHT_PURPLE_POWER_GB = "7E22CE"
+
+    # 深紫色图标 (宇宙大帝/邪恶专属): 用于几个宇宙大帝邪恶角色的特别图标，如暗天陨的黑暗能量充能，威震天的融合炮
+    DARK_PURPLE_SPECIAL = {"tc": "FF00FF", "gt": "FF00FF", "gb": "9333EA"}
+    DARK_PURPLE_SPECIAL_TC = "FF00FF"
+    DARK_PURPLE_SPECIAL_GB = "9333EA"
+
+    # 灰色图标 (倒计时与过渡状态): 一般表示倒计时和过渡状态，如蓄力等待、模式切换冷却、未激活的预热状态
+    GRAY_COOLDOWN = {"tc": "CBD5E1", "gt": "CBD5E1", "gb": "94A3B8"}
+    GRAY_COOLDOWN_TC = "CBD5E1"
+    GRAY_COOLDOWN_GB = "94A3B8"
 
 
 # ---------------------------------------------------------------------------
-# 1. 契约校验器 (Contract Validators)
+# 1. 契约校验器 (Contract Validators) & 通用外观构造器
 # ---------------------------------------------------------------------------
 
 def validate_color_code(color: str, field_name: str = "color"):
@@ -58,6 +103,56 @@ def validate_appear(appr: Dict[str, Any]):
             validate_color_code(appr[c_field], f"{appr_id}.{c_field}")
 
 
+def make_statmod_appearance(
+    appr_id: str,
+    callout_text: str = "",
+    desc: str = "",
+    pua_icon: str = "",
+    color: Any = AbilityColor.BLUE_DEFENSE,
+    show_callout: bool = True,
+    short_desc: str = "",
+    active_desc: str = "",
+) -> Dict[str, Any]:
+    """
+    通用 StatModAppear 外观字典构造器：
+    支持传入 AbilityColor 调色板字典 (如 AbilityColor.DARK_PURPLE_SPECIAL)、元组或 6 位纯十六进制字符串。
+    """
+    if isinstance(color, dict):
+        tc = color.get("tc", "FFFFFF")
+        gt = color.get("gt", tc)
+        gb = color.get("gb", tc)
+    elif isinstance(color, (list, tuple)):
+        tc = color[0]
+        gt = color[0]
+        gb = color[1] if len(color) > 1 else color[0]
+    else:
+        tc = str(color)
+        gt = str(color)
+        gb = str(color)
+
+    validate_color_code(tc, f"{appr_id}.tc")
+    validate_color_code(gt, f"{appr_id}.gt")
+    validate_color_code(gb, f"{appr_id}.gb")
+
+    appear = {
+        "id": appr_id,
+        "a": callout_text,
+        "s": "",                      # 留空避免被当作常驻被动列表项
+        "l": desc or (f"{callout_text}生效中" if callout_text else ""),
+        "ss": short_desc or callout_text,
+        "t": pua_icon,
+        "f": "",
+        "st": callout_text if show_callout else "",
+        "ps": callout_text,
+        "pl": active_desc or (f"{callout_text}生效中" if callout_text else ""),
+        "tc": tc,
+        "gt": gt,
+        "gb": gb,
+    }
+    validate_appear(appear)
+    return appear
+
+
 # ---------------------------------------------------------------------------
 # 2. 通用机制工厂函数 (Mechanic Factories)
 # ---------------------------------------------------------------------------
@@ -77,6 +172,8 @@ def make_bleed_statmod(
     target_scope: str = "none",
     target_actor: str = "opponent",
     pua_icon: str = "\uE401",
+    color_hex: str = AbilityColor.RED_DEBUFF_TC,
+    gradient_bottom: str = AbilityColor.RED_DEBUFF_GB,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """
     通用流血 (Bleed DOT) 工厂：
@@ -91,7 +188,8 @@ def make_bleed_statmod(
     :param appr_id: 外观表现 ID
     :param callout_text: 触发呼出文字 (优先使用中文，如 '流血' / '爆头')
     """
-    validate_color_code("FF0000", "bleed_tc")
+    validate_color_code(color_hex, "bleed_tc")
+    validate_color_code(gradient_bottom, "bleed_gb")
 
     appear = {
         "id": appr_id,
@@ -104,9 +202,9 @@ def make_bleed_statmod(
         "st": callout_text,           # 命中呼出大字 (如 流血 / 爆头)
         "ps": callout_text,
         "pl": f"{callout_text}生效中",
-        "tc": "FF0000",               # 纯 6 位 Hex：鲜红色 (严禁带 '#')
-        "gt": "FF0000",
-        "gb": "FF0000",
+        "tc": color_hex,
+        "gt": color_hex,
+        "gb": gradient_bottom,
     }
 
     stat_mod = {
@@ -204,7 +302,8 @@ def make_unstoppable_statmod(
     play_vfx: bool = False,
     vfx_move: str = "status_unstoppable",
     pua_icon: str = "\uE915",
-    color_hex: str = "FFAA00",
+    color_hex: str = AbilityColor.YELLOW_STATUS_TC,
+    gradient_bottom: str = AbilityColor.YELLOW_STATUS_GB,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """
     通用不可阻挡 (Unstoppable / 霸体) 工厂：
@@ -215,6 +314,8 @@ def make_unstoppable_statmod(
     3. 若 show_callout 为 True，弹出金色 "不可阻挡" 命中呼出大字与 PUA 矢量图标。
     """
     validate_color_code(color_hex, "unstoppable_color")
+
+    validate_color_code(gradient_bottom, "unstoppable_gb")
 
     appear = {
         "id": appr_id,
@@ -229,7 +330,7 @@ def make_unstoppable_statmod(
         "pl": "不可阻挡生效中",
         "tc": color_hex,
         "gt": color_hex,
-        "gb": "FF8800",
+        "gb": gradient_bottom,
     }
 
     stat_mod = {
@@ -316,8 +417,8 @@ def make_ranged_boost_statmod(
     callout_text: str = "远程增益",
     show_callout: bool = True,
     pua_icon: str = "\uE41B",
-    color_hex: str = "FFAA00",
-    gradient_bottom: str = "FF6600",
+    color_hex: str = AbilityColor.ORANGE_DAMAGE_TC,
+    gradient_bottom: str = AbilityColor.ORANGE_DAMAGE_GB,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """
     通用远程增益工厂 (Ranged Boost Buff):
@@ -397,8 +498,8 @@ def make_shock_statmod(
     target_scope: str = "none",
     target_actor: str = "opponent",
     pua_icon: str = "\uE914",
-    color_hex: str = "FF0000",
-    gradient_bottom: str = "FF0000",
+    color_hex: str = AbilityColor.RED_DEBUFF_TC,
+    gradient_bottom: str = AbilityColor.RED_DEBUFF_GB,
     show_callout: bool = True,
     **kwargs,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
@@ -472,8 +573,8 @@ def make_power_leak_statmod(
     appr_id: str = "appr_power_leak",
     callout_text: str = "能量流失",
     pua_icon: str = "\uE607",
-    color_hex: str = "FF0000",
-    gradient_bottom: str = "FF0000",
+    color_hex: str = AbilityColor.RED_DEBUFF_TC,
+    gradient_bottom: str = AbilityColor.RED_DEBUFF_GB,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """
     通用能量流失工厂 (Power Leak Debuff):
@@ -549,8 +650,8 @@ def make_stun_statmod(
     appr_id: str = "appr_stun",
     callout_text: str = "眩晕",
     pua_icon: str = "\uE605",
-    color_hex: str = "FFE000",
-    gradient_bottom: str = "FFAA00",
+    color_hex: str = AbilityColor.YELLOW_STATUS_TC,
+    gradient_bottom: str = AbilityColor.YELLOW_STATUS_GB,
     show_callout: bool = True,
     **kwargs,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
@@ -623,8 +724,8 @@ def make_nullify_statmod(
     appr_id: str = "appr_nullify",
     callout_text: str = "驱散",
     pua_icon: str = "\uE950",
-    color_hex: str = "38BDF8",
-    gradient_bottom: str = "0284C7",
+    color_hex: str = AbilityColor.BLUE_DEFENSE_TC,
+    gradient_bottom: str = AbilityColor.BLUE_DEFENSE_GB,
     target_actor: str = "opponent",
     show_callout: bool = True,
     **kwargs,
@@ -703,8 +804,8 @@ def make_evade_grant_statmod(
     appr_id: str = "",
     callout_text: str = "",             # "近战规避" 或 "远程规避"
     pua_icon: str = "",
-    color_hex: str = "10B981",          # 纯6位十六进制绿色 (严禁带 '#')
-    gradient_bottom: str = "059669",
+    color_hex: str = AbilityColor.GREEN_HEALTH_TC,
+    gradient_bottom: str = AbilityColor.GREEN_HEALTH_GB,
     show_callout: bool = False,         # 获得时通常不弹字 (触发规避免伤时再呼出“规避”)
     stackable: bool = False,
     max_stacks: int = 1,
@@ -796,8 +897,8 @@ def make_evade_consume_statmod(
     callout_text: str = "规避",
     appr_id: str = "",
     pua_icon: str = "",
-    color_hex: str = "10B981",
-    gradient_bottom: str = "059669",
+    color_hex: str = AbilityColor.GREEN_HEALTH_TC,
+    gradient_bottom: str = AbilityColor.GREEN_HEALTH_GB,
     show_callout: bool = True,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """
@@ -835,8 +936,8 @@ def make_evade_statmod(
     callout_text: str = "",
     consume_on_trigger: bool = False,
     pua_icon: str = "",
-    color_hex: str = "10B981",
-    gradient_bottom: str = "059669",
+    color_hex: str = AbilityColor.GREEN_HEALTH_TC,
+    gradient_bottom: str = AbilityColor.GREEN_HEALTH_GB,
     show_callout: bool = True,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """兼容旧接口的规避工厂封装"""
@@ -868,8 +969,8 @@ def make_crit_rate_statmod(
     appr_id: str = "",
     callout_text: str = "暴击几率",
     pua_icon: str = "\uE406",
-    color_hex: str = "F59E0B",
-    gradient_bottom: str = "D97706",
+    color_hex: str = AbilityColor.ORANGE_DAMAGE_TC,
+    gradient_bottom: str = AbilityColor.ORANGE_DAMAGE_GB,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """
     通用暴击几率增益工厂 (Crit Rate Boost Buff):
@@ -943,8 +1044,8 @@ def make_crit_damage_statmod(
     appr_id: str = "",
     callout_text: str = "暴击伤害",
     pua_icon: str = "\uE406",
-    color_hex: str = "F59E0B",
-    gradient_bottom: str = "D97706",
+    color_hex: str = AbilityColor.ORANGE_DAMAGE_TC,
+    gradient_bottom: str = AbilityColor.ORANGE_DAMAGE_GB,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """
     通用暴击伤害增益工厂 (Crit Damage Boost Buff):
@@ -1016,8 +1117,8 @@ def make_remove_statmod(
     callout_text: str = "规避",
     appr_id: str = "",
     pua_icon: str = "\uE509",
-    color_hex: str = "10B981",
-    gradient_bottom: str = "059669",
+    color_hex: str = AbilityColor.GREEN_HEALTH_TC,
+    gradient_bottom: str = AbilityColor.GREEN_HEALTH_GB,
     show_callout: bool = True,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """
@@ -1094,8 +1195,8 @@ def make_armor_up_statmod(
     callout_text: str = "护甲",
     show_callout: bool = True,
     pua_icon: str = "\uE517",
-    color_hex: str = "29EBF4",
-    gradient_bottom: str = "00C5E8",
+    color_hex: str = AbilityColor.BLUE_DEFENSE_TC,
+    gradient_bottom: str = AbilityColor.BLUE_DEFENSE_GB,
     stackable: bool = True,
     max_stacks: int = 10,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
@@ -1174,8 +1275,8 @@ def make_armor_break_statmod(
     callout_text: str = "破甲",
     show_callout: bool = True,
     pua_icon: str = "\uE516",
-    color_hex: str = "EF4444",
-    gradient_bottom: str = "B91C1C",
+    color_hex: str = AbilityColor.RED_DEBUFF_TC,
+    gradient_bottom: str = AbilityColor.RED_DEBUFF_GB,
     stackable: bool = True,
     max_stacks: int = 10,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
@@ -1254,8 +1355,8 @@ def make_attack_boost_statmod(
     callout_text: str = "攻击加成",
     show_callout: bool = True,
     pua_icon: str = "\uE406",
-    color_hex: str = "F59E0B",
-    gradient_bottom: str = "D97706",
+    color_hex: str = AbilityColor.ORANGE_DAMAGE_TC,
+    gradient_bottom: str = AbilityColor.ORANGE_DAMAGE_GB,
     stackable: bool = True,
     max_stacks: int = 5,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
@@ -1339,8 +1440,8 @@ def make_burn_statmod(
     target_scope: str = "none",
     target_actor: str = "opponent",
     pua_icon: str = "\uE41D",
-    color_hex: str = "FF6600",
-    gradient_bottom: str = "CC3300",
+    color_hex: str = AbilityColor.RED_DEBUFF_TC,
+    gradient_bottom: str = AbilityColor.RED_DEBUFF_GB,
     show_callout: bool = True,
     **kwargs,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
@@ -1416,8 +1517,8 @@ def make_power_lock_statmod(
     appr_id: str = "appr_power_lock",
     callout_text: str = "能量锁定",
     pua_icon: str = "\uE523",
-    color_hex: str = "FF0000",
-    gradient_bottom: str = "FF0000",
+    color_hex: str = AbilityColor.RED_DEBUFF_TC,
+    gradient_bottom: str = AbilityColor.RED_DEBUFF_GB,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """
     通用能量锁定工厂 (Power Lock Debuff):
@@ -1495,8 +1596,8 @@ def make_heal_statmod(
     target_scope: str = "none",
     target_actor: str = "self",
     pua_icon: str = "\uE503",
-    color_hex: str = "10B981",
-    gradient_bottom: str = "059669",
+    color_hex: str = AbilityColor.GREEN_HEALTH_TC,
+    gradient_bottom: str = AbilityColor.GREEN_HEALTH_GB,
     show_callout: bool = True,
     **kwargs,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
