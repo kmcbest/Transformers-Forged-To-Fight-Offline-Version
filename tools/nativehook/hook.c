@@ -626,6 +626,11 @@ static volatile uint64_t g_p0_last_attack_ms = 0;
 
 extern int tftf_get_start_full_power(void);
 extern int tftf_get_combat_debug_overlay(void);
+extern int tftf_get_ai_difficulty(void);
+
+static volatile int g_p1_ai_special_cancel_pending = 0;
+static volatile uint64_t g_p1_ai_special_cancel_deadline_ms = 0;
+static volatile uint64_t g_p1_last_ai_action_ms = 0;
 extern int tftf_quest_is_leisure(void);
 extern int tftf_pvp_is_active(void);
 static uint64_t propgo_now_ms(void);
@@ -5079,6 +5084,9 @@ void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     s_last_hit_index = 0;
     s_ironhide_burned_this_hit = 0;
     s_ramjet_s1_stacks = 0;
+    g_p1_ai_special_cancel_pending = 0;
+    g_p1_ai_special_cancel_deadline_ms = 0;
+    g_p1_last_ai_action_ms = 0;
     skill_dispatch_fight_reset();
     return H[140].orig(a0,a1,a2,a3,a4,a5,a6,a7);
 }
@@ -5647,12 +5655,83 @@ void hook_146(void* self, float dT, void* method){
         void* player=fld_p(self, 0x98);                    // AIController.PlayerController (@0x98)
         if(obj_ok(player) && *(uint8_t*)((uintptr_t)self+0x88) && // AIController._isActive
            ((int(*)(void*,void*))(g_base+0xDB07F4))(self,NULL) && // get_IsActive (@0xDB07F4)
-           !((int(*)(void*,void*))(g_base+0xDB07FC))(self,NULL) && // get_IsPaused (@0xDB07FC)
-           !((int(*)(void*,void*))(g_base+0x11752C8))(player,NULL) && // get_IsAttacking
-           ((int(*)(void*,void*))(g_base+0x1174FEC))(player,NULL)){ // get_CanShoot
-            ((void(*)(void*,int,void*))(g_base+0x1179AF4))(player,1,NULL); // Action.Attack
-            static unsigned fired_lines=0;
-            if(fired_lines<100){ fired_lines++; flog("AIRANGE fired=1 ai=%p player=%p is_p0=%d",self,player,is_p0); }
+           !((int(*)(void*,void*))(g_base+0xDB07FC))(self,NULL)){ // get_IsPaused (@0xDB07FC)
+
+            // Stock ranged attack behavior
+            if (!((int(*)(void*,void*))(g_base+0x11752C8))(player,NULL) && // get_IsAttacking
+                ((int(*)(void*,void*))(g_base+0x1174FEC))(player,NULL)){ // get_CanShoot
+                ((void(*)(void*,int,void*))(g_base+0x1179AF4))(player,1,NULL); // Action.Attack
+                static unsigned fired_lines=0;
+                if(fired_lines<100){ fired_lines++; flog("AIRANGE fired=1 ai=%p player=%p is_p0=%d",self,player,is_p0); }
+            }
+
+            // Global AI Difficulty System:
+            // diff 0: Standard Protocol (stock AI behavior)
+            // diff 1: Tactical Overdrive (M2 combo ender cancel into Special Attack S1/S2/S3)
+            // diff 2: Apex Hunter (Special cancel + reduced hesitation + aggressive Dash rush + defense evasion)
+            // diff 3: Samsara Frenzy (Relentless rush + instant punish + extreme evasion & guard)
+            int ai_diff = tftf_get_ai_difficulty();
+            void* opponent = (player && obj_ok(player)) ? *(void**)((char*)player + 0x90) : NULL;
+            int input_enabled = (player && obj_ok(player)) ? *(uint8_t*)((uintptr_t)player + 0x139) : 0;
+
+            // Only execute AI combat actions once fight is actively running (input_enabled=1, opponent valid)
+            if (ai_diff >= 1 && input_enabled && obj_ok(opponent) && (!is_p0 || ((int(*)(void*))(g_base + 0xC9CF80))(NULL))) {
+                uint64_t now_ms = propgo_now_ms();
+
+                // 1. Pending Special Attack Cancel (Level 1+)
+                if (g_p1_ai_special_cancel_pending) {
+                    if (now_ms <= g_p1_ai_special_cancel_deadline_ms) {
+                        int fired = ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 0x200, NULL);
+                        if (fired) {
+                            g_p1_ai_special_cancel_pending = 0;
+                            flog("AI_DIFF: P1 SpecialAttack cancel succeeded on simulate tick!");
+                        }
+                    } else {
+                        g_p1_ai_special_cancel_pending = 0;
+                    }
+                }
+
+                // 2. Aggressive Tempo & Drive (Level 2 & Level 3)
+                if (ai_diff >= 2 && !g_p1_ai_special_cancel_pending) {
+                    int is_att = ((int(*)(void*,void*))(g_base+0x11752C8))(player,NULL); // IsAttacking
+                    int is_blk = ((int(*)(void*,void*))(g_base+0x11737F8))(player,NULL); // IsBlocking
+                    int is_ddg = ((int(*)(void*,void*))(g_base+0x1175468))(player,NULL); // IsDodging
+                    int is_dsh = ((int(*)(void*,void*))(g_base+0x11754B8))(player,NULL); // IsDashing
+                    int is_spc = ((int(*)(void*,void*))(g_base+0x1173F0C))(player,NULL); // IsSpecialAttacking
+
+                    if (!is_att && !is_blk && !is_ddg && !is_dsh && !is_spc) {
+                        uint64_t threshold_ms = (ai_diff >= 3) ? 140 : 320;
+                        if (g_p1_last_ai_action_ms == 0) {
+                            g_p1_last_ai_action_ms = now_ms;
+                        } else if (now_ms - g_p1_last_ai_action_ms >= threshold_ms) {
+                            // 0x1175978 is GetDistanceToOpponentCollider
+                            float dist = ((float(*)(void*,void*))(g_base+0x1175978))(player,NULL);
+                            
+                            // Level 3 Punish: if meter is available and opponent is not attacking, strike with Special!
+                            if (ai_diff >= 3 && g_p0_controller && obj_ok(g_p0_controller)) {
+                                int opp_att = ((int(*)(void*,void*))(g_base+0x11752C8))(g_p0_controller,NULL);
+                                int p1_sp = ((int(*)(void*,void*))(g_base+0x1173FA4))(player,NULL);
+                                if (p1_sp > 0 && !opp_att && dist < 8.0f) {
+                                    if (((int(*)(void*,int,void*))(g_base+0x1179AF4))(player, 0x200, NULL)) {
+                                        g_p1_last_ai_action_ms = now_ms;
+                                        flog("AI_DIFF: Level 3 Samsara Frenzy punish Special fired!");
+                                    }
+                                }
+                            }
+
+                            if (dist > 3.2f) {
+                                // Close distance with Dash (Action.Dash = 32 = 0x20)
+                                ((void(*)(void*,int,void*))(g_base+0x1179AF4))(player, 32, NULL);
+                                g_p1_last_ai_action_ms = now_ms;
+                            } else {
+                                // Initiate Attack Chain (Action.Attack = 1)
+                                ((void(*)(void*,int,void*))(g_base+0x1179AF4))(player, 1, NULL);
+                                g_p1_last_ai_action_ms = now_ms;
+                            }
+                        }
+                    }
+                }
+            }
         }
     });
 }
@@ -5893,6 +5972,21 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
                 reset_player_attack_chain(self);
             }
         }
+        // Level 2/3 AI reactive evasion against player heavy attack
+        if (is_p0_act && g_p1_controller && obj_ok(g_p1_controller)) {
+            int ai_diff = tftf_get_ai_difficulty();
+            int p1_input = *(uint8_t*)((uintptr_t)g_p1_controller + 0x139);
+            if (ai_diff >= 2 && p1_input && action == 0x100) { // Player charging heavy attack
+                int roll = rand() % 100;
+                int evade_chance = (ai_diff >= 3) ? 85 : 50;
+                if (roll < evade_chance) {
+                    int evade_act = (rand() % 2 == 0) ? 8 : (rand() % 2 == 0 ? 0x40 : 0x80);
+                    ((void(*)(void*,int,void*))(g_base+0x1179AF4))(g_p1_controller, evade_act, NULL);
+                    flog("AI_DIFF: AI reacted to player heavy attack (evade_act=%d, roll=%d < %d)", evade_act, roll, evade_chance);
+                }
+            }
+        }
+
         if (action == 8) { // Action.Dodge ONLY (Swipe back / 后闪)
             if (is_p0_act && strstr(g_p0_bot_id, "prowl") != NULL) {
                 prowl_start_charge(1);
@@ -6650,6 +6744,28 @@ float hook_177(void* self, float damage, void* damageType, int32_t blocked, void
                             static int s_arcee_boost_cnt = 0;
                             if (s_arcee_boost_cnt++ < 20) {
                                 flog("RANGED_DAMAGE_BOOST: damage boosted %.2fx (%.1f -> %.1f)", 1.0f + g_p0_ranged_damage_bonus, old_dmg, damage);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // AI Difficulty combo cancel: When P1 hits P0 with M2 / combo ender, arm special attack
+            if (!is_enemy && g_p1_controller && obj_ok(g_p1_controller)) {
+                int ai_diff = tftf_get_ai_difficulty();
+                int p1_input = *(uint8_t*)((uintptr_t)g_p1_controller + 0x139);
+                if (ai_diff >= 1 && p1_input && !blocked) {
+                    uint32_t p1_m = *(uint32_t*)((char*)g_p1_controller + 0x1c4);
+                    uint32_t p1_l = *(uint32_t*)((char*)g_p1_controller + 0x1c0);
+                    if (p1_m >= 2 || (p1_l >= 3 && p1_m >= 1)) {
+                        int sp_avail = ((int(*)(void*,void*))(g_base + 0x1173FA4))(g_p1_controller, NULL);
+                        if (sp_avail > 0) {
+                            g_p1_ai_special_cancel_pending = 1;
+                            g_p1_ai_special_cancel_deadline_ms = propgo_now_ms() + 450;
+                            int fired = ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(g_p1_controller, 0x200, NULL);
+                            if (fired) {
+                                g_p1_ai_special_cancel_pending = 0;
+                                flog("AI_DIFF: P1 combo ender hit -> immediate SpecialAttack fired! (sp_avail=%d, diff=%d)", sp_avail, ai_diff);
                             }
                         }
                     }

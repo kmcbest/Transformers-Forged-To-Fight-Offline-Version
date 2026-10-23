@@ -320,6 +320,7 @@ typedef struct {
     int freeze_enemy_ai;
     int start_full_power;
     int enable_combat_debug_overlay;
+    int ai_difficulty;
 } UserSettings;
 
 static UserSettings g_user_settings = {
@@ -333,7 +334,8 @@ static UserSettings g_user_settings = {
     .enable_swipe_specials = 1,
     .freeze_enemy_ai = 0,
     .start_full_power = 0,
-    .enable_combat_debug_overlay = 0
+    .enable_combat_debug_overlay = 0,
+    .ai_difficulty = 0
 };
 static int g_settings_loaded = 0;
 
@@ -440,6 +442,14 @@ static void load_user_settings(void) {
                         g_user_settings.enable_combat_debug_overlay = !strncmp(c, "true", 4);
                     }
                 }
+                char *aid = strstr(buf, "\"ai_difficulty\"");
+                if (aid) {
+                    char *c = strchr(aid, ':');
+                    if (c) {
+                        int v = (int)strtol(c + 1, NULL, 10);
+                        if (v >= 0 && v <= 3) g_user_settings.ai_difficulty = v;
+                    }
+                }
                 g_settings_loaded = 1;
                 return;
             }
@@ -474,6 +484,10 @@ int tftf_get_start_full_power(void) {
 int tftf_get_combat_debug_overlay(void) {
     if (!g_settings_loaded) load_user_settings();
     return g_user_settings.enable_combat_debug_overlay;
+}
+int tftf_get_ai_difficulty(void) {
+    if (!g_settings_loaded) load_user_settings();
+    return g_user_settings.ai_difficulty;
 }
 
 /* TEST AID (combo quality-gate testing): when this marker file exists or user setting is enabled,
