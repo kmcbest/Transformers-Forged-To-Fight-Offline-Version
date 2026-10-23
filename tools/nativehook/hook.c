@@ -4671,7 +4671,13 @@ void* hook_114(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
 
             if (pressed) {
                 // Check if touch is within special button bounding box in bottom-left
-                if (mpos.x >= 0 && mpos.x <= 0.28f * (float)sw && mpos.y >= 0 && mpos.y <= 0.35f * (float)sh) {
+                // Hexagonal button: IrfanView selection (366, 986; 217x172) on 2712x1220 screen.
+                // Left letterbox bar is 184px, so Unity viewport (2461x1220) coords:
+                // X: [182, 399] -> [0.074*sw, 0.162*sw]
+                // Y: [62, 234] -> [0.051*sh, 0.192*sh] (Unity Y=0 is at bottom)
+                // With small finger padding (~10px): X in [0.070*sw, 0.165*sw], Y in [0.045*sh, 0.200*sh]
+                if (mpos.x >= 0.070f * (float)sw && mpos.x <= 0.165f * (float)sw &&
+                    mpos.y >= 0.045f * (float)sh && mpos.y <= 0.200f * (float)sh) {
                     g_sp_touch_tracking = 1;
                     g_sp_touch_start_x = mpos.x;
                     g_sp_touch_start_y = mpos.y;
