@@ -7199,7 +7199,7 @@ void* hook_186(void* this_pc, void* hitResult, void* method) {
                      p_idx, atk_level, dmg, is_crit_hit, flags, hit_idx);
             }
             s_current_hit_is_ranged = (atk_level == 8);
-            s_current_hit_is_heavy = (atk_level == 4) || (p_idx == 0 && g_p0_after_heavy);
+            s_current_hit_is_heavy = (atk_level == 4);
             s_last_hit_flags = flags;
             s_last_hit_index = hit_idx;
             s_current_hit_is_last = ((flags & 0x80) != 0); // 0x80 = HitResultFlags.LastHit
@@ -7210,6 +7210,9 @@ void* hook_186(void* this_pc, void* hitResult, void* method) {
             if (is_unblocked_hit) {
                 if (p_idx == 0) {
                     g_p1_block_enter_ms = 0;
+                    if (atk_level == 4) {
+                        g_p0_after_heavy = 0;
+                    }
                     if (g_p1_controller) {
                         reset_player_attack_chain(g_p1_controller);
                     }
@@ -7604,6 +7607,73 @@ void skill_apply_buff(int player_index, const char* mod_id) {
     }
 }
 
+int skill_has_buff(int player_index, const char* buff_id_substr) {
+    if (!buff_id_substr || !g_base) return 0;
+    void* pc = (player_index == 0) ? g_p0_controller : g_p1_controller;
+    if (!pc || !obj_ok(pc)) return 0;
+    void* bc = *(void**)((char*)pc + 0x88);
+    if (!bc || !obj_ok(bc)) return 0;
+
+    int found = 0;
+    PROTECT({
+        void* list = *(void**)((char*)bc + 0x40);
+        if (!list || !obj_ok(list)) list = *(void**)((char*)bc + 0x20);
+        if (list && obj_ok(list)) {
+            void* items = *(void**)((char*)list + 0x10);
+            int32_t size = *(int32_t*)((char*)list + 0x18);
+            if (items && obj_ok(items) && size > 0 && size < 128) {
+                for (int i = 0; i < size; i++) {
+                    void* buff = *(void**)((char*)items + 0x20 + i * 8);
+                    if (!buff || !obj_ok(buff)) continue;
+                    bool is_stopped = *(uint8_t*)((char*)buff + 0x6C);
+                    if (is_stopped) continue;
+                    void* id_str_obj = *(void**)((char*)buff + 0x28);
+                    char b_id[64] = {0};
+                    if (id_str_obj && obj_ok(id_str_obj)) read_str(id_str_obj, b_id, sizeof(b_id));
+                    if (strstr(b_id, buff_id_substr) != NULL) {
+                        found = 1;
+                        break;
+                    }
+                }
+            }
+        }
+    });
+    return found;
+}
+
+int skill_count_buffs(int player_index, const char* buff_id_substr) {
+    if (!buff_id_substr || !g_base) return 0;
+    void* pc = (player_index == 0) ? g_p0_controller : g_p1_controller;
+    if (!pc || !obj_ok(pc)) return 0;
+    void* bc = *(void**)((char*)pc + 0x88);
+    if (!bc || !obj_ok(bc)) return 0;
+
+    int count = 0;
+    PROTECT({
+        void* list = *(void**)((char*)bc + 0x40);
+        if (!list || !obj_ok(list)) list = *(void**)((char*)bc + 0x20);
+        if (list && obj_ok(list)) {
+            void* items = *(void**)((char*)list + 0x10);
+            int32_t size = *(int32_t*)((char*)list + 0x18);
+            if (items && obj_ok(items) && size > 0 && size < 128) {
+                for (int i = 0; i < size; i++) {
+                    void* buff = *(void**)((char*)items + 0x20 + i * 8);
+                    if (!buff || !obj_ok(buff)) continue;
+                    bool is_stopped = *(uint8_t*)((char*)buff + 0x6C);
+                    if (is_stopped) continue;
+                    void* id_str_obj = *(void**)((char*)buff + 0x28);
+                    char b_id[64] = {0};
+                    if (id_str_obj && obj_ok(id_str_obj)) read_str(id_str_obj, b_id, sizeof(b_id));
+                    if (strstr(b_id, buff_id_substr) != NULL) {
+                        count++;
+                    }
+                }
+            }
+        }
+    });
+    return count;
+}
+
 void skill_consume_buff(int player_index, const char* mod_id, int count) {
     if (!mod_id || !g_base || !g_strnew) return;
     void* pc = (player_index == 0) ? g_p0_controller : g_p1_controller;
@@ -7656,9 +7726,17 @@ int skill_fuse_target_debuffs(int target_player_index) {
                     char b_id[64] = {0};
                     if (id_str_obj && obj_ok(id_str_obj)) read_str(id_str_obj, b_id, sizeof(b_id));
 
+                    // 1. 严格排除游戏底层机制修饰器 (如受击硬直/击倒硬直 gp_hit_stun、眩晕 stun 等)
+                    // 严防击倒受击硬直被永久化导致对手趴地不起
+                    if (strstr(b_id, "gp_") != NULL || strstr(b_id, "stun") != NULL) {
+                        continue;
+                    }
+
+                    // 2. 判定是否为合法的战斗状态减益 (Debuff)
                     int is_debuff = (mod_type == 2);
                     if (!is_debuff) {
-                        if (strstr(b_id, "debuff") != NULL ||
+                        if (strstr(b_id, "megatron_") != NULL ||
+                            strstr(b_id, "debuff") != NULL ||
                             strstr(b_id, "armor_break") != NULL ||
                             strstr(b_id, "shock") != NULL ||
                             strstr(b_id, "bleed") != NULL ||
@@ -7670,9 +7748,33 @@ int skill_fuse_target_debuffs(int target_player_index) {
                     }
 
                     if (is_debuff && dur > 0.0f) {
-                        *(float*)((char*)buff + 0x48) = -1.0f;
-                        *(float*)((char*)buff + 0x4C) = -1.0f;
-                        *(float*)((char*)buff + 0x50) = 0.0f;
+                        float orig_dur = *(float*)((char*)buff + 0x4C);
+                        if (orig_dur <= 0.0f) orig_dur = dur;
+
+                        // 3. 针对持续伤害类 DOT (dmg_shock, dmg_bleed, dmg_burn):
+                        // 引擎底层的 BuffUtils.CalculateTickPercentage 计算公式：
+                        // 当 IsIndefinite (duration < 0) 时，单跳系数为 tickInterval / 0.5f (= 1.0f)。
+                        // 原始 duration > 0 时单跳系数为 tickInterval / orig_dur。
+                        // 因此固化为永久时，必须将总伤害 _amount 折算为每半秒的单跳伤害，
+                        // 否则每 0.5 秒都会造成全额 20 秒总伤害 (每次掉上万血导致秒杀)！
+                        if (strstr(b_id, "shock") != NULL ||
+                            strstr(b_id, "bleed") != NULL ||
+                            strstr(b_id, "burn") != NULL ||
+                            strstr(b_id, "leak") != NULL) {
+                            float total_amt = *(float*)((char*)buff + 0x44);
+                            if (orig_dur > 0.5f && total_amt > 0.0f) {
+                                float tick_amt = total_amt * (0.5f / orig_dur);
+                                *(float*)((char*)buff + 0x40) = tick_amt; // _originalModifier
+                                *(float*)((char*)buff + 0x44) = tick_amt; // _amount
+                                flog("SKILL_FUSE: Scaled DOT '%s' total %.1f -> per-tick %.2f (dur=%.1f)",
+                                     b_id, total_amt, tick_amt, orig_dur);
+                            }
+                        }
+
+                        *(float*)((char*)buff + 0x48) = -1.0f; // _duration
+                        *(float*)((char*)buff + 0x4C) = -1.0f; // _originalDuration
+                        *(float*)((char*)buff + 0x50) = 0.0f;  // _time
+                        *(float*)((char*)buff + 0x54) = 0.0f;  // _lastTickTime
                         fused_count++;
                         flog("SKILL_FUSE: Fused debuff '%s' on P%d to PERMANENT (-1.0s)", b_id, target_player_index);
                     }
@@ -8322,6 +8424,16 @@ int hook_192(void* self, void* statModifier, float* pRoll, float* pChance, void*
                       strstr(mod_id, "bumblebee_cin_dotm_sp3_shock") != NULL)) {
         if (!s_current_hit_is_last) {
             flog("BUMBLEBEE_GATE: non-last hit, skip roll for %s", mod_id);
+            return 0;
+        }
+    }
+
+    // 威震天 (Megatron Leader 2015): SP1破甲, SP2虚弱, SP3震击 仅最后一击命中时施加
+    if (mod_id[0] && (strstr(mod_id, "megatron_sp1_armor_break") != NULL ||
+                      strstr(mod_id, "megatron_sp2_atk_debuff") != NULL ||
+                      strstr(mod_id, "megatron_sp3_shock") != NULL)) {
+        if (!s_current_hit_is_last) {
+            flog("MEGATRON_GATE: non-last hit, skip roll for %s", mod_id);
             return 0;
         }
     }

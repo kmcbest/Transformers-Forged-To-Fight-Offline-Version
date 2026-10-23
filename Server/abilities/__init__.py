@@ -59,6 +59,8 @@ def build_buffs_config():
         "armor_up": {"stackable": True, "active_display": True},
         # 破甲减益 Debuff：在敌人血条下方显示红色倒计时圆环图标
         "armor_break": {"stackable": True, "active_display": True},
+        # 攻击减益/虚弱 Debuff：可堆叠，在敌人血条下方显示红色倒计时圆环图标
+        "attack_debuff": {"stackable": True, "active_display": True},
         # 攻击力增益 Buff：在血条下方显示金色倒计时圆环图标
         "attack_buff": {"stackable": True, "active_display": True},
         # 燃烧类 Debuff：可堆叠，在敌人血条下方显示倒计时圆环图标

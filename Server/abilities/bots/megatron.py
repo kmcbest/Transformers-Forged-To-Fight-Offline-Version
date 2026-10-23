@@ -126,7 +126,7 @@ def build_megatron_abilities(base_hp: float = 31000.0, base_atk: float = 2450.0)
     mods["megatron_fusion_cannon"] = mod_fusion
     appears["appr_megatron_fusion_cannon"] = appr_fusion
 
-    # 2. SP2 攻击减益 (ID: 3129): 100% 施加 44% 攻击减益 10 秒
+    # 2. SP2 攻击减益 (ID: 3129): 最后一击 100% 施加 44% 攻击减益 10 秒，设为 stackable 避免重置已融合的永久攻击减益
     appr_sp2_atk = make_statmod_appearance(
         appr_id="appr_megatron_sp2_atk_debuff",
         callout_text="虚弱",
@@ -141,11 +141,11 @@ def build_megatron_abilities(base_hp: float = 31000.0, base_atk: float = 2450.0)
         "id": "megatron_sp2_atk_debuff",
         "t": "attack_debuff",
         "tm": "",
-        "tr": ["onSpecial2Activate"],
-        "uit": ["onSpecial2Activate"],
+        "tr": ["onHit"],
+        "uit": ["onHit"],
         "pri": 0,
         "trm": 0.0,
-        "trs": "",
+        "trs": "level=Special2;isLastHit=true",
         "trr": "repeat",
         "c": 1.0,
         "m": 0.44,
@@ -155,7 +155,7 @@ def build_megatron_abilities(base_hp: float = 31000.0, base_atk: float = 2450.0)
         "mt": "debuff",
         "v": "",
         "ms": "",
-        "st": 1,
+        "st": 5,                     # 改为 stackable (上限 5 层)，不会重置冲掉已融合的永久攻击减益
         "g": "attack_debuff",
         "gc": 0.0,
         "gcv": "",
@@ -170,32 +170,38 @@ def build_megatron_abilities(base_hp: float = 31000.0, base_atk: float = 2450.0)
     mods["megatron_sp2_atk_debuff"] = mod_sp2_atk
     appears["appr_megatron_sp2_atk_debuff"] = appr_sp2_atk
 
-    # 3. SP3 震击与过载 (ID: 3130): 100% 施加 300% 震击 20s
+    # 3. SP3 震击与过载 (ID: 3130): 最后一击 100% 施加 300% 震击 20s
     m_sp3_s, a_sp3_s = make_shock_statmod(
         mod_id="megatron_sp3_shock",
         duration=20.0,
         total_dmg=float(round(base_atk * 3.00)),
         chance=1.0,
-        trigger="onSpecial3Activate",
+        trigger="onHit",
+        trigger_scope="level=Special3;isLastHit=true",
         appr_id="appr_megatron_sp3_shock",
         callout_text="震击",
         show_callout=True,
         pua_icon="\uE914",
+        stackable=True,
+        max_stacks=10,
     )
     mods.update(m_sp3_s)
     appears.update(a_sp3_s)
 
-    # 4. SP1 破甲 (ID: 3137): 100% 施加 38% 破甲 10 秒
+    # 4. SP1 破甲 (ID: 3137): 最后一击 100% 施加 38% 破甲 10 秒
     m_sp1_ab, a_sp1_ab = make_armor_break_statmod(
         mod_id="megatron_sp1_armor_break",
         duration=10.0,
         break_amount=0.38,
         chance=1.0,
-        trigger="onSpecial1Activate",
+        trigger="onHit",
+        trigger_scope="level=Special1;isLastHit=true",
         appr_id="appr_megatron_sp1_armor_break",
         callout_text="破甲",
         show_callout=True,
         pua_icon="\uE516",
+        stackable=True,
+        max_stacks=10,
     )
     mods.update(m_sp1_ab)
     appears.update(a_sp1_ab)

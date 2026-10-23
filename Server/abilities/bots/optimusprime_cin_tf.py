@@ -52,6 +52,9 @@ Bot ID: optimusprime_cin_tf
 """
 
 from ..core import (
+    AbilityColor,
+    make_statmod_appearance,
+    make_condition_scope,
     make_armor_up_statmod,
     make_attack_boost_statmod,
     make_bleed_statmod,
@@ -133,7 +136,7 @@ def build_optimusprime_cin_tf_abilities(base_hp: float = 29334.0, base_atk: floa
         "uit": ["always"],
         "pri": 0,
         "trm": 0.0,
-        "trs": "",
+        "trs": make_condition_scope(self_status="dmg_bleed"),
         "trr": "repeat",
         "c": 1.0,
         "m": 0.35,
@@ -157,6 +160,50 @@ def build_optimusprime_cin_tf_abilities(base_hp: float = 29334.0, base_atk: floa
     validate_statmod(mod_willpower)
     mods["optimusprime_cin_tf_willpower"] = mod_willpower
     appears["appr_optimusprime_cin_tf_willpower"] = appr_willpower
+
+    # 3b. 意志力净化 Callout (ID: 2726b): 超过一层的流血1秒后被净化时弹出“净化”文字，绿色图标
+    appr_purify = make_statmod_appearance(
+        appr_id="appr_optimusprime_cin_tf_purify",
+        callout_text="净化",
+        desc="净化一层多余流血并转化为10%最大能量",
+        short_desc="净化",
+        pua_icon="\uE942",
+        color=AbilityColor.GREEN_HEALTH,
+        show_callout=True,
+        active_desc="净化多余流血",
+    )
+    mod_purify = {
+        "id": "optimusprime_cin_tf_purify",
+        "t": "buff",
+        "tm": "",
+        "tr": ["onStart"],
+        "uit": ["onStart"],
+        "pri": 0,
+        "trm": 0.0,
+        "trs": "",
+        "trr": "repeat",
+        "c": 1.0,
+        "m": 1.0,
+        "d": 1.5,
+        "s": "none",
+        "ta": "self",
+        "mt": "buff",
+        "v": "",
+        "ms": "",
+        "st": 1,
+        "g": "willpower_purify",
+        "gc": 0.0,
+        "gcv": "",
+        "rcv": "",
+        "ti": 0,
+        "a": ["appr_optimusprime_cin_tf_purify"],
+        "au": [],
+        "rh": 0.0,
+        "ra": 0.0,
+    }
+    validate_statmod(mod_purify)
+    mods["optimusprime_cin_tf_purify"] = mod_purify
+    appears["appr_optimusprime_cin_tf_purify"] = appr_purify
 
     # 4. SP1 流血 (ID: 2713): 60% 几率施加流血 4 秒 (40% ATK 伤害) - 与 Dinobot / Arcee 对齐
     m_sp1_b, a_sp1_b = make_bleed_statmod(

@@ -42,6 +42,10 @@ void skill_add_mana(int player_index, float norm_mana);
 uint64_t skill_get_block_enter_ms(int player_index);
 void skill_stun_player(int target_player_index, float duration_s);
 
+// Buff / Debuff 活性与层数查询
+int skill_has_buff(int player_index, const char* buff_id_substr);
+int skill_count_buffs(int player_index, const char* buff_id_substr);
+
 // Buff 与修饰器主动施加与消耗
 void skill_apply_buff(int player_index, const char* mod_id);
 void skill_apply_buff_dur(int player_index, const char* mod_id, float override_dur);

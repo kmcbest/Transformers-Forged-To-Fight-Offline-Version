@@ -58,8 +58,8 @@ static void megatron_on_hit_connected(SkillHitContext* ctx) {
         int ap = ctx->attacker_player_index;
         int tp = ctx->target_player_index;
 
-        // SP3 激活：融合炮过载
-        if (ctx->special_index == 3 && !s_fusion_overload[ap]) {
+        // SP3 激活：融合炮过载 (仅在最后一击命中且未被格挡时生效)
+        if (ctx->special_index == 3 && ctx->is_last_hit && !ctx->is_blocked && !s_fusion_overload[ap]) {
             s_fusion_overload[ap] = 1;
             // 移除原有倒计时和紫色层数图标
             skill_consume_buff(ap, "megatron_fusion_cd", 1);
@@ -71,8 +71,8 @@ static void megatron_on_hit_connected(SkillHitContext* ctx) {
             skill_log("MEGATRON: P%d activated SP3 Fusion Cannon Overload!", ap);
         }
 
-        // 重击命中判定：
-        if (ctx->is_heavy && ctx->is_last_hit) {
+        // 重击命中判定 (必须未被格挡，且必须是真正的普通重击，非远程、非SP技)：
+        if (ctx->is_heavy && !ctx->is_ranged && ctx->special_index == 0 && ctx->is_last_hit && !ctx->is_blocked) {
             int has_fusion = (s_fusion_overload[ap] || s_fusion_charges[ap] > 0);
 
             if (has_fusion) {

@@ -154,6 +154,42 @@ def make_statmod_appearance(
 
 
 # ---------------------------------------------------------------------------
+# 1.5. 标准条件作用域工厂 (Condition Scope Formatter)
+# ---------------------------------------------------------------------------
+
+def make_condition_scope(
+    self_status: str = "",
+    opp_status: str = "",
+    level: str = "",
+    is_last_hit: bool = False,
+    state: str = "",
+    extra: str = "",
+) -> str:
+    """
+    生成标准触发作用域/前置条件字符串 (Trigger Scope / trs):
+    - self_status: 自身所需处于的 buff/debuff 状态 (如 "dmg_bleed", "armor_up") -> "self.status=dmg_bleed"
+    - opp_status: 对手所需处于的 buff/debuff 状态 (如 "dmg_burn", "armor_break") -> "opp.status=dmg_burn"
+    - level: 攻击类型 (如 "Light,Medium,Heavy", "Special1", "Heavy") -> "level=Heavy"
+    - is_last_hit: 是否为连招或特殊技最终击 (True -> "isLastHit=true")
+    - state: 角色姿态状态 (如 "Block", "Dodge") -> "state=Block"
+    """
+    parts = []
+    if level:
+        parts.append(f"level={level}")
+    if is_last_hit:
+        parts.append("isLastHit=true")
+    if state:
+        parts.append(f"state={state}")
+    if self_status:
+        parts.append(f"self.status={self_status}")
+    if opp_status:
+        parts.append(f"opp.status={opp_status}")
+    if extra:
+        parts.append(extra)
+    return ";".join(parts)
+
+
+# ---------------------------------------------------------------------------
 # 2. 通用机制工厂函数 (Mechanic Factories)
 # ---------------------------------------------------------------------------
 
