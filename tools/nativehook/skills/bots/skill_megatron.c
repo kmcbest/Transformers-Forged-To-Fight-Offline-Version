@@ -71,8 +71,15 @@ static void megatron_on_hit_connected(SkillHitContext* ctx) {
             skill_log("MEGATRON: P%d activated SP3 Fusion Cannon Overload!", ap);
         }
 
-        // 重击命中判定 (必须未被格挡，且必须是真正的普通重击，非远程、非SP技)：
-        if (ctx->is_heavy && !ctx->is_ranged && ctx->special_index == 0 && ctx->is_last_hit && !ctx->is_blocked) {
+        if (ctx->is_heavy) {
+            skill_log("MEGATRON: P%d heavy hit connected (last=%d, sp=%d, blk=%d, overload=%d, charges=%d)",
+                      ap, ctx->is_last_hit, ctx->special_index, ctx->is_blocked,
+                      s_fusion_overload[ap], s_fusion_charges[ap]);
+        }
+
+        // 威震天普通重击命中判定：
+        // 必须真正命中敌人（未落空/未被闪避，排除 Missed/Avoided/Evaded 标志）：
+        if (ctx->is_heavy && !(ctx->hit_flags & (2 | 512 | 1024))) {
             int has_fusion = (s_fusion_overload[ap] || s_fusion_charges[ap] > 0);
 
             if (has_fusion) {
@@ -119,6 +126,14 @@ static void megatron_on_buff_applied(SkillBuffAppliedContext* ctx) {
         if (s_last_charge_ms[tp] == 0) {
             s_last_charge_ms[tp] = skill_now_ms();
             skill_log("MEGATRON: Initial 6s Fusion Cannon CD started on P%d", tp);
+        }
+        return;
+    }
+    if (strstr(ctx->modifier_id, "megatron_fusion_cannon") != NULL) {
+        s_megatron_active[tp] = 1;
+        if (s_fusion_charges[tp] < 3) {
+            s_fusion_charges[tp]++;
+            skill_log("MEGATRON: P%d synchronized Fusion Cannon charge to %d/3", tp, s_fusion_charges[tp]);
         }
         return;
     }

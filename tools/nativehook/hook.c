@@ -741,7 +741,11 @@ static void combat_overlay_push(const char *fmt, ...) {
     pthread_mutex_unlock(&g_overlay_lock);
 
     flog("[OVERLAY] %s", buf);
-    combat_overlay_show_hud(buf);
+    // Only user-facing announcements (skills, rolls, alerts) should show on in-game HUD banner.
+    // Generic buff telemetry (BUFF -> ...) must NOT overwrite HUD announcements!
+    if (strncmp(buf, "BUFF ->", 7) != 0) {
+        combat_overlay_show_hud(buf);
+    }
 }
 
 static volatile int g_p0_power_seeded = 0;
@@ -760,7 +764,10 @@ static volatile float g_p1_power_lock_mana = 0.0f;
 static volatile uint64_t g_p0_unstoppable_end_ms = 0; // P0 unstoppable (immune to hit reaction/stun)
 static volatile uint64_t g_p1_unstoppable_end_ms = 0; // P1 unstoppable (immune to hit reaction/stun)
 static volatile int g_p1_buffs_nullified_this_attack = 0;
+static volatile int s_current_hit_active = 0;
 static volatile int s_current_hit_is_last = 0;
+static volatile int s_current_hit_is_heavy = 0;
+static volatile int s_current_hit_is_ranged = 0;
 static volatile int s_last_hit_flags = 0;
 static volatile int s_last_hit_index = 0;
 static volatile int s_ironhide_burned_this_hit = 0;
@@ -5074,7 +5081,10 @@ void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     g_p1_prowl_melee_buff_end_ms = 0;
     g_p1_prowl_melee_buff_stacks = 0;
     g_p1_buffs_nullified_this_attack = 0;
+    s_current_hit_active = 0;
     s_current_hit_is_last = 0;
+    s_current_hit_is_heavy = 0;
+    s_current_hit_is_ranged = 0;
     s_last_hit_flags = 0;
     s_last_hit_index = 0;
     s_ironhide_burned_this_hit = 0;
@@ -6393,8 +6403,6 @@ void* hook_165(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     return r;
 }
 
-static __thread int s_current_hit_is_ranged = 0;
-static __thread int s_current_hit_is_heavy = 0;
 
 // slot 171 BLOCKENTER (0x1173848): PlayerBlockState.OnEnter
 void* hook_171(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
@@ -6656,29 +6664,42 @@ float hook_177(void* self, float damage, void* damageType, int32_t blocked, void
                 }
             }
 
-            // Decoupled Bot Skill Hit Dispatch:
-            SkillHitContext hit_ctx = {
-                .attacker_entity = is_enemy ? g_p0_controller : g_p1_controller,
-                .target_entity = owner,
-                .attacker_bot_id = is_enemy ? g_p0_bot_id : g_p1_bot_id,
-                .target_bot_id = is_enemy ? g_p1_bot_id : g_p0_bot_id,
-                .attacker_player_index = is_enemy ? 0 : 1,
-                .target_player_index = is_enemy ? 1 : 0,
-                .special_index = is_enemy ? g_p0_current_special_index : 0,
-                .hit_index = s_last_hit_index,
-                .is_last_hit = (s_current_hit_is_last != 0),
-                .is_ranged = (s_current_hit_is_ranged != 0),
-                .is_heavy = (s_current_hit_is_heavy != 0),
-                .is_crit = (isCrit != 0),
-                .is_blocked = (blocked != 0),
-                .base_damage = damage,
-                .modified_damage = damage,
-                .hit_flags = s_last_hit_flags
-            };
-            skill_dispatch_hit_connected(&hit_ctx);
-            damage = hit_ctx.modified_damage;
-            if (!hit_ctx.is_crit) {
-                isCrit = 0;
+            // Decoupled Bot Skill Hit Dispatch (only when a registered hit connects, not missed, and not a DOT/passive tick):
+            if (s_current_hit_active) {
+                s_current_hit_active = 0; // Consume hit token immediately so subsequent DOT damage ticks cannot re-trigger hit logic
+
+                int is_missed_hit = ((s_last_hit_flags & (2 | 512 | 1024)) != 0);
+                if (!is_missed_hit) {
+                    SkillHitContext hit_ctx = {
+                        .attacker_entity = is_enemy ? g_p0_controller : g_p1_controller,
+                        .target_entity = owner,
+                        .attacker_bot_id = is_enemy ? g_p0_bot_id : g_p1_bot_id,
+                        .target_bot_id = is_enemy ? g_p1_bot_id : g_p0_bot_id,
+                        .attacker_player_index = is_enemy ? 0 : 1,
+                        .target_player_index = is_enemy ? 1 : 0,
+                        .special_index = is_enemy ? (g_p0_current_special_index > 0 ? g_p0_current_special_index : 0) : 0,
+                        .hit_index = s_last_hit_index,
+                        .is_last_hit = (s_current_hit_is_last != 0),
+                        .is_ranged = (s_current_hit_is_ranged != 0),
+                        .is_heavy = (s_current_hit_is_heavy != 0),
+                        .is_crit = (isCrit != 0),
+                        .is_blocked = (blocked != 0),
+                        .base_damage = damage,
+                        .modified_damage = damage,
+                        .hit_flags = s_last_hit_flags
+                    };
+                    skill_dispatch_hit_connected(&hit_ctx);
+                    damage = hit_ctx.modified_damage;
+                    if (!hit_ctx.is_crit) {
+                        isCrit = 0;
+                    }
+                }
+                // Reset transient hit state so lingering flags cannot leak into subsequent DOT ticks or passive damage calculations
+                s_current_hit_is_heavy = 0;
+                s_current_hit_is_ranged = 0;
+                s_current_hit_is_last = 0;
+                s_last_hit_flags = 0;
+                s_last_hit_index = -1;
             }
         }
     });
@@ -7198,11 +7219,23 @@ void* hook_186(void* this_pc, void* hitResult, void* method) {
                 flog("HIT_RESULT: pidx=%d al=%d dmg=%.1f crit=%d flags=0x%x hit_idx=%d",
                      p_idx, atk_level, dmg, is_crit_hit, flags, hit_idx);
             }
-            s_current_hit_is_ranged = (atk_level == 8);
-            s_current_hit_is_heavy = (atk_level == 4);
+            int is_missed = ((flags & (2 | 512 | 1024)) != 0); // 2=Missed, 512=Avoided, 1024=Evaded
+            if (is_missed) {
+                s_current_hit_active = 0;
+                s_current_hit_is_ranged = 0;
+                s_current_hit_is_heavy = 0;
+                s_current_hit_is_last = 0;
+            } else {
+                s_current_hit_active = 1;
+                s_current_hit_is_ranged = (atk_level == 8);
+                s_current_hit_is_heavy = (atk_level == 4);
+                s_current_hit_is_last = ((flags & 0x80) != 0); // 0x80 = HitResultFlags.LastHit
+            }
             s_last_hit_flags = flags;
             s_last_hit_index = hit_idx;
-            s_current_hit_is_last = ((flags & 0x80) != 0); // 0x80 = HitResultFlags.LastHit
+            if (p_idx == 0 && (atk_level == 1 || atk_level == 2 || atk_level == 4 || atk_level == 8)) {
+                g_p0_current_special_index = -1;
+            }
             s_ironhide_burned_this_hit = 0;
             s_ramjet_s1_stacks = 0;
             int is_hit = ((flags & 5) != 0); // Hit (1) or Blocked (4)
@@ -7823,7 +7856,7 @@ int hook_188(void* self, void* applicant, void* statModifier, int32_t updateAttr
                 .target_bot_id = is_target_p0 ? g_p0_bot_id : g_p1_bot_id,
                 .target_player_index = is_target_p0 ? 0 : 1,
                 .attacker_player_index = is_target_p0 ? 1 : 0,
-                .current_special_index = g_p0_current_special_index,
+                .current_special_index = (g_p0_current_special_index > 0 ? g_p0_current_special_index : 0),
                 .last_hit_index = s_last_hit_index,
                 .current_hit_is_last = (s_current_hit_is_last != 0),
                 .is_heavy = (s_current_hit_is_heavy != 0),

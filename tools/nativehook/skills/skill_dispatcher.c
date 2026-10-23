@@ -1,9 +1,12 @@
 #include "skill_dispatcher.h"
 #include <string.h>
 #include <stdio.h>
+#ifdef __ANDROID__
 #include <android/log.h>
-
 #define DISP_LOG(...) __android_log_print(ANDROID_LOG_INFO, "SKILL_DISP", __VA_ARGS__)
+#else
+#define DISP_LOG(...)
+#endif
 
 // 注册的角色模块 extern 声明
 extern BotSkillModule g_module_arcee;

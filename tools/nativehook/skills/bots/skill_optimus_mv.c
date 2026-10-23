@@ -133,8 +133,11 @@ static void optimus_mv_on_simulation_tick(uint64_t now_ms) {
             int bleed_count = skill_count_buffs(p, "bleed");
             if (bleed_count > 1) {
                 // 1. 净化 1 层多余流血
-                skill_consume_buff(p, "bleed", 1);
-                skill_consume_buff(p, "dmg_bleed", 1);
+                if (skill_has_buff(p, "dmg_bleed")) {
+                    skill_consume_buff(p, "dmg_bleed", 1);
+                } else {
+                    skill_consume_buff(p, "bleed", 1);
+                }
 
                 // 2. 呼出净化提示文字并弹字 Callout ("净化")
                 skill_apply_buff_dur(p, "optimusprime_cin_tf_purify", 1.5f);
