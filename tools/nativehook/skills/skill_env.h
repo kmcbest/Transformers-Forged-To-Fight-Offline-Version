@@ -55,6 +55,12 @@ int skill_fuse_target_debuffs(int target_player_index);
 // 警车近战增益层数查询
 int skill_get_prowl_melee_stacks(int player_index);
 
+// 重击状态实时查询 (包括蓄力与飞行/动作全程)
+int skill_is_heavy_attacking(int player_index);
+
+// 特殊技状态实时查询 (0=未放, 1=正在释放 S1/S2/S3)
+int skill_is_special_attacking(int player_index);
+
 #ifdef __cplusplus
 }
 #endif

@@ -39,6 +39,7 @@ void skill_dispatch_simulation_tick(uint64_t now_ms);
 void skill_dispatch_block_state(int player_index, int entered);
 void skill_dispatch_dodge_enter(int player_index);
 void skill_dispatch_hitreact_enter(int player_index);
+void skill_dispatch_attack_start(int player_index, int action_type);
 
 #ifdef __cplusplus
 }

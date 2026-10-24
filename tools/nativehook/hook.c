@@ -5998,6 +5998,7 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
                 COMBAT_ASSERT(*(uint32_t*)((uintptr_t)self + 0x1c4) == 0, "GATE-07",
                               "Medium index must be 0 after heavy attack so the next swipe is M1, got %u",
                               *(uint32_t*)((uintptr_t)self + 0x1c4));
+                skill_dispatch_attack_start(0, 0x100);
             }
             if (action == 1 || action == 32) {
                 // 1 = attack / tap (Light attack L1~L4), 32 (0x20) = Dash (Forward Swipe / Medium attack M1~M2).
@@ -6119,6 +6120,9 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
             if (action == 8 || action == 64 || action == 128 || (action & 192) || action == 0x100 || action == 0x200) {
                 g_p1_block_enter_ms = 0;
                 reset_player_attack_chain(self);
+                if (action == 0x100) {
+                    skill_dispatch_attack_start(1, 0x100);
+                }
             }
         }
         // AI Reaction to player offensive maneuvers
@@ -7572,6 +7576,21 @@ void* hook_186(void* this_pc, void* hitResult, void* method) {
                 }
             }
 
+            // Windblade Heavy Attack Ranged Penetration (穿透敌方远程普攻与远程重击):
+            const char* victim_id = (p_idx == 0) ? g_p0_bot_id : g_p1_bot_id;
+            if (victim_id && strstr(victim_id, "windblade") != NULL) {
+                if (skill_is_heavy_attacking(p_idx) || skill_has_buff(p_idx, "windblade_heavy_range_immune")) {
+                    int is_ranged = (atk_level == 8 || hit_idx == 100);
+                    if (is_ranged) {
+                        *(int32_t*)((uintptr_t)hitResult + 0x20) = 24; // HitResultFlags.Invulnerable (IgnoreDamage | IgnoreHitReaction)
+                        *(float*)((uintptr_t)hitResult + 0x3C) = 0.0f;   // Damage = 0
+                        flog("REG_HIT_RES: Windblade (P%d) penetrated incoming ranged attack (al=%d hit_idx=%d) during heavy!",
+                             p_idx, atk_level, hit_idx);
+                        return NULL;
+                    }
+                }
+            }
+
             if (p_idx == 0) {
                 g_p0_controller = this_pc;
                 
@@ -8021,6 +8040,58 @@ void skill_consume_buff(int player_index, const char* mod_id, int count) {
         flog("SKILL_CONSUME_BUFF: Consumed %d stack(s) matching '%s' on P%d",
              count > 0 ? count : 1, mod_id, player_index);
     });
+}
+
+int skill_is_heavy_attacking(int player_index) {
+    if (!g_base) return 0;
+    void* pc = (player_index == 0) ? g_p0_controller : g_p1_controller;
+    if (!pc || !obj_ok(pc)) return 0;
+    int is_heavy = 0;
+    PROTECT({
+        // 1. Check real-time state machine: pc + 0x48 is StateMachine._state
+        void* cur_state = *(void**)((char*)pc + 0x48);
+        if (cur_state && obj_ok(cur_state)) {
+            void* sname_obj = *(void**)((char*)cur_state + 0x10);
+            if (sname_obj && obj_ok(sname_obj)) {
+                char sname[32] = {0};
+                read_str(sname_obj, sname, sizeof(sname));
+                if (strcmp(sname, "HeavyAttack") == 0 || strcmp(sname, "HeavyCharge") == 0) {
+                    is_heavy = 1;
+                }
+            }
+        }
+        // 2. Also check g_p0_after_heavy flag for P0
+        if (!is_heavy && player_index == 0 && g_p0_after_heavy) {
+            is_heavy = 1;
+        }
+    });
+    return is_heavy;
+}
+
+int skill_is_special_attacking(int player_index) {
+    if (!g_base) return 0;
+    void* pc = (player_index == 0) ? g_p0_controller : g_p1_controller;
+    if (!pc || !obj_ok(pc)) return 0;
+    int is_special = 0;
+    PROTECT({
+        // 1. Check real-time state machine: pc + 0x48 is StateMachine._state
+        void* cur_state = *(void**)((char*)pc + 0x48);
+        if (cur_state && obj_ok(cur_state)) {
+            void* sname_obj = *(void**)((char*)cur_state + 0x10);
+            if (sname_obj && obj_ok(sname_obj)) {
+                char sname[32] = {0};
+                read_str(sname_obj, sname, sizeof(sname));
+                if (strcmp(sname, "SpecialAttack") == 0 || strcmp(sname, "CinematicSpecial") == 0) {
+                    is_special = 1;
+                }
+            }
+        }
+        // 2. Also check g_p0_current_special_index for P0
+        if (!is_special && player_index == 0 && g_p0_current_special_index > 0) {
+            is_special = 1;
+        }
+    });
+    return is_special;
 }
 
 int skill_fuse_target_debuffs(int target_player_index) {
@@ -10103,13 +10174,63 @@ static void* hooked_BattleArbiterOnToggleAutoFight(void* a0, void* a1, void* a2,
     return NULL;
 }
 
+// ==================== Projectile Collision Penetration ====================
+// Projectile.IgnoreCollisionDetection (0x00E9EA00)
+// When returning true, DetectPlayerCollision immediately returns without reporting hit, exploding,
+// or setting IgnorePlayer. The projectile flies right past the opponent!
+static fn8 orig_Projectile_IgnoreCollisionDetection = NULL;
+static bool hooked_Projectile_IgnoreCollisionDetection(void* self, void* method) {
+    if (!self || !obj_ok(self)) return false;
+    bool res = false;
+    if (orig_Projectile_IgnoreCollisionDetection) {
+        typedef bool (*fn_icd)(void*, void*);
+        res = ((fn_icd)orig_Projectile_IgnoreCollisionDetection)(self, method);
+    }
+    if (res) return true;
+    PROTECT({
+        // In Projectile: _owner (PlayerController*) is at offset 0x50
+        void* owner = *(void**)((char*)self + 0x50);
+        if (owner && obj_ok(owner)) {
+            // PlayerController Id: offset 0xF4 (0 = P0, 1 = P1)
+            int owner_idx = *(int32_t*)((uintptr_t)owner + 0xF4);
+            int opp_idx = 1 - owner_idx;
+            const char* opp_id = (opp_idx == 0) ? g_p0_bot_id : g_p1_bot_id;
+            if (opp_id && strstr(opp_id, "windblade") != NULL) {
+                // If opponent is Windblade and is executing heavy attack (or has range penetration active):
+                if (skill_is_heavy_attacking(opp_idx) || skill_has_buff(opp_idx, "windblade_heavy_range_immune")) {
+                    res = true;
+                    flog("PROJ_PENETRATE: Projectile %p ignored collision with Windblade (P%d) during heavy attack!", self, opp_idx);
+                }
+            }
+        }
+    });
+    return res;
+}
+
 // ==================== FightFlow / Error Diagnostics ====================
+// BattleArbiter.get_IsInitialized (0x00CF90A0) - guard against NullReferenceException during combat UI events
+static fn8 orig_BattleArbiter_get_IsInitialized = NULL;
+static bool hooked_BattleArbiter_get_IsInitialized(void* method) {
+    bool res = false;
+    PROTECT({
+        if (orig_BattleArbiter_get_IsInitialized) {
+            typedef bool (*fn_is_init)(void*);
+            res = ((fn_is_init)orig_BattleArbiter_get_IsInitialized)(method);
+        }
+    });
+    return res;
+}
+
 static fn8 orig_WindowManager_ShowError1 = NULL;
 static void* hooked_WindowManager_ShowError1(void* self, void* desc, void* cb, void* method, void* a4, void* a5, void* a6, void* a7) {
     char s_desc[256] = "<null>";
     PROTECT(read_str_utf8(desc, s_desc, sizeof(s_desc)););
     uintptr_t caller = (uintptr_t)__builtin_return_address(0) - g_base;
     flog("SHOW_ERROR_1: desc='%s' caller=0x%lx", s_desc, caller);
+    if (strstr(s_desc, "ID_SPARX_ERROR_UNKNOWN") != NULL && (g_p0_controller != NULL || g_active_hud_screen != NULL)) {
+        flog("SHOW_ERROR_1: SUPPRESSED unknown error modal during combat");
+        return NULL;
+    }
     if (orig_WindowManager_ShowError1) return orig_WindowManager_ShowError1(self, desc, cb, method, a4, a5, a6, a7);
     return NULL;
 }
@@ -10121,6 +10242,10 @@ static void* hooked_WindowManager_ShowError2(void* self, void* title, void* desc
     PROTECT(read_str_utf8(desc, s_desc, sizeof(s_desc)););
     uintptr_t caller = (uintptr_t)__builtin_return_address(0) - g_base;
     flog("SHOW_ERROR_2: title='%s' desc='%s' caller=0x%lx", s_title, s_desc, caller);
+    if (strstr(s_desc, "ID_SPARX_ERROR_UNKNOWN") != NULL && (g_p0_controller != NULL || g_active_hud_screen != NULL)) {
+        flog("SHOW_ERROR_2: SUPPRESSED unknown error modal during combat");
+        return NULL;
+    }
     if (orig_WindowManager_ShowError2) return orig_WindowManager_ShowError2(self, title, desc, cb, method, a5, a6, a7);
     return NULL;
 }
@@ -10132,6 +10257,10 @@ static void* hooked_WindowManager_ShowError3(void* self, void* title, void* desc
     PROTECT(read_str_utf8(desc, s_desc, sizeof(s_desc)););
     uintptr_t caller = (uintptr_t)__builtin_return_address(0) - g_base;
     flog("SHOW_ERROR_3: title='%s' desc='%s' caller=0x%lx", s_title, s_desc, caller);
+    if (strstr(s_desc, "ID_SPARX_ERROR_UNKNOWN") != NULL && (g_p0_controller != NULL || g_active_hud_screen != NULL)) {
+        flog("SHOW_ERROR_3: SUPPRESSED unknown error modal during combat");
+        return NULL;
+    }
     if (orig_WindowManager_ShowError3) return orig_WindowManager_ShowError3(self, title, desc, buttons, cb, method, a6, a7);
     return NULL;
 }
@@ -10888,6 +11017,10 @@ static void* installer(void* arg){
     inline_hook((void*)(g_base + 0x010D24C4), (void*)hooked_TFormGachaPurchaseItem_SetupStoreItems, &orig_TFormGachaPurchaseItem_SetupStoreItems);
     // Hook PlayerBlockState.OnExit (0x01173B28) for symmetric block state exit dispatch:
     inline_hook((void*)(g_base + 0x01173B28), (void*)hooked_PlayerBlockState_OnExit, &orig_PlayerBlockState_OnExit);
+    // Guard BattleArbiter.get_IsInitialized (0x00CF90A0) against NRE on UI touch
+    inline_hook((void*)(g_base + 0x00CF90A0), (void*)hooked_BattleArbiter_get_IsInitialized, &orig_BattleArbiter_get_IsInitialized);
+    // Hook Projectile.IgnoreCollisionDetection (0x00E9EA00) for Windblade Heavy Attack ranged penetration
+    inline_hook((void*)(g_base + 0x00E9EA00), (void*)hooked_Projectile_IgnoreCollisionDetection, &orig_Projectile_IgnoreCollisionDetection);
 
     LOG("install done (%d hooks)", NH);
     skill_dispatcher_init(g_base);

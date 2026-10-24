@@ -25,6 +25,7 @@ extern BotSkillModule g_module_nemesis;
 extern BotSkillModule g_module_jetfire;
 extern BotSkillModule g_module_tantrum;
 extern BotSkillModule g_module_bonecrusher;
+extern BotSkillModule g_module_windblade;
 
 static const BotSkillModule* s_registry[] = {
     &g_module_arcee,
@@ -43,6 +44,7 @@ static const BotSkillModule* s_registry[] = {
     &g_module_jetfire,
     &g_module_tantrum,
     &g_module_bonecrusher,
+    &g_module_windblade,
     NULL
 };
 
@@ -206,4 +208,11 @@ void skill_dispatch_hitreact_enter(int player_index) {
     }
 }
 
-
+void skill_dispatch_attack_start(int player_index, int action_type) {
+    if (player_index < 0 || player_index >= 2) return;
+    const char* bot_id = (player_index == 0) ? g_p0_bot_id : g_p1_bot_id;
+    const BotSkillModule* mod = find_module_by_bot(bot_id);
+    if (mod && mod->on_attack_start) {
+        mod->on_attack_start(player_index, action_type);
+    }
+}

@@ -125,4 +125,5 @@ typedef struct {
     void (*on_block_state)(int player_index, int entered); // entered=1 进入格挡, entered=0 退出格挡
     void (*on_dodge_enter)(int player_index);
     void (*on_hitreact_enter)(int player_index);
+    void (*on_attack_start)(int player_index, int action_type);
 } BotSkillModule;
