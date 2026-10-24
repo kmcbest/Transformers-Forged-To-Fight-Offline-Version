@@ -626,6 +626,35 @@ static volatile uint64_t g_p0_last_attack_ms = 0;
 
 extern int tftf_get_start_full_power(void);
 extern int tftf_get_combat_debug_overlay(void);
+extern int tftf_get_ai_difficulty(void);
+
+static volatile int g_p1_ai_special_cancel_pending = 0;
+static volatile uint64_t g_p1_ai_special_cancel_deadline_ms = 0;
+static volatile uint64_t g_p1_last_ai_action_ms = 0;
+
+// Global AI Tactical Enhancements:
+// 1. Block-and-Disengage (Whiff Punish)
+static volatile int g_p1_disengage_pending = 0;
+static volatile int g_p1_disengage_act = 8;
+static volatile uint64_t g_p1_disengage_execute_ms = 0;
+static volatile int s_p1_block_hit_count = 0;
+static volatile int g_p1_force_dodge_after_block = 0;
+static volatile int g_p1_force_dodge_action = 8;
+
+// 2. Okizeme Wake-up Pressure
+static volatile int g_ai_okizeme_armed = 0;
+static volatile uint64_t g_ai_okizeme_start_ms = 0;
+static volatile int g_ai_okizeme_strategy = 0;
+static volatile int g_ai_okizeme_step = 0;
+
+// 3. Anti-Shoot Special Punish & Evade
+static volatile uint64_t g_p1_anti_shoot_last_ms = 0;
+
+// 4. Post-Combo Safe Retreat & Anti-Whiff
+static volatile int g_p1_retreat_after_combo = 0;
+static volatile uint64_t g_p1_retreat_execute_ms = 0;
+static volatile uint64_t g_p0_last_dodge_ms = 0;
+static volatile uint64_t g_p1_last_hitreact_ms = 0;
 extern int tftf_quest_is_leisure(void);
 extern int tftf_pvp_is_active(void);
 static uint64_t propgo_now_ms(void);
@@ -5089,6 +5118,24 @@ void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     s_last_hit_index = 0;
     s_ironhide_burned_this_hit = 0;
     s_ramjet_s1_stacks = 0;
+    g_p1_ai_special_cancel_pending = 0;
+    g_p1_ai_special_cancel_deadline_ms = 0;
+    g_p1_last_ai_action_ms = 0;
+    g_p1_disengage_pending = 0;
+    g_p1_disengage_act = 8;
+    g_p1_disengage_execute_ms = 0;
+    s_p1_block_hit_count = 0;
+    g_p1_force_dodge_after_block = 0;
+    g_p1_force_dodge_action = 8;
+    g_ai_okizeme_armed = 0;
+    g_ai_okizeme_start_ms = 0;
+    g_ai_okizeme_strategy = 0;
+    g_ai_okizeme_step = 0;
+    g_p1_anti_shoot_last_ms = 0;
+    g_p1_retreat_after_combo = 0;
+    g_p1_retreat_execute_ms = 0;
+    g_p0_last_dodge_ms = 0;
+    g_p1_last_hitreact_ms = 0;
     skill_dispatch_fight_reset();
     return H[140].orig(a0,a1,a2,a3,a4,a5,a6,a7);
 }
@@ -5628,7 +5675,7 @@ void hook_146(void* self, float dT, void* method){
     int frozen = 0;
     int is_p0 = 0;
     PROTECT({
-        void* ai_pc = fld_p(self, 0x98);                        // AIController.PlayerController (@0x98)
+        void* ai_pc = fld_p(self, 0x90);                        // AIController.PlayerController (@0x90)
         if (obj_ok(ai_pc)) {
             int32_t p_idx = *(int32_t*)((uintptr_t)ai_pc + 0xF4);
             if (p_idx == 0) {
@@ -5636,7 +5683,7 @@ void hook_146(void* self, float dT, void* method){
                 // For Player 0, only simulate if AutoFight is currently active!
                 int af_active = 0;
                 if (g_base) {
-                    af_active = ((int(*)(void*))(g_base + 0xC9CF80))(NULL); // AutoFightManager.get_AutoFightIsActive()
+                    af_active = ((int(*)(void*))(g_base + 0xC9CEB0))(NULL); // AutoFightManager.get_AutoFightIsActive() (@0xC9CEB0)
                 }
                 if (!af_active) {
                     // AutoFight is OFF: human manual control, pause AI simulation
@@ -5654,15 +5701,121 @@ void hook_146(void* self, float dT, void* method){
     }
     ((fn_ai_simulate)H[146].orig)(self,dT,method);
     PROTECT({
-        void* player=fld_p(self, 0x98);                    // AIController.PlayerController (@0x98)
-        if(obj_ok(player) && *(uint8_t*)((uintptr_t)self+0x88) && // AIController._isActive
-           ((int(*)(void*,void*))(g_base+0xDB07F4))(self,NULL) && // get_IsActive (@0xDB07F4)
-           !((int(*)(void*,void*))(g_base+0xDB07FC))(self,NULL) && // get_IsPaused (@0xDB07FC)
-           !((int(*)(void*,void*))(g_base+0x11752C8))(player,NULL) && // get_IsAttacking
-           ((int(*)(void*,void*))(g_base+0x1174FEC))(player,NULL)){ // get_CanShoot
-            ((void(*)(void*,int,void*))(g_base+0x1179AF4))(player,1,NULL); // Action.Attack
-            static unsigned fired_lines=0;
-            if(fired_lines<100){ fired_lines++; flog("AIRANGE fired=1 ai=%p player=%p is_p0=%d",self,player,is_p0); }
+        void* player = fld_p(self, 0x90);                    // AIController.PlayerController (@0x90)
+        if (obj_ok(player) && fld_p(player, 0x10) && !is_p0) {
+            int32_t pidx = *(int32_t*)((uintptr_t)player + 0xF4);
+            int input_enabled = *(uint8_t*)((uintptr_t)player + 0x139);
+            if (pidx == 1 && input_enabled == 1) {
+                int ai_diff = tftf_get_ai_difficulty();
+                if (ai_diff >= 1) {
+                    uint64_t now_ms = propgo_now_ms();
+
+                    // 1. Pending Special Attack Cancel
+                    if (g_p1_ai_special_cancel_pending) {
+                        if (now_ms <= g_p1_ai_special_cancel_deadline_ms) {
+                            int fired = ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 0x200, NULL);
+                            if (fired) {
+                                g_p1_ai_special_cancel_pending = 0;
+                                flog("AI_DIFF: P1 SpecialAttack cancel succeeded on simulate tick!");
+                            }
+                        } else {
+                            g_p1_ai_special_cancel_pending = 0;
+                        }
+                    }
+
+                    // 2. Pending Block Disengage (Whiff Punish)
+                    if (g_p1_disengage_pending) {
+                        if (now_ms >= g_p1_disengage_execute_ms) {
+                            int is_blk = ((int(*)(void*,void*))(g_base + 0x11737F8))(player, NULL); // IsBlocking
+                            if (is_blk) {
+                                ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 4, NULL); // ReleaseBlock (4)
+                            }
+                            int escaped = ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, g_p1_disengage_act, NULL);
+                            if (escaped) {
+                                g_p1_disengage_pending = 0;
+                                g_p1_force_dodge_after_block = 0;
+                                flog("AI_DIFF: P1 block disengage executed successfully! (act=%d, is_blk=%d)", g_p1_disengage_act, is_blk);
+                            } else if (now_ms > g_p1_disengage_execute_ms + 350) {
+                                g_p1_disengage_pending = 0;
+                                g_p1_force_dodge_after_block = 0;
+                                flog("AI_DIFF: P1 block disengage timed out (act=%d)", g_p1_disengage_act);
+                            }
+                        }
+                    }
+
+                    // 3. Okizeme Wake-up Pressure
+                    if (g_ai_okizeme_armed && g_ai_okizeme_strategy > 0 &&
+                        g_p0_controller && obj_ok(g_p0_controller) && fld_p(g_p0_controller, 0x10) && *(uint8_t*)((uintptr_t)g_p0_controller + 0x139) == 1) {
+                        int is_att = ((int(*)(void*,void*))(g_base + 0x11752C8))(player, NULL); // IsAttacking
+                        uint64_t elapsed = now_ms - g_ai_okizeme_start_ms;
+
+                        // Phase 1: Approach / Dash close (500ms - 900ms)
+                        if (elapsed >= 500 && elapsed < 900 && g_ai_okizeme_step == 0 && !is_att) {
+                            if (g_ai_okizeme_strategy == 1 || g_ai_okizeme_strategy == 2) {
+                                ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 32, NULL); // Action.Dash (32)
+                                g_ai_okizeme_step = 1;
+                                flog("AI_DIFF: Okizeme Phase 1 -> Dash forward (strat=%d)", g_ai_okizeme_strategy);
+                            } else {
+                                g_ai_okizeme_step = 1; // Strategy 3: Stay at range
+                            }
+                        }
+                        // Phase 2: Wakeup strike (1150ms - 1700ms)
+                        else if (elapsed >= 1150 && elapsed <= 1700 && g_ai_okizeme_step == 1 && !is_att) {
+                            if (g_ai_okizeme_strategy == 1) {
+                                ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 1, NULL); // Melee strike
+                                g_ai_okizeme_armed = 0;
+                                flog("AI_DIFF: Okizeme Phase 2 -> Melee strike on wakeup!");
+                            } else if (g_ai_okizeme_strategy == 2) {
+                                ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 256, NULL); // Heavy Attack charge
+                                g_ai_okizeme_armed = 0;
+                                flog("AI_DIFF: Okizeme Phase 2 -> Heavy Attack charge on wakeup!");
+                            } else if (g_ai_okizeme_strategy == 3) {
+                                ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 1, NULL); // Shoot on wakeup
+                                g_ai_okizeme_armed = 0;
+                                flog("AI_DIFF: Okizeme Phase 2 -> Ranged shoot on wakeup!");
+                            }
+                        } else if (elapsed > 2000) {
+                            g_ai_okizeme_armed = 0;
+                        }
+                    } else if (g_ai_okizeme_armed && now_ms - g_ai_okizeme_start_ms > 2000) {
+                        g_ai_okizeme_armed = 0;
+                    }
+
+                    // 4. Post-combo Safe Retreat (Avoid free retaliatory L1)
+                    if (g_p1_retreat_after_combo) {
+                        if (now_ms >= g_p1_retreat_execute_ms) {
+                            int escaped = ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 8, NULL); // Action.Dodge = 8
+                            if (escaped) {
+                                g_p1_retreat_after_combo = 0;
+                                flog("AI_DIFF: P1 post-combo safe retreat Dodge executed!");
+                            } else if (now_ms > g_p1_retreat_execute_ms + 350) {
+                                g_p1_retreat_after_combo = 0;
+                            }
+                        }
+                    }
+
+                    // 5. Active Ranged Combat (点枪与远程压制 - 解决远程松开摇杆向前跑问题)
+                    if (!g_p1_retreat_after_combo && !g_p1_disengage_pending && !g_ai_okizeme_armed) {
+                        int is_att = ((int(*)(void*,void*))(g_base + 0x11752C8))(player, NULL); // IsAttacking
+                        int can_shoot = ((int(*)(void*,void*))(g_base + 0x1174FEC))(player, NULL); // CanShoot
+                        static uint64_t s_p1_last_ranged_act_ms = 0;
+
+                        if (!is_att && can_shoot && (now_ms - s_p1_last_ranged_act_ms >= 260)) {
+                            s_p1_last_ranged_act_ms = now_ms;
+                            int roll = rand() % 100;
+                            int shoot_rate = (ai_diff >= 3) ? 75 : ((ai_diff == 2) ? 65 : 45);
+                            int dash_rate = (ai_diff >= 3) ? 20 : ((ai_diff == 2) ? 20 : 15);
+                            if (roll < shoot_rate) {
+                                ((void(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 1, NULL); // Action.Attack (Shoot!)
+                                flog("AI_DIFF: P1 fires ranged shot! (diff=%d)", ai_diff);
+                            } else if (roll < shoot_rate + dash_rate) {
+                                ((void(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 32, NULL); // Action.Dash (Chase!)
+                                flog("AI_DIFF: P1 dashes forward from range! (diff=%d)", ai_diff);
+                            }
+                        }
+                    }
+                }
+            }
         }
     });
 }
@@ -5893,8 +6046,63 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
         // Charge is interrupted when a melee hit connects with opponent (in hook_186) or on SP (0x200).
         int is_p0_act = (self == g_p0_controller) || (obj_ok(self) && *(int32_t*)((uintptr_t)self + 0xF4) == 0);
         int is_p1_act = (self == g_p1_controller) || (obj_ok(self) && *(int32_t*)((uintptr_t)self + 0xF4) == 1);
+
+        // Track player retreat / dodge timestamp
+        if (is_p0_act && (action == 8 || action == 64 || action == 128)) {
+            g_p0_last_dodge_ms = propgo_now_ms();
+        }
+
         if (is_p1_act) {
             g_p1_controller = self;
+            uint64_t now_ms = propgo_now_ms();
+
+            // 1. Intercept Behavior Tree Block -> Force Dodge out of block once blockstun has elapsed!
+            if (action == 2 && g_p1_force_dodge_after_block) {
+                if (now_ms >= g_p1_disengage_execute_ms) {
+                    action = g_p1_force_dodge_action ? g_p1_force_dodge_action : 8;
+                    a1 = (void*)(intptr_t)action;
+                    flog("AI_DIFF: Intercepted Behavior Tree Block(2) -> replaced with Dodge(%d)!", action);
+                }
+            }
+            // 2. Tactical Melee / Whiff Prevention & Retreat Counter:
+            else if (action == 1) {
+                int ai_diff = tftf_get_ai_difficulty();
+                int p0_retreated = (now_ms - g_p0_last_dodge_ms < 1000);
+                int p1_was_hit = (now_ms - g_p1_last_hitreact_ms < 1400);
+
+                if (ai_diff >= 1 && (p0_retreated || p1_was_hit)) {
+                    int can_shoot = ((int(*)(void*,void*))(g_base + 0x1174FEC))(self, NULL); // get_CanShoot
+                    if (can_shoot) {
+                        // Player reached CanShoot distance! Either shoot or dash in!
+                        int roll = rand() % 100;
+                        int shoot_chance = (ai_diff >= 3) ? 60 : ((ai_diff == 2) ? 55 : 50);
+                        if (roll < shoot_chance) {
+                            action = 1; // Ranged attack (Shoot!)
+                            a1 = (void*)(intptr_t)action;
+                            flog("AI_DIFF: Player retreated & at CanShoot range -> AI fires ranged shot! (diff=%d)", ai_diff);
+                        } else {
+                            action = 32; // Action.Dash (Chase!)
+                            a1 = (void*)(intptr_t)action;
+                            flog("AI_DIFF: Player retreated & at CanShoot range -> AI dashes in to punish! (diff=%d)", ai_diff);
+                        }
+                    } else if (p0_retreated) {
+                        // Player is retreating, but not yet at CanShoot distance!
+                        // Whiff prevention: DO NOT swing light punch at empty air!
+                        int roll = rand() % 100;
+                        int dash_chance = (ai_diff >= 3) ? 70 : ((ai_diff == 2) ? 55 : 40);
+                        if (roll < dash_chance) {
+                            action = 32; // Action.Dash (Close distance immediately!)
+                            a1 = (void*)(intptr_t)action;
+                            flog("AI_DIFF: Player retreating -> AI converts whiff melee into Dash(32) chase! (diff=%d)", ai_diff);
+                        } else {
+                            // Suppress blind melee swing so AI waits until CanShoot distance!
+                            flog("AI_DIFF: Player retreating -> AI suppresses whiff melee swing (waiting for CanShoot range) (diff=%d)", ai_diff);
+                            return NULL;
+                        }
+                    }
+                }
+            }
+
             if (action == 4 || action == 1 || action == 32 || action == 0x100) {
                 g_p1_block_enter_ms = 0;
             }
@@ -5903,6 +6111,51 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
                 reset_player_attack_chain(self);
             }
         }
+        // AI Reaction to player offensive maneuvers
+        if (is_p0_act && g_p1_controller && obj_ok(g_p1_controller) && fld_p(g_p1_controller, 0x10)) {
+            int ai_diff = tftf_get_ai_difficulty();
+            int p1_input = *(uint8_t*)((uintptr_t)g_p1_controller + 0x139);
+            uint8_t p0_input = (self && obj_ok(self)) ? *(uint8_t*)((uintptr_t)self + 0x139) : 0;
+            if (ai_diff >= 1 && p1_input == 1 && p0_input == 1) {
+                uint64_t now_ms = propgo_now_ms();
+                // 1. Player charging heavy attack -> evade
+                if (ai_diff >= 2 && action == 0x100) {
+                    int roll = rand() % 100;
+                    int evade_chance = (ai_diff >= 3) ? 85 : 50;
+                    if (roll < evade_chance) {
+                        int evade_act = (rand() % 2 == 0) ? 8 : (rand() % 2 == 0 ? 0x40 : 0x80);
+                        ((void(*)(void*,int,void*))(g_base+0x1179AF4))(g_p1_controller, evade_act, NULL);
+                        flog("AI_DIFF: AI reacted to player heavy attack (evade_act=%d, roll=%d < %d)", evade_act, roll, evade_chance);
+                    }
+                }
+                // 2. Player shooting at range -> punish with special or evade
+                else if (action == 1 && (now_ms - g_p1_anti_shoot_last_ms >= 1000)) {
+                    int p0_can_shoot = ((int(*)(void*,void*))(g_base + 0x1174FEC))(self, NULL); // get_CanShoot
+                    if (p0_can_shoot) {
+                        g_p1_anti_shoot_last_ms = now_ms;
+                        int sp_avail = ((int(*)(void*,void*))(g_base + 0x1173FA4))(g_p1_controller, NULL); // GetHighestAvailableSpecialAttack
+                        int sp_chance = (ai_diff >= 3) ? 95 : ((ai_diff == 2) ? 60 : 30);
+                        int evade_chance = (ai_diff >= 3) ? 95 : ((ai_diff == 2) ? 75 : 45);
+
+                        if (sp_avail > 0 && (rand() % 100 < sp_chance)) {
+                            // Punish with Special Attack!
+                            int fired = ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(g_p1_controller, 0x200, NULL);
+                            if (!fired) {
+                                g_p1_ai_special_cancel_pending = 1;
+                                g_p1_ai_special_cancel_deadline_ms = now_ms + 450;
+                            }
+                            flog("AI_DIFF: P1 punishes player shot with Special Attack! (sp=%d, diff=%d, fired=%d)", sp_avail, ai_diff, fired);
+                        } else if (rand() % 100 < evade_chance) {
+                            // Evade projectile with Sidestep (64/128) or Dash (32)
+                            int evade_act = (rand() % 3 == 0) ? 32 : ((rand() % 2 == 0) ? 64 : 128);
+                            ((void(*)(void*,int,void*))(g_base + 0x1179AF4))(g_p1_controller, evade_act, NULL);
+                            flog("AI_DIFF: P1 evades player shot! (act=%d, diff=%d)", evade_act, ai_diff);
+                        }
+                    }
+                }
+            }
+        }
+
         if (action == 8) { // Action.Dodge ONLY (Swipe back / 后闪)
             if (is_p0_act && strstr(g_p0_bot_id, "prowl") != NULL) {
                 prowl_start_charge(1);
@@ -5926,6 +6179,15 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
     void* r = H[154].orig(self, a1, a2, a3, a4, a5, a6, a7);
     PROTECT({
         int action_ok = ((uintptr_t)r != 0);
+        if (g_p1_force_dodge_after_block && action_ok &&
+            (self == g_p1_controller || (obj_ok(self) && *(int32_t*)((uintptr_t)self + 0xF4) == 1))) {
+            // ONLY clear when the action was ACTUALLY Dodge or Sidestep! NEVER on ReleaseBlock(4)!
+            if (action == 8 || action == 64 || action == 128) {
+                g_p1_force_dodge_after_block = 0;
+                g_p1_disengage_pending = 0;
+                flog("AI_DIFF: Intercepted Dodge(%d) succeeded, cleared force_dodge flag", action);
+            }
+        }
         if (obj_ok(self) && *(int32_t*)((uintptr_t)self + 0xF4) == 0) {
             uint32_t post_l = *(uint32_t*)((uintptr_t)self + 0x1c0);
             uint32_t post_m = *(uint32_t*)((uintptr_t)self + 0x1c4);
@@ -6394,6 +6656,7 @@ void* hook_165(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
                 skill_dispatch_hitreact_enter(0);
             } else if (pidx == 1) {
                 g_p1_block_enter_ms = 0;
+                g_p1_last_hitreact_ms = propgo_now_ms();
                 flog("HITREACT_ENTER (0x0117FEC4) on P1: hit reaction resets attack chain");
                 reset_player_attack_chain(pc);
                 skill_dispatch_hitreact_enter(1);
@@ -6421,6 +6684,7 @@ void* hook_171(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
             } else if (pidx == 1) {
                 g_p1_controller = pc;
                 g_p1_block_enter_ms = propgo_now_ms();
+                s_p1_block_hit_count = 0;
                 flog("BLOCK_ENTER (0x1173848): P1 started guarding at %llu ms",
                      (unsigned long long)g_p1_block_enter_ms);
                 skill_dispatch_block_state(1, 1);
@@ -6658,6 +6922,36 @@ float hook_177(void* self, float damage, void* damageType, int32_t blocked, void
                             static int s_arcee_boost_cnt = 0;
                             if (s_arcee_boost_cnt++ < 20) {
                                 flog("RANGED_DAMAGE_BOOST: damage boosted %.2fx (%.1f -> %.1f)", 1.0f + g_p0_ranged_damage_bonus, old_dmg, damage);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // AI Difficulty combo cancel: When P1 hits P0 with M2 / combo ender, arm special attack
+            if (!is_enemy && g_p1_controller && obj_ok(g_p1_controller) && fld_p(g_p1_controller, 0x10)) {
+                int ai_diff = tftf_get_ai_difficulty();
+                int p1_input = *(uint8_t*)((uintptr_t)g_p1_controller + 0x139);
+                if (ai_diff >= 1 && p1_input && !blocked) {
+                    uint32_t p1_m = *(uint32_t*)((char*)g_p1_controller + 0x1c4);
+                    uint32_t p1_l = *(uint32_t*)((char*)g_p1_controller + 0x1c0);
+                    if (p1_m >= 2 || p1_l >= 4 || (p1_l >= 3 && p1_m >= 1)) {
+                        int sp_avail = ((int(*)(void*,void*))(g_base + 0x1173FA4))(g_p1_controller, NULL);
+                        if (sp_avail > 0) {
+                            g_p1_ai_special_cancel_pending = 1;
+                            g_p1_ai_special_cancel_deadline_ms = propgo_now_ms() + 450;
+                            int fired = ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(g_p1_controller, 0x200, NULL);
+                            if (fired) {
+                                g_p1_ai_special_cancel_pending = 0;
+                                flog("AI_DIFF: P1 combo ender hit -> immediate SpecialAttack fired! (sp_avail=%d, diff=%d)", sp_avail, ai_diff);
+                            }
+                        } else {
+                            // No Special available: Immediately backdash to safety to avoid player free retaliatory L1!
+                            int retreat_chance = (ai_diff >= 3) ? 95 : ((ai_diff == 2) ? 80 : 40);
+                            if (rand() % 100 < retreat_chance) {
+                                g_p1_retreat_after_combo = 1;
+                                g_p1_retreat_execute_ms = propgo_now_ms() + 180;
+                                flog("AI_DIFF: P1 combo ender hit with no SP -> armed post-combo retreat backdash! (diff=%d, rate=%d)", ai_diff, retreat_chance);
                             }
                         }
                     }
@@ -8946,6 +9240,61 @@ float hook_198(void* self, int32_t attack_level, float mana_gain_pct, int32_t bl
         attacker_pc = is_p0 ? g_p1_controller : g_p0_controller;
     }
     const char* attacker_bot = is_p0 ? g_p1_bot_id : g_p0_bot_id;
+
+    // Global AI Difficulty System: Block-and-Disengage (Whiff Punish)
+    if (!is_p0 && blocked && (attack_level != 8)) {
+        int ai_diff = tftf_get_ai_difficulty();
+        if (ai_diff >= 1) {
+            s_p1_block_hit_count++;
+            int roll = rand() % 100;
+            int should_disengage = 0;
+            if (ai_diff >= 3 && s_p1_block_hit_count >= 1 && roll < 95) {
+                should_disengage = 1;
+            } else if (ai_diff == 2 && s_p1_block_hit_count >= 1 && roll < 75) {
+                should_disengage = 1;
+            } else if (ai_diff == 1 && s_p1_block_hit_count >= 2 && roll < 45) {
+                should_disengage = 1;
+            }
+            if (should_disengage) {
+                s_p1_block_hit_count = 0;
+                g_p1_force_dodge_after_block = 1;
+                g_p1_force_dodge_action = (rand() % 4 == 0) ? ((rand() % 2 == 0) ? 64 : 128) : 8;
+                g_p1_disengage_pending = 1;
+                g_p1_disengage_act = g_p1_force_dodge_action;
+                uint64_t now_ms = propgo_now_ms();
+                // Block hitstun in TFTF is around 80-110ms; disengage right as blockstun completes
+                g_p1_disengage_execute_ms = now_ms + ((ai_diff >= 3) ? 75 : ((ai_diff == 2) ? 100 : 130));
+                flog("AI_DIFF: P1 blocked melee hit in hook_198! Armed disengage in %d ms (act=%d, diff=%d)",
+                     (int)(g_p1_disengage_execute_ms - now_ms), g_p1_force_dodge_action, ai_diff);
+            }
+        }
+    } else if (!is_p0 && !blocked) {
+        // P1 took an unblocked hit -> cancel pending disengage
+        s_p1_block_hit_count = 0;
+        g_p1_disengage_pending = 0;
+        g_p1_force_dodge_after_block = 0;
+    }
+
+    // Global AI Difficulty System: Okizeme (Player P0 took an unblocked Heavy or Special attack from P1)
+    if (is_p0 && !blocked && ((attack_level & 4) || (attack_level & 0x70))) {
+        int ai_diff = tftf_get_ai_difficulty();
+        if (ai_diff >= 1) {
+            g_ai_okizeme_armed = 1;
+            g_ai_okizeme_start_ms = propgo_now_ms();
+            g_ai_okizeme_step = 0;
+            if (ai_diff == 1) {
+                g_ai_okizeme_strategy = (rand() % 2 == 0) ? 3 : 0; // 50% shoot, 50% none
+            } else if (ai_diff == 2) {
+                int r = rand() % 100;
+                g_ai_okizeme_strategy = (r < 60) ? 1 : 3; // 60% dash & melee, 40% shoot
+            } else {
+                int r = rand() % 100;
+                g_ai_okizeme_strategy = (r < 45) ? 1 : ((r < 85) ? 2 : 3); // 45% dash & melee, 40% heavy, 15% shoot
+            }
+            flog("AI_DIFF: P0 knocked down in hook_198! Arming Okizeme (strat=%d, diff=%d, al=%d)",
+                 g_ai_okizeme_strategy, ai_diff, attack_level);
+        }
+    }
 
     if (attack_level & 0x10) {
         // S1: 0.2格 = 60点 (所有HITS打完的总能量，多HITS的每一HIT平摊)
