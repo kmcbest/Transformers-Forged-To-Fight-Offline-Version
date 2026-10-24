@@ -7578,8 +7578,8 @@ void* hook_186(void* this_pc, void* hitResult, void* method) {
 
             // Windblade Heavy Attack Ranged Penetration (穿透敌方远程普攻与远程重击):
             const char* victim_id = (p_idx == 0) ? g_p0_bot_id : g_p1_bot_id;
-            if (victim_id && strstr(victim_id, "windblade") != NULL) {
-                if (skill_is_heavy_attacking(p_idx) || skill_has_buff(p_idx, "windblade_heavy_range_immune")) {
+            if (victim_id && (strstr(victim_id, "windblade") != NULL || strstr(victim_id, "slipstream") != NULL)) {
+                if (skill_is_heavy_attacking(p_idx) || skill_has_buff(p_idx, "windblade_heavy_range_immune") || skill_has_buff(p_idx, "slipstream_heavy_range_immune")) {
                     int is_ranged = (atk_level == 8 || hit_idx == 100);
                     if (is_ranged) {
                         *(int32_t*)((uintptr_t)hitResult + 0x20) = 24; // HitResultFlags.Invulnerable (IgnoreDamage | IgnoreHitReaction)
@@ -10195,9 +10195,9 @@ static bool hooked_Projectile_IgnoreCollisionDetection(void* self, void* method)
             int owner_idx = *(int32_t*)((uintptr_t)owner + 0xF4);
             int opp_idx = 1 - owner_idx;
             const char* opp_id = (opp_idx == 0) ? g_p0_bot_id : g_p1_bot_id;
-            if (opp_id && strstr(opp_id, "windblade") != NULL) {
-                // If opponent is Windblade and is executing heavy attack (or has range penetration active):
-                if (skill_is_heavy_attacking(opp_idx) || skill_has_buff(opp_idx, "windblade_heavy_range_immune")) {
+            if (opp_id && (strstr(opp_id, "windblade") != NULL || strstr(opp_id, "slipstream") != NULL)) {
+                // If opponent is Windblade/Slipstream and is executing heavy attack (or has range penetration active):
+                if (skill_is_heavy_attacking(opp_idx) || skill_has_buff(opp_idx, "windblade_heavy_range_immune") || skill_has_buff(opp_idx, "slipstream_heavy_range_immune")) {
                     res = true;
                     flog("PROJ_PENETRATE: Projectile %p ignored collision with Windblade (P%d) during heavy attack!", self, opp_idx);
                 }

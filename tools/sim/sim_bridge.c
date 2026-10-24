@@ -700,7 +700,7 @@ SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
     };
 
     int penetrated = 0;
-    if (is_ranged && (skill_is_heavy_attacking(target_idx) || skill_has_buff(target_idx, "windblade_heavy_range_immune"))) {
+    if (is_ranged && (skill_is_heavy_attacking(target_idx) || skill_has_buff(target_idx, "windblade_heavy_range_immune") || skill_has_buff(target_idx, "slipstream_heavy_range_immune"))) {
         penetrated = 1;
     }
 
