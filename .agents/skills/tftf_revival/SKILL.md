@@ -63,6 +63,25 @@ This skill documents critical domain knowledge, reverse-engineered architecture,
 
 ---
 
+### 0.5 Windows PowerShell & Python 执行与终端 UTF-8 编码黄金铁律 (Mandatory Python UTF-8 Standard)
+
+在 Windows + PowerShell 环境下编写和运行任何 Python 脚本时，必须严格遵守以下两条底线：
+
+1. **绝对禁止多行内联命令**：严禁执行 `python -c "..."`。PowerShell 极易破坏多行字符串、嵌套引号与变量符号 `$`, 触发 `ParameterBindingException`。所有逻辑必须落盘到临时或工具 `.py` 文件后调用 `python <script>.py`。
+2. **强制标准输出 UTF-8 重定向 (防 GBK 编码崩溃)**：
+   Windows 默认控制台编码为 GBK/cp936。一旦脚本中 `print()` 包含任何中文字符、Emoji 或 Unicode 符号（如 `✅`, `❌`, `🤖`, `⚡`, `📢`, `🛡️` 等），Python 会瞬间触发 `UnicodeEncodeError: 'gbk' codec can't encode character...` 异常并直接崩溃中断。
+   **凡是新建、临时编写或执行的 Python 脚本，头部必须无条件写入以下重定向样板代码**：
+   ```python
+   import sys
+   if hasattr(sys.stdout, 'reconfigure'):
+       sys.stdout.reconfigure(encoding='utf-8')
+   if hasattr(sys.stderr, 'reconfigure'):
+       sys.stderr.reconfigure(encoding='utf-8')
+   ```
+   或者运行命令前指定环境变量：`$env:PYTHONIOENCODING="utf-8"; python <script_path>.py`。
+
+---
+
 ### 0.4 资产包、动作库与特效层 (AssetBundles, Movesets & VFX)
 
 | 目录 / 文件 | 核心职能与记录的内容 | 铁律与关键规范 |

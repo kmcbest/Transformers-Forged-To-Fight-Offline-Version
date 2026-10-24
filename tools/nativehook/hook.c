@@ -5291,7 +5291,7 @@ void* hook_143(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
 #define TFTF_ENABLE_MAX_POWER_TEST 0
 #endif
 
-static void expire_charge_buffs(void* pc, void* bc, const char* match_str) {
+static void expire_charge_buffs_count(void* pc, void* bc, const char* match_str, int max_count) {
     if (!bc || !obj_ok(bc) || !match_str || !match_str[0]) return;
     PROTECT({
         // In il2cpp ARM64, BuffsController._buffs is at offset 0x40 (fallback 0x20)
@@ -5312,6 +5312,7 @@ static void expire_charge_buffs(void* pc, void* bc, const char* match_str) {
                 fn_action_buff_invoke del_inv = g_base ? (fn_action_buff_invoke)(g_base + 0x01539C40) : NULL;
                 void* del = *(void**)((char*)bc + 0x20); // BuffRemoved delegate
 
+                int expired = 0;
                 for (int i = size - 1; i >= 0; i--) {
                     void* buff = *(void**)((char*)items + 0x20 + i * 8);
                     if (buff && obj_ok(buff)) {
@@ -5323,8 +5324,8 @@ static void expire_charge_buffs(void* pc, void* bc, const char* match_str) {
                         if (app_str_obj && obj_ok(app_str_obj)) read_str(app_str_obj, a_id, sizeof(a_id));
 
                         if (strstr(b_id, match_str) != NULL || strstr(a_id, match_str) != NULL) {
-                            flog("EXPIRE_CHARGE: hiding icon & expiring buff %p (id='%s' app='%s' match='%s')",
-                                 buff, b_id, a_id, match_str);
+                            flog("EXPIRE_CHARGE: hiding icon & expiring buff %p (id='%s' app='%s' match='%s', %d/%d)",
+                                 buff, b_id, a_id, match_str, expired + 1, max_count);
                             // 1. Notify HUD immediately to remove gray icon
                             if (pc && obj_ok(pc) && pc_remove) {
                                 pc_remove(pc, buff, NULL);
@@ -5340,12 +5341,21 @@ static void expire_charge_buffs(void* pc, void* bc, const char* match_str) {
                             float dur = *(float*)((char*)buff + 0x48);
                             *(float*)((char*)buff + 0x50) = dur + 10.0f;
                             *(uint8_t*)((char*)buff + 0x6c) = 1;
+
+                            expired++;
+                            if (max_count > 0 && expired >= max_count) {
+                                break;
+                            }
                         }
                     }
                 }
             }
         }
     });
+}
+
+static void expire_charge_buffs(void* pc, void* bc, const char* match_str) {
+    expire_charge_buffs_count(pc, bc, match_str, 0);
 }
 
 static void expire_prowl_charge_buffs(void* pc, void* bc) {
@@ -7744,7 +7754,12 @@ void skill_heal(int player_index, float amount) {
                 if (next_hp > max_val) next_hp = max_val;
                 set_norm(attr, next_hp / max_val, NULL);
 
-                // 驱动绿色跳字 (PlayerController.IncrementCachedValue("_fth", amount)):
+                // 驱动角色头顶绿色治疗跳字 (FloatingText_BuffEffect.Play @ 0x00DC7D18, style 6 = Healing)
+                typedef void (*fn_play_float)(float value, void* pc, int32_t style, void* method);
+                fn_play_float play_float = (fn_play_float)(g_base + 0x00DC7D18);
+                play_float(amount, pc, 6, NULL);
+
+                // 战斗统计缓存 (PlayerController.IncrementCachedValue("_fth", amount)):
                 if (g_strnew) {
                     typedef void (*fn_inc_cached)(void*, void*, float, void*);
                     fn_inc_cached inc_cached = (fn_inc_cached)(g_base + 0x01173B14);
@@ -7829,6 +7844,7 @@ void skill_apply_buff_dur(int player_index, const char* mod_id, float override_d
     void* bc = *(void**)((char*)pc + 0x88);
     if (!bc || !obj_ok(bc)) return;
 
+    // 1. Direct apply if StatModifier pointer was captured
     void* sm = NULL;
     if (strcmp(mod_id, "bumblebee_cin_dotm_calib_melee") == 0) {
         sm = (player_index == 0) ? s_bumblebee_calib_melee_sm_p0 : s_bumblebee_calib_melee_sm_p1;
@@ -7852,86 +7868,78 @@ void skill_apply_buff_dur(int player_index, const char* mod_id, float override_d
         sm = (player_index == 0) ? s_nemesis_dark_cd_sm_p0 : s_nemesis_dark_cd_sm_p1;
     } else if (strcmp(mod_id, "nemesisprime_dark_energy") == 0) {
         sm = (player_index == 0) ? s_nemesis_dark_stack_sm_p0 : s_nemesis_dark_stack_sm_p1;
+    } else if (strstr(mod_id, "jetfire") != NULL) {
+        sm = (player_index == 0) ? s_jetfire_charge_sm_p0 : s_jetfire_charge_sm_p1;
+    } else if (strstr(mod_id, "tantrum_block_charge") != NULL) {
+        sm = (player_index == 0) ? s_tantrum_charge_sm_p0 : s_tantrum_charge_sm_p1;
+    } else if (strstr(mod_id, "tantrum_block_unstoppable") != NULL) {
+        sm = (player_index == 0) ? s_tantrum_unstop_sm_p0 : s_tantrum_unstop_sm_p1;
     }
 
     if (sm && obj_ok(sm)) {
         PROTECT({
             fn_apply_statmod_buff apply_buff = (fn_apply_statmod_buff)(g_base + 0x00EEFB44);
-            apply_buff(bc, bc, sm, 1, 1, override_dur, NULL);
+            apply_buff(bc, bc, sm, 1, override_dur > 0.0f ? 1 : 0, override_dur, NULL);
             flog("SKILL_APPLY_BUFF_DUR: Direct ApplyBuff for '%s' on P%d (dur=%.2f)", mod_id, player_index, override_dur);
         });
         return;
     }
 
-    skill_apply_buff(player_index, mod_id);
-}
+    // 2. Dynamic resolution via StatModifierController.GetStatModifier(string) @ 0x00CCEEE0
+    PROTECT({
+        typedef void* (*fn_get_statmod)(void* smc, void* id_str, void* method);
+        fn_get_statmod get_sm = (fn_get_statmod)(g_base + 0x00CCEEE0);
+        fn_apply_statmod_buff apply_buff = (fn_apply_statmod_buff)(g_base + 0x00EEFB44);
 
-void skill_apply_buff(int player_index, const char* mod_id) {
-    if (!mod_id || !g_base) return;
-    void* pc = (player_index == 0) ? g_p0_controller : g_p1_controller;
-    if (!pc || !obj_ok(pc)) return;
-    void* bc = *(void**)((char*)pc + 0x88);
-    if (!bc || !obj_ok(bc)) return;
+        int opp_idx = 1 - player_index;
+        void* opp_pc = (opp_idx == 0) ? g_p0_controller : g_p1_controller;
+        void* opp_bc = (opp_pc && obj_ok(opp_pc)) ? *(void**)((char*)opp_pc + 0x88) : NULL;
 
-    // 1. Direct apply if StatModifier pointer was captured
-    if (strstr(mod_id, "jetfire") != NULL) {
-        void* sm = (player_index == 0) ? s_jetfire_charge_sm_p0 : s_jetfire_charge_sm_p1;
-        if (sm && obj_ok(sm)) {
-            PROTECT({
-                fn_apply_statmod_buff apply_buff = (fn_apply_statmod_buff)(g_base + 0x00EEFB44);
-                apply_buff(bc, bc, sm, 1, 1, -1.0f, NULL);
-                flog("SKILL_APPLY_BUFF: Direct ApplyBuff for '%s' on P%d", mod_id, player_index);
-            });
-            return;
-        }
-    }
-    if (strstr(mod_id, "tantrum_block_charge") != NULL) {
-        void* sm = (player_index == 0) ? s_tantrum_charge_sm_p0 : s_tantrum_charge_sm_p1;
-        if (sm && obj_ok(sm)) {
-            PROTECT({
-                fn_apply_statmod_buff apply_buff = (fn_apply_statmod_buff)(g_base + 0x00EEFB44);
-                apply_buff(bc, bc, sm, 1, 1, 1.5f, NULL);
-                flog("SKILL_APPLY_BUFF: Direct ApplyBuff for '%s' on P%d (dur=1.5f)", mod_id, player_index);
-            });
-            return;
-        }
-    }
-    if (strstr(mod_id, "tantrum_block_unstoppable") != NULL) {
-        void* sm = (player_index == 0) ? s_tantrum_unstop_sm_p0 : s_tantrum_unstop_sm_p1;
-        if (sm && obj_ok(sm)) {
-            PROTECT({
-                fn_apply_statmod_buff apply_buff = (fn_apply_statmod_buff)(g_base + 0x00EEFB44);
-                apply_buff(bc, bc, sm, 1, 1, 4.5f, NULL);
-                flog("SKILL_APPLY_BUFF: Direct ApplyBuff for '%s' on P%d (dur=4.5f)", mod_id, player_index);
-            });
-            return;
-        }
-    }
-    if (strstr(mod_id, "bumblebee_cin_dotm_burst_atk") != NULL) {
-        void* sm = (player_index == 0) ? s_bumblebee_burst_sm_p0 : s_bumblebee_burst_sm_p1;
-        if (sm && obj_ok(sm)) {
-            PROTECT({
-                fn_apply_statmod_buff apply_buff = (fn_apply_statmod_buff)(g_base + 0x00EEFB44);
-                apply_buff(bc, bc, sm, 1, 1, 3.0f, NULL);
-                flog("SKILL_APPLY_BUFF: Direct ApplyBuff for '%s' on P%d (dur=3.0f)", mod_id, player_index);
-            });
-            return;
-        }
-    }
+        void* smc_self = *(void**)((char*)bc + 0xA8);
+        void* smc_opp = (opp_bc && obj_ok(opp_bc)) ? *(void**)((char*)opp_bc + 0xA8) : NULL;
 
-    // 2. Otherwise apply via StatModifierController.ApplyStatModifier(string)
-    void* smc = *(void**)((char*)bc + 0xA8);
-    if (smc && obj_ok(smc) && g_strnew) {
-        PROTECT({
+        void* found_sm = NULL;
+        void* applicant_bc = bc;
+
+        if (g_strnew && get_sm) {
+            void* id_str = g_strnew(mod_id);
+            if (id_str) {
+                // Check self SMC
+                if (smc_self && obj_ok(smc_self)) {
+                    found_sm = get_sm(smc_self, id_str, NULL);
+                }
+                // If not found on self, check opponent SMC (e.g. retaliatory bleed / cross debuffs)
+                if (!found_sm && smc_opp && obj_ok(smc_opp)) {
+                    found_sm = get_sm(smc_opp, id_str, NULL);
+                    if (found_sm) {
+                        applicant_bc = opp_bc;
+                    }
+                }
+            }
+        }
+
+        if (found_sm && obj_ok(found_sm) && apply_buff) {
+            apply_buff(bc, applicant_bc, found_sm, 1, override_dur > 0.0f ? 1 : 0, override_dur, NULL);
+            flog("SKILL_APPLY_BUFF: Applied '%s' to P%d (applicant=%s, sm=%p, dur=%.2f)",
+                 mod_id, player_index, (applicant_bc == bc) ? "self" : "opp", found_sm, override_dur);
+            return;
+        }
+
+        // 3. Fallback to SMC.ApplyStatModifier
+        if (smc_self && obj_ok(smc_self) && g_strnew) {
             void* id_str = g_strnew(mod_id);
             if (id_str) {
                 typedef void (*fn_apply_sm)(void* smc, void* id_str, int32_t updateAttr, int32_t useOverrideDur, float overrideDur, void* method);
                 fn_apply_sm apply_sm = (fn_apply_sm)(g_base + 0x00CCF67C);
-                apply_sm(smc, id_str, 1, 0, 0.0f, NULL);
-                flog("SKILL_APPLY_BUFF: SMC.ApplyStatModifier for '%s' on P%d", mod_id, player_index);
+                apply_sm(smc_self, id_str, 1, override_dur > 0.0f ? 1 : 0, override_dur, NULL);
+                flog("SKILL_APPLY_BUFF: Fallback SMC.ApplyStatModifier for '%s' on P%d", mod_id, player_index);
             }
-        });
-    }
+        }
+    });
+}
+
+void skill_apply_buff(int player_index, const char* mod_id) {
+    skill_apply_buff_dur(player_index, mod_id, -1.0f);
 }
 
 int skill_has_buff(int player_index, const char* buff_id_substr) {
@@ -8009,16 +8017,9 @@ void skill_consume_buff(int player_index, const char* mod_id, int count) {
     if (!bc || !obj_ok(bc)) return;
 
     PROTECT({
-        expire_charge_buffs(pc, bc, mod_id);
-
-        void* id_str = g_strnew(mod_id);
-        if (id_str) {
-            typedef bool (*fn_remove_buffs_by_id)(void* bc, void* id_str, int32_t numToRemove, int32_t removeFlags, int32_t source, int32_t cloneCondition, void* method);
-            fn_remove_buffs_by_id remove_fn = (fn_remove_buffs_by_id)(g_base + 0x00EEE8F0);
-            remove_fn(bc, id_str, count > 0 ? count : 1, 4, 0, 0, NULL);
-            flog("SKILL_CONSUME_BUFF: Removed %d stack(s) of '%s' from P%d via RemoveBuffsByID(0xEEE8F0)",
-                 count > 0 ? count : 1, mod_id, player_index);
-        }
+        expire_charge_buffs_count(pc, bc, mod_id, count > 0 ? count : 1);
+        flog("SKILL_CONSUME_BUFF: Consumed %d stack(s) matching '%s' on P%d",
+             count > 0 ? count : 1, mod_id, player_index);
     });
 }
 

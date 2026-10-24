@@ -22,6 +22,9 @@
 //    前两击每一击 90% 几率施加流血，造成 40% 攻击力伤害持续 4 秒。
 // ===========================================================================
 
+extern char g_p0_bot_id[80];
+extern char g_p1_bot_id[80];
+
 static uint64_t s_opt_armor_buff_end_ms[2]   = {0, 0};
 static uint64_t s_opt_melee_buff_end_ms[2]   = {0, 0};
 static uint64_t s_opt_pending_purify_ms[2]   = {0, 0};
@@ -127,12 +130,21 @@ static void optimus_mv_on_buff_applied(SkillBuffAppliedContext* ctx) {
 
 static void optimus_mv_on_simulation_tick(uint64_t now_ms) {
     for (int p = 0; p < 2; p++) {
-        if (s_opt_pending_purify_ms[p] > 0 && now_ms >= s_opt_pending_purify_ms[p]) {
-            s_opt_pending_purify_ms[p] = 0;
+        const char* bot_id = (p == 0) ? g_p0_bot_id : g_p1_bot_id;
+        if (!bot_id || strstr(bot_id, "optimusprime_cin_tf") == NULL) {
+            continue;
+        }
 
-            int bleed_count = skill_count_buffs(p, "bleed");
-            if (bleed_count > 1) {
-                // 1. 净化 1 层多余流血
+        int bleed_count = skill_count_buffs(p, "bleed");
+        if (bleed_count > 1) {
+            // 如果多余流血尚未开启 1 秒倒计时，则启动倒计时
+            if (s_opt_pending_purify_ms[p] == 0) {
+                s_opt_pending_purify_ms[p] = now_ms + 1000;
+                skill_log("OPTIMUS_MV: P%d has %d bleed stacks > 1, scheduled purify in 1000ms", p, bleed_count);
+            } else if (now_ms >= s_opt_pending_purify_ms[p]) {
+                s_opt_pending_purify_ms[p] = 0;
+
+                // 1. 净化 1 层多余流血 (若有 dmg_bleed 优先净化，若无则净化通用 bleed)
                 if (skill_has_buff(p, "dmg_bleed")) {
                     skill_consume_buff(p, "dmg_bleed", 1);
                 } else {
@@ -147,11 +159,13 @@ static void optimus_mv_on_simulation_tick(uint64_t now_ms) {
                 // 3. 转化为 10% 最大能量 (3格的10% = 0.30格)
                 skill_add_mana(p, 0.30f);
 
-                // 若仍有多余流血则继续排队 1 秒后净化下一层
+                // 若净化后仍有多余流血则继续排队 1 秒后净化下一层
                 if (skill_count_buffs(p, "bleed") > 1) {
                     s_opt_pending_purify_ms[p] = now_ms + 1000;
                 }
             }
+        } else {
+            s_opt_pending_purify_ms[p] = 0;
         }
     }
 }

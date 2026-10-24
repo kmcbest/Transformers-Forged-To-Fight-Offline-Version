@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """
-TFTF Combat Simulator Automated Quality Gate Test Suite
-======================================================
-Tests all native skill logic in 0.2s without mobile device or APK.
+TFTF Combat Simulator Automated Quality Gate Test Suite (Enhanced)
+==================================================================
+Tests all native skill logic, data contracts, and IL2CPP engine lifecycles
+in < 0.5s without needing a mobile device or APK installation.
 """
 import sys
 import json
@@ -10,11 +11,23 @@ from pathlib import Path
 
 if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8')
+if hasattr(sys.stderr, 'reconfigure'):
+    sys.stderr.reconfigure(encoding='utf-8')
 
+SIM_DIR = Path(__file__).resolve().parent
+REPO_ROOT = SIM_DIR.parent.parent
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+if str(SIM_DIR) not in sys.path:
+    sys.path.insert(0, str(SIM_DIR))
 
-# Add sim directory
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-from sim_server import g_engine
+from sim_server import (
+    g_engine,
+    decorate_buff,
+    trigger_onstart_phase,
+    CURRENT_MATCHUP,
+    PENDING_START_EVENTS,
+)
 
 def assert_true(cond, msg):
     if not cond:
@@ -140,15 +153,66 @@ def test_bumblebee_sidestep_crit():
     p0_buffs = {b["id"]: b for b in st["p0"]["buffs"]}
     assert_true(p0_buffs["bumblebee_crit_buff"]["stacks"] == 3, "Crit buff capped at 3 stacks")
 
+def test_contract_validation():
+    print("\n--- [TEST 6] Data Contract Validation: Zero Guesswork Binding ---")
+    # 1. 验证电影擎天柱净化：严格读取官方 abilities 数据库，PUA 必须为 0xE942 (意志力绿)，颜色 10B981
+    raw_purify = {"id": "optimusprime_cin_tf_purify", "rem_ms": 1500, "stacks": 1}
+    dec_purify = decorate_buff(raw_purify)
+    assert_true(dec_purify["is_contract_valid"] == True, "Optimus Purify is contract valid")
+    assert_true(dec_purify["pua"] == "0xE942", f"Optimus Purify PUA is 0xE942 (willpower), got: {dec_purify['pua']}")
+    assert_true(dec_purify["tc"] == "10B981", f"Optimus Purify top color is 10B981, got: {dec_purify['tc']}")
+    assert_true(dec_purify["name"] == "净化", f"Optimus Purify name is '净化', got: {dec_purify['name']}")
+
+    # 2. 验证通用标准 Buff
+    raw_bleed = {"id": "dmg_bleed", "rem_ms": 7000, "stacks": 1}
+    dec_bleed = decorate_buff(raw_bleed)
+    assert_true(dec_bleed["is_contract_valid"] == True, "dmg_bleed is standard contract valid")
+    assert_true(dec_bleed["pua"] == "0xE401", f"dmg_bleed PUA is 0xE401, got: {dec_bleed['pua']}")
+    assert_true(dec_bleed["name"] == "流血", f"dmg_bleed name is '流血', got: {dec_bleed['name']}")
+
+    # 3. 验证未在官方库中定义的未注册 Buff 必须被标记违规
+    raw_fake = {"id": "unregistered_test_buff_999", "rem_ms": 5000, "stacks": 1}
+    dec_fake = decorate_buff(raw_fake)
+    assert_true(dec_fake["is_contract_valid"] == False, "Unregistered buff correctly flagged as contract invalid")
+    assert_true("未在" in dec_fake.get("contract_warning", ""), "Contract warning message generated")
+
+def test_lifecycle_onstart():
+    print("\n--- [TEST 7] IL2CPP Lifecycle Emulation: 0.00s onStart Phase ---")
+    # 1. 测试带有开局触发器的角色 (威震天)
+    CURRENT_MATCHUP["p0_bot_id"] = "megatron"
+    CURRENT_MATCHUP["p1_bot_id"] = "bonecrusher_cin_rotf"
+    g_engine.init("megatron", "bonecrusher_cin_rotf", 15000.0, 15000.0, 1000.0, 1000.0)
+    trigger_onstart_phase()
+
+    st = g_engine.get_state()
+    p0_buff_ids = [b["id"] for b in st["p0"]["buffs"]]
+    assert_true(len(p0_buff_ids) > 0, f"Megatron has onStart buffs injected at frame 0.00s: {p0_buff_ids}")
+    assert_true("megatron_fusion_cannon" in p0_buff_ids or "megatron_fusion_cd" in p0_buff_ids,
+                "Megatron fusion mechanisms successfully started at 0.00s")
+    assert_true(len(PENDING_START_EVENTS) > 0, f"Callout events queued for UI banner: {len(PENDING_START_EVENTS)}")
+
+    # 2. 验证修复后的电影擎天柱：因为移除了 onStart，开局不应弹出净化
+    CURRENT_MATCHUP["p0_bot_id"] = "optimusprime_cin_tf"
+    CURRENT_MATCHUP["p1_bot_id"] = "bonecrusher_cin_rotf"
+    g_engine.init("optimusprime_cin_tf", "bonecrusher_cin_rotf", 15000.0, 15000.0, 1000.0, 1000.0)
+    trigger_onstart_phase()
+
+    st = g_engine.get_state()
+    p0_buff_ids = [b["id"] for b in st["p0"]["buffs"]]
+    assert_true("optimusprime_cin_tf_purify" not in p0_buff_ids,
+                "Optimus Prime does NOT trigger purify at 0.00s (lifecycle verified!)")
+
 if __name__ == "__main__":
-    print("=" * 60)
-    print("🚀 TFTF 战斗技能模拟器本地全自动化质量门禁测试")
-    print("=" * 60)
+    print("=" * 70)
+    print("🚀 TFTF 战斗技能模拟器全自动化质量门禁测试 (含数据契约与生命周期)")
+    print("=" * 70)
     test_optimus_mv_willpower()
     test_megatron_debuff_fusion()
     test_prowl_melee_buff()
     test_prowl_dash_back_charge()
     test_bumblebee_sidestep_crit()
-    print("\n" + "=" * 60)
-    print("🎉 全部测试 100% 通过！底层 C 技能模块在 PC 端完美通过逻辑闭环！")
-    print("=" * 60)
+    test_contract_validation()
+    test_lifecycle_onstart()
+    print("\n" + "=" * 70)
+    print("🎉 全部 7 项质量门禁测试 100% 通过！模拟器与真机底层生命周期/契约完美对齐！")
+    print("=" * 70)

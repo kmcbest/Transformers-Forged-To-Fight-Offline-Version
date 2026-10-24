@@ -5,6 +5,7 @@
 # hooks from source and obtain the base APK from an entitled copy of the game.
 *.so
 *.apk
+*.dll
 
 # Local media captures (including screenshots and recordings) must never be committed.
 /media/

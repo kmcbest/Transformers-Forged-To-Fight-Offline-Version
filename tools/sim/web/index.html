@@ -51,7 +51,7 @@
                     <div class="avatar-img" id="p0Avatar">⚔️</div>
                 </div>
                 <div class="combatant-title">
-                    <h2 id="p0Name">电影擎天柱</h2>
+                    <h2 id="p0Name" class="clickable-bot-name" title="点击查看已实装能力列表">电影擎天柱 <span class="view-skills-pill">📖 技能列表</span></h2>
                     <span class="bot-id-tag" id="p0BotId">optimusprime_cin_tf</span>
                 </div>
             </div>
@@ -77,28 +77,24 @@
 
         <!-- 视觉格斗大屏幕 (格斗主视窗) -->
         <section class="combat-stage" id="stage">
-            <!-- 1. 格斗顶部 HUD: 头像 + 血条 + 3段能量槽 + 计时器与VS -->
+            <!-- 1. 格斗顶部 HUD: 头像 + 血条 + 血条下方环形圈Buff + 计时器与VS -->
             <div class="stage-hud-top">
                 <!-- 1P HUD (左侧，向内延伸) -->
                 <div class="stage-p0-hud">
                     <div class="stage-avatar-wrap p0-avatar-wrap">
                         <div class="stage-avatar" id="stageP0Avatar">⚔️</div>
-                        <div class="stage-p-tag p0-tag">P0</div>
+                        <div class="stage-p-tag p0-tag">1P</div>
                     </div>
                     <div class="stage-bars-col">
                         <div class="stage-name-row">
-                            <span class="stage-p-name" id="stageP0Name">电影擎天柱</span>
-                            <span class="stage-hp-num" id="stageP0HpText">15000 / 15000</span>
+                            <span class="stage-p-name clickable-bot-name" id="stageP0Name" title="点击查看已实装能力列表">电影擎天柱 <span class="ab-hint-tag">📖 查看技能</span></span>
+                            <span class="stage-hp-num" id="stageP0HpText">15000 / 15000 (100%)</span>
                         </div>
                         <div class="stage-bar-outer hp-bar-outer">
                             <div class="stage-bar-fill stage-hp-p0" id="stageP0HpFill" style="width: 100%;"></div>
                         </div>
-                        <!-- 3段能量槽 -->
-                        <div class="stage-mana-row p0-mana-row">
-                            <div class="stage-mana-seg" id="p0ManaSeg1"><div class="seg-fill"></div><span class="seg-label">SP1</span></div>
-                            <div class="stage-mana-seg" id="p0ManaSeg2"><div class="seg-fill"></div><span class="seg-label">SP2</span></div>
-                            <div class="stage-mana-seg" id="p0ManaSeg3"><div class="seg-fill"></div><span class="seg-label">SP3</span></div>
-                        </div>
+                        <!-- 游戏真实 UI：血条下方的 PUA 图标 + 环形倒计时圈 -->
+                        <div class="stage-buff-rings p0-buff-rings" id="stageP0BuffRings"></div>
                     </div>
                 </div>
 
@@ -112,22 +108,18 @@
                 <div class="stage-p1-hud">
                     <div class="stage-bars-col p1-bars-col">
                         <div class="stage-name-row p1-name-row">
-                            <span class="stage-hp-num" id="stageP1HpText">15000 / 15000</span>
-                            <span class="stage-p-name" id="stageP1Name">碎骨魔</span>
+                            <span class="stage-hp-num" id="stageP1HpText">15000 / 15000 (100%)</span>
+                            <span class="stage-p-name clickable-bot-name" id="stageP1Name" title="点击查看已实装能力列表"><span class="ab-hint-tag">查看技能 📖</span> 碎骨魔</span>
                         </div>
                         <div class="stage-bar-outer hp-bar-outer">
                             <div class="stage-bar-fill stage-hp-p1" id="stageP1HpFill" style="width: 100%;"></div>
                         </div>
-                        <!-- 3段能量槽 -->
-                        <div class="stage-mana-row p1-mana-row">
-                            <div class="stage-mana-seg" id="p1ManaSeg3"><div class="seg-fill"></div><span class="seg-label">SP3</span></div>
-                            <div class="stage-mana-seg" id="p1ManaSeg2"><div class="seg-fill"></div><span class="seg-label">SP2</span></div>
-                            <div class="stage-mana-seg" id="p1ManaSeg1"><div class="seg-fill"></div><span class="seg-label">SP1</span></div>
-                        </div>
+                        <!-- 游戏真实 UI：血条下方的 PUA 图标 + 环形倒计时圈 (镜像对齐) -->
+                        <div class="stage-buff-rings p1-buff-rings" id="stageP1BuffRings"></div>
                     </div>
                     <div class="stage-avatar-wrap p1-avatar-wrap">
                         <div class="stage-avatar" id="stageP1Avatar">🛡️</div>
-                        <div class="stage-p-tag p1-tag">P1</div>
+                        <div class="stage-p-tag p1-tag">2P</div>
                     </div>
                 </div>
             </div>
@@ -239,6 +231,61 @@
 
             <!-- 4. 战斗浮字层 (锚定在人物上方) -->
             <div class="floater-container" id="floaterContainer"></div>
+
+            <!-- 5. 游戏真实原厂 UI：底部能量与必杀技栏 -->
+            <div class="stage-hud-bottom" id="stageHudBottom">
+                <!-- 1P 底部能量区 (左下角) -->
+                <div class="stage-bottom-p0">
+                    <div class="stage-sp-hex-btn p0-sp-btn" id="stageP0SpHexBtn" title="1P 必杀技按键 (点击出招)">
+                        <div class="hex-btn-bg"></div>
+                        <div class="hex-btn-core">
+                            <span class="hex-sp-icon">⚡</span>
+                            <span class="hex-sp-text" id="stageP0SpText">SP1</span>
+                        </div>
+                    </div>
+                    <div class="stage-bottom-mana-block">
+                        <div class="mana-meta-row">
+                            <span class="mana-title">1P 能量 (POWER)</span>
+                            <span class="mana-num" id="stageP0ManaNum">0.00 / 3.00</span>
+                        </div>
+                        <div class="stage-mana-row p0-mana-row">
+                            <div class="stage-mana-seg" id="p0ManaSeg1"><div class="seg-fill"></div><span class="seg-label">SP 1</span></div>
+                            <div class="stage-mana-seg" id="p0ManaSeg2"><div class="seg-fill"></div><span class="seg-label">SP 2</span></div>
+                            <div class="stage-mana-seg" id="p0ManaSeg3"><div class="seg-fill"></div><span class="seg-label">SP 3</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 底部中央战斗状态 / 连击数 -->
+                <div class="stage-bottom-center">
+                    <div class="combo-counter-hud" id="stageComboHud">
+                        <span class="combo-count-val" id="stageComboVal">0</span>
+                        <span class="combo-count-label">连击 (HITS)</span>
+                    </div>
+                </div>
+
+                <!-- 2P 底部能量区 (右下角，镜像布局) -->
+                <div class="stage-bottom-p1">
+                    <div class="stage-bottom-mana-block p1-mana-block">
+                        <div class="mana-meta-row p1-meta">
+                            <span class="mana-num" id="stageP1ManaNum">0.00 / 3.00</span>
+                            <span class="mana-title">2P 能量 (POWER)</span>
+                        </div>
+                        <div class="stage-mana-row p1-mana-row">
+                            <div class="stage-mana-seg" id="p1ManaSeg3"><div class="seg-fill"></div><span class="seg-label">SP 3</span></div>
+                            <div class="stage-mana-seg" id="p1ManaSeg2"><div class="seg-fill"></div><span class="seg-label">SP 2</span></div>
+                            <div class="stage-mana-seg" id="p1ManaSeg1"><div class="seg-fill"></div><span class="seg-label">SP 1</span></div>
+                        </div>
+                    </div>
+                    <div class="stage-sp-hex-btn p1-sp-btn" id="stageP1SpHexBtn">
+                        <div class="hex-btn-bg"></div>
+                        <div class="hex-btn-core">
+                            <span class="hex-sp-icon">🛡️</span>
+                            <span class="hex-sp-text" id="stageP1SpText">SP</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </section>
 
         <!-- 2P 角色面板 -->
@@ -253,7 +300,7 @@
                     <div class="avatar-img" id="p1Avatar">🛡️</div>
                 </div>
                 <div class="combatant-title">
-                    <h2 id="p1Name">碎骨魔</h2>
+                    <h2 id="p1Name" class="clickable-bot-name" title="点击查看已实装能力列表">碎骨魔 <span class="view-skills-pill">📖 技能列表</span></h2>
                     <span class="bot-id-tag" id="p1BotId">bonecrusher_cin_rotf</span>
                 </div>
             </div>
@@ -375,6 +422,41 @@
             <div class="modal-footer">
                 <button class="btn btn-secondary" id="btnModalCancel">取消</button>
                 <button class="btn btn-primary" id="btnModalApply">立即施加</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 角色已实装能力列表弹窗 (Ability Inspector Modal) -->
+    <div class="modal-overlay" id="abilityModal" style="display: none;">
+        <div class="modal-box ability-modal-box">
+            <div class="modal-header">
+                <div class="ab-modal-title-group">
+                    <span class="ab-modal-avatar" id="abModalAvatar">🤖</span>
+                    <div>
+                        <h3 id="abModalBotName">角色技能与机制清单</h3>
+                        <span class="ab-modal-bot-id" id="abModalBotId">bot_id</span>
+                    </div>
+                </div>
+                <button class="modal-close" id="btnAbilityModalClose">&times;</button>
+            </div>
+            <div class="modal-body ability-modal-body">
+                <!-- 切换 Tabs -->
+                <div class="ab-tabs">
+                    <button class="ab-tab-btn active" id="tabBtnImplemented">⚡ 代码已实装机制 (<span id="abImplementedCount">0</span>)</button>
+                    <button class="ab-tab-btn" id="tabBtnAll">📚 官方图鉴技能库 (<span id="abAllCount">0</span>)</button>
+                </div>
+                <!-- 已实装列表 -->
+                <div class="ab-panel active" id="panelImplemented">
+                    <div class="ab-skills-list" id="abImplementedList"></div>
+                </div>
+                <!-- 全量列表 -->
+                <div class="ab-panel" id="panelAll" style="display: none;">
+                    <div class="ab-skills-list" id="abAllList"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <span class="ab-footer-hint">💡 战斗中当上述被动或技能触发时，血条正下方会以 <strong>PUA 图标加环形倒计时圈</strong> 实时呈现</span>
+                <button class="btn btn-secondary" id="btnAbilityModalClose2">关闭</button>
             </div>
         </div>
     </div>

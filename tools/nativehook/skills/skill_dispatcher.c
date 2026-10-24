@@ -24,6 +24,7 @@ extern BotSkillModule g_module_cyclonus;
 extern BotSkillModule g_module_nemesis;
 extern BotSkillModule g_module_jetfire;
 extern BotSkillModule g_module_tantrum;
+extern BotSkillModule g_module_bonecrusher;
 
 static const BotSkillModule* s_registry[] = {
     &g_module_arcee,
@@ -41,6 +42,7 @@ static const BotSkillModule* s_registry[] = {
     &g_module_nemesis,
     &g_module_jetfire,
     &g_module_tantrum,
+    &g_module_bonecrusher,
     NULL
 };
 
@@ -113,11 +115,12 @@ int skill_dispatch_buff_gate(SkillBuffGateContext* ctx, int* out_allowed) {
 void skill_dispatch_buff_applied(SkillBuffAppliedContext* ctx) {
     if (!ctx) return;
     const BotSkillModule* mod = find_module_by_modifier(ctx->modifier_id);
-    if (!mod && ctx->target_bot_id) {
-        mod = find_module_by_bot(ctx->target_bot_id);
-    }
     if (mod && mod->on_buff_applied) {
         mod->on_buff_applied(ctx);
+    }
+    const BotSkillModule* tgt_mod = find_module_by_bot(ctx->target_bot_id);
+    if (tgt_mod && tgt_mod != mod && tgt_mod->on_buff_applied) {
+        tgt_mod->on_buff_applied(ctx);
     }
 }
 

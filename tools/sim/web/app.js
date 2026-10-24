@@ -181,29 +181,123 @@ function renderState(data) {
     }
 }
 
+// PUA 图标与状态类型识别解析
+function getBuffPuaInfo(buffId) {
+    const id = buffId.toLowerCase();
+    let pua = 0xE406;
+    let typeClass = "is-buff";
+    let name = buffId;
+
+    if (id.includes("bleed")) {
+        pua = 0xE401; // 流血
+        typeClass = "is-debuff is-bleed";
+        name = "流血 (Bleed)";
+    } else if (id.includes("burn") || id.includes("flame") || id.includes("fire")) {
+        pua = 0xE41D; // 灼烧
+        typeClass = "is-debuff is-burn";
+        name = "灼烧 (Burn)";
+    } else if (id.includes("shock") || id.includes("elect")) {
+        pua = 0xE914; // 震击
+        typeClass = "is-debuff is-shock";
+        name = "震击 (Shock)";
+    } else if (id.includes("armor_break") || id.includes("break")) {
+        pua = 0xE516; // 破甲
+        typeClass = "is-debuff";
+        name = "破甲 (Armor Break)";
+    } else if (id.includes("armor") || id.includes("shield")) {
+        pua = 0xE517; // 护甲
+        typeClass = "is-buff";
+        name = "护甲 (Armor)";
+    } else if (id.includes("melee")) {
+        pua = 0xE412; // 近战增益
+        typeClass = "is-buff";
+        name = "近战增益 (Melee)";
+    } else if (id.includes("willpower")) {
+        pua = 0xE942; // 意志力
+        typeClass = "is-buff is-heal";
+        name = "意志力 (Willpower)";
+    } else if (id.includes("purify")) {
+        pua = 0xE942; // 意志力/净化 (Willpower/Purify)
+        typeClass = "is-buff is-heal";
+        name = "净化 (Purify)";
+    } else if (id.includes("crit")) {
+        pua = 0xE40D; // 暴击
+        typeClass = "is-buff is-crit";
+        name = "暴击增益 (Crit)";
+    } else if (id.includes("evade") || id.includes("dodge")) {
+        pua = 0xE509; // 闪避
+        typeClass = "is-buff";
+        name = "闪避/规避 (Evade)";
+    } else if (id.includes("stun")) {
+        pua = 0xE605; // 眩晕
+        typeClass = "is-debuff";
+        name = "眩晕 (Stun)";
+    } else if (id.includes("decel")) {
+        pua = 0xE952; // 减速
+        typeClass = "is-debuff";
+        name = "时间减速 (Decel)";
+    } else if (id.includes("unstoppable")) {
+        pua = 0xE915; // 霸体
+        typeClass = "is-buff";
+        name = "不可阻挡 (Unstoppable)";
+    }
+
+    return {
+        char: String.fromCharCode(pua),
+        hex: "0x" + pua.toString(16).toUpperCase(),
+        typeClass,
+        name
+    };
+}
+
 function updateManaSegments(isP0, mana) {
     const seg1 = isP0 ? p0ManaSeg1 : p1ManaSeg1;
     const seg2 = isP0 ? p0ManaSeg2 : p1ManaSeg2;
     const seg3 = isP0 ? p0ManaSeg3 : p1ManaSeg3;
-    if (!seg1 || !seg2 || !seg3) return;
+    const manaNumEl = isP0 ? document.getElementById("stageP0ManaNum") : document.getElementById("stageP1ManaNum");
+    const spHexBtn = isP0 ? document.getElementById("stageP0SpHexBtn") : document.getElementById("stageP1SpHexBtn");
+    const spTextEl = isP0 ? document.getElementById("stageP0SpText") : document.getElementById("stageP1SpText");
 
-    // 段1 (0.0 ~ 1.0)
-    const fill1 = seg1.querySelector(".seg-fill");
-    const p1 = Math.min(100, Math.max(0, mana * 100));
-    fill1.style.width = `${p1}%`;
-    seg1.classList.toggle("is-full", mana >= 1.0);
+    if (manaNumEl) {
+        manaNumEl.textContent = `${mana.toFixed(2)} / 3.00 (${Math.round((mana / 3.0) * 100)}%)`;
+    }
 
-    // 段2 (1.0 ~ 2.0)
-    const fill2 = seg2.querySelector(".seg-fill");
-    const p2 = Math.min(100, Math.max(0, (mana - 1.0) * 100));
-    fill2.style.width = `${p2}%`;
-    seg2.classList.toggle("is-full", mana >= 2.0);
+    if (seg1 && seg2 && seg3) {
+        // 段1 (0.0 ~ 1.0)
+        const fill1 = seg1.querySelector(".seg-fill");
+        const p1 = Math.min(100, Math.max(0, mana * 100));
+        fill1.style.width = `${p1}%`;
+        seg1.classList.toggle("is-full", mana >= 1.0);
 
-    // 段3 (2.0 ~ 3.0)
-    const fill3 = seg3.querySelector(".seg-fill");
-    const p3 = Math.min(100, Math.max(0, (mana - 2.0) * 100));
-    fill3.style.width = `${p3}%`;
-    seg3.classList.toggle("is-full", mana >= 3.0);
+        // 段2 (1.0 ~ 2.0)
+        const fill2 = seg2.querySelector(".seg-fill");
+        const p2 = Math.min(100, Math.max(0, (mana - 1.0) * 100));
+        fill2.style.width = `${p2}%`;
+        seg2.classList.toggle("is-full", mana >= 2.0);
+
+        // 段3 (2.0 ~ 3.0)
+        const fill3 = seg3.querySelector(".seg-fill");
+        const p3 = Math.min(100, Math.max(0, (mana - 2.0) * 100));
+        fill3.style.width = `${p3}%`;
+        seg3.classList.toggle("is-full", mana >= 3.0);
+    }
+
+    // SP 六边形按键状态联动
+    if (spHexBtn && spTextEl) {
+        spHexBtn.classList.remove("can-sp1", "can-sp2", "can-sp3");
+        if (mana >= 3.0) {
+            spHexBtn.classList.add("can-sp3");
+            spTextEl.textContent = "SP3";
+        } else if (mana >= 2.0) {
+            spHexBtn.classList.add("can-sp2");
+            spTextEl.textContent = "SP2";
+        } else if (mana >= 1.0) {
+            spHexBtn.classList.add("can-sp1");
+            spTextEl.textContent = "SP1";
+        } else {
+            spTextEl.textContent = "SP";
+        }
+    }
 }
 
 function renderPlayer(idx, p) {
@@ -232,7 +326,11 @@ function renderPlayer(idx, p) {
     // Mana 能量段更新
     updateManaSegments(isP0, p.mana);
 
-    // 渲染 Buff 徽章
+    // 1. 渲染血条下方的 PUA 环形倒计时圈 (DOM 差量复用更新，杜绝每100ms重建导致的狂闪)
+    const buffRingsEl = isP0 ? document.getElementById("stageP0BuffRings") : document.getElementById("stageP1BuffRings");
+    renderBuffRingsDOM(buffRingsEl, p.buffs, idx);
+
+    // 2. 侧边栏 Buff 列表渲染
     if (!p.buffs || p.buffs.length === 0) {
         buffTrayEl.innerHTML = '<span class="buff-empty">暂无状态</span>';
     } else {
@@ -240,23 +338,20 @@ function renderPlayer(idx, p) {
         p.buffs.forEach(b => {
             const badge = document.createElement("div");
             const isPerm = (b.rem_ms < 0);
-            badge.className = `buff-badge ${isPerm ? "is-perm" : ""}`;
+            const isValid = (b.is_contract_valid !== false);
+            badge.className = `buff-badge ${isPerm ? "is-perm" : ""} ${!isValid ? "is-contract-invalid" : ""}`;
 
-            let icon = "✨";
-            if (b.id.includes("bleed")) icon = "🩸";
-            else if (b.id.includes("shock")) icon = "⚡";
-            else if (b.id.includes("armor")) icon = "🛡️";
-            else if (b.id.includes("atk") || b.id.includes("melee")) icon = "⚔️";
-            else if (b.id.includes("purify")) icon = "🌟";
-            else if (b.id.includes("stun")) icon = "💫";
-            else if (b.id.includes("dodge") || b.id.includes("evade")) icon = "💨";
-
+            const info = getBuffPuaInfo(b.id);
+            const puaChar = b.pua_char || info.char;
+            const displayName = b.name || info.name || b.id;
             const timeStr = isPerm ? "永久" : `${(b.rem_ms / 1000).toFixed(1)}s`;
             const stackStr = (b.stacks > 1) ? ` x${b.stacks}` : "";
+            const colorStyle = b.tc ? `color:#${b.tc};` : "";
+            const warnIcon = !isValid ? `<span title="${b.contract_warning || '未在官方能力库注册'}" style="color:#ef4444;margin-left:4px;">⚠️</span>` : "";
 
             badge.innerHTML = `
-                <span>${icon}</span>
-                <span><strong>${b.id}</strong>${stackStr} [${timeStr}]</span>
+                <span class="tecnica-icon" style="margin-right:4px;font-size:14px;${colorStyle}">${puaChar}</span>
+                <span><strong style="${colorStyle}">${displayName}</strong>${stackStr} [${timeStr}]${warnIcon}</span>
                 <span class="b-close" title="驱散此Buff" onclick="removeBuff(${idx}, '${b.id}')">&times;</span>
             `;
             buffTrayEl.appendChild(badge);
@@ -318,6 +413,59 @@ function appendLog(line) {
 // 交互事件处理
 // ---------------------------------------------------------------------------
 function setupEventHandlers() {
+    // 角色名字点击 -> 弹出已实装技能列表弹窗
+    const p0NameEl = document.getElementById("p0Name");
+    const p1NameEl = document.getElementById("p1Name");
+    const stageP0NameEl = document.getElementById("stageP0Name");
+    const stageP1NameEl = document.getElementById("stageP1Name");
+
+    if (p0NameEl) p0NameEl.addEventListener("click", () => openAbilityModal(p0BotSelect.value));
+    if (p1NameEl) p1NameEl.addEventListener("click", () => openAbilityModal(p1BotSelect.value));
+    if (stageP0NameEl) stageP0NameEl.addEventListener("click", () => openAbilityModal(p0BotSelect.value));
+    if (stageP1NameEl) stageP1NameEl.addEventListener("click", () => openAbilityModal(p1BotSelect.value));
+
+    // 技能弹窗关闭与 Tab 切换
+    const btnAbClose = document.getElementById("btnAbilityModalClose");
+    const btnAbClose2 = document.getElementById("btnAbilityModalClose2");
+    const abModal = document.getElementById("abilityModal");
+    if (btnAbClose) btnAbClose.addEventListener("click", closeAbilityModal);
+    if (btnAbClose2) btnAbClose2.addEventListener("click", closeAbilityModal);
+    if (abModal) {
+        abModal.addEventListener("click", (e) => {
+            if (e.target === abModal) closeAbilityModal();
+        });
+    }
+
+    const tabBtnImplemented = document.getElementById("tabBtnImplemented");
+    const tabBtnAll = document.getElementById("tabBtnAll");
+    const panelImplemented = document.getElementById("panelImplemented");
+    const panelAll = document.getElementById("panelAll");
+
+    if (tabBtnImplemented && tabBtnAll) {
+        tabBtnImplemented.addEventListener("click", () => {
+            tabBtnImplemented.classList.add("active");
+            tabBtnAll.classList.remove("active");
+            panelImplemented.style.display = "block";
+            panelAll.style.display = "none";
+        });
+        tabBtnAll.addEventListener("click", () => {
+            tabBtnAll.classList.add("active");
+            tabBtnImplemented.classList.remove("active");
+            panelAll.style.display = "block";
+            panelImplemented.style.display = "none";
+        });
+    }
+
+    // 底部六边形 SP 必杀按键点击出招
+    const stageP0SpHexBtn = document.getElementById("stageP0SpHexBtn");
+    if (stageP0SpHexBtn) {
+        stageP0SpHexBtn.addEventListener("click", () => {
+            if (stageP0SpHexBtn.classList.contains("can-sp3")) btnSP3.click();
+            else if (stageP0SpHexBtn.classList.contains("can-sp2")) btnSP2.click();
+            else if (stageP0SpHexBtn.classList.contains("can-sp1")) btnSP1.click();
+            else showToast("能量不足，至少需要 1 格能量释放必杀技！");
+        });
+    }
     // 时钟控制
     btnPlay.addEventListener("click", () => {
         if (!isRunning) {
@@ -613,3 +761,208 @@ function showToast(msg) {
 
 // 启动应用
 document.addEventListener("DOMContentLoaded", init);
+
+
+// ---------------------------------------------------------------------------
+// 角色技能详情弹窗 (Ability Inspector Modal)
+// ---------------------------------------------------------------------------
+async function openAbilityModal(botId) {
+    const modal = document.getElementById("abilityModal");
+    const titleEl = document.getElementById("abModalBotName");
+    const botIdEl = document.getElementById("abModalBotId");
+    const avatarEl = document.getElementById("abModalAvatar");
+    const implCountEl = document.getElementById("abImplementedCount");
+    const allCountEl = document.getElementById("abAllCount");
+    const implListEl = document.getElementById("abImplementedList");
+    const allListEl = document.getElementById("abAllList");
+
+    if (!modal) return;
+    modal.style.display = "flex";
+    botIdEl.textContent = botId;
+    titleEl.textContent = "正在读取技能数据...";
+    implListEl.innerHTML = '<div style="padding:24px;text-align:center;color:#64748b;">⏳ 正在读取代码实装能力与技能图鉴...</div>';
+    allListEl.innerHTML = '';
+
+    try {
+        const res = await fetch(`/api/bot/${botId}`);
+        const data = await res.json();
+        const bot = data.bot || {};
+        titleEl.textContent = `${bot.name_zh || botId} (能力总览)`;
+        if (avatarEl) {
+            avatarEl.textContent = (bot.faction === "decepticon") ? "😈" : "🤖";
+        }
+
+        const implemented = data.implemented_skills || [];
+        const dbAbilities = data.db_abilities || [];
+        implCountEl.textContent = implemented.length;
+        allCountEl.textContent = dbAbilities.length;
+
+        // 渲染代码已实装技能列表
+        if (implemented.length === 0) {
+            implListEl.innerHTML = '<div style="padding:24px;text-align:center;color:#64748b;">该角色暂无自定义 C/Python 机制，已载入标准引擎战斗属性。</div>';
+        } else {
+            implListEl.innerHTML = "";
+            implemented.forEach(s => {
+                let puaCode = 0xE406;
+                if (s.pua_icon) {
+                    puaCode = parseInt(s.pua_icon, s.pua_icon.startsWith("0x") ? 16 : 10);
+                }
+                const puaChar = String.fromCharCode(puaCode);
+                const card = document.createElement("div");
+                card.className = "ab-skill-card";
+                card.innerHTML = `
+                    <div class="ab-skill-glyph-wrap">
+                        <span class="tecnica-icon ab-skill-glyph">${puaChar}</span>
+                    </div>
+                    <div class="ab-skill-info">
+                        <div class="ab-skill-header">
+                            <span class="ab-skill-title">${s.title}</span>
+                            <span class="ab-skill-badge badge-active-c">${s.status || "C 引擎已实装"}</span>
+                        </div>
+                        <div class="ab-skill-category">[${s.category || "能力"}] · 矢量字符: U+${puaCode.toString(16).toUpperCase()}</div>
+                        <div class="ab-skill-desc">${s.desc}</div>
+                    </div>
+                `;
+                implListEl.appendChild(card);
+            });
+        }
+
+        // 渲染官方全量技能列表
+        if (dbAbilities.length === 0) {
+            allListEl.innerHTML = '<div style="padding:24px;text-align:center;color:#64748b;">数据库中未检索到该角色技能记录。</div>';
+        } else {
+            allListEl.innerHTML = "";
+            dbAbilities.forEach(a => {
+                let puaCode = 0xE406;
+                if (a.pua_icon) {
+                    puaCode = parseInt(a.pua_icon, a.pua_icon.startsWith("0x") ? 16 : 10);
+                }
+                const puaChar = String.fromCharCode(puaCode);
+                const card = document.createElement("div");
+                card.className = "ab-skill-card";
+                card.innerHTML = `
+                    <div class="ab-skill-glyph-wrap" style="border-color:#64748b;">
+                        <span class="tecnica-icon ab-skill-glyph" style="color:#94a3b8;">${puaChar}</span>
+                    </div>
+                    <div class="ab-skill-info">
+                        <div class="ab-skill-header">
+                            <span class="ab-skill-title">${a.title_zh || a.title_en || "未命名技能"}</span>
+                            <span class="ab-skill-badge badge-active-db">官方图鉴</span>
+                        </div>
+                        <div class="ab-skill-category">[${a.category || "技能"}] ${a.title_en ? `· ${a.title_en}` : ""}</div>
+                        <div class="ab-skill-desc">${a.desc_zh || a.desc_en || "暂无描述"}</div>
+                    </div>
+                `;
+                allListEl.appendChild(card);
+            });
+        }
+    } catch (e) {
+        implListEl.innerHTML = `<div style="color:#ef4444;padding:20px;">加载技能失败: ${e.message}</div>`;
+    }
+}
+
+function closeAbilityModal() {
+    const modal = document.getElementById("abilityModal");
+    if (modal) modal.style.display = "none";
+}
+
+
+// ---------------------------------------------------------------------------
+// 环形圈 Buff DOM 差量更新 (复用节点，仅更新倒计时与层数，避免重复触发动画闪烁)
+// ---------------------------------------------------------------------------
+function renderBuffRingsDOM(container, buffs, playerIdx) {
+    if (!container) return;
+    if (!buffs || buffs.length === 0) {
+        container.innerHTML = "";
+        return;
+    }
+
+    const activeIds = new Set(buffs.map(b => b.id));
+
+    // 1. 移除已过期的 DOM 节点
+    Array.from(container.children).forEach(child => {
+        const id = child.getAttribute("data-buff-id");
+        if (!activeIds.has(id)) {
+            child.remove();
+        }
+    });
+
+    // 2. 对每个活跃 Buff 复用或新建 DOM
+    buffs.forEach(b => {
+        const info = getBuffPuaInfo(b.id);
+        const isPerm = (b.rem_ms < 0);
+        const isValid = (b.is_contract_valid !== false);
+        const durMs = (b.dur_s && b.dur_s > 0) ? b.dur_s * 1000 : 7000;
+        let pct = 1.0;
+        if (!isPerm && durMs > 0) {
+            pct = Math.max(0, Math.min(1.0, b.rem_ms / durMs));
+        }
+        const offset = (100 - pct * 100).toFixed(1);
+        const timeText = isPerm ? "永久" : `${(b.rem_ms / 1000).toFixed(1)}s`;
+
+        const puaChar = b.pua_char || info.char;
+        const displayName = b.name || info.name || b.id;
+        const tc = b.tc || (info.typeClass.includes("debuff") ? "ef4444" : "38bdf8");
+        const gb = b.gb || tc;
+
+        let item = null;
+        for (let i = 0; i < container.children.length; i++) {
+            if (container.children[i].getAttribute("data-buff-id") === b.id) {
+                item = container.children[i];
+                break;
+            }
+        }
+
+        if (!item) {
+            // 新创建节点：只在第一次添加时触发 ringPopIn 进场动画
+            item = document.createElement("div");
+            item.className = `buff-ring-item ${isPerm ? "is-perm" : ""} ${info.typeClass} ${!isValid ? "contract-violation" : ""}`;
+            item.setAttribute("data-buff-id", b.id);
+            item.onclick = () => removeBuff(playerIdx, b.id);
+
+            item.innerHTML = `
+                <div class="ring-svg-wrap">
+                    <svg class="ring-svg" viewBox="0 0 40 40">
+                        <circle class="ring-bg" cx="20" cy="20" r="16" />
+                        <circle class="ring-progress" cx="20" cy="20" r="16" pathLength="100" />
+                    </svg>
+                    <div class="ring-icon-inner">
+                        <span class="tecnica-icon">${puaChar}</span>
+                    </div>
+                    <span class="ring-stack-badge" style="display: none;"></span>
+                    ${!isValid ? `<span class="ring-contract-warn" title="${b.contract_warning || '未在官方库注册'}">⚠️</span>` : ""}
+                </div>
+            `;
+            container.appendChild(item);
+        }
+
+        // 差量更新数据
+        item.title = `${displayName}\nID: ${b.id}\n剩余时间: ${timeText}\n层数: ${b.stacks}\nPUA: ${b.pua || info.hex}\n契约状态: ${isValid ? "✓ 官方能力库验证通过" : "⚠️ 契约违规 (未在Server/abilities定义)"}\n(点击驱散此状态)`;
+
+        const progressCircle = item.querySelector(".ring-progress");
+        if (progressCircle) {
+            progressCircle.style.strokeDasharray = "100";
+            progressCircle.style.strokeDashoffset = offset;
+            if (tc) {
+                progressCircle.style.stroke = "#" + tc;
+                progressCircle.style.filter = `drop-shadow(0 0 5px #${gb})`;
+            }
+        }
+
+        const iconEl = item.querySelector(".ring-icon-inner .tecnica-icon");
+        if (iconEl) {
+            iconEl.textContent = puaChar;
+            if (tc) iconEl.style.color = "#" + tc;
+        }
+
+        const badge = item.querySelector(".ring-stack-badge");
+        if (badge) {
+            if (b.stacks > 1) {
+                badge.textContent = b.stacks;
+                badge.style.display = "block";
+            } else {
+                badge.style.display = "none";
+            }
+        }
+    });
+}

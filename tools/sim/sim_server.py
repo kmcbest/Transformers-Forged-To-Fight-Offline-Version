@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """
-TFTF Desktop Combat Simulator Server
-===================================
+TFTF Desktop Combat Simulator Server (Data Contract & Lifecycle Upgraded)
+========================================================================
 Local HTTP Server providing Web UI and REST API for the Combat Sandbox.
+Binds directly to Server/abilities/ official bot registry and enforces strict
+game engine lifecycle emulation (onStart triggers) & visual data contracts.
 """
 import os
 import sys
@@ -16,16 +18,185 @@ import urllib.parse
 
 if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8')
-
+if hasattr(sys.stderr, 'reconfigure'):
+    sys.stderr.reconfigure(encoding='utf-8')
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
 SIM_DIR = REPO_ROOT / "tools/sim"
 WEB_DIR = SIM_DIR / "web"
 DB_PATH = REPO_ROOT / "Server/tftf_database.db"
 DLL_PATH = SIM_DIR / "sim_skills.dll"
 
 # ---------------------------------------------------------------------------
-# C Simulator DLL Wrapper
+# 1. 官方能力数据库绑定 (Server/abilities/ 契约真理源)
+# ---------------------------------------------------------------------------
+from Server.abilities.registry import (
+    load_all_bots,
+    collect_all_bot_statmods_and_appears,
+    _BOT_REGISTRY,
+)
+
+load_all_bots()
+ALL_MODS, ALL_APPEARS, EXTRA_BUFFS = collect_all_bot_statmods_and_appears()
+print(f"[SimServer] 已加载 Server/abilities 官方能力库: {len(ALL_MODS)} StatMods, {len(ALL_APPEARS)} Appearances, {len(_BOT_REGISTRY)} 注册角色.")
+
+# 全局标准战斗 Buff 表 (客户端通用减益/增益标准外观)
+STANDARD_BUFFS = {
+    "dmg_bleed": {
+        "pua": "0xE401", "pua_char": "\uE401", "name": "流血", "tc": "EF4444", "gb": "DC2626",
+        "desc": "持续受到流血伤害", "is_contract_valid": True, "dur_s": 7.0
+    },
+    "burn": {
+        "pua": "0xE41D", "pua_char": "\uE41D", "name": "灼烧", "tc": "F97316", "gb": "EA580C",
+        "desc": "持续受到烈焰灼烧伤害", "is_contract_valid": True, "dur_s": 6.0
+    },
+    "shock": {
+        "pua": "0xE914", "pua_char": "\uE914", "name": "震击", "tc": "3B82F6", "gb": "2563EB",
+        "desc": "持续受到电磁震击伤害", "is_contract_valid": True, "dur_s": 6.0
+    },
+    "armor_break": {
+        "pua": "0xE516", "pua_char": "\uE516", "name": "破甲", "tc": "EAB308", "gb": "CA8A04",
+        "desc": "护甲大幅削弱，受到伤害增加", "is_contract_valid": True, "dur_s": 6.0
+    },
+    "armor_up": {
+        "pua": "0xE517", "pua_char": "\uE517", "name": "护甲", "tc": "06B6D4", "gb": "0891B2",
+        "desc": "护甲强化，受到伤害降低", "is_contract_valid": True, "dur_s": 7.0
+    },
+    "melee_buff": {
+        "pua": "0xE412", "pua_char": "\uE412", "name": "近战增益", "tc": "F59E0B", "gb": "D97706",
+        "desc": "近战伤害大幅提升", "is_contract_valid": True, "dur_s": 4.0
+    },
+    "crit_buff": {
+        "pua": "0xE40D", "pua_char": "\uE40D", "name": "暴击增益", "tc": "EC4899", "gb": "DB2777",
+        "desc": "暴击率大幅提升", "is_contract_valid": True, "dur_s": 8.0
+    },
+    "stun": {
+        "pua": "0xE605", "pua_char": "\uE605", "name": "眩晕", "tc": "8B5CF6", "gb": "7C3AED",
+        "desc": "陷入昏迷无法行动", "is_contract_valid": True, "dur_s": 2.5
+    },
+    "evade": {
+        "pua": "0xE509", "pua_char": "\uE509", "name": "闪避/规避", "tc": "10B981", "gb": "059669",
+        "desc": "规避受到的攻击", "is_contract_valid": True, "dur_s": 5.0
+    },
+    "decel": {
+        "pua": "0xE952", "pua_char": "\uE952", "name": "时间减速", "tc": "6366F1", "gb": "4F46E5",
+        "desc": "速度与时间减速", "is_contract_valid": True, "dur_s": 5.0
+    },
+    "unstoppable": {
+        "pua": "0xE915", "pua_char": "\uE915", "name": "不可阻挡", "tc": "EF4444", "gb": "B91C1C",
+        "desc": "免疫受击硬直与击退", "is_contract_valid": True, "dur_s": 4.0
+    },
+}
+
+# 关键词映射 PUA 图标回退表 (游戏标准图标库)
+PUA_FALLBACKS = [
+    (r"流血|破血|割伤|撕裂", "0xe401"),
+    (r"灼烧|焚烧|烈焰|点燃|火", "0xe41d"),
+    (r"震击|感电|电击|闪电", "0xe914"),
+    (r"破甲|碎甲|削甲", "0xe516"),
+    (r"护甲|防御|盾|减伤", "0xe517"),
+    (r"近战", "0xe412"),
+    (r"攻击|增伤|狂暴|力量", "0xe406"),
+    (r"虚弱|弱化|攻击降低", "0xe408"),
+    (r"暴击率|专注", "0xe40d"),
+    (r"暴击伤害|爆伤", "0xe406"),
+    (r"意志力|坚韧", "0xe942"),
+    (r"净化", "0xe942"),
+    (r"驱散|抵消", "0xe950"),
+    (r"规避|闪避|后退|躲闪", "0xe509"),
+    (r"眩晕|昏迷|麻痹", "0xe605"),
+    (r"减速|迟缓|时间场", "0xe952"),
+    (r"能量获取|充能|回气", "0xe403"),
+    (r"能量流失|吸气|能量偷取", "0xe607"),
+    (r"不可阻挡|霸体|无畏", "0xe915"),
+    (r"吸血|修复|治疗|生命回复", "0xe50b"),
+]
+
+def guess_pua(title, desc):
+    import re
+    text = (title or "") + " " + (desc or "")
+    for pat, pua in PUA_FALLBACKS:
+        if re.search(pat, text):
+            return pua
+    return "0xe406"
+
+def decorate_buff(buff):
+    """为底层 C 返回的 buff 字典装饰官方数据库外观与契约校验标记。"""
+    bid = buff.get("id", "")
+    # 1. 优先从 Server/abilities/ 官方能力库检索
+    if bid in ALL_MODS:
+        mod = ALL_MODS[bid]
+        app_ids = mod.get("a", [])
+        app = ALL_APPEARS.get(app_ids[0], {}) if app_ids else {}
+        pua_char = app.get("t", "")
+        pua_hex = ("0x" + hex(ord(pua_char))[2:].upper()) if pua_char else "0xE406"
+        name = app.get("a") or app.get("s") or app.get("ps") or bid
+        tc = app.get("tc", "FFFFFF")
+        gb = app.get("gb", tc)
+        desc = app.get("l") or app.get("pl") or ""
+        dur_s = float(mod.get("d", 0.0))
+        return {
+            **buff,
+            "pua": pua_hex,
+            "pua_char": pua_char,
+            "name": name,
+            "tc": tc,
+            "gb": gb,
+            "desc": desc,
+            "dur_s": dur_s,
+            "is_contract_valid": True,
+        }
+
+    # 2. 从官方通用战斗 Buff 表检索
+    for pattern, sinfo in STANDARD_BUFFS.items():
+        if pattern == bid or pattern in bid:
+            return {
+                **buff,
+                **sinfo,
+            }
+
+    # 3. 从额外注册 Buff 表检索
+    if bid in EXTRA_BUFFS:
+        eb = EXTRA_BUFFS[bid]
+        pua_char = eb.get("t", "")
+        pua_hex = ("0x" + hex(ord(pua_char))[2:].upper()) if pua_char else "0xE406"
+        return {
+            **buff,
+            "pua": pua_hex,
+            "pua_char": pua_char,
+            "name": eb.get("a") or bid,
+            "tc": eb.get("tc", "FFFFFF"),
+            "gb": eb.get("gb", "888888"),
+            "desc": eb.get("l", ""),
+            "dur_s": float(eb.get("d", 0.0)),
+            "is_contract_valid": True,
+        }
+
+    # 4. 未在任何官方配置中找到 -> 标记契约违规 (Contract Violation)
+    pua_guess = guess_pua(bid, "")
+    try:
+        pua_char = chr(int(pua_guess, 16))
+    except Exception:
+        pua_char = "\uE406"
+    return {
+        **buff,
+        "pua": pua_guess,
+        "pua_char": pua_char,
+        "name": bid,
+        "tc": "94A3B8",
+        "gb": "64748B",
+        "desc": f"未在 Server/abilities/ 官方库注册的 Buff ID: {bid}",
+        "dur_s": float(buff.get("rem_ms", 7000)) / 1000.0,
+        "is_contract_valid": False,
+        "contract_warning": f"未在官方能力库中注册的 Buff ID: {bid}",
+    }
+
+
+# ---------------------------------------------------------------------------
+# 2. C Simulator DLL Wrapper
 # ---------------------------------------------------------------------------
 class SimEngine:
     def __init__(self, dll_path):
@@ -75,7 +246,6 @@ class SimEngine:
         self.dll.sim_pop_floaters.restype = ctypes.c_int
 
     def recompile(self):
-        # On Windows, unload the DLL by freeing library handle before overwriting
         import _ctypes
         if self.dll:
             try:
@@ -143,11 +313,86 @@ class SimEngine:
 
 g_engine = SimEngine(DLL_PATH)
 
-# Initialize with default matchup
-g_engine.init("optimusprime_cin_tf", "bonecrusher_cin_rotf", 15000.0, 15000.0, 1000.0, 1000.0)
+# 当前对战阵容与生命周期开局事件追踪
+CURRENT_MATCHUP = {
+    "p0_bot_id": "optimusprime_cin_tf",
+    "p1_bot_id": "bonecrusher_cin_rotf",
+    "p0_hp": 15000.0,
+    "p1_hp": 15000.0,
+    "p0_atk": 1000.0,
+    "p1_atk": 1000.0,
+}
+PENDING_START_EVENTS = []
+
+def resolve_bot_registry(bot_id: str):
+    """支持完全匹配与前缀模糊解析 (例如 'megatron' 自动对齐 'megatron_gs_leader2015')。"""
+    if not bot_id:
+        return None
+    if bot_id in _BOT_REGISTRY:
+        return _BOT_REGISTRY[bot_id]
+    for k, v in _BOT_REGISTRY.items():
+        if bot_id in k or k in bot_id:
+            return v
+    return None
+
+def trigger_onstart_phase():
+    """
+    IL2CPP 生命周期仿真引擎：0.00s 触发 onStart 技能。
+    扫描双方角色的全部 StatMods，凡是含有 'onStart' 的修饰器，立即在第 0 秒注入并触发 Callout！
+    这确保真机上的任何开局弹窗或开局被动，在模拟器上一模一样完全呈现！
+    """
+    global PENDING_START_EVENTS
+    PENDING_START_EVENTS.clear()
+
+    matchup = [
+        (0, CURRENT_MATCHUP["p0_bot_id"], CURRENT_MATCHUP["p0_hp"], CURRENT_MATCHUP["p0_atk"]),
+        (1, CURRENT_MATCHUP["p1_bot_id"], CURRENT_MATCHUP["p1_hp"], CURRENT_MATCHUP["p1_atk"]),
+    ]
+
+    for pidx, bid, base_hp, base_atk in matchup:
+        reg = resolve_bot_registry(bid)
+        if not reg:
+            continue
+        try:
+            res = reg["builder"](base_hp=base_hp, base_atk=base_atk)
+            mods = res[0] if isinstance(res, (tuple, list)) else res
+            appears = res[1] if isinstance(res, (tuple, list)) and len(res) >= 2 else {}
+        except Exception as e:
+            print(f"[ERROR][onStart Phase] Builder error for {bid}: {e}")
+            continue
+
+        for mid, mod in mods.items():
+            trs = mod.get("tr", [])
+            uits = mod.get("uit", [])
+            if "onStart" in trs or "onStart" in uits:
+                ta = mod.get("ta", "self")
+                target_idx = pidx if ta == "self" else (1 - pidx)
+                dur = float(mod.get("d", -1.0))
+                # 注入目标玩家
+                g_engine.inject_buff(target_idx, mid, dur, 1)
+
+                app_ids = mod.get("a", [])
+                app = appears.get(app_ids[0], {}) if app_ids else {}
+                callout = app.get("a") or app.get("st") or mid
+
+                msg = f"[MATCH_START_TRIGGER] 0.00s 开局触发: P{pidx} ({bid}) 激活 '{mid}' -> 施加给 P{target_idx} (持续 {dur}s, 呼出: '{callout}')"
+                print(msg)
+                PENDING_START_EVENTS.append({
+                    "pidx": target_idx,
+                    "type": 4, # Callout floater
+                    "val": 0,
+                    "text": f"开局触发: {callout}",
+                    "log": msg
+                })
+
+# 初始化默认阵容
+g_engine.init(CURRENT_MATCHUP["p0_bot_id"], CURRENT_MATCHUP["p1_bot_id"],
+              CURRENT_MATCHUP["p0_hp"], CURRENT_MATCHUP["p1_hp"],
+              CURRENT_MATCHUP["p0_atk"], CURRENT_MATCHUP["p1_atk"])
+trigger_onstart_phase()
 
 # ---------------------------------------------------------------------------
-# Database Helper
+# 3. 数据库与角色能力查询
 # ---------------------------------------------------------------------------
 def get_db_bots():
     if not DB_PATH.exists():
@@ -161,16 +406,83 @@ def get_db_bots():
 
 def get_bot_abilities(bot_id):
     if not DB_PATH.exists():
-        return []
+        return {"bot": None, "implemented_skills": [], "db_abilities": []}
     conn = sqlite3.connect(str(DB_PATH))
     conn.row_factory = sqlite3.Row
+
+    # 1. 查找角色基础资料
+    char_row = conn.execute("SELECT bot_id, name_zh, name_en, faction, class, hp, attack, rating FROM characters WHERE bot_id = ?", (bot_id,)).fetchone()
+    bot_info = dict(char_row) if char_row else {"bot_id": bot_id, "name_zh": bot_id, "name_en": bot_id}
+
+    # 2. 查找官方技能库
     rows = conn.execute("SELECT id, category, title_zh, title_en, desc_zh, pua_icon FROM character_abilities WHERE bot_id = ? ORDER BY sort_order", (bot_id,)).fetchall()
-    abilities = [dict(r) for r in rows]
+    db_abilities = []
+    for r in rows:
+        d = dict(r)
+        if not d.get("pua_icon"):
+            d["pua_icon"] = guess_pua(d.get("title_zh"), d.get("desc_zh"))
+        db_abilities.append(d)
     conn.close()
-    return abilities
+
+    # 3. 从 Server/abilities/ 官方注册表提取全部契约修饰器
+    implemented = []
+    reg = resolve_bot_registry(bot_id)
+    if reg:
+        try:
+            res = reg["builder"](base_hp=30000.0, base_atk=3000.0)
+            mods = res[0] if isinstance(res, (tuple, list)) else res
+            appears = res[1] if isinstance(res, (tuple, list)) and len(res) >= 2 else {}
+            for mid, m in mods.items():
+                app_ids = m.get("a", [])
+                app = appears.get(app_ids[0], {}) if app_ids else {}
+                pua_char = app.get("t", "")
+                pua_hex = ("0x" + hex(ord(pua_char))[2:].upper()) if pua_char else "0xE406"
+                title = app.get("a") or app.get("s") or mid
+                desc = app.get("l") or app.get("pl") or f"触发条件: {m.get('tr', [])}"
+                category = "被动能力" if "always" in m.get("tr", []) else "触发修饰器"
+                if "Special1" in str(m.get("trs", "")) or "Special1" in str(m.get("tr", "")):
+                    category = "特殊技1"
+                elif "Special2" in str(m.get("trs", "")) or "Special2" in str(m.get("tr", "")):
+                    category = "特殊技2"
+                elif "Special3" in str(m.get("trs", "")) or "Special3" in str(m.get("tr", "")):
+                    category = "特殊技3"
+
+                implemented.append({
+                    "title": title,
+                    "category": category,
+                    "pua_icon": pua_hex,
+                    "desc": desc,
+                    "status": "Server/abilities 契约已载入",
+                    "triggers": m.get("tr", []),
+                    "duration": m.get("d", 0.0),
+                    "target": m.get("ta", "self"),
+                    "color_tc": app.get("tc", "FFFFFF"),
+                    "color_gb": app.get("gb", "888888"),
+                })
+        except Exception as e:
+            print(f"[WARN] Failed to load registry skills for {bot_id}: {e}")
+
+    # 若未在能力注册表中，从 SQLite 官方技能库补全
+    if not implemented and db_abilities:
+        for a in db_abilities:
+            if a.get("category") in ("passive", "signature", "sp1", "sp2", "sp3", "被动", "特殊技"):
+                implemented.append({
+                    "title": a.get("title_zh", ""),
+                    "category": a.get("category", "被动"),
+                    "pua_icon": a.get("pua_icon") or guess_pua(a.get("title_zh"), a.get("desc_zh")),
+                    "desc": a.get("desc_zh", ""),
+                    "status": "官方机制已载入"
+                })
+
+    return {
+        "bot": bot_info,
+        "has_c_module": len(implemented) > 0,
+        "implemented_skills": implemented,
+        "db_abilities": db_abilities
+    }
 
 # ---------------------------------------------------------------------------
-# HTTP Request Handler
+# 4. HTTP Request Handler
 # ---------------------------------------------------------------------------
 class SimHTTPHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
@@ -185,8 +497,25 @@ class SimHTTPHandler(SimpleHTTPRequestHandler):
             self.send_json(get_bot_abilities(bot_id))
         elif parsed.path == "/api/state":
             st = g_engine.get_state()
-            st["logs"] = g_engine.pop_logs()
-            st["floaters"] = g_engine.pop_floaters()
+            logs = g_engine.pop_logs()
+            floaters = g_engine.pop_floaters()
+
+            # 注入开局生命周期事件
+            global PENDING_START_EVENTS
+            if PENDING_START_EVENTS:
+                for evt in PENDING_START_EVENTS:
+                    floaters.append({"pidx": evt["pidx"], "type": evt["type"], "val": evt["val"], "text": evt["text"]})
+                    logs.append(evt["log"])
+                PENDING_START_EVENTS.clear()
+
+            # 数据契约装饰与校验
+            if "p0" in st and "buffs" in st["p0"]:
+                st["p0"]["buffs"] = [decorate_buff(b) for b in st["p0"]["buffs"]]
+            if "p1" in st and "buffs" in st["p1"]:
+                st["p1"]["buffs"] = [decorate_buff(b) for b in st["p1"]["buffs"]]
+
+            st["logs"] = logs
+            st["floaters"] = floaters
             self.send_json(st)
         else:
             super().do_GET()
@@ -207,11 +536,21 @@ class SimHTTPHandler(SimpleHTTPRequestHandler):
             p1_hp = data.get("p1_hp", 15000.0)
             p0_atk = data.get("p0_atk", 1000.0)
             p1_atk = data.get("p1_atk", 1000.0)
+
+            CURRENT_MATCHUP["p0_bot_id"] = p0
+            CURRENT_MATCHUP["p1_bot_id"] = p1
+            CURRENT_MATCHUP["p0_hp"] = p0_hp
+            CURRENT_MATCHUP["p1_hp"] = p1_hp
+            CURRENT_MATCHUP["p0_atk"] = p0_atk
+            CURRENT_MATCHUP["p1_atk"] = p1_atk
+
             g_engine.init(p0, p1, p0_hp, p1_hp, p0_atk, p1_atk)
+            trigger_onstart_phase()
             self.send_json({"ok": True})
 
         elif parsed.path == "/api/reset":
             g_engine.reset()
+            trigger_onstart_phase()
             self.send_json({"ok": True})
 
         elif parsed.path == "/api/tick":
@@ -275,7 +614,7 @@ def run_server(port=8088):
     server = HTTPServer(("0.0.0.0", port), SimHTTPHandler)
     url = f"http://localhost:{port}/index.html"
     print(f"\n" + "=" * 70)
-    print(f"🚀 TFTF 战斗技能沙盒模拟器已就绪!")
+    print(f"🚀 TFTF 战斗技能沙盒模拟器 (契约与生命周期增强版) 已就绪!")
     print(f"👉 访问地址: {url}")
     print(f"=" * 70 + "\n")
     webbrowser.open(url)

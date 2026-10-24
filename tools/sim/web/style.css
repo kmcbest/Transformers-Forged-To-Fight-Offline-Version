@@ -986,3 +986,543 @@ body {
     opacity: 1;
     transform: translateY(0);
 }
+
+/* ==========================================================================
+   TFTF 游戏原厂风格：TecnicaBold PUA 字体、血条下方环形圈与底部能量栏
+   ========================================================================== */
+
+@font-face {
+    font-family: 'TecnicaBold';
+    src: url('fonts/Tecnica_Bold_116.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+}
+
+.tecnica-icon {
+    font-family: 'TecnicaBold', sans-serif !important;
+    font-style: normal;
+    font-weight: normal;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+/* 可点击查看能力列表的名字样式 */
+.clickable-bot-name {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.clickable-bot-name:hover {
+    color: #58a6ff !important;
+    text-shadow: 0 0 10px rgba(88, 166, 255, 0.7);
+}
+.view-skills-pill {
+    font-size: 10px;
+    padding: 2px 8px;
+    background: rgba(56, 189, 248, 0.15);
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    border-radius: 12px;
+    color: #38bdf8;
+    font-weight: 600;
+    vertical-align: middle;
+    transition: all 0.15s;
+}
+.clickable-bot-name:hover .view-skills-pill {
+    background: rgba(56, 189, 248, 0.35);
+    box-shadow: 0 0 8px rgba(56, 189, 248, 0.5);
+}
+.ab-hint-tag {
+    font-size: 9px;
+    padding: 1px 6px;
+    background: rgba(56, 189, 248, 0.2);
+    border: 1px solid rgba(56, 189, 248, 0.45);
+    border-radius: 10px;
+    color: #38bdf8;
+    font-weight: 700;
+}
+
+/* ==========================================================================
+   血条正下方：PUA 图标加环形倒计时圈 (Circular Timer Rings)
+   ========================================================================== */
+.stage-buff-rings {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    min-height: 42px;
+    margin-top: 6px;
+}
+.p1-buff-rings {
+    justify-content: flex-end;
+}
+
+.buff-ring-item {
+    position: relative;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    cursor: pointer;
+    animation: ringPopIn 0.28s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: transform 0.15s ease;
+}
+.buff-ring-item:hover {
+    transform: scale(1.18);
+    z-index: 10;
+}
+
+.ring-svg-wrap {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: #080c14;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ring-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg); /* 从 12 点钟方向顺时针递减 */
+}
+
+.ring-bg {
+    fill: rgba(8, 12, 18, 0.9);
+    stroke: rgba(255, 255, 255, 0.12);
+    stroke-width: 3.2;
+}
+
+.ring-progress {
+    fill: none;
+    stroke-width: 3.4;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.15s linear;
+}
+
+/* 状态色彩渲染 */
+.is-buff .ring-progress {
+    stroke: #38bdf8;
+    filter: drop-shadow(0 0 5px #0284c7);
+}
+.is-buff.is-heal .ring-progress {
+    stroke: #10b981;
+    filter: drop-shadow(0 0 5px #059669);
+}
+.is-buff.is-crit .ring-progress {
+    stroke: #f59e0b;
+    filter: drop-shadow(0 0 5px #d97706);
+}
+
+.is-debuff .ring-progress {
+    stroke: #ef4444;
+    filter: drop-shadow(0 0 5px #dc2626);
+}
+.is-debuff.is-burn .ring-progress {
+    stroke: #f97316;
+    filter: drop-shadow(0 0 5px #ea580c);
+}
+.is-debuff.is-shock .ring-progress {
+    stroke: #a855f7;
+    filter: drop-shadow(0 0 5px #9333ea);
+}
+
+/* 永久 Buff 光环呼吸效果 */
+.is-perm .ring-progress {
+    stroke: #c084fc;
+    animation: permBreathing 2.2s infinite alternate;
+}
+@keyframes permBreathing {
+    0% { filter: drop-shadow(0 0 3px #8b5cf6); }
+    100% { filter: drop-shadow(0 0 9px #d8b4fe); }
+}
+
+@keyframes ringPopIn {
+    0% { transform: scale(0.88); opacity: 0.4; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.ring-icon-inner {
+    position: relative;
+    z-index: 2;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ring-stack-badge {
+    position: absolute;
+    bottom: -3px;
+    right: -3px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 900;
+    font-family: monospace;
+    min-width: 15px;
+    height: 15px;
+    line-height: 15px;
+    text-align: center;
+    border-radius: 8px;
+    border: 1px solid #7f1d1d;
+    box-shadow: 0 0 6px rgba(239, 68, 68, 0.9);
+    z-index: 5;
+}
+
+/* ==========================================================================
+   舞台底部：游戏原厂 3 段切角能量槽与 SP 必杀技按键
+   ========================================================================== */
+.stage-hud-bottom {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 10px 18px 12px 18px;
+    background: linear-gradient(0deg, rgba(6, 10, 16, 0.96) 0%, rgba(6, 10, 16, 0.65) 70%, transparent 100%);
+    z-index: 15;
+    pointer-events: none;
+}
+
+.stage-bottom-p0, .stage-bottom-p1 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    pointer-events: auto;
+}
+.stage-bottom-p1 {
+    flex-direction: row-reverse;
+}
+
+.stage-sp-hex-btn {
+    position: relative;
+    width: 62px;
+    height: 62px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.hex-btn-bg {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #1b2838 0%, #0d1522 100%);
+    clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+    border: 2px solid #30425a;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.8);
+    transition: all 0.2s;
+}
+.hex-btn-core {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.hex-sp-icon {
+    font-size: 20px;
+    line-height: 1;
+}
+.hex-sp-text {
+    font-size: 11px;
+    font-weight: 900;
+    color: #94a3b8;
+    letter-spacing: 0.5px;
+    margin-top: 2px;
+}
+
+.stage-sp-hex-btn.can-sp1 .hex-btn-bg {
+    border-color: #22c55e;
+    background: linear-gradient(135deg, #14532d 0%, #052e16 100%);
+    box-shadow: 0 0 16px rgba(34, 197, 94, 0.7);
+}
+.stage-sp-hex-btn.can-sp1 .hex-sp-text { color: #86efac; }
+
+.stage-sp-hex-btn.can-sp2 .hex-btn-bg {
+    border-color: #06b6d4;
+    background: linear-gradient(135deg, #0e7490 0%, #164e63 100%);
+    box-shadow: 0 0 18px rgba(6, 182, 212, 0.8);
+}
+.stage-sp-hex-btn.can-sp2 .hex-sp-text { color: #67e8f9; }
+
+.stage-sp-hex-btn.can-sp3 .hex-btn-bg {
+    border-color: #f59e0b;
+    background: linear-gradient(135deg, #b45309 0%, #78350f 100%);
+    box-shadow: 0 0 24px rgba(245, 158, 11, 0.95);
+    animation: sp3GlowPulse 1.2s infinite alternate;
+}
+.stage-sp-hex-btn.can-sp3 .hex-sp-text { color: #fde68a; }
+
+@keyframes sp3GlowPulse {
+    0% { transform: scale(1); filter: drop-shadow(0 0 8px #f59e0b); }
+    100% { transform: scale(1.06); filter: drop-shadow(0 0 20px #fbbf24); }
+}
+
+.stage-bottom-mana-block {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.mana-meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 700;
+    gap: 8px;
+}
+.mana-title { color: #94a3b8; letter-spacing: 0.5px; }
+.mana-num { color: #38bdf8; font-family: monospace; }
+.p1-meta { flex-direction: row-reverse; }
+
+.stage-mana-row {
+    display: flex;
+    gap: 6px;
+    width: 220px;
+    height: 15px;
+}
+.stage-mana-seg {
+    flex: 1;
+    height: 100%;
+    background: #090e15;
+    border: 1px solid #233145;
+    transform: skewX(-16deg);
+    border-radius: 2px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.8);
+}
+.stage-mana-seg .seg-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #0284c7 0%, #38bdf8 100%);
+    transition: width 0.12s ease-out;
+}
+.stage-mana-seg.is-full .seg-fill {
+    background: linear-gradient(90deg, #10b981 0%, #22c55e 100%);
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.7);
+}
+#p0ManaSeg3.is-full .seg-fill, #p1ManaSeg3.is-full .seg-fill {
+    background: linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%);
+    box-shadow: 0 0 14px rgba(245, 158, 11, 0.85);
+}
+.seg-label {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    font-weight: 900;
+    color: rgba(255,255,255,0.8);
+    letter-spacing: 0.5px;
+    transform: skewX(16deg);
+}
+
+.combo-counter-hud {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    opacity: 0.35;
+    transition: all 0.2s ease;
+}
+.combo-counter-hud.active {
+    opacity: 1;
+    transform: scale(1.1);
+}
+.combo-count-val {
+    font-size: 26px;
+    font-weight: 900;
+    font-family: monospace;
+    color: #f59e0b;
+    text-shadow: 0 0 12px rgba(245, 158, 11, 0.8);
+    line-height: 1;
+}
+.combo-count-label {
+    font-size: 10px;
+    color: #94a3b8;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+/* ==========================================================================
+   能力列表检视弹窗 (Ability Inspector Modal)
+   ========================================================================== */
+.ability-modal-box {
+    max-width: 720px;
+    width: 92%;
+    max-height: 86vh;
+    display: flex;
+    flex-direction: column;
+    background: #0f172a;
+    border: 1px solid #334155;
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.85), 0 0 30px rgba(56, 189, 248, 0.2);
+}
+.ab-modal-title-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.ab-modal-avatar {
+    font-size: 32px;
+    width: 48px;
+    height: 48px;
+    background: #090d16;
+    border: 2px solid #38bdf8;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.45);
+}
+.ab-modal-bot-id {
+    font-family: monospace;
+    font-size: 11px;
+    color: #64748b;
+}
+.ab-tabs {
+    display: flex;
+    gap: 8px;
+    border-bottom: 1px solid #1e293b;
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+}
+.ab-tab-btn {
+    background: #1e293b;
+    border: 1px solid #334155;
+    color: #94a3b8;
+    padding: 7px 16px;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.ab-tab-btn.active {
+    background: #0284c7;
+    border-color: #38bdf8;
+    color: #fff;
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.45);
+}
+.ab-skills-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow-y: auto;
+    max-height: 52vh;
+    padding-right: 6px;
+}
+.ab-skill-card {
+    background: #0b1120;
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    padding: 12px 14px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    transition: all 0.2s ease;
+}
+.ab-skill-card:hover {
+    border-color: #38bdf8;
+    background: #0f172a;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+.ab-skill-glyph-wrap {
+    width: 46px;
+    height: 46px;
+    background: #060a12;
+    border: 2px solid #38bdf8;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.35);
+}
+.ab-skill-glyph {
+    font-size: 24px;
+    color: #38bdf8;
+}
+.ab-skill-info {
+    flex: 1;
+}
+.ab-skill-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+.ab-skill-title {
+    font-size: 14px;
+    font-weight: 800;
+    color: #f1f5f9;
+}
+.ab-skill-badge {
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-weight: 700;
+}
+.badge-active-c {
+    background: rgba(34, 197, 94, 0.2);
+    border: 1px solid #22c55e;
+    color: #86efac;
+}
+.badge-active-db {
+    background: rgba(56, 189, 248, 0.2);
+    border: 1px solid #38bdf8;
+    color: #7dd3fc;
+}
+.ab-skill-category {
+    font-size: 11px;
+    color: #f59e0b;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+.ab-skill-desc {
+    font-size: 12px;
+    line-height: 1.55;
+    color: #94a3b8;
+}
+.ab-footer-hint {
+    font-size: 11px;
+    color: #64748b;
+    flex: 1;
+}
+
+
+/* 契约违规警示与视觉标识 */
+.buff-ring-item.contract-violation .ring-svg-wrap {
+    border: 2px dashed #ef4444;
+    animation: contractWarnPulse 1.2s infinite alternate;
+}
+@keyframes contractWarnPulse {
+    0% { box-shadow: 0 0 4px #ef4444; }
+    100% { box-shadow: 0 0 12px #ef4444; }
+}
+.ring-contract-warn {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    font-size: 11px;
+    z-index: 5;
+    line-height: 1;
+}
+.buff-badge.is-contract-invalid {
+    border-color: #ef4444 !important;
+    background: rgba(239, 68, 68, 0.15) !important;
+}

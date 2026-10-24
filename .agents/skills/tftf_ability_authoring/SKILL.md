@@ -32,6 +32,20 @@ Server/
 
 ---
 
+## 1.5 运行环境与脚本编码铁律 (Execution & Python Encoding Protocol)
+
+**强制标准输出 UTF-8 重定向 (防 Windows GBK 崩溃)**：
+由于开发机为 Windows PowerShell 环境，默认终端编码为 GBK。所有与技能相关的调试脚本、校验脚本（如 `tools/validate_bot_ability.py`、单测脚本）在向终端打印中文字符或 Emoji 符号（如 `✅`, `❌`, `⚡`）时，**必须在文件头部强制加入 UTF-8 重定向，杜绝 `UnicodeEncodeError`**：
+```python
+import sys
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
+if hasattr(sys.stderr, 'reconfigure'):
+    sys.stderr.reconfigure(encoding='utf-8')
+```
+
+---
+
 ## 2. 编写步骤与流程规范 (Step-by-Step Workflow)
 
 制作任何新英雄能力时，严格遵循以下 4 步工业化流程：

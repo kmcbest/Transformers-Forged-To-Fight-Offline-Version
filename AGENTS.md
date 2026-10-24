@@ -15,6 +15,17 @@
 
 - The development environment runs on Windows with PowerShell. Never use multi-line inline Python commands (`python -c "..."`). PowerShell misparses multi-line strings, nested quotes, `$`, and regex escapes, triggering `ParameterBindingException`.
 - Always write logic into a script file (e.g. in `tools/` or temporary `.py` file) and run `python <script_path>.py` instead.
+- **Python Console Encoding Standard (UTF-8 Output Mandatory - 强制控制台 UTF-8 输出)**:
+  Windows PowerShell 默认终端编码通常为 GBK/cp936。当 Python 脚本向控制台打印中文字符、Emoji 或 Unicode 符号（如 `✅`, `❌`, `🤖`, `⚡`, `📢` 等）时，极易崩溃触发 `UnicodeEncodeError: 'gbk' codec can't encode character...`。
+  因此，**凡是新建、临时编写或运行的 Python 脚本，头部必须一律无条件加入以下标准 UTF-8 重定向样板代码**：
+  ```python
+  import sys
+  if hasattr(sys.stdout, 'reconfigure'):
+      sys.stdout.reconfigure(encoding='utf-8')
+  if hasattr(sys.stderr, 'reconfigure'):
+      sys.stderr.reconfigure(encoding='utf-8')
+  ```
+  或者执行前附带环境变量：`$env:PYTHONIOENCODING="utf-8"; python <script_path>.py`。
 - Prefer explicit PowerShell commands (e.g. `Select-String` or dedicated scripts) over GNU Unix tools like `grep` unless verified available.
 
 ## AssetBundle and UnityPy packaging guidelines
