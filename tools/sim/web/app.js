@@ -10,6 +10,7 @@ const timerDisplay = document.getElementById("timerDisplay");
 const stageTimerDisplay = document.getElementById("stageTimerDisplay");
 const btnPlay = document.getElementById("btnPlay");
 const btnPause = document.getElementById("btnPause");
+const btnStop = document.getElementById("btnStop");
 const btnStep = document.getElementById("btnStep");
 const btnReset = document.getElementById("btnReset");
 const btnRecompile = document.getElementById("btnRecompile");
@@ -161,14 +162,13 @@ function renderState(data) {
     renderPlayer(0, data.p0);
     renderPlayer(1, data.p1);
 
-    // 5. SP 按钮可用性
-    const p0Mana = data.p0.mana || 0;
-    btnSP1.disabled = (p0Mana < 1.0);
-    btnSP2.disabled = (p0Mana < 2.0);
-    btnSP3.disabled = (p0Mana < 3.0);
-    btnSP1.style.opacity = p0Mana >= 1.0 ? "1" : "0.4";
-    btnSP2.style.opacity = p0Mana >= 2.0 ? "1" : "0.4";
-    btnSP3.style.opacity = p0Mana >= 3.0 ? "1" : "0.4";
+    // 5. SP 按钮不受能量限制：无界沙盒模式，无论能量多少均可强行释放特技
+    btnSP1.disabled = false;
+    btnSP2.disabled = false;
+    btnSP3.disabled = false;
+    btnSP1.style.opacity = "1";
+    btnSP2.style.opacity = "1";
+    btnSP3.style.opacity = "1";
 
     // 6. 渲染战斗浮字 (Floaters)
     if (data.floaters && data.floaters.length > 0) {
@@ -360,25 +360,40 @@ function renderPlayer(idx, p) {
 }
 
 // ---------------------------------------------------------------------------
-// 战斗浮字与日志系统
+// 战斗浮字与错峰分流系统 (Anti-Overlap Staggered Floater Manager)
 // ---------------------------------------------------------------------------
+const floaterStacks = {
+    0: { lastTime: 0, level: 0 },
+    1: { lastTime: 0, level: 0 }
+};
+
 function spawnFloater(f) {
     const el = document.createElement("div");
-    el.className = `floater floater-p${f.pidx}`;
+    const pidx = (f.pidx === 1) ? 1 : 0;
+    el.className = `floater floater-p${pidx}`;
 
     let typeClass = "floater-dmg";
     let prefix = "-";
-    if (f.type === 1) { typeClass = "floater-crit"; prefix = "⚡ 暴击 -"; }
-    else if (f.type === 2) { typeClass = "floater-heal"; prefix = "💚 +"; }
-    else if (f.type === 3) { typeClass = "floater-mana"; prefix = "⚡ +"; }
-    else if (f.type === 4 || f.type === 5) { typeClass = "floater-text"; prefix = ""; }
+    if (f.type === 1) { 
+        typeClass = "floater-crit"; 
+        prefix = "⚡ 暴击 -"; 
+    } else if (f.type === 2) { 
+        typeClass = "floater-heal"; 
+        prefix = "💚 +"; 
+    } else if (f.type === 3) { 
+        typeClass = "floater-mana"; 
+        prefix = "⚡ +"; 
+    } else if (f.type === 4 || f.type === 5) { 
+        typeClass = "floater-text"; 
+        prefix = ""; 
+    }
 
     el.classList.add(typeClass);
     const valText = f.val > 0 ? Math.round(f.val) : "";
     el.textContent = `${prefix}${valText} ${f.text || ""}`;
 
     // 受击战士轻微晃动
-    const victim = (f.pidx === 0) ? fighterP0 : fighterP1;
+    const victim = (pidx === 0) ? fighterP0 : fighterP1;
     if (victim && (f.type === 0 || f.type === 1)) {
         victim.classList.remove("hit-react");
         void victim.offsetWidth;
@@ -386,18 +401,41 @@ function spawnFloater(f) {
         setTimeout(() => victim.classList.remove("hit-react"), 220);
     }
 
-    // 随机微调左右位置避免文字完全重叠
-    const offset = (Math.random() - 0.5) * 36;
-    el.style.transform = `translateX(${offset}px)`;
+    // -----------------------------------------------------------------------
+    // 高度与横向错峰分流算法 (保证字与字垂直重叠 <= 0~15%，充分利用上方开阔空间)
+    // -----------------------------------------------------------------------
+    const now = performance.now();
+    const tracker = floaterStacks[pidx];
+    if (now - tracker.lastTime < 800) {
+        tracker.level = (tracker.level + 1) % 6; // 在 0 到 5 阶高度中错峰排布
+    } else {
+        tracker.level = 0;
+    }
+    tracker.lastTime = now;
+
+    // 垂直错峰高度：每阶拉开 36px (字号约 19px，间距 36px 确保垂直 0% 重合)
+    const yOffset = tracker.level * 36;
+
+    // 水平横向散射：交替向左向右展开 (0, +35px, -35px, +70px, -70px, +105px)
+    const sign = (tracker.level % 2 === 1) ? 1 : -1;
+    const mag = Math.ceil(tracker.level / 2) * 36;
+    const xOffset = tracker.level === 0 ? 0 : sign * mag;
+
+    el.style.setProperty("--spawn-x", `${xOffset}px`);
+    el.style.setProperty("--spawn-y", `${yOffset}px`);
 
     floaterContainer.appendChild(el);
-    setTimeout(() => el.remove(), 1100);
+    setTimeout(() => el.remove(), 1400);
 }
 
 function appendLog(line) {
     const p = document.createElement("div");
     p.className = "log-line";
-    if (line.includes("OPTIMUS_MV") || line.includes("MEGATRON") || line.includes("PROWL")) {
+    if (line.includes("ROLL_DICE_PASS")) {
+        p.classList.add("log-dice-pass");
+    } else if (line.includes("ROLL_DICE_FAIL")) {
+        p.classList.add("log-dice-fail");
+    } else if (line.includes("OPTIMUS_MV") || line.includes("MEGATRON") || line.includes("PROWL") || line.includes("WINDBLADE") || line.includes("BONECRUSHER")) {
         p.classList.add("log-skill");
     } else if (line.includes("HIT") || line.includes("ATTACK")) {
         p.classList.add("log-hit");
@@ -462,8 +500,7 @@ function setupEventHandlers() {
         stageP0SpHexBtn.addEventListener("click", () => {
             if (stageP0SpHexBtn.classList.contains("can-sp3")) btnSP3.click();
             else if (stageP0SpHexBtn.classList.contains("can-sp2")) btnSP2.click();
-            else if (stageP0SpHexBtn.classList.contains("can-sp1")) btnSP1.click();
-            else showToast("能量不足，至少需要 1 格能量释放必杀技！");
+            else btnSP1.click(); // 无能量时强行释放 SP1
         });
     }
     // 时钟控制
@@ -491,6 +528,20 @@ function setupEventHandlers() {
             btnPlay.style.background = "#238636";
         }
     });
+
+    if (btnStop) {
+        btnStop.addEventListener("click", async () => {
+            if (isRunning) {
+                isRunning = false;
+                clearInterval(tickTimer);
+                btnPlay.textContent = "▶ 开始模拟";
+                btnPlay.style.background = "#238636";
+            }
+            await fetch("/api/reset", { method: "POST" });
+            fetchState();
+            showToast("⏹ 模拟已停止并归零重置");
+        });
+    }
 
     btnStep.addEventListener("click", async () => {
         await fetch("/api/tick", {
@@ -530,18 +581,39 @@ function setupEventHandlers() {
     p0BotSelect.addEventListener("change", applyBotMatchup);
     p1BotSelect.addEventListener("change", applyBotMatchup);
 
-    // 出招按钮群
+    // 当前即时控制角色 (0 = 1P, 1 = 2P)
+    let currentInstantActor = 0;
+    const btnSelect1P = document.getElementById("btnSelect1P");
+    const btnSelect2P = document.getElementById("btnSelect2P");
+    const instantActorHint = document.getElementById("instantActorHint");
+
+    if (btnSelect1P && btnSelect2P) {
+        btnSelect1P.addEventListener("click", () => {
+            currentInstantActor = 0;
+            btnSelect1P.classList.add("active");
+            btnSelect2P.classList.remove("active");
+            if (instantActorHint) instantActorHint.textContent = "🎮 当前控制: 1P 我方";
+        });
+        btnSelect2P.addEventListener("click", () => {
+            currentInstantActor = 1;
+            btnSelect2P.classList.add("active");
+            btnSelect1P.classList.remove("active");
+            if (instantActorHint) instantActorHint.textContent = "🎮 当前控制: 2P 敌方 (动作由敌方发动)";
+        });
+    }
+
+    // 出招按钮群 (支持 1P / 2P 动态切换)
     document.querySelectorAll(".btn-action").forEach(btn => {
         btn.addEventListener("click", () => {
             const action = parseInt(btn.dataset.action);
             const isLast = parseInt(btn.dataset.last);
             if (!isNaN(action)) {
-                sendAttack(0, action, 0, isLast);
+                sendAttack(currentInstantActor, action, 0, isLast);
             }
         });
     });
 
-    // 切换格挡
+    // 切换格挡 (支持当前控制角色)
     btnToggleBlock.addEventListener("click", async () => {
         p0Blocking = !p0Blocking;
         btnToggleBlock.textContent = p0Blocking ? "🛡️ 正在格挡 (点击解除)" : "🛡️ 切换格挡";
@@ -549,17 +621,17 @@ function setupEventHandlers() {
         await fetch("/api/block", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ player: 0, blocking: p0Blocking ? 1 : 0 })
+            body: JSON.stringify({ player: currentInstantActor, blocking: p0Blocking ? 1 : 0 })
         });
         fetchState();
     });
 
     // 闪避按钮绑定 (后闪与侧闪)
     if (btnDashBack) {
-        btnDashBack.addEventListener("click", () => sendDodge(0, 0));
+        btnDashBack.addEventListener("click", () => sendDodge(currentInstantActor, 0));
     }
     if (btnSidestep) {
-        btnSidestep.addEventListener("click", () => sendDodge(0, 1));
+        btnSidestep.addEventListener("click", () => sendDodge(currentInstantActor, 1));
     }
 
     // 一键 5 连击 (L-L-L-M-M)
@@ -572,10 +644,445 @@ function setupEventHandlers() {
             { act: 2, last: 1 },
         ];
         for (let i = 0; i < combo.length; i++) {
-            await sendAttack(0, combo[i].act, i, combo[i].last);
+            await sendAttack(currentInstantActor, combo[i].act, i, combo[i].last);
             await new Promise(r => setTimeout(r, 180));
         }
     });
+
+    // =========================================================================
+    // 战斗脚本设计器 (Combat Script Timeline Sequencer)
+    // =========================================================================
+    const SCRIPT_ACTIONS = {
+        "dash_back": { icon: "💨", name: "后闪拉开距离", desc: "双方/单方后闪增大间距" },
+        "sidestep": { icon: "💨", name: "侧闪闪避", desc: "侧向滑步闪避" },
+        "heavy_start": { icon: "💥", name: "破防重击起手 (激活穿透力场)", desc: "进入重击蓄力，激活1.2s全程远程穿透" },
+        "heavy_attack": { icon: "💥", name: "破防重击", desc: "破防重击造成伤害" },
+        "ranged_attack": { icon: "🎯", name: "远程射击", desc: "远程弹道射击" },
+        "light_1": { icon: "🥊", name: "L1 轻击 1", desc: "轻攻击第一击" },
+        "light_2": { icon: "🥊", name: "L2 轻击 2", desc: "轻攻击第二击" },
+        "light_3": { icon: "🥊", name: "L3 轻击 3", desc: "轻攻击第三击" },
+        "light_4": { icon: "🥊", name: "L4 终结击", desc: "轻攻击终结击" },
+        "med_1": { icon: "⚔️", name: "M1 中击 1", desc: "中攻击第一击" },
+        "med_2": { icon: "⚔️", name: "M2 终结击", desc: "中攻击终结击" },
+        "sp1": { icon: "⚡", name: "特殊技 1 (SP1)", desc: "释放1格特技" },
+        "sp2": { icon: "⚡⚡", name: "特殊技 2 (SP2)", desc: "释放2格特技" },
+        "sp3": { icon: "⚡⚡⚡", name: "特殊技 3 (SP3)", desc: "释放3格终极技" },
+        "block_on": { icon: "🛡️", name: "开启格挡", desc: "进入格挡防御" },
+        "block_off": { icon: "🛡️", name: "解除格挡", desc: "解除防御姿态" },
+        "inject_buff": { icon: "💉", name: "注入状态", desc: "施加Buff/Debuff" },
+        "delay": { icon: "⏱️", name: "单纯等待", desc: "仅间隔延时" },
+    };
+
+    let scriptSteps = [];
+    let isScriptRunning = false;
+    let abortScriptPlayback = false;
+    let dragSrcIndex = -1;
+
+    // DOM Elements
+    const tabScript = document.getElementById("tabScript");
+    const tabInstant = document.getElementById("tabInstant");
+    const tabPreset = document.getElementById("tabPreset");
+    const panelScript = document.getElementById("panelScript");
+    const panelInstant = document.getElementById("panelInstant");
+    const panelPreset = document.getElementById("panelPreset");
+
+    const btnPlayScript = document.getElementById("btnPlayScript");
+    const btnStopScript = document.getElementById("btnStopScript");
+    const scriptStatusBadge = document.getElementById("scriptStatusBadge");
+    const scriptStepList = document.getElementById("scriptStepList");
+    const stepCount = document.getElementById("stepCount");
+
+    const stepActor = document.getElementById("stepActor");
+    const stepAction = document.getElementById("stepAction");
+    const buffSelectRow = document.getElementById("buffSelectRow");
+    const stepBuffId = document.getElementById("stepBuffId");
+    const stepDelay = document.getElementById("stepDelay");
+    const btnAddStep = document.getElementById("btnAddStep");
+
+    const btnPresetWbPenetrate = document.getElementById("btnPresetWbPenetrate");
+    const btnPresetWbSp1 = document.getElementById("btnPresetWbSp1");
+    const btnClearScript = document.getElementById("btnClearScript");
+
+    // Workspace Tabs Switcher
+    function setupWorkspaceTabs() {
+        const tabs = [
+            { btn: tabScript, panel: panelScript },
+            { btn: tabInstant, panel: panelInstant },
+            { btn: tabPreset, panel: panelPreset },
+        ];
+        tabs.forEach(t => {
+            if (!t.btn || !t.panel) return;
+            t.btn.addEventListener("click", () => {
+                tabs.forEach(o => {
+                    if (o.btn) o.btn.classList.remove("active");
+                    if (o.panel) o.panel.classList.remove("active");
+                });
+                t.btn.classList.add("active");
+                t.panel.classList.add("active");
+            });
+        });
+    }
+    setupWorkspaceTabs();
+
+    // Toggle buff select row on action change
+    if (stepAction && buffSelectRow) {
+        stepAction.addEventListener("change", () => {
+            buffSelectRow.style.display = (stepAction.value === "inject_buff") ? "flex" : "none";
+        });
+    }
+
+    // Load from storage or default
+    function initScript() {
+        try {
+            const saved = localStorage.getItem("tftf_sim_script");
+            if (saved) {
+                scriptSteps = JSON.parse(saved);
+            }
+        } catch(e) {}
+        if (!scriptSteps || scriptSteps.length === 0) {
+            loadPresetWindbladePenetrate();
+        } else {
+            renderScriptStepList();
+        }
+    }
+
+    function saveScriptToStorage() {
+        try {
+            localStorage.setItem("tftf_sim_script", JSON.stringify(scriptSteps));
+        } catch(e) {}
+    }
+
+    // Render Steps List with HTML5 Drag & Drop
+    function renderScriptStepList() {
+        if (!scriptStepList) return;
+        scriptStepList.innerHTML = "";
+        if (stepCount) stepCount.textContent = scriptSteps.length;
+
+        if (scriptSteps.length === 0) {
+            scriptStepList.innerHTML = `
+                <div class="step-empty-hint">
+                    <span>📭 脚本序列为空</span>
+                    <span>点击右侧【➕ 插入到事件序列】或顶部【🌟 载入风刃重击穿透测试】开始编排</span>
+                </div>
+            `;
+            return;
+        }
+
+        scriptSteps.forEach((step, idx) => {
+            const card = document.createElement("div");
+            card.className = "script-step-card";
+            card.draggable = true;
+            card.dataset.index = idx;
+
+            // Actor tag
+            let actorHtml = '<span class="step-actor-pill actor-both">双方</span>';
+            if (step.actor === "0") actorHtml = '<span class="step-actor-pill actor-p0">1P 我方</span>';
+            else if (step.actor === "1") actorHtml = '<span class="step-actor-pill actor-p1">2P 敌方</span>';
+
+            const actInfo = SCRIPT_ACTIONS[step.action] || { icon: "⚡", name: step.action, desc: "" };
+            let actName = `${actInfo.icon} ${actInfo.name}`;
+            if (step.action === "inject_buff" && step.buffId) {
+                actName = `💉 注入: ${step.buffId}`;
+            }
+
+            card.innerHTML = `
+                <span class="step-handle" title="按住拖拽排序">⋮⋮</span>
+                <span class="step-idx">#${idx + 1}</span>
+                ${actorHtml}
+                <div class="step-info" title="${actInfo.desc}">
+                    <span class="step-name">${actName}</span>
+                </div>
+                <span class="step-delay-tag">⏱️ ${step.delayMs || 300}ms</span>
+                <div class="step-actions">
+                    <button class="btn-step-mini btn-step-up" title="上移" ${idx === 0 ? "disabled style='opacity:0.3'" : ""}>🔼</button>
+                    <button class="btn-step-mini btn-step-down" title="下移" ${idx === scriptSteps.length - 1 ? "disabled style='opacity:0.3'" : ""}>🔽</button>
+                    <button class="btn-step-mini btn-step-del" title="删除本步">❌</button>
+                </div>
+            `;
+
+            // Drag and Drop events
+            card.addEventListener("dragstart", (e) => {
+                dragSrcIndex = idx;
+                e.dataTransfer.effectAllowed = "move";
+                card.classList.add("dragging");
+            });
+
+            card.addEventListener("dragend", () => {
+                card.classList.remove("dragging");
+                document.querySelectorAll(".script-step-card").forEach(c => c.classList.remove("drag-over"));
+            });
+
+            card.addEventListener("dragover", (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "move";
+                card.classList.add("drag-over");
+            });
+
+            card.addEventListener("dragleave", () => {
+                card.classList.remove("drag-over");
+            });
+
+            card.addEventListener("drop", (e) => {
+                e.preventDefault();
+                card.classList.remove("drag-over");
+                const destIndex = idx;
+                if (dragSrcIndex >= 0 && dragSrcIndex !== destIndex) {
+                    const item = scriptSteps.splice(dragSrcIndex, 1)[0];
+                    scriptSteps.splice(destIndex, 0, item);
+                    saveScriptToStorage();
+                    renderScriptStepList();
+                }
+            });
+
+            // Button actions
+            card.querySelector(".btn-step-up").addEventListener("click", (e) => {
+                e.stopPropagation();
+                if (idx > 0) {
+                    const temp = scriptSteps[idx];
+                    scriptSteps[idx] = scriptSteps[idx - 1];
+                    scriptSteps[idx - 1] = temp;
+                    saveScriptToStorage();
+                    renderScriptStepList();
+                }
+            });
+
+            card.querySelector(".btn-step-down").addEventListener("click", (e) => {
+                e.stopPropagation();
+                if (idx < scriptSteps.length - 1) {
+                    const temp = scriptSteps[idx];
+                    scriptSteps[idx] = scriptSteps[idx + 1];
+                    scriptSteps[idx + 1] = temp;
+                    saveScriptToStorage();
+                    renderScriptStepList();
+                }
+            });
+
+            card.querySelector(".btn-step-del").addEventListener("click", (e) => {
+                e.stopPropagation();
+                scriptSteps.splice(idx, 1);
+                saveScriptToStorage();
+                renderScriptStepList();
+            });
+
+            scriptStepList.appendChild(card);
+        });
+    }
+
+    // Add Step Form
+    if (btnAddStep) {
+        btnAddStep.addEventListener("click", () => {
+            const actor = stepActor.value;
+            const action = stepAction.value;
+            const buffId = stepBuffId ? stepBuffId.value : "power_gain";
+            const delayMs = parseInt(stepDelay.value) || 350;
+
+            scriptSteps.push({
+                id: "s_" + Date.now() + "_" + Math.floor(Math.random() * 1000),
+                actor,
+                action,
+                buffId: (action === "inject_buff") ? buffId : undefined,
+                delayMs
+            });
+
+            saveScriptToStorage();
+            renderScriptStepList();
+        });
+    }
+
+    // Presets
+    function loadPresetWindbladePenetrate() {
+        scriptSteps = [
+            { id: "s1", actor: "both", action: "dash_back", delayMs: 350 },
+            { id: "s2", actor: "1", action: "ranged_attack", delayMs: 150 },
+            { id: "s3", actor: "0", action: "heavy_start", delayMs: 250 },
+            { id: "s4", actor: "0", action: "heavy_attack", delayMs: 400 },
+        ];
+        saveScriptToStorage();
+        renderScriptStepList();
+        if (typeof showToast === "function") showToast("🌟 已载入：风刃重击穿透远程测试脚本");
+    }
+
+    function loadPresetWindbladeSp1() {
+        scriptSteps = [
+            { id: "s1", actor: "both", action: "dash_back", delayMs: 300 },
+            { id: "s2", actor: "1", action: "inject_buff", buffId: "power_gain", delayMs: 300 },
+            { id: "s3", actor: "0", action: "sp1", delayMs: 500 },
+        ];
+        saveScriptToStorage();
+        renderScriptStepList();
+        if (typeof showToast === "function") showToast("⚡ 已载入：风刃SP1驱散瞬伤与震击测试脚本");
+    }
+
+    if (btnPresetWbPenetrate) btnPresetWbPenetrate.addEventListener("click", loadPresetWindbladePenetrate);
+    if (btnPresetWbSp1) btnPresetWbSp1.addEventListener("click", loadPresetWindbladeSp1);
+    if (btnClearScript) {
+        btnClearScript.addEventListener("click", () => {
+            if (confirm("确定清空当前脚本事件序列吗？")) {
+                scriptSteps = [];
+                saveScriptToStorage();
+                renderScriptStepList();
+            }
+        });
+    }
+
+    // Playback Execution
+    async function executeStep(step) {
+        const actor = step.actor;
+        const act = step.action;
+
+        if (act === "dash_back") {
+            if (actor === "both") {
+                sendDodge(0, 0);
+                sendDodge(1, 0);
+            } else {
+                sendDodge(parseInt(actor), 0);
+            }
+        } else if (act === "sidestep") {
+            if (actor === "both") {
+                sendDodge(0, 1);
+                sendDodge(1, 1);
+            } else {
+                sendDodge(parseInt(actor), 1);
+            }
+        } else if (act === "heavy_start") {
+            const atker = (actor === "both" || actor === "0") ? 0 : 1;
+            await fetch("/api/attack_start", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ attacker: atker, action: 4 })
+            });
+            const fighter = (atker === 0) ? fighterP0 : fighterP1;
+            if (fighter) {
+                fighter.classList.add("attack-react");
+                setTimeout(() => fighter.classList.remove("attack-react"), 300);
+            }
+            fetchState();
+        } else if (act === "heavy_attack") {
+            const atker = (actor === "both" || actor === "0") ? 0 : 1;
+            await sendAttack(atker, 4, 0, 1);
+        } else if (act === "ranged_attack") {
+            const atker = (actor === "both" || actor === "1") ? 1 : 0;
+            await sendAttack(atker, 8, 0, 1);
+        } else if (act === "light_1") {
+            const atker = (actor === "1") ? 1 : 0;
+            await sendAttack(atker, 1, 0, 0);
+        } else if (act === "light_2") {
+            const atker = (actor === "1") ? 1 : 0;
+            await sendAttack(atker, 1, 1, 0);
+        } else if (act === "light_3") {
+            const atker = (actor === "1") ? 1 : 0;
+            await sendAttack(atker, 1, 2, 0);
+        } else if (act === "light_4") {
+            const atker = (actor === "1") ? 1 : 0;
+            await sendAttack(atker, 1, 3, 1);
+        } else if (act === "med_1") {
+            const atker = (actor === "1") ? 1 : 0;
+            await sendAttack(atker, 2, 0, 0);
+        } else if (act === "med_2") {
+            const atker = (actor === "1") ? 1 : 0;
+            await sendAttack(atker, 2, 1, 1);
+        } else if (act === "sp1") {
+            const atker = (actor === "1") ? 1 : 0;
+            await sendAttack(atker, 16, 0, 1);
+        } else if (act === "sp2") {
+            const atker = (actor === "1") ? 1 : 0;
+            await sendAttack(atker, 32, 0, 1);
+        } else if (act === "sp3") {
+            const atker = (actor === "1") ? 1 : 0;
+            await sendAttack(atker, 64, 0, 1);
+        } else if (act === "block_on") {
+            const p = (actor === "1") ? 1 : 0;
+            await fetch("/api/block", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ player: p, blocking: 1 })
+            });
+            fetchState();
+        } else if (act === "block_off") {
+            const p = (actor === "1") ? 1 : 0;
+            await fetch("/api/block", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ player: p, blocking: 0 })
+            });
+            fetchState();
+        } else if (act === "inject_buff") {
+            const target = (actor === "0") ? 0 : 1;
+            const bid = step.buffId || "power_gain";
+            await fetch("/api/inject_buff", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ target: target, mod_id: bid, dur: 8.0, stacks: 1 })
+            });
+            fetchState();
+        }
+    }
+
+    async function playScript() {
+        if (isScriptRunning) return;
+        if (scriptSteps.length === 0) {
+            loadPresetWindbladePenetrate();
+        }
+
+        isScriptRunning = true;
+        abortScriptPlayback = false;
+        if (btnPlayScript) btnPlayScript.disabled = true;
+        if (btnStopScript) btnStopScript.disabled = false;
+        if (scriptStatusBadge) {
+            scriptStatusBadge.textContent = "▶️ 正在执行...";
+            scriptStatusBadge.className = "script-status-badge running";
+        }
+
+        const cards = scriptStepList ? scriptStepList.querySelectorAll(".script-step-card") : [];
+
+        for (let i = 0; i < scriptSteps.length; i++) {
+            if (abortScriptPlayback) break;
+            const step = scriptSteps[i];
+            if (scriptStatusBadge) {
+                scriptStatusBadge.textContent = `▶️ 步骤 ${i + 1}/${scriptSteps.length}`;
+            }
+
+            cards.forEach((c, idx) => {
+                c.classList.remove("step-running");
+                if (idx === i) c.classList.add("step-running");
+                if (idx < i) c.classList.add("step-done");
+            });
+
+            if (cards[i]) {
+                cards[i].scrollIntoView({ behavior: "smooth", block: "nearest" });
+            }
+
+            await executeStep(step);
+            await new Promise(r => setTimeout(r, step.delayMs || 350));
+        }
+
+        cards.forEach(c => c.classList.remove("step-running"));
+        if (abortScriptPlayback) {
+            if (scriptStatusBadge) {
+                scriptStatusBadge.textContent = "⏹ 已停止";
+                scriptStatusBadge.className = "script-status-badge stopped";
+            }
+        } else {
+            if (scriptStatusBadge) {
+                scriptStatusBadge.textContent = "✅ 播放完成";
+                scriptStatusBadge.className = "script-status-badge done";
+            }
+            cards.forEach(c => c.classList.add("step-done"));
+        }
+
+        isScriptRunning = false;
+        if (btnPlayScript) btnPlayScript.disabled = false;
+        if (btnStopScript) btnStopScript.disabled = true;
+    }
+
+    if (btnPlayScript) btnPlayScript.addEventListener("click", playScript);
+    if (btnStopScript) {
+        btnStopScript.addEventListener("click", () => {
+            abortScriptPlayback = true;
+        });
+    }
+
+    initScript();
 
     // 预设剧本按钮
     document.getElementById("presetOptimus").addEventListener("click", setupPresetOptimus);
@@ -584,6 +1091,14 @@ function setupEventHandlers() {
     const presetBumblebee = document.getElementById("presetBumblebee");
     if (presetBumblebee) {
         presetBumblebee.addEventListener("click", setupPresetBumblebee);
+    }
+    const presetWindbladeSp1 = document.getElementById("presetWindbladeSp1");
+    if (presetWindbladeSp1) {
+        presetWindbladeSp1.addEventListener("click", setupPresetWindbladeSp1);
+    }
+    const presetWindbladeStun = document.getElementById("presetWindbladeStun");
+    if (presetWindbladeStun) {
+        presetWindbladeStun.addEventListener("click", setupPresetWindbladeStun);
     }
 
     // 日志清空
@@ -677,6 +1192,40 @@ async function setupPresetBumblebee() {
     p1BotSelect.value = "bonecrusher_cin_rotf";
     await applyBotMatchup();
     showToast("📌 场景已装载: 小黄蜂！点击【💨 后闪】获得规避，点击【💨 侧闪】叠加暴击增益");
+    fetchState();
+}
+
+async function setupPresetWindbladeSp1() {
+    p0BotSelect.value = "windblade_gs";
+    p1BotSelect.value = "bonecrusher_cin_rotf";
+    await applyBotMatchup();
+    // 给敌方注入 2 层能量获取增益
+    await fetch("/api/inject_buff", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ target: 1, mod_id: "power_gain", dur: 10.0, stacks: 2 })
+    });
+    // 增加风刃自身能量至 1.0，直接具备 SP1 释放条件
+    await fetch("/api/mana", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ player: 0, mana: 1.0 })
+    });
+    showToast("📌 场景已装载: 敌方注入 2 层能量获取增益！风刃能量已就绪，点击【⚡ SP1 (1格)】测试驱散与80%瞬伤！");
+    fetchState();
+}
+
+async function setupPresetWindbladeStun() {
+    p0BotSelect.value = "windblade_gs";
+    p1BotSelect.value = "bonecrusher_cin_rotf";
+    await applyBotMatchup();
+    // 给敌方注入流血
+    await fetch("/api/inject_buff", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ target: 1, mod_id: "dmg_bleed", dur: 8.0, stacks: 1 })
+    });
+    showToast("📌 场景已装载: 敌方处于流血状态！点击【🎯 远程射击】测试 35% 远程流血压制眩晕");
     fetchState();
 }
 

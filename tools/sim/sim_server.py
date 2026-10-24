@@ -54,7 +54,7 @@ STANDARD_BUFFS = {
         "desc": "持续受到烈焰灼烧伤害", "is_contract_valid": True, "dur_s": 6.0
     },
     "shock": {
-        "pua": "0xE914", "pua_char": "\uE914", "name": "震击", "tc": "3B82F6", "gb": "2563EB",
+        "pua": "0xE914", "pua_char": "\uE914", "name": "震击", "tc": "EF4444", "gb": "B91C1C",
         "desc": "持续受到电磁震击伤害", "is_contract_valid": True, "dur_s": 6.0
     },
     "armor_break": {
@@ -88,6 +88,46 @@ STANDARD_BUFFS = {
     "unstoppable": {
         "pua": "0xE915", "pua_char": "\uE915", "name": "不可阻挡", "tc": "EF4444", "gb": "B91C1C",
         "desc": "免疫受击硬直与击退", "is_contract_valid": True, "dur_s": 4.0
+    },
+    "power_gain": {
+        "pua": "0xE403", "pua_char": "\uE403", "name": "能量获取", "tc": "38BDF8", "gb": "0284C7",
+        "desc": "战斗能量获取速率大幅提升", "is_contract_valid": True, "dur_s": 8.0
+    },
+    "power_buff": {
+        "pua": "0xE403", "pua_char": "\uE403", "name": "能量增益", "tc": "38BDF8", "gb": "0284C7",
+        "desc": "持有能量获取增益效果", "is_contract_valid": True, "dur_s": 8.0
+    },
+    "power_steal": {
+        "pua": "0xE606", "pua_char": "\uE606", "name": "能量窃取", "tc": "06B6D4", "gb": "0891B2",
+        "desc": "持续窃取对手能量", "is_contract_valid": True, "dur_s": 6.0
+    },
+    "power_lock": {
+        "pua": "0xE606", "pua_char": "\uE606", "name": "能量锁定", "tc": "64748B", "gb": "475569",
+        "desc": "能量被封锁无法增加", "is_contract_valid": True, "dur_s": 5.0
+    },
+    "shield": {
+        "pua": "0xE518", "pua_char": "\uE518", "name": "防护力场", "tc": "38BDF8", "gb": "0369A1",
+        "desc": "吸收即将受到的伤害", "is_contract_valid": True, "dur_s": 6.0
+    },
+    "dmg_poison": {
+        "pua": "0xE402", "pua_char": "\uE402", "name": "酸蚀中毒", "tc": "10B981", "gb": "047857",
+        "desc": "持续受到酸蚀伤害", "is_contract_valid": True, "dur_s": 6.0
+    },
+    "crit_damage_buff": {
+        "pua": "0xE406", "pua_char": "\uE406", "name": "爆伤增益", "tc": "F43F5E", "gb": "BE123C",
+        "desc": "暴击伤害倍率提升", "is_contract_valid": True, "dur_s": 8.0
+    },
+    "atk_buff": {
+        "pua": "0xE406", "pua_char": "\uE406", "name": "攻击强化", "tc": "F59E0B", "gb": "B45309",
+        "desc": "基础攻击力提升", "is_contract_valid": True, "dur_s": 8.0
+    },
+    "atk_debuff": {
+        "pua": "0xE408", "pua_char": "\uE408", "name": "虚弱削弱", "tc": "94A3B8", "gb": "64748B",
+        "desc": "攻击力降低", "is_contract_valid": True, "dur_s": 6.0
+    },
+    "heal_block": {
+        "pua": "0xE950", "pua_char": "\uE950", "name": "禁疗诅咒", "tc": "A855F7", "gb": "7E22CE",
+        "desc": "无法恢复生命值", "is_contract_valid": True, "dur_s": 8.0
     },
 }
 
@@ -133,7 +173,7 @@ def decorate_buff(buff):
         app = ALL_APPEARS.get(app_ids[0], {}) if app_ids else {}
         pua_char = app.get("t", "")
         pua_hex = ("0x" + hex(ord(pua_char))[2:].upper()) if pua_char else "0xE406"
-        name = app.get("a") or app.get("s") or app.get("ps") or bid
+        name = app.get("a") or app.get("s") or app.get("ps") or app.get("ss") or bid
         tc = app.get("tc", "FFFFFF")
         gb = app.get("gb", tc)
         desc = app.get("l") or app.get("pl") or ""
@@ -224,6 +264,10 @@ class SimEngine:
         self.dll.sim_attack.argtypes = [ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
         self.dll.sim_attack.restype = ctypes.c_int
 
+        if hasattr(self.dll, 'sim_attack_start'):
+            self.dll.sim_attack_start.argtypes = [ctypes.c_int, ctypes.c_int]
+            self.dll.sim_attack_start.restype = ctypes.c_int
+
         self.dll.sim_set_block.argtypes = [ctypes.c_int, ctypes.c_int]
         self.dll.sim_set_block.restype = None
 
@@ -244,6 +288,18 @@ class SimEngine:
 
         self.dll.sim_pop_floaters.argtypes = [ctypes.c_char_p, ctypes.c_int]
         self.dll.sim_pop_floaters.restype = ctypes.c_int
+
+        if hasattr(self.dll, 'sim_set_mana'):
+            self.dll.sim_set_mana.argtypes = [ctypes.c_int, ctypes.c_float]
+            self.dll.sim_set_mana.restype = ctypes.c_int
+
+        if hasattr(self.dll, 'sim_set_special_attacking'):
+            self.dll.sim_set_special_attacking.argtypes = [ctypes.c_int, ctypes.c_int]
+            self.dll.sim_set_special_attacking.restype = ctypes.c_int
+
+        if hasattr(self.dll, 'sim_set_heavy_attacking'):
+            self.dll.sim_set_heavy_attacking.argtypes = [ctypes.c_int, ctypes.c_int]
+            self.dll.sim_set_heavy_attacking.restype = ctypes.c_int
 
     def recompile(self):
         import _ctypes
@@ -272,11 +328,31 @@ class SimEngine:
     def tick(self, dt_ms):
         self.dll.sim_tick(int(dt_ms))
 
+    def attack_start(self, attacker, action_type):
+        if hasattr(self.dll, 'sim_attack_start'):
+            return self.dll.sim_attack_start(int(attacker), int(action_type))
+        return 1
+
     def attack(self, attacker, action_type, hit_idx, is_last, is_blocked):
         return self.dll.sim_attack(int(attacker), int(action_type), int(hit_idx), int(is_last), int(is_blocked))
 
     def set_block(self, player, is_blocking):
         self.dll.sim_set_block(int(player), int(is_blocking))
+
+    def set_mana(self, player, mana):
+        if hasattr(self.dll, 'sim_set_mana'):
+            return self.dll.sim_set_mana(int(player), ctypes.c_float(mana))
+        return 0
+
+    def set_special_attacking(self, player, in_special):
+        if hasattr(self.dll, 'sim_set_special_attacking'):
+            return self.dll.sim_set_special_attacking(int(player), 1 if in_special else 0)
+        return 0
+
+    def set_heavy_attacking(self, player, is_heavy):
+        if hasattr(self.dll, 'sim_set_heavy_attacking'):
+            return self.dll.sim_set_heavy_attacking(int(player), 1 if is_heavy else 0)
+        return 0
 
     def dodge(self, player, dodge_type):
         return self.dll.sim_dodge(int(player), int(dodge_type))
@@ -558,6 +634,24 @@ class SimHTTPHandler(SimpleHTTPRequestHandler):
             g_engine.tick(dt)
             self.send_json({"ok": True})
 
+        elif parsed.path == "/api/attack_start":
+            attacker = int(data.get("attacker", 0))
+            action = int(data.get("action", 4))
+            ok = g_engine.attack_start(attacker, action)
+            self.send_json({"ok": bool(ok)})
+
+        elif parsed.path == "/api/set_special":
+            player = int(data.get("player", 0))
+            in_special = bool(data.get("in_special", True))
+            ok = g_engine.set_special_attacking(player, in_special)
+            self.send_json({"ok": bool(ok)})
+
+        elif parsed.path == "/api/set_heavy":
+            player = int(data.get("player", 0))
+            is_heavy = bool(data.get("is_heavy", True))
+            ok = g_engine.set_heavy_attacking(player, is_heavy)
+            self.send_json({"ok": bool(ok)})
+
         elif parsed.path == "/api/attack":
             attacker = data.get("attacker", 0)
             action = data.get("action", 1) # 1=L, 2=M, 4=Heavy, 16=SP1, 32=SP2, 64=SP3
@@ -593,6 +687,12 @@ class SimHTTPHandler(SimpleHTTPRequestHandler):
             count = data.get("count", 1)
             g_engine.remove_buff(target, mod_id, count)
             self.send_json({"ok": True})
+
+        elif parsed.path == "/api/mana":
+            player = int(data.get("player", 0))
+            mana = float(data.get("mana", 1.0))
+            g_engine.set_mana(player, mana)
+            self.send_json({"ok": True, "player": player, "mana": mana})
 
         elif parsed.path == "/api/recompile":
             ok, msg = g_engine.recompile()

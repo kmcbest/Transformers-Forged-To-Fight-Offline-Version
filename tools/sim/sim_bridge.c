@@ -70,6 +70,10 @@ typedef struct {
     uint64_t ranged_boost_end_ms;
     float ranged_damage_bonus;
 
+    int is_heavy;
+    int in_special;
+    int current_action;
+
     int prowl_melee_stacks;
     int prowl_charging;
     uint64_t prowl_charge_start_ms;
@@ -243,6 +247,15 @@ void skill_add_mana(int player_index, float norm_mana) {
     }
 }
 
+SIM_API int sim_set_mana(int player_index, float mana) {
+    if (player_index < 0 || player_index >= 2) return 0;
+    if (mana < 0.0f) mana = 0.0f;
+    if (mana > 3.0f) mana = 3.0f;
+    g_players[player_index].mana = mana;
+    skill_log("SIM: P%d mana set to %.2f / 3.00", player_index, mana);
+    return 1;
+}
+
 uint64_t skill_get_block_enter_ms(int player_index) {
     if (player_index >= 0 && player_index < 2 && g_players[player_index].is_blocking) {
         return g_players[player_index].block_enter_ms;
@@ -252,7 +265,11 @@ uint64_t skill_get_block_enter_ms(int player_index) {
 
 void skill_stun_player(int target_player_index, float duration_s) {
     if (target_player_index >= 0 && target_player_index < 2) {
-        skill_apply_buff_dur(target_player_index, "stun", duration_s);
+        g_players[target_player_index].is_blocking = 0;
+        // 若受击方尚未持有任何眩晕类 Buff (如 windblade_bleed_remote_stun)，才挂载通用 "stun" 占位
+        if (!skill_has_buff(target_player_index, "stun")) {
+            skill_apply_buff_dur(target_player_index, "stun", duration_s);
+        }
         push_floater(target_player_index, 5, duration_s, "眩晕");
     }
 }
@@ -309,6 +326,38 @@ int skill_get_prowl_melee_stacks(int player_index) {
     return 0;
 }
 
+int skill_is_heavy_attacking(int player_index) {
+    if (player_index < 0 || player_index >= 2) return 0;
+    return (g_players[player_index].is_heavy || g_players[player_index].current_action == 4);
+}
+
+int skill_is_special_attacking(int player_index) {
+    if (player_index < 0 || player_index >= 2) return 0;
+    return (g_players[player_index].in_special || g_players[player_index].current_action >= 16);
+}
+
+SIM_API int sim_set_special_attacking(int player_index, int in_special) {
+    if (player_index < 0 || player_index >= 2) return 0;
+    g_players[player_index].in_special = in_special ? 1 : 0;
+    if (in_special && g_players[player_index].current_action < 16) {
+        g_players[player_index].current_action = 16;
+    } else if (!in_special && g_players[player_index].current_action >= 16) {
+        g_players[player_index].current_action = 0;
+    }
+    return 1;
+}
+
+SIM_API int sim_set_heavy_attacking(int player_index, int is_heavy) {
+    if (player_index < 0 || player_index >= 2) return 0;
+    g_players[player_index].is_heavy = is_heavy ? 1 : 0;
+    if (is_heavy) {
+        g_players[player_index].current_action = 4;
+    } else if (g_players[player_index].current_action == 4) {
+        g_players[player_index].current_action = 0;
+    }
+    return 1;
+}
+
 // ---------------------------------------------------------------------------
 // 模拟器核心控制 API
 // ---------------------------------------------------------------------------
@@ -355,6 +404,9 @@ SIM_API void sim_reset(void) {
     g_players[0].mana = 0.0f;
     g_players[0].buff_count = 0;
     g_players[0].is_blocking = 0;
+    g_players[0].is_heavy = 0;
+    g_players[0].in_special = 0;
+    g_players[0].current_action = 0;
     g_players[0].prowl_charging = 0;
     g_players[0].prowl_charge_stacks = 0;
     g_players[0].prowl_melee_stacks = 0;
@@ -363,6 +415,9 @@ SIM_API void sim_reset(void) {
     g_players[1].mana = 0.0f;
     g_players[1].buff_count = 0;
     g_players[1].is_blocking = 0;
+    g_players[1].is_heavy = 0;
+    g_players[1].in_special = 0;
+    g_players[1].current_action = 0;
     g_players[1].prowl_charging = 0;
     g_players[1].prowl_charge_stacks = 0;
     g_players[1].prowl_melee_stacks = 0;
@@ -376,6 +431,19 @@ SIM_API void sim_reset(void) {
 SIM_API int sim_inject_buff(int target_idx, const char* mod_id, float duration_s, int stacks) {
     if (target_idx < 0 || target_idx >= 2 || !mod_id || !mod_id[0]) return 0;
     SimCombatant* c = &g_players[target_idx];
+
+    // 若即将施加具体角色专属的官方眩晕 Buff (例如 windblade_bleed_remote_stun 或 windblade_sp3_stun)，自动清理通用的 "stun" 占位 Buff，避免双重图标
+    if (strstr(mod_id, "stun") != NULL && strcmp(mod_id, "stun") != 0) {
+        for (int i = 0; i < c->buff_count; i++) {
+            if (strcmp(c->buffs[i].mod_id, "stun") == 0) {
+                for (int j = i; j < c->buff_count - 1; j++) {
+                    c->buffs[j] = c->buffs[j + 1];
+                }
+                c->buff_count--;
+                break;
+            }
+        }
+    }
 
     // 检查是否已有相同 mod_id
     for (int i = 0; i < c->buff_count; i++) {
@@ -570,6 +638,18 @@ SIM_API void sim_tick(uint32_t dt_ms) {
     }
 }
 
+
+SIM_API int sim_attack_start(int attacker_idx, int action_type) {
+    if (attacker_idx < 0 || attacker_idx >= 2) return 0;
+    SimCombatant* atker = &g_players[attacker_idx];
+    atker->current_action = action_type;
+    atker->is_heavy = (action_type == 4);
+    atker->in_special = (action_type >= 16);
+    skill_dispatch_attack_start(attacker_idx, action_type);
+    skill_log("SIM_ATTACK_START: P%d started action %d (%s)", attacker_idx, action_type, atker->bot_id);
+    return 1;
+}
+
 SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
                        int is_last_hit, int is_blocked) {
     if (attacker_idx < 0 || attacker_idx >= 2) return 0;
@@ -598,19 +678,110 @@ SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
     int is_heavy = (action_type == 4);
     int is_ranged = (action_type == 8);
 
+    atker->current_action = action_type;
+    atker->is_heavy = is_heavy;
+    atker->in_special = (sp_idx > 0);
+
+    if (is_heavy && !atker->is_heavy) {
+        skill_dispatch_attack_start(attacker_idx, 4);
+    }
+
+    // 远程攻击闪避/穿透判定 (Evade / Penetration Check)
+    int out_evade = 0;
+    SkillEvadeContext evade_ctx = {
+        .entity_attr = (void*)victim,
+        .bot_id = victim->bot_id,
+        .player_index = target_idx,
+        .is_ranged = (bool)is_ranged,
+        .original_evade_result = 0,
+        .base_chance = 0.0f,
+        .modified_chance = 0.0f,
+        .force_guaranteed = false
+    };
+
+    int penetrated = 0;
+    if (is_ranged && (skill_is_heavy_attacking(target_idx) || skill_has_buff(target_idx, "windblade_heavy_range_immune"))) {
+        penetrated = 1;
+    }
+
+    if (penetrated || (skill_dispatch_evade_check(&evade_ctx, &out_evade) && out_evade)) {
+        skill_log("SIM_ATTACK: P%d attack was EVADED/PENETRATED by P%d (%s)!", attacker_idx, target_idx, victim->bot_id);
+        if (strstr(victim->bot_id, "windblade") != NULL && is_ranged) {
+            push_floater(target_idx, 4, 0.0f, "💨 穿透规避");
+        } else {
+            push_floater(target_idx, 4, 0.0f, "规避");
+        }
+        if (is_last_hit) {
+            atker->current_action = 0;
+            atker->is_heavy = 0;
+            atker->in_special = 0;
+        }
+        return 0;
+    }
+
     // 基础伤害计算
     float base_dmg = atker->atk;
     if (action_type == 1) base_dmg *= 0.25f;       // 轻击
     else if (action_type == 2) base_dmg *= 0.40f;  // 中击
     else if (action_type == 4) base_dmg *= 1.00f;  // 重击
+    else if (action_type == 8) base_dmg *= 0.35f;  // 远程射击 (Ranged)
     else if (sp_idx == 1) base_dmg *= 1.80f;       // SP1
     else if (sp_idx == 2) base_dmg *= 2.80f;       // SP2
     else if (sp_idx == 3) base_dmg *= 4.50f;       // SP3
 
-    // 暴击检定
-    int is_crit = (skill_random_float() < atker->crit_rate);
+    // 暴击率构成计算 (Crit Rate Breakdown & Roll Dice)
+    float base_crit = atker->crit_rate;
+    float blade_crit = 0.0f;
+    float resolution_crit = 0.0f;
+    bool is_windblade = (strstr(atker->bot_id, "windblade") != NULL);
+    bool is_thundercracker = (strstr(atker->bot_id, "thundercracker") != NULL);
+
+    if (is_windblade) {
+        // [2907] 剑刃攻击暴击率 +25% (近战或 SP1/SP2，远程射击不享受)
+        bool is_blade_attack = (!is_ranged) || (sp_idx == 1) || (sp_idx == 2);
+        if (is_blade_attack) {
+            blade_crit = 0.25f;
+        }
+        // [2908] 决心觉醒机制: 按敌方已损生命值百分比最高 +25%
+        float opp_max_hp = (victim->max_hp > 0.0f) ? victim->max_hp : 1.0f;
+        float opp_lost_ratio = 1.0f - (victim->hp / opp_max_hp);
+        if (opp_lost_ratio < 0.0f) opp_lost_ratio = 0.0f;
+        if (opp_lost_ratio > 1.0f) opp_lost_ratio = 1.0f;
+        resolution_crit = 0.25f * opp_lost_ratio;
+    }
+
+    float total_crit_rate = base_crit + blade_crit + resolution_crit;
+    if (is_thundercracker && !is_ranged && sp_idx == 0) {
+        total_crit_rate = 0.0f; // 惊天雷近战 0 暴击
+    }
+    if (total_crit_rate < 0.0f) total_crit_rate = 0.0f;
+    if (total_crit_rate > 1.0f) total_crit_rate = 1.0f;
+
+    // 暴击检定 (Roll Dice)
+    float roll = skill_random_float();
+    float roll_pct = roll * 100.0f;
+    float crit_rate_pct = total_crit_rate * 100.0f;
+    int is_crit = (roll < total_crit_rate);
+
     if (is_crit) {
         base_dmg *= atker->crit_damage_mult;
+        if (blade_crit > 0.0f || resolution_crit > 0.0f) {
+            skill_log("ROLL_DICE_PASS: [%s] 暴击检定 PASS! (Roll: %.1f%% < %.1f%% [基础%.1f%% + 剑刃%.1f%% + 决心%.1f%%])",
+                      atker->bot_id, roll_pct, crit_rate_pct,
+                      base_crit * 100.0f, blade_crit * 100.0f, resolution_crit * 100.0f);
+        } else {
+            skill_log("ROLL_DICE_PASS: [%s] 暴击检定 PASS! (Roll: %.1f%% < %.1f%% [基础%.1f%%])",
+                      atker->bot_id, roll_pct, crit_rate_pct, base_crit * 100.0f);
+        }
+    } else {
+        if (blade_crit > 0.0f || resolution_crit > 0.0f) {
+            skill_log("ROLL_DICE_FAIL: [%s] 暴击检定 FAIL (Roll: %.1f%% >= %.1f%% [基础%.1f%% + 剑刃%.1f%% + 决心%.1f%%])",
+                      atker->bot_id, roll_pct, crit_rate_pct,
+                      base_crit * 100.0f, blade_crit * 100.0f, resolution_crit * 100.0f);
+        } else {
+            skill_log("ROLL_DICE_FAIL: [%s] 暴击检定 FAIL (Roll: %.1f%% >= %.1f%% [基础%.1f%%])",
+                      atker->bot_id, roll_pct, crit_rate_pct, base_crit * 100.0f);
+        }
     }
 
     // 命中上下文构建并派发给解耦技能系统 (skill_optimus_mv, skill_megatron, etc.)
@@ -643,9 +814,24 @@ SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
     victim->hp -= final_dmg;
     if (victim->hp < 0.0f) victim->hp = 0.0f;
 
-    // 攻击方回气 (SP技不加气)
+    // 攻击方回气结算 (对齐 hook_197 官方原版基准: 1格=300点)
     if (sp_idx == 0) {
-        atker->mana += 0.08f;
+        float atk_gain = 0.05f; // 轻击 15点 = 0.05格
+        if (action_type == 1) atk_gain = 0.05f;        // 轻击 15点 = 0.05格
+        else if (action_type == 2) atk_gain = 0.10f;   // 中击 30点 = 0.10格
+        else if (action_type == 4) atk_gain = 0.20f;   // 重击 60点 = 0.20格
+        else if (action_type == 8) atk_gain = 0.05f;   // 远程 15点 = 0.05格
+
+        if (is_blocked) {
+            atk_gain *= 0.5f; // 攻击被格挡时获取减半
+        }
+        if (skill_has_buff(attacker_idx, "power_lock")) {
+            atk_gain = 0.0f; // 能量锁定禁止回气
+        }
+        if (skill_has_buff(attacker_idx, "power")) {
+            atk_gain *= 1.5f; // 能量获取增益
+        }
+        atker->mana += atk_gain;
         if (atker->mana > 3.0f) atker->mana = 3.0f;
     } else {
         // 扣除释放 SP 消耗的能量
@@ -653,16 +839,43 @@ SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
         if (atker->mana < 0.0f) atker->mana = 0.0f;
     }
 
-    // 受击方加防守气
-    victim->mana += 0.04f;
+    // 受击方防守加气结算 (对齐 hook_198 官方原版基准: 基础比进攻方多 20%，即 1.2 倍速)
+    float def_gain = 0.06f;
+    if (sp_idx == 1) {
+        def_gain = 0.20f; // SP1 受击 60点 = 0.20格
+    } else if (sp_idx == 2) {
+        def_gain = 0.40f; // SP2 受击 120点 = 0.40格
+    } else if (sp_idx == 3) {
+        def_gain = 0.50f; // SP3 受击 150点 = 0.50格
+    } else {
+        if (action_type == 1) def_gain = 0.06f;        // 轻击受击 18点 = 0.06格 (15 * 1.2)
+        else if (action_type == 2) def_gain = 0.12f;   // 中击受击 36点 = 0.12格 (30 * 1.2)
+        else if (action_type == 4) def_gain = 0.24f;   // 重击受击 72点 = 0.24格 (60 * 1.2)
+        else if (action_type == 8) def_gain = 0.06f;   // 远程受击 18点 = 0.06格 (15 * 1.2)
+    }
+    // 受击方若被格挡不扣减回气
+    if (skill_has_buff(target_idx, "power_lock")) {
+        def_gain = 0.0f;
+    }
+    if (skill_has_buff(target_idx, "power")) {
+        def_gain *= 1.5f;
+    }
+    victim->mana += def_gain;
     if (victim->mana > 3.0f) victim->mana = 3.0f;
 
     // 推送战斗浮字
-    push_floater(target_idx, is_crit ? 1 : 0, final_dmg, is_crit ? "暴击" : (is_blocked ? "格挡" : "命中"));
+    bool effective_crit = hit_ctx.is_crit;
+    push_floater(target_idx, effective_crit ? 1 : 0, final_dmg, effective_crit ? "暴击" : (is_blocked ? "格挡" : "命中"));
 
-    skill_log("SIM_ATTACK: P%d [act=%d sp=%d heavy=%d last=%d] -> P%d: dmg=%.1f (crit=%d, blk=%d, hp_left=%.0f)",
+    skill_log("SIM_ATTACK: P%d [act=%d sp=%d heavy=%d last=%d] -> P%d: dmg=%.1f (crit=%d, crit_rate=%.1f%%, blk=%d, hp_left=%.0f)",
               attacker_idx, action_type, sp_idx, is_heavy, is_last_hit,
-              target_idx, final_dmg, is_crit, is_blocked, victim->hp);
+              target_idx, final_dmg, effective_crit, crit_rate_pct, is_blocked, victim->hp);
+
+    if (is_last_hit) {
+        atker->current_action = 0;
+        atker->is_heavy = 0;
+        atker->in_special = 0;
+    }
 
     return (int)final_dmg;
 }

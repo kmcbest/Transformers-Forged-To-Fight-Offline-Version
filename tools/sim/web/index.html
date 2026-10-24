@@ -21,6 +21,7 @@
             <div class="timer-controls">
                 <button id="btnPlay" class="btn btn-primary">▶ 开始模拟</button>
                 <button id="btnPause" class="btn btn-secondary">⏸ 暂停</button>
+                <button id="btnStop" class="btn btn-warning" title="停止模拟并归零重置">⏹ 停止</button>
                 <button id="btnStep" class="btn btn-secondary" title="单步向前推进 100ms">⏭ 步进+100ms</button>
                 <button id="btnReset" class="btn btn-danger" title="重置本局血量与状态">🔄 重置战斗</button>
             </div>
@@ -326,56 +327,177 @@
     </main>
 
     <!-- 下半部：出招操作台 + 场景预设 + 实时终端日志 -->
+    <!-- 下半部：多功能工作区 (脚本设计器 / 即时双人操作 / 场景预设) + 实时终端日志 -->
     <footer class="bottom-panel">
-        <!-- 1P 动作按钮群 -->
-        <div class="deck-section action-deck">
-            <div class="deck-title">🕹️ 1P 出招与闪避操作面板 (即时出招)</div>
-            <div class="action-grid">
-                <button class="btn-action act-light" data-action="1" data-last="0">L1 轻击1</button>
-                <button class="btn-action act-light" data-action="1" data-last="0">L2 轻击2</button>
-                <button class="btn-action act-light" data-action="1" data-last="0">L3 轻击3</button>
-                <button class="btn-action act-light" data-action="1" data-last="1">L4 终结击</button>
+        <!-- 左侧多功能工作区 (带标签页导航) -->
+        <div class="deck-workspace">
+            <div class="workspace-tabs">
+                <button class="ws-tab active" id="tabScript" data-target="panelScript">
+                    🎬 战斗脚本设计器 <span class="tab-badge">推荐</span>
+                </button>
+                <button class="ws-tab" id="tabInstant" data-target="panelInstant">
+                    🕹️ 即时出招 (1P & 2P)
+                </button>
+                <button class="ws-tab" id="tabPreset" data-target="panelPreset">
+                    🧪 经典场景预设
+                </button>
+            </div>
 
-                <button class="btn-action act-med" data-action="2" data-last="0">M1 中击1</button>
-                <button class="btn-action act-med" data-action="2" data-last="1">M2 终结击</button>
-                <button class="btn-action act-heavy" data-action="4" data-last="1">💥 破防重击</button>
-                <button class="btn-action act-block" id="btnToggleBlock">🛡️ 切换格挡</button>
+            <!-- 面板 1: 战斗脚本设计器 (时间线事件编排与执行) -->
+            <div class="ws-panel active" id="panelScript">
+                <!-- 顶部工具栏 -->
+                <div class="script-toolbar">
+                    <div class="toolbar-left">
+                        <button class="btn btn-primary" id="btnPlayScript" title="按顺序执行所有战斗事件">▶️ 播放脚本</button>
+                        <button class="btn btn-warning" id="btnStopScript" disabled title="停止正在播放的脚本">⏹ 停止</button>
+                        <span class="script-status-badge" id="scriptStatusBadge">⏸️ 就绪</span>
+                    </div>
+                    <div class="toolbar-right">
+                        <button class="btn-tiny" id="btnPresetWbPenetrate" title="快速填入：双方后闪 -> 2P远程射击 -> 1P重击穿透">🌟 载入风刃重击穿透测试</button>
+                        <button class="btn-tiny" id="btnPresetWbSp1" title="快速填入：注入能量 -> SP1驱散瞬伤与震击">⚡ 载入SP1驱散测试</button>
+                        <button class="btn-tiny btn-danger-tiny" id="btnClearScript">🗑️ 清空</button>
+                    </div>
+                </div>
 
-                <!-- 新增：后闪与侧闪按键 -->
-                <button class="btn-action act-dodge" id="btnDashBack">💨 后闪 (Dash)</button>
-                <button class="btn-action act-dodge" id="btnSidestep">💨 侧闪 (Step)</button>
-                <button class="btn-action act-sp" id="btnSP1" data-action="16" data-last="1">⚡ SP1 (1格)</button>
-                <button class="btn-action act-sp" id="btnSP2" data-action="32" data-last="1">⚡⚡ SP2 (2格)</button>
+                <!-- 脚本主体：左侧事件流列表 + 右侧事件添加器 -->
+                <div class="script-body">
+                    <div class="script-timeline-wrap">
+                        <div class="timeline-header">
+                            <span>📋 事件序列 (<span id="stepCount">0</span> 步)</span>
+                            <span class="timeline-hint">支持鼠标拖拽或 🔼🔽 排序</span>
+                        </div>
+                        <div class="script-step-list" id="scriptStepList">
+                            <!-- 动态渲染步骤卡片 -->
+                        </div>
+                    </div>
 
-                <button class="btn-action act-sp" id="btnSP3" data-action="64" data-last="1">⚡⚡⚡ SP3 (3格)</button>
-                <button class="btn-action act-macro" id="btnCombo5">⚡ 5连击 (L-L-L-M-M)</button>
+                    <div class="script-add-card">
+                        <div class="add-card-title">➕ 添加事件步骤</div>
+                        <div class="add-form-row">
+                            <label>执行方:</label>
+                            <select id="stepActor" class="step-select">
+                                <option value="both">双方 (Both - 同时执行)</option>
+                                <option value="0" selected>1P 我方 (P0)</option>
+                                <option value="1">2P 敌方 (P1)</option>
+                            </select>
+                        </div>
+                        <div class="add-form-row">
+                            <label>动作事件:</label>
+                            <select id="stepAction" class="step-select">
+                                <optgroup label="💨 移动与闪避">
+                                    <option value="dash_back">💨 后闪拉开距离 (Dash Back)</option>
+                                    <option value="sidestep">💨 侧闪闪避 (Sidestep)</option>
+                                </optgroup>
+                                <optgroup label="💥 重击与远程 (风刃核心机制)">
+                                    <option value="heavy_start">💥 破防重击起手 (激活1.2s全程远程穿透)</option>
+                                    <option value="heavy_attack" selected>💥 破防重击 (Heavy Attack)</option>
+                                    <option value="ranged_attack">🎯 远程射击 (Ranged Attack)</option>
+                                </optgroup>
+                                <optgroup label="🥊 普通攻击">
+                                    <option value="light_1">L1 轻击 1</option>
+                                    <option value="light_2">L2 轻击 2</option>
+                                    <option value="light_3">L3 轻击 3</option>
+                                    <option value="light_4">L4 终结轻击</option>
+                                    <option value="med_1">M1 中击 1</option>
+                                    <option value="med_2">M2 终结中击</option>
+                                </optgroup>
+                                <optgroup label="⚡ 特殊技 (大招)">
+                                    <option value="sp1">⚡ 特殊技 1 (SP1)</option>
+                                    <option value="sp2">⚡⚡ 特殊技 2 (SP2)</option>
+                                    <option value="sp3">⚡⚡⚡ 特殊技 3 (SP3)</option>
+                                </optgroup>
+                                <optgroup label="🛡️ 防御与状态">
+                                    <option value="block_on">🛡️ 开启格挡</option>
+                                    <option value="block_off">🛡️ 解除格挡</option>
+                                    <option value="inject_buff">💉 注入状态 (Buff/Debuff)</option>
+                                    <option value="delay">⏱️ 单纯等待延时</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        <div class="add-form-row" id="buffSelectRow" style="display:none;">
+                            <label>注入状态:</label>
+                            <select id="stepBuffId" class="step-select">
+                                <option value="power_gain">⚡ 能量获取 (power_gain - SP1驱散目标)</option>
+                                <option value="dmg_bleed">🩸 流血 (dmg_bleed - 远程眩晕前置)</option>
+                                <option value="shock">⚡ 震击 (shock - 红色减益)</option>
+                                <option value="armor_break">💔 破甲 (armor_break)</option>
+                            </select>
+                        </div>
+                        <div class="add-form-row">
+                            <label>间隔延时:</label>
+                            <div class="delay-input-group">
+                                <input type="number" id="stepDelay" value="350" min="50" max="5000" step="50" class="step-num-input" />
+                                <span class="input-unit">ms</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary btn-block" id="btnAddStep">➕ 插入到事件序列</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 面板 2: 即时出招操作台 (1P & 2P) -->
+            <div class="ws-panel" id="panelInstant">
+                <div class="instant-deck-header">
+                    <div class="instant-actor-tabs">
+                        <button class="actor-tab active" id="btnSelect1P">🔵 1P 我方动作台</button>
+                        <button class="actor-tab" id="btnSelect2P">🔴 2P 敌方动作台</button>
+                    </div>
+                    <span class="instant-hint" id="instantActorHint">🎮 当前控制: 1P 我方</span>
+                </div>
+                <div class="action-grid" id="instantActionGrid">
+                    <button class="btn-action act-light" data-action="1" data-last="0">L1 轻击1</button>
+                    <button class="btn-action act-light" data-action="1" data-last="0">L2 轻击2</button>
+                    <button class="btn-action act-light" data-action="1" data-last="0">L3 轻击3</button>
+                    <button class="btn-action act-light" data-action="1" data-last="1">L4 终结击</button>
+
+                    <button class="btn-action act-med" data-action="2" data-last="0">M1 中击1</button>
+                    <button class="btn-action act-med" data-action="2" data-last="1">M2 终结击</button>
+                    <button class="btn-action act-heavy" data-action="4" data-last="1">💥 破防重击</button>
+                    <button class="btn-action act-block" id="btnToggleBlock">🛡️ 切换格挡</button>
+
+                    <button class="btn-action act-dodge" id="btnDashBack">💨 后闪 (Dash)</button>
+                    <button class="btn-action act-dodge" id="btnSidestep">💨 侧闪 (Step)</button>
+                    <button class="btn-action act-sp" id="btnSP1" data-action="16" data-last="1">⚡ SP1 (1格)</button>
+                    <button class="btn-action act-sp" id="btnSP2" data-action="32" data-last="1">⚡⚡ SP2 (2格)</button>
+
+                    <button class="btn-action act-sp" id="btnSP3" data-action="64" data-last="1">⚡⚡⚡ SP3 (3格)</button>
+                    <button class="btn-action act-ranged" id="btnRanged" data-action="8" data-last="1">🎯 远程射击</button>
+                    <button class="btn-action act-macro" id="btnCombo5">⚡ 5连击 (L-L-L-M-M)</button>
+                </div>
+            </div>
+
+            <!-- 面板 3: 场景快速预设 -->
+            <div class="ws-panel" id="panelPreset">
+                <div class="preset-buttons">
+                    <button class="btn-preset" id="presetOptimus">
+                        <span class="p-title">📌 电影擎天柱意志力吸血</span>
+                        <span class="p-desc">挂2层流血，1s后自动净化1层+10%气，普攻吸血35%</span>
+                    </button>
+                    <button class="btn-preset" id="presetMegatron">
+                        <span class="p-title">📌 G1 威震天减益融合</span>
+                        <span class="p-desc">满充能，敌方感电+破甲，重击固化永久减益</span>
+                    </button>
+                    <button class="btn-preset" id="presetProwl">
+                        <span class="p-title">📌 警车后闪充能与近战增益</span>
+                        <span class="p-desc">点击后闪开始每0.5s蓄力，攻击时转化为橙色增益</span>
+                    </button>
+                    <button class="btn-preset" id="presetBumblebee">
+                        <span class="p-title">📌 小黄蜂规避与侧闪暴击</span>
+                        <span class="p-desc">后闪获得32%常驻规避，侧闪叠加暴击率增益(最高+84%)</span>
+                    </button>
+                    <button class="btn-preset" id="presetWindbladeSp1">
+                        <span class="p-title">📌 风刃 SP1 能量驱散瞬伤</span>
+                        <span class="p-desc">敌方注入2层能量获取增益(power_gain)，放SP1全部驱散并追加80%瞬伤+6s震击</span>
+                    </button>
+                    <button class="btn-preset" id="presetWindbladeStun">
+                        <span class="p-title">📌 风刃流血压制远程眩晕</span>
+                        <span class="p-desc">敌方注入流血状态，点击【🎯 远程射击】测试 35% 远程眩晕检定</span>
+                    </button>
+                </div>
             </div>
         </div>
 
-        <!-- 场景快速预设与沙盒注入 -->
-        <div class="deck-section preset-deck">
-            <div class="deck-title">🧪 场景一键测试剧本 (免手机复原战场)</div>
-            <div class="preset-buttons">
-                <button class="btn-preset" id="presetOptimus">
-                    <span class="p-title">📌 电影擎天柱意志力吸血</span>
-                    <span class="p-desc">挂2层流血，1s后自动净化1层+10%气，普攻吸血35%</span>
-                </button>
-                <button class="btn-preset" id="presetMegatron">
-                    <span class="p-title">📌 G1 威震天减益融合</span>
-                    <span class="p-desc">满充能，敌方感电+破甲，重击固化永久减益</span>
-                </button>
-                <button class="btn-preset" id="presetProwl">
-                    <span class="p-title">📌 警车后闪充能与近战增益</span>
-                    <span class="p-desc">点击后闪开始每0.5s蓄力，攻击时转化为橙色增益</span>
-                </button>
-                <button class="btn-preset" id="presetBumblebee">
-                    <span class="p-title">📌 小黄蜂规避与侧闪暴击</span>
-                    <span class="p-desc">后闪获得32%常驻规避，侧闪叠加暴击率增益(最高+84%)</span>
-                </button>
-            </div>
-        </div>
-
-        <!-- 实时底层日志终端 -->
+        <!-- 实时底层日志终端 (右侧，始终可见) -->
         <div class="deck-section log-deck">
             <div class="deck-title">
                 <span>📜 实时底层日志 (TFTF Native & Skills)</span>
@@ -396,12 +518,41 @@
                 <div class="form-group">
                     <label>状态类型 (Mod ID):</label>
                     <select id="modalBuffSelect">
-                        <option value="dmg_bleed">🩸 流血 (dmg_bleed, 40% ATK DOT)</option>
-                        <option value="megatron_sp3_shock">⚡ 震击 (megatron_sp3_shock, 50% ATK DOT)</option>
-                        <option value="megatron_sp1_armor_break">🛡️ 破甲 (armor_break)</option>
-                        <option value="megatron_sp2_atk_debuff">⚔️ 攻击减益 (atk_debuff)</option>
-                        <option value="stun">💫 眩晕 (stun)</option>
-                        <option value="custom">✏️ 自定义输入...</option>
+                        <optgroup label="⚡ 能量与特技类 (Power & Specials)">
+                            <option value="power_gain">⚡ 能量获取增益 (power_gain - 风刃SP1驱散目标!)</option>
+                            <option value="power_buff">⚡ 能量激增 (power_buff)</option>
+                            <option value="power_steal">⚡ 能量窃取 (power_steal)</option>
+                            <option value="power_lock">🔒 能量锁定 (power_lock)</option>
+                        </optgroup>
+                        <optgroup label="🩸 异常状态与持续伤害 (Damage Over Time)">
+                            <option value="dmg_bleed">🩸 流血 (dmg_bleed, 40% ATK DOT)</option>
+                            <option value="megatron_sp3_shock">⚡ 震击 (megatron_sp3_shock, 50% ATK DOT)</option>
+                            <option value="burn">🔥 灼烧 (burn, 35% ATK DOT)</option>
+                            <option value="dmg_poison">🧪 酸蚀/中毒 (dmg_poison)</option>
+                        </optgroup>
+                        <optgroup label="🛡️ 防御与护甲 (Defense & Armor)">
+                            <option value="armor_break">💔 破甲 (armor_break - 减伤削弱)</option>
+                            <option value="armor_up">🛡️ 护甲增益 (armor_up - 伤害减免)</option>
+                            <option value="shield">🛡️ 防护力场 (shield)</option>
+                            <option value="windblade_sp2_armor_pierce">🗡️ 护甲穿透 (windblade_sp2_armor_pierce)</option>
+                        </optgroup>
+                        <optgroup label="⚔️ 攻击与暴击 (Offense & Combat)">
+                            <option value="melee_buff">⚔️ 近战伤害增益 (melee_buff)</option>
+                            <option value="crit_buff">💥 暴击率增益 (crit_buff)</option>
+                            <option value="crit_damage_buff">💥 暴击伤害倍率 (crit_damage_buff)</option>
+                            <option value="atk_buff">⚔️ 基础攻击增益 (atk_buff)</option>
+                            <option value="atk_debuff">⚔️ 攻击力削弱 (atk_debuff)</option>
+                        </optgroup>
+                        <optgroup label="💫 控制与特殊效果 (Control & Mechanics)">
+                            <option value="stun">💫 眩晕 (stun - 无法行动)</option>
+                            <option value="evade">💨 规避/闪避 (evade)</option>
+                            <option value="unstoppable">🛑 不可阻挡 (unstoppable)</option>
+                            <option value="decel">⏳ 时间减速 (decel)</option>
+                            <option value="heal_block">🚫 禁疗 (heal_block)</option>
+                        </optgroup>
+                        <optgroup label="✏️ 自定义 (Custom)">
+                            <option value="custom">✏️ 自定义输入任意 Modifier ID...</option>
+                        </optgroup>
                     </select>
                 </div>
                 <div class="form-group" id="customBuffGroup" style="display: none;">

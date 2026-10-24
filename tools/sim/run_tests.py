@@ -202,6 +202,99 @@ def test_lifecycle_onstart():
     assert_true("optimusprime_cin_tf_purify" not in p0_buff_ids,
                 "Optimus Prime does NOT trigger purify at 0.00s (lifecycle verified!)")
 
+
+def test_windblade_abilities():
+    print("\n--- [TEST 8] Windblade: Blade Crit, Resolution, Bleed, Stun & SP Mechanics ---")
+    g_engine.init("windblade_gs", "bonecrusher_cin_rotf", 15000.0, 15000.0, 1000.0, 1000.0)
+    g_engine.reset()
+
+    # 1. 验证被动：重击远程穿透与规避
+    # 风刃起手重击蓄力/飞行 (act=4)
+    g_engine.attack_start(0, 4)
+    st = g_engine.get_state()
+    p0_buffs = [b["id"] for b in st["p0"]["buffs"]]
+    assert_true("windblade_heavy_range_immune" in p0_buffs, "Windblade has windblade_heavy_range_immune active during heavy attack")
+
+    # 对手向正在重击冲刺的风刃发起远程攻击 (act=8)，风刃处于重击姿态应 100% 穿透规避 (0 伤害)
+    dmg_taken = g_engine.attack(1, 8, 0, 1, 0)
+    assert_true(dmg_taken == 0, f"Windblade heavy attack 100% penetrated/evaded remote attack, dmg_taken={dmg_taken}")
+
+    # 风刃重击命中对手并收招，穿透图标随之清除
+    g_engine.attack(0, 4, 0, 1, 0)
+    st_post_heavy = g_engine.get_state()
+    p0_buffs_post = [b["id"] for b in st_post_heavy["p0"]["buffs"]]
+    assert_true("windblade_heavy_range_immune" not in p0_buffs_post,
+                "Windblade heavy attack connected and finished, windblade_heavy_range_immune cleanly consumed")
+
+    # 2. 验证流血压制远程眩晕及敌方放S技时的【优先级门禁】
+    # 先给对手施加流血
+    g_engine.inject_buff(1, "dmg_bleed", 10.0, 1)
+
+    # 2a. 门禁测试 A: 对手正在释放特殊技 (in_special=1)
+    g_engine.set_special_attacking(1, True)
+    # 风刃远程攻击打在放特殊技的对手身上，严禁打断或施加眩晕！
+    for _ in range(6):
+        g_engine.attack(0, 8, 0, 1, 0)
+    st_special = g_engine.get_state()
+    p1_buffs_special = [b["id"] for b in st_special["p1"]["buffs"]]
+    assert_true("windblade_bleed_remote_stun" not in p1_buffs_special,
+                "Priority Gate PASS: Ranged hit never interrupts or stuns opponent during their Special Attack!")
+    g_engine.set_special_attacking(1, False)
+
+    # 2b. 门禁测试 B: 对手未放特殊技，风刃远程攻击判定流血压制眩晕
+    stun_triggered = False
+    for _ in range(15):
+        g_engine.attack(0, 8, 0, 1, 0)
+        st = g_engine.get_state()
+        p1_buffs = [b["id"] for b in st["p1"]["buffs"]]
+        if "windblade_bleed_remote_stun" in p1_buffs:
+            stun_triggered = True
+            break
+    assert_true(stun_triggered, "Windblade ranged attack stunned bleeding opponent (windblade_bleed_remote_stun applied)")
+
+    # 3. 验证 SP1 能量驱散、多段 Hit 序列与【严格单层震击断言】
+    # 给对手注入 2 层能量获取增益
+    g_engine.inject_buff(1, "power_gain", 10.0, 2)
+    st_before = g_engine.get_state()
+    assert_true(any("power" in b["id"] for b in st_before["p1"]["buffs"]), "Opponent has power buff before SP1")
+
+    # 3a. SP1 第一击 (Hit 0, is_last=0): 驱散能量增益，但严禁施加震击！
+    g_engine.attack(0, 16, 0, 0, 0) # act=16, hit_idx=0, is_last=0
+    st_hit0 = g_engine.get_state()
+    p1_buffs_hit0 = {b["id"]: b["stacks"] for b in st_hit0["p1"]["buffs"]}
+    assert_true(not any("power" in b for b in p1_buffs_hit0), "Opponent power buffs dispelled on SP1 first hit")
+    assert_true("windblade_sp1_shock" not in p1_buffs_hit0, "SP1 Hit 0 (is_last=0) does NOT apply shock (multi-hit sequencing verified!)")
+
+    # 3b. SP1 最后一击 (Hit 1, is_last=1): 施加且仅施加 1 层震击！
+    g_engine.attack(0, 16, 1, 1, 0) # act=16, hit_idx=1, is_last=1
+    st_hit1 = g_engine.get_state()
+    p1_buffs_hit1 = {b["id"]: b["stacks"] for b in st_hit1["p1"]["buffs"]}
+    assert_true("windblade_sp1_shock" in p1_buffs_hit1, "SP1 Stormfall Shock applied on last hit")
+    assert_true(p1_buffs_hit1.get("windblade_sp1_shock", 0) == 1,
+                f"Strict Stack Gate PASS: SP1 shock has EXACTLY 1 stack (actual: {p1_buffs_hit1.get('windblade_sp1_shock', 0)})")
+
+    # 3c. 密集判定防刷机制: 模拟快速子命中 (rapid sub-hit), 震击依然保持 1 层
+    g_engine.attack(0, 16, 1, 1, 0)
+    st_debounce = g_engine.get_state()
+    p1_buffs_deb = {b["id"]: b["stacks"] for b in st_debounce["p1"]["buffs"]}
+    assert_true(p1_buffs_deb.get("windblade_sp1_shock", 0) == 1,
+                "Debounce & Stack Clamp PASS: Rapid sub-hit still maintains strictly 1 stack of shock!")
+
+    # 4. 验证 SP2 护甲穿透增益
+    g_engine.attack(0, 32, 0, 1, 0) # SP2
+    st_sp2 = g_engine.get_state()
+    p0_buffs_sp2 = [b["id"] for b in st_sp2["p0"]["buffs"]]
+    assert_true("windblade_sp2_armor_pierce" in p0_buffs_sp2, "Windblade gained 6s armor pierce (windblade_sp2_armor_pierce)")
+
+    # 5. 验证数据契约有效性
+    for mid in ["windblade_crit_bleed", "windblade_blade_crit_rate", "windblade_signature_resolution",
+                "windblade_heavy_range_immune", "windblade_bleed_remote_stun", "windblade_sp1_power_nullify",
+                "windblade_sp1_shock", "windblade_sp2_armor_pierce", "windblade_sp3_stun"]:
+        dec = decorate_buff({"id": mid, "rem_ms": 3000, "stacks": 1})
+        assert_true(dec["is_contract_valid"] == True, f"Contract valid for {mid}")
+        assert_true(dec["name"] != mid, f"Decorated name exists for {mid}: {dec['name']}")
+        assert_true(dec["pua"].startswith("0x"), f"PUA icon exists for {mid}: {dec['pua']}")
+
 if __name__ == "__main__":
     print("=" * 70)
     print("🚀 TFTF 战斗技能模拟器全自动化质量门禁测试 (含数据契约与生命周期)")
@@ -213,6 +306,7 @@ if __name__ == "__main__":
     test_bumblebee_sidestep_crit()
     test_contract_validation()
     test_lifecycle_onstart()
+    test_windblade_abilities()
     print("\n" + "=" * 70)
-    print("🎉 全部 7 项质量门禁测试 100% 通过！模拟器与真机底层生命周期/契约完美对齐！")
+    print("🎉 全部 8 项质量门禁测试 100% 通过！风刃全套专属机制与底层契约完美闭环！")
     print("=" * 70)
