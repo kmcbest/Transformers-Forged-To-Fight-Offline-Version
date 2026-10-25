@@ -25,6 +25,7 @@ typedef struct {
     float base_damage;           // 原始计算伤害
     float modified_damage;       // 技能修改后的伤害输出
     uint32_t hit_flags;          // 原生命中标志
+    int action_type;             // 动作类别 (1=L, 2=M, 4=Heavy, 8=Ranged, 16=SP1, 32=SP2, 64=SP3)
 } SkillHitContext;
 
 // Buff 施加过滤闸门上下文 (hook_188 pre-apply gate)

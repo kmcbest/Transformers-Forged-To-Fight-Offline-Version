@@ -448,6 +448,7 @@ def test_slipstream_abilities():
         "slipstream_heavy_crit_damage": "0xE906",
         "slipstream_m2_purify_shock": "0xE914",
         "slipstream_backstab": "0xE41E",
+        "slipstream_backfire": "0xE901",
     }
     for mid in ["slipstream_heavy_range_immune", "slipstream_heavy_crit_damage", "slipstream_ranged_nullify_shield",
                 "slipstream_ranged_atk_buff", "slipstream_m2_purify_shock", "slipstream_m2_crit_buff",
@@ -457,6 +458,122 @@ def test_slipstream_abilities():
         if mid in expected_slipstream_puas:
             assert_true(dec.get("pua") == expected_slipstream_puas[mid],
                         f"{mid} PUA icon mismatch: expected {expected_slipstream_puas[mid]}, got {dec.get('pua')}")
+
+    # 3b. 验证 M2 单按 (hit=1, is_last=1) 与 5连击末尾 (hit=4, is_last=1) 均能稳定触发，且 L2 (hit=1, act=1) 绝不误触发 M2
+    g_engine.reset()
+    # 模拟 5 连击前段：L1, L2, L3
+    g_engine.attack(0, 1, 0, 0, 0) # L1
+    g_engine.attack(0, 1, 1, 0, 0) # L2 (act=1, hit=1)
+    st_l2 = g_engine.get_state()
+    assert_true("slipstream_m2_crit_buff" not in [b["id"] for b in st_l2["p0"]["buffs"]], "L2 (hit=1, act=1) must NOT trigger M2 crit buff")
+    g_engine.attack(0, 1, 2, 0, 0) # L3
+    g_engine.attack(0, 2, 3, 0, 0) # M1 (act=2, hit=3, last=0)
+    assert_true("slipstream_m2_crit_buff" not in [b["id"] for b in g_engine.get_state()["p0"]["buffs"]], "M1 must NOT trigger M2 crit buff")
+    g_engine.attack(0, 2, 4, 1, 0) # M2 (act=2, hit=4, last=1)
+    st_combo_m2 = g_engine.get_state()
+    assert_true("slipstream_m2_crit_buff" in [b["id"] for b in st_combo_m2["p0"]["buffs"]], "Combo M2 (hit=4, last=1) successfully triggered M2 crit buff")
+
+    # 3c. 验证 M2 震击单层约束 (严禁溢出堆叠为 x2 或 x3)
+    g_engine.inject_buff(1, "slipstream_m2_purify_shock", 4.0, 1)
+    g_engine.inject_buff(1, "slipstream_m2_purify_shock", 8.0, 1)
+    shock_buff = next(b for b in g_engine.get_state()["p1"]["buffs"] if b["id"] == "slipstream_m2_purify_shock")
+    assert_true(shock_buff["stacks"] == 1, f"slipstream_m2_purify_shock strictly clamped to 1 stack (got {shock_buff['stacks']})")
+
+    # 5. [门禁1] 利用弱点：对方无减益时不ROLL、不刷新
+    g_engine.init("slipstream_gs", "prowl", 32402.0, 15000.0, 2306.0, 1000.0)
+    g_engine.reset()
+    st0 = g_engine.get_state()
+    assert_true(len(st0["p1"]["buffs"]) == 0, "Opponent has 0 debuffs initially")
+    g_engine.attack(0, 1, 0, 1, 0) # 轻击
+    st1 = g_engine.get_state()
+    assert_true(len(st1["p1"]["buffs"]) == 0, "Exploit Weakness: No roll when opponent has 0 debuffs")
+
+    # 5b. [门禁1b] 利用弱点：当对方拥有 3 个减益时，掷骰命中只能随机刷新其中 1 个减益持续时间，另外 2 个保持原持续时间！
+    g_engine.reset()
+    g_engine.inject_buff(1, "slipstream_crit_resist_down", 2.0, 1)
+    g_engine.inject_buff(1, "slipstream_power_drain", 2.0, 1)
+    g_engine.inject_buff(1, "slipstream_backfire", 2.0, 1)
+    # 轻击多次直至触发利用弱点
+    for _ in range(20):
+        g_engine.attack(0, 1, 0, 1, 0)
+        st_exp = g_engine.get_state()
+        p1_buffs_exp = st_exp["p1"]["buffs"]
+        refreshed_count = sum(1 for b in p1_buffs_exp if b["rem_ms"] > 4000)
+        if refreshed_count > 0:
+            assert_true(refreshed_count == 1, f"Exploit Weakness strictly refreshed EXACTLY 1 debuff, not all 3! (refreshed={refreshed_count})")
+            for b in p1_buffs_exp:
+                assert_true(b["stacks"] == 1, f"Debuff {b['id']} stacks remain strictly 1, no duplicate stacking!")
+            break
+
+    # 6. [门禁2] 暴击触发背刺：先施加灰色 E41E 图标 (0.5s)，到期后消失并转化为三态减益之一
+    g_engine.reset()
+    g_engine.set_crit_rate(0, 1.0) # 强制暴击
+    for _ in range(20):
+        g_engine.attack(0, 1, 0, 1, 0)
+        st_crit = g_engine.get_state()
+        if "slipstream_backstab" in [b["id"] for b in st_crit["p1"]["buffs"]]:
+            break
+    p1_buffs_crit = [b["id"] for b in g_engine.get_state()["p1"]["buffs"]]
+    assert_true("slipstream_backstab" in p1_buffs_crit, "Backstab triggered: opponent received slipstream_backstab (gray icon)")
+    bs_buff = next(b for b in g_engine.get_state()["p1"]["buffs"] if b["id"] == "slipstream_backstab")
+    assert_true(bs_buff["rem_ms"] <= 500, f"slipstream_backstab duration is 0.5s, got rem_ms={bs_buff['rem_ms']}")
+    assert_true(bs_buff["stacks"] == 1, "slipstream_backstab is strictly 1 stack")
+
+    # 推进时间 0.55s (550ms)，触发背刺到期转化
+    g_engine.tick(550)
+    st_post_bs = g_engine.get_state()
+    p1_buffs_post_bs = [b["id"] for b in st_post_bs["p1"]["buffs"]]
+    assert_true("slipstream_backstab" not in p1_buffs_post_bs, "slipstream_backstab gray icon expired and removed after 0.5s")
+    
+    valid_debuffs = ["slipstream_crit_resist_down", "slipstream_power_drain", "slipstream_backfire"]
+    applied_bs_debuffs = [b for b in st_post_bs["p1"]["buffs"] if b["id"] in valid_debuffs]
+    assert_true(len(applied_bs_debuffs) == 1, f"Backstab resolved into exactly 1 of 3 debuffs: {[b['id'] for b in applied_bs_debuffs]}")
+    assert_true(applied_bs_debuffs[0]["stacks"] == 1, f"Resolved debuff strictly clamped to 1 stack: {applied_bs_debuffs[0]['stacks']}")
+
+    # 7. [门禁4] 背刺减益层数严格为1，并遵循流转规则：
+    # （三个减益都最大只能叠1层。如果已有某个减益，则随机在另两个中间选，如果已有两个，则必然变成第三个，如果三个都有，则刷新随机到的那个）
+    first_debuff_id = applied_bs_debuffs[0]["id"]
+    remaining_2 = [d for d in valid_debuffs if d != first_debuff_id]
+    second_debuff_id = remaining_2[0]
+    third_debuff_id = remaining_2[1]
+    g_engine.inject_buff(1, second_debuff_id, 8.0, 1)
+
+    # 此时对手已有两个减益，再次触发背刺 (60%几率) 并推进0.55s -> 必然转化为第三个减益！
+    for _ in range(20):
+        g_engine.attack(0, 1, 0, 1, 0)
+        st_try = g_engine.get_state()
+        if "slipstream_backstab" in [b["id"] for b in st_try["p1"]["buffs"]]:
+            break
+    assert_true("slipstream_backstab" in [b["id"] for b in g_engine.get_state()["p1"]["buffs"]], "Backstab triggered with 2 debuffs present")
+    g_engine.tick(550)
+    st_all_3 = g_engine.get_state()
+    p1_all_buff_ids = [b["id"] for b in st_all_3["p1"]["buffs"]]
+    assert_true(third_debuff_id in p1_all_buff_ids, f"Backstab strictly resolved into the 3rd missing debuff: {third_debuff_id}")
+    for b in st_all_3["p1"]["buffs"]:
+        if b["id"] in valid_debuffs:
+            assert_true(b["stacks"] == 1, f"Debuff {b['id']} strictly has max 1 stack (got {b['stacks']})")
+
+    # 8. [门禁3] 逆火反噬机制：有逆火减益的角色，放SP技会受到逆火反噬伤害并消除逆火
+    # 滑流逆火：反噬承受滑流 80% 攻击力伤害 (2306 * 0.80 = 1844.8)
+    g_engine.reset()
+    g_engine.inject_buff(1, "slipstream_backfire", 8.0, 1)
+    hp_before_sp = g_engine.get_state()["p1"]["hp"]
+    g_engine.attack_start(1, 16)
+    hp_after_sp = g_engine.get_state()["p1"]["hp"]
+    dmg_taken_bf = hp_before_sp - hp_after_sp
+    assert_true(abs(dmg_taken_bf - (2306.0 * 0.80)) < 1.0, f"Slipstream Backfire backlash damage matches 80% ATK: {dmg_taken_bf} == {2306.0 * 0.80}")
+    p1_buffs_after_sp = [b["id"] for b in g_engine.get_state()["p1"]["buffs"]]
+    assert_true("slipstream_backfire" not in p1_buffs_after_sp, "slipstream_backfire consumed upon casting SP")
+
+    # 巨蝎勇士 (Scorponok) 逆火反噬机制验证：反噬承受巨蝎 153% 攻击力伤害 (3000 * 1.53 = 4590.0)
+    g_engine.inject_buff(1, "scorponok_venom_backfire", 8.0, 1)
+    hp_before_sp_sc = g_engine.get_state()["p1"]["hp"]
+    g_engine.attack_start(1, 16)
+    hp_after_sp_sc = g_engine.get_state()["p1"]["hp"]
+    dmg_taken_bf_sc = hp_before_sp_sc - hp_after_sp_sc
+    assert_true(abs(dmg_taken_bf_sc - (3000.0 * 1.53)) < 1.0, f"Scorponok Backfire backlash damage matches 153% ATK: {dmg_taken_bf_sc} == {3000.0 * 1.53}")
+    p1_buffs_after_sp_sc = [b["id"] for b in g_engine.get_state()["p1"]["buffs"]]
+    assert_true("scorponok_venom_backfire" not in p1_buffs_after_sp_sc, "scorponok_venom_backfire consumed upon casting SP")
 
 
 def test_cheetor_abilities():
@@ -565,6 +682,98 @@ def test_sideswipe_abilities():
             assert_true(dec.get("pua") == expected_sideswipe_puas[mid],
                         f"{mid} PUA icon mismatch: expected {expected_sideswipe_puas[mid]}, got {dec.get('pua')}")
 
+def test_necrotronus_abilities():
+    print("\n--- [TEST 13] Necrotronus: Titan Charges, Overwhelming Power & Bleed, Power Debuff, SP Consumption ---")
+    g_engine.init("necrotronus_gs_kabam", "bonecrusher_cin_rotf", 35484.0, 15000.0, 2519.0, 1000.0)
+    g_engine.reset()
+
+    # 0. 门禁验证：0.00s 开局绝不提前触发势不可挡、能量压制或觉醒愤怒
+    st_init = g_engine.get_state()
+    p0_init_buffs = [b["id"] for b in st_init["p0"]["buffs"]]
+    p1_init_buffs = [b["id"] for b in st_init["p1"]["buffs"]]
+    assert_true("necrotronus_overwhelming_power" not in p0_init_buffs, "Necrotronus does NOT trigger Overwhelming Power at 0.00s")
+    assert_true("necrotronus_power_rate_debuff" not in p1_init_buffs, "Opponent does NOT receive power rate debuff at 0.00s")
+    assert_true("necrotronus_signature_outrage" not in p0_init_buffs, "Necrotronus does NOT trigger Outrage buff at 0.00s")
+
+    # 1. 验证普通攻击命中获得泰坦充能
+    for i in range(5):
+        g_engine.attack(0, 1, i, 0, 0)
+    st = g_engine.get_state()
+    p0_tc = next((b for b in st["p0"]["buffs"] if b["id"] == "necrotronus_titan_charge"), None)
+    assert_true(p0_tc is not None and p0_tc["stacks"] == 5, f"Necrotronus accumulated 5 Titan Charges (got {p0_tc['stacks'] if p0_tc else 0})")
+
+    # 2. 累积至 20 层激活势不可挡模式 (红色E91A)
+    for i in range(15):
+        g_engine.attack(0, 1, i, 0, 0)
+    st_20 = g_engine.get_state()
+    p0_buffs_20 = [b["id"] for b in st_20["p0"]["buffs"]]
+    assert_true("necrotronus_overwhelming_power" in p0_buffs_20, "Necrotronus reached 20 charges and entered Overwhelming Power")
+
+    # 3. 势不可挡模式下，攻击 100% 施加 6 秒流血
+    g_engine.attack(0, 1, 0, 1, 0)
+    st_bleed = g_engine.get_state()
+    p1_bleed = next((b for b in st_bleed["p1"]["buffs"] if b["id"] == "necrotronus_overwhelming_bleed"), None)
+    assert_true(p1_bleed is not None, "Overwhelming Power applied 6s bleed on hit")
+    assert_true(p1_bleed["stacks"] == 1, "Overwhelming Bleed is strictly 1 stack (refreshed)")
+
+    # 4. 验证能量压制机制：对手能量高于亡灵天尊时施加 -30% 功率减益 (红标E606)，能量少于等于时自动消除
+    g_engine.set_mana(0, 0.5)
+    g_engine.set_mana(1, 1.5)
+    g_engine.tick(100)
+    st_mana_high = g_engine.get_state()
+    p1_buffs_mh = [b["id"] for b in st_mana_high["p1"]["buffs"]]
+    assert_true("necrotronus_power_rate_debuff" in p1_buffs_mh, "Opponent received power rate debuff when opponent mana > Necrotronus mana")
+
+    g_engine.set_mana(0, 2.0)
+    g_engine.tick(100)
+    st_mana_low = g_engine.get_state()
+    p1_buffs_ml = [b["id"] for b in st_mana_low["p1"]["buffs"]]
+    assert_true("necrotronus_power_rate_debuff" not in p1_buffs_ml, "Power rate debuff removed when opponent mana <= Necrotronus mana")
+
+    # 5. 验证 SP 消耗泰坦充能：SP1 消耗 10 层，充能由 20 降至 10 -> 势不可挡模式解除
+    st_before_sp1 = g_engine.get_state()
+    tc_before = next((b["stacks"] for b in st_before_sp1["p0"]["buffs"] if b["id"] == "necrotronus_titan_charge"), 0)
+    assert_true(tc_before >= 20, f"Necrotronus has >=20 charges before SP1 (got {tc_before})")
+
+    g_engine.attack(0, 16, 0, 1, 0) # SP1
+    st_after_sp1 = g_engine.get_state()
+    tc_after = next((b["stacks"] for b in st_after_sp1["p0"]["buffs"] if b["id"] == "necrotronus_titan_charge"), 0)
+    assert_true(tc_after == tc_before - 10 + 1, f"SP1 consumed 10 charges and gained 1 on hit (actual: {tc_after})")
+    assert_true("necrotronus_overwhelming_power" not in [b["id"] for b in st_after_sp1["p0"]["buffs"]], "Overwhelming Power cleanly exited when charges dropped below 20")
+
+    # 6. 验证霸体机制归属方：
+    # 6a. 亡灵天尊自己放 SP 时，绝对不会触发预判霸体（双方均不应得到）
+    g_engine.attack_start(0, 16) # 我方亡灵天尊释放 SP1
+    assert_true("necrotronus_unstoppable" not in [b["id"] for b in g_engine.get_state()["p0"]["buffs"]], "Necrotronus does NOT gain unstoppable on self SP start")
+    assert_true("necrotronus_unstoppable" not in [b["id"] for b in g_engine.get_state()["p1"]["buffs"]], "Opponent does NOT gain unstoppable on Necrotronus SP start")
+
+    # 6b. 对方发动 SP 技时，我方亡灵天尊有 30% 几率获得 0.95 秒不可阻挡霸体
+    unstoppable_triggered = False
+    for _ in range(30):
+        g_engine.attack_start(1, 16) # 对方释放 SP1
+        if "necrotronus_unstoppable" in [b["id"] for b in g_engine.get_state()["p0"]["buffs"]]:
+            unstoppable_triggered = True
+            break
+    assert_true(unstoppable_triggered, "Necrotronus gained unstoppable on opponent SP start")
+
+    # 7. 验证数据契约与官方真理源 PUA 图标绑定
+    expected_necrotronus_puas = {
+        "necrotronus_titan_charge": "0xE91A",
+        "necrotronus_overwhelming_power": "0xE91A",
+        "necrotronus_overwhelming_bleed": "0xE401",
+        "necrotronus_power_rate_debuff": "0xE606",
+        "necrotronus_unstoppable": "0xE915",
+        "necrotronus_heavy_crit_rate": "0xE40D",
+        "necrotronus_sp1_power_rate": "0xE606",
+        "necrotronus_sp2_crit_buff": "0xE40D",
+        "necrotronus_sp3_bleed": "0xE401",
+        "necrotronus_signature_outrage": "0xE906",
+    }
+    for mid, exp_pua in expected_necrotronus_puas.items():
+        dec = decorate_buff({"id": mid, "rem_ms": 3000, "stacks": 1})
+        assert_true(dec["is_contract_valid"] == True, f"Contract valid for {mid}")
+        assert_true(dec.get("pua") == exp_pua, f"{mid} PUA mismatch: expected {exp_pua}, got {dec.get('pua')}")
+
 if __name__ == "__main__":
     print("=" * 70)
     print("🚀 TFTF 战斗技能模拟器全自动化质量门禁测试 (含数据契约与生命周期)")
@@ -581,6 +790,7 @@ if __name__ == "__main__":
     test_slipstream_abilities()
     test_cheetor_abilities()
     test_sideswipe_abilities()
+    test_necrotronus_abilities()
     print("\n" + "=" * 70)
-    print("🎉 全部 12 项质量门禁测试 100% 通过！横炮、反冲、滑流、黄豹与风刃全套专属机制与底层契约完美闭环！")
+    print("🎉 全部 13 项质量门禁测试 100% 通过！亡灵天尊、横炮、反冲、滑流、黄豹与风刃全套专属机制与底层契约完美闭环！")
     print("=" * 70)

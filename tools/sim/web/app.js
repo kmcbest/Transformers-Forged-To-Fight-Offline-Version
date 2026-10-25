@@ -86,37 +86,124 @@ async function init() {
     fetchState();
 }
 
+let g_allBots = [];
+let g_botSortMode = localStorage.getItem("tftf_bot_sort_mode") || "class";
+
+// TFTF 官方六边形克制环 (左上斗士紫，逆时针: 战术蓝、爆破黄、科技青蓝、侦查绿、战士红)
+const CLASS_CONFIG = {
+    braw: { id: "braw", name_zh: "斗士系", name_en: "Brawler",    icon: "✊", color: "#9B45E4" },
+    tact: { id: "tact", name_zh: "战术系", name_en: "Tactician",  icon: "♞", color: "#2F6DF2" },
+    demo: { id: "demo", name_zh: "爆破系", name_en: "Demolition", icon: "💥", color: "#F2B800" },
+    tech: { id: "tech", name_zh: "科技系", name_en: "Tech",       icon: "💠", color: "#00B8DA" },
+    scou: { id: "scou", name_zh: "侦查系", name_en: "Scout",      icon: "🪽", color: "#22C55E" },
+    warr: { id: "warr", name_zh: "战士系", name_en: "Warrior",    icon: "⚔️", color: "#E82B25" },
+};
+
+const CLASS_ORDER = ["braw", "tact", "demo", "tech", "scou", "warr"];
+
+function populateBotSelect(selectEl, selectedBotId) {
+    if (!selectEl || !g_allBots.length) return;
+    const currentVal = selectedBotId || selectEl.value;
+    selectEl.innerHTML = "";
+
+    if (g_botSortMode === "class") {
+        CLASS_ORDER.forEach(cid => {
+            const conf = CLASS_CONFIG[cid];
+            const classBots = g_allBots.filter(b => b.class === cid);
+            if (!classBots.length) return;
+
+            // 类别内部按中文首字拼音序排
+            classBots.sort((a, b) => a.name_zh.localeCompare(b.name_zh, "zh-Hans-CN"));
+
+            const grp = document.createElement("optgroup");
+            grp.label = `${conf.icon} ${conf.name_zh} (${conf.name_en}) · ${classBots.length}人`;
+            grp.className = `group-${cid}`;
+
+            classBots.forEach(b => {
+                const opt = document.createElement("option");
+                opt.value = b.bot_id;
+                opt.className = `bot-opt bot-opt-${cid}`;
+                opt.style.color = conf.color;
+                opt.style.backgroundColor = "#0d1117";
+                opt.textContent = `${b.name_zh} (${b.name_en})`;
+                if (b.bot_id === currentVal) opt.selected = true;
+                grp.appendChild(opt);
+            });
+            selectEl.appendChild(grp);
+        });
+    } else if (g_botSortMode === "pinyin") {
+        const sorted = [...g_allBots].sort((a, b) => a.name_zh.localeCompare(b.name_zh, "zh-Hans-CN"));
+        sorted.forEach(b => {
+            const conf = CLASS_CONFIG[b.class] || { color: "#c9d1d9" };
+            const opt = document.createElement("option");
+            opt.value = b.bot_id;
+            opt.className = `bot-opt bot-opt-${b.class}`;
+            opt.style.color = conf.color;
+            opt.style.backgroundColor = "#0d1117";
+            opt.textContent = `${b.name_zh} (${b.name_en})`;
+            if (b.bot_id === currentVal) opt.selected = true;
+            selectEl.appendChild(opt);
+        });
+    } else if (g_botSortMode === "en") {
+        const sorted = [...g_allBots].sort((a, b) => (a.name_en || "").localeCompare(b.name_en || ""));
+        sorted.forEach(b => {
+            const conf = CLASS_CONFIG[b.class] || { color: "#c9d1d9" };
+            const opt = document.createElement("option");
+            opt.value = b.bot_id;
+            opt.className = `bot-opt bot-opt-${b.class}`;
+            opt.style.color = conf.color;
+            opt.style.backgroundColor = "#0d1117";
+            opt.textContent = `${b.name_zh} (${b.name_en})`;
+            if (b.bot_id === currentVal) opt.selected = true;
+            selectEl.appendChild(opt);
+        });
+    }
+
+    if (!selectEl.value && selectEl.options.length > 0) {
+        selectEl.selectedIndex = 0;
+    }
+    updateSelectClassColor(selectEl);
+}
+
+function updateSelectClassColor(selectEl) {
+    if (!selectEl) return;
+    const botId = selectEl.value;
+    const b = g_allBots.find(x => x.bot_id === botId);
+    if (b && CLASS_CONFIG[b.class]) {
+        const conf = CLASS_CONFIG[b.class];
+        selectEl.style.color = conf.color;
+        selectEl.style.borderColor = `${conf.color}99`;
+        selectEl.style.boxShadow = `0 0 6px ${conf.color}33`;
+    } else {
+        selectEl.style.color = "#c9d1d9";
+        selectEl.style.borderColor = "#30363d";
+        selectEl.style.boxShadow = "none";
+    }
+}
+
+function renderBots() {
+    const val0 = p0BotSelect.value || "optimusprime_cin_tf";
+    const val1 = p1BotSelect.value || "bonecrusher_cin_rotf";
+    populateBotSelect(p0BotSelect, val0);
+    populateBotSelect(p1BotSelect, val1);
+
+    if (p0BotSelect.selectedIndex >= 0) {
+        const t0 = p0BotSelect.options[p0BotSelect.selectedIndex].text.split(" (")[0];
+        if (p0Name) p0Name.textContent = t0;
+        if (stageP0Name) stageP0Name.textContent = t0;
+    }
+    if (p1BotSelect.selectedIndex >= 0) {
+        const t1 = p1BotSelect.options[p1BotSelect.selectedIndex].text.split(" (")[0];
+        if (p1Name) p1Name.textContent = t1;
+        if (stageP1Name) stageP1Name.textContent = t1;
+    }
+}
+
 async function loadBots() {
     try {
         const res = await fetch("/api/bots");
-        const bots = await res.json();
-        p0BotSelect.innerHTML = "";
-        p1BotSelect.innerHTML = "";
-
-        bots.forEach(b => {
-            const opt0 = document.createElement("option");
-            opt0.value = b.bot_id;
-            opt0.textContent = `${b.name_zh} (${b.bot_id})`;
-            if (b.bot_id === "optimusprime_cin_tf") opt0.selected = true;
-            p0BotSelect.appendChild(opt0);
-
-            const opt1 = document.createElement("option");
-            opt1.value = b.bot_id;
-            opt1.textContent = `${b.name_zh} (${b.bot_id})`;
-            if (b.bot_id === "bonecrusher_cin_rotf") opt1.selected = true;
-            p1BotSelect.appendChild(opt1);
-        });
-
-        if (p0BotSelect.selectedIndex >= 0) {
-            const t0 = p0BotSelect.options[p0BotSelect.selectedIndex].text.split(" (")[0];
-            if (p0Name) p0Name.textContent = t0;
-            if (stageP0Name) stageP0Name.textContent = t0;
-        }
-        if (p1BotSelect.selectedIndex >= 0) {
-            const t1 = p1BotSelect.options[p1BotSelect.selectedIndex].text.split(" (")[0];
-            if (p1Name) p1Name.textContent = t1;
-            if (stageP1Name) stageP1Name.textContent = t1;
-        }
+        g_allBots = await res.json();
+        renderBots();
     } catch (e) {
         console.error("Failed to load bots:", e);
     }
@@ -577,9 +664,26 @@ function setupEventHandlers() {
         }
     });
 
+    // 排序模式切换
+    const sortSelect = document.getElementById("botSortModeSelect");
+    if (sortSelect) {
+        sortSelect.value = g_botSortMode;
+        sortSelect.addEventListener("change", (e) => {
+            g_botSortMode = e.target.value;
+            localStorage.setItem("tftf_bot_sort_mode", g_botSortMode);
+            renderBots();
+        });
+    }
+
     // 角色下拉选择
-    p0BotSelect.addEventListener("change", applyBotMatchup);
-    p1BotSelect.addEventListener("change", applyBotMatchup);
+    p0BotSelect.addEventListener("change", () => {
+        updateSelectClassColor(p0BotSelect);
+        applyBotMatchup();
+    });
+    p1BotSelect.addEventListener("change", () => {
+        updateSelectClassColor(p1BotSelect);
+        applyBotMatchup();
+    });
 
     // 当前即时控制角色 (0 = 1P, 1 = 2P)
     let currentInstantActor = 0;
@@ -607,8 +711,9 @@ function setupEventHandlers() {
         btn.addEventListener("click", () => {
             const action = parseInt(btn.dataset.action);
             const isLast = parseInt(btn.dataset.last);
+            const hitIdx = parseInt(btn.dataset.hit || "0");
             if (!isNaN(action)) {
-                sendAttack(currentInstantActor, action, 0, isLast);
+                sendAttack(currentInstantActor, action, hitIdx, isLast);
             }
         });
     });
@@ -890,6 +995,18 @@ function setupEventHandlers() {
     }
 
     // Presets
+    function loadPresetSlipstreamPenetrate() {
+        scriptSteps = [
+            { id: "s1", actor: "both", action: "dash_back", delayMs: 350 },
+            { id: "s2", actor: "1", action: "ranged_attack", delayMs: 150 },
+            { id: "s3", actor: "0", action: "heavy_start", delayMs: 250 },
+            { id: "s4", actor: "0", action: "heavy_attack", delayMs: 400 },
+        ];
+        saveScriptToStorage();
+        renderScriptStepList();
+        if (typeof showToast === "function") showToast("🌟 已载入：滑流重击远程穿透测试脚本 (穿透规避)");
+    }
+
     function loadPresetWindbladePenetrate() {
         scriptSteps = [
             { id: "s1", actor: "both", action: "dash_back", delayMs: 350 },
@@ -915,6 +1032,8 @@ function setupEventHandlers() {
 
     if (btnPresetWbPenetrate) btnPresetWbPenetrate.addEventListener("click", loadPresetWindbladePenetrate);
     if (btnPresetWbSp1) btnPresetWbSp1.addEventListener("click", loadPresetWindbladeSp1);
+    const btnPresetSsPenetrate = document.getElementById("btnPresetSsPenetrate");
+    if (btnPresetSsPenetrate) btnPresetSsPenetrate.addEventListener("click", loadPresetSlipstreamPenetrate);
     if (btnClearScript) {
         btnClearScript.addEventListener("click", () => {
             if (confirm("确定清空当前脚本事件序列吗？")) {
@@ -1101,6 +1220,26 @@ function setupEventHandlers() {
         presetWindbladeStun.addEventListener("click", setupPresetWindbladeStun);
     }
 
+    const presetSlipstreamPurify = document.getElementById("presetSlipstreamPurify");
+    if (presetSlipstreamPurify) {
+        presetSlipstreamPurify.addEventListener("click", setupPresetSlipstreamPurify);
+    }
+
+    const presetSlipstreamExploit = document.getElementById("presetSlipstreamExploit");
+    if (presetSlipstreamExploit) {
+        presetSlipstreamExploit.addEventListener("click", setupPresetSlipstreamExploit);
+    }
+
+    const presetNecroOverwhelming = document.getElementById("presetNecroOverwhelming");
+    if (presetNecroOverwhelming) {
+        presetNecroOverwhelming.addEventListener("click", setupPresetNecroOverwhelming);
+    }
+
+    const presetNecroPowerDebuff = document.getElementById("presetNecroPowerDebuff");
+    if (presetNecroPowerDebuff) {
+        presetNecroPowerDebuff.addEventListener("click", setupPresetNecroPowerDebuff);
+    }
+
     // 日志清空
     btnClearLogs.addEventListener("click", () => {
         logTerminal.innerHTML = "";
@@ -1229,16 +1368,107 @@ async function setupPresetWindbladeStun() {
     fetchState();
 }
 
+async function setupPresetSlipstreamPurify() {
+    p0BotSelect.value = "slipstream_gs";
+    p1BotSelect.value = "bonecrusher_cin_rotf";
+    await applyBotMatchup();
+    // 给自身注入震击
+    await fetch("/api/inject_buff", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ target: 0, mod_id: "dmg_shock", dur: 10.0, stacks: 1 })
+    });
+    showToast("📌 场景已装载: 滑流处于震击状态！单按【M2 终结击】测试净化自身震击并反噬对手 8s 震击与 10% 暴率！");
+    fetchState();
+}
+
+async function setupPresetSlipstreamExploit() {
+    p0BotSelect.value = "slipstream_gs";
+    p1BotSelect.value = "bonecrusher_cin_rotf";
+    await applyBotMatchup();
+    // 给敌方注入 3 种减益
+    await fetch("/api/inject_buff", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ target: 1, mod_id: "slipstream_crit_resist_down", dur: 4.0, stacks: 1 })
+    });
+    await fetch("/api/inject_buff", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ target: 1, mod_id: "slipstream_power_drain", dur: 4.0, stacks: 1 })
+    });
+    await fetch("/api/inject_buff", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ target: 1, mod_id: "slipstream_backfire", dur: 4.0, stacks: 1 })
+    });
+    showToast("📌 场景已装载: 敌方注入 3 种减益！轻击/远程命中测试【利用弱点】随机刷新其中 1 个减益持续时间！");
+    fetchState();
+}
+
+async function setupPresetNecroOverwhelming() {
+    p0BotSelect.value = "necrotronus_gs_kabam";
+    p1BotSelect.value = "bonecrusher_cin_rotf";
+    await applyBotMatchup();
+    // 注入 20 层泰坦充能
+    await fetch("/api/inject_buff", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ target: 0, mod_id: "necrotronus_titan_charge", dur: -1.0, stacks: 20 })
+    });
+    await fetch("/api/attack", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ attacker: 0, action: 1, hit_idx: 0, is_last: 0, blocked: 0 })
+    });
+    showToast("📌 场景已装载: 亡灵天尊达到 20 层泰坦充能，进入势不可挡模式！任意攻击 100% 施加 6 秒流血！");
+    fetchState();
+}
+
+async function setupPresetNecroPowerDebuff() {
+    p0BotSelect.value = "necrotronus_gs_kabam";
+    p1BotSelect.value = "bonecrusher_cin_rotf";
+    await applyBotMatchup();
+    // 我方 0.5 格气，敌方 1.5 格气
+    await fetch("/api/mana", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ player: 0, mana: 0.5 })
+    });
+    await fetch("/api/mana", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ player: 1, mana: 1.5 })
+    });
+    await fetch("/api/tick", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dt_ms: 100 })
+    });
+    showToast("📌 场景已装载: 敌方能量高于亡灵天尊，触发红色 E606 能量压制减益(-30%功率)！");
+    fetchState();
+}
+
 async function applyBotMatchup() {
     const p0 = p0BotSelect.value;
     const p1 = p1BotSelect.value;
-    const p0Text = p0BotSelect.options[p0BotSelect.selectedIndex].text.split(" (")[0];
-    const p1Text = p1BotSelect.options[p1BotSelect.selectedIndex].text.split(" (")[0];
+    const p0Text = p0BotSelect.options[p0BotSelect.selectedIndex]?.text.split(" (")[0] || p0;
+    const p1Text = p1BotSelect.options[p1BotSelect.selectedIndex]?.text.split(" (")[0] || p1;
 
     if (p0Name) p0Name.textContent = p0Text;
     if (p1Name) p1Name.textContent = p1Text;
     if (stageP0Name) stageP0Name.textContent = p0Text;
     if (stageP1Name) stageP1Name.textContent = p1Text;
+
+    const b0 = g_allBots.find(b => b.bot_id === p0);
+    const b1 = g_allBots.find(b => b.bot_id === p1);
+    const p0IdEl = document.getElementById("p0BotId");
+    const p1IdEl = document.getElementById("p1BotId");
+    if (p0IdEl && b0) p0IdEl.textContent = `${b0.name_en} · ${b0.bot_id}`;
+    if (p1IdEl && b1) p1IdEl.textContent = `${b1.name_en} · ${b1.bot_id}`;
+
+    updateSelectClassColor(p0BotSelect);
+    updateSelectClassColor(p1BotSelect);
 
     await fetch("/api/init", {
         method: "POST",

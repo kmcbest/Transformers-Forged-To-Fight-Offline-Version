@@ -18,6 +18,7 @@ float skill_random_float(void); // 0.0f .. 1.0f
 int skill_is_p0_bc(void* bc);
 int skill_is_p0_attr(void* attr);
 int skill_obj_ok(void* ptr);
+const char* skill_get_bot_id(int player_index);
 
 // 全局战斗状态访问器 (读/写)
 int skill_get_p1_buffs_nullified(void);
@@ -37,6 +38,7 @@ float skill_get_hp_ratio(int player_index);
 void skill_heal(int player_index, float amount);
 void skill_deal_damage(int target_player_index, float damage);
 void skill_add_mana(int player_index, float norm_mana);
+float skill_get_mana(int player_index);
 
 // 格挡与控制
 uint64_t skill_get_block_enter_ms(int player_index);

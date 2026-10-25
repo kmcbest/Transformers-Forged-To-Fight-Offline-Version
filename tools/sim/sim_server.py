@@ -293,6 +293,10 @@ class SimEngine:
             self.dll.sim_set_mana.argtypes = [ctypes.c_int, ctypes.c_float]
             self.dll.sim_set_mana.restype = ctypes.c_int
 
+        if hasattr(self.dll, 'sim_set_crit_rate'):
+            self.dll.sim_set_crit_rate.argtypes = [ctypes.c_int, ctypes.c_float]
+            self.dll.sim_set_crit_rate.restype = ctypes.c_int
+
         if hasattr(self.dll, 'sim_set_special_attacking'):
             self.dll.sim_set_special_attacking.argtypes = [ctypes.c_int, ctypes.c_int]
             self.dll.sim_set_special_attacking.restype = ctypes.c_int
@@ -346,6 +350,11 @@ class SimEngine:
     def set_mana(self, player, mana):
         if hasattr(self.dll, 'sim_set_mana'):
             return self.dll.sim_set_mana(int(player), ctypes.c_float(mana))
+        return 0
+
+    def set_crit_rate(self, player, crit_rate):
+        if hasattr(self.dll, 'sim_set_crit_rate'):
+            return self.dll.sim_set_crit_rate(int(player), ctypes.c_float(crit_rate))
         return 0
 
     def set_special_attacking(self, player, in_special):

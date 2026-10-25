@@ -247,6 +247,19 @@ void skill_add_mana(int player_index, float norm_mana) {
     }
 }
 
+const char* skill_get_bot_id(int player_index) {
+    if (player_index == 0) return g_p0_bot_id;
+    if (player_index == 1) return g_p1_bot_id;
+    return "";
+}
+
+float skill_get_mana(int player_index) {
+    if (player_index >= 0 && player_index < 2) {
+        return g_players[player_index].mana;
+    }
+    return 0.0f;
+}
+
 SIM_API int sim_set_mana(int player_index, float mana) {
     if (player_index < 0 || player_index >= 2) return 0;
     if (mana < 0.0f) mana = 0.0f;
@@ -365,6 +378,12 @@ int skill_is_special_attacking(int player_index) {
     return (g_players[player_index].in_special || g_players[player_index].current_action >= 16);
 }
 
+SIM_API int sim_set_crit_rate(int player_index, float crit_rate) {
+    if (player_index < 0 || player_index >= 2) return 0;
+    g_players[player_index].crit_rate = crit_rate;
+    return 1;
+}
+
 SIM_API int sim_set_special_attacking(int player_index, int in_special) {
     if (player_index < 0 || player_index >= 2) return 0;
     g_players[player_index].in_special = in_special ? 1 : 0;
@@ -474,15 +493,36 @@ SIM_API int sim_inject_buff(int target_idx, const char* mod_id, float duration_s
         }
     }
 
-    // 检查是否已有相同 mod_id
+    // 检查是否已有相同 mod_id (非多层减益严格保持为1层，严禁溢出堆叠)
     for (int i = 0; i < c->buff_count; i++) {
         if (strcmp(c->buffs[i].mod_id, mod_id) == 0) {
-            c->buffs[i].stacks += stacks;
+            int is_multi_stack = (strstr(mod_id, "bleed") != NULL ||
+                                  strstr(mod_id, "shock") != NULL ||
+                                  strstr(mod_id, "power_leak") != NULL ||
+                                  strstr(mod_id, "crit_rate_stack") != NULL ||
+                                  strstr(mod_id, "prowl_melee_buff") != NULL ||
+                                  strstr(mod_id, "prowl_melee_charge") != NULL ||
+                                  strstr(mod_id, "bumblebee_crit_buff") != NULL ||
+                                  strstr(mod_id, "tantrum_dash_melee_buff") != NULL ||
+                                  strstr(mod_id, "venom_charge") != NULL);
+            // 滑流专属减益与风刃震击严格限制为单层 (严禁多重叠加，刷新仅重置持续时间)
+            if (strstr(mod_id, "slipstream_") != NULL || strstr(mod_id, "windblade_") != NULL) {
+                is_multi_stack = 0;
+            }
+            // 亡灵天尊：泰坦充能多层堆叠 (上限40)，其余能力严格单层
+            if (strstr(mod_id, "necrotronus_") != NULL) {
+                is_multi_stack = (strcmp(mod_id, "necrotronus_titan_charge") == 0);
+            }
+            if (is_multi_stack) {
+                c->buffs[i].stacks += stacks;
+            } else {
+                c->buffs[i].stacks = 1; // 单层减益严格限制为 1 层！
+            }
             if (duration_s > 0.0f) {
                 c->buffs[i].duration_s = duration_s;
                 c->buffs[i].remaining_ms = (int64_t)(duration_s * 1000.0f);
             }
-            skill_log("SIM: Buff '%s' on P%d refreshed/stacked -> x%d", mod_id, target_idx, c->buffs[i].stacks);
+            skill_log("SIM: Buff '%s' on P%d refreshed -> x%d", mod_id, target_idx, c->buffs[i].stacks);
             goto notify;
         }
     }
@@ -707,9 +747,11 @@ SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
     else if (action_type == 32) sp_idx = 2;
     else if (action_type == 64) sp_idx = 3;
 
-    // 放S技，无论打没打中，都打断
-    if (sp_idx > 0 && atker->prowl_charging) {
-        prowl_finish_charge_sim(attacker_idx, "special attack");
+    // 放S技：触发 attack_start (含充能打断与逆火反噬)
+    if (sp_idx > 0) {
+        if (hit_index == 0) {
+            skill_dispatch_attack_start(attacker_idx, action_type);
+        }
     }
 
     int is_heavy = (action_type == 4);
@@ -741,9 +783,17 @@ SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
         penetrated = 1;
     }
 
+    // 亡灵天尊规避克制：近战攻击削减对手 20% 规避几率
+    if (!is_ranged && strstr(atker->bot_id, "necrotronus") != NULL && out_evade) {
+        if (skill_random_float() < 0.20f) {
+            out_evade = 0;
+            skill_log("SIM: Defender P%d evade suppressed by Necrotronus anti-evade (20%%)!", target_idx);
+        }
+    }
+
     if (penetrated || (skill_dispatch_evade_check(&evade_ctx, &out_evade) && out_evade)) {
         skill_log("SIM_ATTACK: P%d attack was EVADED/PENETRATED by P%d (%s)!", attacker_idx, target_idx, victim->bot_id);
-        if (strstr(victim->bot_id, "windblade") != NULL && is_ranged) {
+        if ((strstr(victim->bot_id, "windblade") != NULL || strstr(victim->bot_id, "slipstream") != NULL) && is_ranged) {
             push_floater(target_idx, 4, 0.0f, "💨 穿透规避");
         } else {
             push_floater(target_idx, 4, 0.0f, "规避");
@@ -758,6 +808,11 @@ SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
 
     // 基础伤害计算
     float base_dmg = atker->atk;
+    // 亡灵天尊：每层泰坦充能增加 1.5% 攻击力
+    if (strstr(atker->bot_id, "necrotronus") != NULL) {
+        int charges = skill_count_buffs(attacker_idx, "necrotronus_titan_charge");
+        base_dmg *= (1.0f + 0.015f * (float)charges);
+    }
     if (action_type == 1) base_dmg *= 0.25f;       // 轻击
     else if (action_type == 2) base_dmg *= 0.40f;  // 中击
     else if (action_type == 4) base_dmg *= 1.00f;  // 重击
@@ -787,7 +842,14 @@ SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
         resolution_crit = 0.25f * opp_lost_ratio;
     }
 
-    float total_crit_rate = base_crit + blade_crit + resolution_crit;
+    // 亡灵天尊重击暴击率：每层泰坦充能 +1%
+    float necro_heavy_crit = 0.0f;
+    if (strstr(atker->bot_id, "necrotronus") != NULL && is_heavy) {
+        int charges = skill_count_buffs(attacker_idx, "necrotronus_titan_charge");
+        necro_heavy_crit = 0.01f * (float)charges;
+    }
+
+    float total_crit_rate = base_crit + blade_crit + resolution_crit + necro_heavy_crit;
     if (is_thundercracker && !is_ranged && sp_idx == 0) {
         total_crit_rate = 0.0f; // 惊天雷近战 0 暴击
     }
@@ -801,7 +863,11 @@ SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
     int is_crit = (roll < total_crit_rate);
 
     if (is_crit) {
-        base_dmg *= atker->crit_damage_mult;
+        float crit_mult = atker->crit_damage_mult;
+        if (strstr(atker->bot_id, "necrotronus") != NULL && skill_has_buff(attacker_idx, "necrotronus_overwhelming_power")) {
+            crit_mult += 0.803f; // 觉醒愤怒：势不可挡激活时暴伤增加 80.3%
+        }
+        base_dmg *= crit_mult;
         if (blade_crit > 0.0f || resolution_crit > 0.0f) {
             skill_log("ROLL_DICE_PASS: [%s] 暴击检定 PASS! (Roll: %.1f%% < %.1f%% [基础%.1f%% + 剑刃%.1f%% + 决心%.1f%%])",
                       atker->bot_id, roll_pct, crit_rate_pct,
@@ -838,12 +904,19 @@ SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
         .is_blocked = (bool)is_blocked,
         .base_damage = base_dmg,
         .modified_damage = base_dmg,
-        .hit_flags = 0x2180 | (is_last_hit ? 0x80 : 0) | (is_crit ? 32 : 0) | (is_blocked ? 4 : 1)
+        .hit_flags = 0x2180 | (is_last_hit ? 0x80 : 0) | (is_crit ? 32 : 0) | (is_blocked ? 4 : 1),
+        .action_type = action_type
     };
 
     skill_dispatch_hit_connected(&hit_ctx);
 
     float final_dmg = hit_ctx.modified_damage;
+    // 亡灵天尊势不可挡模式：受到近战伤害放大 30%
+    if (!is_ranged && sp_idx == 0 && strstr(victim->bot_id, "necrotronus") != NULL) {
+        if (skill_has_buff(target_idx, "necrotronus_overwhelming_power")) {
+            final_dmg *= 1.30f;
+        }
+    }
     if (is_blocked && !is_heavy) {
         final_dmg *= (1.0f - victim->block_reduction);
     }

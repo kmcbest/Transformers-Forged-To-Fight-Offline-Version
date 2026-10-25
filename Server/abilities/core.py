@@ -55,6 +55,9 @@ class AbilityColor:
     GRAY_COOLDOWN = {"tc": "CBD5E1", "gt": "CBD5E1", "gb": "94A3B8"}
     GRAY_COOLDOWN_TC = "CBD5E1"
     GRAY_COOLDOWN_GB = "94A3B8"
+    GRAY_LOCKED = GRAY_COOLDOWN
+    GRAY_LOCKED_TC = "CBD5E1"
+    GRAY_LOCKED_GB = "94A3B8"
 
 
 # ---------------------------------------------------------------------------

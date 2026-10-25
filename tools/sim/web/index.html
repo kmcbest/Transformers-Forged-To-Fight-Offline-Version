@@ -28,6 +28,14 @@
         </div>
 
         <div class="dev-tools">
+            <div class="sort-selector-wrap" title="切换角色下拉列表的排序模式">
+                <span class="sort-label">排序:</span>
+                <select id="botSortModeSelect" class="sort-select">
+                    <option value="class" selected>🛡️ 职业分组 (拼音序)</option>
+                    <option value="pinyin">🔤 中文拼音 (A-Z)</option>
+                    <option value="en">🌐 英文名称 (A-Z)</option>
+                </select>
+            </div>
             <button id="btnRecompile" class="btn btn-accent" title="立即使用 clang 重新编译 sim_skills.dll (0.3s)">⚡ 热重载技能代码</button>
         </div>
     </header>
@@ -355,6 +363,7 @@
                     <div class="toolbar-right">
                         <button class="btn-tiny" id="btnPresetWbPenetrate" title="快速填入：双方后闪 -> 2P远程射击 -> 1P重击穿透">🌟 载入风刃重击穿透测试</button>
                         <button class="btn-tiny" id="btnPresetWbSp1" title="快速填入：注入能量 -> SP1驱散瞬伤与震击">⚡ 载入SP1驱散测试</button>
+                        <button class="btn-tiny" id="btnPresetSsPenetrate" title="滑流重击全程穿透敌方远程射击">💨 滑流重击穿透</button>
                         <button class="btn-tiny btn-danger-tiny" id="btnClearScript">🗑️ 清空</button>
                     </div>
                 </div>
@@ -445,14 +454,14 @@
                     <span class="instant-hint" id="instantActorHint">🎮 当前控制: 1P 我方</span>
                 </div>
                 <div class="action-grid" id="instantActionGrid">
-                    <button class="btn-action act-light" data-action="1" data-last="0">L1 轻击1</button>
-                    <button class="btn-action act-light" data-action="1" data-last="0">L2 轻击2</button>
-                    <button class="btn-action act-light" data-action="1" data-last="0">L3 轻击3</button>
-                    <button class="btn-action act-light" data-action="1" data-last="1">L4 终结击</button>
+                    <button class="btn-action act-light" data-action="1" data-last="0" data-hit="0">L1 轻击1</button>
+                    <button class="btn-action act-light" data-action="1" data-last="0" data-hit="1">L2 轻击2</button>
+                    <button class="btn-action act-light" data-action="1" data-last="0" data-hit="2">L3 轻击3</button>
+                    <button class="btn-action act-light" data-action="1" data-last="1" data-hit="3">L4 终结击</button>
 
-                    <button class="btn-action act-med" data-action="2" data-last="0">M1 中击1</button>
-                    <button class="btn-action act-med" data-action="2" data-last="1">M2 终结击</button>
-                    <button class="btn-action act-heavy" data-action="4" data-last="1">💥 破防重击</button>
+                    <button class="btn-action act-med" data-action="2" data-last="0" data-hit="0">M1 中击1</button>
+                    <button class="btn-action act-med" data-action="2" data-last="1" data-hit="1">M2 终结击</button>
+                    <button class="btn-action act-heavy" data-action="4" data-last="1" data-hit="0">💥 破防重击</button>
                     <button class="btn-action act-block" id="btnToggleBlock">🛡️ 切换格挡</button>
 
                     <button class="btn-action act-dodge" id="btnDashBack">💨 后闪 (Dash)</button>
@@ -492,6 +501,22 @@
                     <button class="btn-preset" id="presetWindbladeStun">
                         <span class="p-title">📌 风刃流血压制远程眩晕</span>
                         <span class="p-desc">敌方注入流血状态，点击【🎯 远程射击】测试 35% 远程眩晕检定</span>
+                    </button>
+                    <button class="btn-preset" id="presetSlipstreamPurify">
+                        <span class="p-title">📌 滑流 M2 震击净化反噬与暴击</span>
+                        <span class="p-desc">我方注入震击状态，点击【M2 终结击】净化自身并反噬对手 8s 震击与 10% 暴率</span>
+                    </button>
+                    <button class="btn-preset" id="presetSlipstreamExploit">
+                        <span class="p-title">📌 滑流利用弱点与背刺三态</span>
+                        <span class="p-desc">敌方注入 3 种减益，轻击/远程随机刷新 1 个减益持续时间；暴击触发 0.5s 背刺流转三态</span>
+                    </button>
+                    <button class="btn-preset" id="presetNecroOverwhelming">
+                        <span class="p-title">📌 亡灵天尊 势不可挡模式与全攻击流血</span>
+                        <span class="p-desc">注入 20 层泰坦充能激活红色E91A，近战受伤+30%，所有攻击 100% 挂 6s 流血</span>
+                    </button>
+                    <button class="btn-preset" id="presetNecroPowerDebuff">
+                        <span class="p-title">📌 亡灵天尊 能量压制与 SP 充能消耗</span>
+                        <span class="p-desc">敌方能量高于天尊触发 -30% 功率减益(红标E606)；放 SP1 消耗 10 层充能</span>
                     </button>
                 </div>
             </div>

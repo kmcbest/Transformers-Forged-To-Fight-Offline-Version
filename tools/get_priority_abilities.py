@@ -55,10 +55,10 @@ CATEGORY_NAMES = {
 }
 
 CLASS_NAMES = {
-    "braw": "格斗系 (Brawler)",
-    "brawler": "格斗系 (Brawler)",
-    "scou": "侦察系 (Scout)",
-    "scout": "侦察系 (Scout)",
+    "braw": "斗士系 (Brawler)",
+    "brawler": "斗士系 (Brawler)",
+    "scou": "侦查系 (Scout)",
+    "scout": "侦查系 (Scout)",
     "warr": "战士系 (Warrior)",
     "warrior": "战士系 (Warrior)",
     "tact": "战术系 (Tactician)",

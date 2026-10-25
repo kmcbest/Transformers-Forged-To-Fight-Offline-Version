@@ -163,15 +163,90 @@ body {
 .badge-p0 { background: rgba(88, 166, 255, 0.2); color: var(--color-p0); border: 1px solid var(--color-p0); }
 .badge-p1 { background: rgba(248, 81, 73, 0.2); color: var(--color-p1); border: 1px solid var(--color-p1); }
 
+/* 顶部全局角色列表排序选择器 */
+.sort-selector-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+}
+.sort-label {
+    color: #8b949e;
+    font-size: 11px;
+    font-weight: 600;
+}
+.sort-select {
+    background: transparent;
+    color: #58a6ff;
+    border: none;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+    padding: 2px 4px;
+}
+.sort-select option {
+    background: #0d1117;
+    color: #c9d1d9;
+}
+
+/* 机器人选择下拉框 */
 .bot-select {
     background: #0d1117;
     color: #c9d1d9;
     border: 1px solid #30363d;
-    padding: 4px 8px;
+    padding: 5px 8px;
     font-size: 12px;
-    border-radius: 4px;
-    width: 170px;
+    font-weight: 600;
+    border-radius: 6px;
+    width: 235px;
+    max-width: calc(100% - 85px);
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s, color 0.2s;
 }
+
+.bot-select:hover {
+    border-color: #58a6ff;
+}
+
+.bot-select:focus {
+    outline: none;
+}
+
+/* 类别分组 Optgroup 样式 */
+.bot-select optgroup {
+    background: #161b22;
+    font-weight: 800;
+    font-size: 12px;
+    padding: 6px 4px 2px;
+    letter-spacing: 0.5px;
+}
+
+.bot-select optgroup.group-braw { color: #9B45E4; background: #201138; }
+.bot-select optgroup.group-tact { color: #2F6DF2; background: #0d1b3e; }
+.bot-select optgroup.group-demo { color: #F2B800; background: #332700; }
+.bot-select optgroup.group-tech { color: #00B8DA; background: #002933; }
+.bot-select optgroup.group-scou { color: #22C55E; background: #0e2e0e; }
+.bot-select optgroup.group-warr { color: #E82B25; background: #380e0c; }
+
+/* 角色选项 Option 样式 (对应官方克制环颜色) */
+.bot-select option {
+    background: #0d1117;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 6px;
+}
+
+.bot-select option.bot-opt-braw { color: #9B45E4; }
+.bot-select option.bot-opt-tact { color: #2F6DF2; }
+.bot-select option.bot-opt-demo { color: #F2B800; }
+.bot-select option.bot-opt-tech { color: #00B8DA; }
+.bot-select option.bot-opt-scou { color: #22C55E; }
+.bot-select option.bot-opt-warr { color: #E82B25; }
 
 .avatar-container {
     display: flex;

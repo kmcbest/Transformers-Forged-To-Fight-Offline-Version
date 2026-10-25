@@ -824,6 +824,7 @@ static volatile int s_current_hit_is_heavy = 0;
 static volatile int s_current_hit_is_ranged = 0;
 static volatile int s_last_hit_flags = 0;
 static volatile int s_last_hit_index = 0;
+static volatile int s_last_atk_level = 0;
 static volatile int s_ironhide_burned_this_hit = 0;
 static volatile int s_ramjet_s1_stacks = 0;
 static volatile uint64_t s_p0_burn_expire_ms = 0;
@@ -7284,7 +7285,8 @@ float hook_177(void* self, float damage, void* damageType, int32_t blocked, void
                         .is_blocked = (blocked != 0),
                         .base_damage = damage,
                         .modified_damage = damage,
-                        .hit_flags = s_last_hit_flags
+                        .hit_flags = s_last_hit_flags,
+                        .action_type = s_last_atk_level
                     };
                     skill_dispatch_hit_connected(&hit_ctx);
                     damage = hit_ctx.modified_damage;
@@ -7298,6 +7300,7 @@ float hook_177(void* self, float damage, void* damageType, int32_t blocked, void
                 s_current_hit_is_last = 0;
                 s_last_hit_flags = 0;
                 s_last_hit_index = -1;
+                s_last_atk_level = 0;
             }
         }
     });
@@ -7831,6 +7834,7 @@ void* hook_186(void* this_pc, void* hitResult, void* method) {
             }
             s_last_hit_flags = flags;
             s_last_hit_index = hit_idx;
+            s_last_atk_level = atk_level;
             if (p_idx == 0 && (atk_level == 1 || atk_level == 2 || atk_level == 4 || atk_level == 8)) {
                 g_p0_current_special_index = -1;
             }
@@ -8111,6 +8115,25 @@ void skill_add_mana(int player_index, float norm_mana) {
             flog("SKILL_ADD_MANA: Player %d mana +%.2f (Mana: %.2f -> %.2f)", player_index, norm_mana, cur, next_mana);
         }
     }
+}
+
+const char* skill_get_bot_id(int player_index) {
+    if (player_index == 0) return g_p0_bot_id;
+    if (player_index == 1) return g_p1_bot_id;
+    return "";
+}
+
+float skill_get_mana(int player_index) {
+    void* pc = (player_index == 0) ? g_p0_controller : g_p1_controller;
+    if (pc && obj_ok(pc)) {
+        void* attr = *(void**)((char*)pc + 0x80);
+        if (attr && obj_ok(attr) && g_base) {
+            typedef float (*fn_get_norm_mana)(void*, void*);
+            fn_get_norm_mana get_mana = (fn_get_norm_mana)(g_base + 0xDAC720);
+            return get_mana(attr, NULL);
+        }
+    }
+    return 0.0f;
 }
 
 void skill_deal_damage(int target_player_index, float damage) {
