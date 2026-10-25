@@ -1355,6 +1355,8 @@ body {
 .act-light { border-color: #388bfd; color: #58a6ff; }
 .act-med { border-color: #d29922; color: #e3b341; }
 .act-heavy { border-color: #f85149; color: #ff7b72; font-weight: 800; }
+.act-invincible { border-color: #f43f5e; color: #fda4af; background: #261118; }
+.act-invincible:hover { background: #3d1420; border-color: #fb7185; }
 .act-block { border-color: #8957e5; color: #d2a8ff; }
 .act-dodge { border-color: #39c5bb; color: #56d4c8; background: #0e2024; }
 .act-dodge:hover { background: #143238; border-color: #56d4c8; }

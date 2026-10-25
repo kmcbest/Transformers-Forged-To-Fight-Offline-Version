@@ -70,6 +70,9 @@ typedef struct {
     uint64_t ranged_boost_end_ms;
     float ranged_damage_bonus;
 
+    uint64_t power_leak_end_ms;
+    float power_leak_step;
+
     int is_heavy;
     int in_special;
     int current_action;
@@ -80,6 +83,12 @@ typedef struct {
     int prowl_charge_stacks;
     uint64_t prowl_melee_buff_end_ms;
     uint64_t next_prowl_tick_ms;
+
+    uint64_t dodge_end_ms;
+    uint64_t last_shot_ms;
+    uint64_t last_dash_ms;
+    float last_ranged_dmg;
+    uint64_t last_ranged_hit_ms;
 
     int buff_count;
     SimBuff buffs[MAX_BUFFS];
@@ -188,7 +197,11 @@ void skill_set_ranged_boost(int player_index, uint64_t duration_ms, float dmg_bo
 }
 
 void skill_set_power_leak(int player_index, uint64_t duration_ms, float step) {
-    (void)player_index; (void)duration_ms; (void)step;
+    if (player_index >= 0 && player_index < 2) {
+        g_players[player_index].power_leak_end_ms = g_sim_clock_ms + duration_ms;
+        g_players[player_index].power_leak_step = step;
+        skill_log("SIM: Set power leak on P%d for %llu ms (step=%.4f)", player_index, (unsigned long long)duration_ms, step);
+    }
 }
 
 void skill_set_power_lock(int target_player_index, uint64_t duration_ms) {
@@ -228,6 +241,13 @@ void skill_heal(int player_index, float amount) {
     }
 }
 
+float skill_get_attack(int player_index) {
+    if (player_index >= 0 && player_index < 2) {
+        return g_players[player_index].atk;
+    }
+    return 2000.0f;
+}
+
 void skill_deal_damage(int target_player_index, float damage) {
     if (target_player_index >= 0 && target_player_index < 2 && damage > 0.0f) {
         g_players[target_player_index].hp -= damage;
@@ -240,10 +260,16 @@ void skill_deal_damage(int target_player_index, float damage) {
 
 void skill_add_mana(int player_index, float norm_mana) {
     if (player_index >= 0 && player_index < 2) {
+        // 黄豹能量守护：免疫一切扣能量效果 (流失/燃烧)
+        if (norm_mana < 0.0f && strstr(g_players[player_index].bot_id, "cheetor") != NULL) {
+            skill_overlay("[%s] 能量守护！免疫能量流失与燃烧！", player_index == 0 ? "黄豹" : "敌方黄豹");
+            skill_log("SIM: Blocked direct mana drain (%.2f) on Cheetor P%d", norm_mana, player_index);
+            return;
+        }
         g_players[player_index].mana += norm_mana;
         if (g_players[player_index].mana > 3.0f) g_players[player_index].mana = 3.0f;
         if (g_players[player_index].mana < 0.0f) g_players[player_index].mana = 0.0f;
-        push_floater(player_index, 3, norm_mana * 100.0f, "+能量");
+        push_floater(player_index, 3, norm_mana * 100.0f, norm_mana >= 0 ? "+能量" : "-能量");
     }
 }
 
@@ -395,6 +421,17 @@ SIM_API int sim_set_special_attacking(int player_index, int in_special) {
     return 1;
 }
 
+static int g_player_invincible = 0;
+
+SIM_API int sim_set_player_invincible(int enabled) {
+    g_player_invincible = enabled ? 1 : 0;
+    return g_player_invincible;
+}
+
+SIM_API int sim_get_player_invincible(void) {
+    return g_player_invincible;
+}
+
 SIM_API int sim_set_heavy_attacking(int player_index, int is_heavy) {
     if (player_index < 0 || player_index >= 2) return 0;
     g_players[player_index].is_heavy = is_heavy ? 1 : 0;
@@ -413,8 +450,24 @@ SIM_API int sim_init(const char* p0_bot_id, const char* p1_bot_id,
                      float p0_max_hp, float p1_max_hp,
                      float p0_atk, float p1_atk) {
     memset(g_players, 0, sizeof(g_players));
+    g_players[0].power_leak_end_ms = 0;
+    g_players[0].power_leak_step = 0.0f;
+    g_players[1].power_leak_end_ms = 0;
+    g_players[1].power_leak_step = 0.0f;
+    g_players[0].dodge_end_ms = 0;
+    g_players[1].dodge_end_ms = 0;
+    g_players[0].last_shot_ms = 0;
+    g_players[1].last_shot_ms = 0;
+    g_players[0].last_dash_ms = 0;
+    g_players[1].last_dash_ms = 0;
+    g_players[0].last_ranged_dmg = 0.0f;
+    g_players[1].last_ranged_dmg = 0.0f;
+    g_players[0].last_ranged_hit_ms = 0;
+    g_players[1].last_ranged_hit_ms = 0;
+
     g_sim_clock_ms = 1000;
     g_floater_count = 0;
+    g_player_invincible = 0;
     g_log_head = 0;
     g_log_count = 0;
     g_last_announcement[0] = '\0';
@@ -437,6 +490,11 @@ SIM_API int sim_init(const char* p0_bot_id, const char* p1_bot_id,
     g_players[1].crit_rate = 0.16f;
     g_players[1].crit_damage_mult = 1.50f;
     g_players[1].block_reduction = 0.50f;
+
+    g_players[0].power_leak_end_ms = 0;
+    g_players[0].power_leak_step = 0.0f;
+    g_players[1].power_leak_end_ms = 0;
+    g_players[1].power_leak_step = 0.0f;
 
     skill_dispatcher_init(0x100000);
     skill_dispatch_fight_reset();
@@ -470,6 +528,21 @@ SIM_API void sim_reset(void) {
     g_players[1].prowl_charge_stacks = 0;
     g_players[1].prowl_melee_stacks = 0;
 
+    g_players[0].power_leak_end_ms = 0;
+    g_players[0].power_leak_step = 0.0f;
+    g_players[1].power_leak_end_ms = 0;
+    g_players[1].power_leak_step = 0.0f;
+    g_players[0].dodge_end_ms = 0;
+    g_players[1].dodge_end_ms = 0;
+    g_players[0].last_shot_ms = 0;
+    g_players[1].last_shot_ms = 0;
+    g_players[0].last_dash_ms = 0;
+    g_players[1].last_dash_ms = 0;
+    g_players[0].last_ranged_dmg = 0.0f;
+    g_players[1].last_ranged_dmg = 0.0f;
+    g_players[0].last_ranged_hit_ms = 0;
+    g_players[1].last_ranged_hit_ms = 0;
+
     g_sim_clock_ms = 1000;
     g_floater_count = 0;
     skill_dispatch_fight_reset();
@@ -479,6 +552,28 @@ SIM_API void sim_reset(void) {
 SIM_API int sim_inject_buff(int target_idx, const char* mod_id, float duration_s, int stacks) {
     if (target_idx < 0 || target_idx >= 2 || !mod_id || !mod_id[0]) return 0;
     SimCombatant* c = &g_players[target_idx];
+
+    // 0. Buff 闸门过滤检定 (Buff Gate Check: on_buff_gated，如黄豹免疫能量流失/燃烧)
+    int out_allowed = 1;
+    SkillBuffGateContext gate_ctx = {
+        .buffs_controller = (void*)c,
+        .applicant = (void*)&g_players[1 - target_idx],
+        .stat_modifier = NULL,
+        .modifier_id = mod_id,
+        .target_bot_id = c->bot_id,
+        .target_player_index = target_idx,
+        .attacker_player_index = 1 - target_idx,
+        .current_special_index = g_players[1 - target_idx].current_action >= 16 ? 1 : 0,
+        .last_hit_index = 0,
+        .current_hit_is_last = true,
+        .is_heavy = g_players[1 - target_idx].is_heavy != 0,
+        .last_hit_flags = 0x80,
+        .allow_application = true
+    };
+    if (skill_dispatch_buff_gate(&gate_ctx, &out_allowed) && !out_allowed) {
+        skill_log("SIM: Buff '%s' on P%d REJECTED by on_buff_gated!", mod_id, target_idx);
+        return 0;
+    }
 
     // 若即将施加具体角色专属的官方眩晕 Buff (例如 windblade_bleed_remote_stun 或 windblade_sp3_stun)，自动清理通用的 "stun" 占位 Buff，避免双重图标
     if (strstr(mod_id, "stun") != NULL && strcmp(mod_id, "stun") != 0) {
@@ -504,6 +599,7 @@ SIM_API int sim_inject_buff(int target_idx, const char* mod_id, float duration_s
                                   strstr(mod_id, "prowl_melee_charge") != NULL ||
                                   strstr(mod_id, "bumblebee_crit_buff") != NULL ||
                                   strstr(mod_id, "tantrum_dash_melee_buff") != NULL ||
+                                  strstr(mod_id, "sideswipe_evade_counter") != NULL ||
                                   strstr(mod_id, "venom_charge") != NULL);
             // 滑流专属减益与风刃震击严格限制为单层 (严禁多重叠加，刷新仅重置持续时间)
             if (strstr(mod_id, "slipstream_") != NULL || strstr(mod_id, "windblade_") != NULL) {
@@ -603,6 +699,40 @@ SIM_API void sim_set_block(int player_idx, int is_blocking) {
 SIM_API int sim_dodge(int player_idx, int dodge_type) {
     if (player_idx < 0 || player_idx >= 2) return 0;
     SimCombatant* c = &g_players[player_idx];
+    int opp_idx = 1 - player_idx;
+    SimCombatant* opp = &g_players[opp_idx];
+
+    // 激活闪避无敌帧窗口 (持续 600ms)
+    c->dodge_end_ms = g_sim_clock_ms + 600;
+
+    // 响应式规避最近射出的远程子弹 (对方在 600ms 内开枪，或子弹刚命中):
+    if ((g_sim_clock_ms - opp->last_shot_ms <= 600) || (g_sim_clock_ms - c->last_ranged_hit_ms <= 600 && c->last_ranged_dmg > 0.0f)) {
+        if (c->last_ranged_dmg > 0.0f) {
+            c->hp += c->last_ranged_dmg; // 伤害回退/闪避化解
+            if (c->hp > c->max_hp) c->hp = c->max_hp;
+            c->last_ranged_dmg = 0.0f;
+            c->last_ranged_hit_ms = 0;
+        }
+        push_floater(player_idx, 4, 0.0f, "闪避");
+        skill_log("SIM: P%d reactively EVADED incoming ranged shot from P%d!", player_idx, opp_idx);
+        if (strstr(c->bot_id, "sideswipe") != NULL) {
+            skill_add_mana(player_idx, 0.39f); // 13% 能量
+            sim_inject_buff(player_idx, "sideswipe_evade_ranged_power", 1.0f, 1);
+            skill_overlay("[横炮] 极速闪避远程！获得+13%%能量！");
+            push_floater(player_idx, 3, 0.39f, "+13% 能量");
+            skill_log("SIDESWIPE_EVADE_RANGED: P%d evaded remote shot, gained +13%% power", player_idx);
+        }
+    }
+
+    // 响应式规避对方刚刚发起的冲锋攻击 (500ms 内):
+    if (g_sim_clock_ms - opp->last_dash_ms <= 500) {
+        if (strstr(c->bot_id, "sideswipe") != NULL) {
+            sim_inject_buff(player_idx, "sideswipe_evade_dash_crit_damage", 6.0f, 1);
+            skill_overlay("[横炮] 闪避冲锋！暴击伤害提升108%！");
+            push_floater(player_idx, 1, 0.0f, "+108% 暴击伤害");
+            skill_log("SIDESWIPE_EVADE_DASH: P%d evaded dash, gained +108%% crit dmg", player_idx);
+        }
+    }
 
     if (dodge_type == 0) { // 0 = 后闪 (Dash Back)
         if (strstr(c->bot_id, "prowl") != NULL) {
@@ -639,6 +769,7 @@ SIM_API int sim_dodge(int player_idx, int dodge_type) {
             push_floater(player_idx, 5, 0.0f, "💨 侧闪 (Sidestep)");
         }
 
+        skill_dispatch_dodge_enter(player_idx);
         skill_log("SIM: P%d performed Sidestep (侧闪)", player_idx);
         return 1;
     }
@@ -705,6 +836,24 @@ SIM_API void sim_tick(uint32_t dt_ms) {
             c->crit_rate = 0.20f + 0.28f * (float)c_stacks;
         }
     }
+
+    // 4. 能量流失扣减 (Power Leak / Drain)
+    for (int p = 0; p < 2; p++) {
+        SimCombatant* c = &g_players[p];
+        if (strstr(c->bot_id, "cheetor") != NULL) continue; // 黄豹能量守护免疫
+
+        int leak_stacks = skill_count_buffs(p, "power_leak") + skill_count_buffs(p, "power_drain");
+        float drain_step = 0.0f;
+        if (g_sim_clock_ms < c->power_leak_end_ms && c->power_leak_step > 0.0f) {
+            drain_step = c->power_leak_step * ((float)dt_ms / 16.0f);
+        } else if (leak_stacks > 0) {
+            drain_step = 0.05f * (float)leak_stacks * ((float)dt_ms / 1000.0f);
+        }
+        if (drain_step > 0.0f && c->mana > 0.0f) {
+            c->mana -= drain_step;
+            if (c->mana < 0.0f) c->mana = 0.0f;
+        }
+    }
 }
 
 
@@ -717,6 +866,8 @@ SIM_API int sim_dash(int player_idx) {
     }
     push_floater(player_idx, 5, 0.0f, "⏩ 前冲 (Dash)");
     skill_log("SIM: P%d performed Dash (前冲)", player_idx);
+    skill_dispatch_attack_start(player_idx, 2);
+    skill_dispatch_attack_start(player_idx, 32);
     return 1;
 }
 
@@ -724,10 +875,11 @@ SIM_API int sim_attack_start(int attacker_idx, int action_type) {
     if (attacker_idx < 0 || attacker_idx >= 2) return 0;
     SimCombatant* atker = &g_players[attacker_idx];
     atker->current_action = action_type;
-    atker->is_heavy = (action_type == 4);
-    atker->in_special = (action_type >= 16);
+    int is_special = (action_type == 16 || action_type == 32 || action_type == 64 || action_type == 0x200);
+    atker->is_heavy = (action_type == 4 || action_type == 0x100);
+    atker->in_special = (is_special && action_type != 4 && action_type != 0x100);
     // 放S技，无论打没打中，都打断
-    if (action_type >= 16 && atker->prowl_charging) {
+    if (atker->in_special && atker->prowl_charging) {
         prowl_finish_charge_sim(attacker_idx, "special attack start");
     }
     skill_dispatch_attack_start(attacker_idx, action_type);
@@ -783,6 +935,34 @@ SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
         penetrated = 1;
     }
 
+    if (is_ranged) {
+        atker->last_shot_ms = g_sim_clock_ms;
+        // 防守方处于闪避无敌帧窗口中，必定规避远程射击
+        if (g_sim_clock_ms < victim->dodge_end_ms) {
+            out_evade = 1;
+            skill_log("SIM_ATTACK: P%d ranged shot was EVADED by P%d (active dodge window)!", attacker_idx, target_idx);
+            if (strstr(victim->bot_id, "sideswipe") != NULL) {
+                skill_add_mana(target_idx, 0.39f);
+                sim_inject_buff(target_idx, "sideswipe_evade_ranged_power", 1.0f, 1);
+                skill_overlay("[横炮] 极速闪避远程！获得+13%%能量！");
+                push_floater(target_idx, 3, 0.39f, "+13% 能量");
+                skill_log("SIDESWIPE_EVADE_RANGED: P%d evaded shot, gained +13%% power", target_idx);
+            }
+        }
+    }
+
+    if (action_type == 32) { // 冲锋攻击
+        atker->last_dash_ms = g_sim_clock_ms;
+        if (g_sim_clock_ms < victim->dodge_end_ms) {
+            out_evade = 1;
+            if (strstr(victim->bot_id, "sideswipe") != NULL) {
+                sim_inject_buff(target_idx, "sideswipe_evade_dash_crit_damage", 6.0f, 1);
+                skill_overlay("[横炮] 闪避冲锋！暴击伤害提升108%！");
+                push_floater(target_idx, 1, 0.0f, "+108% 暴击伤害");
+            }
+        }
+    }
+
     // 亡灵天尊规避克制：近战攻击削减对手 20% 规避几率
     if (!is_ranged && strstr(atker->bot_id, "necrotronus") != NULL && out_evade) {
         if (skill_random_float() < 0.20f) {
@@ -791,7 +971,7 @@ SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
         }
     }
 
-    if (penetrated || (skill_dispatch_evade_check(&evade_ctx, &out_evade) && out_evade)) {
+    if (penetrated || out_evade || (skill_dispatch_evade_check(&evade_ctx, &out_evade) && out_evade)) {
         skill_log("SIM_ATTACK: P%d attack was EVADED/PENETRATED by P%d (%s)!", attacker_idx, target_idx, victim->bot_id);
         if ((strstr(victim->bot_id, "windblade") != NULL || strstr(victim->bot_id, "slipstream") != NULL) && is_ranged) {
             push_floater(target_idx, 4, 0.0f, "💨 穿透规避");
@@ -921,8 +1101,16 @@ SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
         final_dmg *= (1.0f - victim->block_reduction);
     }
 
+    if (target_idx == 0 && g_player_invincible) {
+        final_dmg = 0.0f;
+    }
+
     victim->hp -= final_dmg;
     if (victim->hp < 0.0f) victim->hp = 0.0f;
+    if (is_ranged) {
+        victim->last_ranged_dmg = final_dmg;
+        victim->last_ranged_hit_ms = g_sim_clock_ms;
+    }
 
     // 近战打中对手，打断充能 (排除远程射击 is_ranged 与特殊技 sp_idx > 0)
     if (!is_ranged && sp_idx == 0 && atker->prowl_charging) {

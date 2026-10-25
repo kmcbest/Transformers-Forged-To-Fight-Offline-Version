@@ -432,7 +432,8 @@ function renderPlayer(idx, p) {
             const puaChar = b.pua_char || info.char;
             const displayName = b.name || info.name || b.id;
             const timeStr = isPerm ? "永久" : `${(b.rem_ms / 1000).toFixed(1)}s`;
-            const stackStr = (b.stacks > 1) ? ` x${b.stacks}` : "";
+            const isCounter = b.id.includes("counter") || b.id.includes("charge");
+            const stackStr = (b.stacks > 1 || isCounter) ? ` x${b.stacks}` : "";
             const colorStyle = b.tc ? `color:#${b.tc};` : "";
             const warnIcon = !isValid ? `<span title="${b.contract_warning || '未在官方能力库注册'}" style="color:#ef4444;margin-left:4px;">⚠️</span>` : "";
 
@@ -717,6 +718,24 @@ function setupEventHandlers() {
             }
         });
     });
+
+    // 切换玩家无敌状态 (对标手机启动菜单 "玩家无敌")
+    const btnToggleInvincible = document.getElementById("btnToggleInvincible");
+    let g_isPlayerInvincible = false;
+    if (btnToggleInvincible) {
+        btnToggleInvincible.addEventListener("click", async () => {
+            g_isPlayerInvincible = !g_isPlayerInvincible;
+            btnToggleInvincible.textContent = g_isPlayerInvincible ? "🛡️ 玩家无敌: 开" : "🛡️ 玩家无敌: 关";
+            btnToggleInvincible.style.background = g_isPlayerInvincible ? "#9f1239" : "#261118";
+            btnToggleInvincible.style.borderColor = g_isPlayerInvincible ? "#fb7185" : "#f43f5e";
+            await fetch("/api/player_invincible", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ enabled: g_isPlayerInvincible })
+            });
+            showToast(g_isPlayerInvincible ? "🛡️ 玩家无敌已开启 (受击不扣血)" : "🛡️ 玩家无敌已关闭");
+        });
+    }
 
     // 切换格挡 (支持当前控制角色)
     btnToggleBlock.addEventListener("click", async () => {
@@ -1736,7 +1755,8 @@ function renderBuffRingsDOM(container, buffs, playerIdx) {
 
         const badge = item.querySelector(".ring-stack-badge");
         if (badge) {
-            if (b.stacks > 1) {
+            const isCounter = b.id.includes("counter") || b.id.includes("charge");
+            if (b.stacks > 1 || isCounter) {
                 badge.textContent = b.stacks;
                 badge.style.display = "block";
             } else {

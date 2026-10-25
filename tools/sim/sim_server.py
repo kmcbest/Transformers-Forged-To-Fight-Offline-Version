@@ -367,6 +367,11 @@ class SimEngine:
             return self.dll.sim_set_heavy_attacking(int(player), 1 if is_heavy else 0)
         return 0
 
+    def set_player_invincible(self, enabled):
+        if hasattr(self.dll, 'sim_set_player_invincible'):
+            return self.dll.sim_set_player_invincible(1 if enabled else 0)
+        return 0
+
     def dodge(self, player, dodge_type):
         return self.dll.sim_dodge(int(player), int(dodge_type))
 
@@ -669,6 +674,11 @@ class SimHTTPHandler(SimpleHTTPRequestHandler):
             is_heavy = bool(data.get("is_heavy", True))
             ok = g_engine.set_heavy_attacking(player, is_heavy)
             self.send_json({"ok": bool(ok)})
+
+        elif parsed.path == "/api/player_invincible":
+            enabled = bool(data.get("enabled", True))
+            ok = g_engine.set_player_invincible(enabled)
+            self.send_json({"ok": bool(ok), "invincible": enabled})
 
         elif parsed.path == "/api/attack":
             attacker = data.get("attacker", 0)
