@@ -23,6 +23,8 @@ static float s_last_recorded_mana[2] = {0.0f, 0.0f};
 
 static void cheetor_on_attack_start(int player_index, int action_type) {
     if (player_index < 0 || player_index >= 2) return;
+    const char* bid = skill_get_bot_id(player_index);
+    if (!bid || strstr(bid, "cheetor") == NULL) return;
     if (action_type == 4 || action_type == 0x100) {
         uint64_t now_ms = skill_now_ms();
         s_is_heavy_active[player_index] = 1;
@@ -136,6 +138,22 @@ static int cheetor_on_evade_check(SkillEvadeContext* ctx, int* out_evade) {
     return 0;
 }
 
+static int cheetor_on_buff_gated(SkillBuffGateContext* ctx) {
+    if (!ctx || !ctx->modifier_id || !ctx->modifier_id[0]) return 0;
+    const char* tgt_id = ctx->target_bot_id;
+    if (tgt_id && strstr(tgt_id, "cheetor") != NULL) {
+        if (strstr(ctx->modifier_id, "leak") != NULL ||
+            strstr(ctx->modifier_id, "drain") != NULL ||
+            strstr(ctx->modifier_id, "power_burn") != NULL) {
+            ctx->allow_application = false;
+            skill_overlay("[%s] 能量守护！免疫能量流失与燃烧！", ctx->target_player_index == 0 ? "黄豹" : "敌方黄豹");
+            skill_log("CHEETOR_IMMUNITY: Gated and blocked buff '%s' on Cheetor P%d", ctx->modifier_id, ctx->target_player_index);
+            return 1;
+        }
+    }
+    return 0;
+}
+
 static void cheetor_on_simulation_tick(uint64_t now_ms) {
     for (int p = 0; p < 2; p++) {
         // 重击超时清理
@@ -144,6 +162,24 @@ static void cheetor_on_simulation_tick(uint64_t now_ms) {
                 s_is_heavy_active[p] = 0;
                 s_heavy_end_ms[p] = 0;
             }
+        }
+
+        // 觉醒技 - 野生突击：每填满一格能量触发 4 秒野生突击
+        const char* bid = skill_get_bot_id(p);
+        if (bid && strstr(bid, "cheetor") != NULL) {
+            float cur_mana = skill_get_mana(p);
+            float last_mana = s_last_recorded_mana[p];
+            int cur_bars = (int)cur_mana;
+            int last_bars = (int)last_mana;
+            if (cur_bars > last_bars && cur_bars >= 1) {
+                skill_apply_buff_dur(p, "cheetor_signature_feral_strike", 4.0f);
+                int opp = 1 - p;
+                skill_apply_buff_dur(opp, "cheetor_feral_no_evade", 4.0f);
+                skill_overlay("[%s] 觉醒技！野生突击激活4秒！", p == 0 ? "黄豹" : "敌方黄豹");
+                skill_log("CHEETOR_FERAL_STRIKE: P%d filled power bar (%d -> %d), activated Feral Strike 4.0s!",
+                          p, last_bars, cur_bars);
+            }
+            s_last_recorded_mana[p] = cur_mana;
         }
     }
 }
@@ -160,6 +196,7 @@ BotSkillModule g_module_cheetor = {
     .bot_prefix         = "cheetor",
     .on_hit_connected   = cheetor_on_hit_connected,
     .on_attack_start    = cheetor_on_attack_start,
+    .on_buff_gated       = cheetor_on_buff_gated,
     .on_evade_check     = cheetor_on_evade_check,
     .on_simulation_tick = cheetor_on_simulation_tick,
     .on_fight_reset     = cheetor_on_fight_reset,

@@ -23,6 +23,8 @@ static int s_hit_count[2] = {0, 0};
 
 static void sideswipe_on_attack_start(int player_index, int action_type) {
     if (player_index < 0 || player_index >= 2) return;
+    const char* bid = skill_get_bot_id(player_index);
+    if (!bid || strstr(bid, "sideswipe") == NULL) return;
 
     // 横炮发起重击：净化自身震击减益
     if (action_type == 4 || action_type == 0x100) {
@@ -89,16 +91,9 @@ static void sideswipe_on_hit_connected(SkillHitContext* ctx) {
 
 static void sideswipe_on_dodge_enter(int player_index) {
     if (player_index < 0 || player_index >= 2) return;
-    int opp_index = 1 - player_index;
-
-    // 闪避冲锋攻击触发 +108% 暴击伤害 6 秒
-    skill_apply_buff_dur(player_index, "sideswipe_evade_dash_crit_damage", 6.0f);
-    // 闪避远程攻击获得 13% 能量
-    skill_add_mana(player_index, 0.39f);
-    skill_apply_buff_dur(player_index, "sideswipe_evade_ranged_power", 1.0f);
-    skill_overlay("[%s] 极速闪避！获得108%%暴击伤害与+13%%能量！",
-                  player_index == 0 ? "横炮" : "敌方横炮");
-    skill_log("SIDESWIPE_DODGE: P%d gained 108%% crit dmg and 13%% power from dodge", player_index);
+    // 严格门禁：正常空放闪避或闪避近战绝不误触发回能；
+    // 仅在真实规避远程子弹 (或冲锋攻击) 时由精准判定通道触发！
+    skill_log("SIDESWIPE_DODGE_ENTER: P%d entered dodge stance", player_index);
 }
 
 static int sideswipe_on_evade_check(SkillEvadeContext* ctx, int* out_evade) {

@@ -470,7 +470,7 @@ def build_slipstream_abilities(base_hp: float = 32402.0, base_atk: float = 2306.
         "trs": "",
         "trr": "repeat",
         "c": 1.0,
-        "m": float(round(base_atk * 0.80, 2)),
+        "m": float(round(base_atk * 1.0, 2)),
         "d": 8.0,
         "s": "none",
         "ta": "opponent",

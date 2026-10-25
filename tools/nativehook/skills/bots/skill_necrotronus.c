@@ -22,9 +22,10 @@
 // ===========================================================================
 
 static int s_sp_consumed_this_attack[2] = {0, 0};
+static int s_necrotronus_charges[2] = {0, 0};
 
 static void necrotronus_update_overwhelming_state(int ap) {
-    int charges = skill_count_buffs(ap, "necrotronus_titan_charge");
+    int charges = s_necrotronus_charges[ap];
     int has_overwhelming = skill_has_buff(ap, "necrotronus_overwhelming_power");
 
     if (charges >= 20 && !has_overwhelming) {
@@ -47,7 +48,7 @@ static void necrotronus_on_attack_start(int player_index, int action_type) {
 
     // 2. [ID: 3211] 对方发动特殊技时，我方亡灵天尊 30% 几率获得 0.95s 不可阻挡
     // action_type: 16 (SP1), 32 (SP2), 64 (SP3)
-    int is_special = (action_type == 16 || action_type == 32 || action_type == 64);
+    int is_special = (action_type == 16 || action_type == 32 || action_type == 64 || action_type == 0x200);
     if (is_special) {
         // 关键逻辑：
         // player_index 是释放特殊技的进攻方（即“对方”）。
@@ -61,6 +62,10 @@ static void necrotronus_on_attack_start(int player_index, int action_type) {
                 skill_overlay("[%s] 预判霸体！获得0.95秒不可阻挡！", opp_index == 0 ? "亡灵天尊" : "敌方亡灵天尊");
                 skill_log("NECROTRONUS_UNSTOPPABLE: Necrotronus P%d gained 0.95s unstoppable against opponent P%d SP (roll=%.1f%%)",
                           opp_index, player_index, roll * 100.0f);
+            } else {
+                skill_overlay("[%s] 霸体判定未触发 (30%%概率, roll=%.2f)", opp_index == 0 ? "亡灵天尊" : "敌方亡灵天尊", roll);
+                skill_log("NECROTRONUS_UNSTOPPABLE_FAIL: Opponent P%d launched SP, Necrotronus P%d roll=%.2f >= 0.30",
+                          player_index, opp_index, roll);
             }
         }
     }
@@ -80,6 +85,8 @@ static void necrotronus_on_hit_connected(SkillHitContext* ctx) {
 
             if (ctx->special_index == 1) {
                 // SP1: 消耗 10 层泰坦充能
+                s_necrotronus_charges[ap] -= 10;
+                if (s_necrotronus_charges[ap] < 0) s_necrotronus_charges[ap] = 0;
                 skill_consume_buff(ap, "necrotronus_titan_charge", 10);
                 necrotronus_update_overwhelming_state(ap);
                 // 60% 概率获 30% 能量功率增益 6 秒
@@ -91,6 +98,8 @@ static void necrotronus_on_hit_connected(SkillHitContext* ctx) {
                 }
             } else if (ctx->special_index == 2) {
                 // SP2: 消耗 15 层泰坦充能
+                s_necrotronus_charges[ap] -= 15;
+                if (s_necrotronus_charges[ap] < 0) s_necrotronus_charges[ap] = 0;
                 skill_consume_buff(ap, "necrotronus_titan_charge", 15);
                 necrotronus_update_overwhelming_state(ap);
                 // 65% 概率获 20% 暴击率增益 12 秒
@@ -102,6 +111,8 @@ static void necrotronus_on_hit_connected(SkillHitContext* ctx) {
                 }
             } else if (ctx->special_index == 3) {
                 // SP3: 消耗 20 层泰坦充能
+                s_necrotronus_charges[ap] -= 20;
+                if (s_necrotronus_charges[ap] < 0) s_necrotronus_charges[ap] = 0;
                 skill_consume_buff(ap, "necrotronus_titan_charge", 20);
                 necrotronus_update_overwhelming_state(ap);
                 // 85% 概率施加 40% ATK 7 秒流血
@@ -115,19 +126,20 @@ static void necrotronus_on_hit_connected(SkillHitContext* ctx) {
         }
 
         // --- [ID: 3209] 泰坦充能获取机制 ---
-        // 所有攻击命中时获得 1 层泰坦充能 (上限 40 层)
-        int cur_charges = skill_count_buffs(ap, "necrotronus_titan_charge");
-        int max_charges = 40; // 默认支持觉醒 40 上限
-        if (cur_charges < max_charges) {
-            skill_apply_buff(ap, "necrotronus_titan_charge");
-            skill_log("NECROTRONUS_CHARGE: P%d gained 1 Titan Charge (total: %d)", ap, cur_charges + 1);
+        // S技不获得泰坦充能；被对方防御时不获得充能；仅普通攻击/重击/远程攻击真实命中 (special_index == 0 && !ctx->is_blocked) 时获得 1 层泰坦充能 (上限 40 层)
+        if (ctx->special_index == 0 && !ctx->is_blocked) {
+            int max_charges = 40; // 默认支持觉醒 40 上限
+            if (s_necrotronus_charges[ap] < max_charges) {
+                s_necrotronus_charges[ap]++;
+                skill_apply_buff(ap, "necrotronus_titan_charge");
+                skill_log("NECROTRONUS_CHARGE: P%d gained 1 Titan Charge (total: %d)", ap, s_necrotronus_charges[ap]);
+            }
+            // 检查势不可挡状态切换
+            necrotronus_update_overwhelming_state(ap);
         }
 
-        // 检查势不可挡状态切换
-        necrotronus_update_overwhelming_state(ap);
-
-        // --- [ID: 3207] 势不可挡模式下：所有攻击 100% 施加 6 秒流血 (单层刷新) ---
-        if (skill_has_buff(ap, "necrotronus_overwhelming_power")) {
+        // --- [ID: 3207] 势不可挡模式下：真实命中未被防御时 100% 施加 6 秒流血 (单层刷新) ---
+        if (!ctx->is_blocked && skill_has_buff(ap, "necrotronus_overwhelming_power")) {
             skill_apply_buff_dur(tp, "necrotronus_overwhelming_bleed", 6.0f);
             skill_overlay("[%s] 势不可挡！攻击触发持续流血！", ap == 0 ? "亡灵天尊" : "敌方亡灵天尊");
             skill_log("NECROTRONUS_OVERWHELMING_BLEED: P%d applied 6s bleed on P%d", ap, tp);
@@ -173,6 +185,7 @@ static int necrotronus_on_evade_check(SkillEvadeContext* ctx, int* out_evade) {
 static void necrotronus_on_fight_reset(int player_index) {
     if (player_index >= 0 && player_index < 2) {
         s_sp_consumed_this_attack[player_index] = 0;
+        s_necrotronus_charges[player_index] = 0;
     }
 }
 

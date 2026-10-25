@@ -628,6 +628,52 @@ extern int tftf_get_start_full_power(void);
 extern int tftf_get_combat_debug_overlay(void);
 extern int tftf_get_ai_difficulty(void);
 
+// --- AI Tactical Combat System State (Kiting, Defense & Whiff Punish) ---
+static volatile uint64_t g_p0_last_shot_ms = 0;
+static volatile uint32_t g_p0_last_shot_index = 0;
+static volatile uint64_t g_p0_ranged_recovery_ms = 0;
+static volatile uint64_t g_p1_last_shot_ms = 0;
+static volatile uint32_t g_p1_last_shot_index = 0;
+static volatile uint64_t g_p1_ranged_recovery_ms = 0;
+
+static volatile uint64_t g_p1_auto_unblock_ms = 0;
+static volatile int g_p1_knockdown_active = 0;
+static volatile int g_p1_wakeup_defense_active = 0;
+static volatile uint64_t g_p1_wakeup_ms = 0;
+static volatile int s_p1_kite_pending_action = 0;
+static volatile uint64_t s_p1_kite_pending_time_ms = 0;
+static volatile uint64_t s_p1_last_kite_step_ms = 0;
+static volatile uint64_t s_p1_last_dash_ms = 0;
+static volatile uint64_t s_p1_last_melee_ms = 0;
+
+static volatile uint64_t g_p0_auto_unblock_ms = 0;
+static volatile int g_p0_knockdown_active = 0;
+static volatile int g_p0_wakeup_defense_active = 0;
+static volatile uint64_t g_p0_wakeup_ms = 0;
+static volatile int s_p0_kite_pending_action = 0;
+static volatile uint64_t s_p0_kite_pending_time_ms = 0;
+static volatile uint64_t s_p0_last_kite_step_ms = 0;
+static volatile uint64_t s_p0_last_dash_ms = 0;
+static volatile uint64_t s_p0_last_melee_ms = 0;
+
+static volatile uint64_t s_sideswipe_last_power_evade_ms = 0;
+static volatile uint64_t s_sideswipe_last_dash_evade_ms = 0;
+
+// --- AI 5-Hit Combo Commitment System (按步就班打完5连保证最大伤害) ---
+static volatile int g_p1_combo_committed = 0;
+static volatile int g_p1_combo_hit_count = 0;
+static volatile int g_p1_combo_starter_is_medium = 0;
+static volatile int g_p1_combo_next_action = 0;
+static volatile uint64_t g_p1_combo_next_deadline_ms = 0;
+static volatile int g_p1_combo_just_finished = 0;
+
+static volatile int g_p0_combo_committed = 0;
+static volatile int g_p0_combo_hit_count = 0;
+static volatile int g_p0_combo_starter_is_medium = 0;
+static volatile int g_p0_combo_next_action = 0;
+static volatile uint64_t g_p0_combo_next_deadline_ms = 0;
+static volatile int g_p0_combo_just_finished = 0;
+
 static volatile int g_p1_ai_special_cancel_pending = 0;
 static volatile uint64_t g_p1_ai_special_cancel_deadline_ms = 0;
 static volatile uint64_t g_p1_last_ai_action_ms = 0;
@@ -5144,6 +5190,49 @@ void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     s_last_hit_index = 0;
     s_ironhide_burned_this_hit = 0;
     s_ramjet_s1_stacks = 0;
+    g_p0_last_shot_ms = 0;
+    g_p0_last_shot_index = 0;
+    g_p0_ranged_recovery_ms = 0;
+    g_p1_last_shot_ms = 0;
+    g_p1_last_shot_index = 0;
+    g_p1_ranged_recovery_ms = 0;
+
+    g_p1_auto_unblock_ms = 0;
+    g_p1_knockdown_active = 0;
+    g_p1_wakeup_defense_active = 0;
+    g_p1_wakeup_ms = 0;
+    s_p1_kite_pending_action = 0;
+    s_p1_kite_pending_time_ms = 0;
+    s_p1_last_kite_step_ms = 0;
+    s_p1_last_dash_ms = 0;
+    s_p1_last_melee_ms = 0;
+
+    g_p0_auto_unblock_ms = 0;
+    g_p0_knockdown_active = 0;
+    g_p0_wakeup_defense_active = 0;
+    g_p0_wakeup_ms = 0;
+    s_p0_kite_pending_action = 0;
+    s_p0_kite_pending_time_ms = 0;
+    s_p0_last_kite_step_ms = 0;
+    s_p0_last_dash_ms = 0;
+    s_p0_last_melee_ms = 0;
+    s_sideswipe_last_power_evade_ms = 0;
+    s_sideswipe_last_dash_evade_ms = 0;
+
+    g_p1_combo_committed = 0;
+    g_p1_combo_hit_count = 0;
+    g_p1_combo_starter_is_medium = 0;
+    g_p1_combo_next_action = 0;
+    g_p1_combo_next_deadline_ms = 0;
+    g_p1_combo_just_finished = 0;
+
+    g_p0_combo_committed = 0;
+    g_p0_combo_hit_count = 0;
+    g_p0_combo_starter_is_medium = 0;
+    g_p0_combo_next_action = 0;
+    g_p0_combo_next_deadline_ms = 0;
+    g_p0_combo_just_finished = 0;
+
     g_p1_ai_special_cancel_pending = 0;
     g_p1_ai_special_cancel_deadline_ms = 0;
     g_p1_last_ai_action_ms = 0;
@@ -5541,6 +5630,9 @@ void* hook_145(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
 
         // 2. Smoothly drain enemy power meter if Power Leak / Burn is active
         if (g_enemy_power_leak_end_ms > 0 && g_p1_controller && obj_ok(g_p1_controller)) {
+            if (strstr(g_p1_bot_id, "cheetor") != NULL) {
+                g_enemy_power_leak_end_ms = 0; // 黄豹能量守护免疫
+            }
             uint64_t now_ms = propgo_now_ms();
             if (now_ms < g_enemy_power_leak_end_ms) {
                 void* pm = *(void**)((char*)g_p1_controller + 0x80);
@@ -5725,6 +5817,46 @@ void* hook_145(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
 // simulation first, then request the same Attack action used by the stock ranged node.
 // CanShoot supplies availability and out-of-melee-range gates; TryExecuteAction retains
 // normal action-state, hit-stun, recovery, and blocked-action checks. No custom range/cooldown.
+static int bot_has_ranged_heavy(const char* bot_id) {
+    if (!bot_id || !bot_id[0]) return 0;
+    static const char* s_ranged_heavy_bots[] = {
+        "barricade",
+        "blaster",
+        "bludgeon",
+        "cliffjumper",
+        "galvatron",
+        "grimlock",
+        "hound",
+        "ironhide",
+        "jazz",
+        "jetfire",
+        "megatron",
+        "megatronus",
+        "mixmaster",
+        "necrotronus",
+        "plane",
+        "rodimus",
+        "scorponok",
+        "sharkticon",
+        "shockwave",
+        "starscream",
+        "slipstream",
+        "soundwave",
+        "soundblast",
+        "tantrum",
+        "thundercracker",
+        "ultramagnus",
+        "waspinator",
+        NULL
+    };
+    for (int i = 0; s_ranged_heavy_bots[i]; i++) {
+        if (strstr(bot_id, s_ranged_heavy_bots[i]) != NULL) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
 void hook_146(void* self, float dT, void* method){
     int frozen = 0;
     int is_p0 = 0;
@@ -5764,6 +5896,27 @@ void hook_146(void* self, float dT, void* method){
                 if (ai_diff >= 1) {
                     uint64_t now_ms = propgo_now_ms();
 
+                    // 0. Committed 5-Hit Melee Combo Chain Execution for P1
+                    if (g_p1_combo_committed && g_p1_combo_next_action > 0) {
+                        if (now_ms <= g_p1_combo_next_deadline_ms) {
+                            int can_att = ((int(*)(void*,void*))(g_base + 0x11737B4))(player, NULL); // CanAttack
+                            int att_win = ((int(*)(void*,void*))(g_base + 0x1173F94))(player, NULL); // AttackWindow
+                            if (can_att || att_win) {
+                                int fired = ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, g_p1_combo_next_action, NULL);
+                                if (fired) {
+                                    flog("AI_COMBO: P1 successfully executed combo action %d (hit %d)",
+                                         g_p1_combo_next_action, g_p1_combo_hit_count);
+                                    g_p1_combo_next_action = 0;
+                                }
+                            }
+                        } else {
+                            flog("AI_COMBO: P1 combo action %d timed out (+550ms), dropped commitment", g_p1_combo_next_action);
+                            g_p1_combo_committed = 0;
+                            g_p1_combo_hit_count = 0;
+                            g_p1_combo_next_action = 0;
+                        }
+                    }
+
                     // 1. Pending Special Attack Cancel
                     if (g_p1_ai_special_cancel_pending) {
                         if (now_ms <= g_p1_ai_special_cancel_deadline_ms) {
@@ -5777,65 +5930,7 @@ void hook_146(void* self, float dT, void* method){
                         }
                     }
 
-                    // 2. Pending Block Disengage (Whiff Punish)
-                    if (g_p1_disengage_pending) {
-                        if (now_ms >= g_p1_disengage_execute_ms) {
-                            int is_blk = ((int(*)(void*,void*))(g_base + 0x11737F8))(player, NULL); // IsBlocking
-                            if (is_blk) {
-                                ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 4, NULL); // ReleaseBlock (4)
-                            }
-                            int escaped = ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, g_p1_disengage_act, NULL);
-                            if (escaped) {
-                                g_p1_disengage_pending = 0;
-                                g_p1_force_dodge_after_block = 0;
-                                flog("AI_DIFF: P1 block disengage executed successfully! (act=%d, is_blk=%d)", g_p1_disengage_act, is_blk);
-                            } else if (now_ms > g_p1_disengage_execute_ms + 350) {
-                                g_p1_disengage_pending = 0;
-                                g_p1_force_dodge_after_block = 0;
-                                flog("AI_DIFF: P1 block disengage timed out (act=%d)", g_p1_disengage_act);
-                            }
-                        }
-                    }
-
-                    // 3. Okizeme Wake-up Pressure
-                    if (g_ai_okizeme_armed && g_ai_okizeme_strategy > 0 &&
-                        g_p0_controller && obj_ok(g_p0_controller) && fld_p(g_p0_controller, 0x10) && *(uint8_t*)((uintptr_t)g_p0_controller + 0x139) == 1) {
-                        int is_att = ((int(*)(void*,void*))(g_base + 0x11752C8))(player, NULL); // IsAttacking
-                        uint64_t elapsed = now_ms - g_ai_okizeme_start_ms;
-
-                        // Phase 1: Approach / Dash close (500ms - 900ms)
-                        if (elapsed >= 500 && elapsed < 900 && g_ai_okizeme_step == 0 && !is_att) {
-                            if (g_ai_okizeme_strategy == 1 || g_ai_okizeme_strategy == 2) {
-                                ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 32, NULL); // Action.Dash (32)
-                                g_ai_okizeme_step = 1;
-                                flog("AI_DIFF: Okizeme Phase 1 -> Dash forward (strat=%d)", g_ai_okizeme_strategy);
-                            } else {
-                                g_ai_okizeme_step = 1; // Strategy 3: Stay at range
-                            }
-                        }
-                        // Phase 2: Wakeup strike (1150ms - 1700ms)
-                        else if (elapsed >= 1150 && elapsed <= 1700 && g_ai_okizeme_step == 1 && !is_att) {
-                            if (g_ai_okizeme_strategy == 1) {
-                                ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 1, NULL); // Melee strike
-                                g_ai_okizeme_armed = 0;
-                                flog("AI_DIFF: Okizeme Phase 2 -> Melee strike on wakeup!");
-                            } else if (g_ai_okizeme_strategy == 2) {
-                                ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 256, NULL); // Heavy Attack charge
-                                g_ai_okizeme_armed = 0;
-                                flog("AI_DIFF: Okizeme Phase 2 -> Heavy Attack charge on wakeup!");
-                            } else if (g_ai_okizeme_strategy == 3) {
-                                ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 1, NULL); // Shoot on wakeup
-                                g_ai_okizeme_armed = 0;
-                                flog("AI_DIFF: Okizeme Phase 2 -> Ranged shoot on wakeup!");
-                            }
-                        } else if (elapsed > 2000) {
-                            g_ai_okizeme_armed = 0;
-                        }
-                    } else if (g_ai_okizeme_armed && now_ms - g_ai_okizeme_start_ms > 2000) {
-                        g_ai_okizeme_armed = 0;
-                    }
-
-                    // 4. Post-combo Safe Retreat (Avoid free retaliatory L1)
+                    // 2. Post-combo Safe Retreat (Avoid free retaliatory L1 after combo ender)
                     if (g_p1_retreat_after_combo) {
                         if (now_ms >= g_p1_retreat_execute_ms) {
                             int escaped = ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 8, NULL); // Action.Dodge = 8
@@ -5848,23 +5943,142 @@ void hook_146(void* self, float dT, void* method){
                         }
                     }
 
-                    // 5. Active Ranged Combat (点枪与远程压制 - 解决远程松开摇杆向前跑问题)
-                    if (!g_p1_retreat_after_combo && !g_p1_disengage_pending && !g_ai_okizeme_armed) {
-                        int is_att = ((int(*)(void*,void*))(g_base + 0x11752C8))(player, NULL); // IsAttacking
-                        int can_shoot = ((int(*)(void*,void*))(g_base + 0x1174FEC))(player, NULL); // CanShoot
-                        static uint64_t s_p1_last_ranged_act_ms = 0;
+                    // 3. Auto Unblock Timer (Release guard when incoming bullet/attack window has ended)
+                    if (g_p1_auto_unblock_ms > 0 && now_ms >= g_p1_auto_unblock_ms) {
+                        int is_blk = ((int(*)(void*,void*))(g_base + 0x11737F8))(player, NULL);
+                        if (is_blk) {
+                            ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 4, NULL); // ReleaseBlock
+                            flog("AI_DEFENSE: P1 released auto-block after shot passed");
+                        }
+                        g_p1_auto_unblock_ms = 0;
+                    }
 
-                        if (!is_att && can_shoot && (now_ms - s_p1_last_ranged_act_ms >= 260)) {
-                            s_p1_last_ranged_act_ms = now_ms;
-                            int roll = rand() % 100;
-                            int shoot_rate = (ai_diff >= 3) ? 75 : ((ai_diff == 2) ? 65 : 45);
-                            int dash_rate = (ai_diff >= 3) ? 20 : ((ai_diff == 2) ? 20 : 15);
-                            if (roll < shoot_rate) {
-                                ((void(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 1, NULL); // Action.Attack (Shoot!)
-                                flog("AI_DIFF: P1 fires ranged shot! (diff=%d)", ai_diff);
-                            } else if (roll < shoot_rate + dash_rate) {
-                                ((void(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 32, NULL); // Action.Dash (Chase!)
-                                flog("AI_DIFF: P1 dashes forward from range! (diff=%d)", ai_diff);
+                    // 4. Wakeup Defense against Meaty Pressure
+                    if (g_p1_knockdown_active) {
+                        g_p1_knockdown_active = 0;
+                        g_p1_wakeup_defense_active = 1;
+                        g_p1_wakeup_ms = now_ms;
+                        flog("AI_WAKEUP: P1 stood up / regained input at %llu ms", (unsigned long long)now_ms);
+                    }
+                    if (g_p1_wakeup_defense_active) {
+                        if (now_ms - g_p1_wakeup_ms <= 350) {
+                            float dist = ((float(*)(void*,void*))(g_base + 0x1175A28))(player, NULL);
+                            if (dist > 0.01f && dist < 3.2f) {
+                                int sp = ((int(*)(void*,void*))(g_base + 0x1173FA4))(player, NULL);
+                                if (sp >= 1 && (rand() % 100 < 40)) {
+                                    ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 0x200, NULL);
+                                    flog("AI_WAKEUP: P1 wakeup reversal Special Attack executed!");
+                                } else {
+                                    // 70% Block, 30% Sidestep
+                                    int act = (rand() % 100 < 70) ? 2 : ((rand() % 2 == 0) ? 64 : 128);
+                                    ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, act, NULL);
+                                    if (act == 2) g_p1_auto_unblock_ms = now_ms + 400;
+                                    flog("AI_WAKEUP: P1 wakeup safe defense (act=%d) executed! (dist=%.2f)", act, dist);
+                                }
+                                g_p1_wakeup_defense_active = 0;
+                            }
+                        } else {
+                            g_p1_wakeup_defense_active = 0;
+                        }
+                    }
+
+                    // 5. Tactical Neutral & Kiting Engine (Active Ranged Combat, Kiting Loop & Whiff Punish)
+                    int is_att = ((int(*)(void*,void*))(g_base + 0x11752C8))(player, NULL);
+                    int is_blk = ((int(*)(void*,void*))(g_base + 0x11737F8))(player, NULL);
+                    int is_side = ((int(*)(void*,void*))(g_base + 0x1175590))(player, NULL);
+
+                    void* opp = ((void*(*)(void*,void*))(g_base + 0x1174C60))(player, NULL); // get_Opponent
+                    if (obj_ok(opp) && !is_att && !is_blk && !is_side && !g_p1_ai_special_cancel_pending && !g_p1_retreat_after_combo && !g_p1_combo_committed) {
+                        float dist = ((float(*)(void*,void*))(g_base + 0x1175A28))(player, NULL);
+
+                        // 5.1 Whiff Punish: If P0 is in recovery from 3 ranged shots, immediately DASH IN!
+                        if (g_p0_ranged_recovery_ms > 0 && now_ms < g_p0_ranged_recovery_ms && dist > 0.01f && dist < 12.0f) {
+                            ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 32, NULL); // Dash whiff punish
+                            g_p0_ranged_recovery_ms = 0;
+                            flog("AI_KITE: Whiff punished P0 ranged recovery with Dash M1! (dist=%.2f)", dist);
+                        }
+                        // 5.2 Long Range (dist > 4.5m): Kiting & Ranged routines
+                        else if (dist > 4.5f) {
+                            if (s_p1_kite_pending_action > 0 && now_ms >= s_p1_kite_pending_time_ms) {
+                                int act = s_p1_kite_pending_action;
+                                s_p1_kite_pending_action = 0;
+                                ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, act, NULL);
+                                flog("AI_KITE: Executed scheduled follow-up action %d", act);
+                                if (act == 256) {
+                                    // After heavy attack projectile, schedule reposition Sidestep in 550ms
+                                    s_p1_kite_pending_action = (rand() % 2 == 0) ? 64 : 8;
+                                    s_p1_kite_pending_time_ms = now_ms + 550;
+                                }
+                            }
+                            else if (now_ms - s_p1_last_kite_step_ms >= 600) {
+                                int can_shoot = ((int(*)(void*,void*))(g_base + 0x1174FEC))(player, NULL);
+                                s_p1_last_kite_step_ms = now_ms;
+                                if (can_shoot) {
+                                    int is_ranged_heavy = bot_has_ranged_heavy(g_p1_bot_id);
+                                    if (is_ranged_heavy) {
+                                        // Ranged Heavy Bots (放风筝循环): 45% Routine 1, 40% Routine 2 (Heavy), 15% Routine 3 (Dash)
+                                        int routine = rand() % 100;
+                                        if (routine < 45) {
+                                            // Routine 1: 对枪单点 + 快速侧闪 (Poke & Sidestep)
+                                            ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 1, NULL); // Shoot
+                                            s_p1_kite_pending_action = (rand() % 2 == 0) ? 64 : 128;
+                                            s_p1_kite_pending_time_ms = now_ms + 150;
+                                            flog("AI_KITE: Ranged-heavy bot Routine 1 -> Shoot + Sidestep scheduled (dist=%.2f)", dist);
+                                        } else if (routine < 85) {
+                                            // Routine 2: 放风筝 (Shoot + Heavy Attack projectile + Sidestep)
+                                            ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 1, NULL); // Shoot
+                                            s_p1_kite_pending_action = 256; // Heavy Attack
+                                            s_p1_kite_pending_time_ms = now_ms + 180;
+                                            flog("AI_KITE: Ranged-heavy bot Routine 2 -> Shoot + Heavy Attack scheduled (dist=%.2f)", dist);
+                                        } else {
+                                            // Routine 3: 变节奏突进 (Dash)
+                                            ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 32, NULL); // Dash
+                                            flog("AI_KITE: Ranged-heavy bot Routine 3 -> Sudden Dash forward at range (dist=%.2f)", dist);
+                                        }
+                                    } else {
+                                        // Melee Heavy Bots: 70% Routine 1 (Poke & Sidestep), 30% Routine 3 (Dash)
+                                        // Strictly NEVER do Routine 2 (whiff heavy attack at distance)!
+                                        int routine = rand() % 100;
+                                        if (routine < 70) {
+                                            ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 1, NULL); // Shoot
+                                            s_p1_kite_pending_action = (rand() % 2 == 0) ? 64 : 128;
+                                            s_p1_kite_pending_time_ms = now_ms + 150;
+                                            flog("AI_KITE: Melee-heavy bot Routine 1 -> Shoot + Sidestep scheduled (dist=%.2f)", dist);
+                                        } else {
+                                            ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 32, NULL); // Dash
+                                            flog("AI_KITE: Melee-heavy bot Routine 3 -> Sudden Dash forward at range (dist=%.2f)", dist);
+                                        }
+                                    }
+                                } else {
+                                    // Out of ammo: dash or sidestep instead of slowly walking naked
+                                    ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 32, NULL);
+                                    flog("AI_KITE: Out of ammo, Dash forward to close gap");
+                                }
+                            }
+                        }
+                        // 5.3 Mid Range (2.2m < dist <= 4.5m): dynamic dash strike or angle sidestep
+                        else if (dist > 2.2f && now_ms - s_p1_last_dash_ms >= 650) {
+                            s_p1_last_dash_ms = now_ms;
+                            int r = rand() % 100;
+                            if (r < 65) {
+                                ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 32, NULL); // Dash M1
+                                flog("AI_MID: Forward Dash M1 to initiate melee (dist=%.2f)", dist);
+                            } else {
+                                int side = (rand() % 2 == 0) ? 64 : 128;
+                                ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, side, NULL);
+                                flog("AI_MID: Sidestep angle shift (dist=%.2f)", dist);
+                            }
+                        }
+                        // 5.4 Melee Range (dist <= 2.2m): initiate offense if opponent is idle/blocking
+                        else if (dist > 0.01f && dist <= 2.2f && now_ms - s_p1_last_melee_ms >= 350) {
+                            s_p1_last_melee_ms = now_ms;
+                            int opp_blk = g_p0_controller ? ((int(*)(void*,void*))(g_base + 0x11737F8))(g_p0_controller, NULL) : 0;
+                            if (opp_blk) {
+                                ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 256, NULL); // Heavy guard break
+                                flog("AI_MELEE: Opponent blocking, executed Heavy Attack guard break!");
+                            } else {
+                                ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 1, NULL); // Light attack starter
+                                flog("AI_MELEE: Initiated Light attack combo!");
                             }
                         }
                     }
@@ -5873,6 +6087,26 @@ void hook_146(void* self, float dT, void* method){
                 // Player 0 (AutoFight Friendly AI) - Upgraded to 六道狂乱 (Difficulty 3)!
                 int ai_diff = 3;
                 uint64_t now_ms = propgo_now_ms();
+
+                // 0. Committed 5-Hit Melee Combo Chain Execution for P0 (AutoFight)
+                if (g_p0_combo_committed && g_p0_combo_next_action > 0) {
+                    if (now_ms <= g_p0_combo_next_deadline_ms) {
+                        int can_att = ((int(*)(void*,void*))(g_base + 0x11737B4))(player, NULL); // CanAttack
+                        int att_win = ((int(*)(void*,void*))(g_base + 0x1173F94))(player, NULL); // AttackWindow
+                        if (can_att || att_win) {
+                            int fired = ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, g_p0_combo_next_action, NULL);
+                            if (fired) {
+                                flog("AI_COMBO: P0 (AutoFight) successfully executed combo action %d (hit %d)",
+                                     g_p0_combo_next_action, g_p0_combo_hit_count);
+                                g_p0_combo_next_action = 0;
+                            }
+                        }
+                    } else {
+                        g_p0_combo_committed = 0;
+                        g_p0_combo_hit_count = 0;
+                        g_p0_combo_next_action = 0;
+                    }
+                }
 
                 // 1. Pending Special Attack Cancel
                 if (g_p0_ai_special_cancel_pending) {
@@ -5887,65 +6121,7 @@ void hook_146(void* self, float dT, void* method){
                     }
                 }
 
-                // 2. Pending Block Disengage (Whiff Punish)
-                if (g_p0_disengage_pending) {
-                    if (now_ms >= g_p0_disengage_execute_ms) {
-                        int is_blk = ((int(*)(void*,void*))(g_base + 0x11737F8))(player, NULL); // IsBlocking
-                        if (is_blk) {
-                            ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 4, NULL); // ReleaseBlock (4)
-                        }
-                        int escaped = ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, g_p0_disengage_act, NULL);
-                        if (escaped) {
-                            g_p0_disengage_pending = 0;
-                            g_p0_force_dodge_after_block = 0;
-                            flog("AI_DIFF: P0 (AutoFight) block disengage executed successfully! (act=%d, is_blk=%d)", g_p0_disengage_act, is_blk);
-                        } else if (now_ms > g_p0_disengage_execute_ms + 350) {
-                            g_p0_disengage_pending = 0;
-                            g_p0_force_dodge_after_block = 0;
-                            flog("AI_DIFF: P0 (AutoFight) block disengage timed out (act=%d)", g_p0_disengage_act);
-                        }
-                    }
-                }
-
-                // 3. Okizeme Wake-up Pressure on P1
-                if (g_p0_okizeme_armed && g_p0_okizeme_strategy > 0 &&
-                    g_p1_controller && obj_ok(g_p1_controller) && fld_p(g_p1_controller, 0x10) && *(uint8_t*)((uintptr_t)g_p1_controller + 0x139) == 1) {
-                    int is_att = ((int(*)(void*,void*))(g_base + 0x11752C8))(player, NULL); // IsAttacking
-                    uint64_t elapsed = now_ms - g_p0_okizeme_start_ms;
-
-                    // Phase 1: Approach / Dash close (500ms - 900ms)
-                    if (elapsed >= 500 && elapsed < 900 && g_p0_okizeme_step == 0 && !is_att) {
-                        if (g_p0_okizeme_strategy == 1 || g_p0_okizeme_strategy == 2) {
-                            ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 32, NULL); // Action.Dash (32)
-                            g_p0_okizeme_step = 1;
-                            flog("AI_DIFF: P0 (AutoFight) Okizeme Phase 1 -> Dash forward (strat=%d)", g_p0_okizeme_strategy);
-                        } else {
-                            g_p0_okizeme_step = 1; // Strategy 3: Stay at range
-                        }
-                    }
-                    // Phase 2: Wakeup strike (1150ms - 1700ms)
-                    else if (elapsed >= 1150 && elapsed <= 1700 && g_p0_okizeme_step == 1 && !is_att) {
-                        if (g_p0_okizeme_strategy == 1) {
-                            ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 1, NULL); // Melee strike
-                            g_p0_okizeme_armed = 0;
-                            flog("AI_DIFF: P0 (AutoFight) Okizeme Phase 2 -> Melee strike on wakeup!");
-                        } else if (g_p0_okizeme_strategy == 2) {
-                            ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 256, NULL); // Heavy Attack charge
-                            g_p0_okizeme_armed = 0;
-                            flog("AI_DIFF: P0 (AutoFight) Okizeme Phase 2 -> Heavy Attack charge on wakeup!");
-                        } else if (g_p0_okizeme_strategy == 3) {
-                            ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 1, NULL); // Shoot on wakeup
-                            g_p0_okizeme_armed = 0;
-                            flog("AI_DIFF: P0 (AutoFight) Okizeme Phase 2 -> Ranged shoot on wakeup!");
-                        }
-                    } else if (elapsed > 2000) {
-                        g_p0_okizeme_armed = 0;
-                    }
-                } else if (g_p0_okizeme_armed && now_ms - g_p0_okizeme_start_ms > 2000) {
-                    g_p0_okizeme_armed = 0;
-                }
-
-                // 4. Post-combo Safe Retreat (Avoid free retaliatory L1)
+                // 2. Post-combo Safe Retreat (Avoid free retaliatory L1 after combo ender)
                 if (g_p0_retreat_after_combo) {
                     if (now_ms >= g_p0_retreat_execute_ms) {
                         int escaped = ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 8, NULL); // Action.Dodge = 8
@@ -5958,23 +6134,114 @@ void hook_146(void* self, float dT, void* method){
                     }
                 }
 
-                // 5. Active Ranged Combat (点枪与远程压制 - 六道狂乱: 75% shoot, 20% dash)
-                if (!g_p0_retreat_after_combo && !g_p0_disengage_pending && !g_p0_okizeme_armed) {
-                    int is_att = ((int(*)(void*,void*))(g_base + 0x11752C8))(player, NULL); // IsAttacking
-                    int can_shoot = ((int(*)(void*,void*))(g_base + 0x1174FEC))(player, NULL); // CanShoot
-                    static uint64_t s_p0_last_ranged_act_ms = 0;
+                // 3. Auto Unblock Timer for P0
+                if (g_p0_auto_unblock_ms > 0 && now_ms >= g_p0_auto_unblock_ms) {
+                    int is_blk = ((int(*)(void*,void*))(g_base + 0x11737F8))(player, NULL);
+                    if (is_blk) {
+                        ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 4, NULL); // ReleaseBlock
+                        flog("AI_DEFENSE: P0 (AutoFight) released auto-block after shot passed");
+                    }
+                    g_p0_auto_unblock_ms = 0;
+                }
 
-                    if (!is_att && can_shoot && (now_ms - s_p0_last_ranged_act_ms >= 260)) {
-                        s_p0_last_ranged_act_ms = now_ms;
-                        int roll = rand() % 100;
-                        int shoot_rate = 75; // 六道狂乱
-                        int dash_rate = 20;  // 六道狂乱
-                        if (roll < shoot_rate) {
-                            ((void(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 1, NULL); // Action.Attack (Shoot!)
-                            flog("AI_DIFF: P0 (AutoFight) fires ranged shot!");
-                        } else if (roll < shoot_rate + dash_rate) {
-                            ((void(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 32, NULL); // Action.Dash (Chase!)
-                            flog("AI_DIFF: P0 (AutoFight) dashes forward from range!");
+                // 4. Wakeup Defense against Meaty Pressure for P0
+                if (g_p0_knockdown_active) {
+                    g_p0_knockdown_active = 0;
+                    g_p0_wakeup_defense_active = 1;
+                    g_p0_wakeup_ms = now_ms;
+                    flog("AI_WAKEUP: P0 (AutoFight) stood up / regained input at %llu ms", (unsigned long long)now_ms);
+                }
+                if (g_p0_wakeup_defense_active) {
+                    if (now_ms - g_p0_wakeup_ms <= 350) {
+                        float dist = ((float(*)(void*,void*))(g_base + 0x1175A28))(player, NULL);
+                        if (dist > 0.01f && dist < 3.2f) {
+                            int sp = ((int(*)(void*,void*))(g_base + 0x1173FA4))(player, NULL);
+                            if (sp >= 1 && (rand() % 100 < 40)) {
+                                ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 0x200, NULL);
+                                flog("AI_WAKEUP: P0 (AutoFight) wakeup reversal Special Attack executed!");
+                            } else {
+                                // 70% Block, 30% Sidestep
+                                int act = (rand() % 100 < 70) ? 2 : ((rand() % 2 == 0) ? 64 : 128);
+                                ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, act, NULL);
+                                if (act == 2) g_p0_auto_unblock_ms = now_ms + 400;
+                                flog("AI_WAKEUP: P0 (AutoFight) wakeup safe defense (act=%d) executed! (dist=%.2f)", act, dist);
+                            }
+                            g_p0_wakeup_defense_active = 0;
+                        }
+                    } else {
+                        g_p0_wakeup_defense_active = 0;
+                    }
+                }
+
+                // 5. Tactical Neutral & Kiting Engine for P0
+                int is_att = ((int(*)(void*,void*))(g_base + 0x11752C8))(player, NULL);
+                int is_blk = ((int(*)(void*,void*))(g_base + 0x11737F8))(player, NULL);
+                int is_side = ((int(*)(void*,void*))(g_base + 0x1175590))(player, NULL);
+
+                void* opp = ((void*(*)(void*,void*))(g_base + 0x1174C60))(player, NULL);
+                if (obj_ok(opp) && !is_att && !is_blk && !is_side && !g_p0_ai_special_cancel_pending && !g_p0_retreat_after_combo && !g_p0_combo_committed) {
+                    float dist = ((float(*)(void*,void*))(g_base + 0x1175A28))(player, NULL);
+
+                    if (g_p1_ranged_recovery_ms > 0 && now_ms < g_p1_ranged_recovery_ms && dist > 0.01f && dist < 12.0f) {
+                        ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 32, NULL);
+                        g_p1_ranged_recovery_ms = 0;
+                        flog("AI_KITE: P0 (AutoFight) whiff punished P1 ranged recovery with Dash M1!");
+                    } else if (dist > 4.5f) {
+                        if (s_p0_kite_pending_action > 0 && now_ms >= s_p0_kite_pending_time_ms) {
+                            int act = s_p0_kite_pending_action;
+                            s_p0_kite_pending_action = 0;
+                            ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, act, NULL);
+                            if (act == 256) {
+                                s_p0_kite_pending_action = (rand() % 2 == 0) ? 64 : 8;
+                                s_p0_kite_pending_time_ms = now_ms + 550;
+                            }
+                        } else if (now_ms - s_p0_last_kite_step_ms >= 600) {
+                            int can_shoot = ((int(*)(void*,void*))(g_base + 0x1174FEC))(player, NULL);
+                            s_p0_last_kite_step_ms = now_ms;
+                            if (can_shoot) {
+                                int is_ranged_heavy = bot_has_ranged_heavy(g_p0_bot_id);
+                                if (is_ranged_heavy) {
+                                    int routine = rand() % 100;
+                                    if (routine < 45) {
+                                        ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 1, NULL);
+                                        s_p0_kite_pending_action = (rand() % 2 == 0) ? 64 : 128;
+                                        s_p0_kite_pending_time_ms = now_ms + 150;
+                                    } else if (routine < 85) {
+                                        ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 1, NULL);
+                                        s_p0_kite_pending_action = 256;
+                                        s_p0_kite_pending_time_ms = now_ms + 180;
+                                    } else {
+                                        ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 32, NULL);
+                                    }
+                                } else {
+                                    int routine = rand() % 100;
+                                    if (routine < 70) {
+                                        ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 1, NULL);
+                                        s_p0_kite_pending_action = (rand() % 2 == 0) ? 64 : 128;
+                                        s_p0_kite_pending_time_ms = now_ms + 150;
+                                    } else {
+                                        ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 32, NULL);
+                                    }
+                                }
+                            } else {
+                                ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 32, NULL);
+                            }
+                        }
+                    } else if (dist > 2.2f && now_ms - s_p0_last_dash_ms >= 650) {
+                        s_p0_last_dash_ms = now_ms;
+                        if (rand() % 100 < 65) {
+                            ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 32, NULL);
+                        } else {
+                            int side = (rand() % 2 == 0) ? 64 : 128;
+                            ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, side, NULL);
+                        }
+                    } else if (dist > 0.01f && dist <= 2.2f && now_ms - s_p0_last_melee_ms >= 350) {
+                        s_p0_last_melee_ms = now_ms;
+                        int opp_blk = g_p1_controller ? ((int(*)(void*,void*))(g_base + 0x11737F8))(g_p1_controller, NULL) : 0;
+                        if (opp_blk) {
+                            ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 256, NULL);
+                        } else {
+                            ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 1, NULL);
                         }
                     }
                 }
@@ -6095,10 +6362,16 @@ void* hook_153(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
         if (strstr(g_p0_bot_id, "prowl") != NULL && g_p0_prowl_charging) {
             prowl_finish_charge(1, "special attack start (hook_153)");
         }
+        if (index == 2) {
+            skill_dispatch_attack_start(0, 32);
+        }
     } else if (self == g_p1_controller || (obj_ok(self) && *(int32_t*)((uintptr_t)self + 0xF4) == 1)) {
         reset_player_attack_chain(self);
         if (strstr(g_p1_bot_id, "prowl") != NULL && g_p1_prowl_charging) {
             prowl_finish_charge(0, "special attack start (hook_153)");
+        }
+        if (index == 2) {
+            skill_dispatch_attack_start(1, 32);
         }
     }
     void* r = H[153].orig(self, a1, a2, a3, a4, a5, a6, a7);
@@ -6228,47 +6501,10 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
         // P0 (AutoFight Friendly AI) Tactical Action Interceptions (六道狂乱 Difficulty 3):
         if (is_p0_act && tftf_is_autofight_active()) {
             uint64_t now_ms = propgo_now_ms();
-
-            // 1. Intercept Behavior Tree Block -> Force Dodge out of block once blockstun elapsed!
-            if (action == 2 && g_p0_force_dodge_after_block) {
-                if (now_ms >= g_p0_disengage_execute_ms) {
-                    action = g_p0_force_dodge_action ? g_p0_force_dodge_action : 8;
-                    a1 = (void*)(intptr_t)action;
-                    flog("AI_DIFF: P0 (AutoFight) Intercepted Behavior Tree Block(2) -> replaced with Dodge(%d)!", action);
-                }
-            }
-            // 2. Tactical Melee / Whiff Prevention & Retreat Counter for P0:
-            else if (action == 1) {
-                int p1_retreated = (now_ms - g_p1_last_dodge_ms < 1000);
-                int p0_was_hit = (now_ms - g_p0_last_hitreact_ms < 1400);
-
-                if (p1_retreated || p0_was_hit) {
-                    int can_shoot = ((int(*)(void*,void*))(g_base + 0x1174FEC))(self, NULL); // get_CanShoot
-                    if (can_shoot) {
-                        int roll = rand() % 100;
-                        int shoot_chance = 60; // 六道狂乱
-                        if (roll < shoot_chance) {
-                            action = 1; // Ranged attack (Shoot!)
-                            a1 = (void*)(intptr_t)action;
-                            flog("AI_DIFF: P0 (AutoFight) P1 retreated & at CanShoot range -> fires ranged shot!");
-                        } else {
-                            action = 32; // Action.Dash (Chase!)
-                            a1 = (void*)(intptr_t)action;
-                            flog("AI_DIFF: P0 (AutoFight) P1 retreated & at CanShoot range -> dashes in to punish!");
-                        }
-                    } else if (p1_retreated) {
-                        int roll = rand() % 100;
-                        int dash_chance = 70; // 六道狂乱
-                        if (roll < dash_chance) {
-                            action = 32; // Action.Dash (Close distance immediately!)
-                            a1 = (void*)(intptr_t)action;
-                            flog("AI_DIFF: P0 (AutoFight) P1 retreating -> converts whiff melee into Dash(32) chase!");
-                        } else {
-                            flog("AI_DIFF: P0 (AutoFight) P1 retreating -> suppresses whiff melee swing (waiting for CanShoot range)");
-                            return NULL;
-                        }
-                    }
-                }
+            // Suppress premature Dodge/Sidestep while in a committed 5-hit combo
+            if (g_p0_combo_committed && (action == 8 || action == 64 || action == 128)) {
+                flog("AI_COMBO: P0 (AutoFight) suppressed premature dodge (%d) during committed combo", action);
+                return (void*)0;
             }
         }
 
@@ -6276,48 +6512,27 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
             g_p1_controller = self;
             uint64_t now_ms = propgo_now_ms();
 
-            // 1. Intercept Behavior Tree Block -> Force Dodge out of block once blockstun has elapsed!
-            if (action == 2 && g_p1_force_dodge_after_block) {
-                if (now_ms >= g_p1_disengage_execute_ms) {
-                    action = g_p1_force_dodge_action ? g_p1_force_dodge_action : 8;
-                    a1 = (void*)(intptr_t)action;
-                    flog("AI_DIFF: Intercepted Behavior Tree Block(2) -> replaced with Dodge(%d)!", action);
-                }
+            // Suppress premature Dodge/Sidestep while in a committed 5-hit combo
+            if (g_p1_combo_committed && (action == 8 || action == 64 || action == 128)) {
+                flog("AI_COMBO: P1 suppressed premature dodge (%d) during committed combo", action);
+                return (void*)0;
             }
-            // 2. Tactical Melee / Whiff Prevention & Retreat Counter:
-            else if (action == 1) {
-                int ai_diff = tftf_get_ai_difficulty();
-                int p0_retreated = (now_ms - g_p0_last_dodge_ms < 1000);
-                int p1_was_hit = (now_ms - g_p1_last_hitreact_ms < 1400);
 
-                if (ai_diff >= 1 && (p0_retreated || p1_was_hit)) {
-                    int can_shoot = ((int(*)(void*,void*))(g_base + 0x1174FEC))(self, NULL); // get_CanShoot
-                    if (can_shoot) {
-                        // Player reached CanShoot distance! Either shoot or dash in!
-                        int roll = rand() % 100;
-                        int shoot_chance = (ai_diff >= 3) ? 60 : ((ai_diff == 2) ? 55 : 50);
-                        if (roll < shoot_chance) {
-                            action = 1; // Ranged attack (Shoot!)
-                            a1 = (void*)(intptr_t)action;
-                            flog("AI_DIFF: Player retreated & at CanShoot range -> AI fires ranged shot! (diff=%d)", ai_diff);
-                        } else {
-                            action = 32; // Action.Dash (Chase!)
-                            a1 = (void*)(intptr_t)action;
-                            flog("AI_DIFF: Player retreated & at CanShoot range -> AI dashes in to punish! (diff=%d)", ai_diff);
-                        }
-                    } else if (p0_retreated) {
-                        // Player is retreating, but not yet at CanShoot distance!
-                        // Whiff prevention: DO NOT swing light punch at empty air!
-                        int roll = rand() % 100;
-                        int dash_chance = (ai_diff >= 3) ? 70 : ((ai_diff == 2) ? 55 : 40);
-                        if (roll < dash_chance) {
-                            action = 32; // Action.Dash (Close distance immediately!)
-                            a1 = (void*)(intptr_t)action;
-                            flog("AI_DIFF: Player retreating -> AI converts whiff melee into Dash(32) chase! (diff=%d)", ai_diff);
-                        } else {
-                            // Suppress blind melee swing so AI waits until CanShoot distance!
-                            flog("AI_DIFF: Player retreating -> AI suppresses whiff melee swing (waiting for CanShoot range) (diff=%d)", ai_diff);
-                            return NULL;
+            // Wakeup defense gate for P1: Under meaty pressure within 350ms of wakeup,
+            // if P1 has NO special attack energy, mutate suicidal slow attacks (Heavy 256 or Light 1)
+            // into safe Sidestep (64/128) or Block (2)!
+            if ((action == 256 || action == 1) && (g_p1_wakeup_defense_active || (g_p1_wakeup_ms > 0 && now_ms - g_p1_wakeup_ms <= 350))) {
+                float dist = ((float(*)(void*,void*))(g_base + 0x1175A28))(self, NULL);
+                if (dist > 0.01f && dist < 3.2f) {
+                    int sp_avail = ((int(*)(void*,void*))(g_base + 0x1173FA4))(self, NULL);
+                    if (sp_avail == 0) {
+                        // 70% Block, 30% Sidestep
+                        int safe_act = (rand() % 100 < 70) ? 2 : ((rand() % 2 == 0) ? 64 : 128);
+                        flog("AI_WAKEUP: P1 intercepted suicidal wakeup attack (%d) -> converted to safe action %d (dist=%.2f)", action, safe_act, dist);
+                        action = safe_act;
+                        a1 = (void*)(intptr_t)action;
+                        if (action == 2) {
+                            g_p1_auto_unblock_ms = now_ms + 400;
                         }
                     }
                 }
@@ -6334,88 +6549,6 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
                 }
             }
         }
-        // AI Reaction to player offensive maneuvers
-        if (is_p0_act && g_p1_controller && obj_ok(g_p1_controller) && fld_p(g_p1_controller, 0x10)) {
-            int ai_diff = tftf_get_ai_difficulty();
-            int p1_input = *(uint8_t*)((uintptr_t)g_p1_controller + 0x139);
-            uint8_t p0_input = (self && obj_ok(self)) ? *(uint8_t*)((uintptr_t)self + 0x139) : 0;
-            if (ai_diff >= 1 && p1_input == 1 && p0_input == 1) {
-                uint64_t now_ms = propgo_now_ms();
-                // 1. Player charging heavy attack -> evade
-                if (ai_diff >= 2 && action == 0x100) {
-                    int roll = rand() % 100;
-                    int evade_chance = (ai_diff >= 3) ? 85 : 50;
-                    if (roll < evade_chance) {
-                        int evade_act = (rand() % 2 == 0) ? 8 : (rand() % 2 == 0 ? 0x40 : 0x80);
-                        ((void(*)(void*,int,void*))(g_base+0x1179AF4))(g_p1_controller, evade_act, NULL);
-                        flog("AI_DIFF: AI reacted to player heavy attack (evade_act=%d, roll=%d < %d)", evade_act, roll, evade_chance);
-                    }
-                }
-                // 2. Player shooting at range -> punish with special or evade
-                else if (action == 1 && (now_ms - g_p1_anti_shoot_last_ms >= 1000)) {
-                    int p0_can_shoot = ((int(*)(void*,void*))(g_base + 0x1174FEC))(self, NULL); // get_CanShoot
-                    if (p0_can_shoot) {
-                        g_p1_anti_shoot_last_ms = now_ms;
-                        int sp_avail = ((int(*)(void*,void*))(g_base + 0x1173FA4))(g_p1_controller, NULL); // GetHighestAvailableSpecialAttack
-                        int sp_chance = (ai_diff >= 3) ? 95 : ((ai_diff == 2) ? 60 : 30);
-                        int evade_chance = (ai_diff >= 3) ? 95 : ((ai_diff == 2) ? 75 : 45);
-
-                        if (sp_avail > 0 && (rand() % 100 < sp_chance)) {
-                            // Punish with Special Attack!
-                            int fired = ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(g_p1_controller, 0x200, NULL);
-                            if (!fired) {
-                                g_p1_ai_special_cancel_pending = 1;
-                                g_p1_ai_special_cancel_deadline_ms = now_ms + 450;
-                            }
-                            flog("AI_DIFF: P1 punishes player shot with Special Attack! (sp=%d, diff=%d, fired=%d)", sp_avail, ai_diff, fired);
-                        } else if (rand() % 100 < evade_chance) {
-                            // Evade projectile with Sidestep (64/128) or Dash (32)
-                            int evade_act = (rand() % 3 == 0) ? 32 : ((rand() % 2 == 0) ? 64 : 128);
-                            ((void(*)(void*,int,void*))(g_base + 0x1179AF4))(g_p1_controller, evade_act, NULL);
-                            flog("AI_DIFF: P1 evades player shot! (act=%d, diff=%d)", evade_act, ai_diff);
-                        }
-                    }
-                }
-            }
-        }
-
-        // P0 (AutoFight Friendly AI) Reaction to P1 offensive maneuvers (六道狂乱 Difficulty 3):
-        if (is_p1_act && g_p0_controller && obj_ok(g_p0_controller) && fld_p(g_p0_controller, 0x10) && tftf_is_autofight_active()) {
-            int p0_input = *(uint8_t*)((uintptr_t)g_p0_controller + 0x139);
-            uint8_t p1_input = (self && obj_ok(self)) ? *(uint8_t*)((uintptr_t)self + 0x139) : 0;
-            if (p0_input == 1 && p1_input == 1) {
-                uint64_t now_ms = propgo_now_ms();
-                // 1. P1 charging heavy attack -> P0 evades (85% chance for 六道狂乱)
-                if (action == 0x100) {
-                    int roll = rand() % 100;
-                    if (roll < 85) {
-                        int evade_act = (rand() % 2 == 0) ? 8 : (rand() % 2 == 0 ? 0x40 : 0x80);
-                        ((void(*)(void*,int,void*))(g_base+0x1179AF4))(g_p0_controller, evade_act, NULL);
-                        flog("AI_DIFF: P0 (AutoFight) reacted to P1 heavy attack (evade_act=%d)", evade_act);
-                    }
-                }
-                // 2. P1 shooting at range -> P0 punishes with special or evades (95% chance for 六道狂乱)
-                else if (action == 1 && (now_ms - g_p0_anti_shoot_last_ms >= 1000)) {
-                    int p1_can_shoot = ((int(*)(void*,void*))(g_base + 0x1174FEC))(self, NULL); // get_CanShoot
-                    if (p1_can_shoot) {
-                        g_p0_anti_shoot_last_ms = now_ms;
-                        int sp_avail = ((int(*)(void*,void*))(g_base + 0x1173FA4))(g_p0_controller, NULL); // GetHighestAvailableSpecialAttack
-                        if (sp_avail > 0 && (rand() % 100 < 95)) {
-                            int fired = ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(g_p0_controller, 0x200, NULL);
-                            if (!fired) {
-                                g_p0_ai_special_cancel_pending = 1;
-                                g_p0_ai_special_cancel_deadline_ms = now_ms + 450;
-                            }
-                            flog("AI_DIFF: P0 (AutoFight) punishes P1 shot with Special Attack! (sp=%d, fired=%d)", sp_avail, fired);
-                        } else if (rand() % 100 < 95) {
-                            int evade_act = (rand() % 3 == 0) ? 32 : ((rand() % 2 == 0) ? 64 : 128);
-                            ((void(*)(void*,int,void*))(g_base + 0x1179AF4))(g_p0_controller, evade_act, NULL);
-                            flog("AI_DIFF: P0 (AutoFight) evades P1 shot! (act=%d)", evade_act);
-                        }
-                    }
-                }
-            }
-        }
 
         if (action == 8) { // Action.Dodge ONLY (Swipe back / 后闪)
             if (is_p0_act && strstr(g_p0_bot_id, "prowl") != NULL) {
@@ -6424,6 +6557,9 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
                 prowl_start_charge(0);
             }
         } else if (action == 32) { // Action.Dash (主动前冲，打断充能)
+            if (is_p0_act) s_p0_last_dash_ms = propgo_now_ms();
+            else s_p1_last_dash_ms = propgo_now_ms();
+            skill_dispatch_attack_start(is_p0_act ? 0 : 1, 32);
             if (is_p0_act && strstr(g_p0_bot_id, "prowl") != NULL && g_p0_prowl_charging) {
                 prowl_finish_charge(1, "dash forward (action 32)");
             } else if (is_p1_act && strstr(g_p1_bot_id, "prowl") != NULL && g_p1_prowl_charging) {
@@ -6466,6 +6602,41 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
         if (obj_ok(self) && *(int32_t*)((uintptr_t)self + 0xF4) == 0) {
             uint32_t post_l = *(uint32_t*)((uintptr_t)self + 0x1c0);
             uint32_t post_m = *(uint32_t*)((uintptr_t)self + 0x1c4);
+            uint32_t post_r = *(uint32_t*)((uintptr_t)self + 0x1c8);
+
+            // Detect P0 ranged shot
+            if (action_ok && action == 1 && post_r > 0 && post_l == 0) {
+                uint64_t now_ms = propgo_now_ms();
+                g_p0_last_shot_ms = now_ms;
+                g_p0_last_shot_index = post_r;
+                if (post_r >= 3) {
+                    g_p0_ranged_recovery_ms = now_ms + 420;
+                }
+                // AI defensive reaction to incoming shot
+                if (g_p1_controller && obj_ok(g_p1_controller) && fld_p(g_p1_controller, 0x10)) {
+                    int p1_input = *(uint8_t*)((uintptr_t)g_p1_controller + 0x139);
+                    int p1_att = ((int(*)(void*,void*))(g_base + 0x11752C8))(g_p1_controller, NULL);
+                    int p1_blk = ((int(*)(void*,void*))(g_base + 0x11737F8))(g_p1_controller, NULL);
+                    if (p1_input && !p1_att && !p1_blk && tftf_get_ai_difficulty() >= 1) {
+                        if (post_r <= 2) {
+                            int roll = rand() % 100;
+                            if (roll < 55) {
+                                int side = (rand() % 2 == 0) ? 64 : 128;
+                                ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(g_p1_controller, side, NULL);
+                                flog("AI_DEFENSE: P1 sidestepped P0 shot %u (side=%d)", post_r, side);
+                            } else if (roll < 95) {
+                                ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(g_p1_controller, 2, NULL);
+                                g_p1_auto_unblock_ms = now_ms + 280;
+                                flog("AI_DEFENSE: P1 blocked P0 shot %u (auto unblock armed)", post_r);
+                            }
+                        } else {
+                            // Shot 3 recovery -> Whiff Punish with Dash!
+                            ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(g_p1_controller, 32, NULL);
+                            flog("AI_DEFENSE: P1 dashed forward on P0 3-shot finish!");
+                        }
+                    }
+                }
+            }
             // DIAGNOSTIC ONLY -- no behavior change. Prints the chain counters AFTER the native
             // handler ran for EVERY P0 action; previously these values only reached the log when
             // the ender branch below happened to trip, so the ordinary L1..L4/M1..M2 progression
@@ -6927,12 +7098,20 @@ void* hook_165(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
                 g_p0_combo_ended = 0;
                 g_p0_after_heavy = 0;
                 g_p0_last_hitreact_ms = propgo_now_ms();
+                g_p0_knockdown_active = 1;
+                g_p0_combo_committed = 0;
+                g_p0_combo_hit_count = 0;
+                g_p0_combo_next_action = 0;
                 flog("HITREACT_ENTER (0x0117FEC4) on P0: unblocked hit reaction resets attack chain");
                 reset_player_attack_chain(pc);
                 skill_dispatch_hitreact_enter(0);
             } else if (pidx == 1) {
                 g_p1_block_enter_ms = 0;
                 g_p1_last_hitreact_ms = propgo_now_ms();
+                g_p1_knockdown_active = 1;
+                g_p1_combo_committed = 0;
+                g_p1_combo_hit_count = 0;
+                g_p1_combo_next_action = 0;
                 flog("HITREACT_ENTER (0x0117FEC4) on P1: hit reaction resets attack chain");
                 reset_player_attack_chain(pc);
                 skill_dispatch_hitreact_enter(1);
@@ -7018,6 +7197,31 @@ void* hook_172(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
                 flog("DODGE_ENTER (0x0117F614) on P1: real dodge resets attack chain");
                 reset_player_attack_chain(pc);
                 skill_dispatch_dodge_enter(1);
+            }
+
+            // --- Sideswipe Precision Reactive Evade Gate ---
+            // 严格门禁：普通空闪、闪避近战绝不获得能量；
+            // 唯有当对方刚刚射出远程子弹 (600ms内) 或发动冲锋 (500ms内) 时才激活回能与暴伤！
+            const char* who_dodge = (pidx == 0) ? g_p0_bot_id : g_p1_bot_id;
+            if (who_dodge && strstr(who_dodge, "sideswipe") != NULL) {
+                uint64_t now_ms = propgo_now_ms();
+                uint64_t opp_shot_ms = (pidx == 0) ? g_p1_last_shot_ms : g_p0_last_shot_ms;
+                uint64_t opp_dash_ms = (pidx == 0) ? s_p1_last_dash_ms : s_p0_last_dash_ms;
+                // 1. 闪避远程普通攻击和远程重击: 获得13%能量 (1秒内)
+                if (opp_shot_ms > 0 && now_ms >= opp_shot_ms && (now_ms - opp_shot_ms <= 600) && (now_ms - s_sideswipe_last_power_evade_ms > 700)) {
+                    s_sideswipe_last_power_evade_ms = now_ms;
+                    skill_add_mana(pidx, 0.39f);
+                    skill_apply_buff_dur(pidx, "sideswipe_evade_ranged_power", 1.0f);
+                    combat_overlay_push("[%s] 极速闪避远程！获得+13%%能量！", pidx == 0 ? "横炮" : "敌方横炮");
+                    flog("SIDESWIPE_EVADE_RANGED (DODGE_ENTER): P%d evaded shot (dt=%llu), gained 13%% power", pidx, (unsigned long long)(now_ms - opp_shot_ms));
+                }
+                // 2. 闪避冲锋攻击: 获得 +108% 暴击伤害 (6秒内)
+                if (opp_dash_ms > 0 && now_ms >= opp_dash_ms && (now_ms - opp_dash_ms <= 500) && (now_ms - s_sideswipe_last_dash_evade_ms > 700)) {
+                    s_sideswipe_last_dash_evade_ms = now_ms;
+                    skill_apply_buff_dur(pidx, "sideswipe_evade_dash_crit_damage", 6.0f);
+                    combat_overlay_push("[%s] 闪避冲锋！暴击伤害提升+108%%！", pidx == 0 ? "横炮" : "敌方横炮");
+                    flog("SIDESWIPE_EVADE_DASH (DODGE_ENTER): P%d evaded dash (dt=%llu), gained +108%% crit dmg", pidx, (unsigned long long)(now_ms - opp_dash_ms));
+                }
             }
         }
     });
@@ -7211,7 +7415,8 @@ float hook_177(void* self, float damage, void* damageType, int32_t blocked, void
                 if (p0_input && !blocked) {
                     uint32_t p0_m = *(uint32_t*)((char*)g_p0_controller + 0x1c4);
                     uint32_t p0_l = *(uint32_t*)((char*)g_p0_controller + 0x1c0);
-                    if (p0_m >= 2 || p0_l >= 4 || (p0_l >= 3 && p0_m >= 1)) {
+                    if (p0_m >= 2 || p0_l >= 4 || (p0_l >= 3 && p0_m >= 1) || g_p0_combo_just_finished) {
+                        g_p0_combo_just_finished = 0;
                         int sp_avail = ((int(*)(void*,void*))(g_base + 0x1173FA4))(g_p0_controller, NULL);
                         if (sp_avail > 0) {
                             g_p0_ai_special_cancel_pending = 1;
@@ -7240,7 +7445,8 @@ float hook_177(void* self, float damage, void* damageType, int32_t blocked, void
                 if (ai_diff >= 1 && p1_input && !blocked) {
                     uint32_t p1_m = *(uint32_t*)((char*)g_p1_controller + 0x1c4);
                     uint32_t p1_l = *(uint32_t*)((char*)g_p1_controller + 0x1c0);
-                    if (p1_m >= 2 || p1_l >= 4 || (p1_l >= 3 && p1_m >= 1)) {
+                    if (p1_m >= 2 || p1_l >= 4 || (p1_l >= 3 && p1_m >= 1) || g_p1_combo_just_finished) {
+                        g_p1_combo_just_finished = 0;
                         int sp_avail = ((int(*)(void*,void*))(g_base + 0x1173FA4))(g_p1_controller, NULL);
                         if (sp_avail > 0) {
                             g_p1_ai_special_cancel_pending = 1;
@@ -7826,6 +8032,27 @@ void* hook_186(void* this_pc, void* hitResult, void* method) {
                 s_current_hit_is_ranged = 0;
                 s_current_hit_is_heavy = 0;
                 s_current_hit_is_last = 0;
+
+                // --- 横炮实机真实规避确认 (RegisterHitResult 判定未命中/规避) ---
+                const char* victim_id = (p_idx == 0) ? g_p0_bot_id : g_p1_bot_id;
+                if (victim_id && strstr(victim_id, "sideswipe") != NULL) {
+                    uint64_t now_ms = propgo_now_ms();
+                    int is_ranged_attack = (atk_level == 8 || (atk_level == 4 && bot_has_ranged_heavy(p_idx == 0 ? g_p1_bot_id : g_p0_bot_id)));
+                    if (is_ranged_attack && (now_ms - s_sideswipe_last_power_evade_ms > 700)) {
+                        s_sideswipe_last_power_evade_ms = now_ms;
+                        skill_add_mana(p_idx, 0.39f);
+                        skill_apply_buff_dur(p_idx, "sideswipe_evade_ranged_power", 1.0f);
+                        combat_overlay_push("[%s] 极速闪避远程！获得+13%%能量！", p_idx == 0 ? "横炮" : "敌方横炮");
+                        flog("SIDESWIPE_EVADE_RANGED (REG_HIT): P%d evaded ranged attack (al=%d), gained 13%% power", p_idx, atk_level);
+                    }
+                    int is_dash_attack = (atk_level == 32 || atk_level == 2);
+                    if (is_dash_attack && (now_ms - s_sideswipe_last_dash_evade_ms > 700)) {
+                        s_sideswipe_last_dash_evade_ms = now_ms;
+                        skill_apply_buff_dur(p_idx, "sideswipe_evade_dash_crit_damage", 6.0f);
+                        combat_overlay_push("[%s] 闪避冲锋！暴击伤害提升+108%%！", p_idx == 0 ? "横炮" : "敌方横炮");
+                        flog("SIDESWIPE_EVADE_DASH (REG_HIT): P%d evaded dash attack (al=%d), gained +108%% crit dmg", p_idx, atk_level);
+                    }
+                }
             } else {
                 s_current_hit_active = 1;
                 s_current_hit_is_ranged = (atk_level == 8);
@@ -7835,6 +8062,13 @@ void* hook_186(void* this_pc, void* hitResult, void* method) {
             s_last_hit_flags = flags;
             s_last_hit_index = hit_idx;
             s_last_atk_level = atk_level;
+            if (atk_level == 8) {
+                if (p_idx == 0) g_p1_last_shot_ms = propgo_now_ms();
+                else g_p0_last_shot_ms = propgo_now_ms();
+            } else if (atk_level == 32 || atk_level == 2) {
+                if (p_idx == 0) s_p1_last_dash_ms = propgo_now_ms();
+                else s_p0_last_dash_ms = propgo_now_ms();
+            }
             if (p_idx == 0 && (atk_level == 1 || atk_level == 2 || atk_level == 4 || atk_level == 8)) {
                 g_p0_current_special_index = -1;
             }
@@ -7842,6 +8076,20 @@ void* hook_186(void* this_pc, void* hitResult, void* method) {
             s_ramjet_s1_stacks = 0;
             int is_hit = ((flags & 5) != 0); // Hit (1) or Blocked (4)
             int is_unblocked_hit = ((flags & 1) != 0);
+            int is_blocked = ((flags & 4) != 0);
+            if (is_missed || is_blocked) {
+                if (p_idx == 0) {
+                    // P0 blocked or avoided P1 attack -> abort P1 combo
+                    g_p1_combo_committed = 0;
+                    g_p1_combo_hit_count = 0;
+                    g_p1_combo_next_action = 0;
+                } else if (p_idx == 1) {
+                    // P1 blocked or avoided P0 attack -> abort P0 combo
+                    g_p0_combo_committed = 0;
+                    g_p0_combo_hit_count = 0;
+                    g_p0_combo_next_action = 0;
+                }
+            }
             if (is_unblocked_hit) {
                 if (p_idx == 0) {
                     g_p1_block_enter_ms = 0;
@@ -7851,12 +8099,94 @@ void* hook_186(void* this_pc, void* hitResult, void* method) {
                     if (g_p1_controller) {
                         reset_player_attack_chain(g_p1_controller);
                     }
+
+                    // --- AI 5-Hit Combo Commitment System (P1 attacking P0) ---
+                    if (atk_level == 1 || atk_level == 2) {
+                        if (hit_idx == 0) {
+                            if (!g_p1_combo_committed) {
+                                int ai_diff = tftf_get_ai_difficulty();
+                                // Highest difficulty (3 - 六道狂乱): 90%
+                                // Difficulty 2 (噩梦): 65%
+                                // Difficulty 1 (挑战): 40%
+                                // Difficulty 0 (默认): 0%
+                                int commit_chance = (ai_diff >= 3) ? 90 : ((ai_diff == 2) ? 65 : ((ai_diff == 1) ? 40 : 0));
+                                if (commit_chance > 0 && (rand() % 100 < commit_chance)) {
+                                    g_p1_combo_committed = 1;
+                                    g_p1_combo_hit_count = 1;
+                                    g_p1_combo_starter_is_medium = (atk_level == 2);
+                                    g_p1_combo_next_action = 1; // Next is Light attack
+                                    g_p1_combo_next_deadline_ms = propgo_now_ms() + 550;
+                                    flog("AI_COMBO: P1 landed melee hit 1 -> COMMITTED to full 5-hit combo! (diff=%d, rate=%d%%)",
+                                         ai_diff, commit_chance);
+                                }
+                            } else {
+                                g_p1_combo_hit_count++;
+                                if (g_p1_combo_hit_count >= 5) {
+                                    g_p1_combo_committed = 0;
+                                    g_p1_combo_hit_count = 0;
+                                    g_p1_combo_next_action = 0;
+                                    g_p1_combo_just_finished = 1;
+                                    flog("AI_COMBO: P1 5-hit combo fully completed on hit 5!");
+                                } else {
+                                    // Hits 2, 3 -> Action 1 (Light)
+                                    // Hit 4 -> Action 32 (Medium Dash ender!)
+                                    int next_act = (g_p1_combo_hit_count == 4) ? 32 : 1;
+                                    g_p1_combo_next_action = next_act;
+                                    g_p1_combo_next_deadline_ms = propgo_now_ms() + 550;
+                                    flog("AI_COMBO: P1 combo hit %d/5 landed -> queued next action %d",
+                                         g_p1_combo_hit_count, next_act);
+                                }
+                            }
+                        }
+                    } else {
+                        // Heavy or Special attack hit -> reset normal combo commitment
+                        g_p1_combo_committed = 0;
+                        g_p1_combo_hit_count = 0;
+                        g_p1_combo_next_action = 0;
+                    }
                 } else if (p_idx == 1) {
                     if (g_p0_block_enter_ms == 0) {
                         if (g_p0_controller) {
                             reset_player_attack_chain(g_p0_controller);
                             g_p0_combo_ended = 0;
                             g_p0_after_heavy = 0;
+                        }
+                    }
+
+                    // --- AI 5-Hit Combo Commitment System for P0 (AutoFight attacking P1) ---
+                    if (tftf_is_autofight_active()) {
+                        if (atk_level == 1 || atk_level == 2) {
+                            if (hit_idx == 0) {
+                                if (!g_p0_combo_committed) {
+                                    if (rand() % 100 < 90) {
+                                        g_p0_combo_committed = 1;
+                                        g_p0_combo_hit_count = 1;
+                                        g_p0_combo_starter_is_medium = (atk_level == 2);
+                                        g_p0_combo_next_action = 1;
+                                        g_p0_combo_next_deadline_ms = propgo_now_ms() + 550;
+                                        flog("AI_COMBO: P0 (AutoFight) landed melee hit 1 -> COMMITTED to full 5-hit combo!");
+                                    }
+                                } else {
+                                    g_p0_combo_hit_count++;
+                                    if (g_p0_combo_hit_count >= 5) {
+                                        g_p0_combo_committed = 0;
+                                        g_p0_combo_hit_count = 0;
+                                        g_p0_combo_next_action = 0;
+                                        g_p0_combo_just_finished = 1;
+                                        flog("AI_COMBO: P0 (AutoFight) 5-hit combo fully completed on hit 5!");
+                                    } else {
+                                        int next_act = (g_p0_combo_hit_count == 4) ? 32 : 1;
+                                        g_p0_combo_next_action = next_act;
+                                        g_p0_combo_next_deadline_ms = propgo_now_ms() + 550;
+                                        flog("AI_COMBO: P0 (AutoFight) combo hit %d/5 landed -> queued next action %d",
+                                             g_p0_combo_hit_count, next_act);
+                                    }
+                                }
+                            }
+                        } else {
+                            g_p0_combo_committed = 0;
+                            g_p0_combo_hit_count = 0;
+                            g_p0_combo_next_action = 0;
                         }
                     }
                 }
@@ -8099,6 +8429,13 @@ void skill_heal(int player_index, float amount) {
 }
 
 void skill_add_mana(int player_index, float norm_mana) {
+    if (player_index >= 0 && player_index < 2) {
+        const char* bid = (player_index == 0) ? g_p0_bot_id : g_p1_bot_id;
+        if (norm_mana < 0.0f && bid && strstr(bid, "cheetor") != NULL) {
+            flog("SKILL_ADD_MANA: Blocked mana drain (%.2f) on Cheetor P%d", norm_mana, player_index);
+            return;
+        }
+    }
     void* pc = (player_index == 0) ? g_p0_controller : g_p1_controller;
     if (pc && obj_ok(pc)) {
         void* attr = *(void**)((char*)pc + 0x80);
@@ -8134,6 +8471,26 @@ float skill_get_mana(int player_index) {
         }
     }
     return 0.0f;
+}
+
+float skill_get_attack(int player_index) {
+    void* pc = (player_index == 0) ? g_p0_controller : g_p1_controller;
+    if (pc && obj_ok(pc)) {
+        void* attr = *(void**)((char*)pc + 0x80);
+        if (attr && obj_ok(attr) && g_base) {
+            typedef float (*fn_get_atk)(void*, void*);
+            fn_get_atk get_atk = (fn_get_atk)(g_base + 0xDAC774);
+            float atk = get_atk(attr, NULL);
+            if (atk > 0.0f) return atk;
+        }
+    }
+    const char* bid = (player_index == 0) ? g_p0_bot_id : g_p1_bot_id;
+    if (bid && bid[0]) {
+        float calc_atk = 0.0f;
+        calc_enemy_stats_all(bid, 5, 50, NULL, &calc_atk, NULL, NULL, NULL);
+        if (calc_atk > 0.0f) return calc_atk;
+    }
+    return 2000.0f;
 }
 
 void skill_deal_damage(int target_player_index, float damage) {
@@ -9643,92 +10000,7 @@ float hook_198(void* self, int32_t attack_level, float mana_gain_pct, int32_t bl
     }
     const char* attacker_bot = is_p0 ? g_p1_bot_id : g_p0_bot_id;
 
-    // Global AI Difficulty System: P0 (AutoFight) Block-and-Disengage (Whiff Punish) - 六道狂乱 (95% 75ms)
-    if (is_p0 && blocked && (attack_level != 8) && tftf_is_autofight_active()) {
-        s_p0_block_hit_count++;
-        int roll = rand() % 100;
-        if (s_p0_block_hit_count >= 1 && roll < 95) {
-            s_p0_block_hit_count = 0;
-            g_p0_force_dodge_after_block = 1;
-            g_p0_force_dodge_action = (rand() % 4 == 0) ? ((rand() % 2 == 0) ? 64 : 128) : 8;
-            g_p0_disengage_pending = 1;
-            g_p0_disengage_act = g_p0_force_dodge_action;
-            uint64_t now_ms = propgo_now_ms();
-            g_p0_disengage_execute_ms = now_ms + 75; // 六道狂乱: 75ms
-            flog("AI_DIFF: P0 (AutoFight) blocked melee hit in hook_198! Armed disengage in %d ms (act=%d)",
-                 (int)(g_p0_disengage_execute_ms - now_ms), g_p0_force_dodge_action);
-        }
-    } else if (is_p0 && !blocked) {
-        s_p0_block_hit_count = 0;
-        g_p0_disengage_pending = 0;
-        g_p0_force_dodge_after_block = 0;
-    }
 
-    // Okizeme: Player P1 took an unblocked Heavy or Special attack from P0 (and P0 is in AutoFight)
-    if (!is_p0 && !blocked && ((attack_level & 4) || (attack_level & 0x70)) && tftf_is_autofight_active()) {
-        g_p0_okizeme_armed = 1;
-        g_p0_okizeme_start_ms = propgo_now_ms();
-        g_p0_okizeme_step = 0;
-        // 六道狂乱 strategy: 45% dash & melee, 40% heavy, 15% shoot
-        int r = rand() % 100;
-        g_p0_okizeme_strategy = (r < 45) ? 1 : ((r < 85) ? 2 : 3);
-        flog("AI_DIFF: P1 knocked down by P0 (AutoFight)! Arming Okizeme (strat=%d)", g_p0_okizeme_strategy);
-    }
-
-    // Global AI Difficulty System: Block-and-Disengage (Whiff Punish)
-    if (!is_p0 && blocked && (attack_level != 8)) {
-        int ai_diff = tftf_get_ai_difficulty();
-        if (ai_diff >= 1) {
-            s_p1_block_hit_count++;
-            int roll = rand() % 100;
-            int should_disengage = 0;
-            if (ai_diff >= 3 && s_p1_block_hit_count >= 1 && roll < 95) {
-                should_disengage = 1;
-            } else if (ai_diff == 2 && s_p1_block_hit_count >= 1 && roll < 75) {
-                should_disengage = 1;
-            } else if (ai_diff == 1 && s_p1_block_hit_count >= 2 && roll < 45) {
-                should_disengage = 1;
-            }
-            if (should_disengage) {
-                s_p1_block_hit_count = 0;
-                g_p1_force_dodge_after_block = 1;
-                g_p1_force_dodge_action = (rand() % 4 == 0) ? ((rand() % 2 == 0) ? 64 : 128) : 8;
-                g_p1_disengage_pending = 1;
-                g_p1_disengage_act = g_p1_force_dodge_action;
-                uint64_t now_ms = propgo_now_ms();
-                // Block hitstun in TFTF is around 80-110ms; disengage right as blockstun completes
-                g_p1_disengage_execute_ms = now_ms + ((ai_diff >= 3) ? 75 : ((ai_diff == 2) ? 100 : 130));
-                flog("AI_DIFF: P1 blocked melee hit in hook_198! Armed disengage in %d ms (act=%d, diff=%d)",
-                     (int)(g_p1_disengage_execute_ms - now_ms), g_p1_force_dodge_action, ai_diff);
-            }
-        }
-    } else if (!is_p0 && !blocked) {
-        // P1 took an unblocked hit -> cancel pending disengage
-        s_p1_block_hit_count = 0;
-        g_p1_disengage_pending = 0;
-        g_p1_force_dodge_after_block = 0;
-    }
-
-    // Global AI Difficulty System: Okizeme (Player P0 took an unblocked Heavy or Special attack from P1)
-    if (is_p0 && !blocked && ((attack_level & 4) || (attack_level & 0x70))) {
-        int ai_diff = tftf_get_ai_difficulty();
-        if (ai_diff >= 1) {
-            g_ai_okizeme_armed = 1;
-            g_ai_okizeme_start_ms = propgo_now_ms();
-            g_ai_okizeme_step = 0;
-            if (ai_diff == 1) {
-                g_ai_okizeme_strategy = (rand() % 2 == 0) ? 3 : 0; // 50% shoot, 50% none
-            } else if (ai_diff == 2) {
-                int r = rand() % 100;
-                g_ai_okizeme_strategy = (r < 60) ? 1 : 3; // 60% dash & melee, 40% shoot
-            } else {
-                int r = rand() % 100;
-                g_ai_okizeme_strategy = (r < 45) ? 1 : ((r < 85) ? 2 : 3); // 45% dash & melee, 40% heavy, 15% shoot
-            }
-            flog("AI_DIFF: P0 knocked down in hook_198! Arming Okizeme (strat=%d, diff=%d, al=%d)",
-                 g_ai_okizeme_strategy, ai_diff, attack_level);
-        }
-    }
 
     if (attack_level & 0x10) {
         // S1: 0.2格 = 60点 (所有HITS打完的总能量，多HITS的每一HIT平摊)

@@ -32,6 +32,7 @@ extern BotSkillModule g_module_slipstream;
 extern BotSkillModule g_module_cheetor;
 extern BotSkillModule g_module_sideswipe;
 extern BotSkillModule g_module_necrotronus;
+extern BotSkillModule g_module_motormaster;
 
 static const BotSkillModule* s_registry[] = {
     &g_module_arcee,
@@ -56,6 +57,7 @@ static const BotSkillModule* s_registry[] = {
     &g_module_cheetor,
     &g_module_sideswipe,
     &g_module_necrotronus,
+    &g_module_motormaster,
     NULL
 };
 
@@ -222,20 +224,23 @@ void skill_dispatch_hitreact_enter(int player_index) {
 void skill_dispatch_attack_start(int player_index, int action_type) {
     if (player_index < 0 || player_index >= 2) return;
 
-    // 释放S技：打断充能与逆火反噬检测
-    if (action_type >= 16 || action_type == 0x200) {
+    // 释放S技：打断充能与逆火反噬检测 (仅限特殊技 16, 32, 64, 0x200，绝不包含重击 4 / 0x100)
+    int is_special = (action_type == 16 || action_type == 32 || action_type == 64 || action_type == 0x200);
+    if (is_special && action_type != 4 && action_type != 0x100) {
         if (skill_prowl_is_charging(player_index)) {
             skill_prowl_finish_charge(player_index, "special attack start");
         }
 
         // 规则 3: 逆火反噬机制 (Backfire: 有逆火减益的角色，放SP技会受到逆火伤害)
         if (skill_has_buff(player_index, "slipstream_backfire")) {
-            // 滑流逆火：反噬承受滑流 80% 攻击力伤害
-            float dmg = 2306.0f * 0.80f;
+            // 滑流逆火：反噬承受施加者 100% 攻击力伤害
+            float atk = skill_get_attack(1 - player_index);
+            if (atk <= 0.0f) atk = 2306.0f;
+            float dmg = atk * 1.0f;
             skill_deal_damage(player_index, dmg);
             skill_consume_buff(player_index, "slipstream_backfire", 99);
             skill_overlay("[%s] 遭受能量逆火反噬！承受 %.0f 点反噬伤害！", player_index == 0 ? "我方" : "敌方", dmg);
-            skill_log("BACKFIRE: P%d cast SP under Slipstream Backfire! Suffered %.1f damage", player_index, dmg);
+            skill_log("BACKFIRE: P%d cast SP under Slipstream Backfire! Suffered %.1f damage (atk=%.1f)", player_index, dmg, atk);
         }
         if (skill_has_buff(player_index, "scorponok_venom_backfire")) {
             // 巨蝎逆火：反噬承受巨蝎 153% 攻击力伤害

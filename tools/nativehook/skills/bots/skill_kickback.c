@@ -28,7 +28,9 @@ static void kickback_on_attack_start(int player_index, int action_type) {
     uint64_t now_ms = skill_now_ms();
 
     // 1. 反冲自身发起重击 (action_type == 4 || 0x100) -> 净化自身减益并转化为能量获取
-    if (action_type == 4 || action_type == 0x100) {
+    const char* atker_bid = skill_get_bot_id(player_index);
+    if (atker_bid && strstr(atker_bid, "kickback") != NULL) {
+        if (action_type == 4 || action_type == 0x100) {
         int cleansed = 0;
         if (skill_has_buff(player_index, "dmg_shock")) {
             cleansed += skill_count_buffs(player_index, "dmg_shock");
@@ -56,6 +58,7 @@ static void kickback_on_attack_start(int player_index, int action_type) {
                           player_index == 0 ? "反冲" : "敌方反冲", cleansed);
             skill_log("KICKBACK_CLEANSE: P%d cleansed %d debuffs on heavy start", player_index, cleansed);
         }
+    }
     }
 
     // 2. 对手发起重击时检定：若对手持有反冲施加的 T-齿轮破坏，重击直接失败并陷入 2 秒眩晕！

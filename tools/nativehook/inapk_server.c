@@ -321,6 +321,7 @@ typedef struct {
     int start_full_power;
     int enable_combat_debug_overlay;
     int ai_difficulty;
+    int player_invincible;
 } UserSettings;
 
 static UserSettings g_user_settings = {
@@ -335,7 +336,8 @@ static UserSettings g_user_settings = {
     .freeze_enemy_ai = 0,
     .start_full_power = 0,
     .enable_combat_debug_overlay = 0,
-    .ai_difficulty = 0
+    .ai_difficulty = 0,
+    .player_invincible = 0
 };
 static int g_settings_loaded = 0;
 
@@ -450,6 +452,14 @@ static void load_user_settings(void) {
                         if (v >= 0 && v <= 3) g_user_settings.ai_difficulty = v;
                     }
                 }
+                char *pinv = strstr(buf, "\"player_invincible\"");
+                if (pinv) {
+                    char *c = strchr(pinv, ':');
+                    if (c) {
+                        while (*c && (*c == ':' || isspace((unsigned char)*c))) c++;
+                        g_user_settings.player_invincible = !strncmp(c, "true", 4);
+                    }
+                }
                 g_settings_loaded = 1;
                 return;
             }
@@ -492,6 +502,22 @@ int tftf_get_ai_difficulty(void) {
 
 /* TEST AID (combo quality-gate testing): when this marker file exists or user setting is enabled,
    hook_146 skips the enemy AI's entire tick, so the opponent never attacks and never moves. */
+int tftf_get_player_invincible(void) {
+    if (!g_settings_loaded) load_user_settings();
+    if (g_user_settings.player_invincible) return 1;
+    static const char *paths[] = {
+        "/sdcard/Android/media/com.kabam.bigrobot/player_invincible",
+        "/storage/emulated/0/Android/media/com.kabam.bigrobot/player_invincible",
+        "/sdcard/Android/data/com.kabam.bigrobot/files/player_invincible",
+        "/storage/emulated/0/Android/data/com.kabam.bigrobot/files/player_invincible",
+        NULL
+    };
+    for (int i = 0; paths[i]; i++) {
+        if (access(paths[i], F_OK) == 0) return 1;
+    }
+    return 0;
+}
+
 int tftf_get_freeze_enemy_ai(void) {
     if (!g_settings_loaded) load_user_settings();
     if (g_user_settings.freeze_enemy_ai) return 1;

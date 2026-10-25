@@ -29,6 +29,8 @@ static int      s_backstab_source_p[2]   = {0, 0};
 
 static void slipstream_on_attack_start(int player_index, int action_type) {
     if (player_index < 0 || player_index >= 2) return;
+    const char* bid = skill_get_bot_id(player_index);
+    if (!bid || strstr(bid, "slipstream") == NULL) return;
     if (action_type == 4 || action_type == 0x100) {
         uint64_t now_ms = skill_now_ms();
         s_is_heavy_active[player_index] = 1;
