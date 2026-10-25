@@ -191,14 +191,17 @@ public static class ShaderFallback
 		Shader s = Shader.Find(name);
 		if (s != null) return s;
 		s = Resources.Load<Shader>("Shader310/" + Regex.Replace(name, "[^A-Za-z0-9]+", "_"));
-		if (name.IndexOf("Text", System.StringComparison.OrdinalIgnoreCase) >= 0 || name.IndexOf("Font", System.StringComparison.OrdinalIgnoreCase) >= 0)
+		// Text/font materials prefer the authored text shaders over a generated Shader310 stub. "Text" must not match "Texture"
+		// (NGUI's "(TextureClip)", "Unlit/Texture"): TFTF/Text paints black texels in the vertex colour, so images got white patches.
+		if (Regex.IsMatch(name, "Text(?!ure)|Font", RegexOptions.IgnoreCase))
 		{
 			foreach (string tfb in new string[] { "TFTF/Text", "GUI/Text Shader", "GUI/Text Shader (SoftClip)", "Unlit/Text" })
 			{
-				s = Shader.Find(tfb);
-				if (s != null) return s;
+				Shader t = Shader.Find(tfb);
+				if (t != null) return t;
 			}
 		}
+		if (s != null) return s;
 		// Never hand back null: a Material(null) throws and the game turns that into a critical error.
 		foreach (string fb in new string[] { "Sprites/Default", "UI/Default", "Unlit/Transparent", "Hidden/Internal-Colored" })
 		{
@@ -281,8 +284,8 @@ public class TftfDiag : MonoBehaviour
 
 	// Every frame: the key light comes from the camera's upper left front (TFTF/PbrLite reads _TftfLightDir), and the shadow light matches it.
 	// fights are lit by a much brighter arena than the base and story map
-	private const float DefaultExposure = 1.35f, DefaultSun = 3f, FightExposure = 0.3f, FightSun = 1.5f, FightAmbient = 1f, FightRim = 1f, FightSat = 1.4f, FightContrast = 1.2f, FightFog = 0.45f, FightWarm = 0.05f;
-	private const float RobotMenuExposure = 0.72f, RobotMenuSat = 0.88f;      // robots on the squad / selection screens (not in a fight)
+	private const float DefaultExposure = 1f, DefaultSun = 2.8f, FightExposure = 0.3f, FightSun = 1.5f, FightAmbient = 1f, FightRim = 1f, FightSat = 0.95f, FightContrast = 1.05f, FightFog = 0.45f, FightWarm = 0.05f;
+	private const float RobotMenuExposure = 1f, RobotMenuSat = 1f;      // robots on the squad / selection screens (not in a fight)
 	private static readonly string[] TuneNames = { "exposure", "sun", "ambient", "rim", "sat", "contrast", "fog", "warm" };
 	// BattleArbiter lives in the main assembly, which this first-pass script cannot reference: reach it by reflection.
 	private static System.Type _arbiterType;
@@ -310,7 +313,7 @@ public class TftfDiag : MonoBehaviour
 		foreach (Renderer r in Object.FindObjectsOfType<Renderer>())
 		{
 			if (r.name != "Sky" || r.sharedMaterial == null) continue;
-			Texture t = r.sharedMaterial.mainTexture;
+			Texture t = r.sharedMaterial.HasProperty("_MainTex") ? r.sharedMaterial.mainTexture : null;      // the donor sky has no _MainTex: asking logged an error every second
 			if (t == null && r.sharedMaterial.HasProperty("_base_tex")) t = r.sharedMaterial.GetTexture("_base_tex");
 			if (t == null || t == _skySampled) return;
 			_skySampled = t;
@@ -336,6 +339,36 @@ public class TftfDiag : MonoBehaviour
 		}
 	}
 
+	// The arena's baked lightmap for TFTF/PbrLite: alpha = baked sun shadow and AO in both the forward and the deferred map; the forward
+	// map's rgb also holds baked local lights. Merged arenas only load the deferred one (globalMaximumLOD is maxed).
+	private static Texture _lmSrc, _lmFwd;
+	private static Texture ArenaLightmap()
+	{
+		Texture t = null;
+		try
+		{
+			if (EB.Rendering.EBTimeOfDayManager.IsInitialized)
+			{
+				EB.Rendering.EBTimeOfDayManager.EBTimeOfDay tod = EB.Rendering.EBTimeOfDayManager.Instance.GetActiveTimeOfDay();
+				int fwd = (int)EB.Rendering.EBLightmapSettings.eLIGHTMAP_TYPE.Forward;
+				if (tod != null && tod.Lightmaps != null && tod.Lightmaps.Length > 0) t = tod.Lightmaps.Length > fwd ? tod.Lightmaps[fwd] : tod.Lightmaps[0];
+			}
+		}
+		catch (System.Exception) { }
+		if (t == _lmSrc) return _lmFwd;
+		_lmSrc = t;
+		_lmFwd = null;
+		if (t != null && t.name.Contains("Forward_Environment")) _lmFwd = t;
+		else if (t != null)
+		{
+			string want = t.name.Replace("Deferred_Environment", "Forward_Environment").Replace("Baked_Environment", "Forward_Environment");
+			foreach (Texture2D ct in Resources.FindObjectsOfTypeAll<Texture2D>()) if (ct.name == want) { _lmFwd = ct; break; }
+			if (_lmFwd == null && t.name.Contains("Deferred_Environment")) _lmFwd = t;
+		}
+		Debug.Log("[DIAG] arena lightmap: tod=" + (t != null ? t.name : "none") + " -> " + (_lmFwd != null ? _lmFwd.name + " " + _lmFwd.width : "none"));
+		return _lmFwd;
+	}
+
 	private static float _dbgNext;
 	private static void AimSun()
 	{
@@ -347,7 +380,7 @@ public class TftfDiag : MonoBehaviour
 			Shader.SetGlobalFloat("_TftfDebug", dv);
 			bool inFight = InFight();
 			// lighting values, per screen type; tftf/tune.txt overrides them with "name value" lines (see TuneNames) without a rebuild
-			float[] cur = inFight ? new float[] { FightExposure, FightSun, FightAmbient, FightRim, FightSat, FightContrast, FightFog, FightWarm } : new float[] { DefaultExposure, DefaultSun, 1f, 1f, 1f, 1f, 0f };
+			float[] cur = inFight ? new float[] { FightExposure, FightSun, FightAmbient, FightRim, FightSat, FightContrast, FightFog, FightWarm } : new float[] { DefaultExposure, DefaultSun, 1f, 1f, 1f, 1f, 0f, 0f };
 			try
 			{
 				string tf = System.IO.Path.Combine(Application.persistentDataPath, "tftf/tune.txt");
@@ -358,6 +391,10 @@ public class TftfDiag : MonoBehaviour
 						float tv;
 						if (kv.Length != 2 || !float.TryParse(kv[1], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out tv)) continue;
 						string kn = kv[0].ToLowerInvariant();
+						if (kn == "bloom") { TftfBloom.Amount = tv; continue; }
+						if (kn == "emis") { Shader.SetGlobalFloat("_TftfEmis", tv); continue; }
+						if (kn == "bloomthr") { TftfBloom.Threshold = tv; continue; }
+						if (kn == "bloomgain") { TftfBloom.ThresholdGain = tv; continue; }
 						bool fightKey = kn.StartsWith("f");
 						if (fightKey != inFight) continue;
 						int ki = System.Array.IndexOf(TuneNames, fightKey ? kn.Substring(1) : kn);
@@ -368,6 +405,9 @@ public class TftfDiag : MonoBehaviour
 			Shader.SetGlobalVector("_TftfTune", new Vector4(cur[0], cur[1], cur[6], cur[7]));
 			Shader.SetGlobalVector("_TftfGrade", new Vector4(cur[2], cur[3], cur[4], cur[5]));
 			Shader.SetGlobalVector("_TftfRobot", inFight ? new Vector4(1f, 1f, 0f, 0f) : new Vector4(RobotMenuExposure, RobotMenuSat, 0f, 0f));
+			Texture lmTex = inFight ? ArenaLightmap() : null;
+			Shader.SetGlobalFloat("_TftfLmOn", lmTex == null ? 0f : lmTex.name.Contains("Forward_Environment") ? 2f : 1f);
+			if (lmTex != null) Shader.SetGlobalTexture("_TftfLm", lmTex);
 			SampleSky();
 			Shader.SetGlobalVector("_TftfSky", _skyRgb.sqrMagnitude > 0f ? new Vector4(_skyRgb.x, _skyRgb.y, _skyRgb.z, inFight ? 1f : 0.2f) : Vector4.zero);
 			// dev: tftf/hide.txt lists renderer-name parts (one per line) to switch off; the matches are logged
@@ -395,6 +435,29 @@ public class TftfDiag : MonoBehaviour
 		if (_sun != null && _sun.enabled) _sun.transform.rotation = Quaternion.LookRotation(-L);
 	}
 
+	// The donor sky shader writes alpha 1, which TftfBloom takes as full glow (white sky): a second material rewrites the alpha.
+	private static Material _skyMask;
+	private static void AddSkyGlowMask(Renderer r)
+	{
+		Material[] ms = r.sharedMaterials;
+		int q = 0;
+		foreach (Material x in ms) { if (x == null) continue; if (x.name == "tftf_skymask") return; q = Mathf.Max(q, x.renderQueue); }
+		if (_skyMask == null)
+		{
+			Shader s = ShaderFallback.Find("TFTF/SkyGlowMask");
+			if (s == null || s.name != "TFTF/SkyGlowMask") return;
+			_skyMask = new Material(s) { name = "tftf_skymask" };
+		}
+		// the donor dome may draw after the opaque scene (queue > 2000): the mask has to come right after it, not at Background+1
+		Material mk = new Material(_skyMask) { name = "tftf_skymask" };
+		mk.renderQueue = q + 1;
+		Material[] nms = new Material[ms.Length + 1];
+		ms.CopyTo(nms, 0);
+		nms[ms.Length] = mk;
+		r.sharedMaterials = nms;
+		Debug.Log("[DIAG] sky glow mask on " + r.name + " (" + (ms.Length > 0 && ms[0] != null ? ms[0].name + " shader=" + ms[0].shader.name : "?") + ") queue=" + q);
+	}
+
 	// The donor PBR shaders draw nothing in this pipeline: give those renderers a plain textured material.
 	private static void SwapPbr()
 	{
@@ -404,6 +467,7 @@ public class TftfDiag : MonoBehaviour
 		string[] prefs = new string[] { "_base_tex", "_BaseTex", "_MainTex", "_BaseMap", "_AlbedoTex", "_Albedo", "_DiffuseTex", "_Diffuse" };
 		foreach (Renderer r in Object.FindObjectsOfType<Renderer>())
 		{
+			if (r.name == "Sky") AddSkyGlowMask(r);
 			Material[] mats = r.sharedMaterials;
 			bool changed = false;
 			for (int i = 0; i < mats.Length; i++)
@@ -476,6 +540,9 @@ public class TftfDiag : MonoBehaviour
 					if (fxTex != null) nm.mainTexture = fxTex;
 					Color fxCol = m.HasProperty("_emissive_intensity_col") ? m.GetColor("_emissive_intensity_col") : Color.white;
 					nm.color = fxTex != null ? fxCol : Color.black;
+					if (m.HasProperty("_emissive_overbright_range")) nm.SetFloat("_EmisOver", m.GetFloat("_emissive_overbright_range"));
+					if (m.HasProperty("_emissive_ramp_range")) nm.SetFloat("_EmisRamp", m.GetFloat("_emissive_ramp_range"));
+					nm.SetFloat("_UseVC", r is ParticleSystemRenderer || r is TrailRenderer || r is LineRenderer ? 1f : 0f);
 				}
 				if (nm.HasProperty("_NormalTex"))
 				{
@@ -489,12 +556,31 @@ public class TftfDiag : MonoBehaviour
 					nm.SetVector("_Flags", new Vector4(tn != null ? 1f : 0f, tm != null ? 1f : 0f, tr != null ? 1f : 0f, ta != null ? 1f : 0f));
 					nm.SetFloat("_MetalAmt", tm != null ? 1f : (m.HasProperty("_metallic_range") ? Mathf.Clamp01(m.GetFloat("_metallic_range")) : 0f));
 					Texture tc = m.HasProperty("_pbr_composite_tex") ? m.GetTexture("_pbr_composite_tex") : null;      // robots: R roughness, G AO, B emissive packed together
-					if (tc != null && tm == null && tr == null && ta == null) { nm.SetTexture("_CompTex", tc); nm.SetFloat("_CompOn", 1f); if (m.HasProperty("_emissive_intensity_col")) nm.SetColor("_EmisColor", m.GetColor("_emissive_intensity_col") * 3f); }
+					if (tc != null && tm == null && tr == null && ta == null)
+					{
+						nm.SetTexture("_CompTex", tc); nm.SetFloat("_CompOn", 1f); if (m.HasProperty("_emissive_intensity_col")) nm.SetColor("_EmisColor", m.GetColor("_emissive_intensity_col") * 3f);
+						// the composite and normal maps are atlases shared by several materials: each material addresses its part through its own ST
+						Vector2 cs = m.GetTextureScale("_pbr_composite_tex"), co = m.GetTextureOffset("_pbr_composite_tex");
+						nm.SetVector("_CompST", new Vector4(cs.x, cs.y, co.x, co.y));
+						if (tn != null) { Vector2 ns = m.GetTextureScale("_normal_tex"), no = m.GetTextureOffset("_normal_tex"); nm.SetVector("_NormalST", new Vector4(ns.x, ns.y, no.x, no.y)); nm.SetFloat("_NmMetal", 1f); }
+						if (m.HasProperty("_emissive_pulse_intensity_range") && m.HasProperty("_emissive_pulse_time_range"))
+							nm.SetVector("_EmisPulse", new Vector4(m.GetFloat("_emissive_pulse_intensity_range"), m.GetFloat("_emissive_pulse_time_range"), 0f, 0f));
+					}
 					nm.SetFloat("_RoughAmt", tr != null ? 1f : (m.HasProperty("_roughness_range") ? Mathf.Clamp01(m.GetFloat("_roughness_range")) : 0.6f));
+					if (m.HasProperty("_emissive_overbright_range")) nm.SetFloat("_EmisOver", m.GetFloat("_emissive_overbright_range"));
+					if (m.HasProperty("_emissive_ramp_range")) nm.SetFloat("_EmisRamp", m.GetFloat("_emissive_ramp_range"));
+				}
+				// static arena meshes with a lightmap uv (the donor shader name says LIGHTMAP_ON, or it did not load and lost its name)
+				if (!tftfFx && nm.HasProperty("_LmOn") && r is MeshRenderer && (n.Contains("LIGHTMAP_ON") || n.Length == 0 || !m.shader.isSupported))
+				{
+					MeshFilter lf = r.GetComponent<MeshFilter>();
+					if (lf != null && lf.sharedMesh != null && lf.sharedMesh.HasVertexAttribute(UnityEngine.Rendering.VertexAttribute.TexCoord1)) nm.SetFloat("_LmOn", 1f);
 				}
 				mats[i] = nm; changed = true;
 				if (_swapped.Add(id)) Debug.Log("[DIAG] swapped " + r.name + " shader=" + n.Substring(0, Mathf.Min(48, n.Length)) + " tex=" + (tex != null ? tex.name : "none") + " props=" + string.Join(",", m.GetTexturePropertyNames()));
 			}
+			ParticleSystemRenderer psr = r as ParticleSystemRenderer;
+			if (psr != null && psr.trailMaterial != null && psr.trailMaterial.shader != null && IsBrokenFx(psr.trailMaterial)) ConvertFx(psr.trailMaterial);
 			if (changed)
 			{
 				r.sharedMaterials = mats;
@@ -512,6 +598,44 @@ public class TftfDiag : MonoBehaviour
 					Debug.Log("[DIAG] painted white vertex colors on " + r.name + " (" + white.Length + ")");
 				}
 			}
+		}
+	}
+
+	// Effect materials whose donor shader did not load draw magenta from the frame they spawn until the next SwapPbr. Converting the
+	// loaded material assets themselves to TFTF/AddFx means later instances (hits, specials, trails) are already right when they appear.
+	private static readonly System.Collections.Generic.HashSet<int> _fxSeen = new System.Collections.Generic.HashSet<int>();
+	private static bool IsBrokenFx(Material m)
+	{
+		string n = m.shader.name;
+		if (!(n.StartsWith("Hidden/PBR") || n.Length == 0 || !m.shader.isSupported)) return false;
+		if (m.name.EndsWith("_swap") || m.name.StartsWith("skybox")) return false;
+		return m.renderQueue >= 2500 || m.name.StartsWith("fx_") || m.HasProperty("_particle_lifetime_color_tex");
+	}
+	private static void ConvertFx(Material m)
+	{
+		if (_fxShader == null) _fxShader = ShaderFallback.Find("TFTF/AddFx");
+		if (_fxShader == null || _fxShader.name != "TFTF/AddFx") return;
+		Texture fxTex = m.HasProperty("_emissive_tex") ? m.GetTexture("_emissive_tex") : null;
+		if (fxTex == null && m.HasProperty("_base_tex")) fxTex = m.GetTexture("_base_tex");
+		if (fxTex == null && m.HasProperty("_MainTex")) fxTex = m.GetTexture("_MainTex");
+		Color fxCol = m.HasProperty("_emissive_intensity_col") ? m.GetColor("_emissive_intensity_col") : Color.white;
+		float over = m.HasProperty("_emissive_overbright_range") ? m.GetFloat("_emissive_overbright_range") : 8f;
+		float ramp = m.HasProperty("_emissive_ramp_range") ? m.GetFloat("_emissive_ramp_range") : 1f;
+		bool particle = m.HasProperty("_particle_lifetime_color_tex");
+		m.shader = _fxShader;
+		m.mainTexture = fxTex;
+		m.color = fxTex != null ? fxCol : Color.black;
+		m.SetFloat("_EmisOver", over);
+		m.SetFloat("_EmisRamp", ramp);
+		m.SetFloat("_UseVC", particle ? 1f : 0f);
+		Debug.Log("[DIAG] fx material converted in place: " + m.name + " tex=" + (fxTex != null ? fxTex.name : "none"));
+	}
+	private static void ConvertLoadedFx()
+	{
+		foreach (Material m in Resources.FindObjectsOfTypeAll<Material>())
+		{
+			if (m == null || m.shader == null || !_fxSeen.Add(m.GetInstanceID())) continue;
+			if (IsBrokenFx(m)) ConvertFx(m);
 		}
 	}
 
@@ -548,14 +672,16 @@ public class TftfDiag : MonoBehaviour
 	{
 		if (QualitySettings.skinWeights != SkinWeights.FourBones) QualitySettings.skinWeights = SkinWeights.FourBones;
 		// attack and hit effects spawn mid-fight with donor shaders that did not load: swap them four times a second while a battle runs
-		if (_fastSwap && Time.realtimeSinceStartup >= _nextFast) { _nextFast = Time.realtimeSinceStartup + 0.25f; SwapPbr(); }
+		if (_fastSwap && Time.realtimeSinceStartup >= _nextFast) { _nextFast = Time.realtimeSinceStartup + 0.25f; ConvertLoadedFx(); SwapPbr(); }
 		if (Time.realtimeSinceStartup >= _nextGlobals)
 		{
 			_nextGlobals = Time.realtimeSinceStartup + 1f;
 			_fastSwap = InFight();
 			if (!EB.Rendering.EBTimeOfDayManager.IsInitialized || EB.Rendering.EBTimeOfDayManager.Instance.GetActiveTimeOfDay() == null) ApplyGlobals();
+			ConvertLoadedFx();
 			SwapPbr();
 			EnsureSun();
+			foreach (Camera bc in Camera.allCameras) if (bc.name == "RigCamera" && bc.GetComponent<TftfBloom>() == null) bc.gameObject.AddComponent<TftfBloom>();
 			// The 16:9 UI viewport leaves bars on wider phones: clear them to black instead of Unity's default skybox.
 			RenderSettings.skybox = null;
 			foreach (Camera sc in Camera.allCameras) if (sc.clearFlags == CameraClearFlags.Skybox && sc.targetTexture == null) { sc.clearFlags = CameraClearFlags.SolidColor; sc.backgroundColor = Color.black; }
@@ -678,6 +804,51 @@ public class TftfDiag : MonoBehaviour
 		GameObject b = GameObject.Find("BaseRoot(Clone)");
 		if (b == null) b = GameObject.Find("BaseRoot");
 		Debug.Log("[DIAG] BaseRoot=" + (b != null) + (b != null ? " active=" + b.activeInHierarchy + " pos=" + b.transform.position + " childCount=" + b.transform.childCount : ""));
+	}
+}
+
+// The game's bloom (EBPostFXBloom) runs on stub shaders and draws nothing, so eyes, lights and attack effects never glowed. TFTF/PbrLite,
+// TFTF/AddFx and TFTF/SkyLite write a glow mask into alpha while this camera renders (_TftfGlowOn); the mask is blurred at 1/4 and 1/8
+// resolution and added back. tftf/tune.txt: "bloom 0" switches it off; "bloomthr"/"bloomgain" control the bright-pixel term.
+public class TftfBloom : MonoBehaviour
+{
+	public static float Amount = 1.1f, Threshold = 0.88f, ThresholdGain = 0.35f;
+	private static Material _mat;
+	private static bool _logged;
+
+	private void OnPreRender() { Shader.SetGlobalFloat("_TftfGlowOn", Amount > 0f ? 1f : 0f); }
+	private void OnPostRender() { Shader.SetGlobalFloat("_TftfGlowOn", 0f); }
+
+	private static void Blur(RenderTexture a, RenderTexture b)
+	{
+		_mat.SetVector("_BlurDir", new Vector4(1f / a.width, 0f, 0f, 0f));
+		Graphics.Blit(a, b, _mat, 1);
+		_mat.SetVector("_BlurDir", new Vector4(0f, 1f / a.height, 0f, 0f));
+		Graphics.Blit(b, a, _mat, 1);
+	}
+
+	private void OnRenderImage(RenderTexture src, RenderTexture dst)
+	{
+		if (_mat == null)
+		{
+			Shader s = ShaderFallback.Find("TFTF/Bloom");
+			if (s != null && s.name == "TFTF/Bloom" && s.isSupported) _mat = new Material(s);
+			if (!_logged) { _logged = true; Debug.Log("[DIAG] TFTF bloom shader=" + (s != null ? s.name : "null") + " ok=" + (_mat != null) + " src=" + src.width + "x" + src.height + " " + src.format); }
+		}
+		if (_mat == null || Amount <= 0f) { Graphics.Blit(src, dst); return; }
+		int w = Mathf.Max(16, src.width / 4), h = Mathf.Max(16, src.height / 4);
+		RenderTexture a = RenderTexture.GetTemporary(w, h, 0, src.format), b = RenderTexture.GetTemporary(w, h, 0, src.format);
+		RenderTexture c = RenderTexture.GetTemporary(w / 2, h / 2, 0, src.format), d = RenderTexture.GetTemporary(w / 2, h / 2, 0, src.format);
+		_mat.SetVector("_BloomParams", new Vector4(Threshold, ThresholdGain, Amount, 0f));
+		Graphics.Blit(src, a, _mat, 0);
+		Blur(a, b);
+		Graphics.Blit(a, c);
+		Blur(c, d);
+		Blur(c, d);
+		_mat.SetTexture("_BloomTex", a);
+		_mat.SetTexture("_Bloom2Tex", c);
+		Graphics.Blit(src, dst, _mat, 2);
+		RenderTexture.ReleaseTemporary(a); RenderTexture.ReleaseTemporary(b); RenderTexture.ReleaseTemporary(c); RenderTexture.ReleaseTemporary(d);
 	}
 }
 """)
@@ -997,6 +1168,36 @@ public class EnumComparer<T> : IEqualityComparer<T> where T : struct
                                   f"{m[1]}public void Authenticate(Action<bool> callback)"), t, count=1)
             wr(p, t); note("S7 Authenticate(Action<bool,string>) overload (local user)")
 
+def vr(fp, main):
+    """P53 (TFTF_VR=1 shell only): the game draws into the launcher's virtual screen (TftfVr), not the headset's
+    display. Its screen size reads, touch reads and blits to the backbuffer go through TftfScreen and TftfInput,
+    which pass through unchanged outside VR."""
+    for root in (fp, main):
+        for p in root.rglob("*.cs"):
+            t0 = t = rd(p)
+            t = re.sub(r"(?<![\w.])(?:UnityEngine\.)?Screen\.(width|height)\b", r"TftfScreen.\1", t)
+            t = re.sub(r"(?<![\w.])(?:UnityEngine\.)?Input\.(touchCount|GetTouch|touches)\b", r"TftfInput.\1", t)
+            if t != t0:
+                wr(p, t); note("P53 screen size / touches via TftfScreen / TftfInput (VR)")
+    # The deferred camera's final composite (EBPostFXManager.PostRender -> EBImage) targets the backbuffer.
+    p = fp / "EB/Rendering/EBImage.cs"
+    if p.exists():
+        t = rd(p)
+        t2 = t.replace("\t\t\tRenderTexture.active = null;", "\t\t\tRenderTexture.active = TftfScreen.Target;")
+        t2 = t2.replace("Graphics.Blit(src, dst, material, pass);", "Graphics.Blit(src, dst ?? TftfScreen.Target, material, pass);")
+        if t2 != t:
+            wr(p, t2); note("P53 EBImage backbuffer blits into the VR screen")
+    # The stereo arena follows the fight camera and the point it frames; the controller buttons press the HUD zones.
+    replace_in(main, "CameraController.cs",
+               "\t\t\tbase.transform.rotation = rotation;\n\t\t}\n\t\tif (_shakePivot != null)",
+               "\t\t\tbase.transform.rotation = rotation;\n\t\t}\n\t\tTftfFightState.ReportCamera(Camera, _target);\n\t\tif (_shakePivot != null)",
+               "P53 CameraController reports the fight camera (VR)")
+    replace_in(main, "ActionButton.cs",
+               "\t\tbool pressed = _pressed;\n\t\tbool flag = false;\n\t\tint num = 0;\n",
+               "\t\tbool pressed = _pressed;\n\t\tbool flag = false;\n\t\tint num = 0;\n"
+               "\t\tTftfFightState.ReportButton(base.gameObject.name, UICamera.mainCamera.WorldToScreenPoint(_bounds.center));\n",
+               "P53 ActionButton reports its zone (VR)")
+
 REPAIRS = Path(__file__).resolve().parent / "repairs.json"  # accumulated compiler-log-driven repairs
 
 def collect(log: Path):
@@ -1085,6 +1286,8 @@ def apply(assets: Path):
     generic(fp); generic(main)
     third_party(assets)
     specific(fp, main)
+    if os.environ.get("TFTF_VR") == "1":
+        vr(fp, main)
     log_driven(assets.parent)
     for k, v in LOG.items():
         print(f"  {v:5d}  {k}")

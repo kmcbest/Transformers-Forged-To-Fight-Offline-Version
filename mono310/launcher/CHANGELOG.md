@@ -2,6 +2,10 @@
 
 ## Table of contents
 
+- [0.7.3](#073)
+- [0.7.2](#072)
+- [0.7.0](#070)
+- [0.6.1](#061)
 - [0.6.0](#060)
 - [0.5.2](#052)
 - [0.5.0](#050)
@@ -12,6 +16,49 @@
 - [0.3.0](#030)
 - [0.2.0](#020)
 - [0.1.0 (internal, never released)](#010-internal-never-released)
+
+## 0.7.3
+
+**Changed**
+
+- Quest enemies spawn at level 36 (final bosses at 61) instead of 1, stats grow 2.5% per level, and enemy AI profiles are
+  harder.
+
+**Fixed**
+
+- The red "prod" server tag no longer shows in the top-left corner of the screen.
+
+## 0.7.2
+
+**Fixed**
+
+- Quest VR: magenta upside-down silhouettes over fights in arenas with floor reflections (Karnak). The VR build pointed the
+  game's planar reflection camera, which draws into its own buffers, at the VR screen; disabled cameras and the game's light
+  cameras are now left alone.
+
+## 0.7.0
+
+**Added**
+
+- Meta Quest VR build (`TFTF_VR=1`, [`QUEST_VR.md`](QUEST_VR.md)): the game on a large screen in a VR room with a
+  controller laser as the finger, and fights drawn in stereo with the HUD in front. Built, not yet tested on a headset.
+
+**Fixed**
+
+- Fight arena rendering: baked arena lightmap and fight colour grade, bloom no longer blows the sky out to white,
+  magenta FX materials fixed.
+- Text shaders: authored text shaders are preferred over the stub, `ShaderFallback` no longer catches "Texture"
+  shaders, and the Alpha8 glyph trick is kept out of the image shaders.
+
+## 0.6.1
+
+**Fixed**
+
+- Special Mode opens from level 0 (the `fightLanding_special` and `fightLanding_daily` level locks are tuned to 0), and the
+  Karma Six special mission is unlocked from the start.
+- Starscream's Device and Motormaster's Reckoning are unlocked in the story.
+- The base board no longer hangs on loading when a building model is missing, and the commander portrait shows in the top bar.
+- NGUI dynamic-font and soft-clipped text render correctly.
 
 ## 0.6.0
 
