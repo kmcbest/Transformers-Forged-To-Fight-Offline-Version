@@ -52,8 +52,10 @@ void skill_apply_buff_dur(int player_index, const char* mod_id, float override_d
 void skill_consume_buff(int player_index, const char* mod_id, int count);
 int skill_fuse_target_debuffs(int target_player_index);
 
-// 警车近战增益层数查询
+// 警车近战增益层数与充能状态查询/打断
 int skill_get_prowl_melee_stacks(int player_index);
+int skill_prowl_is_charging(int player_index);
+void skill_prowl_finish_charge(int player_index, const char* reason);
 
 // 重击状态实时查询 (包括蓄力与飞行/动作全程)
 int skill_is_heavy_attacking(int player_index);

@@ -318,7 +318,7 @@ def build_sideswipe_abilities(base_hp: float = 26794.0, base_atk: float = 2698.0
         appr_id="appr_sideswipe_signature_max_thrust",
         callout_text="最大推力",
         desc="引擎全速超频！开局12秒内持续获得最大能量的50%",
-        pua_icon="\uE403",
+        pua_icon="\uE605",
         color=AbilityColor.LIGHT_PURPLE_POWER,
         show_callout=True,
     )
@@ -408,7 +408,7 @@ def build_sideswipe_abilities(base_hp: float = 26794.0, base_atk: float = 2698.0
         appr_id="appr_sideswipe_evade_ranged_power",
         callout_text="能量获取",
         desc="闪避远程攻击获得13%最大能量",
-        pua_icon="\uE403",
+        pua_icon="\uE608",
         color=AbilityColor.LIGHT_PURPLE_POWER,
         show_callout=True,
     )
@@ -453,7 +453,7 @@ def build_sideswipe_abilities(base_hp: float = 26794.0, base_atk: float = 2698.0
         appr_id="appr_sideswipe_evade_dash_crit_damage",
         callout_text="暴伤强化",
         desc="闪避前冲攻击触发，暴击伤害提升108%，持续6秒",
-        pua_icon="\uE406",
+        pua_icon="\uE906",
         color=AbilityColor.ORANGE_DAMAGE,
         show_callout=True,
     )

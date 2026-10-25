@@ -110,7 +110,7 @@ def build_cheetor_abilities(base_hp: float = 28245.0, base_atk: float = 2874.0):
         appr_id="appr_cheetor_combo_power_gain",
         callout_text="能量获取",
         desc="连击完成时获得2.5%最大能量",
-        pua_icon="\uE403",
+        pua_icon="\uE608",
         color=AbilityColor.LIGHT_PURPLE_POWER,
         show_callout=True,
     )
@@ -156,7 +156,7 @@ def build_cheetor_abilities(base_hp: float = 28245.0, base_atk: float = 2874.0):
         appr_id="appr_cheetor_signature_feral_strike",
         callout_text="野生突击",
         desc="获得4秒野生突击：暴击率增加40%，无视护甲，对手无法规避或触发技能，自身25%规避近战",
-        pua_icon="\uE915",
+        pua_icon="\uE160",
         color=AbilityColor.YELLOW_STATUS,
         show_callout=True,
     )
@@ -244,7 +244,7 @@ def build_cheetor_abilities(base_hp: float = 28245.0, base_atk: float = 2874.0):
         appr_id="appr_cheetor_sp1_heal_block",
         callout_text="禁疗",
         desc="禁用对手所有生命回复能力，直到流血状态解除",
-        pua_icon="\uE950",
+        pua_icon="\uE90C",
         color=AbilityColor.RED_DEBUFF,
         show_callout=True,
     )
@@ -307,7 +307,7 @@ def build_cheetor_abilities(base_hp: float = 28245.0, base_atk: float = 2874.0):
         appr_id="appr_cheetor_sp2_power_buff",
         callout_text="能量功率",
         desc="能量获取量增加50%，持续12秒",
-        pua_icon="\uE403",
+        pua_icon="\uE608",
         color=AbilityColor.LIGHT_PURPLE_POWER,
         show_callout=True,
     )
@@ -352,7 +352,7 @@ def build_cheetor_abilities(base_hp: float = 28245.0, base_atk: float = 2874.0):
         appr_id="appr_cheetor_sp3_power_lock",
         callout_text="能量锁定",
         desc="封锁对手能量槽，使其无法获得能量，持续10秒",
-        pua_icon="\uE606",
+        pua_icon="\uE523",
         color=AbilityColor.RED_DEBUFF,
         show_callout=True,
     )

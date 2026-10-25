@@ -128,7 +128,7 @@ def build_slipstream_abilities(base_hp: float = 32402.0, base_atk: float = 2306.
         appr_id="appr_slipstream_heavy_crit_damage",
         callout_text="暴击伤害",
         desc="重击命中后暴击伤害提高15%，持续7秒",
-        pua_icon="\uE406",
+        pua_icon="\uE906",
         color=AbilityColor.ORANGE_DAMAGE,
         show_callout=True,
     )
@@ -326,7 +326,7 @@ def build_slipstream_abilities(base_hp: float = 32402.0, base_atk: float = 2306.
         appr_id="appr_slipstream_backstab",
         callout_text="背刺",
         desc="暴击触发背刺，即将转化为暴抗削弱、能量消耗或逆火减益",
-        pua_icon="\uE604",
+        pua_icon="\uE41E",
         color=AbilityColor.RED_DEBUFF,
         show_callout=True,
     )

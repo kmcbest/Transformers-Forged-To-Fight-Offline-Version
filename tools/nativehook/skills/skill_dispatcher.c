@@ -1,4 +1,5 @@
 #include "skill_dispatcher.h"
+#include "skill_env.h"
 #include <string.h>
 #include <stdio.h>
 #ifdef __ANDROID__
@@ -218,6 +219,14 @@ void skill_dispatch_hitreact_enter(int player_index) {
 
 void skill_dispatch_attack_start(int player_index, int action_type) {
     if (player_index < 0 || player_index >= 2) return;
+
+    // 警车释放S技，无论打没打中，立刻打断充能
+    if (action_type >= 16 || action_type == 0x200) {
+        if (skill_prowl_is_charging(player_index)) {
+            skill_prowl_finish_charge(player_index, "special attack start");
+        }
+    }
+
     const BotSkillModule* mod0 = find_module_by_bot(g_p0_bot_id);
     if (mod0 && mod0->on_attack_start) {
         mod0->on_attack_start(player_index, action_type);

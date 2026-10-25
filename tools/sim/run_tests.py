@@ -93,45 +93,86 @@ def test_megatron_debuff_fusion():
     assert_true("减益融合" in st_after["announcement"], f"Announcement displayed fusion message: {st_after['announcement']}")
 
 def test_prowl_melee_buff():
-    print("\n--- [TEST 3] Prowl: 10 Stacks Melee Buff Scaling ---")
-    g_engine.init("prowl_gs_deluxe2010", "bonecrusher_cin_rotf", 15000.0, 15000.0, 1000.0, 1000.0)
-
-    # 基础伤害
-    base_dmg = g_engine.attack(0, 1, 0, 0, 0)
-
-    # 注入 10 层近战增益
-    g_engine.inject_buff(0, "prowl_melee_buff", 6.0, 10)
-    boosted_dmg = g_engine.attack(0, 1, 0, 0, 0)
-
-    assert_true(boosted_dmg > base_dmg, f"Boosted damage ({boosted_dmg}) > base damage ({base_dmg})")
-
-def test_prowl_dash_back_charge():
-    print("\n--- [TEST 4] Prowl: Dash Back Charge & Attack Convert ---")
+    print("\n--- [TEST 3] Prowl: Melee-Only Damage Scaling (Strictly Exclude Ranged & Specials) ---")
     g_engine.init("prowl_gs_deluxe2016", "bonecrusher_cin_rotf", 15000.0, 15000.0, 1000.0, 1000.0)
     g_engine.reset()
 
-    # 1. 警车后闪 (type=0)
+    # 1. 无增益基础伤害
+    base_melee_dmg = g_engine.attack(0, 1, 0, 0, 0)  # 轻击近战: 1000 * 0.25 = 250
+    base_ranged_dmg = g_engine.attack(0, 8, 0, 0, 0) # 远程射击: 1000 * 0.35 = 350
+    base_sp1_dmg = g_engine.attack(0, 16, 0, 0, 0)   # 特殊技1: 1000 * 1.80 = 1800
+
+    # 2. 注入 10 层近战增益 (prowl_melee_buff)
+    g_engine.inject_buff(0, "prowl_melee_buff", 6.0, 10)
+    boosted_melee_dmg = g_engine.attack(0, 1, 0, 0, 0)
+    boosted_ranged_dmg = g_engine.attack(0, 8, 0, 0, 0)
+    boosted_sp1_dmg = g_engine.attack(0, 16, 0, 0, 0)
+
+    # 验证：仅近战攻击获得 110% 加成 (250 * 2.10 = 525)
+    assert_true(boosted_melee_dmg > base_melee_dmg, f"Melee damage boosted ({boosted_melee_dmg} > {base_melee_dmg})")
+    assert_true(abs(boosted_melee_dmg - base_melee_dmg * 2.10) < 1.0, f"Melee damage matches exact +110% (+11%/stack): {boosted_melee_dmg} == {base_melee_dmg * 2.10}")
+
+    # 验证：远程射击与特殊技绝不享受近战增益！
+    assert_true(abs(boosted_ranged_dmg - base_ranged_dmg) < 0.1, f"Ranged attack NOT boosted by melee buff (strictly melee-only): {boosted_ranged_dmg} == {base_ranged_dmg}")
+    assert_true(abs(boosted_sp1_dmg - base_sp1_dmg) < 0.1, f"Special attack NOT boosted by melee buff (strictly melee-only): {boosted_sp1_dmg} == {base_sp1_dmg}")
+
+def test_prowl_dash_back_charge():
+    print("\n--- [TEST 4] Prowl: Dash Back Charge & Strict Interrupt Quality Gates ---")
+    g_engine.init("prowl_gs_deluxe2016", "bonecrusher_cin_rotf", 15000.0, 15000.0, 1000.0, 1000.0)
+    g_engine.reset()
+
+    # --- 1. 后闪开始充能 (图标应为灰色拳头 E412) ---
     g_engine.dodge(0, 0)
     st = g_engine.get_state()
     p0_buffs = {b["id"]: b for b in st["p0"]["buffs"]}
     assert_true("prowl_melee_charge" in p0_buffs, "Prowl started charging with prowl_melee_charge")
     assert_true(p0_buffs["prowl_melee_charge"]["stacks"] == 1, "Initial charge is 1 stack")
 
-    # 2. 推进时间 1500ms (应递增 3 次 -> 达到 4 层)
+    # 递增时间至 4 层
     for _ in range(15):
         g_engine.tick(100)
     st = g_engine.get_state()
-    p0_buffs = {b["id"]: b for b in st["p0"]["buffs"]}
-    stacks = p0_buffs["prowl_melee_charge"]["stacks"]
+    stacks = {b["id"]: b["stacks"] for b in st["p0"]["buffs"]}["prowl_melee_charge"]
     assert_true(stacks >= 4, f"Charge stacks increased with time (expected >=4, actual {stacks})")
 
-    # 3. 警车出招 -> 打断充能并转化为近战增益
-    g_engine.attack(0, 1, 0, 0, 0)
+    # --- 2. 远程射击测试：远程开枪不应打断充能 ---
+    g_engine.attack(0, 8, 0, 0, 0) # 远程射击
     st = g_engine.get_state()
     p0_buffs = {b["id"]: b for b in st["p0"]["buffs"]}
-    assert_true("prowl_melee_charge" not in p0_buffs, "Charging buff cleared on attack")
-    assert_true("prowl_melee_buff" in p0_buffs, "Converted to orange prowl_melee_buff")
-    assert_true(p0_buffs["prowl_melee_buff"]["stacks"] == stacks, f"Melee buff has {stacks} stacks")
+    assert_true("prowl_melee_charge" in p0_buffs, "Remote shooting does NOT interrupt charging!")
+
+    # --- 3. 打断门禁1：近战打中对手，打断充能并转化为对应层数近战增益 ---
+    g_engine.attack(0, 1, 0, 0, 0) # 近战轻击命中
+    st = g_engine.get_state()
+    p0_buffs = {b["id"]: b for b in st["p0"]["buffs"]}
+    assert_true("prowl_melee_charge" not in p0_buffs, "Interrupt 1 PASS: Charging buff cleared when melee attack hit opponent")
+    assert_true("prowl_melee_buff" in p0_buffs, "Interrupt 1 PASS: Converted to orange prowl_melee_buff")
+
+    # --- 4. 打断门禁2：主动前冲，打断充能 ---
+    g_engine.reset()
+    g_engine.dodge(0, 0) # 再次后闪充能
+    g_engine.tick(600)   # 充到2层
+    assert_true("prowl_melee_charge" in {b["id"]: b for b in g_engine.get_state()["p0"]["buffs"]}, "Prowl recharged after dodge")
+    g_engine.dash(0)     # 主动前冲
+    p0_buffs = {b["id"]: b for b in g_engine.get_state()["p0"]["buffs"]}
+    assert_true("prowl_melee_charge" not in p0_buffs, "Interrupt 2 PASS: Active Dash forward immediately interrupted charge!")
+    assert_true("prowl_melee_buff" in p0_buffs, "Interrupt 2 PASS: Converted to prowl_melee_buff on dash interrupt")
+
+    # --- 5. 打断门禁3：放S技，无论打没打中，都打断 ---
+    g_engine.reset()
+    g_engine.dodge(0, 0) # 再次后闪充能
+    g_engine.tick(600)   # 充到2层
+    assert_true("prowl_melee_charge" in {b["id"]: b for b in g_engine.get_state()["p0"]["buffs"]}, "Prowl recharged after dodge")
+    g_engine.attack_start(0, 16) # 释放SP1起手 (尚未判定任何命中)
+    p0_buffs = {b["id"]: b for b in g_engine.get_state()["p0"]["buffs"]}
+    assert_true("prowl_melee_charge" not in p0_buffs, "Interrupt 3 PASS: Activating Special Attack immediately interrupted charge (regardless of hit)!")
+    assert_true("prowl_melee_buff" in p0_buffs, "Interrupt 3 PASS: Converted to prowl_melee_buff on special attack start")
+
+    # --- 6. 矢量图标契约门禁：检查充能与近战增益 PUA 均为 E412 (拳头图标) ---
+    c_charge = decorate_buff({"id": "prowl_melee_charge", "stacks": 1, "rem_ms": 6000})
+    assert_true(c_charge.get("pua") == "0xE412", f"prowl_melee_charge PUA icon is 0xE412 (fist), got: {c_charge.get('pua')}")
+    c_buff = decorate_buff({"id": "prowl_passive_melee_buff", "stacks": 1, "rem_ms": 6000})
+    assert_true(c_buff.get("pua") == "0xE412", f"prowl_passive_melee_buff PUA icon is 0xE412 (fist), got: {c_buff.get('pua')}")
 
 def test_bumblebee_sidestep_crit():
     print("\n--- [TEST 5] Bumblebee: Sidestep Crit Buff Stacking ---")
@@ -342,12 +383,22 @@ def test_kickback_abilities():
     assert_true(p1_buffs_sp1.get("kickback_sp1_shock", 0) >= 2,
                 f"SP1 shock stacks correspond to power leak stacks: {p1_buffs_sp1.get('kickback_sp1_shock', 0)}")
 
-    # 5. 验证数据契约
+    # 5. 验证数据契约与官方真理源 PUA 图标绑定
+    expected_kickback_puas = {
+        "kickback_tcog_disrupt": "0xE60F",
+        "kickback_power_rate": "0xE606",
+        "kickback_heavy_power_gain": "0xE606",
+        "kickback_sp1_shock": "0xE914",
+        "kickback_sp2_bleed": "0xE401",
+    }
     for mid in ["kickback_crit_power_leak", "kickback_crit_rate", "kickback_power_rate",
                 "kickback_dash_evade", "kickback_heavy_power_gain", "kickback_tcog_disrupt",
                 "kickback_sp1_shock", "kickback_sp2_crit_buff", "kickback_sp2_bleed", "kickback_sp3_repair"]:
         dec = decorate_buff({"id": mid, "rem_ms": 3000, "stacks": 1})
         assert_true(dec["is_contract_valid"] == True, f"Contract valid for {mid}")
+        if mid in expected_kickback_puas:
+            assert_true(dec.get("pua") == expected_kickback_puas[mid],
+                        f"{mid} PUA icon mismatch: expected {expected_kickback_puas[mid]}, got {dec.get('pua')}")
 
 
 def test_slipstream_abilities():
@@ -392,12 +443,20 @@ def test_slipstream_abilities():
     assert_true("slipstream_m2_purify_shock" in p1_buffs_m2, "Slipstream M2 reflected shock to opponent")
     assert_true("slipstream_m2_crit_buff" in p0_buffs_m2, "Slipstream gained 10% crit rate from M2")
 
-    # 4. 验证数据契约
+    # 4. 验证数据契约与官方真理源 PUA 图标绑定
+    expected_slipstream_puas = {
+        "slipstream_heavy_crit_damage": "0xE906",
+        "slipstream_m2_purify_shock": "0xE914",
+        "slipstream_backstab": "0xE41E",
+    }
     for mid in ["slipstream_heavy_range_immune", "slipstream_heavy_crit_damage", "slipstream_ranged_nullify_shield",
                 "slipstream_ranged_atk_buff", "slipstream_m2_purify_shock", "slipstream_m2_crit_buff",
                 "slipstream_backstab", "slipstream_crit_resist_down", "slipstream_power_drain", "slipstream_backfire"]:
         dec = decorate_buff({"id": mid, "rem_ms": 3000, "stacks": 1})
         assert_true(dec["is_contract_valid"] == True, f"Contract valid for {mid}")
+        if mid in expected_slipstream_puas:
+            assert_true(dec.get("pua") == expected_slipstream_puas[mid],
+                        f"{mid} PUA icon mismatch: expected {expected_slipstream_puas[mid]}, got {dec.get('pua')}")
 
 
 def test_cheetor_abilities():
@@ -430,12 +489,22 @@ def test_cheetor_abilities():
     p1_buffs_sp3 = [b["id"] for b in st_sp3["p1"]["buffs"]]
     assert_true("cheetor_sp3_power_lock" in p1_buffs_sp3, "Cheetor SP3 applied 10s power lock")
 
-    # 5. 验证数据契约
+    # 5. 验证数据契约与官方真理源 PUA 图标绑定
+    expected_cheetor_puas = {
+        "cheetor_signature_feral_strike": "0xE160",
+        "cheetor_combo_power_gain": "0xE608",
+        "cheetor_sp1_heal_block": "0xE90C",
+        "cheetor_sp2_power_buff": "0xE608",
+        "cheetor_sp3_power_lock": "0xE523",
+    }
     for mid in ["cheetor_crit_bleed", "cheetor_combo_power_gain", "cheetor_signature_feral_strike",
                 "cheetor_feral_no_evade", "cheetor_sp1_heal_block", "cheetor_sp1_bleed",
                 "cheetor_sp2_power_buff", "cheetor_sp3_power_lock", "cheetor_sp3_power_burn"]:
         dec = decorate_buff({"id": mid, "rem_ms": 3000, "stacks": 1})
         assert_true(dec["is_contract_valid"] == True, f"Contract valid for {mid}")
+        if mid in expected_cheetor_puas:
+            assert_true(dec.get("pua") == expected_cheetor_puas[mid],
+                        f"{mid} PUA icon mismatch: expected {expected_cheetor_puas[mid]}, got {dec.get('pua')}")
 
 
 def test_sideswipe_abilities():
@@ -480,13 +549,21 @@ def test_sideswipe_abilities():
     p0_buffs_sp2 = [b["id"] for b in st_sp2["p0"]["buffs"]]
     assert_true("sideswipe_s2_melee_evade" in p0_buffs_sp2, "Sideswipe gained sideswipe_s2_melee_evade on SP2 hit")
 
-    # 5. 验证数据契约
+    # 5. 验证数据契约与官方真理源 PUA 图标绑定
+    expected_sideswipe_puas = {
+        "sideswipe_signature_max_thrust": "0xE605",
+        "sideswipe_evade_ranged_power": "0xE608",
+        "sideswipe_evade_dash_crit_damage": "0xE906",
+    }
     for mid in ["sideswipe_s1_crit_rate", "sideswipe_s1_stun", "sideswipe_s2_burn", "sideswipe_s3_burn",
                 "sideswipe_s3_nullify", "sideswipe_evade_counter", "sideswipe_melee_evade",
                 "sideswipe_crit_rate_stack", "sideswipe_signature_max_thrust", "sideswipe_s2_melee_evade",
                 "sideswipe_evade_ranged_power", "sideswipe_evade_dash_crit_damage"]:
         dec = decorate_buff({"id": mid, "rem_ms": 3000, "stacks": 1})
         assert_true(dec["is_contract_valid"] == True, f"Contract valid for {mid}")
+        if mid in expected_sideswipe_puas:
+            assert_true(dec.get("pua") == expected_sideswipe_puas[mid],
+                        f"{mid} PUA icon mismatch: expected {expected_sideswipe_puas[mid]}, got {dec.get('pua')}")
 
 if __name__ == "__main__":
     print("=" * 70)

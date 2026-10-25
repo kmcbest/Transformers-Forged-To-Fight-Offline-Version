@@ -655,6 +655,31 @@ static volatile int g_p1_retreat_after_combo = 0;
 static volatile uint64_t g_p1_retreat_execute_ms = 0;
 static volatile uint64_t g_p0_last_dodge_ms = 0;
 static volatile uint64_t g_p1_last_hitreact_ms = 0;
+
+// Player 0 (AutoFight Friendly AI) Tactical Variables - 六道狂乱 (Difficulty 3):
+static volatile int g_p0_ai_special_cancel_pending = 0;
+static volatile uint64_t g_p0_ai_special_cancel_deadline_ms = 0;
+static volatile uint64_t g_p0_last_ai_action_ms = 0;
+static volatile int g_p0_disengage_pending = 0;
+static volatile int g_p0_disengage_act = 8;
+static volatile uint64_t g_p0_disengage_execute_ms = 0;
+static volatile int s_p0_block_hit_count = 0;
+static volatile int g_p0_force_dodge_after_block = 0;
+static volatile int g_p0_force_dodge_action = 8;
+static volatile int g_p0_okizeme_armed = 0;
+static volatile uint64_t g_p0_okizeme_start_ms = 0;
+static volatile int g_p0_okizeme_strategy = 0;
+static volatile int g_p0_okizeme_step = 0;
+static volatile uint64_t g_p0_anti_shoot_last_ms = 0;
+static volatile int g_p0_retreat_after_combo = 0;
+static volatile uint64_t g_p0_retreat_execute_ms = 0;
+static volatile uint64_t g_p1_last_dodge_ms = 0;
+static volatile uint64_t g_p0_last_hitreact_ms = 0;
+
+static inline int tftf_is_autofight_active(void) {
+    if (!g_base) return 0;
+    return ((int(*)(void*))(g_base + 0xC9CEB0))(NULL);
+}
 extern int tftf_quest_is_leisure(void);
 extern int tftf_pvp_is_active(void);
 static uint64_t propgo_now_ms(void);
@@ -5136,6 +5161,24 @@ void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     g_p1_retreat_execute_ms = 0;
     g_p0_last_dodge_ms = 0;
     g_p1_last_hitreact_ms = 0;
+    g_p0_ai_special_cancel_pending = 0;
+    g_p0_ai_special_cancel_deadline_ms = 0;
+    g_p0_last_ai_action_ms = 0;
+    g_p0_disengage_pending = 0;
+    g_p0_disengage_act = 8;
+    g_p0_disengage_execute_ms = 0;
+    s_p0_block_hit_count = 0;
+    g_p0_force_dodge_after_block = 0;
+    g_p0_force_dodge_action = 8;
+    g_p0_okizeme_armed = 0;
+    g_p0_okizeme_start_ms = 0;
+    g_p0_okizeme_strategy = 0;
+    g_p0_okizeme_step = 0;
+    g_p0_anti_shoot_last_ms = 0;
+    g_p0_retreat_after_combo = 0;
+    g_p0_retreat_execute_ms = 0;
+    g_p1_last_dodge_ms = 0;
+    g_p0_last_hitreact_ms = 0;
     skill_dispatch_fight_reset();
     return H[140].orig(a0,a1,a2,a3,a4,a5,a6,a7);
 }
@@ -5712,7 +5755,7 @@ void hook_146(void* self, float dT, void* method){
     ((fn_ai_simulate)H[146].orig)(self,dT,method);
     PROTECT({
         void* player = fld_p(self, 0x90);                    // AIController.PlayerController (@0x90)
-        if (obj_ok(player) && fld_p(player, 0x10) && !is_p0) {
+        if (obj_ok(player) && fld_p(player, 0x10)) {
             int32_t pidx = *(int32_t*)((uintptr_t)player + 0xF4);
             int input_enabled = *(uint8_t*)((uintptr_t)player + 0x139);
             if (pidx == 1 && input_enabled == 1) {
@@ -5822,6 +5865,115 @@ void hook_146(void* self, float dT, void* method){
                                 ((void(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 32, NULL); // Action.Dash (Chase!)
                                 flog("AI_DIFF: P1 dashes forward from range! (diff=%d)", ai_diff);
                             }
+                        }
+                    }
+                }
+            } else if (pidx == 0 && input_enabled == 1 && is_p0) {
+                // Player 0 (AutoFight Friendly AI) - Upgraded to 六道狂乱 (Difficulty 3)!
+                int ai_diff = 3;
+                uint64_t now_ms = propgo_now_ms();
+
+                // 1. Pending Special Attack Cancel
+                if (g_p0_ai_special_cancel_pending) {
+                    if (now_ms <= g_p0_ai_special_cancel_deadline_ms) {
+                        int fired = ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 0x200, NULL);
+                        if (fired) {
+                            g_p0_ai_special_cancel_pending = 0;
+                            flog("AI_DIFF: P0 (AutoFight) SpecialAttack cancel succeeded on simulate tick!");
+                        }
+                    } else {
+                        g_p0_ai_special_cancel_pending = 0;
+                    }
+                }
+
+                // 2. Pending Block Disengage (Whiff Punish)
+                if (g_p0_disengage_pending) {
+                    if (now_ms >= g_p0_disengage_execute_ms) {
+                        int is_blk = ((int(*)(void*,void*))(g_base + 0x11737F8))(player, NULL); // IsBlocking
+                        if (is_blk) {
+                            ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 4, NULL); // ReleaseBlock (4)
+                        }
+                        int escaped = ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, g_p0_disengage_act, NULL);
+                        if (escaped) {
+                            g_p0_disengage_pending = 0;
+                            g_p0_force_dodge_after_block = 0;
+                            flog("AI_DIFF: P0 (AutoFight) block disengage executed successfully! (act=%d, is_blk=%d)", g_p0_disengage_act, is_blk);
+                        } else if (now_ms > g_p0_disengage_execute_ms + 350) {
+                            g_p0_disengage_pending = 0;
+                            g_p0_force_dodge_after_block = 0;
+                            flog("AI_DIFF: P0 (AutoFight) block disengage timed out (act=%d)", g_p0_disengage_act);
+                        }
+                    }
+                }
+
+                // 3. Okizeme Wake-up Pressure on P1
+                if (g_p0_okizeme_armed && g_p0_okizeme_strategy > 0 &&
+                    g_p1_controller && obj_ok(g_p1_controller) && fld_p(g_p1_controller, 0x10) && *(uint8_t*)((uintptr_t)g_p1_controller + 0x139) == 1) {
+                    int is_att = ((int(*)(void*,void*))(g_base + 0x11752C8))(player, NULL); // IsAttacking
+                    uint64_t elapsed = now_ms - g_p0_okizeme_start_ms;
+
+                    // Phase 1: Approach / Dash close (500ms - 900ms)
+                    if (elapsed >= 500 && elapsed < 900 && g_p0_okizeme_step == 0 && !is_att) {
+                        if (g_p0_okizeme_strategy == 1 || g_p0_okizeme_strategy == 2) {
+                            ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 32, NULL); // Action.Dash (32)
+                            g_p0_okizeme_step = 1;
+                            flog("AI_DIFF: P0 (AutoFight) Okizeme Phase 1 -> Dash forward (strat=%d)", g_p0_okizeme_strategy);
+                        } else {
+                            g_p0_okizeme_step = 1; // Strategy 3: Stay at range
+                        }
+                    }
+                    // Phase 2: Wakeup strike (1150ms - 1700ms)
+                    else if (elapsed >= 1150 && elapsed <= 1700 && g_p0_okizeme_step == 1 && !is_att) {
+                        if (g_p0_okizeme_strategy == 1) {
+                            ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 1, NULL); // Melee strike
+                            g_p0_okizeme_armed = 0;
+                            flog("AI_DIFF: P0 (AutoFight) Okizeme Phase 2 -> Melee strike on wakeup!");
+                        } else if (g_p0_okizeme_strategy == 2) {
+                            ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 256, NULL); // Heavy Attack charge
+                            g_p0_okizeme_armed = 0;
+                            flog("AI_DIFF: P0 (AutoFight) Okizeme Phase 2 -> Heavy Attack charge on wakeup!");
+                        } else if (g_p0_okizeme_strategy == 3) {
+                            ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 1, NULL); // Shoot on wakeup
+                            g_p0_okizeme_armed = 0;
+                            flog("AI_DIFF: P0 (AutoFight) Okizeme Phase 2 -> Ranged shoot on wakeup!");
+                        }
+                    } else if (elapsed > 2000) {
+                        g_p0_okizeme_armed = 0;
+                    }
+                } else if (g_p0_okizeme_armed && now_ms - g_p0_okizeme_start_ms > 2000) {
+                    g_p0_okizeme_armed = 0;
+                }
+
+                // 4. Post-combo Safe Retreat (Avoid free retaliatory L1)
+                if (g_p0_retreat_after_combo) {
+                    if (now_ms >= g_p0_retreat_execute_ms) {
+                        int escaped = ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 8, NULL); // Action.Dodge = 8
+                        if (escaped) {
+                            g_p0_retreat_after_combo = 0;
+                            flog("AI_DIFF: P0 (AutoFight) post-combo safe retreat Dodge executed!");
+                        } else if (now_ms > g_p0_retreat_execute_ms + 350) {
+                            g_p0_retreat_after_combo = 0;
+                        }
+                    }
+                }
+
+                // 5. Active Ranged Combat (点枪与远程压制 - 六道狂乱: 75% shoot, 20% dash)
+                if (!g_p0_retreat_after_combo && !g_p0_disengage_pending && !g_p0_okizeme_armed) {
+                    int is_att = ((int(*)(void*,void*))(g_base + 0x11752C8))(player, NULL); // IsAttacking
+                    int can_shoot = ((int(*)(void*,void*))(g_base + 0x1174FEC))(player, NULL); // CanShoot
+                    static uint64_t s_p0_last_ranged_act_ms = 0;
+
+                    if (!is_att && can_shoot && (now_ms - s_p0_last_ranged_act_ms >= 260)) {
+                        s_p0_last_ranged_act_ms = now_ms;
+                        int roll = rand() % 100;
+                        int shoot_rate = 75; // 六道狂乱
+                        int dash_rate = 20;  // 六道狂乱
+                        if (roll < shoot_rate) {
+                            ((void(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 1, NULL); // Action.Attack (Shoot!)
+                            flog("AI_DIFF: P0 (AutoFight) fires ranged shot!");
+                        } else if (roll < shoot_rate + dash_rate) {
+                            ((void(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 32, NULL); // Action.Dash (Chase!)
+                            flog("AI_DIFF: P0 (AutoFight) dashes forward from range!");
                         }
                     }
                 }
@@ -5938,8 +6090,15 @@ void* hook_153(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
         reset_player_attack_chain(self);
         g_p0_combo_ended = 0;
         g_p0_after_heavy = 0;
+        // 警车释放S技，无论打没打中，立刻打断充能
+        if (strstr(g_p0_bot_id, "prowl") != NULL && g_p0_prowl_charging) {
+            prowl_finish_charge(1, "special attack start (hook_153)");
+        }
     } else if (self == g_p1_controller || (obj_ok(self) && *(int32_t*)((uintptr_t)self + 0xF4) == 1)) {
         reset_player_attack_chain(self);
+        if (strstr(g_p1_bot_id, "prowl") != NULL && g_p1_prowl_charging) {
+            prowl_finish_charge(0, "special attack start (hook_153)");
+        }
     }
     void* r = H[153].orig(self, a1, a2, a3, a4, a5, a6, a7);
     PROTECT({
@@ -6058,9 +6217,58 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
         int is_p0_act = (self == g_p0_controller) || (obj_ok(self) && *(int32_t*)((uintptr_t)self + 0xF4) == 0);
         int is_p1_act = (self == g_p1_controller) || (obj_ok(self) && *(int32_t*)((uintptr_t)self + 0xF4) == 1);
 
-        // Track player retreat / dodge timestamp
+        // Track retreat / dodge timestamps
         if (is_p0_act && (action == 8 || action == 64 || action == 128)) {
             g_p0_last_dodge_ms = propgo_now_ms();
+        } else if (is_p1_act && (action == 8 || action == 64 || action == 128)) {
+            g_p1_last_dodge_ms = propgo_now_ms();
+        }
+
+        // P0 (AutoFight Friendly AI) Tactical Action Interceptions (六道狂乱 Difficulty 3):
+        if (is_p0_act && tftf_is_autofight_active()) {
+            uint64_t now_ms = propgo_now_ms();
+
+            // 1. Intercept Behavior Tree Block -> Force Dodge out of block once blockstun elapsed!
+            if (action == 2 && g_p0_force_dodge_after_block) {
+                if (now_ms >= g_p0_disengage_execute_ms) {
+                    action = g_p0_force_dodge_action ? g_p0_force_dodge_action : 8;
+                    a1 = (void*)(intptr_t)action;
+                    flog("AI_DIFF: P0 (AutoFight) Intercepted Behavior Tree Block(2) -> replaced with Dodge(%d)!", action);
+                }
+            }
+            // 2. Tactical Melee / Whiff Prevention & Retreat Counter for P0:
+            else if (action == 1) {
+                int p1_retreated = (now_ms - g_p1_last_dodge_ms < 1000);
+                int p0_was_hit = (now_ms - g_p0_last_hitreact_ms < 1400);
+
+                if (p1_retreated || p0_was_hit) {
+                    int can_shoot = ((int(*)(void*,void*))(g_base + 0x1174FEC))(self, NULL); // get_CanShoot
+                    if (can_shoot) {
+                        int roll = rand() % 100;
+                        int shoot_chance = 60; // 六道狂乱
+                        if (roll < shoot_chance) {
+                            action = 1; // Ranged attack (Shoot!)
+                            a1 = (void*)(intptr_t)action;
+                            flog("AI_DIFF: P0 (AutoFight) P1 retreated & at CanShoot range -> fires ranged shot!");
+                        } else {
+                            action = 32; // Action.Dash (Chase!)
+                            a1 = (void*)(intptr_t)action;
+                            flog("AI_DIFF: P0 (AutoFight) P1 retreated & at CanShoot range -> dashes in to punish!");
+                        }
+                    } else if (p1_retreated) {
+                        int roll = rand() % 100;
+                        int dash_chance = 70; // 六道狂乱
+                        if (roll < dash_chance) {
+                            action = 32; // Action.Dash (Close distance immediately!)
+                            a1 = (void*)(intptr_t)action;
+                            flog("AI_DIFF: P0 (AutoFight) P1 retreating -> converts whiff melee into Dash(32) chase!");
+                        } else {
+                            flog("AI_DIFF: P0 (AutoFight) P1 retreating -> suppresses whiff melee swing (waiting for CanShoot range)");
+                            return NULL;
+                        }
+                    }
+                }
+            }
         }
 
         if (is_p1_act) {
@@ -6170,17 +6378,61 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
             }
         }
 
+        // P0 (AutoFight Friendly AI) Reaction to P1 offensive maneuvers (六道狂乱 Difficulty 3):
+        if (is_p1_act && g_p0_controller && obj_ok(g_p0_controller) && fld_p(g_p0_controller, 0x10) && tftf_is_autofight_active()) {
+            int p0_input = *(uint8_t*)((uintptr_t)g_p0_controller + 0x139);
+            uint8_t p1_input = (self && obj_ok(self)) ? *(uint8_t*)((uintptr_t)self + 0x139) : 0;
+            if (p0_input == 1 && p1_input == 1) {
+                uint64_t now_ms = propgo_now_ms();
+                // 1. P1 charging heavy attack -> P0 evades (85% chance for 六道狂乱)
+                if (action == 0x100) {
+                    int roll = rand() % 100;
+                    if (roll < 85) {
+                        int evade_act = (rand() % 2 == 0) ? 8 : (rand() % 2 == 0 ? 0x40 : 0x80);
+                        ((void(*)(void*,int,void*))(g_base+0x1179AF4))(g_p0_controller, evade_act, NULL);
+                        flog("AI_DIFF: P0 (AutoFight) reacted to P1 heavy attack (evade_act=%d)", evade_act);
+                    }
+                }
+                // 2. P1 shooting at range -> P0 punishes with special or evades (95% chance for 六道狂乱)
+                else if (action == 1 && (now_ms - g_p0_anti_shoot_last_ms >= 1000)) {
+                    int p1_can_shoot = ((int(*)(void*,void*))(g_base + 0x1174FEC))(self, NULL); // get_CanShoot
+                    if (p1_can_shoot) {
+                        g_p0_anti_shoot_last_ms = now_ms;
+                        int sp_avail = ((int(*)(void*,void*))(g_base + 0x1173FA4))(g_p0_controller, NULL); // GetHighestAvailableSpecialAttack
+                        if (sp_avail > 0 && (rand() % 100 < 95)) {
+                            int fired = ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(g_p0_controller, 0x200, NULL);
+                            if (!fired) {
+                                g_p0_ai_special_cancel_pending = 1;
+                                g_p0_ai_special_cancel_deadline_ms = now_ms + 450;
+                            }
+                            flog("AI_DIFF: P0 (AutoFight) punishes P1 shot with Special Attack! (sp=%d, fired=%d)", sp_avail, fired);
+                        } else if (rand() % 100 < 95) {
+                            int evade_act = (rand() % 3 == 0) ? 32 : ((rand() % 2 == 0) ? 64 : 128);
+                            ((void(*)(void*,int,void*))(g_base + 0x1179AF4))(g_p0_controller, evade_act, NULL);
+                            flog("AI_DIFF: P0 (AutoFight) evades P1 shot! (act=%d)", evade_act);
+                        }
+                    }
+                }
+            }
+        }
+
         if (action == 8) { // Action.Dodge ONLY (Swipe back / 后闪)
             if (is_p0_act && strstr(g_p0_bot_id, "prowl") != NULL) {
                 prowl_start_charge(1);
             } else if (is_p1_act && strstr(g_p1_bot_id, "prowl") != NULL) {
                 prowl_start_charge(0);
             }
-        } else if (action == 0x200) { // 特殊技 (SP1/SP2/SP3)
+        } else if (action == 32) { // Action.Dash (主动前冲，打断充能)
             if (is_p0_act && strstr(g_p0_bot_id, "prowl") != NULL && g_p0_prowl_charging) {
-                prowl_finish_charge(1, "special attack");
+                prowl_finish_charge(1, "dash forward (action 32)");
             } else if (is_p1_act && strstr(g_p1_bot_id, "prowl") != NULL && g_p1_prowl_charging) {
-                prowl_finish_charge(0, "special attack");
+                prowl_finish_charge(0, "dash forward (action 32)");
+            }
+        } else if (action == 0x200) { // 特殊技 (SP1/SP2/SP3，无论打没打中均打断)
+            if (is_p0_act && strstr(g_p0_bot_id, "prowl") != NULL && g_p0_prowl_charging) {
+                prowl_finish_charge(1, "special attack (0x200)");
+            } else if (is_p1_act && strstr(g_p1_bot_id, "prowl") != NULL && g_p1_prowl_charging) {
+                prowl_finish_charge(0, "special attack (0x200)");
             }
         }
     });
@@ -6200,6 +6452,14 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
                 g_p1_force_dodge_after_block = 0;
                 g_p1_disengage_pending = 0;
                 flog("AI_DIFF: Intercepted Dodge(%d) succeeded, cleared force_dodge flag", action);
+            }
+        }
+        if (g_p0_force_dodge_after_block && action_ok &&
+            (self == g_p0_controller || (obj_ok(self) && *(int32_t*)((uintptr_t)self + 0xF4) == 0))) {
+            if (action == 8 || action == 64 || action == 128) {
+                g_p0_force_dodge_after_block = 0;
+                g_p0_disengage_pending = 0;
+                flog("AI_DIFF: P0 (AutoFight) Intercepted Dodge(%d) succeeded, cleared force_dodge flag", action);
             }
         }
         if (obj_ok(self) && *(int32_t*)((uintptr_t)self + 0xF4) == 0) {
@@ -6665,6 +6925,7 @@ void* hook_165(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
                 g_p0_block_reset_done = 0;
                 g_p0_combo_ended = 0;
                 g_p0_after_heavy = 0;
+                g_p0_last_hitreact_ms = propgo_now_ms();
                 flog("HITREACT_ENTER (0x0117FEC4) on P0: unblocked hit reaction resets attack chain");
                 reset_player_attack_chain(pc);
                 skill_dispatch_hitreact_enter(0);
@@ -6936,6 +7197,35 @@ float hook_177(void* self, float damage, void* damageType, int32_t blocked, void
                             static int s_arcee_boost_cnt = 0;
                             if (s_arcee_boost_cnt++ < 20) {
                                 flog("RANGED_DAMAGE_BOOST: damage boosted %.2fx (%.1f -> %.1f)", 1.0f + g_p0_ranged_damage_bonus, old_dmg, damage);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // AI Difficulty combo cancel for P0 (AutoFight) and P1:
+            // When P0 in AutoFight hits P1 with M2 / combo ender, arm special attack or retreat
+            if (is_enemy && g_p0_controller && obj_ok(g_p0_controller) && fld_p(g_p0_controller, 0x10) && tftf_is_autofight_active()) {
+                int p0_input = *(uint8_t*)((uintptr_t)g_p0_controller + 0x139);
+                if (p0_input && !blocked) {
+                    uint32_t p0_m = *(uint32_t*)((char*)g_p0_controller + 0x1c4);
+                    uint32_t p0_l = *(uint32_t*)((char*)g_p0_controller + 0x1c0);
+                    if (p0_m >= 2 || p0_l >= 4 || (p0_l >= 3 && p0_m >= 1)) {
+                        int sp_avail = ((int(*)(void*,void*))(g_base + 0x1173FA4))(g_p0_controller, NULL);
+                        if (sp_avail > 0) {
+                            g_p0_ai_special_cancel_pending = 1;
+                            g_p0_ai_special_cancel_deadline_ms = propgo_now_ms() + 450;
+                            int fired = ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(g_p0_controller, 0x200, NULL);
+                            if (fired) {
+                                g_p0_ai_special_cancel_pending = 0;
+                                flog("AI_DIFF: P0 (AutoFight) combo ender hit -> immediate SpecialAttack fired! (sp_avail=%d)", sp_avail);
+                            }
+                        } else {
+                            // 六道狂乱: 95% retreat chance
+                            if (rand() % 100 < 95) {
+                                g_p0_retreat_after_combo = 1;
+                                g_p0_retreat_execute_ms = propgo_now_ms() + 180;
+                                flog("AI_DIFF: P0 (AutoFight) combo ender hit with no SP -> armed post-combo retreat backdash!");
                             }
                         }
                     }
@@ -7569,10 +7859,19 @@ void* hook_186(void* this_pc, void* hitResult, void* method) {
             }
             int is_melee_hit = is_hit && (atk_level != 8) && ((flags & 0x100) == 0);
             if (is_melee_hit) {
-                if (p_idx == 0 && strstr(g_p0_bot_id, "prowl") != NULL && g_p0_prowl_charging) {
+                // 近战打中对手，打断充能 (p_idx 为受击方，1-p_idx 为攻击方):
+                if (p_idx == 1 && strstr(g_p0_bot_id, "prowl") != NULL && g_p0_prowl_charging) {
                     prowl_finish_charge(1, "melee attack hit opponent");
-                } else if (p_idx == 1 && strstr(g_p1_bot_id, "prowl") != NULL && g_p1_prowl_charging) {
+                } else if (p_idx == 0 && strstr(g_p1_bot_id, "prowl") != NULL && g_p1_prowl_charging) {
                     prowl_finish_charge(0, "melee attack hit opponent");
+                }
+            }
+            if (is_unblocked_hit) {
+                // 警车被对手击中，打断充能:
+                if (p_idx == 0 && strstr(g_p0_bot_id, "prowl") != NULL && g_p0_prowl_charging) {
+                    prowl_finish_charge(1, "struck by opponent");
+                } else if (p_idx == 1 && strstr(g_p1_bot_id, "prowl") != NULL && g_p1_prowl_charging) {
+                    prowl_finish_charge(0, "struck by opponent");
                 }
             }
 
@@ -8193,6 +8492,14 @@ int skill_get_prowl_melee_stacks(int player_index) {
         if (now_ms < g_p1_prowl_melee_buff_end_ms) return g_p1_prowl_melee_buff_stacks;
     }
     return 0;
+}
+
+int skill_prowl_is_charging(int player_index) {
+    return prowl_is_charging(player_index == 0 ? 1 : 0);
+}
+
+void skill_prowl_finish_charge(int player_index, const char* reason) {
+    prowl_finish_charge(player_index == 0 ? 1 : 0, reason);
 }
 
 // slot 188 (0x00EEFB44): BuffsController.ApplyBuff(BuffsController applicant, StatModifier statModifier, bool updateAttributes, bool useOverrideDuration, float overrideDuration)
@@ -9312,6 +9619,38 @@ float hook_198(void* self, int32_t attack_level, float mana_gain_pct, int32_t bl
         attacker_pc = is_p0 ? g_p1_controller : g_p0_controller;
     }
     const char* attacker_bot = is_p0 ? g_p1_bot_id : g_p0_bot_id;
+
+    // Global AI Difficulty System: P0 (AutoFight) Block-and-Disengage (Whiff Punish) - 六道狂乱 (95% 75ms)
+    if (is_p0 && blocked && (attack_level != 8) && tftf_is_autofight_active()) {
+        s_p0_block_hit_count++;
+        int roll = rand() % 100;
+        if (s_p0_block_hit_count >= 1 && roll < 95) {
+            s_p0_block_hit_count = 0;
+            g_p0_force_dodge_after_block = 1;
+            g_p0_force_dodge_action = (rand() % 4 == 0) ? ((rand() % 2 == 0) ? 64 : 128) : 8;
+            g_p0_disengage_pending = 1;
+            g_p0_disengage_act = g_p0_force_dodge_action;
+            uint64_t now_ms = propgo_now_ms();
+            g_p0_disengage_execute_ms = now_ms + 75; // 六道狂乱: 75ms
+            flog("AI_DIFF: P0 (AutoFight) blocked melee hit in hook_198! Armed disengage in %d ms (act=%d)",
+                 (int)(g_p0_disengage_execute_ms - now_ms), g_p0_force_dodge_action);
+        }
+    } else if (is_p0 && !blocked) {
+        s_p0_block_hit_count = 0;
+        g_p0_disengage_pending = 0;
+        g_p0_force_dodge_after_block = 0;
+    }
+
+    // Okizeme: Player P1 took an unblocked Heavy or Special attack from P0 (and P0 is in AutoFight)
+    if (!is_p0 && !blocked && ((attack_level & 4) || (attack_level & 0x70)) && tftf_is_autofight_active()) {
+        g_p0_okizeme_armed = 1;
+        g_p0_okizeme_start_ms = propgo_now_ms();
+        g_p0_okizeme_step = 0;
+        // 六道狂乱 strategy: 45% dash & melee, 40% heavy, 15% shoot
+        int r = rand() % 100;
+        g_p0_okizeme_strategy = (r < 45) ? 1 : ((r < 85) ? 2 : 3);
+        flog("AI_DIFF: P1 knocked down by P0 (AutoFight)! Arming Okizeme (strat=%d)", g_p0_okizeme_strategy);
+    }
 
     // Global AI Difficulty System: Block-and-Disengage (Whiff Punish)
     if (!is_p0 && blocked && (attack_level != 8)) {

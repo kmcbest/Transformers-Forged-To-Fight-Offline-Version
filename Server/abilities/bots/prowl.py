@@ -99,7 +99,7 @@ def build_prowl_abilities(base_hp: float = 30533.0, base_atk: float = 2329.0):
 
     # 4. 被动: 近战增益 (Melee Buff / ID 2727)
     # 后闪充能，每0.5s一层最多10层；充到10层或打断后转化为橙色近战增益，每层+11%近战伤害，持续6秒
-    # 4a. 近战充能规避 (亮银灰拳头图标，立即投降！54% 规避几率，充能期间全程显示，最多叠加10层)
+    # 4a. 近战充能规避 (亮银灰拳头图标 0xE412，立即投降！54% 规避几率，充能期间全程显示，最多叠加10层)
     m_charge, a_charge = make_evade_grant_statmod(
         mod_id="prowl_melee_charge",
         evade_type="melee",
@@ -110,7 +110,7 @@ def build_prowl_abilities(base_hp: float = 30533.0, base_atk: float = 2329.0):
         trigger_scope="state=Dodge",
         appr_id="appr_prowl_melee_charge",
         callout_text="立即投降！",
-        pua_icon="\uE406",
+        pua_icon="\uE412",
         color_hex="CBD5E1",
         gradient_bottom="94A3B8",
         show_callout=True,
@@ -120,23 +120,27 @@ def build_prowl_abilities(base_hp: float = 30533.0, base_atk: float = 2329.0):
     mods.update(m_charge)
     appears.update(a_charge)
 
-    # 4b. 橙色近战增益 (伤害加成 11%/层，最多 10 层，持续 6 秒)
+    # 4b. 橙色近战增益 (拳头图标 0xE412，仅对近战伤害生效 11%/层，最多 10 层，持续 6 秒)
+    # 注意：原生 statmod attack_bonus 设为 0.0，避免泛型 attack_buff 误加成远程射击与特殊技
+    # 由底层 C hook (skill_prowl.c) 精确判定近战普通/重击命中时按层数增加 11%/层
     m4, a4 = make_attack_boost_statmod(
         mod_id="prowl_passive_melee_buff",
         duration=6.0,
-        attack_bonus=0.11,
+        attack_bonus=0.0,
         chance=1.0,
         trigger="onPlayerStateEnter",
         trigger_scope="state=Dodge",
         appr_id="appr_prowl_passive_melee_buff",
         callout_text="近战增益",
         show_callout=True,
-        pua_icon="\uE406",
+        pua_icon="\uE412",
         color_hex="FF8800",
         gradient_bottom="DD6600",
         stackable=True,
         max_stacks=10,
     )
+    a4["appr_prowl_passive_melee_buff"]["l"] = "近战伤害提升11%"
+    a4["appr_prowl_passive_melee_buff"]["ss"] = "近战伤害提升11%"
     mods.update(m4)
     appears.update(a4)
 

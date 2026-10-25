@@ -317,6 +317,24 @@ int skill_fuse_target_debuffs(int target_player_index) {
     return fused;
 }
 
+static void prowl_finish_charge_sim(int player_idx, const char* reason) {
+    if (player_idx < 0 || player_idx >= 2) return;
+    SimCombatant* c = &g_players[player_idx];
+    if (!c->prowl_charging) return;
+    int st = c->prowl_charge_stacks;
+    if (st < 1) st = 1;
+    if (st > 10) st = 10;
+    c->prowl_charging = 0;
+    sim_remove_buff(player_idx, "prowl_melee_charge", 99);
+    sim_inject_buff(player_idx, "prowl_melee_buff", 6.0f, st);
+    c->prowl_melee_stacks = st;
+    skill_overlay("[P%d] 警车充能打断 (%s)！%d层充能转化为近战增益(+%d%%, 6秒)", player_idx, reason, st, st * 11);
+    push_floater(player_idx, 5, 0.0f, "⚡ 近战增益激活");
+    float gain = 0.04f * (float)st;
+    c->mana += gain;
+    if (c->mana > 3.0f) c->mana = 3.0f;
+}
+
 int skill_get_prowl_melee_stacks(int player_index) {
     if (player_index >= 0 && player_index < 2) {
         int b_stacks = skill_count_buffs(player_index, "prowl_melee_buff");
@@ -324,6 +342,17 @@ int skill_get_prowl_melee_stacks(int player_index) {
         return g_players[player_index].prowl_melee_stacks;
     }
     return 0;
+}
+
+int skill_prowl_is_charging(int player_index) {
+    if (player_index >= 0 && player_index < 2) {
+        return g_players[player_index].prowl_charging;
+    }
+    return 0;
+}
+
+void skill_prowl_finish_charge(int player_index, const char* reason) {
+    prowl_finish_charge_sim(player_index, reason);
 }
 
 int skill_is_heavy_attacking(int player_index) {
@@ -639,12 +668,28 @@ SIM_API void sim_tick(uint32_t dt_ms) {
 }
 
 
+SIM_API int sim_dash(int player_idx) {
+    if (player_idx < 0 || player_idx >= 2) return 0;
+    SimCombatant* c = &g_players[player_idx];
+    // 主动前冲，打断充能
+    if (c->prowl_charging) {
+        prowl_finish_charge_sim(player_idx, "dash forward");
+    }
+    push_floater(player_idx, 5, 0.0f, "⏩ 前冲 (Dash)");
+    skill_log("SIM: P%d performed Dash (前冲)", player_idx);
+    return 1;
+}
+
 SIM_API int sim_attack_start(int attacker_idx, int action_type) {
     if (attacker_idx < 0 || attacker_idx >= 2) return 0;
     SimCombatant* atker = &g_players[attacker_idx];
     atker->current_action = action_type;
     atker->is_heavy = (action_type == 4);
     atker->in_special = (action_type >= 16);
+    // 放S技，无论打没打中，都打断
+    if (action_type >= 16 && atker->prowl_charging) {
+        prowl_finish_charge_sim(attacker_idx, "special attack start");
+    }
     skill_dispatch_attack_start(attacker_idx, action_type);
     skill_log("SIM_ATTACK_START: P%d started action %d (%s)", attacker_idx, action_type, atker->bot_id);
     return 1;
@@ -657,23 +702,15 @@ SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
     SimCombatant* atker = &g_players[attacker_idx];
     SimCombatant* victim = &g_players[target_idx];
 
-    // 若警车正在充能，攻击会打断充能并将其转化为对应层数的橙色近战增益
-    if (atker->prowl_charging) {
-        int st = atker->prowl_charge_stacks;
-        if (st < 1) st = 1;
-        if (st > 10) st = 10;
-        atker->prowl_charging = 0;
-        sim_remove_buff(attacker_idx, "prowl_melee_charge", 99);
-        sim_inject_buff(attacker_idx, "prowl_melee_buff", 6.0f, st);
-        atker->prowl_melee_stacks = st;
-        skill_overlay("[P%d] 警车出手！%d层充能转化为近战增益(+%d%%, 6秒)", attacker_idx, st, st * 11);
-        push_floater(attacker_idx, 5, 0.0f, "✨ 近战增益激活");
-    }
-
     int sp_idx = 0;
     if (action_type == 16) sp_idx = 1;
     else if (action_type == 32) sp_idx = 2;
     else if (action_type == 64) sp_idx = 3;
+
+    // 放S技，无论打没打中，都打断
+    if (sp_idx > 0 && atker->prowl_charging) {
+        prowl_finish_charge_sim(attacker_idx, "special attack");
+    }
 
     int is_heavy = (action_type == 4);
     int is_ranged = (action_type == 8);
@@ -813,6 +850,15 @@ SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
 
     victim->hp -= final_dmg;
     if (victim->hp < 0.0f) victim->hp = 0.0f;
+
+    // 近战打中对手，打断充能 (排除远程射击 is_ranged 与特殊技 sp_idx > 0)
+    if (!is_ranged && sp_idx == 0 && atker->prowl_charging) {
+        prowl_finish_charge_sim(attacker_idx, "melee attack hit opponent");
+    }
+    // 被对方击中打断充能
+    if (victim->prowl_charging && final_dmg > 0.0f && !is_blocked) {
+        prowl_finish_charge_sim(target_idx, "struck by opponent");
+    }
 
     // 攻击方回气结算 (对齐 hook_197 官方原版基准: 1格=300点)
     if (sp_idx == 0) {

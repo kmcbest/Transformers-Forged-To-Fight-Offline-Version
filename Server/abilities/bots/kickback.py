@@ -162,7 +162,7 @@ def build_kickback_abilities(base_hp: float = 32533.0, base_atk: float = 3880.0)
         appr_id="appr_kickback_power_rate",
         callout_text="能量功率",
         desc="对手处于能量流失状态时，近战攻击能量获取效率提升50%",
-        pua_icon="\uE403",
+        pua_icon="\uE606",
         color=AbilityColor.LIGHT_PURPLE_POWER,
         show_callout=True,
     )
@@ -253,7 +253,7 @@ def build_kickback_abilities(base_hp: float = 32533.0, base_atk: float = 3880.0)
         appr_id="appr_kickback_heavy_power_gain",
         callout_text="能量获取",
         desc="2秒内获得最大能量的3%",
-        pua_icon="\uE403",
+        pua_icon="\uE606",
         color=AbilityColor.LIGHT_PURPLE_POWER,
         show_callout=True,
     )
@@ -299,7 +299,7 @@ def build_kickback_abilities(base_hp: float = 32533.0, base_atk: float = 3880.0)
         appr_id="appr_kickback_tcog_disrupt",
         callout_text="T-齿轮破坏",
         desc="变形齿轮被破坏，能量获取功率降低30%，释放重击将失败并被眩晕2秒",
-        pua_icon="\uE951",
+        pua_icon="\uE60F",
         color=AbilityColor.RED_DEBUFF,
         show_callout=True,
     )
@@ -426,7 +426,7 @@ def build_kickback_abilities(base_hp: float = 32533.0, base_atk: float = 3880.0)
         appr_id="appr_kickback_sp3_repair",
         callout_text="修复",
         desc="5秒内修复最大生命值的3%",
-        pua_icon="\uE514",
+        pua_icon="\uE401",
         color=AbilityColor.GREEN_HEALTH,
         show_callout=True,
     )

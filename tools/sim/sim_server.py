@@ -301,6 +301,10 @@ class SimEngine:
             self.dll.sim_set_heavy_attacking.argtypes = [ctypes.c_int, ctypes.c_int]
             self.dll.sim_set_heavy_attacking.restype = ctypes.c_int
 
+        if hasattr(self.dll, 'sim_dash'):
+            self.dll.sim_dash.argtypes = [ctypes.c_int]
+            self.dll.sim_dash.restype = ctypes.c_int
+
     def recompile(self):
         import _ctypes
         if self.dll:
@@ -356,6 +360,11 @@ class SimEngine:
 
     def dodge(self, player, dodge_type):
         return self.dll.sim_dodge(int(player), int(dodge_type))
+
+    def dash(self, player):
+        if hasattr(self.dll, 'sim_dash'):
+            return self.dll.sim_dash(int(player))
+        return 1
 
     def inject_buff(self, target, mod_id, dur, stacks):
         return self.dll.sim_inject_buff(int(target), mod_id.encode("utf-8"), float(dur), int(stacks))
