@@ -590,10 +590,20 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x00B50074, "FABRIC_SET_MUSIC_VOL", 2, 0 }, // 200 FabricControl.set_MusicVolume
     { 0x00B5200C, "FABRIC_PAUSE_MUSIC",  2, 0 }, // 201 FabricControl.PauseMusic
     { 0x00D1DF58, "CHAR_DETAIL_ENTER",   2, 0 }, // 202 CharacterDetailScreen.OnIntroTransitionBegin
-    { 0x00D1E0B8, "CHAR_DETAIL_EXIT",    2, 0 }  // 203 CharacterDetailScreen.OnOutroTransitionBegin
+    { 0x00D1E0B8, "CHAR_DETAIL_EXIT",    2, 0 }, // 203 CharacterDetailScreen.OnOutroTransitionBegin
+    { 0x00B51EA8, "FABRIC_PAUSE_ALL",    2, 0 }, // 204 FabricControl.Pause
+    { 0x011F97A8, "PVP_FLOW_ENTER",      2, 0 }, // 205 PVPFlow.Enter
+    { 0x011F989C, "PVP_FLOW_RESUME",     2, 0 }, // 206 PVPFlow.Resume
+    { 0x00F1DAA4, "RAID_FLOW_ENTER",     2, 0 }, // 207 PVPRaidFlow.Enter
+    { 0x00F1DB10, "RAID_FLOW_RESUME",    2, 0 }, // 208 PVPRaidFlow.Resume
+    { 0x012E8F34, "QUEST_FLOW_ENTER",    2, 0 }, // 209 QuestFlow.Enter
+    { 0x012E900C, "QUEST_FLOW_RESUME",   2, 0 }, // 210 QuestFlow.Resume
+    { 0x00C5FC70, "HOME_FLOW_RESUME",    2, 0 }  // 211 HomeFlow.Resume
 };
 
 #define NH (int)(sizeof(H)/sizeof(H[0]))
+
+static void native_play_music_category(const char* cat);
 
 
 // Set only while inside BCGHeroBase..ctor (slot 45 brackets it). When set, every
@@ -1130,6 +1140,10 @@ static void* g_active_homeflow = NULL;
 void* hook_18(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
     flog(">>HomeFlow.Enter this=%p", a0);
     g_active_homeflow = a0;
+    if (tftf_get_enable_custom_music()) {
+        LOG("[Jukebox] HomeFlow.Enter (hook_18) -> main");
+        native_play_music_category("main");
+    }
     return H[18].orig(a0,a1,a2,a3,a4,a5,a6,a7);
 }
 MKHOOK(25) MKHOOK(26) MKHOOK(27) MKHOOK(29) MKHOOK(30)
@@ -10153,6 +10167,7 @@ static jmethodID s_play_cat_mid = NULL;
 static jmethodID s_set_vol_mid = NULL;
 static jmethodID s_pause_mid = NULL;
 static jmethodID s_stop_mid = NULL;
+static jmethodID s_fadeout_mid = NULL;
 
 static char s_pending_category[64] = {0};
 
@@ -10227,29 +10242,120 @@ static void native_stop_custom_music(void) {
     if (need_detach) (*s_jvm)->DetachCurrentThread(s_jvm);
 }
 
+static void native_fadeout_custom_music(int duration_ms) {
+    if (!s_jvm || !s_music_class || !s_fadeout_mid) return;
+    JNIEnv* env = NULL;
+    jint res = (*s_jvm)->GetEnv(s_jvm, (void**)&env, JNI_VERSION_1_6);
+    int need_detach = 0;
+    if (res == JNI_EDETACHED) {
+        if ((*s_jvm)->AttachCurrentThread(s_jvm, &env, NULL) != JNI_OK) return;
+        need_detach = 1;
+    } else if (res != JNI_OK || !env) {
+        return;
+    }
+    (*env)->CallStaticVoidMethod(env, s_music_class, s_fadeout_mid, (jint)duration_ms);
+    if (need_detach) (*s_jvm)->DetachCurrentThread(s_jvm);
+}
+
+static const char* get_current_flow_music_category(void) {
+    if (!g_base) return "main";
+    void* (*get_fm_inst)(void*) = (void*(*)(void*))(g_base + 0xDC8D58);
+    void* fm = get_fm_inst ? get_fm_inst(NULL) : NULL;
+    if (!obj_ok(fm)) return "main";
+
+    // 1) First check inProgressFlow
+    void* (*get_in_prog)(void*, void*) = (void*(*)(void*, void*))(g_base + 0xDC8DF4);
+    void* in_prog = get_in_prog ? get_in_prog(fm, NULL) : NULL;
+    if (obj_ok(in_prog)) {
+        void* klass = *(void**)in_prog;
+        if (obj_ok(klass)) {
+            const char* kname = *(const char**)((uintptr_t)klass + 0x10);
+            if (kname) {
+                if (strstr(kname, "PVPRaidFlow") != NULL || strstr(kname, "Raid") != NULL) return "raid";
+                if (strstr(kname, "PVPFlow") != NULL) return "arena";
+                if (strstr(kname, "QuestFlow") != NULL) return "quest";
+                if (strstr(kname, "HomeFlow") != NULL) return "main";
+            }
+        }
+    }
+
+    // 2) Check active flow
+    void* (*get_active)(void*, void*) = (void*(*)(void*, void*))(g_base + 0xDC913C);
+    void* active = get_active ? get_active(fm, NULL) : NULL;
+    if (obj_ok(active)) {
+        void* klass = *(void**)active;
+        if (obj_ok(klass)) {
+            const char* kname = *(const char**)((uintptr_t)klass + 0x10);
+            if (kname) {
+                if (strstr(kname, "PVPRaidFlow") != NULL || strstr(kname, "Raid") != NULL) return "raid";
+                if (strstr(kname, "PVPFlow") != NULL) return "arena";
+                if (strstr(kname, "QuestFlow") != NULL) return "quest";
+                if (strstr(kname, "HomeFlow") != NULL) return "main";
+            }
+        }
+    }
+
+    // 3) Inspect Stack<Flow> _flowStack at offset 0x18
+    void* stack = *(void**)((uintptr_t)fm + 0x18);
+    if (obj_ok(stack)) {
+        void* arr = *(void**)((uintptr_t)stack + 0x10);
+        int32_t size = *(int32_t*)((uintptr_t)stack + 0x18);
+        if (obj_ok(arr) && size > 0 && size < 64) {
+            void** items = (void**)((uintptr_t)arr + 0x20);
+            for (int i = size - 1; i >= 0; i--) {
+                void* flow = items[i];
+                if (!obj_ok(flow)) continue;
+                void* klass = *(void**)flow;
+                if (!obj_ok(klass)) continue;
+                const char* kname = *(const char**)((uintptr_t)klass + 0x10);
+                if (!kname) continue;
+                if (strstr(kname, "FightFlow") != NULL) continue;
+                if (strstr(kname, "PVPRaidFlow") != NULL || strstr(kname, "Raid") != NULL) return "raid";
+                if (strstr(kname, "PVPFlow") != NULL) return "arena";
+                if (strstr(kname, "QuestFlow") != NULL) return "quest";
+                if (strstr(kname, "HomeFlow") != NULL) return "main";
+            }
+        }
+    }
+
+    return "main";
+}
+
 static const char* get_current_fight_music_category(void) {
     if (!g_base) return "fight";
     void* (*get_fm_inst)(void*) = (void*(*)(void*))(g_base + 0xDC8D58);
     void* fm = get_fm_inst ? get_fm_inst(NULL) : NULL;
     if (!obj_ok(fm)) return "fight";
 
-    void* (*get_in_prog)(void*, void*) = (void*(*)(void*, void*))(g_base + 0xDC8DF4);
-    void* flow = get_in_prog ? get_in_prog(fm, NULL) : NULL;
+    void* (*get_active)(void*, void*) = (void*(*)(void*, void*))(g_base + 0xDC913C);
+    void* flow = get_active ? get_active(fm, NULL) : NULL;
     if (!obj_ok(flow)) {
-        void* (*get_active)(void*, void*) = (void*(*)(void*, void*))(g_base + 0xDC913C);
-        flow = get_active ? get_active(fm, NULL) : NULL;
+        void* (*get_in_prog)(void*, void*) = (void*(*)(void*, void*))(g_base + 0xDC8DF4);
+        flow = get_in_prog ? get_in_prog(fm, NULL) : NULL;
     }
+
     if (obj_ok(flow)) {
         void* klass = *(void**)flow;
         if (obj_ok(klass)) {
             const char* kname = *(const char**)((uintptr_t)klass + 0x10);
-            if (kname) {
-                LOG("CURRENT_FLOW: class='%s'", kname);
-                if (strstr(kname, "PVPFlow") != NULL) return "arena";
-                if (strstr(kname, "Raid") != NULL) return "raid";
+            if (kname && strstr(kname, "FightFlow") != NULL) {
+                void* initInfo = *(void**)((uintptr_t)flow + 0x28);
+                if (obj_ok(initInfo)) {
+                    int32_t fightType = *(int32_t*)((uintptr_t)initInfo + 0x4C);
+                    LOG("[Jukebox] FightFlow detected: fightType=%d", fightType);
+                    if (fightType == 1 || fightType == 2) return "arena"; // PVP or DUEL
+                    if (fightType == 4) return "raid";                    // PVPRAID
+                    return "fight";
+                }
             }
         }
     }
+
+    const char* underlying = get_current_flow_music_category();
+    if (strcmp(underlying, "arena") == 0 || strcmp(underlying, "raid") == 0) {
+        return underlying;
+    }
+
     return "fight";
 }
 
@@ -10267,7 +10373,8 @@ void* hook_199(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     }
 
     if (strcmp(name, "music_fe") == 0) {
-        native_play_music_category("main");
+        const char* cat = get_current_flow_music_category();
+        native_play_music_category(cat);
     } else if (strcmp(name, "music_questboard") == 0) {
         native_play_music_category("quest");
     } else if (strcmp(name, "music_fight_loop") == 0) {
@@ -10277,7 +10384,7 @@ void* hook_199(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
         native_stop_custom_music();
         return H[199].orig(a0, a1, a2, a3, a4, a5, a6, a7);
     } else if (strcmp(name, "music_prefight") == 0) {
-        // Allow fight intro / keep playing
+        native_fadeout_custom_music(250);
     }
 
     return NULL;
@@ -10294,6 +10401,7 @@ void* hook_200(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
 
 void* hook_201(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     int bPause = (int)(uintptr_t)a0;
+    LOG("[Jukebox] FabricControl.PauseMusic: pause=%d", bPause);
     native_pause_custom_music(bPause);
     return H[201].orig(a0, a1, a2, a3, a4, a5, a6, a7);
 }
@@ -10309,6 +10417,76 @@ void* hook_202(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
 void* hook_203(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     void* r = H[203].orig(a0, a1, a2, a3, a4, a5, a6, a7);
     if (tftf_get_enable_custom_music()) {
+        native_play_music_category("main");
+    }
+    return r;
+}
+
+void* hook_204(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    int bPause = (int)(uintptr_t)a0;
+    LOG("[Jukebox] FabricControl.Pause: pause=%d", bPause);
+    native_pause_custom_music(bPause);
+    return H[204].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+}
+
+void* hook_205(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    void* r = H[205].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    if (tftf_get_enable_custom_music()) {
+        LOG("[Jukebox] PVPFlow.Enter -> arena");
+        native_play_music_category("arena");
+    }
+    return r;
+}
+
+void* hook_206(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    void* r = H[206].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    if (tftf_get_enable_custom_music()) {
+        LOG("[Jukebox] PVPFlow.Resume -> arena");
+        native_play_music_category("arena");
+    }
+    return r;
+}
+
+void* hook_207(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    void* r = H[207].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    if (tftf_get_enable_custom_music()) {
+        LOG("[Jukebox] PVPRaidFlow.Enter -> raid");
+        native_play_music_category("raid");
+    }
+    return r;
+}
+
+void* hook_208(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    void* r = H[208].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    if (tftf_get_enable_custom_music()) {
+        LOG("[Jukebox] PVPRaidFlow.Resume -> raid");
+        native_play_music_category("raid");
+    }
+    return r;
+}
+
+void* hook_209(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    void* r = H[209].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    if (tftf_get_enable_custom_music()) {
+        LOG("[Jukebox] QuestFlow.Enter -> quest");
+        native_play_music_category("quest");
+    }
+    return r;
+}
+
+void* hook_210(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    void* r = H[210].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    if (tftf_get_enable_custom_music()) {
+        LOG("[Jukebox] QuestFlow.Resume -> quest");
+        native_play_music_category("quest");
+    }
+    return r;
+}
+
+void* hook_211(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    void* r = H[211].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    if (tftf_get_enable_custom_music()) {
+        LOG("[Jukebox] HomeFlow.Resume -> main");
         native_play_music_category("main");
     }
     return r;
@@ -10335,7 +10513,8 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     hook_165,hook_166,(void*)hook_167,hook_168,hook_169,hook_170,
     hook_171,hook_172,hook_173,hook_174,hook_175,hook_176,(void*)hook_177,(void*)hook_178,
     (void*)hook_179,hook_180,hook_181,hook_182,hook_183,hook_184,hook_185,hook_186,(void*)hook_187,(void*)hook_188,(void*)hook_189,
-    (void*)hook_190,(void*)hook_191,(void*)hook_192,(void*)hook_193,(void*)hook_194,(void*)hook_195,(void*)hook_196,(void*)hook_197,(void*)hook_198,hook_199,(void*)hook_200,(void*)hook_201,hook_202,hook_203 };
+    (void*)hook_190,(void*)hook_191,(void*)hook_192,(void*)hook_193,(void*)hook_194,(void*)hook_195,(void*)hook_196,(void*)hook_197,(void*)hook_198,hook_199,(void*)hook_200,(void*)hook_201,hook_202,hook_203,
+    (void*)hook_204,hook_205,hook_206,hook_207,hook_208,hook_209,hook_210,hook_211 };
 _Static_assert(sizeof(handlers)/sizeof(handlers[0]) == sizeof(H)/sizeof(H[0]), "handlers count must match H count");
 
 
@@ -10359,41 +10538,42 @@ static int relocate(uint8_t* tr, uint8_t* src, int ninstr){
         if ((in & 0x7C000000) == 0x14000000){ // B / BL (imm26)
             int64_t off = (int64_t)(in << 6) >> 4; uint64_t tgt = pc + off;
             uint32_t link = in & 0x80000000;
-            // emit: ldr x16,#8 ; (br|blr) x16 ; .quad tgt
+            if (o % 8 != 0) { *(uint32_t*)(tr+o) = 0xD503201F; o += 4; }
             *(uint32_t*)(tr+o)=0x58000050; o+=4;
             *(uint32_t*)(tr+o)= link?0xD63F0200:0xD61F0200; o+=4;
             *(uint64_t*)(tr+o)=tgt; o+=8;
         } else if ((in & 0xFF000010) == 0x54000000){ // B.cond (imm19)
             int64_t off = (int64_t)((in>>5)&0x7FFFF); off=(off<<45)>>43; uint64_t tgt=pc+off;
             uint32_t cond = in & 0xF;
-            // b.<inv> +0x14 ; ldr x16,#8 ; br x16 ; .quad tgt
+            if (o % 8 != 0) { *(uint32_t*)(tr+o) = 0xD503201F; o += 4; }
             *(uint32_t*)(tr+o)=0x54000000 | (0x14>>2<<5) | (cond^1); o+=4;
             *(uint32_t*)(tr+o)=0x58000050; o+=4; *(uint32_t*)(tr+o)=0xD61F0200; o+=4; *(uint64_t*)(tr+o)=tgt; o+=8;
         } else if ((in & 0x7E000000) == 0x34000000){ // CBZ/CBNZ (imm19)
             int64_t off=(int64_t)((in>>5)&0x7FFFF); off=(off<<45)>>43; uint64_t tgt=pc+off;
-            uint32_t inv = in ^ 0x01000000;            // flip Z/NZ
-            // <cbz->cbnz> Rt, +0x14 ; ldr x16,#8 ; br x16 ; .quad tgt
+            uint32_t inv = in ^ 0x01000000;
+            if (o % 8 != 0) { *(uint32_t*)(tr+o) = 0xD503201F; o += 4; }
             *(uint32_t*)(tr+o)=(inv & 0xFF00001F) | (0x14>>2<<5); o+=4;
             *(uint32_t*)(tr+o)=0x58000050; o+=4; *(uint32_t*)(tr+o)=0xD61F0200; o+=4; *(uint64_t*)(tr+o)=tgt; o+=8;
         } else if ((in & 0x7E000000) == 0x36000000){ // TBZ/TBNZ (imm14)
             int64_t off=(int64_t)((in>>5)&0x3FFF); off=(off<<50)>>48; uint64_t tgt=pc+off;
             uint32_t inv = in ^ 0x01000000;
+            if (o % 8 != 0) { *(uint32_t*)(tr+o) = 0xD503201F; o += 4; }
             *(uint32_t*)(tr+o)=(inv & 0xFFF8001F) | (0x14>>2<<5); o+=4;
             *(uint32_t*)(tr+o)=0x58000050; o+=4; *(uint32_t*)(tr+o)=0xD61F0200; o+=4; *(uint64_t*)(tr+o)=tgt; o+=8;
         } else if ((in & 0x9F000000) == 0x10000000){ // ADR (imm)
             uint32_t rd=in&0x1F; int64_t imm=(((in>>5)&0x7FFFF)<<2)|((in>>29)&3); imm=(imm<<43)>>43;
             uint64_t tgt=pc+imm;
-            // ldr Rd,#8 ; b #0xc ; .quad tgt
+            if (o % 8 != 0) { *(uint32_t*)(tr+o) = 0xD503201F; o += 4; }
             *(uint32_t*)(tr+o)=0x58000040|rd; o+=4; *(uint32_t*)(tr+o)=0x14000003; o+=4; *(uint64_t*)(tr+o)=tgt; o+=8;
         } else if ((in & 0x9F000000) == 0x90000000){ // ADRP
             uint32_t rd=in&0x1F; int64_t imm=(((in>>5)&0x7FFFF)<<2)|((in>>29)&3); imm=(imm<<43)>>43; imm<<=12;
             uint64_t tgt=(pc & ~0xFFFULL)+imm;
+            if (o % 8 != 0) { *(uint32_t*)(tr+o) = 0xD503201F; o += 4; }
             *(uint32_t*)(tr+o)=0x58000040|rd; o+=4; *(uint32_t*)(tr+o)=0x14000003; o+=4; *(uint64_t*)(tr+o)=tgt; o+=8;
         } else if ((in & 0x3B000000) == 0x18000000){ // LDR (literal)
             uint32_t rt=in&0x1F; int64_t off=(int64_t)((in>>5)&0x7FFFF); off=(off<<45)>>43; uint64_t tgt=pc+off;
             int is64 = (in>>30)&1;
-            // ldr Rt,#8 ; b #0xc ; .quad &literal ; then deref: load addr then value
-            // simpler: load address into Rt then load [Rt]
+            if (o % 8 != 0) { *(uint32_t*)(tr+o) = 0xD503201F; o += 4; }
             *(uint32_t*)(tr+o)=0x58000040|rt; o+=4; *(uint32_t*)(tr+o)=0x14000003; o+=4; *(uint64_t*)(tr+o)=tgt; o+=8;
             *(uint32_t*)(tr+o)= is64 ? (0xF9400000|rt|(rt<<5)) : (0xB9400000|rt|(rt<<5)); o+=4; // ldr Rt,[Rt]
         } else {
@@ -10411,6 +10591,10 @@ static int inline_hook(void* target, void* handler, fn8* orig_out){
     uint8_t* tr = (uint8_t*)mmap(NULL, 256, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
     if (tr == MAP_FAILED) { LOG("mmap fail"); return -1; }
     int trlen = relocate(tr, t, 4);     // relocate 4 prologue instrs (PC-relative fixed up)
+    if (trlen % 8 != 0) {
+        *(uint32_t*)(tr + trlen) = 0xD503201F; // NOP align jump target
+        trlen += 4;
+    }
     write_jump(tr + trlen, t + 16);     // jump back to target+16
     __builtin___clear_cache((char*)tr, (char*)tr + trlen + 16);
     *orig_out = (fn8)tr;
@@ -12021,6 +12205,7 @@ static void* launcher_thread(void* arg) {
         s_set_vol_mid = (*env)->GetStaticMethodID(env, cmpClass, "setVolume", "(F)V");
         s_pause_mid = (*env)->GetStaticMethodID(env, cmpClass, "pauseMusic", "(Z)V");
         s_stop_mid = (*env)->GetStaticMethodID(env, cmpClass, "stopMusic", "()V");
+        s_fadeout_mid = (*env)->GetStaticMethodID(env, cmpClass, "fadeOut", "(I)V");
         jmethodID init_mid = (*env)->GetStaticMethodID(env, cmpClass, "init", "(Landroid/app/Activity;)V");
         if (init_mid && act) {
             (*env)->CallStaticVoidMethod(env, cmpClass, init_mid, act);

@@ -1,10 +1,12 @@
 package com.kabam.bigrobot;
 
 import android.app.Activity;
+import android.app.Application;
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.media.MediaPlayer;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -27,10 +29,12 @@ public class CustomMusicPlayer {
     private static boolean sEnabled = true;
     private static float sMasterVolume = 1.0f;
     private static boolean sIsPaused = false;
+    private static boolean sAppInBackground = false;
+    private static boolean sLifecycleRegistered = false;
 
     private static String sCurrentCategory = "";
     private static String sCurrentTrackName = "";
-    private static String sSessionMainTrack = ""; // Requirement 1: fixed track for 'main' during this session
+    private static String sSessionMainTrack = ""; // Fixed track for 'main' during this session
 
     private static MediaPlayer sActivePlayer;
     private static Handler sHandler;
@@ -48,7 +52,6 @@ public class CustomMusicPlayer {
         });
         FALLBACK_TRACKS.put("quest", new String[]{
             "Hydraulic_Engine_Bay.mp3",
-            "Original_Questboard_Loop.mp3",
             "quest-1.mp3",
             "The_Bridge_at_World_s_End.mp3"
         });
@@ -99,6 +102,81 @@ public class CustomMusicPlayer {
     public static synchronized void init(Activity activity) {
         if (activity == null) return;
         initContext(activity.getApplicationContext());
+        registerLifecycle(activity);
+    }
+
+    private static void registerLifecycle(Activity activity) {
+        if (sLifecycleRegistered || activity == null) return;
+        try {
+            Application app = activity.getApplication();
+            if (app != null) {
+                app.registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
+                    private int mStartedCount = 0;
+
+                    @Override
+                    public void onActivityStarted(Activity a) {
+                        mStartedCount++;
+                        if (mStartedCount == 1) {
+                            Log.i(TAG, "App entered foreground, resuming music");
+                            resumeFromBackground();
+                        }
+                    }
+
+                    @Override
+                    public void onActivityStopped(Activity a) {
+                        mStartedCount--;
+                        if (mStartedCount <= 0) {
+                            mStartedCount = 0;
+                            Log.i(TAG, "App entered background / screen locked, pausing music");
+                            pauseForBackground();
+                        }
+                    }
+
+                    @Override public void onActivityCreated(Activity a, Bundle b) {}
+                    @Override public void onActivityResumed(Activity a) {}
+                    @Override public void onActivityPaused(Activity a) {}
+                    @Override public void onActivitySaveInstanceState(Activity a, Bundle b) {}
+                    @Override public void onActivityDestroyed(Activity a) {}
+                });
+                sLifecycleRegistered = true;
+                Log.i(TAG, "ActivityLifecycleCallbacks registered successfully");
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "Failed to register ActivityLifecycleCallbacks: " + t.getMessage());
+        }
+    }
+
+    public static synchronized void pauseForBackground() {
+        sAppInBackground = true;
+        getHandler().post(new Runnable() {
+            @Override
+            public void run() {
+                if (sActivePlayer != null) {
+                    try {
+                        if (sActivePlayer.isPlaying()) {
+                            sActivePlayer.pause();
+                        }
+                    } catch (Exception ignored) {}
+                }
+            }
+        });
+    }
+
+    public static synchronized void resumeFromBackground() {
+        sAppInBackground = false;
+        getHandler().post(new Runnable() {
+            @Override
+            public void run() {
+                if (!sEnabled || sIsPaused) return;
+                if (sActivePlayer != null) {
+                    try {
+                        if (!sActivePlayer.isPlaying()) {
+                            sActivePlayer.start();
+                        }
+                    } catch (Exception ignored) {}
+                }
+            }
+        });
     }
 
     public static synchronized void initContext(Context context) {
@@ -191,7 +269,7 @@ public class CustomMusicPlayer {
             Log.i(TAG, "Category [" + cat + "] found " + list.size() + " tracks: " + list);
         }
 
-        // Requirement 1: Pick fixed session track for 'main'
+        // Fixed session track for 'main' (base menu)
         List<String> mainTracks = sCategoryTracks.get("main");
         if (mainTracks != null && !mainTracks.isEmpty()) {
             sSessionMainTrack = mainTracks.get(sRandom.nextInt(mainTracks.size()));
@@ -285,14 +363,37 @@ public class CustomMusicPlayer {
                     afd.close();
                 } catch (Exception ignored) {}
             }
-            nextPlayer.start();
+            if (!sAppInBackground && !sIsPaused) {
+                nextPlayer.start();
+            }
             Log.i(TAG, "Successfully started MediaPlayer for: " + assetPath);
 
             final MediaPlayer oldPlayer = sActivePlayer;
             sActivePlayer = nextPlayer;
 
-            // Crossfade over 1000ms in 20 steps (50ms interval)
-            final int steps = 20;
+            if (oldPlayer == null) {
+                final int steps = 5;
+                final float volTarget = sMasterVolume;
+                for (int i = 1; i <= steps; i++) {
+                    final int step = i;
+                    getHandler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            float progress = (float) step / steps;
+                            float vol = (float) Math.sqrt(progress) * volTarget;
+                            if (sActivePlayer == nextPlayer && !sAppInBackground && !sIsPaused) {
+                                try {
+                                    nextPlayer.setVolume(vol, vol);
+                                } catch (Exception ignored) {}
+                            }
+                        }
+                    }, i * 40);
+                }
+                return;
+            }
+
+            // Snappy crossfade over 350ms in 7 steps (50ms interval) with equal-power curve
+            final int steps = 7;
             final float volTarget = sMasterVolume;
             for (int i = 1; i <= steps; i++) {
                 final int step = i;
@@ -300,15 +401,17 @@ public class CustomMusicPlayer {
                     @Override
                     public void run() {
                         float progress = (float) step / steps;
-                        if (sActivePlayer == nextPlayer) {
+                        float newVol = (float) Math.sqrt(progress) * volTarget;
+                        float oldVol = (float) Math.sqrt(1.0f - progress) * volTarget;
+
+                        if (sActivePlayer == nextPlayer && !sAppInBackground && !sIsPaused) {
                             try {
-                                nextPlayer.setVolume(volTarget * progress, volTarget * progress);
+                                nextPlayer.setVolume(newVol, newVol);
                             } catch (Exception ignored) {}
                         }
                         if (oldPlayer != null) {
                             try {
                                 if (oldPlayer.isPlaying()) {
-                                    float oldVol = volTarget * (1.0f - progress);
                                     oldPlayer.setVolume(oldVol, oldVol);
                                 }
                             } catch (Exception ignored) {}
@@ -328,13 +431,52 @@ public class CustomMusicPlayer {
         }
     }
 
+    public static synchronized void fadeOut(final int durationMs) {
+        ensureInit();
+        getHandler().post(new Runnable() {
+            @Override
+            public void run() {
+                if (sActivePlayer == null) return;
+                final MediaPlayer playerToFade = sActivePlayer;
+                final float curVol = sMasterVolume;
+                final int steps = Math.max(1, durationMs / 50);
+                for (int i = 1; i <= steps; i++) {
+                    final int step = i;
+                    getHandler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            float progress = (float) step / steps;
+                            float vol = (float) Math.sqrt(1.0f - progress) * curVol;
+                            try {
+                                if (playerToFade.isPlaying()) {
+                                    playerToFade.setVolume(vol, vol);
+                                }
+                            } catch (Exception ignored) {}
+                            if (step == steps) {
+                                try {
+                                    playerToFade.stop();
+                                    playerToFade.release();
+                                } catch (Exception ignored) {}
+                                if (sActivePlayer == playerToFade) {
+                                    sActivePlayer = null;
+                                    sCurrentCategory = "";
+                                    sCurrentTrackName = "";
+                                }
+                            }
+                        }
+                    }, i * 50);
+                }
+            }
+        });
+    }
+
     public static synchronized void setVolume(final float volume) {
         ensureInit();
         sMasterVolume = Math.max(0.0f, Math.min(1.0f, volume));
         getHandler().post(new Runnable() {
             @Override
             public void run() {
-                if (sActivePlayer != null) {
+                if (sActivePlayer != null && !sAppInBackground && !sIsPaused) {
                     try {
                         sActivePlayer.setVolume(sMasterVolume, sMasterVolume);
                     } catch (Exception ignored) {}
@@ -351,10 +493,12 @@ public class CustomMusicPlayer {
             public void run() {
                 if (sActivePlayer != null) {
                     try {
-                        if (pause && sActivePlayer.isPlaying()) {
-                            sActivePlayer.pause();
-                        } else if (!pause && !sActivePlayer.isPlaying()) {
-                            sActivePlayer.start();
+                        if (pause) {
+                            if (sActivePlayer.isPlaying()) sActivePlayer.pause();
+                        } else {
+                            if (!sAppInBackground && sEnabled && !sActivePlayer.isPlaying()) {
+                                sActivePlayer.start();
+                            }
                         }
                     } catch (Exception ignored) {}
                 }

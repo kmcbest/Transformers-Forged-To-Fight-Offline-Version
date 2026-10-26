@@ -182,6 +182,28 @@ public class Uri {
 }
 """, encoding="utf-8")
 
+    (stub_dir / "android/os/Bundle.java").write_text("""package android.os;
+public class Bundle {}
+""", encoding="utf-8")
+
+    (stub_dir / "android/app/Application.java").write_text("""package android.app;
+import android.content.Context;
+import android.os.Bundle;
+public class Application extends Context {
+    public interface ActivityLifecycleCallbacks {
+        void onActivityCreated(Activity activity, Bundle savedInstanceState);
+        void onActivityStarted(Activity activity);
+        void onActivityResumed(Activity activity);
+        void onActivityPaused(Activity activity);
+        void onActivityStopped(Activity activity);
+        void onActivitySaveInstanceState(Activity activity, Bundle outState);
+        void onActivityDestroyed(Activity activity);
+    }
+    public void registerActivityLifecycleCallbacks(ActivityLifecycleCallbacks callback) {}
+    public void unregisterActivityLifecycleCallbacks(ActivityLifecycleCallbacks callback) {}
+}
+""", encoding="utf-8")
+
     (stub_dir / "android/app/Activity.java").write_text("""package android.app;
 import java.io.File;
 import android.content.Context;
@@ -191,6 +213,7 @@ public class Activity extends Context {
     public Window getWindow() { return null; }
     public boolean isFinishing() { return false; }
     public boolean isDestroyed() { return false; }
+    public Application getApplication() { return null; }
 }
 """, encoding="utf-8")
 
