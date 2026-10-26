@@ -585,7 +585,12 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x00DACA4C, "GET_POWER_GAIN_RATE", 2, 0 }, // 195 PlayerAttributes.get_PowerGainRate -> power rate boost
     { 0x00DACB04, "GET_REFLECT_PROJ",    2, 0 }, // 196 PlayerAttributes.get_ReflectProjectileModifier -> projectile reflection
     { 0x00DADB68, "GET_ATK_MANA",        2, 0 }, // 197 PlayerAttributes.GetAttackerManaGain
-    { 0x00DADCA8, "GET_DEF_MANA",        2, 0 }  // 198 PlayerAttributes.GetDefenderManaGain
+    { 0x00DADCA8, "GET_DEF_MANA",        2, 0 }, // 198 PlayerAttributes.GetDefenderManaGain
+    { 0x00B506EC, "FABRIC_PLAY_MUSIC",   2, 0 }, // 199 FabricControl.PlayMusic
+    { 0x00B50074, "FABRIC_SET_MUSIC_VOL", 2, 0 }, // 200 FabricControl.set_MusicVolume
+    { 0x00B5200C, "FABRIC_PAUSE_MUSIC",  2, 0 }, // 201 FabricControl.PauseMusic
+    { 0x00D1DF58, "CHAR_DETAIL_ENTER",   2, 0 }, // 202 CharacterDetailScreen.OnIntroTransitionBegin
+    { 0x00D1E0B8, "CHAR_DETAIL_EXIT",    2, 0 }  // 203 CharacterDetailScreen.OnOutroTransitionBegin
 };
 
 #define NH (int)(sizeof(H)/sizeof(H[0]))
@@ -10140,6 +10145,166 @@ float hook_198(void* self, int32_t attack_level, float mana_gain_pct, int32_t bl
     return gain;
 }
 
+
+// ---------------- TFTF Jukebox & Custom Music Integration ----------------
+static JavaVM* s_jvm = NULL;
+static jclass s_music_class = NULL;
+static jmethodID s_play_cat_mid = NULL;
+static jmethodID s_set_vol_mid = NULL;
+static jmethodID s_pause_mid = NULL;
+static jmethodID s_stop_mid = NULL;
+
+static void native_play_music_category(const char* cat) {
+    if (!s_jvm || !s_music_class || !s_play_cat_mid) return;
+    JNIEnv* env = NULL;
+    jint res = (*s_jvm)->GetEnv(s_jvm, (void**)&env, JNI_VERSION_1_6);
+    int need_detach = 0;
+    if (res == JNI_EDETACHED) {
+        if ((*s_jvm)->AttachCurrentThread(s_jvm, &env, NULL) != JNI_OK) return;
+        need_detach = 1;
+    } else if (res != JNI_OK || !env) {
+        return;
+    }
+    jstring jcat = (*env)->NewStringUTF(env, cat);
+    if (jcat) {
+        (*env)->CallStaticVoidMethod(env, s_music_class, s_play_cat_mid, jcat);
+        (*env)->DeleteLocalRef(env, jcat);
+    }
+    if (need_detach) (*s_jvm)->DetachCurrentThread(s_jvm);
+}
+
+static void native_set_custom_music_volume(float vol) {
+    if (!s_jvm || !s_music_class || !s_set_vol_mid) return;
+    JNIEnv* env = NULL;
+    jint res = (*s_jvm)->GetEnv(s_jvm, (void**)&env, JNI_VERSION_1_6);
+    int need_detach = 0;
+    if (res == JNI_EDETACHED) {
+        if ((*s_jvm)->AttachCurrentThread(s_jvm, &env, NULL) != JNI_OK) return;
+        need_detach = 1;
+    } else if (res != JNI_OK || !env) {
+        return;
+    }
+    (*env)->CallStaticVoidMethod(env, s_music_class, s_set_vol_mid, (jfloat)vol);
+    if (need_detach) (*s_jvm)->DetachCurrentThread(s_jvm);
+}
+
+static void native_pause_custom_music(int pause) {
+    if (!s_jvm || !s_music_class || !s_pause_mid) return;
+    JNIEnv* env = NULL;
+    jint res = (*s_jvm)->GetEnv(s_jvm, (void**)&env, JNI_VERSION_1_6);
+    int need_detach = 0;
+    if (res == JNI_EDETACHED) {
+        if ((*s_jvm)->AttachCurrentThread(s_jvm, &env, NULL) != JNI_OK) return;
+        need_detach = 1;
+    } else if (res != JNI_OK || !env) {
+        return;
+    }
+    (*env)->CallStaticVoidMethod(env, s_music_class, s_pause_mid, (jboolean)(pause ? JNI_TRUE : JNI_FALSE));
+    if (need_detach) (*s_jvm)->DetachCurrentThread(s_jvm);
+}
+
+static void native_stop_custom_music(void) {
+    if (!s_jvm || !s_music_class || !s_stop_mid) return;
+    JNIEnv* env = NULL;
+    jint res = (*s_jvm)->GetEnv(s_jvm, (void**)&env, JNI_VERSION_1_6);
+    int need_detach = 0;
+    if (res == JNI_EDETACHED) {
+        if ((*s_jvm)->AttachCurrentThread(s_jvm, &env, NULL) != JNI_OK) return;
+        need_detach = 1;
+    } else if (res != JNI_OK || !env) {
+        return;
+    }
+    (*env)->CallStaticVoidMethod(env, s_music_class, s_stop_mid);
+    if (need_detach) (*s_jvm)->DetachCurrentThread(s_jvm);
+}
+
+static const char* get_current_fight_music_category(void) {
+    if (!g_base) return "fight";
+    void* (*get_fm_inst)(void*) = (void*(*)(void*))(g_base + 0xDC8D58);
+    void* fm = get_fm_inst ? get_fm_inst(NULL) : NULL;
+    if (!obj_ok(fm)) return "fight";
+
+    void* (*get_in_prog)(void*, void*) = (void*(*)(void*, void*))(g_base + 0xDC8DF4);
+    void* flow = get_in_prog ? get_in_prog(fm, NULL) : NULL;
+    if (!obj_ok(flow)) {
+        void* (*get_active)(void*, void*) = (void*(*)(void*, void*))(g_base + 0xDC913C);
+        flow = get_active ? get_active(fm, NULL) : NULL;
+    }
+    if (obj_ok(flow)) {
+        void* klass = *(void**)flow;
+        if (obj_ok(klass)) {
+            const char* kname = *(const char**)((uintptr_t)klass + 0x10);
+            if (kname) {
+                LOG("CURRENT_FLOW: class='%s'", kname);
+                if (strstr(kname, "PVPFlow") != NULL) return "arena";
+                if (strstr(kname, "Raid") != NULL) return "raid";
+            }
+        }
+    }
+    return "fight";
+}
+
+void* hook_199(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    char name[128] = {0};
+    if (obj_ok(a0)) {
+        read_str(a0, name, sizeof(name));
+    }
+    LOG("FABRIC_PLAY_MUSIC: clip='%s'", name);
+
+    int custom_music = tftf_get_enable_custom_music();
+    if (!custom_music) {
+        native_stop_custom_music();
+        return H[199].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    }
+
+    if (strcmp(name, "music_fe") == 0) {
+        native_play_music_category("main");
+    } else if (strcmp(name, "music_questboard") == 0) {
+        native_play_music_category("quest");
+    } else if (strcmp(name, "music_fight_loop") == 0) {
+        const char* cat = get_current_fight_music_category();
+        native_play_music_category(cat);
+    } else if (strcmp(name, "music_gacha") == 0) {
+        native_stop_custom_music();
+        return H[199].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    } else if (strcmp(name, "music_prefight") == 0) {
+        // Allow fight intro / keep playing
+    }
+
+    return NULL;
+}
+
+void* hook_200(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    void* r = H[200].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    if (g_base) {
+        float vol = ((float(*)(void*))(g_base + 0xB509D4))(NULL);
+        native_set_custom_music_volume(vol);
+    }
+    return r;
+}
+
+void* hook_201(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    int bPause = (int)(uintptr_t)a0;
+    native_pause_custom_music(bPause);
+    return H[201].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+}
+
+void* hook_202(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    void* r = H[202].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    if (tftf_get_enable_custom_music()) {
+        native_play_music_category("bot_showcase");
+    }
+    return r;
+}
+
+void* hook_203(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    void* r = H[203].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+    if (tftf_get_enable_custom_music()) {
+        native_play_music_category("main");
+    }
+    return r;
+}
+
 static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hook_7,hook_8,
     hook_9,hook_10,hook_11,hook_12,hook_13,hook_14,hook_15,hook_16,hook_17,hook_18,hook_19,hook_20,hook_21,
     hook_22,hook_23,hook_24,hook_25,hook_26,hook_27,hook_28,hook_29,hook_30,
@@ -10161,7 +10326,7 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     hook_165,hook_166,(void*)hook_167,hook_168,hook_169,hook_170,
     hook_171,hook_172,hook_173,hook_174,hook_175,hook_176,(void*)hook_177,(void*)hook_178,
     (void*)hook_179,hook_180,hook_181,hook_182,hook_183,hook_184,hook_185,hook_186,(void*)hook_187,(void*)hook_188,(void*)hook_189,
-    (void*)hook_190,(void*)hook_191,(void*)hook_192,(void*)hook_193,(void*)hook_194,(void*)hook_195,(void*)hook_196,(void*)hook_197,(void*)hook_198 };
+    (void*)hook_190,(void*)hook_191,(void*)hook_192,(void*)hook_193,(void*)hook_194,(void*)hook_195,(void*)hook_196,(void*)hook_197,(void*)hook_198,hook_199,(void*)hook_200,(void*)hook_201,hook_202,hook_203 };
 _Static_assert(sizeof(handlers)/sizeof(handlers[0]) == sizeof(H)/sizeof(H[0]), "handlers count must match H count");
 
 
@@ -11834,6 +11999,23 @@ static void* launcher_thread(void* arg) {
         LOG("[Launcher] Called LauncherDialog.show successfully!");
     } else {
         LOG("[Launcher] LauncherDialog.show method not found");
+    }
+
+    // Cache JavaVM and CustomMusicPlayer JNI references
+    s_jvm = vm;
+    jstring cmpName = (*env)->NewStringUTF(env, "com.kabam.bigrobot.CustomMusicPlayer");
+    jclass cmpClass = (jclass)(*env)->CallObjectMethod(env, classLoader, loadClassMethod, cmpName);
+    (*env)->DeleteLocalRef(env, cmpName);
+    if (cmpClass && !(*env)->ExceptionCheck(env)) {
+        s_music_class = (jclass)(*env)->NewGlobalRef(env, cmpClass);
+        s_play_cat_mid = (*env)->GetStaticMethodID(env, cmpClass, "playCategory", "(Ljava/lang/String;)V");
+        s_set_vol_mid = (*env)->GetStaticMethodID(env, cmpClass, "setVolume", "(F)V");
+        s_pause_mid = (*env)->GetStaticMethodID(env, cmpClass, "pauseMusic", "(Z)V");
+        s_stop_mid = (*env)->GetStaticMethodID(env, cmpClass, "stopMusic", "()V");
+        LOG("[Jukebox] Successfully initialized CustomMusicPlayer JNI references!");
+    } else {
+        if ((*env)->ExceptionCheck(env)) (*env)->ExceptionClear(env);
+        LOG("[Jukebox] Could not find CustomMusicPlayer class");
     }
 
     usleep(500000);

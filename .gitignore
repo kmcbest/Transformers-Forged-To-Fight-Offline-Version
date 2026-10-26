@@ -108,6 +108,8 @@ assets_redeco/*
 !assets_redeco/portrait_fembots_quest.png
 !assets_redeco/*picnic*
 !assets_redeco/*ghost*
+!assets_redeco/music
+!assets_redeco/music/**
 
 *.mkv
 cookies.txt

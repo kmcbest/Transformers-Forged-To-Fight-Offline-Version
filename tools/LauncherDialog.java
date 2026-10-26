@@ -192,6 +192,9 @@ public class LauncherDialog {
         public void saveAndLaunch(final String jsonStr) {
             Log.i(TAG, "saveAndLaunch called with: " + jsonStr);
             try {
+                CustomMusicPlayer.loadSettings();
+            } catch (Throwable t) {}
+            try {
                 File file = new File(activity.getFilesDir(), SETTINGS_FILE);
                 FileOutputStream fos = new FileOutputStream(file);
                 fos.write(jsonStr.getBytes(StandardCharsets.UTF_8));

@@ -736,6 +736,17 @@ def build(
             payload_info.external_attr = 0o644 << 16
             zout.writestr(payload_info, payload)
 
+        # Inject custom music tracks (stored uncompressed so MediaPlayer can play directly via AssetFileDescriptor)
+        music_dir = Path("assets_redeco/music")
+        if music_dir.exists():
+            for mfile in music_dir.rglob("*.mp3"):
+                rel_music = mfile.relative_to(music_dir).as_posix()
+                target_entry = f"assets/music/{rel_music}"
+                minfo = zipfile.ZipInfo(target_entry, date_time=(1980, 1, 1, 0, 0, 0))
+                minfo.compress_type = zipfile.ZIP_STORED
+                minfo.external_attr = 0o644 << 16
+                zout.writestr(minfo, mfile.read_bytes())
+
         # Inject Launcher Menu DEX, HTML assets, and SP3 timings
         classes3_path = Path("build/classes3.dex")
         if classes3_path.exists():

@@ -322,6 +322,7 @@ typedef struct {
     int enable_combat_debug_overlay;
     int ai_difficulty;
     int player_invincible;
+    int enable_custom_music;
 } UserSettings;
 
 static UserSettings g_user_settings = {
@@ -337,7 +338,8 @@ static UserSettings g_user_settings = {
     .start_full_power = 0,
     .enable_combat_debug_overlay = 0,
     .ai_difficulty = 0,
-    .player_invincible = 0
+    .player_invincible = 0,
+    .enable_custom_music = 1
 };
 static int g_settings_loaded = 0;
 
@@ -460,6 +462,14 @@ static void load_user_settings(void) {
                         g_user_settings.player_invincible = !strncmp(c, "true", 4);
                     }
                 }
+                char *msc = strstr(buf, "\"enable_custom_music\"");
+                if (msc) {
+                    char *c = strchr(msc, ':');
+                    if (c) {
+                        while (*c && (*c == ':' || isspace((unsigned char)*c))) c++;
+                        g_user_settings.enable_custom_music = !strncmp(c, "true", 4);
+                    }
+                }
                 g_settings_loaded = 1;
                 return;
             }
@@ -502,6 +512,11 @@ int tftf_get_ai_difficulty(void) {
 
 /* TEST AID (combo quality-gate testing): when this marker file exists or user setting is enabled,
    hook_146 skips the enemy AI's entire tick, so the opponent never attacks and never moves. */
+int tftf_get_enable_custom_music(void) {
+    if (!g_settings_loaded) load_user_settings();
+    return g_user_settings.enable_custom_music;
+}
+
 int tftf_get_player_invincible(void) {
     if (!g_settings_loaded) load_user_settings();
     if (g_user_settings.player_invincible) return 1;
