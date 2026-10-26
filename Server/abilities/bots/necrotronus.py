@@ -212,7 +212,7 @@ def build_necrotronus_abilities(base_hp: float = 35484.0, base_atk: float = 2519
         "id": "necrotronus_power_rate_debuff",
         "t": "power_rate",
         "tm": "",
-        "ta": "opponent",
+        "ta": "self",
         "tr": [],
         "uit": [],
         "pri": 0,

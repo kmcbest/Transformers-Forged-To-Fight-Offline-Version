@@ -867,7 +867,6 @@ SIM_API int sim_dash(int player_idx) {
     push_floater(player_idx, 5, 0.0f, "⏩ 前冲 (Dash)");
     skill_log("SIM: P%d performed Dash (前冲)", player_idx);
     skill_dispatch_attack_start(player_idx, 2);
-    skill_dispatch_attack_start(player_idx, 32);
     return 1;
 }
 

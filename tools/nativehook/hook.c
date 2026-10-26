@@ -700,6 +700,8 @@ static volatile uint64_t g_p1_anti_shoot_last_ms = 0;
 static volatile int g_p1_retreat_after_combo = 0;
 static volatile uint64_t g_p1_retreat_execute_ms = 0;
 static volatile uint64_t g_p0_last_dodge_ms = 0;
+static volatile uint64_t g_p0_last_backdash_ms = 0;
+static volatile uint64_t g_p1_last_backdash_ms = 0;
 static volatile uint64_t g_p1_last_hitreact_ms = 0;
 
 // Player 0 (AutoFight Friendly AI) Tactical Variables - 六道狂乱 (Difficulty 3):
@@ -5115,6 +5117,10 @@ void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     // marks "chain state is fresh from here" and lets a raw log be split into test rounds
     // (one quality-gate scenario per fight). Logging only.
     flog("COMBAT_START: Simulation.RegisterComponents -> all P0 combo state cleared");
+    tftf_reload_user_settings();
+    flog("COMBAT_START: player_invincible=%d, ai_difficulty=%d", tftf_get_player_invincible(), tftf_get_ai_difficulty());
+    g_p0_last_backdash_ms = 0;
+    g_p1_last_backdash_ms = 0;
     s_saved_actor0_obj = NULL;
     s_saved_actor0_name[0] = 0;
     s_saved_actor1_obj = NULL;
@@ -6062,17 +6068,55 @@ void hook_146(void* self, float dT, void* method){
                                 }
                             }
                         }
-                        // 5.3 Mid Range (2.2m < dist <= 4.5m): dynamic dash strike or angle sidestep
+                        // 5.3 Mid Range (2.2m < dist <= 4.5m): dynamic tactical engagement
                         else if (dist > 2.2f && now_ms - s_p1_last_dash_ms >= 650) {
                             s_p1_last_dash_ms = now_ms;
-                            int r = rand() % 100;
-                            if (r < 65) {
-                                ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 32, NULL); // Dash M1
-                                flog("AI_MID: Forward Dash M1 to initiate melee (dist=%.2f)", dist);
+
+                            // Check if player recently retreated / backdashed after combo (anti-whiff-bait)
+                            int p0_retreated = (g_p0_last_backdash_ms > 0 && (now_ms - g_p0_last_backdash_ms <= 1200) && dist > 2.4f) ||
+                                               (g_p1_last_hitreact_ms > 0 && (now_ms - g_p1_last_hitreact_ms <= 1400) && dist > 2.7f);
+
+                            if (p0_retreated) {
+                                // Player is retreating / out of melee reach to bait an M1 whiff!
+                                // Strictly DO NOT do blind Dash M1!
+                                int can_shoot = ((int(*)(void*,void*))(g_base + 0x1174FEC))(player, NULL);
+                                int is_ranged_heavy = bot_has_ranged_heavy(g_p1_bot_id);
+                                int r = rand() % 100;
+
+                                if (is_ranged_heavy && r < 40) {
+                                    // 40% (for ranged heavy bots): Fire full-screen heavy projectile!
+                                    // Catches retreating / whiff-baiting player and knocks them down!
+                                    ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 256, NULL);
+                                    flog("AI_ANTI_WHIFF: Player retreated (dist=%.2f) -> P1 punished retreat with Heavy projectile!", dist);
+                                } else if (can_shoot && r < 75) {
+                                    // 35%: Shoot poke + schedule lateral sidestep in 150ms
+                                    ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 1, NULL); // Shoot
+                                    s_p1_kite_pending_action = (rand() % 2 == 0) ? 64 : 128;
+                                    s_p1_kite_pending_time_ms = now_ms + 150;
+                                    flog("AI_ANTI_WHIFF: Player retreated (dist=%.2f) -> P1 Shot + Sidestep poke!", dist);
+                                } else if (r < 90) {
+                                    // 15%: Lateral sidestep (shift angle so player's straight rush whiffs)
+                                    int side = (rand() % 2 == 0) ? 64 : 128;
+                                    ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, side, NULL);
+                                    flog("AI_ANTI_WHIFF: Player retreated (dist=%.2f) -> P1 Sidestep angle shift!", dist);
+                                } else {
+                                    // 10%: Patient neutral: observe / hold guard for 300ms, refuse to rush in
+                                    s_p1_last_dash_ms = now_ms + 500;
+                                    ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 2, NULL); // Block
+                                    g_p1_auto_unblock_ms = now_ms + 300;
+                                    flog("AI_ANTI_WHIFF: Player retreated (dist=%.2f) -> P1 patient guard!", dist);
+                                }
                             } else {
-                                int side = (rand() % 2 == 0) ? 64 : 128;
-                                ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, side, NULL);
-                                flog("AI_MID: Sidestep angle shift (dist=%.2f)", dist);
+                                // Normal neutral: player is not retreating
+                                int r = rand() % 100;
+                                if (r < 65) {
+                                    ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 32, NULL); // Dash M1
+                                    flog("AI_MID: Forward Dash M1 to initiate melee (dist=%.2f)", dist);
+                                } else {
+                                    int side = (rand() % 2 == 0) ? 64 : 128;
+                                    ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, side, NULL);
+                                    flog("AI_MID: Sidestep angle shift (dist=%.2f)", dist);
+                                }
                             }
                         }
                         // 5.4 Melee Range (dist <= 2.2m): initiate offense if opponent is idle/blocking
@@ -6241,11 +6285,33 @@ void hook_146(void* self, float dT, void* method){
                         }
                     } else if (dist > 2.2f && now_ms - s_p0_last_dash_ms >= 650) {
                         s_p0_last_dash_ms = now_ms;
-                        if (rand() % 100 < 65) {
-                            ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 32, NULL);
+                        int p1_retreated = (g_p1_last_backdash_ms > 0 && (now_ms - g_p1_last_backdash_ms <= 1200) && dist > 2.4f) ||
+                                           (g_p0_last_hitreact_ms > 0 && (now_ms - g_p0_last_hitreact_ms <= 1400) && dist > 2.7f);
+                        if (p1_retreated) {
+                            int can_shoot = ((int(*)(void*,void*))(g_base + 0x1174FEC))(player, NULL);
+                            int is_ranged_heavy = bot_has_ranged_heavy(g_p0_bot_id);
+                            int r = rand() % 100;
+                            if (is_ranged_heavy && r < 40) {
+                                ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 256, NULL);
+                            } else if (can_shoot && r < 75) {
+                                ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 1, NULL);
+                                s_p0_kite_pending_action = (rand() % 2 == 0) ? 64 : 128;
+                                s_p0_kite_pending_time_ms = now_ms + 150;
+                            } else if (r < 90) {
+                                int side = (rand() % 2 == 0) ? 64 : 128;
+                                ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, side, NULL);
+                            } else {
+                                s_p0_last_dash_ms = now_ms + 500;
+                                ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 2, NULL);
+                                g_p0_auto_unblock_ms = now_ms + 300;
+                            }
                         } else {
-                            int side = (rand() % 2 == 0) ? 64 : 128;
-                            ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, side, NULL);
+                            if (rand() % 100 < 65) {
+                                ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 32, NULL);
+                            } else {
+                                int side = (rand() % 2 == 0) ? 64 : 128;
+                                ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, side, NULL);
+                            }
                         }
                     } else if (dist > 0.01f && dist <= 2.2f && now_ms - s_p0_last_melee_ms >= 350) {
                         s_p0_last_melee_ms = now_ms;
@@ -6374,17 +6440,17 @@ void* hook_153(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
         if (strstr(g_p0_bot_id, "prowl") != NULL && g_p0_prowl_charging) {
             prowl_finish_charge(1, "special attack start (hook_153)");
         }
-        if (index == 2) {
-            skill_dispatch_attack_start(0, 32);
-        }
+        int sp_action_p0 = (index == 0) ? 16 : ((index == 1) ? 320 : 64);
+        skill_dispatch_attack_start(0, 0x201 + index);
+        skill_dispatch_attack_start(0, sp_action_p0);
     } else if (self == g_p1_controller || (obj_ok(self) && *(int32_t*)((uintptr_t)self + 0xF4) == 1)) {
         reset_player_attack_chain(self);
         if (strstr(g_p1_bot_id, "prowl") != NULL && g_p1_prowl_charging) {
             prowl_finish_charge(0, "special attack start (hook_153)");
         }
-        if (index == 2) {
-            skill_dispatch_attack_start(1, 32);
-        }
+        int sp_action_p1 = (index == 0) ? 16 : ((index == 1) ? 320 : 64);
+        skill_dispatch_attack_start(1, 0x201 + index);
+        skill_dispatch_attack_start(1, sp_action_p1);
     }
     void* r = H[153].orig(self, a1, a2, a3, a4, a5, a6, a7);
     PROTECT({
@@ -6563,21 +6629,24 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
         }
 
         if (action == 8) { // Action.Dodge ONLY (Swipe back / 后闪)
-            if (is_p0_act && strstr(g_p0_bot_id, "prowl") != NULL) {
-                prowl_start_charge(1);
-            } else if (is_p1_act && strstr(g_p1_bot_id, "prowl") != NULL) {
-                prowl_start_charge(0);
+            if (is_p0_act) {
+                g_p0_last_backdash_ms = propgo_now_ms();
+                if (strstr(g_p0_bot_id, "prowl") != NULL) prowl_start_charge(1);
+            } else if (is_p1_act) {
+                g_p1_last_backdash_ms = propgo_now_ms();
+                if (strstr(g_p1_bot_id, "prowl") != NULL) prowl_start_charge(0);
             }
         } else if (action == 32) { // Action.Dash (主动前冲，打断充能)
             if (is_p0_act) s_p0_last_dash_ms = propgo_now_ms();
             else s_p1_last_dash_ms = propgo_now_ms();
-            skill_dispatch_attack_start(is_p0_act ? 0 : 1, 32);
+            skill_dispatch_attack_start(is_p0_act ? 0 : 1, 2); // Dash attack type = 2
             if (is_p0_act && strstr(g_p0_bot_id, "prowl") != NULL && g_p0_prowl_charging) {
                 prowl_finish_charge(1, "dash forward (action 32)");
             } else if (is_p1_act && strstr(g_p1_bot_id, "prowl") != NULL && g_p1_prowl_charging) {
                 prowl_finish_charge(0, "dash forward (action 32)");
             }
         } else if (action == 0x200) { // 特殊技 (SP1/SP2/SP3，无论打没打中均打断)
+            skill_dispatch_attack_start(is_p0_act ? 0 : 1, 0x200);
             if (is_p0_act && strstr(g_p0_bot_id, "prowl") != NULL && g_p0_prowl_charging) {
                 prowl_finish_charge(1, "special attack (0x200)");
             } else if (is_p1_act && strstr(g_p1_bot_id, "prowl") != NULL && g_p1_prowl_charging) {
@@ -7213,10 +7282,12 @@ void* hook_172(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
                 g_p0_block_reset_done = 0;
                 g_p0_combo_ended = 0;
                 g_p0_after_heavy = 0;
+                g_p0_last_backdash_ms = propgo_now_ms();
                 flog("DODGE_ENTER (0x0117F614) on P0: real dodge resets attack chain");
                 reset_player_attack_chain(pc);
                 skill_dispatch_dodge_enter(0);
             } else if (pidx == 1) {
+                g_p1_last_backdash_ms = propgo_now_ms();
                 g_p1_block_enter_ms = 0;
                 flog("DODGE_ENTER (0x0117F614) on P1: real dodge resets attack chain");
                 reset_player_attack_chain(pc);
@@ -7384,6 +7455,9 @@ float hook_177(void* self, float damage, void* damageType, int32_t blocked, void
             int is_enemy = (owner && obj_ok(owner) && *(int32_t*)((char*)owner + 0xF4) == 1);
             if (!is_enemy && owner && g_p0_controller && owner != g_p0_controller) {
                 is_enemy = 1;
+            }
+            if (!is_enemy && tftf_get_player_invincible()) {
+                return 0.0f;
             }
             if (is_enemy) {
                 if (tftf_is_picnic_quest_active()) {
@@ -7865,9 +7939,6 @@ static int check_and_toggle_autofight(void* hud_screen) {
 
 void* hook_180(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     if (a0 && obj_ok(a0)) g_active_hud_screen = a0;
-    if (check_and_toggle_autofight(a0)) {
-        return NULL;
-    }
     if (on_portrait_press_down(a0)) {
         return NULL;
     }
@@ -7876,9 +7947,6 @@ void* hook_180(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
 
 void* hook_181(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     if (a0 && obj_ok(a0)) g_active_hud_screen = a0;
-    if (check_and_toggle_autofight(a0)) {
-        return NULL;
-    }
     return ((fn8)H[181].orig)(a0, a1, a2, a3, a4, a5, a6, a7);
 }
 
@@ -8044,6 +8112,10 @@ void* hook_186(void* this_pc, void* hitResult, void* method) {
             int flags = *(int32_t*)((uintptr_t)hitResult + 0x20);     // HitResultData.Flags
             int hit_idx = *(int32_t*)((uintptr_t)hitResult + 0x30);   // HitResultData.HitIndex
             float dmg = *(float*)((uintptr_t)hitResult + 0x3C);       // HitResultData.Damage
+            if (p_idx == 0 && tftf_get_player_invincible()) {
+                *(float*)((uintptr_t)hitResult + 0x3C) = 0.0f;
+                dmg = 0.0f;
+            }
             int is_crit_hit = ((flags & 32) != 0);
             static int s_hit_log_cnt = 0;
             if (s_hit_log_cnt++ < 80) {
@@ -10857,6 +10929,39 @@ static void* hooked_BattleArbiterOnToggleAutoFight(void* a0, void* a1, void* a2,
 }
 
 // ==================== Projectile Collision Penetration ====================
+// ==================== Player Invincibility Direct Hooks ====================
+// PlayerController.ApplyDamage (0x01179630)
+static fn8 orig_PlayerController_ApplyDamage = NULL;
+static bool hooked_PlayerController_ApplyDamage(void* self, float amount, bool knockoutIfDead, void* method) {
+    if (self && obj_ok(self)) {
+        int pidx = *(int32_t*)((char*)self + 0xF4);
+        if (pidx == 0 && tftf_get_player_invincible()) {
+            return false;
+        }
+    }
+    if (orig_PlayerController_ApplyDamage) {
+        typedef bool (*fn_apply_dmg)(void*, float, bool, void*);
+        return ((fn_apply_dmg)orig_PlayerController_ApplyDamage)(self, amount, knockoutIfDead, method);
+    }
+    return false;
+}
+
+// PlayerAttributes.ApplyDamage (0x00DAD08C)
+static fn8 orig_PlayerAttributes_ApplyDamage = NULL;
+static void hooked_PlayerAttributes_ApplyDamage(void* self, float amount, void* method) {
+    if (self && obj_ok(self)) {
+        void* owner = *(void**)((char*)self + 0x28);
+        int pidx = (owner && obj_ok(owner)) ? *(int32_t*)((char*)owner + 0xF4) : -1;
+        if (pidx == 0 && tftf_get_player_invincible()) {
+            return;
+        }
+    }
+    if (orig_PlayerAttributes_ApplyDamage) {
+        typedef void (*fn_pa_apply_dmg)(void*, float, void*);
+        ((fn_pa_apply_dmg)orig_PlayerAttributes_ApplyDamage)(self, amount, method);
+    }
+}
+
 // Projectile.IgnoreCollisionDetection (0x00E9EA00)
 // When returning true, DetectPlayerCollision immediately returns without reporting hit, exploding,
 // or setting IgnorePlayer. The projectile flies right past the opponent!
@@ -11635,6 +11740,9 @@ static void* installer(void* arg){
     // Diagnostic hooks for AutoFight actions:
     inline_hook((void*)(g_base + 0x00FEFC24), (void*)hooked_HudScreenAwake, &orig_HudScreenAwake);
     inline_hook((void*)(g_base + 0x00FEDEC4), (void*)hooked_HudScreenSetupWindow, &orig_HudScreenSetupWindow);
+    inline_hook((void*)(g_base + 0x00C9C540), (void*)hooked_ToggleAutoFight, &orig_ToggleAutoFight);
+    inline_hook((void*)(g_base + 0x01179630), (void*)hooked_PlayerController_ApplyDamage, &orig_PlayerController_ApplyDamage);
+    inline_hook((void*)(g_base + 0x00DAD08C), (void*)hooked_PlayerAttributes_ApplyDamage, &orig_PlayerAttributes_ApplyDamage);
 
     // PVP hooks:
     inline_hook((void*)(g_base + 0x11FA254), (void*)hooked_QuitArena, &orig_QuitArena);

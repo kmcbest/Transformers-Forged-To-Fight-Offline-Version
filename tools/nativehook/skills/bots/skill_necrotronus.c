@@ -23,6 +23,7 @@
 
 static int s_sp_consumed_this_attack[2] = {0, 0};
 static int s_necrotronus_charges[2] = {0, 0};
+static int s_power_debuff_active[2] = {0, 0};
 
 static void necrotronus_update_overwhelming_state(int ap) {
     int charges = s_necrotronus_charges[ap];
@@ -48,7 +49,9 @@ static void necrotronus_on_attack_start(int player_index, int action_type) {
 
     // 2. [ID: 3211] 对方发动特殊技时，我方亡灵天尊 30% 几率获得 0.95s 不可阻挡
     // action_type: 16 (SP1), 32 (SP2), 64 (SP3)
-    int is_special = (action_type == 16 || action_type == 32 || action_type == 64 || action_type == 0x200);
+    // action_type: 16 (SP1), 320/0x202 (SP2), 64/0x203 (SP3), 0x200..0x203 (Action.Special)
+    // Note: Action.Dash = 32 must NOT be treated as special attack!
+    int is_special = (action_type >= 0x200 && action_type <= 0x203) || action_type == 16 || action_type == 64 || action_type == 320;
     if (is_special) {
         // 关键逻辑：
         // player_index 是释放特殊技的进攻方（即“对方”）。
@@ -160,14 +163,16 @@ static void necrotronus_on_simulation_tick(uint64_t now_ms) {
         float opp_mana = skill_get_mana(opp);
 
         if (opp_mana > my_mana) {
-            if (!skill_has_buff(opp, "necrotronus_power_rate_debuff")) {
+            if (!s_power_debuff_active[p]) {
+                s_power_debuff_active[p] = 1;
                 skill_apply_buff_dur(opp, "necrotronus_power_rate_debuff", -1.0f);
                 skill_overlay("[%s] 能量压制！对手能量功率降低30%%！", p == 0 ? "亡灵天尊" : "敌方亡灵天尊");
                 skill_log("NECROTRONUS_POWER_DEBUFF: Opponent P%d mana (%.2f) > Necrotronus P%d mana (%.2f), applied power debuff",
                           opp, opp_mana, p, my_mana);
             }
         } else {
-            if (skill_has_buff(opp, "necrotronus_power_rate_debuff")) {
+            if (s_power_debuff_active[p]) {
+                s_power_debuff_active[p] = 0;
                 skill_consume_buff(opp, "necrotronus_power_rate_debuff", 99);
                 skill_log("NECROTRONUS_POWER_DEBUFF: Opponent P%d mana (%.2f) <= Necrotronus P%d mana (%.2f), removed power debuff",
                           opp, opp_mana, p, my_mana);
@@ -186,6 +191,7 @@ static void necrotronus_on_fight_reset(int player_index) {
     if (player_index >= 0 && player_index < 2) {
         s_sp_consumed_this_attack[player_index] = 0;
         s_necrotronus_charges[player_index] = 0;
+        s_power_debuff_active[player_index] = 0;
     }
 }
 

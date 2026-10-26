@@ -841,6 +841,13 @@ def test_necrotronus_abilities():
             break
     assert_true(unstoppable_triggered, "Necrotronus gained unstoppable on opponent SP start")
 
+    # 6c. 对方发动普通前冲 (Dash / Action 2) 时，绝对不触发亡灵天尊霸体判定
+    # 先等待之前 SP 触发的 0.95s 霸体到期
+    g_engine.tick(2000)
+    for _ in range(30):
+        g_engine.attack_start(1, 2) # 对方前冲 (Dash)
+        assert_true("necrotronus_unstoppable" not in [b["id"] for b in g_engine.get_state()["p0"]["buffs"]], "Opponent Dash does NOT trigger Necrotronus unstoppable")
+
     # 7. 验证数据契约与官方真理源 PUA 图标绑定
     expected_necrotronus_puas = {
         "necrotronus_titan_charge": "0xE91A",

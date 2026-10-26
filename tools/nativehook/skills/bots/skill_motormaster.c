@@ -23,7 +23,7 @@ static void motormaster_on_attack_start(int player_index, int action_type) {
         skill_apply_buff_dur(player_index, "motormaster_dash_unstoppable", 0.7f);
         skill_overlay("[%s] 汽车大师前冲霸体激活！(0.7s)", player_index == 0 ? "我方" : "敌方");
         skill_log("MOTORMASTER: P%d dash -> gained unstoppable 0.7s", player_index);
-    } else if (action_type == 32) {
+    } else if (action_type == 32 || action_type == 320 || action_type == 0x202) {
         // SP2 获得 4.0 秒不可阻挡霸体
         skill_set_unstoppable(player_index, 4000);
         skill_apply_buff_dur(player_index, "motormaster_sp2_unstoppable", 4.0f);
