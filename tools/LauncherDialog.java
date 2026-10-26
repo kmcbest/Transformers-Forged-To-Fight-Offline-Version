@@ -36,6 +36,12 @@ public class LauncherDialog {
             return;
         }
 
+        try {
+            CustomMusicPlayer.init(activity);
+        } catch (Throwable t) {
+            Log.w(TAG, "Failed to init CustomMusicPlayer from LauncherDialog: " + t.getMessage());
+        }
+
         File filesDir = activity.getFilesDir();
         File configFile = new File(filesDir, SETTINGS_FILE);
         if (configFile.exists()) {
@@ -191,6 +197,9 @@ public class LauncherDialog {
         @JavascriptInterface
         public void saveAndLaunch(final String jsonStr) {
             Log.i(TAG, "saveAndLaunch called with: " + jsonStr);
+            try {
+                CustomMusicPlayer.loadSettings();
+            } catch (Throwable t) {}
             try {
                 File file = new File(activity.getFilesDir(), SETTINGS_FILE);
                 FileOutputStream fos = new FileOutputStream(file);

@@ -1,1462 +1,2980 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>TFTF Launcher Settings / 启动配置</title>
-  <style>
-    :root {
-      --bg-dark: #070b14;
-      --panel-bg: rgba(13, 21, 38, 0.88);
-      --panel-border: rgba(56, 189, 248, 0.22);
-      --cyan: #38bdf8;
-      --cyan-glow: rgba(56, 189, 248, 0.35);
-      --purple: #a855f7;
-      --emerald: #34d399;
-      --amber: #fbbf24;
-      --rose: #fb7185;
-      --text-main: #f1f5f9;
-      --text-dim: #94a3b8;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; }
-    body {
-      background-color: var(--bg-dark);
-      background-image: 
-        radial-gradient(circle at 15% 15%, rgba(56, 189, 248, 0.08) 0%, transparent 40%),
-        radial-gradient(circle at 85% 85%, rgba(168, 85, 247, 0.08) 0%, transparent 40%),
-        linear-gradient(180deg, #050811 0%, #0a101f 100%);
-      color: var(--text-main);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
-      height: 100vh;
-      width: 100vw;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      padding: 6px;
-    }
-    .game-font {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      letter-spacing: 0.03em;
-    }
-    .launcher-frame {
-      width: 96vw;
-      max-width: 900px;
-      height: 95vh;
-      max-height: 520px;
-      background: var(--panel-bg);
-      border: 1px solid var(--panel-border);
-      border-radius: 14px;
-      box-shadow: 0 0 30px rgba(0, 0, 0, 0.8), 0 0 15px rgba(56, 189, 248, 0.12);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-    /* Header */
-    .top-bar {
-      height: 46px;
-      padding: 0 16px;
-      background: linear-gradient(90deg, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.8) 60%, rgba(8, 47, 73, 0.4));
-      border-bottom: 1px solid rgba(56, 189, 248, 0.18);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-shrink: 0;
-    }
-    .brand-box {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .logo-badge {
-      width: 28px;
-      height: 28px;
-      border-radius: 6px;
-      background: rgba(56, 189, 248, 0.12);
-      border: 1px solid rgba(56, 189, 248, 0.4);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--cyan);
-    }
-    .brand-title {
-      font-size: 16.5px;
-      font-weight: bold;
-      color: #f8fafc;
-      letter-spacing: 0.02em;
-    }
-    .version-tag {
-      font-size: 12px;
-      padding: 2px 7px;
-      border-radius: 4px;
-      background: rgba(56, 189, 248, 0.15);
-      color: var(--cyan);
-      border: 1px solid rgba(56, 189, 248, 0.3);
-    }
-    /* Language Switcher */
-    .lang-switcher {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .lang-status-badge {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      color: #94a3b8;
-    }
-    .lang-pill-group {
-      display: flex;
-      background: rgba(15, 23, 42, 0.85);
-      border: 1px solid rgba(56, 189, 248, 0.3);
-      border-radius: 6px;
-      padding: 2px;
-      gap: 2px;
-    }
-    .lang-pill-btn {
-      background: transparent;
-      border: none;
-      border-radius: 4px;
-      color: #94a3b8;
-      font-size: 12px;
-      font-weight: 600;
-      padding: 3px 8px;
-      cursor: pointer;
-      transition: all 0.15s ease;
-    }
-    .lang-pill-btn:hover {
-      color: #f1f5f9;
-    }
-    .lang-pill-btn.active {
-      background: rgba(56, 189, 248, 0.25);
-      color: var(--cyan);
-      box-shadow: 0 0 6px rgba(56, 189, 248, 0.3);
-    }
-    /* Commander Input Strip */
-    .commander-strip {
-      padding: 6px 14px;
-      background: rgba(10, 16, 28, 0.65);
-      border-bottom: 1px solid rgba(56, 189, 248, 0.12);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      flex-shrink: 0;
-    }
-    .commander-label {
-      font-size: 12px;
-      font-weight: 600;
-      color: #cbd5e1;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      white-space: nowrap;
-    }
-    .input-wrapper {
-      flex: 1;
-      max-width: 360px;
-      position: relative;
-      display: flex;
-      align-items: center;
-    }
-    .commander-input {
-      width: 100%;
-      height: 34px;
-      background: rgba(15, 23, 42, 0.85);
-      border: 1px solid rgba(56, 189, 248, 0.3);
-      border-radius: 6px;
-      padding: 0 62px 0 12px;
-      font-size: 14.5px;
-      color: #38bdf8;
-      outline: none;
-      transition: all 0.15s ease;
-    }
-    .commander-input:focus {
-      border-color: #38bdf8;
-      box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
-      background: rgba(20, 30, 50, 0.95);
-    }
-    .char-counter {
-      position: absolute;
-      right: 8px;
-      font-size: 12px;
-      font-family: 'TecnicaBold', monospace;
-      color: #94a3b8;
-      background: rgba(15, 23, 42, 0.7);
-      padding: 1px 6px;
-      border-radius: 3px;
-      pointer-events: none;
-    }
-    .char-counter.limit {
-      color: var(--rose);
-      font-weight: bold;
-    }
-    .commander-hint {
-      font-size: 12px;
-      color: #94a3b8;
-      white-space: nowrap;
-    }
-    /* Main Grid */
-    .grid-container {
-      flex: 1;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      padding: 12px 16px;
-      overflow-y: auto;
-    }
-    .col {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .card {
-      background: rgba(15, 23, 42, 0.55);
-      border: 1px solid rgba(51, 65, 85, 0.65);
-      border-radius: 10px;
-      padding: 10px 14px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      transition: border-color 0.15s;
-      flex: 1;
-    }
-    .card:hover {
-      border-color: rgba(56, 189, 248, 0.35);
-    }
-    .card-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 6px;
-    }
-    .card-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: #e2e8f0;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .card-title .dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--cyan);
-    }
-    .current-val {
-      font-size: 13px;
-      color: var(--cyan);
-    }
-    /* Options Pills */
-    .pills-group {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 8px;
-    }
-    .pill-btn {
-      background: rgba(15, 23, 42, 0.85);
-      border: 1px solid rgba(51, 65, 85, 0.8);
-      border-radius: 8px;
-      padding: 8px 4px;
-      min-height: 50px;
-      cursor: pointer;
-      text-align: center;
-      transition: all 0.15s ease;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 3px;
-    }
-    .pill-btn:hover {
-      border-color: rgba(56, 189, 248, 0.5);
-      background: rgba(25, 38, 64, 0.8);
-    }
-    .pill-btn.active {
-      border-color: var(--cyan);
-      background: linear-gradient(135deg, rgba(56, 189, 248, 0.22), rgba(14, 165, 233, 0.08));
-      box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
-    }
-    .pill-name {
-      font-size: 13.5px;
-      font-weight: bold;
-    }
-    .pill-badge {
-      font-size: 11px;
-      white-space: nowrap;
-      padding: 2px 6px;
-      border-radius: 4px;
-    }
-    .c-green { color: var(--emerald); }
-    .bg-green { background: rgba(52, 211, 153, 0.15); color: var(--emerald); }
-    .c-amber { color: var(--amber); }
-    .bg-amber { background: rgba(251, 191, 36, 0.15); color: var(--amber); }
-    .c-cyan { color: var(--cyan); }
-    .bg-cyan { background: rgba(56, 189, 248, 0.15); color: var(--cyan); }
-    .c-rose { color: var(--rose); }
-    .bg-rose { background: rgba(251, 113, 133, 0.15); color: var(--rose); }
-    /* Switch Cards */
-    .switch-card {
-      padding: 10px 14px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-    .switch-info {
-      flex: 1;
-    }
-    .switch-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: #e2e8f0;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .switch-desc {
-      font-size: 12px;
-      color: #94a3b8;
-      margin-top: 4px;
-      line-height: 1.4;
-    }
-    /* Toggle Switch */
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 44px;
-      height: 24px;
-      flex-shrink: 0;
-    }
-    .switch input { opacity: 0; width: 0; height: 0; }
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background-color: #1e293b;
-      border: 1px solid #334155;
-      transition: .2s cubic-bezier(0.4, 0, 0.2, 1);
-      border-radius: 24px;
-    }
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 18px;
-      width: 18px;
-      left: 2px;
-      bottom: 2px;
-      background-color: #ffffff;
-      transition: .2s cubic-bezier(0.4, 0, 0.2, 1);
-      border-radius: 50%;
-    }
-    input:checked + .slider.cyan-switch {
-      background-color: #0284c7;
-      border-color: #38bdf8;
-      box-shadow: 0 0 8px rgba(56, 189, 248, 0.35);
-    }
-    input:checked + .slider.purple-switch {
-      background-color: #7e22ce;
-      border-color: #a855f7;
-      box-shadow: 0 0 8px rgba(168, 85, 247, 0.35);
-    }
-    input:checked + .slider:before {
-      transform: translateX(20px);
-    }
-    /* Skip checkbox strip */
-    .skip-card {
-      background: rgba(8, 47, 73, 0.2);
-      border: 1px solid rgba(56, 189, 248, 0.25);
-      border-radius: 8px;
-      padding: 9px 14px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      cursor: pointer;
-    }
-    .skip-card input {
-      accent-color: #38bdf8;
-      width: 18px;
-      height: 18px;
-      cursor: pointer;
-    }
-    .skip-text {
-      font-size: 12px;
-      color: #cbd5e1;
-      line-height: 1.35;
-    }
-    .skip-text strong {
-      color: #f1f5f9;
-      font-size: 13.5px;
-      display: block;
-      margin-bottom: 2px;
-    }
-    /* Footer */
-    .footer-bar {
-      height: 52px;
-      padding: 0 16px;
-      background: rgba(10, 16, 28, 0.95);
-      border-top: 1px solid rgba(51, 65, 85, 0.6);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-shrink: 0;
-    }
-    .footer-actions-left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .btn-secondary {
-      padding: 7px 14px;
-      border-radius: 7px;
-      background: rgba(30, 41, 59, 0.6);
-      border: 1px solid rgba(51, 65, 85, 0.8);
-      color: #94a3b8;
-      font-size: 13px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: all 0.15s;
-    }
-    .btn-secondary:hover {
-      background: rgba(51, 65, 85, 0.8);
-      color: #f1f5f9;
-      border-color: rgba(56, 189, 248, 0.4);
-    }
-    .btn-primary {
-      padding: 9px 24px;
-      border-radius: 8px;
-      background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
-      border: 1px solid rgba(56, 189, 248, 0.6);
-      color: #ffffff;
-      font-size: 14.5px;
-      font-weight: bold;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      box-shadow: 0 0 14px rgba(2, 132, 199, 0.35);
-      transition: all 0.15s ease;
-    }
-    .btn-primary:hover {
-      background: linear-gradient(135deg, #38bdf8 0%, #3b82f6 100%);
-      box-shadow: 0 0 20px rgba(56, 189, 248, 0.55);
-      transform: translateY(-1px);
-    }
-    .btn-primary:active {
-      transform: scale(0.97);
-    }
-    /* Modal */
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.75);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 99;
-      padding: 10px;
-    }
-    .modal-overlay.active { display: flex; }
-    .modal-content {
-      width: 100%;
-      max-width: 480px;
-      background: #0f172a;
-      border: 1px solid rgba(56, 189, 248, 0.35);
-      border-radius: 12px;
-      padding: 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      box-shadow: 0 0 30px rgba(0,0,0,0.8);
-    }
-    .modal-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid #1e293b;
-      padding-bottom: 6px;
-      font-size: 11px;
-      color: #94a3b8;
-    }
-    .modal-pre {
-      background: #090d16;
-      border: 1px solid #1e293b;
-      border-radius: 6px;
-      padding: 8px;
-      color: #38bdf8;
-      font-size: 11px;
-      max-height: 200px;
-      overflow-y: auto;
-      user-select: text;
-      -webkit-user-select: text;
-    }
-    .launcher-frame { max-height: 580px; }
-    .launcher-tabs { display:flex; flex-shrink:0; gap:8px; padding:6px 16px; border-bottom:1px solid var(--panel-border); }
-    .launcher-tab,.graphics-presets button { font:inherit; font-size:13px; cursor:pointer; border:1px solid var(--panel-border); border-radius:6px; color:var(--text-dim); background:#0d1728; padding:6px 16px; }
-    .launcher-tab.active { color:var(--cyan); border-color:var(--cyan); background:#102b40; }
-    .graphics-panel { display:none; flex:1; min-height:0; overflow-y:auto; overflow-x:hidden; padding:12px 16px; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; }
-    .graphics-presets { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px; }
-    .graphics-presets .graphics-enhanced { color:var(--cyan); border-color:#2a7899; }
-    .graphics-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; }
-    .graphics-control { display:flex; flex-direction:column; min-width:0; gap:5px; padding:10px 12px; border:1px solid var(--panel-border); border-radius:9px; background:#0d1627; }
-    .graphics-label { color:var(--text-main); font-size:14px; }
-    .graphics-control select { width:100%; min-height:32px; background:#071421; color:var(--cyan); border:1px solid #25506e; border-radius:5px; font:inherit; font-size:13px; padding:4px 7px; }
-    .graphics-description,.graphics-note { color:var(--text-dim); font-size:11px; line-height:1.4; }
-    .graphics-note { margin-top:10px; }
-    @media(max-width:620px) { .graphics-grid { grid-template-columns:1fr; } }
-    /*122: opaque compositor surfaces, bounded repaint and no broad UI animations. */
-    .launcher-frame { background:#0d1526; box-shadow:0 6px 18px #0008; }
-    .grid-container,.graphics-panel { min-height:0; overscroll-behavior:contain; contain:layout paint; }
-    button,.pill-btn,.slider,.slider:before,.commander-input { transition:none; }
-    .pill-btn.active,.lang-pill-btn.active,input:checked + .slider,.btn-primary { box-shadow:none; }
-    .btn-primary:hover,.btn-primary:active { transform:none; }
-    a,button,.pill-btn { touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
-    .credit-strip { display:flex; flex-wrap:wrap; align-items:center; gap:5px 22px; flex-shrink:0; padding:7px 16px; background:#0a1220; border-bottom:1px solid #253448; font-size:12px; line-height:1.4; }
-    .credit-item { display:flex; align-items:center; gap:6px; }
-    .credit-label { color:#a9b9cd; }
-    .credit-link { color:#68d4ff; text-decoration:none; font-weight:700; padding:2px 0; }
-    .credit-link:focus-visible { outline:2px solid #68d4ff; outline-offset:3px; }
-    @media(max-width:620px) { .credit-strip { padding:5px 12px; font-size:11px; gap:2px 16px; } .brand-title { font-size:14px; } .version-tag { font-size:10px; } }
-    .notice-strip { display:flex; align-items:center; gap:10px; flex-shrink:0; min-height:30px; padding:4px 16px; background:#091522; border-bottom:1px solid #24384b; font-size:11px; line-height:1.5; }
-    .notice-button { flex-shrink:0; border:0; background:transparent; color:#67d3ff; font:inherit; cursor:pointer; min-height:24px; padding:0 3px; }
-    .notice-window { flex:1; min-width:0; overflow:hidden; color:#b3c2d4; }
-    .notice-text { display:inline-block; white-space:nowrap; vertical-align:middle; }
-    .notice-window.has-overflow .notice-text { animation:notice-flow var(--notice-duration,32s) linear infinite; will-change:transform; }
-    @keyframes notice-flow { 0%,10% { transform:translateX(0); } 90%,100% { transform:translateX(var(--notice-offset,0px)); } }
-    .notice-dialog { max-width:620px; }
-    .notice-full { font-size:14px; line-height:1.9; color:#dbe6f2; user-select:text; -webkit-user-select:text; }
-    @media(prefers-reduced-motion:reduce) { .notice-window { overflow-x:auto; } .notice-window.has-overflow .notice-text { animation:none; will-change:auto; } }
-</style>
-</head>
-<body>
-  <div class="launcher-frame">
-    <section class="notice-strip" aria-label="Community redistribution statement">
-      <button class="notice-button" type="button" onclick="toggleNoticeModal()" data-i18n="notice_title" title="查看完整声明">社区声明</button>
-      <div class="notice-window" id="notice-window"><span class="notice-text" id="notice-text" data-i18n="notice_text">本版本由玩家社区免费维护与分享。欢迎非商业转载，但请保留原始贡献者署名及项目发布来源。禁止冒用开发者身份或将本项目修改成果宣称为个人原创。</span></div>
-      <button class="notice-button" id="notice-pause" type="button" onclick="toggleNoticePause()" aria-pressed="false">暂停</button>
-    </section>
-    <!-- Top Header -->
-    <header class="top-bar">
-      <div class="brand-box">
-        <div class="logo-badge" onclick="toggleDebugModal()" style="cursor: pointer;" title="Debug Settings">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5zm0 2.18l7 3.89v4.93c0 4.54-3.08 8.79-7 9.92-3.92-1.13-7-5.38-7-9.92V8.07l7-3.89zM11 7v2h2V7h-2zm-3 4v2h8v-2H8zm1 4v2h6v-2H9z"/>
-          </svg>
-        </div>
-        <span class="brand-title" data-i18n="brand_title">启动配置与战斗调优</span>
-        <span class="version-tag game-font">v9.2 · 122</span>
-      </div>
-      <div class="lang-switcher">
-        <div class="lang-status-badge">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="2" y1="12" x2="22" y2="12"></line>
-            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-          </svg>
-          <span id="txt-lang-mode" class="game-font">自适应: 简中</span>
-        </div>
-        <div class="lang-pill-group">
-          <button type="button" class="lang-pill-btn active" id="btn-lang-zh" onclick="setLanguage('zh')">简中</button>
-          <button type="button" class="lang-pill-btn" id="btn-lang-en" onclick="setLanguage('en')">EN</button>
-        </div>
-      </div>
-    </header>
-    <section class="credit-strip" aria-label="Contributors">
-      <div class="credit-item"><span class="credit-label" data-i18n="credit_kmc">单机版维护与启动菜单</span><a class="credit-link" href="https://kmc.is-a.bot/" title="https://kmc.is-a.bot/" rel="noopener noreferrer">KMC ↗</a></div>
-      <div class="credit-item"><span class="credit-label" data-i18n="credit_neil">画质与特效优化</span><a class="credit-link" href="https://github.com/neilhorn233" title="https://github.com/neilhorn233" rel="noopener noreferrer">neilhorn233 ↗</a></div>
-    </section>
-    <!-- Main Content 2-Column Grid -->
-    <nav class="launcher-tabs" aria-label="Settings pages">
-      <button type="button" class="launcher-tab active" id="tab-battle" onclick="setLauncherTab('battle')" data-i18n="tab_battle">战斗设置</button>
-      <button type="button" class="launcher-tab" id="tab-graphics" onclick="setLauncherTab('graphics')" data-i18n="tab_graphics">画质设置</button>
-    </nav>
-    <main class="grid-container" id="battle-panel">
-      <!-- Left Column: Combat Tuning -->
-      <div class="col">
-        <!-- 1. 六道轮回难度 (Boss HP & Attack) -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">
-              <span class="dot" style="background: var(--rose);"></span>
-              <span data-i18n="diff_title">六道轮回挑战难度</span>
-            </div>
-            <span class="current-val game-font" id="txt-diff-val">10.0x HP (六道极意)</span>
-          </div>
-          <div class="pills-group">
-            <div class="pill-btn" onclick="setDifficulty(1.0, this)">
-              <span class="pill-name c-green" data-i18n="diff_normal">正常剧情</span>
-              <span class="pill-badge bg-green game-font" data-i18n="diff_normal_badge">1.0x (原版)</span>
-            </div>
-            <div class="pill-btn" onclick="setDifficulty(5.0, this)">
-              <span class="pill-name c-amber" data-i18n="diff_fury">狂暴进阶</span>
-              <span class="pill-badge bg-amber game-font" data-i18n="diff_fury_badge">5.0x (5倍)</span>
-            </div>
-            <div class="pill-btn active" onclick="setDifficulty(10.0, this)">
-              <span class="pill-name c-rose" data-i18n="diff_extreme">六道极意</span>
-              <span class="pill-badge bg-rose game-font" data-i18n="diff_extreme_badge">10.0x (10倍)</span>
-            </div>
-          </div>
-        </div>
-        <!-- 2. 能量加气模式 (Power Charge Mode) -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">
-              <span class="dot" style="background: var(--cyan);"></span>
-              <span data-i18n="mana_title">能量加气模式</span>
-            </div>
-            <span class="current-val game-font" id="txt-mana-val">重生快充 (我方3倍速，敌方0.5)</span>
-          </div>
-          <div class="pills-group">
-            <div class="pill-btn" onclick="setMana(1.0, this)">
-              <span class="pill-name c-amber" data-i18n="mana_1">官方原版</span>
-              <span class="pill-badge bg-amber game-font" data-i18n="mana_1_badge">1.0x (原速)</span>
-            </div>
-            <div class="pill-btn active" onclick="setMana(0.5, this)">
-              <span class="pill-name c-cyan" data-i18n="mana_half">重生快充</span>
-              <span class="pill-badge bg-cyan game-font" data-i18n="mana_half_badge">我方3倍速，敌方0.5</span>
-            </div>
-            <div class="pill-btn" onclick="setMana(0.2, this)">
-              <span class="pill-name c-green" data-i18n="mana_slow">畅快压制</span>
-              <span class="pill-badge bg-green game-font" data-i18n="mana_slow_badge">我方3倍速，敌方0.2</span>
-            </div>
-          </div>
-        </div>
-        <!-- 3. 大招手势选择 (Special Attack Gesture Control) -->
-        <div class="card switch-card">
-          <div class="switch-info">
-            <div class="switch-title">
-              <span class="dot" style="background: var(--purple);"></span>
-              <span data-i18n="swipe_title">必杀技滑动手势 (右滑S1 / 上滑S2)</span>
-            </div>
-            <div class="switch-desc" data-i18n="swipe_desc">
-              按住大招按钮右滑即放S1，上滑即放S2，点按放最高可用大招；关闭后恢复原版纯点按模式。
-            </div>
-          </div>
-          <label class="switch">
-            <input type="checkbox" id="chk-swipe-specials" onchange="toggleSwipeSpecials(this.checked)" checked>
-            <span class="slider purple-switch"></span>
-          </label>
-        </div>
-        <div class="card switch-card">
-          <div class="switch-info">
-            <div class="switch-title">
-              <span class="dot" style="background: var(--emerald);"></span>
-              <span data-i18n="invincible_title">玩家无敌（受击不掉血）</span>
-            </div>
-            <div class="switch-desc" data-i18n="invincible_desc">只保护玩家生命值，保留受击动作；敌人正常掉血，玩家可以回血。</div>
-          </div>
-          <label class="switch">
-            <input type="checkbox" id="chk-player-invincible" onchange="toggleInvincible(this.checked)">
-            <span class="slider purple-switch"></span>
-          </label>
-        </div>
-      </div>
-      <!-- Right Column: Profile & Launch Preference -->
-      <div class="col">
-        <!-- AI 战斗难度 (AI Combat Difficulty) -->
-        <div class="card" id="card-ai-difficulty">
-          <div class="card-header">
-            <div class="card-title">
-              <span class="dot" style="background: var(--purple);"></span>
-              <span data-i18n="ai_diff_title">AI 战斗难度与侵略性</span>
-            </div>
-            <span class="current-val game-font" id="txt-ai-diff-val">标准量产 (原版普通)</span>
-          </div>
-          <div class="pills-group" style="grid-template-columns: 1fr 1fr;">
-            <div class="pill-btn active" id="btn-ai-diff-0" onclick="setAiDifficulty(0, this)">
-              <span class="pill-name c-green" data-i18n="ai_diff_0">标准量产</span>
-              <span class="pill-badge bg-green game-font" data-i18n="ai_diff_0_badge">原版基础</span>
-            </div>
-            <div class="pill-btn" id="btn-ai-diff-1" onclick="setAiDifficulty(1, this)">
-              <span class="pill-name c-cyan" data-i18n="ai_diff_1">核心过载</span>
-              <span class="pill-badge bg-cyan game-font" data-i18n="ai_diff_1_badge">连招接必杀</span>
-            </div>
-            <div class="pill-btn" id="btn-ai-diff-2" onclick="setAiDifficulty(2, this)">
-              <span class="pill-name c-amber" data-i18n="ai_diff_2">宿命猎杀</span>
-              <span class="pill-badge bg-amber game-font" data-i18n="ai_diff_2_badge">迅捷突进压制</span>
-            </div>
-            <div class="pill-btn" id="btn-ai-diff-3" onclick="setAiDifficulty(3, this)">
-              <span class="pill-name c-rose" data-i18n="ai_diff_3">六道狂乱</span>
-              <span class="pill-badge bg-rose game-font" data-i18n="ai_diff_3_badge">极限压迫极意</span>
-            </div>
-          </div>
-        </div>
-        <!-- 3. 自定义指挥官代号 (Commander Name) -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">
-              <span class="dot" style="background: var(--emerald);"></span>
-              <span data-i18n="cmdr_title">指挥官代号</span>
-            </div>
-            <span id="lbl-char-counter" class="char-counter game-font">9/16</span>
-          </div>
-          <div class="input-wrapper" style="margin-top: 4px;">
-            <input type="text" id="inp-commander" class="commander-input game-font" value="Commander" placeholder="最多8汉字或16英文字符" data-i18n-ph="cmdr_placeholder" maxlength="16" oninput="onCommanderInput()">
-          </div>
-          <div class="card-hint" style="margin-top: 6px; font-size: 12px; color: var(--text-dim); line-height: 1.4;" data-i18n="cmdr_hint">
-            替换系统默认代号 · 基地主页、战报结算与档案即时同步
-          </div>
-        </div>
-        <!-- 4. 画面帧率上限 (Target Frame Rate) -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">
-              <span class="dot" style="background: var(--cyan);"></span>
-              <span data-i18n="fps_title">画面帧率上限</span>
-            </div>
-            <span class="current-val game-font" id="txt-fps-val">60 FPS (高刷流畅)</span>
-          </div>
-          <div class="pills-group" style="grid-template-columns: 1fr 1fr;">
-            <div class="pill-btn active" id="btn-fps-60" onclick="setFps(60, this)">
-              <span class="pill-name c-cyan" data-i18n="fps_60">高刷流畅</span>
-              <span class="pill-badge bg-cyan game-font" data-i18n="fps_60_badge">60 FPS (推荐)</span>
-            </div>
-            <div class="pill-btn" id="btn-fps-120" onclick="setFps(120, this)">
-              <span class="pill-name c-purple" data-i18n="fps_120">120 帧</span>
-              <span class="pill-badge bg-purple game-font" data-i18n="fps_120_badge">120 FPS</span>
-            </div>
-            <div class="pill-btn" id="btn-fps-144" onclick="setFps(144, this)">
-              <span class="pill-name c-cyan" data-i18n="fps_144">144Hz 屏幕</span>
-              <span class="pill-badge bg-cyan game-font" data-i18n="fps_144_badge">144 FPS</span>
-            </div>
-            <div class="pill-btn" id="btn-fps-30" onclick="setFps(30, this)">
-              <span class="pill-name c-green" data-i18n="fps_30">原版省电</span>
-              <span class="pill-badge bg-green game-font" data-i18n="fps_30_badge">30 FPS (降温)</span>
-            </div>
-          </div>
-        </div>
-        <!-- 5. 下次跳过启动菜单 (Skip Next Time) -->
-        <label class="skip-card" style="margin-top: 2px;">
-          <input type="checkbox" id="chk-skip-launcher" onchange="updateConfig()">
-          <div class="skip-text">
-            <strong data-i18n="skip_title">记住我的选择，下次直接进入游戏</strong>
-            <span data-i18n="skip_desc">下次冷启动静默跳过此菜单；可在系统应用管理「清除存储」重置</span>
-          </div>
-        </label>
-      </div>
-    </main>
-    <section id="graphics-panel" class="graphics-panel" aria-label="Graphics settings">
-      <div class="graphics-presets">
-        <button type="button" class="graphics-enhanced" onclick="setGraphicsPreset('ultra116')" data-i18n="gfx_ultra116">清晰光效122</button>
-        <button type="button" class="graphics-enhanced" onclick="setGraphicsPreset('enhanced114')" data-i18n="gfx_enhanced112">命中光效115</button>
-        <button type="button" class="graphics-enhanced" onclick="setGraphicsPreset('enhanced111')" data-i18n="gfx_enhanced">画质增强111</button>
-        <button type="button" onclick="setGraphicsPreset('stock')" data-i18n="gfx_stock">跟随原版</button>
-        <button type="button" onclick="setGraphicsPreset('clear')" data-i18n="gfx_clear">清晰预设</button>
-        <button type="button" onclick="setGraphicsPreset('smooth')" data-i18n="gfx_smooth">流畅预设</button>
-      </div>
-      <div class="graphics-grid"><label class="graphics-control" for="graphics_glow">
-          <span class="graphics-label" data-i18n="graphics_glow_title">发光光晕</span>
-          <select id="graphics_glow" onchange="setGraphics('graphics_glow',this.value)"><option value="0" data-i18n="graphics_glow_0">基础光晕</option><option value="2" data-i18n="graphics_glow_2">增强光晕</option><option value="3" data-i18n="graphics_glow_3">超强光晕</option></select>
-          <span class="graphics-description" data-i18n="graphics_glow_desc">控制发光区域周围的柔光；超强档加强亮度并限制扩散。需开启后期光效。</span>
-        </label><label class="graphics-control" for="graphics_added_lights">
-          <span class="graphics-label" data-i18n="graphics_added_lights_title">附加动态光源</span>
-          <select id="graphics_added_lights" onchange="setGraphics('graphics_added_lights',this.value)"><option value="0" data-i18n="graphics_added_lights_0">关闭</option><option value="2" data-i18n="graphics_added_lights_2">开启局部照明</option><option value="3" data-i18n="graphics_added_lights_3">超强局部照明（夸张）</option></select>
-          <span class="graphics-description" data-i18n="graphics_added_lights_desc">为已绘制的武器、子弹和命中特效增加局部照明；增加GPU开销。</span>
-        </label><label class="graphics-control" for="graphics_render_scale">
-          <span class="graphics-label" data-i18n="graphics_render_scale_title">渲染分辨率</span>
-          <select id="graphics_render_scale" onchange="setGraphics('graphics_render_scale',this.value)"><option value="0" data-i18n="graphics_render_scale_0">跟随原版</option><option value="50" data-i18n="graphics_render_scale_50">50%（更流畅）</option><option value="75" data-i18n="graphics_render_scale_75">75%（均衡）</option><option value="100" data-i18n="graphics_render_scale_100">100%（原生清晰）</option></select>
-          <span class="graphics-description" data-i18n="graphics_render_scale_desc">比例指宽高比例；100% 使用屏幕原生分辨率。</span>
-        </label><label class="graphics-control" for="graphics_msaa">
-          <span class="graphics-label" data-i18n="graphics_msaa_title">MSAA 抗锯齿</span>
-          <select id="graphics_msaa" onchange="setGraphics('graphics_msaa',this.value)"><option value="0" data-i18n="graphics_msaa_0">跟随原版</option><option value="1" data-i18n="graphics_msaa_1">关闭</option><option value="2" data-i18n="graphics_msaa_2">2×</option><option value="4" data-i18n="graphics_msaa_4">4×</option><option value="8" data-i18n="graphics_msaa_8">8×（较高开销）</option></select>
-          <span class="graphics-description" data-i18n="graphics_msaa_desc">减少模型边缘锯齿；受渲染路径与设备支持限制。</span>
-        </label><label class="graphics-control" for="graphics_shadows">
-          <span class="graphics-label" data-i18n="graphics_shadows_title">阴影细节</span>
-          <select id="graphics_shadows" onchange="setGraphics('graphics_shadows',this.value)"><option value="0" data-i18n="graphics_shadows_0">跟随原版</option><option value="1" data-i18n="graphics_shadows_1">关闭</option><option value="2" data-i18n="graphics_shadows_2">低</option><option value="3" data-i18n="graphics_shadows_3">中</option><option value="4" data-i18n="graphics_shadows_4">高</option></select>
-          <span class="graphics-description" data-i18n="graphics_shadows_desc">调整实时阴影和角色接触阴影。</span>
-        </label><label class="graphics-control" for="graphics_reflections">
-          <span class="graphics-label" data-i18n="graphics_reflections_title">地面反射</span>
-          <select id="graphics_reflections" onchange="setGraphics('graphics_reflections',this.value)"><option value="0" data-i18n="graphics_reflections_0">跟随原版</option><option value="1" data-i18n="graphics_reflections_1">关闭</option><option value="2" data-i18n="graphics_reflections_2">低</option><option value="3" data-i18n="graphics_reflections_3">高</option></select>
-          <span class="graphics-description" data-i18n="graphics_reflections_desc">使用场景已有反射；高档位增加渲染开销。</span>
-        </label><label class="graphics-control" for="graphics_effects">
-          <span class="graphics-label" data-i18n="graphics_effects_title">粒子与拖尾细节</span>
-          <select id="graphics_effects" onchange="setGraphics('graphics_effects',this.value)"><option value="0" data-i18n="graphics_effects_0">跟随原版</option><option value="1" data-i18n="graphics_effects_1">低</option><option value="2" data-i18n="graphics_effects_2">中</option><option value="3" data-i18n="graphics_effects_3">高</option></select>
-          <span class="graphics-description" data-i18n="graphics_effects_desc">调整场景已有粒子和武器拖尾细节。</span>
-        </label><label class="graphics-control" for="graphics_postfx">
-          <span class="graphics-label" data-i18n="graphics_postfx_title">后期光效</span>
-          <select id="graphics_postfx" onchange="setGraphics('graphics_postfx',this.value)"><option value="0" data-i18n="graphics_postfx_0">跟随原版</option><option value="1" data-i18n="graphics_postfx_1">关闭</option><option value="2" data-i18n="graphics_postfx_2">开启</option></select>
-          <span class="graphics-description" data-i18n="graphics_postfx_desc">控制原有泛光与 FXAA 等后期效果。</span>
-        </label><label class="graphics-control" for="graphics_filtering">
-          <span class="graphics-label" data-i18n="graphics_filtering_title">斜面纹理清晰度</span>
-          <select id="graphics_filtering" onchange="setGraphics('graphics_filtering',this.value)"><option value="0" data-i18n="graphics_filtering_0">保持原设置</option><option value="1" data-i18n="graphics_filtering_1">关闭</option><option value="2" data-i18n="graphics_filtering_2">强制开启</option></select>
-          <span class="graphics-description" data-i18n="graphics_filtering_desc">改善斜看地面时的纹理清晰度；不增加贴图尺寸。</span>
-        </label><label class="graphics-control" for="graphics_reflection_resolution">
-          <span class="graphics-label" data-i18n="graphics_reflection_resolution_title">反射清晰度</span>
-          <select id="graphics_reflection_resolution" onchange="setGraphics('graphics_reflection_resolution',this.value)"><option value="0" data-i18n="graphics_reflection_resolution_0">原版</option><option value="256" data-i18n="graphics_reflection_resolution_256">256 × 256</option><option value="512" data-i18n="graphics_reflection_resolution_512">512 × 512（增强）</option></select>
-          <span class="graphics-description" data-i18n="graphics_reflection_resolution_desc">需开启地面反射；只影响场景已有的反射。</span>
-        </label><label class="graphics-control" for="graphics_bloom_resolution">
-          <span class="graphics-label" data-i18n="graphics_bloom_resolution_title">辉光清晰度</span>
-          <select id="graphics_bloom_resolution" onchange="setGraphics('graphics_bloom_resolution',this.value)"><option value="0" data-i18n="graphics_bloom_resolution_0">原版 · 128 × 96</option><option value="1" data-i18n="graphics_bloom_resolution_1">增强 · 256 × 192</option></select>
-          <span class="graphics-description" data-i18n="graphics_bloom_resolution_desc">需开启后期光效；改善辉光边缘，亮度不变。</span>
-        </label><label class="graphics-control" for="graphics_fx_resolution">
-          <span class="graphics-label" data-i18n="graphics_fx_resolution_title">透明特效清晰度</span>
-          <select id="graphics_fx_resolution" onchange="setGraphics('graphics_fx_resolution',this.value)"><option value="0" data-i18n="graphics_fx_resolution_0">原版 · 256 × 192</option><option value="1" data-i18n="graphics_fx_resolution_1">增强 · 512 × 384</option></select>
-          <span class="graphics-description" data-i18n="graphics_fx_resolution_desc">细化适用的烟雾、透明粒子边缘；不增加火花数量。</span>
-        </label><label class="graphics-control" for="graphics_lighting">
-          <span class="graphics-label" data-i18n="graphics_lighting_title">动态光照与反射</span>
-          <select id="graphics_lighting" onchange="setGraphics('graphics_lighting',this.value)"><option value="0" data-i18n="graphics_lighting_0">跟随原版</option><option value="1" data-i18n="graphics_lighting_1">增强光照与反射</option><option value="2" data-i18n="graphics_lighting_2">增强光照与高光</option></select>
-          <span class="graphics-description" data-i18n="graphics_lighting_desc">启用场景现有的动态照明与反射材质；更多高光会增加渲染负担。</span>
-        </label></div>
-      <p class="graphics-note" data-i18n="gfx_note">保存并重新进入游戏后生效。60 帧更易稳定；120 / 144 帧更依赖设备性能。</p>
-      <p class="graphics-note" data-i18n="gfx_scope">光影增强启用场景已有的照明与反射路径；不同地图表现不同。景深暂不可用。</p>
-    </section>
-    <!-- Bottom Action Footer -->
-    <footer class="footer-bar">
-      <div class="footer-actions-left">
-        <button class="btn-secondary" onclick="resetDefaults()">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-          </svg>
-          <span data-i18n="btn_reset">恢复默认</span>
-        </button>
-        <!-- 【功能屏蔽注释 - 严禁删除】JSON查看配置按钮临时屏蔽，后续调测备用 -->
-        <!--
-        <button class="btn-secondary game-font" onclick="toggleJsonModal()">
-          <span>{ } JSON</span>
-        </button>
-        -->
-      </div>
-      <div>
-        <button class="btn-primary game-font" onclick="saveAndLaunch()" id="btn-launch">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
-          </svg>
-          <span data-i18n="btn_launch">保存并进入方舟</span>
-        </button>
-      </div>
-    </footer>
-  </div>
-  <!-- Debug Modal (验收调试设置) -->
-  <div id="debug-modal" class="modal-overlay">
-    <div class="modal-content" style="max-width: 440px;">
-      <div class="modal-header">
-        <span class="game-font" style="color: #f59e0b; font-weight: bold;" data-i18n="debug_title">🛠️ 调试与验收特权设置</span>
-        <button onclick="toggleDebugModal()" style="background:none; border:none; color:#94a3b8; cursor:pointer; font-size:16px;">✕</button>
-      </div>
-      <div style="display: flex; flex-direction: column; gap: 10px; padding: 6px 0;">
-        <label class="toggle-row" style="cursor: pointer; display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
-          <div style="padding-right: 12px;">
-            <div style="font-size: 13.5px; font-weight: bold; color: #f8fafc;" data-i18n="freeze_ai_title">敌人不动 (定身木桩)</div>
-            <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;" data-i18n="freeze_ai_desc">冻结所有敌人 AI 决策与攻击行动，便于测试连招与技能机制</div>
-          </div>
-          <input type="checkbox" id="chk-freeze-ai" onchange="toggleFreezeAi(this.checked)" style="transform: scale(1.25); accent-color: #f59e0b; cursor: pointer;">
-        </label>
-        <label class="toggle-row" style="cursor: pointer; display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
-          <div style="padding-right: 12px;">
-            <div style="font-size: 13.5px; font-weight: bold; color: #f8fafc;" data-i18n="full_power_title">我方开局三格满气</div>
-            <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;" data-i18n="full_power_desc">对局开局直接注满 3 格 SP 能量，即刻测试特殊技 SP1 / SP2 / SP3</div>
-          </div>
-          <input type="checkbox" id="chk-full-power" onchange="toggleFullPower(this.checked)" style="transform: scale(1.25); accent-color: #f59e0b; cursor: pointer;">
-        </label>
-        <label class="toggle-row" style="cursor: pointer; display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
-          <div style="padding-right: 12px;">
-            <div style="font-size: 13.5px; font-weight: bold; color: #f8fafc;" data-i18n="combat_overlay_title">战斗判定悬浮战报 (Combat Overlay)</div>
-            <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;" data-i18n="combat_overlay_desc">屏幕实时显示技能掷骰概率、暴击/闪避判定与Buff施加，便于录屏分析</div>
-          </div>
-          <input type="checkbox" id="chk-combat-overlay" onchange="toggleCombatOverlay(this.checked)" style="transform: scale(1.25); accent-color: #f59e0b; cursor: pointer;">
-        </label>
-      </div>
-      <div style="display:flex; justify-content:flex-end;">
-        <button class="btn-secondary" onclick="toggleDebugModal()" data-i18n="btn_close">关闭</button>
-      </div>
-    </div>
-  </div>
-  <!-- JSON Modal -->
-  <div id="json-modal" class="modal-overlay">
-    <div class="modal-content">
-      <div class="modal-header">
-        <span class="game-font">/data/data/com.kabam.bigrobot/files/user_settings.json</span>
-        <button onclick="toggleJsonModal()" style="background:none; border:none; color:#94a3b8; cursor:pointer; font-size:14px;">✕</button>
-      </div>
-      <pre id="json-preview" class="modal-pre"></pre>
-      <div style="display:flex; justify-content:flex-end;">
-        <button class="btn-secondary" onclick="toggleJsonModal()" data-i18n="btn_close">关闭</button>
-      </div>
-    </div>
-  </div>
-  <div id="notice-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="notice-modal-title" onclick="if(event.target===this)toggleNoticeModal()">
-    <div class="modal-content notice-dialog">
-      <div class="modal-header"><strong id="notice-modal-title" data-i18n="notice_title">社区声明</strong><button type="button" class="btn-secondary" onclick="toggleNoticeModal()" data-i18n="btn_close">关闭</button></div>
-      <p class="notice-full" data-i18n="notice_text">本版本由玩家社区免费维护与分享。欢迎非商业转载，但请保留原始贡献者署名及项目发布来源。禁止冒用开发者身份或将本项目修改成果宣称为个人原创。</p>
-    </div>
-  </div>
-  <script>
-    const config = {
-      commander_name: "Commander",
-      ai_difficulty: 0,
-      challenge_hp_multiplier: 10.0,
-      enemy_mana_gain: 0.5,
-      player_mana_gain: 1.0,
-      graphics_render_scale: 0,
-      graphics_msaa: 0,
-      graphics_shadows: 0,
-      graphics_reflections: 0,
-      graphics_effects: 0,
-      graphics_postfx: 0,
-      graphics_filtering: 0,
-      graphics_reflection_resolution: 0,
-      graphics_bloom_resolution: 0,
-      graphics_fx_resolution: 0,
-      graphics_lighting: 0,
-      graphics_glow: 0,
-      graphics_added_lights: 0,
-      target_fps: 60,
-      player_invincible: false,
-      enable_swipe_specials: true,
-      freeze_enemy_ai: false,
-      start_full_power: false,
-      enable_combat_debug_overlay: false,
-      skip_launcher_next_time: false
-    };
-    const i18n = {
-      zh: {
-        mode_auto: "自适应: 简中",
-        mode_manual: "语言: 简中",
-        brand_title: "启动配置与战斗调优",
-        ai_diff_title: "AI 战斗难度与侵略性",
-        ai_diff_0: "标准量产",
-        ai_diff_0_badge: "原版基础",
-        ai_diff_0_desc: "标准量产 (原版普通)",
-        ai_diff_1: "核心过载",
-        ai_diff_1_badge: "连招接必杀",
-        ai_diff_1_desc: "核心过载 (连招无缝接必杀)",
-        ai_diff_2: "宿命猎杀",
-        ai_diff_2_badge: "迅捷突进压制",
-        ai_diff_2_desc: "宿命猎杀 (必杀取消+迅捷突进)",
-        ai_diff_3: "六道狂乱",
-        ai_diff_3_badge: "极限压迫极意",
-        ai_diff_3_desc: "六道狂乱 (极限压制+零延迟防反)",
-        diff_title: "六道轮回挑战难度",
-        diff_normal: "正常剧情",
-        diff_normal_badge: "1.0x (原版)",
-        diff_fury: "狂暴进阶",
-        diff_fury_badge: "5.0x (5倍)",
-        diff_extreme: "六道极意",
-        diff_extreme_badge: "10.0x (10倍)",
-        diff_val_1: "1.0x HP (正常剧情)",
-        diff_val_5: "5.0x HP (狂暴进阶)",
-        diff_val_10: "10.0x HP (六道极意)",
-        mana_title: "能量加气模式",
-        mana_1: "官方原版",
-        mana_1_badge: "1.0x (原速)",
-        mana_half: "重生快充",
-        mana_half_badge: "我方3倍速，敌方0.5",
-        mana_slow: "畅快压制",
-        mana_slow_badge: "我方3倍速，敌方0.2",
-        mana_val_1: "1.0x (官方原版)",
-        mana_val_half: "重生快充 (我方3倍速，敌方0.5)",
-        mana_val_slow: "畅快压制 (我方3倍速，敌方0.2)",
-        swipe_title: "必杀技滑动手势 (右滑S1 / 上滑S2)",
-        swipe_desc: "按住大招按钮右滑即放S1，上滑即放S2，点按放最高可用大招；关闭后恢复原版纯点按模式。",
-        cmdr_title: "指挥官代号",
-        cmdr_placeholder: "最多8汉字或16英文字符",
-        cmdr_hint: "替换系统默认代号 · 基地主页、战报结算与档案即时同步",
-        fps_title: "画面帧率上限",
-        fps_60: "高刷流畅",
-        fps_60_badge: "60 FPS (推荐)",
-        fps_30: "原版省电",
-        fps_30_badge: "30 FPS (降温)",
-        fps_val_60: "60 FPS (高刷流畅)",
-        fps_val_30: "30 FPS (原版省电)",
-        fps_120: "120 帧",
-        fps_120_badge: "120 FPS",
-        fps_144: "144Hz 屏幕",
-        fps_144_badge: "144 FPS",
-        fps_val_120: "120 FPS",
-        fps_val_144: "144 FPS (144Hz 屏幕)",
-        invincible_title: "玩家无敌（受击不掉血）",
-        invincible_desc: "只保护玩家生命值，保留受击动作；敌人正常掉血，玩家可以回血。",
-        skip_title: "记住我的选择，下次直接进入游戏",
-        skip_desc: "下次冷启动静默跳过此菜单；可在系统应用管理「清除存储」重置",
-        debug_title: "🛠️ 调试与验收特权设置",
-        freeze_ai_title: "敌人不动 (定身木桩)",
-        freeze_ai_desc: "冻结敌人 AI 思考与行动，便于观测连招与技能机制",
-        full_power_title: "我方开局三格满气",
-        full_power_desc: "对局开场直接注满 3 格 SP 能量，即刻释放特技",
-        combat_overlay_title: "战斗判定悬浮战报 (Combat Overlay)",
-        combat_overlay_desc: "屏幕实时显示技能掷骰概率、暴击/闪避判定与Buff施加，便于录屏分析",
-        btn_reset: "恢复默认",
-        btn_json: "{ } JSON",
-        btn_launch: "保存并进入方舟",
-        btn_close: "关闭"
-      },
-      en: {
-        mode_auto: "Auto: EN",
-        mode_manual: "Lang: EN",
-        brand_title: "Launcher Settings & Combat Tuning",
-        ai_diff_title: "AI Combat Difficulty & Aggression",
-        ai_diff_0: "Standard",
-        ai_diff_0_badge: "Stock AI",
-        ai_diff_0_desc: "Standard Protocol (Stock AI)",
-        ai_diff_1: "Overdrive",
-        ai_diff_1_badge: "Special Cancel",
-        ai_diff_1_desc: "Tactical Overdrive (Combo into Special)",
-        ai_diff_2: "Apex Hunter",
-        ai_diff_2_badge: "Aggressive Rush",
-        ai_diff_2_desc: "Apex Hunter (Special Cancel + Fast Rush)",
-        ai_diff_3: "Samsara Frenzy",
-        ai_diff_3_badge: "Maximum Threat",
-        ai_diff_3_desc: "Samsara Frenzy (Relentless Pressure & Evade)",
-        diff_title: "Challenge Difficulty",
-        diff_normal: "Normal Story",
-        diff_normal_badge: "1.0x (Stock)",
-        diff_fury: "Furious Rage",
-        diff_fury_badge: "5.0x (5x HP)",
-        diff_extreme: "Extreme Samsara",
-        diff_extreme_badge: "10.0x (10x HP)",
-        diff_val_1: "1.0x HP (Normal Story)",
-        diff_val_5: "5.0x HP (Furious Rage)",
-        diff_val_10: "10.0x HP (Extreme Samsara)",
-        mana_title: "Power Charge Mode",
-        mana_1: "Official Stock",
-        mana_1_badge: "1.0x (Stock)",
-        mana_half: "Revival Rush",
-        mana_half_badge: "Player 3x, Enemy 0.5x",
-        mana_slow: "Suppression",
-        mana_slow_badge: "Player 3x, Enemy 0.2x",
-        mana_val_1: "1.0x (Official Stock)",
-        mana_val_half: "Revival Rush (Player 3x, Enemy 0.5x)",
-        mana_val_slow: "Suppression (Player 3x, Enemy 0.2x)",
-        swipe_title: "Special Attack Swipe Gestures (Swipe S1 / S2)",
-        swipe_desc: "Hold SP & swipe right for SP1, swipe up for SP2, tap for highest SP; disable to restore classic tap-only mode.",
-        cmdr_title: "Commander Name",
-        cmdr_placeholder: "Up to 16 characters",
-        cmdr_hint: "Replaces default handle · Syncs with base, battle results & profile",
-        fps_title: "Target Frame Rate",
-        fps_60: "High Smooth",
-        fps_60_badge: "60 FPS (Rec.)",
-        fps_30: "Battery Saver",
-        fps_30_badge: "30 FPS (Cooler)",
-        fps_val_60: "60 FPS (High Smooth)",
-        fps_val_30: "30 FPS (Battery Saver)",
-        fps_120: "120 FPS",
-        fps_120_badge: "120 FPS",
-        fps_144: "144 Hz Display",
-        fps_144_badge: "144 FPS",
-        fps_val_120: "120 FPS",
-        fps_val_144: "144 FPS (144 Hz Display)",
-        invincible_title: "Player Invincibility (No HP Loss)",
-        invincible_desc: "Protects player HP while keeping hit reactions. Enemies still take damage and healing still works.",
-        skip_title: "Remember my choice, skip next time",
-        skip_desc: "Once checked, this menu can be brought up by clearing your app data.",
-        debug_title: "🛠️ Debug & Testing Privileges",
-        freeze_ai_title: "Freeze Enemy AI (Dummy)",
-        freeze_ai_desc: "Freeze all enemy AI decisions and actions for testing combos & abilities",
-        full_power_title: "Start With 3 Full Power Bars",
-        full_power_desc: "Instantly charge 3 full SP power bars at fight start",
-        combat_overlay_title: "Combat Trigger Overlay",
-        combat_overlay_desc: "Display real-time ability dice rolls, crit/evade procs, and buff events on-screen for video debugging",
-        btn_reset: "Reset Defaults",
-        btn_json: "{ } JSON",
-        btn_launch: "Save & Launch Game",
-        btn_close: "Close"
-      }
-    };
-    let currentLang = "zh";
-    let isManualLang = false;
-    function detectSystemLang() {
-      try {
-        const nav = (navigator.language || (navigator.languages && navigator.languages[0]) || '').toLowerCase();
-        return nav.startsWith('zh') ? 'zh' : 'en';
-      } catch (e) {
-        return 'zh';
-      }
-    }
-    function setLanguage(lang, manual = true) {
-      currentLang = (lang === 'en') ? 'en' : 'zh';
-      if (manual) {
-        isManualLang = true;
-        config.launcher_language = currentLang;
-      }
-      document.querySelectorAll('.lang-pill-btn').forEach(btn => btn.classList.remove('active'));
-      const activeBtn = document.getElementById('btn-lang-' + currentLang);
-      if (activeBtn) activeBtn.classList.add('active');
-      const dict = i18n[currentLang];
-      const modeLabel = document.getElementById('txt-lang-mode');
-      if (modeLabel) {
-        modeLabel.textContent = isManualLang ? dict.mode_manual : dict.mode_auto;
-      }
-      document.querySelectorAll('[data-i18n]').forEach(el => {
-        const key = el.getAttribute('data-i18n');
-        if (dict[key]) el.textContent = dict[key];
-      });
-      document.querySelectorAll('[data-i18n-ph]').forEach(el => {
-        const key = el.getAttribute('data-i18n-ph');
-        if (dict[key]) el.placeholder = dict[key];
-      });
-      updateDiffDisplay();
-      updateManaDisplay();
-      updateFpsDisplay();
-      updateAiDiffDisplay();
-      updateJsonPreview();
-      scheduleNoticeLayout();
-    }
-    function calcUnits(str) {
-      let units = 0;
-      for (let i = 0; i < str.length; i++) {
-        units += (str.charCodeAt(i) > 127) ? 2 : 1;
-      }
-      return units;
-    }
-    function trimToMaxUnits(str, maxUnits = 16) {
-      let units = 0, res = '';
-      for (let i = 0; i < str.length; i++) {
-        const ch = str[i];
-        const u = (ch.charCodeAt(0) > 127) ? 2 : 1;
-        if (units + u > maxUnits) break;
-        units += u;
-        res += ch;
-      }
-      return { text: res, units: units };
-    }
-    function onCommanderInput() {
-      const inp = document.getElementById('inp-commander');
-      let val = inp.value.replace(/[\r\n\t"'\\\]]/g, '');
-      const trimmed = trimToMaxUnits(val, 16);
-      if (val !== trimmed.text) {
-        inp.value = trimmed.text;
-      }
-      config.commander_name = trimmed.text.trim() || 'Commander';
-      const counter = document.getElementById('lbl-char-counter');
-      counter.textContent = `${trimmed.units}/16`;
-      counter.classList.toggle('limit', trimmed.units >= 16);
-      updateJsonPreview();
-    }
-    function updateDiffDisplay() {
-      const mult = config.challenge_hp_multiplier;
-      const txt = document.getElementById('txt-diff-val');
-      const dict = i18n[currentLang] || i18n.zh;
-      if (mult <= 1.5) txt.textContent = dict.diff_val_1;
-      else if (mult <= 5.5) txt.textContent = dict.diff_val_5;
-      else txt.textContent = dict.diff_val_10;
-    }
-    function updateManaDisplay() {
-      const gain = config.enemy_mana_gain;
-      const txt = document.getElementById('txt-mana-val');
-      const dict = i18n[currentLang] || i18n.zh;
-      if (gain >= 0.8) txt.textContent = dict.mana_val_1;
-      else if (gain >= 0.4) txt.textContent = dict.mana_val_half;
-      else txt.textContent = dict.mana_val_slow;
-    }
-    function updateAiDiffDisplay() {
-      const diff = config.ai_difficulty || 0;
-      const txt = document.getElementById('txt-ai-diff-val');
-      if (!txt) return;
-      const dict = i18n[currentLang] || i18n.zh;
-      txt.textContent = dict['ai_diff_' + diff + '_desc'] || dict.ai_diff_0_desc;
-    }
-    function setAiDifficulty(diff, el) {
-      config.ai_difficulty = parseInt(diff, 10) || 0;
-      document.querySelectorAll('#card-ai-difficulty .pill-btn').forEach(btn => btn.classList.remove('active'));
-      if (el) el.classList.add('active');
-      updateAiDiffDisplay();
-      updateJsonPreview();
-    }
-    function updateFpsDisplay() {
-      const fps = config.target_fps;
-      const txt = document.getElementById('txt-fps-val');
-      const dict = i18n[currentLang] || i18n.zh;
-      txt.textContent = dict['fps_val_' + fps] || (fps + ' FPS');
-    }
-    function setDifficulty(mult, el) {
-      config.challenge_hp_multiplier = mult;
-      document.querySelectorAll('.grid-container .col:first-child .card:first-child .pill-btn').forEach(btn => btn.classList.remove('active'));
-      el.classList.add('active');
-      updateDiffDisplay();
-      updateJsonPreview();
-    }
-    function setMana(gain, el) {
-      config.enemy_mana_gain = gain;
-      document.querySelectorAll('.grid-container .col:first-child .card:nth-child(2) .pill-btn').forEach(btn => btn.classList.remove('active'));
-      el.classList.add('active');
-      updateManaDisplay();
-      updateJsonPreview();
-    }
-    function setFps(fps, el) {
-      config.target_fps = fps;
-      document.querySelectorAll('#btn-fps-60, #btn-fps-30, #btn-fps-120, #btn-fps-144').forEach(btn => btn.classList.remove('active'));
-      el.classList.add('active');
-      updateFpsDisplay();
-      updateJsonPreview();
-    }
-    function toggleInvincible(enabled) {
-      config.player_invincible = !!enabled;
-      updateJsonPreview();
-    }
-    function toggleSwipeSpecials(enabled) {
-      config.enable_swipe_specials = enabled;
-      updateJsonPreview();
-    }
-    function updateConfig() {
-      config.skip_launcher_next_time = document.getElementById('chk-skip-launcher').checked;
-      updateJsonPreview();
-    }
-    function updateJsonPreview() {
-      const pre = document.getElementById('json-preview');
-      if (pre && document.getElementById('json-modal').classList.contains('active')) {
-        pre.textContent = JSON.stringify(config, null, 2);
-      }
-    }
-    function toggleJsonModal() {
-      const m = document.getElementById('json-modal');
-      m.classList.toggle('active');
-      updateJsonPreview();
-    }
-    function toggleDebugModal() {
-      const m = document.getElementById('debug-modal');
-      if (m) m.classList.toggle('active');
-    }
-    function toggleFreezeAi(enabled) {
-      config.freeze_enemy_ai = !!enabled;
-      updateJsonPreview();
-    }
-    function toggleFullPower(enabled) {
-      config.start_full_power = !!enabled;
-      updateJsonPreview();
-    }
-    function toggleCombatOverlay(enabled) {
-      config.enable_combat_debug_overlay = !!enabled;
-      updateJsonPreview();
-    }
-    function resetDefaults() {
-      setGraphicsPreset('stock');
-      document.getElementById('inp-commander').value = 'Commander';
-      onCommanderInput();
-      document.getElementById('chk-skip-launcher').checked = false;
-      const chkInvincible = document.getElementById('chk-player-invincible');
-      if (chkInvincible) { chkInvincible.checked = false; toggleInvincible(false); }
-      const chkFreeze = document.getElementById('chk-freeze-ai');
-      if (chkFreeze) { chkFreeze.checked = false; toggleFreezeAi(false); }
-      const chkPower = document.getElementById('chk-full-power');
-      if (chkPower) { chkPower.checked = false; toggleFullPower(false); }
-      const chkOverlay = document.getElementById('chk-combat-overlay');
-      if (chkOverlay) { chkOverlay.checked = false; toggleCombatOverlay(false); }
-      const diffPills = document.querySelectorAll('.grid-container .col:first-child .card:first-child .pill-btn');
-      diffPills[2].click();
-      const manaPills = document.querySelectorAll('.grid-container .col:first-child .card:nth-child(2) .pill-btn');
-      manaPills[1].click();
-      const fpsBtn60 = document.getElementById('btn-fps-60');
-      if (fpsBtn60) fpsBtn60.click();
-      const aiBtn0 = document.getElementById('btn-ai-diff-0');
-      if (aiBtn0) aiBtn0.click();
-      const chkSwipe = document.getElementById('chk-swipe-specials');
-      if (chkSwipe) {
-        chkSwipe.checked = true;
-        toggleSwipeSpecials(true);
-      }
-      // Reset language to auto-detect
-      isManualLang = false;
-      delete config.launcher_language;
-      setLanguage(detectSystemLang(), false);
-      updateConfig();
-      updateJsonPreview();
-    }
-    function saveAndLaunch() {
-      try {
-        onCommanderInput();
-        updateConfig();
-        const payloadStr = JSON.stringify(config, null, 2);
-        // 1. Android WebView Native Interface Bridge
-        if (window.Android && typeof window.Android.saveAndLaunch === 'function') {
-          window.Android.saveAndLaunch(payloadStr);
-          return;
-        }
-        if (window.Android && typeof window.Android.saveConfig === 'function') {
-          window.Android.saveConfig(payloadStr);
-          return;
-        }
-        // 2. LocalStorage (fallback for browser testing)
-        try {
-          localStorage.setItem('tftf_user_settings', payloadStr);
-        } catch (e) {}
-        // 3. Fallback visual feedback if tested in desktop browser
-        const btn = document.getElementById('btn-launch');
-        if (btn) {
-          const orig = btn.innerHTML;
-          btn.innerHTML = '<span class="game-font">SAVED!</span>';
-          setTimeout(() => {
-            btn.innerHTML = orig;
-          }, 800);
-        }
-      } catch (err) {
-        console.error('saveAndLaunch error:', err);
-      }
-    }
-    const graphicsAllowed = {"graphics_render_scale": [0, 50, 75, 100], "graphics_msaa": [0, 1, 2, 4, 8], "graphics_shadows": [0, 1, 2, 3, 4], "graphics_reflections": [0, 1, 2, 3], "graphics_effects": [0, 1, 2, 3], "graphics_postfx": [0, 1, 2], "graphics_filtering": [0, 1, 2], "graphics_reflection_resolution": [0, 256, 512], "graphics_bloom_resolution": [0, 1], "graphics_fx_resolution": [0, 1], "graphics_lighting": [0, 1, 2], "graphics_glow": [0, 2, 3], "graphics_added_lights": [0, 2, 3]};
-    const graphicsPresets = {"stock": {"graphics_render_scale": 0, "graphics_msaa": 0, "graphics_shadows": 0, "graphics_reflections": 0, "graphics_effects": 0, "graphics_postfx": 0, "graphics_filtering": 0, "graphics_reflection_resolution": 0, "graphics_bloom_resolution": 0, "graphics_fx_resolution": 0, "graphics_lighting": 0, "graphics_glow": 0, "graphics_added_lights": 0}, "clear": {"graphics_render_scale": 100, "graphics_msaa": 4, "graphics_shadows": 4, "graphics_reflections": 3, "graphics_effects": 3, "graphics_postfx": 2, "graphics_filtering": 0, "graphics_reflection_resolution": 0, "graphics_bloom_resolution": 0, "graphics_fx_resolution": 0, "graphics_lighting": 0, "graphics_glow": 0, "graphics_added_lights": 0}, "smooth": {"graphics_render_scale": 75, "graphics_msaa": 1, "graphics_shadows": 2, "graphics_reflections": 1, "graphics_effects": 2, "graphics_postfx": 1, "graphics_filtering": 0, "graphics_reflection_resolution": 0, "graphics_bloom_resolution": 0, "graphics_fx_resolution": 0, "graphics_lighting": 0, "graphics_glow": 0, "graphics_added_lights": 0}, "enhanced111": {"graphics_render_scale": 100, "graphics_msaa": 4, "graphics_shadows": 4, "graphics_reflections": 3, "graphics_effects": 3, "graphics_postfx": 2, "graphics_filtering": 2, "graphics_reflection_resolution": 512, "graphics_bloom_resolution": 1, "graphics_fx_resolution": 1, "graphics_lighting": 0, "graphics_glow": 0, "graphics_added_lights": 0}, "enhanced112": {"graphics_render_scale": 100, "graphics_msaa": 4, "graphics_shadows": 4, "graphics_reflections": 3, "graphics_effects": 3, "graphics_postfx": 2, "graphics_filtering": 2, "graphics_reflection_resolution": 512, "graphics_bloom_resolution": 1, "graphics_fx_resolution": 1, "graphics_lighting": 1, "graphics_glow": 0, "graphics_added_lights": 0}, "enhanced114": {"graphics_render_scale": 100, "graphics_msaa": 4, "graphics_shadows": 4, "graphics_reflections": 3, "graphics_effects": 3, "graphics_postfx": 2, "graphics_filtering": 2, "graphics_reflection_resolution": 512, "graphics_bloom_resolution": 1, "graphics_fx_resolution": 1, "graphics_lighting": 2, "graphics_glow": 2, "graphics_added_lights": 2}, "ultra116": {"graphics_render_scale": 100, "graphics_msaa": 4, "graphics_shadows": 4, "graphics_reflections": 3, "graphics_effects": 3, "graphics_postfx": 2, "graphics_filtering": 2, "graphics_reflection_resolution": 512, "graphics_bloom_resolution": 1, "graphics_fx_resolution": 1, "graphics_lighting": 2, "graphics_glow": 3, "graphics_added_lights": 3}};
-    Object.assign(i18n.zh,{"tab_battle": "\u6218\u6597\u8bbe\u7f6e", "tab_graphics": "\u753b\u8d28\u8bbe\u7f6e", "gfx_stock": "\u8ddf\u968f\u539f\u7248", "gfx_clear": "\u6e05\u6670\u9884\u8bbe", "gfx_smooth": "\u6d41\u7545\u9884\u8bbe", "gfx_enhanced": "\u753b\u8d28\u589e\u5f3a111", "gfx_enhanced112": "\u547d\u4e2d\u5149\u6548115", "gfx_note": "\u4fdd\u5b58\u5e76\u91cd\u65b0\u8fdb\u5165\u6e38\u620f\u540e\u751f\u6548\u300260 \u5e27\u66f4\u6613\u7a33\u5b9a\uff1b120 / 144 \u5e27\u66f4\u4f9d\u8d56\u8bbe\u5907\u6027\u80fd\u3002", "gfx_scope": "\u5149\u5f71\u589e\u5f3a\u542f\u7528\u573a\u666f\u5df2\u6709\u7684\u7167\u660e\u4e0e\u53cd\u5c04\u8def\u5f84\uff1b\u4e0d\u540c\u5730\u56fe\u8868\u73b0\u4e0d\u540c\u3002\u666f\u6df1\u6682\u4e0d\u53ef\u7528\u3002", "graphics_glow_title": "\u53d1\u5149\u5149\u6655", "graphics_glow_desc": "\u63a7\u5236\u53d1\u5149\u533a\u57df\u5468\u56f4\u7684\u67d4\u5149\uff1b\u8d85\u5f3a\u6863\u52a0\u5f3a\u4eae\u5ea6\u5e76\u9650\u5236\u6269\u6563\u3002\u9700\u5f00\u542f\u540e\u671f\u5149\u6548\u3002", "graphics_glow_0": "\u57fa\u7840\u5149\u6655", "graphics_glow_2": "\u589e\u5f3a\u5149\u6655", "graphics_glow_3": "\u8d85\u5f3a\u5149\u6655", "graphics_added_lights_title": "\u9644\u52a0\u52a8\u6001\u5149\u6e90", "graphics_added_lights_desc": "\u4e3a\u5df2\u7ed8\u5236\u7684\u6b66\u5668\u3001\u5b50\u5f39\u548c\u547d\u4e2d\u7279\u6548\u589e\u52a0\u5c40\u90e8\u7167\u660e\uff1b\u589e\u52a0GPU\u5f00\u9500\u3002", "graphics_added_lights_0": "\u5173\u95ed", "graphics_added_lights_2": "\u5f00\u542f\u5c40\u90e8\u7167\u660e", "graphics_added_lights_3": "\u8d85\u5f3a\u5c40\u90e8\u7167\u660e\uff08\u5938\u5f20\uff09", "graphics_render_scale_title": "\u6e32\u67d3\u5206\u8fa8\u7387", "graphics_render_scale_desc": "\u6bd4\u4f8b\u6307\u5bbd\u9ad8\u6bd4\u4f8b\uff1b100% \u4f7f\u7528\u5c4f\u5e55\u539f\u751f\u5206\u8fa8\u7387\u3002", "graphics_render_scale_0": "\u8ddf\u968f\u539f\u7248", "graphics_render_scale_50": "50%\uff08\u66f4\u6d41\u7545\uff09", "graphics_render_scale_75": "75%\uff08\u5747\u8861\uff09", "graphics_render_scale_100": "100%\uff08\u539f\u751f\u6e05\u6670\uff09", "graphics_msaa_title": "MSAA \u6297\u952f\u9f7f", "graphics_msaa_desc": "\u51cf\u5c11\u6a21\u578b\u8fb9\u7f18\u952f\u9f7f\uff1b\u53d7\u6e32\u67d3\u8def\u5f84\u4e0e\u8bbe\u5907\u652f\u6301\u9650\u5236\u3002", "graphics_msaa_0": "\u8ddf\u968f\u539f\u7248", "graphics_msaa_1": "\u5173\u95ed", "graphics_msaa_2": "2\u00d7", "graphics_msaa_4": "4\u00d7", "graphics_msaa_8": "8\u00d7\uff08\u8f83\u9ad8\u5f00\u9500\uff09", "graphics_shadows_title": "\u9634\u5f71\u7ec6\u8282", "graphics_shadows_desc": "\u8c03\u6574\u5b9e\u65f6\u9634\u5f71\u548c\u89d2\u8272\u63a5\u89e6\u9634\u5f71\u3002", "graphics_shadows_0": "\u8ddf\u968f\u539f\u7248", "graphics_shadows_1": "\u5173\u95ed", "graphics_shadows_2": "\u4f4e", "graphics_shadows_3": "\u4e2d", "graphics_shadows_4": "\u9ad8", "graphics_reflections_title": "\u5730\u9762\u53cd\u5c04", "graphics_reflections_desc": "\u4f7f\u7528\u573a\u666f\u5df2\u6709\u53cd\u5c04\uff1b\u9ad8\u6863\u4f4d\u589e\u52a0\u6e32\u67d3\u5f00\u9500\u3002", "graphics_reflections_0": "\u8ddf\u968f\u539f\u7248", "graphics_reflections_1": "\u5173\u95ed", "graphics_reflections_2": "\u4f4e", "graphics_reflections_3": "\u9ad8", "graphics_effects_title": "\u7c92\u5b50\u4e0e\u62d6\u5c3e\u7ec6\u8282", "graphics_effects_desc": "\u8c03\u6574\u573a\u666f\u5df2\u6709\u7c92\u5b50\u548c\u6b66\u5668\u62d6\u5c3e\u7ec6\u8282\u3002", "graphics_effects_0": "\u8ddf\u968f\u539f\u7248", "graphics_effects_1": "\u4f4e", "graphics_effects_2": "\u4e2d", "graphics_effects_3": "\u9ad8", "graphics_postfx_title": "\u540e\u671f\u5149\u6548", "graphics_postfx_desc": "\u63a7\u5236\u539f\u6709\u6cdb\u5149\u4e0e FXAA \u7b49\u540e\u671f\u6548\u679c\u3002", "graphics_postfx_0": "\u8ddf\u968f\u539f\u7248", "graphics_postfx_1": "\u5173\u95ed", "graphics_postfx_2": "\u5f00\u542f", "graphics_filtering_title": "\u659c\u9762\u7eb9\u7406\u6e05\u6670\u5ea6", "graphics_filtering_desc": "\u6539\u5584\u659c\u770b\u5730\u9762\u65f6\u7684\u7eb9\u7406\u6e05\u6670\u5ea6\uff1b\u4e0d\u589e\u52a0\u8d34\u56fe\u5c3a\u5bf8\u3002", "graphics_filtering_0": "\u4fdd\u6301\u539f\u8bbe\u7f6e", "graphics_filtering_1": "\u5173\u95ed", "graphics_filtering_2": "\u5f3a\u5236\u5f00\u542f", "graphics_reflection_resolution_title": "\u53cd\u5c04\u6e05\u6670\u5ea6", "graphics_reflection_resolution_desc": "\u9700\u5f00\u542f\u5730\u9762\u53cd\u5c04\uff1b\u53ea\u5f71\u54cd\u573a\u666f\u5df2\u6709\u7684\u53cd\u5c04\u3002", "graphics_reflection_resolution_0": "\u539f\u7248", "graphics_reflection_resolution_256": "256 \u00d7 256", "graphics_reflection_resolution_512": "512 \u00d7 512\uff08\u589e\u5f3a\uff09", "graphics_bloom_resolution_title": "\u8f89\u5149\u6e05\u6670\u5ea6", "graphics_bloom_resolution_desc": "\u9700\u5f00\u542f\u540e\u671f\u5149\u6548\uff1b\u6539\u5584\u8f89\u5149\u8fb9\u7f18\uff0c\u4eae\u5ea6\u4e0d\u53d8\u3002", "graphics_bloom_resolution_0": "\u539f\u7248 \u00b7 128 \u00d7 96", "graphics_bloom_resolution_1": "\u589e\u5f3a \u00b7 256 \u00d7 192", "graphics_fx_resolution_title": "\u900f\u660e\u7279\u6548\u6e05\u6670\u5ea6", "graphics_fx_resolution_desc": "\u7ec6\u5316\u9002\u7528\u7684\u70df\u96fe\u3001\u900f\u660e\u7c92\u5b50\u8fb9\u7f18\uff1b\u4e0d\u589e\u52a0\u706b\u82b1\u6570\u91cf\u3002", "graphics_fx_resolution_0": "\u539f\u7248 \u00b7 256 \u00d7 192", "graphics_fx_resolution_1": "\u589e\u5f3a \u00b7 512 \u00d7 384", "graphics_lighting_title": "\u52a8\u6001\u5149\u7167\u4e0e\u53cd\u5c04", "graphics_lighting_desc": "\u542f\u7528\u573a\u666f\u73b0\u6709\u7684\u52a8\u6001\u7167\u660e\u4e0e\u53cd\u5c04\u6750\u8d28\uff1b\u66f4\u591a\u9ad8\u5149\u4f1a\u589e\u52a0\u6e32\u67d3\u8d1f\u62c5\u3002", "graphics_lighting_0": "\u8ddf\u968f\u539f\u7248", "graphics_lighting_1": "\u589e\u5f3a\u5149\u7167\u4e0e\u53cd\u5c04", "graphics_lighting_2": "\u589e\u5f3a\u5149\u7167\u4e0e\u9ad8\u5149", "gfx_ultra116": "\u6e05\u6670\u5149\u6548118"});
-    Object.assign(i18n.en,{"tab_battle": "Combat", "tab_graphics": "Graphics", "gfx_stock": "Stock preset", "gfx_clear": "Clarity preset", "gfx_smooth": "Smooth preset", "gfx_enhanced": "Enhanced 111", "gfx_enhanced112": "Effects 114", "gfx_note": "Save and restart the game to apply. 60 FPS is easier to sustain; 120 / 144 FPS depends more on device performance.", "gfx_scope": "Enhanced lighting uses existing scene lighting and reflection paths; results vary by map. Depth of field is unavailable.", "graphics_glow_title": "Emissive glow", "graphics_glow_desc": "Soft halos around luminous regions. Ultra increases brightness with limited spread; requires post-processing.", "graphics_glow_0": "Base halo", "graphics_glow_2": "Enhanced halo", "graphics_glow_3": "Ultra halo", "graphics_added_lights_title": "Added dynamic lights", "graphics_added_lights_desc": "Adds local light to visible weapons, projectiles and impacts; costs GPU time.", "graphics_added_lights_0": "Off", "graphics_added_lights_2": "Local lighting on", "graphics_added_lights_3": "Ultra local lighting (dramatic)", "graphics_render_scale_title": "Render resolution", "graphics_render_scale_desc": "Scale applies to width and height; 100% uses native resolution.", "graphics_render_scale_0": "Stock", "graphics_render_scale_50": "50% (faster)", "graphics_render_scale_75": "75% (balanced)", "graphics_render_scale_100": "100% (native)", "graphics_msaa_title": "MSAA anti-aliasing", "graphics_msaa_desc": "Smooths geometry edges; support depends on rendering path and device.", "graphics_msaa_0": "Stock", "graphics_msaa_1": "Off", "graphics_msaa_2": "2x", "graphics_msaa_4": "4x", "graphics_msaa_8": "8x (higher cost)", "graphics_shadows_title": "Shadow detail", "graphics_shadows_desc": "Adjusts realtime and character contact shadows.", "graphics_shadows_0": "Stock", "graphics_shadows_1": "Off", "graphics_shadows_2": "Low", "graphics_shadows_3": "Medium", "graphics_shadows_4": "High", "graphics_reflections_title": "Planar reflections", "graphics_reflections_desc": "Uses reflections provided by the scene; high costs more GPU time.", "graphics_reflections_0": "Stock", "graphics_reflections_1": "Off", "graphics_reflections_2": "Low", "graphics_reflections_3": "High", "graphics_effects_title": "Particles and trails", "graphics_effects_desc": "Adjusts existing particles and weapon trails.", "graphics_effects_0": "Stock", "graphics_effects_1": "Low", "graphics_effects_2": "Medium", "graphics_effects_3": "High", "graphics_postfx_title": "Post-processing", "graphics_postfx_desc": "Controls existing bloom, FXAA and related post effects.", "graphics_postfx_0": "Stock", "graphics_postfx_1": "Off", "graphics_postfx_2": "On", "graphics_filtering_title": "Angled texture clarity", "graphics_filtering_desc": "Keeps angled surfaces sharper; texture sizes stay unchanged.", "graphics_filtering_0": "Keep existing", "graphics_filtering_1": "Off", "graphics_filtering_2": "Force on", "graphics_reflection_resolution_title": "Reflection clarity", "graphics_reflection_resolution_desc": "Requires ground reflections; applies where the scene provides them.", "graphics_reflection_resolution_0": "Stock", "graphics_reflection_resolution_256": "256 x 256", "graphics_reflection_resolution_512": "512 x 512 (enhanced)", "graphics_bloom_resolution_title": "Bloom clarity", "graphics_bloom_resolution_desc": "Requires post-processing; improves bloom edges without increasing brightness.", "graphics_bloom_resolution_0": "Stock \u00b7 128 x 96", "graphics_bloom_resolution_1": "Enhanced \u00b7 256 x 192", "graphics_fx_resolution_title": "Transparent effect clarity", "graphics_fx_resolution_desc": "Sharpens supported smoke and particle edges; spark counts stay unchanged.", "graphics_fx_resolution_0": "Stock \u00b7 256 x 192", "graphics_fx_resolution_1": "Enhanced \u00b7 512 x 384", "graphics_lighting_title": "Dynamic lighting and reflections", "graphics_lighting_desc": "Enables existing scene lighting and reflection materials; extra highlights may cost more GPU time.", "graphics_lighting_0": "Stock", "graphics_lighting_1": "Enhanced lighting and reflections", "graphics_lighting_2": "Enhanced lighting and highlights", "gfx_ultra116": "Clear effects118"});
-    function setLauncherTab(tab) {
-      document.getElementById('battle-panel').style.display = tab === 'battle' ? 'grid' : 'none';
-      document.getElementById('graphics-panel').style.display = tab === 'graphics' ? 'block' : 'none';
-      document.getElementById('tab-battle').classList.toggle('active',tab === 'battle');
-      document.getElementById('tab-graphics').classList.toggle('active',tab === 'graphics');
-    }
-    function syncGraphics() {
-      Object.keys(graphicsAllowed).forEach(key => { document.getElementById(key).value = String(config[key]); });
-      updateJsonPreview();
-    }
-    function validGraphicsValue(key, value) {
-      if (!Object.prototype.hasOwnProperty.call(graphicsAllowed, key)) return 0;
-      if (typeof value === 'string') {
-        value = value.trim();
-        if (!/^\d{1,3}$/.test(value)) return 0;
-      } else if (typeof value !== 'number') {
-        return 0;
-      }
-      let number = Number(value);
-      if ((key === 'graphics_glow' || key === 'graphics_added_lights') && number === 1) number = 2;
-      return Number.isInteger(number) && graphicsAllowed[key].includes(number) ? number : 0;
-    }
-    function loadGraphicsSettings(settings) {
-      const saved = settings && typeof settings === 'object' ? settings : {};
-      Object.keys(graphicsAllowed).forEach(key => {
-        config[key] = validGraphicsValue(key, saved[key]);
-      });
-      syncGraphics();
-    }
-    function setGraphics(key,value) {
-      if (!Object.prototype.hasOwnProperty.call(graphicsAllowed, key)) return;
-      config[key] = validGraphicsValue(key, value);
-      document.getElementById(key).value = String(config[key]);
-      updateJsonPreview();
-    }
-    function setGraphicsPreset(preset) {
-      const values = Object.prototype.hasOwnProperty.call(graphicsPresets, preset) ? graphicsPresets[preset] : graphicsPresets.stock;
-      loadGraphicsSettings(values);
-    }
-    Object.assign(i18n.zh,{credit_kmc:'单机版维护与启动菜单',credit_neil:'画质与特效优化'});
-    Object.assign(i18n.en,{credit_kmc:'Offline game & launcher',credit_neil:'Graphics & visual effects'});
-    Object.assign(i18n.zh,{notice_title:'社区声明',notice_pause:'暂停',notice_resume:'继续',notice_text:"本版本由玩家社区免费维护与分享。欢迎非商业转载，但请保留原始贡献者署名及项目发布来源。禁止冒用开发者身份或将本项目修改成果宣称为个人原创。"});
-    Object.assign(i18n.en,{notice_title:'Community notice',notice_pause:'Pause',notice_resume:'Resume',notice_text:"This version is maintained and shared free of charge by the player community. Non-commercial redistribution is welcome; please retain the original contributors’ credits and project release sources. Do not impersonate the developers or claim these modifications as your own original work."});
-    let noticePaused=false, noticeLayoutFrame=0;
-    function updateNoticeMotion() {
-      const text=document.getElementById('notice-text');
-      const modal=document.getElementById('notice-modal');
-      const button=document.getElementById('notice-pause');
-      if (!text || !modal || !button) return;
-      text.style.animationPlayState=(noticePaused || document.hidden || modal.classList.contains('active')) ? 'paused' : 'running';
-      button.textContent=i18n[currentLang][noticePaused?'notice_resume':'notice_pause'];
-      button.setAttribute('aria-pressed',String(noticePaused));
-    }
-    function scheduleNoticeLayout() {
-      if (noticeLayoutFrame) return;
-      noticeLayoutFrame=requestAnimationFrame(function() {
-        noticeLayoutFrame=0;
-        const view=document.getElementById('notice-window');
-        const text=document.getElementById('notice-text');
-        if (!view || !text) return;
-        const travel=Math.max(0,text.scrollWidth-view.clientWidth);
-        view.style.setProperty('--notice-offset',(-travel)+'px');
-        view.style.setProperty('--notice-duration',Math.max(24,travel/22+8)+'s');
-        view.classList.toggle('has-overflow',travel>1);
-        updateNoticeMotion();
-      });
-    }
-    function toggleNoticePause() { noticePaused=!noticePaused; updateNoticeMotion(); }
-    function toggleNoticeModal() {
-      document.getElementById('notice-modal').classList.toggle('active');
-      updateNoticeMotion();
-    }
-    window.addEventListener('resize',scheduleNoticeLayout,{passive:true});
-    document.addEventListener('visibilitychange',updateNoticeMotion);
-    (function initSaved() {
-      try {
-        let saved = null;
-        if (window.Android && typeof window.Android.getInitialSettings === 'function') {
-          saved = window.Android.getInitialSettings();
-        }
-        if (!saved) {
-          saved = localStorage.getItem('tftf_user_settings');
-        }
-        let savedLang = null;
-        if (saved) {
-          const parsed = (typeof saved === 'string') ? JSON.parse(saved) : saved;
-          loadGraphicsSettings(parsed);
-          if (parsed.commander_name) {
-            document.getElementById('inp-commander').value = parsed.commander_name;
-          }
-          if (parsed.challenge_hp_multiplier !== undefined) {
-            const mult = parsed.challenge_hp_multiplier;
-            const diffPills = document.querySelectorAll('.grid-container .col:first-child .card:first-child .pill-btn');
-            if (mult <= 1.5) diffPills[0].click();
-            else if (mult <= 5.5) diffPills[1].click();
-            else diffPills[2].click();
-          }
-          if (parsed.enemy_mana_gain !== undefined) {
-            const mana = parsed.enemy_mana_gain;
-            const manaPills = document.querySelectorAll('.grid-container .col:first-child .card:nth-child(2) .pill-btn');
-            if (mana >= 0.8) manaPills[0].click();
-            else if (mana >= 0.4) manaPills[1].click();
-            else manaPills[2].click();
-          }
-          if (parsed.ai_difficulty !== undefined) {
-            const d = parseInt(parsed.ai_difficulty, 10);
-            const aiBtn = document.getElementById('btn-ai-diff-' + d);
-            if (aiBtn) aiBtn.click();
-          }
-          if (parsed.target_fps !== undefined) {
-            const fps = parsed.target_fps;
-            const supportedFps = [30, 60, 120, 144].includes(fps) ? fps : 60;
-            const fpsButton = document.getElementById('btn-fps-' + supportedFps);
-            if (fpsButton) fpsButton.click();
-          }
-          if (parsed.player_invincible !== undefined) {
-            const chkInvincible = document.getElementById('chk-player-invincible');
-            if (chkInvincible) chkInvincible.checked = !!parsed.player_invincible;
-            config.player_invincible = !!parsed.player_invincible;
-          }
-          if (parsed.enable_swipe_specials !== undefined) {
-            const chkSwipe = document.getElementById('chk-swipe-specials');
-            if (chkSwipe) {
-              chkSwipe.checked = !!parsed.enable_swipe_specials;
-              config.enable_swipe_specials = !!parsed.enable_swipe_specials;
-            }
-          }
-          if (parsed.freeze_enemy_ai !== undefined) {
-            const chkFreeze = document.getElementById('chk-freeze-ai');
-            if (chkFreeze) {
-              chkFreeze.checked = !!parsed.freeze_enemy_ai;
-              config.freeze_enemy_ai = !!parsed.freeze_enemy_ai;
-            }
-          }
-          if (parsed.start_full_power !== undefined) {
-            const chkPower = document.getElementById('chk-full-power');
-            if (chkPower) {
-              chkPower.checked = !!parsed.start_full_power;
-              config.start_full_power = !!parsed.start_full_power;
-            }
-          }
-          if (parsed.enable_combat_debug_overlay !== undefined) {
-            const chkOverlay = document.getElementById('chk-combat-overlay');
-            if (chkOverlay) {
-              chkOverlay.checked = !!parsed.enable_combat_debug_overlay;
-              config.enable_combat_debug_overlay = !!parsed.enable_combat_debug_overlay;
-            }
-          }
-          if (parsed.launcher_language) {
-            savedLang = parsed.launcher_language;
-          }
-          if (parsed.skip_launcher_next_time !== undefined) {
-            document.getElementById('chk-skip-launcher').checked = parsed.skip_launcher_next_time;
-          }
-        }
-        if (savedLang) {
-          setLanguage(savedLang, true);
-        } else {
-          setLanguage(detectSystemLang(), false);
-        }
-      } catch (e) {
-        setLanguage(detectSystemLang(), false);
-      }
-      onCommanderInput();
-      updateConfig();
-      syncGraphics();
-      updateJsonPreview();
-    })();
-  </script>
-</body>
-</html>
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <title>TFTF Launcher Settings / 启动配置</title>
+
+  <style>
+
+    :root {
+
+      --bg-dark: #070b14;
+
+      --panel-bg: rgba(13, 21, 38, 0.88);
+
+      --panel-border: rgba(56, 189, 248, 0.22);
+
+      --cyan: #38bdf8;
+
+      --cyan-glow: rgba(56, 189, 248, 0.35);
+
+      --purple: #a855f7;
+
+      --emerald: #34d399;
+
+      --amber: #fbbf24;
+
+      --rose: #fb7185;
+
+      --text-main: #f1f5f9;
+
+      --text-dim: #94a3b8;
+
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; }
+
+    body {
+
+      background-color: var(--bg-dark);
+
+      background-image: 
+
+        radial-gradient(circle at 15% 15%, rgba(56, 189, 248, 0.08) 0%, transparent 40%),
+
+        radial-gradient(circle at 85% 85%, rgba(168, 85, 247, 0.08) 0%, transparent 40%),
+
+        linear-gradient(180deg, #050811 0%, #0a101f 100%);
+
+      color: var(--text-main);
+
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+
+      height: 100vh;
+
+      width: 100vw;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      overflow: hidden;
+
+      padding: 6px;
+
+    }
+
+    .game-font {
+
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+      letter-spacing: 0.03em;
+
+    }
+
+    .launcher-frame {
+
+      width: 96vw;
+
+      max-width: 900px;
+
+      height: 95vh;
+
+      max-height: 520px;
+
+      background: var(--panel-bg);
+
+      border: 1px solid var(--panel-border);
+
+      border-radius: 14px;
+
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.8), 0 0 15px rgba(56, 189, 248, 0.12);
+
+      display: flex;
+
+      flex-direction: column;
+
+      overflow: hidden;
+
+    }
+
+    /* Header */
+
+    .top-bar {
+
+      height: 46px;
+
+      padding: 0 16px;
+
+      background: linear-gradient(90deg, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.8) 60%, rgba(8, 47, 73, 0.4));
+
+      border-bottom: 1px solid rgba(56, 189, 248, 0.18);
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: space-between;
+
+      flex-shrink: 0;
+
+    }
+
+    .brand-box {
+
+      display: flex;
+
+      align-items: center;
+
+      gap: 10px;
+
+    }
+
+    .logo-badge {
+
+      width: 28px;
+
+      height: 28px;
+
+      border-radius: 6px;
+
+      background: rgba(56, 189, 248, 0.12);
+
+      border: 1px solid rgba(56, 189, 248, 0.4);
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      color: var(--cyan);
+
+    }
+
+    .brand-title {
+
+      font-size: 16.5px;
+
+      font-weight: bold;
+
+      color: #f8fafc;
+
+      letter-spacing: 0.02em;
+
+    }
+
+    .version-tag {
+
+      font-size: 12px;
+
+      padding: 2px 7px;
+
+      border-radius: 4px;
+
+      background: rgba(56, 189, 248, 0.15);
+
+      color: var(--cyan);
+
+      border: 1px solid rgba(56, 189, 248, 0.3);
+
+    }
+
+    /* Language Switcher */
+
+    .lang-switcher {
+
+      display: flex;
+
+      align-items: center;
+
+      gap: 8px;
+
+    }
+
+    .lang-status-badge {
+
+      display: flex;
+
+      align-items: center;
+
+      gap: 5px;
+
+      color: #94a3b8;
+
+    }
+
+    .lang-pill-group {
+
+      display: flex;
+
+      background: rgba(15, 23, 42, 0.85);
+
+      border: 1px solid rgba(56, 189, 248, 0.3);
+
+      border-radius: 6px;
+
+      padding: 2px;
+
+      gap: 2px;
+
+    }
+
+    .lang-pill-btn {
+
+      background: transparent;
+
+      border: none;
+
+      border-radius: 4px;
+
+      color: #94a3b8;
+
+      font-size: 12px;
+
+      font-weight: 600;
+
+      padding: 3px 8px;
+
+      cursor: pointer;
+
+      transition: all 0.15s ease;
+
+    }
+
+    .lang-pill-btn:hover {
+
+      color: #f1f5f9;
+
+    }
+
+    .lang-pill-btn.active {
+
+      background: rgba(56, 189, 248, 0.25);
+
+      color: var(--cyan);
+
+      box-shadow: 0 0 6px rgba(56, 189, 248, 0.3);
+
+    }
+
+    /* Commander Input Strip */
+
+    .commander-strip {
+
+      padding: 6px 14px;
+
+      background: rgba(10, 16, 28, 0.65);
+
+      border-bottom: 1px solid rgba(56, 189, 248, 0.12);
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: space-between;
+
+      gap: 10px;
+
+      flex-shrink: 0;
+
+    }
+
+    .commander-label {
+
+      font-size: 12px;
+
+      font-weight: 600;
+
+      color: #cbd5e1;
+
+      display: flex;
+
+      align-items: center;
+
+      gap: 6px;
+
+      white-space: nowrap;
+
+    }
+
+    .input-wrapper {
+
+      flex: 1;
+
+      max-width: 360px;
+
+      position: relative;
+
+      display: flex;
+
+      align-items: center;
+
+    }
+
+    .commander-input {
+
+      width: 100%;
+
+      height: 34px;
+
+      background: rgba(15, 23, 42, 0.85);
+
+      border: 1px solid rgba(56, 189, 248, 0.3);
+
+      border-radius: 6px;
+
+      padding: 0 62px 0 12px;
+
+      font-size: 14.5px;
+
+      color: #38bdf8;
+
+      outline: none;
+
+      transition: all 0.15s ease;
+
+    }
+
+    .commander-input:focus {
+
+      border-color: #38bdf8;
+
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
+
+      background: rgba(20, 30, 50, 0.95);
+
+    }
+
+    .char-counter {
+
+      position: absolute;
+
+      right: 8px;
+
+      font-size: 12px;
+
+      font-family: 'TecnicaBold', monospace;
+
+      color: #94a3b8;
+
+      background: rgba(15, 23, 42, 0.7);
+
+      padding: 1px 6px;
+
+      border-radius: 3px;
+
+      pointer-events: none;
+
+    }
+
+    .char-counter.limit {
+
+      color: var(--rose);
+
+      font-weight: bold;
+
+    }
+
+    .commander-hint {
+
+      font-size: 12px;
+
+      color: #94a3b8;
+
+      white-space: nowrap;
+
+    }
+
+    /* Main Grid */
+
+    .grid-container {
+
+      flex: 1;
+
+      display: grid;
+
+      grid-template-columns: 1fr 1fr;
+
+      gap: 12px;
+
+      padding: 12px 16px;
+
+      overflow-y: auto;
+
+    }
+
+    .col {
+
+      display: flex;
+
+      flex-direction: column;
+
+      gap: 10px;
+
+    }
+
+    .card {
+
+      background: rgba(15, 23, 42, 0.55);
+
+      border: 1px solid rgba(51, 65, 85, 0.65);
+
+      border-radius: 10px;
+
+      padding: 10px 14px;
+
+      display: flex;
+
+      flex-direction: column;
+
+      justify-content: space-between;
+
+      transition: border-color 0.15s;
+
+      flex: 1;
+
+    }
+
+    .card:hover {
+
+      border-color: rgba(56, 189, 248, 0.35);
+
+    }
+
+    .card-header {
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: space-between;
+
+      margin-bottom: 6px;
+
+    }
+
+    .card-title {
+
+      font-size: 14px;
+
+      font-weight: 600;
+
+      color: #e2e8f0;
+
+      display: flex;
+
+      align-items: center;
+
+      gap: 6px;
+
+    }
+
+    .card-title .dot {
+
+      width: 7px;
+
+      height: 7px;
+
+      border-radius: 50%;
+
+      background: var(--cyan);
+
+    }
+
+    .current-val {
+
+      font-size: 13px;
+
+      color: var(--cyan);
+
+    }
+
+    /* Options Pills */
+
+    .pills-group {
+
+      display: grid;
+
+      grid-template-columns: 1fr 1fr 1fr;
+
+      gap: 8px;
+
+    }
+
+    .pill-btn {
+
+      background: rgba(15, 23, 42, 0.85);
+
+      border: 1px solid rgba(51, 65, 85, 0.8);
+
+      border-radius: 8px;
+
+      padding: 8px 4px;
+
+      min-height: 50px;
+
+      cursor: pointer;
+
+      text-align: center;
+
+      transition: all 0.15s ease;
+
+      display: flex;
+
+      flex-direction: column;
+
+      align-items: center;
+
+      justify-content: center;
+
+      gap: 3px;
+
+    }
+
+    .pill-btn:hover {
+
+      border-color: rgba(56, 189, 248, 0.5);
+
+      background: rgba(25, 38, 64, 0.8);
+
+    }
+
+    .pill-btn.active {
+
+      border-color: var(--cyan);
+
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.22), rgba(14, 165, 233, 0.08));
+
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
+
+    }
+
+    .pill-name {
+
+      font-size: 13.5px;
+
+      font-weight: bold;
+
+    }
+
+    .pill-badge {
+
+      font-size: 11px;
+
+      white-space: nowrap;
+
+      padding: 2px 6px;
+
+      border-radius: 4px;
+
+    }
+
+    .c-green { color: var(--emerald); }
+
+    .bg-green { background: rgba(52, 211, 153, 0.15); color: var(--emerald); }
+
+    .c-amber { color: var(--amber); }
+
+    .bg-amber { background: rgba(251, 191, 36, 0.15); color: var(--amber); }
+
+    .c-cyan { color: var(--cyan); }
+
+    .bg-cyan { background: rgba(56, 189, 248, 0.15); color: var(--cyan); }
+
+    .c-rose { color: var(--rose); }
+
+    .bg-rose { background: rgba(251, 113, 133, 0.15); color: var(--rose); }
+
+    /* Switch Cards */
+
+    .switch-card {
+
+      padding: 10px 14px;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: space-between;
+
+      gap: 12px;
+
+    }
+
+    .switch-info {
+
+      flex: 1;
+
+    }
+
+    .switch-title {
+
+      font-size: 14px;
+
+      font-weight: 600;
+
+      color: #e2e8f0;
+
+      display: flex;
+
+      align-items: center;
+
+      gap: 6px;
+
+    }
+
+    .switch-desc {
+
+      font-size: 12px;
+
+      color: #94a3b8;
+
+      margin-top: 4px;
+
+      line-height: 1.4;
+
+    }
+
+    /* Toggle Switch */
+
+    .switch {
+
+      position: relative;
+
+      display: inline-block;
+
+      width: 44px;
+
+      height: 24px;
+
+      flex-shrink: 0;
+
+    }
+
+    .switch input { opacity: 0; width: 0; height: 0; }
+
+    .slider {
+
+      position: absolute;
+
+      cursor: pointer;
+
+      top: 0; left: 0; right: 0; bottom: 0;
+
+      background-color: #1e293b;
+
+      border: 1px solid #334155;
+
+      transition: .2s cubic-bezier(0.4, 0, 0.2, 1);
+
+      border-radius: 24px;
+
+    }
+
+    .slider:before {
+
+      position: absolute;
+
+      content: "";
+
+      height: 18px;
+
+      width: 18px;
+
+      left: 2px;
+
+      bottom: 2px;
+
+      background-color: #ffffff;
+
+      transition: .2s cubic-bezier(0.4, 0, 0.2, 1);
+
+      border-radius: 50%;
+
+    }
+
+    input:checked + .slider.cyan-switch {
+
+      background-color: #0284c7;
+
+      border-color: #38bdf8;
+
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.35);
+
+    }
+
+    input:checked + .slider.purple-switch {
+
+      background-color: #7e22ce;
+
+      border-color: #a855f7;
+
+      box-shadow: 0 0 8px rgba(168, 85, 247, 0.35);
+
+    }
+
+    input:checked + .slider:before {
+
+      transform: translateX(20px);
+
+    }
+
+    /* Skip checkbox strip */
+
+    .skip-card {
+
+      background: rgba(8, 47, 73, 0.2);
+
+      border: 1px solid rgba(56, 189, 248, 0.25);
+
+      border-radius: 8px;
+
+      padding: 9px 14px;
+
+      display: flex;
+
+      align-items: center;
+
+      gap: 10px;
+
+      cursor: pointer;
+
+    }
+
+    .skip-card input {
+
+      accent-color: #38bdf8;
+
+      width: 18px;
+
+      height: 18px;
+
+      cursor: pointer;
+
+    }
+
+    .skip-text {
+
+      font-size: 12px;
+
+      color: #cbd5e1;
+
+      line-height: 1.35;
+
+    }
+
+    .skip-text strong {
+
+      color: #f1f5f9;
+
+      font-size: 13.5px;
+
+      display: block;
+
+      margin-bottom: 2px;
+
+    }
+
+    /* Footer */
+
+    .footer-bar {
+
+      height: 52px;
+
+      padding: 0 16px;
+
+      background: rgba(10, 16, 28, 0.95);
+
+      border-top: 1px solid rgba(51, 65, 85, 0.6);
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: space-between;
+
+      flex-shrink: 0;
+
+    }
+
+    .footer-actions-left {
+
+      display: flex;
+
+      align-items: center;
+
+      gap: 10px;
+
+    }
+
+    .btn-secondary {
+
+      padding: 7px 14px;
+
+      border-radius: 7px;
+
+      background: rgba(30, 41, 59, 0.6);
+
+      border: 1px solid rgba(51, 65, 85, 0.8);
+
+      color: #94a3b8;
+
+      font-size: 13px;
+
+      cursor: pointer;
+
+      display: flex;
+
+      align-items: center;
+
+      gap: 6px;
+
+      transition: all 0.15s;
+
+    }
+
+    .btn-secondary:hover {
+
+      background: rgba(51, 65, 85, 0.8);
+
+      color: #f1f5f9;
+
+      border-color: rgba(56, 189, 248, 0.4);
+
+    }
+
+    .btn-primary {
+
+      padding: 9px 24px;
+
+      border-radius: 8px;
+
+      background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+
+      border: 1px solid rgba(56, 189, 248, 0.6);
+
+      color: #ffffff;
+
+      font-size: 14.5px;
+
+      font-weight: bold;
+
+      cursor: pointer;
+
+      display: flex;
+
+      align-items: center;
+
+      gap: 8px;
+
+      box-shadow: 0 0 14px rgba(2, 132, 199, 0.35);
+
+      transition: all 0.15s ease;
+
+    }
+
+    .btn-primary:hover {
+
+      background: linear-gradient(135deg, #38bdf8 0%, #3b82f6 100%);
+
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.55);
+
+      transform: translateY(-1px);
+
+    }
+
+    .btn-primary:active {
+
+      transform: scale(0.97);
+
+    }
+
+    /* Modal */
+
+    .modal-overlay {
+
+      position: fixed;
+
+      inset: 0;
+
+      background: rgba(0, 0, 0, 0.75);
+
+      display: none;
+
+      align-items: center;
+
+      justify-content: center;
+
+      z-index: 99;
+
+      padding: 10px;
+
+    }
+
+    .modal-overlay.active { display: flex; }
+
+    .modal-content {
+
+      width: 100%;
+
+      max-width: 480px;
+
+      background: #0f172a;
+
+      border: 1px solid rgba(56, 189, 248, 0.35);
+
+      border-radius: 12px;
+
+      padding: 14px;
+
+      display: flex;
+
+      flex-direction: column;
+
+      gap: 10px;
+
+      box-shadow: 0 0 30px rgba(0,0,0,0.8);
+
+    }
+
+    .modal-header {
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: space-between;
+
+      border-bottom: 1px solid #1e293b;
+
+      padding-bottom: 6px;
+
+      font-size: 11px;
+
+      color: #94a3b8;
+
+    }
+
+    .modal-pre {
+
+      background: #090d16;
+
+      border: 1px solid #1e293b;
+
+      border-radius: 6px;
+
+      padding: 8px;
+
+      color: #38bdf8;
+
+      font-size: 11px;
+
+      max-height: 200px;
+
+      overflow-y: auto;
+
+      user-select: text;
+
+      -webkit-user-select: text;
+
+    }
+
+    .launcher-frame { max-height: 580px; }
+
+    .launcher-tabs { display:flex; flex-shrink:0; gap:8px; padding:6px 16px; border-bottom:1px solid var(--panel-border); }
+
+    .launcher-tab,.graphics-presets button { font:inherit; font-size:13px; cursor:pointer; border:1px solid var(--panel-border); border-radius:6px; color:var(--text-dim); background:#0d1728; padding:6px 16px; }
+
+    .launcher-tab.active { color:var(--cyan); border-color:var(--cyan); background:#102b40; }
+
+    .graphics-panel { display:none; flex:1; min-height:0; overflow-y:auto; overflow-x:hidden; padding:12px 16px; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; }
+
+    .graphics-presets { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px; }
+
+    .graphics-presets .graphics-enhanced { color:var(--cyan); border-color:#2a7899; }
+
+    .graphics-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; }
+
+    .graphics-control { display:flex; flex-direction:column; min-width:0; gap:5px; padding:10px 12px; border:1px solid var(--panel-border); border-radius:9px; background:#0d1627; }
+
+    .graphics-label { color:var(--text-main); font-size:14px; }
+
+    .graphics-control select { width:100%; min-height:32px; background:#071421; color:var(--cyan); border:1px solid #25506e; border-radius:5px; font:inherit; font-size:13px; padding:4px 7px; }
+
+    .graphics-description,.graphics-note { color:var(--text-dim); font-size:11px; line-height:1.4; }
+
+    .graphics-note { margin-top:10px; }
+
+    @media(max-width:620px) { .graphics-grid { grid-template-columns:1fr; } }
+
+    /*122: opaque compositor surfaces, bounded repaint and no broad UI animations. */
+
+    .launcher-frame { background:#0d1526; box-shadow:0 6px 18px #0008; }
+
+    .grid-container,.graphics-panel { min-height:0; overscroll-behavior:contain; contain:layout paint; }
+
+    button,.pill-btn,.slider,.slider:before,.commander-input { transition:none; }
+
+    .pill-btn.active,.lang-pill-btn.active,input:checked + .slider,.btn-primary { box-shadow:none; }
+
+    .btn-primary:hover,.btn-primary:active { transform:none; }
+
+    a,button,.pill-btn { touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
+
+    .credit-strip { display:flex; flex-wrap:wrap; align-items:center; gap:5px 22px; flex-shrink:0; padding:7px 16px; background:#0a1220; border-bottom:1px solid #253448; font-size:12px; line-height:1.4; }
+
+    .credit-item { display:flex; align-items:center; gap:6px; }
+
+    .credit-label { color:#a9b9cd; }
+
+    .credit-link { color:#68d4ff; text-decoration:none; font-weight:700; padding:2px 0; }
+
+    .credit-link:focus-visible { outline:2px solid #68d4ff; outline-offset:3px; }
+
+    @media(max-width:620px) { .credit-strip { padding:5px 12px; font-size:11px; gap:2px 16px; } .brand-title { font-size:14px; } .version-tag { font-size:10px; } }
+
+    .notice-strip { display:flex; align-items:center; gap:10px; flex-shrink:0; min-height:30px; padding:4px 16px; background:#091522; border-bottom:1px solid #24384b; font-size:11px; line-height:1.5; }
+
+    .notice-button { flex-shrink:0; border:0; background:transparent; color:#67d3ff; font:inherit; cursor:pointer; min-height:24px; padding:0 3px; }
+
+    .notice-window { flex:1; min-width:0; overflow:hidden; color:#b3c2d4; }
+
+    .notice-text { display:inline-block; white-space:nowrap; vertical-align:middle; }
+
+    .notice-window.has-overflow .notice-text { animation:notice-flow var(--notice-duration,32s) linear infinite; will-change:transform; }
+
+    @keyframes notice-flow { 0%,10% { transform:translateX(0); } 90%,100% { transform:translateX(var(--notice-offset,0px)); } }
+
+    .notice-dialog { max-width:620px; }
+
+    .notice-full { font-size:14px; line-height:1.9; color:#dbe6f2; user-select:text; -webkit-user-select:text; }
+
+    @media(prefers-reduced-motion:reduce) { .notice-window { overflow-x:auto; } .notice-window.has-overflow .notice-text { animation:none; will-change:auto; } }
+
+</style>
+
+</head>
+
+<body>
+
+  <div class="launcher-frame">
+
+    <section class="notice-strip" aria-label="Community redistribution statement">
+
+      <button class="notice-button" type="button" onclick="toggleNoticeModal()" data-i18n="notice_title" title="查看完整声明">社区声明</button>
+
+      <div class="notice-window" id="notice-window"><span class="notice-text" id="notice-text" data-i18n="notice_text">本版本由玩家社区免费维护与分享。欢迎非商业转载，但请保留原始贡献者署名及项目发布来源。禁止冒用开发者身份或将本项目修改成果宣称为个人原创。</span></div>
+
+      <button class="notice-button" id="notice-pause" type="button" onclick="toggleNoticePause()" aria-pressed="false">暂停</button>
+
+    </section>
+
+    <!-- Top Header -->
+
+    <header class="top-bar">
+
+      <div class="brand-box">
+
+        <div class="logo-badge" onclick="toggleDebugModal()" style="cursor: pointer;" title="Debug Settings">
+
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+
+            <path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5zm0 2.18l7 3.89v4.93c0 4.54-3.08 8.79-7 9.92-3.92-1.13-7-5.38-7-9.92V8.07l7-3.89zM11 7v2h2V7h-2zm-3 4v2h8v-2H8zm1 4v2h6v-2H9z"/>
+
+          </svg>
+
+        </div>
+
+        <span class="brand-title" data-i18n="brand_title">启动配置与战斗调优</span>
+
+        <span class="version-tag game-font">v9.2 · 122</span>
+
+      </div>
+
+      <div class="lang-switcher">
+
+        <div class="lang-status-badge">
+
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+            <circle cx="12" cy="12" r="10"></circle>
+
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+
+          </svg>
+
+          <span id="txt-lang-mode" class="game-font">自适应: 简中</span>
+
+        </div>
+
+        <div class="lang-pill-group">
+
+          <button type="button" class="lang-pill-btn active" id="btn-lang-zh" onclick="setLanguage('zh')">简中</button>
+
+          <button type="button" class="lang-pill-btn" id="btn-lang-en" onclick="setLanguage('en')">EN</button>
+
+        </div>
+
+      </div>
+
+    </header>
+
+    <section class="credit-strip" aria-label="Contributors">
+
+      <div class="credit-item"><span class="credit-label" data-i18n="credit_kmc">单机版维护与启动菜单</span><a class="credit-link" href="https://kmc.is-a.bot/" title="https://kmc.is-a.bot/" rel="noopener noreferrer">KMC ↗</a></div>
+
+      <div class="credit-item"><span class="credit-label" data-i18n="credit_neil">画质与特效优化</span><a class="credit-link" href="https://github.com/neilhorn233" title="https://github.com/neilhorn233" rel="noopener noreferrer">neilhorn233 ↗</a></div>
+
+    </section>
+
+    <!-- Main Content 2-Column Grid -->
+
+    <nav class="launcher-tabs" aria-label="Settings pages">
+
+      <button type="button" class="launcher-tab active" id="tab-battle" onclick="setLauncherTab('battle')" data-i18n="tab_battle">战斗设置</button>
+
+      <button type="button" class="launcher-tab" id="tab-graphics" onclick="setLauncherTab('graphics')" data-i18n="tab_graphics">画质设置</button>
+
+    </nav>
+
+    <main class="grid-container" id="battle-panel">
+
+      <!-- Left Column: Combat Tuning -->
+
+      <div class="col">
+
+        <!-- 1. 六道轮回难度 (Boss HP & Attack) -->
+
+        <div class="card">
+
+          <div class="card-header">
+
+            <div class="card-title">
+
+              <span class="dot" style="background: var(--rose);"></span>
+
+              <span data-i18n="diff_title">六道轮回挑战难度</span>
+
+            </div>
+
+            <span class="current-val game-font" id="txt-diff-val">10.0x HP (六道极意)</span>
+
+          </div>
+
+          <div class="pills-group">
+
+            <div class="pill-btn" onclick="setDifficulty(1.0, this)">
+
+              <span class="pill-name c-green" data-i18n="diff_normal">正常剧情</span>
+
+              <span class="pill-badge bg-green game-font" data-i18n="diff_normal_badge">1.0x (原版)</span>
+
+            </div>
+
+            <div class="pill-btn" onclick="setDifficulty(5.0, this)">
+
+              <span class="pill-name c-amber" data-i18n="diff_fury">狂暴进阶</span>
+
+              <span class="pill-badge bg-amber game-font" data-i18n="diff_fury_badge">5.0x (5倍)</span>
+
+            </div>
+
+            <div class="pill-btn active" onclick="setDifficulty(10.0, this)">
+
+              <span class="pill-name c-rose" data-i18n="diff_extreme">六道极意</span>
+
+              <span class="pill-badge bg-rose game-font" data-i18n="diff_extreme_badge">10.0x (10倍)</span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- 2. 能量加气模式 (Power Charge Mode) -->
+
+        <div class="card">
+
+          <div class="card-header">
+
+            <div class="card-title">
+
+              <span class="dot" style="background: var(--cyan);"></span>
+
+              <span data-i18n="mana_title">能量加气模式</span>
+
+            </div>
+
+            <span class="current-val game-font" id="txt-mana-val">重生快充 (我方3倍速，敌方0.5)</span>
+
+          </div>
+
+          <div class="pills-group">
+
+            <div class="pill-btn" onclick="setMana(1.0, this)">
+
+              <span class="pill-name c-amber" data-i18n="mana_1">官方原版</span>
+
+              <span class="pill-badge bg-amber game-font" data-i18n="mana_1_badge">1.0x (原速)</span>
+
+            </div>
+
+            <div class="pill-btn active" onclick="setMana(0.5, this)">
+
+              <span class="pill-name c-cyan" data-i18n="mana_half">重生快充</span>
+
+              <span class="pill-badge bg-cyan game-font" data-i18n="mana_half_badge">我方3倍速，敌方0.5</span>
+
+            </div>
+
+            <div class="pill-btn" onclick="setMana(0.2, this)">
+
+              <span class="pill-name c-green" data-i18n="mana_slow">畅快压制</span>
+
+              <span class="pill-badge bg-green game-font" data-i18n="mana_slow_badge">我方3倍速，敌方0.2</span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- 3. 大招手势选择 (Special Attack Gesture Control) -->
+
+        <div class="card switch-card">
+
+          <div class="switch-info">
+
+            <div class="switch-title">
+
+              <span class="dot" style="background: var(--purple);"></span>
+
+              <span data-i18n="swipe_title">必杀技滑动手势 (右滑S1 / 上滑S2)</span>
+
+            </div>
+
+            <div class="switch-desc" data-i18n="swipe_desc">
+
+              按住大招按钮右滑即放S1，上滑即放S2，点按放最高可用大招；关闭后恢复原版纯点按模式。
+
+            </div>
+
+          </div>
+
+          <label class="switch">
+
+            <input type="checkbox" id="chk-swipe-specials" onchange="toggleSwipeSpecials(this.checked)" checked>
+
+            <span class="slider purple-switch"></span>
+
+          </label>
+
+        </div>
+
+        <div class="card switch-card">
+
+          <div class="switch-info">
+
+            <div class="switch-title">
+
+              <span class="dot" style="background: var(--emerald);"></span>
+
+              <span data-i18n="invincible_title">玩家无敌（受击不掉血）</span>
+
+            </div>
+
+            <div class="switch-desc" data-i18n="invincible_desc">只保护玩家生命值，保留受击动作；敌人正常掉血，玩家可以回血。</div>
+
+          </div>
+
+          <label class="switch">
+
+            <input type="checkbox" id="chk-player-invincible" onchange="toggleInvincible(this.checked)">
+
+            <span class="slider purple-switch"></span>
+
+          </label>
+
+        </div>
+
+        <div class="card switch-card">
+
+          <div class="switch-info">
+
+            <div class="switch-title">
+
+              <span class="dot" style="background: var(--cyan);"></span>
+
+              <span data-i18n="custom_music_title">原创音乐 (Jukebox)</span>
+
+            </div>
+
+            <div class="switch-desc" data-i18n="custom_music_desc">开启后在主界面、任务、战斗、竞技场与突袭播放高质量扩展音乐；关闭则使用游戏原版音乐。</div>
+
+          </div>
+
+          <label class="switch">
+
+            <input type="checkbox" id="chk-custom-music" onchange="toggleCustomMusic(this.checked)" checked>
+
+            <span class="slider purple-switch"></span>
+
+          </label>
+
+        </div>
+
+      </div>
+
+      <!-- Right Column: Profile & Launch Preference -->
+
+      <div class="col">
+
+        <!-- AI 战斗难度 (AI Combat Difficulty) -->
+
+        <div class="card" id="card-ai-difficulty">
+
+          <div class="card-header">
+
+            <div class="card-title">
+
+              <span class="dot" style="background: var(--purple);"></span>
+
+              <span data-i18n="ai_diff_title">AI 战斗难度与侵略性</span>
+
+            </div>
+
+            <span class="current-val game-font" id="txt-ai-diff-val">标准量产 (原版普通)</span>
+
+          </div>
+
+          <div class="pills-group" style="grid-template-columns: 1fr 1fr;">
+
+            <div class="pill-btn active" id="btn-ai-diff-0" onclick="setAiDifficulty(0, this)">
+
+              <span class="pill-name c-green" data-i18n="ai_diff_0">标准量产</span>
+
+              <span class="pill-badge bg-green game-font" data-i18n="ai_diff_0_badge">原版基础</span>
+
+            </div>
+
+            <div class="pill-btn" id="btn-ai-diff-1" onclick="setAiDifficulty(1, this)">
+
+              <span class="pill-name c-cyan" data-i18n="ai_diff_1">核心过载</span>
+
+              <span class="pill-badge bg-cyan game-font" data-i18n="ai_diff_1_badge">连招接必杀</span>
+
+            </div>
+
+            <div class="pill-btn" id="btn-ai-diff-2" onclick="setAiDifficulty(2, this)">
+
+              <span class="pill-name c-amber" data-i18n="ai_diff_2">宿命猎杀</span>
+
+              <span class="pill-badge bg-amber game-font" data-i18n="ai_diff_2_badge">迅捷突进压制</span>
+
+            </div>
+
+            <div class="pill-btn" id="btn-ai-diff-3" onclick="setAiDifficulty(3, this)">
+
+              <span class="pill-name c-rose" data-i18n="ai_diff_3">六道狂乱</span>
+
+              <span class="pill-badge bg-rose game-font" data-i18n="ai_diff_3_badge">极限压迫极意</span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- 3. 自定义指挥官代号 (Commander Name) -->
+
+        <div class="card">
+
+          <div class="card-header">
+
+            <div class="card-title">
+
+              <span class="dot" style="background: var(--emerald);"></span>
+
+              <span data-i18n="cmdr_title">指挥官代号</span>
+
+            </div>
+
+            <span id="lbl-char-counter" class="char-counter game-font">9/16</span>
+
+          </div>
+
+          <div class="input-wrapper" style="margin-top: 4px;">
+
+            <input type="text" id="inp-commander" class="commander-input game-font" value="Commander" placeholder="最多8汉字或16英文字符" data-i18n-ph="cmdr_placeholder" maxlength="16" oninput="onCommanderInput()">
+
+          </div>
+
+          <div class="card-hint" style="margin-top: 6px; font-size: 12px; color: var(--text-dim); line-height: 1.4;" data-i18n="cmdr_hint">
+
+            替换系统默认代号 · 基地主页、战报结算与档案即时同步
+
+          </div>
+
+        </div>
+
+        <!-- 4. 画面帧率上限 (Target Frame Rate) -->
+
+        <div class="card">
+
+          <div class="card-header">
+
+            <div class="card-title">
+
+              <span class="dot" style="background: var(--cyan);"></span>
+
+              <span data-i18n="fps_title">画面帧率上限</span>
+
+            </div>
+
+            <span class="current-val game-font" id="txt-fps-val">60 FPS (高刷流畅)</span>
+
+          </div>
+
+          <div class="pills-group" style="grid-template-columns: 1fr 1fr;">
+
+            <div class="pill-btn active" id="btn-fps-60" onclick="setFps(60, this)">
+
+              <span class="pill-name c-cyan" data-i18n="fps_60">高刷流畅</span>
+
+              <span class="pill-badge bg-cyan game-font" data-i18n="fps_60_badge">60 FPS (推荐)</span>
+
+            </div>
+
+            <div class="pill-btn" id="btn-fps-120" onclick="setFps(120, this)">
+
+              <span class="pill-name c-purple" data-i18n="fps_120">120 帧</span>
+
+              <span class="pill-badge bg-purple game-font" data-i18n="fps_120_badge">120 FPS</span>
+
+            </div>
+
+            <div class="pill-btn" id="btn-fps-144" onclick="setFps(144, this)">
+
+              <span class="pill-name c-cyan" data-i18n="fps_144">144Hz 屏幕</span>
+
+              <span class="pill-badge bg-cyan game-font" data-i18n="fps_144_badge">144 FPS</span>
+
+            </div>
+
+            <div class="pill-btn" id="btn-fps-30" onclick="setFps(30, this)">
+
+              <span class="pill-name c-green" data-i18n="fps_30">原版省电</span>
+
+              <span class="pill-badge bg-green game-font" data-i18n="fps_30_badge">30 FPS (降温)</span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- 5. 下次跳过启动菜单 (Skip Next Time) -->
+
+        <label class="skip-card" style="margin-top: 2px;">
+
+          <input type="checkbox" id="chk-skip-launcher" onchange="updateConfig()">
+
+          <div class="skip-text">
+
+            <strong data-i18n="skip_title">记住我的选择，下次直接进入游戏</strong>
+
+            <span data-i18n="skip_desc">下次冷启动静默跳过此菜单；可在系统应用管理「清除存储」重置</span>
+
+          </div>
+
+        </label>
+
+      </div>
+
+    </main>
+
+    <section id="graphics-panel" class="graphics-panel" aria-label="Graphics settings">
+
+      <div class="graphics-presets">
+
+        <button type="button" class="graphics-enhanced" onclick="setGraphicsPreset('ultra116')" data-i18n="gfx_ultra116">清晰光效122</button>
+
+        <button type="button" class="graphics-enhanced" onclick="setGraphicsPreset('enhanced114')" data-i18n="gfx_enhanced112">命中光效115</button>
+
+        <button type="button" class="graphics-enhanced" onclick="setGraphicsPreset('enhanced111')" data-i18n="gfx_enhanced">画质增强111</button>
+
+        <button type="button" onclick="setGraphicsPreset('stock')" data-i18n="gfx_stock">跟随原版</button>
+
+        <button type="button" onclick="setGraphicsPreset('clear')" data-i18n="gfx_clear">清晰预设</button>
+
+        <button type="button" onclick="setGraphicsPreset('smooth')" data-i18n="gfx_smooth">流畅预设</button>
+
+      </div>
+
+      <div class="graphics-grid"><label class="graphics-control" for="graphics_glow">
+
+          <span class="graphics-label" data-i18n="graphics_glow_title">发光光晕</span>
+
+          <select id="graphics_glow" onchange="setGraphics('graphics_glow',this.value)"><option value="0" data-i18n="graphics_glow_0">基础光晕</option><option value="2" data-i18n="graphics_glow_2">增强光晕</option><option value="3" data-i18n="graphics_glow_3">超强光晕</option></select>
+
+          <span class="graphics-description" data-i18n="graphics_glow_desc">控制发光区域周围的柔光；超强档加强亮度并限制扩散。需开启后期光效。</span>
+
+        </label><label class="graphics-control" for="graphics_added_lights">
+
+          <span class="graphics-label" data-i18n="graphics_added_lights_title">附加动态光源</span>
+
+          <select id="graphics_added_lights" onchange="setGraphics('graphics_added_lights',this.value)"><option value="0" data-i18n="graphics_added_lights_0">关闭</option><option value="2" data-i18n="graphics_added_lights_2">开启局部照明</option><option value="3" data-i18n="graphics_added_lights_3">超强局部照明（夸张）</option></select>
+
+          <span class="graphics-description" data-i18n="graphics_added_lights_desc">为已绘制的武器、子弹和命中特效增加局部照明；增加GPU开销。</span>
+
+        </label><label class="graphics-control" for="graphics_render_scale">
+
+          <span class="graphics-label" data-i18n="graphics_render_scale_title">渲染分辨率</span>
+
+          <select id="graphics_render_scale" onchange="setGraphics('graphics_render_scale',this.value)"><option value="0" data-i18n="graphics_render_scale_0">跟随原版</option><option value="50" data-i18n="graphics_render_scale_50">50%（更流畅）</option><option value="75" data-i18n="graphics_render_scale_75">75%（均衡）</option><option value="100" data-i18n="graphics_render_scale_100">100%（原生清晰）</option></select>
+
+          <span class="graphics-description" data-i18n="graphics_render_scale_desc">比例指宽高比例；100% 使用屏幕原生分辨率。</span>
+
+        </label><label class="graphics-control" for="graphics_msaa">
+
+          <span class="graphics-label" data-i18n="graphics_msaa_title">MSAA 抗锯齿</span>
+
+          <select id="graphics_msaa" onchange="setGraphics('graphics_msaa',this.value)"><option value="0" data-i18n="graphics_msaa_0">跟随原版</option><option value="1" data-i18n="graphics_msaa_1">关闭</option><option value="2" data-i18n="graphics_msaa_2">2×</option><option value="4" data-i18n="graphics_msaa_4">4×</option><option value="8" data-i18n="graphics_msaa_8">8×（较高开销）</option></select>
+
+          <span class="graphics-description" data-i18n="graphics_msaa_desc">减少模型边缘锯齿；受渲染路径与设备支持限制。</span>
+
+        </label><label class="graphics-control" for="graphics_shadows">
+
+          <span class="graphics-label" data-i18n="graphics_shadows_title">阴影细节</span>
+
+          <select id="graphics_shadows" onchange="setGraphics('graphics_shadows',this.value)"><option value="0" data-i18n="graphics_shadows_0">跟随原版</option><option value="1" data-i18n="graphics_shadows_1">关闭</option><option value="2" data-i18n="graphics_shadows_2">低</option><option value="3" data-i18n="graphics_shadows_3">中</option><option value="4" data-i18n="graphics_shadows_4">高</option></select>
+
+          <span class="graphics-description" data-i18n="graphics_shadows_desc">调整实时阴影和角色接触阴影。</span>
+
+        </label><label class="graphics-control" for="graphics_reflections">
+
+          <span class="graphics-label" data-i18n="graphics_reflections_title">地面反射</span>
+
+          <select id="graphics_reflections" onchange="setGraphics('graphics_reflections',this.value)"><option value="0" data-i18n="graphics_reflections_0">跟随原版</option><option value="1" data-i18n="graphics_reflections_1">关闭</option><option value="2" data-i18n="graphics_reflections_2">低</option><option value="3" data-i18n="graphics_reflections_3">高</option></select>
+
+          <span class="graphics-description" data-i18n="graphics_reflections_desc">使用场景已有反射；高档位增加渲染开销。</span>
+
+        </label><label class="graphics-control" for="graphics_effects">
+
+          <span class="graphics-label" data-i18n="graphics_effects_title">粒子与拖尾细节</span>
+
+          <select id="graphics_effects" onchange="setGraphics('graphics_effects',this.value)"><option value="0" data-i18n="graphics_effects_0">跟随原版</option><option value="1" data-i18n="graphics_effects_1">低</option><option value="2" data-i18n="graphics_effects_2">中</option><option value="3" data-i18n="graphics_effects_3">高</option></select>
+
+          <span class="graphics-description" data-i18n="graphics_effects_desc">调整场景已有粒子和武器拖尾细节。</span>
+
+        </label><label class="graphics-control" for="graphics_postfx">
+
+          <span class="graphics-label" data-i18n="graphics_postfx_title">后期光效</span>
+
+          <select id="graphics_postfx" onchange="setGraphics('graphics_postfx',this.value)"><option value="0" data-i18n="graphics_postfx_0">跟随原版</option><option value="1" data-i18n="graphics_postfx_1">关闭</option><option value="2" data-i18n="graphics_postfx_2">开启</option></select>
+
+          <span class="graphics-description" data-i18n="graphics_postfx_desc">控制原有泛光与 FXAA 等后期效果。</span>
+
+        </label><label class="graphics-control" for="graphics_filtering">
+
+          <span class="graphics-label" data-i18n="graphics_filtering_title">斜面纹理清晰度</span>
+
+          <select id="graphics_filtering" onchange="setGraphics('graphics_filtering',this.value)"><option value="0" data-i18n="graphics_filtering_0">保持原设置</option><option value="1" data-i18n="graphics_filtering_1">关闭</option><option value="2" data-i18n="graphics_filtering_2">强制开启</option></select>
+
+          <span class="graphics-description" data-i18n="graphics_filtering_desc">改善斜看地面时的纹理清晰度；不增加贴图尺寸。</span>
+
+        </label><label class="graphics-control" for="graphics_reflection_resolution">
+
+          <span class="graphics-label" data-i18n="graphics_reflection_resolution_title">反射清晰度</span>
+
+          <select id="graphics_reflection_resolution" onchange="setGraphics('graphics_reflection_resolution',this.value)"><option value="0" data-i18n="graphics_reflection_resolution_0">原版</option><option value="256" data-i18n="graphics_reflection_resolution_256">256 × 256</option><option value="512" data-i18n="graphics_reflection_resolution_512">512 × 512（增强）</option></select>
+
+          <span class="graphics-description" data-i18n="graphics_reflection_resolution_desc">需开启地面反射；只影响场景已有的反射。</span>
+
+        </label><label class="graphics-control" for="graphics_bloom_resolution">
+
+          <span class="graphics-label" data-i18n="graphics_bloom_resolution_title">辉光清晰度</span>
+
+          <select id="graphics_bloom_resolution" onchange="setGraphics('graphics_bloom_resolution',this.value)"><option value="0" data-i18n="graphics_bloom_resolution_0">原版 · 128 × 96</option><option value="1" data-i18n="graphics_bloom_resolution_1">增强 · 256 × 192</option></select>
+
+          <span class="graphics-description" data-i18n="graphics_bloom_resolution_desc">需开启后期光效；改善辉光边缘，亮度不变。</span>
+
+        </label><label class="graphics-control" for="graphics_fx_resolution">
+
+          <span class="graphics-label" data-i18n="graphics_fx_resolution_title">透明特效清晰度</span>
+
+          <select id="graphics_fx_resolution" onchange="setGraphics('graphics_fx_resolution',this.value)"><option value="0" data-i18n="graphics_fx_resolution_0">原版 · 256 × 192</option><option value="1" data-i18n="graphics_fx_resolution_1">增强 · 512 × 384</option></select>
+
+          <span class="graphics-description" data-i18n="graphics_fx_resolution_desc">细化适用的烟雾、透明粒子边缘；不增加火花数量。</span>
+
+        </label><label class="graphics-control" for="graphics_lighting">
+
+          <span class="graphics-label" data-i18n="graphics_lighting_title">动态光照与反射</span>
+
+          <select id="graphics_lighting" onchange="setGraphics('graphics_lighting',this.value)"><option value="0" data-i18n="graphics_lighting_0">跟随原版</option><option value="1" data-i18n="graphics_lighting_1">增强光照与反射</option><option value="2" data-i18n="graphics_lighting_2">增强光照与高光</option></select>
+
+          <span class="graphics-description" data-i18n="graphics_lighting_desc">启用场景现有的动态照明与反射材质；更多高光会增加渲染负担。</span>
+
+        </label></div>
+
+      <p class="graphics-note" data-i18n="gfx_note">保存并重新进入游戏后生效。60 帧更易稳定；120 / 144 帧更依赖设备性能。</p>
+
+      <p class="graphics-note" data-i18n="gfx_scope">光影增强启用场景已有的照明与反射路径；不同地图表现不同。景深暂不可用。</p>
+
+    </section>
+
+    <!-- Bottom Action Footer -->
+
+    <footer class="footer-bar">
+
+      <div class="footer-actions-left">
+
+        <button class="btn-secondary" onclick="resetDefaults()">
+
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+
+          </svg>
+
+          <span data-i18n="btn_reset">恢复默认</span>
+
+        </button>
+
+        <!-- 【功能屏蔽注释 - 严禁删除】JSON查看配置按钮临时屏蔽，后续调测备用 -->
+
+        <!--
+
+        <button class="btn-secondary game-font" onclick="toggleJsonModal()">
+
+          <span>{ } JSON</span>
+
+        </button>
+
+        -->
+
+      </div>
+
+      <div>
+
+        <button class="btn-primary game-font" onclick="saveAndLaunch()" id="btn-launch">
+
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+
+            <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+
+          </svg>
+
+          <span data-i18n="btn_launch">保存并进入方舟</span>
+
+        </button>
+
+      </div>
+
+    </footer>
+
+  </div>
+
+  <!-- Debug Modal (验收调试设置) -->
+
+  <div id="debug-modal" class="modal-overlay">
+
+    <div class="modal-content" style="max-width: 440px;">
+
+      <div class="modal-header">
+
+        <span class="game-font" style="color: #f59e0b; font-weight: bold;" data-i18n="debug_title">🛠️ 调试与验收特权设置</span>
+
+        <button onclick="toggleDebugModal()" style="background:none; border:none; color:#94a3b8; cursor:pointer; font-size:16px;">✕</button>
+
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 10px; padding: 6px 0;">
+
+        <label class="toggle-row" style="cursor: pointer; display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
+
+          <div style="padding-right: 12px;">
+
+            <div style="font-size: 13.5px; font-weight: bold; color: #f8fafc;" data-i18n="freeze_ai_title">敌人不动 (定身木桩)</div>
+
+            <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;" data-i18n="freeze_ai_desc">冻结所有敌人 AI 决策与攻击行动，便于测试连招与技能机制</div>
+
+          </div>
+
+          <input type="checkbox" id="chk-freeze-ai" onchange="toggleFreezeAi(this.checked)" style="transform: scale(1.25); accent-color: #f59e0b; cursor: pointer;">
+
+        </label>
+
+        <label class="toggle-row" style="cursor: pointer; display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
+
+          <div style="padding-right: 12px;">
+
+            <div style="font-size: 13.5px; font-weight: bold; color: #f8fafc;" data-i18n="full_power_title">我方开局三格满气</div>
+
+            <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;" data-i18n="full_power_desc">对局开局直接注满 3 格 SP 能量，即刻测试特殊技 SP1 / SP2 / SP3</div>
+
+          </div>
+
+          <input type="checkbox" id="chk-full-power" onchange="toggleFullPower(this.checked)" style="transform: scale(1.25); accent-color: #f59e0b; cursor: pointer;">
+
+        </label>
+
+        <label class="toggle-row" style="cursor: pointer; display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
+
+          <div style="padding-right: 12px;">
+
+            <div style="font-size: 13.5px; font-weight: bold; color: #f8fafc;" data-i18n="combat_overlay_title">战斗判定悬浮战报 (Combat Overlay)</div>
+
+            <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;" data-i18n="combat_overlay_desc">屏幕实时显示技能掷骰概率、暴击/闪避判定与Buff施加，便于录屏分析</div>
+
+          </div>
+
+          <input type="checkbox" id="chk-combat-overlay" onchange="toggleCombatOverlay(this.checked)" style="transform: scale(1.25); accent-color: #f59e0b; cursor: pointer;">
+
+        </label>
+
+      </div>
+
+      <div style="display:flex; justify-content:flex-end;">
+
+        <button class="btn-secondary" onclick="toggleDebugModal()" data-i18n="btn_close">关闭</button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- JSON Modal -->
+
+  <div id="json-modal" class="modal-overlay">
+
+    <div class="modal-content">
+
+      <div class="modal-header">
+
+        <span class="game-font">/data/data/com.kabam.bigrobot/files/user_settings.json</span>
+
+        <button onclick="toggleJsonModal()" style="background:none; border:none; color:#94a3b8; cursor:pointer; font-size:14px;">✕</button>
+
+      </div>
+
+      <pre id="json-preview" class="modal-pre"></pre>
+
+      <div style="display:flex; justify-content:flex-end;">
+
+        <button class="btn-secondary" onclick="toggleJsonModal()" data-i18n="btn_close">关闭</button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <div id="notice-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="notice-modal-title" onclick="if(event.target===this)toggleNoticeModal()">
+
+    <div class="modal-content notice-dialog">
+
+      <div class="modal-header"><strong id="notice-modal-title" data-i18n="notice_title">社区声明</strong><button type="button" class="btn-secondary" onclick="toggleNoticeModal()" data-i18n="btn_close">关闭</button></div>
+
+      <p class="notice-full" data-i18n="notice_text">本版本由玩家社区免费维护与分享。欢迎非商业转载，但请保留原始贡献者署名及项目发布来源。禁止冒用开发者身份或将本项目修改成果宣称为个人原创。</p>
+
+    </div>
+
+  </div>
+
+  <script>
+
+    const config = {
+
+      commander_name: "Commander",
+
+      ai_difficulty: 0,
+
+      challenge_hp_multiplier: 10.0,
+
+      enemy_mana_gain: 0.5,
+
+      player_mana_gain: 1.0,
+
+      graphics_render_scale: 0,
+
+      graphics_msaa: 0,
+
+      graphics_shadows: 0,
+
+      graphics_reflections: 0,
+
+      graphics_effects: 0,
+
+      graphics_postfx: 0,
+
+      graphics_filtering: 0,
+
+      graphics_reflection_resolution: 0,
+
+      graphics_bloom_resolution: 0,
+
+      graphics_fx_resolution: 0,
+
+      graphics_lighting: 0,
+
+      graphics_glow: 0,
+
+      graphics_added_lights: 0,
+
+      target_fps: 60,
+
+      player_invincible: false,
+
+      enable_custom_music: true,
+
+      enable_swipe_specials: true,
+
+      freeze_enemy_ai: false,
+
+      start_full_power: false,
+
+      enable_combat_debug_overlay: false,
+
+      skip_launcher_next_time: false
+
+    };
+
+    const i18n = {
+
+      zh: {
+
+        mode_auto: "自适应: 简中",
+
+        mode_manual: "语言: 简中",
+
+        brand_title: "启动配置与战斗调优",
+
+        ai_diff_title: "AI 战斗难度与侵略性",
+
+        ai_diff_0: "标准量产",
+
+        ai_diff_0_badge: "原版基础",
+
+        ai_diff_0_desc: "标准量产 (原版普通)",
+
+        ai_diff_1: "核心过载",
+
+        ai_diff_1_badge: "连招接必杀",
+
+        ai_diff_1_desc: "核心过载 (连招无缝接必杀)",
+
+        ai_diff_2: "宿命猎杀",
+
+        ai_diff_2_badge: "迅捷突进压制",
+
+        ai_diff_2_desc: "宿命猎杀 (必杀取消+迅捷突进)",
+
+        ai_diff_3: "六道狂乱",
+
+        ai_diff_3_badge: "极限压迫极意",
+
+        ai_diff_3_desc: "六道狂乱 (极限压制+零延迟防反)",
+
+        diff_title: "六道轮回挑战难度",
+
+        diff_normal: "正常剧情",
+
+        diff_normal_badge: "1.0x (原版)",
+
+        diff_fury: "狂暴进阶",
+
+        diff_fury_badge: "5.0x (5倍)",
+
+        diff_extreme: "六道极意",
+
+        diff_extreme_badge: "10.0x (10倍)",
+
+        diff_val_1: "1.0x HP (正常剧情)",
+
+        diff_val_5: "5.0x HP (狂暴进阶)",
+
+        diff_val_10: "10.0x HP (六道极意)",
+
+        mana_title: "能量加气模式",
+
+        mana_1: "官方原版",
+
+        mana_1_badge: "1.0x (原速)",
+
+        mana_half: "重生快充",
+
+        mana_half_badge: "我方3倍速，敌方0.5",
+
+        mana_slow: "畅快压制",
+
+        mana_slow_badge: "我方3倍速，敌方0.2",
+
+        mana_val_1: "1.0x (官方原版)",
+
+        mana_val_half: "重生快充 (我方3倍速，敌方0.5)",
+
+        mana_val_slow: "畅快压制 (我方3倍速，敌方0.2)",
+
+        swipe_title: "必杀技滑动手势 (右滑S1 / 上滑S2)",
+
+        swipe_desc: "按住大招按钮右滑即放S1，上滑即放S2，点按放最高可用大招；关闭后恢复原版纯点按模式。",
+
+        cmdr_title: "指挥官代号",
+
+        cmdr_placeholder: "最多8汉字或16英文字符",
+
+        cmdr_hint: "替换系统默认代号 · 基地主页、战报结算与档案即时同步",
+
+        fps_title: "画面帧率上限",
+
+        fps_60: "高刷流畅",
+
+        fps_60_badge: "60 FPS (推荐)",
+
+        fps_30: "原版省电",
+
+        fps_30_badge: "30 FPS (降温)",
+
+        fps_val_60: "60 FPS (高刷流畅)",
+
+        fps_val_30: "30 FPS (原版省电)",
+
+        fps_120: "120 帧",
+
+        fps_120_badge: "120 FPS",
+
+        fps_144: "144Hz 屏幕",
+
+        fps_144_badge: "144 FPS",
+
+        fps_val_120: "120 FPS",
+
+        fps_val_144: "144 FPS (144Hz 屏幕)",
+
+        invincible_title: "玩家无敌（受击不掉血）",
+
+        custom_music_title: "原创音乐 (Jukebox)",
+
+        custom_music_desc: "开启后在主界面、任务、战斗、竞技场与突袭播放高质量扩展音乐；关闭则使用游戏原版音乐。",
+
+        invincible_desc: "只保护玩家生命值，保留受击动作；敌人正常掉血，玩家可以回血。",
+
+        skip_title: "记住我的选择，下次直接进入游戏",
+
+        skip_desc: "下次冷启动静默跳过此菜单；可在系统应用管理「清除存储」重置",
+
+        debug_title: "🛠️ 调试与验收特权设置",
+
+        freeze_ai_title: "敌人不动 (定身木桩)",
+
+        freeze_ai_desc: "冻结敌人 AI 思考与行动，便于观测连招与技能机制",
+
+        full_power_title: "我方开局三格满气",
+
+        full_power_desc: "对局开场直接注满 3 格 SP 能量，即刻释放特技",
+
+        combat_overlay_title: "战斗判定悬浮战报 (Combat Overlay)",
+
+        combat_overlay_desc: "屏幕实时显示技能掷骰概率、暴击/闪避判定与Buff施加，便于录屏分析",
+
+        btn_reset: "恢复默认",
+
+        btn_json: "{ } JSON",
+
+        btn_launch: "保存并进入方舟",
+
+        btn_close: "关闭"
+
+      },
+
+      en: {
+
+        mode_auto: "Auto: EN",
+
+        mode_manual: "Lang: EN",
+
+        brand_title: "Launcher Settings & Combat Tuning",
+
+        ai_diff_title: "AI Combat Difficulty & Aggression",
+
+        ai_diff_0: "Standard",
+
+        ai_diff_0_badge: "Stock AI",
+
+        ai_diff_0_desc: "Standard Protocol (Stock AI)",
+
+        ai_diff_1: "Overdrive",
+
+        ai_diff_1_badge: "Special Cancel",
+
+        ai_diff_1_desc: "Tactical Overdrive (Combo into Special)",
+
+        ai_diff_2: "Apex Hunter",
+
+        ai_diff_2_badge: "Aggressive Rush",
+
+        ai_diff_2_desc: "Apex Hunter (Special Cancel + Fast Rush)",
+
+        ai_diff_3: "Samsara Frenzy",
+
+        ai_diff_3_badge: "Maximum Threat",
+
+        ai_diff_3_desc: "Samsara Frenzy (Relentless Pressure & Evade)",
+
+        diff_title: "Challenge Difficulty",
+
+        diff_normal: "Normal Story",
+
+        diff_normal_badge: "1.0x (Stock)",
+
+        diff_fury: "Furious Rage",
+
+        diff_fury_badge: "5.0x (5x HP)",
+
+        diff_extreme: "Extreme Samsara",
+
+        diff_extreme_badge: "10.0x (10x HP)",
+
+        diff_val_1: "1.0x HP (Normal Story)",
+
+        diff_val_5: "5.0x HP (Furious Rage)",
+
+        diff_val_10: "10.0x HP (Extreme Samsara)",
+
+        mana_title: "Power Charge Mode",
+
+        mana_1: "Official Stock",
+
+        mana_1_badge: "1.0x (Stock)",
+
+        mana_half: "Revival Rush",
+
+        mana_half_badge: "Player 3x, Enemy 0.5x",
+
+        mana_slow: "Suppression",
+
+        mana_slow_badge: "Player 3x, Enemy 0.2x",
+
+        mana_val_1: "1.0x (Official Stock)",
+
+        mana_val_half: "Revival Rush (Player 3x, Enemy 0.5x)",
+
+        mana_val_slow: "Suppression (Player 3x, Enemy 0.2x)",
+
+        swipe_title: "Special Attack Swipe Gestures (Swipe S1 / S2)",
+
+        swipe_desc: "Hold SP & swipe right for SP1, swipe up for SP2, tap for highest SP; disable to restore classic tap-only mode.",
+
+        cmdr_title: "Commander Name",
+
+        cmdr_placeholder: "Up to 16 characters",
+
+        cmdr_hint: "Replaces default handle · Syncs with base, battle results & profile",
+
+        fps_title: "Target Frame Rate",
+
+        fps_60: "High Smooth",
+
+        fps_60_badge: "60 FPS (Rec.)",
+
+        fps_30: "Battery Saver",
+
+        fps_30_badge: "30 FPS (Cooler)",
+
+        fps_val_60: "60 FPS (High Smooth)",
+
+        fps_val_30: "30 FPS (Battery Saver)",
+
+        fps_120: "120 FPS",
+
+        fps_120_badge: "120 FPS",
+
+        fps_144: "144 Hz Display",
+
+        fps_144_badge: "144 FPS",
+
+        fps_val_120: "120 FPS",
+
+        fps_val_144: "144 FPS (144 Hz Display)",
+
+        invincible_title: "Player Invincibility (No HP Loss)",
+
+        custom_music_title: "Custom Music (Jukebox)",
+
+        custom_music_desc: "Enable extended soundtrack across base, quests, combat, arena and raid; disable to use original music.",
+
+        invincible_desc: "Protects player HP while keeping hit reactions. Enemies still take damage and healing still works.",
+
+        skip_title: "Remember my choice, skip next time",
+
+        skip_desc: "Once checked, this menu can be brought up by clearing your app data.",
+
+        debug_title: "🛠️ Debug & Testing Privileges",
+
+        freeze_ai_title: "Freeze Enemy AI (Dummy)",
+
+        freeze_ai_desc: "Freeze all enemy AI decisions and actions for testing combos & abilities",
+
+        full_power_title: "Start With 3 Full Power Bars",
+
+        full_power_desc: "Instantly charge 3 full SP power bars at fight start",
+
+        combat_overlay_title: "Combat Trigger Overlay",
+
+        combat_overlay_desc: "Display real-time ability dice rolls, crit/evade procs, and buff events on-screen for video debugging",
+
+        btn_reset: "Reset Defaults",
+
+        btn_json: "{ } JSON",
+
+        btn_launch: "Save & Launch Game",
+
+        btn_close: "Close"
+
+      }
+
+    };
+
+    let currentLang = "zh";
+
+    let isManualLang = false;
+
+    function detectSystemLang() {
+
+      try {
+
+        const nav = (navigator.language || (navigator.languages && navigator.languages[0]) || '').toLowerCase();
+
+        return nav.startsWith('zh') ? 'zh' : 'en';
+
+      } catch (e) {
+
+        return 'zh';
+
+      }
+
+    }
+
+    function setLanguage(lang, manual = true) {
+
+      currentLang = (lang === 'en') ? 'en' : 'zh';
+
+      if (manual) {
+
+        isManualLang = true;
+
+        config.launcher_language = currentLang;
+
+      }
+
+      document.querySelectorAll('.lang-pill-btn').forEach(btn => btn.classList.remove('active'));
+
+      const activeBtn = document.getElementById('btn-lang-' + currentLang);
+
+      if (activeBtn) activeBtn.classList.add('active');
+
+      const dict = i18n[currentLang];
+
+      const modeLabel = document.getElementById('txt-lang-mode');
+
+      if (modeLabel) {
+
+        modeLabel.textContent = isManualLang ? dict.mode_manual : dict.mode_auto;
+
+      }
+
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+
+        const key = el.getAttribute('data-i18n');
+
+        if (dict[key]) el.textContent = dict[key];
+
+      });
+
+      document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+
+        const key = el.getAttribute('data-i18n-ph');
+
+        if (dict[key]) el.placeholder = dict[key];
+
+      });
+
+      updateDiffDisplay();
+
+      updateManaDisplay();
+
+      updateFpsDisplay();
+
+      updateAiDiffDisplay();
+
+      updateJsonPreview();
+
+      scheduleNoticeLayout();
+
+    }
+
+    function calcUnits(str) {
+
+      let units = 0;
+
+      for (let i = 0; i < str.length; i++) {
+
+        units += (str.charCodeAt(i) > 127) ? 2 : 1;
+
+      }
+
+      return units;
+
+    }
+
+    function trimToMaxUnits(str, maxUnits = 16) {
+
+      let units = 0, res = '';
+
+      for (let i = 0; i < str.length; i++) {
+
+        const ch = str[i];
+
+        const u = (ch.charCodeAt(0) > 127) ? 2 : 1;
+
+        if (units + u > maxUnits) break;
+
+        units += u;
+
+        res += ch;
+
+      }
+
+      return { text: res, units: units };
+
+    }
+
+    function onCommanderInput() {
+
+      const inp = document.getElementById('inp-commander');
+
+      let val = inp.value.replace(/[\r\n\t"'\\\]]/g, '');
+
+      const trimmed = trimToMaxUnits(val, 16);
+
+      if (val !== trimmed.text) {
+
+        inp.value = trimmed.text;
+
+      }
+
+      config.commander_name = trimmed.text.trim() || 'Commander';
+
+      const counter = document.getElementById('lbl-char-counter');
+
+      counter.textContent = `${trimmed.units}/16`;
+
+      counter.classList.toggle('limit', trimmed.units >= 16);
+
+      updateJsonPreview();
+
+    }
+
+    function updateDiffDisplay() {
+
+      const mult = config.challenge_hp_multiplier;
+
+      const txt = document.getElementById('txt-diff-val');
+
+      const dict = i18n[currentLang] || i18n.zh;
+
+      if (mult <= 1.5) txt.textContent = dict.diff_val_1;
+
+      else if (mult <= 5.5) txt.textContent = dict.diff_val_5;
+
+      else txt.textContent = dict.diff_val_10;
+
+    }
+
+    function updateManaDisplay() {
+
+      const gain = config.enemy_mana_gain;
+
+      const txt = document.getElementById('txt-mana-val');
+
+      const dict = i18n[currentLang] || i18n.zh;
+
+      if (gain >= 0.8) txt.textContent = dict.mana_val_1;
+
+      else if (gain >= 0.4) txt.textContent = dict.mana_val_half;
+
+      else txt.textContent = dict.mana_val_slow;
+
+    }
+
+    function updateAiDiffDisplay() {
+
+      const diff = config.ai_difficulty || 0;
+
+      const txt = document.getElementById('txt-ai-diff-val');
+
+      if (!txt) return;
+
+      const dict = i18n[currentLang] || i18n.zh;
+
+      txt.textContent = dict['ai_diff_' + diff + '_desc'] || dict.ai_diff_0_desc;
+
+    }
+
+    function setAiDifficulty(diff, el) {
+
+      config.ai_difficulty = parseInt(diff, 10) || 0;
+
+      document.querySelectorAll('#card-ai-difficulty .pill-btn').forEach(btn => btn.classList.remove('active'));
+
+      if (el) el.classList.add('active');
+
+      updateAiDiffDisplay();
+
+      updateJsonPreview();
+
+    }
+
+    function updateFpsDisplay() {
+
+      const fps = config.target_fps;
+
+      const txt = document.getElementById('txt-fps-val');
+
+      const dict = i18n[currentLang] || i18n.zh;
+
+      txt.textContent = dict['fps_val_' + fps] || (fps + ' FPS');
+
+    }
+
+    function setDifficulty(mult, el) {
+
+      config.challenge_hp_multiplier = mult;
+
+      document.querySelectorAll('.grid-container .col:first-child .card:first-child .pill-btn').forEach(btn => btn.classList.remove('active'));
+
+      el.classList.add('active');
+
+      updateDiffDisplay();
+
+      updateJsonPreview();
+
+    }
+
+    function setMana(gain, el) {
+
+      config.enemy_mana_gain = gain;
+
+      document.querySelectorAll('.grid-container .col:first-child .card:nth-child(2) .pill-btn').forEach(btn => btn.classList.remove('active'));
+
+      el.classList.add('active');
+
+      updateManaDisplay();
+
+      updateJsonPreview();
+
+    }
+
+    function setFps(fps, el) {
+
+      config.target_fps = fps;
+
+      document.querySelectorAll('#btn-fps-60, #btn-fps-30, #btn-fps-120, #btn-fps-144').forEach(btn => btn.classList.remove('active'));
+
+      el.classList.add('active');
+
+      updateFpsDisplay();
+
+      updateJsonPreview();
+
+    }
+
+    function toggleInvincible(enabled) {
+
+      config.player_invincible = !!enabled;
+
+      updateJsonPreview();
+
+    }
+
+    function toggleCustomMusic(enabled) {
+
+      config.enable_custom_music = !!enabled;
+
+      updateJsonPreview();
+
+    }
+
+    function toggleSwipeSpecials(enabled) {
+
+      config.enable_swipe_specials = enabled;
+
+      updateJsonPreview();
+
+    }
+
+    function updateConfig() {
+
+      config.skip_launcher_next_time = document.getElementById('chk-skip-launcher').checked;
+
+      updateJsonPreview();
+
+    }
+
+    function updateJsonPreview() {
+
+      const pre = document.getElementById('json-preview');
+
+      if (pre && document.getElementById('json-modal').classList.contains('active')) {
+
+        pre.textContent = JSON.stringify(config, null, 2);
+
+      }
+
+    }
+
+    function toggleJsonModal() {
+
+      const m = document.getElementById('json-modal');
+
+      m.classList.toggle('active');
+
+      updateJsonPreview();
+
+    }
+
+    function toggleDebugModal() {
+
+      const m = document.getElementById('debug-modal');
+
+      if (m) m.classList.toggle('active');
+
+    }
+
+    function toggleFreezeAi(enabled) {
+
+      config.freeze_enemy_ai = !!enabled;
+
+      updateJsonPreview();
+
+    }
+
+    function toggleFullPower(enabled) {
+
+      config.start_full_power = !!enabled;
+
+      updateJsonPreview();
+
+    }
+
+    function toggleCombatOverlay(enabled) {
+
+      config.enable_combat_debug_overlay = !!enabled;
+
+      updateJsonPreview();
+
+    }
+
+    function resetDefaults() {
+
+      setGraphicsPreset('stock');
+
+      document.getElementById('inp-commander').value = 'Commander';
+
+      onCommanderInput();
+
+      document.getElementById('chk-skip-launcher').checked = false;
+
+      const chkInvincible = document.getElementById('chk-player-invincible');
+
+      if (chkInvincible) { chkInvincible.checked = false; toggleInvincible(false); }
+      const chkCustomMusic = document.getElementById('chk-custom-music');
+      if (chkCustomMusic) { chkCustomMusic.checked = true; toggleCustomMusic(true); }
+
+      const chkFreeze = document.getElementById('chk-freeze-ai');
+
+      if (chkFreeze) { chkFreeze.checked = false; toggleFreezeAi(false); }
+
+      const chkPower = document.getElementById('chk-full-power');
+
+      if (chkPower) { chkPower.checked = false; toggleFullPower(false); }
+
+      const chkOverlay = document.getElementById('chk-combat-overlay');
+
+      if (chkOverlay) { chkOverlay.checked = false; toggleCombatOverlay(false); }
+
+      const diffPills = document.querySelectorAll('.grid-container .col:first-child .card:first-child .pill-btn');
+
+      diffPills[2].click();
+
+      const manaPills = document.querySelectorAll('.grid-container .col:first-child .card:nth-child(2) .pill-btn');
+
+      manaPills[1].click();
+
+      const fpsBtn60 = document.getElementById('btn-fps-60');
+
+      if (fpsBtn60) fpsBtn60.click();
+
+      const aiBtn0 = document.getElementById('btn-ai-diff-0');
+
+      if (aiBtn0) aiBtn0.click();
+
+      const chkSwipe = document.getElementById('chk-swipe-specials');
+
+      if (chkSwipe) {
+
+        chkSwipe.checked = true;
+
+        toggleSwipeSpecials(true);
+
+      }
+
+      // Reset language to auto-detect
+
+      isManualLang = false;
+
+      delete config.launcher_language;
+
+      setLanguage(detectSystemLang(), false);
+
+      updateConfig();
+
+      updateJsonPreview();
+
+    }
+
+    function saveAndLaunch() {
+
+      try {
+
+        onCommanderInput();
+
+        updateConfig();
+
+        const payloadStr = JSON.stringify(config, null, 2);
+
+        // 1. Android WebView Native Interface Bridge
+
+        if (window.Android && typeof window.Android.saveAndLaunch === 'function') {
+
+          window.Android.saveAndLaunch(payloadStr);
+
+          return;
+
+        }
+
+        if (window.Android && typeof window.Android.saveConfig === 'function') {
+
+          window.Android.saveConfig(payloadStr);
+
+          return;
+
+        }
+
+        // 2. LocalStorage (fallback for browser testing)
+
+        try {
+
+          localStorage.setItem('tftf_user_settings', payloadStr);
+
+        } catch (e) {}
+
+        // 3. Fallback visual feedback if tested in desktop browser
+
+        const btn = document.getElementById('btn-launch');
+
+        if (btn) {
+
+          const orig = btn.innerHTML;
+
+          btn.innerHTML = '<span class="game-font">SAVED!</span>';
+
+          setTimeout(() => {
+
+            btn.innerHTML = orig;
+
+          }, 800);
+
+        }
+
+      } catch (err) {
+
+        console.error('saveAndLaunch error:', err);
+
+      }
+
+    }
+
+    const graphicsAllowed = {"graphics_render_scale": [0, 50, 75, 100], "graphics_msaa": [0, 1, 2, 4, 8], "graphics_shadows": [0, 1, 2, 3, 4], "graphics_reflections": [0, 1, 2, 3], "graphics_effects": [0, 1, 2, 3], "graphics_postfx": [0, 1, 2], "graphics_filtering": [0, 1, 2], "graphics_reflection_resolution": [0, 256, 512], "graphics_bloom_resolution": [0, 1], "graphics_fx_resolution": [0, 1], "graphics_lighting": [0, 1, 2], "graphics_glow": [0, 2, 3], "graphics_added_lights": [0, 2, 3]};
+
+    const graphicsPresets = {"stock": {"graphics_render_scale": 0, "graphics_msaa": 0, "graphics_shadows": 0, "graphics_reflections": 0, "graphics_effects": 0, "graphics_postfx": 0, "graphics_filtering": 0, "graphics_reflection_resolution": 0, "graphics_bloom_resolution": 0, "graphics_fx_resolution": 0, "graphics_lighting": 0, "graphics_glow": 0, "graphics_added_lights": 0}, "clear": {"graphics_render_scale": 100, "graphics_msaa": 4, "graphics_shadows": 4, "graphics_reflections": 3, "graphics_effects": 3, "graphics_postfx": 2, "graphics_filtering": 0, "graphics_reflection_resolution": 0, "graphics_bloom_resolution": 0, "graphics_fx_resolution": 0, "graphics_lighting": 0, "graphics_glow": 0, "graphics_added_lights": 0}, "smooth": {"graphics_render_scale": 75, "graphics_msaa": 1, "graphics_shadows": 2, "graphics_reflections": 1, "graphics_effects": 2, "graphics_postfx": 1, "graphics_filtering": 0, "graphics_reflection_resolution": 0, "graphics_bloom_resolution": 0, "graphics_fx_resolution": 0, "graphics_lighting": 0, "graphics_glow": 0, "graphics_added_lights": 0}, "enhanced111": {"graphics_render_scale": 100, "graphics_msaa": 4, "graphics_shadows": 4, "graphics_reflections": 3, "graphics_effects": 3, "graphics_postfx": 2, "graphics_filtering": 2, "graphics_reflection_resolution": 512, "graphics_bloom_resolution": 1, "graphics_fx_resolution": 1, "graphics_lighting": 0, "graphics_glow": 0, "graphics_added_lights": 0}, "enhanced112": {"graphics_render_scale": 100, "graphics_msaa": 4, "graphics_shadows": 4, "graphics_reflections": 3, "graphics_effects": 3, "graphics_postfx": 2, "graphics_filtering": 2, "graphics_reflection_resolution": 512, "graphics_bloom_resolution": 1, "graphics_fx_resolution": 1, "graphics_lighting": 1, "graphics_glow": 0, "graphics_added_lights": 0}, "enhanced114": {"graphics_render_scale": 100, "graphics_msaa": 4, "graphics_shadows": 4, "graphics_reflections": 3, "graphics_effects": 3, "graphics_postfx": 2, "graphics_filtering": 2, "graphics_reflection_resolution": 512, "graphics_bloom_resolution": 1, "graphics_fx_resolution": 1, "graphics_lighting": 2, "graphics_glow": 2, "graphics_added_lights": 2}, "ultra116": {"graphics_render_scale": 100, "graphics_msaa": 4, "graphics_shadows": 4, "graphics_reflections": 3, "graphics_effects": 3, "graphics_postfx": 2, "graphics_filtering": 2, "graphics_reflection_resolution": 512, "graphics_bloom_resolution": 1, "graphics_fx_resolution": 1, "graphics_lighting": 2, "graphics_glow": 3, "graphics_added_lights": 3}};
+
+    Object.assign(i18n.zh,{"tab_battle": "\u6218\u6597\u8bbe\u7f6e", "tab_graphics": "\u753b\u8d28\u8bbe\u7f6e", "gfx_stock": "\u8ddf\u968f\u539f\u7248", "gfx_clear": "\u6e05\u6670\u9884\u8bbe", "gfx_smooth": "\u6d41\u7545\u9884\u8bbe", "gfx_enhanced": "\u753b\u8d28\u589e\u5f3a111", "gfx_enhanced112": "\u547d\u4e2d\u5149\u6548115", "gfx_note": "\u4fdd\u5b58\u5e76\u91cd\u65b0\u8fdb\u5165\u6e38\u620f\u540e\u751f\u6548\u300260 \u5e27\u66f4\u6613\u7a33\u5b9a\uff1b120 / 144 \u5e27\u66f4\u4f9d\u8d56\u8bbe\u5907\u6027\u80fd\u3002", "gfx_scope": "\u5149\u5f71\u589e\u5f3a\u542f\u7528\u573a\u666f\u5df2\u6709\u7684\u7167\u660e\u4e0e\u53cd\u5c04\u8def\u5f84\uff1b\u4e0d\u540c\u5730\u56fe\u8868\u73b0\u4e0d\u540c\u3002\u666f\u6df1\u6682\u4e0d\u53ef\u7528\u3002", "graphics_glow_title": "\u53d1\u5149\u5149\u6655", "graphics_glow_desc": "\u63a7\u5236\u53d1\u5149\u533a\u57df\u5468\u56f4\u7684\u67d4\u5149\uff1b\u8d85\u5f3a\u6863\u52a0\u5f3a\u4eae\u5ea6\u5e76\u9650\u5236\u6269\u6563\u3002\u9700\u5f00\u542f\u540e\u671f\u5149\u6548\u3002", "graphics_glow_0": "\u57fa\u7840\u5149\u6655", "graphics_glow_2": "\u589e\u5f3a\u5149\u6655", "graphics_glow_3": "\u8d85\u5f3a\u5149\u6655", "graphics_added_lights_title": "\u9644\u52a0\u52a8\u6001\u5149\u6e90", "graphics_added_lights_desc": "\u4e3a\u5df2\u7ed8\u5236\u7684\u6b66\u5668\u3001\u5b50\u5f39\u548c\u547d\u4e2d\u7279\u6548\u589e\u52a0\u5c40\u90e8\u7167\u660e\uff1b\u589e\u52a0GPU\u5f00\u9500\u3002", "graphics_added_lights_0": "\u5173\u95ed", "graphics_added_lights_2": "\u5f00\u542f\u5c40\u90e8\u7167\u660e", "graphics_added_lights_3": "\u8d85\u5f3a\u5c40\u90e8\u7167\u660e\uff08\u5938\u5f20\uff09", "graphics_render_scale_title": "\u6e32\u67d3\u5206\u8fa8\u7387", "graphics_render_scale_desc": "\u6bd4\u4f8b\u6307\u5bbd\u9ad8\u6bd4\u4f8b\uff1b100% \u4f7f\u7528\u5c4f\u5e55\u539f\u751f\u5206\u8fa8\u7387\u3002", "graphics_render_scale_0": "\u8ddf\u968f\u539f\u7248", "graphics_render_scale_50": "50%\uff08\u66f4\u6d41\u7545\uff09", "graphics_render_scale_75": "75%\uff08\u5747\u8861\uff09", "graphics_render_scale_100": "100%\uff08\u539f\u751f\u6e05\u6670\uff09", "graphics_msaa_title": "MSAA \u6297\u952f\u9f7f", "graphics_msaa_desc": "\u51cf\u5c11\u6a21\u578b\u8fb9\u7f18\u952f\u9f7f\uff1b\u53d7\u6e32\u67d3\u8def\u5f84\u4e0e\u8bbe\u5907\u652f\u6301\u9650\u5236\u3002", "graphics_msaa_0": "\u8ddf\u968f\u539f\u7248", "graphics_msaa_1": "\u5173\u95ed", "graphics_msaa_2": "2\u00d7", "graphics_msaa_4": "4\u00d7", "graphics_msaa_8": "8\u00d7\uff08\u8f83\u9ad8\u5f00\u9500\uff09", "graphics_shadows_title": "\u9634\u5f71\u7ec6\u8282", "graphics_shadows_desc": "\u8c03\u6574\u5b9e\u65f6\u9634\u5f71\u548c\u89d2\u8272\u63a5\u89e6\u9634\u5f71\u3002", "graphics_shadows_0": "\u8ddf\u968f\u539f\u7248", "graphics_shadows_1": "\u5173\u95ed", "graphics_shadows_2": "\u4f4e", "graphics_shadows_3": "\u4e2d", "graphics_shadows_4": "\u9ad8", "graphics_reflections_title": "\u5730\u9762\u53cd\u5c04", "graphics_reflections_desc": "\u4f7f\u7528\u573a\u666f\u5df2\u6709\u53cd\u5c04\uff1b\u9ad8\u6863\u4f4d\u589e\u52a0\u6e32\u67d3\u5f00\u9500\u3002", "graphics_reflections_0": "\u8ddf\u968f\u539f\u7248", "graphics_reflections_1": "\u5173\u95ed", "graphics_reflections_2": "\u4f4e", "graphics_reflections_3": "\u9ad8", "graphics_effects_title": "\u7c92\u5b50\u4e0e\u62d6\u5c3e\u7ec6\u8282", "graphics_effects_desc": "\u8c03\u6574\u573a\u666f\u5df2\u6709\u7c92\u5b50\u548c\u6b66\u5668\u62d6\u5c3e\u7ec6\u8282\u3002", "graphics_effects_0": "\u8ddf\u968f\u539f\u7248", "graphics_effects_1": "\u4f4e", "graphics_effects_2": "\u4e2d", "graphics_effects_3": "\u9ad8", "graphics_postfx_title": "\u540e\u671f\u5149\u6548", "graphics_postfx_desc": "\u63a7\u5236\u539f\u6709\u6cdb\u5149\u4e0e FXAA \u7b49\u540e\u671f\u6548\u679c\u3002", "graphics_postfx_0": "\u8ddf\u968f\u539f\u7248", "graphics_postfx_1": "\u5173\u95ed", "graphics_postfx_2": "\u5f00\u542f", "graphics_filtering_title": "\u659c\u9762\u7eb9\u7406\u6e05\u6670\u5ea6", "graphics_filtering_desc": "\u6539\u5584\u659c\u770b\u5730\u9762\u65f6\u7684\u7eb9\u7406\u6e05\u6670\u5ea6\uff1b\u4e0d\u589e\u52a0\u8d34\u56fe\u5c3a\u5bf8\u3002", "graphics_filtering_0": "\u4fdd\u6301\u539f\u8bbe\u7f6e", "graphics_filtering_1": "\u5173\u95ed", "graphics_filtering_2": "\u5f3a\u5236\u5f00\u542f", "graphics_reflection_resolution_title": "\u53cd\u5c04\u6e05\u6670\u5ea6", "graphics_reflection_resolution_desc": "\u9700\u5f00\u542f\u5730\u9762\u53cd\u5c04\uff1b\u53ea\u5f71\u54cd\u573a\u666f\u5df2\u6709\u7684\u53cd\u5c04\u3002", "graphics_reflection_resolution_0": "\u539f\u7248", "graphics_reflection_resolution_256": "256 \u00d7 256", "graphics_reflection_resolution_512": "512 \u00d7 512\uff08\u589e\u5f3a\uff09", "graphics_bloom_resolution_title": "\u8f89\u5149\u6e05\u6670\u5ea6", "graphics_bloom_resolution_desc": "\u9700\u5f00\u542f\u540e\u671f\u5149\u6548\uff1b\u6539\u5584\u8f89\u5149\u8fb9\u7f18\uff0c\u4eae\u5ea6\u4e0d\u53d8\u3002", "graphics_bloom_resolution_0": "\u539f\u7248 \u00b7 128 \u00d7 96", "graphics_bloom_resolution_1": "\u589e\u5f3a \u00b7 256 \u00d7 192", "graphics_fx_resolution_title": "\u900f\u660e\u7279\u6548\u6e05\u6670\u5ea6", "graphics_fx_resolution_desc": "\u7ec6\u5316\u9002\u7528\u7684\u70df\u96fe\u3001\u900f\u660e\u7c92\u5b50\u8fb9\u7f18\uff1b\u4e0d\u589e\u52a0\u706b\u82b1\u6570\u91cf\u3002", "graphics_fx_resolution_0": "\u539f\u7248 \u00b7 256 \u00d7 192", "graphics_fx_resolution_1": "\u589e\u5f3a \u00b7 512 \u00d7 384", "graphics_lighting_title": "\u52a8\u6001\u5149\u7167\u4e0e\u53cd\u5c04", "graphics_lighting_desc": "\u542f\u7528\u573a\u666f\u73b0\u6709\u7684\u52a8\u6001\u7167\u660e\u4e0e\u53cd\u5c04\u6750\u8d28\uff1b\u66f4\u591a\u9ad8\u5149\u4f1a\u589e\u52a0\u6e32\u67d3\u8d1f\u62c5\u3002", "graphics_lighting_0": "\u8ddf\u968f\u539f\u7248", "graphics_lighting_1": "\u589e\u5f3a\u5149\u7167\u4e0e\u53cd\u5c04", "graphics_lighting_2": "\u589e\u5f3a\u5149\u7167\u4e0e\u9ad8\u5149", "gfx_ultra116": "\u6e05\u6670\u5149\u6548118"});
+
+    Object.assign(i18n.en,{"tab_battle": "Combat", "tab_graphics": "Graphics", "gfx_stock": "Stock preset", "gfx_clear": "Clarity preset", "gfx_smooth": "Smooth preset", "gfx_enhanced": "Enhanced 111", "gfx_enhanced112": "Effects 114", "gfx_note": "Save and restart the game to apply. 60 FPS is easier to sustain; 120 / 144 FPS depends more on device performance.", "gfx_scope": "Enhanced lighting uses existing scene lighting and reflection paths; results vary by map. Depth of field is unavailable.", "graphics_glow_title": "Emissive glow", "graphics_glow_desc": "Soft halos around luminous regions. Ultra increases brightness with limited spread; requires post-processing.", "graphics_glow_0": "Base halo", "graphics_glow_2": "Enhanced halo", "graphics_glow_3": "Ultra halo", "graphics_added_lights_title": "Added dynamic lights", "graphics_added_lights_desc": "Adds local light to visible weapons, projectiles and impacts; costs GPU time.", "graphics_added_lights_0": "Off", "graphics_added_lights_2": "Local lighting on", "graphics_added_lights_3": "Ultra local lighting (dramatic)", "graphics_render_scale_title": "Render resolution", "graphics_render_scale_desc": "Scale applies to width and height; 100% uses native resolution.", "graphics_render_scale_0": "Stock", "graphics_render_scale_50": "50% (faster)", "graphics_render_scale_75": "75% (balanced)", "graphics_render_scale_100": "100% (native)", "graphics_msaa_title": "MSAA anti-aliasing", "graphics_msaa_desc": "Smooths geometry edges; support depends on rendering path and device.", "graphics_msaa_0": "Stock", "graphics_msaa_1": "Off", "graphics_msaa_2": "2x", "graphics_msaa_4": "4x", "graphics_msaa_8": "8x (higher cost)", "graphics_shadows_title": "Shadow detail", "graphics_shadows_desc": "Adjusts realtime and character contact shadows.", "graphics_shadows_0": "Stock", "graphics_shadows_1": "Off", "graphics_shadows_2": "Low", "graphics_shadows_3": "Medium", "graphics_shadows_4": "High", "graphics_reflections_title": "Planar reflections", "graphics_reflections_desc": "Uses reflections provided by the scene; high costs more GPU time.", "graphics_reflections_0": "Stock", "graphics_reflections_1": "Off", "graphics_reflections_2": "Low", "graphics_reflections_3": "High", "graphics_effects_title": "Particles and trails", "graphics_effects_desc": "Adjusts existing particles and weapon trails.", "graphics_effects_0": "Stock", "graphics_effects_1": "Low", "graphics_effects_2": "Medium", "graphics_effects_3": "High", "graphics_postfx_title": "Post-processing", "graphics_postfx_desc": "Controls existing bloom, FXAA and related post effects.", "graphics_postfx_0": "Stock", "graphics_postfx_1": "Off", "graphics_postfx_2": "On", "graphics_filtering_title": "Angled texture clarity", "graphics_filtering_desc": "Keeps angled surfaces sharper; texture sizes stay unchanged.", "graphics_filtering_0": "Keep existing", "graphics_filtering_1": "Off", "graphics_filtering_2": "Force on", "graphics_reflection_resolution_title": "Reflection clarity", "graphics_reflection_resolution_desc": "Requires ground reflections; applies where the scene provides them.", "graphics_reflection_resolution_0": "Stock", "graphics_reflection_resolution_256": "256 x 256", "graphics_reflection_resolution_512": "512 x 512 (enhanced)", "graphics_bloom_resolution_title": "Bloom clarity", "graphics_bloom_resolution_desc": "Requires post-processing; improves bloom edges without increasing brightness.", "graphics_bloom_resolution_0": "Stock \u00b7 128 x 96", "graphics_bloom_resolution_1": "Enhanced \u00b7 256 x 192", "graphics_fx_resolution_title": "Transparent effect clarity", "graphics_fx_resolution_desc": "Sharpens supported smoke and particle edges; spark counts stay unchanged.", "graphics_fx_resolution_0": "Stock \u00b7 256 x 192", "graphics_fx_resolution_1": "Enhanced \u00b7 512 x 384", "graphics_lighting_title": "Dynamic lighting and reflections", "graphics_lighting_desc": "Enables existing scene lighting and reflection materials; extra highlights may cost more GPU time.", "graphics_lighting_0": "Stock", "graphics_lighting_1": "Enhanced lighting and reflections", "graphics_lighting_2": "Enhanced lighting and highlights", "gfx_ultra116": "Clear effects118"});
+
+    function setLauncherTab(tab) {
+
+      document.getElementById('battle-panel').style.display = tab === 'battle' ? 'grid' : 'none';
+
+      document.getElementById('graphics-panel').style.display = tab === 'graphics' ? 'block' : 'none';
+
+      document.getElementById('tab-battle').classList.toggle('active',tab === 'battle');
+
+      document.getElementById('tab-graphics').classList.toggle('active',tab === 'graphics');
+
+    }
+
+    function syncGraphics() {
+
+      Object.keys(graphicsAllowed).forEach(key => { document.getElementById(key).value = String(config[key]); });
+
+      updateJsonPreview();
+
+    }
+
+    function validGraphicsValue(key, value) {
+
+      if (!Object.prototype.hasOwnProperty.call(graphicsAllowed, key)) return 0;
+
+      if (typeof value === 'string') {
+
+        value = value.trim();
+
+        if (!/^\d{1,3}$/.test(value)) return 0;
+
+      } else if (typeof value !== 'number') {
+
+        return 0;
+
+      }
+
+      let number = Number(value);
+
+      if ((key === 'graphics_glow' || key === 'graphics_added_lights') && number === 1) number = 2;
+
+      return Number.isInteger(number) && graphicsAllowed[key].includes(number) ? number : 0;
+
+    }
+
+    function loadGraphicsSettings(settings) {
+
+      const saved = settings && typeof settings === 'object' ? settings : {};
+
+      Object.keys(graphicsAllowed).forEach(key => {
+
+        config[key] = validGraphicsValue(key, saved[key]);
+
+      });
+
+      syncGraphics();
+
+    }
+
+    function setGraphics(key,value) {
+
+      if (!Object.prototype.hasOwnProperty.call(graphicsAllowed, key)) return;
+
+      config[key] = validGraphicsValue(key, value);
+
+      document.getElementById(key).value = String(config[key]);
+
+      updateJsonPreview();
+
+    }
+
+    function setGraphicsPreset(preset) {
+
+      const values = Object.prototype.hasOwnProperty.call(graphicsPresets, preset) ? graphicsPresets[preset] : graphicsPresets.stock;
+
+      loadGraphicsSettings(values);
+
+    }
+
+    Object.assign(i18n.zh,{credit_kmc:'单机版维护与启动菜单',credit_neil:'画质与特效优化'});
+
+    Object.assign(i18n.en,{credit_kmc:'Offline game & launcher',credit_neil:'Graphics & visual effects'});
+
+    Object.assign(i18n.zh,{notice_title:'社区声明',notice_pause:'暂停',notice_resume:'继续',notice_text:"本版本由玩家社区免费维护与分享。欢迎非商业转载，但请保留原始贡献者署名及项目发布来源。禁止冒用开发者身份或将本项目修改成果宣称为个人原创。"});
+
+    Object.assign(i18n.en,{notice_title:'Community notice',notice_pause:'Pause',notice_resume:'Resume',notice_text:"This version is maintained and shared free of charge by the player community. Non-commercial redistribution is welcome; please retain the original contributors’ credits and project release sources. Do not impersonate the developers or claim these modifications as your own original work."});
+
+    let noticePaused=false, noticeLayoutFrame=0;
+
+    function updateNoticeMotion() {
+
+      const text=document.getElementById('notice-text');
+
+      const modal=document.getElementById('notice-modal');
+
+      const button=document.getElementById('notice-pause');
+
+      if (!text || !modal || !button) return;
+
+      text.style.animationPlayState=(noticePaused || document.hidden || modal.classList.contains('active')) ? 'paused' : 'running';
+
+      button.textContent=i18n[currentLang][noticePaused?'notice_resume':'notice_pause'];
+
+      button.setAttribute('aria-pressed',String(noticePaused));
+
+    }
+
+    function scheduleNoticeLayout() {
+
+      if (noticeLayoutFrame) return;
+
+      noticeLayoutFrame=requestAnimationFrame(function() {
+
+        noticeLayoutFrame=0;
+
+        const view=document.getElementById('notice-window');
+
+        const text=document.getElementById('notice-text');
+
+        if (!view || !text) return;
+
+        const travel=Math.max(0,text.scrollWidth-view.clientWidth);
+
+        view.style.setProperty('--notice-offset',(-travel)+'px');
+
+        view.style.setProperty('--notice-duration',Math.max(24,travel/22+8)+'s');
+
+        view.classList.toggle('has-overflow',travel>1);
+
+        updateNoticeMotion();
+
+      });
+
+    }
+
+    function toggleNoticePause() { noticePaused=!noticePaused; updateNoticeMotion(); }
+
+    function toggleNoticeModal() {
+
+      document.getElementById('notice-modal').classList.toggle('active');
+
+      updateNoticeMotion();
+
+    }
+
+    window.addEventListener('resize',scheduleNoticeLayout,{passive:true});
+
+    document.addEventListener('visibilitychange',updateNoticeMotion);
+
+    (function initSaved() {
+
+      try {
+
+        let saved = null;
+
+        if (window.Android && typeof window.Android.getInitialSettings === 'function') {
+
+          saved = window.Android.getInitialSettings();
+
+        }
+
+        if (!saved) {
+
+          saved = localStorage.getItem('tftf_user_settings');
+
+        }
+
+        let savedLang = null;
+
+        if (saved) {
+
+          const parsed = (typeof saved === 'string') ? JSON.parse(saved) : saved;
+
+          loadGraphicsSettings(parsed);
+
+          if (parsed.commander_name) {
+
+            document.getElementById('inp-commander').value = parsed.commander_name;
+
+          }
+
+          if (parsed.challenge_hp_multiplier !== undefined) {
+
+            const mult = parsed.challenge_hp_multiplier;
+
+            const diffPills = document.querySelectorAll('.grid-container .col:first-child .card:first-child .pill-btn');
+
+            if (mult <= 1.5) diffPills[0].click();
+
+            else if (mult <= 5.5) diffPills[1].click();
+
+            else diffPills[2].click();
+
+          }
+
+          if (parsed.enemy_mana_gain !== undefined) {
+
+            const mana = parsed.enemy_mana_gain;
+
+            const manaPills = document.querySelectorAll('.grid-container .col:first-child .card:nth-child(2) .pill-btn');
+
+            if (mana >= 0.8) manaPills[0].click();
+
+            else if (mana >= 0.4) manaPills[1].click();
+
+            else manaPills[2].click();
+
+          }
+
+          if (parsed.ai_difficulty !== undefined) {
+
+            const d = parseInt(parsed.ai_difficulty, 10);
+
+            const aiBtn = document.getElementById('btn-ai-diff-' + d);
+
+            if (aiBtn) aiBtn.click();
+
+          }
+
+          if (parsed.target_fps !== undefined) {
+
+            const fps = parsed.target_fps;
+
+            const supportedFps = [30, 60, 120, 144].includes(fps) ? fps : 60;
+
+            const fpsButton = document.getElementById('btn-fps-' + supportedFps);
+
+            if (fpsButton) fpsButton.click();
+
+          }
+
+          if (parsed.player_invincible !== undefined) {
+
+            const chkInvincible = document.getElementById('chk-player-invincible');
+
+            if (chkInvincible) chkInvincible.checked = !!parsed.player_invincible;
+
+            config.player_invincible = !!parsed.player_invincible;
+
+          }
+
+          if (parsed.enable_custom_music !== undefined) {
+
+            const chkCustomMusic = document.getElementById('chk-custom-music');
+
+            if (chkCustomMusic) chkCustomMusic.checked = !!parsed.enable_custom_music;
+
+            config.enable_custom_music = !!parsed.enable_custom_music;
+
+          }
+
+          if (parsed.enable_swipe_specials !== undefined) {
+
+            const chkSwipe = document.getElementById('chk-swipe-specials');
+
+            if (chkSwipe) {
+
+              chkSwipe.checked = !!parsed.enable_swipe_specials;
+
+              config.enable_swipe_specials = !!parsed.enable_swipe_specials;
+
+            }
+
+          }
+
+          if (parsed.freeze_enemy_ai !== undefined) {
+
+            const chkFreeze = document.getElementById('chk-freeze-ai');
+
+            if (chkFreeze) {
+
+              chkFreeze.checked = !!parsed.freeze_enemy_ai;
+
+              config.freeze_enemy_ai = !!parsed.freeze_enemy_ai;
+
+            }
+
+          }
+
+          if (parsed.start_full_power !== undefined) {
+
+            const chkPower = document.getElementById('chk-full-power');
+
+            if (chkPower) {
+
+              chkPower.checked = !!parsed.start_full_power;
+
+              config.start_full_power = !!parsed.start_full_power;
+
+            }
+
+          }
+
+          if (parsed.enable_combat_debug_overlay !== undefined) {
+
+            const chkOverlay = document.getElementById('chk-combat-overlay');
+
+            if (chkOverlay) {
+
+              chkOverlay.checked = !!parsed.enable_combat_debug_overlay;
+
+              config.enable_combat_debug_overlay = !!parsed.enable_combat_debug_overlay;
+
+            }
+
+          }
+
+          if (parsed.launcher_language) {
+
+            savedLang = parsed.launcher_language;
+
+          }
+
+          if (parsed.skip_launcher_next_time !== undefined) {
+
+            document.getElementById('chk-skip-launcher').checked = parsed.skip_launcher_next_time;
+
+          }
+
+        }
+
+        if (savedLang) {
+
+          setLanguage(savedLang, true);
+
+        } else {
+
+          setLanguage(detectSystemLang(), false);
+
+        }
+
+      } catch (e) {
+
+        setLanguage(detectSystemLang(), false);
+
+      }
+
+      onCommanderInput();
+
+      updateConfig();
+
+      syncGraphics();
+
+      updateJsonPreview();
+
+    })();
+
+  </script>
+
+</body>
+
+</html>
+

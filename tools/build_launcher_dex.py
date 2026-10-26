@@ -37,6 +37,8 @@ def build_launcher_dex(output_dex: Path) -> Path:
     (stub_dir / "android/os").mkdir(parents=True)
     (stub_dir / "android/util").mkdir(parents=True)
     (stub_dir / "android/net").mkdir(parents=True)
+    (stub_dir / "android/media").mkdir(parents=True)
+    (stub_dir / "android/content/res").mkdir(parents=True)
 
     (stub_dir / "android/os/Build.java").write_text("""package android.os;
 public class Build {
@@ -103,10 +105,63 @@ public interface WindowManager {
 
     (stub_dir / "android/content/Context.java").write_text("""package android.content;
 import java.io.File;
+import android.content.res.AssetManager;
 public class Context {
     public File getFilesDir() { return null; }
     public File getExternalFilesDir(String type) { return null; }
+    public AssetManager getAssets() { return null; }
+    public Context getApplicationContext() { return this; }
     public void startActivity(Intent intent) {}
+}
+""", encoding="utf-8")
+
+    (stub_dir / "android/content/res/AssetFileDescriptor.java").write_text("""package android.content.res;
+import java.io.FileDescriptor;
+import java.io.IOException;
+public class AssetFileDescriptor {
+    public FileDescriptor getFileDescriptor() { return null; }
+    public long getStartOffset() { return 0; }
+    public long getLength() { return 0; }
+    public void close() throws IOException {}
+}
+""", encoding="utf-8")
+
+    (stub_dir / "android/content/res/AssetManager.java").write_text("""package android.content.res;
+import java.io.IOException;
+public class AssetManager {
+    public AssetFileDescriptor openFd(String fileName) throws IOException { return null; }
+    public String[] list(String path) throws IOException { return null; }
+}
+""", encoding="utf-8")
+
+    (stub_dir / "android/media/MediaPlayer.java").write_text("""package android.media;
+import java.io.FileDescriptor;
+import java.io.IOException;
+public class MediaPlayer {
+    public void setDataSource(FileDescriptor fd, long offset, long length) throws IOException {}
+    public void setLooping(boolean looping) {}
+    public void setVolume(float leftVolume, float rightVolume) {}
+    public void prepare() throws IOException {}
+    public void start() {}
+    public void pause() {}
+    public void stop() {}
+    public void release() {}
+    public boolean isPlaying() { return false; }
+}
+""", encoding="utf-8")
+
+    (stub_dir / "android/os/Looper.java").write_text("""package android.os;
+public class Looper {
+    public static Looper getMainLooper() { return null; }
+}
+""", encoding="utf-8")
+
+    (stub_dir / "android/os/Handler.java").write_text("""package android.os;
+public class Handler {
+    public Handler() {}
+    public Handler(Looper looper) {}
+    public boolean post(Runnable r) { return false; }
+    public boolean postDelayed(Runnable r, long delayMillis) { return false; }
 }
 """, encoding="utf-8")
 
@@ -127,6 +182,28 @@ public class Uri {
 }
 """, encoding="utf-8")
 
+    (stub_dir / "android/os/Bundle.java").write_text("""package android.os;
+public class Bundle {}
+""", encoding="utf-8")
+
+    (stub_dir / "android/app/Application.java").write_text("""package android.app;
+import android.content.Context;
+import android.os.Bundle;
+public class Application extends Context {
+    public interface ActivityLifecycleCallbacks {
+        void onActivityCreated(Activity activity, Bundle savedInstanceState);
+        void onActivityStarted(Activity activity);
+        void onActivityResumed(Activity activity);
+        void onActivityPaused(Activity activity);
+        void onActivityStopped(Activity activity);
+        void onActivitySaveInstanceState(Activity activity, Bundle outState);
+        void onActivityDestroyed(Activity activity);
+    }
+    public void registerActivityLifecycleCallbacks(ActivityLifecycleCallbacks callback) {}
+    public void unregisterActivityLifecycleCallbacks(ActivityLifecycleCallbacks callback) {}
+}
+""", encoding="utf-8")
+
     (stub_dir / "android/app/Activity.java").write_text("""package android.app;
 import java.io.File;
 import android.content.Context;
@@ -136,6 +213,7 @@ public class Activity extends Context {
     public Window getWindow() { return null; }
     public boolean isFinishing() { return false; }
     public boolean isDestroyed() { return false; }
+    public Application getApplication() { return null; }
 }
 """, encoding="utf-8")
 
@@ -217,11 +295,14 @@ public class WebView extends View {
 }
 """, encoding="utf-8")
 
-    # 2. Copy LauncherDialog.java
+    # 2. Copy LauncherDialog.java and CustomMusicPlayer.java
     launcher_src = ROOT / "tools" / "LauncherDialog.java"
-    target_java = src_dir / "com" / "kabam" / "bigrobot" / "LauncherDialog.java"
-    target_java.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy(launcher_src, target_java)
+    music_src = ROOT / "tools" / "CustomMusicPlayer.java"
+    target_dir = src_dir / "com" / "kabam" / "bigrobot"
+    target_dir.mkdir(parents=True, exist_ok=True)
+    shutil.copy(launcher_src, target_dir / "LauncherDialog.java")
+    if music_src.exists():
+        shutil.copy(music_src, target_dir / "CustomMusicPlayer.java")
 
     # 3. Compile
     javac = None
