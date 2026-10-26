@@ -33,8 +33,9 @@ static void arcee_on_buff_applied(SkillBuffAppliedContext* ctx) {
     if (!ctx->modifier_id || !ctx->modifier_id[0]) return;
 
     if (strstr(ctx->modifier_id, "arcee_sp1_trick_shot") != NULL) {
-        skill_set_ranged_boost(0, 6500, 0.35f, 0.40f);
-        skill_log("RANGED_BOOST_ACTIVATED: Arcee SP1 (dmg=+35%%, spd=+40%%, dur=6.5s)");
+        int tp = ctx->target_player_index;
+        skill_set_ranged_boost(tp, 6500, 0.35f, 0.40f);
+        skill_log("RANGED_BOOST_ACTIVATED: Arcee SP1 on P%d (dmg=+35%%, spd=+40%%, dur=6.5s)", tp);
     }
 }
 

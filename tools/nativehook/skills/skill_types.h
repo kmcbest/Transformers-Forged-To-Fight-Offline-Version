@@ -116,6 +116,9 @@ typedef struct {
     // 远程子弹反射检定 (返回 1 表示已接管并输出 *out_reflect_mod; 返回 0 表示非本模块管辖)
     int (*on_reflect_proj)(int player_index, float* out_reflect_mod);
 
+    // 弹丸飞行速度倍率修正 (返回 1 表示已接管并输出 *out_speed_mult; 返回 0 表示非本模块管辖)
+    int (*on_projectile_speed)(int player_index, int is_heavy, float* out_speed_mult);
+
     // 战斗重置/回合开始 (清理私有冷却和状态变量)
     void (*on_fight_reset)(int player_index);
 

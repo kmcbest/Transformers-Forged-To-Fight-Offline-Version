@@ -186,6 +186,19 @@ int skill_dispatch_reflect_proj(int player_index, float* out_reflect_mod) {
     return 0;
 }
 
+float skill_dispatch_projectile_speed(int player_index, int is_heavy) {
+    if (player_index < 0 || player_index >= 2) return 1.0f;
+    const char* bot_id = (player_index == 0) ? g_p0_bot_id : g_p1_bot_id;
+    const BotSkillModule* mod = find_module_by_bot(bot_id);
+    if (mod && mod->on_projectile_speed) {
+        float mult = 1.0f;
+        if (mod->on_projectile_speed(player_index, is_heavy, &mult)) {
+            return mult;
+        }
+    }
+    return 1.0f;
+}
+
 void skill_dispatch_simulation_tick(uint64_t now_ms) {
     for (int i = 0; s_registry[i] != NULL; i++) {
         if (s_registry[i]->on_simulation_tick) {

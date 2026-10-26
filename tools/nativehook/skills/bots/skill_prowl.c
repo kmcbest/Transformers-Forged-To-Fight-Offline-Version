@@ -54,8 +54,9 @@ static void prowl_on_buff_applied(SkillBuffAppliedContext* ctx) {
     if (!ctx->modifier_id || !ctx->modifier_id[0]) return;
 
     if (strstr(ctx->modifier_id, "prowl_s2_ranged_boost") != NULL) {
-        skill_set_ranged_boost(0, 6000, 0.50f, 0.50f);
-        skill_log("RANGED_BOOST_ACTIVATED: Prowl SP2 (dmg=+50%%, spd=+50%%, dur=6.0s)");
+        int tp = ctx->target_player_index;
+        skill_set_ranged_boost(tp, 6000, 0.50f, 0.50f);
+        skill_log("RANGED_BOOST_ACTIVATED: Prowl SP2 on P%d (dmg=+50%%, spd=+50%%, dur=6.0s)", tp);
     }
 }
 

@@ -574,7 +574,7 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x014F4048, "ISTUTCOMPLETE",     2, 0 }, // 184 TutorialManagerHelper.IsTutorialComplete
     { 0x0095BDD8, "SAFE_GC_SCAN",       2, 0 }, // 185 il2cpp GC scan safe guard (prevents SEGV on 0x1)
     { 0x11785B8, "REG_HIT_RES",        2, 0 }, // 186 PlayerController.RegisterHitResult(HitResultData hitResult)
-    { 0x00DACAAC, "GET_SPD_MOD",       2, 0 }, // 187 PlayerAttributes.get_SpeedModifier -> attack animation speed boost
+    { 0x00DAD8E4, "GET_PROJ_SPD",      2, 0 }, // 187 PlayerAttributes.GetProjectileSpeed(float baseSpeed) -> projectile flight speed boost
     { 0x00EEFB44, "APPLY_BUFF",        2, 0 }, // 188 BuffsController.ApplyBuff -> ability gating (Rhinox bleed-on-nullify, Wheeljack final hit, Unstoppable window)
     { 0x00EEE57C, "REMOVE_BUFFS_INT",  2, 0 }, // 189 BuffsController.RemoveBuffsInternal -> track successful buff nullification
     { 0x00DACC74, "GET_EVADE_MELEE",   2, 0 }, // 190 PlayerAttributes.get_EvadeMelee -> probabilistic melee evade
@@ -852,10 +852,16 @@ static void combat_overlay_push(const char *fmt, ...) {
 
 static volatile int g_p0_power_seeded = 0;
 static volatile int g_p0_current_special_index = -1;
-static volatile uint64_t g_p0_ranged_boost_end_ms = 0;
-static volatile float g_p0_ranged_damage_bonus = 0.0f;
-static volatile float g_p0_ranged_speed_bonus = 0.0f;
-#define g_arcee_ranged_boost_end_ms g_p0_ranged_boost_end_ms
+static volatile uint64_t g_ranged_boost_end_ms[2] = {0, 0};
+static volatile float g_ranged_damage_bonus[2] = {0.0f, 0.0f};
+static volatile float g_ranged_speed_bonus[2] = {0.0f, 0.0f};
+#define g_p0_ranged_boost_end_ms g_ranged_boost_end_ms[0]
+#define g_p0_ranged_damage_bonus g_ranged_damage_bonus[0]
+#define g_p0_ranged_speed_bonus g_ranged_speed_bonus[0]
+#define g_p1_ranged_boost_end_ms g_ranged_boost_end_ms[1]
+#define g_p1_ranged_damage_bonus g_ranged_damage_bonus[1]
+#define g_p1_ranged_speed_bonus g_ranged_speed_bonus[1]
+#define g_arcee_ranged_boost_end_ms g_ranged_boost_end_ms[0]
 static volatile uint64_t g_enemy_power_leak_end_ms = 0;
 static volatile float g_enemy_power_leak_step = 0.0022f;
 static volatile uint64_t g_p0_power_lock_end_ms = 0; // P0 is power locked (cannot gain power)
@@ -5166,9 +5172,9 @@ void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     g_p0_last_attack_ms = 0;
     g_p0_power_seeded = 0;
     g_p0_current_special_index = -1;
-    g_p0_ranged_boost_end_ms = 0;
-    g_p0_ranged_damage_bonus = 0.0f;
-    g_p0_ranged_speed_bonus = 0.0f;
+    g_ranged_boost_end_ms[0] = g_ranged_boost_end_ms[1] = 0;
+    g_ranged_damage_bonus[0] = g_ranged_damage_bonus[1] = 0.0f;
+    g_ranged_speed_bonus[0] = g_ranged_speed_bonus[1] = 0.0f;
     g_enemy_power_leak_end_ms = 0;
     g_enemy_power_leak_step = 0.0022f;
     g_p0_power_lock_end_ms = 0;
@@ -8365,48 +8371,44 @@ void* hook_186(void* this_pc, void* hitResult, void* method) {
     return H[186].orig ? ((fn_reg_hit)H[186].orig)(this_pc, hitResult, method) : NULL;
 }
 
-// slot 187 (0x00DACAAC): PlayerAttributes.get_SpeedModifier
-float hook_187(void* self) {
-    float mod = 1.0f;
+// slot 187 (0x00DAD8E4): PlayerAttributes.GetProjectileSpeed(float baseSpeed)
+float hook_187(void* self, float baseSpeed, void* method) {
+    float spd = baseSpeed;
     if (H[187].orig) {
-        typedef float (*fn_spd_mod)(void*);
-        mod = ((fn_spd_mod)H[187].orig)(self);
+        typedef float (*fn_proj_spd)(void*, float, void*);
+        spd = ((fn_proj_spd)H[187].orig)(self, baseSpeed, method);
     }
     PROTECT({
-        if (is_player0_attr(self)) {
-            uint64_t now_ms = propgo_now_ms();
-            if (now_ms < g_p0_ranged_boost_end_ms && g_p0_ranged_speed_bonus > 0.0f) {
-                int is_shooting = 0;
-                if (g_p0_controller && obj_ok(g_p0_controller)) {
-                    // 1. Check StateMachine._state (at offset 0x48)
-                    void* cur_state = *(void**)((char*)g_p0_controller + 0x48);
-                    if (cur_state && obj_ok(cur_state)) {
-                        void* sname_obj = *(void**)((char*)cur_state + 0x10);
-                        if (sname_obj && obj_ok(sname_obj)) {
-                            char sname[32] = {0};
-                            read_str(sname_obj, sname, sizeof(sname));
-                            if (strcmp(sname, "Shoot") == 0) {
-                                is_shooting = 1;
-                            }
-                        }
-                    }
-                    // 2. Check _rangedAttackIndex (at offset 0x1c8)
-                    if (!is_shooting) {
-                        uint32_t r = *(uint32_t*)((char*)g_p0_controller + 0x1c8);
-                        if (r > 0) is_shooting = 1;
-                    }
-                }
-                if (is_shooting) {
-                    mod *= (1.0f + g_p0_ranged_speed_bonus);
-                    static int s_spd_anim_log = 0;
-                    if (s_spd_anim_log++ < 20) {
-                        flog("SHOOT_ANIM_SPEED_BOOST: speedMod=%.2f (+%.0f%%)", mod, g_p0_ranged_speed_bonus * 100.0f);
-                    }
-                }
+        if (!self || !obj_ok(self)) break;
+        int is_p0 = is_player0_attr(self);
+        int pidx = is_p0 ? 0 : 1;
+        int is_heavy = skill_is_heavy_attacking(pidx);
+
+        float mult = 1.0f;
+
+        // 1. Bot-specific projectile speed (e.g. Megatron fusion cannon heavy attack)
+        float bot_mult = skill_dispatch_projectile_speed(pidx, is_heavy);
+        if (bot_mult > 0.0f) {
+            mult *= bot_mult;
+        }
+
+        // 2. Generic timed ranged speed boost (Prowl SP2, Arcee SP1, etc.)
+        uint64_t now_ms = propgo_now_ms();
+        if (now_ms < g_ranged_boost_end_ms[pidx] && g_ranged_speed_bonus[pidx] > 0.0f) {
+            mult *= (1.0f + g_ranged_speed_bonus[pidx]);
+        }
+
+        if (mult != 1.0f) {
+            float old_spd = spd;
+            spd *= mult;
+            static int s_spd_log_cnt = 0;
+            if (s_spd_log_cnt++ < 30) {
+                flog("PROJ_SPEED_BOOST: P%d proj_speed %.2f -> %.2f (x%.2f, is_heavy=%d)",
+                     pidx, old_spd, spd, mult, is_heavy);
             }
         }
     });
-    return mod;
+    return spd;
 }
 
 // ---------------------------------------------------------------------------
@@ -8454,10 +8456,10 @@ void skill_set_p1_buffs_nullified(int val) {
 }
 
 void skill_set_ranged_boost(int player_index, uint64_t duration_ms, float dmg_bonus, float spd_bonus) {
-    if (player_index == 0) {
-        g_p0_ranged_boost_end_ms = propgo_now_ms() + duration_ms;
-        g_p0_ranged_damage_bonus = dmg_bonus;
-        g_p0_ranged_speed_bonus = spd_bonus;
+    if (player_index >= 0 && player_index < 2) {
+        g_ranged_boost_end_ms[player_index] = propgo_now_ms() + duration_ms;
+        g_ranged_damage_bonus[player_index] = dmg_bonus;
+        g_ranged_speed_bonus[player_index] = spd_bonus;
     }
 }
 
