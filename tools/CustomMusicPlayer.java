@@ -39,6 +39,35 @@ public class CustomMusicPlayer {
     private static final Map<String, List<String>> sCategoryTracks = new HashMap<>();
     private static final Map<String, String> sLastPlayedTrack = new HashMap<>();
 
+    // Static fallback track names in case AssetManager.list() fails or returns empty
+    private static final Map<String, String[]> FALLBACK_TRACKS = new HashMap<>();
+    static {
+        FALLBACK_TRACKS.put("main", new String[]{
+            "Original_Theme_Loop.mp3",
+            "Subterranean Hum.mp3"
+        });
+        FALLBACK_TRACKS.put("quest", new String[]{
+            "Hydraulic_Engine_Bay.mp3",
+            "Original_Questboard_Loop.mp3",
+            "quest-1.mp3",
+            "The_Bridge_at_World_s_End.mp3"
+        });
+        FALLBACK_TRACKS.put("fight", new String[]{
+            "Original_Fight_Loop.mp3",
+            "Torn_Alloy.mp3",
+            "Zero Impact.mp3"
+        });
+        FALLBACK_TRACKS.put("arena", new String[]{
+            "Floor_Beneath_the_Blade.mp3"
+        });
+        FALLBACK_TRACKS.put("raid", new String[]{
+            "Sector_Defense.mp3"
+        });
+        FALLBACK_TRACKS.put("bot_showcase", new String[]{
+            "bot_showcase-1.mp3"
+        });
+    }
+
     private static Handler getHandler() {
         if (sHandler == null) {
             sHandler = new Handler(Looper.getMainLooper());
@@ -46,9 +75,35 @@ public class CustomMusicPlayer {
         return sHandler;
     }
 
+    public static synchronized void ensureInit() {
+        if (sContext != null) return;
+        try {
+            Class<?> upCls = Class.forName("com.unity3d.player.UnityPlayer");
+            Activity act = (Activity) upCls.getField("currentActivity").get(null);
+            if (act != null) {
+                init(act);
+                return;
+            }
+        } catch (Throwable ignored) {}
+
+        try {
+            Class<?> atCls = Class.forName("android.app.ActivityThread");
+            Object appObj = atCls.getMethod("currentApplication").invoke(null);
+            if (appObj instanceof Context) {
+                initContext((Context) appObj);
+                return;
+            }
+        } catch (Throwable ignored) {}
+    }
+
     public static synchronized void init(Activity activity) {
         if (activity == null) return;
-        sContext = activity.getApplicationContext();
+        initContext(activity.getApplicationContext());
+    }
+
+    public static synchronized void initContext(Context context) {
+        if (context == null) return;
+        sContext = context;
         loadSettings();
         scanTracks();
         Log.i(TAG, "CustomMusicPlayer initialized. Enabled=" + sEnabled + ", SessionMain=" + sSessionMainTrack);
@@ -56,6 +111,7 @@ public class CustomMusicPlayer {
 
     public static synchronized void setEnabled(boolean enabled) {
         sEnabled = enabled;
+        Log.i(TAG, "setEnabled: " + enabled);
         if (!sEnabled) {
             stopMusic();
         }
@@ -88,6 +144,7 @@ public class CustomMusicPlayer {
                     }
                 }
             }
+            Log.i(TAG, "loadSettings finished: sEnabled=" + sEnabled);
         } catch (Exception e) {
             Log.w(TAG, "Error reading user_settings.json: " + e.getMessage());
         }
@@ -112,8 +169,26 @@ public class CustomMusicPlayer {
             } catch (IOException e) {
                 Log.w(TAG, "Failed to list music/" + cat + ": " + e.getMessage());
             }
+
+            // Fallback check if list is empty
+            if (list.isEmpty() && FALLBACK_TRACKS.containsKey(cat)) {
+                Log.i(TAG, "am.list was empty, using fallback track list for category: " + cat);
+                for (String fallbackName : FALLBACK_TRACKS.get(cat)) {
+                    String fullPath = "music/" + cat + "/" + fallbackName;
+                    try {
+                        AssetFileDescriptor testAfd = am.openFd(fullPath);
+                        if (testAfd != null) {
+                            list.add(fullPath);
+                            testAfd.close();
+                        }
+                    } catch (IOException e) {
+                        Log.w(TAG, "Fallback track not found in assets: " + fullPath);
+                    }
+                }
+            }
+
             sCategoryTracks.put(cat, list);
-            Log.i(TAG, "Category [" + cat + "] found " + list.size() + " tracks.");
+            Log.i(TAG, "Category [" + cat + "] found " + list.size() + " tracks: " + list);
         }
 
         // Requirement 1: Pick fixed session track for 'main'
@@ -123,10 +198,15 @@ public class CustomMusicPlayer {
         } else {
             sSessionMainTrack = "";
         }
+        Log.i(TAG, "Selected session locked main track: " + sSessionMainTrack);
     }
 
     public static synchronized void playCategory(final String category) {
-        if (!sEnabled || sContext == null) return;
+        ensureInit();
+        if (!sEnabled || sContext == null) {
+            Log.w(TAG, "playCategory ignored: enabled=" + sEnabled + ", hasContext=" + (sContext != null));
+            return;
+        }
         getHandler().post(new Runnable() {
             @Override
             public void run() {
@@ -178,7 +258,7 @@ public class CustomMusicPlayer {
         if (trackPath.equals(sCurrentTrackName) && sActivePlayer != null) {
             try {
                 if (sActivePlayer.isPlaying()) {
-                    Log.i(TAG, "Track already playing: " + trackPath);
+                    Log.i(TAG, "Track already playing smoothly: " + trackPath);
                     return;
                 }
             } catch (Exception ignored) {}
@@ -189,16 +269,24 @@ public class CustomMusicPlayer {
         startCrossfade(trackPath);
     }
 
-    private static void startCrossfade(String assetPath) {
+    private static void startCrossfade(final String assetPath) {
+        if (sContext == null) return;
         try {
-            AssetFileDescriptor afd = sContext.getAssets().openFd(assetPath);
+            AssetManager am = sContext.getAssets();
+            AssetFileDescriptor afd = am.openFd(assetPath);
             final MediaPlayer nextPlayer = new MediaPlayer();
-            nextPlayer.setDataSource(afd.getFileDescriptor(), afd.getStartOffset(), afd.getLength());
-            afd.close();
-            nextPlayer.setLooping(true);
-            nextPlayer.setVolume(0f, 0f);
-            nextPlayer.prepare();
+            try {
+                nextPlayer.setDataSource(afd.getFileDescriptor(), afd.getStartOffset(), afd.getLength());
+                nextPlayer.setLooping(true);
+                nextPlayer.setVolume(0f, 0f);
+                nextPlayer.prepare();
+            } finally {
+                try {
+                    afd.close();
+                } catch (Exception ignored) {}
+            }
             nextPlayer.start();
+            Log.i(TAG, "Successfully started MediaPlayer for: " + assetPath);
 
             final MediaPlayer oldPlayer = sActivePlayer;
             sActivePlayer = nextPlayer;
@@ -241,6 +329,7 @@ public class CustomMusicPlayer {
     }
 
     public static synchronized void setVolume(final float volume) {
+        ensureInit();
         sMasterVolume = Math.max(0.0f, Math.min(1.0f, volume));
         getHandler().post(new Runnable() {
             @Override
@@ -255,6 +344,7 @@ public class CustomMusicPlayer {
     }
 
     public static synchronized void pauseMusic(final boolean pause) {
+        ensureInit();
         sIsPaused = pause;
         getHandler().post(new Runnable() {
             @Override
@@ -273,6 +363,7 @@ public class CustomMusicPlayer {
     }
 
     public static synchronized void stopMusic() {
+        ensureInit();
         getHandler().post(new Runnable() {
             @Override
             public void run() {

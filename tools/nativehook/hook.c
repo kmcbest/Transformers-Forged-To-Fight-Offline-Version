@@ -10154,8 +10154,16 @@ static jmethodID s_set_vol_mid = NULL;
 static jmethodID s_pause_mid = NULL;
 static jmethodID s_stop_mid = NULL;
 
+static char s_pending_category[64] = {0};
+
 static void native_play_music_category(const char* cat) {
-    if (!s_jvm || !s_music_class || !s_play_cat_mid) return;
+    if (!cat || !cat[0]) return;
+    if (!s_jvm || !s_music_class || !s_play_cat_mid) {
+        LOG("[Jukebox] Not yet ready, queuing pending category: %s", cat);
+        strncpy(s_pending_category, cat, sizeof(s_pending_category) - 1);
+        s_pending_category[sizeof(s_pending_category) - 1] = '\0';
+        return;
+    }
     JNIEnv* env = NULL;
     jint res = (*s_jvm)->GetEnv(s_jvm, (void**)&env, JNI_VERSION_1_6);
     int need_detach = 0;
@@ -10165,6 +10173,7 @@ static void native_play_music_category(const char* cat) {
     } else if (res != JNI_OK || !env) {
         return;
     }
+    LOG("[Jukebox] native_play_music_category calling JNI: %s", cat);
     jstring jcat = (*env)->NewStringUTF(env, cat);
     if (jcat) {
         (*env)->CallStaticVoidMethod(env, s_music_class, s_play_cat_mid, jcat);
@@ -12012,7 +12021,19 @@ static void* launcher_thread(void* arg) {
         s_set_vol_mid = (*env)->GetStaticMethodID(env, cmpClass, "setVolume", "(F)V");
         s_pause_mid = (*env)->GetStaticMethodID(env, cmpClass, "pauseMusic", "(Z)V");
         s_stop_mid = (*env)->GetStaticMethodID(env, cmpClass, "stopMusic", "()V");
+        jmethodID init_mid = (*env)->GetStaticMethodID(env, cmpClass, "init", "(Landroid/app/Activity;)V");
+        if (init_mid && act) {
+            (*env)->CallStaticVoidMethod(env, cmpClass, init_mid, act);
+            LOG("[Jukebox] CustomMusicPlayer.init(act) called successfully!");
+        }
         LOG("[Jukebox] Successfully initialized CustomMusicPlayer JNI references!");
+        if (s_pending_category[0] != '\0') {
+            LOG("[Jukebox] Playing pending queued category: %s", s_pending_category);
+            char pending[64];
+            strncpy(pending, s_pending_category, sizeof(pending));
+            s_pending_category[0] = '\0';
+            native_play_music_category(pending);
+        }
     } else {
         if ((*env)->ExceptionCheck(env)) (*env)->ExceptionClear(env);
         LOG("[Jukebox] Could not find CustomMusicPlayer class");

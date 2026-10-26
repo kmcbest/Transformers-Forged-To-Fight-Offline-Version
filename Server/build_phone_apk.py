@@ -739,8 +739,19 @@ def build(
         # Inject custom music tracks (stored uncompressed so MediaPlayer can play directly via AssetFileDescriptor)
         music_dir = Path("assets_redeco/music")
         if music_dir.exists():
+            dirs_added = set()
             for mfile in music_dir.rglob("*.mp3"):
                 rel_music = mfile.relative_to(music_dir).as_posix()
+                parts = rel_music.split("/")
+                for d_idx in range(len(parts)):
+                    d_path = "assets/music/" + "/".join(parts[:d_idx]) + "/" if d_idx > 0 else "assets/music/"
+                    if d_path not in dirs_added:
+                        dinfo = zipfile.ZipInfo(d_path, date_time=(1980, 1, 1, 0, 0, 0))
+                        dinfo.compress_type = zipfile.ZIP_STORED
+                        dinfo.external_attr = 0o755 << 16
+                        zout.writestr(dinfo, b"")
+                        dirs_added.add(d_path)
+
                 target_entry = f"assets/music/{rel_music}"
                 minfo = zipfile.ZipInfo(target_entry, date_time=(1980, 1, 1, 0, 0, 0))
                 minfo.compress_type = zipfile.ZIP_STORED

@@ -36,6 +36,12 @@ public class LauncherDialog {
             return;
         }
 
+        try {
+            CustomMusicPlayer.init(activity);
+        } catch (Throwable t) {
+            Log.w(TAG, "Failed to init CustomMusicPlayer from LauncherDialog: " + t.getMessage());
+        }
+
         File filesDir = activity.getFilesDir();
         File configFile = new File(filesDir, SETTINGS_FILE);
         if (configFile.exists()) {
