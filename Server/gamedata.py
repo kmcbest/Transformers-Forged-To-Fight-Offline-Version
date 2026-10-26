@@ -909,26 +909,53 @@ def display_name(bid, lang="en"):
     return tok[:1].upper() + tok[1:]
 
 
+_BOT_GENERATION_CACHE = None
+
+def get_bot_generation_tag(bid):
+    """Map a bot ID to its generation tag for UIBotAudio and UI display:
+    'generations' (G1 / Shattered Glass), 'movie' (Cinematic), or 'bw' (Beast Wars)."""
+    global _BOT_GENERATION_CACHE
+    if _BOT_GENERATION_CACHE is None:
+        _BOT_GENERATION_CACHE = {}
+        try:
+            db_path = os.path.join(HERE, "tftf_database.db")
+            if os.path.exists(db_path):
+                conn = sqlite3.connect(db_path)
+                c = conn.cursor()
+                for row in c.execute("SELECT bot_id, origin FROM characters"):
+                    _BOT_GENERATION_CACHE[row[0]] = row[1]
+                conn.close()
+        except Exception:
+            pass
+
+    origin = _BOT_GENERATION_CACHE.get(bid, "")
+    if origin == "Cinematic (Movie)" or "_cin_" in bid:
+        return "movie"
+    elif origin == "Beast Wars" or "_bw_" in bid:
+        return "bw"
+    else:
+        return "generations"
+
+
 def build_characters(lang="en"):
-    """`characters` map for getLoginData -> BCGCharacterData. Keys id, sg, gen(faction),
-    aip, sps (as in the proven response) PLUS the art fields the client reads:
+    """`characters` map for getLoginData -> BCGCharacterData. Keys id, sg, gen (generation
+    tag: generations/movie/bw for UIBotAudio transform sounds and badges), f/faction,
+    aip, sps PLUS the art fields the client reads:
     i/img (_imgID@0x50), m/mdl (ModelID@0x28), ma/map_asset (MapAssetID@0x30),
-    hc/hero_colour (HeroColour@0x38). These were empty, which left the roster's
-    featured/valid-hero setup in HeroesScreen.SetScreenType dereferencing empty art
-    (NullReferenceException -> "unknown error", verified live session 4). Assets are
-    ODR-delivered so most won't actually load offline, but non-empty names keep the
-    setup path from null-dereferencing."""
+    hc/hero_colour (HeroColour@0x38)."""
     out = {}
     for bid, (faction, klass, star) in ROSTER.items():
         base = art_base(bid)
         name = display_name(bid, lang=lang)
+        gen_tag = get_bot_generation_tag(bid)
         out[bid] = {
             "id": bid,
             # FriendlyName / FriendlyNameShort (keys n_loc/n/name_loc/name and
             # ns_loc/ns/name_s_loc/name_s -- captured live). Non-null display name so
             # the roster tile's name label isn't a null string (see display_name).
             "name": name, "name_s": name,
-            "sg": "", "gen": faction, "aip": "", "sps": "",
+            "sg": "", "gen": gen_tag, "generation": gen_tag, "aip": "", "sps": "",
+            "f": faction, "faction": faction,
             # i/img -> portrait (SHORT art base); m/mdl -> ModelID (the 3D combat mesh
             # bundle, named by the FULL bid, see model_id). Truncating the model id to the
             # short base pointed at a non-existent bundle and forced the placeholder mesh.
@@ -945,7 +972,8 @@ def build_characters(lang="en"):
         out[mid] = {
             "id": mid,
             "name": name, "name_s": name,
-            "sg": "", "gen": "autobot", "aip": "", "sps": "",
+            "sg": "", "gen": "generations", "generation": "generations", "aip": "", "sps": "",
+            "f": "autobot", "faction": "autobot",
             "i": base, "img": base,
             "m": mdl, "mdl": mdl,
             "ma": base, "map_asset": base,
@@ -959,7 +987,8 @@ def build_characters(lang="en"):
         out[rid] = {
             "id": rid,
             "name": name, "name_s": name,
-            "sg": "", "gen": "autobot", "aip": "", "sps": "",
+            "sg": "", "gen": "generations", "generation": "generations", "aip": "", "sps": "",
+            "f": "autobot", "faction": "autobot",
             "i": base, "img": base,
             "m": mdl, "mdl": mdl,
             "ma": base, "map_asset": base,

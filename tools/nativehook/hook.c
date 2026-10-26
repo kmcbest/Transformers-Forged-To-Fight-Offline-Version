@@ -5931,8 +5931,14 @@ void hook_146(void* self, float dT, void* method){
                     }
 
                     // 2. Post-combo Safe Retreat (Avoid free retaliatory L1 after combo ender)
+                    int is_hit = ((int(*)(void*,void*))(g_base + 0x1173D94))(player, NULL); // get_HitStunned
+                    int is_stun = ((int(*)(void*,void*))(g_base + 0x1173E28))(player, NULL); // get_Stunned
+                    int in_hitreact = is_hit || is_stun || (now_ms - g_p1_last_hitreact_ms < 400);
+
                     if (g_p1_retreat_after_combo) {
-                        if (now_ms >= g_p1_retreat_execute_ms) {
+                        if (in_hitreact) {
+                            g_p1_retreat_after_combo = 0;
+                        } else if (now_ms >= g_p1_retreat_execute_ms) {
                             int escaped = ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 8, NULL); // Action.Dodge = 8
                             if (escaped) {
                                 g_p1_retreat_after_combo = 0;
@@ -5988,7 +5994,7 @@ void hook_146(void* self, float dT, void* method){
                     int is_side = ((int(*)(void*,void*))(g_base + 0x1175590))(player, NULL);
 
                     void* opp = ((void*(*)(void*,void*))(g_base + 0x1174C60))(player, NULL); // get_Opponent
-                    if (obj_ok(opp) && !is_att && !is_blk && !is_side && !g_p1_ai_special_cancel_pending && !g_p1_retreat_after_combo && !g_p1_combo_committed) {
+                    if (obj_ok(opp) && !in_hitreact && !is_att && !is_blk && !is_side && !g_p1_ai_special_cancel_pending && !g_p1_retreat_after_combo && !g_p1_combo_committed) {
                         float dist = ((float(*)(void*,void*))(g_base + 0x1175A28))(player, NULL);
 
                         // 5.1 Whiff Punish: If P0 is in recovery from 3 ranged shots, immediately DASH IN!
@@ -6122,8 +6128,14 @@ void hook_146(void* self, float dT, void* method){
                 }
 
                 // 2. Post-combo Safe Retreat (Avoid free retaliatory L1 after combo ender)
+                int is_hit = ((int(*)(void*,void*))(g_base + 0x1173D94))(player, NULL); // get_HitStunned
+                int is_stun = ((int(*)(void*,void*))(g_base + 0x1173E28))(player, NULL); // get_Stunned
+                int in_hitreact = is_hit || is_stun || (now_ms - g_p0_last_hitreact_ms < 400);
+
                 if (g_p0_retreat_after_combo) {
-                    if (now_ms >= g_p0_retreat_execute_ms) {
+                    if (in_hitreact) {
+                        g_p0_retreat_after_combo = 0;
+                    } else if (now_ms >= g_p0_retreat_execute_ms) {
                         int escaped = ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 8, NULL); // Action.Dodge = 8
                         if (escaped) {
                             g_p0_retreat_after_combo = 0;
@@ -6179,7 +6191,7 @@ void hook_146(void* self, float dT, void* method){
                 int is_side = ((int(*)(void*,void*))(g_base + 0x1175590))(player, NULL);
 
                 void* opp = ((void*(*)(void*,void*))(g_base + 0x1174C60))(player, NULL);
-                if (obj_ok(opp) && !is_att && !is_blk && !is_side && !g_p0_ai_special_cancel_pending && !g_p0_retreat_after_combo && !g_p0_combo_committed) {
+                if (obj_ok(opp) && !in_hitreact && !is_att && !is_blk && !is_side && !g_p0_ai_special_cancel_pending && !g_p0_retreat_after_combo && !g_p0_combo_committed) {
                     float dist = ((float(*)(void*,void*))(g_base + 0x1175A28))(player, NULL);
 
                     if (g_p1_ranged_recovery_ms > 0 && now_ms < g_p1_ranged_recovery_ms && dist > 0.01f && dist < 12.0f) {
@@ -6617,7 +6629,9 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
                     int p1_input = *(uint8_t*)((uintptr_t)g_p1_controller + 0x139);
                     int p1_att = ((int(*)(void*,void*))(g_base + 0x11752C8))(g_p1_controller, NULL);
                     int p1_blk = ((int(*)(void*,void*))(g_base + 0x11737F8))(g_p1_controller, NULL);
-                    if (p1_input && !p1_att && !p1_blk && tftf_get_ai_difficulty() >= 1) {
+                    int p1_hit = ((int(*)(void*,void*))(g_base + 0x1173D94))(g_p1_controller, NULL);
+                    int p1_stun = ((int(*)(void*,void*))(g_base + 0x1173E28))(g_p1_controller, NULL);
+                    if (p1_input && !p1_att && !p1_blk && !p1_hit && !p1_stun && (now_ms - g_p1_last_hitreact_ms >= 400) && tftf_get_ai_difficulty() >= 1) {
                         if (post_r <= 2) {
                             int roll = rand() % 100;
                             if (roll < 55) {
@@ -7098,17 +7112,27 @@ void* hook_165(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
                 g_p0_combo_ended = 0;
                 g_p0_after_heavy = 0;
                 g_p0_last_hitreact_ms = propgo_now_ms();
-                g_p0_knockdown_active = 1;
                 g_p0_combo_committed = 0;
                 g_p0_combo_hit_count = 0;
                 g_p0_combo_next_action = 0;
+                if (tftf_is_autofight_active()) {
+                    g_p0_retreat_after_combo = 0;
+                    g_p0_disengage_pending = 0;
+                    g_p0_force_dodge_after_block = 0;
+                    g_p0_wakeup_defense_active = 0;
+                    s_p0_kite_pending_action = 0;
+                }
                 flog("HITREACT_ENTER (0x0117FEC4) on P0: unblocked hit reaction resets attack chain");
                 reset_player_attack_chain(pc);
                 skill_dispatch_hitreact_enter(0);
             } else if (pidx == 1) {
                 g_p1_block_enter_ms = 0;
                 g_p1_last_hitreact_ms = propgo_now_ms();
-                g_p1_knockdown_active = 1;
+                g_p1_retreat_after_combo = 0;
+                g_p1_disengage_pending = 0;
+                g_p1_force_dodge_after_block = 0;
+                g_p1_wakeup_defense_active = 0;
+                s_p1_kite_pending_action = 0;
                 g_p1_combo_committed = 0;
                 g_p1_combo_hit_count = 0;
                 g_p1_combo_next_action = 0;
@@ -8091,13 +8115,32 @@ void* hook_186(void* this_pc, void* hitResult, void* method) {
                 }
             }
             if (is_unblocked_hit) {
+                // Real knockdown detection: Heavy attack (4) or Special attack (0x70)
+                if (atk_level == 4 || (atk_level & 0x70)) {
+                    if (p_idx == 0) {
+                        g_p0_knockdown_active = 1;
+                    } else if (p_idx == 1) {
+                        g_p1_knockdown_active = 1;
+                    }
+                }
+
                 if (p_idx == 0) {
+                    // P0 (human player) took an unblocked hit from P1 (AI)
                     g_p1_block_enter_ms = 0;
                     if (atk_level == 4) {
                         g_p0_after_heavy = 0;
                     }
-                    if (g_p1_controller) {
-                        reset_player_attack_chain(g_p1_controller);
+                    // Reset victim P0's attack chain
+                    reset_player_attack_chain(this_pc);
+                    if (tftf_is_autofight_active()) {
+                        g_p0_retreat_after_combo = 0;
+                        g_p0_disengage_pending = 0;
+                        g_p0_force_dodge_after_block = 0;
+                        g_p0_wakeup_defense_active = 0;
+                        s_p0_kite_pending_action = 0;
+                        g_p0_combo_committed = 0;
+                        g_p0_combo_hit_count = 0;
+                        g_p0_combo_next_action = 0;
                     }
 
                     // --- AI 5-Hit Combo Commitment System (P1 attacking P0) ---
@@ -8145,13 +8188,18 @@ void* hook_186(void* this_pc, void* hitResult, void* method) {
                         g_p1_combo_next_action = 0;
                     }
                 } else if (p_idx == 1) {
-                    if (g_p0_block_enter_ms == 0) {
-                        if (g_p0_controller) {
-                            reset_player_attack_chain(g_p0_controller);
-                            g_p0_combo_ended = 0;
-                            g_p0_after_heavy = 0;
-                        }
-                    }
+                    // P1 (AI) took an unblocked hit from P0 (human player)
+                    // Reset victim P1's attack chain
+                    reset_player_attack_chain(this_pc);
+                    // Clear all pending AI counter-actions so AI never breaks hitstun
+                    g_p1_retreat_after_combo = 0;
+                    g_p1_disengage_pending = 0;
+                    g_p1_force_dodge_after_block = 0;
+                    g_p1_wakeup_defense_active = 0;
+                    s_p1_kite_pending_action = 0;
+                    g_p1_combo_committed = 0;
+                    g_p1_combo_hit_count = 0;
+                    g_p1_combo_next_action = 0;
 
                     // --- AI 5-Hit Combo Commitment System for P0 (AutoFight attacking P1) ---
                     if (tftf_is_autofight_active()) {

@@ -27,27 +27,93 @@ from tkinter.scrolledtext import ScrolledText
 
 
 HISTORY_FILE = Path.home() / ".tftf_adb_history.json"
+BASE_DIR = Path(__file__).resolve().parent
 
 
 # ---------------------------------------------------------------------------
-# 1. 历史连接记录管理
+# 1. 历史连接与文件记录管理
 # ---------------------------------------------------------------------------
+def to_relative_or_abs(path_str: str) -> str:
+    """尝试将路径转换为相对于当前脚本目录的相对路径，格式为 Unix 风格正斜杠"""
+    if not path_str or not path_str.strip():
+        return ""
+    p = Path(path_str.strip())
+    try:
+        resolved = p.resolve()
+        rel = resolved.relative_to(BASE_DIR)
+        return rel.as_posix()
+    except Exception:
+        return path_str.strip()
+
+
+def resolve_to_absolute(path_str: str) -> Path:
+    """将相对或绝对路径转换为解析后的绝对路径对象"""
+    p = Path(path_str.strip())
+    if not p.is_absolute():
+        return (BASE_DIR / p).resolve()
+    return p.resolve()
+
+
 def load_history() -> dict:
-    """读取历史无线连接记录"""
+    """读取历史无线连接记录及近期文件路径"""
     try:
         if HISTORY_FILE.exists():
             return json.loads(HISTORY_FILE.read_text(encoding="utf-8"))
     except Exception:
         pass
-    return {"recent_ips": [], "last_ip": "192.168.1.", "last_port": "5555", "use_fast_install": True}
+    return {
+        "recent_ips": [],
+        "last_ip": "192.168.1.",
+        "last_port": "5555",
+        "use_fast_install": True,
+        "recent_apks": [],
+        "last_apk": "",
+        "recent_push_files": [],
+        "last_push_file": "",
+        "push_dest_dir": "/sdcard/Documents",
+    }
 
 
 def save_history(data: dict):
-    """保存历史无线连接记录"""
+    """保存历史记录"""
     try:
         HISTORY_FILE.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
     except Exception:
         pass
+
+
+def record_history_apk_path(apk_path: str):
+    """记录近期使用的 APK 相对路径"""
+    apk_path = apk_path.strip()
+    if not apk_path:
+        return
+    rel_path = to_relative_or_abs(apk_path)
+    hist = load_history()
+    recent = hist.get("recent_apks", [])
+    if rel_path in recent:
+        recent.remove(rel_path)
+    recent.insert(0, rel_path)
+    hist["recent_apks"] = recent[:15]
+    hist["last_apk"] = rel_path
+    save_history(hist)
+
+
+def record_history_push_file(file_path: str, dest_dir: str = "/sdcard/Documents"):
+    """记录近期向设备传输的文件路径"""
+    file_path = file_path.strip()
+    if not file_path:
+        return
+    rel_path = to_relative_or_abs(file_path)
+    hist = load_history()
+    recent = hist.get("recent_push_files", [])
+    if rel_path in recent:
+        recent.remove(rel_path)
+    recent.insert(0, rel_path)
+    hist["recent_push_files"] = recent[:15]
+    hist["last_push_file"] = rel_path
+    if dest_dir:
+        hist["push_dest_dir"] = dest_dir.strip()
+    save_history(hist)
 
 
 def record_history_ip_port(ip: str, port: str):
@@ -498,8 +564,8 @@ class ApkInstallerApp:
     def __init__(self, root):
         self.root = root
         self.root.title("ADB APK 极速安装与有线/无线管理工具 (集成局域网直传引擎)")
-        self.root.geometry("720x680")
-        self.root.minsize(620, 540)
+        self.root.geometry("740x660")
+        self.root.minsize(640, 520)
 
         # 变量绑定
         self.selected_device = tk.StringVar()
@@ -507,9 +573,12 @@ class ApkInstallerApp:
         self.manual_ip = tk.StringVar()
         self.manual_port = tk.StringVar(value="5555")
         self.apk_path = tk.StringVar()
+        self.push_file_path = tk.StringVar()
+        self.push_dest_dir = tk.StringVar(value="/sdcard/Documents")
         self.use_fast_install = tk.BooleanVar(value=True)
         self.install_args = tk.StringVar(value="-r --no-incremental")
         self.screenshot_filename = tk.StringVar(value="")
+        self.push_panel_expanded = tk.BooleanVar(value=False)
 
         self._create_widgets()
         self._load_cached_history()
@@ -586,42 +655,101 @@ class ApkInstallerApp:
         self.btn_disconnect_manual.pack(side="left", padx=2)
 
         # 2. APK 选择区域
-        file_frame = ttk.LabelFrame(self.root, text="APK 文件", padding=8)
+        file_frame = ttk.LabelFrame(self.root, text="APK 文件安装", padding=8)
         file_frame.pack(fill="x", **pad_opts)
 
-        ttk.Entry(file_frame, textvariable=self.apk_path).pack(
-            side="left", fill="x", expand=True, padx=5
-        )
-        ttk.Button(
-            file_frame, text="📂 选择 APK", command=self.browse_apk
-        ).pack(side="right", padx=5)
+        row_apk = ttk.Frame(file_frame)
+        row_apk.pack(fill="x", expand=True)
 
-        # 3. 安装配置与传输模式区域
-        param_frame = ttk.LabelFrame(self.root, text="安装参数与极速模式", padding=8)
+        self.combo_apk = ttk.Combobox(
+            row_apk, textvariable=self.apk_path
+        )
+        self.combo_apk.pack(side="left", fill="x", expand=True, padx=(0, 5))
+        self.combo_apk.bind("<<ComboboxSelected>>", self._on_apk_selected)
+        self.combo_apk.bind("<FocusOut>", self._on_apk_focus_out)
+
+        ttk.Button(
+            row_apk, text="📂 选择 APK", command=self.browse_apk
+        ).pack(side="right", padx=2)
+
+        # 3. 安装配置与一键安装 (紧凑同行布局)
+        param_frame = ttk.LabelFrame(self.root, text="安装参数与极速模式", padding=6)
         param_frame.pack(fill="x", **pad_opts)
 
         row_mode = ttk.Frame(param_frame)
-        row_mode.pack(fill="x", pady=(0, 4))
+        row_mode.pack(fill="x", pady=(0, 2))
         self.chk_fast = ttk.Checkbutton(
             row_mode,
-            text="⚡ 启用局域网极速直传模式 (LAN HTTP 满速传输，强烈推荐无线调试，速度可达 30~80MB/s)",
+            text="⚡ 局域网极速直传 (LAN HTTP 满速直传，推荐无线调试 30~80MB/s)",
             variable=self.use_fast_install,
             command=self._on_mode_toggled,
         )
-        self.chk_fast.pack(side="left", padx=5)
+        self.chk_fast.pack(side="left", padx=2)
 
         row_args = ttk.Frame(param_frame)
         row_args.pack(fill="x", pady=(2, 0))
-        ttk.Label(row_args, text="额外参数:").pack(side="left", padx=5)
-        ttk.Entry(row_args, textvariable=self.install_args).pack(
-            side="left", fill="x", expand=True, padx=5
-        )
+        ttk.Label(row_args, text="额外参数:").pack(side="left", padx=(2, 4))
+        self.entry_args = ttk.Entry(row_args, textvariable=self.install_args)
+        self.entry_args.pack(side="left", fill="x", expand=True, padx=(0, 6))
 
-        # 4. 操作按钮
         self.btn_install = ttk.Button(
-            self.root, text="🚀 开始极速安装", command=self.start_install_thread
+            row_args, text="🚀 开始极速安装", command=self.start_install_thread
         )
-        self.btn_install.pack(fill="x", padx=10, pady=6)
+        self.btn_install.pack(side="right", padx=2)
+
+        # 4. 传输文件到设备 (默认折叠收起)
+        self.push_frame = ttk.LabelFrame(self.root, text="传输文件到设备 (ADB Push / LAN 直传)", padding=6)
+        self.push_frame.pack(fill="x", **pad_opts)
+
+        # 折叠/展开控制栏
+        row_push_header = ttk.Frame(self.push_frame)
+        row_push_header.pack(fill="x")
+        self.btn_toggle_push = ttk.Button(
+            row_push_header,
+            text="▶ 点击展开文件传输面板 (推送到 /sdcard/Documents)",
+            command=self._toggle_push_panel,
+        )
+        self.btn_toggle_push.pack(side="left", padx=2)
+
+        # 折叠主体内容容器 (默认 pack_forget)
+        self.push_body = ttk.Frame(self.push_frame)
+
+        row_push_file = ttk.Frame(self.push_body)
+        row_push_file.pack(fill="x", expand=True, pady=(4, 2))
+        ttk.Label(row_push_file, text="本地文件/文件夹:").pack(side="left", padx=(0, 4))
+        self.combo_push_file = ttk.Combobox(
+            row_push_file, textvariable=self.push_file_path
+        )
+        self.combo_push_file.pack(side="left", fill="x", expand=True, padx=2)
+        self.combo_push_file.bind("<<ComboboxSelected>>", self._on_push_file_selected)
+        self.combo_push_file.bind("<FocusOut>", self._on_push_file_focus_out)
+
+        ttk.Button(
+            row_push_file, text="📂 浏览文件", command=self.browse_push_file
+        ).pack(side="left", padx=2)
+        ttk.Button(
+            row_push_file, text="📁 浏览文件夹", command=self.browse_push_dir
+        ).pack(side="left", padx=2)
+
+        row_push_dest = ttk.Frame(self.push_body)
+        row_push_dest.pack(fill="x", expand=True, pady=(2, 0))
+        ttk.Label(row_push_dest, text="设备目标路径:").pack(side="left", padx=(0, 16))
+        self.entry_push_dest = ttk.Entry(
+            row_push_dest, textvariable=self.push_dest_dir
+        )
+        self.entry_push_dest.pack(side="left", fill="x", expand=True, padx=2)
+
+        self.btn_push = ttk.Button(
+            row_push_dest, text="📤 发送到设备", command=self.start_push_file_thread
+        )
+        self.btn_push.pack(side="right", padx=2)
+
+        ttk.Label(
+            self.push_body,
+            text="* 默认传输至手机公共目录 /sdcard/Documents；支持任意文件或整个文件夹，无线连接自动高速传输",
+            font=("TkDefaultFont", 8),
+            foreground="gray",
+        ).pack(anchor="w", padx=2, pady=(3, 0))
 
         # 5. 设备截图区域
         shot_frame = ttk.LabelFrame(self.root, text="设备截图", padding=8)
@@ -684,15 +812,26 @@ class ApkInstallerApp:
 
     def _on_mode_toggled(self):
         if self.use_fast_install.get():
-            self.btn_install.config(text="🚀 开始极速安装 (LAN HTTP 局域网直传)")
+            self.btn_install.config(text="🚀 开始极速安装 (LAN 直传)")
         else:
-            self.btn_install.config(text="🚀 开始标准安装 (ADB 流式传输)")
+            self.btn_install.config(text="🚀 开始安装 (ADB 传输)")
+
+    def _toggle_push_panel(self):
+        """展开或收起传输文件面板"""
+        expanded = not self.push_panel_expanded.get()
+        self.push_panel_expanded.set(expanded)
+        if expanded:
+            self.push_body.pack(fill="x", expand=True, pady=(2, 0))
+            self.btn_toggle_push.config(text="▼ 收起文件传输面板")
+        else:
+            self.push_body.pack_forget()
+            self.btn_toggle_push.config(text="▶ 点击展开文件传输面板 (推送到 /sdcard/Documents)")
 
     def _load_cached_history(self):
-        """载入历史 IP 列表"""
+        """载入历史 IP 列表及文件路径列表"""
         hist = load_history()
-        recent = hist.get("recent_ips", [])
-        self.combo_ip["values"] = recent
+        recent_ips = hist.get("recent_ips", [])
+        self.combo_ip["values"] = recent_ips
         last_ip = hist.get("last_ip", "")
         last_port = hist.get("last_port", "5555")
         if last_ip:
@@ -702,6 +841,55 @@ class ApkInstallerApp:
         self.manual_port.set(last_port or "5555")
         self.use_fast_install.set(hist.get("use_fast_install", True))
         self._on_mode_toggled()
+
+        # 加载 APK 历史记录
+        recent_apks = hist.get("recent_apks", [])
+        self.combo_apk["values"] = recent_apks
+        last_apk = hist.get("last_apk", "")
+        if last_apk:
+            self.apk_path.set(last_apk)
+        elif recent_apks:
+            self.apk_path.set(recent_apks[0])
+
+        # 加载 Push 文件历史记录
+        recent_push = hist.get("recent_push_files", [])
+        self.combo_push_file["values"] = recent_push
+        last_push = hist.get("last_push_file", "")
+        if last_push:
+            self.push_file_path.set(last_push)
+        elif recent_push:
+            self.push_file_path.set(recent_push[0])
+
+        dest_dir = hist.get("push_dest_dir", "/sdcard/Documents")
+        self.push_dest_dir.set(dest_dir or "/sdcard/Documents")
+
+    def _on_apk_selected(self, event=None):
+        val = self.apk_path.get().strip()
+        if val:
+            record_history_apk_path(val)
+
+    def _on_apk_focus_out(self, event=None):
+        val = self.apk_path.get().strip()
+        if val:
+            rel = to_relative_or_abs(val)
+            self.apk_path.set(rel)
+            record_history_apk_path(rel)
+            hist = load_history()
+            self.combo_apk["values"] = hist.get("recent_apks", [])
+
+    def _on_push_file_selected(self, event=None):
+        val = self.push_file_path.get().strip()
+        if val:
+            record_history_push_file(val, self.push_dest_dir.get().strip())
+
+    def _on_push_file_focus_out(self, event=None):
+        val = self.push_file_path.get().strip()
+        if val:
+            rel = to_relative_or_abs(val)
+            self.push_file_path.set(rel)
+            record_history_push_file(rel, self.push_dest_dir.get().strip())
+            hist = load_history()
+            self.combo_push_file["values"] = hist.get("recent_push_files", [])
 
     def _on_history_ip_selected(self, event=None):
         val = self.manual_ip.get().strip()
@@ -940,24 +1128,58 @@ class ApkInstallerApp:
             filetypes=[("APK 文件", "*.apk"), ("所有文件", "*.*")],
         )
         if file_selected:
-            self.apk_path.set(file_selected)
+            rel = to_relative_or_abs(file_selected)
+            self.apk_path.set(rel)
+            record_history_apk_path(rel)
+            hist = load_history()
+            self.combo_apk["values"] = hist.get("recent_apks", [])
+
+    def browse_push_file(self):
+        file_selected = filedialog.askopenfilename(
+            title="选择要传输到设备的文件",
+            filetypes=[("所有文件", "*.*")],
+        )
+        if file_selected:
+            rel = to_relative_or_abs(file_selected)
+            self.push_file_path.set(rel)
+            record_history_push_file(rel, self.push_dest_dir.get().strip())
+            hist = load_history()
+            self.combo_push_file["values"] = hist.get("recent_push_files", [])
+
+    def browse_push_dir(self):
+        dir_selected = filedialog.askdirectory(
+            title="选择要传输到设备的文件夹",
+        )
+        if dir_selected:
+            rel = to_relative_or_abs(dir_selected)
+            self.push_file_path.set(rel)
+            record_history_push_file(rel, self.push_dest_dir.get().strip())
+            hist = load_history()
+            self.combo_push_file["values"] = hist.get("recent_push_files", [])
 
     def start_install_thread(self):
         device_id = self.get_clean_device_id()
-        apk = self.apk_path.get().strip()
+        apk_input = self.apk_path.get().strip()
 
         if not device_id:
             messagebox.showwarning("警告", "请先选择一个有效的已连接设备！")
             return
 
-        if not apk or not os.path.exists(apk):
-            messagebox.showwarning("警告", "请选择有效的 APK 文件路径！")
+        if not apk_input:
+            messagebox.showwarning("警告", "请输入或选择 APK 文件路径！")
             return
 
-        # 记住模式选择
+        apk_real_path = resolve_to_absolute(apk_input)
+        if not apk_real_path.exists():
+            messagebox.showwarning("警告", f"未找到 APK 文件:\n{apk_real_path}")
+            return
+
+        # 记录近期 APK 路径并刷新下拉
+        record_history_apk_path(apk_input)
         hist = load_history()
         hist["use_fast_install"] = self.use_fast_install.get()
         save_history(hist)
+        self.combo_apk["values"] = hist.get("recent_apks", [])
 
         self.btn_install.config(state="disabled")
         self.btn_refresh.config(state="disabled")
@@ -967,8 +1189,141 @@ class ApkInstallerApp:
         else:
             target_fn = self._standard_install_worker
 
-        thread = threading.Thread(target=target_fn, args=(device_id, apk), daemon=True)
+        thread = threading.Thread(target=target_fn, args=(device_id, str(apk_real_path)), daemon=True)
         thread.start()
+
+    def start_push_file_thread(self):
+        device_id = self.get_clean_device_id()
+        file_input = self.push_file_path.get().strip()
+        dest_dir = self.push_dest_dir.get().strip() or "/sdcard/Documents"
+
+        if not device_id:
+            messagebox.showwarning("警告", "请先选择一个有效的已连接设备！")
+            return
+
+        if not file_input:
+            messagebox.showwarning("警告", "请输入或选择要传输的文件/文件夹路径！")
+            return
+
+        real_path = resolve_to_absolute(file_input)
+        if not real_path.exists():
+            messagebox.showwarning("警告", f"未找到本地文件或文件夹:\n{real_path}")
+            return
+
+        # 记录近期传输记录
+        record_history_push_file(file_input, dest_dir)
+        hist = load_history()
+        self.combo_push_file["values"] = hist.get("recent_push_files", [])
+
+        self.btn_push.config(state="disabled")
+        self.btn_refresh.config(state="disabled")
+
+        thread = threading.Thread(target=self._push_file_worker, args=(device_id, real_path, dest_dir), daemon=True)
+        thread.start()
+
+    def _push_file_worker(self, device_id: str, local_path: Path, dest_dir: str):
+        is_wireless = ":" in device_id
+        is_file = local_path.is_file()
+        item_type_str = "文件" if is_file else "文件夹"
+        item_name = local_path.name
+        httpd = None
+
+        try:
+            self.set_status(f"正在准备向设备传输{item_type_str}...")
+            self.log("=" * 50)
+            self.log(f"📤 [文件传输] 目标设备: {device_id} ({'无线连接' if is_wireless else '有线连接'})")
+            self.log(f"本地{item_type_str}: {local_path}")
+            self.log(f"设备目录: {dest_dir}")
+
+            # 确保设备目标目录存在
+            subprocess.run(
+                ["adb", "-s", device_id, "shell", "mkdir", "-p", dest_dir],
+                capture_output=True, text=True, timeout=8
+            )
+
+            # 单文件且无线连接时，优先探测能否使用 LAN HTTP 极速下载
+            use_fast_http = False
+            if is_file and is_wireless:
+                downloader = detect_downloader(device_id)
+                if downloader:
+                    use_fast_http = True
+
+            if use_fast_http:
+                self.set_status(f"局域网极速直传 {item_name} ...")
+                self.log(f"⚡ [局域网极速直传模式] 选用设备端下载组件: {downloader}")
+                serve_dir = local_path.parent
+                httpd, port = start_http_server(serve_dir)
+
+                phone_ip = device_id.split(":")[0]
+                local_ip = get_local_ip(phone_ip)
+                encoded_name = urllib.parse.quote(item_name)
+                download_url = f"http://{local_ip}:{port}/{encoded_name}"
+                target_dest_file = f"{dest_dir.rstrip('/')}/{item_name}"
+
+                self.log(f"[+] 本地直传节点: {download_url}")
+                self.log(f"[*] 手机正在满速拉取并写入: {target_dest_file}")
+
+                if "curl" in downloader:
+                    dl_cmd = f"{downloader} -fSL --connect-timeout 8 -o '{target_dest_file}' '{download_url}'"
+                else:
+                    dl_cmd = f"{downloader} -O '{target_dest_file}' '{download_url}'"
+
+                dl_res = subprocess.run(
+                    ["adb", "-s", device_id, "shell", dl_cmd],
+                    capture_output=True, text=True, timeout=300
+                )
+                stop_http_server(httpd)
+                httpd = None
+
+                if dl_res.returncode == 0:
+                    self.set_status("传输成功！")
+                    self.log(f"🎉 恭喜！{item_name} 已成功极速传输至设备: {target_dest_file}")
+                    messagebox.showinfo("传输成功", f"🎉 文件已成功极速传输至设备！\n\n目标设备: {device_id}\n保存路径: {target_dest_file}")
+                    return
+                else:
+                    self.log(f"[!] 局域网直传未成功 ({(dl_res.stdout + dl_res.stderr).strip()})，自动切换为 ADB Push...")
+
+            # 标准 ADB Push 传输模式
+            self.set_status(f"正在执行 ADB Push 传输...")
+            cmd = ["adb", "-s", device_id, "push", str(local_path), dest_dir]
+            self.log(f"🚀 执行命令: {' '.join(cmd)}")
+
+            process = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+            )
+
+            full_output = []
+            for line in process.stdout:
+                line_clean = line.rstrip()
+                self.log(line_clean)
+                full_output.append(line_clean)
+
+            process.wait()
+            output_str = "\n".join(full_output)
+
+            if process.returncode == 0:
+                self.set_status("传输完成！")
+                self.log(f"🎉 传输成功！已传输至设备: {dest_dir}")
+                messagebox.showinfo("传输成功", f"🎉 {item_type_str}已成功推送到设备！\n\n设备: {device_id}\n路径: {dest_dir}")
+            else:
+                self.set_status("传输失败")
+                self.log(f"❌ 传输失败，返回码: {process.returncode}")
+                messagebox.showerror("传输失败", f"传输失败！\n\n终端输出：\n{output_str[-300:]}")
+
+        except Exception as e:
+            self.set_status("传输异常")
+            self.log(f"[异常] 传输过程中出错: {e}")
+            messagebox.showerror("异常", f"传输异常: {e}")
+        finally:
+            stop_http_server(httpd)
+            self.btn_push.config(state="normal")
+            self.btn_refresh.config(state="normal")
+            self.set_status("就绪")
 
     # -----------------------------------------------------------------------
     # 极速局域网直传安装引擎 (来自 INSTALL-OVER-LAN-FASTER.py)
@@ -1426,6 +1781,8 @@ if __name__ == "__main__":
     parser.add_argument("--ip", type=str, help="无线设备 IP 地址 (搭配 --port 使用)")
     parser.add_argument("--port", type=str, default="5555", help="无线设备端口 (默认 5555)")
     parser.add_argument("--tcpip", nargs="?", const="5555", help="将当前 USB 设备切换为 TCP/IP 无线监听端口 (默认 5555)")
+    parser.add_argument("--push", type=str, help="向设备传输指定文件或文件夹 (搭配 --dest 使用)")
+    parser.add_argument("--dest", type=str, default="/sdcard/Documents", help="文件传输至设备的目标路径 (默认 /sdcard/Documents)")
     parser.add_argument("--disconnect", nargs="?", const="", help="断开无线设备连接 (可选指定 IP:PORT，默认断开全部)")
     args = parser.parse_args()
 
@@ -1441,6 +1798,21 @@ if __name__ == "__main__":
         run_cli_screenshot_clipboard(target_device=args.device)
     elif args.screenshot:
         run_cli_screenshot(custom_name=args.name, out_dir=args.out_dir, target_device=args.device)
+    elif args.push:
+        devices = parse_adb_devices()
+        online_devices = [d["serial"] for d in devices if d["status"] == "device"]
+        dev = args.device or (online_devices[0] if online_devices else "")
+        if not dev:
+            print("[ERROR] No online ADB device detected!")
+            sys.exit(1)
+        p_path = resolve_to_absolute(args.push)
+        if not p_path.exists():
+            print(f"[ERROR] Local path not found: {p_path}")
+            sys.exit(1)
+        record_history_push_file(args.push, args.dest)
+        subprocess.run(["adb", "-s", dev, "shell", "mkdir", "-p", args.dest])
+        res = subprocess.run(["adb", "-s", dev, "push", str(p_path), args.dest])
+        sys.exit(res.returncode)
     elif args.auto:
         target_apk = args.apk
         if not target_apk:
