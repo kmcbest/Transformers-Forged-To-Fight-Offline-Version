@@ -33,6 +33,8 @@ SIM_API int sim_inject_buff(int target_idx, const char* mod_id,
 
 SIM_API int sim_remove_buff(int target_idx, const char* mod_id, int count);
 
+SIM_API float sim_get_projectile_speed(int player_idx, float base_speed, int is_heavy);
+
 SIM_API int sim_get_state_json(char* out_buf, int max_len);
 
 SIM_API int sim_pop_logs(char* out_buf, int max_len);

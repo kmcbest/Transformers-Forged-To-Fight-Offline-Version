@@ -69,6 +69,7 @@ typedef struct {
     uint64_t power_lock_end_ms;
     uint64_t ranged_boost_end_ms;
     float ranged_damage_bonus;
+    float ranged_speed_bonus;
 
     uint64_t power_leak_end_ms;
     float power_leak_step;
@@ -193,6 +194,7 @@ void skill_set_ranged_boost(int player_index, uint64_t duration_ms, float dmg_bo
     if (player_index >= 0 && player_index < 2) {
         g_players[player_index].ranged_boost_end_ms = g_sim_clock_ms + duration_ms;
         g_players[player_index].ranged_damage_bonus = dmg_bonus;
+        g_players[player_index].ranged_speed_bonus = spd_bonus;
     }
 }
 
@@ -464,6 +466,12 @@ SIM_API int sim_init(const char* p0_bot_id, const char* p1_bot_id,
     g_players[1].last_ranged_dmg = 0.0f;
     g_players[0].last_ranged_hit_ms = 0;
     g_players[1].last_ranged_hit_ms = 0;
+    g_players[0].ranged_boost_end_ms = 0;
+    g_players[0].ranged_damage_bonus = 0.0f;
+    g_players[0].ranged_speed_bonus = 0.0f;
+    g_players[1].ranged_boost_end_ms = 0;
+    g_players[1].ranged_damage_bonus = 0.0f;
+    g_players[1].ranged_speed_bonus = 0.0f;
 
     g_sim_clock_ms = 1000;
     g_floater_count = 0;
@@ -660,6 +668,24 @@ notify:
         skill_dispatch_buff_applied(&app_ctx);
     }
     return 1;
+}
+
+SIM_API float sim_get_projectile_speed(int player_idx, float base_speed, int is_heavy) {
+    if (player_idx < 0 || player_idx >= 2) return base_speed;
+    float mult = 1.0f;
+
+    // 1. Bot-specific projectile speed (e.g. Megatron fusion cannon heavy attack)
+    float bot_mult = skill_dispatch_projectile_speed(player_idx, is_heavy);
+    if (bot_mult > 0.0f) {
+        mult *= bot_mult;
+    }
+
+    // 2. Generic timed ranged speed boost (Prowl SP2, Arcee SP1, etc.)
+    if (g_sim_clock_ms < g_players[player_idx].ranged_boost_end_ms && g_players[player_idx].ranged_speed_bonus > 0.0f) {
+        mult *= (1.0f + g_players[player_idx].ranged_speed_bonus);
+    }
+
+    return base_speed * mult;
 }
 
 SIM_API int sim_remove_buff(int target_idx, const char* mod_id, int count) {
