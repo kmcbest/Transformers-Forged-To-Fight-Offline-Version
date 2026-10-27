@@ -948,6 +948,48 @@ def test_player_invincible():
     after_off = g_engine.get_state()["p0"]["hp"]
     assert_true(after_off < before_off, f"Player Invincible OFF: P0 normal damage restored (HP: {before_off} -> {after_off})")
 
+
+def test_projectile_speed_boost():
+    print("\n--- [TEST 17] Projectile Flight Speed Quality Gate (Prowl SP2, Arcee SP1, Megatron Fusion Cannon) ---")
+
+    # 1. 警车 (Prowl): SP2 激活前弹速 10.0，激活后弹速 15.0 (+50%)
+    g_engine.init("prowl", "bonecrusher", 30000.0, 30000.0, 1000.0, 1000.0)
+    g_engine.reset()
+    spd_before = g_engine.get_projectile_speed(0, 10.0, is_heavy=False)
+    assert_true(abs(spd_before - 10.0) < 1e-4, f"Prowl base projectile speed is 10.0: got {spd_before}")
+
+    # 激活 SP2 (prowl_s2_ranged_boost)
+    g_engine.inject_buff(0, "prowl_s2_ranged_boost", 6.0, 1)
+    spd_sp2 = g_engine.get_projectile_speed(0, 10.0, is_heavy=False)
+    assert_true(abs(spd_sp2 - 15.0) < 1e-4, f"Prowl SP2 boosted projectile speed by +50% (10.0 -> 15.0): got {spd_sp2}")
+
+    # 2. 阿尔茜 (Arcee): SP1 激活前弹速 10.0，激活后弹速 14.0 (+40%)
+    g_engine.init("arcee", "bonecrusher", 30000.0, 30000.0, 1000.0, 1000.0)
+    g_engine.reset()
+    spd_arcee_before = g_engine.get_projectile_speed(0, 10.0, is_heavy=False)
+    assert_true(abs(spd_arcee_before - 10.0) < 1e-4, f"Arcee base projectile speed is 10.0: got {spd_arcee_before}")
+
+    # 激活 SP1 (arcee_sp1_trick_shot)
+    g_engine.inject_buff(0, "arcee_sp1_trick_shot", 6.5, 1)
+    spd_arcee_sp1 = g_engine.get_projectile_speed(0, 10.0, is_heavy=False)
+    assert_true(abs(spd_arcee_sp1 - 14.0) < 1e-4, f"Arcee SP1 boosted projectile speed by +40% (10.0 -> 14.0): got {spd_arcee_sp1}")
+
+    # 3. 威震天 (Megatron Leader):
+    # a) 无融合炮时，重击弹速 10.0 (未提速)
+    g_engine.init("megatron", "bonecrusher", 30000.0, 30000.0, 1000.0, 1000.0)
+    g_engine.reset()
+    spd_mega_no_fusion = g_engine.get_projectile_speed(0, 10.0, is_heavy=True)
+    assert_true(abs(spd_mega_no_fusion - 10.0) < 1e-4, f"Megatron heavy without fusion is unboosted (10.0): got {spd_mega_no_fusion}")
+
+    # b) 拥有融合炮充能 (megatron_fusion_cannon) 时，重击飞行速度 +50% (10.0 -> 15.0)
+    g_engine.inject_buff(0, "megatron_fusion_cannon", -1.0, 1)
+    spd_mega_heavy = g_engine.get_projectile_speed(0, 10.0, is_heavy=True)
+    assert_true(abs(spd_mega_heavy - 15.0) < 1e-4, f"Megatron heavy with fusion cannon boosted by +50% (10.0 -> 15.0): got {spd_mega_heavy}")
+
+    # c) 拥有融合炮时，普通小枪远程攻击并不提速 (保持 10.0)
+    spd_mega_ranged = g_engine.get_projectile_speed(0, 10.0, is_heavy=False)
+    assert_true(abs(spd_mega_ranged - 10.0) < 1e-4, f"Megatron normal ranged attack is NOT boosted by fusion (10.0): got {spd_mega_ranged}")
+
 if __name__ == "__main__":
     print("=" * 70)
     print("🚀 TFTF 战斗技能模拟器全自动化质量门禁测试 (含数据契约与生命周期)")
@@ -968,6 +1010,7 @@ if __name__ == "__main__":
     test_player_invincible()
     test_wheeljack_abilities()
     test_motormaster_abilities()
+    test_projectile_speed_boost()
     print("\n" + "=" * 70)
-    print("🎉 全部 16 项质量门禁测试 100% 通过！千斤顶、汽车大师、黄豹、反冲等全角色机制闭环！")
+    print("🎉 全部 17 项质量门禁测试 100% 通过！子弹弹速提速、千斤顶、汽车大师等全角色机制闭环！")
     print("=" * 70)

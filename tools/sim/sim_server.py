@@ -309,6 +309,10 @@ class SimEngine:
             self.dll.sim_dash.argtypes = [ctypes.c_int]
             self.dll.sim_dash.restype = ctypes.c_int
 
+        if hasattr(self.dll, 'sim_get_projectile_speed'):
+            self.dll.sim_get_projectile_speed.argtypes = [ctypes.c_int, ctypes.c_float, ctypes.c_int]
+            self.dll.sim_get_projectile_speed.restype = ctypes.c_float
+
     def recompile(self):
         import _ctypes
         if self.dll:
@@ -379,6 +383,11 @@ class SimEngine:
         if hasattr(self.dll, 'sim_dash'):
             return self.dll.sim_dash(int(player))
         return 1
+
+    def get_projectile_speed(self, player: int, base_speed: float = 10.0, is_heavy: bool = False) -> float:
+        if hasattr(self.dll, 'sim_get_projectile_speed'):
+            return float(self.dll.sim_get_projectile_speed(int(player), ctypes.c_float(base_speed), 1 if is_heavy else 0))
+        return base_speed
 
     def inject_buff(self, target, mod_id, dur, stacks):
         return self.dll.sim_inject_buff(int(target), mod_id.encode("utf-8"), float(dur), int(stacks))

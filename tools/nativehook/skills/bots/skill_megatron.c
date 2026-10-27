@@ -139,6 +139,18 @@ static void megatron_on_buff_applied(SkillBuffAppliedContext* ctx) {
     }
 }
 
+static int megatron_on_projectile_speed(int player_index, int is_heavy, float* out_speed_mult) {
+    if (player_index < 0 || player_index >= 2 || !out_speed_mult) return 0;
+    // 拥有融合炮（过载或 >= 1 层充能）时，重击飞行速度 +50%
+    if (is_heavy && (s_fusion_overload[player_index] || s_fusion_charges[player_index] > 0)) {
+        *out_speed_mult = 1.50f;
+        skill_log("MEGATRON: P%d Fusion Cannon Heavy Attack projectile speed boosted +50%% (overload=%d, charges=%d)",
+                  player_index, s_fusion_overload[player_index], s_fusion_charges[player_index]);
+        return 1;
+    }
+    return 0;
+}
+
 static void megatron_on_fight_reset(int player_index) {
     if (player_index >= 0 && player_index < 2) {
         s_megatron_active[player_index]         = 0;
@@ -149,12 +161,15 @@ static void megatron_on_fight_reset(int player_index) {
 }
 
 BotSkillModule g_module_megatron = {
-    .bot_prefix         = "megatron",
-    .on_hit_connected   = megatron_on_hit_connected,
-    .on_buff_gated      = NULL,
-    .on_buff_applied    = megatron_on_buff_applied,
-    .on_evade_check     = NULL,
-    .on_test_roll       = NULL,
-    .on_fight_reset     = megatron_on_fight_reset,
-    .on_simulation_tick = megatron_on_simulation_tick,
+    .bot_prefix          = "megatron",
+    .on_hit_connected    = megatron_on_hit_connected,
+    .on_buff_gated       = NULL,
+    .on_buff_applied     = megatron_on_buff_applied,
+    .on_evade_check      = NULL,
+    .on_test_roll        = NULL,
+    .on_power_gain_rate  = NULL,
+    .on_reflect_proj     = NULL,
+    .on_projectile_speed = megatron_on_projectile_speed,
+    .on_fight_reset      = megatron_on_fight_reset,
+    .on_simulation_tick  = megatron_on_simulation_tick,
 };
