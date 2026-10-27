@@ -1049,6 +1049,11 @@ if __name__ == "__main__":
     test_motormaster_abilities()
     test_projectile_speed_boost()
     test_block_state_enter()
+    
+    # --- [TEST 19] 震天尊 (Megatronus) 全套战斗机制与自主充能 ---
+    from tools.sim.test_megatronus import run_tests as test_megatronus_suite
+    test_megatronus_suite()
+
     print("\n" + "=" * 70)
-    print("🎉 全部 18 项质量门禁测试 100% 通过！子弹弹速提速、千斤顶、汽车大师等全角色机制闭环！")
+    print("🎉 全部 19 项质量门禁测试 100% 通过！震天尊、子弹弹速提速、千斤顶、汽车大师等全角色机制闭环！")
     print("=" * 70)

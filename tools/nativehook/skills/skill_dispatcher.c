@@ -19,6 +19,7 @@ extern BotSkillModule g_module_bumblebee_dotm;
 extern BotSkillModule g_module_scorponok;
 extern BotSkillModule g_module_hotrod;
 extern BotSkillModule g_module_megatron;
+extern BotSkillModule g_module_megatronus;
 extern BotSkillModule g_module_grimlock;
 extern BotSkillModule g_module_thundercracker;
 extern BotSkillModule g_module_cyclonus;
@@ -43,6 +44,7 @@ static const BotSkillModule* s_registry[] = {
     &g_module_bumblebee_dotm,
     &g_module_scorponok,
     &g_module_hotrod,
+    &g_module_megatronus,
     &g_module_megatron,
     &g_module_grimlock,
     &g_module_thundercracker,
@@ -80,22 +82,34 @@ void skill_dispatch_fight_reset(void) {
 
 static const BotSkillModule* find_module_by_bot(const char* bot_id) {
     if (!bot_id || !bot_id[0]) return NULL;
+    const BotSkillModule* best = NULL;
+    size_t best_len = 0;
     for (int i = 0; s_registry[i] != NULL; i++) {
         if (s_registry[i]->bot_prefix && strstr(bot_id, s_registry[i]->bot_prefix) != NULL) {
-            return s_registry[i];
+            size_t len = strlen(s_registry[i]->bot_prefix);
+            if (len > best_len) {
+                best_len = len;
+                best = s_registry[i];
+            }
         }
     }
-    return NULL;
+    return best;
 }
 
 static const BotSkillModule* find_module_by_modifier(const char* mod_id) {
     if (!mod_id || !mod_id[0]) return NULL;
+    const BotSkillModule* best = NULL;
+    size_t best_len = 0;
     for (int i = 0; s_registry[i] != NULL; i++) {
         if (s_registry[i]->bot_prefix && strstr(mod_id, s_registry[i]->bot_prefix) != NULL) {
-            return s_registry[i];
+            size_t len = strlen(s_registry[i]->bot_prefix);
+            if (len > best_len) {
+                best_len = len;
+                best = s_registry[i];
+            }
         }
     }
-    return NULL;
+    return best;
 }
 
 void skill_dispatch_hit_connected(SkillHitContext* ctx) {

@@ -5151,8 +5151,16 @@ void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     s_saved_actor1_obj = NULL;
     s_saved_actor1_name[0] = 0;
     sp3_xf_clear();
-    g_p0_controller = NULL;
-    g_p1_controller = NULL;
+    if (a2 && obj_ok(a2)) {
+        g_p0_controller = a2;
+    } else {
+        g_p0_controller = NULL;
+    }
+    if (a3 && obj_ok(a3)) {
+        g_p1_controller = a3;
+    } else {
+        g_p1_controller = NULL;
+    }
     g_intended_special_tier = 0;
     g_sp_touch_tracking = 0;
     g_p0_block_enter_ms = 0;
@@ -5819,7 +5827,11 @@ void* hook_145(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
                 reset_player_attack_chain(g_p0_controller);
             }
         }
-        skill_dispatch_simulation_tick(propgo_now_ms());
+        if (g_p0_controller && obj_ok(g_p0_controller) &&
+            g_p1_controller && obj_ok(g_p1_controller) &&
+            g_p0_last_hp > 0.001f && g_p1_last_hp > 0.001f) {
+            skill_dispatch_simulation_tick(propgo_now_ms());
+        }
         // HP tracking (Hit reactions are natively handled via slot 165 PlayerHitReactState.OnEnter)
         if (g_p0_combat_character && obj_ok(g_p0_combat_character)) {
             typedef float (*fn_get_hp)(void*, void*);
@@ -8530,6 +8542,32 @@ float skill_get_hp_ratio(int player_index) {
     return 1.0f;
 }
 
+float skill_get_hp(int player_index) {
+    void* pc = (player_index == 0) ? g_p0_controller : g_p1_controller;
+    if (pc && obj_ok(pc)) {
+        void* attr = *(void**)((char*)pc + 0x80);
+        if (attr && obj_ok(attr) && g_base) {
+            typedef float (*fn_get_hp)(void*, void*);
+            fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC660);
+            return get_hp(attr, NULL);
+        }
+    }
+    return 0.0f;
+}
+
+float skill_get_max_hp(int player_index) {
+    void* pc = (player_index == 0) ? g_p0_controller : g_p1_controller;
+    if (pc && obj_ok(pc)) {
+        void* attr = *(void**)((char*)pc + 0x80);
+        if (attr && obj_ok(attr) && g_base) {
+            typedef float (*fn_get_max)(void*, void*);
+            fn_get_max get_max = (fn_get_max)(g_base + 0xDAC628);
+            return get_max(attr, NULL);
+        }
+    }
+    return 0.0f;
+}
+
 void skill_heal(int player_index, float amount) {
     if (amount <= 0.0f) return;
     void* pc = (player_index == 0) ? g_p0_controller : g_p1_controller;
@@ -8588,11 +8626,13 @@ void skill_add_mana(int player_index, float norm_mana) {
             typedef void (*fn_set_norm_mana)(void*, float, void*);
             fn_set_norm_mana set_mana = (fn_set_norm_mana)(g_base + 0xDAC73C);
             float cur = get_mana(attr, NULL);
-            float next_mana = cur + norm_mana;
-            if (next_mana > 3.0f) next_mana = 3.0f;
+            float next_mana = cur + (norm_mana / 3.0f);
+            if (next_mana > 1.0f) next_mana = 1.0f;
             if (next_mana < 0.0f) next_mana = 0.0f;
             set_mana(attr, next_mana, NULL);
-            flog("SKILL_ADD_MANA: Player %d mana +%.2f (Mana: %.2f -> %.2f)", player_index, norm_mana, cur, next_mana);
+            if (fabsf(norm_mana) >= 0.1f) {
+                flog("SKILL_ADD_MANA: Player %d mana +%.2f (Mana: %.2f -> %.2f)", player_index, norm_mana, cur * 3.0f, next_mana * 3.0f);
+            }
         }
     }
 }
@@ -8610,7 +8650,7 @@ float skill_get_mana(int player_index) {
         if (attr && obj_ok(attr) && g_base) {
             typedef float (*fn_get_norm_mana)(void*, void*);
             fn_get_norm_mana get_mana = (fn_get_norm_mana)(g_base + 0xDAC720);
-            return get_mana(attr, NULL);
+            return get_mana(attr, NULL) * 3.0f;
         }
     }
     return 0.0f;
@@ -9862,7 +9902,7 @@ float hook_195(void* self) {
     float orig_rate = H[195].orig ? ((fn_get_float)H[195].orig)(self) : 1.0f;
     int is_p0 = is_player0_attr(self);
     float mod = skill_dispatch_power_gain_rate_mod(is_p0 ? 0 : 1);
-    if (mod > 0.0f) {
+    if (mod >= 0.0f) {
         orig_rate *= mod;
     }
     return orig_rate;

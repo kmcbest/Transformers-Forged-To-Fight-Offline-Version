@@ -233,6 +233,20 @@ float skill_get_hp_ratio(int player_index) {
     return 1.0f;
 }
 
+float skill_get_hp(int player_index) {
+    if (player_index >= 0 && player_index < 2) {
+        return g_players[player_index].hp;
+    }
+    return 0.0f;
+}
+
+float skill_get_max_hp(int player_index) {
+    if (player_index >= 0 && player_index < 2) {
+        return g_players[player_index].max_hp;
+    }
+    return 0.0f;
+}
+
 void skill_heal(int player_index, float amount) {
     if (player_index >= 0 && player_index < 2 && amount > 0.0f) {
         g_players[player_index].hp += amount;
@@ -294,6 +308,15 @@ SIM_API int sim_set_mana(int player_index, float mana) {
     if (mana > 3.0f) mana = 3.0f;
     g_players[player_index].mana = mana;
     skill_log("SIM: P%d mana set to %.2f / 3.00", player_index, mana);
+    return 1;
+}
+
+SIM_API int sim_set_hp(int player_index, float hp) {
+    if (player_index < 0 || player_index >= 2) return 0;
+    if (hp < 0.0f) hp = 0.0f;
+    if (hp > g_players[player_index].max_hp) hp = g_players[player_index].max_hp;
+    g_players[player_index].hp = hp;
+    skill_log("SIM: P%d hp set to %.1f / %.1f", player_index, hp, g_players[player_index].max_hp);
     return 1;
 }
 
@@ -1166,8 +1189,12 @@ SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
         if (skill_has_buff(attacker_idx, "power_lock")) {
             atk_gain = 0.0f; // 能量锁定禁止回气
         }
-        if (skill_has_buff(attacker_idx, "power")) {
+        if (skill_has_buff(attacker_idx, "power_gain") || skill_has_buff(attacker_idx, "buff_power")) {
             atk_gain *= 1.5f; // 能量获取增益
+        }
+        float rate_atk = skill_dispatch_power_gain_rate_mod(attacker_idx);
+        if (rate_atk >= 0.0f) {
+            atk_gain *= rate_atk;
         }
         atker->mana += atk_gain;
         if (atker->mana > 3.0f) atker->mana = 3.0f;
@@ -1192,11 +1219,15 @@ SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
         else if (action_type == 8) def_gain = 0.06f;   // 远程受击 18点 = 0.06格 (15 * 1.2)
     }
     // 受击方若被格挡不扣减回气
-    if (skill_has_buff(target_idx, "power_lock")) {
+    if (skill_has_buff(target_idx, "power_lock") || skill_has_buff(target_idx, "power_steal")) {
         def_gain = 0.0f;
     }
-    if (skill_has_buff(target_idx, "power")) {
+    if (skill_has_buff(target_idx, "power_gain") || skill_has_buff(target_idx, "buff_power")) {
         def_gain *= 1.5f;
+    }
+    float rate_def = skill_dispatch_power_gain_rate_mod(target_idx);
+    if (rate_def >= 0.0f) {
+        def_gain *= rate_def;
     }
     victim->mana += def_gain;
     if (victim->mana > 3.0f) victim->mana = 3.0f;

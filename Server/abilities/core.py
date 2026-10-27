@@ -51,6 +51,11 @@ class AbilityColor:
     DARK_PURPLE_SPECIAL_TC = "FF00FF"
     DARK_PURPLE_SPECIAL_GB = "9333EA"
 
+    # 白色图标 (特殊机制/不朽专属)
+    WHITE_SPECIAL = {"tc": "FFFFFF", "gt": "FFFFFF", "gb": "D1D5DB"}
+    WHITE_SPECIAL_TC = "FFFFFF"
+    WHITE_SPECIAL_GB = "D1D5DB"
+
     # 灰色图标 (倒计时与过渡状态): 一般表示倒计时和过渡状态，如蓄力等待、模式切换冷却、未激活的预热状态
     GRAY_COOLDOWN = {"tc": "CBD5E1", "gt": "CBD5E1", "gb": "94A3B8"}
     GRAY_COOLDOWN_TC = "CBD5E1"

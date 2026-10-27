@@ -35,6 +35,8 @@ int skill_is_unstoppable(int player_index);
 
 // 生命值与能量操作
 float skill_get_hp_ratio(int player_index);
+float skill_get_hp(int player_index);
+float skill_get_max_hp(int player_index);
 float skill_get_attack(int player_index);
 void skill_heal(int player_index, float amount);
 void skill_deal_damage(int target_player_index, float damage);
