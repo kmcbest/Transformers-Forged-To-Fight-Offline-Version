@@ -1122,6 +1122,12 @@ SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
             final_dmg *= 1.30f;
         }
     }
+    // 通用被动护甲减伤托底 (对未在独立 bot 模块中减免的角色生效)
+    if (final_dmg == base_dmg) {
+        if (skill_has_buff(target_idx, "block_armor") || skill_has_buff(target_idx, "armor_up")) {
+            final_dmg *= (1.0f - 0.165f);
+        }
+    }
     if (is_blocked && !is_heavy) {
         final_dmg *= (1.0f - victim->block_reduction);
     }

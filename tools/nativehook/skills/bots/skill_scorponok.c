@@ -6,7 +6,7 @@
 // 巨蝎勇士 (Scorponok BW) 技能模块
 // Bot ID: scorponok_bw_kabam
 // ===========================================================================
-// 1. [3253] 被动：毒液充能 (Venom Charge)
+// 1. [3253] 被动：毒液充能 (Venom Charge) - 每层充能增加 20% 攻击力
 // 2. [3264] SP1：目眩 (Daze)
 // 3. [3276] 重击：逆火 (Venom Backfire Passive)
 // 4. [3277] SP2：逆火 (Venom Backfire SP2)
@@ -15,6 +15,7 @@
 // 核心机制：逆火 (Backfire)
 // 巨蝎向对手施加逆火减益。在逆火生效期间，若对手释放特殊技能 (SP1/SP2/SP3)，
 // 对手会立刻承受逆火反噬，遭受基于巨蝎攻击力 153% 的即时震击伤害。
+// 毒液充能每层提升 20% 攻击力。
 // ===========================================================================
 
 static int      s_backfire_active[2]    = {0, 0};
@@ -32,9 +33,9 @@ static void scorponok_on_hit_connected(SkillHitContext* ctx) {
     if (s_backfire_active[ap]) {
         if (now_ms < s_backfire_end_ms[ap]) {
             if (ctx->special_index > 0 && ctx->hit_index == 0) {
-                // 特殊技首击即触发逆火震击反噬！
+                // 特殊技首击即触发逆火震击反噬：
                 float backlash_dmg = s_scorponok_atk[ap] * 1.53f;
-                skill_overlay("[%s] 触发逆火反噬！承受巨蝎 153%% 攻击力 (%.0f) 震击伤害！",
+                skill_overlay("[%s] 触发逆火反噬！承受巨蝎 153%% 攻击力(%.0f) 震击伤害！",
                               ap == 0 ? "我方" : "敌方", backlash_dmg);
                 skill_log("SCORPONOK: Backfire backlash triggered on P%d for %.1f damage", ap, backlash_dmg);
                 // 扣减伤害或消耗逆火
@@ -45,9 +46,19 @@ static void scorponok_on_hit_connected(SkillHitContext* ctx) {
         }
     }
 
-    // 2. 巨蝎作为攻击方：普通攻击/重击积攒毒液充能
+    // 2. 巨蝎作为攻击方：应用毒液充能攻击力提升 (+20%/层)
     if (ctx->attacker_bot_id && strstr(ctx->attacker_bot_id, "scorponok") != NULL) {
         int sp = ctx->attacker_player_index;
+        int charges = s_venom_charges[sp];
+        int buff_charges = skill_count_buffs(sp, "scorponok_venom_charge");
+        if (buff_charges > charges) charges = buff_charges;
+        if (charges > 0) {
+            float boost = 1.0f + (0.20f * (float)charges);
+            float old_dmg = ctx->modified_damage;
+            ctx->modified_damage *= boost;
+            skill_log("SCORPONOK: Venom charges (%d) boosted damage x%.2f (%.1f -> %.1f) on P%d",
+                      charges, boost, old_dmg, ctx->modified_damage, sp);
+        }
         if (s_venom_charges[sp] < 10) {
             s_venom_charges[sp]++;
         }
@@ -74,8 +85,7 @@ static void scorponok_on_fight_reset(int player_index) {
     if (player_index >= 0 && player_index < 2) {
         s_backfire_active[player_index] = 0;
         s_backfire_end_ms[player_index] = 0;
-        s_scorponok_atk[player_index] = 3000.0f;
-        s_venom_charges[player_index] = 0;
+        s_venom_charges[player_index]   = 0;
     }
 }
 

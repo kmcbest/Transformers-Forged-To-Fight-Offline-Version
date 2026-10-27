@@ -108,6 +108,24 @@ void skill_dispatch_hit_connected(SkillHitContext* ctx) {
     if (tgt_mod && tgt_mod != att_mod && tgt_mod->on_hit_connected) {
         tgt_mod->on_hit_connected(ctx);
     }
+
+    // 通用被动护甲减伤托底 (对未定义独立模块的角色生效，如 G1 擎天柱、原始擎天柱、铁皮等)：
+    if (!tgt_mod && ctx->target_player_index >= 0 && ctx->target_player_index < 2) {
+        int tp = ctx->target_player_index;
+        if (skill_has_buff(tp, "block_armor") || skill_has_buff(tp, "armor_up") || skill_has_buff(tp, "buff_armor")) {
+            ctx->modified_damage *= (1.0f - 0.165f); // 降低 16.5% 伤害
+        }
+    }
+
+    // 通用被动近战加攻托底 (对未定义独立模块的角色生效)：
+    if (!att_mod && ctx->attacker_player_index >= 0 && ctx->attacker_player_index < 2 && !ctx->is_ranged) {
+        int ap = ctx->attacker_player_index;
+        if (skill_has_buff(ap, "melee_buff")) {
+            ctx->modified_damage *= 1.50f; // 标准近战增益 +50%
+        } else if (skill_has_buff(ap, "atk_buff") || skill_has_buff(ap, "attack_buff") || skill_has_buff(ap, "attack_boost")) {
+            ctx->modified_damage *= 1.20f; // 标准攻击力增益 +20%
+        }
+    }
 }
 
 int skill_dispatch_buff_gate(SkillBuffGateContext* ctx, int* out_allowed) {

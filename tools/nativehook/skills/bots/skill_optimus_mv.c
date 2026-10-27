@@ -39,15 +39,12 @@ static void optimus_mv_on_hit_connected(SkillHitContext* ctx) {
     if (ctx->target_bot_id && strstr(ctx->target_bot_id, "optimusprime_cin_tf") != NULL) {
         int tp = ctx->target_player_index;
 
-        // 1. [2724] 进入格挡姿态获得 7 秒护甲增益
-        if (ctx->is_blocked) {
-            s_opt_armor_buff_end_ms[tp] = now_ms + 7000;
-            skill_overlay("[%s] 护甲增益激活 (减伤 16.5%%, 7s)", tp == 0 ? "电影擎天柱" : "敌方擎天柱");
-            skill_log("OPTIMUS_MV: Armor Buff activated on player %d for 7.0s", tp);
-        }
-
-        // 护甲增益减伤结算
-        if (now_ms < s_opt_armor_buff_end_ms[tp]) {
+        // 1. [2724] 护甲增益减伤结算 (减伤 16.5%)
+        // 由进入格挡姿态事件触发施加 optimusprime_cin_tf_block_armor (7s)
+        int has_armor = skill_has_buff(tp, "optimusprime_cin_tf_block_armor") ||
+                        skill_has_buff(tp, "block_armor") ||
+                        (now_ms < s_opt_armor_buff_end_ms[tp]);
+        if (has_armor) {
             float old_dmg = ctx->modified_damage;
             ctx->modified_damage *= (1.0f - 0.165f); // 降低 16.5% 伤害
             skill_log("OPTIMUS_MV: Armor reduced damage on P%d: %.1f -> %.1f", tp, old_dmg, ctx->modified_damage);
@@ -67,9 +64,14 @@ static void optimus_mv_on_hit_connected(SkillHitContext* ctx) {
             skill_log("OPTIMUS_MV: Melee Buff proc on P%d for 4.0s", ap);
         }
 
-        // 近战增益伤害加成
-        if (now_ms < s_opt_melee_buff_end_ms[ap] && !ctx->is_ranged) {
+        // 近战增益伤害加成 (支持真实 Buff 容器检索与本地时间戳双重保障，仅限近战攻击)
+        int has_melee = skill_has_buff(ap, "optimusprime_cin_tf_melee_buff") ||
+                        skill_has_buff(ap, "melee_buff") ||
+                        (now_ms < s_opt_melee_buff_end_ms[ap]);
+        if (has_melee && !ctx->is_ranged) {
+            float old_dmg = ctx->modified_damage;
             ctx->modified_damage *= 1.60f; // +60% 近战伤害
+            skill_log("OPTIMUS_MV: Melee Buff boosted damage on P%d: %.1f -> %.1f", ap, old_dmg, ctx->modified_damage);
         }
 
         // 3. [2726] 意志力吸血回生：处于流血状态时，造成的 35% 伤害转化为自身生命
@@ -111,6 +113,17 @@ static void optimus_mv_on_hit_connected(SkillHitContext* ctx) {
 static void optimus_mv_on_buff_applied(SkillBuffAppliedContext* ctx) {
     if (!ctx || !ctx->modifier_id) return;
     uint64_t now_ms = skill_now_ms();
+
+    if (ctx->target_bot_id && strstr(ctx->target_bot_id, "optimusprime_cin_tf") != NULL) {
+        int tp = ctx->target_player_index;
+        if (strstr(ctx->modifier_id, "block_armor") != NULL || strstr(ctx->modifier_id, "armor_up") != NULL) {
+            float dur = (ctx->override_duration > 0.0f) ? ctx->override_duration : 7.0f;
+            s_opt_armor_buff_end_ms[tp] = now_ms + (uint64_t)(dur * 1000.0f);
+        } else if (strstr(ctx->modifier_id, "melee_buff") != NULL) {
+            float dur = (ctx->override_duration > 0.0f) ? ctx->override_duration : 4.0f;
+            s_opt_melee_buff_end_ms[tp] = now_ms + (uint64_t)(dur * 1000.0f);
+        }
+    }
 
     // 检查是否为施加给电影擎天柱的流血
     if (strstr(ctx->modifier_id, "bleed") != NULL &&

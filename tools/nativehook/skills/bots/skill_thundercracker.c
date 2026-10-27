@@ -9,12 +9,13 @@
 // 1. [3404] 被动：近战 0 暴击 (Melee Zero Crit / White Damage)
 // 2. [3409] 被动：重击净化 (Heavy Attack Purify)
 // 3. [3410] 被动：净化转燃烧 (Purify to Burn Converter)
-// 4. [3420] SP1：近战增益 (SP1 Melee Buff)
+// 4. [3420] SP1：近战增益 (SP1 Melee Buff) - +50% 近战伤害，持续 6s
 // 5. [3422] SP3：震击 (SP3 Shock)
 //
 // 核心机制：
 // 惊天雷的近战攻击永远不产生暴击 (恒定为白字伤害)。
 // 重击命中时净化自身减益，并根据净化的减益层数在对手身上施加高额火焰燃烧。
+// 释放 SP1 后获得 6 秒近战增益 (+50% 近战伤害)。
 // ===========================================================================
 
 static int s_purified_count[2] = {0, 0};
@@ -31,7 +32,14 @@ static void thundercracker_on_hit_connected(SkillHitContext* ctx) {
             ctx->is_crit = false;
         }
 
-        // 2. 重击净化与燃烧转化：
+        // 2. SP1 近战增益 (+50% 近战伤害，持续 6s)
+        if (!ctx->is_ranged && (skill_has_buff(ap, "thundercracker_sp1_melee_buff") || skill_has_buff(ap, "melee_buff"))) {
+            float old_dmg = ctx->modified_damage;
+            ctx->modified_damage *= 1.50f;
+            skill_log("THUNDERCRACKER: SP1 Melee buff boosted damage on P%d: %.1f -> %.1f", ap, old_dmg, ctx->modified_damage);
+        }
+
+        // 3. 重击净化与燃烧转化：
         if (ctx->is_last_hit) {
             if (s_purified_count[ap] > 0) {
                 float burn_mult = 1.0f + (0.50f * s_purified_count[ap]);

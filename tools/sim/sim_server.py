@@ -11,6 +11,7 @@ import sys
 import json
 import sqlite3
 import ctypes
+import random
 import webbrowser
 from pathlib import Path
 from http.server import HTTPServer, SimpleHTTPRequestHandler
@@ -331,6 +332,13 @@ class SimEngine:
         return False, res.stderr or res.stdout
 
     def init(self, p0_bot, p1_bot, p0_hp, p1_hp, p0_atk, p1_atk):
+        if "CURRENT_MATCHUP" in globals():
+            CURRENT_MATCHUP["p0_bot_id"] = p0_bot
+            CURRENT_MATCHUP["p1_bot_id"] = p1_bot
+            CURRENT_MATCHUP["p0_hp"] = float(p0_hp)
+            CURRENT_MATCHUP["p1_hp"] = float(p1_hp)
+            CURRENT_MATCHUP["p0_atk"] = float(p0_atk)
+            CURRENT_MATCHUP["p1_atk"] = float(p1_atk)
         return self.dll.sim_init(p0_bot.encode("utf-8"), p1_bot.encode("utf-8"),
                                  float(p0_hp), float(p1_hp), float(p0_atk), float(p1_atk))
 
@@ -350,6 +358,8 @@ class SimEngine:
 
     def set_block(self, player, is_blocking):
         self.dll.sim_set_block(int(player), int(is_blocking))
+        if is_blocking and "trigger_block_state_phase" in globals():
+            trigger_block_state_phase(int(player), int(is_blocking))
 
     def set_mana(self, player, mana):
         if hasattr(self.dll, 'sim_set_mana'):
@@ -498,6 +508,59 @@ g_engine.init(CURRENT_MATCHUP["p0_bot_id"], CURRENT_MATCHUP["p1_bot_id"],
               CURRENT_MATCHUP["p0_hp"], CURRENT_MATCHUP["p1_hp"],
               CURRENT_MATCHUP["p0_atk"], CURRENT_MATCHUP["p1_atk"])
 trigger_onstart_phase()
+
+def trigger_block_state_phase(pidx: int, is_blocking: int):
+    """
+    IL2CPP 生命周期仿真引擎：触发进入格挡状态机事件 (onPlayerStateEnter / state=Block)。
+    当玩家切换为格挡 (is_blocking=1) 时，扫描角色的全部 StatMods，凡是含有 'onPlayerStateEnter' 
+    且 trigger_scope 包含 'state=Block' 的修饰器，立即注入目标并触发 Callout！
+    """
+    if not is_blocking:
+        return
+
+    bid = CURRENT_MATCHUP["p0_bot_id"] if pidx == 0 else CURRENT_MATCHUP["p1_bot_id"]
+    base_hp = CURRENT_MATCHUP["p0_hp"] if pidx == 0 else CURRENT_MATCHUP["p1_hp"]
+    base_atk = CURRENT_MATCHUP["p0_atk"] if pidx == 0 else CURRENT_MATCHUP["p1_atk"]
+
+    reg = resolve_bot_registry(bid)
+    if not reg:
+        return
+
+    try:
+        res = reg["builder"](base_hp=base_hp, base_atk=base_atk)
+        mods = res[0] if isinstance(res, (tuple, list)) else res
+        appears = res[1] if isinstance(res, (tuple, list)) and len(res) >= 2 else {}
+    except Exception as e:
+        print(f"[ERROR][Block Phase] Builder error for {bid}: {e}")
+        return
+
+    for mid, mod in mods.items():
+        trs = mod.get("tr", [])
+        uits = mod.get("uit", [])
+        scope = mod.get("trs", "")
+        # 只要监听 onPlayerStateEnter 且为 state=Block
+        if ("onPlayerStateEnter" in trs or "onPlayerStateEnter" in uits) and ("state=Block" in scope or not scope):
+            chance = float(mod.get("c", 1.0))
+            if random.random() <= chance:
+                ta = mod.get("ta", "self")
+                target_idx = pidx if ta == "self" else (1 - pidx)
+                dur = float(mod.get("d", -1.0))
+                g_engine.inject_buff(target_idx, mid, dur, 1)
+
+                app_ids = mod.get("a", [])
+                app = appears.get(app_ids[0], {}) if app_ids else {}
+                callout = app.get("a") or app.get("st") or mid
+
+                msg = f"[BLOCK_ENTER_TRIGGER] 格挡姿态触发: P{pidx} ({bid}) 激活 '{mid}' -> 施加给 P{target_idx} (持续 {dur}s, 呼出: '{callout}')"
+                print(msg)
+                PENDING_START_EVENTS.append({
+                    "pidx": target_idx,
+                    "type": 4, # Callout floater
+                    "val": 0,
+                    "text": f"格挡触发: {callout}",
+                    "log": msg
+                })
+
 
 # ---------------------------------------------------------------------------
 # 3. 数据库与角色能力查询

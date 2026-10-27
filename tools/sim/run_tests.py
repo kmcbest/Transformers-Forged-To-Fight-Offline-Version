@@ -949,6 +949,43 @@ def test_player_invincible():
     assert_true(after_off < before_off, f"Player Invincible OFF: P0 normal damage restored (HP: {before_off} -> {after_off})")
 
 
+
+def test_block_state_enter():
+    print("\n--- [TEST 18] Block State Lifecycle & Armor Damage Reduction ---")
+    g_engine.init("optimusprime_cin_tf", "generic_enemy", 30000.0, 30000.0, 2500.0, 2500.0)
+    g_engine.set_crit_rate(0, 0.0)
+    g_engine.set_crit_rate(1, 0.0)
+    g_engine.reset()
+
+    # 进入格挡触发 onPlayerStateEnter (state=Block) -> optimusprime_cin_tf_block_armor
+    g_engine.set_block(0, 1)
+    st = g_engine.get_state()
+    buffs = [b["id"] for b in st["p0"]["buffs"]]
+    assert "optimusprime_cin_tf_block_armor" in buffs, "Optimus Prime block armor not triggered"
+    print("  [PASS] Movie Optimus gained 7.0s block armor on block toggle")
+
+    # 验证受击享受 16.5% 减伤 (2500 * 0.4 = 1000 -> 835.0)
+    hp_before = st["p0"]["hp"]
+    g_engine.attack(1, 2, 0, 1, 0)
+    dmg = hp_before - g_engine.get_state()["p0"]["hp"]
+    assert abs(dmg - 835.0) < 1.0, f"Expected 835.0, got {dmg}"
+    print("  [PASS] Movie Optimus reduced damage by 16.5% under armor (1000 -> 835)")
+
+    # G1 擎天柱
+    g_engine.init("fte_optimus_gs_t3", "generic_enemy", 30000.0, 30000.0, 2500.0, 2500.0)
+    g_engine.set_crit_rate(0, 0.0)
+    g_engine.set_crit_rate(1, 0.0)
+    g_engine.reset()
+    g_engine.set_block(0, 1)
+    buffs_g1 = [b["id"] for b in g_engine.get_state()["p0"]["buffs"]]
+    assert "optimus_block_armor" in buffs_g1, "G1 Optimus block armor not triggered"
+    print("  [PASS] G1 Optimus gained 2.5s block armor on block toggle")
+    hp_g1 = g_engine.get_state()["p0"]["hp"]
+    g_engine.attack(1, 2, 0, 1, 0)
+    dmg_g1 = hp_g1 - g_engine.get_state()["p0"]["hp"]
+    assert abs(dmg_g1 - 835.0) < 1.0, f"Expected 835.0, got {dmg_g1}"
+    print("  [PASS] G1 Optimus reduced damage by 16.5% under armor (1000 -> 835)")
+
 def test_projectile_speed_boost():
     print("\n--- [TEST 17] Projectile Flight Speed Quality Gate (Prowl SP2, Arcee SP1, Megatron Fusion Cannon) ---")
 
@@ -1011,6 +1048,7 @@ if __name__ == "__main__":
     test_wheeljack_abilities()
     test_motormaster_abilities()
     test_projectile_speed_boost()
+    test_block_state_enter()
     print("\n" + "=" * 70)
-    print("🎉 全部 17 项质量门禁测试 100% 通过！子弹弹速提速、千斤顶、汽车大师等全角色机制闭环！")
+    print("🎉 全部 18 项质量门禁测试 100% 通过！子弹弹速提速、千斤顶、汽车大师等全角色机制闭环！")
     print("=" * 70)

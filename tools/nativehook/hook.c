@@ -6377,11 +6377,13 @@ void* hook_150(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
                 ch_str[len] = 0;
             }
         }
-        int rank = (boss && obj_ok(boss)) ? *(int*)((char*)boss + 0x60) : 5;
-        int level = (boss && obj_ok(boss)) ? *(int*)((char*)boss + 0x64) : 50;
-        rating = calc_enemy_rating(ch_str, rank, level);
-        a2 = (void*)(intptr_t)rating;
-        LOG("CALC_RATING_CB: fixed rating %s (rank %d lvl %d) -> %d", ch_str, rank, level, rating);
+        if (boss && obj_ok(boss) && ch_str[0]) {
+            int rank = *(int*)((char*)boss + 0x60);
+            int level = *(int*)((char*)boss + 0x64);
+            rating = calc_enemy_rating(ch_str, rank, level);
+            a2 = (void*)(intptr_t)rating;
+            LOG("CALC_RATING_CB: fixed rating %s (rank %d lvl %d) -> %d", ch_str, rank, level, rating);
+        }
     }
     return H[150].orig(a0, a1, a2, a3, a4, a5, a6, a7);
 }
@@ -6403,7 +6405,7 @@ void* hook_151(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
          a0, boss, ch_str, rank, level);
     void* r = H[151].orig(a0, a1, a2, a3, a4, a5, a6, a7);
     PROTECT({
-        if (a0 && obj_ok(a0)) {
+        if (a0 && obj_ok(a0) && boss && obj_ok(boss) && ch_str[0]) {
             void* aligner = *(void**)((char*)a0 + 0xF8);
             if (aligner && obj_ok(aligner)) {
                 void (*safe_set_active)(void*, int, void*) = (void(*)(void*, int, void*))(g_base + 0xDD4258);

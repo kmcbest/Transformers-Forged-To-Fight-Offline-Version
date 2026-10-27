@@ -2478,6 +2478,14 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         return gamestore_buy_ok;
     }
 
+    if(strstr(p, "/loginrewards2/") || strstr(p, "/loginrewards/")) {
+        static const unsigned char loginrewards_resp[] =
+            "{\"error\":null,\"result\":{\"boards\":[],\"daysInCurrentMonth\":30,\"currentMonth\":10,\"endOfDayTimestamp\":2000000000}}";
+        *outn = strlen((const char*)loginrewards_resp);
+        logmsg("LOGINREWARDS: handled %s with empty boards", p);
+        return loginrewards_resp;
+    }
+
     return NULL;
 }
 
