@@ -33,6 +33,7 @@ typedef enum {
 static MegatronusRelic s_active_relic[2]       = {MEGATRONUS_RELIC_NONE, MEGATRONUS_RELIC_NONE};
 static uint64_t        s_last_tick_ms[2]       = {0, 0};
 static int             s_last_power_bar[2]     = {0, 0};
+static int             s_combat_started[2]     = {0, 0};
 
 static int             s_immortality_used[2]   = {0, 0};
 static int             s_immortality_active[2] = {0, 0};
@@ -52,14 +53,15 @@ static void megatronus_on_fight_reset(int player_index) {
     }
 
     s_active_relic[player_index]       = MEGATRONUS_RELIC_FURY; // 开局处于狂怒遗迹状态
-    s_last_tick_ms[player_index]       = skill_now_ms();
+    s_last_tick_ms[player_index]       = 0; // 重置时钟，由正式开战的首个 tick 初始化
     s_last_power_bar[player_index]     = 0;
+    s_combat_started[player_index]     = 0; // 标记未开战 (从天而降动画期间绝不充能)
     s_immortality_used[player_index]   = 0;
     s_immortality_active[player_index] = 0;
     s_immortality_end_ms[player_index] = 0;
 
-    // 开局清空能量，确保火种源能量从 0 开始自主充盈
-    skill_add_mana(player_index, -3.0f);
+    // 开局清空能量，确保从 0.0 开始自主充盈
+    skill_set_mana(player_index, 0.0f);
 
     // 检查开局血量是否低于 10%
     float hp = skill_get_hp(player_index);
@@ -90,21 +92,50 @@ static void megatronus_on_simulation_tick(uint64_t now_ms) {
         const char* bid = skill_get_bot_id(p);
         if (!bid || strstr(bid, "megatronus") == NULL) continue;
 
-        // 1. 火种源自主回能: 每秒自动产生 1.2% 最大能量 (3.0 * 0.012 = 0.036 bars/s)
-        if (s_last_tick_ms[p] == 0) {
-            s_last_tick_ms[p] = now_ms;
-        } else if (now_ms > s_last_tick_ms[p]) {
-            uint64_t dt_ms = now_ms - s_last_tick_ms[p];
-            s_last_tick_ms[p] = now_ms;
+        // 0. 真实开战初始化 (从天而降动画结束后，首个 tick 触发，确保从 0.00 开始充能)
+        if (!s_combat_started[p]) {
+            s_combat_started[p] = 1;
+            s_last_tick_ms[p]   = now_ms;
+            s_last_power_bar[p] = 0;
+            skill_set_mana(p, 0.0f);
+            skill_log("MEGATRONUS: P%d combat officially started, zeroed mana and armed tick clock", p);
+            continue;
+        }
 
-            if (!skill_has_buff(p, "power_lock")) {
-                float mana_delta = ((float)dt_ms / 1000.0f) * 0.036f;
-                skill_add_mana(p, mana_delta);
+        // 1. 火种源自主回能: 14秒充满一格能量 (1.0 / 14.0 = ~0.07142857 bars/s)
+        float cur_mana = skill_get_mana(p);
+
+        // 门禁 A: 若能量已达到满 3 格 (>= 3.0)，彻底停止充能并对齐时钟，严禁溢出或累积！
+        if (cur_mana >= 3.0f - 0.005f) {
+            s_last_tick_ms[p] = now_ms;
+            if (cur_mana > 3.0f) {
+                skill_set_mana(p, 3.0f);
+            }
+        }
+        // 门禁 B: 匀速自主充能 (放 S 技完全不影响自发充气)
+        else {
+            if (s_last_tick_ms[p] == 0) {
+                s_last_tick_ms[p] = now_ms;
+            } else if (now_ms > s_last_tick_ms[p]) {
+                uint64_t dt_ms = now_ms - s_last_tick_ms[p];
+                s_last_tick_ms[p] = now_ms;
+
+
+
+                if (!skill_has_buff(p, "power_lock")) {
+                    float mana_delta = ((float)dt_ms / 1000.0f) * (1.0f / 14.0f);
+                    skill_add_mana(p, mana_delta);
+
+                    // 充能后如果超过 3 格，严格截断并写回
+                    if (skill_get_mana(p) > 3.0f) {
+                        skill_set_mana(p, 3.0f);
+                    }
+                }
             }
         }
 
         // 2. 遗迹流转交替: "每充满一格能量，交替切换"
-        float cur_mana = skill_get_mana(p);
+        cur_mana = skill_get_mana(p);
         int cur_bar = (int)(cur_mana + 0.001f); // 0, 1, 2, 3
         if (cur_bar > 3) cur_bar = 3;
         if (cur_bar > s_last_power_bar[p]) {
@@ -346,6 +377,17 @@ static void megatronus_on_hit_connected(SkillHitContext* ctx) {
 }
 
 // 供外部与模拟器快速读取遗迹状态与不朽状态
+static void megatronus_on_attack_start(int player_index, int action_type) {
+    if (player_index < 0 || player_index >= 2) return;
+    const char* bid = skill_get_bot_id(player_index);
+    if (!bid || strstr(bid, "megatronus") == NULL) return;
+
+    // 当释放 SP3 (action_type == 64) 消耗 3 格气时，将内部记录同步清零
+    if (action_type == 64 || action_type == 0x40) {
+        s_last_power_bar[player_index] = 0;
+    }
+}
+
 int skill_get_megatronus_relic(int player_index) {
     if (player_index >= 0 && player_index < 2) {
         return (int)s_active_relic[player_index];
@@ -375,5 +417,5 @@ BotSkillModule g_module_megatronus = {
     .on_block_state      = NULL,
     .on_dodge_enter      = NULL,
     .on_hitreact_enter   = NULL,
-    .on_attack_start     = NULL,
+    .on_attack_start     = megatronus_on_attack_start,
 };

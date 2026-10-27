@@ -302,6 +302,14 @@ float skill_get_mana(int player_index) {
     return 0.0f;
 }
 
+void skill_set_mana(int player_index, float norm_mana) {
+    if (player_index >= 0 && player_index < 2) {
+        if (norm_mana < 0.0f) norm_mana = 0.0f;
+        if (norm_mana > 3.0f) norm_mana = 3.0f;
+        g_players[player_index].mana = norm_mana;
+    }
+}
+
 SIM_API int sim_set_mana(int player_index, float mana) {
     if (player_index < 0 || player_index >= 2) return 0;
     if (mana < 0.0f) mana = 0.0f;
@@ -577,6 +585,7 @@ SIM_API void sim_reset(void) {
     g_sim_clock_ms = 1000;
     g_floater_count = 0;
     skill_dispatch_fight_reset();
+    skill_dispatch_simulation_tick(g_sim_clock_ms);
     skill_log("SIM_RESET: Fight reset for both combatants.");
 }
 

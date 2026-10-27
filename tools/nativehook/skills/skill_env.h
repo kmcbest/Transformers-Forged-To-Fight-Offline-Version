@@ -41,7 +41,9 @@ float skill_get_attack(int player_index);
 void skill_heal(int player_index, float amount);
 void skill_deal_damage(int target_player_index, float damage);
 void skill_add_mana(int player_index, float norm_mana);
+void skill_set_mana(int player_index, float norm_mana);
 float skill_get_mana(int player_index);
+int skill_is_special_attacking(int player_index);
 
 // 格挡与控制
 uint64_t skill_get_block_enter_ms(int player_index);

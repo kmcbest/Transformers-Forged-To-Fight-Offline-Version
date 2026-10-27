@@ -51,12 +51,12 @@ def run_tests():
     assert abs(mana_after_hit - 0.0) < 0.01, f"Expected 0.00 mana after getting hit, got {mana_after_hit}"
     print("  [PASS] 震天尊防守受击 100% 不产生能量 (常规回能归零生效)!")
 
-    # 3. 推进物理时钟 10.0 秒: 预期自主产生 10.0 * 0.036 = 0.36 格能量 (1.2% * 3.0 * 10s)
-    g_engine.tick(10000) # 10000 ms = 10s
+    # 3. 推进物理时钟 14.0 秒: 预期自主产生 14.0 * (1.0/14.0) = 1.000 格能量 (14秒充满一格)
+    g_engine.tick(14000) # 14000 ms = 14s
     mana_after_tick = g_engine.get_state()["p0"]["mana"]
-    print(f"  [Megatronus] 经过 10.0 秒自主回气后能量: {mana_after_tick:.3f} (预期 0.360)")
-    assert abs(mana_after_tick - 0.360) < 0.02, f"Expected ~0.360 mana, got {mana_after_tick}"
-    print("  [PASS] 火种源能量每秒精准自动产生 1.2% 最大能量 (10s 累加 0.36 格)!")
+    print(f"  [Megatronus] 经过 14.0 秒自主回气后能量: {mana_after_tick:.3f} (预期 1.000)")
+    assert abs(mana_after_tick - 1.000) < 0.02, f"Expected ~1.000 mana, got {mana_after_tick}"
+    print("  [PASS] 火种源能量精准 14 秒充满一格能量 (14s 累加 1.000 格)!")
 
     # ------------------------------------------------------------------------
     # [TEST 2] 狂怒遗迹 (Relic of Fury): 开局激活，攻击力 +60%，对手格挡精通 -20%
@@ -210,6 +210,50 @@ def run_tests():
     print(f"  [Megatronus] SP2 首击生命窃取回复量: {healed:.1f} (预期 17.5% 最大生命: {expected_steal:.1f})")
     assert abs(healed - expected_steal) < 1.0, f"Expected {expected_steal}, got {healed}"
     print("  [PASS] SP2 保存遗迹下精准窃取对手 17.5% 最大生命并全额治愈自身!")
+
+    # ------------------------------------------------------------------------
+    # [TEST 8] 满 3 格气静置停充: 满气后静置 10 秒，能量严格钳制在 3.00，绝不溢出累积
+    # ------------------------------------------------------------------------
+    print("\n--- [TEST 8] 满 3 格气静置停充: 满气静置 10 秒，能量严格锁死在 3.00 格 ---")
+    init_combatant("megatronus_gs_kabam", "generic_enemy")
+    g_engine.set_mana(0, 3.0)
+    g_engine.tick(100) # 同步当前能量状态
+    mana_full = g_engine.get_state()["p0"]["mana"]
+    print(f"  [Megatronus] 满能量初始值: {mana_full:.3f}")
+    assert abs(mana_full - 3.0) < 0.01
+
+    # 静置 10 秒 (10000ms)，此时自主回能必须彻底停止并持续对齐时钟，禁止暗中累加
+    g_engine.tick(10000)
+    mana_after_idle = g_engine.get_state()["p0"]["mana"]
+    print(f"  [Megatronus] 满能量静置 10 秒后能量: {mana_after_idle:.3f} (严格等于 3.000)")
+    assert abs(mana_after_idle - 3.0) < 0.001, f"Expected strictly 3.000, got {mana_after_idle}"
+    print("  [PASS] 满 3 格能量后自主充能彻底停充，能量严格锁死在 3.000 格，无任何溢出累积！")
+
+    # ------------------------------------------------------------------------
+    # [TEST 9] 延迟释放 S3 扣除 3 格能量并清零
+    # ------------------------------------------------------------------------
+    print("\n--- [TEST 9] 延迟释放 S3: 满气静置后释放 S3，扣除 3 格气后能量精准清零 ---")
+    g_engine.attack_start(0, 64)
+    g_engine.attack(0, 64, 0, 1, 0)
+    mana_after_s3 = g_engine.get_state()["p0"]["mana"]
+    print(f"  [Megatronus] 释放 S3 终结后能量: {mana_after_s3:.3f} (预期 0.000)")
+    assert abs(mana_after_s3 - 0.0) < 0.001, f"Expected strictly 0.000 mana after S3, got {mana_after_s3}"
+    print("  [PASS] 满气释放 S3 精准扣除 3 格能量归零！")
+
+    # ------------------------------------------------------------------------
+    # [TEST 10] 释放特殊技完全不影响自主充气
+    # ------------------------------------------------------------------------
+    print("\n--- [TEST 10] 特殊技期间自主充能持续生效: 放S技不阻断回能，无需等待普攻打中对手 ---")
+    init_combatant("megatronus_gs_kabam", "generic_enemy")
+    g_engine.set_mana(0, 0.0)
+    # 模拟启动 SP1 特技动作 (act=16)
+    g_engine.attack_start(0, 16)
+    # 流逝 7.0 秒 (7000ms)，此时自主回能必须持续推进，预期产生 7.0 * (1.0/14.0) = 0.500 格
+    g_engine.tick(7000)
+    mana_during_sp = g_engine.get_state()["p0"]["mana"]
+    print(f"  [Megatronus] 施放特技并流逝 7.0 秒后能量: {mana_during_sp:.3f} (预期 0.500)")
+    assert abs(mana_during_sp - 0.500) < 0.02, f"Expected ~0.500 mana during SP, got {mana_during_sp}"
+    print("  [PASS] 释放特殊技期间自主充能持续匀速推进，完全不受动作状态阻断！")
 
     print("\n" + "=" * 75)
     print("🎉 恭喜！震天尊 (Megatronus) 全套 13 项核心技能、自主充能与双遗迹 100% 通过！")

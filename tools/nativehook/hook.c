@@ -865,6 +865,7 @@ static void combat_overlay_push(const char *fmt, ...) {
     }
 }
 
+static volatile uint64_t g_combat_sim_clock_ms = 1000;
 static volatile int g_p0_power_seeded = 0;
 static volatile int g_p0_current_special_index = -1;
 static volatile uint64_t g_ranged_boost_end_ms[2] = {0, 0};
@@ -5308,6 +5309,7 @@ void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     g_p0_retreat_execute_ms = 0;
     g_p1_last_dodge_ms = 0;
     g_p0_last_hitreact_ms = 0;
+    g_combat_sim_clock_ms = 1000;
     skill_dispatch_fight_reset();
     return H[140].orig(a0,a1,a2,a3,a4,a5,a6,a7);
 }
@@ -5654,6 +5656,49 @@ static void give_p0_max_power(void) {
 
 /* SP3BEAT (shipped): per simulation tick, drive the one contiguous alternate-form block for an
    active cinematic special and apply the scheduled body when it changes. */
+
+static int is_fight_running(void) {
+    if (g_base) {
+        // 1. Unity timeScale check: 游戏暂停时 timeScale 必为 0.0f
+        typedef float (*fn_get_ts)(void*);
+        fn_get_ts get_ts = (fn_get_ts)(g_base + 0x16B6DB8); // UnityEngine.Time.get_timeScale
+        if (get_ts && get_ts(NULL) <= 0.0001f) {
+            return 0; // Paused via Unity timeScale!
+        }
+
+        // 2. BattleArbiter 状态检定: 必须处于 Running 且未处于 Paused
+        typedef void* (*fn_get_arbiter)(void);
+        fn_get_arbiter get_arbiter = (fn_get_arbiter)(g_base + 0x00CF8E28); // BattleArbiter.get_Instance
+        if (get_arbiter) {
+            void* arb = get_arbiter();
+            if (arb && obj_ok(arb)) {
+                typedef bool (*fn_is_paused)(void*, void*);
+                fn_is_paused is_paused = (fn_is_paused)(g_base + 0x00CF92C4); // BattleArbiter.get_Paused
+                if (is_paused && is_paused(arb, NULL)) {
+                    return 0; // Paused via BattleArbiter!
+                }
+                if (*(uint8_t*)((char*)arb + 0xF8)) {
+                    return 0; // Direct BattleArbiter._paused field
+                }
+
+                typedef bool (*fn_is_running)(void*, void*);
+                fn_is_running is_running = (fn_is_running)(g_base + 0x00CF9218); // BattleArbiter.get_IsRunningFight
+                if (is_running) {
+                    return is_running(arb, NULL) ? 1 : 0;
+                }
+            }
+        }
+        if (g_p0_controller && obj_ok(g_p0_controller)) {
+            typedef bool (*fn_input)(void*, void*);
+            fn_input get_input = (fn_input)(g_base + 0x01175700); // PlayerController.get_InputEnabled
+            if (get_input) {
+                return get_input(g_p0_controller, NULL) ? 1 : 0;
+            }
+        }
+    }
+    return 0;
+}
+
 void* hook_145(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
     void* r=H[145].orig(a0,a1,a2,a3,a4,a5,a6,a7);
     PROTECT({
@@ -5829,8 +5874,21 @@ void* hook_145(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
         }
         if (g_p0_controller && obj_ok(g_p0_controller) &&
             g_p1_controller && obj_ok(g_p1_controller) &&
-            g_p0_last_hp > 0.001f && g_p1_last_hp > 0.001f) {
-            skill_dispatch_simulation_tick(propgo_now_ms());
+            g_p0_last_hp > 0.001f && g_p1_last_hp > 0.001f &&
+            is_fight_running()) {
+            float dt_sec = 0.0f;
+            typedef float (*fn_get_dt)(void*);
+            fn_get_dt get_dt = (fn_get_dt)(g_base + 0x16B6C08); // UnityEngine.Time.get_deltaTime
+            if (get_dt) {
+                dt_sec = get_dt(NULL);
+            }
+            if (dt_sec > 0.0001f) {
+                if (dt_sec > 0.1f) dt_sec = 0.1f; // 单帧跃迁最高保护在 100ms
+                uint32_t dt_ms = (uint32_t)(dt_sec * 1000.0f);
+                if (dt_ms == 0) dt_ms = 1;
+                g_combat_sim_clock_ms += dt_ms;
+                skill_dispatch_simulation_tick(g_combat_sim_clock_ms);
+            }
         }
         // HP tracking (Hit reactions are natively handled via slot 165 PlayerHitReactState.OnEnter)
         if (g_p0_combat_character && obj_ok(g_p0_combat_character)) {
@@ -6676,9 +6734,15 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
                 if (strstr(g_p1_bot_id, "prowl") != NULL) prowl_start_charge(0);
             }
         } else if (action == 32) { // Action.Dash (主动前冲，打断充能)
-            if (is_p0_act) s_p0_last_dash_ms = propgo_now_ms();
-            else s_p1_last_dash_ms = propgo_now_ms();
-            skill_dispatch_attack_start(is_p0_act ? 0 : 1, 2); // Dash attack type = 2
+            uint64_t now_ms = propgo_now_ms();
+            if (is_p0_act) s_p0_last_dash_ms = now_ms;
+            else s_p1_last_dash_ms = now_ms;
+            static uint64_t s_last_dash_dispatch_ms[2] = {0, 0};
+            int p_idx = is_p0_act ? 0 : 1;
+            if (now_ms - s_last_dash_dispatch_ms[p_idx] >= 500) {
+                s_last_dash_dispatch_ms[p_idx] = now_ms;
+                skill_dispatch_attack_start(p_idx, 2); // Dash attack type = 2
+            }
             if (is_p0_act && strstr(g_p0_bot_id, "prowl") != NULL && g_p0_prowl_charging) {
                 prowl_finish_charge(1, "dash forward (action 32)");
             } else if (is_p1_act && strstr(g_p1_bot_id, "prowl") != NULL && g_p1_prowl_charging) {
@@ -8637,6 +8701,22 @@ void skill_add_mana(int player_index, float norm_mana) {
     }
 }
 
+
+void skill_set_mana(int player_index, float norm_mana) {
+    void* pc = (player_index == 0) ? g_p0_controller : g_p1_controller;
+    if (pc && obj_ok(pc)) {
+        void* attr = *(void**)((char*)pc + 0x80);
+        if (attr && obj_ok(attr) && g_base) {
+            typedef void (*fn_set_norm_mana)(void*, float, void*);
+            fn_set_norm_mana set_mana = (fn_set_norm_mana)(g_base + 0xDAC73C);
+            float target = norm_mana / 3.0f;
+            if (target > 1.0f) target = 1.0f;
+            if (target < 0.0f) target = 0.0f;
+            set_mana(attr, target, NULL);
+        }
+    }
+}
+
 const char* skill_get_bot_id(int player_index) {
     if (player_index == 0) return g_p0_bot_id;
     if (player_index == 1) return g_p1_bot_id;
@@ -8948,9 +9028,13 @@ int skill_is_special_attacking(int player_index) {
                 }
             }
         }
-        // 2. Also check g_p0_current_special_index for P0
-        if (!is_special && player_index == 0 && g_p0_current_special_index > 0) {
-            is_special = 1;
+        // 2. Also check PlayerController.get_IsSpecialAttacking
+        if (!is_special) {
+            typedef bool (*fn_is_sp)(void*, void*);
+            fn_is_sp is_sp = (fn_is_sp)(g_base + 0x01173F0C); // PlayerController.get_IsSpecialAttacking
+            if (is_sp && is_sp(pc, NULL)) {
+                is_special = 1;
+            }
         }
     });
     return is_special;
@@ -9170,7 +9254,9 @@ buff_gate_done: ;
                 }
             }
             // 不可阻挡霸体生效时间窗口跟踪 (Unstoppable Buff Activated)
-            if (mod_id[0] && strstr(mod_id, "unstoppable") != NULL) {
+            // 注意：dash 类霸体属于动作状态机约束（仅限前冲位移中有效，由 hook_194 中精确判定 state==Dash），
+            // 严禁在此为 dash 类霸体设置全局定时器，否则会导致霸体持续时间溢出到普通近战轻中攻击（M1/L1），破坏正常格斗手感！
+            if (mod_id[0] && strstr(mod_id, "unstoppable") != NULL && strstr(mod_id, "dash") == NULL) {
                 float dur_sec = 0.0f;
                 if (useOverrideDuration && overrideDuration > 0.0f) {
                     dur_sec = overrideDuration;
@@ -10105,6 +10191,10 @@ float hook_197(void* self, int32_t attack_level, float mana_gain_pct, int32_t bl
     }
 
     int is_p0 = is_player0_attr(self);
+    const char* atk_bot = is_p0 ? g_p0_bot_id : g_p1_bot_id;
+    if (atk_bot && strstr(atk_bot, "megatronus") != NULL) {
+        return 0.0f; // 震天尊主动攻击不产生能量 (仅由火种源自主充能)
+    }
 
     if (is_p0 && g_combat_enemy_mana_gain < 0.8f) {
         // 重生快充 / 畅快压制：我方（P0）加气速度保留上游作者非官方速度（5个近战连击加一格，即 3倍速）
@@ -10148,9 +10238,8 @@ float hook_197(void* self, int32_t attack_level, float mana_gain_pct, int32_t bl
 
     // PowerGainRate modifier
     float pgr = hook_195(self);
-    if (pgr > 0.0f) {
-        gain *= pgr;
-    }
+    if (pgr <= 0.0f) return 0.0f;
+    gain *= pgr;
 
     uint64_t now_ms = propgo_now_ms();
     if (is_p0) {
@@ -10176,6 +10265,10 @@ float hook_198(void* self, int32_t attack_level, float mana_gain_pct, int32_t bl
     float gain = 0.0f;
 
     int is_p0 = is_player0_attr(self);
+    const char* def_bot = is_p0 ? g_p0_bot_id : g_p1_bot_id;
+    if (def_bot && strstr(def_bot, "megatronus") != NULL) {
+        return 0.0f; // 震天尊防守受击不产生能量 (仅由火种源自主充能)
+    }
     void* defender_owner = *(void**)((char*)self + 0x28);
     void* attacker_pc = (defender_owner && obj_ok(defender_owner)) ? *(void**)((char*)defender_owner + 0xF8) : NULL;
     if (!attacker_pc) {
@@ -10246,9 +10339,8 @@ float hook_198(void* self, int32_t attack_level, float mana_gain_pct, int32_t bl
 
     // PowerGainRate modifier
     float pgr = hook_195(self);
-    if (pgr > 0.0f) {
-        gain *= pgr;
-    }
+    if (pgr <= 0.0f) return 0.0f;
+    gain *= pgr;
 
     // 敌方受击加气倍率 (官方原版 1.0x, 重生快充 0.5x, 畅快压制 0.2x)
     if (!is_p0) {
