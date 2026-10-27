@@ -278,11 +278,11 @@
                 "sharkticon_gs_warrior"
               ],
               "rank": 1,
-              "level": 1,
+              "level": 36,
               "sig_lvl": 0,
               "flvl": 0,
               "aiType": 0,
-              "aiString": "Default",
+              "aiString": "Hardish",
               "aiPer": "Ranged",
               "mapOverride": "karnak",
               "todIndex": 2
@@ -368,11 +368,11 @@
                 "kickback_gs_kabam"
               ],
               "rank": 1,
-              "level": 1,
+              "level": 36,
               "sig_lvl": 0,
               "flvl": 0,
               "aiType": 0,
-              "aiString": "Default",
+              "aiString": "Hardish",
               "aiPer": "Ranged",
               "mapOverride": "rust",
               "todIndex": 2
@@ -457,11 +457,11 @@
                 "waspinator_gs_deluxe"
               ],
               "rank": 1,
-              "level": 1,
+              "level": 36,
               "sig_lvl": 0,
               "flvl": 0,
               "aiType": 0,
-              "aiString": "Default",
+              "aiString": "Hardish",
               "aiPer": "Ranged",
               "mapOverride": "hongkong",
               "todIndex": 0
@@ -546,11 +546,11 @@
                 "sharkticon_gs_demolition"
               ],
               "rank": 1,
-              "level": 1,
+              "level": 36,
               "sig_lvl": 0,
               "flvl": 0,
               "aiType": 0,
-              "aiString": "Default",
+              "aiString": "Hardish",
               "aiPer": "Ranged",
               "mapOverride": "mine",
               "todIndex": 0
@@ -635,11 +635,11 @@
                 "soundwave_gs"
               ],
               "rank": 1,
-              "level": 1,
+              "level": 36,
               "sig_lvl": 0,
               "flvl": 0,
               "aiType": 0,
-              "aiString": "Default",
+              "aiString": "Hardish",
               "aiPer": "Ranged",
               "mapOverride": "chicago",
               "todIndex": 1
@@ -725,11 +725,11 @@
                 "cyclonus_gs_uw06"
               ],
               "rank": 1,
-              "level": 1,
+              "level": 36,
               "sig_lvl": 0,
               "flvl": 0,
               "aiType": 0,
-              "aiString": "Default",
+              "aiString": "Hardish",
               "aiPer": "Ranged",
               "mapOverride": "karnak",
               "todIndex": 1
@@ -814,11 +814,11 @@
                 "motormaster_gs_voyager2015"
               ],
               "rank": 1,
-              "level": 1,
+              "level": 36,
               "sig_lvl": 0,
               "flvl": 0,
               "aiType": 0,
-              "aiString": "Default",
+              "aiString": "Hardish",
               "aiPer": "Ranged",
               "mapOverride": "rust",
               "todIndex": 1
@@ -903,11 +903,11 @@
                 "bludgeon_gs_rd20"
               ],
               "rank": 1,
-              "level": 1,
+              "level": 36,
               "sig_lvl": 0,
               "flvl": 0,
               "aiType": 0,
-              "aiString": "Default",
+              "aiString": "Hardish",
               "aiPer": "Ranged",
               "mapOverride": "hongkong",
               "todIndex": 2
@@ -992,11 +992,11 @@
                 "necrotronus_gs_kabam"
               ],
               "rank": 1,
-              "level": 1,
+              "level": 36,
               "sig_lvl": 0,
               "flvl": 0,
               "aiType": 0,
-              "aiString": "Default",
+              "aiString": "Hardish",
               "aiPer": "Ranged",
               "mapOverride": "mine",
               "todIndex": 2
@@ -1073,11 +1073,11 @@
                 "nemesisprime_gs_voyager2015"
               ],
               "rank": 1,
-              "level": 1,
+              "level": 61,
               "sig_lvl": 0,
               "flvl": 0,
               "aiType": 0,
-              "aiString": "Default",
+              "aiString": "Hard",
               "aiPer": "Ranged",
               "mapOverride": "chicago",
               "todIndex": 0
@@ -1399,11 +1399,11 @@
                       "sharkticon_gs_warrior"
                     ],
                     "rank": 1,
-                    "level": 1,
+                    "level": 36,
                     "sig_lvl": 0,
                     "flvl": 0,
                     "aiType": 0,
-                    "aiString": "Default",
+                    "aiString": "Hardish",
                     "aiPer": "Ranged",
                     "mapOverride": "karnak",
                     "todIndex": 2
@@ -1489,11 +1489,11 @@
                       "kickback_gs_kabam"
                     ],
                     "rank": 1,
-                    "level": 1,
+                    "level": 36,
                     "sig_lvl": 0,
                     "flvl": 0,
                     "aiType": 0,
-                    "aiString": "Default",
+                    "aiString": "Hardish",
                     "aiPer": "Ranged",
                     "mapOverride": "rust",
                     "todIndex": 2
@@ -1578,11 +1578,11 @@
                       "waspinator_gs_deluxe"
                     ],
                     "rank": 1,
-                    "level": 1,
+                    "level": 36,
                     "sig_lvl": 0,
                     "flvl": 0,
                     "aiType": 0,
-                    "aiString": "Default",
+                    "aiString": "Hardish",
                     "aiPer": "Ranged",
                     "mapOverride": "hongkong",
                     "todIndex": 0
@@ -1667,11 +1667,11 @@
                       "sharkticon_gs_demolition"
                     ],
                     "rank": 1,
-                    "level": 1,
+                    "level": 36,
                     "sig_lvl": 0,
                     "flvl": 0,
                     "aiType": 0,
-                    "aiString": "Default",
+                    "aiString": "Hardish",
                     "aiPer": "Ranged",
                     "mapOverride": "mine",
                     "todIndex": 0
@@ -1756,11 +1756,11 @@
                       "soundwave_gs"
                     ],
                     "rank": 1,
-                    "level": 1,
+                    "level": 36,
                     "sig_lvl": 0,
                     "flvl": 0,
                     "aiType": 0,
-                    "aiString": "Default",
+                    "aiString": "Hardish",
                     "aiPer": "Ranged",
                     "mapOverride": "chicago",
                     "todIndex": 1
@@ -1846,11 +1846,11 @@
                       "cyclonus_gs_uw06"
                     ],
                     "rank": 1,
-                    "level": 1,
+                    "level": 36,
                     "sig_lvl": 0,
                     "flvl": 0,
                     "aiType": 0,
-                    "aiString": "Default",
+                    "aiString": "Hardish",
                     "aiPer": "Ranged",
                     "mapOverride": "karnak",
                     "todIndex": 1
@@ -1935,11 +1935,11 @@
                       "motormaster_gs_voyager2015"
                     ],
                     "rank": 1,
-                    "level": 1,
+                    "level": 36,
                     "sig_lvl": 0,
                     "flvl": 0,
                     "aiType": 0,
-                    "aiString": "Default",
+                    "aiString": "Hardish",
                     "aiPer": "Ranged",
                     "mapOverride": "rust",
                     "todIndex": 1
@@ -2024,11 +2024,11 @@
                       "bludgeon_gs_rd20"
                     ],
                     "rank": 1,
-                    "level": 1,
+                    "level": 36,
                     "sig_lvl": 0,
                     "flvl": 0,
                     "aiType": 0,
-                    "aiString": "Default",
+                    "aiString": "Hardish",
                     "aiPer": "Ranged",
                     "mapOverride": "hongkong",
                     "todIndex": 2
@@ -2113,11 +2113,11 @@
                       "necrotronus_gs_kabam"
                     ],
                     "rank": 1,
-                    "level": 1,
+                    "level": 36,
                     "sig_lvl": 0,
                     "flvl": 0,
                     "aiType": 0,
-                    "aiString": "Default",
+                    "aiString": "Hardish",
                     "aiPer": "Ranged",
                     "mapOverride": "mine",
                     "todIndex": 2
@@ -2194,11 +2194,11 @@
                       "nemesisprime_gs_voyager2015"
                     ],
                     "rank": 1,
-                    "level": 1,
+                    "level": 61,
                     "sig_lvl": 0,
                     "flvl": 0,
                     "aiType": 0,
-                    "aiString": "Default",
+                    "aiString": "Hard",
                     "aiPer": "Ranged",
                     "mapOverride": "chicago",
                     "todIndex": 0
@@ -2519,11 +2519,11 @@
                           "sharkticon_gs_warrior"
                         ],
                         "rank": 1,
-                        "level": 1,
+                        "level": 36,
                         "sig_lvl": 0,
                         "flvl": 0,
                         "aiType": 0,
-                        "aiString": "Default",
+                        "aiString": "Hardish",
                         "aiPer": "Ranged",
                         "mapOverride": "karnak",
                         "todIndex": 2
@@ -2609,11 +2609,11 @@
                           "kickback_gs_kabam"
                         ],
                         "rank": 1,
-                        "level": 1,
+                        "level": 36,
                         "sig_lvl": 0,
                         "flvl": 0,
                         "aiType": 0,
-                        "aiString": "Default",
+                        "aiString": "Hardish",
                         "aiPer": "Ranged",
                         "mapOverride": "rust",
                         "todIndex": 2
@@ -2698,11 +2698,11 @@
                           "waspinator_gs_deluxe"
                         ],
                         "rank": 1,
-                        "level": 1,
+                        "level": 36,
                         "sig_lvl": 0,
                         "flvl": 0,
                         "aiType": 0,
-                        "aiString": "Default",
+                        "aiString": "Hardish",
                         "aiPer": "Ranged",
                         "mapOverride": "hongkong",
                         "todIndex": 0
@@ -2787,11 +2787,11 @@
                           "sharkticon_gs_demolition"
                         ],
                         "rank": 1,
-                        "level": 1,
+                        "level": 36,
                         "sig_lvl": 0,
                         "flvl": 0,
                         "aiType": 0,
-                        "aiString": "Default",
+                        "aiString": "Hardish",
                         "aiPer": "Ranged",
                         "mapOverride": "mine",
                         "todIndex": 0
@@ -2876,11 +2876,11 @@
                           "soundwave_gs"
                         ],
                         "rank": 1,
-                        "level": 1,
+                        "level": 36,
                         "sig_lvl": 0,
                         "flvl": 0,
                         "aiType": 0,
-                        "aiString": "Default",
+                        "aiString": "Hardish",
                         "aiPer": "Ranged",
                         "mapOverride": "chicago",
                         "todIndex": 1
@@ -2966,11 +2966,11 @@
                           "cyclonus_gs_uw06"
                         ],
                         "rank": 1,
-                        "level": 1,
+                        "level": 36,
                         "sig_lvl": 0,
                         "flvl": 0,
                         "aiType": 0,
-                        "aiString": "Default",
+                        "aiString": "Hardish",
                         "aiPer": "Ranged",
                         "mapOverride": "karnak",
                         "todIndex": 1
@@ -3055,11 +3055,11 @@
                           "motormaster_gs_voyager2015"
                         ],
                         "rank": 1,
-                        "level": 1,
+                        "level": 36,
                         "sig_lvl": 0,
                         "flvl": 0,
                         "aiType": 0,
-                        "aiString": "Default",
+                        "aiString": "Hardish",
                         "aiPer": "Ranged",
                         "mapOverride": "rust",
                         "todIndex": 1
@@ -3144,11 +3144,11 @@
                           "bludgeon_gs_rd20"
                         ],
                         "rank": 1,
-                        "level": 1,
+                        "level": 36,
                         "sig_lvl": 0,
                         "flvl": 0,
                         "aiType": 0,
-                        "aiString": "Default",
+                        "aiString": "Hardish",
                         "aiPer": "Ranged",
                         "mapOverride": "hongkong",
                         "todIndex": 2
@@ -3233,11 +3233,11 @@
                           "necrotronus_gs_kabam"
                         ],
                         "rank": 1,
-                        "level": 1,
+                        "level": 36,
                         "sig_lvl": 0,
                         "flvl": 0,
                         "aiType": 0,
-                        "aiString": "Default",
+                        "aiString": "Hardish",
                         "aiPer": "Ranged",
                         "mapOverride": "mine",
                         "todIndex": 2
@@ -3314,11 +3314,11 @@
                           "nemesisprime_gs_voyager2015"
                         ],
                         "rank": 1,
-                        "level": 1,
+                        "level": 61,
                         "sig_lvl": 0,
                         "flvl": 0,
                         "aiType": 0,
-                        "aiString": "Default",
+                        "aiString": "Hard",
                         "aiPer": "Ranged",
                         "mapOverride": "chicago",
                         "todIndex": 0
@@ -3651,11 +3651,11 @@
                 "sharkticon_gs_warrior"
               ],
               "rank": 1,
-              "level": 1,
+              "level": 36,
               "sig_lvl": 0,
               "flvl": 0,
               "aiType": 0,
-              "aiString": "Default",
+              "aiString": "Hardish",
               "aiPer": "Ranged",
               "mapOverride": "karnak",
               "todIndex": 2
