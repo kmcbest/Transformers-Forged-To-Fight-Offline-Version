@@ -10329,6 +10329,19 @@ static void native_fadeout_custom_music(int duration_ms) {
     if (need_detach) (*s_jvm)->DetachCurrentThread(s_jvm);
 }
 
+static int questflow_is_in_gameboard(void* qf) {
+    if (!obj_ok(qf)) return 0;
+    // Check Gameboard _gameBoard at offset 0x50
+    void* gb = *(void**)((uintptr_t)qf + 0x50);
+    if (obj_ok(gb)) return 1;
+    // Check QuestFlow.State _state at offset 0x30:
+    // 0=TeamSelect, 1=BeginQuest, 2=ResyncQuest, 3=UpdateBCG,
+    // 4=LoadGameBoard, 5=OpenScreens, 6=SetupHud, 7=GameBoardReady, 8=Expired, 9=QuestCompleted
+    int state = *(int32_t*)((uintptr_t)qf + 0x30);
+    if (state >= 4 && state <= 7) return 1;
+    return 0;
+}
+
 static const char* get_current_flow_music_category(void) {
     if (!g_base) return "main";
     void* (*get_fm_inst)(void*) = (void*(*)(void*))(g_base + 0xDC8D58);
@@ -10345,7 +10358,10 @@ static const char* get_current_flow_music_category(void) {
             if (kname) {
                 if (strstr(kname, "PVPRaidFlow") != NULL || strstr(kname, "Raid") != NULL) return "raid";
                 if (strstr(kname, "PVPFlow") != NULL) return "arena";
-                if (strstr(kname, "QuestFlow") != NULL) return "quest";
+                if (strstr(kname, "QuestFlow") != NULL) {
+                    if (questflow_is_in_gameboard(in_prog)) return "quest";
+                    return "main";
+                }
                 if (strstr(kname, "HomeFlow") != NULL) return "main";
             }
         }
@@ -10361,7 +10377,10 @@ static const char* get_current_flow_music_category(void) {
             if (kname) {
                 if (strstr(kname, "PVPRaidFlow") != NULL || strstr(kname, "Raid") != NULL) return "raid";
                 if (strstr(kname, "PVPFlow") != NULL) return "arena";
-                if (strstr(kname, "QuestFlow") != NULL) return "quest";
+                if (strstr(kname, "QuestFlow") != NULL) {
+                    if (questflow_is_in_gameboard(active)) return "quest";
+                    return "main";
+                }
                 if (strstr(kname, "HomeFlow") != NULL) return "main";
             }
         }
@@ -10384,7 +10403,10 @@ static const char* get_current_flow_music_category(void) {
                 if (strstr(kname, "FightFlow") != NULL) continue;
                 if (strstr(kname, "PVPRaidFlow") != NULL || strstr(kname, "Raid") != NULL) return "raid";
                 if (strstr(kname, "PVPFlow") != NULL) return "arena";
-                if (strstr(kname, "QuestFlow") != NULL) return "quest";
+                if (strstr(kname, "QuestFlow") != NULL) {
+                    if (questflow_is_in_gameboard(flow)) return "quest";
+                    return "main";
+                }
                 if (strstr(kname, "HomeFlow") != NULL) return "main";
             }
         }
@@ -10540,8 +10562,12 @@ void* hook_208(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
 void* hook_209(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     void* r = H[209].orig(a0, a1, a2, a3, a4, a5, a6, a7);
     if (tftf_get_enable_custom_music()) {
-        LOG("[Jukebox] QuestFlow.Enter -> quest");
-        native_play_music_category("quest");
+        if (questflow_is_in_gameboard(a0)) {
+            LOG("[Jukebox] QuestFlow.Enter (in gameboard) -> quest");
+            native_play_music_category("quest");
+        } else {
+            LOG("[Jukebox] QuestFlow.Enter (before map) -> keep main");
+        }
     }
     return r;
 }
@@ -10549,8 +10575,13 @@ void* hook_209(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
 void* hook_210(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     void* r = H[210].orig(a0, a1, a2, a3, a4, a5, a6, a7);
     if (tftf_get_enable_custom_music()) {
-        LOG("[Jukebox] QuestFlow.Resume -> quest");
-        native_play_music_category("quest");
+        if (questflow_is_in_gameboard(a0)) {
+            LOG("[Jukebox] QuestFlow.Resume (in gameboard) -> quest");
+            native_play_music_category("quest");
+        } else {
+            LOG("[Jukebox] QuestFlow.Resume (not in gameboard) -> main");
+            native_play_music_category("main");
+        }
     }
     return r;
 }
