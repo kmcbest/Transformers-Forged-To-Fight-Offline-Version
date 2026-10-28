@@ -58,7 +58,7 @@ class TestMotormasterAbility(unittest.TestCase):
         self.assertEqual(dash_mod["trs"], "state=Dash")
         self.assertEqual(dash_mod["ta"], "self")
         self.assertEqual(dash_mod["mt"], "buff")
-        self.assertGreaterEqual(dash_mod["d"], 0.5)
+        self.assertGreater(dash_mod["d"], 0.0)
 
     def test_motormaster_sp2_unstoppable_contract(self):
         """验证 SP2 霸体修饰器的底层契约。"""

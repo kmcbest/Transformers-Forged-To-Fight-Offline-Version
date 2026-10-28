@@ -45,7 +45,7 @@ def build_motormaster_abilities(base_hp: float = 34894.0, base_atk: float = 2629
     # 1. 前冲霸体 (Dashing Unstoppable, 0.7s)
     m_dash, a_dash = make_unstoppable_statmod(
         mod_id="motormaster_dash_unstoppable",
-        duration=0.7,
+        duration=0.55,
         trigger="onPlayerStateEnter",
         trigger_scope="state=Dash",
         appr_id="appr_motormaster_dash_unstoppable",

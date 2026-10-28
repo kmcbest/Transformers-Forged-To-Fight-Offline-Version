@@ -212,6 +212,15 @@ void skill_set_power_lock(int target_player_index, uint64_t duration_ms) {
     }
 }
 
+static float s_sim_opponent_distance = 25.0f;
+float skill_get_opponent_distance(int player_index) { (void)player_index; return s_sim_opponent_distance; }
+SIM_API void sim_set_distance(float dist) { s_sim_opponent_distance = dist; }
+void skill_set_motormaster_dash_unstoppable(int player_index, uint64_t duration_ms) { (void)player_index; (void)duration_ms; }
+void skill_clear_motormaster_dash_unstoppable(int player_index) { (void)player_index; }
+int skill_is_motormaster_dashing_unstoppable(int player_index) { (void)player_index; return 0; }
+void skill_play_bot_move(int player_index, const char* move_name) { (void)player_index; (void)move_name; }
+void skill_stop_bot_move(int player_index, const char* move_name) { (void)player_index; (void)move_name; }
+
 void skill_set_unstoppable(int player_index, uint64_t duration_ms) {
     if (player_index >= 0 && player_index < 2) {
         g_players[player_index].unstoppable_end_ms = g_sim_clock_ms + duration_ms;

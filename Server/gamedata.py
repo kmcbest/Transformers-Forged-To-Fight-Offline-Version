@@ -1715,7 +1715,7 @@ CHALLENGE_R = 14
 _CHALLENGE_SPOKE_ANGLES = [0, math.pi/3, 2*math.pi/3, math.pi, 4*math.pi/3, 5*math.pi/3]
 
 _CHALLENGE_SPOKE_ENEMIES = [
-    # 0: Brawler (East, 0 deg) - 12 bots
+    # 0: Brawler (East, 0 deg) - 13 bots
     [
         "sharkticon_gs_brawler",
         "sunstreaker_gs_deluxe2008",
@@ -1727,7 +1727,6 @@ _CHALLENGE_SPOKE_ENEMIES = [
         "optimusprime_cin_tf",
         "optimusprimal_bw_mp32",
         "optimusprime_sg_voyager2015",
-        "ultramagnus_sg_leader",
         "motormaster_gs_voyager2015",
         "wildrider_gs_deluxe2016",
         "grimlock_gs_mp08",
@@ -1763,7 +1762,7 @@ _CHALLENGE_SPOKE_ENEMIES = [
         "drift_cin_aoe",
         "dragstrip_gs_deluxe2016",
     ],
-    # 3: Tactician (West, 180 deg) - 10 bots
+    # 3: Tactician (West, 180 deg) - 13 bots
     [
         "sharkticon_gs_tactician",
         "dinobot_bw_kabam",
@@ -1775,6 +1774,9 @@ _CHALLENGE_SPOKE_ENEMIES = [
         "starsaber_gs_leader2014",
         "nemesisprime_gs_voyager2015",
         "megatron_gs_leader2015",
+        "soundblaster_gs_mp13b",
+        "fte_stars_gs_t3",
+        "fte_optimus_gs_t3",
     ],
     # 4: Tech (SW, 240 deg) - 12 bots
     [
@@ -1801,7 +1803,7 @@ _CHALLENGE_SPOKE_ENEMIES = [
         "ironhide_cin_rotf",
         "deadend_gs_deluxe2015",
         "waspinator_gs_deluxe",
-        "soundblaster_gs_mp13b",
+        "ultramagnus_sg_leader",
         "megatronus_gs_kabam",
         "novastorm_gs_leader2015",
         "megatron_cin_rotf",

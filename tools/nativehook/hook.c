@@ -6537,16 +6537,18 @@ void* hook_153(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
         if (strstr(g_p0_bot_id, "prowl") != NULL && g_p0_prowl_charging) {
             prowl_finish_charge(1, "special attack start (hook_153)");
         }
-        int sp_action_p0 = (index == 0) ? 16 : ((index == 1) ? 320 : 64);
-        skill_dispatch_attack_start(0, 0x201 + index);
+        // 1-based index (1=SP1, 2=SP2, 3=SP3)
+        int sp_action_p0 = (index == 1) ? 16 : ((index == 2) ? 320 : 64);
+        skill_dispatch_attack_start(0, 0x200 + index);
         skill_dispatch_attack_start(0, sp_action_p0);
     } else if (self == g_p1_controller || (obj_ok(self) && *(int32_t*)((uintptr_t)self + 0xF4) == 1)) {
         reset_player_attack_chain(self);
         if (strstr(g_p1_bot_id, "prowl") != NULL && g_p1_prowl_charging) {
             prowl_finish_charge(0, "special attack start (hook_153)");
         }
-        int sp_action_p1 = (index == 0) ? 16 : ((index == 1) ? 320 : 64);
-        skill_dispatch_attack_start(1, 0x201 + index);
+        // 1-based index (1=SP1, 2=SP2, 3=SP3)
+        int sp_action_p1 = (index == 1) ? 16 : ((index == 2) ? 320 : 64);
+        skill_dispatch_attack_start(1, 0x200 + index);
         skill_dispatch_attack_start(1, sp_action_p1);
     }
     void* r = H[153].orig(self, a1, a2, a3, a4, a5, a6, a7);
@@ -8570,6 +8572,68 @@ void skill_set_power_leak(int player_index, uint64_t duration_ms, float step) {
 void skill_set_power_lock(int target_player_index, uint64_t duration_ms) {
     (void)target_player_index;
     (void)duration_ms;
+}
+
+static volatile uint64_t g_mm_dash_unstoppable_end_ms[2] = {0, 0};
+
+float skill_get_opponent_distance(int player_index) {
+    void* pc = (player_index == 0) ? g_p0_controller : g_p1_controller;
+    if (pc && obj_ok(pc) && g_base) {
+        typedef float (*fn_get_dist)(void*, void*);
+        return ((fn_get_dist)(g_base + 0x1175A28))(pc, NULL);
+    }
+    return 10.0f;
+}
+
+void skill_set_motormaster_dash_unstoppable(int player_index, uint64_t duration_ms) {
+    if (player_index >= 0 && player_index < 2) {
+        g_mm_dash_unstoppable_end_ms[player_index] = propgo_now_ms() + duration_ms;
+    }
+}
+
+void skill_clear_motormaster_dash_unstoppable(int player_index) {
+    if (player_index >= 0 && player_index < 2) {
+        g_mm_dash_unstoppable_end_ms[player_index] = 0;
+    }
+}
+
+int skill_is_motormaster_dashing_unstoppable(int player_index) {
+    if (player_index >= 0 && player_index < 2) {
+        return (propgo_now_ms() < g_mm_dash_unstoppable_end_ms[player_index]);
+    }
+    return 0;
+}
+
+void skill_play_bot_move(int player_index, const char* move_name) {
+    if (player_index < 0 || player_index >= 2 || !move_name || !move_name[0]) return;
+    void* pc = (player_index == 0) ? g_p0_controller : g_p1_controller;
+    if (pc && obj_ok(pc) && g_base && g_strnew) {
+        void* seq = *(void**)((char*)pc + 0xA8);
+        if (seq && obj_ok(seq)) {
+            typedef void (*fn_enter_move)(void*, void*, float, void*);
+            void* str_obj = g_strnew(move_name);
+            if (str_obj) {
+                ((fn_enter_move)(g_base + 0x100C88C))(seq, str_obj, 0.0f, NULL);
+                flog("PLAY_BOT_MOVE: P%d EnterMove('%s') executed on seq=%p", player_index, move_name, seq);
+            }
+        }
+    }
+}
+
+void skill_stop_bot_move(int player_index, const char* move_name) {
+    if (player_index < 0 || player_index >= 2 || !move_name || !move_name[0]) return;
+    void* pc = (player_index == 0) ? g_p0_controller : g_p1_controller;
+    if (pc && obj_ok(pc) && g_base && g_strnew) {
+        void* seq = *(void**)((char*)pc + 0xA8);
+        if (seq && obj_ok(seq)) {
+            typedef void (*fn_exit_move)(void*, void*, void*);
+            void* str_obj = g_strnew(move_name);
+            if (str_obj) {
+                ((fn_exit_move)(g_base + 0x100C104))(seq, str_obj, NULL);
+                flog("STOP_BOT_MOVE: P%d ExitMove('%s') executed on seq=%p", player_index, move_name, seq);
+            }
+        }
+    }
 }
 
 void skill_set_unstoppable(int player_index, uint64_t duration_ms) {
@@ -10603,11 +10667,14 @@ void* hook_199(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     }
 
     if (strcmp(name, "music_fe") == 0) {
+        if (g_base) ((void(*)(void*))(g_base + 0xB5085C))(NULL); // FabricControl.StopMusic
         const char* cat = get_current_flow_music_category();
         native_play_music_category(cat);
     } else if (strcmp(name, "music_questboard") == 0) {
+        if (g_base) ((void(*)(void*))(g_base + 0xB5085C))(NULL); // FabricControl.StopMusic
         native_play_music_category("quest");
     } else if (strcmp(name, "music_fight_loop") == 0) {
+        if (g_base) ((void(*)(void*))(g_base + 0xB5085C))(NULL); // FabricControl.StopMusic
         const char* cat = get_current_fight_music_category();
         native_play_music_category(cat);
     } else if (strcmp(name, "music_gacha") == 0) {

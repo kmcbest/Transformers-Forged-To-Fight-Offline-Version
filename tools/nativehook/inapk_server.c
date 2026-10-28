@@ -1614,9 +1614,15 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
     }
     if(strstr(p, "/matches/activate-match")) {
         if (body && bn > 0) {
-            if (strstr(body, "10001")) g_selected_raid_opponent = 0;
-            else if (strstr(body, "10003")) g_selected_raid_opponent = 2;
-            else if (strstr(body, "10002")) g_selected_raid_opponent = 1;
+            int midx = json_int(body, end, "midx", -1);
+            if (midx == 0) {
+                g_selected_raid_opponent = 0;
+            } else if (midx == 1) {
+                g_selected_raid_opponent = 1;
+            } else if (midx == 2) {
+                g_selected_raid_opponent = 2;
+            }
+            logmsg("ACTIVATE_MATCH: parsed midx=%d -> g_selected_raid_opponent=%d", midx, g_selected_raid_opponent);
         }
         if(strstr(p, "fight")) {
             static const unsigned char fight_match_ok[] = "{\"error\":null,\"result\":{\"matchID\":\"quests_fight_match_1\",\"matchId\":\"quests_fight_match_1\",\"status\":\"active\",\"timeout\":180,\"matchTimeout\":180,\"matchAttributes\":{}}}";

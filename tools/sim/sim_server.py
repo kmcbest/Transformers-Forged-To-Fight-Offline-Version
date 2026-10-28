@@ -314,6 +314,10 @@ class SimEngine:
             self.dll.sim_dash.argtypes = [ctypes.c_int]
             self.dll.sim_dash.restype = ctypes.c_int
 
+        if hasattr(self.dll, 'sim_set_distance'):
+            self.dll.sim_set_distance.argtypes = [ctypes.c_float]
+            self.dll.sim_set_distance.restype = None
+
         if hasattr(self.dll, 'sim_get_projectile_speed'):
             self.dll.sim_get_projectile_speed.argtypes = [ctypes.c_int, ctypes.c_float, ctypes.c_int]
             self.dll.sim_get_projectile_speed.restype = ctypes.c_float
@@ -397,6 +401,10 @@ class SimEngine:
 
     def dodge(self, player, dodge_type):
         return self.dll.sim_dodge(int(player), int(dodge_type))
+
+    def set_distance(self, dist: float):
+        if hasattr(self.dll, 'sim_set_distance'):
+            self.dll.sim_set_distance(ctypes.c_float(dist))
 
     def dash(self, player):
         if hasattr(self.dll, 'sim_dash'):

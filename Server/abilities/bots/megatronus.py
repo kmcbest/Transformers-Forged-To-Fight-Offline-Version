@@ -247,7 +247,7 @@ def build_megatronus_abilities(base_hp: float = 35206.0, base_atk: float = 2375.
     )
     mod_immort = {
         "id": "megatronus_relic_immortality",
-        "t": "invulnerable",
+        "t": "protection",
         "tm": "",
         "ta": "self",
         "tr": [],
@@ -663,5 +663,107 @@ def build_megatronus_abilities(base_hp: float = 35206.0, base_atk: float = 2375.
     }
     validate_statmod(mod_sp3_life_steal)
     mods[mod_sp3_life_steal["id"]] = mod_sp3_life_steal
+
+    # -------------------------------------------------------------------------
+    # 4b. 震天尊专属三大遗迹光环 Move 特效 (官方 moves.assetbundle 原生绑定)
+    # -------------------------------------------------------------------------
+    mod_fury_vfx = {
+        "id": "megatronus_relic_fury_vfx",
+        "t": "play_move",
+        "tm": "relic_orange",
+        "ta": "self",
+        "tr": [],
+        "uit": [],
+        "pri": 0,
+        "trm": 0.0,
+        "trs": "",
+        "trr": "repeat",
+        "c": 1.0,
+        "m": 1.0,
+        "d": -1.0,
+        "s": "none",
+        "mt": "buff",
+        "v": "",
+        "ms": "",
+        "st": 1,
+        "g": "megatronus_relic_vfx",
+        "gc": 0.0,
+        "gcv": "",
+        "rcv": "",
+        "ti": 0,
+        "a": [],
+        "au": [],
+        "rh": 0.0,
+        "ra": 0.0,
+        "it": 0,
+    }
+    validate_statmod(mod_fury_vfx)
+    mods[mod_fury_vfx["id"]] = mod_fury_vfx
+
+    mod_pres_vfx = {
+        "id": "megatronus_relic_preservation_vfx",
+        "t": "play_move",
+        "tm": "relic_blue",
+        "ta": "self",
+        "tr": [],
+        "uit": [],
+        "pri": 0,
+        "trm": 0.0,
+        "trs": "",
+        "trr": "repeat",
+        "c": 1.0,
+        "m": 1.0,
+        "d": -1.0,
+        "s": "none",
+        "mt": "buff",
+        "v": "",
+        "ms": "",
+        "st": 1,
+        "g": "megatronus_relic_vfx",
+        "gc": 0.0,
+        "gcv": "",
+        "rcv": "",
+        "ti": 0,
+        "a": [],
+        "au": [],
+        "rh": 0.0,
+        "ra": 0.0,
+        "it": 0,
+    }
+    validate_statmod(mod_pres_vfx)
+    mods[mod_pres_vfx["id"]] = mod_pres_vfx
+
+    mod_immort_vfx = {
+        "id": "megatronus_relic_immortality_vfx",
+        "t": "play_move",
+        "tm": "relic_white",
+        "ta": "self",
+        "tr": [],
+        "uit": [],
+        "pri": 0,
+        "trm": 0.0,
+        "trs": "",
+        "trr": "repeat",
+        "c": 1.0,
+        "m": 1.0,
+        "d": 8.0,
+        "s": "none",
+        "mt": "buff",
+        "v": "",
+        "ms": "",
+        "st": 1,
+        "g": "megatronus_relic_vfx",
+        "gc": 0.0,
+        "gcv": "",
+        "rcv": "",
+        "ti": 0,
+        "a": [],
+        "au": [],
+        "rh": 0.0,
+        "ra": 0.0,
+        "it": 0,
+    }
+    validate_statmod(mod_immort_vfx)
+    mods[mod_immort_vfx["id"]] = mod_immort_vfx
 
     return mods, appears, buffs

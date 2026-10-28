@@ -2,6 +2,14 @@
 #include <stdint.h>
 #include <stddef.h>
 
+// 距离与汽车大师专属前冲霸体控制
+float skill_get_opponent_distance(int player_index);
+void skill_set_motormaster_dash_unstoppable(int player_index, uint64_t duration_ms);
+void skill_clear_motormaster_dash_unstoppable(int player_index);
+int skill_is_motormaster_dashing_unstoppable(int player_index);
+void skill_play_bot_move(int player_index, const char* move_name);
+void skill_stop_bot_move(int player_index, const char* move_name);
+
 #ifdef __cplusplus
 extern "C" {
 #endif

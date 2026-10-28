@@ -49,6 +49,9 @@ static void megatronus_on_fight_reset(int player_index) {
         s_immortality_used[player_index]   = 0;
         s_immortality_active[player_index] = 0;
         s_immortality_end_ms[player_index] = 0;
+    skill_consume_buff(player_index, "megatronus_relic_fury_vfx", 99);
+    skill_consume_buff(player_index, "megatronus_relic_preservation_vfx", 99);
+    skill_consume_buff(player_index, "megatronus_relic_immortality_vfx", 99);
         return;
     }
 
@@ -59,6 +62,12 @@ static void megatronus_on_fight_reset(int player_index) {
     s_immortality_used[player_index]   = 0;
     s_immortality_active[player_index] = 0;
     s_immortality_end_ms[player_index] = 0;
+    skill_consume_buff(player_index, "megatronus_relic_fury_vfx", 99);
+    skill_consume_buff(player_index, "megatronus_relic_preservation_vfx", 99);
+    skill_consume_buff(player_index, "megatronus_relic_immortality_vfx", 99);
+    skill_stop_bot_move(player_index, "relic_orange");
+    skill_stop_bot_move(player_index, "relic_blue");
+    skill_stop_bot_move(player_index, "relic_white");
 
     // 开局清空能量，确保从 0.0 开始自主充盈
     skill_set_mana(player_index, 0.0f);
@@ -70,8 +79,10 @@ static void megatronus_on_fight_reset(int player_index) {
         s_immortality_used[player_index] = 1; // 开局少于10%则不激活
     }
 
-    // 施加狂怒遗迹 Buff
+    // 施加狂怒遗迹 Buff 与专属橙色光圈特效
     skill_apply_buff(player_index, "megatronus_relic_fury");
+    skill_apply_buff(player_index, "megatronus_relic_fury_vfx");
+    skill_play_bot_move(player_index, "relic_orange");
     skill_overlay("[%s] 激活狂怒遗迹！攻击力+60%%，格挡穿透+20%%！", player_index == 0 ? "震天尊" : "敌方震天尊");
     skill_log("MEGATRONUS: P%d fight reset, armed Relic of Fury", player_index);
 }
@@ -98,7 +109,8 @@ static void megatronus_on_simulation_tick(uint64_t now_ms) {
             s_last_tick_ms[p]   = now_ms;
             s_last_power_bar[p] = 0;
             skill_set_mana(p, 0.0f);
-            skill_log("MEGATRONUS: P%d combat officially started, zeroed mana and armed tick clock", p);
+            skill_play_bot_move(p, "relic_orange");
+            skill_log("MEGATRONUS: P%d combat officially started, zeroed mana, armed tick clock and played relic_orange", p);
             continue;
         }
 
@@ -143,7 +155,11 @@ static void megatronus_on_simulation_tick(uint64_t now_ms) {
             if (s_active_relic[p] == MEGATRONUS_RELIC_FURY) {
                 s_active_relic[p] = MEGATRONUS_RELIC_PRESERVATION;
                 skill_consume_buff(p, "megatronus_relic_fury", 99);
+                skill_consume_buff(p, "megatronus_relic_fury_vfx", 99);
+                skill_stop_bot_move(p, "relic_orange");
                 skill_apply_buff(p, "megatronus_relic_preservation");
+                skill_apply_buff(p, "megatronus_relic_preservation_vfx");
+                skill_play_bot_move(p, "relic_blue");
                 skill_overlay("[%s] 充盈第 %d 格能量！切换至保存遗迹！伤害抗性+60%%！",
                               p == 0 ? "震天尊" : "敌方震天尊", cur_bar);
                 skill_log("MEGATRONUS: P%d mana reached %.2f (bar %d), switched to Relic of Preservation",
@@ -151,7 +167,11 @@ static void megatronus_on_simulation_tick(uint64_t now_ms) {
             } else {
                 s_active_relic[p] = MEGATRONUS_RELIC_FURY;
                 skill_consume_buff(p, "megatronus_relic_preservation", 99);
+                skill_consume_buff(p, "megatronus_relic_preservation_vfx", 99);
+                skill_stop_bot_move(p, "relic_blue");
                 skill_apply_buff(p, "megatronus_relic_fury");
+                skill_apply_buff(p, "megatronus_relic_fury_vfx");
+                skill_play_bot_move(p, "relic_orange");
                 skill_overlay("[%s] 充盈第 %d 格能量！切换至狂怒遗迹！攻击力+60%%！",
                               p == 0 ? "震天尊" : "敌方震天尊", cur_bar);
                 skill_log("MEGATRONUS: P%d mana reached %.2f (bar %d), switched to Relic of Fury",
@@ -168,6 +188,15 @@ static void megatronus_on_simulation_tick(uint64_t now_ms) {
             if (now_ms >= s_immortality_end_ms[p]) {
                 s_immortality_active[p] = 0;
                 skill_consume_buff(p, "megatronus_relic_immortality", 99);
+                skill_consume_buff(p, "megatronus_relic_immortality_vfx", 99);
+                skill_stop_bot_move(p, "relic_white");
+                if (s_active_relic[p] == MEGATRONUS_RELIC_FURY) {
+                    skill_apply_buff(p, "megatronus_relic_fury_vfx");
+                    skill_play_bot_move(p, "relic_orange");
+                } else {
+                    skill_apply_buff(p, "megatronus_relic_preservation_vfx");
+                    skill_play_bot_move(p, "relic_blue");
+                }
                 skill_overlay("[%s] 不朽遗迹持续时间结束", p == 0 ? "震天尊" : "敌方震天尊");
                 skill_log("MEGATRONUS: Relic of Immortality expired on P%d", p);
             }
@@ -211,25 +240,47 @@ static void megatronus_on_hit_connected(SkillHitContext* ctx) {
         }
 
         // 3. 生命值跌破 10% 触发不朽遗迹 (单局限 1 次)
+        // 官方真理源: "当震天尊生命值降到10%以下时，他会发光跃起震开对手并额外激活不朽遗迹，持续8秒，此期间震天尊免疫任何伤害"
+        // 关键防护: 严禁在 24% 等健康血量承受非致命常规攻击时提前激活不朽！必须真实跌破 10% 或受到致死打击时触发。
         float cur_hp = skill_get_hp(tp);
         float max_hp = skill_get_max_hp(tp);
         if (!s_immortality_used[tp] && max_hp > 0.0f) {
             float threshold = max_hp * 0.10f;
-            if (cur_hp - ctx->modified_damage <= threshold) {
+
+            // 致命打击拦截保底：若本次伤害会导致击杀 (剩余血量 <= 0)，截断伤害保底停留在 10%
+            if (cur_hp - ctx->modified_damage <= 0.0f) {
+                ctx->modified_damage = (cur_hp > threshold) ? (cur_hp - threshold) : 0.0f;
+                skill_log("MEGATRONUS: Lethal blow intercepted on P%d: damage clamped to keep 10%% HP", tp);
+            }
+
+            // 仅当震天尊承受本次伤害后血量确实处于 <= 10% (且当前血量已处于濒死阶段 <= 10.5% 或受到截断致死打击) 时激活
+            float hp_after = cur_hp - ctx->modified_damage;
+            if (hp_after <= threshold && (cur_hp <= threshold + 0.05f * max_hp || cur_hp - ctx->modified_damage <= 0.0f)) {
                 s_immortality_used[tp]   = 1;
                 s_immortality_active[tp] = 1;
                 s_immortality_end_ms[tp] = now_ms + 8000; // 持续 8 秒
 
-                // 锁血截断：确保震天尊不会在这一击死亡，血量锁在 10%
-                if (cur_hp - ctx->modified_damage < threshold) {
+                // 锁血截断：确保震天尊血量锁在 10%
+                if (hp_after < threshold) {
                     ctx->modified_damage = cur_hp - threshold;
                     if (ctx->modified_damage < 0.0f) ctx->modified_damage = 0.0f;
                 }
 
+                skill_consume_buff(tp, "megatronus_relic_fury", 99);
+                skill_consume_buff(tp, "megatronus_relic_fury_vfx", 99);
+                skill_consume_buff(tp, "megatronus_relic_preservation", 99);
+                skill_consume_buff(tp, "megatronus_relic_preservation_vfx", 99);
+                skill_stop_bot_move(tp, "relic_orange");
+                skill_stop_bot_move(tp, "relic_blue");
+
                 skill_apply_buff(tp, "megatronus_relic_immortality");
+                skill_apply_buff_dur(tp, "megatronus_relic_immortality_vfx", 8.0f);
+                skill_play_bot_move(tp, "relic_white");
+
                 skill_overlay("[%s] 生命危险！激活不朽遗迹！8秒内免疫所有伤害！",
                               tp == 0 ? "震天尊" : "敌方震天尊");
-                skill_log("MEGATRONUS: P%d dropped below 10%% HP, activated 8s Relic of Immortality!", tp);
+                skill_log("MEGATRONUS: P%d dropped to <= 10%% HP (%.1f/%.1f), activated 8s Relic of Immortality!",
+                          tp, hp_after, max_hp);
             }
         }
     }
