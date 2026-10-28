@@ -407,9 +407,12 @@ class SimEngine:
             self.dll.sim_set_distance(ctypes.c_float(dist))
 
     def dash(self, player):
+        res = 1
         if hasattr(self.dll, 'sim_dash'):
-            return self.dll.sim_dash(int(player))
-        return 1
+            res = self.dll.sim_dash(int(player))
+        if "trigger_dash_state_phase" in globals():
+            trigger_dash_state_phase(int(player))
+        return res
 
     def get_projectile_speed(self, player: int, base_speed: float = 10.0, is_heavy: bool = False) -> float:
         if hasattr(self.dll, 'sim_get_projectile_speed'):
@@ -575,6 +578,56 @@ def trigger_block_state_phase(pidx: int, is_blocking: int):
                     "type": 4, # Callout floater
                     "val": 0,
                     "text": f"格挡触发: {callout}",
+                    "log": msg
+                })
+
+
+def trigger_dash_state_phase(pidx: int):
+    """
+    IL2CPP 生命周期仿真引擎：触发进入前冲状态机事件 (onPlayerStateEnter / state=Dash)。
+    当玩家前冲 (dash) 时，扫描角色的全部 StatMods，凡是含有 'onPlayerStateEnter' 
+    且 trigger_scope 包含 'state=Dash' 的修饰器，立即注入目标并触发 Callout！
+    """
+    bid = CURRENT_MATCHUP["p0_bot_id"] if pidx == 0 else CURRENT_MATCHUP["p1_bot_id"]
+    base_hp = CURRENT_MATCHUP["p0_hp"] if pidx == 0 else CURRENT_MATCHUP["p1_hp"]
+    base_atk = CURRENT_MATCHUP["p0_atk"] if pidx == 0 else CURRENT_MATCHUP["p1_atk"]
+
+    reg = resolve_bot_registry(bid)
+    if not reg:
+        return
+
+    try:
+        res = reg["builder"](base_hp=base_hp, base_atk=base_atk)
+        mods = res[0] if isinstance(res, (tuple, list)) else res
+        appears = res[1] if isinstance(res, (tuple, list)) and len(res) >= 2 else {}
+    except Exception as e:
+        print(f"[ERROR][Dash Phase] Builder error for {bid}: {e}")
+        return
+
+    for mid, mod in mods.items():
+        trs = mod.get("tr", [])
+        uits = mod.get("uit", [])
+        scope = mod.get("trs", "")
+        # 只要监听 onPlayerStateEnter 且为 state=Dash
+        if ("onPlayerStateEnter" in trs or "onPlayerStateEnter" in uits) and ("state=Dash" in scope or not scope):
+            chance = float(mod.get("c", 1.0))
+            if random.random() <= chance:
+                ta = mod.get("ta", "self")
+                target_idx = pidx if ta == "self" else (1 - pidx)
+                dur = float(mod.get("d", -1.0))
+                g_engine.inject_buff(target_idx, mid, dur, 1)
+
+                app_ids = mod.get("a", [])
+                app = appears.get(app_ids[0], {}) if app_ids else {}
+                callout = app.get("a") or app.get("st") or mid
+
+                msg = f"[DASH_ENTER_TRIGGER] 前冲姿态触发: P{pidx} ({bid}) 激活 '{mid}' -> 施加给 P{target_idx} (持续 {dur}s, 呼出: '{callout}')"
+                print(msg)
+                PENDING_START_EVENTS.append({
+                    "pidx": target_idx,
+                    "type": 4, # Callout floater
+                    "val": 0,
+                    "text": f"前冲触发: {callout}",
                     "log": msg
                 })
 

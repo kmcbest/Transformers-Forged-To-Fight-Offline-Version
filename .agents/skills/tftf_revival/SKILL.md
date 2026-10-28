@@ -740,3 +740,12 @@ Server/gamedata.py ROSTER.faction
    - `JADX_PATH` 指向 `d:\Agent\tftf\toolchain\jadx\bin\jadx.bat`
    - NativeHook 编译一律使用：`python tools/build_hook.py`
 
+---
+
+## 20. 拒绝思维漂移与回归崩溃排查铁律 (Anti-Cognitive-Drift & Regression Defense Protocol)
+
+> 本节已作为全局最高优先级工作纪律升格并收拢至仓库根目录的 [`AGENTS.md`](file:///e:/Agent/TFTF/AGENTS.md)（参见 `## Anti-cognitive-drift and regression defense protocol` 章节）。
+> 核心包括：因果律优先与第一反应法则（`git diff HEAD~1` 优先）、零臆测 RVA 与跨指令跳转铁律、只读属性钩子纯净性门禁、信号保护宏块封闭性法则。
+
+
+

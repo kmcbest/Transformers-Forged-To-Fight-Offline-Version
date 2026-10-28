@@ -42,7 +42,7 @@ def build_motormaster_abilities(base_hp: float = 34894.0, base_atk: float = 2629
     appears = {}
     buffs = {}
 
-    # 1. 前冲霸体 (Dashing Unstoppable, 0.7s)
+    # 1. 前冲霸体 (Dashing Unstoppable, 0.55s)
     m_dash, a_dash = make_unstoppable_statmod(
         mod_id="motormaster_dash_unstoppable",
         duration=0.55,
@@ -51,8 +51,12 @@ def build_motormaster_abilities(base_hp: float = 34894.0, base_atk: float = 2629
         appr_id="appr_motormaster_dash_unstoppable",
         callout_text="不可阻挡",
         show_callout=True,
-        play_vfx=False,
+        play_vfx=True,
+        vfx_move="status_unstoppable",
     )
+    # 关键防护：前冲霸体绝不使用 type="unstoppable" (设为 "")，避免其 0.55s 到期提前触发全局 gb_unstoppfxrmv 抹杀 SP2 的金色光环！
+    # 底层真实霸体保护由 NativeHook (hook_194) 严格依据真实动作状态机 (Dash / DashAttacking) 判定，硬上限 600ms。
+    m_dash["motormaster_dash_unstoppable"]["t"] = ""
     mods.update(m_dash)
     appears.update(a_dash)
 
@@ -65,7 +69,8 @@ def build_motormaster_abilities(base_hp: float = 34894.0, base_atk: float = 2629
         appr_id="appr_motormaster_sp2_unstoppable",
         callout_text="不可阻挡",
         show_callout=True,
-        play_vfx=False,
+        play_vfx=True,
+        vfx_move="status_unstoppable",
     )
     mods.update(m_sp2)
     appears.update(a_sp2)

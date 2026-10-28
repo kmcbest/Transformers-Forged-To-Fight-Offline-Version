@@ -660,6 +660,7 @@ static volatile uint64_t s_p1_kite_pending_time_ms = 0;
 static volatile uint64_t s_p1_last_kite_step_ms = 0;
 static volatile uint64_t s_p1_last_dash_ms = 0;
 static volatile uint64_t s_p1_last_melee_ms = 0;
+static volatile uint64_t s_p1_next_clean_dash_ms = 0;
 
 static volatile uint64_t g_p0_auto_unblock_ms = 0;
 static volatile int g_p0_knockdown_active = 0;
@@ -3386,7 +3387,7 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                 pi = (int)(hp_f + atk_f) / 20;
             }
             float enemy_hp_ratio = 1.0f;
-            if (!tftf_quest_is_leisure() && tftf_quest_has_pending_enemy()) {
+            if (!tftf_quest_is_leisure() && !tftf_pvp_is_active() && tftf_quest_has_pending_enemy()) {
                 enemy_hp_ratio = tftf_quest_get_pending_enemy_hp_ratio();
                 if (enemy_hp_ratio < 0.05f) enemy_hp_ratio = 0.05f;
                 if (enemy_hp_ratio > 1.0f) enemy_hp_ratio = 1.0f;
@@ -3449,7 +3450,7 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                 } else {
                     *(float*)((char*)at1 + 0x54) = 1.0f; // Dynamic player mana gain rate (baseline 1.0)
                 }
-                if (!tftf_quest_is_leisure()) {
+                if (!tftf_quest_is_leisure() && !tftf_pvp_is_active()) {
                     float hp_ratio = tftf_quest_get_hero_hp_ratio_by_bid(id1);
                     if (hp_ratio > 1.0f) hp_ratio = 1.0f;
                     if (hp_ratio <= 0.0f) hp_ratio = 0.0f;
@@ -3484,7 +3485,7 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                 if (is_fembots) {
                     *(int32_t*)((char*)ch1 + 0x28) = 0; // NumSpecials = 0
                 }
-                if (!tftf_quest_is_leisure()) {
+                if (!tftf_quest_is_leisure() && !tftf_pvp_is_active()) {
                     float hp_ratio = tftf_quest_get_hero_hp_ratio_by_bid(id1);
                     if (hp_ratio > 1.0f) hp_ratio = 1.0f;
                     if (hp_ratio <= 0.0f) hp_ratio = 0.0f;
@@ -3533,7 +3534,7 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                 float max_val = get_max(a0, NULL);
                 if (max_val > 0.0f) g_p0_max_hp = max_val;
 
-                if (!tftf_quest_is_leisure()) {
+                if (!tftf_quest_is_leisure() && !tftf_pvp_is_active()) {
                     float hp_ratio = tftf_quest_get_hero_hp_ratio_by_bid(g_p0_bot_id);
                     if (hp_ratio > 1.0f) hp_ratio = 1.0f;
                     if (hp_ratio <= 0.0f) hp_ratio = 0.0f;
@@ -3564,7 +3565,7 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                 float max_val = get_max(a0, NULL);
                 if (max_val > 0.0f) g_p1_max_hp = max_val;
 
-                if (!tftf_quest_is_leisure() && tftf_quest_has_pending_enemy()) {
+                if (!tftf_quest_is_leisure() && !tftf_pvp_is_active() && tftf_quest_has_pending_enemy()) {
                     float enemy_hp_ratio = tftf_quest_get_pending_enemy_hp_ratio();
                     if (enemy_hp_ratio < 0.05f) enemy_hp_ratio = 0.05f;
                     if (enemy_hp_ratio > 1.0f) enemy_hp_ratio = 1.0f;
@@ -5246,6 +5247,7 @@ void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     s_p1_last_kite_step_ms = 0;
     s_p1_last_dash_ms = 0;
     s_p1_last_melee_ms = 0;
+    s_p1_next_clean_dash_ms = 0;
 
     g_p0_auto_unblock_ms = 0;
     g_p0_knockdown_active = 0;
@@ -6089,142 +6091,27 @@ void hook_146(void* self, float dT, void* method){
                         }
                     }
 
-                    // 5. Tactical Neutral & Kiting Engine (Active Ranged Combat, Kiting Loop & Whiff Punish)
-                    int is_att = ((int(*)(void*,void*))(g_base + 0x11752C8))(player, NULL);
-                    int is_blk = ((int(*)(void*,void*))(g_base + 0x11737F8))(player, NULL);
-                    int is_side = ((int(*)(void*,void*))(g_base + 0x1175590))(player, NULL);
-
-                    void* opp = ((void*(*)(void*,void*))(g_base + 0x1174C60))(player, NULL); // get_Opponent
-                    if (obj_ok(opp) && !in_hitreact && !is_att && !is_blk && !is_side && !g_p1_ai_special_cancel_pending && !g_p1_retreat_after_combo && !g_p1_combo_committed) {
+                    // 5. Tactical Range Gap-Closing (Clean Dash Initiation, zero M2 fallback):
+                    // 在中远距离周旋时，原生行为树因缺少云端 AI 权重仅会慢走逼近。
+                    // 此处以 1.8s ~ 2.4s 节奏驱动干净利落的突进前冲，进入原生 PlayerDashState。
+                    // 严格门禁：必须处于可行动/可跑动状态(get_CanAct & get_CanRun)，远离受击/倒地恢复期(>=1200ms)，绝不在起身瞬间抢招！
+                    // 关键前置：重置普攻链 (reset_player_attack_chain)，确保 MediumAttackIndex==0，绝不误触 M2！
+                    if (now_ms >= s_p1_next_clean_dash_ms) {
                         float dist = ((float(*)(void*,void*))(g_base + 0x1175A28))(player, NULL);
+                        int is_att = ((int(*)(void*,void*))(g_base + 0x11752C8))(player, NULL);
+                        int is_blk = ((int(*)(void*,void*))(g_base + 0x11737F8))(player, NULL);
+                        int is_side = ((int(*)(void*,void*))(g_base + 0x1175590))(player, NULL);
+                        int can_act = ((int(*)(void*,void*))(g_base + 0x1175714))(player, NULL);
+                        int can_run = ((int(*)(void*,void*))(g_base + 0x1175238))(player, NULL);
 
-                        // 5.1 Whiff Punish: If P0 is in recovery from 3 ranged shots, immediately DASH IN!
-                        if (g_p0_ranged_recovery_ms > 0 && now_ms < g_p0_ranged_recovery_ms && dist > 0.01f && dist < 12.0f) {
-                            ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 32, NULL); // Dash whiff punish
-                            g_p0_ranged_recovery_ms = 0;
-                            flog("AI_KITE: Whiff punished P0 ranged recovery with Dash M1! (dist=%.2f)", dist);
-                        }
-                        // 5.2 Long Range (dist > 4.5m): Kiting & Ranged routines
-                        else if (dist > 4.5f) {
-                            if (s_p1_kite_pending_action > 0 && now_ms >= s_p1_kite_pending_time_ms) {
-                                int act = s_p1_kite_pending_action;
-                                s_p1_kite_pending_action = 0;
-                                ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, act, NULL);
-                                flog("AI_KITE: Executed scheduled follow-up action %d", act);
-                                if (act == 256) {
-                                    // After heavy attack projectile, schedule reposition Sidestep in 550ms
-                                    s_p1_kite_pending_action = (rand() % 2 == 0) ? 64 : 8;
-                                    s_p1_kite_pending_time_ms = now_ms + 550;
-                                }
-                            }
-                            else if (now_ms - s_p1_last_kite_step_ms >= 600) {
-                                int can_shoot = ((int(*)(void*,void*))(g_base + 0x1174FEC))(player, NULL);
-                                s_p1_last_kite_step_ms = now_ms;
-                                if (can_shoot) {
-                                    int is_ranged_heavy = bot_has_ranged_heavy(g_p1_bot_id);
-                                    if (is_ranged_heavy) {
-                                        // Ranged Heavy Bots (放风筝循环): 45% Routine 1, 40% Routine 2 (Heavy), 15% Routine 3 (Dash)
-                                        int routine = rand() % 100;
-                                        if (routine < 45) {
-                                            // Routine 1: 对枪单点 + 快速侧闪 (Poke & Sidestep)
-                                            ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 1, NULL); // Shoot
-                                            s_p1_kite_pending_action = (rand() % 2 == 0) ? 64 : 128;
-                                            s_p1_kite_pending_time_ms = now_ms + 150;
-                                            flog("AI_KITE: Ranged-heavy bot Routine 1 -> Shoot + Sidestep scheduled (dist=%.2f)", dist);
-                                        } else if (routine < 85) {
-                                            // Routine 2: 放风筝 (Shoot + Heavy Attack projectile + Sidestep)
-                                            ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 1, NULL); // Shoot
-                                            s_p1_kite_pending_action = 256; // Heavy Attack
-                                            s_p1_kite_pending_time_ms = now_ms + 180;
-                                            flog("AI_KITE: Ranged-heavy bot Routine 2 -> Shoot + Heavy Attack scheduled (dist=%.2f)", dist);
-                                        } else {
-                                            // Routine 3: 变节奏突进 (Dash)
-                                            ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 32, NULL); // Dash
-                                            flog("AI_KITE: Ranged-heavy bot Routine 3 -> Sudden Dash forward at range (dist=%.2f)", dist);
-                                        }
-                                    } else {
-                                        // Melee Heavy Bots: 70% Routine 1 (Poke & Sidestep), 30% Routine 3 (Dash)
-                                        // Strictly NEVER do Routine 2 (whiff heavy attack at distance)!
-                                        int routine = rand() % 100;
-                                        if (routine < 70) {
-                                            ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 1, NULL); // Shoot
-                                            s_p1_kite_pending_action = (rand() % 2 == 0) ? 64 : 128;
-                                            s_p1_kite_pending_time_ms = now_ms + 150;
-                                            flog("AI_KITE: Melee-heavy bot Routine 1 -> Shoot + Sidestep scheduled (dist=%.2f)", dist);
-                                        } else {
-                                            ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 32, NULL); // Dash
-                                            flog("AI_KITE: Melee-heavy bot Routine 3 -> Sudden Dash forward at range (dist=%.2f)", dist);
-                                        }
-                                    }
-                                } else {
-                                    // Out of ammo: dash or sidestep instead of slowly walking naked
-                                    ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 32, NULL);
-                                    flog("AI_KITE: Out of ammo, Dash forward to close gap");
-                                }
-                            }
-                        }
-                        // 5.3 Mid Range (2.2m < dist <= 4.5m): dynamic tactical engagement
-                        else if (dist > 2.2f && now_ms - s_p1_last_dash_ms >= 650) {
-                            s_p1_last_dash_ms = now_ms;
-
-                            // Check if player recently retreated / backdashed after combo (anti-whiff-bait)
-                            int p0_retreated = (g_p0_last_backdash_ms > 0 && (now_ms - g_p0_last_backdash_ms <= 1200) && dist > 2.4f) ||
-                                               (g_p1_last_hitreact_ms > 0 && (now_ms - g_p1_last_hitreact_ms <= 1400) && dist > 2.7f);
-
-                            if (p0_retreated) {
-                                // Player is retreating / out of melee reach to bait an M1 whiff!
-                                // Strictly DO NOT do blind Dash M1!
-                                int can_shoot = ((int(*)(void*,void*))(g_base + 0x1174FEC))(player, NULL);
-                                int is_ranged_heavy = bot_has_ranged_heavy(g_p1_bot_id);
-                                int r = rand() % 100;
-
-                                if (is_ranged_heavy && r < 40) {
-                                    // 40% (for ranged heavy bots): Fire full-screen heavy projectile!
-                                    // Catches retreating / whiff-baiting player and knocks them down!
-                                    ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 256, NULL);
-                                    flog("AI_ANTI_WHIFF: Player retreated (dist=%.2f) -> P1 punished retreat with Heavy projectile!", dist);
-                                } else if (can_shoot && r < 75) {
-                                    // 35%: Shoot poke + schedule lateral sidestep in 150ms
-                                    ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 1, NULL); // Shoot
-                                    s_p1_kite_pending_action = (rand() % 2 == 0) ? 64 : 128;
-                                    s_p1_kite_pending_time_ms = now_ms + 150;
-                                    flog("AI_ANTI_WHIFF: Player retreated (dist=%.2f) -> P1 Shot + Sidestep poke!", dist);
-                                } else if (r < 90) {
-                                    // 15%: Lateral sidestep (shift angle so player's straight rush whiffs)
-                                    int side = (rand() % 2 == 0) ? 64 : 128;
-                                    ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, side, NULL);
-                                    flog("AI_ANTI_WHIFF: Player retreated (dist=%.2f) -> P1 Sidestep angle shift!", dist);
-                                } else {
-                                    // 10%: Patient neutral: observe / hold guard for 300ms, refuse to rush in
-                                    s_p1_last_dash_ms = now_ms + 500;
-                                    ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 2, NULL); // Block
-                                    g_p1_auto_unblock_ms = now_ms + 300;
-                                    flog("AI_ANTI_WHIFF: Player retreated (dist=%.2f) -> P1 patient guard!", dist);
-                                }
-                            } else {
-                                // Normal neutral: player is not retreating
-                                int r = rand() % 100;
-                                if (r < 65) {
-                                    ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 32, NULL); // Dash M1
-                                    flog("AI_MID: Forward Dash M1 to initiate melee (dist=%.2f)", dist);
-                                } else {
-                                    int side = (rand() % 2 == 0) ? 64 : 128;
-                                    ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, side, NULL);
-                                    flog("AI_MID: Sidestep angle shift (dist=%.2f)", dist);
-                                }
-                            }
-                        }
-                        // 5.4 Melee Range (dist <= 2.2m): initiate offense if opponent is idle/blocking
-                        else if (dist > 0.01f && dist <= 2.2f && now_ms - s_p1_last_melee_ms >= 350) {
-                            s_p1_last_melee_ms = now_ms;
-                            int opp_blk = g_p0_controller ? ((int(*)(void*,void*))(g_base + 0x11737F8))(g_p0_controller, NULL) : 0;
-                            if (opp_blk) {
-                                ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 256, NULL); // Heavy guard break
-                                flog("AI_MELEE: Opponent blocking, executed Heavy Attack guard break!");
-                            } else {
-                                ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 1, NULL); // Light attack starter
-                                flog("AI_MELEE: Initiated Light attack combo!");
-                            }
+                        if (dist >= 3.5f && can_act && can_run && !is_att && !is_blk && !is_side && !in_hitreact &&
+                            (now_ms - g_p1_last_hitreact_ms >= 1200) &&
+                            !g_p1_knockdown_active && !g_p1_wakeup_defense_active &&
+                            !g_p1_combo_committed && !g_p1_ai_special_cancel_pending && !g_p1_retreat_after_combo) {
+                            reset_player_attack_chain(player);
+                            s_p1_next_clean_dash_ms = now_ms + 1800 + (rand() % 600);
+                            ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 32, NULL); // Action.Dash = 32
+                            flog("AI_COMBAT: P1 initiated clean range dash (dist=%.2f)", dist);
                         }
                     }
                 }
@@ -6324,100 +6211,7 @@ void hook_146(void* self, float dT, void* method){
                     }
                 }
 
-                // 5. Tactical Neutral & Kiting Engine for P0
-                int is_att = ((int(*)(void*,void*))(g_base + 0x11752C8))(player, NULL);
-                int is_blk = ((int(*)(void*,void*))(g_base + 0x11737F8))(player, NULL);
-                int is_side = ((int(*)(void*,void*))(g_base + 0x1175590))(player, NULL);
-
-                void* opp = ((void*(*)(void*,void*))(g_base + 0x1174C60))(player, NULL);
-                if (obj_ok(opp) && !in_hitreact && !is_att && !is_blk && !is_side && !g_p0_ai_special_cancel_pending && !g_p0_retreat_after_combo && !g_p0_combo_committed) {
-                    float dist = ((float(*)(void*,void*))(g_base + 0x1175A28))(player, NULL);
-
-                    if (g_p1_ranged_recovery_ms > 0 && now_ms < g_p1_ranged_recovery_ms && dist > 0.01f && dist < 12.0f) {
-                        ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 32, NULL);
-                        g_p1_ranged_recovery_ms = 0;
-                        flog("AI_KITE: P0 (AutoFight) whiff punished P1 ranged recovery with Dash M1!");
-                    } else if (dist > 4.5f) {
-                        if (s_p0_kite_pending_action > 0 && now_ms >= s_p0_kite_pending_time_ms) {
-                            int act = s_p0_kite_pending_action;
-                            s_p0_kite_pending_action = 0;
-                            ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, act, NULL);
-                            if (act == 256) {
-                                s_p0_kite_pending_action = (rand() % 2 == 0) ? 64 : 8;
-                                s_p0_kite_pending_time_ms = now_ms + 550;
-                            }
-                        } else if (now_ms - s_p0_last_kite_step_ms >= 600) {
-                            int can_shoot = ((int(*)(void*,void*))(g_base + 0x1174FEC))(player, NULL);
-                            s_p0_last_kite_step_ms = now_ms;
-                            if (can_shoot) {
-                                int is_ranged_heavy = bot_has_ranged_heavy(g_p0_bot_id);
-                                if (is_ranged_heavy) {
-                                    int routine = rand() % 100;
-                                    if (routine < 45) {
-                                        ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 1, NULL);
-                                        s_p0_kite_pending_action = (rand() % 2 == 0) ? 64 : 128;
-                                        s_p0_kite_pending_time_ms = now_ms + 150;
-                                    } else if (routine < 85) {
-                                        ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 1, NULL);
-                                        s_p0_kite_pending_action = 256;
-                                        s_p0_kite_pending_time_ms = now_ms + 180;
-                                    } else {
-                                        ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 32, NULL);
-                                    }
-                                } else {
-                                    int routine = rand() % 100;
-                                    if (routine < 70) {
-                                        ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 1, NULL);
-                                        s_p0_kite_pending_action = (rand() % 2 == 0) ? 64 : 128;
-                                        s_p0_kite_pending_time_ms = now_ms + 150;
-                                    } else {
-                                        ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 32, NULL);
-                                    }
-                                }
-                            } else {
-                                ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 32, NULL);
-                            }
-                        }
-                    } else if (dist > 2.2f && now_ms - s_p0_last_dash_ms >= 650) {
-                        s_p0_last_dash_ms = now_ms;
-                        int p1_retreated = (g_p1_last_backdash_ms > 0 && (now_ms - g_p1_last_backdash_ms <= 1200) && dist > 2.4f) ||
-                                           (g_p0_last_hitreact_ms > 0 && (now_ms - g_p0_last_hitreact_ms <= 1400) && dist > 2.7f);
-                        if (p1_retreated) {
-                            int can_shoot = ((int(*)(void*,void*))(g_base + 0x1174FEC))(player, NULL);
-                            int is_ranged_heavy = bot_has_ranged_heavy(g_p0_bot_id);
-                            int r = rand() % 100;
-                            if (is_ranged_heavy && r < 40) {
-                                ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 256, NULL);
-                            } else if (can_shoot && r < 75) {
-                                ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 1, NULL);
-                                s_p0_kite_pending_action = (rand() % 2 == 0) ? 64 : 128;
-                                s_p0_kite_pending_time_ms = now_ms + 150;
-                            } else if (r < 90) {
-                                int side = (rand() % 2 == 0) ? 64 : 128;
-                                ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, side, NULL);
-                            } else {
-                                s_p0_last_dash_ms = now_ms + 500;
-                                ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 2, NULL);
-                                g_p0_auto_unblock_ms = now_ms + 300;
-                            }
-                        } else {
-                            if (rand() % 100 < 65) {
-                                ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 32, NULL);
-                            } else {
-                                int side = (rand() % 2 == 0) ? 64 : 128;
-                                ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, side, NULL);
-                            }
-                        }
-                    } else if (dist > 0.01f && dist <= 2.2f && now_ms - s_p0_last_melee_ms >= 350) {
-                        s_p0_last_melee_ms = now_ms;
-                        int opp_blk = g_p1_controller ? ((int(*)(void*,void*))(g_base + 0x11737F8))(g_p1_controller, NULL) : 0;
-                        if (opp_blk) {
-                            ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 256, NULL);
-                        } else {
-                            ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(player, 1, NULL);
-                        }
-                    }
-                }
+                // 5. 自动战斗原生行为树驱动 (由 H[146].orig 全权负责)
             }
         }
     });
@@ -6563,6 +6357,7 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
     // Set when THIS call already cleared the chain, so the POST block below cannot mistake our
     // own clear for a native combo-end (which would re-arm the flag forever).
     int did_reset = 0;
+    int suppress_action = 0;
     PROTECT({
         if (obj_ok(self) && *(int32_t*)((uintptr_t)self + 0xF4) == 0) {
             g_p0_controller = self;
@@ -6647,7 +6442,8 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
             if (action == 0x200) {
                 if (!g_sp_dispatching_internal && g_sp_touch_tracking) {
                     flog("PLAYER_ACTION 0x200: suppressed premature touch-down special on P0 (tracking gesture)");
-                    return (void*)1;
+                    suppress_action = 2;
+                    break;
                 }
                 flog("PLAYER_ACTION 0x200: executing on P0 (intended_tier=%d, internal=%d)",
                      g_intended_special_tier, g_sp_dispatching_internal);
@@ -6681,7 +6477,17 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
             // Suppress premature Dodge/Sidestep while in a committed 5-hit combo
             if (g_p0_combo_committed && (action == 8 || action == 64 || action == 128)) {
                 flog("AI_COMBO: P0 (AutoFight) suppressed premature dodge (%d) during committed combo", action);
-                return (void*)0;
+                suppress_action = 1;
+                break;
+            }
+        }
+
+        if (is_p0_act && (action == 2 || action == 4)) {
+            const char* bid = g_p0_bot_id;
+            if (bid && strstr(bid, "motormaster") != NULL && skill_is_motormaster_dashing_unstoppable(0)) {
+                flog("MOTORMASTER: P0 blocked cancellation to Block(%d) during unstoppable dash!", action);
+                suppress_action = 1;
+                break;
             }
         }
 
@@ -6689,10 +6495,21 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
             g_p1_controller = self;
             uint64_t now_ms = propgo_now_ms();
 
+            // 汽车大师前冲保护：在前冲霸体有效期间，绝对禁止打断进入格挡姿态 (Action.Block 2 / ReleaseBlock 4)
+            if (action == 2 || action == 4) {
+                const char* bid = g_p1_bot_id;
+                if (bid && strstr(bid, "motormaster") != NULL && skill_is_motormaster_dashing_unstoppable(1)) {
+                    flog("MOTORMASTER: P1 blocked cancellation to Block(%d) during unstoppable dash!", action);
+                    suppress_action = 1;
+                    break;
+                }
+            }
+
             // Suppress premature Dodge/Sidestep while in a committed 5-hit combo
             if (g_p1_combo_committed && (action == 8 || action == 64 || action == 128)) {
                 flog("AI_COMBO: P1 suppressed premature dodge (%d) during committed combo", action);
-                return (void*)0;
+                suppress_action = 1;
+                break;
             }
 
             // Wakeup defense gate for P1: Under meaty pressure within 350ms of wakeup,
@@ -6737,13 +6554,21 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
             }
         } else if (action == 32) { // Action.Dash (主动前冲，打断充能)
             uint64_t now_ms = propgo_now_ms();
-            if (is_p0_act) s_p0_last_dash_ms = now_ms;
-            else s_p1_last_dash_ms = now_ms;
-            static uint64_t s_last_dash_dispatch_ms[2] = {0, 0};
+            int can_act = ((int(*)(void*,void*))(g_base + 0x1175714))(self, NULL);
+            int can_run = ((int(*)(void*,void*))(g_base + 0x1175238))(self, NULL);
+            int is_hit = ((int(*)(void*,void*))(g_base + 0x1173D94))(self, NULL);
+            int is_stun = ((int(*)(void*,void*))(g_base + 0x1173E28))(self, NULL);
             int p_idx = is_p0_act ? 0 : 1;
-            if (now_ms - s_last_dash_dispatch_ms[p_idx] >= 500) {
-                s_last_dash_dispatch_ms[p_idx] = now_ms;
-                skill_dispatch_attack_start(p_idx, 2); // Dash attack type = 2
+            uint64_t last_hit = (p_idx == 0) ? g_p0_last_hitreact_ms : g_p1_last_hitreact_ms;
+            // 严格门禁：只有角色真正具备行动能力(CanAct & CanRun)，未被击晕受击且不在倒地起身期(>=800ms)，才准触发前冲技能事件
+            if (can_act && can_run && !is_hit && !is_stun && (now_ms - last_hit >= 800)) {
+                if (is_p0_act) s_p0_last_dash_ms = now_ms;
+                else s_p1_last_dash_ms = now_ms;
+                static uint64_t s_last_dash_dispatch_ms[2] = {0, 0};
+                if (now_ms - s_last_dash_dispatch_ms[p_idx] >= 500) {
+                    s_last_dash_dispatch_ms[p_idx] = now_ms;
+                    skill_dispatch_attack_start(p_idx, 2); // Dash attack type = 2
+                }
             }
             if (is_p0_act && strstr(g_p0_bot_id, "prowl") != NULL && g_p0_prowl_charging) {
                 prowl_finish_charge(1, "dash forward (action 32)");
@@ -6759,6 +6584,9 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
             }
         }
     });
+
+    if (suppress_action == 1) return (void*)0;
+    if (suppress_action == 2) return (void*)1;
 
     // Widened range: filter out non-interactive high action codes (e.g. 1024), but allow action 1..32 so taps and dashes are observable.
     if (action >= 1 && action <= 32) {
@@ -6798,32 +6626,7 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
                 if (post_r >= 3) {
                     g_p0_ranged_recovery_ms = now_ms + 420;
                 }
-                // AI defensive reaction to incoming shot
-                if (g_p1_controller && obj_ok(g_p1_controller) && fld_p(g_p1_controller, 0x10)) {
-                    int p1_input = *(uint8_t*)((uintptr_t)g_p1_controller + 0x139);
-                    int p1_att = ((int(*)(void*,void*))(g_base + 0x11752C8))(g_p1_controller, NULL);
-                    int p1_blk = ((int(*)(void*,void*))(g_base + 0x11737F8))(g_p1_controller, NULL);
-                    int p1_hit = ((int(*)(void*,void*))(g_base + 0x1173D94))(g_p1_controller, NULL);
-                    int p1_stun = ((int(*)(void*,void*))(g_base + 0x1173E28))(g_p1_controller, NULL);
-                    if (p1_input && !p1_att && !p1_blk && !p1_hit && !p1_stun && (now_ms - g_p1_last_hitreact_ms >= 400) && tftf_get_ai_difficulty() >= 1) {
-                        if (post_r <= 2) {
-                            int roll = rand() % 100;
-                            if (roll < 55) {
-                                int side = (rand() % 2 == 0) ? 64 : 128;
-                                ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(g_p1_controller, side, NULL);
-                                flog("AI_DEFENSE: P1 sidestepped P0 shot %u (side=%d)", post_r, side);
-                            } else if (roll < 95) {
-                                ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(g_p1_controller, 2, NULL);
-                                g_p1_auto_unblock_ms = now_ms + 280;
-                                flog("AI_DEFENSE: P1 blocked P0 shot %u (auto unblock armed)", post_r);
-                            }
-                        } else {
-                            // Shot 3 recovery -> Whiff Punish with Dash!
-                            ((int(*)(void*,int,void*))(g_base + 0x1179AF4))(g_p1_controller, 32, NULL);
-                            flog("AI_DEFENSE: P1 dashed forward on P0 3-shot finish!");
-                        }
-                    }
-                }
+                // 敌方原生行为树自动处理远程招架与侧闪，无需人工干预注入动作
             }
             // DIAGNOSTIC ONLY -- no behavior change. Prints the chain counters AFTER the native
             // handler ran for EVERY P0 action; previously these values only reached the log when
@@ -6923,6 +6726,7 @@ void* hook_156(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     return (void*)(intptr_t)is_crit;
 }
 float hook_157(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    if (tftf_pvp_is_active()) return 1.0f;
     typedef float (*fn_orig)(void*, void*, void*, void*, void*, void*, void*, void*);
     float hp = 1.0f;
     PROTECT({
@@ -6941,8 +6745,8 @@ float hook_157(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
 }
 int32_t hook_158(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     int slot = (int)(intptr_t)a1;
-    if (tftf_quest_is_leisure()) {
-        return 0; // In leisure mode, heroes are never KO!
+    if (tftf_quest_is_leisure() || tftf_pvp_is_active()) {
+        return 0; // In leisure mode or PvP, heroes are never KO!
     }
     if (slot >= 0 && slot < 5) {
         float ratio = tftf_quest_get_hero_hp_ratio(slot);
@@ -6957,8 +6761,8 @@ int32_t hook_158(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, v
 }
 float hook_159(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     int slot = (int)(intptr_t)a1;
-    if (tftf_quest_is_leisure()) {
-        return 1.0f; // In leisure mode, full HP
+    if (tftf_quest_is_leisure() || tftf_pvp_is_active()) {
+        return 1.0f; // In leisure mode or PvP, full HP
     }
     if (slot >= 0 && slot < 5) {
         float ratio = tftf_quest_get_hero_hp_ratio(slot);
@@ -7298,6 +7102,7 @@ void* hook_165(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
                 }
                 flog("HITREACT_ENTER (0x0117FEC4) on P0: unblocked hit reaction resets attack chain");
                 reset_player_attack_chain(pc);
+                skill_clear_motormaster_dash_unstoppable(0);
                 skill_dispatch_hitreact_enter(0);
             } else if (pidx == 1) {
                 g_p1_block_enter_ms = 0;
@@ -7312,6 +7117,7 @@ void* hook_165(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
                 g_p1_combo_next_action = 0;
                 flog("HITREACT_ENTER (0x0117FEC4) on P1: hit reaction resets attack chain");
                 reset_player_attack_chain(pc);
+                skill_clear_motormaster_dash_unstoppable(1);
                 skill_dispatch_hitreact_enter(1);
             }
         }
@@ -7922,6 +7728,7 @@ void* hook_170(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
 }
 
 float hook_178(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    if (tftf_pvp_is_active()) return 1.0f;
     if (!tftf_quest_is_leisure() && tftf_quest_has_pending_enemy()) {
         float ratio = tftf_quest_get_pending_enemy_hp_ratio();
         if (ratio > 1.0f) ratio = 1.0f;
@@ -8278,6 +8085,18 @@ void* hook_186(void* this_pc, void* hitResult, void* method) {
             int is_hit = ((flags & 5) != 0); // Hit (1) or Blocked (4)
             int is_unblocked_hit = ((flags & 1) != 0);
             int is_blocked = ((flags & 4) != 0);
+            if (is_hit) {
+                // Motormaster 前冲攻击一旦击中对手或被防御，前冲攻击即告结束，立即清空霸体
+                // 注意：this_pc 是攻击发起方 (Attacker)！只有当发起方为汽车大师，且为中击冲锋 (atk_level == 2) 时才清空
+                if (atk_level == 2 && p_idx >= 0 && p_idx < 2) {
+                    const char* atkid = (p_idx == 0) ? g_p0_bot_id : g_p1_bot_id;
+                    if (atkid && strstr(atkid, "motormaster") != NULL && skill_is_motormaster_dashing_unstoppable(p_idx)) {
+                        skill_clear_motormaster_dash_unstoppable(p_idx);
+                        skill_stop_bot_move(p_idx, "status_unstoppable");
+                        flog("MOTORMASTER: P%d dash attack connected with target -> cleared dash unstoppable", p_idx);
+                    }
+                }
+            }
             if (is_missed || is_blocked) {
                 if (p_idx == 0) {
                     // P0 blocked or avoided P1 attack -> abort P1 combo
@@ -8575,6 +8394,8 @@ void skill_set_power_lock(int target_player_index, uint64_t duration_ms) {
 }
 
 static volatile uint64_t g_mm_dash_unstoppable_end_ms[2] = {0, 0};
+static volatile uint64_t g_mm_dash_start_ms[2] = {0, 0};
+static volatile int g_mm_dash_active[2] = {0, 0};
 
 float skill_get_opponent_distance(int player_index) {
     void* pc = (player_index == 0) ? g_p0_controller : g_p1_controller;
@@ -8587,19 +8408,26 @@ float skill_get_opponent_distance(int player_index) {
 
 void skill_set_motormaster_dash_unstoppable(int player_index, uint64_t duration_ms) {
     if (player_index >= 0 && player_index < 2) {
-        g_mm_dash_unstoppable_end_ms[player_index] = propgo_now_ms() + duration_ms;
+        uint64_t now_ms = propgo_now_ms();
+        g_mm_dash_start_ms[player_index] = now_ms;
+        g_mm_dash_unstoppable_end_ms[player_index] = now_ms + duration_ms;
+        g_mm_dash_active[player_index] = 1;
     }
 }
 
 void skill_clear_motormaster_dash_unstoppable(int player_index) {
     if (player_index >= 0 && player_index < 2) {
         g_mm_dash_unstoppable_end_ms[player_index] = 0;
+        g_mm_dash_start_ms[player_index] = 0;
+        g_mm_dash_active[player_index] = 0;
     }
 }
 
 int skill_is_motormaster_dashing_unstoppable(int player_index) {
     if (player_index >= 0 && player_index < 2) {
-        return (propgo_now_ms() < g_mm_dash_unstoppable_end_ms[player_index]);
+        if (!g_mm_dash_active[player_index]) return 0;
+        uint64_t now_ms = propgo_now_ms();
+        return (now_ms < g_mm_dash_unstoppable_end_ms[player_index]);
     }
     return 0;
 }
@@ -9988,61 +9816,70 @@ int hook_194(void* self) {
     int orig_val = H[194].orig ? ((fn_get_bool)H[194].orig)(self) : 0;
     if (orig_val) return 1;
 
-    int is_p0 = is_player0_attr(self);
-    uint64_t now_ms = propgo_now_ms();
+    int ret_val = 0;
+    PROTECT({
+        int is_p0 = is_player0_attr(self);
+        uint64_t now_ms = propgo_now_ms();
 
-    // 1. Buff timer check (activated via ApplyBuff for motormaster_dash_unstoppable, motormaster_sp2_unstoppable, etc.)
-    if (is_p0 && now_ms < g_p0_unstoppable_end_ms) {
-        static uint64_t s_last_u_buff_p0 = 0;
-        if (now_ms - s_last_u_buff_p0 > 400) {
-            s_last_u_buff_p0 = now_ms;
-            flog("GET_UNSTOPPABLE: returning 1 for P0 (buff window active, rem=%llu ms)", (unsigned long long)(g_p0_unstoppable_end_ms - now_ms));
+        // 1. Buff timer check (activated via ApplyBuff for motormaster_dash_unstoppable, motormaster_sp2_unstoppable, etc.)
+        if (is_p0 && now_ms < g_p0_unstoppable_end_ms) {
+            ret_val = 1;
+            break;
         }
-        return 1;
-    }
-    if (!is_p0 && now_ms < g_p1_unstoppable_end_ms) {
-        static uint64_t s_last_u_buff_p1 = 0;
-        if (now_ms - s_last_u_buff_p1 > 400) {
-            s_last_u_buff_p1 = now_ms;
-            flog("GET_UNSTOPPABLE: returning 1 for P1 (buff window active, rem=%llu ms)", (unsigned long long)(g_p1_unstoppable_end_ms - now_ms));
+        if (!is_p0 && now_ms < g_p1_unstoppable_end_ms) {
+            ret_val = 1;
+            break;
         }
-        return 1;
-    }
 
-    // 2. Real-time StateMachine check (zero-delay safety net for Dash & Heavy)
-    void* pc = is_p0 ? g_p0_controller : g_p1_controller;
-    const char* bot_id = is_p0 ? g_p0_bot_id : g_p1_bot_id;
-    if (pc && obj_ok(pc) && bot_id && bot_id[0]) {
-        void* cur_state = *(void**)((char*)pc + 0x48);
-        if (cur_state && obj_ok(cur_state)) {
-            void* sname_obj = *(void**)((char*)cur_state + 0x10);
-            if (sname_obj && obj_ok(sname_obj)) {
-                char sname[32] = {0};
-                read_str(sname_obj, sname, sizeof(sname));
-                // Motormaster dashing:
-                if (strstr(bot_id, "motormaster") != NULL && strcmp(sname, "Dash") == 0) {
-                    static uint64_t s_last_u_dash = 0;
-                    if (now_ms - s_last_u_dash > 400) {
-                        s_last_u_dash = now_ms;
-                        flog("GET_UNSTOPPABLE: returning 1 for %s (p%d state=Dash)", bot_id, is_p0 ? 0 : 1);
+        // 2. Real-time StateMachine check (zero-delay safety net for Dash & Heavy)
+        void* pc = is_p0 ? g_p0_controller : g_p1_controller;
+        const char* bot_id = is_p0 ? g_p0_bot_id : g_p1_bot_id;
+        if (pc && obj_ok(pc) && bot_id && bot_id[0]) {
+            void* cur_state = *(void**)((char*)pc + 0x48);
+            if (cur_state && obj_ok(cur_state)) {
+                void* sname_obj = *(void**)((char*)cur_state + 0x10);
+                if (sname_obj && obj_ok(sname_obj)) {
+                    char sname[32] = {0};
+                    read_str(sname_obj, sname, sizeof(sname));
+                    // Motormaster dashing:
+                    // 确认只在以下两个状态获得：a)从远距离发起前冲攻击，发起到结束的过程获得不可阻挡，不能超过时间；b)sp2发动时获得，总计4秒。
+                    if (strstr(bot_id, "motormaster") != NULL) {
+                        int pidx = is_p0 ? 0 : 1;
+                        if (strcmp(sname, "Dash") == 0) {
+                            if (skill_is_motormaster_dashing_unstoppable(pidx)) {
+                                ret_val = 1;
+                                break;
+                            }
+                        } else if (strcmp(sname, "Attack") == 0) {
+                            // DashAttack (从 Dash 切入的冲锋挥砍第一击)
+                            if (skill_is_motormaster_dashing_unstoppable(pidx) && g_base) {
+                                typedef bool (*fn_is_dash_att)(void*, void*);
+                                fn_is_dash_att is_dash_att = (fn_is_dash_att)(g_base + 0x1175508); // PlayerController.get_IsDashAttacking
+                                if (is_dash_att && is_dash_att(pc, NULL)) {
+                                    ret_val = 1;
+                                    break;
+                                }
+                            }
+                        }
                     }
-                    return 1;
-                }
-                // Ramjet heavy attack charge or flight:
-                if (strstr(bot_id, "ramjet") != NULL && 
-                    (strcmp(sname, "HeavyCharge") == 0 || strcmp(sname, "HeavyAttack") == 0)) {
-                    return 1;
-                }
-                // Grimlock heavy attack:
-                if (strstr(bot_id, "grimlock") != NULL && 
-                    (strcmp(sname, "HeavyCharge") == 0 || strcmp(sname, "HeavyAttack") == 0)) {
-                    return 1;
+                    // Ramjet heavy attack charge or flight:
+                    if (strstr(bot_id, "ramjet") != NULL && 
+                        (strcmp(sname, "HeavyCharge") == 0 || strcmp(sname, "HeavyAttack") == 0)) {
+                        ret_val = 1;
+                        break;
+                    }
+                    // Grimlock heavy attack:
+                    if (strstr(bot_id, "grimlock") != NULL && 
+                        (strcmp(sname, "HeavyCharge") == 0 || strcmp(sname, "HeavyAttack") == 0)) {
+                        ret_val = 1;
+                        break;
+                    }
                 }
             }
         }
-    }
+    });
 
-    return 0;
+    return ret_val;
 }
 
 // slot 195 (0x00DACA4C): PlayerAttributes.get_PowerGainRate -> power rate boost
@@ -10303,6 +10140,11 @@ float hook_197(void* self, int32_t attack_level, float mana_gain_pct, int32_t bl
     // PowerGainRate modifier
     float pgr = hook_195(self);
     if (pgr <= 0.0f) return 0.0f;
+    // 敌方(P1)攻击加气：必须遵循 Launcher 菜单设置，且压制突袭(Raid)基地防守节点自带的+100%膨胀，确保各模式一致
+    if (!is_p0) {
+        if (pgr > 1.0f) pgr = 1.0f;
+        gain *= g_combat_enemy_mana_gain;
+    }
     gain *= pgr;
 
     uint64_t now_ms = propgo_now_ms();
@@ -10404,6 +10246,10 @@ float hook_198(void* self, int32_t attack_level, float mana_gain_pct, int32_t bl
     // PowerGainRate modifier
     float pgr = hook_195(self);
     if (pgr <= 0.0f) return 0.0f;
+    // 敌方(P1)受击加气：压制突袭(Raid)基地防守节点自带的+100%膨胀，确保各模式一致
+    if (!is_p0) {
+        if (pgr > 1.0f) pgr = 1.0f;
+    }
     gain *= pgr;
 
     // 敌方受击加气倍率 (官方原版 1.0x, 重生快充 0.5x, 畅快压制 0.2x)

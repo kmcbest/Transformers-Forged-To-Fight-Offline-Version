@@ -901,26 +901,32 @@ def test_motormaster_abilities():
     g_engine.init("motormaster_gs_voyager2015", "bonecrusher_cin_rotf", 34894.0, 15000.0, 2629.0, 1000.0)
     g_engine.reset()
 
-    # 1. 验证中远距离冲锋 (dist >= 20.0m) 获得 0.55 秒不可阻挡霸体
-    g_engine.set_distance(25.0)
+    # 1. 前冲动作获得前冲霸体
     g_engine.dash(0)
     st_dash = g_engine.get_state()
     p0_buffs_dash = [b["id"] for b in st_dash["p0"]["buffs"]]
-    assert_true("motormaster_dash_unstoppable" in p0_buffs_dash, "Motormaster gained unstoppable on remote Dash")
+    assert_true("motormaster_dash_unstoppable" in p0_buffs_dash, "Motormaster gained unstoppable on Dash")
 
-    # 1b. 门禁验证：贴脸近战距离 (dist < 20.0m) 出招或倒地起身贴脸绝不给霸体！
-    g_engine.reset()
-    g_engine.set_distance(10.0)
-    g_engine.dash(0)
-    st_close = g_engine.get_state()
-    p0_buffs_close = [b["id"] for b in st_close["p0"]["buffs"]]
-    assert_true("motormaster_dash_unstoppable" not in p0_buffs_close, "Motormaster does NOT gain unstoppable at close range (gated)")
+    # 2. 门禁验证：SP1 (0x201 / 16) 绝对不得获得霸体
+    g_engine.init("motormaster_gs_voyager2015", "bonecrusher_cin_rotf", 34894.0, 15000.0, 2629.0, 1000.0)
+    g_engine.attack_start(0, 0x201) # SP1 start
+    st_sp1 = g_engine.get_state()
+    p0_buffs_sp1 = [b["id"] for b in st_sp1["p0"]["buffs"]]
+    assert_true("motormaster_sp2_unstoppable" not in p0_buffs_sp1, "Motormaster does NOT gain unstoppable on SP1")
 
-    # 2. 验证 SP2 获得 4.0 秒不可阻挡霸体
-    g_engine.attack_start(0, 32) # SP2 start
+    # 3. 门禁验证：SP2 (0x202 / 320) 发动时独立获得 4.0 秒不可阻挡霸体
+    g_engine.init("motormaster_gs_voyager2015", "bonecrusher_cin_rotf", 34894.0, 15000.0, 2629.0, 1000.0)
+    g_engine.attack_start(0, 0x202) # SP2 start
     st_sp2 = g_engine.get_state()
     p0_buffs_sp2 = [b["id"] for b in st_sp2["p0"]["buffs"]]
     assert_true("motormaster_sp2_unstoppable" in p0_buffs_sp2, "Motormaster gained 4.0s unstoppable on SP2 start")
+
+    # 4. 门禁验证：SP3 (0x203 / 64) 绝对不得获得霸体
+    g_engine.init("motormaster_gs_voyager2015", "bonecrusher_cin_rotf", 34894.0, 15000.0, 2629.0, 1000.0)
+    g_engine.attack_start(0, 0x203) # SP3 start
+    st_sp3 = g_engine.get_state()
+    p0_buffs_sp3 = [b["id"] for b in st_sp3["p0"]["buffs"]]
+    assert_true("motormaster_sp2_unstoppable" not in p0_buffs_sp3, "Motormaster does NOT gain unstoppable on SP3")
 
 
 def test_player_invincible():
