@@ -370,6 +370,7 @@ public class TftfDiag : MonoBehaviour
 	}
 
 	private static float _dbgNext;
+	private static string _globalsLogged;
 	private static void AimSun()
 	{
 		if (Time.realtimeSinceStartup >= _dbgNext)
@@ -379,6 +380,8 @@ public class TftfDiag : MonoBehaviour
 			try { string f = System.IO.Path.Combine(Application.persistentDataPath, "tftf/dbg.txt"); if (System.IO.File.Exists(f)) float.TryParse(System.IO.File.ReadAllText(f).Trim(), out dv); } catch (System.Exception) { }
 			Shader.SetGlobalFloat("_TftfDebug", dv);
 			bool inFight = InFight();
+			string gl = "fight=" + inFight + " exp=" + Shader.GetGlobalFloat("_EBExposure") + " emisExp=" + Shader.GetGlobalFloat("_EBEmissiveExposure") + " tm=" + Shader.GetGlobalVector("_EBToneMapResponse") + " pmrem=" + Shader.GetGlobalVector("_PMREMScale") + " sunLum=" + Shader.GetGlobalVector("_EBDirectionalLightLuminanceIntensityValueShift");
+			if (gl != _globalsLogged) { _globalsLogged = gl; Debug.Log("[DIAG] EB globals " + gl); }
 			// lighting values, per screen type; tftf/tune.txt overrides them with "name value" lines (see TuneNames) without a rebuild
 			float[] cur = inFight ? new float[] { FightExposure, FightSun, FightAmbient, FightRim, FightSat, FightContrast, FightFog, FightWarm } : new float[] { DefaultExposure, DefaultSun, 1f, 1f, 1f, 1f, 0f, 0f };
 			try
@@ -395,6 +398,9 @@ public class TftfDiag : MonoBehaviour
 						if (kn == "emis") { Shader.SetGlobalFloat("_TftfEmis", tv); continue; }
 						if (kn == "bloomthr") { TftfBloom.Threshold = tv; continue; }
 						if (kn == "bloomgain") { TftfBloom.ThresholdGain = tv; continue; }
+						// "_Name value" sets a shader global float, "v_Name value" a global vector (all four components)
+						if (kv[0].StartsWith("_")) { Shader.SetGlobalFloat(kv[0], tv); continue; }
+						if (kv[0].StartsWith("v_")) { Shader.SetGlobalVector(kv[0].Substring(1), new Vector4(tv, tv, tv, tv)); continue; }
 						bool fightKey = kn.StartsWith("f");
 						if (fightKey != inFight) continue;
 						int ki = System.Array.IndexOf(TuneNames, fightKey ? kn.Substring(1) : kn);
@@ -479,7 +485,9 @@ public class TftfDiag : MonoBehaviour
 				// the blob "contact shadow" quads under the feet and hips use an opaque white-on-black mask that the stand-in shader draws as
 				// cards; the TFTF sun light casts real shadows now, so these are switched off
 				if (n == "EB/Misc/ContactShadow") { if (r.enabled) r.enabled = false; continue; }
-				if (!(n.StartsWith("Hidden/PBR") || n.StartsWith("Hidden/GridReveal") || n.Length == 0 || !m.shader.isSupported)) continue;      // empty name: a donor shader that did not load (magenta)
+				// 9.2.0 donor PBR shaders render in this pipeline (metallic, roughness, normal maps): keep them
+				if (n.StartsWith("Hidden/PBR")) continue;
+				if (!(n.StartsWith("Hidden/GridReveal") || n.Length == 0 || !m.shader.isSupported)) continue;      // empty name: a donor shader that did not load (magenta)
 				if (n.Length == 0 || !m.shader.isSupported)      // lights, sky and flares are drawn by the game's own deferred passes: leave them alone
 				{
 					string rn = r.name;
@@ -643,18 +651,23 @@ public class TftfDiag : MonoBehaviour
 	{
 		if (!_lodLogged) { _lodLogged = true; Debug.Log("[DIAG] globalMaximumLOD(before)=" + Shader.globalMaximumLOD + " rtCount=" + SystemInfo.supportedRenderTargetCount + " gles=" + SystemInfo.graphicsDeviceVersion); }
 		Shader.globalMaximumLOD = 100000;
-		Shader.SetGlobalFloat("_EBExposure", 1f);
-		Shader.SetGlobalFloat("_EBOneOverExposure", 1f);
-		Shader.SetGlobalFloat("_EBSkyLuminanceScale", 1f / 32f);
-		Shader.SetGlobalFloat("_EBEmissiveExposure", 1f);
-		Shader.SetGlobalFloat("_AODirectInfluence", 1f);
-		Shader.SetGlobalVector("_EBLightmapAdjust", new Vector4(1f, 1f, 1f, 1f));
-		Shader.SetGlobalVector("_EBDirectionalLightDirection", new Vector4(0.3f, 0.8f, -0.5f, 0f));
-		Shader.SetGlobalVector("_EBDirectionalLightLuminanceIntensity", new Vector4(1f, 1f, 1f, 1f));
-		Shader.SetGlobalVector("_PMREMScale", new Vector4(1f, 1f, 1f, 1f));
+		// fallbacks only: a scene's EBRenderSettings sets these once when it activates, and the donor PBR shaders need its exposure
+		// and tone map (overwriting them every second blew the story squad screen out to white)
+		DefaultFloat("_EBExposure", 1f);
+		DefaultFloat("_EBOneOverExposure", 1f);
+		DefaultFloat("_EBSkyLuminanceScale", 1f / 32f);
+		DefaultFloat("_EBEmissiveExposure", 1f);
+		DefaultFloat("_AODirectInfluence", 1f);
+		DefaultVector("_EBToneMapResponse", new Vector4(1f, 1f, 1f, 0f));      // x / (x + response): zero turns every lit pixel white
+		DefaultVector("_EBLightmapAdjust", new Vector4(1f, 1f, 1f, 1f));
+		DefaultVector("_EBDirectionalLightDirection", new Vector4(0.3f, 0.8f, -0.5f, 0f));
+		DefaultVector("_EBDirectionalLightLuminanceIntensity", new Vector4(1f, 1f, 1f, 1f));
+		DefaultVector("_PMREMScale", new Vector4(1f, 1f, 1f, 1f));
 		Shader.SetGlobalVector("_FogParams", Vector4.zero);
 		Shader.SetGlobalTexture("_lm", Texture2D.whiteTexture);
 	}
+	private static void DefaultFloat(string name, float v) { if (Shader.GetGlobalFloat(name) == 0f) Shader.SetGlobalFloat(name, v); }
+	private static void DefaultVector(string name, Vector4 v) { if (Shader.GetGlobalVector(name).sqrMagnitude == 0f) Shader.SetGlobalVector(name, v); }
 
 	private Camera _rig;
 
@@ -812,7 +825,8 @@ public class TftfDiag : MonoBehaviour
 // resolution and added back. tftf/tune.txt: "bloom 0" switches it off; "bloomthr"/"bloomgain" control the bright-pixel term.
 public class TftfBloom : MonoBehaviour
 {
-	public static float Amount = 1.1f, Threshold = 0.88f, ThresholdGain = 0.35f;
+	// off by default: tuned for TFTF/PbrLite; the donor PBR shaders' brighter tone-mapped output bloomed fights and menus to white (tune.txt "bloom 1.1" turns it on)
+	public static float Amount = 0f, Threshold = 0.88f, ThresholdGain = 0.35f;
 	private static Material _mat;
 	private static bool _logged;
 
@@ -962,6 +976,14 @@ public class TftfBloom : MonoBehaviour
         replace_in(fp, "UIStretch.cs", "\t\tmRoot = NGUITools.FindInParents<UIRoot>(base.gameObject);\n",
                    "\t\tmRoot = NGUITools.FindInParents<UIRoot>(base.gameObject);\n\t\tmWidget = GetComponent<UIWidget>();\n\t\tmSprite = GetComponent<UISprite>();\n\t\tmVectorArt = GetComponent<UIVectorArt>();\n\t\tmPanel = GetComponent<UIPanel>();\n",
                    "P47 UIStretch finds its widget again in Start")
+        # P55: the hip contact shadow draws as an opaque dark card between the legs; it is still created (LateUpdate uses it), never shown
+        replace_in(main, "ContactShadow.cs", "_HipShadowRenderer.enabled = enable;", "_HipShadowRenderer.enabled = false;",
+                   "P55 hip contact shadow hidden")
+        replace_in(main, "ContactShadow.cs", "_HipShadowRenderer.material = _HipShadowMaterial;\n",
+                   "_HipShadowRenderer.material = _HipShadowMaterial;\n\t\t_HipShadowRenderer.enabled = false;\n", "P55 hip contact shadow hidden")
+        # P56: never show the server tag label (top left); a stale server copy on the phone can still send "prod"
+        replace_in(main, "ServerTag.cs", "SafeSetActive(Tuning.Instance != null && Tuning.Instance.DisplayServerTag);",
+                   "SafeSetActive(false);", "P56 server tag hidden")
     # P44 (shell only): the revival splash (big logo, "Unicron's Lair") between the Kabam screen and the title screen
     if os.environ.get("TFTF_SHELL") == "1":
         replace_in(main, "BootFlow.cs", "\t\tyield return Coroutines.Run(ReInitializeLoadingScreen());\n",
@@ -1119,6 +1141,8 @@ public class EnumComparer<T> : IEqualityComparer<T> where T : struct
             t, n = re.subn(r"(?<![\w.])Input\.(touchCount|GetTouch)\b", r"TftfInput.\1", rd(p))
             if n:
                 wr(p, t); note("P52 %s touches via TftfInput (mouse on PC)" % p.stem)
+    if os.environ.get("TFTF_SHELL") == "1":
+        online_pvp(main)
     p = fp / "EB/FileSystem/ZipDriver.cs"   # P7 (same fix as 2.0.2): SharpZipLib asks for OEM code page 850/437
     if p.exists():
         t = rd(p)
@@ -1168,6 +1192,77 @@ public class EnumComparer<T> : IEqualityComparer<T> where T : struct
                                   f"{m[1]}public void Authenticate(Action<bool> callback)"), t, count=1)
             wr(p, t); note("S7 Authenticate(Action<bool,string>) overload (local user)")
 
+
+def online_pvp(main):
+    """P54 (shell only): online Arena fights (mono310/launcher/ONLINE_PVP.md). Inserts calls into TftfNetGlue (copied into
+    Assembly-CSharp from launcher/shell/TftfMain by assemble_project.py) and TftfNet (shell, first pass). Every insertion is
+    anchored on one line (a signature or a single statement)."""
+    guard = lambda call: "\t\tif (%s)\n\t\t{\n\t\t\treturn;\n\t\t}\n" % call
+
+    def after(rel, line, add, cls, first_only=False):
+        p = main / rel
+        if not p.exists():
+            return
+        t = rd(p)
+        n = t.count(line)
+        if n == 0 or (n > 1 and not first_only):
+            print("  P54 anchor not found once in %s: %r" % (rel, line.strip()))
+            return
+        i = t.index(line) + len(line)
+        wr(p, t[:i] + add + t[i:]); note(cls)
+
+    def method_start(rel, signature, add, cls):
+        after(rel, "\t" + signature + "\n\t{\n", add, cls)
+
+    # Simulation: tick gate and inputs, the fight's clock, input handling every tick, end-of-tick authority, pacing
+    sim = "Simulation.cs"
+    method_start(sim, "private void FixedUpdate()", guard("!TftfNetGlue.BeginTick(_playerInput)"), "P54 Simulation tick gate")
+    after(sim, "\t\tDeltaTime = UnityEngine.Time.fixedDeltaTime;\n",
+          "\t\tif (TftfNet.LockstepActive)\n\t\t{\n\t\t\tTime = TftfNet.SimTime;\n\t\t}\n", "P54 Simulation fight clock")
+    p = main / sim
+    if p.exists():
+        t = rd(p)
+        start = t.find("\tprivate void FixedUpdate()")
+        upd = t.find("\tprivate void Update()")
+        cond = "\t\tif (frameCount != _currentFrame)\n"
+        call = "\t\t\tUpdateUserInput();\n"
+        i = t.find(cond, start)
+        j = t.find(call, i)
+        if 0 <= start < i < j < upd:
+            # online: the inputs are simulated every tick, not once per rendered frame (frame rates differ between phones)
+            t = t[:i] + "\t\tif (frameCount != _currentFrame || TftfNet.LockstepActive)\n" + t[i + len(cond):]
+            j = t.find(call, i)
+            t = t[:j] + "\t\t\tif (frameCount != _currentFrame)\n\t\t\t{\n\t\t\t\tUpdateUserInput();\n\t\t\t}\n" + t[j + len(call):]
+            upd = t.find("\tprivate void Update()")
+            k = t.rfind("\t}\n", 0, upd)
+            t = t[:k] + "\t\tTftfNetGlue.EndTick(_playerController);\n" + t[k:]
+            wr(p, t); note("P54 Simulation inputs every tick, end-of-tick authority")
+        else:
+            print("  P54 Simulation.FixedUpdate input block not found")
+    method_start(sim, "private void Update()", "\t\tTftfNetGlue.Gate(_paused, _timeScale);\n", "P54 Simulation pacing")
+    method_start(sim, "private void OnDestroy()", "\t\tTftfNetGlue.FightEnded();\n", "P54 Simulation fight end")
+    after(sim, "\t\t_swipeDetection = swipeDetection;\n", "\t\tTftfNetGlue.FightStarted();\n", "P54 Simulation fight start")
+    # PlayerInput: the local player's inputs go into the lockstep
+    for sig, code in (("OnReceiveAttackInput()", "'a'"), ("OnReleaseAttackInput()", "'A'"), ("OnReceiveBlockInput()", "'b'"),
+                      ("OnReleaseBlockInput()", "'B'"), ("OnReceiveSpecialInput()", "'s'"),
+                      ("OnDetectSwipe(SwipeDirection direction)", "(char)(48 + (int)direction)")):
+        method_start("PlayerInput.cs", "public void " + sig, guard("TftfNetGlue.Capture(this, %s)" % code), "P54 PlayerInput capture")
+    # no AI on either fighter of an online fight; the opponent's fighter takes inputs
+    method_start("BattleArbiter.cs", "public void EnableAI(int id, bool enable)", "\t\tenable = TftfNetGlue.FilterAI(enable);\n", "P54 no AI online")
+    replace_in(main, "BattleArbiterInitState.cs", "enemyInput.SafeEnabled(GameplayDebugUtils.DisableAI);",
+               "enemyInput.SafeEnabled(GameplayDebugUtils.DisableAI || TftfNetGlue.OnlineFightPending);", "P54 opponent input online")
+    # only the host knocks out
+    replace_in(main, "PlayerController.cs", "\t\t\tif (Attributes.NormalizedHealth <= 0f && knockoutIfDead)\n",
+               "\t\t\tif (Attributes.NormalizedHealth <= 0f && knockoutIfDead && !TftfNetGlue.HoldKnockout(this))\n", "P54 guest waits for the host's knock-out")
+    # both players' bots are exchanged before the fight
+    method_start("PVPUtil.cs", "public static void GenerateFightData(string scene, EB.Action<FightData, string> resultHandler)",
+                 guard("TftfNetGlue.InterceptFightData(scene, resultHandler)"), "P54 online fight data")
+    after("PVPScreen.cs", "\tprotected override void CacheReferences()\n\t{\n", "\t\tTftfNetGlue.MarkArena(this);\n", "P54 Arena screen marked")
+    # the fight's random rolls come from streams seeded alike on both phones
+    replace_in(main, "PlayerAttributes.cs", "Random.value", "TftfNet.RandomValue((Owner != null) ? Owner.Id : 0)", "P54 fighter rolls")
+    for rel in ("StatModifierController.cs", "GetRandom_BuffValue.cs", "CreateArea_BuffEffect.cs"):
+        replace_in(main, rel, "Random.value", "TftfNet.RandomValue(-1)", "P54 buff rolls")
+
 def vr(fp, main):
     """P53 (TFTF_VR=1 shell only): the game draws into the launcher's virtual screen (TftfVr), not the headset's
     display. Its screen size reads, touch reads and blits to the backbuffer go through TftfScreen and TftfInput,
@@ -1197,6 +1292,11 @@ def vr(fp, main):
                "\t\tbool pressed = _pressed;\n\t\tbool flag = false;\n\t\tint num = 0;\n"
                "\t\tTftfFightState.ReportButton(base.gameObject.name, UICamera.mainCamera.WorldToScreenPoint(_bounds.center));\n",
                "P53 ActionButton reports its zone (VR)")
+    # The stereo base follows the home base's camera and the point it looks at.
+    replace_in(main, "Quests/Presentation/BaseCameraController.cs",
+               "\t\t\t\t_TransitionTimer += UnityEngine.Time.deltaTime;\n",
+               "\t\t\t\tTftfFightState.ReportBase(_currentCamera, _LookAtTarget);\n\t\t\t\t_TransitionTimer += UnityEngine.Time.deltaTime;\n",
+               "P53 BaseCameraController reports the base camera (VR)")
 
 REPAIRS = Path(__file__).resolve().parent / "repairs.json"  # accumulated compiler-log-driven repairs
 

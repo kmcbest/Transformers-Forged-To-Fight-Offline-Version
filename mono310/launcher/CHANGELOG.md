@@ -2,6 +2,10 @@
 
 ## Table of contents
 
+- [Unreleased](#unreleased)
+- [0.10](#010)
+- [0.9](#09)
+- [0.8](#08)
 - [0.7.3](#073)
 - [0.7.2](#072)
 - [0.7.0](#070)
@@ -16,6 +20,69 @@
 - [0.3.0](#030)
 - [0.2.0](#020)
 - [0.1.0 (internal, never released)](#010-internal-never-released)
+
+## Unreleased
+
+**Added**
+
+- Quest VR build: first-person fights with motion controls and hand tracking. The view sits in your fighter's head,
+  facing the opponent; the fighter's body stays in view and its arms follow your controllers or tracked hands (two-bone
+  IK). Punch for a light attack, punch with both hands or step in to dash, raise both hands and bring them down for a
+  heavy, hold a guard in front of your face to block, lean back to dodge, lean sideways to sidestep, hold both fists
+  together (or B) for a special. Controllers buzz on hits. X now cycles first-person, arena and flat; Y turns motion
+  controls off and on. Hand tracking reads OVRPlugin directly; the manifest declares it as optional. Not yet tested on a
+  headset.
+
+## 0.10
+
+**Added**
+
+- Quest VR build: the home base is shown in full VR (base mode), like fights: the base camera's view in stereo from a
+  seat on its line of sight, horizon level, at a tenth of its size so it reads as a model town with depth, the HUD on the
+  transparent screen in front. Pointing the laser at the base (off the screen) taps and drags that spot. X switches
+  both base and arena mode back to the theater screen. Not yet tested on a headset.
+- Quest VR build: the online PVP button and panel are on the Arena screen too, and say "headset" instead of "phone"
+  ("HOST ON THIS HEADSET").
+
+## 0.9
+
+**Added**
+
+- Player levels: every finished fight earns experience (120 for a win, 40 for a loss, story and Arena), and the level
+  shown in the top bar follows it (level 2 at 100 XP, 3 at 300, 4 at 600, up to 60). Saved by the in-app server.
+- The Arena (online PVP) is unlocked from level 0.
+
+**Changed**
+
+- Bots, the board and fights keep the 9.2.0 donor PBR shaders (metallic reflections, roughness, normal maps) instead of
+  the flat stand-in. Scenes keep their own exposure and tone map, and the launcher's bloom is off by default
+  (`tftf/tune.txt` with `bloom 1.1` turns it back on), so the story squad screen and fights are no longer washed out.
+- The online PVP button and panel on the Arena screen use the game's own buttons and fonts; the button moved to the
+  bottom right, so it no longer covers the arena's ENTER and VIEW DETAILS buttons.
+
+**Fixed**
+
+- BOTS roster portraits show again (a loading-screen `UIStretch` patch from the same change was dropped).
+- The hip contact shadow (a dark card between the legs) is hidden without errors every frame.
+
+- Tutorial and mode locks: `ShieldTutorial` is marked completed in the login responses, and `fightLanding_story`,
+  `story` and `raids` unlock at player level 0 alongside daily and special missions.
+- The server tag in the top-left corner is hidden by the client, so a stale or older server copy on the phone can no
+  longer bring back the red "prod" label.
+
+## 0.8
+
+**Added**
+
+- Online Arena fights against another player: an "Online PVP" button on the Arena screen chooses a relay server
+  (`Server/pvp_relay.py`) and room code and finds an opponent; fights run in input lockstep with the host deciding
+  health and knock-outs. Not yet tested between two phones. See [`ONLINE_PVP.md`](ONLINE_PVP.md).
+- "Host on this phone" in the online panel runs the relay inside the app, so other phones can connect to this one
+  without a computer.
+
+**Changed**
+
+- Version bump; includes the latest server and SP3 cutscene fixes.
 
 ## 0.7.3
 
