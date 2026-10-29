@@ -8,7 +8,8 @@ Bot ID: hotrod_cin_tlk
 【官方技能真理源对照 (来自 Upstash KV 聚合 Priorities 清单)】：
 -----------------------------------------------------------------------------
 1. [被动 - 眩晕] (ID: 2550, pua_icon: 0xe605)
-   - 致命重击：重击暴击触发眩晕 2.5 秒。
+   - 官方描述: "重击暴击时有40%的概率造成眩晕，持续1.5秒"
+   - 实现方案: hotrod_heavy_stun: 触发 onCrit，限制 level=Heavy，40% 几率施加 1.5 秒眩晕。呼出文字: "眩晕"。
 2. [被动 - 能量功率减益] (ID: 2562, pua_icon: 0xe606)
    - 减速中的对方无法规避；每层减速降低对手能量功率 27.2%。
 3. [SP2 - 减速] (ID: 2563, pua_icon: 0xe952)
@@ -33,11 +34,11 @@ def build_hotrod_abilities(base_hp: float = 29500.0, base_atk: float = 2420.0):
     mods = {}
     appears = {}
 
-    # 1. 致命重击眩晕 (ID: 2550): 重击暴击触发 2.5 秒眩晕
+    # 1. 致命重击眩晕 (ID: 2550): 重击暴击触发 1.5 秒眩晕 (40% 几率)
     m_stun, a_stun = make_stun_statmod(
         mod_id="hotrod_heavy_stun",
-        duration=2.5,
-        chance=1.0,
+        duration=1.5,
+        chance=0.40,
         trigger="onCrit",
         trigger_scope="level=Heavy",
         appr_id="appr_hotrod_heavy_stun",

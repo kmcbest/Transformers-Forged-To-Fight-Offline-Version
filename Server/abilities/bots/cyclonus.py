@@ -13,10 +13,17 @@ Bot ID: cyclonus_gs_uw06
      如果具有不可阻挡增益的对手冲向狂飙，他会立即获得黑暗能量，驱散不可阻挡增益，并造成1.5秒眩晕。"
 2. [SP3 - 黑暗场 / Dark Field] (ID: 2991, category: sp3)
    - 官方描述: "狂飙获得黑暗能量，并且在10秒内连续释放黑暗场脉冲。"
+3. [被动 - 黑暗能量 / Dark Energy] (ID: 2972, category: passive)
+   - 官方描述: "每次填满一格气，狂飙获得一层黑暗能量，提升攻击力30%，持续6秒"
+   - 实现方案:
+     cyclonus_dark_energy_power_fill:
+       触发 onPowerBarFull, 100% 获得 6.0 秒黑暗能量 (+30% 攻击力, 可叠3层),
+       紫色图标 (PUA: 0xe608), 呼出文字: "黑暗能量"。
 -----------------------------------------------------------------------------
 """
 
 from ..core import (
+    make_attack_boost_statmod,
     make_direct_dmg_statmod,
     make_nullify_statmod,
     make_stun_statmod,
@@ -120,5 +127,25 @@ def build_cyclonus_abilities(base_hp: float = 32000.0, base_atk: float = 2950.0)
     }
     validate_statmod(statmod_sp3)
     mods["cyclonus_sp3_dark_field"] = statmod_sp3
+
+    # 3. ID 2972: 填满一格气获得一层黑暗能量 (+30% 攻击力)，持续 6.0s (上限3层)
+    m_dark_pwr, a_dark_pwr = make_attack_boost_statmod(
+        mod_id="cyclonus_dark_energy_power_fill",
+        duration=6.0,
+        attack_bonus=0.30,
+        chance=1.0,
+        trigger="onPowerBarFull",
+        trigger_scope="",
+        appr_id="appr_cyclonus_dark_energy",
+        callout_text="黑暗能量",
+        show_callout=True,
+        pua_icon="\uE608",
+        color_hex="8800FF",
+        gradient_bottom="440088",
+        stackable=True,
+        max_stacks=3,
+    )
+    mods.update(m_dark_pwr)
+    appears.update(a_dark_pwr)
 
     return mods, appears, buffs

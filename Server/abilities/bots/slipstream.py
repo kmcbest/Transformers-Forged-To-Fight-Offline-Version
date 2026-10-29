@@ -17,7 +17,7 @@ Bot ID: slipstream_gs
    - 实现方案:
      slipstream_heavy_crit_damage: 触发 onHit，限制 level=Heavy，获得 15% 爆伤增益持续 7 秒。
 
-3. [被动 - 远程驱散] (ID: 3332)
+3. [被动 - 远程驱散] (ID: 3354 / 3332)
    - 官方描述: "基础远程攻击100%概率驱散对手一个护盾类增益"
    - 实现方案:
      slipstream_ranged_nullify_shield: 触发 onHit，限制 level=Ranged，100% 几率驱散护盾。
@@ -167,7 +167,7 @@ def build_slipstream_abilities(base_hp: float = 32402.0, base_atk: float = 2306.
     appears["appr_slipstream_heavy_crit_damage"] = appr_heavy_crit_dmg
 
     # -------------------------------------------------------------------------
-    # 3. 基础远程攻击驱散对手护盾 (ID: 3332)
+    # 3. 基础远程攻击驱散对手护盾 (ID: 3354, 数据库优先项)
     # -------------------------------------------------------------------------
     appr_nullify_shield = make_statmod_appearance(
         appr_id="appr_slipstream_ranged_nullify_shield",

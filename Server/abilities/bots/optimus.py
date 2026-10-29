@@ -56,6 +56,12 @@ Bot ID: fte_optimus_gs_t3
        100% 概率对对手施加 4.0 秒流血 debuff (总计 140% base_atk 伤害),
        作用于 opponent, 鲜红血条圆环图标 (PUA: 0xe401, Hex: FF0000 / FF0000),
        呼出文字: "突破口"。
+7. [被动 - 攻击增益 / Attack Buff] (ID: 2357, pua_icon: 0xe406, category: passive)
+   - 官方描述: "发动重击时，获得一个攻击增益，增加（28.8%*小队人数）的攻击力，持续7秒"
+   - 实现方案:
+     optimus_heavy_atk_buff:
+       触发 onPlayerStateEnter, state=Heavy, 100% 获得 7.0 秒攻击增益 (+115.2% 攻击力, 4位队友),
+       作用于 self, 金色血条圆环图标 (PUA: 0xe406), 呼出文字: "攻击增益"。
 -----------------------------------------------------------------------------
 """
 
@@ -191,5 +197,24 @@ def build_optimus_abilities(base_hp: float = 30000.0, base_atk: float = 3000.0):
     )
     mods.update(m_sig_bleed)
     appears.update(a_sig_bleed)
+
+    # 7. ID 2357: 发动重击时获得攻击增益 (+115.2% ATK，28.8% * 4人)，持续 7.0s
+    m_heavy_atk, a_heavy_atk = make_attack_boost_statmod(
+        mod_id="optimus_heavy_atk_buff",
+        duration=7.0,
+        attack_bonus=1.152,
+        chance=1.0,
+        trigger="onPlayerStateEnter",
+        trigger_scope="state=Heavy",
+        appr_id="appr_optimus_heavy_atk_buff",
+        callout_text="攻击增益",
+        show_callout=True,
+        pua_icon="\uE406",
+        color_hex="F59E0B",
+        gradient_bottom="D97706",
+        stackable=False,
+    )
+    mods.update(m_heavy_atk)
+    appears.update(a_heavy_atk)
 
     return mods, appears

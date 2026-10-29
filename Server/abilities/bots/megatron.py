@@ -18,10 +18,20 @@ Bot ID: megatron_gs_leader2015
    - 100%的概率施加38%的破甲，持续10秒。
 5. [被动 - 减益融合] (ID: 3138, pua_icon: 0xe60f)
    - 重击击中对方时，如果对方身上有带倒计时的减益，将该减益变为无倒计时永久状态。
+6. [被动 - 不可阻挡 / Unstoppable] (ID: 3126, pua_icon: 0xe514, category: passive)
+   - 官方描述: "被击倒后，威震天有概率获得3秒的不可阻挡，概率等于损失生命值的百分比乘以0.7"
+   - 实现方案:
+     megatron_knockdown_unstoppable: 触发 onKnockdown, 获得 3.0 秒不可阻挡 (PUA: 0xe514), 呼出文字: "不可阻挡"。
+
+7. [觉醒技 - 毫不留情 / No Mercy] (ID: 3127, pua_icon: 0xe412, category: signature)
+   - 官方描述: "只要对手身上有融合的减益，威震天的近战攻击就有60%的概率从对方身上随机偷走一个增益，持续5秒。"
+   - 实现方案:
+     megatron_no_mercy_steal: 触发 onHit, level=Light,Medium,Heavy, 60% 几率窃取增益 5.0 秒。
 -----------------------------------------------------------------------------
 """
 
 from ..core import (
+    make_unstoppable_statmod,
     AbilityColor,
     make_statmod_appearance,
     make_armor_break_statmod,
@@ -293,5 +303,60 @@ def build_megatron_abilities(base_hp: float = 31000.0, base_atk: float = 2450.0)
     validate_statmod(mod_overload)
     mods["megatron_fusion_overload"] = mod_overload
     appears["appr_megatron_fusion_overload"] = appr_overload
+
+    # 7. ID 3126: 被击倒后触发 3 秒不可阻挡
+    m_unstoppable, a_unstoppable = make_unstoppable_statmod(
+        mod_id="megatron_knockdown_unstoppable",
+        duration=3.0,
+        trigger="onKnockdown",
+        trigger_scope="",
+        appr_id="appr_megatron_unstoppable",
+        callout_text="不可阻挡",
+        pua_icon="\uE514",
+    )
+    mods.update(m_unstoppable)
+    appears.update(a_unstoppable)
+
+    # 8. ID 3127: 觉醒技【毫不留情】对手有融合减益时近战 60% 偷取一个增益 5.0 秒
+    appr_no_mercy = make_statmod_appearance(
+        appr_id="appr_megatron_no_mercy_steal",
+        callout_text="毫不留情",
+        desc="对手有融合减益时，近战攻击60%概率窃取对方一个增益，持续5秒",
+        pua_icon="\uE412",
+        color=AbilityColor.RED_DEBUFF,
+        show_callout=True,
+    )
+    mod_no_mercy = {
+        "id": "megatron_no_mercy_steal",
+        "t": "buff_steal",
+        "tm": "",
+        "tr": ["onHit"],
+        "uit": ["onHit"],
+        "pri": 0,
+        "trm": 0.0,
+        "trs": "level=Light,Medium,Heavy",
+        "trr": "repeat",
+        "c": 0.60,
+        "m": 1.0,
+        "d": 5.0,
+        "s": "none",
+        "ta": "self",
+        "mt": "buff",
+        "v": "",
+        "ms": "",
+        "st": 5,
+        "g": "buff_steal",
+        "gc": 0.0,
+        "gcv": "",
+        "rcv": "",
+        "ti": 0,
+        "a": ["appr_megatron_no_mercy_steal"],
+        "au": [],
+        "rh": 0.0,
+        "ra": 0.0,
+    }
+    validate_statmod(mod_no_mercy)
+    mods["megatron_no_mercy_steal"] = mod_no_mercy
+    appears["appr_megatron_no_mercy_steal"] = appr_no_mercy
 
     return mods, appears
