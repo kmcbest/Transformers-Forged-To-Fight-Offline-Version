@@ -117,12 +117,10 @@ static void megatronus_on_simulation_tick(uint64_t now_ms) {
         // 1. 火种源自主回能: 14秒充满一格能量 (1.0 / 14.0 = ~0.07142857 bars/s)
         float cur_mana = skill_get_mana(p);
 
-        // 门禁 A: 若能量已达到满 3 格 (>= 3.0)，彻底停止充能并对齐时钟，严禁溢出或累积！
-        if (cur_mana >= 3.0f - 0.005f) {
+        // 门禁 A: 若能量已达到或超过满 3 格 (>= 3.0)，停止充能并对齐时钟，严格维持 3.0f 满格
+        if (cur_mana >= 3.0f) {
             s_last_tick_ms[p] = now_ms;
-            if (cur_mana > 3.0f) {
-                skill_set_mana(p, 3.0f);
-            }
+            skill_set_mana(p, 3.0f);
         }
         // 门禁 B: 匀速自主充能 (放 S 技完全不影响自发充气)
         else {
@@ -132,14 +130,12 @@ static void megatronus_on_simulation_tick(uint64_t now_ms) {
                 uint64_t dt_ms = now_ms - s_last_tick_ms[p];
                 s_last_tick_ms[p] = now_ms;
 
-
-
                 if (!skill_has_buff(p, "power_lock")) {
                     float mana_delta = ((float)dt_ms / 1000.0f) * (1.0f / 14.0f);
                     skill_add_mana(p, mana_delta);
 
-                    // 充能后如果超过 3 格，严格截断并写回
-                    if (skill_get_mana(p) > 3.0f) {
+                    // 接近满 3 格时 (>= 2.99f) 直接拉满至 3.0f，保证解锁 SP3 必杀技按键与满槽
+                    if (skill_get_mana(p) >= 2.99f) {
                         skill_set_mana(p, 3.0f);
                     }
                 }
@@ -239,50 +235,8 @@ static void megatronus_on_hit_connected(SkillHitContext* ctx) {
             }
         }
 
-        // 3. 生命值跌破 10% 触发不朽遗迹 (单局限 1 次)
-        // 官方真理源: "当震天尊生命值降到10%以下时，他会发光跃起震开对手并额外激活不朽遗迹，持续8秒，此期间震天尊免疫任何伤害"
-        // 关键防护: 严禁在 24% 等健康血量承受非致命常规攻击时提前激活不朽！必须真实跌破 10% 或受到致死打击时触发。
-        float cur_hp = skill_get_hp(tp);
-        float max_hp = skill_get_max_hp(tp);
-        if (!s_immortality_used[tp] && max_hp > 0.0f) {
-            float threshold = max_hp * 0.10f;
-
-            // 致命打击拦截保底：若本次伤害会导致击杀 (剩余血量 <= 0)，截断伤害保底停留在 10%
-            if (cur_hp - ctx->modified_damage <= 0.0f) {
-                ctx->modified_damage = (cur_hp > threshold) ? (cur_hp - threshold) : 0.0f;
-                skill_log("MEGATRONUS: Lethal blow intercepted on P%d: damage clamped to keep 10%% HP", tp);
-            }
-
-            // 仅当震天尊承受本次伤害后血量确实处于 <= 10% (且当前血量已处于濒死阶段 <= 10.5% 或受到截断致死打击) 时激活
-            float hp_after = cur_hp - ctx->modified_damage;
-            if (hp_after <= threshold && (cur_hp <= threshold + 0.05f * max_hp || cur_hp - ctx->modified_damage <= 0.0f)) {
-                s_immortality_used[tp]   = 1;
-                s_immortality_active[tp] = 1;
-                s_immortality_end_ms[tp] = now_ms + 8000; // 持续 8 秒
-
-                // 锁血截断：确保震天尊血量锁在 10%
-                if (hp_after < threshold) {
-                    ctx->modified_damage = cur_hp - threshold;
-                    if (ctx->modified_damage < 0.0f) ctx->modified_damage = 0.0f;
-                }
-
-                skill_consume_buff(tp, "megatronus_relic_fury", 99);
-                skill_consume_buff(tp, "megatronus_relic_fury_vfx", 99);
-                skill_consume_buff(tp, "megatronus_relic_preservation", 99);
-                skill_consume_buff(tp, "megatronus_relic_preservation_vfx", 99);
-                skill_stop_bot_move(tp, "relic_orange");
-                skill_stop_bot_move(tp, "relic_blue");
-
-                skill_apply_buff(tp, "megatronus_relic_immortality");
-                skill_apply_buff_dur(tp, "megatronus_relic_immortality_vfx", 8.0f);
-                skill_play_bot_move(tp, "relic_white");
-
-                skill_overlay("[%s] 生命危险！激活不朽遗迹！8秒内免疫所有伤害！",
-                              tp == 0 ? "震天尊" : "敌方震天尊");
-                skill_log("MEGATRONUS: P%d dropped to <= 10%% HP (%.1f/%.1f), activated 8s Relic of Immortality!",
-                          tp, hp_after, max_hp);
-            }
-        }
+        // 注：生命值跌破 10% 触发不朽遗迹与 10% 锁血保底由 skill_megatronus_filter_damage()
+        // 在 hook_177 计算出最终结算受击伤害时精确卡在 10%，确保本次攻击有效扣血且绝不提前拒伤。
     }
 
     // =======================================================================
@@ -437,6 +391,63 @@ static void megatronus_on_attack_start(int player_index, int action_type) {
     if (action_type == 64 || action_type == 0x40) {
         s_last_power_bar[player_index] = 0;
     }
+}
+
+// 震天尊受击最终伤害过滤门禁 (由 hook_177 在最终计算出受到伤害后调用)
+// 保证：
+// 1. 若不朽遗迹处于激活状态 (8秒内)，完全免伤 (0.0f)；
+// 2. 若一次进攻会把他的体力打到 10% 以下：这次进攻依然有效并造成伤害，只是把最终体力卡在 10%；
+// 3. 同时激活不朽遗迹与专属白色光圈特效 (8秒)。
+float skill_megatronus_filter_damage(int target_player_index, float final_damage) {
+    if (target_player_index < 0 || target_player_index >= 2) return final_damage;
+    const char* bid = skill_get_bot_id(target_player_index);
+    if (!bid || strstr(bid, "megatronus") == NULL) return final_damage;
+
+    uint64_t now_ms = skill_now_ms();
+
+    // 1. 不朽遗迹激活中：8 秒内绝对免疫伤害
+    if (s_immortality_active[target_player_index]) {
+        if (now_ms < s_immortality_end_ms[target_player_index]) {
+            skill_log("MEGATRONUS: Relic of Immortality absorbed 100%% damage on P%d (%.1f -> 0.0)",
+                      target_player_index, final_damage);
+            return 0.0f;
+        }
+    }
+
+    // 2. 检查生命值跌破 10% (单局限 1 次)
+    float cur_hp = skill_get_hp(target_player_index);
+    float max_hp = skill_get_max_hp(target_player_index);
+    if (!s_immortality_used[target_player_index] && max_hp > 0.0f) {
+        float threshold = max_hp * 0.10f;
+        if (cur_hp - final_damage <= threshold) {
+            // 本次攻击依然有效扣血，只是把体力卡在 10%
+            float allowed = (cur_hp > threshold) ? (cur_hp - threshold) : 0.0f;
+            float old_dmg = final_damage;
+            final_damage = allowed;
+
+            s_immortality_used[target_player_index]   = 1;
+            s_immortality_active[target_player_index] = 1;
+            s_immortality_end_ms[target_player_index] = now_ms + 8000;
+
+            skill_consume_buff(target_player_index, "megatronus_relic_fury", 99);
+            skill_consume_buff(target_player_index, "megatronus_relic_fury_vfx", 99);
+            skill_consume_buff(target_player_index, "megatronus_relic_preservation", 99);
+            skill_consume_buff(target_player_index, "megatronus_relic_preservation_vfx", 99);
+            skill_stop_bot_move(target_player_index, "relic_orange");
+            skill_stop_bot_move(target_player_index, "relic_blue");
+
+            skill_apply_buff(target_player_index, "megatronus_relic_immortality");
+            skill_apply_buff_dur(target_player_index, "megatronus_relic_immortality_vfx", 8.0f);
+            skill_play_bot_move(target_player_index, "relic_white");
+
+            skill_overlay("[%s] 生命危险！激活不朽遗迹！8秒内免疫所有伤害！",
+                          target_player_index == 0 ? "震天尊" : "敌方震天尊");
+            skill_log("MEGATRONUS: P%d hit clamped damage %.1f -> %.1f, keeping HP at 10%% (%.1f/%.1f), activated 8s Immortality!",
+                      target_player_index, old_dmg, final_damage, cur_hp - final_damage, max_hp);
+        }
+    }
+
+    return final_damage;
 }
 
 int skill_get_megatronus_relic(int player_index) {

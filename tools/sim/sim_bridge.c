@@ -213,8 +213,14 @@ void skill_set_power_lock(int target_player_index, uint64_t duration_ms) {
 }
 
 static float s_sim_opponent_distance = 25.0f;
+static int s_sim_in_melee = 0;
+static int s_sim_in_combo = 0;
 float skill_get_opponent_distance(int player_index) { (void)player_index; return s_sim_opponent_distance; }
+int skill_is_in_melee_range(int player_index) { (void)player_index; return s_sim_in_melee; }
+int skill_is_in_combo(int player_index) { (void)player_index; return s_sim_in_combo; }
 SIM_API void sim_set_distance(float dist) { s_sim_opponent_distance = dist; }
+SIM_API void sim_set_in_melee(int in_melee) { s_sim_in_melee = in_melee; }
+SIM_API void sim_set_in_combo(int in_combo) { s_sim_in_combo = in_combo; }
 static uint64_t s_mm_dash_end_ms[2] = {0, 0};
 void skill_set_motormaster_dash_unstoppable(int player_index, uint64_t duration_ms) {
     if (player_index >= 0 && player_index < 2) s_mm_dash_end_ms[player_index] = g_sim_clock_ms + duration_ms;
@@ -1184,6 +1190,9 @@ SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
     if (target_idx == 0 && g_player_invincible) {
         final_dmg = 0.0f;
     }
+
+    extern float skill_megatronus_filter_damage(int target_player_index, float final_damage);
+    final_dmg = skill_megatronus_filter_damage(target_idx, final_dmg);
 
     victim->hp -= final_dmg;
     if (victim->hp < 0.0f) victim->hp = 0.0f;

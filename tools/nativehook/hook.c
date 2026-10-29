@@ -626,6 +626,7 @@ static volatile uint64_t g_p1_block_enter_ms = 0;
 static volatile int g_p0_block_reset_done = 0;
 static volatile int g_p0_after_heavy = 0;
 static volatile int g_p0_combo_ended = 0;
+static volatile int g_p1_combo_ended = 0;
 void* g_p0_combat_character = NULL;
 void* g_p1_combat_character = NULL;
 volatile float g_p0_max_hp = 50000.0f;
@@ -4763,6 +4764,9 @@ static inline void ensure_p0_power_rounding(void* pc) {
     } else if (cur >= 0.65f && cur <= 0.6675f) {
         set_cur(fm, 0.67f, NULL);
         flog("POWER_ROUNDING: cur=%.5f -> boosted to 0.67f (SP2 full green)", cur);
+    } else if (cur >= 0.985f && cur < 1.0f) {
+        set_cur(fm, 1.0f, NULL);
+        flog("POWER_ROUNDING: cur=%.5f -> boosted to 1.0f (SP3 full red)", cur);
     }
 }
 
@@ -5198,6 +5202,7 @@ void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     g_p0_block_reset_done = 0;
     g_p0_after_heavy = 0;
     g_p0_combo_ended = 0;
+    g_p1_combo_ended = 0;
     g_p0_last_attack_ms = 0;
     g_p0_power_seeded = 0;
     g_p0_current_special_index = -1;
@@ -6532,15 +6537,36 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
                 }
             }
 
+            // P1 Combo End Gate: if P1 reached combo ender, subsequent attacks (1 or 32)
+            // must strictly wait until P1 is truly back in CanAct & CanAttack idle.
+            // If AI spams attacks during recovery, suppress the action.
+            uint32_t p1_l = *(uint32_t*)((uintptr_t)self + 0x1c0);
+            uint32_t p1_m = *(uint32_t*)((uintptr_t)self + 0x1c4);
+            if (action == 1 || action == 32) {
+                if (g_p1_combo_ended || p1_m >= 2 || p1_l >= 4) {
+                    int can_act = ((int(*)(void*,void*))(g_base + 0x1175714))(self, NULL);
+                    int can_att = ((int(*)(void*,void*))(g_base + 0x11737B4))(self, NULL);
+                    if (can_act && can_att) {
+                        reset_player_attack_chain(self);
+                        g_p1_combo_ended = 0;
+                    } else {
+                        // AI attempted to attack while in recovery from previous combo: suppress!
+                        suppress_action = 1;
+                        break;
+                    }
+                }
+            }
+
             if (action == 4 || action == 1 || action == 32 || action == 0x100) {
                 g_p1_block_enter_ms = 0;
             }
-            if (action == 8 || action == 64 || action == 128 || (action & 192) || action == 0x100 || action == 0x200) {
+            if (action == 0x100) {
                 g_p1_block_enter_ms = 0;
                 reset_player_attack_chain(self);
-                if (action == 0x100) {
-                    skill_dispatch_attack_start(1, 0x100);
-                }
+                skill_dispatch_attack_start(1, 0x100);
+            } else if (action == 0x200) {
+                g_p1_block_enter_ms = 0;
+                reset_player_attack_chain(self);
             }
         }
 
@@ -6552,7 +6578,7 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
                 g_p1_last_backdash_ms = propgo_now_ms();
                 if (strstr(g_p1_bot_id, "prowl") != NULL) prowl_start_charge(0);
             }
-        } else if (action == 32) { // Action.Dash (主动前冲，打断充能)
+        } else if (action == 32) { // Action.Dash / Swipe Forward
             uint64_t now_ms = propgo_now_ms();
             int can_act = ((int(*)(void*,void*))(g_base + 0x1175714))(self, NULL);
             int can_run = ((int(*)(void*,void*))(g_base + 0x1175238))(self, NULL);
@@ -6560,15 +6586,28 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
             int is_stun = ((int(*)(void*,void*))(g_base + 0x1173E28))(self, NULL);
             int p_idx = is_p0_act ? 0 : 1;
             uint64_t last_hit = (p_idx == 0) ? g_p0_last_hitreact_ms : g_p1_last_hitreact_ms;
-            // 严格门禁：只有角色真正具备行动能力(CanAct & CanRun)，未被击晕受击且不在倒地起身期(>=800ms)，才准触发前冲技能事件
-            if (can_act && can_run && !is_hit && !is_stun && (now_ms - last_hit >= 800)) {
-                if (is_p0_act) s_p0_last_dash_ms = now_ms;
-                else s_p1_last_dash_ms = now_ms;
-                static uint64_t s_last_dash_dispatch_ms[2] = {0, 0};
-                if (now_ms - s_last_dash_dispatch_ms[p_idx] >= 500) {
-                    s_last_dash_dispatch_ms[p_idx] = now_ms;
-                    skill_dispatch_attack_start(p_idx, 2); // Dash attack type = 2
+
+            // 严格门禁：区分【中远距离主动前冲】与【近战连招中的中击 (M1/M2)】
+            // 当角色处于攻击连招中 (l > 0 || m > 0)、处于近战贴脸判定区 (IsInMeleeRange) 或两机体间距小于 10.0m 时，
+            // Action 32 实质为普通连招中击，严禁触发前冲技能事件！
+            uint32_t act_l = *(uint32_t*)((uintptr_t)self + 0x1c0);
+            uint32_t act_m = *(uint32_t*)((uintptr_t)self + 0x1c4);
+            int in_melee = ((int(*)(void*,void*))(g_base + 0x1175078))(self, NULL);
+            float dist = ((float(*)(void*,void*))(g_base + 0x1175A28))(self, NULL);
+
+            if (act_l == 0 && act_m == 0 && !in_melee && dist >= 10.0f) {
+                if (can_act && can_run && !is_hit && !is_stun && (now_ms - last_hit >= 800)) {
+                    if (is_p0_act) s_p0_last_dash_ms = now_ms;
+                    else s_p1_last_dash_ms = now_ms;
+                    static uint64_t s_last_dash_dispatch_ms[2] = {0, 0};
+                    if (now_ms - s_last_dash_dispatch_ms[p_idx] >= 500) {
+                        s_last_dash_dispatch_ms[p_idx] = now_ms;
+                        skill_dispatch_attack_start(p_idx, 2); // Dash attack type = 2
+                    }
                 }
+            } else {
+                flog("ACTION_32_MELEE_SWIPE: P%d swipe in combo/melee (l=%u, m=%u, in_melee=%d, dist=%.2f) -> treated as Medium attack, skip dash dispatch",
+                     p_idx, act_l, act_m, in_melee, dist);
             }
             if (is_p0_act && strstr(g_p0_bot_id, "prowl") != NULL && g_p0_prowl_charging) {
                 prowl_finish_charge(1, "dash forward (action 32)");
@@ -6603,6 +6642,19 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
                 g_p1_force_dodge_after_block = 0;
                 g_p1_disengage_pending = 0;
                 flog("AI_DIFF: Intercepted Dodge(%d) succeeded, cleared force_dodge flag", action);
+            }
+        }
+        if (action_ok && (self == g_p1_controller || (obj_ok(self) && *(int32_t*)((uintptr_t)self + 0xF4) == 1))) {
+            // ONLY reset attack chain when Dodge/Sidestep ACTUALLY succeeded!
+            if (action == 8 || action == 64 || action == 128 || (action & 192)) {
+                g_p1_block_enter_ms = 0;
+                reset_player_attack_chain(self);
+                g_p1_combo_ended = 0;
+            }
+            uint32_t post_p1_l = *(uint32_t*)((uintptr_t)self + 0x1c0);
+            uint32_t post_p1_m = *(uint32_t*)((uintptr_t)self + 0x1c4);
+            if (post_p1_l >= 4 || post_p1_m >= 2) {
+                g_p1_combo_ended = 1;
             }
         }
         if (g_p0_force_dodge_after_block && action_ok &&
@@ -6676,6 +6728,7 @@ void* hook_155(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
             flog("SPECIAL_EXIT (0x0E34640) on P1 (target=%p): attack chain reset", pc);
             reset_player_attack_chain(pc);
             g_p1_block_enter_ms = 0;
+            g_p1_combo_ended = 0;
         }
     });
     return r;
@@ -6794,6 +6847,7 @@ void* hook_160(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
             } else if (pidx == 1) {
                 g_p1_controller = pc;
                 g_p1_block_enter_ms = 0;
+                g_p1_combo_ended = 0;
                 reset_player_attack_chain(pc);
             }
         }
@@ -7117,6 +7171,7 @@ void* hook_165(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
                 g_p1_combo_next_action = 0;
                 flog("HITREACT_ENTER (0x0117FEC4) on P1: hit reaction resets attack chain");
                 reset_player_attack_chain(pc);
+                g_p1_combo_ended = 0;
                 skill_clear_motormaster_dash_unstoppable(1);
                 skill_dispatch_hitreact_enter(1);
             }
@@ -7200,6 +7255,7 @@ void* hook_172(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
             } else if (pidx == 1) {
                 g_p1_last_backdash_ms = propgo_now_ms();
                 g_p1_block_enter_ms = 0;
+                g_p1_combo_ended = 0;
                 flog("DODGE_ENTER (0x0117F614) on P1: real dodge resets attack chain");
                 reset_player_attack_chain(pc);
                 skill_dispatch_dodge_enter(1);
@@ -7359,11 +7415,12 @@ typedef float (*fn_get_damage_received)(void* self, float damage, void* damageTy
 // In Starscream's Picnic (1.1.7), only ranged attacks can deal damage to enemies.
 // Melee attacks (light combo, medium dash, heavy charge) deal 0 damage.
 float hook_177(void* self, float damage, void* damageType, int32_t blocked, void* isPerfectBlock, int32_t isCrit, int32_t isArmorIgnoring, void* method, float critPenetration, float armorPenetration) {
+    int is_enemy = 0;
     PROTECT({
         if (self && obj_ok(self)) {
             void* owner = *(void**)((char*)self + 0x28);
             // Target is enemy (P1)
-            int is_enemy = (owner && obj_ok(owner) && *(int32_t*)((char*)owner + 0xF4) == 1);
+            is_enemy = (owner && obj_ok(owner) && *(int32_t*)((char*)owner + 0xF4) == 1);
             if (!is_enemy && owner && g_p0_controller && owner != g_p0_controller) {
                 is_enemy = 1;
             }
@@ -7556,6 +7613,8 @@ float hook_177(void* self, float damage, void* damageType, int32_t blocked, void
             }
         }
     }
+    extern float skill_megatronus_filter_damage(int target_player_index, float final_damage);
+    res = skill_megatronus_filter_damage(is_enemy ? 1 : 0, res);
     return res;
 }
 
@@ -8187,6 +8246,7 @@ void* hook_186(void* this_pc, void* hitResult, void* method) {
                     // P1 (AI) took an unblocked hit from P0 (human player)
                     // Reset victim P1's attack chain
                     reset_player_attack_chain(this_pc);
+                    g_p1_combo_ended = 0;
                     // Clear all pending AI counter-actions so AI never breaks hitstun
                     g_p1_retreat_after_combo = 0;
                     g_p1_disengage_pending = 0;
@@ -8406,6 +8466,28 @@ float skill_get_opponent_distance(int player_index) {
     return 10.0f;
 }
 
+int skill_is_in_melee_range(int player_index) {
+    void* pc = (player_index == 0) ? g_p0_controller : g_p1_controller;
+    if (pc && obj_ok(pc) && g_base) {
+        typedef int (*fn_is_melee)(void*, void*);
+        return ((fn_is_melee)(g_base + 0x1175078))(pc, NULL);
+    }
+    return 0;
+}
+
+int skill_is_in_combo(int player_index) {
+    void* pc = (player_index == 0) ? g_p0_controller : g_p1_controller;
+    if (pc && obj_ok(pc)) {
+        int l = *(int32_t*)((uintptr_t)pc + 0x1c0);
+        int m = *(int32_t*)((uintptr_t)pc + 0x1c4);
+        return (l > 0 || m > 0);
+    }
+    return 0;
+}
+
+void skill_consume_buff(int player_index, const char* mod_id, int count);
+int skill_has_buff(int player_index, const char* buff_id_substr);
+
 void skill_set_motormaster_dash_unstoppable(int player_index, uint64_t duration_ms) {
     if (player_index >= 0 && player_index < 2) {
         uint64_t now_ms = propgo_now_ms();
@@ -8420,6 +8502,12 @@ void skill_clear_motormaster_dash_unstoppable(int player_index) {
         g_mm_dash_unstoppable_end_ms[player_index] = 0;
         g_mm_dash_start_ms[player_index] = 0;
         g_mm_dash_active[player_index] = 0;
+        skill_consume_buff(player_index, "motormaster_dash_unstoppable", 99);
+        skill_consume_buff(player_index, "motormaster_dash_unstoppable_vfx", 99);
+        if (!skill_has_buff(player_index, "motormaster_sp2_unstoppable")) {
+            if (player_index == 0) g_p0_unstoppable_end_ms = 0;
+            else g_p1_unstoppable_end_ms = 0;
+        }
     }
 }
 
