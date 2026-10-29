@@ -598,7 +598,8 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x00F1DB10, "RAID_FLOW_RESUME",    2, 0 }, // 208 PVPRaidFlow.Resume
     { 0x012E8F34, "QUEST_FLOW_ENTER",    2, 0 }, // 209 QuestFlow.Enter
     { 0x012E900C, "QUEST_FLOW_RESUME",   2, 0 }, // 210 QuestFlow.Resume
-    { 0x00C5FC70, "HOME_FLOW_RESUME",    2, 0 }  // 211 HomeFlow.Resume
+    { 0x00C5FC70, "HOME_FLOW_RESUME",    2, 0 }, // 211 HomeFlow.Resume
+    { 0x01180E24, "PLAYER_SWIPE",        2, 0 }  // 212 PlayerInput.OnDetectSwipe
 };
 
 #define NH (int)(sizeof(H)/sizeof(H[0]))
@@ -720,6 +721,39 @@ static volatile uint64_t g_p0_last_dodge_ms = 0;
 static volatile uint64_t g_p0_last_backdash_ms = 0;
 static volatile uint64_t g_p1_last_backdash_ms = 0;
 static volatile uint64_t g_p1_last_hitreact_ms = 0;
+
+// ==========================================
+// COMBAT EXPANSION: CRUSH CANCEL & HEAVY FEINT & CINEMATIC FX
+// ==========================================
+static volatile int g_cancel_window_active = 0;
+static volatile uint64_t g_cancel_window_expire_ms = 0;
+static volatile int g_p0_current_attack_is_ender = 0;
+
+static volatile int g_heavy_feint_armed = 0;
+static volatile uint64_t g_heavy_feint_expire_ms = 0;
+static volatile int g_p0_heavy_charging = 0;
+static volatile uint64_t g_p0_last_heavy_start_ms = 0;
+
+// Right-screen gesture recognition tracking
+static volatile int g_r_touch_tracking = 0;
+static volatile float g_r_touch_start_x = 0.0f;
+static volatile float g_r_touch_start_y = 0.0f;
+static volatile uint64_t g_r_touch_start_ms = 0;
+static volatile int g_r_touch_swiped = 0;
+
+// Suppression window for native sidestep when cancel/feint is triggered or swipe is on right screen
+static volatile uint64_t g_suppress_sidestep_until_ms = 0;
+static volatile uint64_t g_p0_last_ender_start_ms = 0;
+static volatile int g_p0_last_ender_type = 0;
+static volatile uint64_t g_last_crush_cancel_trigger_ms = 0;
+static volatile uint64_t g_last_heavy_feint_trigger_ms = 0;
+
+// Cinematic FX Context
+static volatile int g_cinematic_fx_active = 0;
+static volatile uint64_t g_cinematic_fx_start_real_ms = 0;
+static volatile uint64_t g_cinematic_fx_duration_ms = 0;
+static float g_cinematic_fx_original_fov = 0.0f;
+static void* g_cinematic_camera = NULL;
 
 // Player 0 (AutoFight Friendly AI) Tactical Variables - 六道狂乱 (Difficulty 3):
 static volatile int g_p0_ai_special_cancel_pending = 0;
@@ -4770,6 +4804,184 @@ static inline void ensure_p0_power_rounding(void* pc) {
     }
 }
 
+// Forward declarations for combat cancel & cinematic expansion
+static void reset_player_attack_chain(void* pc);
+float skill_get_mana(int player_index);
+void skill_add_mana(int player_index, float norm_mana);
+static int bot_has_ranged_heavy(const char* bot_id);
+
+static void combat_start_cinematic_fx(uint64_t duration_ms, float target_fov, float time_scale) {
+    if (!g_base) return;
+    PROTECT({
+        // 1. Set Unity TimeScale
+        typedef void (*fn_set_timescale)(float);
+        fn_set_timescale set_ts = (fn_set_timescale)(g_base + 0x16B6DEC);
+        if (set_ts) {
+            set_ts(time_scale);
+        }
+
+        // 2. Fetch Camera from BattleArbiter -> CameraController -> _camera
+        typedef void* (*fn_get_arbiter)(void);
+        fn_get_arbiter get_arbiter = (fn_get_arbiter)(g_base + 0x00CF8E28);
+        if (get_arbiter) {
+            void* arb = get_arbiter();
+            if (arb && obj_ok(arb)) {
+                // BattleArbiter.CameraController @ offset 0x80
+                void* cam_ctrl = *(void**)((char*)arb + 0x80);
+                if (cam_ctrl && obj_ok(cam_ctrl)) {
+                    // CameraController._camera @ offset 0xA0
+                    void* cam = *(void**)((char*)cam_ctrl + 0xA0);
+                    if (cam && obj_ok(cam)) {
+                        typedef float (*fn_get_fov)(void*, void*);
+                        typedef void (*fn_set_fov)(void*, float, void*);
+                        fn_get_fov get_fov = (fn_get_fov)(g_base + 0x1B48F58);
+                        fn_set_fov set_fov = (fn_set_fov)(g_base + 0x1B48F98);
+                        if (get_fov && set_fov) {
+                            if (!g_cinematic_fx_active || g_cinematic_fx_original_fov <= 0.001f) {
+                                float f = get_fov(cam, NULL);
+                                if (f >= 15.0f && f <= 110.0f) {
+                                    g_cinematic_fx_original_fov = f;
+                                } else {
+                                    g_cinematic_fx_original_fov = 48.0f;
+                                }
+                            }
+                            g_cinematic_camera = cam;
+                            set_fov(cam, target_fov, NULL);
+                        }
+                    }
+                }
+            }
+        }
+
+        g_cinematic_fx_active = 1;
+        g_cinematic_fx_start_real_ms = propgo_now_ms();
+        g_cinematic_fx_duration_ms = duration_ms;
+        flog("[CINEMATIC_FX] Started: duration=%llu ms, target_fov=%.1f, orig_fov=%.1f, timescale=%.2f",
+             (unsigned long long)duration_ms, target_fov, g_cinematic_fx_original_fov, time_scale);
+    });
+}
+
+static void combat_update_cinematic_fx(void) {
+    if (!g_cinematic_fx_active) return;
+    uint64_t now_real = propgo_now_ms();
+    if (now_real - g_cinematic_fx_start_real_ms >= g_cinematic_fx_duration_ms) {
+        PROTECT({
+            // 1. Restore TimeScale
+            typedef void (*fn_set_timescale)(float);
+            fn_set_timescale set_ts = (fn_set_timescale)(g_base + 0x16B6DEC);
+            if (set_ts) {
+                set_ts(1.0f);
+            }
+
+            // 2. Restore Camera FOV
+            if (g_cinematic_camera && obj_ok(g_cinematic_camera) && g_cinematic_fx_original_fov > 10.0f) {
+                typedef void (*fn_set_fov)(void*, float, void*);
+                fn_set_fov set_fov = (fn_set_fov)(g_base + 0x1B48F98);
+                if (set_fov) {
+                    set_fov((void*)g_cinematic_camera, g_cinematic_fx_original_fov, NULL);
+                }
+            }
+            flog("[CINEMATIC_FX] Restored normal timeScale 1.0 and FOV %.1f after %llu ms",
+                 g_cinematic_fx_original_fov, (unsigned long long)(now_real - g_cinematic_fx_start_real_ms));
+            g_cinematic_fx_active = 0;
+        });
+    }
+}
+
+static void try_trigger_crush_cancel(void) {
+    if (!g_p0_controller || !obj_ok(g_p0_controller)) return;
+    uint64_t now = propgo_now_ms();
+    if (now - g_last_crush_cancel_trigger_ms < 300) {
+        return; // Debounce
+    }
+    if (!g_cancel_window_active || now > g_cancel_window_expire_ms) {
+        flog("[CRUSH_CANCEL] Rejected: window inactive or expired (active=%d, left=%lld ms)",
+             g_cancel_window_active, (long long)(g_cancel_window_expire_ms - now));
+        combat_overlay_push("[P0] 崩坏取消未就绪！(需L4/M2命中)");
+        return;
+    }
+    float cur_mana = skill_get_mana(0);
+    if (cur_mana < 0.5f) {
+        flog("[CRUSH_CANCEL] Rejected: insufficient mana (cur=%.2f < 0.50)", cur_mana);
+        combat_overlay_push("[P0] 能量不足无法崩坏！(需0.5格气)");
+        return;
+    }
+
+    // 1. Deduct 0.5 Bar mana
+    skill_add_mana(0, -0.5f);
+
+    // 2. Clear cancel window & suppress sidestep
+    g_cancel_window_active = 0;
+    g_last_crush_cancel_trigger_ms = now;
+    g_suppress_sidestep_until_ms = now + 500;
+
+    // 3. Clear attack chain to L1
+    reset_player_attack_chain(g_p0_controller);
+
+    // 4. Cancel recovery animation and punch out L1
+    if (g_base) {
+        typedef bool (*fn_try_act)(void*, int, void*);
+        fn_try_act try_act = (fn_try_act)(g_base + 0x1179AF4);
+        if (try_act) {
+            try_act(g_p0_controller, 1, NULL); // TryExecuteAction(1) -> L1 punch!
+        }
+    }
+
+    // 5. Apply 0.35s HitStun to P1 (Crush Crumble)
+    void* target_p1 = g_p1_controller;
+    if (!target_p1 && g_p0_controller && obj_ok(g_p0_controller)) {
+        target_p1 = *(void**)((uintptr_t)g_p0_controller + 0xF8);
+        if (target_p1 && obj_ok(target_p1)) {
+            g_p1_controller = target_p1;
+        }
+    }
+    if (target_p1 && obj_ok(target_p1) && g_base) {
+        typedef void (*fn_apply_stun)(void*, float, void*);
+        fn_apply_stun apply_stun = (fn_apply_stun)(g_base + 0x1179730);
+        if (apply_stun) {
+            apply_stun(target_p1, 0.35f, NULL);
+        }
+    }
+
+    // 6. Cinematic Camera Zoom + Slow-Mo (250ms, 32.0f FOV, 0.20f TimeScale)
+    combat_start_cinematic_fx(250, 32.0f, 0.20f);
+
+    combat_overlay_push("[P0] 崩坏取消！追击破防！");
+    flog("[CRUSH_CANCEL] Executed! Mana now %.2f", skill_get_mana(0));
+}
+
+static void try_trigger_heavy_feint(void) {
+    if (!g_p0_controller || !obj_ok(g_p0_controller)) return;
+    uint64_t now = propgo_now_ms();
+    if (now - g_last_heavy_feint_trigger_ms < 300) {
+        return; // Debounce
+    }
+    if (!g_p0_heavy_charging && !g_p0_after_heavy && (now - g_p0_last_heavy_start_ms > 1200)) {
+        flog("[HEAVY_FEINT] Rejected: not in heavy attack window (charging=%d, after_heavy=%d, elapsed=%llu ms)",
+             g_p0_heavy_charging, g_p0_after_heavy, (unsigned long long)(now - g_p0_last_heavy_start_ms));
+        combat_overlay_push("[P0] 非重击状态无法重击变化！");
+        return;
+    }
+    float cur_mana = skill_get_mana(0);
+    if (cur_mana < 0.3333f) {
+        flog("[HEAVY_FEINT] Rejected: insufficient mana (cur=%.2f < 0.33)", cur_mana);
+        combat_overlay_push("[P0] 能量不足无法重击变化！(需1/3气)");
+        return;
+    }
+
+    // 1. Deduct 1/3 Bar mana
+    skill_add_mana(0, -0.3333f);
+
+    // 2. Arm heavy feint & suppress sidestep
+    g_heavy_feint_armed = 1;
+    g_heavy_feint_expire_ms = now + 1500;
+    g_last_heavy_feint_trigger_ms = now;
+    g_suppress_sidestep_until_ms = now + 500;
+
+    combat_overlay_push("[P0] 重击变化就绪！-1/3气");
+    flog("[HEAVY_FEINT] Armed successfully! Mana now %.2f", skill_get_mana(0));
+}
+
 void* hook_114(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
     void* r=H[114].orig(a0,a1,a2,a3,a4,a5,a6,a7);
     uintptr_t pressed = (uintptr_t)a1 & 1;
@@ -4865,6 +5077,48 @@ void* hook_114(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
                     g_sp_touch_tracking = 0;
                     trigger_special_action(g_p0_controller);
                 }
+            }
+        });
+    }
+
+    // Right Screen Gesture Recognition for Crush Cancel & Heavy Feint
+    if (obj_ok(g_p0_controller)) {
+        PROTECT({
+            Vector3_t mpos = unity_get_mouse_position();
+            int sw = unity_get_screen_width();
+            int sh = unity_get_screen_height();
+            if (sw <= 0) sw = 1920;
+            if (sh <= 0) sh = 1080;
+
+            if (mpos.x >= 0.38f * (float)sw) {
+                if (pressed) {
+                    g_r_touch_tracking = 1;
+                    g_r_touch_start_x = mpos.x;
+                    g_r_touch_start_y = mpos.y;
+                    g_r_touch_start_ms = propgo_now_ms();
+                    g_r_touch_swiped = 0;
+                } else if (g_r_touch_tracking && !g_r_touch_swiped) {
+                    float r_dx = mpos.x - g_r_touch_start_x;
+                    float r_dy = mpos.y - g_r_touch_start_y;
+                    // SWIPE UP: Crush Cancel
+                    if (r_dy > 35.0f && r_dy > fabsf(r_dx)) {
+                        g_r_touch_swiped = 1;
+                        g_r_touch_tracking = 0;
+                        g_suppress_sidestep_until_ms = propgo_now_ms() + 600;
+                        try_trigger_crush_cancel();
+                    }
+                    // SWIPE DOWN: Heavy Feint
+                    else if (r_dy < -35.0f && fabsf(r_dy) > fabsf(r_dx)) {
+                        g_r_touch_swiped = 1;
+                        g_r_touch_tracking = 0;
+                        g_suppress_sidestep_until_ms = propgo_now_ms() + 600;
+                        try_trigger_heavy_feint();
+                    }
+                }
+            }
+            if (unpressed) {
+                g_r_touch_tracking = 0;
+                g_r_touch_swiped = 0;
             }
         });
     }
@@ -5203,6 +5457,24 @@ void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     g_p0_after_heavy = 0;
     g_p0_combo_ended = 0;
     g_p1_combo_ended = 0;
+    g_cancel_window_active = 0;
+    g_cancel_window_expire_ms = 0;
+    g_p0_current_attack_is_ender = 0;
+    g_heavy_feint_armed = 0;
+    g_heavy_feint_expire_ms = 0;
+    g_p0_heavy_charging = 0;
+    g_p0_last_heavy_start_ms = 0;
+    g_p0_last_ender_start_ms = 0;
+    g_p0_last_ender_type = 0;
+    g_r_touch_tracking = 0;
+    g_r_touch_swiped = 0;
+    g_suppress_sidestep_until_ms = 0;
+    g_last_crush_cancel_trigger_ms = 0;
+    g_last_heavy_feint_trigger_ms = 0;
+    if (g_cinematic_fx_active) {
+        combat_update_cinematic_fx();
+        g_cinematic_fx_active = 0;
+    }
     g_p0_last_attack_ms = 0;
     g_p0_power_seeded = 0;
     g_p0_current_special_index = -1;
@@ -5917,6 +6189,15 @@ void* hook_145(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
                 on_portrait_press_down(g_active_hud_screen);
             }
         }
+
+        // Combat cancel & cinematic camera update
+        combat_update_cinematic_fx();
+        if (g_cancel_window_active && propgo_now_ms() > g_cancel_window_expire_ms) {
+            g_cancel_window_active = 0;
+        }
+        if (g_heavy_feint_armed && propgo_now_ms() > g_heavy_feint_expire_ms) {
+            g_heavy_feint_armed = 0;
+        }
     });
     return r;
 }
@@ -6387,6 +6668,12 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
                 g_p0_block_enter_ms = 0;
                 g_p0_block_reset_done = 0;
             }
+            if ((action == 64 || action == 128) && propgo_now_ms() < g_suppress_sidestep_until_ms) {
+                flog("COMBAT_CANCEL: Suppressed native Sidestep (%d) due to active suppress window (left=%llu ms)",
+                     action, (unsigned long long)(g_suppress_sidestep_until_ms - propgo_now_ms()));
+                suppress_action = 1;
+                break;
+            }
             if (action == 8 || action == 64 || action == 128 || (action & 192)) {
                 // 8 = Dodge (back swipe), 64 (0x40) = SidestepLeft (swipe up), 128 (0x80) = SidestepRight (swipe down)
                 g_p0_block_enter_ms = 0;
@@ -6399,6 +6686,8 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
             }
             if (action == 0x100) {
                 // 0x100 is HeavyAttack
+                g_p0_heavy_charging = 1;
+                g_p0_last_heavy_start_ms = propgo_now_ms();
                 g_p0_block_enter_ms = 0;
                 g_p0_block_reset_done = 0;
                 g_p0_after_heavy = 1;
@@ -6411,6 +6700,15 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
                 skill_dispatch_attack_start(0, 0x100);
             }
             if (action == 1 || action == 32) {
+                if (action == 1 && pre_l >= 3) {
+                    g_p0_current_attack_is_ender = 1;
+                    g_p0_last_ender_start_ms = propgo_now_ms();
+                    g_p0_last_ender_type = 1;
+                } else if (action == 32 && pre_m >= 1) {
+                    g_p0_current_attack_is_ender = 1;
+                    g_p0_last_ender_start_ms = propgo_now_ms();
+                    g_p0_last_ender_type = 2;
+                }
                 // 1 = attack / tap (Light attack L1~L4), 32 (0x20) = Dash (Forward Swipe / Medium attack M1~M2).
                 // Note: action 4 is ReleaseBlock, NOT forward dash!
                 if (g_p0_after_heavy) {
@@ -6704,8 +7002,10 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
             // how M2 ends the medium chain, confirmed by the M1,M2,L1 test giving L1 afterwards).
             if (!did_reset && (post_l >= 4 || post_m >= 2 || post_l < pre_l || post_m < pre_m)) {
                 g_p0_combo_ended = 1;
-                flog("COMBAT_GATE: combo ender CONFIRMED (action=%d, pre l=%u m=%u -> post l=%u m=%u) -> g_p0_combo_ended = 1",
-                     action, pre_l, pre_m, post_l, post_m);
+                g_p0_last_ender_start_ms = propgo_now_ms();
+                g_p0_last_ender_type = (action == 32 || post_m >= 2 || post_m < pre_m) ? 2 : 1;
+                flog("COMBAT_GATE: combo ender CONFIRMED (action=%d, type=%d, pre l=%u m=%u -> post l=%u m=%u) -> g_p0_combo_ended = 1",
+                     action, g_p0_last_ender_type, pre_l, pre_m, post_l, post_m);
             }
         }
     });
@@ -8079,19 +8379,31 @@ void* hook_186(void* this_pc, void* hitResult, void* method) {
     if (this_pc && obj_ok(this_pc) && hitResult && obj_ok(hitResult)) {
         PROTECT({
             int p_idx = *(int32_t*)((uintptr_t)this_pc + 0xF4);
+            int instigator_id = *(int32_t*)((uintptr_t)hitResult + 0x18);
+            int target_id = *(int32_t*)((uintptr_t)hitResult + 0x1C);
             int atk_level = *(int32_t*)((uintptr_t)hitResult + 0x24); // HitResultData.AttackLevel
             int flags = *(int32_t*)((uintptr_t)hitResult + 0x20);     // HitResultData.Flags
             int hit_idx = *(int32_t*)((uintptr_t)hitResult + 0x30);   // HitResultData.HitIndex
             float dmg = *(float*)((uintptr_t)hitResult + 0x3C);       // HitResultData.Damage
-            if (p_idx == 0 && tftf_get_player_invincible()) {
+
+            void* opp = *(void**)((uintptr_t)this_pc + 0xF8);
+            if (p_idx == 0) {
+                g_p0_controller = this_pc;
+                if (opp && obj_ok(opp)) g_p1_controller = opp;
+            } else if (p_idx == 1) {
+                g_p1_controller = this_pc;
+                if (opp && obj_ok(opp)) g_p0_controller = opp;
+            }
+
+            if (target_id == 0 && tftf_get_player_invincible()) {
                 *(float*)((uintptr_t)hitResult + 0x3C) = 0.0f;
                 dmg = 0.0f;
             }
             int is_crit_hit = ((flags & 32) != 0);
             static int s_hit_log_cnt = 0;
             if (s_hit_log_cnt++ < 80) {
-                flog("HIT_RESULT: pidx=%d al=%d dmg=%.1f crit=%d flags=0x%x hit_idx=%d",
-                     p_idx, atk_level, dmg, is_crit_hit, flags, hit_idx);
+                flog("HIT_RESULT: pidx=%d inst=%d tgt=%d al=%d dmg=%.1f crit=%d flags=0x%x hit_idx=%d",
+                     p_idx, instigator_id, target_id, atk_level, dmg, is_crit_hit, flags, hit_idx);
             }
             int is_missed = ((flags & (2 | 512 | 1024)) != 0); // 2=Missed, 512=Avoided, 1024=Evaded
             if (is_missed) {
@@ -8099,6 +8411,15 @@ void* hook_186(void* this_pc, void* hitResult, void* method) {
                 s_current_hit_is_ranged = 0;
                 s_current_hit_is_heavy = 0;
                 s_current_hit_is_last = 0;
+
+                if (p_idx == 0 && atk_level == 4) {
+                    if (g_heavy_feint_armed) {
+                        g_heavy_feint_armed = 0;
+                        combat_overlay_push("[P0] 重击落空！博弈失败");
+                        flog("[HEAVY_FEINT] P0 heavy attack missed/avoided by P1! Energy wasted.");
+                    }
+                    g_p0_heavy_charging = 0;
+                }
 
                 // --- 横炮实机真实规避确认 (RegisterHitResult 判定未命中/规避) ---
                 const char* victim_id = (p_idx == 0) ? g_p0_bot_id : g_p1_bot_id;
@@ -8145,6 +8466,80 @@ void* hook_186(void* this_pc, void* hitResult, void* method) {
             int is_unblocked_hit = ((flags & 1) != 0);
             int is_blocked = ((flags & 4) != 0);
             if (is_hit) {
+                // Combat Expansion: Crush Cancel window & Heavy Feint on P0 connecting hit with P1
+                if (p_idx == 0) {
+                    // P0 landed hit/block on P1
+                    uint64_t now_ms = propgo_now_ms();
+                    int is_ender = g_p0_combo_ended || (now_ms - g_p0_last_ender_start_ms <= 800) || g_p0_current_attack_is_ender;
+                    if (is_ender && (atk_level == 1 || atk_level == 2)) {
+                        g_cancel_window_active = 1;
+                        g_cancel_window_expire_ms = now_ms + 600;
+                        combat_overlay_push("[P0] 崩坏取消就绪！右上滑");
+                        flog("[CRUSH_CANCEL] Cancel window OPENED on P0! (is_ender=%d, type=%d, al=%d, flags=0x%x)",
+                             is_ender, g_p0_last_ender_type, atk_level, flags);
+                        g_p0_current_attack_is_ender = 0;
+                        g_p0_combo_ended = 0;
+                    }
+                    if (atk_level == 4) {
+                        if (g_heavy_feint_armed && now_ms <= g_heavy_feint_expire_ms) {
+                            g_heavy_feint_armed = 0;
+                            int is_ranged = bot_has_ranged_heavy(g_p0_bot_id);
+                            void* target = (opp && obj_ok(opp)) ? opp : g_p1_controller;
+                            if (is_ranged) {
+                                // Ranged Heavy Feint: Wall Bounce! Pull opponent towards P0
+                                if (target && obj_ok(target) && g_base) {
+                                    typedef void (*fn_apply_stun)(void*, float, void*);
+                                    fn_apply_stun apply_stun = (fn_apply_stun)(g_base + 0x1179730);
+                                    if (apply_stun) apply_stun(target, 0.45f, NULL);
+
+                                    typedef bool (*fn_slide_opp)(void*, float, bool, bool);
+                                    fn_slide_opp slide_opp = (fn_slide_opp)(g_base + 0x117A954);
+                                    if (slide_opp) slide_opp(target, 0.35f, false, true);
+                                }
+                                // Mutate hitResult AttackLevel to 1 so native RegisterHitResult doesn't knock down P1!
+                                *(int32_t*)((uintptr_t)hitResult + 0x24) = 1;
+
+                                combat_start_cinematic_fx(250, 32.0f, 0.20f);
+                                combat_overlay_push("[P0] 远程重击·反弹弹墙！");
+                                flog("[HEAVY_FEINT] Ranged heavy landed on P1 -> Wall Bounce triggered!");
+                            } else {
+                                // Melee Heavy Feint: Crumble Stun & morph back to robot at contact point!
+                                if (target && obj_ok(target) && g_base) {
+                                    typedef void (*fn_apply_stun)(void*, float, void*);
+                                    fn_apply_stun apply_stun = (fn_apply_stun)(g_base + 0x1179730);
+                                    if (apply_stun) apply_stun(target, 0.35f, NULL);
+                                }
+                                // Mutate hitResult AttackLevel to 1 so native RegisterHitResult doesn't knock down P1!
+                                *(int32_t*)((uintptr_t)hitResult + 0x24) = 1;
+
+                                if (this_pc && obj_ok(this_pc) && g_base) {
+                                    // Transform(false) -> morph back to robot immediately
+                                    typedef void (*fn_transform)(void*, int, void*);
+                                    fn_transform tf = (fn_transform)(g_base + 0x117A67C);
+                                    if (tf) tf(this_pc, 0, NULL);
+
+                                    // Cancel slide / retreat motion
+                                    typedef void (*fn_cancelslide)(void*, void*);
+                                    fn_cancelslide cs = (fn_cancelslide)(g_base + 0x1173B1C);
+                                    if (cs) cs(this_pc, NULL);
+
+                                    // Reset attack chain to 0
+                                    reset_player_attack_chain(this_pc);
+
+                                    // Strike L1 immediately!
+                                    typedef bool (*fn_try_act)(void*, int, void*);
+                                    fn_try_act try_act = (fn_try_act)(g_base + 0x1179AF4);
+                                    if (try_act) try_act(this_pc, 1, NULL);
+                                }
+
+                                combat_start_cinematic_fx(250, 32.0f, 0.20f);
+                                combat_overlay_push("[P0] 近战重击变化·破防立回！");
+                                flog("[HEAVY_FEINT] Melee heavy landed on P1 -> Crumble Stun applied, transformed back to robot, chain reset to L1!");
+                            }
+                        }
+                        g_p0_heavy_charging = 0;
+                    }
+                }
                 // Motormaster 前冲攻击一旦击中对手或被防御，前冲攻击即告结束，立即清空霸体
                 // 注意：this_pc 是攻击发起方 (Attacker)！只有当发起方为汽车大师，且为中击冲锋 (atk_level == 2) 时才清空
                 if (atk_level == 2 && p_idx >= 0 && p_idx < 2) {
@@ -10732,6 +11127,39 @@ void* hook_211(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     return r;
 }
 
+// slot 212 (0x01180E24): PlayerInput.OnDetectSwipe(SwipeDirection direction)
+void* hook_212(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    int direction = (int)(intptr_t)a1;
+    int intercepted = 0;
+    PROTECT({
+        Vector3_t mpos = unity_get_mouse_position();
+        int sw = unity_get_screen_width();
+        if (sw <= 0) sw = 1920;
+
+        int is_right_screen = (mpos.x >= 0.38f * (float)sw) || (g_r_touch_start_x >= 0.38f * (float)sw) || g_r_touch_tracking;
+
+        if (is_right_screen) {
+            // SwipeDirection: 1 = Up (Crush Cancel), 3 = Down (Heavy Feint)
+            if (direction == 1) {
+                flog("[INPUT_SWIPE] Right screen SWIPE UP intercepted -> trigger crush cancel");
+                g_suppress_sidestep_until_ms = propgo_now_ms() + 600;
+                intercepted = 1;
+                try_trigger_crush_cancel();
+            } else if (direction == 3) {
+                flog("[INPUT_SWIPE] Right screen SWIPE DOWN intercepted -> trigger heavy feint");
+                g_suppress_sidestep_until_ms = propgo_now_ms() + 600;
+                intercepted = 1;
+                try_trigger_heavy_feint();
+            }
+        }
+    });
+
+    if (intercepted) {
+        return NULL;
+    }
+    return H[212].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+}
+
 static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hook_7,hook_8,
     hook_9,hook_10,hook_11,hook_12,hook_13,hook_14,hook_15,hook_16,hook_17,hook_18,hook_19,hook_20,hook_21,
     hook_22,hook_23,hook_24,hook_25,hook_26,hook_27,hook_28,hook_29,hook_30,
@@ -10754,7 +11182,7 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     hook_171,hook_172,hook_173,hook_174,hook_175,hook_176,(void*)hook_177,(void*)hook_178,
     (void*)hook_179,hook_180,hook_181,hook_182,hook_183,hook_184,hook_185,hook_186,(void*)hook_187,(void*)hook_188,(void*)hook_189,
     (void*)hook_190,(void*)hook_191,(void*)hook_192,(void*)hook_193,(void*)hook_194,(void*)hook_195,(void*)hook_196,(void*)hook_197,(void*)hook_198,hook_199,(void*)hook_200,(void*)hook_201,hook_202,hook_203,
-    (void*)hook_204,hook_205,hook_206,hook_207,hook_208,hook_209,hook_210,hook_211 };
+    (void*)hook_204,hook_205,hook_206,hook_207,hook_208,hook_209,hook_210,hook_211,hook_212 };
 _Static_assert(sizeof(handlers)/sizeof(handlers[0]) == sizeof(H)/sizeof(H[0]), "handlers count must match H count");
 
 
