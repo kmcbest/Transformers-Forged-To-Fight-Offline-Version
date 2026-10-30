@@ -55,3 +55,15 @@
 
 
 
+
+
+## Anti-cognitive-drift and regression defense protocol (防思维漂移与回归排查铁律)
+
+- **Top-Down Git Diff Rule (因果律优先与第一反应法则)**:
+  上一版可用、改动后即崩的 Bug，99.9% 必然且只可能由刚刚修改的代码引入！一旦出现即时回归（如闪退、新逻辑失效），**严禁首先下潜分析 IL2CPP 深层源码与反汇编**！第一行动必须无条件且唯一是执行 `git diff HEAD~1`，显微镜级审查刚刚写进代码库的每一行改动，绝不无端发散到未修改的底层系统。
+- **Zero-Phantom-RVA Iron Law (严禁凭空臆测 RVA 与跨指令跳转)**:
+  严禁凭记忆或猜测硬编码任何 `g_base + 0xXXXXXX`。写进 NativeHook 的每个地址必须在 `dump.cs` 中严格核对为函数起始地址（函数头）。ARM64 架构下，严禁跳转到函数中间指令（否则将跳过 `stp x29, x30, [sp, -16]!` 导致 CPU 栈指针 `sp` 错位 16 字节，引发非现场内存解引用崩溃）；高阶距离判断（如 `dist >= 3.5f`）优先于底层私有函数调用。
+- **Pure-Query Gate for Property Getters (只读属性钩子纯净性门禁)**:
+  高频属性查询类 Hook（如 `hook_194: get_Unstoppable`、`get_Health` 等）必须保持纯净只读（Pure Query），严禁在内部调用 `EnterMove`、`ExitMove` 或 `SwitchState` 去修改状态机或动画容器；所有状态变更必须收敛在动作发起、受击与判定事件中。
+- **Macro Enclosure Rule (信号保护宏块封闭性)**:
+  `PROTECT({ ... })` 宏块内部严禁直接使用 `return` 跳出，否则会跳过宏尾部 `g_prot = 0`，导致全局异常保护标志被永久锁死在 1 并引发后续雪崩。必须统一使用局部变量配合 `break` 在宏块外统一返回。

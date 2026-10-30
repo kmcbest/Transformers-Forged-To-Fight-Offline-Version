@@ -1,15 +1,22 @@
 import sys
-from pathlib import Path
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
+if hasattr(sys.stderr, 'reconfigure'):
+    sys.stderr.reconfigure(encoding='utf-8')
+
 import UnityPy
+from pathlib import Path
 
-sys.stdout.reconfigure(encoding='utf-8')
+bundle_path = Path(r"E:\Agent\TFTF-blender\extracted_apk\assets\assetpack\arcee_gs_deluxe2014_odr\arcee_gs_deluxe2014.assetbundle")
+env = UnityPy.load(str(bundle_path))
 
-ROOT = Path(__file__).resolve().parent.parent.parent
-BUNDLE = ROOT / "extracted_apk" / "assets" / "assetpack" / "arcee_gs_deluxe2014_odr" / "arcee_gs_deluxe2014.assetbundle"
-env = UnityPy.load(str(BUNDLE))
-
-print(f"=== AnimationClips in {BUNDLE.name} ===")
+clips = []
 for obj in env.objects:
     if obj.type.name == "AnimationClip":
-        tree = obj.read_typetree()
-        print(f"  Clip: '{tree.get('m_Name')}' (PathID {obj.path_id})")
+        t = obj.read_typetree()
+        cname = t.get("m_Name")
+        clips.append(cname)
+
+print(f"Found {len(clips)} AnimationClips in Arcee bundle:")
+for c in clips:
+    print(" ", c)

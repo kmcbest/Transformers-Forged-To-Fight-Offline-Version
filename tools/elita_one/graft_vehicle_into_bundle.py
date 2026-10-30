@@ -16,6 +16,7 @@ import os
 import sys
 from pathlib import Path
 from PIL import Image
+import numpy as np
 
 try:
     import UnityPy
@@ -91,6 +92,58 @@ def main():
     # Prepare replacement vehicle mesh
     v_mesh = copy.deepcopy(vehicle_mesh_tree)
     v_mesh["m_Name"] = "cha_arcee_gs_deluxe2014_01"
+
+    # ---------------------------------------------------------------------
+    # HEADING GUARD + CORRECTION
+    #
+    # extract_elita_vehicle.py exports with bake_space_transform=True /
+    # FBX_SCALE_ALL while the robot FBX uses the defaults, so the compiled
+    # vehicle ends up rotated 180 deg about the vertical compared with the
+    # robot's convention: the car's NOSE lands on -Z although TFTF's forward
+    # is +Z (measured: windshield Z in [-1.528, +0.806] instead of
+    # [-0.806, +1.528]).  That is why she used to ram enemies in reverse.
+    # We yaw it here so this rebuild path and the in-place surgical patch
+    # (tools/elita_one/surgical_fix_hand_and_vehicle.py) stay consistent.
+    # ---------------------------------------------------------------------
+    def _yaw180(tree, glass_submesh=2):
+        vc = tree["m_VertexData"]["m_VertexCount"]
+        raw = bytes(tree["m_VertexData"]["m_DataSize"])
+        assert len(raw) >= vc * 40, f"vertex buffer too small ({len(raw)} < {vc * 40})"
+        a = np.frombuffer(raw, dtype='<f4', count=vc * 10).reshape(vc, 10).copy()
+        pos, nrm, tan = a[:, 0:3], a[:, 3:6], a[:, 6:10]
+        cx = (pos[:, 0].min() + pos[:, 0].max()) / 2.0
+        cz = (pos[:, 2].min() + pos[:, 2].max()) / 2.0
+        pos[:, 0] = 2 * cx - pos[:, 0]
+        pos[:, 2] = 2 * cz - pos[:, 2]
+        nrm[:, 0] *= -1; nrm[:, 2] *= -1
+        tan[:, 0] *= -1; tan[:, 2] *= -1
+        tree["m_VertexData"]["m_DataSize"] = a.tobytes() + raw[vc * 40:]
+        # recompute AABBs
+        tree["m_LocalAABB"] = {
+            "m_Center": {k: float(v) for k, v in zip("xyz", (pos.min(0) + pos.max(0)) / 2)},
+            "m_Extent": {k: float(v) for k, v in zip("xyz", (pos.max(0) - pos.min(0)) / 2)},
+        }
+        idx = np.frombuffer(bytes(tree["m_IndexBuffer"]), dtype='<u2').astype(np.int64)
+        for sm in tree["m_SubMeshes"]:
+            f = sm["firstByte"] // 2
+            p = pos[idx[f:f + sm["indexCount"]].reshape(-1)]
+            sm["localAABB"] = {
+                "m_Center": {k: float(v) for k, v in zip("xyz", (p.min(0) + p.max(0)) / 2)},
+                "m_Extent": {k: float(v) for k, v in zip("xyz", (p.max(0) - p.min(0)) / 2)},
+            }
+        # windshield must end up at +Z
+        sm = tree["m_SubMeshes"][glass_submesh]
+        f = sm["firstByte"] // 2
+        g = np.unique(idx[f:f + sm["indexCount"]].reshape(-1))
+        zmin, zmax = float(pos[g, 2].min()), float(pos[g, 2].max())
+        print(f"    windshield Z[{zmin:.3f},{zmax:.3f}] after heading correction")
+        assert zmax > 1.4 and zmin > -0.85, (
+            f"vehicle still faces the wrong way (windshield Z[{zmin:.3f},{zmax:.3f}]); "
+            "expected roughly [-0.81, +1.53]")
+        return tree
+
+    v_mesh = _yaw180(v_mesh)
+
     v_mesh["m_BindPose"] = arcee_v_bindposes
     if arcee_v_bone_hashes:
         v_mesh["m_BoneNameHashes"] = arcee_v_bone_hashes

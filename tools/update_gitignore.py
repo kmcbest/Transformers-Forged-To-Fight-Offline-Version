@@ -1,11 +1,17 @@
-from pathlib import Path
+with open(r"E:\Agent\TFTF-blender\.gitignore", "r", encoding="utf-8") as f:
+    text = f.read()
 
-p = Path(r"E:\Agent\TFTF-blender\.gitignore")
-content = p.read_text(encoding='utf-8')
-if "!assets_redeco/*toxitron*" not in content:
-    target = "!assets_redeco/*elita*"
-    content = content.replace(target, target + "\n!assets_redeco/*toxitron*")
-    p.write_text(content, encoding='utf-8')
-    print("Updated .gitignore with toxitron whitelist")
+target = "!assets_redeco/*elita*\n"
+replacement = "!assets_redeco/*elita*\n!assets_redeco/*bumblebee*\n"
+
+if "\r\n" in text:
+    target = target.replace("\n", "\r\n")
+    replacement = replacement.replace("\n", "\r\n")
+
+if target in text:
+    text = text.replace(target, replacement)
+    with open(r"E:\Agent\TFTF-blender\.gitignore", "w", encoding="utf-8") as f:
+        f.write(text)
+    print("Successfully added !assets_redeco/*bumblebee* to .gitignore")
 else:
-    print(".gitignore already contains toxitron")
+    print("Target not found in .gitignore")

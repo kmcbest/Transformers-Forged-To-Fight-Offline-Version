@@ -1,3 +1,9 @@
+import sys
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
+if hasattr(sys.stderr, 'reconfigure'):
+    sys.stderr.reconfigure(encoding='utf-8')
+
 import json
 import math
 import mathutils
@@ -11,7 +17,7 @@ HIERARCHY_JSON = ROOT / "tools" / "elita_one" / "arcee_bone_hierarchy.json"
 MAPPING_JSON = ROOT / "tools" / "elita_one" / "elita_to_arcee_mapping.json"
 OUT_FBX = ROOT / "toolchain" / "unity_build_project" / "Assets" / "ElitaOne" / "elita_one_prepared.fbx"
 
-print(f"=== Building and Exporting Prepared FBX for Elita One ===")
+print(f"=== Building and Exporting Prepared FBX with Knuckle-Aligned Finger Bones ===")
 bpy.ops.wm.read_factory_settings(use_empty=True)
 
 # 1. Load Metadata
@@ -28,7 +34,7 @@ with open(ROOT / "tools" / "elita_one" / "arcee_63_bones.json", "r", encoding="u
     arcee_63_bones = json.load(f)
 valid_bones = set(arcee_63_bones) | {"Reference"}
 
-# Apply confirmed solid bone overrides
+# Solid overrides
 bone_mapping["l_lower_cover_wheel_skin"] = "LeftArm"
 bone_mapping["l_lower_wheel_skin"] = "LeftArm"
 bone_mapping["l_lower_wheel_skin_end"] = "LeftArm"
@@ -41,7 +47,6 @@ bone_mapping["l_piston_lower_arm_start_skin_end"] = "LeftForeArm"
 bone_mapping["r_piston_lower_arm_start_skin"] = "RightForeArm"
 bone_mapping["r_piston_lower_arm_start_skin_end"] = "RightForeArm"
 
-# Hip pistons (both sleeve and cylinder belong to Hips so they never fly into empty space):
 for p_name in [
     "l_piston_leg_end_01_skin", "l_piston_leg_end_01_skin_end",
     "l_piston_leg_end_02_skin", "l_piston_leg_end_02_skin_end",
@@ -60,7 +65,6 @@ bone_mapping["l_shoulder_pistons_skin_end"] = "Spine1"
 bone_mapping["r_shoulder_pistons_skin"] = "Spine1"
 bone_mapping["r_shoulder_pistons_skin_end"] = "Spine1"
 
-# Ankle pistons (base and ball joint firmly attach to Foot so ankle never pulls apart):
 for p_name in [
     "l_piston_leg_start_01_skin", "l_piston_leg_start_01_skin_end",
     "l_piston_leg_start_02_skin", "l_piston_leg_start_02_skin_end",
@@ -75,72 +79,23 @@ for p_name in [
 ]:
     bone_mapping[p_name] = "RightFoot"
 
-# 2. Build Base 63-Bone Armature "character_model"
-C = mathutils.Matrix((
-    (1, 0, 0, 0),
-    (0, 0, 1, 0),
-    (0, 1, 0, 0),
-    (0, 0, 0, 1)
-))
-
-arm_data = bpy.data.armatures.new("character_model")
-arm_obj = bpy.data.objects.new("character_model", arm_data)
-bpy.context.scene.collection.objects.link(arm_obj)
-bpy.context.view_layer.objects.active = arm_obj
-bpy.ops.object.mode_set(mode='EDIT')
-
-edit_bones = {}
-for b in rest_data["bones"]:
-    bname = b["name"]
-    if bname in edit_bones or bname not in valid_bones:
-        continue
-    m_raw = b["m"]
-    M_u = mathutils.Matrix((m_raw[0:4], m_raw[4:8], m_raw[8:12], m_raw[12:16]))
-    M_b = C @ M_u @ C
-    
-    eb = arm_data.edit_bones.new(bname)
-    eb.head = M_b.translation
-    eb.tail = M_b.translation + mathutils.Vector((0.0, 0.08, 0.0))
-    edit_bones[bname] = eb
-
-for bname, eb in edit_bones.items():
-    eb.use_connect = False
-    pname = hierarchy.get(bname)
-    if pname and pname in edit_bones:
-        eb.parent = edit_bones[pname]
-
-bpy.ops.object.mode_set(mode='OBJECT')
-print(f"[✓] Created 63-bone Armature 'character_model'")
-
-# 3. Import Elita One FBX
+# 2. Import Elita One FBX First to extract Posed Hand Transforms!
 print("[*] Importing Elita One FBX...")
 bpy.ops.import_scene.fbx(filepath=str(FBX_PATH))
 
 fbx_arm = bpy.data.objects.get("SK_CH_11")
 elita_mesh = bpy.data.objects.get("SK_CH_11.001")
 
-# Remove extra objects
-for o in list(bpy.context.scene.collection.objects):
-    if o.name not in ["character_model", "SK_CH_11", "SK_CH_11.001"]:
-        bpy.data.objects.remove(o, do_unlink=True)
-
-# Record polygon material slots before transforms:
-# Slot 0 (MI_CH11_00) & Slot 1 (BlackGlass) -> Slot 0 (Main)
-# Slot 2 (MI_CH11_01) -> Slot 1 (Vehicle/Misc)
 orig_mat_slots = [p.material_index for p in elita_mesh.data.polygons]
 new_poly_slots = [0 if idx in (0, 1) else 1 for idx in orig_mat_slots]
-print(f"[+] Recorded {len(new_poly_slots)} polygon material slots: "
-      f"{new_poly_slots.count(0)} main, {new_poly_slots.count(1)} vh/misc")
 
-# Mathematical transform matrix (+90° Z rotation, 1.09365x scale)
 scale_s = 8.840 / 8.083
 M_transform = mathutils.Matrix.Rotation(math.radians(90.0), 4, 'Z') @ mathutils.Matrix.Scale(scale_s, 4)
 
 fbx_arm.data.transform(M_transform)
 elita_mesh.data.transform(M_transform)
 
-# Posing FBX Armature to rotate A-pose arms inward by 21.2°
-print("[*] Adjusting Elita One A-pose arms inward to match Arcee rest pose...")
+# Pose FBX Armature to rotate A-pose arms inward
 bpy.context.view_layer.objects.active = fbx_arm
 bpy.ops.object.mode_set(mode='POSE')
 
@@ -171,62 +126,103 @@ R_r_rest = fbx_arm.data.bones.get("r_upperarm_skin").matrix_local.to_3x3()
 q_r_local = (R_r_rest.inverted() @ q_r.to_matrix() @ R_r_rest).to_quaternion()
 pb_r.rotation_quaternion = q_r_local
 
-# Clench Left and Right fists cleanly
-rot_curl_l01 = mathutils.Euler((0.0, 0.0, math.radians(75.0))).to_quaternion()
-rot_curl_l02 = mathutils.Euler((0.0, 0.0, math.radians(85.0))).to_quaternion()
-rot_curl_l03 = mathutils.Euler((0.0, 0.0, math.radians(75.0))).to_quaternion()
-
-for f_base in ["l_index", "l_middle", "l_ring", "l_pinky"]:
-    pb1 = fbx_arm.pose.bones.get(f"{f_base}_01_skin")
-    pb2 = fbx_arm.pose.bones.get(f"{f_base}_02_skin")
-    pb3 = fbx_arm.pose.bones.get(f"{f_base}_03_skin")
-    if pb1: pb1.rotation_quaternion = rot_curl_l01
-    if pb2: pb2.rotation_quaternion = rot_curl_l02
-    if pb3: pb3.rotation_quaternion = rot_curl_l03
-
-pb_lt1 = fbx_arm.pose.bones.get("l_thumb_01_skin")
-pb_lt2 = fbx_arm.pose.bones.get("l_thumb_02_skin")
-pb_lt3 = fbx_arm.pose.bones.get("l_thumb_03_skin")
-if pb_lt1: pb_lt1.rotation_quaternion = mathutils.Euler((math.radians(20.0), math.radians(45.0), math.radians(-35.0))).to_quaternion()
-if pb_lt2: pb_lt2.rotation_quaternion = mathutils.Euler((0.0, 0.0, math.radians(-70.0))).to_quaternion()
-if pb_lt3: pb_lt3.rotation_quaternion = mathutils.Euler((0.0, 0.0, math.radians(-50.0))).to_quaternion()
-
-rot_curl_r01 = mathutils.Euler((0.0, 0.0, math.radians(-75.0))).to_quaternion()
-rot_curl_r02 = mathutils.Euler((0.0, 0.0, math.radians(-85.0))).to_quaternion()
-rot_curl_r03 = mathutils.Euler((0.0, 0.0, math.radians(-75.0))).to_quaternion()
-
-for f_base in ["r_index", "r_middle", "r_ring", "r_pinky"]:
-    pb1 = fbx_arm.pose.bones.get(f"{f_base}_01_skin")
-    pb2 = fbx_arm.pose.bones.get(f"{f_base}_02_skin")
-    pb3 = fbx_arm.pose.bones.get(f"{f_base}_03_skin")
-    if pb1: pb1.rotation_quaternion = rot_curl_r01
-    if pb2: pb2.rotation_quaternion = rot_curl_r02
-    if pb3: pb3.rotation_quaternion = rot_curl_r03
-
-pb_rt1 = fbx_arm.pose.bones.get("r_thumb_01_skin")
-pb_rt2 = fbx_arm.pose.bones.get("r_thumb_02_skin")
-pb_rt3 = fbx_arm.pose.bones.get("r_thumb_03_skin")
-if pb_rt1: pb_rt1.rotation_quaternion = mathutils.Euler((math.radians(-20.0), math.radians(-45.0), math.radians(35.0))).to_quaternion()
-if pb_rt2: pb_rt2.rotation_quaternion = mathutils.Euler((0.0, 0.0, math.radians(70.0))).to_quaternion()
-if pb_rt3: pb_rt3.rotation_quaternion = mathutils.Euler((0.0, 0.0, math.radians(50.0))).to_quaternion()
-
 bpy.context.view_layer.update()
+
+# Extract 30 Posed Finger Bone Heads and Tails directly from Elita!
+elita_finger_to_arcee = {
+    "l_thumb_01_skin": "LeftHandThumb1",
+    "l_thumb_02_skin": "LeftHandThumb2",
+    "l_thumb_03_skin": "LeftHandThumb3",
+    "l_index_01_skin": "LeftHandIndex1",
+    "l_index_02_skin": "LeftHandIndex2",
+    "l_index_03_skin": "LeftHandIndex3",
+    "l_middle_01_skin": "LeftHandMiddle1",
+    "l_middle_02_skin": "LeftHandMiddle2",
+    "l_middle_03_skin": "LeftHandMiddle3",
+    "l_ring_01_skin": "LeftHandRing1",
+    "l_ring_02_skin": "LeftHandRing2",
+    "l_ring_03_skin": "LeftHandRing3",
+    "l_pinky_01_skin": "LeftHandPinky1",
+    "l_pinky_02_skin": "LeftHandPinky2",
+    "l_pinky_03_skin": "LeftHandPinky3",
+    "r_thumb_01_skin": "RightHandThumb1",
+    "r_thumb_02_skin": "RightHandThumb2",
+    "r_thumb_03_skin": "RightHandThumb3",
+    "r_index_01_skin": "RightHandIndex1",
+    "r_index_02_skin": "RightHandIndex2",
+    "r_index_03_skin": "RightHandIndex3",
+    "r_middle_01_skin": "RightHandMiddle1",
+    "r_middle_02_skin": "RightHandMiddle2",
+    "r_middle_03_skin": "RightHandMiddle3",
+    "r_ring_01_skin": "RightHandRing1",
+    "r_ring_02_skin": "RightHandRing2",
+    "r_ring_03_skin": "RightHandRing3",
+    "r_pinky_01_skin": "RightHandPinky1",
+    "r_pinky_02_skin": "RightHandPinky2",
+    "r_pinky_03_skin": "RightHandPinky3",
+}
+
+finger_head_tail = {}
+for e_name, a_name in elita_finger_to_arcee.items():
+    pb = fbx_arm.pose.bones.get(e_name)
+    if pb:
+        finger_head_tail[a_name] = (pb.head.copy(), pb.tail.copy())
+
+print(f"[✓] Extracted {len(finger_head_tail)} knuckle-aligned finger bone positions from Elita!")
+
 bpy.ops.object.mode_set(mode='OBJECT')
 
 # Apply armature deformation to mesh to bake the aligned rest pose
 bpy.context.view_layer.objects.active = elita_mesh
-mod_orig = None
 for m in elita_mesh.modifiers:
     if m.type == 'ARMATURE':
-        mod_orig = m
+        bpy.ops.object.modifier_apply(modifier=m.name)
         break
 
-if mod_orig:
-    bpy.ops.object.modifier_apply(modifier=mod_orig.name)
-    print("[✓] Applied arm pose deformation cleanly into Elita One mesh geometry!")
-
-# Remove fbx_arm
 bpy.data.objects.remove(fbx_arm, do_unlink=True)
+
+# 3. Build 63-Bone Armature "character_model" with Knuckle-Aligned Fingers
+C = mathutils.Matrix((
+    (1, 0, 0, 0),
+    (0, 0, 1, 0),
+    (0, 1, 0, 0),
+    (0, 0, 0, 1)
+))
+
+arm_data = bpy.data.armatures.new("character_model")
+arm_obj = bpy.data.objects.new("character_model", arm_data)
+bpy.context.scene.collection.objects.link(arm_obj)
+bpy.context.view_layer.objects.active = arm_obj
+bpy.ops.object.mode_set(mode='EDIT')
+
+edit_bones = {}
+for b in rest_data["bones"]:
+    bname = b["name"]
+    if bname in edit_bones or bname not in valid_bones:
+        continue
+    
+    eb = arm_data.edit_bones.new(bname)
+    if bname in finger_head_tail:
+        # Use Elita's exact knuckle head & tail!
+        head, tail = finger_head_tail[bname]
+        eb.head = head
+        eb.tail = tail
+    else:
+        m_raw = b["m"]
+        M_u = mathutils.Matrix((m_raw[0:4], m_raw[4:8], m_raw[8:12], m_raw[12:16]))
+        M_b = C @ M_u @ C
+        eb.head = M_b.translation
+        eb.tail = M_b.translation + mathutils.Vector((0.0, 0.08, 0.0))
+    edit_bones[bname] = eb
+
+for bname, eb in edit_bones.items():
+    eb.use_connect = False
+    pname = hierarchy.get(bname)
+    if pname and pname in edit_bones:
+        eb.parent = edit_bones[pname]
+
+bpy.ops.object.mode_set(mode='OBJECT')
+print(f"[✓] Created 63-bone Armature 'character_model' with 30 knuckle-aligned finger bones!")
 
 # 4. Remap Vertex Groups to 63 Arcee Bones
 print("[*] Remapping Elita One vertex groups to 63 Arcee bones...")
@@ -268,13 +264,9 @@ elita_mesh.data.materials.clear()
 elita_mesh.data.materials.append(mat_main)
 elita_mesh.data.materials.append(mat_vh)
 
-# Reassign saved polygon material indices
 for p, s_idx in zip(elita_mesh.data.polygons, new_poly_slots):
     p.material_index = s_idx
 
-print("[✓] Reassigned polygon material indices (Slot 0: Main, Slot 1: VH)")
-
-# Set naming and coordinates for FBX export
 elita_mesh.name = "cha_elita_one_gs_00"
 arm_obj.name = "character_model"
 
@@ -303,4 +295,4 @@ bpy.ops.export_scene.fbx(
     add_leaf_bones=False
 )
 
-print(f"[✓] SUCCESS: Exported prepared FBX to {OUT_FBX} ({OUT_FBX.stat().st_size / (1024*1024):.2f} MB)")
+print(f"[✓] SUCCESS: Exported knuckle-aligned prepared FBX to {OUT_FBX} ({OUT_FBX.stat().st_size / (1024*1024):.2f} MB)")

@@ -55,55 +55,14 @@ def transform_mesh_stream0(mesh_tree, target_name, bindposes, bone_hashes=None):
     if bone_hashes:
         mesh_copy["m_BoneNameHashes"] = bone_hashes
 
-    vdata = mesh_copy.get('m_VertexData', {})
-    v_count = vdata.get('m_VertexCount', 0)
-    raw_data = bytearray(vdata.get('m_DataSize', []))
-    stride = 40  # stream 0 stride: 12 pos + 12 norm + 16 tan
-
-    min_x, max_x = float('inf'), float('-inf')
-    min_y, max_y = float('inf'), float('-inf')
-    min_z, max_z = float('inf'), float('-inf')
-
-    for i in range(v_count):
-        offset = i * stride
-        px, py, pz = struct.unpack_from('<3f', raw_data, offset)
-        nx, ny, nz = struct.unpack_from('<3f', raw_data, offset + 12)
-        tx, ty, tz, tw = struct.unpack_from('<4f', raw_data, offset + 24)
-
-        # In the new grafted FBX/asset, coordinates are ALREADY Y-up and Z-forward
-        new_px, new_py, new_pz = px, py, pz
-        new_nx, new_ny, new_nz = nx, ny, nz
-        new_tx, new_ty, new_tz = tx, ty, tz
-
-        struct.pack_into('<3f', raw_data, offset, new_px, new_py, new_pz)
-        struct.pack_into('<3f', raw_data, offset + 12, new_nx, new_ny, new_nz)
-        struct.pack_into('<4f', raw_data, offset + 24, new_tx, new_ty, new_tz, tw)
-
-        min_x = min(min_x, new_px); max_x = max(max_x, new_px)
-        min_y = min(min_y, new_py); max_y = max(max_y, new_py)
-        min_z = min(min_z, new_pz); max_z = max(max_z, new_pz)
-
-    vdata['m_DataSize'] = bytes(raw_data)
-    mesh_copy['m_VertexData'] = vdata
-
-    center_x = (min_x + max_x) / 2.0
-    center_y = (min_y + max_y) / 2.0
-    center_z = (min_z + max_z) / 2.0
-    extent_x = (max_x - min_x) / 2.0
-    extent_y = (max_y - min_y) / 2.0
-    extent_z = (max_z - min_z) / 2.0
-
-    mesh_copy['m_LocalAABB'] = {
-        'm_Center': {'x': center_x, 'y': center_y, 'z': center_z},
-        'm_Extent': {'x': extent_x, 'y': extent_y, 'z': extent_z}
-    }
-    
+    # Mesh in elita_one_mesh.assetbundle is ALREADY in authoritative Unity space from RemapElitaMeshToArcee.cs
+    # Direct pass-through preserves all vertices, normals, tangents, UVs, and triangle windings perfectly.
+    local_aabb = mesh_copy.get("m_LocalAABB", {})
+    center = local_aabb.get("m_Center", {})
+    extent = local_aabb.get("m_Extent", {})
     bounds_info = {
-        'center_x': center_x, 'center_y': center_y, 'center_z': center_z,
-        'extent_x': extent_x, 'extent_y': extent_y, 'extent_z': extent_z,
-        'min_x': min_x, 'max_x': max_x,
-        'min_y': min_y, 'max_y': max_y,
-        'min_z': min_z, 'max_z': max_z
+        'center_x': center.get('x', 0.0), 'center_y': center.get('y', 4.42), 'center_z': center.get('z', -0.19),
+        'extent_x': extent.get('x', 2.12), 'extent_y': extent.get('y', 4.42), 'extent_z': extent.get('z', 1.50)
     }
     return mesh_copy, bounds_info
 
@@ -190,6 +149,7 @@ def main():
     arcee_bindposes = None
     arcee_bone_hashes = None
     arcee_smr_bones = []
+    arcee_robot_smr_aabb = None
     arcee_v_bindposes = None
     arcee_v_bone_hashes = None
 
@@ -206,6 +166,7 @@ def main():
             tree = obj.read_typetree()
             bones = tree.get('m_Bones', [])
             if len(bones) == 63 and not arcee_smr_bones:
+                arcee_robot_smr_aabb = copy.deepcopy(tree.get('m_AABB'))
                 for b in bones:
                     tr_id = b.get('m_PathID')
                     go_id = tr_to_go.get(tr_id)
@@ -214,7 +175,27 @@ def main():
     print(f"[+] Extracted {len(arcee_bindposes)} ground-truth robot bindposes and {len(arcee_smr_bones)} SMR bones from Arcee.")
     print(f"[+] Extracted {len(arcee_v_bindposes)} ground-truth vehicle bindposes from Arcee.")
 
-    target_bindposes = arcee_bindposes
+    # Load finger local transforms
+    finger_transforms_path = root / "tools" / "elita_one" / "elita_finger_local_transforms.json"
+    finger_transforms = {}
+    if finger_transforms_path.exists():
+        with open(finger_transforms_path, "r", encoding="utf-8") as f:
+            finger_transforms = json.load(f)
+    print(f"[*] Loaded {len(finger_transforms)} finger knuckle local transforms.")
+    updated_finger_transforms = 0
+
+    # For 30 fingers, inject the knuckle-aligned bindposes from Elita's grafted mesh!
+    elita_bindposes = robot_mesh_tree.get("m_BindPose", [])
+    combined_bindposes = copy.deepcopy(arcee_bindposes)
+    if len(elita_bindposes) == len(arcee_bindposes):
+        knuckle_count = 0
+        for idx, bname in enumerate(arcee_smr_bones):
+            l_name = bname.lower()
+            if any(k in l_name for k in ["thumb", "index", "middle", "ring", "pinky"]):
+                combined_bindposes[idx] = copy.deepcopy(elita_bindposes[idx])
+                knuckle_count += 1
+        print(f"[+] Injected {knuckle_count} knuckle-aligned finger bindposes into robot mesh!")
+    target_bindposes = combined_bindposes
 
     # CAB remap
     old_cab = "CAB-5eb3be434313f8b01ba027da80ef0a32"
@@ -288,10 +269,13 @@ def main():
                     new_bones.append({"m_FileID": 0, "m_PathID": tr_id})
                 smr["m_Bones"] = new_bones
                 smr["m_RootBone"] = {"m_FileID": 0, "m_PathID": pref_tr["Hips"]}
-                smr["m_AABB"] = {
-                    'm_Center': {'x': r_bounds['center_x'], 'y': r_bounds['center_y'], 'z': r_bounds['center_z']},
-                    'm_Extent': {'x': r_bounds['extent_x'], 'y': r_bounds['extent_y'], 'z': r_bounds['extent_z']}
-                }
+                if arcee_robot_smr_aabb:
+                    smr["m_AABB"] = copy.deepcopy(arcee_robot_smr_aabb)
+                else:
+                    smr["m_AABB"] = {
+                        'm_Center': {'x': r_bounds['center_x'], 'y': r_bounds['center_y'] - 4.542289, 'z': r_bounds['center_z']},
+                        'm_Extent': {'x': r_bounds['extent_x'], 'y': r_bounds['extent_y'], 'z': r_bounds['extent_z']}
+                    }
                 replace_str_in_tree(smr, old_cab, new_cab)
                 obj.save_typetree(smr)
                 routed_smrs += 1
@@ -314,6 +298,20 @@ def main():
             else:
                 replace_str_in_tree(smr, old_cab, new_cab)
                 obj.save_typetree(smr)
+
+        elif obj.type.name == "Transform":
+            tr = obj.read_typetree()
+            go_id = tr.get('m_GameObject', {}).get('m_PathID')
+            go_name = go_dict.get(go_id, {}).get('m_Name')
+            if go_name in finger_transforms:
+                lp = finger_transforms[go_name]["local_pos_unity"]
+                tr["m_LocalPosition"] = {"x": lp[0], "y": lp[1], "z": lp[2]}
+                replace_str_in_tree(tr, old_cab, new_cab)
+                obj.save_typetree(tr)
+                updated_finger_transforms += 1
+            else:
+                replace_str_in_tree(tr, old_cab, new_cab)
+                obj.save_typetree(tr)
 
         elif obj.type.name == "Material":
             mat = obj.read_typetree()
@@ -467,6 +465,7 @@ def main():
             except Exception:
                 pass
 
+    print(f"[✓] Updated {updated_finger_transforms} finger bone transforms across Prefab 1 and Prefab 2 to knuckle positions!")
     print(f"[*] Renaming internal UnityFS CAB entries: {old_cab} -> {new_cab}...")
     bf = list(i_env.files.values())[0]
     new_files = {}
