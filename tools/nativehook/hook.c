@@ -604,6 +604,8 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
 #define NH (int)(sizeof(H)/sizeof(H[0]))
 
 static void native_play_music_category(const char* cat);
+void native_reset_quest_music(void);
+void native_on_quest_complete_music(void);
 
 
 // Set only while inside BCGHeroBase..ctor (slot 45 brackets it). When set, every
@@ -10374,6 +10376,8 @@ static jmethodID s_set_vol_mid = NULL;
 static jmethodID s_pause_mid = NULL;
 static jmethodID s_stop_mid = NULL;
 static jmethodID s_fadeout_mid = NULL;
+static jmethodID s_reset_quest_mid = NULL;
+static jmethodID s_complete_quest_mid = NULL;
 
 static char s_pending_category[64] = {0};
 
@@ -10463,6 +10467,38 @@ static void native_fadeout_custom_music(int duration_ms) {
     if (need_detach) (*s_jvm)->DetachCurrentThread(s_jvm);
 }
 
+void native_reset_quest_music(void) {
+    if (!s_jvm || !s_music_class || !s_reset_quest_mid) return;
+    JNIEnv* env = NULL;
+    jint res = (*s_jvm)->GetEnv(s_jvm, (void**)&env, JNI_VERSION_1_6);
+    int need_detach = 0;
+    if (res == JNI_EDETACHED) {
+        if ((*s_jvm)->AttachCurrentThread(s_jvm, &env, NULL) != JNI_OK) return;
+        need_detach = 1;
+    } else if (res != JNI_OK || !env) {
+        return;
+    }
+    LOG("[Jukebox] native_reset_quest_music calling JNI");
+    (*env)->CallStaticVoidMethod(env, s_music_class, s_reset_quest_mid);
+    if (need_detach) (*s_jvm)->DetachCurrentThread(s_jvm);
+}
+
+void native_on_quest_complete_music(void) {
+    if (!s_jvm || !s_music_class || !s_complete_quest_mid) return;
+    JNIEnv* env = NULL;
+    jint res = (*s_jvm)->GetEnv(s_jvm, (void**)&env, JNI_VERSION_1_6);
+    int need_detach = 0;
+    if (res == JNI_EDETACHED) {
+        if ((*s_jvm)->AttachCurrentThread(s_jvm, &env, NULL) != JNI_OK) return;
+        need_detach = 1;
+    } else if (res != JNI_OK || !env) {
+        return;
+    }
+    LOG("[Jukebox] native_on_quest_complete_music calling JNI");
+    (*env)->CallStaticVoidMethod(env, s_music_class, s_complete_quest_mid);
+    if (need_detach) (*s_jvm)->DetachCurrentThread(s_jvm);
+}
+
 static int questflow_is_in_gameboard(void* qf) {
     if (!obj_ok(qf)) return 0;
     // Check Gameboard _gameBoard at offset 0x50
@@ -10472,6 +10508,9 @@ static int questflow_is_in_gameboard(void* qf) {
     // 0=TeamSelect, 1=BeginQuest, 2=ResyncQuest, 3=UpdateBCG,
     // 4=LoadGameBoard, 5=OpenScreens, 6=SetupHud, 7=GameBoardReady, 8=Expired, 9=QuestCompleted
     int state = *(int32_t*)((uintptr_t)qf + 0x30);
+    if (state == 9) {
+        native_on_quest_complete_music();
+    }
     if (state >= 4 && state <= 7) return 1;
     return 0;
 }
@@ -12482,6 +12521,8 @@ static void* launcher_thread(void* arg) {
         s_pause_mid = (*env)->GetStaticMethodID(env, cmpClass, "pauseMusic", "(Z)V");
         s_stop_mid = (*env)->GetStaticMethodID(env, cmpClass, "stopMusic", "()V");
         s_fadeout_mid = (*env)->GetStaticMethodID(env, cmpClass, "fadeOut", "(I)V");
+        s_reset_quest_mid = (*env)->GetStaticMethodID(env, cmpClass, "resetQuestTrack", "()V");
+        s_complete_quest_mid = (*env)->GetStaticMethodID(env, cmpClass, "onQuestComplete", "()V");
         jmethodID init_mid = (*env)->GetStaticMethodID(env, cmpClass, "init", "(Landroid/app/Activity;)V");
         if (init_mid && act) {
             (*env)->CallStaticVoidMethod(env, cmpClass, init_mid, act);

@@ -35,6 +35,8 @@ public class CustomMusicPlayer {
     private static String sCurrentCategory = "";
     private static String sCurrentTrackName = "";
     private static String sSessionMainTrack = ""; // Fixed track for 'main' during this session
+    private static String sCurrentQuestTrack = ""; // Fixed track for 'quest' during active map run
+    private static boolean sQuestPendingReroll = false; // Flag to reroll quest track after map cleared
 
     private static MediaPlayer sActivePlayer;
     private static Handler sHandler;
@@ -48,7 +50,8 @@ public class CustomMusicPlayer {
     static {
         FALLBACK_TRACKS.put("main", new String[]{
             "Original_Theme_Loop.mp3",
-            "Subterranean Hum.mp3"
+            "Subterranean Hum.mp3",
+            "Spark Dormant.mp3"
         });
         FALLBACK_TRACKS.put("quest", new String[]{
             "Hydraulic_Engine_Bay.mp3",
@@ -67,7 +70,9 @@ public class CustomMusicPlayer {
             "Sector_Defense.mp3"
         });
         FALLBACK_TRACKS.put("bot_showcase", new String[]{
-            "bot_showcase-1.mp3"
+            "bot_showcase-1.mp3",
+            "Gantry Zero.mp3",
+            "Titan_Maintenance_Bay.mp3"
         });
     }
 
@@ -279,6 +284,17 @@ public class CustomMusicPlayer {
         Log.i(TAG, "Selected session locked main track: " + sSessionMainTrack);
     }
 
+    public static synchronized void resetQuestTrack() {
+        Log.i(TAG, "resetQuestTrack: clearing locked quest track (was: " + sCurrentQuestTrack + ")");
+        sCurrentQuestTrack = "";
+        sQuestPendingReroll = false;
+    }
+
+    public static synchronized void onQuestComplete() {
+        Log.i(TAG, "onQuestComplete: quest map cleared, will reroll quest track after exiting map (current: " + sCurrentQuestTrack + ")");
+        sQuestPendingReroll = true;
+    }
+
     public static synchronized void playCategory(final String category) {
         ensureInit();
         if (!sEnabled || sContext == null) {
@@ -297,11 +313,39 @@ public class CustomMusicPlayer {
         if (!sEnabled || sContext == null) return;
         String trackPath = null;
         if ("main".equals(category)) {
+            if (sQuestPendingReroll) {
+                Log.i(TAG, "Returned to main after quest completion, resetting locked quest track");
+                sCurrentQuestTrack = "";
+                sQuestPendingReroll = false;
+            }
             if (sSessionMainTrack != null && !sSessionMainTrack.isEmpty()) {
                 trackPath = sSessionMainTrack;
             } else {
                 List<String> list = sCategoryTracks.get("main");
                 if (list != null && !list.isEmpty()) trackPath = list.get(0);
+            }
+        } else if ("quest".equals(category)) {
+            if (sCurrentQuestTrack != null && !sCurrentQuestTrack.isEmpty()) {
+                trackPath = sCurrentQuestTrack;
+                Log.i(TAG, "Reusing locked quest track for active map: " + trackPath);
+            } else {
+                List<String> list = sCategoryTracks.get("quest");
+                if (list != null && !list.isEmpty()) {
+                    if (list.size() == 1) {
+                        trackPath = list.get(0);
+                    } else {
+                        String last = sLastPlayedTrack.get("quest");
+                        List<String> candidates = new ArrayList<>(list);
+                        if (last != null && candidates.size() > 1) {
+                            candidates.remove(last);
+                        }
+                        trackPath = candidates.get(sRandom.nextInt(candidates.size()));
+                    }
+                    sLastPlayedTrack.put("quest", trackPath);
+                    sCurrentQuestTrack = trackPath;
+                    sQuestPendingReroll = false;
+                    Log.i(TAG, "Selected new locked quest track: " + sCurrentQuestTrack);
+                }
             }
         } else {
             List<String> list = sCategoryTracks.get(category);

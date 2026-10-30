@@ -117,6 +117,8 @@ extern volatile float g_p0_max_hp;
 extern volatile float g_p1_max_hp;
 extern volatile float g_p0_last_hp;
 extern volatile float g_p1_last_hp;
+extern void native_reset_quest_music(void);
+extern void native_on_quest_complete_music(void);
 
 typedef struct {
     char qid[64];
@@ -1467,6 +1469,10 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
             }
 
             int is_completed = (player_won && g_quest_state.is_final_boss);
+            if (is_completed) {
+                logmsg("QUEST_COMBAT: Quest completed! Triggering quest completion music handler.");
+                native_on_quest_complete_music();
+            }
             const char *comp_str = is_completed ? "true" : "false";
             char aid[64];
             if (strchr(g_quest_state.qid, '-')) {
@@ -1960,6 +1966,7 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         return o->p;
     }
     if(strstr(p, "/quests/quest-quit/")) {
+        native_reset_quest_music();
         pthread_mutex_lock(&g_pos_lock);
         g_quest_state.is_leisure = 1;
         g_quest_state.pending_battle_active = 0;
@@ -1997,6 +2004,7 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         return default_quit_resp;
     }
     if(strstr(p,"/quests/quest-begin/")) { Team team; Out qteam={0}; TemplateArg args[32];snprintf(qid,sizeof qid,"%.63s",path_last(p));
+        native_reset_quest_music();
         snprintf(g_active_quest_id, sizeof g_active_quest_id, "%s", qid);
         g_quest_state.is_final_boss = 0;
         g_matrix_war_active = (strcmp(qid, "1.1.5") == 0);

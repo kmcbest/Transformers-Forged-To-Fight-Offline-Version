@@ -1069,6 +1069,18 @@ if __name__ == "__main__":
     from tools.sim.test_megatronus import run_tests as test_megatronus_suite
     test_megatronus_suite()
 
+    # --- [TEST 20] Batches 2~4 增补战技全量套件 (8 英雄、51 项战技) ---
+    from tools.sim.test_batches2_to_4_abilities import run_all as test_batches2_to_4_suite
+    test_batches2_to_4_suite()
+
+    # --- [TEST 21] 12 位全新角色专属套件 (12 英雄、96 项战技) ---
+    from tools.sim.test_new_bots_abilities import run_tests as test_new_bots_suite
+    test_new_bots_suite()
+
+    # --- [TEST 22] 6 位红蜘蛛重涂 Seeker 寻猎空军专属套件 (6 英雄、37 项战技) ---
+    from tools.sim.test_redeco_seekers_abilities import run_tests as test_redeco_seekers_suite
+    test_redeco_seekers_suite()
+
     print("\n" + "=" * 70)
-    print("🎉 全部 19 项质量门禁测试 100% 通过！震天尊、子弹弹速提速、千斤顶、汽车大师等全角色机制闭环！")
+    print("🎉 全部 22 项质量门禁测试 100% 通过！60 位英雄全套战斗机制与数据契约完整闭环！")
     print("=" * 70)
