@@ -1,0 +1,149 @@
+{
+  "bot_id": "ratchet_gs_kabam",
+  "name_zh": "救护车",
+  "name_en": "Ratchet",
+  "faction": "autobot",
+  "class": "tech",
+  "signature": {
+    "title_zh": "紧急抢修",
+    "title_en": "Emergency Repair",
+    "desc_zh": "当单次攻击造成大量伤害时，棘轮会激活紧急修复。\n\n受到攻击时：当对手单次攻击造成的攻击量超过 {{var_10}} 时，棘轮有 {{var_9}} 几率激活紧急修复，修复受到的伤害超过 {{var_11}}。\n\n每级 +{{var_12}}",
+    "pua_icon": "",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "冲击扳手",
+      "name_en": "Impact Wrench",
+      "desc_zh": "40%的概率眩晕对手2.5秒，对手身上的每层震击增加20%的概率",
+      "pua_icon": "E605",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "紧急响应",
+      "name_en": "Emergency Response",
+      "desc_zh": "根据损失的生命值，最多获取最大能量槽的28.8%。",
+      "pua_icon": "E606",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "诊断扫描",
+      "name_en": "Diagnostic Scan",
+      "desc_zh": "100%概率施加震击，施加攻击力97.5%的震击伤害，持续4秒",
+      "pua_icon": "0xe914",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "自我诊断",
+      "title_en": "Self-Diagnosis",
+      "desc_zh": "",
+      "pua_icon": "0xe60e",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "震击",
+      "title_en": "Shock",
+      "desc_zh": "远程攻击：",
+      "pua_icon": "0xe914",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "自我诊断",
+      "title_en": "Self-Diagnosis",
+      "desc_zh": "当救护车血量低于50%时，完成重击动作时会激活自我诊断，修复10%的生命值，并获得最大能量槽20%的能量，持续10秒",
+      "pua_icon": "0xe60e",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "远程震击",
+      "title_en": "Ranged Shock",
+      "desc_zh": "远程攻击+20%的暴击率，如果出暴击，将施加攻击力75%的震击伤害，持续6.5秒",
+      "pua_icon": "0xe914",
+      "category": "passive",
+      "ui_trigger": "onBasicRange",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "盟友",
+      "title_en": "Allies",
+      "desc_zh": "+{{var_23}}~{{var_24}} 装甲。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "jazz_gs_twm05",
+        "grimlock_gs_mp08"
+      ]
+    },
+    {
+      "title_zh": "盟友",
+      "title_en": "Allies",
+      "desc_zh": "+{{var_25}}~{{var_26}} 装甲。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "ironhide_cin_rotf"
+      ]
+    },
+    {
+      "title_zh": "首席军医",
+      "title_en": "Chief Medical Officer",
+      "desc_zh": "最多 {{var_27}} 机会损失生命值来修复 {{var_28}} 基础生命值，而不是在推出时获得攻击增益。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "fte_optimus_gs_t3"
+      ]
+    },
+    {
+      "title_zh": "医疗支持",
+      "title_en": "Medic Support",
+      "desc_zh": "战斗开始时修复了基地生命值的{{var_29}}~{{var_30}}。 + 突袭中的 {{var_31}}~{{var_32}} 额外修复。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "ironhide_gs_kabam",
+        "bumblebee_cin_dotm"
+      ]
+    },
+    {
+      "title_zh": "心智压榨",
+      "title_en": "Brain Drain",
+      "desc_zh": "冲击波在冲击波的特殊 2 上获得 {{var_33}} 机会击晕对手，造成 {{var_34}}。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "shockwave_gs"
+      ]
+    },
+    {
+      "title_zh": "并肩作战",
+      "title_en": "Brothers in Arms",
+      "desc_zh": "汽车人的 {{var_35}}~{{var_36}} 装甲以及单人任务中的 +{{var_37}}~{{var_38}} 近战伤害。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "fte_optimus_gs_t3"
+      ]
+    },
+    {
+      "title_zh": "直到一切合而为一",
+      "title_en": "Till All Are One",
+      "desc_zh": "+{{var_39}}~{{var_40}} 汽车人攻击评级。 +{{var_41}}~{{var_42}} 突袭中汽车人的减益伤害。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "bumblebee_gs_kabam"
+      ]
+    },
+    {
+      "title_zh": "领袖威仪 (5星)",
+      "title_en": "Leadership (5 Star)",
+      "desc_zh": "+{{var_43}} 功率率。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    }
+  ]
+}

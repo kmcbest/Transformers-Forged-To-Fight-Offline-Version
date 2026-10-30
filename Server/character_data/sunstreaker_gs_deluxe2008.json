@@ -1,0 +1,132 @@
+{
+  "bot_id": "sunstreaker_gs_deluxe2008",
+  "name_zh": "飞毛腿",
+  "name_en": "Sunstreaker",
+  "faction": "autobot",
+  "class": "braw",
+  "signature": {
+    "title_zh": "高级模型 - Sunstreaker 努力保持自己的外观，让他有机会永久保留一些增益。",
+    "title_en": "Premium Model - Sunstreaker tries hard to maintain his look, giving him a chance to permanently keep some Buffs.",
+    "desc_zh": "被动：增益效果到期：\n\n当飞毛腿的近战增益或装甲增益到期时，{{var_14}} 几率分别获得永久的 {{var_15}} 近战增益或装甲增益。 （最大堆叠数：10）\n\n+{{var_16}} 每级",
+    "pua_icon": "",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "不是脸",
+      "name_en": "Not The Face",
+      "desc_zh": "不要刮伤Sunstreaker的油漆，否则你会后悔的。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "特殊技 2",
+      "name_en": "Special Attack 2",
+      "desc_zh": "如果处于原始状态，则获得 {{var_17}} 的瑕疵状态增益。如果处于瑕疵状态，最后一击不可阻挡。如果Sunstreaker 不处于这两种状态，则获得{{var_18}} 的两种状态增益。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "刚刚镀铬",
+      "name_en": "Just Been Chromed",
+      "desc_zh": "飞毛腿炫耀他华丽的动作和新外套。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "能量获取",
+      "title_en": "Power Gain",
+      "desc_zh": "L4或者M2命中对手的时候，在1秒内获得最大能量槽的5%。",
+      "pua_icon": "E608",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "近战增益",
+      "title_en": "Melee Buff",
+      "desc_zh": "重击发起时，有30%的概率获得14%的近战增益，持续5秒",
+      "pua_icon": "E412",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "不可阻抗",
+      "title_en": "Unstoppable",
+      "desc_zh": "生命值掉到40%以下时，得到5秒的不可阻挡增益。",
+      "pua_icon": "E915",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "远程射击",
+      "title_en": "Ranged Attacks",
+      "desc_zh": "远程攻击",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "onBasicRange",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "{{var_10}} 次机会净化减益。",
+      "title_en": "{{var_10}} chance to Purify a Debuff.",
+      "desc_zh": "{{var_10}} 次机会净化减益。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "喷射柔道",
+      "title_en": "Jet Judo",
+      "desc_zh": "+{{var_22}}~{{var_23}} 以空中替代形式对抗机器人的近战增益。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "jetfire_gs_leader2014"
+      ]
+    },
+    {
+      "title_zh": "双引擎",
+      "title_en": "Twin Engines",
+      "desc_zh": "通过{{var_24}}~{{var_25}} 增加功率增益。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "sideswipe_gs"
+      ]
+    },
+    {
+      "title_zh": "巨擎天柱",
+      "title_en": "Optimus Maximus",
+      "desc_zh": "使用{{var_26}}~{{var_27}} Power开始战斗。仅当团队中的所有机器人都具有此协同羁绊时才适用。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "fte_optimus_gs_t3",
+        "ironhide_gs_kabam",
+        "prowl_gs_deluxe2016",
+        "mirage_gs_deluxe2016"
+      ]
+    },
+    {
+      "title_zh": "华丽六人组",
+      "title_en": "Magnificent Six",
+      "desc_zh": "当被击倒时，{{var_28}}~{{var_29}}有几率为{{var_31}}获得+{{var_30}}特殊伤害。每次击倒后增加 {{var_32}}。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "jazz_gs_twm05"
+      ]
+    },
+    {
+      "title_zh": "领袖威仪 (5星)",
+      "title_en": "Leadership (5 Star)",
+      "desc_zh": "作为领导的灯塔，所有较低级别的队友都获得 +{{var_33}} 攻击评级",
+      "pua_icon": "",
+      "bonus_heroes": []
+    }
+  ]
+}

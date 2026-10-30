@@ -1,0 +1,121 @@
+{
+  "bot_id": "bonecrusher_cin_rotf",
+  "name_zh": "碎骨魔",
+  "name_en": "Bonecrusher",
+  "faction": "decepticon",
+  "class": "warr",
+  "signature": {
+    "title_zh": "纯粹的仇恨",
+    "title_en": "Pure Hate",
+    "desc_zh": "对手流血会加剧碎骨者的仇恨，提高他的攻击力和力量值，同时降低对手的攻击力和力量值。\n\n被动：流血的对手会加剧碎骨者的仇恨，每层流血都会将他的攻击力提高 {{var_10}}，将功率提高 {{var_11}}。对手的攻击力和力量值减少相同的量。\n\n+ 每级大约 {{var_12}}。",
+    "pua_icon": "",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "蝎尾痛蝥",
+      "name_en": "Scorpion Sting",
+      "desc_zh": "",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "厌恶",
+      "name_en": "Abhornado",
+      "desc_zh": "",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "杀无赦！",
+      "name_en": "No Survivors!",
+      "desc_zh": "",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "战斗被动",
+      "title_en": "When struck by melee critical hits: {{var_1}} chance to Bleed, dealing {{var_2}} Attack over {{var_3}}.",
+      "desc_zh": "受到近战暴击时：{{var_1}} 几率流血，造成 {{var_2}} 攻击力高于 {{var_3}}。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "受暴击反伤流血",
+      "title_en": "Bleed when Struck by Crit",
+      "desc_zh": "受到近战暴击时：90%的几率给对方施加流血，造成攻击力89.6%的伤害，持续7秒，可叠加。",
+      "pua_icon": "0xe401",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "重击流血",
+      "title_en": "Heavy Attacks Bleed",
+      "desc_zh": "重击命中时：70%几率触发流血，造成攻击力45%的伤害，持续5.6秒。",
+      "pua_icon": "0xe401",
+      "category": "passive",
+      "ui_trigger": "onHeavyHit",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "盟友",
+      "title_en": "Allies",
+      "desc_zh": "+{{var_22}}~{{var_23}} 装甲。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "barricade_cin_dotm"
+      ]
+    },
+    {
+      "title_zh": "盟友",
+      "title_en": "Allies",
+      "desc_zh": "{{var_24}}~{{var_25}} 装甲。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "grindor_cin_rotf",
+        "mixmaster_cin_rotf"
+      ]
+    },
+    {
+      "title_zh": "宿敌",
+      "title_en": "Enemies",
+      "desc_zh": "+{{var_26}}~{{var_27}} 攻击评级。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "optimusprime_cin_tf"
+      ]
+    },
+    {
+      "title_zh": "锻造服务",
+      "title_en": "Forged to Serve",
+      "desc_zh": "当对手达到 20 个伤害指控时，威震天有 {{var_28}}~{{var_29}} 机会击晕对手。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "megatron_cin_rotf"
+      ]
+    },
+    {
+      "title_zh": "锻造服务",
+      "title_en": "Forged to Serve",
+      "desc_zh": "威震天的每个爪牙都为他提供了独特的能力。作为回报，威震天提供+{{var_30}}~{{var_31}} 装甲。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "megatron_gs_leader2015"
+      ]
+    },
+    {
+      "title_zh": "领袖威仪 (5星)",
+      "title_en": "Leadership (5 Star)",
+      "desc_zh": "作为团队的领导灯塔，所有较低级别的队友都会获得 +{{var_32}} 暴击伤害。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    }
+  ]
+}

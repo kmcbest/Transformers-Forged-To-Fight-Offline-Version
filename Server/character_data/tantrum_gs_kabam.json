@@ -1,0 +1,71 @@
+{
+  "bot_id": "tantrum_gs_kabam",
+  "name_zh": "野牛",
+  "name_en": "Tantrum",
+  "faction": "decepticon",
+  "class": "braw",
+  "signature": {
+    "title_zh": "疯狂：发脾气的攻击变得狂野且不可预测，突破敌人的防御并无视他们的破坏性减益效果。",
+    "title_en": "Frenzy: Tantrum’s attacks become wild and unpredictable, punching through enemy defenses and ignoring their damaging debuffs.",
+    "desc_zh": "每 3 个近战奖励增益：当发脾气获得 3 个近战奖励增益时，他会获得狂乱，从而获得 +{{var_11}} 暴击率和 {{var_12}} 几率为 {{var_13}} 提供不可阻挡的机会。此外，当发脾气变得疯狂时，他会净化所有伤害性减益效果，并且在疯狂期间不会受到进一步的伤害性减益效果。",
+    "pua_icon": "",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "喷火器",
+      "name_en": "Special 1 – Flamethrower",
+      "desc_zh": "",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "电能剑",
+      "name_en": "Electro-Sword",
+      "desc_zh": "发脾气时每个近战增益有 {{var_14}} 几率造成灼伤，造成热伤害，伤害值等于 {{var_15}} 的攻击评级高于 {{var_16}}。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "横冲直撞",
+      "name_en": "Bull Rush",
+      "desc_zh": "",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "不可阻挡",
+      "title_en": "Unstoppable",
+      "desc_zh": "进入防御状态1.5秒后，获得4.5秒的不可阻挡增益。\n野牛身上每多一个近战增益，进入不可阻挡的充能时间减少8%。",
+      "pua_icon": "E915",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "盟友——惊破天、狂飙",
+      "title_en": "Allies – Galvatron, Cyclonus",
+      "desc_zh": "+{{var_20}}~{{var_21}} 装甲。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "– 敌人 – Blaster、阿尔西",
+      "title_en": "– Enemies – Blaster, Arcee",
+      "desc_zh": "+{{var_22}}~{{var_23}} 攻击评级。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "兽祖 – 全兽战机器人",
+      "title_en": "Beast Ancestor – All Beast War Bots",
+      "desc_zh": "每次重击后，该机器人都会获得野兽之怒增益，使攻击有 {{var_24}}~{{var_25}} 机会无法被 {{var_26}} 阻挡。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    }
+  ]
+}

@@ -1,0 +1,196 @@
+{
+  "bot_id": "waspinator_gs_deluxe",
+  "name_zh": "黄蜂勇士",
+  "name_en": "Waspinator",
+  "faction": "predacon",
+  "class": "demo",
+  "signature": {
+    "title_zh": "黄蜂者还活着！ - <em>黄蜂者能够承受致命的打击并快速自我重组，这使他成为一个难以消灭的机器人。</em>",
+    "title_en": "Waspinator Lives! - <em>Waspinator’s ability to endure otherwise fatal blows and quickly reassemble himself makes him a tough bot to take out.</em>",
+    "desc_zh": "击倒打击：如果黄蜂者受到致命伤害，他会变得无敌，净化所有减益并修复 {{var_9}} 生命值。\n\n+{{var_10}} 每级",
+    "pua_icon": "",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "眼睛激光",
+      "name_en": "Eye Lasers",
+      "desc_zh": "黄蜂者的光学传感器超载！",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "特殊技 2",
+      "name_en": "Special Attack 2",
+      "desc_zh": "{{var_11}}有几率获得精准增益，提高{{var_13}}的暴击率并降低对手躲避{{var_12}}攻击的几率。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "不稳定的刺击",
+      "name_en": "Unsteady Sting Shot",
+      "desc_zh": "100%概率施加燃烧，造成攻击力100%的伤害，持续5秒。",
+      "pua_icon": "0xe41d",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "抗性削弱",
+      "title_en": "Resistance Debuff",
+      "desc_zh": "降低敌方对特定攻击类型的抗性。",
+      "pua_icon": "",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "特殊技增伤",
+      "title_en": "Special Damage",
+      "desc_zh": "提升特殊技造成的伤害。",
+      "pua_icon": "",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "<strong>被动：</strong>",
+      "title_en": "<strong>Passive:</strong>",
+      "desc_zh": "<strong>被动：</strong>",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "When Waspinator drops below half of his Base Health, he diverts power to his ranged weapons, doubling Projectile Speed by {{var_1}} for the remainder of the fight.",
+      "desc_zh": "当黄蜂者的基础生命值低于一半时，他会将能量转移到远程武器上，在剩余的战斗中将射弹速度提高一倍 {{var_1}}。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "When Waspinator drops below a quarter of his Base Health, he gains a {{var_2}} Special Damage Buff for the remainder of the fight.",
+      "desc_zh": "当黄蜂者的基础生命值低于四分之一时，他会在剩余的战斗中获得 {{var_2}} 特殊伤害增益。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "<strong>远程攻击</strong>",
+      "title_en": "<strong>Ranged Attacks</strong>",
+      "desc_zh": "<strong>远程攻击</strong>",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "onBasicRange",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "Basic ranged attacks sting the opponent, inflicting a {{var_3}} Resistance Debuff for {{var_4}} after a short delay.",
+      "desc_zh": "基本远程攻击刺痛对手，在短暂延迟后对 {{var_4}} 造成 {{var_3}} 抵抗减益。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "<strong>重击</strong>",
+      "title_en": "<strong>Heavy Attacks</strong>",
+      "desc_zh": "<strong>重击</strong>",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "onHeavyHit",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "{{var_5}} chance to instantly inflict a {{var_6}} Resistance Debuff for {{var_7}}.",
+      "desc_zh": "{{var_5}} 有机会立即对 {{var_7}} 造成 {{var_6}} 抵抗减益。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "{{var_8}} 次机会消灭抵抗。",
+      "title_en": "{{var_8}} chance to Nullify a Resistance.",
+      "desc_zh": "{{var_8}} 次机会消灭抵抗。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "宿敌",
+      "title_en": "Enemies",
+      "desc_zh": "{{var_21}}~{{var_22}} 攻击评级。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "rhinox_gs_voyager2014",
+        "dinobot_bw_kabam",
+        "optimusprimal_bw_mp32",
+        "cheetor_bw_transmetal"
+      ]
+    },
+    {
+      "title_zh": "盟友",
+      "title_en": "Allies",
+      "desc_zh": "{{var_23}}~{{var_24}} 装甲。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "scorponok_bw_kabam"
+      ]
+    },
+    {
+      "title_zh": "天空突击",
+      "title_en": "Sky Assault",
+      "desc_zh": "{{var_25}}~{{var_26}} 反规避",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "windblade_gs",
+        "fte_stars_gs_t3"
+      ]
+    },
+    {
+      "title_zh": "武器铁匠",
+      "title_en": "Weaponsmiths",
+      "desc_zh": "{{var_27}}~{{var_28}} 重击造成暴击的几率。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "mixmaster_cin_rotf"
+      ]
+    },
+    {
+      "title_zh": "野兽净化",
+      "title_en": "Beast Purification",
+      "desc_zh": "重击：只要团队中有两个或更多其他野兽战争机器人与擎天柱一起，野兽战争角色就会获得{{var_31}}的{{var_29}}~{{var_30}}攻击力并净化伤害减益。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "optimusprimal_bw_mp32"
+      ]
+    },
+    {
+      "title_zh": "兽祖",
+      "title_en": "Beast Ancestor",
+      "desc_zh": "每次重击后，该机器人都会获得野兽之怒增益，使攻击有 {{var_32}}~{{var_33}} 机会无法被 {{var_34}} 阻挡。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "tantrum_gs_kabam"
+      ]
+    },
+    {
+      "title_zh": "领袖威仪 (5星)",
+      "title_en": "Leadership (5 Star)",
+      "desc_zh": "所有较低级别的队友都会获得 +{{var_35}} 特殊伤害。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    }
+  ]
+}

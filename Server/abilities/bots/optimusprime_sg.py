@@ -127,20 +127,21 @@ def build_optimusprime_sg_abilities(base_hp: float = 34850.0, base_atk: float = 
     appr_spark = make_statmod_appearance(
         appr_id="appr_optimusprime_sg_spark",
         callout_text="暴虐火种",
-        desc="特殊技破防概率充能 +30%",
+        desc="",
         short_desc="暴虐火种",
         pua_icon="\uE909",
         color=AbilityColor.LIGHT_PURPLE_POWER,
         show_callout=True,
         active_desc="暴虐火种生效中",
     )
+    appr_spark["l"] = ""  # 纯战斗修饰器，清空 LongStringID 防止抢占 SP1 UI 描述
     appears["appr_optimusprime_sg_spark"] = appr_spark
     mod_spark = {
         "id": "optimusprime_sg_spark_charge",
         "t": "buff",
         "tm": "",
         "tr": ["onSpecial1Activate", "onSpecial2Activate", "onSpecial3Activate"],
-        "uit": ["onSpecial1Activate", "onSpecial2Activate", "onSpecial3Activate"],
+        "uit": [],  # 触发逻辑保留，uit 清空避免抢占 UI 触发器分类
         "pri": 0,
         "trm": 0.0,
         "trs": "",
@@ -171,20 +172,22 @@ def build_optimusprime_sg_abilities(base_hp: float = 34850.0, base_atk: float = 
     appr_unbl_melee = make_statmod_appearance(
         appr_id="appr_optimusprime_sg_unblockable_melee",
         callout_text="无法防御",
-        desc="下一次近战攻击无法防御",
+        desc="",
         short_desc="无法防御",
         pua_icon="\uE41F",
         color=AbilityColor.ORANGE_DAMAGE,
         show_callout=True,
         active_desc="无法防御生效中",
     )
+    appr_unbl_melee["l"] = ""  # 清空 LongStringID，防止误生成“所有攻击”分类
+    appr_unbl_melee["s"] = ""
     appears["appr_optimusprime_sg_unblockable_melee"] = appr_unbl_melee
     mod_unbl_melee = {
         "id": "optimusprime_sg_unblockable_melee",
         "t": "buff",
         "tm": "",
         "tr": ["onHit"],
-        "uit": ["onHit"],
+        "uit": [],  # 清空 uit，不向 UI 分类注入临时描述
         "pri": 0,
         "trm": 0.0,
         "trs": "level=Special1,Special2",
@@ -329,5 +332,10 @@ def build_optimusprime_sg_abilities(base_hp: float = 34850.0, base_atk: float = 
     )
     mods.update(m_bleed)
     appears.update(a_bleed)
+
+    # 清空战斗内部 Mod 的 l (LongStringID)，避免在底部详情中重复产生未翻译的触发器分组
+    for a_dict in (a_struggle, a_ctrl, a_burn, a_shock, a_acid, a_bleed):
+        for app in a_dict.values():
+            app["l"] = ""
 
     return mods, appears, buffs

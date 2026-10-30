@@ -1,0 +1,200 @@
+{
+  "bot_id": "thundercracker_gs_leader2015",
+  "name_zh": "惊天雷",
+  "name_en": "Thundercracker",
+  "faction": "decepticon",
+  "class": "braw",
+  "signature": {
+    "title_zh": "飞升-雷霆通过对抗减益、增强近战命中以及增加对强敌的伤害来证明他的近战价值。",
+    "title_en": "Ascension- Thundercracker proves his melee worth by fighting off Debuffs, enhancing melee hits, and increasing his damage against tough opponents.",
+    "desc_zh": "所有攻击：\n\n在未减益的情况下，每进行 5 次连续近战攻击都会为 {{var_18}} 提供 {{var_17}} 近战增益。\n\n每个招牌能力等级的近战攻击都有 {{var_19}} 几率来净化任何减益。\n\n每场战斗开始时，针对每个招牌能力等级，将敌人的额外攻击力增加 {{var_20}} 点。\n\n+ 每级大约 {{var_21}}",
+    "pua_icon": "",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "肤色自卑",
+      "name_en": "Inferiority Complexion",
+      "desc_zh": "除第一击外，所有攻击获得10%的近战增益，持续2秒",
+      "pua_icon": "E412",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "特殊技 2",
+      "name_en": "Special Attack 2",
+      "desc_zh": "每次射弹命中都会为 {{var_23}} 提供 {{var_22}} 近战增益。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "残酷的背叛",
+      "name_en": "Brutal Treachery",
+      "desc_zh": "当你的敌人认为你已陷入绝境时……粉碎他们。",
+      "pua_icon": "E914",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "近战0暴",
+      "title_en": "No Melee Crit",
+      "desc_zh": "惊天雷所有攻击不产生暴击，如果随机数出现暴击，则强制以白字显示伤害，而不是黄字。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "Successful melee hits refresh all Melee Buffs on Thundercracker.",
+      "desc_zh": "成功的近战攻击会刷新雷霆雷上的所有近战增益。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "Sidestepping after a melee attack also refreshes all Melee Buffs.",
+      "desc_zh": "近战攻击后回避也会刷新所有近战增益。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "净化",
+      "title_en": "Purify",
+      "desc_zh": "重击开始时，净化身上所有流血，燃烧，震击，酸液，逆火和目眩减益。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "燃烧",
+      "title_en": "Burn",
+      "desc_zh": "每净化一个减益，就给对方施加一层燃烧，造成攻击力80%的伤害，持续7秒",
+      "pua_icon": "E41D",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "For each Debuff Purified in this way, this attack inflicts a Burn Debuff causing {{var_8}} Attack as heat damage over {{var_9}}.",
+      "desc_zh": "对于以这种方式净化的每个减益，此攻击会造成燃烧减益，导致 {{var_8}} 攻击对 {{var_9}} 造成热伤害。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "远程射击",
+      "title_en": "Ranged Attacks",
+      "desc_zh": "远程攻击",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "onBasicRange",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "Gain a {{var_10}} Melee Damage Buff for {{var_11}}.",
+      "desc_zh": "为 {{var_11}} 获得 {{var_10}} 近战伤害增益。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "格挡防御",
+      "title_en": "Blocking",
+      "desc_zh": "阻塞",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "onBlock",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "+{{var_12}} Block Proficiency against melee attacks.",
+      "desc_zh": "+{{var_12}} 对抗近战攻击的格挡熟练度。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "An additional +{{var_13}} Block Proficiency against the melee attacks of ground vehicles.",
+      "desc_zh": "对抗地面车辆近战攻击的额外 +{{var_13}} 格挡熟练度。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "While above {{var_14}} Health, Block cannot be broken by attacks from Bots in their ground vehicle form.",
+      "desc_zh": "当生命值高于 {{var_14}} 时，区块无法被地面车辆形式的机器人的攻击所破坏。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "Well-timed Blocks against ground vehicles grant a {{var_15}} Melee Buff for {{var_16}} and knock opponents out of their vehicle form.",
+      "desc_zh": "针对地面车辆的适时格挡可为 {{var_16}} 提供 {{var_15}} 近战增益，并将对手击出车辆形态。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "净化燃烧",
+      "title_en": "Purify Burn",
+      "desc_zh": "重击命中时有70%几率造成燃烧，施加攻击力80%的伤害，持续4秒。",
+      "pua_icon": "0xe41d",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "红蜘蛛的探索者",
+      "title_en": "Starscream's Seekers",
+      "desc_zh": "+{{var_29}}~{{var_30}} 伤害和 {{var_31}}~{{var_32}} 所有霸天虎远程攻击的穿甲。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "fte_stars_gs_t3",
+        "ramjet_gs_deluxe2008",
+        "dirge_gs_deluxe2008",
+        "skywarp_gs_leader2015"
+      ]
+    },
+    {
+      "title_zh": "天空突击",
+      "title_en": "Sky Assualt",
+      "desc_zh": "+{{var_33}}~{{var_34}} 反规避",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "cyclonus_gs_uw06",
+        "grindor_cin_rotf",
+        "ramjet_gs_deluxe2008",
+        "fte_stars_gs_t3",
+        "windblade_gs",
+        "jetfire_gs_leader2014"
+      ]
+    },
+    {
+      "title_zh": "领袖威仪 (5星)",
+      "title_en": "Leadership (5 Star)",
+      "desc_zh": "作为领导的灯塔，所有较低级别的队友都获得 +{{var_35}} 攻击评级。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    }
+  ]
+}

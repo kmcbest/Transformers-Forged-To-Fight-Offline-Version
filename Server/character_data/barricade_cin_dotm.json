@@ -1,0 +1,89 @@
+{
+  "bot_id": "barricade_cin_dotm",
+  "name_zh": "路障",
+  "name_en": "Barricade",
+  "faction": "decepticon",
+  "class": "scou",
+  "signature": {
+    "title_zh": "坏警察",
+    "title_en": "Bad Cop",
+    "desc_zh": "被动：逆火可堆叠且其持续时间增加（由{{var_9}}决定）。",
+    "pua_icon": "",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "惩罚",
+      "name_en": "Punishment",
+      "desc_zh": "你有权保持沉默。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "特殊技 2",
+      "name_en": "Special Attack 2",
+      "desc_zh": "{{var_10}} 对 {{var_11}} 造成逆火。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "征服",
+      "name_en": "Subjugation",
+      "desc_zh": "使对手屈服。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "近战规避",
+      "title_en": "Melee Evade",
+      "desc_zh": "被击倒时，有85%的概率获得3秒的近战规避，可规避基础近战和SP1/SP2中的近战攻击",
+      "pua_icon": "0xe509",
+      "category": "passive",
+      "ui_trigger": "onDodge",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "宿敌",
+      "title_en": "Enemies",
+      "desc_zh": "+{{var_16}}~{{var_17}} 攻击评级。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "bumblebee_gs_kabam",
+        "prowl_gs_deluxe2016",
+        "hotrod_cin_tlk",
+        "hound_cin_tlk"
+      ]
+    },
+    {
+      "title_zh": "亡命之徒",
+      "title_en": "Outlaws",
+      "desc_zh": "第一次重击击中时，{{var_18}} 有机会对 {{var_19}}~{{var_20}} 造成强力锁定。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "grindor_cin_rotf"
+      ]
+    },
+    {
+      "title_zh": "锻造服务",
+      "title_en": "Forged to Serve",
+      "desc_zh": "威震天有 {{var_21}}~{{var_22}} 几率每次击中造成 2 个损伤球。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "megatron_cin_rotf"
+      ]
+    },
+    {
+      "title_zh": "锻造领先",
+      "title_en": "Forged to Lead",
+      "desc_zh": "威震天的每个爪牙都为他提供了独特的能力。作为回报，威震天提供 {{var_23}}~{{var_24}} 装甲。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "megatron_gs_leader2015"
+      ]
+    }
+  ]
+}

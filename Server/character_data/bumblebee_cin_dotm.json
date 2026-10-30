@@ -1,0 +1,118 @@
+{
+  "bot_id": "bumblebee_cin_dotm",
+  "name_zh": "大黄蜂",
+  "name_en": "Bumblebee (DOTM)",
+  "faction": "autobot",
+  "class": "tact",
+  "signature": {
+    "title_zh": "欢快",
+    "title_en": "Alacrity",
+    "desc_zh": "大黄蜂在远程和近战校准模式之间切换得更快。此外，大黄蜂的敏捷性使他在躲避传入的近战攻击后获得 {{var_7}} 的临时 {{var_6}} 攻击增益。",
+    "pua_icon": "",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "嗡嗡声踢",
+      "name_en": "Buzz Kick",
+      "desc_zh": "每一击都有60%的概率施加破甲，移除对方身上所有护甲增益，并施加35%的破甲减益，持续6秒。",
+      "pua_icon": "0xe516",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "蜜蜂射击",
+      "name_en": "Bug Shot",
+      "desc_zh": "最后一击施加震击，造成攻击力80%的伤害，持续10秒，对方身上如果有护甲，震击伤害增加",
+      "pua_icon": "0xe914",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "弹壳震击",
+      "name_en": "Shell Shock",
+      "desc_zh": "",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "攻击增益",
+      "title_en": "Attack Buff",
+      "desc_zh": "每击倒对手一次：获得一个永久攻击增益，攻击力增加13.5%。\n永远增益最多堆叠15 层，第16层开始出现倒计时，3秒后消失。",
+      "pua_icon": "0xe406",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "盟友",
+      "title_en": "Allies",
+      "desc_zh": "+{{var_17}}~{{var_18}} 装甲。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "ironhide_gs_kabam",
+        "optimusprime_cin_tf",
+        "hotrod_cin_tlk"
+      ]
+    },
+    {
+      "title_zh": "直到一切合而为一",
+      "title_en": "Till All Are One",
+      "desc_zh": "+{{var_19}}~{{var_20}} 汽车人攻击评级。 +{{var_21}}~{{var_22}} 突袭中汽车人的减益伤害。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "ratchet_gs_kabam",
+        "optimusprime_cin_tf"
+      ]
+    },
+    {
+      "title_zh": "宿敌",
+      "title_en": "Enemies",
+      "desc_zh": "+{{var_23}}~{{var_24}} 攻击评级。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "barricade_cin_dotm",
+        "megatron_cin_rotf"
+      ]
+    },
+    {
+      "title_zh": "医疗支持",
+      "title_en": "Medic Support",
+      "desc_zh": "战斗开始时修复基地生命值的{{var_25}}~{{var_26}}。 +{{var_27}}~{{var_28}} 突袭中的额外修复。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "ratchet_gs_kabam"
+      ]
+    },
+    {
+      "title_zh": "间谍专家",
+      "title_en": "Espionage Specialists",
+      "desc_zh": "{{var_29}}~{{var_30}} 在使用特殊 2 或 3 击球时激活对手能力的可能性较小。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "mirage_gs_deluxe2016"
+      ]
+    },
+    {
+      "title_zh": "速度追逐者",
+      "title_en": "Speed Chasers",
+      "desc_zh": "+{{var_31}}~{{var_32}} 躲避对手攻击时进行下一次攻击。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "sideswipe_gs",
+        "mirage_gs_deluxe2016"
+      ]
+    },
+    {
+      "title_zh": "并肩作战",
+      "title_en": "Brothers in Arms",
+      "desc_zh": "+{{var_33}}~{{var_34}} 汽车人装甲以及+{{var_35}}~{{var_36}} 单人任务中的近战伤害。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "hotrod_cin_tlk"
+      ]
+    }
+  ]
+}

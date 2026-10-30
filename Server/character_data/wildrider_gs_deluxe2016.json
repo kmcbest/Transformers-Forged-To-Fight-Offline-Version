@@ -1,0 +1,67 @@
+{
+  "bot_id": "wildrider_gs_deluxe2016",
+  "name_zh": "莽撞",
+  "name_en": "Wildrider",
+  "faction": "decepticon",
+  "class": "braw",
+  "signature": {
+    "title_zh": "",
+    "title_en": "",
+    "desc_zh": "",
+    "pua_icon": "",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "野蛮变线侧撞",
+      "name_en": "Road Rage Slam",
+      "desc_zh": "",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "连环追尾爆破",
+      "name_en": "Multi-Car Pileup",
+      "desc_zh": "",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "狂徒末路狂飙",
+      "name_en": "Highway to Havoc",
+      "desc_zh": "",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "毁灭冲撞",
+      "title_en": "Kamikaze Charge",
+      "desc_zh": "冲刺攻击自带不可阻挡 (Unstoppable) 特性，撞击对手将其击退并削减其 20% 能量槽。",
+      "pua_icon": "",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "毁灭狂徒",
+      "title_en": "Demolition Maniacs",
+      "desc_zh": "与野牛、碎骨魔同队时，近战攻击附带 +{{var_6}} 破甲。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "tantrum_gs_kabam",
+        "bonecrusher_cin_rotf"
+      ]
+    },
+    {
+      "title_zh": "领袖威仪 (5星)",
+      "title_en": "Leadership (5 Star)",
+      "desc_zh": "团队所有低星级队员获得 +{{var_7}} 攻击力。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    }
+  ]
+}

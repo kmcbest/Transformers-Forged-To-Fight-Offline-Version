@@ -1,0 +1,80 @@
+{
+  "bot_id": "grimlock_gs_mp08",
+  "name_zh": "钢锁",
+  "name_en": "Grimlock",
+  "faction": "autobot",
+  "class": "braw",
+  "signature": {
+    "title_zh": "恐龙之怒",
+    "title_en": "Dino Rage",
+    "desc_zh": "钢锁在受到伤害减益后1秒净化该减益，并有30%的概率得到一层近战增益，增加近战伤害30%，持续5秒，可叠加。",
+    "pua_icon": "",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "恐龙之力",
+      "name_en": "Dino Force",
+      "desc_zh": "100%几率造成燃烧，施加攻击力100%的伤害，持续4秒。",
+      "pua_icon": "0xe41d",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "特殊技 2",
+      "name_en": "Special Attack 2",
+      "desc_zh": "100%的概率得到一层近战增益，增加近战伤害18%，持续5秒。",
+      "pua_icon": "E406",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "特殊技 3",
+      "name_en": "Special Attack 3",
+      "desc_zh": "{{var_13}} 有机会造成燃烧，对 {{var_14}} 攻击造成热伤害，而对 {{var_15}} 则造成热伤害。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "近战增益",
+      "title_en": "Melee Buff",
+      "desc_zh": "受到攻击时，有14%的概率得到一层近战增益，增加近战伤害14%，持续5秒，可叠加。\n使用重击和特殊技时全程",
+      "pua_icon": "E406",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "盟友 – 擎天柱、通天晓、大黄蜂、爵士、",
+      "title_en": "Allies – Optimus Prime, Ultra Magnus, Bumblebee, Jazz,",
+      "desc_zh": "{{var_30}}~{{var_31}} 装甲。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "盟友",
+      "title_en": "Allies",
+      "desc_zh": "{{var_32}}~{{var_33}} 装甲。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "wheeljack_gs_mp20"
+      ]
+    },
+    {
+      "title_zh": "敌人——汽车大师、回扣",
+      "title_en": "Enemies – Motormaster, Kickback",
+      "desc_zh": "{{var_34}}~{{var_35}} 攻击评级。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "领袖威仪 (5星)",
+      "title_en": "Leadership (5 Star)",
+      "desc_zh": "所有较低级别的队友都会获得 +{{var_36}} 攻击评级。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    }
+  ]
+}

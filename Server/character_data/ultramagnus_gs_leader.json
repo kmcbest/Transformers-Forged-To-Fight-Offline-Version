@@ -1,0 +1,164 @@
+{
+  "bot_id": "ultramagnus_gs_leader",
+  "name_zh": "通天晓",
+  "name_en": "Ultra Magnus",
+  "faction": "autobot",
+  "class": "tact",
+  "signature": {
+    "title_zh": "人人为我",
+    "title_en": "All for One",
+    "desc_zh": "通天晓为每位活着的队友和每位对手倒下的队友增加攻击力，并为每位倒下的队友和每位对手活着的队友增加物理抗性。\n\n被动：如果活着的队友多于死亡的队友或通天晓独自一人，他会获得+{{var_11}}物理抗性。如果死亡的队友多于活着的或平局的队友，通天晓将获得 {{var_12}} 攻击评级。如果所有队友都死了，他就会获得这两种效果。\n\n+每级大约 {{var_13}}\n\n攻击增益仅影响指挥官的马格努斯，而不影响野外的 AI。",
+    "pua_icon": "",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "槌碎",
+      "name_en": "Gavel Crush",
+      "desc_zh": "移除对方身上所有护甲增益，并按护甲层数施加16.2%的破甲（对方身上如果没有护甲增益，也会施加一层破甲），持续10秒。",
+      "pua_icon": "0xe516",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "我为人人",
+      "name_en": "One for All",
+      "desc_zh": "75%的护甲穿透",
+      "pua_icon": "0xe409",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "代表作",
+      "name_en": "Magnus Opus",
+      "desc_zh": "",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "受到攻击时：",
+      "title_en": "When Attacked:",
+      "desc_zh": "受到攻击时：",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "When struck by Physical Attacks, his Resistance against Physical Attacks goes up by {{var_1}} (Max: 10 Stacks). One stack of Energy Resistance is lost.",
+      "desc_zh": "当受到物理攻击时，他对物理攻击的抵抗力会增加{{var_1}}（最多：10层）。一层能量抗性消失。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "When struck by Energy Attacks, his Resistance against Energy Attacks goes up by {{var_2}} (Max: 10 Stacks). One stack of Physical Resistance is lost.",
+      "desc_zh": "当受到能量攻击时，他对能量攻击的抵抗力会增加 {{var_2}}（最多：10 层）。失去一层物理抗性。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "轻或中度连击的最后一击：",
+      "title_en": "Last hit of a light or medium combo:",
+      "desc_zh": "轻或中度连击的最后一击：",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "Each time Ultra Magnus completes a Light Melee Combo, his Resistance against Physical Attacks goes up by {{var_3}} (Max: 10 Stacks). One stack of Energy Resistance is lost.",
+      "desc_zh": "通天晓每次完成轻型近战连击时，他对物理攻击的抵抗力都会提高 {{var_3}}（最多：10 层）。一层能量抗性消失。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "Each time Ultra Magnus completes a Medium Melee Combo, his Resistance against Energy Attacks goes up by {{var_4}} (Max: 10 Stacks). One stack of Physical Resistance is lost.",
+      "desc_zh": "每次通天晓完成中型近战连击时，他对能量攻击的抵抗力就会增加 {{var_4}}（最多：10 层）。失去一层物理抗性。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "Ranged Attacks: {{var_5}} chance to Nullify an Attack or Melee Buff.",
+      "desc_zh": "远程攻击：{{var_5}} 几率无效攻击或近战增益。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "Heavy Attacks: {{var_6}} chance to inflict Burn, dealing Heat damage for {{var_7}} Attack over <s>6</s> {{var_8}}.",
+      "desc_zh": "重击：{{var_6}} 几率造成燃烧，对 {{var_7}} 攻击造成热伤害，超过 <s>6</s> {{var_8}}。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "Special Attacks: Ultra Magnus crushes opponents with his hammer, converting Armor Buffs into Armor Breaks, each applying {{var_9}} Armor reduction for {{var_10}}.",
+      "desc_zh": "特殊技：通天晓用他的锤子粉碎对手，将装甲增益转化为装甲破坏，每次都会对 {{var_10}} 施加 {{var_9}} 装甲减少。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "与阿尔茜合而为一",
+      "title_en": "Till All Are One with Arcee",
+      "desc_zh": "+{{var_27}}~{{var_28}} 汽车人攻击评级。 +{{var_29}}~{{var_30}} 突袭中汽车人的减益伤害。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "与钢锁、爆能者结盟",
+      "title_en": "Allies with Grimlock, Blaster",
+      "desc_zh": "+{{var_31}}~{{var_32}} 装甲。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "与潜行者的盟友",
+      "title_en": "Allies with Prowl",
+      "desc_zh": "+{{var_33}}~{{var_34}} 装甲。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "与惊破天、狂飙为敌",
+      "title_en": "Enemies with Galvatron, Cyclonus",
+      "desc_zh": "+{{var_35}}~{{var_36}} 攻击评级。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "战火兄弟连与警车",
+      "title_en": "Brothers in Arms with Prowl",
+      "desc_zh": "+{{var_37}}~{{var_38}} 汽车人装甲。 +{{var_39}}~{{var_40}} 单人任务中汽车人的近战伤害。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "领袖威仪 (5星)",
+      "title_en": "Leadership (5 Star)",
+      "desc_zh": "作为领导的灯塔，所有低级别队友都获得 +{{var_41}} 装甲等级。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    }
+  ]
+}

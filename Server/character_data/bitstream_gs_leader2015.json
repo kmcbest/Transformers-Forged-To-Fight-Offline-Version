@@ -1,0 +1,85 @@
+{
+  "bot_id": "bitstream_gs_leader2015",
+  "name_zh": "比特流",
+  "name_en": "Bitstream",
+  "faction": "decepticon",
+  "class": "tech",
+  "signature": {
+    "title_zh": "零日漏洞拦截",
+    "title_en": "Zero-Day Exploit",
+    "desc_zh": "当敌方蓄满任意一整格能量时，有 [40% - 75%] 概率退回其刚获取的该格能量，并对其施加持续 [3 - 5] 秒的能量锁定减益，阻止其获得能量和释放特殊技。",
+    "pua_icon": "0xe523",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "干扰脉冲",
+      "name_en": "Scramble Pulse",
+      "desc_zh": "最后一击命中 100% 概率施加能量锁定减益，阻止对方获得能量和释放特殊技，持续 3.5 秒；50% 概率施加眩晕减益，持续 1.5 秒。",
+      "pua_icon": "0xe523",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "逻辑蠕虫",
+      "name_en": "Logic Worm",
+      "desc_zh": "最后一击命中 100% 概率触发能量窃取，窃取对手当前能量值的 20% 转化为自身能量；并施加持续 5 秒的能量流失减益，在持续时间内扣除对方 1 格能量的 60%。",
+      "pua_icon": "0xe607",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "全盘系统重置",
+      "name_en": "Kernel Wipeout",
+      "desc_zh": "最后一击 100% 概率即时扣除对方全部现有能量；技能结束后 100% 概率施加能量锁定减益，持续 6 秒，并施加 25% 的攻击减益，持续 6 秒。",
+      "pua_icon": "0xe523",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "网络干扰射击",
+      "title_en": "Data Scramble Shot",
+      "desc_zh": "远程射击注入数据木马，使敌人无法使用特殊技 3 秒，并扰乱其能量条。",
+      "pua_icon": "",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "数据防火墙",
+      "title_en": "Firewall Protocol",
+      "desc_zh": "战斗开始时获得 4 个护盾增益，每个护盾增益将一次攻击造成的伤害上限限制为对手攻击力的 75%。被近战攻击命中或者防御攻击时消耗一个护盾。护盾全消耗完之后触发系统反噬：对敌人施加震击减益，造成攻击力 50% 的伤害，持续 4 秒，并进入 10 秒充能状态，倒计时结束后重新获得 4 个护盾。",
+      "pua_icon": "0xe515",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "网络电子战同盟",
+      "title_en": "Cyber Warfare",
+      "desc_zh": "与声波、震荡波同队时，能量获取率提升 {{var_1}}。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "soundwave_gs",
+        "shockwave_gs"
+      ]
+    },
+    {
+      "title_zh": "寻猎空军",
+      "title_en": "Seekers",
+      "desc_zh": "与红蜘蛛同队时，获得 +{{var_2}} 破甲。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "fte_stars_gs_t3"
+      ]
+    },
+    {
+      "title_zh": "领袖威仪 (5星)",
+      "title_en": "Leadership (5 Star)",
+      "desc_zh": "团队所有低星级队员获得 +{{var_3}} 暴击率。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    }
+  ]
+}

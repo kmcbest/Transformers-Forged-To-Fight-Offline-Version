@@ -1,0 +1,137 @@
+{
+  "bot_id": "necrotronus_gs_kabam",
+  "name_zh": "亡灵天尊",
+  "name_en": "Necrotronus",
+  "faction": "decepticon",
+  "class": "warr",
+  "signature": {
+    "title_zh": "愤怒",
+    "title_en": "Outrage",
+    "desc_zh": "泰坦充能最大值提升为40。当势不可挡的力量激活时，暴击伤害增加80.3%",
+    "pua_icon": "E906",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "起起落落",
+      "name_en": "Fall and Rise Again",
+      "desc_zh": "60%概率得到30%的能量功率增益，持续6秒\n技能命中消耗10层泰坦充能",
+      "pua_icon": "E606",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "两种看法",
+      "name_en": "Two Minds",
+      "desc_zh": "65%的概率得到20%的暴击几率增益，持续12秒\n技能命中消耗15层泰坦充能",
+      "pua_icon": "E40D",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "时间的主人",
+      "name_en": "Master of Timelines",
+      "desc_zh": "85%概率施加流血，造成攻击力40%的伤害，持续7秒。\n技能命中消耗20层泰坦充能",
+      "pua_icon": "E401",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "能量获取削弱",
+      "title_en": "Power Rate Down",
+      "desc_zh": "降低对手获取能量的速率。",
+      "pua_icon": "",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "绝对压制",
+      "title_en": "Overwhelming Power",
+      "desc_zh": "降低对手格挡效能并削弱其对抗近战攻击的防御。",
+      "pua_icon": "",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "流血",
+      "title_en": "Bleed",
+      "desc_zh": "能量液流失造成持续直接伤害。",
+      "pua_icon": "",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "不可阻挡",
+      "title_en": "Unstoppable",
+      "desc_zh": "对方发动特殊技时，我方有30%的概率获得不可阻挡增益，持续0.95秒",
+      "pua_icon": "0xe915",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "暴击几率",
+      "title_en": "Crit Rate",
+      "desc_zh": "重击命中时，每个泰坦充能增加1%的的暴击几率",
+      "pua_icon": "0xe40d",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "规避克制",
+      "title_en": "Anti Evade",
+      "desc_zh": "近战攻击降低对手20%的规避几率",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "onDodge",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "",
+      "title_en": "",
+      "desc_zh": "渴望 - 威震天 - 使用 {{var_12}}~{{var_13}} 泰坦冲锋开始战斗。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "",
+      "title_en": "",
+      "desc_zh": "消耗的力量 - 威震天 - +{{var_14}}~{{var_15}} 当威震天拥有比对手更多的力量时的暴击率。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "",
+      "title_en": "",
+      "desc_zh": "门徒 - Nemesis Prime、Bludgeon - 当你的机器人的力量低于对手时，+{{var_16}}~{{var_17}} 力量增益。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "",
+      "title_en": "",
+      "desc_zh": "Cityspeaker - Windblade - +{{var_18}}~{{var_19}} 剑攻击带来的力量增益。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "",
+      "title_en": "",
+      "desc_zh": "泰坦猎人 - 雷霆、黄蜂 - +{{var_20}}~{{var_21}} 穿甲。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "领袖威仪 (5星)",
+      "title_en": "Leadership (5 Star)",
+      "desc_zh": "作为领导者的灯塔，所有较低级别的队友都获得+{{var_22}}暴击率。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    }
+  ]
+}

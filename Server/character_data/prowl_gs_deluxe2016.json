@@ -1,0 +1,143 @@
+{
+  "bot_id": "prowl_gs_deluxe2016",
+  "name_zh": "警车",
+  "name_en": "Prowl",
+  "faction": "autobot",
+  "class": "scou",
+  "signature": {
+    "title_zh": "好警察",
+    "title_en": "Good Cop",
+    "desc_zh": "每次近战充能完毕（变橙色图标）时，每层充能获得4%的能量（以满能量槽计算）。",
+    "pua_icon": "0xe608",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "短路",
+      "name_en": "Short Circuit",
+      "desc_zh": "100%概率触发能量燃烧，0.5秒内扣减对方最大能量（按三格满计）的40.5%",
+      "pua_icon": "0xe607",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "枪手",
+      "name_en": "Gunslinger",
+      "desc_zh": "远程伤害提升50%，远程射速提升50%，持续6秒",
+      "pua_icon": "0xe41b",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "运输护卫",
+      "name_en": "Ride Shotgun",
+      "desc_zh": "技能结束时100%概率触发能量锁定，阻止对方获得能量，持续16秒",
+      "pua_icon": "0xe523",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "近战增益",
+      "title_en": "Melee Buff",
+      "desc_zh": "后闪一次开始充近战增益。\n0.5秒充一层，最多10层。\n充能过程中，有54%的概率规避对方近战、远程或特殊攻击\n充到10层或者被打断后，灰色图标变成橙色图标，每层增加11%的近战伤害，持续6秒。\n打断条件：警车前冲，被对方击中，近战击中对方，触发规避。",
+      "pua_icon": "0xe412",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "远程眩晕",
+      "title_en": "Ranged Stun",
+      "desc_zh": "远程的第一枪有10%的概率眩晕对手1.5秒。\n如果警车正在近战增益充能中，眩晕概率提高到80%",
+      "pua_icon": "0xe605",
+      "category": "passive",
+      "ui_trigger": "onBasicRange",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "盟友",
+      "title_en": "Allies",
+      "desc_zh": "{{var_17}}~{{var_18}} 装甲。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "ultramagnus_gs_leader"
+      ]
+    },
+    {
+      "title_zh": "并肩作战",
+      "title_en": "Brothers in Arms",
+      "desc_zh": "{{var_19}}~{{var_20}} 汽车人装甲。 {{var_21}}~{{var_22}} 在单人任务中对汽车人的近战伤害。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "ultramagnus_gs_leader"
+      ]
+    },
+    {
+      "title_zh": "盟友",
+      "title_en": "Allies",
+      "desc_zh": "{{var_23}}~{{var_24}} 装甲。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "arcee_gs_deluxe2014"
+      ]
+    },
+    {
+      "title_zh": "守则 12：鲁莽驾驶",
+      "title_en": "Code 12: Reckless Driving",
+      "desc_zh": "{{var_25}}~{{var_26}} 使用重击时 {{var_27}} 的攻击增益。堆叠这些增益会刷新整个堆叠的持续时间。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "sideswipe_gs",
+        "hotrod_cin_tlk",
+        "mirage_gs_deluxe2016"
+      ]
+    },
+    {
+      "title_zh": "宿敌",
+      "title_en": "Enemies",
+      "desc_zh": "{{var_28}}~{{var_29}} 攻击评级。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "barricade_cin_dotm",
+        "kickback_gs_kabam"
+      ]
+    },
+    {
+      "title_zh": "楷模榜样",
+      "title_en": "Role Models",
+      "desc_zh": "{{var_30}}~{{var_31}} 装甲。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "bumblebee_gs_kabam"
+      ]
+    },
+    {
+      "title_zh": "楷模榜样",
+      "title_en": "Role Models",
+      "desc_zh": "大黄蜂的重击为每个活着的团队成员获得 {{var_32}}~{{var_33}} 攻击增益。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "bumblebee_gs_kabam"
+      ]
+    },
+    {
+      "title_zh": "副官",
+      "title_en": "Lieutenants",
+      "desc_zh": "擎天柱获得 {{var_34}}~{{var_35}} 攻击力和装甲值，他的副官获得独特的能力。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "fte_optimus_gs_t3"
+      ]
+    },
+    {
+      "title_zh": "副官",
+      "title_en": "Lieutenants",
+      "desc_zh": "如果警车将对手的力量消耗至最大力量的 {{var_36}}，他有 {{var_37}}~{{var_38}} 的机会击晕对手 {{var_39}}。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "fte_optimus_gs_t3"
+      ]
+    }
+  ]
+}

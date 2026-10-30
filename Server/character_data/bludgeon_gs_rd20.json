@@ -1,0 +1,134 @@
+{
+  "bot_id": "bludgeon_gs_rd20",
+  "name_zh": "雷震",
+  "name_en": "Bludgeon",
+  "faction": "decepticon",
+  "class": "warr",
+  "signature": {
+    "title_zh": "金属武士道",
+    "title_en": "Metallikato",
+    "desc_zh": "精通古老的塞伯坦武术金属武士道，雷震需要全神贯注才能获得暴击伤害增益。\n\n被动：当雷震近战攻击未命中时，他摧毁对手的愿望变得更加强烈，为下一次暴击提供暴击伤害增益。",
+    "pua_icon": "0xe406",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "刀锋之道",
+      "name_en": "Way of the Blade",
+      "desc_zh": "棍棒从蹲伏的位置跳入圆屋，露出一把袖剑。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "畸变",
+      "name_en": "Aberrance",
+      "desc_zh": "那些害怕破坏 Metallikato 代码的人不喜欢获胜。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "特殊技 3",
+      "name_en": "Special Attack 3",
+      "desc_zh": "{{var_12}} 有机会击晕 {{var_13}}。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "剑刃攻击",
+      "title_en": "Blade Attacks",
+      "desc_zh": "暴击时有25%的概率触发流血，在5秒内造成攻击力120%的伤害。如果是特殊技中的剑刃暴击，概率+60%。",
+      "pua_icon": "0xe401",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "When Attacked: {{var_4}} chance to gain an Armor Buff when struck by Critical Hits, reducing damage from attacks by {{var_5}} for {{var_6}}seconds.",
+      "desc_zh": "受到攻击时：受到暴击时，{{var_4}} 有几率获得装甲增益，减少 {{var_5}} 攻击造成的伤害，持续 {{var_6}} 秒。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "强力重击",
+      "title_en": "Heavy Attacks:",
+      "desc_zh": "重击：",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "onHeavyHit",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "Renews the duration of Armor Up Buffs when Bludgeon turns into a Tank.",
+      "desc_zh": "当大棒变成坦克时，更新装甲增强增益的持续时间。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "{{var_7}} 有机会击晕 {{var_8}}。",
+      "title_en": "{{var_7}} chance to Stun for {{var_8}}.",
+      "desc_zh": "{{var_7}} 有机会击晕 {{var_8}}。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "盟友",
+      "title_en": "Allies",
+      "desc_zh": "+{{var_16}}~{{var_17}} 装甲。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "soundwave_gs",
+        "ramjet_gs_deluxe2008",
+        "kickback_gs_kabam"
+      ]
+    },
+    {
+      "title_zh": "宿敌",
+      "title_en": "Enemies",
+      "desc_zh": "+{{var_18}}~{{var_19}} 攻击评级。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "fte_optimus_gs_t3"
+      ]
+    },
+    {
+      "title_zh": "宿敌",
+      "title_en": "Enemies",
+      "desc_zh": "+{{var_20}}~{{var_21}} 攻击评级。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "jazz_gs_twm05",
+        "wheeljack_gs_mp20"
+      ]
+    },
+    {
+      "title_zh": "剑圣",
+      "title_en": "Swordmasters",
+      "desc_zh": "{{var_22}}~{{var_23}} 每次剑攻击的暴击伤害，在下一次暴击之前不会成为暴击。 （这不计算对具有有效暴击抗性增益的对手或当剑圣机器人具有有效暴击率减益时的命中。） 在单人任务中+{{var_24}}~{{var_25}}更多致命一击。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "windblade_gs",
+        "drift_cin_aoe",
+        "dinobot_bw_kabam"
+      ]
+    },
+    {
+      "title_zh": "领袖威仪 (5星)",
+      "title_en": "Leadership (5 Star)",
+      "desc_zh": "所有较低级别的队友都会获得 +{{var_26}} 暴击伤害。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    }
+  ]
+}

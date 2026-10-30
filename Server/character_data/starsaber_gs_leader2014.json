@@ -1,0 +1,68 @@
+{
+  "bot_id": "starsaber_gs_leader2014",
+  "name_zh": "史达",
+  "name_en": "Star Saber",
+  "faction": "autobot",
+  "class": "tact",
+  "signature": {
+    "title_zh": "",
+    "title_en": "",
+    "desc_zh": "",
+    "pua_icon": "",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "胜利飞斩",
+      "name_en": "Victory Slash",
+      "desc_zh": "",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "智者合体冲天击",
+      "name_en": "Brainset Buster",
+      "desc_zh": "王者之剑斩出十字极光波，削减敌方 {{var_3}} 护甲持续 {{var_4}} 秒，并使目标眩晕 {{var_5}} 秒。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "王者之剑·绝命制裁",
+      "name_en": "Cosmic Blade Judgment",
+      "desc_zh": "王者之剑化作神光从天而降，造成巨额真实伤害，自身获得持续 {{var_6}} 秒的领袖光环，提升 {{var_7}} 攻击力与护甲。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [],
+  "synergies": [
+    {
+      "title_zh": "总司令官同盟",
+      "title_en": "Supreme Commanders",
+      "desc_zh": "与擎天柱、补天士、通天晓同队时，全队获得 +{{var_2}} 攻击力与护甲。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "fte_optimus_gs_t3",
+        "rodimusprime_gs_mp09",
+        "ultramagnus_gs_leader"
+      ]
+    },
+    {
+      "title_zh": "剑客之道",
+      "title_en": "Way of the Blade",
+      "desc_zh": "与漂移、雷震同队或对战时，获得 +{{var_3}} 暴击伤害。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "drift_cin_aoe",
+        "bludgeon_gs_rd20"
+      ]
+    },
+    {
+      "title_zh": "领袖威仪 (5星)",
+      "title_en": "Leadership (5 Star)",
+      "desc_zh": "团队所有低星级队员获得 +{{var_4}} 能量获取速率。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    }
+  ]
+}

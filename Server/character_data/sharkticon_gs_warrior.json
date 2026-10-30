@@ -1,0 +1,59 @@
+{
+  "bot_id": "sharkticon_gs_warrior",
+  "name_zh": "饿鲨",
+  "name_en": "Sharkticon (Warrior)",
+  "faction": "decepticon",
+  "class": "warr",
+  "signature": {
+    "title_zh": "鲨鱼强化",
+    "title_en": "Shark Enhancement",
+    "desc_zh": "唤醒这只 Sharkticon 可以利用新昆塔萨上一些最强大的机器人的能力来增强它。\n\n该机器人只有在其招牌能力被唤醒后才能解锁能力。提高该机器人的签名级别以提高其能力。\n\n（只有当鲨鱼提克觉醒了这个招牌能力时，他们才能使用他们的能力，这是其他同类机器人中最强大的能力和特殊技能力。）",
+    "pua_icon": "",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "特殊技 1",
+      "name_en": "Special Attack 1",
+      "desc_zh": "3. 鲨鱼袭击 - 这些鲨鱼在陆地上同样致命。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "",
+      "name_en": "",
+      "desc_zh": "",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "",
+      "name_en": "",
+      "desc_zh": "",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "重击流血",
+      "title_en": "Heavy Attacks Bleed",
+      "desc_zh": "重击命中时：70%几率触发流血，造成攻击力45%的伤害，持续5.6秒。",
+      "pua_icon": "0xe401",
+      "category": "passive",
+      "ui_trigger": "onHeavyHit",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "鲨鱼狂潮",
+      "title_en": "Shark Frenzy",
+      "desc_zh": "如果您的整个团队由 Sharkticons 组成，则在使用特殊技 3 时，所有 Sharkticons 都会为您团队中的每个 Alive 机器人恢复 {{var_1}}~{{var_2}} 生命值。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "sharkticon_gs_kabam"
+      ]
+    }
+  ]
+}

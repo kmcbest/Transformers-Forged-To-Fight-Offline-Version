@@ -1,0 +1,103 @@
+{
+  "bot_id": "rodimusprime_gs_mp09",
+  "name_zh": "补天士",
+  "name_en": "Rodimus Prime",
+  "faction": "autobot",
+  "class": "tact",
+  "signature": {
+    "title_zh": "补天士崛起",
+    "title_en": "Arise Rodimus Prime",
+    "desc_zh": "当形势对他不利时，补天士会在Primes的力量的推动下更加努力地战斗。\n\n被动：\n\n每失去 {{var_13}} 生命值，补天士 Prime 就会获得 +{{var_12}} 攻击评级。对于故事或事件任务的最终 Boss，该值会加倍。\n\n+{{var_14}} 每级",
+    "pua_icon": "",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "敢于相信",
+      "name_en": "Dare to Believe",
+      "desc_zh": "补天士手中掌握着未来！",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "特殊技 2",
+      "name_en": "Special Attack 2",
+      "desc_zh": "激活后，将不可阻挡者从对手身上移除。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "特殊技 3",
+      "name_en": "Special Attack 3",
+      "desc_zh": "{{var_15}} 次机会无效化对手 1 个增益。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "前冲净化",
+      "title_en": "Dashing Purify",
+      "desc_zh": "前冲时有70%的概率净化补天士身上的一个减益。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "近战驱散",
+      "title_en": "Melee Nullify",
+      "desc_zh": "近战组合的最后一击（M2或者L2）命中时：\n50%的概率驱散对方一个近战增益\n50%的概率驱散对方一个护甲增益",
+      "pua_icon": "0xe950",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "重击破甲",
+      "title_en": "Heavy Attack Armor Break",
+      "desc_zh": "重击命中时，对方身上有几个增益，就施加几层破甲，每层强度15%，持续7秒。同时移除对方身上所有的护甲增益。",
+      "pua_icon": "0xe516",
+      "category": "passive",
+      "ui_trigger": "onHeavyHit",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "宿敌",
+      "title_en": "Enemies",
+      "desc_zh": "+{{var_26}}~{{var_27}} 攻击评级。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "galvatron_gs_voyager2016"
+      ]
+    },
+    {
+      "title_zh": "汽车人领袖",
+      "title_en": "Autobot Leaders",
+      "desc_zh": "所有汽车人对抗霸天虎时都会获得 +{{var_28}}~{{var_29}} 破甲穿透。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "fte_optimus_gs_t3",
+        "ultramagnus_gs_leader"
+      ]
+    },
+    {
+      "title_zh": "奇怪的时代",
+      "title_en": "Strange Times",
+      "desc_zh": "增加 {{var_30}}~{{var_31}} 触发减速的机会。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "hotrod_cin_tlk"
+      ]
+    },
+    {
+      "title_zh": "领袖威仪 (5星)",
+      "title_en": "Leadership (5 Star)",
+      "desc_zh": "作为领导的灯塔，所有低级别队友都获得 +{{var_32}} 装甲等级。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    }
+  ]
+}

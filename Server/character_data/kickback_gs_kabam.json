@@ -1,0 +1,79 @@
+{
+  "bot_id": "kickback_gs_kabam",
+  "name_zh": "反冲",
+  "name_en": "Kickback",
+  "faction": "decepticon",
+  "class": "scou",
+  "signature": {
+    "title_zh": "T-齿轮破坏",
+    "title_en": "T-Cog Sabotage",
+    "desc_zh": "重击命中有80%的概率破坏对手的变形齿轮，对手能量获取功率降低30%，持续10秒。\n如果对手此时使用重击，重击会失败且对手会眩晕2秒。",
+    "pua_icon": "E60F",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "震击伤口",
+      "name_en": "Shock in the Wounds",
+      "desc_zh": "",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "划破",
+      "name_en": "Lacerate",
+      "desc_zh": "",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "需要投喂",
+      "name_en": "Need to Feed",
+      "desc_zh": "",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [],
+  "synergies": [
+    {
+      "title_zh": "盟友",
+      "title_en": "Allies",
+      "desc_zh": "{{var_37}}~{{var_38}} 装甲。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "soundwave_gs",
+        "bludgeon_gs_rd20",
+        "cyclonus_gs_uw06"
+      ]
+    },
+    {
+      "title_zh": "宿敌",
+      "title_en": "Enemies",
+      "desc_zh": "{{var_39}}~{{var_40}} 攻击评级。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "prowl_gs_deluxe2016",
+        "grimlock_gs_mp08",
+        "jetfire_gs_leader2014"
+      ]
+    },
+    {
+      "title_zh": "执行者",
+      "title_en": "Enforcers",
+      "desc_zh": "减益效果持续 {{var_41}}~{{var_42}} 的时间更长且无法净化。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "motormaster_gs_voyager2015",
+        "ramjet_gs_deluxe2008"
+      ]
+    },
+    {
+      "title_zh": "领袖威仪 (5星)",
+      "title_en": "Leadership (5 Star)",
+      "desc_zh": "+{{var_43}} 临界评级。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    }
+  ]
+}

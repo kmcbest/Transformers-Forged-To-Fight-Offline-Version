@@ -1,0 +1,88 @@
+{
+  "bot_id": "dragstrip_gs_deluxe2016",
+  "name_zh": "抢劫",
+  "name_en": "Dragstrip",
+  "faction": "decepticon",
+  "class": "warr",
+  "signature": {
+    "title_zh": "卑鄙胜者",
+    "title_en": "Dirty Victory",
+    "desc_zh": "重击命中有45%概率窃取对方最大能量的10%，并施加1层流血，造成攻击力40%的伤害，持续5秒。",
+    "pua_icon": "E607",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "重力爆冲",
+      "name_en": "Graviton Dash",
+      "desc_zh": "六轮赛车形态贴地极速爆冲，造成破甲降低对手 {{var_1}} 护甲持续 {{var_2}} 秒，并施加流血在 {{var_3}} 秒内造成 {{var_4}} 伤害。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "等离子过载连击",
+      "name_en": "Plasma Overdrive",
+      "desc_zh": "极速绕后连击并在零距离倾泻等离子流，对敌方施加燃烧与流血，在 {{var_5}} 秒内造成 {{var_6}} 复合伤害。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "致命方格旗",
+      "name_en": "Chequered Carnage",
+      "desc_zh": "致命方格旗全速狂飙碾压，自身获得残暴增益，提升 {{var_7}} 攻击力持续 {{var_8}} 秒。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "不可防御",
+      "title_en": "Unblockable",
+      "desc_zh": "发动前冲攻击时有25%的概率不可防御",
+      "pua_icon": "E41F",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "修复",
+      "title_en": "Repair",
+      "desc_zh": "成功叠加3层流血时，停止对手流血减益并触发修复，4秒内回复5%的最大生命值。",
+      "pua_icon": "E503",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "飞天虎 (Menasor)",
+      "title_en": "Menasor",
+      "desc_zh": "战斗开始时获得 {{var_4}}~{{var_5}} 初始能量与 +{{var_6}} 攻击力和护甲。仅当队伍中所有成员均具有此协同（飞虎队全员）时激活。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "motormaster_gs_voyager2015",
+        "deadend_gs_deluxe2015",
+        "breakdown_gs",
+        "wildrider_gs_deluxe2016"
+      ]
+    },
+    {
+      "title_zh": "极速对决",
+      "title_en": "Speed Rivals",
+      "desc_zh": "与幻影、大黄蜂同队或对战时，获得 +{{var_7}} 暴击伤害。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "mirage_gs_deluxe2016",
+        "bumblebee_gs_kabam"
+      ]
+    },
+    {
+      "title_zh": "领袖威仪 (5星)",
+      "title_en": "Leadership (5 Star)",
+      "desc_zh": "团队所有低星级队员获得 +{{var_8}} 护甲穿透。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    }
+  ]
+}

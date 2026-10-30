@@ -1,0 +1,103 @@
+{
+  "bot_id": "hotrod_cin_tlk",
+  "name_zh": "热破",
+  "name_en": "Hot Rod",
+  "faction": "autobot",
+  "class": "warr",
+  "signature": {
+    "title_zh": "加速 - 成功连接特殊技会使 Hot Rod 的引擎超频，暂时增加他的攻击能量流和躲避远程攻击。",
+    "title_en": "Acceleration - Successfully connecting with a Special Attack overclocks Hot Rod’s engines, temporarily increasing his Power Flow on attacks and Evading Ranged Attacks.",
+    "desc_zh": "特殊技：超频 Hot Rod 的引擎，增加 {{var_8}} 对 {{var_9}} 攻击的功率流。此外，当加速处于活动状态时，Hot Rod 有 {{var_10}} 几率躲避远程攻击。\n\n每级 +{{var_11}}",
+    "pua_icon": "",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "惩罚回旋",
+      "name_en": "Punishing Pirouette",
+      "desc_zh": "一阵空中踢击将对手击倒。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "时间篡改",
+      "name_en": "Time Tampering",
+      "desc_zh": "",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "时间泡泡爆破",
+      "name_en": "Time Bubble Blast",
+      "desc_zh": "",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "减速",
+      "title_en": "Deceleration",
+      "desc_zh": "远程攻击命中或被防御时，有60%的概率施加减速，持续3.2秒。",
+      "pua_icon": "E952",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "眩晕",
+      "title_en": "Stun",
+      "desc_zh": "重击暴击时有40%的概率造成眩晕，持续1.5秒",
+      "pua_icon": "E605",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "代码 12：鲁莽驾驶（警车）",
+      "title_en": "Code 12: Reckless Driving (Prowl)",
+      "desc_zh": "+{{var_14}}~{{var_15}} 使用重击时 {{var_16}} 的攻击增益。堆叠这些增益会刷新整个堆叠的持续时间。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "敌人（街垒）",
+      "title_en": "Enemies (Barricade)",
+      "desc_zh": "+{{var_17}}~{{var_18}} 攻击评级。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "赛车对手（幻影）",
+      "title_en": "Racing Rivals (Mirage)",
+      "desc_zh": "{{var_19}}~{{var_20}} 严重损坏。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "战友（大黄蜂）",
+      "title_en": "Brother in Arms (Bumblebee)",
+      "desc_zh": "汽车人在单人任务中获得+{{var_21}}~{{var_22}}装甲和+{{var_23}}~{{var_24}}近战伤害。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "盟友",
+      "title_en": "Allies",
+      "desc_zh": "{{var_25}}~{{var_26}} 装甲。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "bumblebee_gs_kabam"
+      ]
+    },
+    {
+      "title_zh": "领袖威仪 (5星)",
+      "title_en": "Leadership (5 Star)",
+      "desc_zh": "所有较低级别的队友都会获得 +{{var_27}} 暴击伤害。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    }
+  ]
+}

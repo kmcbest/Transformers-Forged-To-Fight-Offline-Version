@@ -1,0 +1,177 @@
+{
+  "bot_id": "soundwave_gs",
+  "name_zh": "声波",
+  "name_en": "Soundwave",
+  "faction": "decepticon",
+  "class": "tech",
+  "signature": {
+    "title_zh": "音波护盾",
+    "title_en": "Sonic Shield",
+    "desc_zh": "声波投射出一个音波护盾，赋予他能量抵抗力并有机会反射传入的远程攻击。\n\n当填充能量条时：声波投射一个音波护盾，赋予他 {{var_5}} 能量抗性，并有 {{var_6}} 几率反射传入的远程攻击，造成 {{var_7}} 的原始伤害。\n\n+每级大约 {{var_8}}",
+    "pua_icon": "",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "音波炮",
+      "name_en": "Sonic Cannon",
+      "desc_zh": "听着这个，你的耳朵会燃烧。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "特殊技 2",
+      "name_en": "Special Attack 2",
+      "desc_zh": "{{var_9}} 有机会击晕 {{var_10}}。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "特殊技 3",
+      "name_en": "Special Attack 3",
+      "desc_zh": "{{var_11}} 有机会发生电源泄漏，消耗电源条的 {{var_12}} 超过 {{var_13}}。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "震击",
+      "title_en": "Shock",
+      "desc_zh": "重击命中100%的概率施加震击，造成攻击50%的伤害，持续6秒。",
+      "pua_icon": "E914",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "能量涌动",
+      "title_en": "Power Flow",
+      "desc_zh": "声波的普通近战和普通远程攻击不产生能量\n重击命中后获得能量涌动增益，每秒产生最大能量的5.7%，直到充满2格能量或者释放特殊技",
+      "pua_icon": "E608",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "Passive: Soundwave does not generate Power from hitting opponents, use his Heavy and Special Attacks to generate Power instead.",
+      "desc_zh": "被动：声波不会通过击中对手来产生能量，而是使用他的重击和特殊技来产生能量。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "强力重击",
+      "title_en": "Heavy Attacks:",
+      "desc_zh": "重击：",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "onHeavyHit",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "Generates {{var_1}} of a Power Bar per second until a Special Attack is activated or upon gaining 2 bars of Power.",
+      "desc_zh": "每秒生成 {{var_1}} 能量条，直到激活特殊技或获得 2 条能量为止。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "{{var_2}} chance to inflict Shock, dealing Shock Damage for {{var_3}} Attack over {{var_4}}.",
+      "desc_zh": "{{var_2}} 有机会造成触电，{{var_3}} 攻击对 {{var_4}} 造成感应触电伤害。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "盟友",
+      "title_en": "Allies",
+      "desc_zh": "+{{var_23}}~{{var_24}} 装甲。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "ramjet_gs_deluxe2008",
+        "bludgeon_gs_rd20",
+        "kickback_gs_kabam"
+      ]
+    },
+    {
+      "title_zh": "宿敌",
+      "title_en": "Enemies",
+      "desc_zh": "{{var_25}}~{{var_26}} 攻击评级。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "fte_optimus_gs_t3"
+      ]
+    },
+    {
+      "title_zh": "宿敌",
+      "title_en": "Enemies",
+      "desc_zh": "{{var_27}}~{{var_28}} 攻击评级。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "blaster_gs_leader2016"
+      ]
+    },
+    {
+      "title_zh": "屏蔽放大器",
+      "title_en": "Shield Amp",
+      "desc_zh": "屏蔽时{{var_29}}~{{var_30}}伤害减少。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "mirage_gs_deluxe2016",
+        "rhinox_gs_voyager2014"
+      ]
+    },
+    {
+      "title_zh": "大脑增益",
+      "title_en": "Brain Gain",
+      "desc_zh": "声波在战斗开始时将其对拆除机器人的攻击力提高 {{var_31}}~{{var_32}}。仅当团队中的所有机器人都具有此协同羁绊时，冲击波才能受益于此奖励。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "shockwave_gs"
+      ]
+    },
+    {
+      "title_zh": "心智压榨",
+      "title_en": "Brain Drain",
+      "desc_zh": "Shockwave 的冲击持续 {{var_33}}~{{var_34}} 的时间更长。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "shockwave_gs"
+      ]
+    },
+    {
+      "title_zh": "直到一切都是我们的",
+      "title_en": "Till All is Ours",
+      "desc_zh": "所有霸天虎都会获得 {{var_35}}~{{var_36}} 对汽车人的攻击力。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "megatron_gs_leader2015"
+      ]
+    },
+    {
+      "title_zh": "粘在一起",
+      "title_en": "Taped Together",
+      "desc_zh": "重击伤害增加 {{var_37}}~{{var_38}}。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "soundblaster_gs_mp13b"
+      ]
+    },
+    {
+      "title_zh": "领袖威仪 (5星)",
+      "title_en": "Leadership (5 Star)",
+      "desc_zh": "+{{var_39}} 所有较低级别队友的功率率。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    }
+  ]
+}

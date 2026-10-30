@@ -1,0 +1,195 @@
+{
+  "bot_id": "jazz_gs_twm05",
+  "name_zh": "爵士",
+  "name_en": "Jazz",
+  "faction": "autobot",
+  "class": "scou",
+  "signature": {
+    "title_zh": "精疲力尽",
+    "title_en": "Exhaustion",
+    "desc_zh": "有时让困惑的对手疲惫不堪是值得的。\n\n困惑的对手：困惑时，对手每次未命中的攻击都有 {{var_9}} 几率失去 {{var_10}} 的当前力量。如果对手的能量条下降到较低的水平，他们就会因 {{var_11}} 而被击晕。",
+    "pua_icon": "",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "风车",
+      "name_en": "Windmill",
+      "desc_zh": "爵士开始实施他的计划。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "特殊技 2",
+      "name_en": "Special Attack 2",
+      "desc_zh": "每次击中困惑的对手都有 {{var_12}} 机会击晕对手 {{var_13}}。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "炫目展示",
+      "name_en": "Dazzling Display",
+      "desc_zh": "混乱比比皆是。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "强力重击",
+      "title_en": "Heavy Attacks:",
+      "desc_zh": "重击：",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "onHeavyHit",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "{{var_1}} Chance to Confuse the opponent, lowering their Attack Rating by {{var_2}} and increasing the chance they will use a Special Attack for {{var_3}} or until their next Special Attack ends.",
+      "desc_zh": "{{var_1}} 有机会迷惑对手，降低他们的攻击评级 {{var_2}}，并增加他们使用 {{var_3}} 特殊技的机会，或者直到他们的下一次特殊技结束。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "If the opponent is not already Confused, Heavy Attacks grant {{var_4}} less Power to the opponent.",
+      "desc_zh": "如果对手尚未混乱，重击会给予对手 {{var_4}} 更少的力量。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "避免特殊技",
+      "title_en": "Avoiding Special Attacks",
+      "desc_zh": "避免特殊技",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "If Jazz avoids being struck by the first hit of a Special Attack he gains an Evasion Buff, granting a {{var_5}} chance to Evade all attacks for {{var_6}}.",
+      "desc_zh": "如果爵士避免被特殊技的第一击击中，他将获得回避增益，从而获得 {{var_5}} 的机会来回避 {{var_6}} 的所有攻击。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "组合仪表：",
+      "title_en": "Combo Meter:",
+      "desc_zh": "组合仪表：",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "Every 5 hits on the Combo Meter, Autobot Jazz gains a Critical Rate Buff, increasing Critical Chance by {{var_7}} until he is next hit.",
+      "desc_zh": "每击中连击计 5 次，汽车人爵士就会获得暴击率增益，将暴击率提高 {{var_7}}，直到他受到下一次击中。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "暴击触发",
+      "title_en": "Critical Hits",
+      "desc_zh": "热门歌曲",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "Critical Hits have +{{var_8}} Critical Damage against Stunned opponents.",
+      "desc_zh": "暴击对被眩晕的对手有 +{{var_8}} 暴击伤害。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "盟友——棘轮、钢锁",
+      "title_en": "Allies – Ratchet, Grimlock",
+      "desc_zh": "+{{var_18}}~{{var_19}} 装甲。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "敌人——威震天、红蜘蛛、大棒",
+      "title_en": "Enemies – Megatron, Starscream, Bludgeon",
+      "desc_zh": "+{{var_20}}~{{var_21}} 攻击评级。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "楷模榜样",
+      "title_en": "Role Models",
+      "desc_zh": "大黄蜂的重击为每个活着的团队成员获得 +{{var_22}}~{{var_23}} 攻击增益。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "bumblebee_gs_kabam"
+      ]
+    },
+    {
+      "title_zh": "楷模榜样",
+      "title_en": "Role Models",
+      "desc_zh": "Bumbelee 获得了一项新能力，并为他的榜样授予 +{{var_24}}~{{var_25}} 装甲值。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "bumblebee_gs_kabam"
+      ]
+    },
+    {
+      "title_zh": "中尉——擎天柱",
+      "title_en": "Lieutenants – Optimus Prime",
+      "desc_zh": "擎天柱获得 {{var_26}}~{{var_27}} 攻击力和装甲值，他的副官获得独特的能力。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "中尉——擎天柱",
+      "title_en": "Lieutenants – Optimus Prime",
+      "desc_zh": "每次爵士在对手的特殊技中避免所有命中，他都会获得攻击增益，在剩余的战斗中将他的攻击评级提高 {{var_28}}~{{var_29}}。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "破坏专家",
+      "title_en": "Sabotage Specialists",
+      "desc_zh": "+{{var_30}}~{{var_31}} 逆火伤害。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "slipstream_gs"
+      ]
+    },
+    {
+      "title_zh": "华丽六人组",
+      "title_en": "Magnificent Six",
+      "desc_zh": "当被击倒时，{{var_32}}~{{var_33}}有几率为{{var_35}}获得+{{var_34}}特殊伤害。每次击倒后增加 {{var_36}}。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "prowl_gs_deluxe2016",
+        "wheeljack_gs_mp20",
+        "sunstreaker_gs_deluxe2008"
+      ]
+    },
+    {
+      "title_zh": "领袖威仪 (5星)",
+      "title_en": "Leadership (5 Star)",
+      "desc_zh": "+{{var_37}} 临界评级。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    }
+  ]
+}

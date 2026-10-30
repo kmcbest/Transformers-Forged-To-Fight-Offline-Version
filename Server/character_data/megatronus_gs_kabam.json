@@ -1,0 +1,94 @@
+{
+  "bot_id": "megatronus_gs_kabam",
+  "name_zh": "震天尊",
+  "name_en": "Megatronus",
+  "faction": "decepticon",
+  "class": "demo",
+  "signature": {
+    "title_zh": "",
+    "title_en": "",
+    "desc_zh": "",
+    "pua_icon": "",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "权力掌握",
+      "name_en": "Grip of Power",
+      "desc_zh": "最后一击60%的概率施加破甲，移除对手一层护甲增益，施加30%的破甲减益，持续8秒",
+      "pua_icon": "0xe516",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "不可估量",
+      "name_en": "Beyond Measure",
+      "desc_zh": "最后一击不可防御",
+      "pua_icon": "0xe41f",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "真正的领袖",
+      "name_en": "Truly Prime",
+      "desc_zh": "最后一击100%概率施加黑暗燃烧，造成攻击力200%的即时伤害",
+      "pua_icon": "E810",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "火种源的能量",
+      "title_en": "Power from the Allspark",
+      "desc_zh": "震天尊的攻击和受到攻击不产生能量，他每秒自动产生最大能量的1.2%",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "狂怒遗迹",
+      "title_en": "Relic of Fury",
+      "desc_zh": "开局处于狂怒遗迹状态，此状态下攻击力提升60%，降低对手20%的格挡精通\n每充满一格能量，切换到保存遗迹",
+      "pua_icon": "E91A",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "保存遗迹",
+      "title_en": "Relic of Preservation",
+      "desc_zh": "此状态下伤害抗性提升60%\n此状态下，限制对方任何单次攻击的伤害上限为震天尊最大生命值的20%\n每充满一格能量，切换到保存遗迹",
+      "pua_icon": "E91A",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "不朽遗迹",
+      "title_en": "Relic of Immortality",
+      "desc_zh": "当震天尊生命值降到10%以下时，他会发光跃起震开对手并额外激活不朽遗迹，持续8秒，此期间震天尊免疫任何伤害\n一局只能激活一次不朽遗迹，如果震天尊开局生命值少于10%，不朽遗迹不会激活。",
+      "pua_icon": "E91A",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "暴击几率",
+      "title_en": "Crit Rate",
+      "desc_zh": "L4和M2命中时增加40%的暴击几率。",
+      "pua_icon": "0xe40d",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "黑暗燃烧",
+      "title_en": "Dark Burn",
+      "desc_zh": "重击命中100%概率施加黑暗燃烧，造成攻击力40%的即时伤害",
+      "pua_icon": "E810",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": []
+}

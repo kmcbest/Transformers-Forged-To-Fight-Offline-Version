@@ -1,0 +1,184 @@
+{
+  "bot_id": "soundblaster_gs_mp13b",
+  "name_zh": "音板",
+  "name_en": "Soundblaster",
+  "faction": "decepticon",
+  "class": "tact",
+  "signature": {
+    "title_zh": "信号扰乱 - Soundblaster 可以干扰对手的传感器，阻止他们使用自己的能力。",
+    "title_en": "Signal Scramble - Soundblaster can jam the opponent's sensors, preventing them from using their abilities.",
+    "desc_zh": "远程攻击：应用触发率减益效果，使敌人触发减益效果的几率降低 {{var_8}} 至 {{var_9}}。 [最大堆叠数：1]\n\n+{{var_10}} 每级",
+    "pua_icon": "",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "那兆赫兹！",
+      "name_en": "That Megahertz!",
+      "desc_zh": "快速的一二连击，将对手打飞。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "特殊技 2",
+      "name_en": "Special Attack 2",
+      "desc_zh": "{{var_11}} 有机会为 {{var_13}} 进行 {{var_12}} 破甲。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "特殊技 3",
+      "name_en": "Special Attack 3",
+      "desc_zh": "连击计数器每 20 次命中造成 +{{var_14}} 伤害",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "无源/组合仪表",
+      "title_en": "Passive/Combo Meter",
+      "desc_zh": "无源/组合仪表",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "Soundblaster records his Combo success, preventing his Combo Meter from being reset.",
+      "desc_zh": "Soundblaster 记录了他的连击成功，防止他的连击计被重置。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "If Soundblaster is hit by a Special Attack Critical Hit or Ranged Critical Hit, his Combo Meter is immediately reset.",
+      "desc_zh": "如果声爆者受到特殊技暴击或远程暴击，他的连击计数器会立即重置。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "远程射击",
+      "title_en": "Ranged Attacks",
+      "desc_zh": "远程攻击",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "onBasicRange",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "Soundblaster’s Ranged Attacks have a {{var_1}} chance to Nullify an Armor or Melee Buff on the opponent. Increase chance by {{var_2}} for each 5 points of Combo Meter.",
+      "desc_zh": "Soundblaster 的远程攻击有 {{var_1}} 几率无效化对手的装甲或近战增益。 Combo Meter 每 5 点，几率增加 {{var_2}}。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "强力重击",
+      "title_en": "Heavy Attack",
+      "desc_zh": "重击",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "onHeavyHit",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "Buzzsaw 发射 3 发追踪对手的子弹。",
+      "title_en": "Buzzsaw fires 3 shots that track the opponent.",
+      "desc_zh": "Buzzsaw 发射 3 发追踪对手的子弹。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "Hitting an Unstoppable enemy causes Stun for {{var_3}}.",
+      "desc_zh": "击中不可阻挡的敌人会导致 {{var_3}} 眩晕。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "特殊技",
+      "title_en": "Special Attacks",
+      "desc_zh": "特殊技",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "After ending a Special Attack, if Combo meter is even, Soundblaster gains {{var_4}} Attack Up for {{var_5}}.",
+      "desc_zh": "结束特殊技后，如果连击计数器为偶数，Soundblaster 将为 {{var_5}} 获得 {{var_4}} 攻击力提升。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "After ending a Special Attack, if Combo meter is odd, the opponent gets a -{{var_6}} Attack Debuff for {{var_7}}.",
+      "desc_zh": "特殊技结束后，如果连击计为奇数，对手将获得 {{var_7}} 的 -{{var_6}} 攻击减益效果。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "能量走私者",
+      "title_en": "Energon Smuggler",
+      "desc_zh": "远程攻击有 {{var_24}} 几率窃取对手当前能量条的 {{var_25}}~{{var_26}}。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "bumblebee_gs_kabam"
+      ]
+    },
+    {
+      "title_zh": "粘在一起",
+      "title_en": "Taped Together",
+      "desc_zh": "重击伤害增加 {{var_27}}~{{var_28}}。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "soundwave_gs",
+        "blaster_gs_leader2016"
+      ]
+    },
+    {
+      "title_zh": "放大的不和谐",
+      "title_en": "Amplified Dissonance",
+      "desc_zh": "减少对手的远程伤害{{var_29}}~{{var_30}}。 （3 星错误地说 {{var_31}}）",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "dirge_gs_deluxe2008"
+      ]
+    },
+    {
+      "title_zh": "认识你的创造者",
+      "title_en": "Meet Your Maker",
+      "desc_zh": "增加 {{var_32}}~{{var_33}} 的特殊伤害。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "shockwave_gs"
+      ]
+    },
+    {
+      "title_zh": "领袖威仪 (5星)",
+      "title_en": "Leadership (5 Star)",
+      "desc_zh": "作为团队的领导灯塔，所有低级别队友都获得 +{{var_34}} 装甲等级。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    }
+  ]
+}

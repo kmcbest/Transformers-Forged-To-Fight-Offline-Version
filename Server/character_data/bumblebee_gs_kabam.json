@@ -1,0 +1,67 @@
+{
+  "bot_id": "bumblebee_gs_kabam",
+  "name_zh": "小黄蜂",
+  "name_en": "Bumblebee",
+  "faction": "autobot",
+  "class": "scou",
+  "signature": {
+    "title_zh": "勇敢的蜜蜂",
+    "title_en": "Bee Brave",
+    "desc_zh": "大黄蜂并不是最强大或最难对付的机器人，但在靠近敌人的同时，他展现了无与伦比的勇气。\n\n敌人近距离：大黄蜂每秒生成 {{var_6}} 的剩余最大功率，并在敌人处于近距离时获得 {{var_7}} 近战奖励。",
+    "pua_icon": "",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "金靴",
+      "name_en": "Gold Boot",
+      "desc_zh": "大黄蜂发出旋转风车踢。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "特殊技 2",
+      "name_en": "Special Attack 2",
+      "desc_zh": "在此特殊技期间，有 {{var_8}} 几率增加 {{var_9}} 暴击伤害。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "动力堵塞",
+      "name_en": "Power Jam",
+      "desc_zh": "大黄蜂用手枪过度充能，炸毁敌人的系统，然后将其击倒。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "近战规避",
+      "title_en": "Melee Evade",
+      "desc_zh": "后闪会获得一个32%概率的近战规避，无倒计时，触发规避后消耗。",
+      "pua_icon": "0xe509",
+      "category": "passive",
+      "ui_trigger": "onDodge",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "暴击几率增益",
+      "title_en": "Crit Rate Buff",
+      "desc_zh": "侧闪时获得一个28%的暴击几率增益，最多累积3个。每次小黄蜂命中对手时（无论是否出暴击），消耗一个增益。",
+      "pua_icon": "0xe40d",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "破盾",
+      "title_en": "Critical Hits:",
+      "desc_zh": "关键点击：{{var_3}} 有机会打破对手的护盾，完全无效化所有护盾并造成触电，造成 {{var_4}} 超过 {{var_5}} 的能量伤害。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": []
+}

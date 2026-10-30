@@ -1,0 +1,216 @@
+{
+  "bot_id": "galvatron_gs_voyager2016",
+  "name_zh": "惊破天",
+  "name_en": "Galvatron",
+  "faction": "decepticon",
+  "class": "demo",
+  "signature": {
+    "title_zh": "宇宙大帝的意志",
+    "title_en": "Will of Unicron",
+    "desc_zh": "完全充能时，根据对手失去生命值的百分比*0.5的概率获得不可阻挡，持续6秒，并在6秒内获得30%的最大能量槽",
+    "pua_icon": "E915",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "粒子加速",
+      "name_en": "Particle Acceleration",
+      "desc_zh": "惊破天使用他的粒子加速器向前跳跃并猛击他的对手。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "特殊技 2",
+      "name_en": "Special Attack 2",
+      "desc_zh": "每个暗能量冲锋有 {{var_13}} 次机会击晕对手 {{var_14}}。 （充能 30 次时，击晕几率为 {{var_15}}。）",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "暗能量冲击",
+      "name_en": "Dark Energy Blast",
+      "desc_zh": "技能发动时，暂停黑暗能量充能的倒计时。\n技能发动立即获得30个黑暗能量充能，无倒计时。\n最后一击命中时，每层黑暗能量充能有3.3%的概率消耗所有黑暗能量充能并施加黑暗燃烧，造成攻击力140%的即时伤害。",
+      "pua_icon": "E90A",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "黑暗能量充能",
+      "title_en": "Dark Energy Charge",
+      "desc_zh": "在远程攻击的距离开始格挡，每0.065秒获得一层黑暗能量充能\n在充能达到30之前，停止格挡会以每层0.065秒的速度失去充能\n充能达到30层之后，停止格挡不会失去充能，但6秒倒计时开始。\n充能过程中格挡精通增加20%",
+      "pua_icon": "E90A",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "远程伤害",
+      "title_en": "Ranged Damage",
+      "desc_zh": "每层黑暗能量充能提升远程攻击5%的伤害",
+      "pua_icon": "E41B",
+      "category": "passive",
+      "ui_trigger": "onBasicRange",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "暴击伤害",
+      "title_en": "Crit Damage",
+      "desc_zh": "每层黑暗能量充能提升近战暴击5%的伤害",
+      "pua_icon": "E906",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "暴击几率",
+      "title_en": "Crit Rate",
+      "desc_zh": "L4和M2命中时增加50%的暴击几率。",
+      "pua_icon": "E40D",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "黑暗燃烧",
+      "title_en": "Dark Burn",
+      "desc_zh": "重击命中时，每层黑暗能量充能有1.7%的概率消耗所有黑暗能量充能并施加黑暗燃烧，造成攻击力140%的即时伤害",
+      "pua_icon": "E810",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "远程格挡",
+      "title_en": "Blocking at Ranged Distance",
+      "desc_zh": "远程格挡",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "onBasicRange",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "Galvatron gains a Dark Energy Charge every {{var_1}} but quickly loses them while not Blocking.",
+      "desc_zh": "惊破天每 {{var_1}} 就会获得一次暗能量，但在不进行格挡时很快就会失去它们。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "If Galvatron reaches 30 Dark Energy Charges he will not lose the charges for {{var_2}}, after which he will lose them all.",
+      "desc_zh": "如果惊破天达到 30 个暗能量充能，他将不会失去 {{var_2}} 的充能，之后他将失去所有暗能量充能。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "Each Dark Energy Charge increases the damage of Ranged Attacks by {{var_3}}.",
+      "desc_zh": "每个暗能量球都会使远程攻击的伤害增加 {{var_3}}。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "+{{var_4}} 区块熟练度",
+      "title_en": "+{{var_4}} Block Proficiency",
+      "desc_zh": "+{{var_4}} 区块熟练度",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "强力重击",
+      "title_en": "Heavy Attacks",
+      "desc_zh": "重击",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "onHeavyHit",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "{{var_5}} chance for each Dark Energy Charge to inflict Dark Burn, instantly dealing {{var_6}} of Attack as Energy Damage.",
+      "desc_zh": "每个黑暗能量球有 {{var_5}} 次机会造成黑暗灼烧，立即造成 {{var_6}} 点攻击能量伤害。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "关键近战攻击",
+      "title_en": "Critical Melee Attacks",
+      "desc_zh": "关键近战攻击",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "+{{var_7}} Critical Damage for each Dark Energy Charge.",
+      "desc_zh": "+{{var_7}} 每个暗能量充能造成致命伤害。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "+{{var_8}} Critical Chance to the last hit of a Light or Medium Melee Combo.",
+      "desc_zh": "+{{var_8}} 轻型或中型近战连击最后一击的暴击率。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "敌人——红蜘蛛、通天晓",
+      "title_en": "Enemies – Starscream, Ultra Magnus",
+      "desc_zh": "+{{var_21}}~{{var_22}} 攻击评级。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "生命武器——冲击波",
+      "title_en": "Living Weapon – Shockwave",
+      "desc_zh": "+{{var_23}}~{{var_24}} 对重击和特攻 3 的伤害。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "盟友",
+      "title_en": "Allies",
+      "desc_zh": "{{var_25}}-{{var_26}} 装甲。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "tantrum_gs_kabam",
+        "megatronus_gs_kabam"
+      ]
+    },
+    {
+      "title_zh": "混沌之手",
+      "title_en": "Hand of Chaos",
+      "desc_zh": "所有霸天虎特殊技都会获得+{{var_27}}~{{var_28}}特殊技伤害和+{{var_29}}~{{var_30}}暴击伤害。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "cyclonus_gs_uw06"
+      ]
+    },
+    {
+      "title_zh": "领袖威仪 (5星)",
+      "title_en": "Leadership (5 Star)",
+      "desc_zh": "+{{var_31}} 对所有低等级队友造成特殊伤害。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    }
+  ]
+}

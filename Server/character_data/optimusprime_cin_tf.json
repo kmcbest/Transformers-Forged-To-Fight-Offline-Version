@@ -1,0 +1,143 @@
+{
+  "bot_id": "optimusprime_cin_tf",
+  "name_zh": "电影擎天柱",
+  "name_en": "Optimus Prime (MV1)",
+  "faction": "autobot",
+  "class": "braw",
+  "signature": {
+    "title_zh": "我会带你们一起去的！ - 擎天柱的毅力改变了战斗的潮流，在生命值较低时提供更高的装甲值和三个近战增益。每场战斗可能会发生一次。",
+    "title_en": "I'll Take You All On! - Optimus Prime's perseverance changes the tide of the battle, providing increased Armor and three Melee Buffs when at low health. This may occur once per fight.",
+    "desc_zh": "生命值低于 {{var_1}}：擎天柱的毅力改变了战斗的潮流，为 {{var_4}} 提供了 +{{var_2}} 增加的装甲值和三个 {{var_3}} 近战增益。每场战斗可能会发生一次。\n\n每级 +{{var_5}}。",
+    "pua_icon": "",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "守护斩",
+      "name_en": "Guardian Slash",
+      "desc_zh": "60%概率施加流血，造成攻击力40%的伤害，持续4秒",
+      "pua_icon": "E401",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "单挑全场！",
+      "name_en": "I'll Take You All On!",
+      "desc_zh": "",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "我会带你们一起去的！",
+      "name_en": "Strength of the Autobots",
+      "desc_zh": "",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "装甲增益",
+      "title_en": "Armor Buff",
+      "desc_zh": "降低受到的攻击伤害。",
+      "pua_icon": "",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "近战强化",
+      "title_en": "Melee Buff",
+      "desc_zh": "临时提升近战攻击的伤害。",
+      "pua_icon": "",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "钢铁意志",
+      "title_en": "Willpower",
+      "desc_zh": "流血状态下将造成的伤害按比例转化为自身生命值恢复。",
+      "pua_icon": "",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "盟友",
+      "title_en": "Allies",
+      "desc_zh": "+{{var_8}}~{{var_9}} 装甲。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "ironhide_gs_kabam",
+        "bumblebee_gs_kabam",
+        "drift_cin_aoe",
+        "hound_cin_tlk"
+      ]
+    },
+    {
+      "title_zh": "宿敌",
+      "title_en": "Enemies",
+      "desc_zh": "+{{var_10}}~{{var_11}} 攻击评级。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "megatron_gs_leader2015",
+        "megatronus_gs_kabam"
+      ]
+    },
+    {
+      "title_zh": "宿敌",
+      "title_en": "Enemies",
+      "desc_zh": "+{{var_12}}~{{var_13}} 攻击评级。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "grindor_cin_rotf",
+        "bonecrusher_cin_rotf"
+      ]
+    },
+    {
+      "title_zh": "老师",
+      "title_en": "Sensei",
+      "desc_zh": "{{var_14}}~{{var_15}} 装甲。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "drift_cin_aoe"
+      ]
+    },
+    {
+      "title_zh": "直到一切合而为一",
+      "title_en": "Till All Are One",
+      "desc_zh": "汽车人的 {{var_16}}~{{var_17}} 攻击评级。突袭中汽车人的 {{var_18}}~{{var_19}} 减益伤害。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "bumblebee_gs_kabam"
+      ]
+    },
+    {
+      "title_zh": "老朋友",
+      "title_en": "Old Friends",
+      "desc_zh": "{{var_20}}~{{var_21}} 在造成流血时有机会造成额外的流血叠加。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "ironhide_gs_kabam"
+      ]
+    },
+    {
+      "title_zh": "医疗支持",
+      "title_en": "Medic Support",
+      "desc_zh": "战斗开始时修复基地生命值的{{var_22}}~{{var_23}}。 +{{var_24}}~{{var_25}} 突袭中的额外修复。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "hound_cin_tlk"
+      ]
+    },
+    {
+      "title_zh": "领袖威仪 (5星)",
+      "title_en": "Leadership (5 Star)",
+      "desc_zh": "作为团队的领导灯塔，所有较低级别的队友都获得 +{{var_26}} 攻击评级。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    }
+  ]
+}

@@ -1,0 +1,104 @@
+{
+  "bot_id": "megatron_gs_leader2015",
+  "name_zh": "G1威震天",
+  "name_en": "Megatron",
+  "faction": "decepticon",
+  "class": "tact",
+  "signature": {
+    "title_zh": "毫不留情",
+    "title_en": "No Mercy",
+    "desc_zh": "只要对手身上有融合的减益，威震天的近战攻击（打中和被防都算）就有60%的概率从对方身上随机偷走一个增益，持续5秒。",
+    "pua_icon": "",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "能量粉碎",
+      "name_en": "Energon Crush",
+      "desc_zh": "",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "原子弹头",
+      "name_en": "Atomic Slug",
+      "desc_zh": "100%的概率施加44%的攻击减益，持续10秒。",
+      "pua_icon": "0xe916",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "太简单了",
+      "name_en": "All Too Easy",
+      "desc_zh": "100%的概率施加震击，造成攻击300%的伤害，持续20秒。\n融合炮过载：融合炮图标变为绿色，不带数字，本局可无限使用，不消耗。",
+      "pua_icon": "0xe914",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "不可阻挡",
+      "title_en": "Unstoppable",
+      "desc_zh": "被击倒后，威震天有概率获得3秒的不可阻挡，概率等于损失生命值的百分比乘以0.7",
+      "pua_icon": "E915",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "宿敌",
+      "title_en": "Enemies",
+      "desc_zh": "+{{var_18}}~{{var_19}} 攻击评级。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "fte_optimus_gs_t3",
+        "bumblebee_gs_kabam",
+        "jazz_gs_twm05",
+        "jetfire_gs_leader2014"
+      ]
+    },
+    {
+      "title_zh": "直到一切都是我们的",
+      "title_en": "Till All is Ours",
+      "desc_zh": "所有霸天虎对汽车人的攻击评级都获得+{{var_20}}~{{var_21}}。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "soundwave_gs"
+      ]
+    },
+    {
+      "title_zh": "副官",
+      "title_en": "Lieutenants",
+      "desc_zh": "威震天获得新能力，他的副官获得+{{var_22}}~{{var_23}}装甲和+{{var_24}}~{{var_25}}攻击评级。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "fte_stars_gs_t3",
+        "shockwave_gs"
+      ]
+    },
+    {
+      "title_zh": "中尉——红蜘蛛",
+      "title_en": "Lieutenants – Starscream",
+      "desc_zh": "威震天的特殊技有 {{var_26}}~{{var_27}}% 的几率使对手昏迷 {{var_28}}。此效果每次特殊技每场战斗只会触发一次，且此眩晕减益无法融合。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "中尉——冲击波",
+      "title_en": "Lieutenants – Shockwave",
+      "desc_zh": "威震天中型连击的最后一击有 {{var_29}}~{{var_30}} 几率造成功率减益，使对手的功率降低 {{var_31}} 至 {{var_32}}。该减益效果可能会融合到对手身上。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "堕落者",
+      "title_en": "The Fallen",
+      "desc_zh": "您团队中的所有霸天虎在与霸天虎战斗时获得 +{{var_33}}~{{var_34}} 装甲值，在与汽车人战斗时获得 +{{var_35}}~{{var_36}} 功率率。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "megatronus_gs_kabam"
+      ]
+    }
+  ]
+}

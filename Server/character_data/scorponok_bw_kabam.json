@@ -1,0 +1,119 @@
+{
+  "bot_id": "scorponok_bw_kabam",
+  "name_zh": "巨蝎勇士",
+  "name_en": "Scorponok",
+  "faction": "predacon",
+  "class": "warr",
+  "signature": {
+    "title_zh": "再生毒素",
+    "title_en": "REGENERATIVE TOXIN",
+    "desc_zh": "在蝎子毒液充能的推动下，蝎子隐藏的机器人增强功能使他能够修复。\n\n被击中时：在天蝎座毒液充能的推动下，天蝎座隐藏的机器人增强功能使他能够被动修复非特殊技造成的 {{var_10}}~ {{var_11}} 伤害。\n\n<small>*统计数据是根据游戏中的估计观察到的。</small>",
+    "pua_icon": "",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "目眩和毁坏",
+      "name_en": "Daze and Destroy",
+      "desc_zh": "技能命中时施加目眩，敌人的基础远程攻击有60%的概率无法命中，特殊远程攻击100%无法命中，持续9.5秒。",
+      "pua_icon": "E519",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "隧道恐怖",
+      "name_en": "Tunneling Terror",
+      "desc_zh": "",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "原始兽迫害",
+      "name_en": "Predacon Persecution",
+      "desc_zh": "",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "毒液适得其反",
+      "title_en": "Venom Backfire",
+      "desc_zh": "毒液适得其反",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "If 3 or more Backfire charges expires simultaneously, the opponent takes Shock Damage equal to {{var_8}} of Attack Rating over {{var_9}}.",
+      "desc_zh": "如果 3 个或更多逆火球同时失效，对手将受到攻击评级 {{var_8}} 高于 {{var_9}} 的感应触电伤害。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "盟友",
+      "title_en": "Allies",
+      "desc_zh": "+{{var_19}}~{{var_20}} 装甲。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "waspinator_gs_deluxe"
+      ]
+    },
+    {
+      "title_zh": "宿敌",
+      "title_en": "Enemies",
+      "desc_zh": "所有巨无霸 - +{{var_21}}~{{var_22}} 攻击评级。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "武器铁匠",
+      "title_en": "Weaponsmiths",
+      "desc_zh": "+{{var_23}}~{{var_24}} 重击成为暴击的几率。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "hound_cin_tlk",
+        "ramjet_gs_deluxe2008"
+      ]
+    },
+    {
+      "title_zh": "领袖威仪 (5星)",
+      "title_en": "Leadership (5 Star)",
+      "desc_zh": "作为领导的灯塔，所有较低级别的队友都会获得 +{{var_25}} 暴击伤害。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "野兽净化",
+      "title_en": "Beast Purification",
+      "desc_zh": "只要 Primal 的队伍中有 2 个或更多野兽战争机器人，野兽战争角色的重击就会为 {{var_28}} 提供 {{var_26}}~{{var_27}} 攻击评级并净化伤害减益。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "optimusprimal_bw_mp32"
+      ]
+    },
+    {
+      "title_zh": "兽祖",
+      "title_en": "Beast Ancestor",
+      "desc_zh": "每次重击后，该机器人都会获得野兽之怒增益，使攻击有 {{var_29}}~{{var_30}} 机会无法被 {{var_31}} 阻挡。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "tantrum_gs_kabam"
+      ]
+    },
+    {
+      "title_zh": "破坏专家",
+      "title_en": "Sabotage Specialists",
+      "desc_zh": "+{{var_32}}~{{var_33}} 逆火伤害。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "slipstream_gs"
+      ]
+    }
+  ]
+}

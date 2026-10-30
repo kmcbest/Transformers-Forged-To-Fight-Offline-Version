@@ -1,0 +1,70 @@
+{
+  "bot_id": "ironhide_gs_kabam",
+  "name_zh": "G1铁皮",
+  "name_en": "Ironhide",
+  "faction": "autobot",
+  "class": "braw",
+  "signature": {
+    "title_zh": "三乙基体",
+    "title_en": "Trithyllium Body",
+    "desc_zh": "铁皮的装甲非常坚韧，敌人在攻击它时会受到伤害。\n\n在 {{var_16}}、{{var_17}} 和 {{var_18}} 健康状况下，\n\n铁皮获得 {{var_19}} 的近战反射，当受到近战攻击攻击时，有 {{var_20}} 机会将铁皮攻击的 {{var_21}} 分给对手。",
+    "pua_icon": "",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "损伤",
+      "name_en": "Ding Up",
+      "desc_zh": "",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "手里枪",
+      "name_en": "Talking-Iron",
+      "desc_zh": "",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "走开",
+      "name_en": "Make Tracks",
+      "desc_zh": "",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [],
+  "synergies": [
+    {
+      "title_zh": "敌人——挽歌、闹翻天",
+      "title_en": "Enemies – Dirge, Skywarp",
+      "desc_zh": "+{{var_29}}~{{var_30}} 攻击评级。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "汽车人安全专家 – Prowl",
+      "title_en": "Autobot Security Specialists – Prowl",
+      "desc_zh": "+{{var_31}}~{{var_32}} 对霸天虎的攻击。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "巨擎天柱",
+      "title_en": "Optimus Maximus",
+      "desc_zh": "使用{{var_33}}~{{var_34}} Power开始战斗。仅当团队中的所有机器人都具有此协同羁绊时，机器人才能受益于此奖励。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "fte_optimus_gs_t3"
+      ]
+    },
+    {
+      "title_zh": "领袖威仪 (5星)",
+      "title_en": "Leadership (5 Star)",
+      "desc_zh": "所有较低级别的队友都会获得 +{{var_35}} 攻击评级。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    }
+  ]
+}

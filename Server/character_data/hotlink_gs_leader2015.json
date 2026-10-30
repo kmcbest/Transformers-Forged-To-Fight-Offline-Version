@@ -1,0 +1,85 @@
+{
+  "bot_id": "hotlink_gs_leader2015",
+  "name_zh": "热链接",
+  "name_en": "Hotlink",
+  "faction": "decepticon",
+  "class": "braw",
+  "signature": {
+    "title_zh": "过热熔炉",
+    "title_en": "Crucible Overdrive",
+    "desc_zh": "当生命值低于 50% 时触发：获得持续 6 秒的不可阻挡增益；且在此期间每次近战攻击命中处于燃烧状态的敌人时，额外获得一层 15% 的近战增益，持续 5 秒（上限 3 层）。",
+    "pua_icon": "0xe412",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "热能推进",
+      "name_en": "Thermal Thrusters",
+      "desc_zh": "最后一击命中 100% 概率施加燃烧减益，造成攻击力 50% 的伤害，持续 5 秒；技能结束后自身获得一层 20% 的近战增益，持续 6 秒。",
+      "pua_icon": "0xe41d",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "炼狱火幕",
+      "name_en": "Infernal Barrage",
+      "desc_zh": "每一击有 85% 概率施加燃烧减益，造成攻击力 70% 的伤害，持续 6 秒；并有 50% 概率造成眩晕，持续 1.5 秒。",
+      "pua_icon": "0xe41d",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "熔铁焚毁",
+      "name_en": "Foundry Incineration",
+      "desc_zh": "最后一击 100% 概率施加燃烧减益，造成攻击力 100% 的伤害，持续 8 秒；技能结束后获得一层 30% 的护甲增益，持续 8 秒，以及持续 4 秒的不可阻挡增益。",
+      "pua_icon": "0xe915",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "背负式重型喷火器",
+      "title_en": "Twin Flamethrowers",
+      "desc_zh": "重击喷出猛烈烈焰火海，击退敌人并施加持续燃烧。自身完全免疫燃烧效果。",
+      "pua_icon": "",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "淬火装甲",
+      "title_en": "Tempered Armor",
+      "desc_zh": "重击命中 100% 概率施加燃烧减益，造成攻击力 60% 的伤害，持续 6 秒。当对手处于燃烧状态时，热链接的近战攻击命中 100% 刷新该燃烧减益的持续时间，且额外造成 25% 的近战物理伤害。热链接自身受到流血减益影响时，受到的流血伤害降低 30%。",
+      "pua_icon": "0xe517",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "军火工程师",
+      "title_en": "Weapons Engineers",
+      "desc_zh": "与千斤顶、声波同队时，火焰伤害提升 {{var_1}}。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "wheeljack_gs_mp20",
+        "soundwave_gs"
+      ]
+    },
+    {
+      "title_zh": "寻猎空军",
+      "title_en": "Seekers",
+      "desc_zh": "与红蜘蛛同队时，攻击力提升 {{var_2}}。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "fte_stars_gs_t3"
+      ]
+    },
+    {
+      "title_zh": "领袖威仪 (5星)",
+      "title_en": "Leadership (5 Star)",
+      "desc_zh": "团队所有低星级队员获得 +{{var_3}} 护甲。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    }
+  ]
+}

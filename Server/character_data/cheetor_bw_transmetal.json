@@ -1,0 +1,112 @@
+{
+  "bot_id": "cheetor_bw_transmetal",
+  "name_zh": "黄豹",
+  "name_en": "Cheetor",
+  "faction": "maximal",
+  "class": "scou",
+  "signature": {
+    "title_zh": "野生突击",
+    "title_en": "Feral Strike",
+    "desc_zh": "每充满一格能量，黄豹得到4秒的野生突击状态（黄色图标），在此增益过程中：\n1. 所有攻击暴击率增加40%\n2. 所有攻击无视对方护甲\n3. 对手无法规避（对手侧显示一个红色的E92A图标）\n4. 对手无法触发任何技能（无法得到增益，也无法施加减益）\n5. 黄豹自己有25%的概率规避近战攻击",
+    "pua_icon": "E160",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "变形金属创伤",
+      "name_en": "Transmetal Trauma",
+      "desc_zh": "施加阻止修复，禁用对方所有回血能力，直到对方流血状态解除。",
+      "pua_icon": "E90C",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "类星体突破",
+      "name_en": "Quasar Blaster",
+      "desc_zh": "对手能量越少，该攻击伤害越大，最大造成50%的额外伤害。",
+      "pua_icon": "E41B",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "巨无霸过载",
+      "name_en": "Maximal Overdrive",
+      "desc_zh": "对手能量越少，该攻击伤害越大，最大造成100%的额外伤害。",
+      "pua_icon": "E41B",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "暴击流血",
+      "title_en": "Critical Bleed",
+      "desc_zh": "近战攻击出暴击时，有45%的概率触发流血，造成攻击力65%的伤害，持续4秒。",
+      "pua_icon": "0xe401",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "能量获取",
+      "title_en": "Power Gain",
+      "desc_zh": "L4或者M2命中对手的时候，在1秒内获得最大能量槽的2.5%",
+      "pua_icon": "E608",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "重击规避远程",
+      "title_en": "Heavy Evade Range",
+      "desc_zh": "黄豹重击过程中有35%的概率穿透对方的基础远程和远程重击\n如果没有触发穿透，则100%的概率触发规避",
+      "pua_icon": "E518",
+      "category": "passive",
+      "ui_trigger": "onHeavyHit",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "盟友 – 犀牛、恐龙机器人、擎天柱",
+      "title_en": "Allies – Rhinox, Dinobot, Optimus Primal",
+      "desc_zh": "+{{var_27}}~{{var_28}} 装甲。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "敌人 – 黄蜂、蝎子",
+      "title_en": "Enemies – Waspinator, Scorponok",
+      "desc_zh": "+{{var_29}}~{{var_30}} 攻击评级。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "野兽净化——擎天柱",
+      "title_en": "Beast Purification – Optimus Primal",
+      "desc_zh": "重击：只要 Primal 的团队中有 2 个或更多 Beast Wars 机器人，Beast Wars 角色就会获得 {{var_33}} 的 {{var_31}}~{{var_32}} 攻击评级并净化伤害减益。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "速度追逐者 – Sideswipe、Mirage、Bumblebee (DOTM)",
+      "title_en": "Speed Chasers – Sideswipe, Mirage, Bumblebee (DOTM)",
+      "desc_zh": "+{{var_34}}~{{var_35}} 躲避对手攻击时，下一击攻击。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "兽祖",
+      "title_en": "Beast Ancestor",
+      "desc_zh": "每次重击后，该机器人都会获得野兽之怒增益，使攻击有 {{var_36}}~{{var_37}} 机会无法被 {{var_38}} 阻挡。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "tantrum_gs_kabam"
+      ]
+    },
+    {
+      "title_zh": "领袖威仪 (5星)",
+      "title_en": "Leadership (5 Star)",
+      "desc_zh": "所有较低级别的队友都会获得 +{{var_39}} 临界评级。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    }
+  ]
+}

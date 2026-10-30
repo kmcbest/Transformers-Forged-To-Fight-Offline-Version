@@ -1,0 +1,56 @@
+{
+  "bot_id": "optimusprimal_bw_mp32",
+  "name_zh": "猩猩队长",
+  "name_en": "Optimus Primal",
+  "faction": "maximal",
+  "class": "braw",
+  "signature": {
+    "title_zh": "",
+    "title_en": "",
+    "desc_zh": "",
+    "pua_icon": "",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "丛林的法则",
+      "name_en": "Law of the Jungle",
+      "desc_zh": "",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "野兽勇士",
+      "name_en": "Beast Warrior",
+      "desc_zh": "",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "大猩猩的战争",
+      "name_en": "Gorilla Warfare",
+      "desc_zh": "",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [],
+  "synergies": [
+    {
+      "title_zh": "野兽净化",
+      "title_en": "Beast Purification",
+      "desc_zh": "只要 Primal 的队伍中有 2 个或更多野兽战争机器人，野兽战争角色的重击就会为 {{var_22}} 提供 {{var_20}}~{{var_21}} 攻击评级并净化伤害减益。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "optimusprimal_bw_mp32"
+      ]
+    },
+    {
+      "title_zh": "领袖威仪 (5星)",
+      "title_en": "Leadership (5 Star)",
+      "desc_zh": "所有机器人 - 作为团队领导的灯塔，所有较低级别的队友都获得 +{{var_23}} 攻击评级。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    }
+  ]
+}

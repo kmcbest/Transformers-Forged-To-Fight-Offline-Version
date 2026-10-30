@@ -1,0 +1,159 @@
+{
+  "bot_id": "fte_stars_gs_t3",
+  "name_zh": "红蜘蛛",
+  "name_en": "Starscream",
+  "faction": "decepticon",
+  "class": "tact",
+  "signature": {
+    "title_zh": "驱散所有希望",
+    "title_en": "Nullify All Hope",
+    "desc_zh": "红蜘蛛的无效射线有 {{var_8}} 几率无效化任何类型的增益。这不会影响来自战术模块或增益道具的增益。\n\n每级大约+{{var_9}}",
+    "pua_icon": "E950",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "制空情结",
+      "name_en": "Air Superiority Complex",
+      "desc_zh": "阿谀奉承者终于报仇了。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "特殊技 2",
+      "name_en": "Special Attack 2",
+      "desc_zh": "{{var_10}} 有机会增加 {{var_11}} 的远程伤害和 {{var_12}} 的射弹速度。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "狡猾的背叛",
+      "name_en": "Cunning Treachery",
+      "desc_zh": "他现在已经得到你了！",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "零射线",
+      "title_en": "Null Ray",
+      "desc_zh": "基础远程攻击命中时100%概率驱散一个护甲、近战或者攻击增益。\n驱散时造成攻击力90%的即时震击伤害。",
+      "pua_icon": "E950",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "Ranged attacks have {{var_1}} increase to Critical Chance.",
+      "desc_zh": "远程攻击的暴击率增加 {{var_1}}。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "规避近战重击",
+      "title_en": "Evade Heavy Melee",
+      "desc_zh": "20%的概率机规避近战重击。",
+      "pua_icon": "E509",
+      "category": "passive",
+      "ui_trigger": "onHeavyHit",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "燃烧",
+      "title_en": "Burn",
+      "desc_zh": "重击命中时有20%几率造成燃烧，施加攻击力40%的伤害，持续4秒。",
+      "pua_icon": "0xe41d",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "红蜘蛛的探索者",
+      "title_en": "Starscream's Seekers",
+      "desc_zh": "+{{var_16}}~{{var_17}} 伤害和 {{var_18}}~{{var_19}} 所有霸天虎远程攻击的穿甲。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "thundercracker_gs_leader2015",
+        "skywarp_gs_leader2015",
+        "ramjet_gs_deluxe2008",
+        "dirge_gs_deluxe2008"
+      ]
+    },
+    {
+      "title_zh": "天空突击",
+      "title_en": "Sky Assault",
+      "desc_zh": "+{{var_20}}~{{var_21}} 反规避",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "windblade_gs",
+        "waspinator_gs_deluxe"
+      ]
+    },
+    {
+      "title_zh": "宿敌",
+      "title_en": "Enemies",
+      "desc_zh": "+{{var_22}}~{{var_23}} 攻击评级。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "galvatron_gs_voyager2016",
+        "jazz_gs_twm05"
+      ]
+    },
+    {
+      "title_zh": "副官",
+      "title_en": "Lieutenants",
+      "desc_zh": "威震天获得新能力，他的副官获得+{{var_24}}~{{var_25}}装甲和+{{var_26}}~{{var_27}}攻击评级。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "megatron_gs_leader2015"
+      ]
+    },
+    {
+      "title_zh": "副官",
+      "title_en": "Lieutenants",
+      "desc_zh": "威震天的特殊技有 {{var_28}}~{{var_29}}% 的几率使对手昏迷 {{var_30}}。此效果每次特殊技每场战斗只会触发一次，且此眩晕减益无法融合。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "megatron_gs_leader2015"
+      ]
+    },
+    {
+      "title_zh": "老朋友",
+      "title_en": "Old Friends",
+      "desc_zh": "通过 {{var_31}}~{{var_32}} 增加适时格挡的天火眩晕持续时间。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "jetfire_gs_leader2014"
+      ]
+    },
+    {
+      "title_zh": "老朋友——天火",
+      "title_en": "Old Friends – Jetfire",
+      "desc_zh": "猛冲回来时，远程攻击会错过红蜘蛛，这会为他提供 {{var_33}}~{{var_34}} 暴击伤害增益，以及 {{var_35}}。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "领袖威仪 (5星)",
+      "title_en": "Leadership (5 Star)",
+      "desc_zh": "作为防止背叛的卫士，所有下层队友都会获得+{{var_36}} 无效抵抗力。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "拥有天空",
+      "title_en": "Own the Skies",
+      "desc_zh": "+{{var_37}}~{{var_38}} 以空中替代形式攻击机器人。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "slipstream_gs"
+      ]
+    }
+  ]
+}

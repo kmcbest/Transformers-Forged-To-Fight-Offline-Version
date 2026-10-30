@@ -1,0 +1,169 @@
+{
+  "bot_id": "mixmaster_cin_rotf",
+  "name_zh": "搅拌者",
+  "name_en": "Mixmaster",
+  "faction": "decepticon",
+  "class": "demo",
+  "signature": {
+    "title_zh": "震荡块",
+    "title_en": "Concussive Block",
+    "desc_zh": "根据当前生命值，格挡可减少物理攻击造成的最多 {{var_10}} 额外伤害。\n\n适时的格挡会招架对手的基本近战攻击，将其击退并造成 {{var_11}} 攻击。\n\n这提供了特殊或致命伤害增益。",
+    "pua_icon": "",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "灾难的秘诀",
+      "name_en": "Recipe for Disaster",
+      "desc_zh": "一方面是愤怒，另一方面是不可预测性，打造一场猛烈的打击。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "混合物",
+      "name_en": "Concoction",
+      "desc_zh": "",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "特殊技 3",
+      "name_en": "Special Attack 3",
+      "desc_zh": "",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "常驻被动",
+      "title_en": "Passive:",
+      "desc_zh": "被动：",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "Gains a Special Damage Buff every {{var_1}}, increasing Special Damage by {{var_2}}. (Max: 6 stacks).",
+      "desc_zh": "每 {{var_1}} 获得一个特殊伤害增益，将特殊伤害增加 {{var_2}}。 （最多：6 堆）。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "Once Mixmaster finishes generating Special Damage Buffs, he begins generating a Critical Damage Buff every {{var_3}}, each adding {{var_4}} Critical Damage. (Max: 6 Stacks)",
+      "desc_zh": "一旦 Mixmaster 完成生成特殊伤害增益，他就会开始在每个 {{var_3}} 生成一个致命伤害增益，每个都会增加 {{var_4}} 致命伤害。 （最多：6 层）",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "These Buffs are removed after Mixmaster successfully lands the last hit of a Special Attack.",
+      "desc_zh": "在 Mixmaster 成功完成特殊技的最后一击后，这些增益会被移除。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "远程射击",
+      "title_en": "Ranged Attacks",
+      "desc_zh": "远程攻击",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "onBasicRange",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "{{var_5}} chance to inflict Acid, dealing {{var_6}} Attack as chemical damage over {{var_7}}seconds and corroding 1 Resistance Buff every {{var_8}}(s).",
+      "desc_zh": "{{var_5}} 有机会造成酸，在 {{var_7}} 秒内造成 {{var_6}} 攻击化学伤害，并每 {{var_8}} 腐蚀 1 个抵抗增益。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "所有攻击",
+      "title_en": "All Attacks",
+      "desc_zh": "所有攻击",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "+{{var_9}} Critical Rate if the opponent is under the effect of a Debuff.",
+      "desc_zh": "如果对手受到减益效果，则 +{{var_9}} 暴击率。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "盟友",
+      "title_en": "Allies",
+      "desc_zh": "+{{var_22}}~{{var_23}} 装甲。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "bonecrusher_cin_rotf"
+      ]
+    },
+    {
+      "title_zh": "宿敌",
+      "title_en": "Enemies",
+      "desc_zh": "+{{var_24}}~{{var_25}} 攻击评级。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "drift_cin_aoe"
+      ]
+    },
+    {
+      "title_zh": "武器专家",
+      "title_en": "Weapon Specialists",
+      "desc_zh": "+{{var_26}}~{{var_27}} 伤害减益持续时间。 +{{var_28}}~{{var_29}} 联盟任务中的攻击评级。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "ironhide_gs_kabam",
+        "rhinox_gs_voyager2014",
+        "hound_cin_tlk"
+      ]
+    },
+    {
+      "title_zh": "武器铁匠",
+      "title_en": "Weaponsmiths",
+      "desc_zh": "重击有 {{var_30}}~{{var_31}} 几率成为暴击。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "waspinator_gs_deluxe",
+        "grindor_cin_rotf"
+      ]
+    },
+    {
+      "title_zh": "盾大师",
+      "title_en": "Shieldmasters",
+      "desc_zh": "适时对抗近战攻击具有 {{var_32}} 格挡熟练度，并消耗相当于对手最大力量 {{var_33}}~{{var_34}} 的力量。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "dinobot_bw_kabam",
+        "jetfire_gs_leader2014"
+      ]
+    },
+    {
+      "title_zh": "领袖威仪 (5星)",
+      "title_en": "Leadership (5 Star)",
+      "desc_zh": "+{{var_35}} 特殊伤害。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    }
+  ]
+}

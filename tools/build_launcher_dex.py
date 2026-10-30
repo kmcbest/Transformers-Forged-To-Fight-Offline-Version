@@ -363,7 +363,7 @@ public class WebView extends View {
 
     class_files = [str(p) for p in bin_dir.rglob("*.class")]
 
-    cmd = [str(java), "-cp", str(d8_jar), "com.android.tools.r8.D8", "--min-api", "23", "--output", str(out_dir)] + class_files
+    cmd = [str(java), "-cp", str(d8_jar), "com.android.tools.r8.D8", "--no-desugaring", "--min-api", "23", "--output", str(out_dir)] + class_files
     subprocess.run(cmd, check=True)
 
     gen_dex = out_dir / "classes.dex"

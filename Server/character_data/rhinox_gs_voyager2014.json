@@ -1,0 +1,190 @@
+{
+  "bot_id": "rhinox_gs_voyager2014",
+  "name_zh": "犀牛",
+  "name_en": "Rhinox",
+  "faction": "maximal",
+  "class": "tech",
+  "signature": {
+    "title_zh": "超频",
+    "title_en": "Overclock",
+    "desc_zh": "护盾增益更有效，但也更不稳定。\n\n被动：犀牛通过护盾增益获得额外的性能，进一步减少对对手攻击评级 {{var_15}} 的伤害。当减少攻击造成的伤害时，额外的压力会导致它们爆炸，造成 {{var_16}} 攻击的冲击伤害。\n\n+每级大约 {{var_17}}",
+    "pua_icon": "",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "戈尔战术",
+      "name_en": "Tactical Gore",
+      "desc_zh": "100%几率破坏目标的武器系统，驱散最多1个近战、远程或特殊伤害增益。",
+      "pua_icon": "0xe950",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "末日之机关枪",
+      "name_en": "Chainguns of Doom",
+      "desc_zh": "40%概率触发流血，施加攻击力60%的伤害，持续8秒",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "猛虎出笼",
+      "name_en": "A Beast Unleashed",
+      "desc_zh": "以这种方式移除的每个增益有 {{var_20}} 机会造成流血，造成 {{var_21}} 攻击超过 {{var_22}}。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "被动防护",
+      "title_en": "Shielding Passive",
+      "desc_zh": "战斗开始时有 6 个护盾增益，每个护盾增益将一次攻击造成的伤害上限限制为对手攻击评级的 {{var_1}}。 </s>每次犀牛受到基本或重型近战攻击时都会被移除。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "远程流血",
+      "title_en": "Ranged Bleed",
+      "desc_zh": "远程攻击30%几率触发流血，造成攻击力60%的伤害，持续5秒",
+      "pua_icon": "0xe401",
+      "category": "passive",
+      "ui_trigger": "onBasicRange",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "While Rhinox's Shield is active, powerful enemy attacks cannot deal more than {{var_2}} of the opponent's Attack Rating in a single hit.",
+      "desc_zh": "当犀牛之盾激活时，强大的敌人攻击在单次攻击中造成的攻击评级不能超过 {{var_2}}。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "Shield Buffs recharge in {{var_3}}seconds. (cooldown on HUD as of December 2019)",
+      "desc_zh": "护盾增益在 {{var_3}} 秒内充能。 （HUD 冷却时间截至 2019 年 12 月）",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "+{{var_4}} Burn and Shock Resistance while Shielded.",
+      "desc_zh": "+{{var_4}} 屏蔽时的耐燃烧性和耐冲击性。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "Basic Melee Attacks: +{{var_5}} damage against Bleeding targets.",
+      "desc_zh": "基本近战攻击：对流血目标造成 +{{var_5}} 伤害。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "Chaingun Ranged Attacks: {{var_6}} chance to inflict Bleed, dealing {{var_7}} Attack over {{var_8}}.",
+      "desc_zh": "链枪远程攻击：{{var_6}} 几率造成流血，造成 {{var_7}} 攻击超过 {{var_8}}。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "犀牛公羊重击：",
+      "title_en": "Rhino Ram Heavy Attack:",
+      "desc_zh": "犀牛公羊重击：",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "onHeavyHit",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "<s>{{var_9}}</s> {{var_10}} chance to drain {{var_11}} of the target's max Power and inflict Power Lock for {{var_12}}.",
+      "desc_zh": "<s>{{var_9}}</s> {{var_10}} 有机会耗尽目标 {{var_11}} 的最大能量并对 {{var_12}} 造成能量锁定。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "When this ability is triggered, its chance to trigger again is reduced by {{var_13}}. This returns to normal after {{var_14}}.",
+      "desc_zh": "当该能力被触发时，其再次触发的几率会减少 {{var_13}}。这在 {{var_14}} 后恢复正常。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "",
+      "title_en": "",
+      "desc_zh": "敌人 - 黄蜂、蝎子 - +{{var_35}}~{{var_36}} 攻击评级。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "武器专家",
+      "title_en": "Weapon Specialists",
+      "desc_zh": "伤害性减益持续时间+{{var_37}}~{{var_38}} 更长。此外，联盟任务中的攻击评级增加+{{var_39}}~{{var_40}}。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "mixmaster_cin_rotf",
+        "ironhide_gs_kabam",
+        "hound_cin_tlk"
+      ]
+    },
+    {
+      "title_zh": "心智压榨",
+      "title_en": "Brain Drain",
+      "desc_zh": "<s>冲击波会在战斗开始时以及每次 {{var_42}} 时生成 {{var_41}} 能量球。 </s> 冲击波的冲击会造成 {{var_43}}~{{var_44}} 更多伤害。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "shockwave_gs"
+      ]
+    },
+    {
+      "title_zh": "",
+      "title_en": "",
+      "desc_zh": "盟友 - 猎豹、机器人、擎天柱 - +{{var_45}}~{{var_46}} 装甲。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "野兽净化",
+      "title_en": "Beast Purification",
+      "desc_zh": "只要 Primal 的队伍中有 2 个或更多野兽战争机器人，野兽战争角色的重击就会为 {{var_49}} 提供 {{var_47}}~{{var_48}} 攻击评级并净化伤害减益。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "optimusprimal_bw_mp32"
+      ]
+    },
+    {
+      "title_zh": "兽祖",
+      "title_en": "Beast Ancestor",
+      "desc_zh": "每次重击后，该机器人都会获得野兽之怒增益，使攻击有 {{var_50}}~{{var_51}} 机会无法被 {{var_52}} 阻挡。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "tantrum_gs_kabam"
+      ]
+    },
+    {
+      "title_zh": "领袖威仪 (5星)",
+      "title_en": "Leadership (5 Star)",
+      "desc_zh": "+{{var_53}} 功率率。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    }
+  ]
+}

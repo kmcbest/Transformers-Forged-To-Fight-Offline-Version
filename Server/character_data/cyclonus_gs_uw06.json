@@ -1,0 +1,157 @@
+{
+  "bot_id": "cyclonus_gs_uw06",
+  "name_zh": "狂飙",
+  "name_en": "Cyclonus",
+  "faction": "decepticon",
+  "class": "tact",
+  "signature": {
+    "title_zh": "黑暗奴役",
+    "title_en": "Dark Servitude",
+    "desc_zh": "对宇宙大帝的忠诚赋予狂飙以难以想象的力量。\n\n黑暗场造成的黑暗灼伤会造成 {{var_13}} 点额外伤害。",
+    "pua_icon": "",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "宇宙边缘",
+      "name_en": "Cosmic Edge",
+      "desc_zh": "只有星之剑本身才能匹敌的剑。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "特殊技 2",
+      "name_en": "Special Attack 2",
+      "desc_zh": "{{var_14}} 穿甲弹。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "星际旅行",
+      "name_en": "Interstellar Ride",
+      "desc_zh": "",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "暗能量",
+      "title_en": "Dark Energy",
+      "desc_zh": "提高攻击评级并为暗场提供动力。",
+      "pua_icon": "",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "暗场",
+      "title_en": "Dark Field",
+      "desc_zh": "近距离的暗能量脉冲，造成黑暗灼伤，并有机会无效增益效果。",
+      "pua_icon": "",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "纪律",
+      "title_en": "Discipline",
+      "desc_zh": "该机器人经过广泛的训练，使其能够在许多情况下表现出色。",
+      "pua_icon": "",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "黑暗能量",
+      "title_en": "Dark Energy",
+      "desc_zh": "每次填满一格气，狂飙获得一层黑暗能量，提升攻击力30%，持续6秒",
+      "pua_icon": "0xe90a",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "黑暗场",
+      "title_en": "Dark Field",
+      "desc_zh": "当狂飙获得一层黑暗能量或在拥有黑暗能量的情况下使用L4或者M2命中对手时，他会放出黑暗场脉冲。\n黑暗场对对方造成黑暗燃烧，立即造成攻击力20%的伤害，并有70%的概率驱散对方一个增益。如果对方处于不可阻挡的状态，概率变为100%\n如果具有不可阻挡增益的对手冲向狂飙，他会立即获得黑暗能量，驱散不可阻挡增益，并造成1.5秒眩晕。",
+      "pua_icon": "0xe701",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "纪律",
+      "title_en": "Discipline",
+      "desc_zh": "纪律",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "After being struck 5 times by Melee Attacks, Cyclonus gains a {{var_7}} Physical Resistance Buff for {{var_8}}seconds.",
+      "desc_zh": "受到近战攻击 5 次后，狂飙获得 {{var_7}} 物理抵抗增益，持续 {{var_8}} 秒。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "After landing 6 Ranged Attacks, Cyclonus gains a Ranged Bonus, increasing damage from Ranged Attacks by {{var_9}} and Projectile Speed for {{var_10}}seconds.",
+      "desc_zh": "进行 6 次远程攻击后，狂飙获得远程加成，将远程攻击造成的伤害提高 {{var_9}}，射弹速度提高 {{var_10}} 秒。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "After landing 10 Melee Attacks, Cyclonus gains a Melee Bonus, increasing damage from Melee Attacks by {{var_11}} for {{var_12}}seconds.",
+      "desc_zh": "在进行 10 次近战攻击后，狂飙获得近战奖励，使近战攻击造成的伤害增加 {{var_11}}，持续 {{var_12}} 秒。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "盟友 – 回扣、发脾气、威震天",
+      "title_en": "Allies – Kickback, Tantrum, Megatronus",
+      "desc_zh": "+{{var_17}}~{{var_18}} 装甲",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "敌人 – 通天晓、阿尔茜、爆能者",
+      "title_en": "Enemies – Ultra Magnus, Arcee, Blaster",
+      "desc_zh": "+{{var_19}}~{{var_20}} 攻击",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "混沌之手——惊破天",
+      "title_en": "Hand of Chaos – Galvatron",
+      "desc_zh": "所有霸天虎特殊技都会获得 +{{var_21}}~{{var_22}} 特殊技伤害和暴击伤害。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "黑暗盟友 – Nemesis Prime",
+      "title_en": "Dark Ally – Nemesis Prime",
+      "desc_zh": "增加+{{var_23}}~{{var_24}} 暗烧伤伤害。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "领袖威仪 (5星)",
+      "title_en": "Leadership (5 Star)",
+      "desc_zh": "作为团队领导的灯塔，所有下层队友+{{var_25}} 装甲等级。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    }
+  ]
+}

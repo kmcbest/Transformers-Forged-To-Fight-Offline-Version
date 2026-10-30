@@ -1,0 +1,85 @@
+{
+  "bot_id": "ionstorm_gs_leader2015",
+  "name_zh": "离子风",
+  "name_en": "Ion Storm",
+  "faction": "decepticon",
+  "class": "tact",
+  "signature": {
+    "title_zh": "电磁逆火",
+    "title_en": "Ion Field Backfire",
+    "desc_zh": "敌方释放特殊技时，有 [50% - 85%] 几率触发电磁逆火：施加震击减益，造成攻击力 [40% - 80%] 的伤害，持续 5 秒，并扣除对手一格能量的 [20% - 40%]。",
+    "pua_icon": "0xe914",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "离子脉冲",
+      "name_en": "Ion Pulse Ray",
+      "desc_zh": "最后一击命中 85% 概率施加震击减益，造成攻击力 45% 的伤害，持续 4 秒；对拥有护甲增益或不可阻挡增益的敌人，额外造成 50% 的伤害。",
+      "pua_icon": "0xe914",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "电磁暴风",
+      "name_en": "EMP Stormfall",
+      "desc_zh": "每一击有 90% 概率施加破甲，首先移除对方身上一层护甲增益，并施加 30% 的破甲减益，持续 6 秒；70% 概率追加震击减益，造成攻击力 50% 的伤害，持续 5 秒。",
+      "pua_icon": "0xe516",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "平流层风暴",
+      "name_en": "Stratospheric Tempest",
+      "desc_zh": "最后一击 100% 概率移除对方身上所有护甲增益，并施加一个 40% 的破甲减益，持续 8 秒；技能结束后离子风获得一个攻击增益，增加 30% 的攻击力，持续 6 秒。",
+      "pua_icon": "0xe516",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "高压电离打击",
+      "title_en": "Ionizing Blast",
+      "desc_zh": "攻击附带高压电离冲击，命中时降低对手能量获取率 35%，并有几率对格斗系敌人的霸体状态造成直接电击打断。",
+      "pua_icon": "",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "电离极化",
+      "title_en": "Ionic Depolarization",
+      "desc_zh": "重击命中 100% 概率首先移除对方身上一层护甲增益，并施加 30% 的破甲减益，持续 6 秒。对手处于破甲减益状态下时，离子风的所有攻击造成额外 25% 的伤害。若对手处于不可阻挡状态，离子风的重击命中 100% 概率驱散其不可阻挡增益。",
+      "pua_icon": "0xe516",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "雨师三人组",
+      "title_en": "The Rainmakers",
+      "desc_zh": "与酸雨、新星风同队时，全队元素减益持续时间延长 {{var_1}}。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "acidstorm_gs_leader2015",
+        "novastorm_gs_leader2015"
+      ]
+    },
+    {
+      "title_zh": "寻猎空军",
+      "title_en": "Seeker Armada",
+      "desc_zh": "与红蜘蛛同队时，获得 +{{var_2}} 能量获取速率。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "fte_stars_gs_t3"
+      ]
+    },
+    {
+      "title_zh": "领袖威仪 (5星)",
+      "title_en": "Leadership (5 Star)",
+      "desc_zh": "团队所有低星级队员获得 +{{var_3}} 电击伤害。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    }
+  ]
+}

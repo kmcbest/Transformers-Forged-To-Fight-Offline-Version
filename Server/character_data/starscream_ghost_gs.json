@@ -1,0 +1,94 @@
+{
+  "bot_id": "starscream_ghost_gs",
+  "name_zh": "鬼魂红蜘蛛",
+  "name_en": "Ghost Starscream",
+  "faction": "decepticon",
+  "class": "scou",
+  "signature": {
+    "title_zh": "怨念附身",
+    "title_en": "Spiteful Possession",
+    "desc_zh": "受到致命伤害时，红蜘蛛化作怨灵附身对手 5 秒，令其陷入混乱反噬，并在附身结束时满血复活！",
+    "pua_icon": "",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "幽能突刺",
+      "name_en": "Phase Strike",
+      "desc_zh": "潜入虚空从背后突刺，造成无视格挡的暴击并施加破甲，削减对手 {{var_1}} 护甲持续 {{var_2}} 秒。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "火种汲取",
+      "name_en": "Spark Siphon",
+      "desc_zh": "双手抓住对手头部强行抽取火种能量，对目标施加虚弱降低其 {{var_3}} 攻击力持续 {{var_4}} 秒，同时自身恢复 {{var_5}} 生命值。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "篡位者亡魂狂想曲",
+      "name_en": "Ghost of the Usurper",
+      "desc_zh": "释放万千怨魂与幽冥鬼火，使对手陷入混乱持续 {{var_6}} 秒，无法获取能量并在期间受到 {{var_7}} 持续伤害。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "虚无悬浮相位",
+      "title_en": "Spectral Phasing",
+      "desc_zh": "全时处于悬浮鬼魂形态，所有近战与远程攻击对其有 30% 几率直接穿透虚化 (Miss)，不造成伤害。",
+      "pua_icon": "",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "幽能热射线",
+      "title_en": "Ethereal Null-Ray",
+      "desc_zh": "射线直接作用于敌方火种，造成无视护甲与护盾的纯净真实伤害。暴击率极高。",
+      "pua_icon": "",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "不灭火种",
+      "title_en": "Indestructible Spark",
+      "desc_zh": "受到暴击时免疫额外暴击加成伤害；每次成功虚化闪避时，吸取对手 10% 能量槽。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "弑君之仇",
+      "title_en": "Usurper Eternal Rival",
+      "desc_zh": "与惊破天、威震天对决时，获得 +{{var_1}} 暴击率与暴击伤害。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "galvatron_gs_voyager2016",
+        "megatron_gs_leader2015"
+      ]
+    },
+    {
+      "title_zh": "寻猎魅影",
+      "title_en": "Seeker Phantoms",
+      "desc_zh": "与滑流同队时，闪避几率额外提升 {{var_2}}。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "slipstream_gs"
+      ]
+    },
+    {
+      "title_zh": "领袖威仪 (5星)",
+      "title_en": "Leadership (5 Star)",
+      "desc_zh": "团队所有低星级队员获得 +{{var_3}} 暴击率。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    }
+  ]
+}

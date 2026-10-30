@@ -1,0 +1,96 @@
+{
+  "bot_id": "dinobot_bw_kabam",
+  "name_zh": "恐龙勇士",
+  "name_en": "Dinobot",
+  "faction": "maximal",
+  "class": "tact",
+  "signature": {
+    "title_zh": "适者生存",
+    "title_en": "Survival of the Fittest",
+    "desc_zh": "恐龙机器人鄙视弱点，会用破损的装甲刺穿敌人的方块。\n\n格挡对手：如果格挡对手破甲，恐龙机器人会通过格挡造成 {{var_14}} 点更多伤害，并有 {{var_15}} 几率发动不可格挡攻击。",
+    "pua_icon": "",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "特殊技 1",
+      "name_en": "Special Attack 1",
+      "desc_zh": "特殊 1 - 三叠纪湍流 - 恐龙机器人和他的对手被送上天空。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "特殊技 2",
+      "name_en": "Special Attack 2",
+      "desc_zh": "{{var_16}} 造成 {{var_17}} 破甲，持续 {{var_18}} 秒。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "特殊技 3",
+      "name_en": "Special Attack 3",
+      "desc_zh": "特别篇 2 - 侏罗纪正义 - 恐龙机器人毫不留情地对待他的对手。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "战斗被动",
+      "title_en": "Well-timed Blocks gain +{{var_9}} Block Proficiency.",
+      "desc_zh": "适时的区块获得+{{var_9}}区块熟练度。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "致命重击",
+      "title_en": "Critical Heavy Attacks",
+      "desc_zh": "致命重击",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "onHeavyHit",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "{{var_10}} Chance to inflict Bleed for <s>{{var_11}}</s> {{var_12}} of attack as damage over {{var_13}}.",
+      "desc_zh": "{{var_10}} 有机会对 <s>{{var_11}}</s> {{var_12}} 攻击造成流血，作为对 {{var_13}} 的伤害。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "盟友",
+      "title_en": "Allies",
+      "desc_zh": "犀牛、猎豹。擎天柱 +{{var_30}} 装甲",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "宿敌",
+      "title_en": "Enemies",
+      "desc_zh": "黄蜂者、蝎子 +{{var_31}} 攻击评级",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "剑圣",
+      "title_en": "Swordmasters",
+      "desc_zh": "风刃、漂移、大棒 在下一次暴击之前，每次不是暴击的剑攻击都会产生 +{{var_32}} 暴击伤害。 +{{var_33}} 单人任务中更多的关键命中。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "盾大师",
+      "title_en": "Shieldmasters",
+      "desc_zh": "Mixmaster、Jetfire 针对近战攻击的适时格挡获得 +{{var_34}} 格挡熟练度。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "bot_id": "chromia_gs_kabam",
+  "name_zh": "克劳莉娅",
+  "name_en": "Chromia",
+  "faction": "autobot",
+  "class": "warr",
+  "signature": {
+    "title_zh": "瞄准目标",
+    "title_en": "Eyes on Target",
+    "desc_zh": "所有特殊技最后一击：得到能量涌动增益，提升能量获得功率120%，持续7秒。",
+    "pua_icon": "E608",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "执行任务",
+      "name_en": "Bot on a Mission",
+      "desc_zh": "100%几率触发流血，造成攻击力69.3%的伤害，持续4秒。",
+      "pua_icon": "E401",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "善恶斩",
+      "name_en": "Good Chop. Bad Chop",
+      "desc_zh": "100%几率触发流血，造成攻击力100%的伤害，持续4秒。",
+      "pua_icon": "E401",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "暴力斧",
+      "name_en": "Axe of Violence",
+      "desc_zh": "施加减速，持续23.6秒，可叠加\n每层减速降低对手能量功率10%\n减速中的对手绝对不触发规避",
+      "pua_icon": "E952",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "减速",
+      "title_en": "Deceleration",
+      "desc_zh": "远程攻击命中或被防御时，有60%的概率施加减速，持续3.2秒，可叠加\n每层减速降低对手能量功率10%\n减速中的对手绝对不触发规避",
+      "pua_icon": "E952",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": []
+}

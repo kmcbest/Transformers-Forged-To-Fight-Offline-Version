@@ -1,0 +1,120 @@
+{
+  "bot_id": "ramjet_gs_deluxe2008",
+  "name_zh": "喷气机",
+  "name_en": "Ramjet",
+  "faction": "decepticon",
+  "class": "demo",
+  "signature": {
+    "title_zh": "势头",
+    "title_en": "Momentum",
+    "desc_zh": "冲压发动机在撞击对手后产生动力。\n\n冲压发动机有 {{var_4}} 几率获得永久特殊奖励增益，每个增益可增加 {{var_5}} 的特殊技伤害。对于他身上已有的每个特殊奖励增益，获得增益的机会会增加 {{var_6}}。 [最多 10 个 Buffs] 每激活一个特殊奖励 Buff，他自己的眩晕效果就会更快 {{var_7}}。\n\n+{{var_8}} 每级",
+    "pua_icon": "",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "导弹齐射",
+      "name_en": "Missile Volley",
+      "desc_zh": "每一击有60%的概率施加随机1~4层燃烧，每一层施加攻击力35%的伤害，持续6秒。",
+      "pua_icon": "0xe41d",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "特殊技 2",
+      "name_en": "Special Attack 2",
+      "desc_zh": "每一击有100%的概率施加燃烧，造成攻击力70%的伤害，持续6秒。",
+      "pua_icon": "0xe41d",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "火箭爆破者",
+      "name_en": "Rocket Blaster",
+      "desc_zh": "技能完成后，100%概率给对手和自己同时施加眩晕，对手眩晕4秒，自己眩晕1秒。",
+      "pua_icon": "0xe605",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "眩晕",
+      "title_en": "Stun",
+      "desc_zh": "重击命中处于燃烧状态的对手，100%概率触发眩晕，持续3秒",
+      "pua_icon": "0xe605",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "不可阻挡",
+      "title_en": "Unstoppable",
+      "desc_zh": "重击全程进入不可阻挡状态",
+      "pua_icon": "0xe915",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "盟友——声波、大棒、红蜘蛛",
+      "title_en": "Allies – Soundwave, Bludgeon, Starscream",
+      "desc_zh": "+{{var_23}}~{{var_24}} 装甲",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "敌人——风刃、天火",
+      "title_en": "Enemies – Windblade, Jetfire",
+      "desc_zh": "+{{var_25}}~{{var_26}} 攻击评级",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "协同加成",
+      "title_en": "Synergy Bonus",
+      "desc_zh": "不可阻挡的力量——汽车大师",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "协同加成",
+      "title_en": "Synergy Bonus",
+      "desc_zh": "{{var_27}}~{{var_28}} 机会冲压发动机在特殊技的最后一次命中后获得 {{var_29}} 的不可阻挡。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "协同加成",
+      "title_en": "Synergy Bonus",
+      "desc_zh": "{{var_30}}~{{var_31}} 机会 Motormaster 在特殊技的最后一击后击晕对手以获得 {{var_32}}。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "红蜘蛛的探索者",
+      "title_en": "Starscream's Seekers",
+      "desc_zh": "所有霸天虎远程攻击的 {{var_33}}~{{var_34}} 伤害和 {{var_35}}~{{var_36}} 穿甲。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "fte_stars_gs_t3"
+      ]
+    },
+    {
+      "title_zh": "执行者",
+      "title_en": "Enforcers",
+      "desc_zh": "减益效果持续 {{var_37}}~{{var_38}} 的时间更长且无法净化。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "motormaster_gs_voyager2015",
+        "kickback_gs_kabam"
+      ]
+    },
+    {
+      "title_zh": "领袖威仪 (5星)",
+      "title_en": "Leadership (5 Star)",
+      "desc_zh": "+{{var_39}} 特殊伤害。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    }
+  ]
+}

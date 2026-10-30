@@ -1,0 +1,66 @@
+{
+  "bot_id": "ultramagnus_sg_leader",
+  "name_zh": "捅天枭",
+  "name_en": "SG Ultra Magnus",
+  "faction": "autobot",
+  "class": "demo",
+  "signature": {
+    "title_zh": "终末战争军火库",
+    "title_en": "War Machine Frenzy",
+    "desc_zh": "特殊技命中时立即装填超重型战术核导弹，造成致命远程轰炸与辐射灼烧。",
+    "pua_icon": "",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "破片导弹蜂群",
+      "name_en": "Cluster Missile Swarm",
+      "desc_zh": "肩扛导弹巢瞬间齐射，打出漫天爆鸣，撕碎敌方防御并削减敌方 {{var_1}} 护甲持续 {{var_2}} 秒。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "死神磁轨重炮",
+      "name_en": "Railgun Decapitation",
+      "desc_zh": "充能发射毁灭性电磁轨道重炮，无视护盾并造成触电，在 {{var_3}} 秒内造成 {{var_4}} 能量伤害。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "审判日地毯轰炸",
+      "name_en": "Doomsday Carpet Bombing",
+      "desc_zh": "展开全武器库地毯式饱和火力轰炸，造成大范围燃烧与辐射，在 {{var_5}} 秒内造成 {{var_6}} 伤害并摧毁对手 {{var_7}} 能量。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [],
+  "synergies": [
+    {
+      "title_zh": "碎玻璃军阀",
+      "title_en": "Shattered Warlords",
+      "desc_zh": "与倾天柱同队时，爆炸伤害与攻击力提升 {{var_1}}。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "optimusprime_sg_voyager2015"
+      ]
+    },
+    {
+      "title_zh": "末日先驱",
+      "title_en": "Harbingers of Ruin",
+      "desc_zh": "与惊破天、电影威震天同队时，破甲提升 {{var_2}}。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "galvatron_gs_voyager2016",
+        "megatron_cin_rotf"
+      ]
+    },
+    {
+      "title_zh": "领袖威仪 (5星)",
+      "title_en": "Leadership (5 Star)",
+      "desc_zh": "团队所有低星级队员获得 +{{var_3}} 爆炸穿透。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    }
+  ]
+}

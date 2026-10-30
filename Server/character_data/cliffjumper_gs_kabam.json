@@ -1,0 +1,120 @@
+{
+  "bot_id": "cliffjumper_gs_kabam",
+  "name_zh": "飞过山",
+  "name_en": "Cliffjumper",
+  "faction": "autobot",
+  "class": "demo",
+  "signature": {
+    "title_zh": "脆化粉碎",
+    "title_en": "Glass Shatter",
+    "desc_zh": "暴击命中处于脆化状态的敌人时，有 60% 概率触发玻璃粉碎爆炸，造成巨额真实伤害并击晕对手 2 秒。",
+    "pua_icon": "",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "瓦斯火箭轰击",
+      "name_en": "Glass Gas Rocket",
+      "desc_zh": "近距离轰出高浓缩玻璃瓦斯火箭弹，直接击碎敌方护甲，施加破甲削减 {{var_1}} 护甲持续 {{var_2}} 秒并击退。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "红火狂怒连射",
+      "name_en": "Crimson Fury Barrage",
+      "desc_zh": "如果对手拥有至少I0个玻璃瓦斯减益，此攻击的最后一击无法格挡。",
+      "pua_icon": "E41F",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "零距离粉碎",
+      "name_en": "Point Blank Annihilation",
+      "desc_zh": "零距离引爆高浓缩玻璃瓦斯核芯，施加脆化，使敌方受到的暴击伤害提升 {{var_6}} 持续 {{var_7}} 秒。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "玻璃瓦斯重炮",
+      "title_en": "Glass Gas Projector",
+      "desc_zh": "远程攻击发射独特的玻璃瓦斯，使对手进入“脆化” (Brittle) 状态，对手护甲瞬间归零，受到的暴击伤害提升 50%。",
+      "pua_icon": "",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "特殊伤害",
+      "title_en": "Special Damage",
+      "desc_zh": "在没有伤害减益的状态下使用特殊技，伤害增加20%",
+      "pua_icon": "E41C",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "玻璃瓦斯减益",
+      "title_en": "Glass Gas Debuff",
+      "desc_zh": "远程攻击命中或被防，有100%的几率施加1层玻璃瓦斯减益，持续8秒可叠加。\n每层玻璃瓦斯减益降低对手格挡精通5%\n每层玻璃瓦斯减益提升飞过山特殊技伤害5%",
+      "pua_icon": "E524",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "重击刷新",
+      "title_en": "Heavy Refresh",
+      "desc_zh": "重击命中，刷新所有玻璃瓦斯减益的倒计时。",
+      "pua_icon": "E406",
+      "category": "passive",
+      "ui_trigger": "onHeavyHit",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "勇往直前",
+      "title_en": "First to Fight",
+      "desc_zh": "面对体型大于自身的敌人时，攻击力额外提升 30%，且免疫任何嘲讽与恐惧效果。",
+      "pua_icon": "",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "潜伏警惕",
+      "title_en": "Suspicious Temperament",
+      "desc_zh": "面对具有闪避 (Evade) 或隐形能力的敌人时，飞过山精准度提高 100%，攻击绝对无法被闪避。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "领袖先锋",
+      "title_en": "Prime Vanguard",
+      "desc_zh": "与G1擎天柱同队时，获得 +{{var_1}} 攻击力与 +{{var_2}} 暴击率。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "fte_optimus_gs_t3"
+      ]
+    },
+    {
+      "title_zh": "迷你勇士侦察连",
+      "title_en": "Minibot Recon",
+      "desc_zh": "与大黄蜂同队时，所有暴击伤害提升 {{var_3}}。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "bumblebee_gs_kabam"
+      ]
+    },
+    {
+      "title_zh": "领袖威仪 (5星)",
+      "title_en": "Leadership (5 Star)",
+      "desc_zh": "团队所有低星级队员获得 +{{var_4}} 破甲效果。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    }
+  ]
+}

@@ -1,0 +1,112 @@
+{
+  "bot_id": "optimusprime_sg_voyager2015",
+  "name_zh": "倾天柱",
+  "name_en": "SG Optimus Prime",
+  "faction": "autobot",
+  "class": "braw",
+  "signature": {
+    "title_zh": "暴虐火种",
+    "title_en": "Spark of Tyranny",
+    "desc_zh": "所有特殊技发动时，获得一个概率充能，提升下一次特殊技无法防御的概率30%，直到特殊技触发无法防御时消耗掉。\n如果使用不可防御的SP1或SP2击中对手，则额外获得一层不可防御，下一次L1或M1必然不可防御，然后消耗掉。",
+    "pua_icon": "E909",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "欺世之斧",
+      "name_en": "Iron Grip Choke Slam",
+      "desc_zh": "单手扼住对手喉咙将其砸入地面，眩晕目标 {{var_1}} 秒并施加流血在 {{var_2}} 秒内造成 {{var_3}} 伤害。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "断魂之斧",
+      "name_en": "Energon Axe Execution",
+      "desc_zh": "弹出猩红能量斧疯狂连环劈砍，施加多层撕裂流血，在 {{var_4}} 秒内造成 {{var_5}} 伤害，且无法被净化。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "夺命之斧",
+      "name_en": "Absolute Dominion",
+      "desc_zh": "化身邪恶重卡全力碾压对手，自身获得残暴增益提升 {{var_6}} 攻击力持续 {{var_7}} 秒，且攻击不可被格挡。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "暴君重拳",
+      "title_en": "Tyrant Fist",
+      "desc_zh": "重击必定造成重度眩晕 (Stun) 与撕裂流血；近战对攻极其霸道。",
+      "pua_icon": "",
+      "category": "basic",
+      "ui_trigger": "onHeavyHit",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "嗜血狂暴",
+      "title_en": "Bloodthirsty Rush",
+      "desc_zh": "敌人身上的每一层流血都使倾天柱获得 +15% 攻击力与吸血效果（攻击命中吸取生命）。",
+      "pua_icon": "",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "逆境暴发",
+      "title_en": "Struggle",
+      "desc_zh": "处于伤害减益状态时，攻击力提升50%",
+      "pua_icon": "E406",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "减益控制",
+      "title_en": "Debuff Control",
+      "desc_zh": "被施加伤害减益时重击命中对手，可将所有伤害减益强度降低99%，但时间延长300%。",
+      "pua_icon": "E407",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "减益循环",
+      "title_en": "Debuff Cycle",
+      "desc_zh": "自身处于流血状态时，所有攻击有10%的概率施加1层燃烧，造成攻击力70%的伤害，持续3秒，最大堆叠1层，可刷新\n自身处于燃烧状态时，所有攻击有10%的概率施加1层震击，造成攻击力70%的伤害，持续3秒，最大堆叠1层，可刷新\n自身处于震击状态时，所有攻击有10%的概率施加1层酸液，造成攻击力70%的伤害，持续3秒，最大堆叠1层，可刷新\n自身处于酸液状态时，所有攻击有10%的概率施加1层流血，造成攻击力70%的伤害，持续3秒，最大堆叠1层，可刷新",
+      "pua_icon": "E936",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "镜像宿命",
+      "title_en": "Mirror Nemesis",
+      "desc_zh": "与G1擎天柱对决或同队时，获得 +{{var_2}} 攻击力。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "fte_optimus_gs_t3"
+      ]
+    },
+    {
+      "title_zh": "碎玻璃暴君同盟",
+      "title_en": "Shattered Tyrants",
+      "desc_zh": "与捅天枭、暗天陨同队时，破甲与吸血效果提升 {{var_3}}。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "ultramagnus_sg_leader",
+        "nemesisprime_gs_voyager2015"
+      ]
+    },
+    {
+      "title_zh": "领袖威仪 (5星)",
+      "title_en": "Leadership (5 Star)",
+      "desc_zh": "团队所有低星级队员获得 +{{var_4}} 暴击伤害。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    }
+  ]
+}

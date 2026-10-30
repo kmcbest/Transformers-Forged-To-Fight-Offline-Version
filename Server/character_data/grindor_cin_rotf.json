@@ -1,0 +1,93 @@
+{
+  "bot_id": "grindor_cin_rotf",
+  "name_zh": "碾碎器",
+  "name_en": "Grindor",
+  "faction": "decepticon",
+  "class": "braw",
+  "signature": {
+    "title_zh": "穿孔",
+    "title_en": "Perforate",
+    "desc_zh": "所有攻击：作为近战专家，Grindor 能够利用对手储存的力量来发挥自己的优势，将近战伤害提高最多 <s>{{var_11}}</s> {{var_12}}。\n\n+ 每级大约 {{var_13}}。",
+    "pua_icon": "",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "物理治疗",
+      "name_en": "Physical Therapy",
+      "desc_zh": "战争记忆会引发身体爆发，损害对手的利益。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "愤怒旋转",
+      "name_en": "Rotor Rage",
+      "desc_zh": "根据对手当前的能量，最高造成40%的额外伤害。",
+      "pua_icon": "0xe406",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "俯冲",
+      "name_en": "Skydive",
+      "desc_zh": "{{var_16}} 有机会为 {{var_17}} 锁定特殊 2。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "天然护甲",
+      "title_en": "Permanent Armor",
+      "desc_zh": "+17%的永久护甲增益，无图标，不可被破甲移除",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "盟友",
+      "title_en": "Allies",
+      "desc_zh": "+{{var_29}}~{{var_30}} 装甲。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "bonecrusher_cin_rotf"
+      ]
+    },
+    {
+      "title_zh": "宿敌",
+      "title_en": "Enemies",
+      "desc_zh": "+{{var_31}}~{{var_32}} 攻击评级。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "optimusprime_cin_tf"
+      ]
+    },
+    {
+      "title_zh": "亡命之徒",
+      "title_en": "Outlaws",
+      "desc_zh": "第一次重击击中时，{{var_33}} 有机会对 {{var_34}}~{{var_35}} 造成强力锁定。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "barricade_cin_dotm"
+      ]
+    },
+    {
+      "title_zh": "锻造服务",
+      "title_en": "Forged to Serve",
+      "desc_zh": "威震天有 {{var_36}}~{{var_37}} 机会以势不可挡的方式赢得战斗。 Grindor 获得+{{var_38}}~{{var_39}} 装甲。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "megatron_cin_rotf"
+      ]
+    },
+    {
+      "title_zh": "领袖威仪 (5星)",
+      "title_en": "Leadership (5 Star)",
+      "desc_zh": "所有较低级别的队友都会获得 +{{var_40}} 攻击评级。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    }
+  ]
+}

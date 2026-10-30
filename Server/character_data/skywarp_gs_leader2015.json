@@ -1,0 +1,114 @@
+{
+  "bot_id": "skywarp_gs_leader2015",
+  "name_zh": "闹翻天",
+  "name_en": "Skywarp",
+  "faction": "decepticon",
+  "class": "tech",
+  "signature": {
+    "title_zh": "闪避——闹翻天也可以利用他的传送进行防御，躲避危险。",
+    "title_en": "Cut and Run - Skywarp can use his teleportation defensively too, dodging away from danger.",
+    "desc_zh": "受到攻击时：如果闹天有传送冲锋，{{var_14}} 几率闪避特殊技 1 或特殊技 2 的最后一击。这会消耗传送冲锋。\n\n+{{var_15}} 每级",
+    "pua_icon": "",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "欺骗性打击",
+      "name_en": "Deceitful Hit",
+      "desc_zh": "闹翻天总是有他的妙计。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "特殊技 2",
+      "name_en": "Special Attack 2",
+      "desc_zh": "如果闹翻天有传送冲锋，这就是传送攻击。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "特殊技 3",
+      "name_en": "Special Attack 3",
+      "desc_zh": "远程攻击会导致 {{var_17}} 的 {{var_16}} 功率消耗。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "传送充能",
+      "title_en": "Teleport Charge",
+      "desc_zh": "每8秒得到一个传送充能，最大叠加3层\n如果闹翻天受到暴击，有25%的概率丢失一个传送充能，受到战士系暴击时概率为50%\n成功闪避一次特殊攻击，得到一个传送充能",
+      "pua_icon": "E98F",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "特殊伤害减益",
+      "title_en": "Special Damage Debuff",
+      "desc_zh": "普通远程攻击命中时有20%的概率施加1层特殊伤害减益，减少10%的特殊伤害，持续5秒\n远程重击命中时有50%的概率施加1层特殊伤害减益，减少10%的特殊伤害，持续9秒",
+      "pua_icon": "E41C",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "传送攻击",
+      "title_en": "Teleport Attack",
+      "desc_zh": "在拥有传送充能时，特殊攻击1和2会变为传送攻击\n\n传送攻击的暴击率增加27%\n传送攻击不可防御\n传送攻击有50%的概率施加8秒的能量锁定\n传送攻击100%概率净化所有震击减益",
+      "pua_icon": "E98F",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "红蜘蛛的探索者",
+      "title_en": "Starscream’s Seekers",
+      "desc_zh": "+{{var_24}}~{{var_25}} 伤害和 {{var_26}}~{{var_27}} 所有霸天虎远程攻击的穿甲。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "fte_stars_gs_t3",
+        "thundercracker_gs_leader2015",
+        "ramjet_gs_deluxe2008",
+        "dirge_gs_deluxe2008"
+      ]
+    },
+    {
+      "title_zh": "棘手技术",
+      "title_en": "Tricky Tech",
+      "desc_zh": "+{{var_28}}~{{var_29}} 特殊技力。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "mirage_gs_deluxe2016"
+      ]
+    },
+    {
+      "title_zh": "大脑增益",
+      "title_en": "Brain Gain",
+      "desc_zh": "{{var_30}}~{{var_31}} 增加对拆除机器人的攻击评级。仅当团队中的所有机器人都具有此协同羁绊时，冲击波才能受益于此奖励",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "shockwave_gs"
+      ]
+    },
+    {
+      "title_zh": "心智压榨",
+      "title_en": "Brain Drain",
+      "desc_zh": "{{var_32}}~{{var_33}} 战斗开始时对{{var_34}}进行远程回避。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "shockwave_gs"
+      ]
+    },
+    {
+      "title_zh": "领袖威仪 (5星)",
+      "title_en": "Leadership (5 Star)",
+      "desc_zh": "作为领导的灯塔，所有较低级别的队友都获得+{{var_35}}功率率。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    }
+  ]
+}

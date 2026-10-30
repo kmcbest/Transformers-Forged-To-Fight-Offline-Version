@@ -1,0 +1,126 @@
+{
+  "bot_id": "windblade_gs",
+  "name_zh": "风刃",
+  "name_en": "Windblade",
+  "faction": "autobot",
+  "class": "scou",
+  "signature": {
+    "title_zh": "决心",
+    "title_en": "Resolution",
+    "desc_zh": "根据对手失去的生命值提高暴击率，最高提升25%",
+    "pua_icon": "E40D",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "电路切片器",
+      "name_en": "Circuit Slicer",
+      "desc_zh": "如果对手身上有能量增益，则全部驱散，并施加攻击力80%的即时伤害。",
+      "pua_icon": "E950",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "剑舞",
+      "name_en": "Sword Dance",
+      "desc_zh": "最后一击命中后，获得6秒的的护甲穿透增益，所有攻击无视对方100%的护甲值。",
+      "pua_icon": "E409",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "空中扫射",
+      "name_en": "Strafing Run",
+      "desc_zh": "技能完成后，35%概率施加眩晕，持续3秒",
+      "pua_icon": "0xe605",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "剑刃暴击流血",
+      "title_en": "Critical Bleed",
+      "desc_zh": "近战（包括近战普通攻击和重击）出暴击时，有66%的概率触发流血，造成攻击力68%的伤害，持续4秒。",
+      "pua_icon": "0xe401",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "剑刃暴击率",
+      "title_en": "Crit Buff",
+      "desc_zh": "使用剑刃攻击时暴击率增加25%。",
+      "pua_icon": "E40D",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "重击远程穿透",
+      "title_en": "Heavy Range Immunue",
+      "desc_zh": "重击全程不会被远程普通攻击和远程重击击中。",
+      "pua_icon": "0xe518",
+      "category": "passive",
+      "ui_trigger": "onHeavyHit",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "眩晕",
+      "title_en": "Stun",
+      "desc_zh": "如果对手正处于流血状态，远程攻击命中有35%的概率造成眩晕，持续1.5秒",
+      "pua_icon": "E605",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "与铁皮的盟友",
+      "title_en": "Allies with Ironhide",
+      "desc_zh": "+{{var_16}}~{{var_17}} 装甲。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "拥有冲压发动机的敌人",
+      "title_en": "Enemies with Ramjet",
+      "desc_zh": "+{{var_18}}~{{var_19}} 攻击评级。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "剑圣与大棒、漂移、恐龙机器人",
+      "title_en": "Swordmasters with Bludgeon, Drift, Dinobot",
+      "desc_zh": "<s>{{var_20}}~{{var_21}}</s> {{var_22}}~{{var_23}} 每次剑攻击的暴击伤害，在下一次暴击之前不会成为暴击。 （这不计算对具有有效暴击抵抗增益的对手或当剑圣机器人具有有效暴击率减益时的命中。） 在单人任务中+{{var_24}}~{{var_25}}更多致命一击。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "黄蜂和红蜘蛛的天空突击",
+      "title_en": "Sky Assault with Waspinator and Starscream",
+      "desc_zh": "{{var_26}}~{{var_27}} 反规避。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "浪漫与横扫",
+      "title_en": "Romance with Sideswipe",
+      "desc_zh": "风刃以能量条的{{var_28}}~{{var_29}}开始战斗。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "与滑流的竞争对手",
+      "title_en": "Rivals with Slipstream",
+      "desc_zh": "+{{var_30}}~{{var_31}} 关键机会。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "领袖威仪 (5星)",
+      "title_en": "Leadership (5 Star)",
+      "desc_zh": "+{{var_32}} 批评评级",
+      "pua_icon": "",
+      "bonus_heroes": []
+    }
+  ]
+}

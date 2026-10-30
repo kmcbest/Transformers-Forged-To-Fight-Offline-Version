@@ -1,0 +1,119 @@
+{
+  "bot_id": "blaster_gs_leader2016",
+  "name_zh": "录音机",
+  "name_en": "Blaster",
+  "faction": "autobot",
+  "class": "tech",
+  "signature": {
+    "title_zh": "吸收护盾",
+    "title_en": "Absorption Shield",
+    "desc_zh": "护盾状态下，录音机对远程攻击拥有不可阻挡的状态\n护盾额外提供20%的伤害减免",
+    "pua_icon": "E915",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "放大",
+      "name_en": "Amped",
+      "desc_zh": "调高音量，开始节奏。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "特殊技 2",
+      "name_en": "Special Attack 2",
+      "desc_zh": "Blaster 获得最多 3 个额外的 Amp Charges。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "特殊技 3",
+      "name_en": "Special Attack 3",
+      "desc_zh": "{{var_17}} 有机会授予功率增益增益，从而生成超过 {{var_19}} 的最大功率的 {{var_18}}。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "放大充能",
+      "title_en": "Amp Charge",
+      "desc_zh": "发动任意特殊技时，获得1层放大充能，最多叠加10层。\n每层放大充能增加6%的远程伤害，包括普通远程，重击和特殊技中的远程攻击",
+      "pua_icon": "E119",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "干扰",
+      "title_en": "Interference",
+      "desc_zh": "普通远程攻击命中或被防时，有80%概率施加干扰减益，降低对手远程攻击20%的伤害，50%的射速，持续10秒。",
+      "pua_icon": "E519",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "震击",
+      "title_en": "Shock",
+      "desc_zh": "重击命中100%的概率施加震击，造成攻击30%的伤害，持续5秒。\n每层放大充能增加20%的震击伤害",
+      "pua_icon": "E914",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "护盾",
+      "title_en": "Shield",
+      "desc_zh": "进入防御姿态时得到一个护盾，护盾生效时使受到的伤害降低15%，松开防御后0.5秒后护盾消失，每个放大充能延长倒计时0.25秒。",
+      "pua_icon": "E515",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "盟友——通天晓、阿尔茜",
+      "title_en": "Allies – Ultra Magnus, Arcee",
+      "desc_zh": "+{{var_28}}~{{var_29}} 装甲。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "敌人——声波、发脾气、狂飙",
+      "title_en": "Enemies – Soundwave, Tantrum, Cyclonus",
+      "desc_zh": "+{{var_30}}~{{var_31}} 攻击评级。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "护盾放大器 – 声波、幻影、犀牛",
+      "title_en": "Shield Amp - Soundwave, Mirage, Rhinox",
+      "desc_zh": "{{var_32}}~{{var_33}} 屏蔽时伤害减少。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "人才流失——冲击波",
+      "title_en": "Brain Drain – Shockwave",
+      "desc_zh": "冲击波在战斗开始时和每次 {{var_35}} 时产生 {{var_34}}~3 能量球。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "大脑增益——冲击波",
+      "title_en": "Brain Gain – Shockwave",
+      "desc_zh": "{{var_36}}~{{var_37}} 增加对拆除机器人的攻击。只有当团队中的所有机器人都具有这种协同羁绊时，Shockwave 才能获得此优势。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "领袖威仪 (5星)",
+      "title_en": "Leadership (5 Star)",
+      "desc_zh": "+{{var_38}} 所有较低级别队友的功率率。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    }
+  ]
+}

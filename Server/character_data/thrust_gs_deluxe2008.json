@@ -1,0 +1,85 @@
+{
+  "bot_id": "thrust_gs_deluxe2008",
+  "name_zh": "冲锋",
+  "name_en": "Thrust",
+  "faction": "decepticon",
+  "class": "scou",
+  "signature": {
+    "title_zh": "尖锥重撞",
+    "title_en": "Conehead Ram",
+    "desc_zh": "冲锋俯冲与重击具有霸体特性，必定造成重度眩晕与强力破盾。",
+    "pua_icon": "",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "垂直起降风暴",
+      "name_en": "VTOL Cyclone",
+      "desc_zh": "垂直起降涡轮喷出高压气流吹飞敌人，造成音爆硬直并使目标眩晕 {{var_1}} 秒。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "低空俯冲扫射",
+      "name_en": "Low-Altitude Strafing",
+      "desc_zh": "低空超音速掠过连续投弹扫射，命中造成破甲持续 {{var_2}} 秒，降低对手 {{var_3}} 护甲。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "五倍音速天顶撞击",
+      "name_en": "Mach-5 Catastrophe",
+      "desc_zh": "突破五倍音速用坚硬的锥头穿刺敌人，造成巨额暴击伤害并施加脑震荡持续 {{var_4}} 秒。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "极音速音爆后掠",
+      "title_en": "Sonic Boom Wake",
+      "desc_zh": "侧滑与闪避产生高频震荡波，打断敌方射击瞄准并击退对手。",
+      "pua_icon": "",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "浮夸吹嘘与绝地逃脱",
+      "title_en": "Brazen Bravado",
+      "desc_zh": "战斗前 15 秒移动速度与暴击率提升 40%；生命值低于 30% 时闪避几率暴增 50%。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "尖头小队",
+      "title_en": "The Coneheads",
+      "desc_zh": "与挽歌、喷气机同队时，闪避与近战穿透提升 {{var_1}}。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "dirge_gs_deluxe2008",
+        "ramjet_gs_deluxe2008"
+      ]
+    },
+    {
+      "title_zh": "寻猎空军",
+      "title_en": "Seekers",
+      "desc_zh": "与红蜘蛛同队时，暴击率提升 {{var_2}}。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "fte_stars_gs_t3"
+      ]
+    },
+    {
+      "title_zh": "领袖威仪 (5星)",
+      "title_en": "Leadership (5 Star)",
+      "desc_zh": "团队所有低星级队员获得 +{{var_3}} 暴击伤害。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    }
+  ]
+}

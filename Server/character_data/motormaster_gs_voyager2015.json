@@ -1,0 +1,138 @@
+{
+  "bot_id": "motormaster_gs_voyager2015",
+  "name_zh": "汽车大师",
+  "name_en": "Motormaster",
+  "faction": "decepticon",
+  "class": "braw",
+  "signature": {
+    "title_zh": "公路之王",
+    "title_en": "King of the Road",
+    "desc_zh": "他的生命值越低，汽车大师就越愤怒，从而给予他近战伤害增益。\n\n被动：每损失最大生命值的20%，汽车大师的愤怒就会赋予他60%的近战伤害增益。",
+    "pua_icon": "0xe406",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "离子发生器叶片",
+      "name_en": "Ionizer Blade",
+      "desc_zh": "真空金属化能量的爆炸帮助对手成为垃圾场之王。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial1Hit"
+    },
+    "sp2": {
+      "name_zh": "大师级工艺 (不可阻挡)",
+      "name_en": "A Master Craft (Unstoppable)",
+      "desc_zh": "特殊技2激活时：获得4秒的不可阻挡增益。",
+      "pua_icon": "0xe915",
+      "ui_trigger": "onSpecial2Hit"
+    },
+    "sp3": {
+      "name_zh": "特殊技 3",
+      "name_en": "Special Attack 3",
+      "desc_zh": "汽车大师获得不可阻挡的增益，持续 {{var_9}} 秒。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit"
+    }
+  },
+  "abilities": [
+    {
+      "title_zh": "冲压",
+      "title_en": "Ramming",
+      "desc_zh": "暂时降低对手的攻击力",
+      "pua_icon": "0xe916",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "不可阻挡",
+      "title_en": "Unstoppable",
+      "desc_zh": "角色行动不会被对手攻击打断",
+      "pua_icon": "0xe915",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "前冲不可阻挡",
+      "title_en": "Dashing Unstoppable",
+      "desc_zh": "汽车大师以不可阻挡的力量向前冲锋，无视对手攻击的影响。",
+      "pua_icon": "0xe915",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "重击冲压",
+      "title_en": "Ram With Heavy Attacks",
+      "desc_zh": "用重击撞击对手时随机造成三个减益效果之一（均持续6秒）\n* -21.6%的攻击力\n* -29.7%的破甲\n* -24.3%的能量功率",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "onHeavyHit",
+      "show_on_main_screen": true
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "宿敌",
+      "title_en": "Enemies",
+      "desc_zh": "+{{var_12}}~{{var_13}} 攻击评级。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "fte_optimus_gs_t3",
+        "grimlock_gs_mp08",
+        "wheeljack_gs_mp20"
+      ]
+    },
+    {
+      "title_zh": "协同加成",
+      "title_en": "Synergy Bonus",
+      "desc_zh": "不可阻挡的力量——冲压发动机",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "协同加成",
+      "title_en": "Synergy Bonus",
+      "desc_zh": "{{var_14}}~{{var_15}} 机会冲压发动机在特殊技的最后一次命中后获得 {{var_16}} 的不可阻挡。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "协同加成",
+      "title_en": "Synergy Bonus",
+      "desc_zh": "{{var_17}}~{{var_18}} 机会 Motormaster 在特殊技的最后一击后击晕对手以获得 {{var_19}}。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "执行者",
+      "title_en": "Enforcers",
+      "desc_zh": "减益效果持续 {{var_20}}~{{var_21}} 的时间更长且无法净化。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "ramjet_gs_deluxe2008",
+        "kickback_gs_kabam"
+      ]
+    },
+    {
+      "title_zh": "领袖威仪 (5星)",
+      "title_en": "Leadership (5 Star)",
+      "desc_zh": "+{{var_22}} 攻击评级。",
+      "pua_icon": "",
+      "bonus_heroes": []
+    },
+    {
+      "title_zh": "飞天虎 (Menasor)",
+      "title_en": "Menasor",
+      "desc_zh": "战斗开始时获得 {{var_23}}~{{var_24}} 初始能量与 +{{var_25}} 攻击力和护甲。仅当队伍中所有成员均具有此协同（飞虎队全员）时激活。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "deadend_gs_deluxe2015",
+        "breakdown_gs",
+        "dragstrip_gs_deluxe2016",
+        "wildrider_gs_deluxe2016"
+      ]
+    }
+  ]
+}
