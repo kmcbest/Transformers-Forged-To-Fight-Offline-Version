@@ -29,12 +29,7 @@
    * 8.2 第二攻坚难题：眼睛点亮位置与发光遮罩（独立 3D 眼球镜片与 RAOE 通道图集错位）
    * 8.3 第三攻坚难题：载具模式朝向 180° 反转（Vehicle Mode Yaw Flip）
    * 8.4 关键资产与核心脚本速查表
-7. [架构复盘与真机渲染失真根因分析及演进路线 (Architecture Retrospective & Runtime Distortion Root Cause)](#7-架构复盘与真机渲染失真根因分析及演进路线-architecture-retrospective--runtime-distortion-root-cause)
-8. [高难实战攻坚专题：全 30 根手指灵活卷曲、3D 独立发光眼与载具 180° 朝向逆转深度避坑指南 (Advanced Practice: 30 Articulated Fingers, True 3D Eye Glow, and 180° Vehicle Orientation Correction)](#8-高难实战攻坚专题全-30-根手指灵活卷曲3d-独立发光眼与载具-180-朝向逆转深度避坑指南)
-   * 8.1 第一攻坚难题：30 根手指灵活卷曲与 1:1 关节轴向精准对齐
-   * 8.2 第二攻坚难题：眼睛点亮位置与发光遮罩（独立 3D 眼球镜片与 RAOE 通道图集错位）
-   * 8.3 第三攻坚难题：载具模式朝向 180° 反转（Vehicle Mode Yaw Flip）
-   * 8.4 关键资产与核心脚本速查表
+   * 8.5 第四攻坚难题：Kabam 法线蓝通道隐藏金属度（NM.Blue）导致全身镜面发暗与珍珠白提亮
 
 ---
 
@@ -553,3 +548,21 @@ flowchart TD
 | **全套权威贴图构建** | `tools/elita_one/build_clean_elita_textures.py` | 3D 眼睛注入冰青发光、清洗面部手绘杂色、构建 $1024\times 2048$ 零碰撞 RAOE 图集 |
 | **底层 AssetBundle 逆向注入** | `tools/elita_one/generate_elita_one_bundle.py` | 跨 Prefab 物理隔离、修正材质 UV Scale/Offset、强制 LZ4 压缩保存 |
 
+---
+
+### 8.5 第四攻坚难题：Kabam 法线蓝通道隐藏金属度（`NM.Blue`）导致全身镜面发暗与珍珠白提亮
+
+#### 1. 现象与 PBR 通道错位根因
+* **现象**：在 Unity Editor（`Standard` 着色器）中，艾丽塔与阿尔茜并排站立时脸部、大腿、胸口与手指均呈现明亮白净的质感；但打包进游戏实机后，全身显得灰暗油腻，白色部位变成灰褐色，甚至在深色/暗黄关卡（如香港码头集装箱、夜晚城市废墟）中把背景环境色像镜子一样反射在身上。
+* **三大精确根因**：
+  1. **法线贴图蓝通道（`NM.Blue`）在 Kabam `Character/PBR` 中实为逐像素金属度遮罩（Metallic Mask）**：  
+     当材质启用 `_METALLIC_TEX` 宏时，`_normal_tex`（`main_NM` / `tform_misc_NM`）的通道定义为 **`R = Nx, G = Ny, B = Metallic, A = 255`**（法线 $N_z$ 由着色器实时重构）。官方阿尔茜在所有白色装甲、脸部、粉色装甲上的 `NM.B` 中位数均为 **`0`（纯非金属电介质陶瓷/烤漆）**，仅在裸露深灰机械关节处为 `180~255`。若直接塞入 UE4/常规法线图（`Nz ≈ 254`），引擎会将角色全身 100% 判定为裸露铬金属，大幅压暗漫反射 `Albedo * (1 - Metallic)` 并把全身变成环境反射镜！
+  2. **粗糙度贴图与材质球 `_roughness_range` 双重相乘导致 `0.07` 极滑镜面**：  
+     将粗糙度贴图乘以 `0.35`（降至 `~0.20`）的同时又把材质 `_roughness_range` 设为 `0.35`，叠加 `_MODE_CLEARCOAT` 的 `_clearcoat_reflectance_range = 0.10`，会产生 `0.07` 粗糙度的湿滑镜面反射。
+  3. **第三方主机/PC 原模漫反射“白甲”底色偏暖灰褐（Taupe）**：  
+     《Galactic Trials》原图白色区域均值仅为 `RGB ≈ [194, 168, 167]`（线性空间反射率不足官方阿尔茜 `[241, 241, 241]` 的一半）。
+
+#### 2. 工业化修正铁律
+* **严格按 Kabam `(Nx, Ny, Metallic, 255)` 规范打包法线贴图**：在 `build_clean_elita_textures.py` 中，100% 保留原始 `Nx, Ny` 微法线细节，将所有白色装甲、面部皮肤、彩色烤漆装甲、轮胎与发光灯带的 `NM.B` 强制置为 **`0`（纯电介质）**，仅在深灰中性机械关节（`lum ∈ [44, 116], sat < 0.15`）赋予柔和金属度（`~95`）；同步输出给 Unity Editor `Standard` 预览的法线图则保留常规三轴 `(Nx, Ny, Nz)`。
+* **丝绒哑光陶瓷粗糙度与清漆抑制**：人形白甲与面部 `RAOE.R` 保持在 `185~215` 丝滑哑光陶瓷区间，材质 `_roughness_range` 设为 `0.95`（对齐官方铁皮/阿尔茜的 `1.0`），并将 `_clearcoat_reflectance_range` 压低至 `0.02`，彻底隔绝暗色关卡环境贴图染色。
+* **保留立体雕塑细节的连续珍珠白提亮曲线**：采用无硬阈值连续权重与高光软膝（`tanh` soft-knee）曲线，将灰褐白甲平滑提亮至 `RGB ≈ [240, 238, 240]` 珍珠白，100% 保留嘴唇、鼻梁、眼窝雕塑层次与银色汽车人徽章内部刻线。

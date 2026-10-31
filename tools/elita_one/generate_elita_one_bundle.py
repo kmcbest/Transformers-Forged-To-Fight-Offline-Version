@@ -289,16 +289,21 @@ def main():
         elif obj.type.name == "Material":
             mat = obj.read_typetree()
             saved_props = mat.get("m_SavedProperties", {})
-            # Tune the 2 main body materials to render bright & opaque with HDR Bloom
+            # Tune the 2 main body materials for bright dielectric pearl-white/sakura-pink satin PBR
+            # (Zero muddy stage cubemap reflections + crisp HDR Eye/Crest Bloom)
             if obj.path_id in [-737396187749761411, 5182645448333425879]:
                 new_floats = []
                 for k, v in saved_props.get("m_Floats", []):
                     if k == "_Mode":
-                        new_floats.append((k, 0.0))  # Opaque
+                        new_floats.append((k, 3.0))  # Official Kabam _MODE_CLEARCOAT enum
                     elif k == "_metallic_range":
-                        new_floats.append((k, 0.45))  # Metallic
+                        new_floats.append((k, 0.22))  # Multiplies NM.B (0 on all white/face/pink -> 0.00 metallic!)
                     elif k == "_roughness_range":
-                        new_floats.append((k, 0.35))  # Sleek sports car gloss
+                        new_floats.append((k, 0.95))  # Silky matte-satin ceramic (eliminates 0.07 mirror reflections!)
+                    elif k == "_clearcoat_reflectance_range":
+                        new_floats.append((k, 0.02))  # Prevents dark yellow stage cubemaps from tinting white armor
+                    elif k == "_reflectance":
+                        new_floats.append((k, 0.03))  # Soft dielectric Fresnel sheen
                     elif k == "_emissive_range":
                         new_floats.append((k, 1.0))
                     elif k == "_emissive_overbright_range":
@@ -345,18 +350,22 @@ def main():
 
                 replace_str_in_tree(mat, old_cab, new_cab)
                 obj.save_typetree(mat)
-                print(f"[✓] Tuned material {mat.get('m_Name')} for bright vibrant PBR & exact HDR Eye/Body Bloom!")
+                print(f"[✓] Tuned material {mat.get('m_Name')} for Pearl-White Dielectric Satin PBR & HDR Bloom!")
 
             elif obj.path_id == 6920099848281342549:
                 # Vehicle Material (Horizontal [VH11_00 | VH11_01] in Top Half of tform_misc & Bottom-Right of main_tform_misc_RAOE)
                 new_floats = []
                 for k, v in saved_props.get("m_Floats", []):
                     if k == "_Mode":
-                        new_floats.append((k, 0.0))
+                        new_floats.append((k, 3.0))
                     elif k == "_metallic_range":
-                        new_floats.append((k, 0.45))
+                        new_floats.append((k, 0.10))  # Clean dielectric automotive paint (matches Arcee vehicle 0.0)
                     elif k == "_roughness_range":
-                        new_floats.append((k, 0.35))
+                        new_floats.append((k, 0.85))  # Satin-gloss sports car finish without dark mirror reflections
+                    elif k == "_clearcoat_reflectance_range":
+                        new_floats.append((k, 0.04))
+                    elif k == "_reflectance":
+                        new_floats.append((k, 0.035))
                     elif k == "_emissive_range":
                         new_floats.append((k, 1.0))
                     elif k == "_emissive_overbright_range":
