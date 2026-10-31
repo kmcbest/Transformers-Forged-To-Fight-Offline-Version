@@ -16,23 +16,26 @@ uv_layer = mesh.uv_layers.active
 if not uv_layer:
     raise RuntimeError("No active UV layer found!")
 
-# For each polygon, adjust UV based on its material slot
+# For each polygon, pack UV horizontally [Left = VH00 | Right = VH01]
+# so Kabam's Vehicle Material (tform_misc_A/NM scale=(1, 0.5) offset=(0, 0.5),
+# main_tform_misc_RAOE scale=(0.5, 0.5) offset=(0.5, 0)) samples both sheets 1:1
+# without colliding with Robot Submesh[1] (T_CH11_01) in the bottom half of tform_misc!
 for poly in mesh.polygons:
     slot = poly.material_index
     for loop_idx in poly.loop_indices:
         u, v = uv_layer.data[loop_idx].uv
         if slot == 0:
-            # VH00: Top half (image Y in [0, 1024]). In OpenGL/Unity UV, V in [0.5, 1.0]
-            new_v = v * 0.5 + 0.5
-            new_u = u
+            # VH00: Left half, U' in [0.0, 0.5], V' in [0.0, 1.0]
+            new_u = u * 0.5
+            new_v = v
         elif slot == 1:
-            # VH01: Bottom half (image Y in [1024, 2048]). In OpenGL/Unity UV, V in [0.0, 0.5]
-            new_v = v * 0.5
-            new_u = u
+            # VH01: Right half, U' in [0.5, 1.0], V' in [0.0, 1.0]
+            new_u = u * 0.5 + 0.5
+            new_v = v
         else:
-            # Glass / Cockpit: Point to dark area near (0.02, 0.52)
-            new_u = 0.02
-            new_v = 0.52
+            # Glass / Cockpit: Uniform sleek dark charcoal patch in VH01 top-left
+            new_u = 0.5732
+            new_v = 0.9219
         uv_layer.data[loop_idx].uv = (new_u, new_v)
 
 print(f"[✓] Transformed UVs for {len(mesh.polygons)} polygons to match atlas layout!")

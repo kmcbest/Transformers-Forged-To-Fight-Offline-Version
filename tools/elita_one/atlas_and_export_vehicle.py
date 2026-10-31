@@ -76,23 +76,20 @@ uv_layer = mesh.uv_layers.active
 if not uv_layer:
     raise RuntimeError("No active UV layer found!")
 
-# For each polygon, adjust UV based on its material slot
+# For each polygon, pack UV horizontally [Left = VH00 | Right = VH01]
 for poly in mesh.polygons:
     slot = poly.material_index
     for loop_idx in poly.loop_indices:
         u, v = uv_layer.data[loop_idx].uv
         if slot == 0:
-            # VH00: Top half, V' in [0.5, 1.0]
-            new_v = v * 0.5 + 0.5
-            new_u = u
+            new_u = u * 0.5
+            new_v = v
         elif slot == 1:
-            # VH01: Bottom half, V' in [0.0, 0.5]
-            new_v = v * 0.5
-            new_u = u
+            new_u = u * 0.5 + 0.5
+            new_v = v
         else:
-            # Glass / Cockpit: Point to dark area near (0.02, 0.52)
-            new_u = 0.02
-            new_v = 0.52
+            new_u = 0.5732
+            new_v = 0.9219
         uv_layer.data[loop_idx].uv = (new_u, new_v)
 
 print(f"[✓] Transformed UVs for {len(mesh.polygons)} polygons to match atlas layout!")

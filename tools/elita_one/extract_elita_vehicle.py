@@ -32,22 +32,20 @@ vh_mesh.matrix_world = Matrix.Identity(4)
 # Up is +Z (height 2.43m, bottom at Z=0)
 
 # We want Unity/TFTF car standard orientation:
-# Forward = +Y in Blender (which exports to +Z in Unity)
-# Up = +Z in Blender (which exports to +Y in Unity)
-# Right = +X in Blender (which exports to +X in Unity)
-# Left = -X in Blender (which exports to -X in Unity)
-
+# Forward = -Y in Blender (which exports with axis_forward='-Z', axis_up='Y' to +Z Forward in Unity!)
+# Up = +Z in Blender (which exports to +Y Up in Unity)
+#
 # In original FBX:
-# Front was +X -> needs to become +Y (rotate +90 deg around Z)
-# If we rotate by +90 deg around Z:
-# Old +X (Front) -> New +Y (Front)
-# Old +Y (Left) -> New -X (Left)
-# Old -Y (Right) -> New +X (Right)
-# Old +Z (Up) -> New +Z (Up)
-# This perfectly preserves chirality (right-handed coordinates) without any inversion!
+# Front was +X -> needs to become -Y (rotate -90 deg around Z)
+# If we rotate by -90 deg around Z:
+# Old +X (Front) -> New -Y (Blender Forward -> Unity +Z Forward, matching Arcee 1:1!)
+# Old +Y (Left)  -> New +X (Blender Left -> Unity -X Left)
+# Old -Y (Right) -> New -X (Blender Right -> Unity +X Right)
+# Old +Z (Up)    -> New +Z (Blender Up -> Unity +Y Up)
+# This perfectly preserves chirality (det = +1, un-mirrored Autobot badge) and fixes the 180-deg reversal!
 
-print("[*] Rotating vehicle to standard Forward=+Y, Up=+Z...")
-vh_mesh.rotation_euler = (0, 0, math.radians(90))
+print("[*] Rotating vehicle to standard Forward=-Y (Unity +Z), Up=+Z (Unity +Y)...")
+vh_mesh.rotation_euler = (0, 0, math.radians(-90))
 bpy.context.view_layer.objects.active = vh_mesh
 vh_mesh.select_set(True)
 bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)

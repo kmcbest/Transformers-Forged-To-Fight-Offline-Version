@@ -26,9 +26,9 @@ public class ElitaFingerTester : MonoBehaviour {
         Down_NegY
     }
 
-    [Header("Rotation Axis")]
+    [Header("Rotation Axis (Maya Left=+Z, Right=-Z)")]
     public CurlAxis leftHandAxis = CurlAxis.Forward_Z;
-    public CurlAxis rightHandAxis = CurlAxis.Forward_Z;
+    public CurlAxis rightHandAxis = CurlAxis.Back_NegZ;
 
     [Header("Diagnostics")]
     public int leftFingerBonesFound = 0;
@@ -48,6 +48,8 @@ public class ElitaFingerTester : MonoBehaviour {
     private readonly List<Transform> rightPinkyBones = new List<Transform>();
 
     private bool initialized = false;
+    private bool wasManualOverrideActive = false;
+    private Vector2 scrollPos = Vector2.zero;
 
     void OnEnable() {
         InitializeBones();
@@ -71,7 +73,6 @@ public class ElitaFingerTester : MonoBehaviour {
         rightRingBones.Clear();
         rightPinkyBones.Clear();
 
-        // Search recursively under this object for LeftHand and RightHand finger bones
         Transform[] allTransforms = GetComponentsInChildren<Transform>(true);
         foreach (var t in allTransforms) {
             string n = t.name;
@@ -90,7 +91,6 @@ public class ElitaFingerTester : MonoBehaviour {
         leftFingerBonesFound = leftThumbBones.Count + leftIndexBones.Count + leftMiddleBones.Count + leftRingBones.Count + leftPinkyBones.Count;
         rightFingerBonesFound = rightThumbBones.Count + rightIndexBones.Count + rightMiddleBones.Count + rightRingBones.Count + rightPinkyBones.Count;
 
-        Debug.Log($"[ElitaFingerTester] Initialized: Found {leftFingerBonesFound} Left Finger Bones and {rightFingerBonesFound} Right Finger Bones.");
         initialized = true;
     }
 
@@ -112,11 +112,41 @@ public class ElitaFingerTester : MonoBehaviour {
         }
     }
 
+    bool HasManualOverride() {
+        return autoWiggle
+            || Mathf.Abs(curlAll) > 0.01f
+            || Mathf.Abs(curlThumb) > 0.01f
+            || Mathf.Abs(curlIndex) > 0.01f
+            || Mathf.Abs(curlMiddle) > 0.01f
+            || Mathf.Abs(curlRing) > 0.01f
+            || Mathf.Abs(curlPinky) > 0.01f;
+    }
+
     void LateUpdate() {
         if (!initialized || restRotations.Count == 0) {
             InitializeBones();
             if (restRotations.Count == 0) return;
         }
+
+        bool manualActive = HasManualOverride();
+        if (Application.isPlaying) {
+            // In Play Mode, let Animator / PlayableGraph drive authentic Kabam finger animations
+            // unless the user actively enables Auto Wiggle or drags a manual curl slider.
+            if (!manualActive) {
+                wasManualOverrideActive = false;
+                return;
+            }
+        } else {
+            if (!manualActive) {
+                if (wasManualOverrideActive) {
+                    RestoreRestRotations();
+                    wasManualOverrideActive = false;
+                }
+                return;
+            }
+        }
+
+        wasManualOverrideActive = true;
 
         float effectiveCurlAll = curlAll;
         float effectiveThumb = curlThumb;
@@ -126,13 +156,20 @@ public class ElitaFingerTester : MonoBehaviour {
         float effectivePinky = curlPinky;
 
         if (autoWiggle) {
-            float wave = Mathf.Sin(Time.time * wiggleSpeed) * wiggleRange;
-            effectiveCurlAll += wave;
-            effectiveThumb += wave * 0.8f;
+            float t = Application.isPlaying ? Time.time : Time.realtimeSinceStartup;
+            // Oscillate between 0 and +wiggleRange (inward fist curl)
+            float wave = (0.5f + 0.5f * Mathf.Sin(t * wiggleSpeed)) * wiggleRange;
+            effectiveThumb += wave * 0.6f;
             effectiveIndex += wave;
-            effectiveMiddle += wave * 1.1f;
+            effectiveMiddle += wave * 1.05f;
             effectiveRing += wave;
-            effectivePinky += wave * 0.9f;
+            effectivePinky += wave * 0.95f;
+#if UNITY_EDITOR
+            if (!Application.isPlaying) {
+                UnityEditor.EditorApplication.QueuePlayerLoopUpdate();
+                UnityEditor.SceneView.RepaintAll();
+            }
+#endif
         }
 
         Vector3 lAxis = GetAxisVector(leftHandAxis);
@@ -162,6 +199,14 @@ public class ElitaFingerTester : MonoBehaviour {
         }
     }
 
+    void RestoreRestRotations() {
+        foreach (var kvp in restRotations) {
+            if (kvp.Key != null) {
+                kvp.Key.localRotation = kvp.Value;
+            }
+        }
+    }
+
     public void ResetAll() {
         curlAll = 0f;
         curlThumb = 0f;
@@ -170,71 +215,37 @@ public class ElitaFingerTester : MonoBehaviour {
         curlRing = 0f;
         curlPinky = 0f;
         autoWiggle = false;
+        leftHandAxis = CurlAxis.Forward_Z;
+        rightHandAxis = CurlAxis.Back_NegZ;
 
-        foreach (var kvp in restRotations) {
-            if (kvp.Key != null) {
-                kvp.Key.localRotation = kvp.Value;
-            }
+        if (!Application.isPlaying) {
+            RestoreRestRotations();
         }
+        wasManualOverrideActive = false;
     }
 
     private Rect windowRect = new Rect(0, 0, 0, 0);
 
     void OnGUI() {
+        float maxH = Mathf.Max(200f, Screen.height - 20f);
+        float targetH = Mathf.Min(500f, maxH);
         if (windowRect.width == 0) {
-            windowRect = new Rect(Screen.width - 340, 20, 320, 520);
+            windowRect = new Rect(Mathf.Max(10f, Screen.width - 350f), 10f, 340f, targetH);
+        } else {
+            windowRect.width = 340f;
+            windowRect.height = targetH;
+            windowRect.x = Mathf.Clamp(windowRect.x, 0f, Mathf.Max(0f, Screen.width - windowRect.width));
+            windowRect.y = Mathf.Clamp(windowRect.y, 0f, Mathf.Max(0f, Screen.height - windowRect.height));
         }
-        windowRect = GUI.Window(9912, windowRect, DrawTesterWindow, "Elita 手指骨骼活动测试器 (可拖拽)");
+        windowRect = GUI.Window(9912, windowRect, DrawTesterWindow, "Elita 手指骨骼活动测试器 (可拖拽/滚动)");
     }
 
     void DrawTesterWindow(int id) {
-        GUILayout.Label($"左手手指骨骼: {leftFingerBonesFound} 根");
-        GUILayout.Label($"右手手指骨骼: {rightFingerBonesFound} 根");
-
-        GUILayout.Space(6);
-        bool newAuto = GUILayout.Toggle(autoWiggle, " 自动挥动/活动手指 (Auto Wiggle)");
-        if (newAuto != autoWiggle) autoWiggle = newAuto;
-
-        if (autoWiggle) {
-            GUILayout.Label($"挥动速度: {wiggleSpeed:F1}");
-            wiggleSpeed = GUILayout.HorizontalSlider(wiggleSpeed, 0.5f, 8f);
-            GUILayout.Label($"挥动角度幅度: {wiggleRange:F0}°");
-            wiggleRange = GUILayout.HorizontalSlider(wiggleRange, 10f, 90f);
-        }
-
-        GUILayout.Space(8);
-        GUILayout.Label($"全手指整体屈伸 (Curl All): {curlAll:F0}°");
-        curlAll = GUILayout.HorizontalSlider(curlAll, -90f, 90f);
-
-        GUILayout.Space(4);
-        GUILayout.Label($"拇指 (Thumb): {curlThumb:F0}°");
-        curlThumb = GUILayout.HorizontalSlider(curlThumb, -90f, 90f);
-
-        GUILayout.Label($"食指 (Index): {curlIndex:F0}°");
-        curlIndex = GUILayout.HorizontalSlider(curlIndex, -90f, 90f);
-
-        GUILayout.Label($"中指 (Middle): {curlMiddle:F0}°");
-        curlMiddle = GUILayout.HorizontalSlider(curlMiddle, -90f, 90f);
-
-        GUILayout.Label($"无名指 (Ring): {curlRing:F0}°");
-        curlRing = GUILayout.HorizontalSlider(curlRing, -90f, 90f);
-
-        GUILayout.Label($"小指 (Pinky): {curlPinky:F0}°");
-        curlPinky = GUILayout.HorizontalSlider(curlPinky, -90f, 90f);
-
-        GUILayout.Space(10);
-        if (GUILayout.Button("一键诊断 BindPose 偏差 (Diagnose Bindposes)")) {
-            DiagnoseBindposes();
-        }
-
-        if (GUILayout.Button("重置全部手指姿态 (Reset)")) {
-            ResetAll();
-        }
+        scrollPos = GUILayout.BeginScrollView(scrollPos);
 
 #if UNITY_EDITOR
-        GUILayout.Space(8);
-        GUI.backgroundColor = new Color(0.2f, 1.0f, 0.4f);
-        if (GUILayout.Button("★ 一键重构灵动指节 (1:1 对齐真实指骨)", GUILayout.Height(36))) {
+        GUI.backgroundColor = new Color(0.2f, 0.95f, 0.45f);
+        if (GUILayout.Button("★ 一键重构灵动指节 (1:1 对齐真实指骨)", GUILayout.Height(34))) {
             var fixerType = System.Type.GetType("ElitaHandFixer, Assembly-CSharp-Editor");
             if (fixerType != null) {
                 var method = fixerType.GetMethod("RebuildFlexibleFingers", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
@@ -244,21 +255,86 @@ public class ElitaFingerTester : MonoBehaviour {
             }
         }
         GUI.backgroundColor = Color.white;
+        GUILayout.Space(4);
 #endif
 
-        GUI.DragWindow(new Rect(0, 0, 10000, 25));
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("诊断 BindPose 偏差", GUILayout.Height(24))) {
+            DiagnoseBindposes();
+        }
+        if (GUILayout.Button("重置手指姿态 (Reset)", GUILayout.Height(24))) {
+            ResetAll();
+        }
+        GUILayout.EndHorizontal();
+
+        GUILayout.Space(4);
+        GUILayout.Label($"手指骨骼: 左手 {leftFingerBonesFound} 根 | 右手 {rightFingerBonesFound} 根");
+        if (Application.isPlaying && !HasManualOverride()) {
+            GUI.color = new Color(0.4f, 1.0f, 0.6f);
+            GUILayout.Label("当前状态: 跟随动画自然驱动 (拖动滑块可手动接管)");
+            GUI.color = Color.white;
+        }
+
+        GUILayout.Space(4);
+        bool newAuto = GUILayout.Toggle(autoWiggle, " 自动握拳/活动手指 (Auto Wiggle)");
+        if (newAuto != autoWiggle) autoWiggle = newAuto;
+
+        if (autoWiggle) {
+            GUILayout.Label($"挥动速度: {wiggleSpeed:F1}");
+            wiggleSpeed = GUILayout.HorizontalSlider(wiggleSpeed, 0.5f, 8f);
+            GUILayout.Label($"握拳角度幅度: {wiggleRange:F0}°");
+            wiggleRange = GUILayout.HorizontalSlider(wiggleRange, 10f, 85f);
+        }
+
+        GUILayout.Space(6);
+        GUILayout.Label($"全手指整体屈伸 (Curl All): {curlAll:F0}°");
+        curlAll = GUILayout.HorizontalSlider(curlAll, -30f, 85f);
+
+        GUILayout.Space(2);
+        GUILayout.Label($"拇指 (Thumb): {curlThumb:F0}°");
+        curlThumb = GUILayout.HorizontalSlider(curlThumb, -45f, 85f);
+
+        GUILayout.Label($"食指 (Index): {curlIndex:F0}°");
+        curlIndex = GUILayout.HorizontalSlider(curlIndex, -30f, 85f);
+
+        GUILayout.Label($"中指 (Middle): {curlMiddle:F0}°");
+        curlMiddle = GUILayout.HorizontalSlider(curlMiddle, -30f, 85f);
+
+        GUILayout.Label($"无名指 (Ring): {curlRing:F0}°");
+        curlRing = GUILayout.HorizontalSlider(curlRing, -30f, 85f);
+
+        GUILayout.Label($"小指 (Pinky): {curlPinky:F0}°");
+        curlPinky = GUILayout.HorizontalSlider(curlPinky, -30f, 85f);
+
+        GUILayout.EndScrollView();
+
+#if UNITY_EDITOR
+        if (GUI.changed && !Application.isPlaying) {
+            LateUpdate();
+            UnityEditor.EditorApplication.QueuePlayerLoopUpdate();
+            UnityEditor.SceneView.RepaintAll();
+        }
+#endif
+
+        GUI.DragWindow(new Rect(0, 0, 10000, 22));
     }
 
     public void DiagnoseBindposes() {
-        var smr = GetComponentInChildren<SkinnedMeshRenderer>();
+        SkinnedMeshRenderer smr = null;
+        foreach (var s in GetComponentsInChildren<SkinnedMeshRenderer>(true)) {
+            if (!s.name.Contains("_01") && !s.name.ToLower().Contains("vehicle")) {
+                smr = s;
+                break;
+            }
+        }
         if (smr == null || smr.sharedMesh == null) {
-            Debug.LogError("[Diagnose] No SkinnedMeshRenderer found on Elita!");
+            Debug.LogError("[Diagnose] No robot SkinnedMeshRenderer found on Elita!");
             return;
         }
 
         Transform[] bones = smr.bones;
         Matrix4x4[] bindposes = smr.sharedMesh.bindposes;
-        Debug.Log($"=== [Diagnose] Inspecting SMR '{smr.name}' with {bones.Length} bones and {bindposes.Length} bindposes ===");
+        Debug.Log($"=== [Diagnose] Inspecting SMR '{smr.name}' (verts={smr.sharedMesh.vertexCount}) with {bones.Length} bones and {bindposes.Length} bindposes ===");
 
         int mismatchCount = 0;
         for (int i = 0; i < bones.Length; i++) {
@@ -273,11 +349,11 @@ public class ElitaFingerTester : MonoBehaviour {
                 Vector3 currentPos = b.position;
                 float delta = Vector3.Distance(currentPos, bindPos);
 
-                if (delta > 0.05f) { // Greater than 5cm offset
+                if (delta > 0.05f) {
                     mismatchCount++;
                     Debug.LogWarning($"[OFFSET MISMATCH] Bone [{i}] '{n}': Current Pos={currentPos:F3}, BindPose Pos={bindPos:F3}, DELTA={delta:F3}m!");
                 } else {
-                    Debug.Log($"[OK] Bone [{i}] '{n}': Delta={delta*1000f:F1}mm (Perfect match)");
+                    Debug.Log($"[OK] Bone [{i}] '{n}': Delta={delta * 1000f:F1}mm (Perfect match)");
                 }
             }
         }
@@ -305,7 +381,6 @@ public static class ElitaFingerTesterMenu {
     public static void Attach() {
         var go = GameObject.Find("ElitaOne_Candidate");
         if (go != null) {
-            // Remove missing / corrupted script placeholders to clean up Inspector
             int removed = UnityEditor.GameObjectUtility.RemoveMonoBehavioursWithMissingScript(go);
             if (removed > 0) {
                 Debug.Log($"[✓] Cleaned up {removed} missing script placeholders on ElitaOne_Candidate.");
@@ -315,16 +390,17 @@ public static class ElitaFingerTesterMenu {
             if (comp == null) {
                 comp = go.AddComponent<ElitaFingerTester>();
             }
-            comp.autoWiggle = true; // Auto start wiggling by default for immediate visual feedback!
+            comp.leftHandAxis = ElitaFingerTester.CurlAxis.Forward_Z;
+            comp.rightHandAxis = ElitaFingerTester.CurlAxis.Back_NegZ;
+            comp.autoWiggle = false;
             comp.InitializeBones();
             comp.DiagnoseBindposes();
             UnityEditor.EditorUtility.SetDirty(go);
             UnityEditor.Selection.activeGameObject = go;
-            Debug.Log("[✓] Added ElitaFingerTester to ElitaOne_Candidate with Auto Wiggle enabled!");
+            Debug.Log("[✓] Attached ElitaFingerTester to ElitaOne_Candidate!");
         } else {
             Debug.LogError("Could not find 'ElitaOne_Candidate' in current scene!");
         }
     }
 }
 #endif
-
