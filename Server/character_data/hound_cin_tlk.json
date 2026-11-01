@@ -15,6 +15,20 @@
     "sp1": {
       "name_zh": "雷霆滚滚",
       "name_en": "Rolling Thunder",
+      "effects": [
+        {
+          "title_zh": "雷霆滚滚",
+          "title_en": "Rolling Thunder",
+          "desc_zh": "大男孩来了！",
+          "pua_icon": ""
+        },
+        {
+          "title_zh": "暴击率减益",
+          "title_en": "Crit Rate Debuff",
+          "desc_zh": "装配精确弹药时，最后一击",
+          "pua_icon": "E912"
+        }
+      ],
       "desc_zh": "大男孩来了！",
       "pua_icon": "",
       "ui_trigger": "onSpecial1Hit"
@@ -22,6 +36,14 @@
     "sp2": {
       "name_zh": "特殊技 2",
       "name_en": "Special Attack 2",
+      "effects": [
+        {
+          "title_zh": "特殊技 2",
+          "title_en": "Special Attack 2",
+          "desc_zh": "当配备精准弹药时，最后一击有 {{var_18}} 几率对 {{var_20}} 造成 {{var_19}} 暴击率下降。",
+          "pua_icon": ""
+        }
+      ],
       "desc_zh": "当配备精准弹药时，最后一击有 {{var_18}} 几率对 {{var_20}} 造成 {{var_19}} 暴击率下降。",
       "pua_icon": "",
       "ui_trigger": "onSpecial2Hit"
@@ -29,121 +51,19 @@
     "sp3": {
       "name_zh": "特殊技 3",
       "name_en": "Special Attack 3",
+      "effects": [
+        {
+          "title_zh": "特殊技 3",
+          "title_en": "Special Attack 3",
+          "desc_zh": "当配备地狱弹药时，最后一击有 {{var_21}} 几率造成燃烧，造成 {{var_22}} 攻击力超过 {{var_23}}。",
+          "pua_icon": ""
+        }
+      ],
       "desc_zh": "当配备地狱弹药时，最后一击有 {{var_21}} 几率造成燃烧，造成 {{var_22}} 攻击力超过 {{var_23}}。",
       "pua_icon": "",
       "ui_trigger": "onSpecial3Hit"
     }
   },
-  "abilities": [
-    {
-      "title_zh": "弹药类型：",
-      "title_en": "Ammo Types:",
-      "desc_zh": "弹药类型：",
-      "pua_icon": "",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    },
-    {
-      "title_zh": "战斗被动",
-      "title_en": "Holding Block at Ranged Distance for <s>0.9</s> {{var_1}} will Swap Autobot Hound’s Ammo Types.",
-      "desc_zh": "在远程距离保持格挡 <s>0.9</s> {{var_1}} 将交换汽车人猎犬的弹药类型。",
-      "pua_icon": "",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    },
-    {
-      "title_zh": "战斗被动",
-      "title_en": "Inferno Ammo grants Critical Ranged Hits a {{var_2}} chance to inflict Burn, dealing {{var_3}} of Attack as Heat damage over {{var_4}}seconds.",
-      "desc_zh": "地狱弹药使致命远程命中有 {{var_2}} 几率造成燃烧，在 {{var_4}} 秒内造成 {{var_3}} 点攻击力热力伤害。",
-      "pua_icon": "",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    },
-    {
-      "title_zh": "战斗被动",
-      "title_en": "The third hit of a Ranged Combo has a {{var_5}} chance to refresh the timer of a Burn Debuff.",
-      "desc_zh": "远程连击的第三次命中有 {{var_5}} 几率刷新燃烧减益计时器。",
-      "pua_icon": "",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    },
-    {
-      "title_zh": "战斗被动",
-      "title_en": "Precision Ammo grants Ranged Attacks a {{var_6}} increased Critical Rate and cannot be Evaded and is not affected by abilities that would cause Ranged Attacks to Miss.",
-      "desc_zh": "精确弹药使远程攻击的暴击率提升 {{var_6}}，且无法躲避，并且不受导致远程攻击失手的能力影响。",
-      "pua_icon": "",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    },
-    {
-      "title_zh": "战斗被动",
-      "title_en": "The second hit of a basic ranged combo has a {{var_7}} chance to Nullify a Shield Buff on the opponent.",
-      "desc_zh": "基本远程连击的第二次攻击有 {{var_7}} 几率使对手的护盾增益无效。",
-      "pua_icon": "",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    },
-    {
-      "title_zh": "战斗被动",
-      "title_en": "The third hit of a basic ranged combo has an {{var_8}} chance to Nullity a Shield Buff on the opponent.",
-      "desc_zh": "基本远程连击的第三次打击有 {{var_8}} 几率使对手的护盾增益无效。",
-      "pua_icon": "",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    },
-    {
-      "title_zh": "战斗被动",
-      "title_en": "Sidestepping with Precision Ammo Purifies all Daze effects.",
-      "desc_zh": "使用精密弹药进行回避净化了所有眩晕效果。",
-      "pua_icon": "",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    },
-    {
-      "title_zh": "战斗被动",
-      "title_en": "Ranged Attacks: Critical Hits on Burning opponents have 50~% Critical Damage.",
-      "desc_zh": "远程攻击：对燃烧的对手造成暴击，造成 50% 的暴击伤害。",
-      "pua_icon": "",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    },
-    {
-      "title_zh": "强力重击",
-      "title_en": "Heavy Attacks:",
-      "desc_zh": "重击：",
-      "pua_icon": "",
-      "category": "passive",
-      "ui_trigger": "onHeavyHit",
-      "show_on_main_screen": true
-    },
-    {
-      "title_zh": "战斗被动",
-      "title_en": "{{var_9}} Chance to gain an Armor Buff, reducing damage from attacks by {{var_10}} for {{var_11}}.",
-      "desc_zh": "{{var_9}} 有机会获得装甲增益，减少 {{var_10}} 对 {{var_11}} 攻击造成的伤害。",
-      "pua_icon": "",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    },
-    {
-      "title_zh": "战斗被动",
-      "title_en": "{{var_12}} Chance to inflict a Critical Resistance Debuff, increasing the chance for Critical Hits against opponents by {{var_13}}? for {{var_14}}seconds.",
-      "desc_zh": "{{var_12}} 有机会造成致命一击减益，增加 {{var_13}} 对对手致命一击的几率？为 {{var_14}} 秒。",
-      "pua_icon": "",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    }
-  ],
   "synergies": [
     {
       "title_zh": "敌人——路障",
@@ -186,6 +106,120 @@
       "desc_zh": "+{{var_50}} 严重伤害。",
       "pua_icon": "",
       "bonus_heroes": []
+    }
+  ],
+  "basic_abilities": [
+    {
+      "title_zh": "基础特长",
+      "title_en": "Basic Abilities",
+      "desc_zh": "地狱弹药",
+      "pua_icon": ""
+    },
+    {
+      "title_zh": "基础特长",
+      "title_en": "Basic Abilities",
+      "desc_zh": "精密弹药",
+      "pua_icon": ""
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "弹药类型：",
+      "title_en": "Ammo Types:",
+      "desc_zh": "弹药类型：",
+      "pua_icon": "",
+      "ui_trigger": "弹药类型："
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "Holding Block at Ranged Distance for <s>0.9</s> {{var_1}} will Swap Autobot Hound’s Ammo Types.",
+      "desc_zh": "在远程距离保持格挡 <s>0.9</s> {{var_1}} 将交换汽车人猎犬的弹药类型。",
+      "pua_icon": "",
+      "ui_trigger": "战斗被动"
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "Inferno Ammo grants Critical Ranged Hits a {{var_2}} chance to inflict Burn, dealing {{var_3}} of Attack as Heat damage over {{var_4}}seconds.",
+      "desc_zh": "地狱弹药使致命远程命中有 {{var_2}} 几率造成燃烧，在 {{var_4}} 秒内造成 {{var_3}} 点攻击力热力伤害。",
+      "pua_icon": "",
+      "ui_trigger": "战斗被动"
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "The third hit of a Ranged Combo has a {{var_5}} chance to refresh the timer of a Burn Debuff.",
+      "desc_zh": "远程连击的第三次命中有 {{var_5}} 几率刷新燃烧减益计时器。",
+      "pua_icon": "",
+      "ui_trigger": "战斗被动"
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "Precision Ammo grants Ranged Attacks a {{var_6}} increased Critical Rate and cannot be Evaded and is not affected by abilities that would cause Ranged Attacks to Miss.",
+      "desc_zh": "精确弹药使远程攻击的暴击率提升 {{var_6}}，且无法躲避，并且不受导致远程攻击失手的能力影响。",
+      "pua_icon": "",
+      "ui_trigger": "战斗被动"
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "The second hit of a basic ranged combo has a {{var_7}} chance to Nullify a Shield Buff on the opponent.",
+      "desc_zh": "基本远程连击的第二次攻击有 {{var_7}} 几率使对手的护盾增益无效。",
+      "pua_icon": "",
+      "ui_trigger": "战斗被动"
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "The third hit of a basic ranged combo has an {{var_8}} chance to Nullity a Shield Buff on the opponent.",
+      "desc_zh": "基本远程连击的第三次打击有 {{var_8}} 几率使对手的护盾增益无效。",
+      "pua_icon": "",
+      "ui_trigger": "战斗被动"
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "Sidestepping with Precision Ammo Purifies all Daze effects.",
+      "desc_zh": "使用精密弹药进行回避净化了所有眩晕效果。",
+      "pua_icon": "",
+      "ui_trigger": "战斗被动"
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "Ranged Attacks: Critical Hits on Burning opponents have 50~% Critical Damage.",
+      "desc_zh": "远程攻击：对燃烧的对手造成暴击，造成 50% 的暴击伤害。",
+      "pua_icon": "",
+      "ui_trigger": "战斗被动"
+    },
+    {
+      "title_zh": "强力重击",
+      "title_en": "Heavy Attacks:",
+      "desc_zh": "重击：",
+      "pua_icon": "",
+      "ui_trigger": "强力重击"
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "{{var_9}} Chance to gain an Armor Buff, reducing damage from attacks by {{var_10}} for {{var_11}}.",
+      "desc_zh": "{{var_9}} 有机会获得装甲增益，减少 {{var_10}} 对 {{var_11}} 攻击造成的伤害。",
+      "pua_icon": "",
+      "ui_trigger": "战斗被动"
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "{{var_12}} Chance to inflict a Critical Resistance Debuff, increasing the chance for Critical Hits against opponents by {{var_13}}? for {{var_14}}seconds.",
+      "desc_zh": "{{var_12}} 有机会造成致命一击减益，增加 {{var_13}} 对对手致命一击的几率？为 {{var_14}} 秒。",
+      "pua_icon": "",
+      "ui_trigger": "战斗被动"
+    },
+    {
+      "title_zh": "燃烧",
+      "title_en": "Burn",
+      "desc_zh": "所有导弹攻击（重击、SP1的最后一击，SP2的所有攻击）命中时有70%几率造成燃烧，施加攻击力80%的伤害，持续4秒。\n如果对手正在燃烧中，则燃烧可以叠加，每层依旧是4秒，但伤害为攻击力的30%。",
+      "pua_icon": "0xe41d",
+      "ui_trigger": "燃烧"
+    },
+    {
+      "title_zh": "重击流血",
+      "title_en": "Heavy Attacks Bleed",
+      "desc_zh": "重击命中时：70%几率触发流血，造成攻击力45%的伤害，持续5.6秒。",
+      "pua_icon": "0xe401",
+      "ui_trigger": "重击流血"
     }
   ]
 }

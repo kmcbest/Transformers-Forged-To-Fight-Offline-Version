@@ -7,7 +7,7 @@
   "signature": {
     "title_zh": "毫不留情",
     "title_en": "No Mercy",
-    "desc_zh": "只要对手身上有融合的减益，威震天的近战攻击（打中和被防都算）就有60%的概率从对方身上随机偷走一个增益，持续5秒。",
+    "desc_zh": "只要对手身上有融合的减益，威震天的近战攻击（打中和被防都算）就有60%的概率从对方身上随机偷走一个增益，持续5秒。\n//偷走意味着对方的没了，威震天这边得到。\n//对方有多层的，威震天一次近战攻击只能偷一层\n//如果对方是永久性的增益，威震天偷过来也会在5秒后过期。",
     "pua_icon": "",
     "ui_trigger": "none"
   },
@@ -15,13 +15,29 @@
     "sp1": {
       "name_zh": "能量粉碎",
       "name_en": "Energon Crush",
-      "desc_zh": "",
-      "pua_icon": "",
+      "effects": [
+        {
+          "title_zh": "破甲",
+          "title_en": "Armor Break",
+          "desc_zh": "100%的概率施加38%的破甲，持续10秒。",
+          "pua_icon": "0xe516"
+        }
+      ],
+      "desc_zh": "100%的概率施加38%的破甲，持续10秒。",
+      "pua_icon": "0xe516",
       "ui_trigger": "onSpecial1Hit"
     },
     "sp2": {
       "name_zh": "原子弹头",
       "name_en": "Atomic Slug",
+      "effects": [
+        {
+          "title_zh": "攻击减益",
+          "title_en": "Attack Debuff",
+          "desc_zh": "100%的概率施加44%的攻击减益，持续10秒。",
+          "pua_icon": "0xe916"
+        }
+      ],
       "desc_zh": "100%的概率施加44%的攻击减益，持续10秒。",
       "pua_icon": "0xe916",
       "ui_trigger": "onSpecial2Hit"
@@ -29,22 +45,19 @@
     "sp3": {
       "name_zh": "太简单了",
       "name_en": "All Too Easy",
+      "effects": [
+        {
+          "title_zh": "震击",
+          "title_en": "Shock",
+          "desc_zh": "100%的概率施加震击，造成攻击300%的伤害，持续20秒。\n融合炮过载：融合炮图标变为绿色，不带数字，本局可无限使用，不消耗。",
+          "pua_icon": "0xe914"
+        }
+      ],
       "desc_zh": "100%的概率施加震击，造成攻击300%的伤害，持续20秒。\n融合炮过载：融合炮图标变为绿色，不带数字，本局可无限使用，不消耗。",
       "pua_icon": "0xe914",
       "ui_trigger": "onSpecial3Hit"
     }
   },
-  "abilities": [
-    {
-      "title_zh": "不可阻挡",
-      "title_en": "Unstoppable",
-      "desc_zh": "被击倒后，威震天有概率获得3秒的不可阻挡，概率等于损失生命值的百分比乘以0.7",
-      "pua_icon": "E915",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    }
-  ],
   "synergies": [
     {
       "title_zh": "宿敌",
@@ -99,6 +112,49 @@
       "bonus_heroes": [
         "megatronus_gs_kabam"
       ]
+    }
+  ],
+  "basic_abilities": [
+    {
+      "title_zh": "融合炮",
+      "title_en": "Fusion Cannon",
+      "desc_zh": "全力攻击时，重击会更加强大，并且会产生减益效果。",
+      "pua_icon": ""
+    },
+    {
+      "title_zh": "破甲",
+      "title_en": "Armor Break",
+      "desc_zh": "移除装甲增益。放大受到攻击的伤害。",
+      "pua_icon": ""
+    },
+    {
+      "title_zh": "攻击减益",
+      "title_en": "Attack Debuff",
+      "desc_zh": "暂时降低对手的攻击力。",
+      "pua_icon": ""
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "融合炮",
+      "title_en": "Fusion Cannon",
+      "desc_zh": "融合炮：每6秒充满一层融合炮，最多三层。//先灰色图标+倒计时，充满一层后显示紫色同样图标，带数字表示层数\n有融合炮增益时，重击飞行速度+50%，伤害+30%，重击命中消耗一层融合炮增益。",
+      "pua_icon": "0xe910",
+      "ui_trigger": "融合炮"
+    },
+    {
+      "title_zh": "不可阻挡",
+      "title_en": "Unstoppable",
+      "desc_zh": "被击倒后，威震天有概率获得3秒的不可阻挡，概率等于损失生命值的百分比乘以0.7 //用例：损失50%的生命，概率为35%",
+      "pua_icon": "E915",
+      "ui_trigger": "不可阻挡"
+    },
+    {
+      "title_zh": "减益融合",
+      "title_en": "Debuff Fusion",
+      "desc_zh": "如果重击击中对方时对方身上有带倒计时的减益，则该减益变为不带倒计时的永久状态。",
+      "pua_icon": "0xe60f",
+      "ui_trigger": "减益融合"
     }
   ]
 }

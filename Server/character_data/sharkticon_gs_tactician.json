@@ -15,6 +15,14 @@
     "sp1": {
       "name_zh": "特殊技 1",
       "name_en": "Special Attack 1",
+      "effects": [
+        {
+          "title_zh": "特殊技 1",
+          "title_en": "Special Attack 1",
+          "desc_zh": "3. 鲨鱼袭击 - 这些鲨鱼在陆地上同样致命。",
+          "pua_icon": ""
+        }
+      ],
       "desc_zh": "3. 鲨鱼袭击 - 这些鲨鱼在陆地上同样致命。",
       "pua_icon": "",
       "ui_trigger": "onSpecial1Hit"
@@ -22,6 +30,7 @@
     "sp2": {
       "name_zh": "",
       "name_en": "",
+      "effects": [],
       "desc_zh": "",
       "pua_icon": "",
       "ui_trigger": "onSpecial2Hit"
@@ -29,12 +38,12 @@
     "sp3": {
       "name_zh": "",
       "name_en": "",
+      "effects": [],
       "desc_zh": "",
       "pua_icon": "",
       "ui_trigger": "onSpecial3Hit"
     }
   },
-  "abilities": [],
   "synergies": [
     {
       "title_zh": "鲨鱼狂潮",
@@ -45,5 +54,7 @@
         "sharkticon_gs_kabam"
       ]
     }
-  ]
+  ],
+  "basic_abilities": [],
+  "game_abilities": []
 }

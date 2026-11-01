@@ -15,6 +15,14 @@
     "sp1": {
       "name_zh": "不是脸",
       "name_en": "Not The Face",
+      "effects": [
+        {
+          "title_zh": "不是脸",
+          "title_en": "Not The Face",
+          "desc_zh": "不要刮伤Sunstreaker的油漆，否则你会后悔的。",
+          "pua_icon": ""
+        }
+      ],
       "desc_zh": "不要刮伤Sunstreaker的油漆，否则你会后悔的。",
       "pua_icon": "",
       "ui_trigger": "onSpecial1Hit"
@@ -22,6 +30,14 @@
     "sp2": {
       "name_zh": "特殊技 2",
       "name_en": "Special Attack 2",
+      "effects": [
+        {
+          "title_zh": "特殊技 2",
+          "title_en": "Special Attack 2",
+          "desc_zh": "如果处于原始状态，则获得 {{var_17}} 的瑕疵状态增益。如果处于瑕疵状态，最后一击不可阻挡。如果Sunstreaker 不处于这两种状态，则获得{{var_18}} 的两种状态增益。",
+          "pua_icon": ""
+        }
+      ],
       "desc_zh": "如果处于原始状态，则获得 {{var_17}} 的瑕疵状态增益。如果处于瑕疵状态，最后一击不可阻挡。如果Sunstreaker 不处于这两种状态，则获得{{var_18}} 的两种状态增益。",
       "pua_icon": "",
       "ui_trigger": "onSpecial2Hit"
@@ -29,58 +45,19 @@
     "sp3": {
       "name_zh": "刚刚镀铬",
       "name_en": "Just Been Chromed",
+      "effects": [
+        {
+          "title_zh": "刚刚镀铬",
+          "title_en": "Just Been Chromed",
+          "desc_zh": "飞毛腿炫耀他华丽的动作和新外套。",
+          "pua_icon": ""
+        }
+      ],
       "desc_zh": "飞毛腿炫耀他华丽的动作和新外套。",
       "pua_icon": "",
       "ui_trigger": "onSpecial3Hit"
     }
   },
-  "abilities": [
-    {
-      "title_zh": "能量获取",
-      "title_en": "Power Gain",
-      "desc_zh": "L4或者M2命中对手的时候，在1秒内获得最大能量槽的5%。",
-      "pua_icon": "E608",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    },
-    {
-      "title_zh": "近战增益",
-      "title_en": "Melee Buff",
-      "desc_zh": "重击发起时，有30%的概率获得14%的近战增益，持续5秒",
-      "pua_icon": "E412",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    },
-    {
-      "title_zh": "不可阻抗",
-      "title_en": "Unstoppable",
-      "desc_zh": "生命值掉到40%以下时，得到5秒的不可阻挡增益。",
-      "pua_icon": "E915",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    },
-    {
-      "title_zh": "远程射击",
-      "title_en": "Ranged Attacks",
-      "desc_zh": "远程攻击",
-      "pua_icon": "",
-      "category": "passive",
-      "ui_trigger": "onBasicRange",
-      "show_on_main_screen": true
-    },
-    {
-      "title_zh": "{{var_10}} 次机会净化减益。",
-      "title_en": "{{var_10}} chance to Purify a Debuff.",
-      "desc_zh": "{{var_10}} 次机会净化减益。",
-      "pua_icon": "",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    }
-  ],
   "synergies": [
     {
       "title_zh": "喷射柔道",
@@ -127,6 +104,57 @@
       "desc_zh": "作为领导的灯塔，所有较低级别的队友都获得 +{{var_33}} 攻击评级",
       "pua_icon": "",
       "bonus_heroes": []
+    }
+  ],
+  "basic_abilities": [
+    {
+      "title_zh": "基础特长",
+      "title_en": "Basic Abilities",
+      "desc_zh": "近战攻击",
+      "pua_icon": ""
+    },
+    {
+      "title_zh": "基础特长",
+      "title_en": "Basic Abilities",
+      "desc_zh": "装甲",
+      "pua_icon": ""
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "能量获取",
+      "title_en": "Power Gain",
+      "desc_zh": "L4或者M2命中对手的时候，在1秒内获得最大能量槽的5%。",
+      "pua_icon": "E608",
+      "ui_trigger": "能量获取"
+    },
+    {
+      "title_zh": "近战增益",
+      "title_en": "Melee Buff",
+      "desc_zh": "重击发起时，有30%的概率获得14%的近战增益，持续5秒",
+      "pua_icon": "E412",
+      "ui_trigger": "近战增益"
+    },
+    {
+      "title_zh": "不可阻抗",
+      "title_en": "Unstoppable",
+      "desc_zh": "生命值掉到40%以下时，得到5秒的不可阻挡增益。",
+      "pua_icon": "E915",
+      "ui_trigger": "不可阻抗"
+    },
+    {
+      "title_zh": "远程射击",
+      "title_en": "Ranged Attacks",
+      "desc_zh": "远程攻击",
+      "pua_icon": "",
+      "ui_trigger": "远程射击"
+    },
+    {
+      "title_zh": "{{var_10}} 次机会净化减益。",
+      "title_en": "{{var_10}} chance to Purify a Debuff.",
+      "desc_zh": "{{var_10}} 次机会净化减益。",
+      "pua_icon": "",
+      "ui_trigger": "{{var_10}} 次机会净化减益。"
     }
   ]
 }

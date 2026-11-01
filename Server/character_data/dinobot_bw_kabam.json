@@ -13,56 +13,57 @@
   },
   "special_attacks": {
     "sp1": {
-      "name_zh": "特殊技 1",
-      "name_en": "Special Attack 1",
-      "desc_zh": "特殊 1 - 三叠纪湍流 - 恐龙机器人和他的对手被送上天空。",
-      "pua_icon": "",
+      "name_zh": "三叠纪动荡",
+      "name_en": "Triassic Turbulence",
+      "effects": [
+        {
+          "title_zh": "破甲",
+          "title_en": "Armor Break",
+          "desc_zh": "每1击有80%的概率施加1层30%的破甲减益，持续8秒。//如果对方身上有护甲，先抵消1层护甲。",
+          "pua_icon": "0xe516"
+        }
+      ],
+      "desc_zh": "每1击有80%的概率施加1层30%的破甲减益，持续8秒。//如果对方身上有护甲，先抵消1层护甲。",
+      "pua_icon": "0xe516",
       "ui_trigger": "onSpecial1Hit"
     },
     "sp2": {
-      "name_zh": "特殊技 2",
-      "name_en": "Special Attack 2",
-      "desc_zh": "{{var_16}} 造成 {{var_17}} 破甲，持续 {{var_18}} 秒。",
-      "pua_icon": "",
+      "name_zh": "侏罗纪正义",
+      "name_en": "Jurassic Justice",
+      "effects": [
+        {
+          "title_zh": "暴击几率",
+          "title_en": "Crit Rate",
+          "desc_zh": "发动时，得到30%的暴击几率增益，持续9秒。",
+          "pua_icon": "0xe40d"
+        }
+      ],
+      "desc_zh": "发动时，得到30%的暴击几率增益，持续9秒。",
+      "pua_icon": "0xe40d",
       "ui_trigger": "onSpecial2Hit"
     },
     "sp3": {
-      "name_zh": "特殊技 3",
-      "name_en": "Special Attack 3",
-      "desc_zh": "特别篇 2 - 侏罗纪正义 - 恐龙机器人毫不留情地对待他的对手。",
-      "pua_icon": "",
+      "name_zh": "白垩纪大屠杀",
+      "name_en": "Cretaceous Carnage",
+      "effects": [
+        {
+          "title_zh": "修复",
+          "title_en": "Repair",
+          "desc_zh": "除第一击和最后一击外，每次攻击有50%的概率得到1层修复，4秒内修复最大生命值的3% //绿图标",
+          "pua_icon": "E503"
+        },
+        {
+          "title_zh": "暴击几率",
+          "title_en": "Crit Rate",
+          "desc_zh": "发动时，得到30%的暴击几率增益，持续16秒。",
+          "pua_icon": "0xe40d"
+        }
+      ],
+      "desc_zh": "除第一击和最后一击外，每次攻击有50%的概率得到1层修复，4秒内修复最大生命值的3% //绿图标",
+      "pua_icon": "E503",
       "ui_trigger": "onSpecial3Hit"
     }
   },
-  "abilities": [
-    {
-      "title_zh": "战斗被动",
-      "title_en": "Well-timed Blocks gain +{{var_9}} Block Proficiency.",
-      "desc_zh": "适时的区块获得+{{var_9}}区块熟练度。",
-      "pua_icon": "",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    },
-    {
-      "title_zh": "致命重击",
-      "title_en": "Critical Heavy Attacks",
-      "desc_zh": "致命重击",
-      "pua_icon": "",
-      "category": "passive",
-      "ui_trigger": "onHeavyHit",
-      "show_on_main_screen": true
-    },
-    {
-      "title_zh": "战斗被动",
-      "title_en": "{{var_10}} Chance to inflict Bleed for <s>{{var_11}}</s> {{var_12}} of attack as damage over {{var_13}}.",
-      "desc_zh": "{{var_10}} 有机会对 <s>{{var_11}}</s> {{var_12}} 攻击造成流血，作为对 {{var_13}} 的伤害。",
-      "pua_icon": "",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    }
-  ],
   "synergies": [
     {
       "title_zh": "盟友",
@@ -91,6 +92,44 @@
       "desc_zh": "Mixmaster、Jetfire 针对近战攻击的适时格挡获得 +{{var_34}} 格挡熟练度。",
       "pua_icon": "",
       "bonus_heroes": []
+    }
+  ],
+  "basic_abilities": [],
+  "game_abilities": [
+    {
+      "title_zh": "重击流血",
+      "title_en": "Heavy Attacks Bleed",
+      "desc_zh": "重击命中并出暴击时：100%几率触发流血，造成攻击力80%的伤害，持续5秒。",
+      "pua_icon": "0xe401",
+      "ui_trigger": "重击流血"
+    },
+    {
+      "title_zh": "护甲穿透",
+      "title_en": "Armor Piercing",
+      "desc_zh": "近战攻击自带65%的护甲穿透属性\n近战暴击100%护甲穿透\n//护甲穿透降低对方护甲减伤的效果，但不移除对方的护甲",
+      "pua_icon": "E409",
+      "ui_trigger": "护甲穿透"
+    },
+    {
+      "title_zh": "格挡反伤",
+      "title_en": "Blocking Damage",
+      "desc_zh": "格挡对方近战攻击时，有60%的概率反向造成相当于对手攻击力10%的伤害，如果格挡对方的前冲攻击，概率为100%，伤害变为20%。",
+      "pua_icon": "E50F",
+      "ui_trigger": "格挡反伤"
+    },
+    {
+      "title_zh": "格挡破甲",
+      "title_en": "Blocking Armor Break",
+      "desc_zh": "格挡对方的前冲攻击，100%的概率施加1层40%的破甲减益，持续9秒。//如果对方身上有护甲，先抵消1层护甲。",
+      "pua_icon": "0xe516",
+      "ui_trigger": "格挡破甲"
+    },
+    {
+      "title_zh": "格挡精通",
+      "title_en": "Block Proficiency",
+      "desc_zh": "即时格挡时增加50%的格挡精通   //降低格挡伤害50%，即时格挡判定条件同天火招架护盾",
+      "pua_icon": "E501",
+      "ui_trigger": "格挡精通"
     }
   ]
 }

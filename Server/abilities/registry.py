@@ -88,6 +88,12 @@ def collect_all_bot_statmods_and_appears() -> tuple[Dict[str, Any], Dict[str, An
             else:
                 mods, appears, b_buffs = {}, {}, {}
 
+            # 净化战斗修饰器中的 UI 字段，避免污染客户端 StatModifiersInfoPanel 详细技能菜单
+            for mid, m in mods.items():
+                m["uit"] = []
+            for aid, a in appears.items():
+                a["l"] = ""
+
             all_mods.update(mods)
             all_appears.update(appears)
             extra_buffs.update(b_buffs)

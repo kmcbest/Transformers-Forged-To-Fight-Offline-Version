@@ -15,45 +15,67 @@
     "sp1": {
       "name_zh": "重力爆冲",
       "name_en": "Graviton Dash",
-      "desc_zh": "六轮赛车形态贴地极速爆冲，造成破甲降低对手 {{var_1}} 护甲持续 {{var_2}} 秒，并施加流血在 {{var_3}} 秒内造成 {{var_4}} 伤害。",
-      "pua_icon": "",
+      "effects": [
+        {
+          "title_zh": "流血",
+          "title_en": "Bleed",
+          "desc_zh": "80%概率施加流血，造成攻击力70%的伤害，持续7秒。",
+          "pua_icon": "E401"
+        },
+        {
+          "title_zh": "暴击几率",
+          "title_en": "Crit Rate",
+          "desc_zh": "最后一击命中后，增加50%的暴击几率，持续5秒。",
+          "pua_icon": "0xe40d"
+        }
+      ],
+      "desc_zh": "80%概率施加流血，造成攻击力70%的伤害，持续7秒。",
+      "pua_icon": "E401",
       "ui_trigger": "onSpecial1Hit"
     },
     "sp2": {
       "name_zh": "等离子过载连击",
       "name_en": "Plasma Overdrive",
-      "desc_zh": "极速绕后连击并在零距离倾泻等离子流，对敌方施加燃烧与流血，在 {{var_5}} 秒内造成 {{var_6}} 复合伤害。",
-      "pua_icon": "",
+      "effects": [
+        {
+          "title_zh": "暴击几率",
+          "title_en": "Crit Rate",
+          "desc_zh": "最后一击命中后，增加80%的暴击几率，持续8秒。",
+          "pua_icon": "0xe40d"
+        },
+        {
+          "title_zh": "规避克制",
+          "title_en": "Anti Evade",
+          "desc_zh": "最后一击命中后，施加规避克制，完全禁止对方规避，持续8秒。",
+          "pua_icon": "E92A"
+        }
+      ],
+      "desc_zh": "最后一击命中后，增加80%的暴击几率，持续8秒。",
+      "pua_icon": "0xe40d",
       "ui_trigger": "onSpecial2Hit"
     },
     "sp3": {
       "name_zh": "致命方格旗",
       "name_en": "Chequered Carnage",
-      "desc_zh": "致命方格旗全速狂飙碾压，自身获得残暴增益，提升 {{var_7}} 攻击力持续 {{var_8}} 秒。",
-      "pua_icon": "",
+      "effects": [
+        {
+          "title_zh": "流血",
+          "title_en": "Bleed",
+          "desc_zh": "技能完成时施加2层流血，每层造成攻击力70%的伤害，持续7秒。",
+          "pua_icon": "E401"
+        },
+        {
+          "title_zh": "能量锁定",
+          "title_en": "Power Lock",
+          "desc_zh": "技能完成时100%概率触发能量锁定，阻止对方获得能量，持续5秒",
+          "pua_icon": "0xe523"
+        }
+      ],
+      "desc_zh": "技能完成时施加2层流血，每层造成攻击力70%的伤害，持续7秒。",
+      "pua_icon": "E401",
       "ui_trigger": "onSpecial3Hit"
     }
   },
-  "abilities": [
-    {
-      "title_zh": "不可防御",
-      "title_en": "Unblockable",
-      "desc_zh": "发动前冲攻击时有25%的概率不可防御",
-      "pua_icon": "E41F",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    },
-    {
-      "title_zh": "修复",
-      "title_en": "Repair",
-      "desc_zh": "成功叠加3层流血时，停止对手流血减益并触发修复，4秒内回复5%的最大生命值。",
-      "pua_icon": "E503",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    }
-  ],
   "synergies": [
     {
       "title_zh": "飞天虎 (Menasor)",
@@ -83,6 +105,43 @@
       "desc_zh": "团队所有低星级队员获得 +{{var_8}} 护甲穿透。",
       "pua_icon": "",
       "bonus_heroes": []
+    }
+  ],
+  "basic_abilities": [
+    {
+      "title_zh": "极速超车冲刺",
+      "title_en": "Drafting Surge",
+      "desc_zh": "冲刺重击时免疫远程子弹与飞行道具；命中对手必定撕裂装甲，施加流血 (Bleed)，在 5 秒内造成 {{var_1}} 物理伤害。",
+      "pua_icon": ""
+    },
+    {
+      "title_zh": "不择手段",
+      "title_en": "Win at All Costs",
+      "desc_zh": "对手生命值越低，抢劫造成的近战伤害越高（最多提升 60%）。对处于流血状态的敌人近战必暴。",
+      "pua_icon": ""
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "暴击流血",
+      "title_en": "Melee Crit Bleed",
+      "desc_zh": "近战暴击时：35%的概率触发流血，造成攻击力40%的伤害，持续7秒。",
+      "pua_icon": "0xe401",
+      "ui_trigger": "暴击流血"
+    },
+    {
+      "title_zh": "不可防御",
+      "title_en": "Unblockable",
+      "desc_zh": "发动前冲攻击时有25%的概率不可防御  // 图标在前冲过程中出现，未触发则不出现",
+      "pua_icon": "0xe41f",
+      "ui_trigger": "不可防御"
+    },
+    {
+      "title_zh": "修复",
+      "title_en": "Repair",
+      "desc_zh": "成功叠加3层流血时，停止对手流血减益并触发修复，4秒内回复5%的最大生命值。",
+      "pua_icon": "E503",
+      "ui_trigger": "修复"
     }
   ]
 }

@@ -15,6 +15,14 @@
     "sp1": {
       "name_zh": "迈出第一步",
       "name_en": "Make the First Move",
+      "effects": [
+        {
+          "title_zh": "迈出第一步",
+          "title_en": "Make the First Move",
+          "desc_zh": "在对手攻击你之前发起攻击。",
+          "pua_icon": ""
+        }
+      ],
       "desc_zh": "在对手攻击你之前发起攻击。",
       "pua_icon": "",
       "ui_trigger": "onSpecial1Hit"
@@ -22,6 +30,14 @@
     "sp2": {
       "name_zh": "特殊技 2",
       "name_en": "Special Attack 2",
+      "effects": [
+        {
+          "title_zh": "特殊技 2",
+          "title_en": "Special Attack 2",
+          "desc_zh": "<s>{{var_25}}</s> {{var_26}} 最后一击修复 {{var_27}} 格挡的机会。对手身上的每个减益有 +{{var_28}} 机会。",
+          "pua_icon": ""
+        }
+      ],
       "desc_zh": "<s>{{var_25}}</s> {{var_26}} 最后一击修复 {{var_27}} 格挡的机会。对手身上的每个减益有 +{{var_28}} 机会。",
       "pua_icon": "",
       "ui_trigger": "onSpecial2Hit"
@@ -29,12 +45,19 @@
     "sp3": {
       "name_zh": "特殊技 3",
       "name_en": "Special Attack 3",
+      "effects": [
+        {
+          "title_zh": "特殊技 3",
+          "title_en": "Special Attack 3",
+          "desc_zh": "在严重命中时，修复方块会持续 {{var_29}}。",
+          "pua_icon": ""
+        }
+      ],
       "desc_zh": "在严重命中时，修复方块会持续 {{var_29}}。",
       "pua_icon": "",
       "ui_trigger": "onSpecial3Hit"
     }
   },
-  "abilities": [],
   "synergies": [
     {
       "title_zh": "对手",
@@ -73,6 +96,77 @@
       "desc_zh": "作为领导力的灯塔，所有较低级别的队友都获得 +{{var_43}} 关键评级。",
       "pua_icon": "",
       "bonus_heroes": []
+    }
+  ],
+  "basic_abilities": [
+    {
+      "title_zh": "基础特长",
+      "title_en": "Basic Abilities",
+      "desc_zh": "暴击率增益",
+      "pua_icon": ""
+    },
+    {
+      "title_zh": "基础特长",
+      "title_en": "Basic Abilities",
+      "desc_zh": "背刺",
+      "pua_icon": ""
+    },
+    {
+      "title_zh": "基础特长",
+      "title_en": "Basic Abilities",
+      "desc_zh": "功耗",
+      "pua_icon": ""
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "重击远程穿透",
+      "title_en": "Heavy Range Immunue",
+      "desc_zh": "重击全程不会被远程普通攻击和远程重击击中。//对方的远程普通攻击和远程重击会直接从飞过，这个过程显示一个黄色的图标，重击完成后消失。",
+      "pua_icon": "0xe518",
+      "ui_trigger": "重击远程穿透"
+    },
+    {
+      "title_zh": "暴击伤害",
+      "title_en": "Crit Damage",
+      "desc_zh": "重击命中获得一个15%的暴击伤害增益，持续7秒",
+      "pua_icon": "0xe906",
+      "ui_trigger": "暴击伤害"
+    },
+    {
+      "title_zh": "远程驱散",
+      "title_en": "Ranged Nullify",
+      "desc_zh": "基础远程攻击100%概率驱散对手一个护盾类增益",
+      "pua_icon": "E950",
+      "ui_trigger": "远程驱散"
+    },
+    {
+      "title_zh": "攻击增益",
+      "title_en": "Attack Buff",
+      "desc_zh": "基础远程攻击有30%的概率得到20%的攻击增益，持续5秒",
+      "pua_icon": "0xe406",
+      "ui_trigger": "攻击增益"
+    },
+    {
+      "title_zh": "净化并震击",
+      "title_en": "Purify and Shock",
+      "desc_zh": "M2命中时，减化自己所有震击减益，如果成功净化，向对手施加震击，造成攻击力60%的伤害，持续8秒。",
+      "pua_icon": "E914",
+      "ui_trigger": "净化并震击"
+    },
+    {
+      "title_zh": "暴击几率",
+      "title_en": "Crit Rate",
+      "desc_zh": "M2命中得到一个10%的暴击几率增益，持续6秒",
+      "pua_icon": "0xe40d",
+      "ui_trigger": "暴击几率"
+    },
+    {
+      "title_zh": "背刺",
+      "title_en": "Backstab",
+      "desc_zh": "暴击命中时，60%的概率施加背刺，对方每多一格能量，背刺概率增加12%。//用例，对方三格能量满，背刺概率为96%\n背刺图标在0.5秒内随机变为以下三个减益之一：\n1. 20%的暴击抗性减益，持续8秒  // 图标为E912，相当于对方暴击率提升20%\n2. 30%的能量功率减益，持续8秒\n3. 逆火减益，持续8秒，对手释放特殊技时，受到滑流攻击力100%的即时伤害，并移除逆火减益\n（三个减益都最大只能叠1层。如果已有某个减益，则随机在另两个中间选，如果已有两个，则必然变成第三个，如果三个都有，则刷新随机到的那个）",
+      "pua_icon": "E41E",
+      "ui_trigger": "背刺"
     }
   ]
 }

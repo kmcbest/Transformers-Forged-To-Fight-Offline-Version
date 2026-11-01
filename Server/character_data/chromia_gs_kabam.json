@@ -7,7 +7,7 @@
   "signature": {
     "title_zh": "瞄准目标",
     "title_en": "Eyes on Target",
-    "desc_zh": "所有特殊技最后一击：得到能量涌动增益，提升能量获得功率120%，持续7秒。",
+    "desc_zh": "所有特殊技最后一击：得到能量涌动增益，提升能量获得功率120%，持续7秒。\n\n【规避】所有特殊技最后一击：获得规避增益，30%的概率规避敌人远程攻击，持续7秒\n\n【顶光区的炸弹】所有特殊技：技能命中后最后一击施加炸弹减益，持续5秒  // 灰色图标\n5秒内未被对手击中，炸弹造成攻击力100%的即时伤害，并眩晕2.5秒",
     "pua_icon": "E608",
     "ui_trigger": "none"
   },
@@ -15,35 +15,110 @@
     "sp1": {
       "name_zh": "执行任务",
       "name_en": "Bot on a Mission",
+      "effects": [
+        {
+          "title_zh": "流血",
+          "title_en": "Bleed",
+          "desc_zh": "100%几率触发流血，造成攻击力69.3%的伤害，持续4秒。",
+          "pua_icon": "0xe401"
+        },
+        {
+          "title_zh": "引爆",
+          "title_en": "Detonation",
+          "desc_zh": "如果目标身上有电荷，则引爆电荷，施加攻击力80%的瞬时伤害，并眩晕1.5秒",
+          "pua_icon": "E908"
+        }
+      ],
       "desc_zh": "100%几率触发流血，造成攻击力69.3%的伤害，持续4秒。",
-      "pua_icon": "E401",
+      "pua_icon": "0xe401",
       "ui_trigger": "onSpecial1Hit"
     },
     "sp2": {
       "name_zh": "善恶斩",
       "name_en": "Good Chop. Bad Chop",
+      "effects": [
+        {
+          "title_zh": "流血",
+          "title_en": "Bleed",
+          "desc_zh": "100%几率触发流血，造成攻击力100%的伤害，持续4秒。",
+          "pua_icon": "0xe401"
+        },
+        {
+          "title_zh": "减速",
+          "title_en": "Deceleration",
+          "desc_zh": "施加减速，持续9秒，可叠加\n每层减速降低对手能量功率10%\n减速中的对手绝对不触发规避",
+          "pua_icon": "E952"
+        }
+      ],
       "desc_zh": "100%几率触发流血，造成攻击力100%的伤害，持续4秒。",
-      "pua_icon": "E401",
+      "pua_icon": "0xe401",
       "ui_trigger": "onSpecial2Hit"
     },
     "sp3": {
       "name_zh": "暴力斧",
       "name_en": "Axe of Violence",
+      "effects": [
+        {
+          "title_zh": "减速",
+          "title_en": "Deceleration",
+          "desc_zh": "施加减速，持续23.6秒，可叠加\n每层减速降低对手能量功率10%\n减速中的对手绝对不触发规避",
+          "pua_icon": "E952"
+        },
+        {
+          "title_zh": "流血",
+          "title_en": "Bleed",
+          "desc_zh": "100%几率触发流血，造成攻击力200%的伤害，持续25秒。",
+          "pua_icon": "0xe401"
+        }
+      ],
       "desc_zh": "施加减速，持续23.6秒，可叠加\n每层减速降低对手能量功率10%\n减速中的对手绝对不触发规避",
       "pua_icon": "E952",
       "ui_trigger": "onSpecial3Hit"
     }
   },
-  "abilities": [
+  "synergies": [],
+  "basic_abilities": [
+    {
+      "title_zh": "基础特长",
+      "title_en": "Basic Abilities",
+      "desc_zh": "缓慢：阻止对手躲避攻击，并减少对手攻击时的能量流。",
+      "pua_icon": ""
+    },
+    {
+      "title_zh": "基础特长",
+      "title_en": "Basic Abilities",
+      "desc_zh": "暴击率增益：击中遭受缓慢减益效果的对手时，暂时提高暴击率。",
+      "pua_icon": ""
+    }
+  ],
+  "game_abilities": [
     {
       "title_zh": "减速",
       "title_en": "Deceleration",
       "desc_zh": "远程攻击命中或被防御时，有60%的概率施加减速，持续3.2秒，可叠加\n每层减速降低对手能量功率10%\n减速中的对手绝对不触发规避",
       "pua_icon": "E952",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
+      "ui_trigger": "减速"
+    },
+    {
+      "title_zh": "感应电荷",
+      "title_en": "Sensor Charge",
+      "desc_zh": "远程普通攻击命中或被格挡时，70%的概率施加1层感应电荷，持续6秒  //灰图标，最大1层，可刷新\n感应电荷降低对手60%的规避概率\n电荷过期时立即扣除对方1.5%的最大能量",
+      "pua_icon": "E806",
+      "ui_trigger": "感应电荷"
+    },
+    {
+      "title_zh": "觉醒·规避",
+      "title_en": "Evade",
+      "desc_zh": "所有特殊技最后一击：获得规避增益，30%的概率规避敌人远程攻击，持续7秒",
+      "pua_icon": "0xe518",
+      "ui_trigger": "规避"
+    },
+    {
+      "title_zh": "觉醒·顶光区的炸弹",
+      "title_en": "Acrolight Bomb",
+      "desc_zh": "所有特殊技：技能命中后最后一击施加炸弹减益，持续5秒  // 灰色图标\n5秒内未被对手击中，炸弹造成攻击力100%的即时伤害，并眩晕2.5秒",
+      "pua_icon": "E40E",
+      "ui_trigger": "顶光区的炸弹"
     }
-  ],
-  "synergies": []
+  ]
 }

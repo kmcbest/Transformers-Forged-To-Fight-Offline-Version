@@ -32,6 +32,7 @@ static const EnemyStat ENEMY_STATS[] = {
     { "dirge_gs_deluxe2008", 44950, 2945, 7336, 0.16f, 1.50f, "warr" },
     { "dragstrip_gs_deluxe2016", 44100, 3050, 7384, 0.16f, 1.50f, "warr" },
     { "drift_cin_aoe", 44250, 3060, 7408, 0.16f, 1.50f, "warr" },
+    { "elita_one_gs", 38400, 2780, 6574, 0.16f, 1.50f, "tact" },
     { "fte_optimus_gs_t3", 38400, 2780, 6574, 0.16f, 1.50f, "tact" },
     { "fte_stars_gs_t3", 37251, 2669, 6345, 0.16f, 1.50f, "tact" },
     { "galvatron_gs_voyager2016", 46250, 3085, 7612, 0.16f, 1.50f, "demo" },
@@ -92,6 +93,6 @@ static const EnemyStat ENEMY_STATS[] = {
     { "wildrider_gs_deluxe2016", 44380, 3545, 7983, 0.08f, 1.30f, "braw" },
     { "windblade_gs", 39100, 3070, 6971, 0.24f, 1.50f, "scou" },
 };
-#define NUM_ENEMY_STATS 78
+#define NUM_ENEMY_STATS 79
 
 #endif // BOT_INFO_H

@@ -15,6 +15,14 @@
     "sp1": {
       "name_zh": "制空情结",
       "name_en": "Air Superiority Complex",
+      "effects": [
+        {
+          "title_zh": "制空情结",
+          "title_en": "Air Superiority Complex",
+          "desc_zh": "阿谀奉承者终于报仇了。",
+          "pua_icon": ""
+        }
+      ],
       "desc_zh": "阿谀奉承者终于报仇了。",
       "pua_icon": "",
       "ui_trigger": "onSpecial1Hit"
@@ -22,6 +30,14 @@
     "sp2": {
       "name_zh": "特殊技 2",
       "name_en": "Special Attack 2",
+      "effects": [
+        {
+          "title_zh": "特殊技 2",
+          "title_en": "Special Attack 2",
+          "desc_zh": "{{var_10}} 有机会增加 {{var_11}} 的远程伤害和 {{var_12}} 的射弹速度。",
+          "pua_icon": ""
+        }
+      ],
       "desc_zh": "{{var_10}} 有机会增加 {{var_11}} 的远程伤害和 {{var_12}} 的射弹速度。",
       "pua_icon": "",
       "ui_trigger": "onSpecial2Hit"
@@ -29,49 +45,19 @@
     "sp3": {
       "name_zh": "狡猾的背叛",
       "name_en": "Cunning Treachery",
+      "effects": [
+        {
+          "title_zh": "狡猾的背叛",
+          "title_en": "Cunning Treachery",
+          "desc_zh": "他现在已经得到你了！",
+          "pua_icon": ""
+        }
+      ],
       "desc_zh": "他现在已经得到你了！",
       "pua_icon": "",
       "ui_trigger": "onSpecial3Hit"
     }
   },
-  "abilities": [
-    {
-      "title_zh": "零射线",
-      "title_en": "Null Ray",
-      "desc_zh": "基础远程攻击命中时100%概率驱散一个护甲、近战或者攻击增益。\n驱散时造成攻击力90%的即时震击伤害。",
-      "pua_icon": "E950",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    },
-    {
-      "title_zh": "战斗被动",
-      "title_en": "Ranged attacks have {{var_1}} increase to Critical Chance.",
-      "desc_zh": "远程攻击的暴击率增加 {{var_1}}。",
-      "pua_icon": "",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    },
-    {
-      "title_zh": "规避近战重击",
-      "title_en": "Evade Heavy Melee",
-      "desc_zh": "20%的概率机规避近战重击。",
-      "pua_icon": "E509",
-      "category": "passive",
-      "ui_trigger": "onHeavyHit",
-      "show_on_main_screen": true
-    },
-    {
-      "title_zh": "燃烧",
-      "title_en": "Burn",
-      "desc_zh": "重击命中时有20%几率造成燃烧，施加攻击力40%的伤害，持续4秒。",
-      "pua_icon": "0xe41d",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    }
-  ],
   "synergies": [
     {
       "title_zh": "红蜘蛛的探索者",
@@ -154,6 +140,56 @@
       "bonus_heroes": [
         "slipstream_gs"
       ]
+    }
+  ],
+  "basic_abilities": [
+    {
+      "title_zh": "基础特长",
+      "title_en": "Basic Abilities",
+      "desc_zh": "零射线",
+      "pua_icon": ""
+    },
+    {
+      "title_zh": "基础特长",
+      "title_en": "Basic Abilities",
+      "desc_zh": "远程增益",
+      "pua_icon": ""
+    },
+    {
+      "title_zh": "基础特长",
+      "title_en": "Basic Abilities",
+      "desc_zh": "破甲",
+      "pua_icon": ""
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "零射线",
+      "title_en": "Null Ray",
+      "desc_zh": "基础远程攻击命中时100%概率驱散一个护甲、近战或者攻击增益。\n驱散时造成攻击力90%的即时震击伤害。",
+      "pua_icon": "E950",
+      "ui_trigger": "零射线"
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "Ranged attacks have {{var_1}} increase to Critical Chance.",
+      "desc_zh": "远程攻击的暴击率增加 {{var_1}}。",
+      "pua_icon": "",
+      "ui_trigger": "战斗被动"
+    },
+    {
+      "title_zh": "规避近战重击",
+      "title_en": "Evade Heavy Melee",
+      "desc_zh": "20%的概率机规避近战重击。//无图标，天然技能，在敌人近战重击即将命中时计算概率",
+      "pua_icon": "E509",
+      "ui_trigger": "规避近战重击"
+    },
+    {
+      "title_zh": "燃烧",
+      "title_en": "Burn",
+      "desc_zh": "重击命中时有20%几率造成燃烧，施加攻击力40%的伤害，持续4秒。",
+      "pua_icon": "0xe41d",
+      "ui_trigger": "燃烧"
     }
   ]
 }

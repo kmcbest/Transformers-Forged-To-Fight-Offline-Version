@@ -15,6 +15,14 @@
     "sp1": {
       "name_zh": "敢于相信",
       "name_en": "Dare to Believe",
+      "effects": [
+        {
+          "title_zh": "敢于相信",
+          "title_en": "Dare to Believe",
+          "desc_zh": "补天士手中掌握着未来！",
+          "pua_icon": ""
+        }
+      ],
       "desc_zh": "补天士手中掌握着未来！",
       "pua_icon": "",
       "ui_trigger": "onSpecial1Hit"
@@ -22,6 +30,14 @@
     "sp2": {
       "name_zh": "特殊技 2",
       "name_en": "Special Attack 2",
+      "effects": [
+        {
+          "title_zh": "特殊技 2",
+          "title_en": "Special Attack 2",
+          "desc_zh": "激活后，将不可阻挡者从对手身上移除。",
+          "pua_icon": ""
+        }
+      ],
       "desc_zh": "激活后，将不可阻挡者从对手身上移除。",
       "pua_icon": "",
       "ui_trigger": "onSpecial2Hit"
@@ -29,40 +45,19 @@
     "sp3": {
       "name_zh": "特殊技 3",
       "name_en": "Special Attack 3",
+      "effects": [
+        {
+          "title_zh": "特殊技 3",
+          "title_en": "Special Attack 3",
+          "desc_zh": "{{var_15}} 次机会无效化对手 1 个增益。",
+          "pua_icon": ""
+        }
+      ],
       "desc_zh": "{{var_15}} 次机会无效化对手 1 个增益。",
       "pua_icon": "",
       "ui_trigger": "onSpecial3Hit"
     }
   },
-  "abilities": [
-    {
-      "title_zh": "前冲净化",
-      "title_en": "Dashing Purify",
-      "desc_zh": "前冲时有70%的概率净化补天士身上的一个减益。",
-      "pua_icon": "",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    },
-    {
-      "title_zh": "近战驱散",
-      "title_en": "Melee Nullify",
-      "desc_zh": "近战组合的最后一击（M2或者L2）命中时：\n50%的概率驱散对方一个近战增益\n50%的概率驱散对方一个护甲增益",
-      "pua_icon": "0xe950",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    },
-    {
-      "title_zh": "重击破甲",
-      "title_en": "Heavy Attack Armor Break",
-      "desc_zh": "重击命中时，对方身上有几个增益，就施加几层破甲，每层强度15%，持续7秒。同时移除对方身上所有的护甲增益。",
-      "pua_icon": "0xe516",
-      "category": "passive",
-      "ui_trigger": "onHeavyHit",
-      "show_on_main_screen": true
-    }
-  ],
   "synergies": [
     {
       "title_zh": "宿敌",
@@ -98,6 +93,37 @@
       "desc_zh": "作为领导的灯塔，所有低级别队友都获得 +{{var_32}} 装甲等级。",
       "pua_icon": "",
       "bonus_heroes": []
+    }
+  ],
+  "basic_abilities": [
+    {
+      "title_zh": "基础特长",
+      "title_en": "Basic Abilities",
+      "desc_zh": "修复",
+      "pua_icon": ""
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "前冲净化",
+      "title_en": "Dashing Purify",
+      "desc_zh": "前冲时有70%的概率净化补天士身上的一个减益。//无图标，净化成功显示文字“净化！”",
+      "pua_icon": "",
+      "ui_trigger": "前冲净化"
+    },
+    {
+      "title_zh": "近战驱散",
+      "title_en": "Melee Nullify",
+      "desc_zh": "近战组合的最后一击（M2或者L2）命中时：\n50%的概率驱散对方一个近战增益\n50%的概率驱散对方一个护甲增益",
+      "pua_icon": "0xe950",
+      "ui_trigger": "近战驱散"
+    },
+    {
+      "title_zh": "重击破甲",
+      "title_en": "Heavy Attack Armor Break",
+      "desc_zh": "重击命中时，对方身上有几个增益，就施加几层破甲，每层强度15%，持续7秒。同时移除对方身上所有的护甲增益。//不移除对方其他增益\n//用例：对方有5个近战增益和5个护甲增益，则施加10层破甲，扩大150%的伤害",
+      "pua_icon": "0xe516",
+      "ui_trigger": "重击破甲"
     }
   ]
 }

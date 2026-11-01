@@ -15,6 +15,14 @@
     "sp1": {
       "name_zh": "惩罚回旋",
       "name_en": "Punishing Pirouette",
+      "effects": [
+        {
+          "title_zh": "惩罚性旋转",
+          "title_en": "Punishing Pirouette",
+          "desc_zh": "一阵空中踢击将对手击倒。",
+          "pua_icon": ""
+        }
+      ],
       "desc_zh": "一阵空中踢击将对手击倒。",
       "pua_icon": "",
       "ui_trigger": "onSpecial1Hit"
@@ -22,38 +30,34 @@
     "sp2": {
       "name_zh": "时间篡改",
       "name_en": "Time Tampering",
-      "desc_zh": "",
-      "pua_icon": "",
+      "effects": [
+        {
+          "title_zh": "减速",
+          "title_en": "Deceleration",
+          "desc_zh": "远程攻击命中或被防御时，有60%的概率施加减速，持续3.2秒。",
+          "pua_icon": "E952"
+        }
+      ],
+      "desc_zh": "远程攻击命中或被防御时，有60%的概率施加减速，持续3.2秒。",
+      "pua_icon": "E952",
       "ui_trigger": "onSpecial2Hit"
     },
     "sp3": {
       "name_zh": "时间泡泡爆破",
       "name_en": "Time Bubble Blast",
-      "desc_zh": "",
-      "pua_icon": "",
+      "effects": [
+        {
+          "title_zh": "减速",
+          "title_en": "Deceleration",
+          "desc_zh": "远程攻击命中或被防御时，有60%的概率施加减速，持续3.2秒。",
+          "pua_icon": "E952"
+        }
+      ],
+      "desc_zh": "远程攻击命中或被防御时，有60%的概率施加减速，持续3.2秒。",
+      "pua_icon": "E952",
       "ui_trigger": "onSpecial3Hit"
     }
   },
-  "abilities": [
-    {
-      "title_zh": "减速",
-      "title_en": "Deceleration",
-      "desc_zh": "远程攻击命中或被防御时，有60%的概率施加减速，持续3.2秒。",
-      "pua_icon": "E952",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    },
-    {
-      "title_zh": "眩晕",
-      "title_en": "Stun",
-      "desc_zh": "重击暴击时有40%的概率造成眩晕，持续1.5秒",
-      "pua_icon": "E605",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    }
-  ],
   "synergies": [
     {
       "title_zh": "代码 12：鲁莽驾驶（警车）",
@@ -98,6 +102,43 @@
       "desc_zh": "所有较低级别的队友都会获得 +{{var_27}} 暴击伤害。",
       "pua_icon": "",
       "bonus_heroes": []
+    }
+  ],
+  "basic_abilities": [
+    {
+      "title_zh": "基础特长",
+      "title_en": "Basic Abilities",
+      "desc_zh": "减速度",
+      "pua_icon": ""
+    },
+    {
+      "title_zh": "基础特长",
+      "title_en": "Basic Abilities",
+      "desc_zh": "暴击率增益",
+      "pua_icon": ""
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "减速",
+      "title_en": "Deceleration",
+      "desc_zh": "远程攻击命中或被防御时，有60%的概率施加减速，持续3.2秒。",
+      "pua_icon": "E952",
+      "ui_trigger": "减速"
+    },
+    {
+      "title_zh": "眩晕",
+      "title_en": "Stun",
+      "desc_zh": "重击暴击时有40%的概率造成眩晕，持续1.5秒",
+      "pua_icon": "E605",
+      "ui_trigger": "眩晕"
+    },
+    {
+      "title_zh": "能量功率减益",
+      "title_en": "Power Rate Debuff",
+      "desc_zh": "减速中的对方无法规避\n每层减速降低对手能量功率27.2%",
+      "pua_icon": "E606",
+      "ui_trigger": "能量功率减益"
     }
   ]
 }

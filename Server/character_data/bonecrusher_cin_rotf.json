@@ -15,54 +15,49 @@
     "sp1": {
       "name_zh": "蝎尾痛蝥",
       "name_en": "Scorpion Sting",
-      "desc_zh": "",
-      "pua_icon": "",
+      "effects": [
+        {
+          "title_zh": "流血",
+          "title_en": "Heavy Attacks Bleed",
+          "desc_zh": "每一击90%的概率触发流血，造成攻击力115%的伤害，持续2秒。",
+          "pua_icon": "0xe401"
+        }
+      ],
+      "desc_zh": "每一击90%的概率触发流血，造成攻击力115%的伤害，持续2秒。",
+      "pua_icon": "0xe401",
       "ui_trigger": "onSpecial1Hit"
     },
     "sp2": {
       "name_zh": "厌恶",
       "name_en": "Abhornado",
-      "desc_zh": "",
-      "pua_icon": "",
+      "effects": [
+        {
+          "title_zh": "流血",
+          "title_en": "Bleed",
+          "desc_zh": "每一击71%的概率触发流血，造成攻击力72%的伤害，持续7秒。",
+          "pua_icon": "0xe401"
+        }
+      ],
+      "desc_zh": "每一击71%的概率触发流血，造成攻击力72%的伤害，持续7秒。",
+      "pua_icon": "0xe401",
       "ui_trigger": "onSpecial2Hit"
     },
     "sp3": {
       "name_zh": "杀无赦！",
       "name_en": "No Survivors!",
-      "desc_zh": "",
-      "pua_icon": "",
+      "effects": [
+        {
+          "title_zh": "流血",
+          "title_en": "Heavy Attacks Bleed",
+          "desc_zh": "每一击45%的概率触发流血，造成攻击力198%的伤害，持续18秒。",
+          "pua_icon": "0xe401"
+        }
+      ],
+      "desc_zh": "每一击45%的概率触发流血，造成攻击力198%的伤害，持续18秒。",
+      "pua_icon": "0xe401",
       "ui_trigger": "onSpecial3Hit"
     }
   },
-  "abilities": [
-    {
-      "title_zh": "战斗被动",
-      "title_en": "When struck by melee critical hits: {{var_1}} chance to Bleed, dealing {{var_2}} Attack over {{var_3}}.",
-      "desc_zh": "受到近战暴击时：{{var_1}} 几率流血，造成 {{var_2}} 攻击力高于 {{var_3}}。",
-      "pua_icon": "",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    },
-    {
-      "title_zh": "受暴击反伤流血",
-      "title_en": "Bleed when Struck by Crit",
-      "desc_zh": "受到近战暴击时：90%的几率给对方施加流血，造成攻击力89.6%的伤害，持续7秒，可叠加。",
-      "pua_icon": "0xe401",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    },
-    {
-      "title_zh": "重击流血",
-      "title_en": "Heavy Attacks Bleed",
-      "desc_zh": "重击命中时：70%几率触发流血，造成攻击力45%的伤害，持续5.6秒。",
-      "pua_icon": "0xe401",
-      "category": "passive",
-      "ui_trigger": "onHeavyHit",
-      "show_on_main_screen": true
-    }
-  ],
   "synergies": [
     {
       "title_zh": "盟友",
@@ -116,6 +111,43 @@
       "desc_zh": "作为团队的领导灯塔，所有较低级别的队友都会获得 +{{var_32}} 暴击伤害。",
       "pua_icon": "",
       "bonus_heroes": []
+    }
+  ],
+  "basic_abilities": [
+    {
+      "title_zh": "基础特长",
+      "title_en": "Basic Abilities",
+      "desc_zh": "暴击率增益",
+      "pua_icon": ""
+    },
+    {
+      "title_zh": "基础特长",
+      "title_en": "Basic Abilities",
+      "desc_zh": "出血",
+      "pua_icon": ""
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "战斗被动",
+      "title_en": "When struck by melee critical hits: {{var_1}} chance to Bleed, dealing {{var_2}} Attack over {{var_3}}.",
+      "desc_zh": "受到近战暴击时：{{var_1}} 几率流血，造成 {{var_2}} 攻击力高于 {{var_3}}。",
+      "pua_icon": "",
+      "ui_trigger": "战斗被动"
+    },
+    {
+      "title_zh": "受暴击反伤流血",
+      "title_en": "Bleed when Struck by Crit",
+      "desc_zh": "受到近战暴击时：90%的几率给对方施加流血，造成攻击力89.6%的伤害，持续7秒，可叠加。",
+      "pua_icon": "0xe401",
+      "ui_trigger": "受暴击反伤流血"
+    },
+    {
+      "title_zh": "重击流血",
+      "title_en": "Heavy Attacks Bleed",
+      "desc_zh": "重击命中时：70%几率触发流血，造成攻击力45%的伤害，持续5.6秒。",
+      "pua_icon": "0xe401",
+      "ui_trigger": "重击流血"
     }
   ]
 }

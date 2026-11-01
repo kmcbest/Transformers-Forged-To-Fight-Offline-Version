@@ -7,71 +7,63 @@
   "signature": {
     "title_zh": "公路之王",
     "title_en": "King of the Road",
-    "desc_zh": "他的生命值越低，汽车大师就越愤怒，从而给予他近战伤害增益。\n\n被动：每损失最大生命值的20%，汽车大师的愤怒就会赋予他60%的近战伤害增益。",
-    "pua_icon": "0xe406",
+    "desc_zh": "每损失最大生命值的20%，得到1层60%的近战增益。 // 用例：体力只剩19%时，应该有4层近战增益，橙图标，无倒计时",
+    "pua_icon": "E412",
     "ui_trigger": "none"
   },
   "special_attacks": {
     "sp1": {
-      "name_zh": "离子发生器叶片",
+      "name_zh": "离子刀",
       "name_en": "Ionizer Blade",
-      "desc_zh": "真空金属化能量的爆炸帮助对手成为垃圾场之王。",
-      "pua_icon": "",
+      "effects": [
+        {
+          "title_zh": "能量燃烧",
+          "title_en": "Power Burn",
+          "desc_zh": "即时扣除对方最大能量的2%",
+          "pua_icon": "0xe607"
+        }
+      ],
+      "desc_zh": "即时扣除对方最大能量的2%",
+      "pua_icon": "0xe607",
       "ui_trigger": "onSpecial1Hit"
     },
     "sp2": {
-      "name_zh": "大师级工艺 (不可阻挡)",
+      "name_zh": "大师工艺",
       "name_en": "A Master Craft (Unstoppable)",
-      "desc_zh": "特殊技2激活时：获得4秒的不可阻挡增益。",
+      "effects": [
+        {
+          "title_zh": "不可阻挡",
+          "title_en": "Unstoppable",
+          "desc_zh": "特殊技2激活时：获得4.5秒的不可阻挡增益。",
+          "pua_icon": "0xe915"
+        }
+      ],
+      "desc_zh": "特殊技2激活时：获得4.5秒的不可阻挡增益。",
       "pua_icon": "0xe915",
       "ui_trigger": "onSpecial2Hit"
     },
     "sp3": {
-      "name_zh": "特殊技 3",
-      "name_en": "Special Attack 3",
-      "desc_zh": "汽车大师获得不可阻挡的增益，持续 {{var_9}} 秒。",
+      "name_zh": "路的尽头",
+      "name_en": "End of the Road",
+      "effects": [
+        {
+          "title_zh": "攻击增益",
+          "title_en": "Attack Buff",
+          "desc_zh": "最后一击伤害增加150%，但同时对自身造成攻击力90%的伤害   // 如果自身剩余体力不够，不会KO自己，留1点体力",
+          "pua_icon": ""
+        },
+        {
+          "title_zh": "冲压",
+          "title_en": "Ram",
+          "desc_zh": "最后一击随机施加6个冲压减益，均持续6秒\n* 21.6%的攻击减益\n* 29.7%的破甲减益\n* 24.3%的能量功率减益",
+          "pua_icon": ""
+        }
+      ],
+      "desc_zh": "最后一击伤害增加150%，但同时对自身造成攻击力90%的伤害   // 如果自身剩余体力不够，不会KO自己，留1点体力",
       "pua_icon": "",
       "ui_trigger": "onSpecial3Hit"
     }
   },
-  "abilities": [
-    {
-      "title_zh": "冲压",
-      "title_en": "Ramming",
-      "desc_zh": "暂时降低对手的攻击力",
-      "pua_icon": "0xe916",
-      "category": "basic",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    },
-    {
-      "title_zh": "不可阻挡",
-      "title_en": "Unstoppable",
-      "desc_zh": "角色行动不会被对手攻击打断",
-      "pua_icon": "0xe915",
-      "category": "basic",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    },
-    {
-      "title_zh": "前冲不可阻挡",
-      "title_en": "Dashing Unstoppable",
-      "desc_zh": "汽车大师以不可阻挡的力量向前冲锋，无视对手攻击的影响。",
-      "pua_icon": "0xe915",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    },
-    {
-      "title_zh": "重击冲压",
-      "title_en": "Ram With Heavy Attacks",
-      "desc_zh": "用重击撞击对手时随机造成三个减益效果之一（均持续6秒）\n* -21.6%的攻击力\n* -29.7%的破甲\n* -24.3%的能量功率",
-      "pua_icon": "",
-      "category": "passive",
-      "ui_trigger": "onHeavyHit",
-      "show_on_main_screen": true
-    }
-  ],
   "synergies": [
     {
       "title_zh": "宿敌",
@@ -133,6 +125,36 @@
         "dragstrip_gs_deluxe2016",
         "wildrider_gs_deluxe2016"
       ]
+    }
+  ],
+  "basic_abilities": [
+    {
+      "title_zh": "冲压",
+      "title_en": "Ramming",
+      "desc_zh": "暂时降低对手的攻击力",
+      "pua_icon": "0xe916"
+    },
+    {
+      "title_zh": "不可阻挡",
+      "title_en": "Unstoppable",
+      "desc_zh": "角色行动不会被对手攻击打断",
+      "pua_icon": "0xe915"
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "前冲不可阻挡",
+      "title_en": "Dashing Unstoppable",
+      "desc_zh": "汽车大师以不可阻挡的力量向前冲锋，无视对手攻击的影响。",
+      "pua_icon": "0xe915",
+      "ui_trigger": "前冲不可阻挡"
+    },
+    {
+      "title_zh": "重击冲压",
+      "title_en": "Ram With Heavy Attacks",
+      "desc_zh": "用重击撞击对手时随机造成三个减益效果之一（均持续6秒）\n* 21.6%的攻击减益\n* 29.7%的破甲减益\n* 24.3%的能量功率减益",
+      "pua_icon": "",
+      "ui_trigger": "重击冲压"
     }
   ]
 }

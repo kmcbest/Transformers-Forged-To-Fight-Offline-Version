@@ -7052,13 +7052,29 @@ void* hook_161(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
 void* hook_162(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7) {
     void* r = H[162].orig(a0,a1,a2,a3,a4,a5,a6,a7);
     if (!a0) return r;
-    char k[128];
-    if (read_str(a0, k, sizeof(k)) && k[0]) {
+    char k[256];
+    if (read_str_utf8(a0, k, sizeof(k)) && k[0]) {
         if (strncmp(k, "ID_SPECIAL_", 11) == 0 || strncmp(k, "MS_ID_SPECIAL_", 14) == 0) {
             const char* tr = lookup_special_attack_zh(k);
             if (tr) {
                 LOG("LOCALIZE sp: %s -> %s", k, tr);
                 return g_strnew ? g_strnew(tr) : r;
+            }
+        }
+        const char* sub_prefix = "ID_UI_STAT_ATTRIBUTE_TRIGGER_SUBTITLE_";
+        const char* p_sub = strstr(k, sub_prefix);
+        if (p_sub) {
+            char r_buf[16];
+            r_buf[0] = 0;
+            if (r && obj_ok(r)) {
+                read_str_utf8(r, r_buf, sizeof(r_buf));
+            }
+            if (strncmp(r_buf, "MS_", 3) == 0 || !r_buf[0]) {
+                const char* custom_title = p_sub + strlen(sub_prefix);
+                if (custom_title[0] && g_strnew) {
+                    LOG("LOCALIZE subtitle custom: %s -> %s", k, custom_title);
+                    return g_strnew(custom_title);
+                }
             }
         }
         if (strstr(k, "DRAGSTRIP") || strstr(k, "dragstrip") || strstr(k, "Dragstrip")) {

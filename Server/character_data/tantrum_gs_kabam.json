@@ -15,13 +15,29 @@
     "sp1": {
       "name_zh": "喷火器",
       "name_en": "Special 1 – Flamethrower",
-      "desc_zh": "",
-      "pua_icon": "",
+      "effects": [
+        {
+          "title_zh": "燃烧",
+          "title_en": "Burn",
+          "desc_zh": "所有导弹攻击（重击、SP1的最后一击，SP2的所有攻击）命中时有70%几率造成燃烧，施加攻击力80%的伤害，持续4秒。\n如果对手正在燃烧中，则燃烧可以叠加，每层依旧是4秒，但伤害为攻击力的30%。",
+          "pua_icon": "0xe41d"
+        }
+      ],
+      "desc_zh": "所有导弹攻击（重击、SP1的最后一击，SP2的所有攻击）命中时有70%几率造成燃烧，施加攻击力80%的伤害，持续4秒。\n如果对手正在燃烧中，则燃烧可以叠加，每层依旧是4秒，但伤害为攻击力的30%。",
+      "pua_icon": "0xe41d",
       "ui_trigger": "onSpecial1Hit"
     },
     "sp2": {
       "name_zh": "电能剑",
       "name_en": "Electro-Sword",
+      "effects": [
+        {
+          "title_zh": "特殊技 2",
+          "title_en": "Special Attack 2",
+          "desc_zh": "发脾气时每个近战增益有 {{var_14}} 几率造成灼伤，造成热伤害，伤害值等于 {{var_15}} 的攻击评级高于 {{var_16}}。",
+          "pua_icon": ""
+        }
+      ],
       "desc_zh": "发脾气时每个近战增益有 {{var_14}} 几率造成灼伤，造成热伤害，伤害值等于 {{var_15}} 的攻击评级高于 {{var_16}}。",
       "pua_icon": "",
       "ui_trigger": "onSpecial2Hit"
@@ -29,22 +45,25 @@
     "sp3": {
       "name_zh": "横冲直撞",
       "name_en": "Bull Rush",
-      "desc_zh": "",
-      "pua_icon": "",
+      "effects": [
+        {
+          "title_zh": "不可阻挡",
+          "title_en": "Unstoppable",
+          "desc_zh": "技能结束后获得7.5秒的不可阻挡增益。",
+          "pua_icon": "E915"
+        },
+        {
+          "title_zh": "近战增益",
+          "title_en": "Melee Buff",
+          "desc_zh": "技能结束后获得3层近战增益，每层增加24%的近战伤害，最大叠加10层。//无倒计时\n如果野牛后闪且身上没有不可阻挡状态，则失去所有近战增益",
+          "pua_icon": "E412"
+        }
+      ],
+      "desc_zh": "技能结束后获得7.5秒的不可阻挡增益。",
+      "pua_icon": "E915",
       "ui_trigger": "onSpecial3Hit"
     }
   },
-  "abilities": [
-    {
-      "title_zh": "不可阻挡",
-      "title_en": "Unstoppable",
-      "desc_zh": "进入防御状态1.5秒后，获得4.5秒的不可阻挡增益。\n野牛身上每多一个近战增益，进入不可阻挡的充能时间减少8%。",
-      "pua_icon": "E915",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    }
-  ],
   "synergies": [
     {
       "title_zh": "盟友——惊破天、狂飙",
@@ -66,6 +85,49 @@
       "desc_zh": "每次重击后，该机器人都会获得野兽之怒增益，使攻击有 {{var_24}}~{{var_25}} 机会无法被 {{var_26}} 阻挡。",
       "pua_icon": "",
       "bonus_heroes": []
+    }
+  ],
+  "basic_abilities": [
+    {
+      "title_zh": "基础特长",
+      "title_en": "Basic Abilities",
+      "desc_zh": "近战增益",
+      "pua_icon": ""
+    },
+    {
+      "title_zh": "基础特长",
+      "title_en": "Basic Abilities",
+      "desc_zh": "势不可挡",
+      "pua_icon": ""
+    },
+    {
+      "title_zh": "基础特长",
+      "title_en": "Basic Abilities",
+      "desc_zh": "烧伤",
+      "pua_icon": ""
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "不可阻挡",
+      "title_en": "Unstoppable",
+      "desc_zh": "进入防御状态1.5秒后，获得4.5秒的不可阻挡增益。//出现一个灰色的不可阻挡图标，倒计时1.5秒后变成黄色，进入不可阻挡状态。\n野牛身上每多一个近战增益，进入不可阻挡的充能时间减少8%。//用例：野牛身上有10个近战增益，充能时间=1.5*(1-8%*10)=0.3秒",
+      "pua_icon": "E915",
+      "ui_trigger": "不可阻挡"
+    },
+    {
+      "title_zh": "近战增益",
+      "title_en": "Melee Buff",
+      "desc_zh": "前冲时100%获得一层近战增益，增加24%的近战伤害，最大叠加10层。//无倒计时\n如果野牛后闪且身上没有不可阻挡状态，则失去所有近战增益",
+      "pua_icon": "E412",
+      "ui_trigger": "近战增益"
+    },
+    {
+      "title_zh": "天然护甲",
+      "title_en": "Permanent Armor",
+      "desc_zh": "+10%的永久护甲增益，无图标，不可被破甲移除",
+      "pua_icon": "",
+      "ui_trigger": "天然护甲"
     }
   ]
 }

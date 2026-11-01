@@ -7,7 +7,7 @@
   "signature": {
     "title_zh": "回溯",
     "title_en": "Undo",
-    "desc_zh": "每充满一格能量时，有35%的概率激活回溯，持续4秒。当倒计时结束时，他会立即修复这4秒内受到的全部伤害。",
+    "desc_zh": "每充满一格能量时，有35%的概率激活回溯，持续4秒。当倒计时结束时，他会立即修复这4秒内受到的全部伤害。//灰色图标",
     "pua_icon": "E81E",
     "ui_trigger": "none"
   },
@@ -15,99 +15,73 @@
     "sp1": {
       "name_zh": "冲击波",
       "name_en": "Shockblast",
-      "desc_zh": "从逻辑上讲，机器人大脑模块内的一组微芯片在受到足够的冲击时会炸毁。",
+      "effects": [
+        {
+          "title_zh": "能量充能",
+          "title_en": "Energy Charge",
+          "desc_zh": "技能发动时（无论是否命中），得到3层能量充能，持续6秒",
+          "pua_icon": ""
+        },
+        {
+          "title_zh": "震击",
+          "title_en": "Shock",
+          "desc_zh": "最后一击命中时，每层能量充能施加1层震击减益，造成攻击力85%的伤害，持续4秒",
+          "pua_icon": "E914"
+        }
+      ],
+      "desc_zh": "技能发动时（无论是否命中），得到3层能量充能，持续6秒",
       "pua_icon": "",
       "ui_trigger": "onSpecial1Hit"
     },
     "sp2": {
-      "name_zh": "特殊技 2",
-      "name_en": "Special Attack 2",
-      "desc_zh": "技能期间100%护甲穿透",
+      "name_zh": "激光扫射",
+      "name_en": "Laser Sweep",
+      "effects": [
+        {
+          "title_zh": "护甲穿透",
+          "title_en": "Armor Piercing",
+          "desc_zh": "技能期间100%护甲穿透   //黄图标，技能期间显示",
+          "pua_icon": "E409"
+        },
+        {
+          "title_zh": "阻止修复",
+          "title_en": "Repair Block",
+          "desc_zh": "最后一击命中，施加阻止修复，禁用对方所有回血能力，持续6.5秒",
+          "pua_icon": "E90C"
+        }
+      ],
+      "desc_zh": "技能期间100%护甲穿透   //黄图标，技能期间显示",
       "pua_icon": "E409",
       "ui_trigger": "onSpecial2Hit"
     },
     "sp3": {
-      "name_zh": "特殊技 3",
-      "name_en": "Special Attack 3",
-      "desc_zh": "每能量充能造成 {{var_11}} 攻击力超过 {{var_12}} 的感应触电伤害。",
+      "name_zh": "小朋友",
+      "name_en": "Little Friend",
+      "effects": [
+        {
+          "title_zh": "能量充能",
+          "title_en": "Energy Charge",
+          "desc_zh": "技能发动时，得到5层能量充能，持续7秒",
+          "pua_icon": ""
+        },
+        {
+          "title_zh": "震击",
+          "title_en": "Shock",
+          "desc_zh": "技能完成后，每层能量充能施加1层震击减益，造成攻击力85%的伤害，持续4秒",
+          "pua_icon": "E914"
+        },
+        {
+          "title_zh": "阻止修复",
+          "title_en": "Repair Block",
+          "desc_zh": "技能完成后，施加阻止修复，禁用对方所有回血能力，持续11秒",
+          "pua_icon": "E90C"
+        }
+      ],
+      "desc_zh": "技能发动时，得到5层能量充能，持续7秒",
       "pua_icon": "",
       "ui_trigger": "onSpecial3Hit"
     }
   },
-  "abilities": [
-    {
-      "title_zh": "能量充能",
-      "title_en": "Energy Charge",
-      "desc_zh": "格挡远程能量攻击时，得到1层能量充能，持续6秒，最多叠加3层\n震荡波能量充能数少于3个时，格挡远程能量攻击承受0伤害。",
-      "pua_icon": "E608",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    },
-    {
-      "title_zh": "震击",
-      "title_en": "Shock",
-      "desc_zh": "重击命中时，每层能量充能施加1层震击减益，造成攻击力85%的伤害，持续4秒\n普通远程攻击命中时，如果有能量充能，消耗1层能量充能，施加1层震击减益，造成攻击力85%的伤害，持续4秒\n震击的同时触发能量流失，每秒扣除最大能量的0.87%，直到震击结束或者被净化",
-      "pua_icon": "E914",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    },
-    {
-      "title_zh": "能量充能",
-      "title_en": "Energy Charge",
-      "desc_zh": "技能发动时（无论是否命中），得到3层能量充能，持续6秒",
-      "pua_icon": "E608",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    },
-    {
-      "title_zh": "战斗被动",
-      "title_en": "Generates up to 3 Energy Charges, each lasting {{var_1}}.",
-      "desc_zh": "生成最多 3 个能量电荷，每个能量电荷持续 {{var_1}}。",
-      "pua_icon": "",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    },
-    {
-      "title_zh": "战斗被动",
-      "title_en": "While Shockwave has less than 3 Energy Charges he gains {{var_2}} Block Proficiency against Basic Energy Attacks.",
-      "desc_zh": "虽然冲击波的能量球少于 3 个，但他在对抗基本能量攻击时获得 {{var_2}} 格挡熟练度。",
-      "pua_icon": "",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    },
-    {
-      "title_zh": "战斗被动",
-      "title_en": "On Heavy Attack: - Inflicts Shock damage for {{var_3}} of Attack per Energy Charge over {{var_4}}.",
-      "desc_zh": "重击时： - 每能量充能造成 {{var_3}} 的感应触电伤害，超过 {{var_4}}。",
-      "pua_icon": "",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    },
-    {
-      "title_zh": "震击",
-      "title_en": "Shock",
-      "desc_zh": "基本远程攻击有 {{var_5}} 几率消耗触电球对敌人造成触电。",
-      "pua_icon": "0xe914",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    },
-    {
-      "title_zh": "战斗被动",
-      "title_en": "Shockwave Power Leaks the enemy for {{var_6}} of a Power Bar every second for each Shock Debuff on them.",
-      "desc_zh": "冲击波能量每秒泄漏敌人 {{var_6}} 的能量条，每次对敌人施加冲击减益。",
-      "pua_icon": "",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    }
-  ],
   "synergies": [
     {
       "title_zh": "大脑增益——所有科技机器人",
@@ -205,6 +179,49 @@
       "desc_zh": "通过+{{var_50}} 增加功率增益。",
       "pua_icon": "",
       "bonus_heroes": []
+    }
+  ],
+  "basic_abilities": [
+    {
+      "title_zh": "基础特长",
+      "title_en": "Basic Abilities",
+      "desc_zh": "震惊",
+      "pua_icon": ""
+    },
+    {
+      "title_zh": "基础特长",
+      "title_en": "Basic Abilities",
+      "desc_zh": "漏电",
+      "pua_icon": ""
+    },
+    {
+      "title_zh": "基础特长",
+      "title_en": "Basic Abilities",
+      "desc_zh": "修复块",
+      "pua_icon": ""
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "能量充能",
+      "title_en": "Energy Charge",
+      "desc_zh": "格挡远程能量攻击时，得到1层能量充能，持续6秒，最多叠加3层  //大部分远程普通攻击都是能量攻击，只有漂移、反冲和雷震是物理攻击，他们不会给震荡波得到护盾。\n震荡波能量充能数少于3个时，格挡远程能量攻击承受0伤害。",
+      "pua_icon": "",
+      "ui_trigger": "能量充能"
+    },
+    {
+      "title_zh": "震击",
+      "title_en": "Shock",
+      "desc_zh": "重击命中时，每层能量充能施加1层震击减益，造成攻击力85%的伤害，持续4秒  // 不消耗能量充能，无能量充能则不触发震击\n普通远程攻击命中时，如果有能量充能，消耗1层能量充能，施加1层震击减益，造成攻击力85%的伤害，持续4秒  // 无能量充能则不触发震击\n震击的同时触发能量流失，每秒扣除最大能量的0.87%，直到震击结束或者被净化  // 同步显示红色能量流失图标e607",
+      "pua_icon": "E914",
+      "ui_trigger": "震击"
+    },
+    {
+      "title_zh": "能量充能",
+      "title_en": "Energy Charge",
+      "desc_zh": "技能发动时（无论是否命中），得到3层能量充能，持续6秒",
+      "pua_icon": "",
+      "ui_trigger": "能量充能"
     }
   ]
 }

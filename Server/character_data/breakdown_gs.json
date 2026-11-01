@@ -7,7 +7,7 @@
   "signature": {
     "title_zh": "晚期神经质",
     "title_en": "Terminal Paranoia",
-    "desc_zh": "敌方血量大于50%时，打击获得一个规避增益，40%的概率规避对方近战攻击，成功规避后增益消失，5秒后重新获得。\n敌方血量小于50%时，打击获得一个暴击率增益，提升40%的暴击几率，触发暴击后消失，5秒后重新获得",
+    "desc_zh": "敌方血量大于50%时，打击获得一个规避增益，40%的概率规避对方近战攻击，成功规避后增益消失，5秒后重新获得。 //先是绿图标，无倒计时，触发规避后变成5秒倒计时的灰图标，再变回绿图标。如果倒计时过程中对方血量跌至50%以下，倒计时结束不再获得。\n敌方血量小于50%时，打击获得一个暴击率增益，提升40%的暴击几率，触发暴击后消失，5秒后重新获得 //先是黄图标，无倒计时，触发暴击后变成5秒倒计时的灰图标，再变回黄图标。如果倒计时过程中对方血量升至50%以上，倒计时结束不再获得。",
     "pua_icon": "E509",
     "ui_trigger": "none"
   },
@@ -15,6 +15,20 @@
     "sp1": {
       "name_zh": "震颤火炮",
       "name_en": "Concussion Blaster",
+      "effects": [
+        {
+          "title_zh": "能量流失",
+          "title_en": "Power Leak",
+          "desc_zh": "最后一击命中时，50%概率施加能量流失，在5秒内扣除对方最大能量的12%。",
+          "pua_icon": "E607"
+        },
+        {
+          "title_zh": "暴击几率",
+          "title_en": "Crit Rate",
+          "desc_zh": "最后一击命中时，35%的概率得到30%的暴击几率增益，持续8秒",
+          "pua_icon": "E40D"
+        }
+      ],
       "desc_zh": "最后一击命中时，50%概率施加能量流失，在5秒内扣除对方最大能量的12%。",
       "pua_icon": "E607",
       "ui_trigger": "onSpecial1Hit"
@@ -22,65 +36,46 @@
     "sp2": {
       "name_zh": "疯狂漂移碾压",
       "name_en": "Erratic Drifting",
-      "desc_zh": "以不可预测的漂移轨迹狂野冲撞对手，施加破甲持续 {{var_2}} 秒，降低其 {{var_3}} 护甲评级。",
-      "pua_icon": "",
+      "effects": [
+        {
+          "title_zh": "燃烧",
+          "title_en": "Burn",
+          "desc_zh": "最后一击造成燃烧，施加攻击力120%的伤害，持续4秒。",
+          "pua_icon": "E41D"
+        },
+        {
+          "title_zh": "确定性",
+          "title_en": "Certainty",
+          "desc_zh": "施加确定性减益，对方下次充满一格能量后，必然立即释放特殊技1，释放后减益消失。//即便有2或3格气，也强制出SP1",
+          "pua_icon": "E909"
+        }
+      ],
+      "desc_zh": "最后一击造成燃烧，施加攻击力120%的伤害，持续4秒。",
+      "pua_icon": "E41D",
       "ui_trigger": "onSpecial2Hit"
     },
     "sp3": {
       "name_zh": "神经错乱破坏",
       "name_en": "Paranoid Overdrive",
+      "effects": [
+        {
+          "title_zh": "远程减益",
+          "title_en": "Ranged Debuff",
+          "desc_zh": "施加远程减益，降低对手的远程攻击伤害的100%，持续20秒",
+          "pua_icon": "E519"
+        },
+        {
+          "title_zh": "确定性",
+          "title_en": "Certainty",
+          "desc_zh": "施加2层确定性减益，对方下次充满一格能量后，必然立即释放特殊技1，释放后减益消失。//即便有2或3格气，也强制出SP1",
+          "pua_icon": "E909"
+        }
+      ],
       "desc_zh": "施加远程减益，降低对手的远程攻击伤害的100%，持续20秒",
       "pua_icon": "E519",
       "ui_trigger": "onSpecial3Hit"
     }
   },
-  "abilities": [
-    {
-      "title_zh": "偏执规避与破盾",
-      "title_en": "Paranoid Evade & Shield Breaker",
-      "desc_zh": "侧滑距离提升 30%，成功闪避远程攻击时获得精准；重击面对科技系护盾时造成 200% 额外破坏伤害，直接粉碎力场。",
-      "pua_icon": "",
-      "category": "basic",
-      "ui_trigger": "onDodge",
-      "show_on_main_screen": true
-    },
-    {
-      "title_zh": "护盾崩解",
-      "title_en": "Shield Break",
-      "desc_zh": "成功闪避对方重击时，获得一个护盾崩解增益，提升50%的近战伤害，在近战命中时消耗此增益，清除对方身上所有的护盾并施加攻击力50%的即时伤害。",
-      "pua_icon": "E807",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    },
-    {
-      "title_zh": "近战规避",
-      "title_en": "Melee Evade",
-      "desc_zh": "L4或M2被防时，有75%的概率获得4秒的近战规避。",
-      "pua_icon": "E509",
-      "category": "passive",
-      "ui_trigger": "onDodge",
-      "show_on_main_screen": true
-    },
-    {
-      "title_zh": "神经质暴击",
-      "title_en": "Neurotic Strikes",
-      "desc_zh": "敌人每拥有 1 格能量槽，打击获得 +{{var_1}} 暴击率。近战暴击对敌方造成护甲击碎 (Armor Break)。",
-      "pua_icon": "",
-      "category": "basic",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    },
-    {
-      "title_zh": "高度警觉",
-      "title_en": "High Anxiety",
-      "desc_zh": "极度敏感多疑的性格让他在面对高爆发敌人时神经紧绷，闪避几率提升 {{var_2}}，且受到暴击时立刻后撤步脱离连招。",
-      "pua_icon": "",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    }
-  ],
   "synergies": [
     {
       "title_zh": "飞天虎 (Menasor)",
@@ -110,6 +105,36 @@
       "desc_zh": "团队所有低星级队员获得 +{{var_8}} 暴击率。",
       "pua_icon": "",
       "bonus_heroes": []
+    }
+  ],
+  "basic_abilities": [
+    {
+      "title_zh": "偏执规避与破盾",
+      "title_en": "Paranoid Evade & Shield Breaker",
+      "desc_zh": "侧滑距离提升 30%，成功闪避远程攻击时获得精准；重击面对科技系护盾时造成 200% 额外破坏伤害，直接粉碎力场。",
+      "pua_icon": ""
+    },
+    {
+      "title_zh": "神经质暴击",
+      "title_en": "Neurotic Strikes",
+      "desc_zh": "敌人每拥有 1 格能量槽，打击获得 +{{var_1}} 暴击率。近战暴击对敌方造成护甲击碎 (Armor Break)。",
+      "pua_icon": ""
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "护盾崩解",
+      "title_en": "Shield Break",
+      "desc_zh": "成功闪避对方重击时，获得一个护盾崩解增益，提升50%的近战伤害，在近战命中时消耗此增益，清除对方身上所有的护盾并施加攻击力50%的即时伤害。  //橙色图标，无倒计时",
+      "pua_icon": "E807",
+      "ui_trigger": "护盾崩解"
+    },
+    {
+      "title_zh": "近战规避",
+      "title_en": "Melee Evade",
+      "desc_zh": "L4或M2被防时，有75%的概率获得4秒的近战规避。",
+      "pua_icon": "0xe509",
+      "ui_trigger": "近战规避"
     }
   ]
 }

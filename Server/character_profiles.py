@@ -21,6 +21,7 @@ TFTF Character Profiles Engine
 """
 
 import sqlite3
+import sys
 import json
 import os
 import re
@@ -143,6 +144,16 @@ def _init_from_json_files(json_files: List[Path]):
 
         # 1. 招牌能力 (Signature)
         sig = data.get("signature", {})
+        if not sig or (not sig.get("title_zh") and not sig.get("title_en")):
+            # 无招牌能力时自动补充占位符，防止客户端触发 Fallback 简易菜单
+            sig = {
+                "title_zh": "名称待定",
+                "title_en": "TBD",
+                "desc_zh": "描述待定",
+                "pua_icon": "",
+                "ui_trigger": "none"
+            }
+
         if sig and (sig.get("title_zh") or sig.get("title_en")):
             mod_id = f"sig_{bot_id}"
             appr_id = f"appr_sig_{bot_id}"
@@ -179,89 +190,190 @@ def _init_from_json_files(json_files: List[Path]):
                 "gb": gb,
             }
 
-        # 2. 机体能力 (Abilities: basic & passive)
-        abilities_list = data.get("abilities", [])
-        for idx, ab in enumerate(abilities_list):
-            mod_id = f"ability_{bot_id}_{idx}"
-            appr_id = f"appr_ability_{bot_id}_{idx}"
-            clean_desc = _clean_comment(ab.get("desc_zh", ""))
-            icon_char = _hex_to_pua_char(ab.get("pua_icon", ""))
-            name = ab.get("title_zh") or ab.get("title_en")
-            tc, gt, gb = _choose_ability_colors(name, clean_desc)
-            ui_tr = ab.get("ui_trigger", "none")
-            show_main = ab.get("show_on_main_screen", True)
+        # 2. 机体能力 (Abilities: basic_abilities / game_abilities or legacy abilities)
+        basic_list = data.get("basic_abilities", [])
+        game_list = data.get("game_abilities", [])
+        legacy_list = data.get("abilities", [])
 
-            _BOT_UI_MOD_IDS[bot_id].append(mod_id)
-            _UI_MODS[mod_id] = {
-                "id": mod_id,
-                "AppearanceID": appr_id,
-                "Type": "combat",
-                "t": "combat",
-                "d": 0.0,
-                "m": 0.0,
-                "p": 1.0,
-                "tr": [ui_tr] if ui_tr != "none" else [],
-                "uit": [ui_tr],
-                "a": [appr_id],
-                "au": [],
-                "rh": 0.0,
-                "ra": 0.0,
-            }
-            _UI_APPEARS[appr_id] = {
-                "id": appr_id,
-                "a": name,
-                "s": name if show_main else "",  # ShortStringID 非空时挂入主界面能力列表
-                "ss": clean_desc,
-                "l": clean_desc,                 # LongStringID 非空时展开至对应触发器分类
-                "t": icon_char,
-                "tc": tc,
-                "gt": gt,
-                "gb": gb,
-            }
+        if basic_list or game_list:
+            mod_counter = 0
+            # 2a. 基础能力卡片 (显示在主界面卡片区 "能力会随着升阶而提升")
+            for ab in basic_list:
+                name = ab.get("title_zh") or ab.get("title_en")
+                if not name:
+                    continue
+                mod_id = f"ability_{bot_id}_{mod_counter}"
+                appr_id = f"appr_ability_{bot_id}_{mod_counter}"
+                mod_counter += 1
+                clean_desc = _clean_comment(ab.get("desc_zh", ""))
+                icon_char = _hex_to_pua_char(ab.get("pua_icon", ""))
+                tc, gt, gb = _choose_ability_colors(name, clean_desc)
 
-        # 3. 特殊攻击 (SP1 / SP2 / SP3)
+                _BOT_UI_MOD_IDS[bot_id].append(mod_id)
+                _UI_MODS[mod_id] = {
+                    "id": mod_id,
+                    "AppearanceID": appr_id,
+                    "Type": "combat",
+                    "t": "combat",
+                    "d": 0.0,
+                    "m": 0.0,
+                    "p": 1.0,
+                    "tr": [],
+                    "uit": ["none"],
+                    "a": [appr_id],
+                    "au": [],
+                    "rh": 0.0,
+                    "ra": 0.0,
+                }
+                _UI_APPEARS[appr_id] = {
+                    "id": appr_id,
+                    "a": name,
+                    "s": name,          # ShortStringID 非空 -> 渲染在上方卡片区
+                    "ss": clean_desc,    # 一句话摘要
+                    "l": "",             # LongStringID 为空 -> 不污染下方详细触发器列表！
+                    "t": icon_char,
+                    "tc": tc,
+                    "gt": gt,
+                    "gb": gb,
+                }
+
+            # 2b. 实战能力列表 (按自定义 ui_trigger 或标题展开在下方)
+            for ab in game_list:
+                name = ab.get("title_zh") or ab.get("title_en")
+                if not name:
+                    continue
+                mod_id = f"ability_{bot_id}_{mod_counter}"
+                appr_id = f"appr_ability_{bot_id}_{mod_counter}"
+                mod_counter += 1
+                clean_desc = _clean_comment(ab.get("desc_zh", ""))
+                icon_char = _hex_to_pua_char(ab.get("pua_icon", ""))
+                tc, gt, gb = _choose_ability_colors(name, clean_desc)
+                ui_tr = ab.get("ui_trigger") or name
+
+                _BOT_UI_MOD_IDS[bot_id].append(mod_id)
+                _UI_MODS[mod_id] = {
+                    "id": mod_id,
+                    "AppearanceID": appr_id,
+                    "Type": "combat",
+                    "t": "combat",
+                    "d": 0.0,
+                    "m": 0.0,
+                    "p": 1.0,
+                    "tr": [ui_tr] if ui_tr != "none" else [],
+                    "uit": [ui_tr],
+                    "a": [appr_id],
+                    "au": [],
+                    "rh": 0.0,
+                    "ra": 0.0,
+                }
+                _UI_APPEARS[appr_id] = {
+                    "id": appr_id,
+                    "a": name,
+                    "s": "",             # ShortStringID 为空 -> 绝不污染上方卡片区！
+                    "ss": "",
+                    "l": clean_desc,     # LongStringID -> 展开在对应分类标题下
+                    "t": icon_char,      # 有 PUA 则显示图标，无则显示 NGUI 圆点 •
+                    "tc": tc,
+                    "gt": gt,
+                    "gb": gb,
+                }
+        else:
+            for idx, ab in enumerate(legacy_list):
+                mod_id = f"ability_{bot_id}_{idx}"
+                appr_id = f"appr_ability_{bot_id}_{idx}"
+                clean_desc = _clean_comment(ab.get("desc_zh", ""))
+                icon_char = _hex_to_pua_char(ab.get("pua_icon", ""))
+                name = ab.get("title_zh") or ab.get("title_en")
+                tc, gt, gb = _choose_ability_colors(name, clean_desc)
+                ui_tr = ab.get("ui_trigger", "none")
+                show_main = ab.get("show_on_main_screen", True)
+
+                _BOT_UI_MOD_IDS[bot_id].append(mod_id)
+                _UI_MODS[mod_id] = {
+                    "id": mod_id,
+                    "AppearanceID": appr_id,
+                    "Type": "combat",
+                    "t": "combat",
+                    "d": 0.0,
+                    "m": 0.0,
+                    "p": 1.0,
+                    "tr": [ui_tr] if ui_tr != "none" else [],
+                    "uit": [ui_tr],
+                    "a": [appr_id],
+                    "au": [],
+                    "rh": 0.0,
+                    "ra": 0.0,
+                }
+                _UI_APPEARS[appr_id] = {
+                    "id": appr_id,
+                    "a": name,
+                    "s": name if show_main else "",  # ShortStringID 非空时挂入主界面能力列表
+                    "ss": clean_desc,
+                    "l": clean_desc,                 # LongStringID 非空时展开至对应触发器分类
+                    "t": icon_char,
+                    "tc": tc,
+                    "gt": gt,
+                    "gb": gb,
+                }
+
+        # 3. 特殊攻击 (SP1 / SP2 / SP3，支持多项效果机制展开)
         specials = data.get("special_attacks", {})
         for sp_idx, cat in enumerate(["sp1", "sp2", "sp3"], start=1):
             sp_data = specials.get(cat, {})
             if not sp_data:
                 continue
-            name = sp_data.get("name_zh") or sp_data.get("name_en") or f"SP{sp_idx}"
-            clean_desc = _clean_comment(sp_data.get("desc_zh", ""))
-            if not clean_desc:
-                continue
-            icon_char = _hex_to_pua_char(sp_data.get("pua_icon", ""))
-            mod_id = f"sp_ui_{bot_id}_{sp_idx}"
-            appr_id = f"appr_sp_ui_{bot_id}_{sp_idx}"
-            tc, gt, gb = _choose_ability_colors(name, clean_desc)
+            sp_name = sp_data.get("name_zh") or sp_data.get("name_en") or f"SP{sp_idx}"
             ui_tr = sp_data.get("ui_trigger", f"onSpecial{sp_idx}Hit")
 
-            _BOT_UI_MOD_IDS[bot_id].append(mod_id)
-            _UI_MODS[mod_id] = {
-                "id": mod_id,
-                "AppearanceID": appr_id,
-                "Type": "combat",
-                "t": "combat",
-                "d": 0.0,
-                "m": 0.0,
-                "p": 1.0,
-                "tr": [ui_tr],
-                "uit": [ui_tr],
-                "a": [appr_id],
-                "au": [],
-                "rh": 0.0,
-                "ra": 0.0,
-            }
-            _UI_APPEARS[appr_id] = {
-                "id": appr_id,
-                "a": name,
-                "s": "",                         # 不抢占主界面的基础能力名额
-                "ss": "",
-                "l": clean_desc,
-                "t": icon_char,
-                "tc": tc,
-                "gt": gt,
-                "gb": gb,
-            }
+            # 支持多 effects 列表或单 desc_zh 回退
+            effects = sp_data.get("effects", [])
+            if not effects:
+                single_desc = _clean_comment(sp_data.get("desc_zh", ""))
+                if single_desc:
+                    effects = [{
+                        "title_zh": sp_name,
+                        "title_en": sp_data.get("name_en", ""),
+                        "desc_zh": single_desc,
+                        "pua_icon": sp_data.get("pua_icon", "")
+                    }]
+
+            for eff_idx, eff in enumerate(effects):
+                clean_desc = _clean_comment(eff.get("desc_zh", ""))
+                if not clean_desc:
+                    continue
+                eff_name = eff.get("title_zh") or eff.get("title_en") or sp_name
+                icon_char = _hex_to_pua_char(eff.get("pua_icon", ""))
+                mod_id = f"sp_ui_{bot_id}_{sp_idx}_{eff_idx}"
+                appr_id = f"appr_sp_ui_{bot_id}_{sp_idx}_{eff_idx}"
+                tc, gt, gb = _choose_ability_colors(eff_name, clean_desc)
+
+                _BOT_UI_MOD_IDS[bot_id].append(mod_id)
+                _UI_MODS[mod_id] = {
+                    "id": mod_id,
+                    "AppearanceID": appr_id,
+                    "Type": "combat",
+                    "t": "combat",
+                    "d": 0.0,
+                    "m": 0.0,
+                    "p": 1.0,
+                    "tr": [ui_tr],
+                    "uit": [ui_tr],
+                    "a": [appr_id],
+                    "au": [],
+                    "rh": 0.0,
+                    "ra": 0.0,
+                }
+                _UI_APPEARS[appr_id] = {
+                    "id": appr_id,
+                    "a": eff_name,
+                    "s": "",                         # 不抢占主界面的基础能力名额
+                    "ss": "",
+                    "l": clean_desc,
+                    "t": icon_char,
+                    "tc": tc,
+                    "gt": gt,
+                    "gb": gb,
+                }
 
         # 4. 协同奖励 (Synergies)
         synergies_list = data.get("synergies", [])
@@ -511,3 +623,53 @@ def get_profile_stat_mod_appears() -> Dict[str, Dict[str, Any]]:
 def build_all_synergy_bonuses(lang: str = "zh") -> Dict[str, Dict[str, Any]]:
     _init_profiles()
     return dict(_SYNERGY_BONUSES)
+
+
+if __name__ == '__main__':
+    import subprocess
+    if hasattr(sys.stdout, 'reconfigure'):
+        sys.stdout.reconfigure(encoding='utf-8')
+    if hasattr(sys.stderr, 'reconfigure'):
+        sys.stderr.reconfigure(encoding='utf-8')
+
+    print('=' * 65)
+    print(' TFTF 角色能力与底层配置文件引擎 (Character Profiles Engine)')
+    print('=' * 65)
+    _init_profiles()
+    total_bots = len(_BOT_UI_MOD_IDS)
+    total_ui_mods = len(_UI_MODS)
+    total_sig_mods = len(_SIG_MODS)
+    total_synergies = len(_SYNERGY_BONUSES)
+
+    print(f'✔ 已成功加载机体数量: {total_bots} 位')
+    print(f'✔ 生成战斗机制 StatModifiers: {total_ui_mods} 项')
+    print(f'✔ 生成觉醒技 StatModifiers: {total_sig_mods} 项')
+    print(f'✔ 生成机体协同加成: {total_synergies} 项')
+    print('-' * 65)
+    print('说明: character_profiles.py 是游戏底层数据管道模块。')
+    print('可视化编辑与界面预览请使用: tools/ability_editor_gui.py')
+    print('-' * 65)
+    print('[1] 启动可视化桌面编辑器 (打开全角色技能与预览 Studio)')
+    print('[2] 重新生成全部离线游戏数据 (运行 gamedata.py)')
+    print('[3] 退出')
+    print('=' * 65)
+
+    try:
+        choice = input('请选择操作 [默认 1]: ').strip()
+    except EOFError:
+        choice = '3'
+
+    if choice in ('', '1'):
+        gui_path = ROOT_DIR / 'tools' / 'ability_editor_gui.py'
+        print(f'\n正在启动可视化编辑器: {gui_path} ...')
+        subprocess.run([sys.executable, str(gui_path)], cwd=str(ROOT_DIR))
+    elif choice == '2':
+        gdata_path = ROOT_DIR / 'Server' / 'gamedata.py'
+        print(f'\n正在重新生成离线数据: {gdata_path} ...')
+        subprocess.run([sys.executable, str(gdata_path)], cwd=str(ROOT_DIR))
+        try:
+            input('\n执行完毕，按回车键退出...')
+        except EOFError:
+            pass
+    else:
+        print('已退出。')

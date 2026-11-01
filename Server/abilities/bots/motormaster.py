@@ -187,7 +187,7 @@ def build_motormaster_abilities(base_hp: float = 34894.0, base_atk: float = 2629
         "t": "recoil_damage",
         "tm": "",
         "tr": ["onSpecial3Activate"],
-        "uit": ["onSpecial3Activate"],
+        "uit": [],
         "pri": 0,
         "trm": 0.0,
         "trs": "dmgFlags=LastHit",

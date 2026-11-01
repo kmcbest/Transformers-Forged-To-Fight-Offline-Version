@@ -15,6 +15,14 @@
     "sp1": {
       "name_zh": "刀锋之道",
       "name_en": "Way of the Blade",
+      "effects": [
+        {
+          "title_zh": "刀锋之道",
+          "title_en": "Way of the Blade",
+          "desc_zh": "棍棒从蹲伏的位置跳入圆屋，露出一把袖剑。",
+          "pua_icon": ""
+        }
+      ],
       "desc_zh": "棍棒从蹲伏的位置跳入圆屋，露出一把袖剑。",
       "pua_icon": "",
       "ui_trigger": "onSpecial1Hit"
@@ -22,6 +30,14 @@
     "sp2": {
       "name_zh": "畸变",
       "name_en": "Aberrance",
+      "effects": [
+        {
+          "title_zh": "畸变",
+          "title_en": "Aberrance",
+          "desc_zh": "那些害怕破坏 Metallikato 代码的人不喜欢获胜。",
+          "pua_icon": ""
+        }
+      ],
       "desc_zh": "那些害怕破坏 Metallikato 代码的人不喜欢获胜。",
       "pua_icon": "",
       "ui_trigger": "onSpecial2Hit"
@@ -29,58 +45,19 @@
     "sp3": {
       "name_zh": "特殊技 3",
       "name_en": "Special Attack 3",
+      "effects": [
+        {
+          "title_zh": "特殊技 3",
+          "title_en": "Special Attack 3",
+          "desc_zh": "{{var_12}} 有机会击晕 {{var_13}}。",
+          "pua_icon": ""
+        }
+      ],
       "desc_zh": "{{var_12}} 有机会击晕 {{var_13}}。",
       "pua_icon": "",
       "ui_trigger": "onSpecial3Hit"
     }
   },
-  "abilities": [
-    {
-      "title_zh": "剑刃攻击",
-      "title_en": "Blade Attacks",
-      "desc_zh": "暴击时有25%的概率触发流血，在5秒内造成攻击力120%的伤害。如果是特殊技中的剑刃暴击，概率+60%。",
-      "pua_icon": "0xe401",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    },
-    {
-      "title_zh": "战斗被动",
-      "title_en": "When Attacked: {{var_4}} chance to gain an Armor Buff when struck by Critical Hits, reducing damage from attacks by {{var_5}} for {{var_6}}seconds.",
-      "desc_zh": "受到攻击时：受到暴击时，{{var_4}} 有几率获得装甲增益，减少 {{var_5}} 攻击造成的伤害，持续 {{var_6}} 秒。",
-      "pua_icon": "",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    },
-    {
-      "title_zh": "强力重击",
-      "title_en": "Heavy Attacks:",
-      "desc_zh": "重击：",
-      "pua_icon": "",
-      "category": "passive",
-      "ui_trigger": "onHeavyHit",
-      "show_on_main_screen": true
-    },
-    {
-      "title_zh": "战斗被动",
-      "title_en": "Renews the duration of Armor Up Buffs when Bludgeon turns into a Tank.",
-      "desc_zh": "当大棒变成坦克时，更新装甲增强增益的持续时间。",
-      "pua_icon": "",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    },
-    {
-      "title_zh": "{{var_7}} 有机会击晕 {{var_8}}。",
-      "title_en": "{{var_7}} chance to Stun for {{var_8}}.",
-      "desc_zh": "{{var_7}} 有机会击晕 {{var_8}}。",
-      "pua_icon": "",
-      "category": "passive",
-      "ui_trigger": "none",
-      "show_on_main_screen": true
-    }
-  ],
   "synergies": [
     {
       "title_zh": "盟友",
@@ -129,6 +106,63 @@
       "desc_zh": "所有较低级别的队友都会获得 +{{var_26}} 暴击伤害。",
       "pua_icon": "",
       "bonus_heroes": []
+    }
+  ],
+  "basic_abilities": [
+    {
+      "title_zh": "基础特长",
+      "title_en": "Basic Abilities",
+      "desc_zh": "出血",
+      "pua_icon": ""
+    },
+    {
+      "title_zh": "基础特长",
+      "title_en": "Basic Abilities",
+      "desc_zh": "装甲增益",
+      "pua_icon": ""
+    },
+    {
+      "title_zh": "基础特长",
+      "title_en": "Basic Abilities",
+      "desc_zh": "击晕",
+      "pua_icon": ""
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "剑刃攻击",
+      "title_en": "Blade Attacks",
+      "desc_zh": "暴击时有25%的概率触发流血，在5秒内造成攻击力120%的伤害。如果是特殊技中的剑刃暴击，概率+60%。",
+      "pua_icon": "0xe401",
+      "ui_trigger": "剑刃攻击"
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "When Attacked: {{var_4}} chance to gain an Armor Buff when struck by Critical Hits, reducing damage from attacks by {{var_5}} for {{var_6}}seconds.",
+      "desc_zh": "受到攻击时：受到暴击时，{{var_4}} 有几率获得装甲增益，减少 {{var_5}} 攻击造成的伤害，持续 {{var_6}} 秒。",
+      "pua_icon": "",
+      "ui_trigger": "战斗被动"
+    },
+    {
+      "title_zh": "强力重击",
+      "title_en": "Heavy Attacks:",
+      "desc_zh": "重击：",
+      "pua_icon": "",
+      "ui_trigger": "强力重击"
+    },
+    {
+      "title_zh": "战斗被动",
+      "title_en": "Renews the duration of Armor Up Buffs when Bludgeon turns into a Tank.",
+      "desc_zh": "当大棒变成坦克时，更新装甲增强增益的持续时间。",
+      "pua_icon": "",
+      "ui_trigger": "战斗被动"
+    },
+    {
+      "title_zh": "{{var_7}} 有机会击晕 {{var_8}}。",
+      "title_en": "{{var_7}} chance to Stun for {{var_8}}.",
+      "desc_zh": "{{var_7}} 有机会击晕 {{var_8}}。",
+      "pua_icon": "",
+      "ui_trigger": "{{var_7}} 有机会击晕 {{var_8}}。"
     }
   ]
 }

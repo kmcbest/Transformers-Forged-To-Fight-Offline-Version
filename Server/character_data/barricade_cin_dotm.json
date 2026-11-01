@@ -15,6 +15,14 @@
     "sp1": {
       "name_zh": "惩罚",
       "name_en": "Punishment",
+      "effects": [
+        {
+          "title_zh": "惩罚",
+          "title_en": "Punishment",
+          "desc_zh": "你有权保持沉默。",
+          "pua_icon": ""
+        }
+      ],
       "desc_zh": "你有权保持沉默。",
       "pua_icon": "",
       "ui_trigger": "onSpecial1Hit"
@@ -22,6 +30,14 @@
     "sp2": {
       "name_zh": "特殊技 2",
       "name_en": "Special Attack 2",
+      "effects": [
+        {
+          "title_zh": "特殊技 2",
+          "title_en": "Special Attack 2",
+          "desc_zh": "{{var_10}} 对 {{var_11}} 造成逆火。",
+          "pua_icon": ""
+        }
+      ],
       "desc_zh": "{{var_10}} 对 {{var_11}} 造成逆火。",
       "pua_icon": "",
       "ui_trigger": "onSpecial2Hit"
@@ -29,22 +45,19 @@
     "sp3": {
       "name_zh": "征服",
       "name_en": "Subjugation",
+      "effects": [
+        {
+          "title_zh": "征服",
+          "title_en": "Subjugation",
+          "desc_zh": "使对手屈服。",
+          "pua_icon": ""
+        }
+      ],
       "desc_zh": "使对手屈服。",
       "pua_icon": "",
       "ui_trigger": "onSpecial3Hit"
     }
   },
-  "abilities": [
-    {
-      "title_zh": "近战规避",
-      "title_en": "Melee Evade",
-      "desc_zh": "被击倒时，有85%的概率获得3秒的近战规避，可规避基础近战和SP1/SP2中的近战攻击",
-      "pua_icon": "0xe509",
-      "category": "passive",
-      "ui_trigger": "onDodge",
-      "show_on_main_screen": true
-    }
-  ],
   "synergies": [
     {
       "title_zh": "宿敌",
@@ -84,6 +97,49 @@
       "bonus_heroes": [
         "megatron_gs_leader2015"
       ]
+    }
+  ],
+  "basic_abilities": [
+    {
+      "title_zh": "暴击伤害",
+      "title_en": "Crit Damage",
+      "desc_zh": "严重伤害 {{var_1}}",
+      "pua_icon": "0xe906"
+    },
+    {
+      "title_zh": "逆火",
+      "title_en": "Backfire",
+      "desc_zh": "",
+      "pua_icon": "0xe901"
+    },
+    {
+      "title_zh": "能量窃取",
+      "title_en": "Power Steal",
+      "desc_zh": "",
+      "pua_icon": "0xe607"
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "近战规避",
+      "title_en": "Melee Evade",
+      "desc_zh": "被击倒时，有85%的概率获得3秒的近战规避，可规避基础近战和SP1/SP2中的近战攻击",
+      "pua_icon": "0xe509",
+      "ui_trigger": "近战规避"
+    },
+    {
+      "title_zh": "远程规避",
+      "title_en": "Ranged Evade",
+      "desc_zh": "被击倒时，有85%的概率获得3秒的远程规避，可规避基础近战和SP1/SP2中的远程攻击",
+      "pua_icon": "0xe518",
+      "ui_trigger": "远程规避"
+    },
+    {
+      "title_zh": "暴击几率",
+      "title_en": "Crit Rate",
+      "desc_zh": "被击倒时，有40%的概率获得暴击几率增益，持续7.5秒",
+      "pua_icon": "0xe40d",
+      "ui_trigger": "暴击几率"
     }
   ]
 }
