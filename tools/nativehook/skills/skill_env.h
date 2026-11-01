@@ -79,6 +79,8 @@ int skill_is_heavy_attacking(int player_index);
 
 // 特殊技状态实时查询 (0=未放, 1=正在释放 S1/S2/S3)
 int skill_is_special_attacking(int player_index);
+uint64_t skill_get_last_dash_ms(int player_index);
+uint64_t skill_get_last_melee_ms(int player_index);
 
 #ifdef __cplusplus
 }

@@ -476,9 +476,11 @@ def _build_elita_abilities_impl(
 
     # =========================================================================
     # 5. [被动] 灵动反击 (Nimble Counter)
-    #    - 闪避冲锋或近战 50% 获得反击锦囊 (持续 1.0s)
-    #    - 击中对手眩晕 1.5s
-    #    - 被对手闪避施加 50% 攻击削弱持续 3s
+    #    - 闪避冲锋或近战 50% 获得反击锦囊 (持续 1.0s, 黄色图标 E50A)
+    #    - 持有反击锦囊击中对手眩晕 1.5s ("反击眩晕", 黄色图标 E50A)
+    #    - 持有反击锦囊被对手闪避施加 50% 攻击削弱持续 3s ("攻击减益", 红色图标)
+    #    - 由 NativeHook 底层状态机精准驱动与门禁拦截，
+    #      statmod 保持 tr: [] 空触发列表，防止 IL2CPP 误判在每次普通命中时常驻连晕！
     # =========================================================================
     appr_pouch = make_statmod_appearance(
         appr_id="appr_elita_counter_pouch",
@@ -494,34 +496,49 @@ def _build_elita_abilities_impl(
         "AppearanceID": appr_pouch["id"],
         "Type": "combat",
         "t": "combat",
-        "d": 1.0,
-        "m": 1.0,
+        "tm": "",
+        "tr": [],
+        "uit": [],
+        "pri": 0,
+        "trm": 0.0,
+        "trs": "",
+        "trr": "repeat",
+        "c": 0.50,
         "p": 0.50,
-        "tr": ["onEvade"],
-        "trs": "opponent:level=Dash,Run,Melee",
-        "uit": ["none"],
+        "m": 1.0,
+        "d": 1.0,
+        "s": "none",
+        "ta": "self",
+        "mt": "buff",
+        "v": "",
+        "ms": "",
+        "st": 1,
+        "g": "elita_counter_pouch",
+        "gc": 0.0,
+        "gcv": "",
+        "rcv": "",
+        "ti": 0,
         "a": [appr_pouch["id"]],
         "au": [],
         "rh": 0.0,
         "ra": 0.0,
-        "ta": "self",
-        "mt": "buff",
-        "s": "none",
-        "st": 1,
     }
 
     m_counter_stn, a_counter_stn = make_stun_statmod(
         mod_id="elita_counter_stun",
         duration=1.5,
         chance=1.0,
-        trigger="onHit",
-        trigger_scope="self:buff=elita_counter_pouch_buff",
+        trigger="",
+        trigger_scope="",
+        target_actor="self",
         appr_id="appr_elita_counter_stn",
         callout_text="反击眩晕",
         pua_icon="\uE50A",
         color_hex=AbilityColor.YELLOW_STATUS_TC,
         gradient_bottom=AbilityColor.YELLOW_STATUS_GB,
     )
+    m_counter_stn["elita_counter_stun"]["tr"] = []
+    m_counter_stn["elita_counter_stun"]["trs"] = ""
     mods.update(m_counter_stn)
     appears.update(a_counter_stn)
 
@@ -539,20 +556,31 @@ def _build_elita_abilities_impl(
         "AppearanceID": appr_weaken["id"],
         "Type": "combat",
         "t": "mod_attack_rating",
-        "d": 3.0,
+        "tm": "",
+        "tr": [],
+        "uit": [],
+        "pri": 0,
+        "trm": 0.0,
+        "trs": "",
+        "trr": "repeat",
+        "c": 1.0,
         "m": -0.50,
-        "p": 1.0,
-        "tr": ["onOpponentEvade"],
-        "trs": "self:buff=elita_counter_pouch_buff",
-        "uit": ["none"],
+        "d": 3.0,
+        "s": "none",
+        "ta": "self",
+        "mt": "debuff",
+        "v": "",
+        "ms": "",
+        "st": 1,
+        "g": "attack_debuff",
+        "gc": 0.0,
+        "gcv": "",
+        "rcv": "",
+        "ti": 0,
         "a": [appr_weaken["id"]],
         "au": [],
         "rh": 0.0,
         "ra": 0.0,
-        "ta": "opponent",
-        "mt": "debuff",
-        "s": "none",
-        "st": 1,
     }
 
     # =========================================================================

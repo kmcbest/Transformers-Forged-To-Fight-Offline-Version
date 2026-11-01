@@ -6434,6 +6434,9 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
                     COMBAT_ASSERT(pre_l == 0 && pre_m == 0, "GATE-01", "Attack after combo ender must start at index 0");
                 }
             }
+            if (action == 1 || action == 32 || action == 0x100) {
+                s_p0_last_melee_ms = propgo_now_ms();
+            }
             if (action == 4 || action == 1 || action == 32 || action == 0x100) {
                 // Release block (4) or Attack/Dash/ChargeHeavy: abort block timer if released before 200ms
                 if (g_p0_block_enter_ms > 0) {
@@ -6559,6 +6562,9 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
                 }
             }
 
+            if (action == 1 || action == 32 || action == 0x100) {
+                s_p1_last_melee_ms = propgo_now_ms();
+            }
             if (action == 4 || action == 1 || action == 32 || action == 0x100) {
                 g_p1_block_enter_ms = 0;
             }
@@ -9147,6 +9153,18 @@ void skill_prowl_finish_charge(int player_index, const char* reason) {
     prowl_finish_charge(player_index == 0 ? 1 : 0, reason);
 }
 
+uint64_t skill_get_last_dash_ms(int player_index) {
+    if (player_index == 0) return s_p0_last_dash_ms;
+    if (player_index == 1) return s_p1_last_dash_ms;
+    return 0;
+}
+
+uint64_t skill_get_last_melee_ms(int player_index) {
+    if (player_index == 0) return s_p0_last_melee_ms;
+    if (player_index == 1) return s_p1_last_melee_ms;
+    return 0;
+}
+
 // slot 188 (0x00EEFB44): BuffsController.ApplyBuff(BuffsController applicant, StatModifier statModifier, bool updateAttributes, bool useOverrideDuration, float overrideDuration)
 int hook_188(void* self, void* applicant, void* statModifier, int32_t updateAttributes, int32_t useOverrideDuration, float overrideDuration, void* method) {
     char mod_id[80] = {0};
@@ -9373,6 +9391,14 @@ int hook_190(void* self) {
         if (charging) {
             prowl_finish_charge(is_p0, "evade melee triggered");
         }
+        int atker_idx = 1 - is_p0;
+        const char* atker_id = skill_get_bot_id(atker_idx);
+        if (atker_id && strstr(atker_id, "elita") != NULL && skill_has_buff(atker_idx, "elita_counter_pouch")) {
+            skill_consume_buff(atker_idx, "elita_counter_pouch", 99);
+            skill_apply_buff_dur(is_p0 ? 0 : 1, "elita_counter_atk_debuff", 3.0f);
+            skill_overlay("[%s] 攻击被闪避！施加50%%攻击减益！", atker_idx == 0 ? "艾丽塔" : "敌方艾丽塔");
+            skill_log("ELITA_COUNTER_EVADED: P%d's attack was evaded by P%d while holding counter pouch -> applied 3s atk debuff", atker_idx, is_p0 ? 0 : 1);
+        }
         return 1;
     } else {
         flog("EVADE_MELEE_CHECK: MISSED! [%s] roll=%.3f >= chance=%.3f (NORMAL HIT)", who, r, chance);
@@ -9459,6 +9485,14 @@ int hook_191(void* self) {
         if (charging) {
             prowl_finish_charge(is_p0, "evade ranged triggered");
         }
+        int atker_idx = 1 - is_p0;
+        const char* atker_id = skill_get_bot_id(atker_idx);
+        if (atker_id && strstr(atker_id, "elita") != NULL && skill_has_buff(atker_idx, "elita_counter_pouch")) {
+            skill_consume_buff(atker_idx, "elita_counter_pouch", 99);
+            skill_apply_buff_dur(is_p0 ? 0 : 1, "elita_counter_atk_debuff", 3.0f);
+            skill_overlay("[%s] 攻击被闪避！施加50%%攻击减益！", atker_idx == 0 ? "艾丽塔" : "敌方艾丽塔");
+            skill_log("ELITA_COUNTER_EVADED: P%d's attack was evaded by P%d while holding counter pouch -> applied 3s atk debuff", atker_idx, is_p0 ? 0 : 1);
+        }
         return 1;
     } else {
         flog("EVADE_RANGED_CHECK: MISSED! [%s] roll=%.3f >= chance=%.3f (NORMAL HIT)", who, r, chance);
@@ -9484,6 +9518,16 @@ int hook_192(void* self, void* statModifier, float* pRoll, float* pChance, void*
     });
 
     // 动作分段打击过滤 (Action Hit Gating)
+    // 艾丽塔 (Elita-1): 灵动反击门禁 - 必须持有【反击锦囊】才允许掷骰施加眩晕或攻击减益
+    if (mod_id[0] && (strstr(mod_id, "elita_counter_stun") != NULL || strstr(mod_id, "elita_counter_atk_debuff") != NULL)) {
+        void* owner_bc = (statModifier && obj_ok(statModifier)) ? *(void**)((char*)statModifier + 0x10) : NULL;
+        int is_p0 = is_player0_bc(owner_bc);
+        int ap = is_p0 ? 0 : 1;
+        if (!skill_has_buff(ap, "elita_counter_pouch")) {
+            return 0; // 未持反击锦囊，彻底阻止！
+        }
+    }
+
     if (mod_id[0] && strstr(mod_id, "jetfire_energy_charge") != NULL) {
         void* owner_bc = *(void**)((char*)statModifier + 0x10);
         int is_p0 = is_player0_bc(owner_bc);

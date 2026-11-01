@@ -34,6 +34,7 @@ extern BotSkillModule g_module_cheetor;
 extern BotSkillModule g_module_sideswipe;
 extern BotSkillModule g_module_necrotronus;
 extern BotSkillModule g_module_motormaster;
+extern BotSkillModule g_module_elita;
 
 static const BotSkillModule* s_registry[] = {
     &g_module_arcee,
@@ -60,6 +61,7 @@ static const BotSkillModule* s_registry[] = {
     &g_module_sideswipe,
     &g_module_necrotronus,
     &g_module_motormaster,
+    &g_module_elita,
     NULL
 };
 
