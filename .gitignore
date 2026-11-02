@@ -108,6 +108,9 @@ assets_redeco/*
 !assets_redeco/portrait_fembots_quest.png
 !assets_redeco/*picnic*
 !assets_redeco/*ghost*
+!assets_redeco/*elita*
+assets_redeco/*.ds
+assets_redeco/*.psd
 !assets_redeco/music
 !assets_redeco/music/**
 
