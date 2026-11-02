@@ -460,6 +460,37 @@ int skill_is_special_attacking(int player_index) {
     return (g_players[player_index].in_special || g_players[player_index].current_action >= 16);
 }
 
+int skill_is_attacking(int player_index) {
+    if (player_index < 0 || player_index >= 2) return 0;
+    return g_players[player_index].current_action > 0;
+}
+
+int skill_is_melee_attacking(int player_index) {
+    if (player_index < 0 || player_index >= 2) return 0;
+    int a = g_players[player_index].current_action;
+    return (a == 1 || a == 2 || a == 4 || a == 32 || a == 0x100);
+}
+
+uint64_t skill_get_last_dash_ms(int player_index) {
+    (void)player_index;
+    return 0;
+}
+
+uint64_t skill_get_last_melee_ms(int player_index) {
+    (void)player_index;
+    return 0;
+}
+
+uint64_t skill_get_last_backdash_ms(int player_index) {
+    (void)player_index;
+    return 0;
+}
+
+uint64_t skill_get_last_sidestep_ms(int player_index) {
+    (void)player_index;
+    return 0;
+}
+
 SIM_API int sim_set_crit_rate(int player_index, float crit_rate) {
     if (player_index < 0 || player_index >= 2) return 0;
     g_players[player_index].crit_rate = crit_rate;

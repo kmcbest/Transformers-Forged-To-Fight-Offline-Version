@@ -117,25 +117,33 @@ static void megatronus_on_simulation_tick(uint64_t now_ms) {
         // 1. 火种源自主回能: 14秒充满一格能量 (1.0 / 14.0 = ~0.07142857 bars/s)
         float cur_mana = skill_get_mana(p);
 
-        // 门禁 A: 若能量已达到或超过满 3 格 (>= 3.0)，停止充能并对齐时钟，严格维持 3.0f 满格
-        if (cur_mana >= 3.0f) {
+        // 匀速自主充能 (放 S 技完全不影响自发充气，但受能量锁定与能量流失制衡)
+        if (s_last_tick_ms[p] == 0) {
             s_last_tick_ms[p] = now_ms;
-            skill_set_mana(p, 3.0f);
-        }
-        // 门禁 B: 匀速自主充能 (放 S 技完全不影响自发充气)
-        else {
-            if (s_last_tick_ms[p] == 0) {
-                s_last_tick_ms[p] = now_ms;
-            } else if (now_ms > s_last_tick_ms[p]) {
-                uint64_t dt_ms = now_ms - s_last_tick_ms[p];
-                s_last_tick_ms[p] = now_ms;
+        } else if (now_ms > s_last_tick_ms[p]) {
+            uint64_t dt_ms = now_ms - s_last_tick_ms[p];
+            s_last_tick_ms[p] = now_ms;
 
-                if (!skill_has_buff(p, "power_lock")) {
-                    float mana_delta = ((float)dt_ms / 1000.0f) * (1.0f / 14.0f);
+            if (!skill_has_buff(p, "power_lock")) {
+                float base_rate = 1.0f / 14.0f; // 正常每秒自主产出 +0.0714 格
+                float net_rate = base_rate;
+
+                // 能量流失 (Power Leak) 制衡: 每层扣减 0.0288 格/秒 (最大能量3格的9.6%/10s)
+                int leak_stacks = skill_count_buffs(p, "power_leak");
+                if (leak_stacks > 0) {
+                    if (leak_stacks > 5) leak_stacks = 5;
+                    net_rate -= (float)leak_stacks * 0.0288f;
+                }
+
+                // 若能量已满 3 格且净充能 >= 0，严格锁死在 3.0f 满格
+                if (cur_mana >= 3.0f && net_rate >= 0.0f) {
+                    skill_set_mana(p, 3.0f);
+                } else {
+                    float mana_delta = ((float)dt_ms / 1000.0f) * net_rate;
                     skill_add_mana(p, mana_delta);
 
-                    // 接近满 3 格时 (>= 2.99f) 直接拉满至 3.0f，保证解锁 SP3 必杀技按键与满槽
-                    if (skill_get_mana(p) >= 2.99f) {
+                    // 充能接近满 3 格且仍在充能时 (>= 2.99f) 直接拉满至 3.0f，保证解锁 SP3 必杀技按键与满槽
+                    if (skill_get_mana(p) >= 2.99f && net_rate > 0.0f) {
                         skill_set_mana(p, 3.0f);
                     }
                 }

@@ -10,7 +10,7 @@ Bot ID: kickback_gs_kabam
 1. [被动 - 能量流失 / Power Leak] (ID: 3077)
    - 官方描述: "触发暴击时100%的概率造成能量流失，在10秒内扣除对方最大能量的9.6%，最多叠加5层。"
    - 实现方案:
-     kickback_crit_power_leak: 暴击触发，施加持续 10 秒的能量流失 debuff，扣除 9.6% 能量，上限 5 层。
+     kickback_crit_power_leak: 暴击触发，施加持续 10 秒的能量流失 debuff，扣除最大能量(3格)的 9.6% (0.288 * 300 = 86.4 Mana)，上限 5 层。
 
 2. [被动 - 暴击几率 / Crit Rate on Kick] (ID: 3078)
    - 官方描述: "L4和M2命中时增加30%的暴击几率。//无图标，仅针对本次攻击本身"
@@ -92,12 +92,12 @@ def build_kickback_abilities(base_hp: float = 32533.0, base_atk: float = 3880.0)
 
     # -------------------------------------------------------------------------
     # 1. 暴击能量流失 (Power Leak) 10.0s (ID: 3077)
-    # 扣除对手 9.6% 能量 (0.096 * 300 = 28.8 点 Mana)
+    # 扣除对手最大能量(3格)的 9.6% (0.288 * 300 = 86.4 点 Mana)
     # -------------------------------------------------------------------------
     m_leak, a_leak = make_power_leak_statmod(
         mod_id="kickback_crit_power_leak",
         duration=10.0,
-        drain_bars=0.096,
+        drain_bars=0.288,
         chance=1.0,
         trigger="onCrit",
         trigger_scope="",
