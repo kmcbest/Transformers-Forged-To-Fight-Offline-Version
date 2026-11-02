@@ -17,7 +17,7 @@ Bot ID: elita_one_gs / elita_one_gs_kabam
    - 官方描述: "闪避对手前冲攻击或近战攻击时，有50%的概率得到一个反击锦囊，持续1秒，
      此时间内如果击中对手，可将对手眩晕1.5秒；如果攻击被对手闪避，则对对手施加1层50%的攻击减益，持续3秒。"
    - 实现方案:
-     c) elita_counter_pouch_buff: 闪避冲锋或近战攻击时 50% 获得反击锦囊持续 1.0 秒 (黄色图标 E50A)。
+     c) elita_counter_pouch_buff: 闪避冲锋或近战攻击时 50% 获得反击锦囊持续 2.0 秒 (黄色图标 E50A)。
      d) elita_counter_stun: 持有反击锦囊击中对手时造成 1.5 秒眩晕。
      e) elita_counter_atk_debuff: 持有反击锦囊被对手规避时对对手施加 50% 攻击减益持续 3.0 秒。
 
@@ -476,7 +476,7 @@ def _build_elita_abilities_impl(
 
     # =========================================================================
     # 5. [被动] 灵动反击 (Nimble Counter)
-    #    - 闪避冲锋或近战 50% 获得反击锦囊 (持续 1.0s, 黄色图标 E50A)
+    #    - 闪避冲锋或近战 50% 获得反击锦囊 (持续 2.0s, 黄色图标 E50A)
     #    - 持有反击锦囊击中对手眩晕 1.5s ("反击眩晕", 黄色图标 E50A)
     #    - 持有反击锦囊被对手闪避施加 50% 攻击削弱持续 3s ("攻击减益", 红色图标)
     #    - 由 NativeHook 底层状态机精准驱动与门禁拦截，
@@ -506,7 +506,7 @@ def _build_elita_abilities_impl(
         "c": 0.50,
         "p": 0.50,
         "m": 1.0,
-        "d": 1.0,
+        "d": 2.0,
         "s": "none",
         "ta": "self",
         "mt": "buff",
@@ -530,7 +530,7 @@ def _build_elita_abilities_impl(
         chance=1.0,
         trigger="",
         trigger_scope="",
-        target_actor="self",
+        target_actor="opponent",
         appr_id="appr_elita_counter_stn",
         callout_text="反击眩晕",
         pua_icon="\uE50A",
@@ -567,7 +567,7 @@ def _build_elita_abilities_impl(
         "m": -0.50,
         "d": 3.0,
         "s": "none",
-        "ta": "self",
+        "ta": "opponent",
         "mt": "debuff",
         "v": "",
         "ms": "",

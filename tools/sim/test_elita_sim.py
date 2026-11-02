@@ -68,7 +68,7 @@ def test_elita_priority_abilities():
     assert_true(mods["elita_tactical_insight_melee_buff"]["m"] == 0.30, "Passive: Tactical insight melee buff 30%")
 
     assert_true("elita_counter_pouch_buff" in mods, "Passive: Nimble counter pouch defined")
-    assert_true(mods["elita_counter_pouch_buff"]["d"] == 1.0, "Passive: Counter pouch duration 1.0s")
+    assert_true(mods["elita_counter_pouch_buff"]["d"] == 2.0, "Passive: Counter pouch duration 2.0s")
     assert_true(mods["elita_counter_pouch_buff"]["p"] == 0.50, "Passive: Counter pouch chance 50%")
     assert_true("elita_counter_stun" in mods, "Passive: Counter stun defined")
     assert_true(mods["elita_counter_stun"]["d"] == 1.5, "Passive: Counter stun duration 1.5s")

@@ -598,7 +598,8 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x00F1DB10, "RAID_FLOW_RESUME",    2, 0 }, // 208 PVPRaidFlow.Resume
     { 0x012E8F34, "QUEST_FLOW_ENTER",    2, 0 }, // 209 QuestFlow.Enter
     { 0x012E900C, "QUEST_FLOW_RESUME",   2, 0 }, // 210 QuestFlow.Resume
-    { 0x00C5FC70, "HOME_FLOW_RESUME",    2, 0 }  // 211 HomeFlow.Resume
+    { 0x00C5FC70, "HOME_FLOW_RESUME",    2, 0 }, // 211 HomeFlow.Resume
+    { 0x0117E4AC, "DASH_ENTER",          2, 0 }  // 212 PlayerDashState.OnEnter -> track dash start timestamp
 };
 
 #define NH (int)(sizeof(H)/sizeof(H[0]))
@@ -663,6 +664,7 @@ static volatile uint64_t s_p1_kite_pending_time_ms = 0;
 static volatile uint64_t s_p1_last_kite_step_ms = 0;
 static volatile uint64_t s_p1_last_dash_ms = 0;
 static volatile uint64_t s_p1_last_melee_ms = 0;
+static volatile uint64_t s_p1_last_sidestep_ms = 0;
 static volatile uint64_t s_p1_next_clean_dash_ms = 0;
 
 static volatile uint64_t g_p0_auto_unblock_ms = 0;
@@ -674,6 +676,7 @@ static volatile uint64_t s_p0_kite_pending_time_ms = 0;
 static volatile uint64_t s_p0_last_kite_step_ms = 0;
 static volatile uint64_t s_p0_last_dash_ms = 0;
 static volatile uint64_t s_p0_last_melee_ms = 0;
+static volatile uint64_t s_p0_last_sidestep_ms = 0;
 
 static volatile uint64_t s_sideswipe_last_power_evade_ms = 0;
 static volatile uint64_t s_sideswipe_last_dash_evade_ms = 0;
@@ -5265,6 +5268,8 @@ void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     s_p0_last_kite_step_ms = 0;
     s_p0_last_dash_ms = 0;
     s_p0_last_melee_ms = 0;
+    s_p0_last_sidestep_ms = 0;
+    s_p1_last_sidestep_ms = 0;
     s_sideswipe_last_power_evade_ms = 0;
     s_sideswipe_last_dash_evade_ms = 0;
 
@@ -6436,6 +6441,7 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
             }
             if (action == 1 || action == 32 || action == 0x100) {
                 s_p0_last_melee_ms = propgo_now_ms();
+                skill_dispatch_attack_start(0, action);
             }
             if (action == 4 || action == 1 || action == 32 || action == 0x100) {
                 // Release block (4) or Attack/Dash/ChargeHeavy: abort block timer if released before 200ms
@@ -6564,6 +6570,7 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
 
             if (action == 1 || action == 32 || action == 0x100) {
                 s_p1_last_melee_ms = propgo_now_ms();
+                skill_dispatch_attack_start(1, action);
             }
             if (action == 4 || action == 1 || action == 32 || action == 0x100) {
                 g_p1_block_enter_ms = 0;
@@ -6844,19 +6851,24 @@ void* hook_160(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     PROTECT({
         if (obj_ok(pc)) {
             int32_t pidx = *(int32_t*)((uintptr_t)pc + 0xF4);
+            uint64_t now_ms = propgo_now_ms();
             if (pidx == 0) {
                 g_p0_controller = pc;
                 g_p0_block_enter_ms = 0;
                 g_p0_block_reset_done = 0;
                 g_p0_combo_ended = 0;
                 g_p0_after_heavy = 0;
+                s_p0_last_sidestep_ms = now_ms;
                 flog("SIDESTEP_ENTER (0x00E3349C) on P0: reset attack chain");
                 reset_player_attack_chain(pc);
+                skill_dispatch_dodge_enter(0);
             } else if (pidx == 1) {
                 g_p1_controller = pc;
                 g_p1_block_enter_ms = 0;
                 g_p1_combo_ended = 0;
+                s_p1_last_sidestep_ms = now_ms;
                 reset_player_attack_chain(pc);
+                skill_dispatch_dodge_enter(1);
             }
         }
     });
@@ -8124,6 +8136,23 @@ void* hook_186(void* this_pc, void* hitResult, void* method) {
                 s_current_hit_is_heavy = 0;
                 s_current_hit_is_last = 0;
 
+                // --- 艾丽塔原生规避/挥空判定联动 (RegisterHitResult 判定未命中/规避) ---
+                const char* victim_id_elita = (p_idx == 0) ? g_p0_bot_id : g_p1_bot_id;
+                if (victim_id_elita && strstr(victim_id_elita, "elita") != NULL) {
+                    uint64_t now_ms = propgo_now_ms();
+                    uint64_t last_side = (p_idx == 0) ? s_p0_last_sidestep_ms : s_p1_last_sidestep_ms;
+                    uint64_t last_back = (p_idx == 0) ? g_p0_last_backdash_ms : g_p1_last_backdash_ms;
+                    int is_dash = (atk_level == 32 || atk_level == 2);
+                    int is_melee = (atk_level == 1 || atk_level == 2 || atk_level == 4);
+                    if (is_dash && (now_ms - last_side <= 800)) {
+                        skill_dispatch_attack_start(1 - p_idx, 32);
+                    } else if (is_melee && (now_ms - last_back)) {
+                        if (now_ms - last_back <= 700) {
+                            skill_dispatch_attack_start(1 - p_idx, 1);
+                        }
+                    }
+                }
+
                 // --- 横炮实机真实规避确认 (RegisterHitResult 判定未命中/规避) ---
                 const char* victim_id = (p_idx == 0) ? g_p0_bot_id : g_p1_bot_id;
                 if (victim_id && strstr(victim_id, "sideswipe") != NULL) {
@@ -8159,6 +8188,9 @@ void* hook_186(void* this_pc, void* hitResult, void* method) {
             } else if (atk_level == 32 || atk_level == 2) {
                 if (p_idx == 0) s_p1_last_dash_ms = propgo_now_ms();
                 else s_p0_last_dash_ms = propgo_now_ms();
+            } else if (atk_level == 1 || atk_level == 4) {
+                if (p_idx == 0) s_p1_last_melee_ms = propgo_now_ms();
+                else s_p0_last_melee_ms = propgo_now_ms();
             }
             if (p_idx == 0 && (atk_level == 1 || atk_level == 2 || atk_level == 4 || atk_level == 8)) {
                 g_p0_current_special_index = -1;
@@ -9153,6 +9185,24 @@ void skill_prowl_finish_charge(int player_index, const char* reason) {
     prowl_finish_charge(player_index == 0 ? 1 : 0, reason);
 }
 
+int skill_is_attacking(int player_index) {
+    void* pc = (player_index == 0) ? g_p0_controller : g_p1_controller;
+    if (pc && obj_ok(pc) && g_base) {
+        typedef int (*fn_is_atk)(void*, void*);
+        return ((fn_is_atk)(g_base + 0x11752C8))(pc, NULL);
+    }
+    return 0;
+}
+
+int skill_is_melee_attacking(int player_index) {
+    void* pc = (player_index == 0) ? g_p0_controller : g_p1_controller;
+    if (pc && obj_ok(pc) && g_base) {
+        typedef int (*fn_is_melee_atk)(void*, void*);
+        return ((fn_is_melee_atk)(g_base + 0x11753C8))(pc, NULL);
+    }
+    return 0;
+}
+
 uint64_t skill_get_last_dash_ms(int player_index) {
     if (player_index == 0) return s_p0_last_dash_ms;
     if (player_index == 1) return s_p1_last_dash_ms;
@@ -9162,6 +9212,18 @@ uint64_t skill_get_last_dash_ms(int player_index) {
 uint64_t skill_get_last_melee_ms(int player_index) {
     if (player_index == 0) return s_p0_last_melee_ms;
     if (player_index == 1) return s_p1_last_melee_ms;
+    return 0;
+}
+
+uint64_t skill_get_last_backdash_ms(int player_index) {
+    if (player_index == 0) return g_p0_last_backdash_ms;
+    if (player_index == 1) return g_p1_last_backdash_ms;
+    return 0;
+}
+
+uint64_t skill_get_last_sidestep_ms(int player_index) {
+    if (player_index == 0) return s_p0_last_sidestep_ms;
+    if (player_index == 1) return s_p1_last_sidestep_ms;
     return 0;
 }
 
@@ -9394,8 +9456,8 @@ int hook_190(void* self) {
         int atker_idx = 1 - is_p0;
         const char* atker_id = skill_get_bot_id(atker_idx);
         if (atker_id && strstr(atker_id, "elita") != NULL && skill_has_buff(atker_idx, "elita_counter_pouch")) {
-            skill_consume_buff(atker_idx, "elita_counter_pouch", 99);
             skill_apply_buff_dur(is_p0 ? 0 : 1, "elita_counter_atk_debuff", 3.0f);
+            skill_consume_buff(atker_idx, "elita_counter_pouch", 99);
             skill_overlay("[%s] 攻击被闪避！施加50%%攻击减益！", atker_idx == 0 ? "艾丽塔" : "敌方艾丽塔");
             skill_log("ELITA_COUNTER_EVADED: P%d's attack was evaded by P%d while holding counter pouch -> applied 3s atk debuff", atker_idx, is_p0 ? 0 : 1);
         }
@@ -9488,8 +9550,8 @@ int hook_191(void* self) {
         int atker_idx = 1 - is_p0;
         const char* atker_id = skill_get_bot_id(atker_idx);
         if (atker_id && strstr(atker_id, "elita") != NULL && skill_has_buff(atker_idx, "elita_counter_pouch")) {
-            skill_consume_buff(atker_idx, "elita_counter_pouch", 99);
             skill_apply_buff_dur(is_p0 ? 0 : 1, "elita_counter_atk_debuff", 3.0f);
+            skill_consume_buff(atker_idx, "elita_counter_pouch", 99);
             skill_overlay("[%s] 攻击被闪避！施加50%%攻击减益！", atker_idx == 0 ? "艾丽塔" : "敌方艾丽塔");
             skill_log("ELITA_COUNTER_EVADED: P%d's attack was evaded by P%d while holding counter pouch -> applied 3s atk debuff", atker_idx, is_p0 ? 0 : 1);
         }
@@ -10831,6 +10893,31 @@ void* hook_211(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     return r;
 }
 
+// slot 212 DASH_ENTER (0x0117E4AC): PlayerDashState.OnEnter -> track dash start timestamp
+void* hook_212(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    void* r = H[212].orig ? H[212].orig(a0, a1, a2, a3, a4, a5, a6, a7) : NULL;
+    PROTECT({
+        void* pc = fld_p(a0, 0x18);
+        if (pc && obj_ok(pc)) {
+            int32_t pidx = *(int32_t*)((uintptr_t)pc + 0xF4);
+            uint64_t now_ms = propgo_now_ms();
+            if (pidx == 0) {
+                s_p0_last_dash_ms = now_ms;
+                g_p0_controller = pc;
+                skill_dispatch_attack_start(0, 32);
+                flog("DASH_ENTER (0x0117E4AC) on P0: dash timestamp updated (now_ms=%llu)", (unsigned long long)now_ms);
+            } else if (pidx == 1) {
+                s_p1_last_dash_ms = now_ms;
+                g_p1_controller = pc;
+                skill_dispatch_attack_start(1, 32);
+                flog("DASH_ENTER (0x0117E4AC) on P1: dash timestamp updated (now_ms=%llu)", (unsigned long long)now_ms);
+            }
+        }
+    });
+    return r;
+}
+
+
 static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hook_7,hook_8,
     hook_9,hook_10,hook_11,hook_12,hook_13,hook_14,hook_15,hook_16,hook_17,hook_18,hook_19,hook_20,hook_21,
     hook_22,hook_23,hook_24,hook_25,hook_26,hook_27,hook_28,hook_29,hook_30,
@@ -10853,7 +10940,7 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     hook_171,hook_172,hook_173,hook_174,hook_175,hook_176,(void*)hook_177,(void*)hook_178,
     (void*)hook_179,hook_180,hook_181,hook_182,hook_183,hook_184,hook_185,hook_186,(void*)hook_187,(void*)hook_188,(void*)hook_189,
     (void*)hook_190,(void*)hook_191,(void*)hook_192,(void*)hook_193,(void*)hook_194,(void*)hook_195,(void*)hook_196,(void*)hook_197,(void*)hook_198,hook_199,(void*)hook_200,(void*)hook_201,hook_202,hook_203,
-    (void*)hook_204,hook_205,hook_206,hook_207,hook_208,hook_209,hook_210,hook_211 };
+    (void*)hook_204,hook_205,hook_206,hook_207,hook_208,hook_209,hook_210,hook_211,hook_212 };
 _Static_assert(sizeof(handlers)/sizeof(handlers[0]) == sizeof(H)/sizeof(H[0]), "handlers count must match H count");
 
 
