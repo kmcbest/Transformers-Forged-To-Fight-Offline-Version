@@ -89,10 +89,32 @@
   ],
   "basic_abilities": [
     {
-      "title_zh": "凝固热核弹幕",
-      "title_en": "Incendiary Barrage",
-      "desc_zh": "远程重火器发射高温热核弹，击中必定引发燃烧 (Burn)，持续造成火热伤害并阻止敌方任何生命恢复。",
-      "pua_icon": ""
+      "title_zh": "燃烧",
+      "title_en": "Burn",
+      "desc_zh": "持续造成能量伤害。",
+      "desc_en": "Deals energy damage over time.",
+      "pua_icon": "E41D"
+    },
+    {
+      "title_zh": "不可阻挡",
+      "title_en": "Unstoppable",
+      "desc_zh": "进攻动作无视对手攻击冲击与受击打断。",
+      "desc_en": "Shrugs off hit reactions; attacks cannot be interrupted.",
+      "pua_icon": "E915"
+    },
+    {
+      "title_zh": "暴击率增益",
+      "title_en": "Crit Rate Buff",
+      "desc_zh": "临时增加攻击命中时触发暴击的几率。",
+      "desc_en": "Temporarily increases the chance of scoring critical hits.",
+      "pua_icon": "E40D"
+    },
+    {
+      "title_zh": "暴击伤害增益",
+      "title_en": "Crit Damage Buff",
+      "desc_zh": "临时增加暴击命中时造成的伤害。",
+      "desc_en": "Temporarily increases the damage of critical hits.",
+      "pua_icon": "E906"
     }
   ],
   "game_abilities": [

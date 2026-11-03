@@ -166,7 +166,7 @@ def build_bumblebee_abilities(base_hp: float = 30000.0, base_atk: float = 3000.0
     appr_brave = {
         "id": "appr_bumblebee_bee_brave",
         "a": "蜂之勇气",
-        "s": "蜂之勇气",
+        "s": "none",
         "l": "近战距离时激活能量涌动，每秒获得1.2%最大能量",
         "ss": "蜂之勇气",
         "t": "\uE608",

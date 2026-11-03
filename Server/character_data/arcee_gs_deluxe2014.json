@@ -120,16 +120,25 @@
   ],
   "basic_abilities": [
     {
-      "title_zh": "规避",
-      "title_en": "Evade",
-      "desc_zh": "躲避传入的远程攻击。",
-      "pua_icon": "0xe518"
+      "title_zh": "爆头射击",
+      "title_en": "Headshot",
+      "desc_zh": "爆头导致瞬间的能量晶体流失伤害并持续造成直接伤害，对手回避时额外承受伤害。",
+      "desc_en": "Headshots cause instant damage and bleeding damage over time, dealing extra damage if the opponent evades.",
+      "pua_icon": "E401"
     },
     {
-      "title_zh": "爆头",
-      "title_en": "Head Shot",
-      "desc_zh": "随着时间的推移，爆头造成的流血能量会造成直接伤害。如果对手闪避或闪避，则会造成额外伤害。",
-      "pua_icon": "0xe401"
+      "title_zh": "远程增益",
+      "title_en": "Ranged Buff",
+      "desc_zh": "临时增加远程攻击的速度、射击频率与伤害。",
+      "desc_en": "Temporarily increases ranged attack speed and damage.",
+      "pua_icon": "E41B"
+    },
+    {
+      "title_zh": "能量获取",
+      "title_en": "Power Gain",
+      "desc_zh": "暴击额外获得能量",
+      "desc_en": "Passively gains power over time to fill special attack bars faster.",
+      "pua_icon": "E608"
     }
   ],
   "game_abilities": [

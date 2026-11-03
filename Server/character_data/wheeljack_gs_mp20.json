@@ -157,26 +157,37 @@
     {
       "title_zh": "升级",
       "title_en": "Upgrade",
-      "desc_zh": "该机器人能够对其防御、进攻和电力系统进行升级。",
-      "pua_icon": ""
+      "desc_zh": "构建进攻、防御或能量系统模块升级，全面强化机体性能。",
+      "desc_en": "Constructs offensive, defensive, or energy module upgrades to enhance chassis performance.",
+      "pua_icon": "E306"
     },
     {
-      "title_zh": "感应触电",
+      "title_zh": "震击",
       "title_en": "Shock",
-      "desc_zh": "随着时间的推移造成能量伤害。",
-      "pua_icon": ""
+      "desc_zh": "持续造成电磁能量伤害。",
+      "desc_en": "Deals electrical energy damage over time.",
+      "pua_icon": "E914"
     },
     {
-      "title_zh": "漏电",
+      "title_zh": "能量流失",
       "title_en": "Power Leak",
-      "desc_zh": "随着时间的推移，减去一定百分比的对手力量。",
-      "pua_icon": ""
+      "desc_zh": "随时间推移持续扣减对手一定比例的能量槽。",
+      "desc_en": "Drains a percentage of the opponent's power gauge over time.",
+      "pua_icon": "E607"
     },
     {
       "title_zh": "修复",
       "title_en": "Repair",
-      "desc_zh": "修复随着时间的推移失去的生命值。",
-      "pua_icon": ""
+      "desc_zh": "随时间推移持续修复生命值，或按受损比例回血。",
+      "desc_en": "Repairs health over time or restores a percentage of lost health.",
+      "pua_icon": "E503"
+    },
+    {
+      "title_zh": "眩晕",
+      "title_en": "Stun",
+      "desc_zh": "临时阻止目标采取任何行动。",
+      "desc_en": "Temporarily paralyzes the target, preventing all actions.",
+      "pua_icon": "E605"
     }
   ],
   "game_abilities": [

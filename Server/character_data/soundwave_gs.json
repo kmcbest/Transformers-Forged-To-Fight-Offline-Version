@@ -168,22 +168,25 @@
   ],
   "basic_abilities": [
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "功率增益",
-      "pua_icon": ""
+      "title_zh": "震击",
+      "title_en": "Shock",
+      "desc_zh": "持续造成电磁能量伤害。",
+      "desc_en": "Deals electrical energy damage over time.",
+      "pua_icon": "E914"
     },
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "漏电",
-      "pua_icon": ""
+      "title_zh": "能量获取",
+      "title_en": "Power Gain",
+      "desc_zh": "持续进行的被动能量积蓄，加速特殊技能量条充盈。",
+      "desc_en": "Passively gains power over time to fill special attack bars faster.",
+      "pua_icon": "E608"
     },
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "震惊",
-      "pua_icon": ""
+      "title_zh": "能量流失",
+      "title_en": "Power Leak",
+      "desc_zh": "随时间推移持续扣减对手一定比例的能量槽。",
+      "desc_en": "Drains a percentage of the opponent's power gauge over time.",
+      "pua_icon": "E607"
     }
   ],
   "game_abilities": [

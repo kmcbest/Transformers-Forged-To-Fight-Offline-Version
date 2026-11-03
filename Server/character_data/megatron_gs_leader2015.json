@@ -116,22 +116,32 @@
   ],
   "basic_abilities": [
     {
-      "title_zh": "融合炮",
-      "title_en": "Fusion Cannon",
-      "desc_zh": "全力攻击时，重击会更加强大，并且会产生减益效果。",
-      "pua_icon": ""
-    },
-    {
       "title_zh": "破甲",
       "title_en": "Armor Break",
-      "desc_zh": "移除装甲增益。放大受到攻击的伤害。",
-      "pua_icon": ""
+      "desc_zh": "移除护甲增益，降低护甲评级并提升受到攻击的伤害量。",
+      "desc_en": "Removes armor buffs and reduces armor rating, amplifying incoming damage.",
+      "pua_icon": "E516"
     },
     {
       "title_zh": "攻击减益",
       "title_en": "Attack Debuff",
-      "desc_zh": "暂时降低对手的攻击力。",
-      "pua_icon": ""
+      "desc_zh": "削弱机体动力，临时减少对手攻击评分与输出。",
+      "desc_en": "Temporarily reduces the opponent's attack rating and damage output.",
+      "pua_icon": "E916"
+    },
+    {
+      "title_zh": "震击",
+      "title_en": "Shock",
+      "desc_zh": "持续造成电磁能量伤害。",
+      "desc_en": "Deals electrical energy damage over time.",
+      "pua_icon": "E914"
+    },
+    {
+      "title_zh": "融合炮",
+      "title_en": "Fusion Cannon",
+      "desc_zh": "增强重击伤害，并有融合减益的能力。",
+      "desc_en": "Constructs offensive, defensive, or energy module upgrades to enhance chassis performance.",
+      "pua_icon": "E910"
     }
   ],
   "game_abilities": [

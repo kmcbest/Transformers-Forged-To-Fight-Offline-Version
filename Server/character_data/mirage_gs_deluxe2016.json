@@ -146,22 +146,25 @@
   ],
   "basic_abilities": [
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "屏蔽",
-      "pua_icon": ""
+      "title_zh": "护盾",
+      "title_en": "Shield",
+      "desc_zh": "展开力场吸收来袭伤害，优先于生命值消耗。",
+      "desc_en": "Deploys a forcefield that absorbs incoming damage before reducing health.",
+      "pua_icon": "E515"
     },
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "功率燃烧 1",
-      "pua_icon": ""
+      "title_zh": "能量燃烧",
+      "title_en": "Power Burn",
+      "desc_zh": "立即扣减对手的能量槽。",
+      "desc_en": "Instantly burns the opponent's power gauge.",
+      "pua_icon": "E607"
     },
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "攻击减益 1",
-      "pua_icon": ""
+      "title_zh": "攻击减益",
+      "title_en": "Attack Debuff",
+      "desc_zh": "削弱机体动力，临时减少对手攻击评分与输出。",
+      "desc_en": "Temporarily reduces the opponent's attack rating and damage output.",
+      "pua_icon": "E916"
     }
   ],
   "game_abilities": [

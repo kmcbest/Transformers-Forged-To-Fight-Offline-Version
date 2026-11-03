@@ -146,22 +146,39 @@
   ],
   "basic_abilities": [
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "抑制",
-      "pua_icon": ""
+      "title_zh": "近战增益",
+      "title_en": "Melee Buff",
+      "desc_zh": "临时增加近战普通攻击与近战重击的伤害。",
+      "desc_en": "Temporarily increases damage dealt by basic and heavy melee attacks.",
+      "pua_icon": "E412"
     },
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "功率消耗",
-      "pua_icon": ""
+      "title_zh": "能量燃烧",
+      "title_en": "Power Burn",
+      "desc_zh": "立即扣减对手的能量槽。",
+      "desc_en": "Instantly burns the opponent's power gauge.",
+      "pua_icon": "E607"
     },
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "远程增益",
-      "pua_icon": ""
+      "title_zh": "能量锁定",
+      "title_en": "Power Lock",
+      "desc_zh": "临时阻止目标从攻击或被动机制中获取任何能量。",
+      "desc_en": "Temporarily prevents the target from gaining power from any source.",
+      "pua_icon": "E523"
+    },
+    {
+      "title_zh": "眩晕",
+      "title_en": "Stun",
+      "desc_zh": "临时阻止目标采取任何行动。",
+      "desc_en": "Temporarily paralyzes the target, preventing all actions.",
+      "pua_icon": "E605"
+    },
+    {
+      "title_zh": "远程增益",
+      "title_en": "Ranged Buff",
+      "desc_zh": "临时增加远程攻击的速度、射击频率与伤害。",
+      "desc_en": "Temporarily increases ranged attack speed and damage.",
+      "pua_icon": "E41B"
     }
   ],
   "game_abilities": [

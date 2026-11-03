@@ -91,6 +91,7 @@
       "title_zh": "毁灭破片弹药",
       "title_en": "Devastation Munitions",
       "desc_zh": "所有攻击均装填高爆破片弹，命中造成持续范围爆炸与破甲削弱。",
+      "desc_en": "All munitions are loaded with high-explosive shrapnel, inflicting continuous explosions and Armor Break.",
       "pua_icon": ""
     }
   ],

@@ -43,7 +43,7 @@ def build_thundercracker_abilities(base_hp: float = 29000.0, base_atk: float = 2
     appr_zero = {
         "id": "appr_thundercracker_zero_crit",
         "a": "精准打击",
-        "s": "近战0暴",
+        "s": "none",
         "l": "所有攻击不产生暴击，全部以纯白字绝对伤害结算",
         "ss": "全攻击锁定白字",
         "t": "\uE406",
@@ -92,7 +92,7 @@ def build_thundercracker_abilities(base_hp: float = 29000.0, base_atk: float = 2
     appr_purify = {
         "id": "appr_thundercracker_heavy_purify",
         "a": "过载净化",
-        "s": "过载净化",
+        "s": "none",
         "l": "重击发起时净化所有流血/燃烧/震击等减益",
         "ss": "重击全减益净化",
         "t": "\uE950",

@@ -88,10 +88,18 @@
   ],
   "basic_abilities": [
     {
-      "title_zh": "高压电离打击",
-      "title_en": "Ionizing Blast",
-      "desc_zh": "攻击附带高压电离冲击，命中时降低对手能量获取率 35%，并有几率对格斗系敌人的霸体状态造成直接电击打断。",
-      "pua_icon": ""
+      "title_zh": "震击",
+      "title_en": "Shock",
+      "desc_zh": "持续造成电磁能量伤害。",
+      "desc_en": "Deals electrical energy damage over time.",
+      "pua_icon": "E914"
+    },
+    {
+      "title_zh": "破甲",
+      "title_en": "Armor Break",
+      "desc_zh": "移除护甲增益，降低护甲评级并提升受到攻击的伤害量。",
+      "desc_en": "Removes armor buffs and reduces armor rating, amplifying incoming damage.",
+      "pua_icon": "E516"
     }
   ],
   "game_abilities": [

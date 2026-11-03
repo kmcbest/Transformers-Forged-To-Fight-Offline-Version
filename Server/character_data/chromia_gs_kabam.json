@@ -79,16 +79,32 @@
   "synergies": [],
   "basic_abilities": [
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "缓慢：阻止对手躲避攻击，并减少对手攻击时的能量流。",
-      "pua_icon": ""
+      "title_zh": "流血",
+      "title_en": "Bleed",
+      "desc_zh": "流失的能量晶体会持续造成直接伤害。",
+      "desc_en": "Bleeding energon causes direct damage over time.",
+      "pua_icon": "E401"
     },
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "暴击率增益：击中遭受缓慢减益效果的对手时，暂时提高暴击率。",
-      "pua_icon": ""
+      "title_zh": "减速",
+      "title_en": "Decelerate",
+      "desc_zh": "阻止对手躲避攻击，并减少对手行动时的能量流速。",
+      "desc_en": "Prevents the opponent from dodging and slows their power flow.",
+      "pua_icon": "E952"
+    },
+    {
+      "title_zh": "顶光区的炸弹",
+      "title_en": "Acrolight Bomb",
+      "desc_zh": "持续造成酸性伤害。",
+      "desc_en": "Deals corrosive acid damage over time.",
+      "pua_icon": "E40E"
+    },
+    {
+      "title_zh": "感应电荷",
+      "title_en": "Sensor Charge",
+      "desc_zh": "爆头导致瞬间的能量晶体流失伤害并持续造成直接伤害，对手回避时额外承受伤害。",
+      "desc_en": "Headshots cause instant damage and bleeding damage over time, dealing extra damage if the opponent evades.",
+      "pua_icon": "E806"
     }
   ],
   "game_abilities": [

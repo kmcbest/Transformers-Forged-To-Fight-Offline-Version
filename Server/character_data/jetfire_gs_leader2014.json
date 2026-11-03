@@ -168,28 +168,32 @@
   ],
   "basic_abilities": [
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "招架盾",
-      "pua_icon": ""
+      "title_zh": "招架护盾",
+      "title_en": "Parry Shield",
+      "desc_zh": "成功格挡攻击时吸收冲击，并反弹来袭的近战攻击或远程火力。",
+      "desc_en": "Absorbs impact upon successful block and reflects melee or ranged strikes.",
+      "pua_icon": "E911"
     },
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "震惊",
-      "pua_icon": ""
+      "title_zh": "震击",
+      "title_en": "Shock",
+      "desc_zh": "持续造成电磁能量伤害。",
+      "desc_en": "Deals electrical energy damage over time.",
+      "pua_icon": "E914"
     },
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "远程增益",
-      "pua_icon": ""
+      "title_zh": "远程增益",
+      "title_en": "Ranged Buff",
+      "desc_zh": "临时增加远程攻击的速度、射击频率与伤害。",
+      "desc_en": "Temporarily increases ranged attack speed and damage.",
+      "pua_icon": "E41B"
     },
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "屏蔽",
-      "pua_icon": ""
+      "title_zh": "护盾",
+      "title_en": "Shield",
+      "desc_zh": "展开力场吸收来袭伤害，优先于生命值消耗。",
+      "desc_en": "Deploys a forcefield that absorbs incoming damage before reducing health.",
+      "pua_icon": "E515"
     }
   ],
   "game_abilities": [

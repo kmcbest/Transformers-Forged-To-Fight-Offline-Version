@@ -1663,7 +1663,7 @@ def make_heal_statmod(
     appear = {
         "id": appr_id,
         "a": callout_text,
-        "s": callout_text,
+        "s": "none",
         "l": "",
         "ss": "",
         "t": pua_icon,

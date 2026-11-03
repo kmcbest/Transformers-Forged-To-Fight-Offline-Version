@@ -94,12 +94,14 @@
       "title_zh": "毁灭冲撞",
       "title_en": "Kamikaze Charge",
       "desc_zh": "冲刺攻击自带不可阻挡 (Unstoppable) 特性，撞击对手将其击退并削减其 20% 能量槽。",
+      "desc_en": "Dash attacks feature Unstoppable momentum, knocking the opponent back and draining 20% of their Power.",
       "pua_icon": ""
     },
     {
       "title_zh": "狂暴公路反震",
       "title_en": "Road Rage Parrying",
       "desc_zh": "成功格挡近战攻击时，将 35% 伤害反弹给对手，并有 50% 概率使其硬直 1 秒。",
+      "desc_en": "Blocking melee strikes reflects 35% damage back to the attacker with a 50% chance to induce hitstun.",
       "pua_icon": ""
     }
   ],

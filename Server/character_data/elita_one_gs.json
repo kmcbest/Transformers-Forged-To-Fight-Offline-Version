@@ -36,7 +36,36 @@
   "effective_crit_melee": 0.14,
   "portrait_url": "portraits/elita_one_gs_kabam.png",
   "portrait_large_url": "portraits/elita_one_gs_kabam_large.png",
-  "basic_abilities": [],
+  "basic_abilities": [
+    {
+      "title_zh": "流血",
+      "title_en": "Bleed",
+      "desc_zh": "流失的能量晶体会持续造成直接伤害。",
+      "desc_en": "Bleeding energon causes direct damage over time.",
+      "pua_icon": "E401"
+    },
+    {
+      "title_zh": "灵动反击",
+      "title_en": "Counterpunch",
+      "desc_zh": "成功闪避近战或前冲后获得反击契机，可打出硬直或眩晕。",
+      "desc_en": "Successful dodges grant counter windows to stagger or stun the opponent.",
+      "pua_icon": "E50A"
+    },
+    {
+      "title_zh": "战术封锁",
+      "title_en": "Tactical Lockdown",
+      "desc_zh": "封印对手全部特殊攻击，期间对手无法发动任何特殊技。",
+      "desc_en": "Locks down all special attacks, preventing the opponent from launching any special move.",
+      "pua_icon": "E419"
+    },
+    {
+      "title_zh": "破甲",
+      "title_en": "Armor Break",
+      "desc_zh": "移除护甲增益，降低护甲评级并提升受到攻击的伤害量。",
+      "desc_en": "Removes armor buffs and reduces armor rating, amplifying incoming damage.",
+      "pua_icon": "E516"
+    }
+  ],
   "game_abilities": [
     {
       "title_zh": "战术洞察",

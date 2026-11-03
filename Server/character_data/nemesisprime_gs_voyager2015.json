@@ -104,16 +104,25 @@
   ],
   "basic_abilities": [
     {
-      "title_zh": "暗能量",
+      "title_zh": "黑暗能量",
       "title_en": "Dark Energy",
-      "desc_zh": "增加复制增益的几率、特殊技的效果和重击的伤害。",
-      "pua_icon": ""
+      "desc_zh": "聚集黑暗能量充能，提高攻击评级并为黑暗场提供动力。",
+      "desc_en": "Harvests dark energy charges, boosting attack rating and powering dark fields.",
+      "pua_icon": "E90A"
     },
     {
-      "title_zh": "子空间脉冲克隆器",
-      "title_en": "Subspace Impulse Cloner",
-      "desc_zh": "每当对手获得近战攻击增益或装甲增益时，复仇女神就有机会复制相同的增益。",
-      "pua_icon": ""
+      "title_zh": "驱散",
+      "title_en": "Nullify",
+      "desc_zh": "消除对手身上的增益效果，使其增益立即失效。",
+      "desc_en": "Clears active buffs from the opponent, instantly ending their effects.",
+      "pua_icon": "E950"
+    },
+    {
+      "title_zh": "无法格挡",
+      "title_en": "Unblockable",
+      "desc_zh": "特定攻击无法被防御。",
+      "desc_en": "Certain attacks cannot be blocked.",
+      "pua_icon": "E41F"
     }
   ],
   "game_abilities": [

@@ -105,7 +105,29 @@
       "bonus_heroes": []
     }
   ],
-  "basic_abilities": [],
+  "basic_abilities": [
+    {
+      "title_zh": "流血",
+      "title_en": "Bleed",
+      "desc_zh": "流失的能量晶体会持续造成直接伤害。",
+      "desc_en": "Bleeding energon causes direct damage over time.",
+      "pua_icon": "E401"
+    },
+    {
+      "title_zh": "抗暴护甲",
+      "title_en": "Anti Crit Armor",
+      "desc_zh": "临时提升装甲厚度，降低受到攻击的伤害并阻止对手暴击。",
+      "desc_en": "Temporarily increases armor thickness, reducing damage from incoming attacks.",
+      "pua_icon": "E517"
+    },
+    {
+      "title_zh": "近战增益",
+      "title_en": "Melee Buff",
+      "desc_zh": "临时增加近战普通攻击与近战重击的伤害。",
+      "desc_en": "Temporarily increases damage dealt by basic and heavy melee attacks.",
+      "pua_icon": "E412"
+    }
+  ],
   "game_abilities": [
     {
       "title_zh": "护甲增益",

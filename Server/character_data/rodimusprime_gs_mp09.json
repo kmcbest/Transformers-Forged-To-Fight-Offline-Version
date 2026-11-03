@@ -97,10 +97,32 @@
   ],
   "basic_abilities": [
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "修复",
-      "pua_icon": ""
+      "title_zh": "护甲增益",
+      "title_en": "Armor Buff",
+      "desc_zh": "临时提升装甲厚度，降低受到攻击的伤害。",
+      "desc_en": "Temporarily increases armor thickness, reducing damage from incoming attacks.",
+      "pua_icon": "E517"
+    },
+    {
+      "title_zh": "破甲",
+      "title_en": "Armor Break",
+      "desc_zh": "移除护甲增益，降低护甲评级并提升受到攻击的伤害量。",
+      "desc_en": "Removes armor buffs and reduces armor rating, amplifying incoming damage.",
+      "pua_icon": "E516"
+    },
+    {
+      "title_zh": "驱散",
+      "title_en": "Nullify",
+      "desc_zh": "消除对手身上的增益效果，使其增益立即失效。",
+      "desc_en": "Clears active buffs from the opponent, instantly ending their effects.",
+      "pua_icon": "E950"
+    },
+    {
+      "title_zh": "修复",
+      "title_en": "Repair",
+      "desc_zh": "随时间推移持续修复生命值，或按受损比例回血。",
+      "desc_en": "Repairs health over time or restores a percentage of lost health.",
+      "pua_icon": "E503"
     }
   ],
   "game_abilities": [

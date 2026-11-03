@@ -108,16 +108,25 @@
   ],
   "basic_abilities": [
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "近战攻击",
-      "pua_icon": ""
+      "title_zh": "能量获取",
+      "title_en": "Power Gain",
+      "desc_zh": "持续进行的被动能量积蓄，加速特殊技能量条充盈。",
+      "desc_en": "Passively gains power over time to fill special attack bars faster.",
+      "pua_icon": "E608"
     },
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "装甲",
-      "pua_icon": ""
+      "title_zh": "近战增益",
+      "title_en": "Melee Buff",
+      "desc_zh": "临时增加近战普通攻击与近战重击的伤害。",
+      "desc_en": "Temporarily increases damage dealt by basic and heavy melee attacks.",
+      "pua_icon": "E412"
+    },
+    {
+      "title_zh": "不可阻挡",
+      "title_en": "Unstoppable",
+      "desc_zh": "进攻动作无视对手攻击冲击与受击打断。",
+      "desc_en": "Shrugs off hit reactions; attacks cannot be interrupted.",
+      "pua_icon": "E915"
     }
   ],
   "game_abilities": [

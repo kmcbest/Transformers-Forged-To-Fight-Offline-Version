@@ -61,22 +61,32 @@
   "synergies": [],
   "basic_abilities": [
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "近战闪避",
-      "pua_icon": ""
+      "title_zh": "规避",
+      "title_en": "Evade",
+      "desc_zh": "自动闪避即将到来的攻击。",
+      "desc_en": "Automatically evade incoming attack.",
+      "pua_icon": "E509"
     },
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "临界率增益",
-      "pua_icon": ""
+      "title_zh": "暴击率增益",
+      "title_en": "Crit Rate Buff",
+      "desc_zh": "临时增加攻击命中时触发暴击的几率。",
+      "desc_en": "Temporarily increases the chance of scoring critical hits.",
+      "pua_icon": "E40D"
     },
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "破盾",
-      "pua_icon": ""
+      "title_zh": "能量锁定",
+      "title_en": "Power Lock",
+      "desc_zh": "临时阻止目标从攻击或被动机制中获取任何能量。",
+      "desc_en": "Temporarily prevents the target from gaining power from any source.",
+      "pua_icon": "E523"
+    },
+    {
+      "title_zh": "破盾",
+      "title_en": "Shield Break",
+      "desc_zh": "粉碎对手的护盾力场。",
+      "desc_en": "Shatters the opponent's shield.",
+      "pua_icon": "E807"
     }
   ],
   "game_abilities": [

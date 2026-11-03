@@ -88,10 +88,25 @@
   ],
   "basic_abilities": [
     {
-      "title_zh": "白热等离子光刃",
-      "title_en": "Solar Blades",
-      "desc_zh": "近战攻击散发白热聚变辐射，刀刀见血，造成辐射撕裂 (Radiation Bleed) 与重度破甲。",
-      "pua_icon": ""
+      "title_zh": "燃烧",
+      "title_en": "Burn",
+      "desc_zh": "持续造成能量伤害。",
+      "desc_en": "Deals energy damage over time.",
+      "pua_icon": "E41D"
+    },
+    {
+      "title_zh": "近战增益",
+      "title_en": "Melee Buff",
+      "desc_zh": "临时增加近战普通攻击与近战重击的伤害。",
+      "desc_en": "Temporarily increases damage dealt by basic and heavy melee attacks.",
+      "pua_icon": "E412"
+    },
+    {
+      "title_zh": "暴击伤害增益",
+      "title_en": "Crit Damage Buff",
+      "desc_zh": "临时增加暴击命中时造成的伤害。",
+      "desc_en": "Temporarily increases the damage of critical hits.",
+      "pua_icon": "E906"
     }
   ],
   "game_abilities": [

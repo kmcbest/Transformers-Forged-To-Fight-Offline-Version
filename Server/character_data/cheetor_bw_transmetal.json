@@ -130,22 +130,32 @@
   ],
   "basic_abilities": [
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "功率增益",
-      "pua_icon": ""
+      "title_zh": "流血",
+      "title_en": "Bleed",
+      "desc_zh": "流失的能量晶体会持续造成直接伤害。",
+      "desc_en": "Bleeding energon causes direct damage over time.",
+      "pua_icon": "E401"
     },
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "回避",
-      "pua_icon": ""
+      "title_zh": "修复阻止",
+      "title_en": "Heal Block",
+      "desc_zh": "临时阻止目标回复生命值，全面抑制回血与再生效果。",
+      "desc_en": "Temporarily prevents the target from regaining health, shutting down all healing.",
+      "pua_icon": "E90C"
     },
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "出血",
-      "pua_icon": ""
+      "title_zh": "能量涌动",
+      "title_en": "Power Flow",
+      "desc_zh": "提高所有攻击与受击时所产生的能量功率。",
+      "desc_en": "Increases power generation rate from all attacks and hits taken.",
+      "pua_icon": "E608"
+    },
+    {
+      "title_zh": "能量锁定",
+      "title_en": "Power Lock",
+      "desc_zh": "临时阻止目标从攻击或被动机制中获取任何能量。",
+      "desc_en": "Temporarily prevents the target from gaining power from any source.",
+      "pua_icon": "E523"
     }
   ],
   "game_abilities": [

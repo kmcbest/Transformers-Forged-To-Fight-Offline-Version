@@ -83,7 +83,36 @@
     }
   },
   "synergies": [],
-  "basic_abilities": [],
+  "basic_abilities": [
+    {
+      "title_zh": "狂怒遗迹",
+      "title_en": "Relic of Fury",
+      "desc_zh": "显著提升攻击力，降低对手格挡精通",
+      "desc_en": "Deals energy damage over time.",
+      "pua_icon": "E91A"
+    },
+    {
+      "title_zh": "保存遗迹",
+      "title_en": "Relic of Preservation",
+      "desc_zh": "提高伤害抗性并限击对方单次攻击的伤害",
+      "desc_en": "Deals instant dark energy damage.",
+      "pua_icon": "E91A"
+    },
+    {
+      "title_zh": "修复",
+      "title_en": "Repair",
+      "desc_zh": "随时间推移持续修复生命值，或按受损比例回血。",
+      "desc_en": "Repairs health over time or restores a percentage of lost health.",
+      "pua_icon": "E90D"
+    },
+    {
+      "title_zh": "能量窃取",
+      "title_en": "Power Steal",
+      "desc_zh": "盗取对手当前储存的能量槽，并将其转移给自己。",
+      "desc_en": "Steals stored power from the opponent and transfers it to the user.",
+      "pua_icon": "E607"
+    }
+  ],
   "game_abilities": [
     {
       "title_zh": "火种源的能量",

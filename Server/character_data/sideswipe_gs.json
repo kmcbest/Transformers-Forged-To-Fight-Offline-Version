@@ -125,22 +125,32 @@
   ],
   "basic_abilities": [
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "回避",
-      "pua_icon": ""
+      "title_zh": "暴击率增益",
+      "title_en": "Crit Rate Buff",
+      "desc_zh": "临时增加攻击命中时触发暴击的几率。",
+      "desc_en": "Temporarily increases the chance of scoring critical hits.",
+      "pua_icon": "E40D"
     },
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "严重伤害",
-      "pua_icon": ""
+      "title_zh": "能量获取",
+      "title_en": "Power Gain",
+      "desc_zh": "持续进行的被动能量积蓄，加速特殊技能量条充盈。",
+      "desc_en": "Passively gains power over time to fill special attack bars faster.",
+      "pua_icon": "E608"
     },
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "暴击率增益",
-      "pua_icon": ""
+      "title_zh": "规避",
+      "title_en": "Evade",
+      "desc_zh": "自动闪避即将到来的攻击。",
+      "desc_en": "Automatically evade incoming attack.",
+      "pua_icon": "E509"
+    },
+    {
+      "title_zh": "燃烧",
+      "title_en": "Burn",
+      "desc_zh": "持续造成能量伤害。",
+      "desc_en": "Deals energy damage over time.",
+      "pua_icon": "E41D"
     }
   ],
   "game_abilities": [

@@ -94,7 +94,36 @@
       "bonus_heroes": []
     }
   ],
-  "basic_abilities": [],
+  "basic_abilities": [
+    {
+      "title_zh": "格挡反伤",
+      "title_en": "Block Damage",
+      "desc_zh": "格挡时对对手造成伤害",
+      "desc_en": "Temporarily increases the damage of critical hits.",
+      "pua_icon": "E50F"
+    },
+    {
+      "title_zh": "破甲",
+      "title_en": "Armor Break",
+      "desc_zh": "移除护甲增益，降低护甲评级并提升受到攻击的伤害量。",
+      "desc_en": "Removes armor buffs and reduces armor rating, amplifying incoming damage.",
+      "pua_icon": "E516"
+    },
+    {
+      "title_zh": "流血",
+      "title_en": "Bleed",
+      "desc_zh": "流失的能量晶体会持续造成直接伤害。",
+      "desc_en": "Bleeding energon causes direct damage over time.",
+      "pua_icon": "E401"
+    },
+    {
+      "title_zh": "修复",
+      "title_en": "Repair",
+      "desc_zh": "随时间推移持续修复生命值，或按受损比例回血。",
+      "desc_en": "Repairs health over time or restores a percentage of lost health.",
+      "pua_icon": "E503"
+    }
+  ],
   "game_abilities": [
     {
       "title_zh": "重击流血",

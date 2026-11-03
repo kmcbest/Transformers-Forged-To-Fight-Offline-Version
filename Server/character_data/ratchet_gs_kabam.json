@@ -140,16 +140,32 @@
   ],
   "basic_abilities": [
     {
-      "title_zh": "自我诊断",
-      "title_en": "Self-Diagnosis",
-      "desc_zh": "",
-      "pua_icon": "0xe60e"
-    },
-    {
       "title_zh": "震击",
       "title_en": "Shock",
-      "desc_zh": "远程攻击：",
-      "pua_icon": "0xe914"
+      "desc_zh": "持续造成电磁能量伤害。",
+      "desc_en": "Deals electrical energy damage over time.",
+      "pua_icon": "E914"
+    },
+    {
+      "title_zh": "修复",
+      "title_en": "Repair",
+      "desc_zh": "随时间推移持续修复生命值，或按受损比例回血。",
+      "desc_en": "Repairs health over time or restores a percentage of lost health.",
+      "pua_icon": "E503"
+    },
+    {
+      "title_zh": "能量获取",
+      "title_en": "Power Gain",
+      "desc_zh": "持续进行的被动能量积蓄，加速特殊技能量条充盈。",
+      "desc_en": "Passively gains power over time to fill special attack bars faster.",
+      "pua_icon": "E608"
+    },
+    {
+      "title_zh": "自我诊断",
+      "title_en": "Self-Diagnosis",
+      "desc_zh": "缓慢恢复生命与能量",
+      "desc_en": "Certain attacks cannot be blocked.",
+      "pua_icon": "E60E"
     }
   ],
   "game_abilities": [

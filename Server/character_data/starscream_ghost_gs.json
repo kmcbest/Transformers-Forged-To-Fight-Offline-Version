@@ -91,12 +91,14 @@
       "title_zh": "虚无悬浮相位",
       "title_en": "Spectral Phasing",
       "desc_zh": "全时处于悬浮鬼魂形态，所有近战与远程攻击对其有 30% 几率直接穿透虚化 (Miss)，不造成伤害。",
+      "desc_en": "Hovering perpetually in spirit form gives a 30% chance for all incoming attacks to phase harmlessly through him (Miss).",
       "pua_icon": ""
     },
     {
       "title_zh": "幽能热射线",
       "title_en": "Ethereal Null-Ray",
       "desc_zh": "射线直接作用于敌方火种，造成无视护甲与护盾的纯净真实伤害。暴击率极高。",
+      "desc_en": "Null-Rays strike the opponent Spark directly, inflicting pure True Damage bypassing all Armor and Shields with high Critical Chance.",
       "pua_icon": ""
     }
   ],

@@ -102,16 +102,18 @@
   ],
   "basic_abilities": [
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "暗能量",
-      "pua_icon": ""
+      "title_zh": "黑暗燃烧",
+      "title_en": "Dark Burn",
+      "desc_zh": "造成瞬时黑暗能量伤害。",
+      "desc_en": "Deals instant dark energy damage.",
+      "pua_icon": "E810"
     },
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "暗烧伤",
-      "pua_icon": ""
+      "title_zh": "黑暗能量",
+      "title_en": "Dark Energy",
+      "desc_zh": "聚集黑暗能量充能，提高攻击评级并为黑暗场提供动力。",
+      "desc_en": "Harvests dark energy charges, boosting attack rating and powering dark fields.",
+      "pua_icon": "E90A"
     }
   ],
   "game_abilities": [

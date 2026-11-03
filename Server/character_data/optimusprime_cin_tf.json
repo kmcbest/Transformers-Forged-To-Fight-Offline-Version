@@ -143,22 +143,32 @@
   ],
   "basic_abilities": [
     {
-      "title_zh": "装甲增益",
+      "title_zh": "护甲增益",
       "title_en": "Armor Buff",
-      "desc_zh": "降低受到的攻击伤害。",
-      "pua_icon": ""
+      "desc_zh": "临时提升装甲厚度，降低受到攻击的伤害。",
+      "desc_en": "Temporarily increases armor thickness, reducing damage from incoming attacks.",
+      "pua_icon": "E517"
     },
     {
-      "title_zh": "近战强化",
-      "title_en": "Melee Buff",
-      "desc_zh": "临时提升近战攻击的伤害。",
-      "pua_icon": ""
+      "title_zh": "流血",
+      "title_en": "Bleed",
+      "desc_zh": "流失的能量晶体会持续造成直接伤害。",
+      "desc_en": "Bleeding energon causes direct damage over time.",
+      "pua_icon": "E401"
     },
     {
-      "title_zh": "钢铁意志",
+      "title_zh": "攻击增益",
+      "title_en": "Attack Buff",
+      "desc_zh": "临时增加机体攻击评分与造成的全部伤害。",
+      "desc_en": "Temporarily increases overall attack rating and damage dealt.",
+      "pua_icon": "E406"
+    },
+    {
+      "title_zh": "意志力",
       "title_en": "Willpower",
-      "desc_zh": "流血状态下将造成的伤害按比例转化为自身生命值恢复。",
-      "pua_icon": ""
+      "desc_zh": "处于减益状态时，将受到的部分伤害转化为生命值回复。",
+      "desc_en": "Converts a portion of incoming damage into health recovery while suffering debuffs.",
+      "pua_icon": "E942"
     }
   ],
   "game_abilities": [

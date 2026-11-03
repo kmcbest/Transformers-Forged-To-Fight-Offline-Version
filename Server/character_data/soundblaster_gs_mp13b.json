@@ -106,22 +106,32 @@
   ],
   "basic_abilities": [
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "攻击增益",
-      "pua_icon": ""
+      "title_zh": "震击",
+      "title_en": "Shock",
+      "desc_zh": "持续造成电磁能量伤害。",
+      "desc_en": "Deals electrical energy damage over time.",
+      "pua_icon": "E914"
     },
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "攻击减益",
-      "pua_icon": ""
+      "title_zh": "眩晕",
+      "title_en": "Stun",
+      "desc_zh": "临时阻止目标采取任何行动。",
+      "desc_en": "Temporarily paralyzes the target, preventing all actions.",
+      "pua_icon": "E605"
     },
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "破甲",
-      "pua_icon": ""
+      "title_zh": "破甲",
+      "title_en": "Armor Break",
+      "desc_zh": "移除护甲增益，降低护甲评级并提升受到攻击的伤害量。",
+      "desc_en": "Removes armor buffs and reduces armor rating, amplifying incoming damage.",
+      "pua_icon": "E516"
+    },
+    {
+      "title_zh": "连击保护",
+      "title_en": "Combo Meter Guard",
+      "desc_zh": "临时提升装甲厚度，降低受到攻击的伤害。",
+      "desc_en": "Temporarily increases armor thickness, reducing damage from incoming attacks.",
+      "pua_icon": "E50B"
     }
   ],
   "game_abilities": [

@@ -89,7 +89,22 @@
       "bonus_heroes": []
     }
   ],
-  "basic_abilities": [],
+  "basic_abilities": [
+    {
+      "title_zh": "不可阻挡",
+      "title_en": "Unstoppable",
+      "desc_zh": "进攻动作无视对手攻击冲击与受击打断。",
+      "desc_en": "Shrugs off hit reactions; attacks cannot be interrupted.",
+      "pua_icon": "E915"
+    },
+    {
+      "title_zh": "护甲增益",
+      "title_en": "Armor Buff",
+      "desc_zh": "临时提升装甲厚度，降低受到攻击的伤害。",
+      "desc_en": "Temporarily increases armor thickness, reducing damage from incoming attacks.",
+      "pua_icon": "E517"
+    }
+  ],
   "game_abilities": [
     {
       "title_zh": "护甲增益",

@@ -97,22 +97,25 @@
   ],
   "basic_abilities": [
     {
-      "title_zh": "暗能量",
+      "title_zh": "黑暗能量",
       "title_en": "Dark Energy",
-      "desc_zh": "提高攻击评级并为暗场提供动力。",
-      "pua_icon": ""
+      "desc_zh": "聚集黑暗能量充能，提高攻击评级并为黑暗场提供动力。",
+      "desc_en": "Harvests dark energy charges, boosting attack rating and powering dark fields.",
+      "pua_icon": "E90A"
     },
     {
-      "title_zh": "暗场",
+      "title_zh": "黑暗燃烧",
+      "title_en": "Dark Burn",
+      "desc_zh": "造成瞬时黑暗能量伤害。",
+      "desc_en": "Deals instant dark energy damage.",
+      "pua_icon": "E810"
+    },
+    {
+      "title_zh": "黑暗场",
       "title_en": "Dark Field",
-      "desc_zh": "近距离的暗能量脉冲，造成黑暗灼伤，并有机会无效增益效果。",
-      "pua_icon": ""
-    },
-    {
-      "title_zh": "纪律",
-      "title_en": "Discipline",
-      "desc_zh": "该机器人经过广泛的训练，使其能够在许多情况下表现出色。",
-      "pua_icon": ""
+      "desc_zh": "施放黑暗脉冲造成伤害",
+      "desc_en": "Deals corrosive acid damage over time.",
+      "pua_icon": "E701"
     }
   ],
   "game_abilities": [

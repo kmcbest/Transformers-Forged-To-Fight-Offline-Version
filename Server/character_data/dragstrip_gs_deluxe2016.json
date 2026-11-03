@@ -109,16 +109,39 @@
   ],
   "basic_abilities": [
     {
-      "title_zh": "极速超车冲刺",
-      "title_en": "Drafting Surge",
-      "desc_zh": "冲刺重击时免疫远程子弹与飞行道具；命中对手必定撕裂装甲，施加流血 (Bleed)，在 5 秒内造成 {{var_1}} 物理伤害。",
-      "pua_icon": ""
+      "title_zh": "流血",
+      "title_en": "Bleed",
+      "desc_zh": "流失的能量晶体会持续造成直接伤害。",
+      "desc_en": "Bleeding energon causes direct damage over time.",
+      "pua_icon": "E401"
     },
     {
-      "title_zh": "不择手段",
-      "title_en": "Win at All Costs",
-      "desc_zh": "对手生命值越低，抢劫造成的近战伤害越高（最多提升 60%）。对处于流血状态的敌人近战必暴。",
-      "pua_icon": ""
+      "title_zh": "能量窃取",
+      "title_en": "Power Steal",
+      "desc_zh": "盗取对手当前储存的能量槽，并将其转移给自己。",
+      "desc_en": "Steals stored power from the opponent and transfers it to the user.",
+      "pua_icon": "E607"
+    },
+    {
+      "title_zh": "无法格挡",
+      "title_en": "Unblockable",
+      "desc_zh": "特定攻击无法被防御。",
+      "desc_en": "Certain attacks cannot be blocked.",
+      "pua_icon": "E41F"
+    },
+    {
+      "title_zh": "修复",
+      "title_en": "Repair",
+      "desc_zh": "随时间推移持续修复生命值，或按受损比例回血。",
+      "desc_en": "Repairs health over time or restores a percentage of lost health.",
+      "pua_icon": "E503"
+    },
+    {
+      "title_zh": "能量锁定",
+      "title_en": "Power Lock",
+      "desc_zh": "临时阻止目标从攻击或被动机制中获取任何能量。",
+      "desc_en": "Temporarily prevents the target from gaining power from any source.",
+      "pua_icon": "E523"
     }
   ],
   "game_abilities": [

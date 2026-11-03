@@ -72,7 +72,7 @@ def build_jetfire_abilities(base_hp: float = 28975.0, base_atk: float = 2260.0):
     appr_shield = {
         "id": "appr_jetfire_parry_shield",
         "a": "招架护盾",
-        "s": "招架护盾",
+        "s": "none",
         "l": "最接近状态格挡激活护盾，100%反弹远程攻击与重击；近战完全免伤并眩晕对手1秒",
         "ss": "招架护盾",
         "t": "\uE911",
@@ -125,7 +125,7 @@ def build_jetfire_abilities(base_hp: float = 28975.0, base_atk: float = 2260.0):
     appr_charge = {
         "id": "appr_jetfire_energy_charge",
         "a": "能量充能",
-        "s": "能量充能",
+        "s": "none",
         "l": "成功招架获得1层能量充能(上限10层)，每层提升能量功率5%",
         "ss": "能量充能",
         "t": "\uE914",
@@ -333,7 +333,7 @@ def build_jetfire_abilities(base_hp: float = 28975.0, base_atk: float = 2260.0):
     appr_hblock = {
         "id": "appr_jetfire_sp2_heal_block",
         "a": "修复阻止",
-        "s": "修复阻止",
+        "s": "none",
         "l": "阻止目标所有回血与自我修复能力",
         "ss": "修复阻止",
         "t": "\uE90C",

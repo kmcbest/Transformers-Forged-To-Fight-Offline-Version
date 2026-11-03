@@ -44,7 +44,7 @@ def build_scorponok_abilities(base_hp: float = 30000.0, base_atk: float = 2350.0
     appr_charge = {
         "id": "appr_scorponok_venom_charge",
         "a": "毒液充能",
-        "s": "毒液充能",
+        "s": "none",
         "l": "每充盈一格能量获得一层充能，每层提升20%攻击力",
         "ss": "毒液攻击提升",
         "t": "\uE40A",
@@ -95,7 +95,7 @@ def build_scorponok_abilities(base_hp: float = 30000.0, base_atk: float = 2350.0
     appr_daze1 = {
         "id": "appr_scorponok_sp1_daze",
         "a": "目眩",
-        "s": "目眩",
+        "s": "none",
         "l": "基础远程攻击60%无法命中，特技远程100%无法命中",
         "ss": "远程射击失准",
         "t": "\uE519",
@@ -146,7 +146,7 @@ def build_scorponok_abilities(base_hp: float = 30000.0, base_atk: float = 2350.0
     appr_bf = {
         "id": "appr_scorponok_venom_backfire",
         "a": "逆火",
-        "s": "逆火",
+        "s": "none",
         "l": "对手使用特殊技时，受到逆火反噬震击伤害",
         "ss": "必杀技反噬震击",
         "t": "\uE901",
@@ -228,7 +228,7 @@ def build_scorponok_abilities(base_hp: float = 30000.0, base_atk: float = 2350.0
     appr_daze3 = {
         "id": "appr_scorponok_sp3_daze",
         "a": "超长目眩",
-        "s": "超长目眩",
+        "s": "none",
         "l": "基础远程攻击60%无法命中，特技远程100%无法命中(持续26秒)",
         "ss": "远程射击失准",
         "t": "\uE519",

@@ -105,22 +105,25 @@
   ],
   "basic_abilities": [
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "精度",
-      "pua_icon": ""
+      "title_zh": "精准",
+      "title_en": "Precision",
+      "desc_zh": "增加暴击命中几率，降低对手规避能力。",
+      "desc_en": "Increases critical rate and reduce the chance of opponent evading attacks",
+      "pua_icon": "E409"
     },
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "严重伤害",
-      "pua_icon": ""
+      "title_zh": "暴击伤害增益",
+      "title_en": "Crit Damage Buff",
+      "desc_zh": "临时增加暴击命中时造成的伤害。",
+      "desc_en": "Temporarily increases the damage of critical hits.",
+      "pua_icon": "E906"
     },
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "出血",
-      "pua_icon": ""
+      "title_zh": "流血",
+      "title_en": "Bleed",
+      "desc_zh": "流失的能量晶体会持续造成直接伤害。",
+      "desc_en": "Bleeding energon causes direct damage over time.",
+      "pua_icon": "E401"
     }
   ],
   "game_abilities": [

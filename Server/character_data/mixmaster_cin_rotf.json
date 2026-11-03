@@ -124,28 +124,32 @@
   ],
   "basic_abilities": [
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "特殊伤害",
-      "pua_icon": ""
+      "title_zh": "酸液",
+      "title_en": "Acid",
+      "desc_zh": "持续造成酸性伤害。",
+      "desc_en": "Deals corrosive acid damage over time.",
+      "pua_icon": "E524"
     },
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "严重伤害",
-      "pua_icon": ""
+      "title_zh": "特殊伤害",
+      "title_en": "Special Damage",
+      "desc_zh": "增加组合连击与全部特殊攻击造成的破坏力。",
+      "desc_en": "Increases damage dealt by combo finishers and special attacks.",
+      "pua_icon": "E41C"
     },
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "酸",
-      "pua_icon": ""
+      "title_zh": "暴击伤害增益",
+      "title_en": "Crit Damage Buff",
+      "desc_zh": "临时增加暴击命中时造成的伤害。",
+      "desc_en": "Temporarily increases the damage of critical hits.",
+      "pua_icon": "E906"
     },
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "烧伤",
-      "pua_icon": ""
+      "title_zh": "燃烧",
+      "title_en": "Burn",
+      "desc_zh": "持续造成能量伤害。",
+      "desc_en": "Deals energy damage over time.",
+      "pua_icon": "E41D"
     }
   ],
   "game_abilities": [

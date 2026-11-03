@@ -114,10 +114,32 @@
   ],
   "basic_abilities": [
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "暴击率增益",
-      "pua_icon": ""
+      "title_zh": "暴击率增益",
+      "title_en": "Crit Rate Buff",
+      "desc_zh": "临时增加攻击命中时触发暴击的几率。",
+      "desc_en": "Temporarily increases the chance of scoring critical hits.",
+      "pua_icon": "E40D"
+    },
+    {
+      "title_zh": "能量燃烧",
+      "title_en": "Power Burn",
+      "desc_zh": "立即扣减对手的能量槽。",
+      "desc_en": "Instantly burns the opponent's power gauge.",
+      "pua_icon": "E607"
+    },
+    {
+      "title_zh": "能量窃取",
+      "title_en": "Power Steal",
+      "desc_zh": "盗取对手当前储存的能量槽，并将其转移给自己。",
+      "desc_en": "Steals stored power from the opponent and transfers it to the user.",
+      "pua_icon": "E607"
+    },
+    {
+      "title_zh": "修复阻止",
+      "title_en": "Heal Block",
+      "desc_zh": "临时阻止目标回复生命值，全面抑制回血与再生效果。",
+      "desc_en": "Temporarily prevents the target from regaining health, shutting down all healing.",
+      "pua_icon": "E90C"
     }
   ],
   "game_abilities": [

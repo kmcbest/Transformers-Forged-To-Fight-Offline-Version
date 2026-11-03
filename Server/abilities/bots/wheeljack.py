@@ -159,7 +159,7 @@ def build_wheeljack_abilities(base_hp: float = 32402.0, base_atk: float = 2306.0
     appr_reroll = {
         "id": "appr_wheeljack_sp2_reroll",
         "a": "升级刷新",
-        "s": "升级刷新",
+        "s": "none",
         "l": "随机替换所有已获得的科技升级类型",
         "ss": "升级刷新",
         "t": "\uE950",
@@ -214,7 +214,7 @@ def build_wheeljack_abilities(base_hp: float = 32402.0, base_atk: float = 2306.0
     appr_align = {
         "id": "appr_wheeljack_sp3_align",
         "a": "升级对齐",
-        "s": "升级对齐",
+        "s": "none",
         "l": "将所有升级转变为首个升级相同类型并触发升级成功",
         "ss": "升级对齐",
         "t": "\uE950",

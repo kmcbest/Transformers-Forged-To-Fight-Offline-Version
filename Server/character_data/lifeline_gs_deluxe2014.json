@@ -88,16 +88,18 @@
   ],
   "basic_abilities": [
     {
-      "title_zh": "纳米修复光束",
-      "title_en": "Nano Repair Beam",
-      "desc_zh": "远程射击与暴击命中时为自身累积纳米修复充能，暴击时对敌方施加触电 (Shock)，造成持续能量伤害。",
-      "pua_icon": ""
+      "title_zh": "注射",
+      "title_en": "Injection",
+      "desc_zh": "",
+      "desc_en": "Ranged attacks and Critical Hits generate Nano Repair charges. Critical Hits inflict Shock on the opponent dealing Energy Damage.",
+      "pua_icon": "E939"
     },
     {
-      "title_zh": "应急纳米力场",
-      "title_en": "Emergency Nano Shield",
-      "desc_zh": "当单次受到超过自身生命上限 10% 的伤害时，立刻生成吸收相当于 {{var_1}} 伤害的纳米护盾，持续 6 秒。",
-      "pua_icon": ""
+      "title_zh": "生命传递",
+      "title_en": "Life Transfer",
+      "desc_zh": "",
+      "desc_en": "Taking damage exceeding 10% of Max Health instantly activates a Nano Shield absorbing {{var_1}} damage for 6 seconds.",
+      "pua_icon": "E917"
     }
   ],
   "game_abilities": [

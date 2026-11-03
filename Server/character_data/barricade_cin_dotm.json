@@ -101,22 +101,32 @@
   ],
   "basic_abilities": [
     {
-      "title_zh": "暴击伤害",
-      "title_en": "Crit Damage",
-      "desc_zh": "严重伤害 {{var_1}}",
-      "pua_icon": "0xe906"
-    },
-    {
-      "title_zh": "逆火",
-      "title_en": "Backfire",
-      "desc_zh": "",
-      "pua_icon": "0xe901"
+      "title_zh": "规避",
+      "title_en": "Evade",
+      "desc_zh": "自动闪避即将到来的攻击。",
+      "desc_en": "Automatically evade incoming attack.",
+      "pua_icon": "E509"
     },
     {
       "title_zh": "能量窃取",
       "title_en": "Power Steal",
-      "desc_zh": "",
-      "pua_icon": "0xe607"
+      "desc_zh": "盗取对手当前储存的能量槽，并将其转移给自己。",
+      "desc_en": "Steals stored power from the opponent and transfers it to the user.",
+      "pua_icon": "E607"
+    },
+    {
+      "title_zh": "暴击率增益",
+      "title_en": "Crit Rate Buff",
+      "desc_zh": "临时增加攻击命中时触发暴击的几率。",
+      "desc_en": "Temporarily increases the chance of scoring critical hits.",
+      "pua_icon": "E40D"
+    },
+    {
+      "title_zh": "逆火",
+      "title_en": "Backfire",
+      "desc_zh": "对手激活特殊攻击时受到直接伤害。",
+      "desc_en": "Causes backfire recoil when the opponent activates a special attack, dealing damage.",
+      "pua_icon": "E901"
     }
   ],
   "game_abilities": [

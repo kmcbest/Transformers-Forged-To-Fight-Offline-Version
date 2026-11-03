@@ -114,7 +114,7 @@ def build_waspinator_abilities(base_hp: float = 29598.0, base_atk: float = 2191.
     appr_sp_dmg = {
         "id": "appr_waspinator_sp_dmg",
         "a": "特殊伤害",
-        "s": "特殊伤害",
+        "s": "none",
         "l": "生命值低于25%时获得30%特殊技伤害加成",
         "ss": "特殊伤害",
         "t": "\uE41C",
@@ -222,7 +222,7 @@ def build_waspinator_abilities(base_hp: float = 29598.0, base_atk: float = 2191.
     appr_anti_evade = {
         "id": "appr_waspinator_anti_evade",
         "a": "规避克制",
-        "s": "规避克制",
+        "s": "none",
         "l": "降低对手规避几率30%",
         "ss": "规避克制",
         "t": "\uE92A",

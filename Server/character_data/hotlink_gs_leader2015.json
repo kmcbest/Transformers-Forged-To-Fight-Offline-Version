@@ -88,10 +88,18 @@
   ],
   "basic_abilities": [
     {
-      "title_zh": "背负式重型喷火器",
-      "title_en": "Twin Flamethrowers",
-      "desc_zh": "重击喷出猛烈烈焰火海，击退敌人并施加持续燃烧。自身完全免疫燃烧效果。",
-      "pua_icon": ""
+      "title_zh": "燃烧",
+      "title_en": "Burn",
+      "desc_zh": "持续造成能量伤害。",
+      "desc_en": "Deals energy damage over time.",
+      "pua_icon": "E41D"
+    },
+    {
+      "title_zh": "不可阻挡",
+      "title_en": "Unstoppable",
+      "desc_zh": "进攻动作无视对手攻击冲击与受击打断。",
+      "desc_en": "Shrugs off hit reactions; attacks cannot be interrupted.",
+      "pua_icon": "E915"
     }
   ],
   "game_abilities": [

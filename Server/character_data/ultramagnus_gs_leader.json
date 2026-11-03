@@ -128,16 +128,32 @@
   ],
   "basic_abilities": [
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "阻力转移",
-      "pua_icon": ""
+      "title_zh": "抗性转换",
+      "title_en": "Resistance Switch",
+      "desc_zh": "提升抗性，整体降低结算伤害。",
+      "desc_en": "Increases the resistance and reduces the calculated damage.",
+      "pua_icon": "E507"
     },
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "破甲",
-      "pua_icon": ""
+      "title_zh": "破甲",
+      "title_en": "Armor Break",
+      "desc_zh": "移除护甲增益，降低护甲评级并提升受到攻击的伤害量。",
+      "desc_en": "Removes armor buffs and reduces armor rating, amplifying incoming damage.",
+      "pua_icon": "E516"
+    },
+    {
+      "title_zh": "燃烧",
+      "title_en": "Burn",
+      "desc_zh": "持续造成能量伤害。",
+      "desc_en": "Deals energy damage over time.",
+      "pua_icon": "E41D"
+    },
+    {
+      "title_zh": "驱散",
+      "title_en": "Nullify",
+      "desc_zh": "消除对手身上的增益效果，使其增益立即失效。",
+      "desc_en": "Clears active buffs from the opponent, instantly ending their effects.",
+      "pua_icon": "E950"
     }
   ],
   "game_abilities": [

@@ -104,22 +104,25 @@
   ],
   "basic_abilities": [
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "放大",
-      "pua_icon": ""
+      "title_zh": "放大",
+      "title_en": "Amp",
+      "desc_zh": "增加远程攻击伤害",
+      "desc_en": "Amplify",
+      "pua_icon": "E118"
     },
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "干扰",
-      "pua_icon": ""
+      "title_zh": "干扰",
+      "title_en": "Interference",
+      "desc_zh": "降低对方远程伤害与射速",
+      "desc_en": "Dazes the opponent, causing their basic and special ranged attacks to miss.",
+      "pua_icon": "E519"
     },
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "屏蔽",
-      "pua_icon": ""
+      "title_zh": "护盾",
+      "title_en": "Shield",
+      "desc_zh": "展开力场吸收来袭伤害，优先于生命值消耗。",
+      "desc_en": "Deploys a forcefield that absorbs incoming damage before reducing health.",
+      "pua_icon": "E515"
     }
   ],
   "game_abilities": [

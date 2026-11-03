@@ -113,16 +113,18 @@
   ],
   "basic_abilities": [
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "势不可挡",
-      "pua_icon": ""
+      "title_zh": "不可阻挡",
+      "title_en": "Unstoppable",
+      "desc_zh": "进攻动作无视对手攻击冲击与受击打断。",
+      "desc_en": "Shrugs off hit reactions; attacks cannot be interrupted.",
+      "pua_icon": "E915"
     },
     {
-      "title_zh": "远程强化",
+      "title_zh": "远程增益",
       "title_en": "Ranged Buff",
-      "desc_zh": "提升远程攻击造成的伤害。",
-      "pua_icon": ""
+      "desc_zh": "临时增加远程攻击的速度、射击频率与伤害。",
+      "desc_en": "Temporarily increases ranged attack speed and damage.",
+      "pua_icon": "E41B"
     }
   ],
   "game_abilities": [

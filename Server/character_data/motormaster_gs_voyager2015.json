@@ -129,16 +129,32 @@
   ],
   "basic_abilities": [
     {
-      "title_zh": "冲压",
-      "title_en": "Ramming",
-      "desc_zh": "暂时降低对手的攻击力",
-      "pua_icon": "0xe916"
-    },
-    {
       "title_zh": "不可阻挡",
       "title_en": "Unstoppable",
-      "desc_zh": "角色行动不会被对手攻击打断",
-      "pua_icon": "0xe915"
+      "desc_zh": "进攻动作无视对手攻击冲击与受击打断。",
+      "desc_en": "Shrugs off hit reactions; attacks cannot be interrupted.",
+      "pua_icon": "E915"
+    },
+    {
+      "title_zh": "破甲",
+      "title_en": "Armor Break",
+      "desc_zh": "移除护甲增益，降低护甲评级并提升受到攻击的伤害量。",
+      "desc_en": "Removes armor buffs and reduces armor rating, amplifying incoming damage.",
+      "pua_icon": "E516"
+    },
+    {
+      "title_zh": "能量功率减益",
+      "title_en": "Power Rate Debuff",
+      "desc_zh": "降低对手能量获取的功率",
+      "desc_en": "Drains a percentage of the opponent's power gauge over time.",
+      "pua_icon": "E607"
+    },
+    {
+      "title_zh": "攻击减益",
+      "title_en": "Attack Debuff",
+      "desc_zh": "削弱机体动力，临时减少对手攻击评分与输出。",
+      "desc_en": "Temporarily reduces the opponent's attack rating and damage output.",
+      "pua_icon": "E916"
     }
   ],
   "game_abilities": [

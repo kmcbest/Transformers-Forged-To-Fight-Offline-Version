@@ -93,12 +93,14 @@
       "title_zh": "正义圣剑格挡反击",
       "title_en": "Parry of Justice",
       "desc_zh": "每次完美格挡对手近战攻击，必定发动“破剑反击”，打断对手攻击链并造成硬直与流血。",
+      "desc_en": "Perfect blocks trigger a Parry Counter, interrupting the opponent combo and causing heavy hitstun and Bleed.",
       "pua_icon": ""
     },
     {
       "title_zh": "剑圣之姿",
       "title_en": "Way of the Swordmaster",
       "desc_zh": "近战连击每次命中积累一层“正义之气”（最多 10 层），每层提供 +{{var_1}} 攻击力与破甲。",
+      "desc_en": "Melee strikes generate Spirit of Justice stacks (max 10), each granting +{{var_1}} Attack and Armor Piercing.",
       "pua_icon": ""
     }
   ],

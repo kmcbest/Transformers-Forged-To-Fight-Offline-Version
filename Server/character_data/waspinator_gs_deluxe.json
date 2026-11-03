@@ -133,16 +133,25 @@
   ],
   "basic_abilities": [
     {
-      "title_zh": "抗性削弱",
+      "title_zh": "抗性减益",
       "title_en": "Resistance Debuff",
-      "desc_zh": "降低敌方对特定攻击类型的抗性。",
-      "pua_icon": ""
+      "desc_zh": "降低目标抗性评级，放大其承受的所有伤害。",
+      "desc_en": "Reduces target resistance rating, amplifying all incoming damage.",
+      "pua_icon": "E60A"
     },
     {
-      "title_zh": "特殊技增伤",
+      "title_zh": "远程增益",
+      "title_en": "Ranged Buff",
+      "desc_zh": "临时增加远程攻击的速度、射击频率与伤害。",
+      "desc_en": "Temporarily increases ranged attack speed and damage.",
+      "pua_icon": "E41B"
+    },
+    {
+      "title_zh": "特殊伤害",
       "title_en": "Special Damage",
-      "desc_zh": "提升特殊技造成的伤害。",
-      "pua_icon": ""
+      "desc_zh": "增加组合连击与全部特殊攻击造成的破坏力。",
+      "desc_en": "Increases damage dealt by combo finishers and special attacks.",
+      "pua_icon": "E41C"
     }
   ],
   "game_abilities": [

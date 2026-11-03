@@ -110,16 +110,18 @@
   ],
   "basic_abilities": [
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "地狱弹药",
-      "pua_icon": ""
+      "title_zh": "地狱弹药",
+      "title_en": "Inferno Ammo",
+      "desc_zh": "远程暴击命中将施加燃烧，并随时间推移造成伤\n害。",
+      "desc_en": "Deals energy damage over time.",
+      "pua_icon": "E41D"
     },
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "精密弹药",
-      "pua_icon": ""
+      "title_zh": "精准弹药",
+      "title_en": "Precision Ammo",
+      "desc_zh": "远程攻击拥有更高暴击几率并且不能被规避。",
+      "desc_en": "Temporarily increases the chance of scoring critical hits.",
+      "pua_icon": "E40D"
     }
   ],
   "game_abilities": [

@@ -87,16 +87,18 @@
   ],
   "basic_abilities": [
     {
-      "title_zh": "玻璃瓦斯重炮",
-      "title_en": "Glass Gas Projector",
-      "desc_zh": "远程攻击发射独特的玻璃瓦斯，使对手进入“脆化” (Brittle) 状态，对手护甲瞬间归零，受到的暴击伤害提升 50%。",
-      "pua_icon": ""
+      "title_zh": "玻璃瓦斯",
+      "title_en": "Glass Gas",
+      "desc_zh": "降低敌人的格挡精通和暴击抗性",
+      "desc_en": "Ranged attacks coat targets in Glass Gas, inflicting Brittle. The target Armor is reduced to 0 and incoming Critical Damage increases by 50%.",
+      "pua_icon": "E524"
     },
     {
-      "title_zh": "勇往直前",
-      "title_en": "First to Fight",
-      "desc_zh": "面对体型大于自身的敌人时，攻击力额外提升 30%，且免疫任何嘲讽与恐惧效果。",
-      "pua_icon": ""
+      "title_zh": "特殊伤害",
+      "title_en": "Special Damage",
+      "desc_zh": "增加组合连击与全部特殊攻击造成的破坏力。",
+      "desc_en": "Increases damage dealt by combo finishers and special attacks.",
+      "pua_icon": "E41C"
     }
   ],
   "game_abilities": [

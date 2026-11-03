@@ -213,22 +213,25 @@
   ],
   "basic_abilities": [
     {
-      "title_zh": "装甲增益",
-      "title_en": "Armor Buff",
-      "desc_zh": "降低受到的攻击伤害。",
-      "pua_icon": ""
-    },
-    {
-      "title_zh": "变形重击",
-      "title_en": "Roll Out",
-      "desc_zh": "重击冲锋时提升攻击力与速度。",
-      "pua_icon": ""
-    },
-    {
       "title_zh": "破甲",
       "title_en": "Armor Break",
-      "desc_zh": "施加破甲，降低敌方装甲防御。",
-      "pua_icon": ""
+      "desc_zh": "移除护甲增益，降低护甲评级并提升受到攻击的伤害量。",
+      "desc_en": "Removes armor buffs and reduces armor rating, amplifying incoming damage.",
+      "pua_icon": "E516"
+    },
+    {
+      "title_zh": "护甲增益",
+      "title_en": "Armor Buff",
+      "desc_zh": "临时提升装甲厚度，降低受到攻击的伤害。",
+      "desc_en": "Temporarily increases armor thickness, reducing damage from incoming attacks.",
+      "pua_icon": "E517"
+    },
+    {
+      "title_zh": "攻击增益",
+      "title_en": "Attack Buff",
+      "desc_zh": "临时增加机体攻击评分与造成的全部伤害。",
+      "desc_en": "Temporarily increases overall attack rating and damage dealt.",
+      "pua_icon": "E406"
     }
   ],
   "game_abilities": [

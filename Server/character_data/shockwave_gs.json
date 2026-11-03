@@ -183,22 +183,25 @@
   ],
   "basic_abilities": [
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "震惊",
-      "pua_icon": ""
+      "title_zh": "震击",
+      "title_en": "Shock",
+      "desc_zh": "持续造成电磁能量伤害。",
+      "desc_en": "Deals electrical energy damage over time.",
+      "pua_icon": "E914"
     },
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "漏电",
-      "pua_icon": ""
+      "title_zh": "能量流失",
+      "title_en": "Power Leak",
+      "desc_zh": "随时间推移持续扣减对手一定比例的能量槽。",
+      "desc_en": "Drains a percentage of the opponent's power gauge over time.",
+      "pua_icon": "E607"
     },
     {
-      "title_zh": "基础特长",
-      "title_en": "Basic Abilities",
-      "desc_zh": "修复块",
-      "pua_icon": ""
+      "title_zh": "修复阻止",
+      "title_en": "Heal Block",
+      "desc_zh": "临时阻止目标回复生命值，全面抑制回血与再生效果。",
+      "desc_en": "Temporarily prevents the target from regaining health, shutting down all healing.",
+      "pua_icon": "E90C"
     }
   ],
   "game_abilities": [

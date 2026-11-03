@@ -92,20 +92,23 @@
     {
       "title_zh": "恐惧",
       "title_en": "Fear",
-      "desc_zh": "背对挽歌或逃跑时对敌方施加恐惧。",
-      "pua_icon": ""
+      "desc_zh": "使敌人因恐惧造成多种负面效果",
+      "desc_en": "Intimidates fleeing opponents, inflicting multiple debuffs.",
+      "pua_icon": "E907"
     },
     {
       "title_zh": "流血",
       "title_en": "Bleed",
-      "desc_zh": "随着时间的推移，流血的能量会造成直接伤害。",
-      "pua_icon": ""
+      "desc_zh": "流失的能量晶体会持续造成直接伤害。",
+      "desc_en": "Bleeding energon causes direct damage over time.",
+      "pua_icon": "E401"
     },
     {
-      "title_zh": "反闪避",
-      "title_en": "Anti-Evade",
-      "desc_zh": "敌方闪避动作受到惩罚与抑制。",
-      "pua_icon": ""
+      "title_zh": "反规避",
+      "title_en": "Anti Evade",
+      "desc_zh": "敌人因躲闪而受到惩罚",
+      "desc_en": "Temporarily reduces the opponent's attack rating and damage output.",
+      "pua_icon": "E916"
     }
   ],
   "game_abilities": [

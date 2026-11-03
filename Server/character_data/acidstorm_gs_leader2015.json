@@ -93,12 +93,14 @@
       "title_zh": "强酸喷射",
       "title_en": "Corrosive Jet",
       "desc_zh": "远程攻击与重击向敌人喷射强腐蚀性酸液，施加强酸 (Acid Burn)，每秒溶解敌方护甲并造成持续伤害。",
+      "desc_en": "Ranged and Heavy Attacks spray corrosive acid, inflicting Acid Burn which steadily melts enemy Armor and deals damage over time.",
       "pua_icon": ""
     },
     {
       "title_zh": "酸蚀外壳",
       "title_en": "Acidic Plating",
       "desc_zh": "受到近战物理攻击时，25% 几率将强酸飞溅至攻击者身上，削减其护甲评级 {{var_1}}。",
+      "desc_en": "Taking physical melee hits has a 25% chance to splash acid onto the attacker, reducing their Armor by {{var_1}}.",
       "pua_icon": ""
     }
   ],

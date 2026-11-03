@@ -88,10 +88,25 @@
   ],
   "basic_abilities": [
     {
-      "title_zh": "网络干扰射击",
-      "title_en": "Data Scramble Shot",
-      "desc_zh": "远程射击注入数据木马，使敌人无法使用特殊技 3 秒，并扰乱其能量条。",
-      "pua_icon": ""
+      "title_zh": "护盾",
+      "title_en": "Shield",
+      "desc_zh": "展开力场吸收来袭伤害，优先于生命值消耗。",
+      "desc_en": "Deploys a forcefield that absorbs incoming damage before reducing health.",
+      "pua_icon": "E515"
+    },
+    {
+      "title_zh": "能量锁定",
+      "title_en": "Power Lock",
+      "desc_zh": "临时阻止目标从攻击或被动机制中获取任何能量。",
+      "desc_en": "Temporarily prevents the target from gaining power from any source.",
+      "pua_icon": "E523"
+    },
+    {
+      "title_zh": "能量窃取",
+      "title_en": "Power Steal",
+      "desc_zh": "盗取对手当前储存的能量槽，并将其转移给自己。",
+      "desc_en": "Steals stored power from the opponent and transfers it to the user.",
+      "pua_icon": "E607"
     }
   ],
   "game_abilities": [

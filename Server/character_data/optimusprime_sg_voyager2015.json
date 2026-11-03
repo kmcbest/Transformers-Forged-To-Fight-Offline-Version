@@ -88,16 +88,25 @@
   ],
   "basic_abilities": [
     {
-      "title_zh": "暴君重拳",
-      "title_en": "Tyrant Fist",
-      "desc_zh": "重击必定造成重度眩晕 (Stun) 与撕裂流血；近战对攻极其霸道。",
-      "pua_icon": ""
+      "title_zh": "减益循环",
+      "title_en": "Debuff Cycle",
+      "desc_zh": "根据受到的减益，向对手施加不同的减益",
+      "desc_en": "Heavy Attacks guarantee heavy Stun and deep Bleed, dominating close-range trades.",
+      "pua_icon": "E936"
     },
     {
-      "title_zh": "嗜血狂暴",
-      "title_en": "Bloodthirsty Rush",
-      "desc_zh": "敌人身上的每一层流血都使倾天柱获得 +15% 攻击力与吸血效果（攻击命中吸取生命）。",
-      "pua_icon": ""
+      "title_zh": "减益控制",
+      "title_en": "Debuff Control",
+      "desc_zh": "减轻受到伤害减益的强度",
+      "desc_en": "Temporarily prevents the target from regaining health, shutting down all healing.",
+      "pua_icon": "E407"
+    },
+    {
+      "title_zh": "攻击增益",
+      "title_en": "Attack Buff",
+      "desc_zh": "临时增加机体攻击评分与造成的全部伤害。",
+      "desc_en": "Temporarily increases overall attack rating and damage dealt.",
+      "pua_icon": "E406"
     }
   ],
   "game_abilities": [
