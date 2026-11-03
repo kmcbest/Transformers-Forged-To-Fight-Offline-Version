@@ -384,6 +384,11 @@ def _init_from_json_files(json_files: List[Path]):
             _BOT_SYNERGY_IDS[bot_id].append(syn_id)
             clean_desc = _clean_comment(syn.get("desc_zh", ""))
             syn_title = syn.get("title_zh") or syn.get("title_en")
+            if not syn_title:
+                if "-" in clean_desc:
+                    syn_title = clean_desc.split("-")[0].replace("*", "").strip()
+                if not syn_title:
+                    syn_title = "协同加成"
             tex = _hex_to_pua_char(syn.get("pua_icon", "")) or _choose_synergy_icon(syn_title, clean_desc)
             _SYNERGY_BONUSES[syn_id] = {
                 "id": syn_id,

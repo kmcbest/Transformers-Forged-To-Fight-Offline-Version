@@ -275,54 +275,59 @@ def patch_moves_assetbundle(moves_bundle_data: bytes, out_dir: Path) -> None:
 
 
 
-# Authentic sword-holding grip values from Frontend_Sword_idle (right hand 75..94)
-# Mirrored symmetrically to left hand (55..74)
-DUAL_SWORD_GRIP = {
-    # Left Hand (mirrored from right)
-    55: 0.0663,   # Left Hand.Thumb.1 Stretched
-    56: -0.3871,  # Left Hand.Thumb.Spread
-    57: 0.0682,   # Left Hand.Thumb.2 Stretched
-    58: 0.0713,   # Left Hand.Thumb.3 Stretched
-    59: -0.1021,  # Left Hand.Index.1 Stretched
-    60: 1.9131,   # Left Hand.Index.Spread
-    61: -0.6325,  # Left Hand.Index.2 Stretched
-    62: 0.2883,   # Left Hand.Index.3 Stretched
-    63: 0.0123,   # Left Hand.Middle.1 Stretched
-    64: 0.8074,   # Left Hand.Middle.Spread
-    65: -0.1119,  # Left Hand.Middle.2 Stretched
-    66: -0.0972,  # Left Hand.Middle.3 Stretched
-    67: 0.2078,   # Left Hand.Ring.1 Stretched
-    68: -0.0011,  # Left Hand.Ring.Spread
-    69: 1.2425,   # Left Hand.Ring.2 Stretched
-    70: -0.6559,  # Left Hand.Ring.3 Stretched
-    71: 0.2797,   # Left Hand.Little.1 Stretched
-    72: 0.0511,   # Left Hand.Little.Spread
-    73: 0.8165,   # Left Hand.Little.2 Stretched
-    74: -0.1576,  # Left Hand.Little.3 Stretched
-    # Right Hand
-    75: 0.0663,   # Right Hand.Thumb.1 Stretched
-    76: -0.3871,  # Right Hand.Thumb.Spread
-    77: 0.0682,   # Right Hand.Thumb.2 Stretched
-    78: 0.0713,   # Right Hand.Thumb.3 Stretched
-    79: -0.1021,  # Right Hand.Index.1 Stretched
-    80: 1.9131,   # Right Hand.Index.Spread
-    81: -0.6325,  # Right Hand.Index.2 Stretched
-    82: 0.2883,   # Right Hand.Index.3 Stretched
-    83: 0.0123,   # Right Hand.Middle.1 Stretched
-    84: 0.8074,   # Right Hand.Middle.Spread
-    85: -0.1119,  # Right Hand.Middle.2 Stretched
-    86: -0.0972,  # Right Hand.Middle.3 Stretched
-    87: 0.2078,   # Right Hand.Ring.1 Stretched
-    88: -0.0011,  # Right Hand.Ring.Spread
-    89: 1.2425,   # Right Hand.Ring.2 Stretched
-    90: -0.6559,  # Right Hand.Ring.3 Stretched
-    91: 0.2797,   # Right Hand.Little.1 Stretched
-    92: 0.0511,   # Right Hand.Little.Spread
-    93: 0.8165,   # Right Hand.Little.2 Stretched
-    94: -0.1576,  # Right Hand.Little.3 Stretched
+# Authentic dual-sword tight grip: strictly covers ONLY the 40 Humanoid finger muscles (55..94)
+# Left Hand Fingers (55..74) & Right Hand Fingers (75..94)
+# NEVER touches 0..54 (Spine, Legs, Feet, Shoulders, Arms, Forearms) or 95+ (Transforms).
+LIFELINE_DUAL_SWORD_GRIP = {
+    # Left Hand Fingers (55..74)
+    55: 0.50,   # Left Hand.Thumb.1 Stretched
+    56: -0.25,  # Left Hand.Thumb.Spread
+    57: 0.50,   # Left Hand.Thumb.2 Stretched
+    58: 0.50,   # Left Hand.Thumb.3 Stretched
+    59: 0.65,   # Left Hand.Index.1 Stretched
+    60: 0.00,   # Left Hand.Index.Spread
+    61: 0.75,   # Left Hand.Index.2 Stretched
+    62: 0.70,   # Left Hand.Index.3 Stretched
+    63: 0.70,   # Left Hand.Middle.1 Stretched
+    64: 0.00,   # Left Hand.Middle.Spread
+    65: 0.80,   # Left Hand.Middle.2 Stretched
+    66: 0.75,   # Left Hand.Middle.3 Stretched
+    67: 0.75,   # Left Hand.Ring.1 Stretched
+    68: 0.00,   # Left Hand.Ring.Spread
+    69: 0.85,   # Left Hand.Ring.2 Stretched
+    70: 0.80,   # Left Hand.Ring.3 Stretched
+    71: 0.80,   # Left Hand.Little.1 Stretched
+    72: 0.00,   # Left Hand.Little.Spread
+    73: 0.85,   # Left Hand.Little.2 Stretched
+    74: 0.80,   # Left Hand.Little.3 Stretched
+
+    # Right Hand Fingers (75..94)
+    75: 0.50,   # Right Hand.Thumb.1 Stretched
+    76: -0.25,  # Right Hand.Thumb.Spread
+    77: 0.50,   # Right Hand.Thumb.2 Stretched
+    78: 0.50,   # Right Hand.Thumb.3 Stretched
+    79: 0.65,   # Right Hand.Index.1 Stretched
+    80: 0.00,   # Right Hand.Index.Spread
+    81: 0.75,   # Right Hand.Index.2 Stretched
+    82: 0.70,   # Right Hand.Index.3 Stretched
+    83: 0.70,   # Right Hand.Middle.1 Stretched
+    84: 0.00,   # Right Hand.Middle.Spread
+    85: 0.80,   # Right Hand.Middle.2 Stretched
+    86: 0.75,   # Right Hand.Middle.3 Stretched
+    87: 0.75,   # Right Hand.Ring.1 Stretched
+    88: 0.00,   # Right Hand.Ring.Spread
+    89: 0.85,   # Right Hand.Ring.2 Stretched
+    90: 0.80,   # Right Hand.Ring.3 Stretched
+    91: 0.80,   # Right Hand.Little.1 Stretched
+    92: 0.00,   # Right Hand.Little.Spread
+    93: 0.85,   # Right Hand.Little.2 Stretched
+    94: 0.80,   # Right Hand.Little.3 Stretched
 }
 
-def inject_dual_sword_grip_into_clip(clip_tree):
+def inject_dual_sword_grip_into_clip(clip_tree, finger_map=None):
+    if finger_map is None:
+        finger_map = LIFELINE_DUAL_SWORD_GRIP
+
     bind = clip_tree.get("m_ClipBindingConstant", {}).get("genericBindings", [])
     mc = clip_tree.get("m_MuscleClip", {})
     clip_data = mc.get("m_Clip", {}).get("data", {})
@@ -333,39 +338,36 @@ def inject_dual_sword_grip_into_clip(clip_tree):
     
     num_s = streamed.get("curveCount", 0)
     num_d = dense.get("m_CurveCount", 0)
+    frames_d = dense.get("m_FrameCount", 0)
+    
     s_data = list(streamed.get("data", []))
     c_data = list(constant.get("data", []))
+    d_samples = np.array(dense.get("m_SampleArray", []), dtype=np.float32).reshape((frames_d, num_d)) if num_d > 0 and frames_d > 0 else None
     
-    frames_d = dense.get("m_FrameCount", 0)
-    if num_d > 0 and frames_d > 0:
-        d_samples = np.array(dense.get("m_SampleArray", []), dtype=np.float32).reshape((frames_d, num_d))
-    else:
-        d_samples = None
-        
     deltas = mc.get("m_ValueArrayDelta", [])
     modified_count = 0
     
+    # 1. Update deltas and dense/constant for finger bindings ONLY (53..72 and 82..101)
     for b_idx, b in enumerate(bind):
         attr = b.get("attribute")
-        if attr in DUAL_SWORD_GRIP:
-            val = float(DUAL_SWORD_GRIP[attr])
+        if attr in finger_map:
+            val = float(finger_map[attr])
             if b_idx < len(deltas):
                 deltas[b_idx]["m_Start"] = val
                 deltas[b_idx]["m_Stop"] = val
                 
-            if b_idx < num_s:
-                pass
-            elif b_idx < num_s + num_d:
+            if num_s <= b_idx < num_s + num_d:
                 d_idx = b_idx - num_s
                 if d_samples is not None:
                     d_samples[:, d_idx] = val
                     modified_count += 1
-            else:
+            elif b_idx >= num_s + num_d:
                 c_idx = b_idx - num_s - num_d
                 if c_idx < len(c_data):
                     c_data[c_idx] = val
                     modified_count += 1
                     
+    # 2. Update streamed keys for finger bindings ONLY
     if num_s > 0 and len(s_data) > 0:
         pos = 0
         while pos < len(s_data):
@@ -375,12 +377,11 @@ def inject_dual_sword_grip_into_clip(clip_tree):
                 c_idx = s_data[kp]
                 if c_idx < len(bind):
                     attr = bind[c_idx].get("attribute")
-                    if attr in DUAL_SWORD_GRIP:
-                        val = float(DUAL_SWORD_GRIP[attr])
+                    if attr in finger_map:
+                        val = float(finger_map[attr])
                         val_u32 = struct.unpack("<I", struct.pack("<f", val))[0]
-                        s_data[kp+1] = 0
-                        s_data[kp+2] = 0
-                        s_data[kp+3] = 0
+                        s_data[kp+1] = 0  # inSlope
+                        s_data[kp+2] = 0  # outSlope
                         s_data[kp+4] = val_u32
                         modified_count += 1
             pos += 2 + num_keys * 5
@@ -771,23 +772,14 @@ def generate_lifeline_assets(apk_path: str | None = None, output_dir: str = "ass
             obj.save_typetree(tree)
             print("[+] Successfully rewired fight AnimatorOverrideController with stitched moveset and sword victory overrides!")
 
-        # 2c. Inject true dual-sword grip into idle AnimationClips (Mecanim Streamed/Dense/Constant)
-        elif obj.type.name == "AnimationClip":
-            tree = obj.read_typetree()
-            cname = tree.get("m_Name", "")
-            if cname in ["TeamSelect_Female_idle", "Prefight_Female_idle"]:
-                injected = inject_dual_sword_grip_into_clip(tree)
-                replace_str_in_tree(tree, old_cab, new_cab)
-                obj.save_typetree(tree)
-                print(f"[+] Successfully injected dual sword grip into {cname} ({injected} runtime keys modified)")
 
         # 3b. Living World AnimatorOverrideController (LW AOC)
         elif obj.path_id == -3591652285783644433 and obj.type.name == "AnimatorOverrideController":
             tree = obj.read_typetree()
             clips = tree.get("m_Clips", [])
             if len(clips) > 1:
-                # Slot 1 is the Victory clip in Living World
-                clips[1]["m_OverrideClip"] = {"m_FileID": 3, "m_PathID": -3196363985734342445}
+                # Slot 1 is the Victory clip in Living World (keep clean female char_victory, NOT comical sword_male_victory!)
+                clips[1]["m_OverrideClip"] = {"m_FileID": 3, "m_PathID": 3642901185112467297}
             if len(clips) > 3:
                 # Slot 3 is the Showroom / Character Detail Screen Idle
                 # Option B: Use patched TeamSelect_Female_idle (FileID 0, PathID 807675994726628539)
@@ -797,10 +789,10 @@ def generate_lifeline_assets(apk_path: str | None = None, output_dir: str = "ass
                 # Slot 13 is Prefight idle, also patched with S2 grip
                 clips[13]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": 7081150187961391002}
             if len(clips) > 16:
-                # Retarget Levelup, Forge, and Rankup to sword variants with proper weapon grip
-                clips[14]["m_OverrideClip"] = {"m_FileID": 3, "m_PathID": -8743058503240597887}  # frontend_Sword_ChargeUp
-                clips[15]["m_OverrideClip"] = {"m_FileID": 3, "m_PathID": -4911802547413484722}  # frontend_Sword_Forged
-                clips[16]["m_OverrideClip"] = {"m_FileID": 3, "m_PathID": -4911802547413484722}  # frontend_Sword_Forged
+                # Keep authentic female chargeup & forged animations
+                clips[14]["m_OverrideClip"] = {"m_FileID": 3, "m_PathID": -680920813975545301}   # frontend_Female_ChargeUp
+                clips[15]["m_OverrideClip"] = {"m_FileID": 3, "m_PathID": -1261342412043725448}  # frontend_Female_Forged
+                clips[16]["m_OverrideClip"] = {"m_FileID": 3, "m_PathID": -1261342412043725448}  # frontend_Female_Forged
             tree["m_Clips"] = clips
             replace_str_in_tree(tree, old_cab, new_cab)
             obj.save_typetree(tree)

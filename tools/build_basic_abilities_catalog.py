@@ -32,22 +32,18 @@ for bot_id, cat, t_zh, t_en, d_zh, icon in db_rows:
     t = f"{t_zh or ''} {t_en or ''} {d_zh or ''} {icon or ''}"
     bot_texts[bot_id].append(t.lower())
 
-# Also scan Server/character_data/*.json
+# Also scan Server/character_data/*.json for ability text keywords
 char_dir = Path("Server/character_data")
 for p in char_dir.glob("*.json"):
+    # Skip alias or raw pulled files
+    if p.stem == "elita_one_gs_kabam" or p.stem.endswith("_pulled"):
+        continue
     try:
         with open(p, "r", encoding="utf-8") as f:
             d = json.load(f)
         bid = d.get("bot_id", p.stem)
-        if bid not in characters:
-            characters[bid] = {
-                "id": bid,
-                "name_zh": d.get("name_zh", bid),
-                "name_en": d.get("name_en", bid),
-                "class": d.get("class", ""),
-                "faction": d.get("faction", "")
-            }
-        bot_texts[bid].append(json.dumps(d, ensure_ascii=False).lower())
+        if bid in characters:
+            bot_texts[bid].append(json.dumps(d, ensure_ascii=False).lower())
     except Exception:
         pass
 
@@ -101,8 +97,8 @@ CANONICAL_ABILITIES = [
         "name_en": "Acid",
         "category": "持续伤害",
         "pua_icon": "E524",
-        "desc_zh": "持续造成酸性伤害并溶解护甲。",
-        "desc_en": "Deals corrosive acid damage over time and dissolves armor.",
+        "desc_zh": "持续造成酸性伤害。",
+        "desc_en": "Deals corrosive acid damage over time.",
         "keywords": ["酸液", "acid", "强酸", "腐蚀", "e524"]
     },
     {
@@ -111,8 +107,8 @@ CANONICAL_ABILITIES = [
         "name_en": "Dark Burn",
         "category": "持续伤害",
         "pua_icon": "E810",
-        "desc_zh": "持续造成黑暗能量伤害，并有几率驱散激活的增益。",
-        "desc_en": "Deals dark energy damage over time with a chance to nullify active buffs.",
+        "desc_zh": "造成瞬时黑暗能量伤害。",
+        "desc_en": "Deals instant dark energy damage.",
         "keywords": ["暗烧伤", "dark burn", "黑暗燃烧", "混沌燃烧", "e810"]
     },
     {
@@ -121,8 +117,9 @@ CANONICAL_ABILITIES = [
         "name_en": "Headshot",
         "category": "持续伤害",
         "pua_icon": "E401",
-        "desc_zh": "爆头导致能量晶体流失并持续造成直接伤害，对手回避时额外承受伤害。",
-        "desc_en": "Headshots cause bleeding direct damage over time, dealing extra damage if the opponent evades.",
+        "desc_zh": "爆头导致瞬间的能量晶体流失伤害并持续造成直接伤害，对手回避时额外承受伤害。",
+        "desc_en": "Headshots cause instant damage and bleeding damage over time, dealing extra damage if the opponent evades.",
+        "explicit_bots": ["arcee_gs_deluxe2014"],
         "keywords": ["爆头", "headshot", "head shot"]
     },
 
@@ -143,7 +140,7 @@ CANONICAL_ABILITIES = [
         "name_en": "Armor Penetration",
         "category": "攻击特长",
         "pua_icon": "E409",
-        "desc_zh": "忽略对手当前护甲值的固定百分比，造成深度贯穿。",
+        "desc_zh": "忽略对手当前护甲值的固定百分比造成伤害。",
         "desc_en": "Ignores a percentage of the opponent's current armor.",
         "keywords": ["护甲穿透", "穿甲", "armor pen", "armor pierce"]
     },
@@ -165,6 +162,14 @@ CANONICAL_ABILITIES = [
         "pua_icon": "E501",
         "desc_zh": "全程持续获得固定的伤害减免，不可被破甲效果移除。",
         "desc_en": "Provides permanent passive damage reduction that cannot be removed by Armor Break.",
+        "explicit_bots": [
+            "fte_optimus_gs_t3",
+            "optimusprime_sg_voyager2015",
+            "optimusprimal_bw_mp32",
+            "megatron_cin_rotf",
+            "grindor_cin_rotf",
+            "tantrum_gs_kabam"
+        ],
         "keywords": ["永久护甲", "permanent armor", "天然护甲"]
     },
     {
@@ -180,11 +185,11 @@ CANONICAL_ABILITIES = [
     {
         "id": "shield_breaker",
         "name_zh": "破盾",
-        "name_en": "Shield Breaker",
+        "name_en": "Shield Break",
         "category": "机制克制",
-        "pua_icon": "E41D",
-        "desc_zh": "直接粉碎对手的护盾力场并造成额外破坏伤害。",
-        "desc_en": "Shatters the opponent's shield forcefield and inflicts bonus destructive damage.",
+        "pua_icon": "E807",
+        "desc_zh": "粉碎对手的护盾力场。",
+        "desc_en": "Shatters the opponent's shield.",
         "keywords": ["破盾", "shield breaker", "粉碎力场", "护盾崩解", "e807", "shdbrk"]
     },
 
@@ -195,7 +200,7 @@ CANONICAL_ABILITIES = [
         "name_en": "Stun",
         "category": "行动控制",
         "pua_icon": "E605",
-        "desc_zh": "瘫痪目标电子机能，临时阻止目标采取任何行动。",
+        "desc_zh": "临时阻止目标采取任何行动。",
         "desc_en": "Temporarily paralyzes the target, preventing all actions.",
         "keywords": ["眩晕", "stun", "击晕", "e605"]
     },
@@ -217,7 +222,8 @@ CANONICAL_ABILITIES = [
         "pua_icon": "E419",
         "desc_zh": "封印对手全部特殊攻击，期间对手无法发动任何特殊技。",
         "desc_en": "Locks down all special attacks, preventing the opponent from launching any special move.",
-        "keywords": ["战术封锁", "lockdown", "封印对手全部特殊攻击", "无法使用特殊攻击", "无法使用特殊技"]
+        "explicit_bots": ["elita_one_gs"],
+        "keywords": ["战术封锁", "tactical lockdown"]
     },
     {
         "id": "fear",
@@ -232,12 +238,13 @@ CANONICAL_ABILITIES = [
     {
         "id": "daze",
         "name_zh": "目眩",
-        "name_en": "Daze / Dizzy",
+        "name_en": "Daze",
         "category": "状态减益",
-        "pua_icon": "E41C",
-        "desc_zh": "降低对手能力的触发几率，并使远程攻击有几率无法命中。",
-        "desc_en": "Reduces ability trigger chances and causes ranged attacks to occasionally miss.",
-        "keywords": ["目眩", "daze", "dizzy", "混乱", "失准", "未命中", "e41c", "e903"]
+        "pua_icon": "E519",
+        "desc_zh": "使对手陷入目眩，大幅降低其远程攻击命中率（基础远程与特殊远程攻击大概率无法命中）。",
+        "desc_en": "Dazes the opponent, causing their basic and special ranged attacks to miss.",
+        "explicit_bots": ["scorponok_bw_kabam"],
+        "keywords": ["目眩", "daze"]
     },
 
     # --- 机动与格斗状态 (Mobility & Combat State) ---
@@ -247,8 +254,8 @@ CANONICAL_ABILITIES = [
         "name_en": "Evade",
         "category": "机动防御",
         "pua_icon": "E509",
-        "desc_zh": "有一定几率完全闪避即将到来的攻击伤害。",
-        "desc_en": "Chance to completely evade incoming attack damage.",
+        "desc_zh": "自动闪避即将到来的攻击。",
+        "desc_en": "Automatically evade incoming attack.",
         "keywords": ["规避", "evade", "回避", "闪避", "近战规避", "e509", "e518"]
     },
     {
@@ -257,17 +264,17 @@ CANONICAL_ABILITIES = [
         "name_en": "Precision",
         "category": "攻击特长",
         "pua_icon": "E409",
-        "desc_zh": "增加暴击命中几率，并阻止对手规避攻击。",
-        "desc_en": "Increases critical hit chance and prevents the opponent from evading.",
+        "desc_zh": "增加暴击命中几率。",
+        "desc_en": "Increases critical hit chance.",
         "keywords": ["精准", "precision", "精度", "反闪避", "规避克制", "e92a"]
     },
     {
         "id": "unstoppable",
         "name_zh": "不可阻挡",
         "name_en": "Unstoppable",
-        "category": "战斗霸体",
+        "category": "进攻强化",
         "pua_icon": "E915",
-        "desc_zh": "无视攻击冲击与受击打断，出招过程不可被打断。",
+        "desc_zh": "进攻动作无视对手攻击冲击与受击打断。",
         "desc_en": "Shrugs off hit reactions; attacks cannot be interrupted.",
         "keywords": ["不可阻挡", "unstoppable", "势不可挡", "霸体", "无视攻击影响", "e915"]
     },
@@ -275,8 +282,8 @@ CANONICAL_ABILITIES = [
         "id": "unblockable",
         "name_zh": "无法格挡",
         "name_en": "Unblockable",
-        "category": "战斗特性",
-        "pua_icon": "E40A",
+        "category": "进攻强化",
+        "pua_icon": "E41F",
         "desc_zh": "特定攻击无法被防御格挡，强行贯穿防御。",
         "desc_en": "Certain attacks cannot be blocked, directly piercing defenses.",
         "keywords": ["无法格挡", "unblockable", "不可防御", "破防", "e40a"]
@@ -289,7 +296,8 @@ CANONICAL_ABILITIES = [
         "pua_icon": "E50A",
         "desc_zh": "成功闪避近战或前冲后获得反击契机，可打出硬直或眩晕。",
         "desc_en": "Successful dodges grant counter windows to stagger or stun the opponent.",
-        "keywords": ["反击", "counter", "灵动反击", "反击锦囊", "e50a", "e98d"]
+        "explicit_bots": ["elita_one_gs"],
+        "keywords": ["灵动反击", "反击锦囊"]
     },
     {
         "id": "parry_shield",
@@ -599,21 +607,34 @@ CANONICAL_ABILITIES = [
     }
 ]
 
-# Map characters to each ability based on keyword detection
+# Map characters to each ability based on keyword detection or explicit bots
 final_catalog = []
 for item in CANONICAL_ABILITIES:
-    kws = item["keywords"]
-    matched_bots = []
-    for bid, cinfo in characters.items():
-        all_t = " ".join(bot_texts[bid])
-        if any(kw.lower() in all_t for kw in kws):
-            matched_bots.append({
+    if "explicit_bots" in item:
+        matched_bots = [
+            {
                 "bot_id": bid,
-                "name_zh": cinfo["name_zh"],
-                "name_en": cinfo["name_en"],
-                "faction": cinfo["faction"],
-                "class": cinfo["class"]
-            })
+                "name_zh": characters[bid]["name_zh"],
+                "name_en": characters[bid]["name_en"],
+                "faction": characters[bid]["faction"],
+                "class": characters[bid]["class"]
+            }
+            for bid in item["explicit_bots"]
+            if bid in characters
+        ]
+    else:
+        kws = item["keywords"]
+        matched_bots = []
+        for bid, cinfo in characters.items():
+            all_t = " ".join(bot_texts[bid])
+            if any(kw.lower() in all_t for kw in kws):
+                matched_bots.append({
+                    "bot_id": bid,
+                    "name_zh": cinfo["name_zh"],
+                    "name_en": cinfo["name_en"],
+                    "faction": cinfo["faction"],
+                    "class": cinfo["class"]
+                })
     
     # Sort matched bots by name_zh
     matched_bots.sort(key=lambda x: x["name_zh"])
@@ -650,7 +671,7 @@ with open(out_json_path, "w", encoding="utf-8") as f:
     json.dump({
         "meta": {
             "title": "TFTF Common Basic Abilities Catalog",
-            "version": "1.0",
+            "version": "1.4",
             "total_abilities": len(final_catalog),
             "total_characters": len(characters),
             "updated_at": "2026-11-02"

@@ -890,7 +890,7 @@ html_content = """<!DOCTYPE html>
             </div>
             <div class="modal-body">
                 <div class="bot-search-bar" style="display: flex; gap: 10px;">
-                    <input type="text" class="form-control" id="modal-bot-search" placeholder="在 80 位英雄中搜索并勾选..." oninput="filterModalBots()">
+                    <input type="text" class="form-control" id="modal-bot-search" placeholder="搜索英雄并勾选..." oninput="filterModalBots()">
                     <button class="btn-secondary" onclick="toggleSelectAllBots(true)">全选</button>
                     <button class="btn-secondary" onclick="toggleSelectAllBots(false)">清空</button>
                 </div>
@@ -926,7 +926,25 @@ html_content = """<!DOCTYPE html>
             const saved = localStorage.getItem('tftf_basic_abilities_draft');
             if (saved) {
                 try {
-                    catalog = JSON.parse(saved);
+                    const parsed = JSON.parse(saved);
+                    // Check if catalog version matches
+                    if (parsed.meta && parsed.meta.version === INITIAL_CATALOG.meta.version) {
+                        catalog = parsed;
+                        // Always synchronize characters_all to ensure roster integrity
+                        catalog.characters_all = INITIAL_CATALOG.characters_all;
+                        catalog.meta.total_characters = INITIAL_CATALOG.characters_all.length;
+                        const validBotIds = new Set(INITIAL_CATALOG.characters_all.map(c => c.id));
+                        catalog.abilities.forEach(ab => {
+                            if (ab.associated_bots) {
+                                ab.associated_bots = ab.associated_bots.filter(b => validBotIds.has(b.bot_id));
+                                ab.bot_count = ab.associated_bots.length;
+                            }
+                        });
+                    } else {
+                        console.log('Catalog version changed, reloading from INITIAL_CATALOG');
+                        catalog = JSON.parse(JSON.stringify(INITIAL_CATALOG));
+                        persistData();
+                    }
                 } catch(e) {
                     console.error('Failed to parse localStorage data:', e);
                     catalog = JSON.parse(JSON.stringify(INITIAL_CATALOG));
@@ -1215,7 +1233,9 @@ html_content = """<!DOCTYPE html>
             document.getElementById('bots-modal-title').textContent = `为【${ab.name_zh}】配置关联英雄`;
             tempSelectedBots = new Set(ab.associated_bots ? ab.associated_bots.map(b => b.bot_id) : []);
             
-            document.getElementById('modal-bot-search').value = '';
+            const searchInput = document.getElementById('modal-bot-search');
+            searchInput.value = '';
+            searchInput.placeholder = `在 ${catalog.characters_all.length} 位英雄中搜索并勾选...`;
             renderModalBots();
             document.getElementById('bots-modal').classList.add('active');
         }
