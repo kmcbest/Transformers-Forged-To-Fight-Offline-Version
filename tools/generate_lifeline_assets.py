@@ -275,53 +275,54 @@ def patch_moves_assetbundle(moves_bundle_data: bytes, out_dir: Path) -> None:
 
 
 
-# Authentic dual-sword tight grip: strictly covers ONLY the 40 Humanoid finger muscles (55..94)
-# Left Hand Fingers (55..74) & Right Hand Fingers (75..94)
-# NEVER touches 0..54 (Spine, Legs, Feet, Shoulders, Arms, Forearms) or 95+ (Transforms).
+# Authentic sword-holding grip extracted from Frontend_Sword_idle (Right Hand attr 117..136)
+# Applied symmetrically to Left Hand (attr 97..116) and Right Hand (attr 117..136).
+# Note: In compiled Unity Humanoid MuscleClips, 0..41 are IK/Root goals (6 * 7 = 42),
+# 42..96 are Body/Limb muscles (0..54), and 97..136 are the 40 Finger muscles (55..94).
 LIFELINE_DUAL_SWORD_GRIP = {
-    # Left Hand Fingers (55..74)
-    55: 0.50,   # Left Hand.Thumb.1 Stretched
-    56: -0.25,  # Left Hand.Thumb.Spread
-    57: 0.50,   # Left Hand.Thumb.2 Stretched
-    58: 0.50,   # Left Hand.Thumb.3 Stretched
-    59: 0.65,   # Left Hand.Index.1 Stretched
-    60: 0.00,   # Left Hand.Index.Spread
-    61: 0.75,   # Left Hand.Index.2 Stretched
-    62: 0.70,   # Left Hand.Index.3 Stretched
-    63: 0.70,   # Left Hand.Middle.1 Stretched
-    64: 0.00,   # Left Hand.Middle.Spread
-    65: 0.80,   # Left Hand.Middle.2 Stretched
-    66: 0.75,   # Left Hand.Middle.3 Stretched
-    67: 0.75,   # Left Hand.Ring.1 Stretched
-    68: 0.00,   # Left Hand.Ring.Spread
-    69: 0.85,   # Left Hand.Ring.2 Stretched
-    70: 0.80,   # Left Hand.Ring.3 Stretched
-    71: 0.80,   # Left Hand.Little.1 Stretched
-    72: 0.00,   # Left Hand.Little.Spread
-    73: 0.85,   # Left Hand.Little.2 Stretched
-    74: 0.80,   # Left Hand.Little.3 Stretched
+    # Left Hand Fingers (attr 97..116 = muscle 55..74)
+    97:  -1.5541633,  # Left Hand.Thumb.1 Stretched
+    98:  -2.1583767,  # Left Hand.Thumb.Spread
+    99:  -0.2255878,  # Left Hand.Thumb.2 Stretched
+    100: -0.4691082,  # Left Hand.Thumb.3 Stretched
+    101: -0.5655559,  # Left Hand.Index.1 Stretched
+    102: -0.7321508,  # Left Hand.Index.Spread
+    103: -1.2284926,  # Left Hand.Index.2 Stretched
+    104:  0.8108447,  # Left Hand.Index.3 Stretched
+    105: -0.5706741,  # Left Hand.Middle.1 Stretched
+    106: -0.9387131,  # Left Hand.Middle.Spread
+    107: -1.2096846,  # Left Hand.Middle.2 Stretched
+    108:  0.8109050,  # Left Hand.Middle.3 Stretched
+    109: -0.8122700,  # Left Hand.Ring.1 Stretched
+    110: -1.1390761,  # Left Hand.Ring.Spread
+    111: -1.6857924,  # Left Hand.Ring.2 Stretched
+    112:  0.8109150,  # Left Hand.Ring.3 Stretched
+    113: -0.6678960,  # Left Hand.Little.1 Stretched
+    114: -0.7445285,  # Left Hand.Little.Spread
+    115: -1.2094172,  # Left Hand.Little.2 Stretched
+    116:  0.8109943,  # Left Hand.Little.3 Stretched
 
-    # Right Hand Fingers (75..94)
-    75: 0.50,   # Right Hand.Thumb.1 Stretched
-    76: -0.25,  # Right Hand.Thumb.Spread
-    77: 0.50,   # Right Hand.Thumb.2 Stretched
-    78: 0.50,   # Right Hand.Thumb.3 Stretched
-    79: 0.65,   # Right Hand.Index.1 Stretched
-    80: 0.00,   # Right Hand.Index.Spread
-    81: 0.75,   # Right Hand.Index.2 Stretched
-    82: 0.70,   # Right Hand.Index.3 Stretched
-    83: 0.70,   # Right Hand.Middle.1 Stretched
-    84: 0.00,   # Right Hand.Middle.Spread
-    85: 0.80,   # Right Hand.Middle.2 Stretched
-    86: 0.75,   # Right Hand.Middle.3 Stretched
-    87: 0.75,   # Right Hand.Ring.1 Stretched
-    88: 0.00,   # Right Hand.Ring.Spread
-    89: 0.85,   # Right Hand.Ring.2 Stretched
-    90: 0.80,   # Right Hand.Ring.3 Stretched
-    91: 0.80,   # Right Hand.Little.1 Stretched
-    92: 0.00,   # Right Hand.Little.Spread
-    93: 0.85,   # Right Hand.Little.2 Stretched
-    94: 0.80,   # Right Hand.Little.3 Stretched
+    # Right Hand Fingers (attr 117..136 = muscle 75..94)
+    117: -1.5541633,  # Right Hand.Thumb.1 Stretched
+    118: -2.1583767,  # Right Hand.Thumb.Spread
+    119: -0.2255878,  # Right Hand.Thumb.2 Stretched
+    120: -0.4691082,  # Right Hand.Thumb.3 Stretched
+    121: -0.5655559,  # Right Hand.Index.1 Stretched
+    122: -0.7321508,  # Right Hand.Index.Spread
+    123: -1.2284926,  # Right Hand.Index.2 Stretched
+    124:  0.8108447,  # Right Hand.Index.3 Stretched
+    125: -0.5706741,  # Right Hand.Middle.1 Stretched
+    126: -0.9387131,  # Right Hand.Middle.Spread
+    127: -1.2096846,  # Right Hand.Middle.2 Stretched
+    128:  0.8109050,  # Right Hand.Middle.3 Stretched
+    129: -0.8122700,  # Right Hand.Ring.1 Stretched
+    130: -1.1390761,  # Right Hand.Ring.Spread
+    131: -1.6857924,  # Right Hand.Ring.2 Stretched
+    132:  0.8109150,  # Right Hand.Ring.3 Stretched
+    133: -0.6678960,  # Right Hand.Little.1 Stretched
+    134: -0.7445285,  # Right Hand.Little.Spread
+    135: -1.2094172,  # Right Hand.Little.2 Stretched
+    136:  0.8109943,  # Right Hand.Little.3 Stretched
 }
 
 def inject_dual_sword_grip_into_clip(clip_tree, finger_map=None):
@@ -730,6 +731,13 @@ def generate_lifeline_assets(apk_path: str | None = None, output_dir: str = "ass
             replace_str_in_tree(tree, old_cab, new_cab)
             obj.save_typetree(tree)
             print("[+] Injected Optimus Primal M1 AnimationClip into slot -565707484110939324")
+
+        elif obj.path_id in [807675994726628539, 7081150187961391002] and obj.type.name == "AnimationClip":
+            tree = obj.read_typetree()
+            mod_count = inject_dual_sword_grip_into_clip(tree)
+            replace_str_in_tree(tree, old_cab, new_cab)
+            obj.save_typetree(tree)
+            print(f"[+] Injected Windblade sword grip (attr 97..136) into {tree.get('m_Name')} (modified {mod_count} finger channels)")
 
         # 2b. Character Root MonoBehaviour: Retarget VictoryStagePrefab to Sword Victory Stage
         elif obj.path_id == 8221105282552802949 and obj.type.name == "MonoBehaviour":

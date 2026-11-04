@@ -1,121 +1,148 @@
-# 《百炼为战》（TFTF）角色展厅待机动作与姿态（Idle & Pose）自制指南
+# 《百炼为战》（TFTF）角色展厅待机动作与手部握姿（Idle & Grip Pose）定制指南
 
-本指南详细记录如何为《百炼为战》重涂与自制角色定制优雅、自然的展厅待机动画（Living Idle），解决武器握持手型不匹配、手指未握紧或需要自定义专属站姿的问题。
-
----
-
-## 一、 为什么不能用 Python 直接硬改底层动画数据？
-
-在之前的尝试中，试图通过直接解析修改 Unity AssetBundle 中的 `MuscleClip`（Streamed/Dense/Constant 曲线）来修改手型，导致了角色“深蹲大劈叉”、“单手向天弯折”或“双手过头交叉”等严重畸变。
-
-### 核心机理：
-1. **Unity Mecanim 人形动力学链（IK Chain）**：
-   游戏采用的是 Unity Humanoid 骨骼体系，各骨骼肌肉通道在底层是高度互相关联的。
-2. **量化切线与压缩范围归一化**：
-   `AnimationClip` 在打包为 AssetBundle 时经过了 Unity 专有的有损 Hermite 压缩。各通道被归一化到特定的极值范围矩阵中。
-3. **黑盒式修改引发解算器溢出**：
-   一旦在外部脚本中手动将常量注入压缩数据流，由于破坏了导数、四元数规范化和父子层级变换约束，会导致引擎内部的运动学解算器（IK Solver）计算出无限大（Inf）或非数值（NaN），并沿着“手指 $\rightarrow$ 手腕 $\rightarrow$ 双臂 $\rightarrow$ 脊椎/骨盆”回溯暴走，引发整具骨骼的姿态坍塌。
-
-### 逆向实录：4 次底层注入失败案例剖析
-
-| 案例 | 实机表象 | 底层根本原因 |
-| :--- | :--- | :--- |
-| **案例 1** | **左脚尖上翘，手指仍虚握** | 误用男刀客插槽，且手部通道发生偏移未能触达真实指骨通道 |
-| **案例 2** | **马步大劈叉（横向深蹲）** | S2 抽取的通道范围错位（覆盖了 46~54 右臂及 95+ 骨盆根节点），下半身权重彻底崩溃 |
-| **案例 3** | **右臂直角向上，左臂反剪背后** | 将 46~54（实际为右肩/右臂）误当成左手手指写入，引擎强行将手臂折曲成手指弧度并连锁拉扯左臂 |
-| **案例 4** | **双手过头架刀（头顶交叉）** | 虽命中真实手指通道（55~94），但由于破坏了量化极值与切线导数，IK 解算器向上一级骨骼逆向暴走 |
-
-**结论**：**修改动画必须在经过规范数学计算的动画工具（Blender 或 Unity Editor）中进行关键帧处理，再由 Unity 官方算法编译出合规的 AnimationClip。**
+本指南总结了在《百炼为战》（Transformers: Forged to Fight）中为重涂与自制角色（如回春手 Lifeline）定制展示厅待机动画（Living Idle）与武器握持手型的完整技术规范，涵盖 **Python 二进制肌肉通道微创移植（跨角色借姿势 / 单手镜像到双手）** 与 **Unity 3D 可视化手调 + `HumanPoseHandler` 导出** 两条已验证走通的工程路径，并记录了历史排障中必须规避的两大底层死胡同。
 
 ---
 
-## 二、 游戏展厅待机动作的结构原理
+## 一、 核心真值：编译后 Humanoid `AnimationClip` 的通道映射表（`+42` 偏移铁律）
 
-百炼为战中的展示厅（Character Detail / Showroom）待机并非一张固定的静止 Pose（单帧木头人），而是一个时长约 **2~3 秒（60~90 帧）的首尾无缝循环动画（Living Idle Loop）**：
-- **胸腔与脊椎**：有缓慢起伏的微呼吸节律；
-- **双臂与双肩**：随呼吸有微小的惯性摆动；
-- **重心与腿部**：保持稳定支撑，脚掌平实贴地；
-- **手指**：默认有微幅度的舒展张合。
+Unity 引擎在将 Humanoid（人形骨骼，`typeID = 95`, `path = 0`）动画编译进 AssetBundle 的 `m_ClipBindingConstant.genericBindings` 时，**`attribute` 编号并不是直接从 `0` 开始对应 95 块人体肌肉（`HumanPose.muscles[0..94]`）**！
 
-我们的目标是：**完全继承官方优雅自然的身体呼吸摆动，仅把双手手指牢牢锁定在刀柄上**。
+在 `genericBindings` 中，前 **42 个通道（`attribute = 0..41`）** 固定分配给 6 组 Root 与手脚 IK 目标（每组含 `T.x, T.y, T.z, Q.x, Q.y, Q.z, Q.w` 共 7 个浮点数，$6 \times 7 = 42$）。真正的 95 块人体肌肉从 **`attribute = 42`** 才开始（即 $\text{attribute} = 42 + \text{muscle\_index}$，范围 `42..136`）：
 
----
-
-## 三、 制作流程途径 A：Blender 姿态覆盖制作法（精细化调整）
-
-### 1. 资源准备
-- 角色模型 FBX（包含骨骼与网格，例如阿尔茜 `cha_arcee_gs_deluxe2014_00.fbx`）；
-- 官方待机动画（例如 `TeamSelect_Female_idle.fbx`）；
-- 武器模型（可选，导入作为握持参考）。
-
-### 2. 导入与工程配置
-1. 打开 Blender，删除默认立方体；
-2. 点击 `文件 (File)` $\rightarrow$ `导入 (Import)` $\rightarrow$ `FBX (.fbx)`，导入带动画的骨骼模型；
-3. 按下空格键播放时间轴，确认模型已有完整的呼吸、手臂微晃等动作。
-
-### 3. 锁定双手手指姿态（Pose Layering）
-1. 选中骨骼，按 `Ctrl + Tab` 进入 **【姿态模式】（Pose Mode）**；
-2. 导入武器模型或将其临时对齐到手部骨骼节点作为视觉参考；
-3. **调节手指**：
-   - 选中右手/左手的大拇指（Thumb）、食指（Index）、中指（Middle）、无名指（Ring）、小指（Pinky）各关节指骨；
-   - 使用快捷键 `R`（旋转）配合局部坐标轴，将各手指自然弯曲贴合刀柄，大拇指横跨包覆在手指外侧；
-4. **打关键帧覆盖**：
-   - 圈选双手所有调整过角度的指骨；
-   - 按 `I` 键，选择 `旋转 (Rotation)` 为当前帧添加关键帧；
-   - 将该关键帧复制并粘贴到第 0 帧和最后一帧；
-5. **动画曲线平直化**：
-   - 打开 `动画摄影表 (Dope Sheet)` 或 `曲线编辑器 (Graph Editor)`；
-   - 将双手手指骨骼的旋转插值设置为 `常数 (Constant)` 或平直曲线，确保整个循环周期内双手始终稳固紧握，而胸腹和双臂依然跟随时钟自然呼吸摆动。
-
-### 4. 导出 FBX
-- 点击 `文件` $\rightarrow$ `导出` $\rightarrow$ `FBX (.fbx)`；
-- 勾选 `仅选中物体 (Selected Objects)`，物体类型选择 `骨架 (Armature)` 与 `网格 (Mesh)`；
-- 在动画（Bake Animation）设置中确保烘焙步骤为 1，导出为 `lifeline_custom_idle.fbx`。
-
----
-
-## 四、 制作流程途径 B：Unity 内置 Animation 窗口制作（引擎原生、零格式转换风险，但属于重量级环境）
-
-> [!WARNING] 磁盘空间与体积警告
-> Unity Editor **绝非轻量级工具**，正是位于 `toolchain/downloads/UnitySetup64-2020.3.31f1.exe`（单安装包即 2.67 GB，解压安装完毕后通常占用 **6 ~ 10+ GB** 磁盘空间）。如果本地电脑磁盘空间吃紧，**强烈不建议安装 Unity Editor**！
-> 相反，Blender 官方提供免安装便携绿色版（Portable zip，仅约 250 MB，解压约 600 MB 且不污染 C 盘），或者可以通过其他大空间工作站完成。
-
-如果电脑已有 Unity 开发环境或磁盘空间充裕，使用 Unity Editor 可直接产出原生的 `.anim` 文件，省去 FBX 导入导出的转换环节：
-
-### 1. 搭建场景
-1. 打开任何支持 Android 平台的 Unity 编辑器（推荐 2017.4 ~ 2020.3）；
-2. 将角色模型拖入场景中，Inspector 中将 Rig 类型设置为 `Humanoid`；
-3. 挂载一个带有当前待机动画的 `Animator` 控制器。
-
-### 2. 录制覆盖手指姿态
-1. 选中场景中的角色对象，按快捷键 `Ctrl + 6` 打开 **Animation 窗口**；
-2. 在下拉菜单中选择待机动画，或点击 `Create New Clip`；
-3. 点击 Animation 窗口左上角的 **红色圆点（录制模式 Record）**；
-4. 在 Hierarchy 层级树中顺着找到双手手指骨骼：
-   - `LeftHandThumb1 ~ 3`, `LeftHandIndex1 ~ 3`, `LeftHandMiddle1 ~ 3`, `LeftHandRing1 ~ 3`, `LeftHandPinky1 ~ 3`
-   - `RightHandThumb1 ~ 3`, `RightHandIndex1 ~ 3` 等等；
-5. 在 Scene 视口中用旋转手柄旋转手指至完美紧握刀柄；
-6. 再次点击红点结束录制，Unity 会自动生成合法的 `.anim` 动画资产。
-
----
-
-## 五、 将自制动画打包注入 AssetBundle
-
-获得合规的 `AnimationClip` 后，可以通过以下标准管线替换进角色的 AssetBundle：
-
-1. **Unity 自动导出法**：
-   - 在 Unity 工程中将该动画放入 AssetBundle 打包脚本，导出新的 `.assetbundle`。
-2. **UnityPy 精准替换法**：
-   - 使用 Python 脚本加载导出的新 bundle 与现有的 `lifeline_gs_deluxe2014.assetbundle`；
-   - 提取新 bundle 中经过引擎编译合格的 `AnimationClip` typetree，直接写入回春手 bundle 对应的 PathID 中；
-   - 执行 `save(packer="lz4")` 保存压缩，确保游戏加载时不触发任何校验错误。
-
----
-
-## 六、 工具体积对比与日常方案建议
-
-| 制作方案 | 软件体积与磁盘开销 | 核心优势 | 适用场景 |
+| 编译后 `attribute` 范围 | 对应 `HumanPose.muscles` 下标 | 真实控制部位 | 说明与修改禁忌 |
 | :--- | :--- | :--- | :--- |
-| **微调武器挂点 (PropsController)** | **0 MB**（纯代码配置，不装任何软件） | 极速无风险，1 分钟生效 | 武器在手心稍有偏移或穿模，不需要大改骨骼姿势 |
-| **Blender 便携版 (Portable Zip)** | **~600 MB**（免安装，解压即用，随时可删） | 磁盘占用小，支持骨骼姿态图层精确调节 | 本地磁盘吃紧、需要精细定制握姿/骨骼动作 |
-| **Unity Editor (2020.3+)** | **6 ~ 10+ GB**（重量级引擎） | 直接生成原生 `.anim`，零转码 | 磁盘空间充裕，或机器上已配置好 Unity 开发环境 |
+| **`0 .. 6`** | — | `MotionT.x..z`, `MotionQ.x..w` | 根运动位移与旋转（无 Root Motion 的待机动画通常不包含这 7 项） |
+| **`7 .. 13`** | — | `RootT.x..z`, `RootQ.x..w` | 身体重心（Center of Mass）坐标与朝向，决定角色站立高度与重心起伏 |
+| **`14 .. 27`** | — | `LeftFootT/Q` (`14..20`), `RightFootT/Q` (`21..27`) | 左右脚 IK 锁定目标，确保双脚稳固踩地不滑步 |
+| **`28 .. 41`** | — | `LeftHandT/Q` (`28..34`), `RightHandT/Q` (`35..41`) | 左右手 IK 目标 |
+| **`42 .. 62`** | **`0 .. 20`** | 脊椎、胸腔、上胸、颈部、头部、眼球、下巴 | 负责待机呼吸胸腔起伏与头部微动，**严禁在调手型时触碰** |
+| **`63 .. 78`** | **`21 .. 36`** | 左大腿/小腿/脚踝/脚趾 (`63..70`)、右腿 (`71..78`) | 负责双腿站姿，**误改会导致角色深蹲、劈叉或踮脚** |
+| **`79 .. 96`** | **`37 .. 54`** | 左肩/上臂/前臂/手腕 (`79..87`)、右臂 (`88..96`) | 负责双臂持武器的自然姿态与呼吸摆动，**误改会导致双臂高举或乱拧** |
+| **`97 .. 116`** | **`55 .. 74`** | **左手 20 个手指关节**（拇指、食指、中指、无名指、小指） | **左手握持手型的唯一真值通道** |
+| **`117 .. 136`** | **`75 .. 94`** | **右手 20 个手指关节**（拇指、食指、中指、无名指、小指） | **右手握持手型的唯一真值通道** |
+
+### 手指通道内部顺序与正负号规范
+每只手固定 20 个通道，按 **`Thumb`（拇指）、`Index`（食指）、`Middle`（中指）、`Ring`（无名指）、`Little`（小指）** 顺序排列，每根手指包含 4 个自由度（DOF）：
+1. `1 Stretched`（近节指骨弯曲/伸展）
+2. `Spread`（手指左右张合）
+3. `2 Stretched`（中节指骨弯曲/伸展）
+4. `3 Stretched`（远节指尖弯曲/伸展）
+
+> [!IMPORTANT] 肌肉值正负号与左右手对称性铁律
+> 1. **负数为握拳（Closed），正数为张开（Stretched）**：在 Unity Mecanim 肌肉空间中，`Stretched` 字面意思是“伸展张开”，因此手指紧握刀柄时，`1 Stretched` 与 `2 Stretched` 均为**负数**（通常在 `-0.56` ~ `-1.68` 之间）。
+> 2. **左右手天然镜像对称，复制时无需取反**：Unity 的 `HumanTrait` 肌肉空间已在引擎底层完成了左右手镜像归一化——无论 `Stretched` 还是 `Spread`，**左手 `97..116` 与右手 `117..136` 的正负号和数值含义完全一致**。将单手握刀姿势（如风刃右手 `117..136`）复制到另一只手（左手 `97..116`）时，**直接 1:1 原样复制 20 个浮点数即可，严禁将 `Spread` 取反**！
+
+---
+
+## 二、 历史踩坑警示：必须规避的两大死胡同
+
+### ❌ 死胡同 1：漏算 `+42` 偏移，误把 `attribute 55..94`（或 `46..94`）当成手指通道修改
+- **错误做法**：以为 Unity 有 95 块肌肉（`0..94`），就直接去改 `genericBindings` 里 `attribute = 55..94` 的数值，甚至自己编造 `+0.50 ~ +0.85` 的正数写入。
+- **灾难后果**：由于漏算了前 42 个 IK/Root 通道，`attribute 55..94` 实际上是 `muscle_index 13..52`（脖子、双腿 `63..78`、双臂 `79..94`）！修改它们会导致角色的腿和手臂发生各种离奇扭曲（劈叉、举手、胸前架刀），给人一种“每次修改都有变化”的错觉，而真正控制手指的 **`attribute 97..136` 从头到尾纹丝不动**，手指永远停留在原版张开状态。
+- **同时注意**：Unity 并不会因为只改 `attr 97..136` 而触发任何所谓的“IK 逆向暴走”。手指关节位于运动学链最末端，且在待机动画（如 `TeamSelect_Female_idle` 和 `Prefight_Female_idle`）中，全部 40 个手指通道均独立存放在 `ConstantClip` 尾部（`b_idx = 90..129`，即 `c_data[15..54]`），与 `StreamedClip`（51 条）和 `DenseClip`（24 条）中的身体呼吸曲线完全解耦。
+
+### ❌ 死胡同 2：在 Unity Editor 中将 `Animator.avatar = null` 并烘焙为 Generic `Transform` 曲线替换原动画
+- **错误做法**：在 Unity Editor 中为了绕过 Humanoid 骨骼无法直接用 Animation 窗口 K 帧的限制，把 `instanceAnim.avatar = null` 清空，将动画烘焙成基于骨骼路径的 Generic `Transform.localRotation` / `localPosition` 曲线（`typeID = 4`），然后整包替换游戏 AssetBundle 中的 `AnimationClip`。
+- **灾难后果**：
+  1. 游戏内角色使用的是 **Humanoid `Animator`**，它只读取 `typeID = 95` 的肌肉通道，**100% 忽略手指与四肢上的 Generic `Transform.localRotation` 曲线**！
+  2. 原版 `typeID = 95` 的肌肉数据被洗掉后，全身肌肉回退到 Avatar 默认的 **T-Pose / Bind Pose**（双臂僵直交叉成“十字刀”，手指恢复张开）。
+  3. 无 Avatar 状态下烘焙出的 `Hips.localPosition`（如 `Y = -7.73`）会直接覆盖游戏内重心高度，导致角色“半截身子陷入地下”。
+
+---
+
+## 二、 标准方案一：纯 Python 跨角色借用握姿 / 单手镜像到双手（最快、零失真）
+
+当游戏内已有现成持剑/持武器角色的待机动作（例如 `character_anim_procedural.assetbundle` 中的风刃持剑待机 `Frontend_Sword_idle`，其右手握剑，左手张开），只需提取其右手握剑的 20 个通道（`attr 117..136`），同时写入目标角色待机动画的左手（`attr 97..116`）与右手（`attr 117..136`），即可在 **100% 保留目标角色原版呼吸起伏、站姿与手臂角度** 的前提下，让双手稳稳握住武器。
+
+### 完整实现与参考数据（以回春手 `tools/generate_lifeline_assets.py` 为例）
+
+从 `Frontend_Sword_idle` 提取的右手握剑 20 通道真值，对称映射到双手 `97..136`：
+
+```python
+# Authentic sword-holding grip extracted from Frontend_Sword_idle (Right Hand attr 117..136)
+# Applied symmetrically to Left Hand (attr 97..116) and Right Hand (attr 117..136).
+LIFELINE_DUAL_SWORD_GRIP = {
+    # Left Hand Fingers (attr 97..116 = muscle 55..74)
+    97:  -1.5541633,  # Left Hand.Thumb.1 Stretched
+    98:  -2.1583767,  # Left Hand.Thumb.Spread
+    99:  -0.2255878,  # Left Hand.Thumb.2 Stretched
+    100: -0.4691082,  # Left Hand.Thumb.3 Stretched
+    101: -0.5655559,  # Left Hand.Index.1 Stretched
+    102: -0.7321508,  # Left Hand.Index.Spread
+    103: -1.2284926,  # Left Hand.Index.2 Stretched
+    104:  0.8108447,  # Left Hand.Index.3 Stretched
+    105: -0.5706741,  # Left Hand.Middle.1 Stretched
+    106: -0.9387131,  # Left Hand.Middle.Spread
+    107: -1.2096846,  # Left Hand.Middle.2 Stretched
+    108:  0.8109050,  # Left Hand.Middle.3 Stretched
+    109: -0.8122700,  # Left Hand.Ring.1 Stretched
+    110: -1.1390761,  # Left Hand.Ring.Spread
+    111: -1.6857924,  # Left Hand.Ring.2 Stretched
+    112:  0.8109150,  # Left Hand.Ring.3 Stretched
+    113: -0.6678960,  # Left Hand.Little.1 Stretched
+    114: -0.7445285,  # Left Hand.Little.Spread
+    115: -1.2094172,  # Left Hand.Little.2 Stretched
+    116:  0.8109943,  # Left Hand.Little.3 Stretched
+
+    # Right Hand Fingers (attr 117..136 = muscle 75..94)
+    117: -1.5541633,  # Right Hand.Thumb.1 Stretched
+    118: -2.1583767,  # Right Hand.Thumb.Spread
+    119: -0.2255878,  # Right Hand.Thumb.2 Stretched
+    120: -0.4691082,  # Right Hand.Thumb.3 Stretched
+    121: -0.5655559,  # Right Hand.Index.1 Stretched
+    122: -0.7321508,  # Right Hand.Index.Spread
+    123: -1.2284926,  # Right Hand.Index.2 Stretched
+    124:  0.8108447,  # Right Hand.Index.3 Stretched
+    125: -0.5706741,  # Right Hand.Middle.1 Stretched
+    126: -0.9387131,  # Right Hand.Middle.Spread
+    127: -1.2096846,  # Right Hand.Middle.2 Stretched
+    128:  0.8109050,  # Right Hand.Middle.3 Stretched
+    129: -0.8122700,  # Right Hand.Ring.1 Stretched
+    130: -1.1390761,  # Right Hand.Ring.Spread
+    131: -1.6857924,  # Right Hand.Ring.2 Stretched
+    132:  0.8109150,  # Right Hand.Ring.3 Stretched
+    133: -0.6678960,  # Right Hand.Little.1 Stretched
+    134: -0.7445285,  # Right Hand.Little.Spread
+    135: -1.2094172,  # Right Hand.Little.2 Stretched
+    136:  0.8109943,  # Right Hand.Little.3 Stretched
+}
+```
+
+将该字典通过 `inject_dual_sword_grip_into_clip(tree)` 注入目标角色的展示厅待机 `TeamSelect_Female_idle`（PathID `807675994726628539`）与战前待机 `Prefight_Female_idle`（PathID `7081150187961391002`），并确保单元测试验证：
+- `m_StreamedClip.data`、`m_DenseClip.m_SampleArray` 与原版 **100% 字节一致**；
+- `m_ConstantClip.data` 中非手指项与原版 **100% 一致**，仅 `attr 97..136` 对应的 40 项被更新。
+
+---
+
+## 三、 标准方案二：在 Unity 3D 软件中可视化手调姿势 + `HumanPoseHandler` 导出（所见即所得）
+
+如果需要针对特殊造型的武器在 3D 视口中看着刀柄一根根微调手指角度，**千万不要清空 `Avatar` 去烘焙 `.anim` 文件**，而应采用 **`HumanPoseHandler` 逆向解算导出 $\rightarrow$ Python 微创注入 `attr 97..136`** 的流水线：
+
+### 1. 在 Unity 场景中加载与自由摆姿
+1. 从角色 AssetBundle 中加载展示厅 Prefab（如 `lifeline_gs_deluxe2014_lw.prefab`），实例化到场景中，并点亮武器 `SkinnedMeshRenderer`；
+2. 使用 `AnimationMode.SampleAnimationClip` 将角色采样到 `TeamSelect_Female_idle` 的第 0 帧标准站姿，随后停止 `AnimationMode` 并禁用/暂停 `Animator` 组件（**务必在内存中保留原始 `Animator.avatar` 引用**）；
+3. **无需打开 Animation 窗口或录制关键帧**：直接在 Scene 视图中选中任意手指骨骼（如 `LeftHandIndex1..3`、`RightHandIndex1..3`）或武器节点（注意：若武器是挂载在 `swordRight/Reference/COG` 下的 `SkinnedMeshRenderer`，应移动父节点 `swordRight` / `swordLeft`），用旋转/移动工具直观地将手指贴紧刀柄。
+
+### 2. 用 `HumanPoseHandler` 导出 40 个标准肌肉值
+在 Unity Editor 导出脚本中，直接调用 Unity 引擎原生的 Mecanim 逆向解算接口，将你在 3D 视口中摆好的骨骼旋转角度自动换算回 Humanoid 标准肌肉值：
+
+```csharp
+// originalAvatar 为原版 cha_arcee_gs_deluxe2014_00Avatar
+// characterModelRoot 为 Avatar 对应的根节点 (通常为 instance.transform 或 character_model)
+HumanPoseHandler handler = new HumanPoseHandler(originalAvatar, characterModelRoot);
+HumanPose pose = new HumanPose();
+handler.GetHumanPose(ref pose);
+
+// pose.muscles[55..94] 即为 Unity 官方解算出的双手 40 个手指肌肉值！
+// 将其按 attr = 42 + muscle_index (即 97..136) 导出为 JSON：
+var attrMap = new Dictionary<int, float>();
+for (int mIdx = 55; mIdx <= 94; mIdx++) {
+    int attr = 42 + mIdx; // 97..136
+    attrMap[attr] = pose.muscles[mIdx];
+}
+```
+
+### 3. Python 端微创写入 `attr 97..136`
+将导出的 `attr 97..136` 字典直接传给 `inject_dual_sword_grip_into_clip(tree, attr_map)` 写入原版 `AnimationClip`，并以 `packer="lz4"` 保存 AssetBundle。
+- **优势**：既享受了 3D 软件中“看着武器摆手指”的所见即所得体验，又 100% 保护了原版动画的身体呼吸曲线与重心高度，彻底杜绝动作坍塌或退化为 T-Pose 的风险。
