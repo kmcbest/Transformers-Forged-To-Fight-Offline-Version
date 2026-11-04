@@ -117,32 +117,19 @@ LIFELINE_DUAL_SWORD_GRIP = {
 
 ## 三、 标准方案二：在 Unity 3D 软件中可视化手调姿势 + `HumanPoseHandler` 导出（所见即所得）
 
-如果需要针对特殊造型的武器在 3D 视口中看着刀柄一根根微调手指角度，**千万不要清空 `Avatar` 去烘焙 `.anim` 文件**，而应采用 **`HumanPoseHandler` 逆向解算导出 $\rightarrow$ Python 微创注入 `attr 97..136`** 的流水线：
+如果需要针对特殊造型的武器在 3D 视口中看着刀柄一根根微调手指角度，**千万不要清空 `Avatar` 去烘焙 `.anim` 文件**，而应直接使用工程中已改造完成的 [`unity_lifeline/Assets/Editor/LifelinePoseWorkbench.cs`](file:///d:/Agent/tftf/unity_lifeline/Assets/Editor/LifelinePoseWorkbench.cs) 与 [`tools/apply_unity_idle_clip.py`](file:///d:/Agent/tftf/tools/apply_unity_idle_clip.py) 流水线。
 
-### 1. 在 Unity 场景中加载与自由摆姿
-1. 从角色 AssetBundle 中加载展示厅 Prefab（如 `lifeline_gs_deluxe2014_lw.prefab`），实例化到场景中，并点亮武器 `SkinnedMeshRenderer`；
-2. 使用 `AnimationMode.SampleAnimationClip` 将角色采样到 `TeamSelect_Female_idle` 的第 0 帧标准站姿，随后停止 `AnimationMode` 并禁用/暂停 `Animator` 组件（**务必在内存中保留原始 `Animator.avatar` 引用**）；
-3. **无需打开 Animation 窗口或录制关键帧**：直接在 Scene 视图中选中任意手指骨骼（如 `LeftHandIndex1..3`、`RightHandIndex1..3`）或武器节点（注意：若武器是挂载在 `swordRight/Reference/COG` 下的 `SkinnedMeshRenderer`，应移动父节点 `swordRight` / `swordLeft`），用旋转/移动工具直观地将手指贴紧刀柄。
+### 四个必须严格遵守的工程铁律（防 AI 改错门禁）
 
-### 2. 用 `HumanPoseHandler` 导出 40 个标准肌肉值
-在 Unity Editor 导出脚本中，直接调用 Unity 引擎原生的 Mecanim 逆向解算接口，将你在 3D 视口中摆好的骨骼旋转角度自动换算回 Humanoid 标准肌肉值：
-
-```csharp
-// originalAvatar 为原版 cha_arcee_gs_deluxe2014_00Avatar
-// characterModelRoot 为 Avatar 对应的根节点 (通常为 instance.transform 或 character_model)
-HumanPoseHandler handler = new HumanPoseHandler(originalAvatar, characterModelRoot);
-HumanPose pose = new HumanPose();
-handler.GetHumanPose(ref pose);
-
-// pose.muscles[55..94] 即为 Unity 官方解算出的双手 40 个手指肌肉值！
-// 将其按 attr = 42 + muscle_index (即 97..136) 导出为 JSON：
-var attrMap = new Dictionary<int, float>();
-for (int mIdx = 55; mIdx <= 94; mIdx++) {
-    int attr = 42 + mIdx; // 97..136
-    attrMap[attr] = pose.muscles[mIdx];
-}
-```
-
-### 3. Python 端微创写入 `attr 97..136`
-将导出的 `attr 97..136` 字典直接传给 `inject_dual_sword_grip_into_clip(tree, attr_map)` 写入原版 `AnimationClip`，并以 `packer="lz4"` 保存 AssetBundle。
-- **优势**：既享受了 3D 软件中“看着武器摆手指”的所见即所得体验，又 100% 保护了原版动画的身体呼吸曲线与重心高度，彻底杜绝动作坍塌或退化为 T-Pose 的风险。
+1. **骨骼层级路径无 `character_model/` 前缀，`HumanPoseHandler` 根节点必须传顶层 `instance.transform`**：
+   - 在角色的 `Avatar`（如 `cha_arcee_gs_deluxe2014_00Avatar`）的 `m_TOS` 映射表中，骨骼路径直接以 `"Reference/Hips/Spine/..."` 开头（**不存在** `"character_model/"` 子节点！），且 `Animator` 组件直接挂载在 Prefab 最顶层实例（`Lifeline_Showroom`）上。
+   - 因此调用 `new HumanPoseHandler(anim.avatar, root.transform)` 时，第二个参数**必须且只能传挂载了 `Animator` 的最顶层 `root.transform`**；双手双刀的查找路径也必须是 `"Reference/Hips/Spine/Spine1/.../RightHand/swordRight"`。
+2. **采样第 0 帧后必须禁用 `Animator`（`enabled = false`），但严禁清空 `Animator.avatar`**：
+   - 加载场景时，先在 `instanceAnim.avatar` 完好的状态下调用 `sourceClip.SampleAnimation(instance, 0f)` 将角色定格在官方待机站姿；
+   - 随后执行 `instanceAnim.runtimeAnimatorController = null; instanceAnim.enabled = false;` 解除骨骼锁定（否则在 Scene 视图中拖不动手指），**同时必须保留 `instanceAnim.avatar = origAvatar` 不清空**，供导出时 `HumanPoseHandler` 读取。
+3. **加载场景时必须手动同步 `PropsController` 的武器掌心偏移**：
+   - 独立 Unity 工程不运行游戏脚本 `PropsController.Awake()`，因此刚实例化时 `swordLeft` 和 `swordRight` 的 `localPosition` 会停留在 `(0, 0, 0)`（悬在手背外）。
+   - 编辑器加载脚本必须主动设置 `swordRight.localPosition = new Vector3(0f, 0f, 0.38f)` 与 `swordLeft.localPosition = new Vector3(0f, 0f, -0.38f)`，保证 Unity 视口中刀柄与手掌的相对位置和游戏实机 100% 一致。
+4. **导出与注入严禁整包替换 `AnimationClip`**：
+   - 导出阶段由 [`LifelinePoseWorkbench.cs`](file:///d:/Agent/tftf/unity_lifeline/Assets/Editor/LifelinePoseWorkbench.cs) 将 `pose.muscles[55..94]` 按 `attr = 42 + mIdx`（即 `97..136`）写入 `unity_lifeline/Assets/AssetBundles/lifeline_finger_pose.json`（支持双手独立导出或右手一键镜像到左手）；
+   - 注入阶段运行 `python tools/apply_unity_idle_clip.py`，脚本设有安全门禁（仅允许 `97 <= attr <= 136` 共 40 项），只微创更新原版 `TeamSelect_Female_idle` 与 `Prefight_Female_idle` 的手指通道，100% 保护原版身体呼吸曲线与重心高度。
