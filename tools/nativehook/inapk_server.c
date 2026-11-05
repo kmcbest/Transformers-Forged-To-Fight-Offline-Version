@@ -6,6 +6,7 @@
 #define _POSIX_C_SOURCE 200809L
 #include "inapk_server.h"
 #include "inapk_pvp.h"
+#include "bot_info.h"
 
 #include <arpa/inet.h>
 #include <ctype.h>
@@ -193,6 +194,7 @@ void tftf_set_matrix_war_active(int active) {
     g_matrix_war_active = active;
     if (!active) {
         if (strcmp(g_active_quest_id, "1.1.5") == 0) g_active_quest_id[0] = 0;
+        g_current_is_10x_challenge = 0;
         if (strcmp(g_quest_state.qid, "1.1.5") == 0) g_quest_state.qid[0] = 0;
         g_matrix_war_empty_team = 0;
         g_matrix_war_team_set = 0;
@@ -636,7 +638,7 @@ static int out_hero_detail(Out *o, const unsigned char *s, size_t n, const char 
     if (!is_10x) {
         return out_template(o, s, n, "%SIG%", sig, "", "");
     }
-    float mult = g_user_settings.challenge_hp_multiplier;
+    float mult = tftf_get_challenge_hp_multiplier();
     if (mult <= 0.05f) mult = 1.0f;
     float atk_mult = (mult <= 1.5f) ? 0.8f : ((mult >= 9.0f) ? 1.25f : 1.0f);
 
@@ -645,30 +647,72 @@ static int out_hero_detail(Out *o, const unsigned char *s, size_t n, const char 
         free(tmp.p);
         return 0;
     }
+
+    char bid[64] = "";
+    const char *bpos = strstr((const char*)tmp.p, "\"bid\":\"");
+    if (bpos) {
+        bpos += 7;
+        const char *bend = strchr(bpos, '"');
+        if (bend && (bend - bpos < (int)sizeof(bid))) {
+            memcpy(bid, bpos, bend - bpos);
+            bid[bend - bpos] = 0;
+        }
+    }
+
+    int base_hp = 42000, base_atk = 2300, base_rating = 5370;
+    int found_stat = 0;
+    if (bid[0]) {
+        for (int k = 0; k < NUM_ENEMY_STATS; k++) {
+            if (strcmp(ENEMY_STATS[k].id, bid) == 0) {
+                base_hp = ENEMY_STATS[k].hp;
+                base_atk = ENEMY_STATS[k].atk;
+                base_rating = ENEMY_STATS[k].rating;
+                found_stat = 1;
+                break;
+            }
+        }
+    }
+    if (!found_stat) {
+        const char *hpp = strstr((const char*)tmp.p, "\"max_hp\":");
+        if (hpp) base_hp = atoi(hpp + 9);
+        const char *atp = strstr((const char*)tmp.p, "\"attack\":");
+        if (atp) base_atk = atoi(atp + 9);
+    }
+
+    long long new_hp = (long long)(base_hp * mult);
+    long long new_atk = (long long)(base_atk * atk_mult);
+    long long new_pi = (new_hp + new_atk) / 20;
+    long long new_r_hp = new_hp / 20;
+    long long new_r_atk = new_pi - new_r_hp;
+
     size_t i = 0;
     while (i < tmp.n) {
         static const char * const hp_keys[] = {
-            "\"rating_hp\":",
             "\"max_hp\":",
             "\"health\":"
         };
+        static const char * const r_hp_keys[] = {
+            "\"rating_hp\":",
+            "\"rating_hp_base\":"
+        };
         static const char * const atk_keys[] = {
-            "\"rating_attack\":",
             "\"attack\":"
         };
+        static const char * const r_atk_keys[] = {
+            "\"rating_attack\":",
+            "\"rating_attack_base\":"
+        };
+        static const char * const pi_keys[] = {
+            "\"rating\":"
+        };
+
         int matched = 0;
-        for (int k = 0; k < 3; k++) {
+        for (int k = 0; k < 2; k++) {
             size_t kl = strlen(hp_keys[k]);
             if (i + kl <= tmp.n && !memcmp(tmp.p + i, hp_keys[k], kl)) {
                 if (!out_add(o, tmp.p + i, kl)) { free(tmp.p); return 0; }
                 i += kl;
-                char val_str[32] = {0};
-                int vi = 0;
-                while (i < tmp.n && isdigit(tmp.p[i]) && vi < (int)sizeof(val_str)-1) {
-                    val_str[vi++] = (char)tmp.p[i++];
-                }
-                long long orig_hp = atoll(val_str);
-                long long new_hp = (long long)(orig_hp * mult);
+                while (i < tmp.n && isdigit(tmp.p[i])) i++;
                 char new_val[32];
                 int nlen = snprintf(new_val, sizeof(new_val), "%lld", new_hp);
                 if (!out_add(o, new_val, (size_t)nlen)) { free(tmp.p); return 0; }
@@ -678,19 +722,58 @@ static int out_hero_detail(Out *o, const unsigned char *s, size_t n, const char 
         }
         if (!matched) {
             for (int k = 0; k < 2; k++) {
+                size_t kl = strlen(r_hp_keys[k]);
+                if (i + kl <= tmp.n && !memcmp(tmp.p + i, r_hp_keys[k], kl)) {
+                    if (!out_add(o, tmp.p + i, kl)) { free(tmp.p); return 0; }
+                    i += kl;
+                    while (i < tmp.n && isdigit(tmp.p[i])) i++;
+                    char new_val[32];
+                    int nlen = snprintf(new_val, sizeof(new_val), "%lld", new_r_hp);
+                    if (!out_add(o, new_val, (size_t)nlen)) { free(tmp.p); return 0; }
+                    matched = 1;
+                    break;
+                }
+            }
+        }
+        if (!matched) {
+            for (int k = 0; k < 1; k++) {
                 size_t kl = strlen(atk_keys[k]);
                 if (i + kl <= tmp.n && !memcmp(tmp.p + i, atk_keys[k], kl)) {
                     if (!out_add(o, tmp.p + i, kl)) { free(tmp.p); return 0; }
                     i += kl;
-                    char val_str[32] = {0};
-                    int vi = 0;
-                    while (i < tmp.n && isdigit(tmp.p[i]) && vi < (int)sizeof(val_str)-1) {
-                        val_str[vi++] = (char)tmp.p[i++];
-                    }
-                    long long orig_atk = atoll(val_str);
-                    long long new_atk = (long long)(orig_atk * atk_mult);
+                    while (i < tmp.n && isdigit(tmp.p[i])) i++;
                     char new_val[32];
                     int nlen = snprintf(new_val, sizeof(new_val), "%lld", new_atk);
+                    if (!out_add(o, new_val, (size_t)nlen)) { free(tmp.p); return 0; }
+                    matched = 1;
+                    break;
+                }
+            }
+        }
+        if (!matched) {
+            for (int k = 0; k < 2; k++) {
+                size_t kl = strlen(r_atk_keys[k]);
+                if (i + kl <= tmp.n && !memcmp(tmp.p + i, r_atk_keys[k], kl)) {
+                    if (!out_add(o, tmp.p + i, kl)) { free(tmp.p); return 0; }
+                    i += kl;
+                    while (i < tmp.n && isdigit(tmp.p[i])) i++;
+                    char new_val[32];
+                    int nlen = snprintf(new_val, sizeof(new_val), "%lld", new_r_atk);
+                    if (!out_add(o, new_val, (size_t)nlen)) { free(tmp.p); return 0; }
+                    matched = 1;
+                    break;
+                }
+            }
+        }
+        if (!matched) {
+            for (int k = 0; k < 1; k++) {
+                size_t kl = strlen(pi_keys[k]);
+                if (i + kl <= tmp.n && !memcmp(tmp.p + i, pi_keys[k], kl)) {
+                    if (!out_add(o, tmp.p + i, kl)) { free(tmp.p); return 0; }
+                    i += kl;
+                    while (i < tmp.n && isdigit(tmp.p[i])) i++;
+                    char new_val[32];
+                    int nlen = snprintf(new_val, sizeof(new_val), "%lld", new_pi);
                     if (!out_add(o, new_val, (size_t)nlen)) { free(tmp.p); return 0; }
                     matched = 1;
                     break;
@@ -1970,9 +2053,9 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
                 if(is_wildcard) {
                     if(!out_template(o,v,n,"%SIG%",sig,"__unknown_bid__",hb))return NULL;
                 } else {
-                    if(!out_hero_detail(o,v,n,sig,0))return NULL;
+                    if(!out_hero_detail(o,v,n,sig,g_current_is_10x_challenge))return NULL;
                 }
-                first=0;if((rank==6&&level==1)||(rank==5&&level==1)){char hk60[200];size_t n60=0;snprintf(hk60,sizeof hk60,"@hero:%s:6:60",hb);const unsigned char *v60=lookup(hk60,&n60);if(v60){if(!out_add(o,",",1))return NULL;if(!out_hero_detail(o,v60,n60,sig,0))return NULL;logmsg("getBaseHeroData: also emitted rank 6 level 60 for %s", hb);}}}q=close;}
+                first=0;if((rank==6&&level==1)||(rank==5&&level==1)){char hk50[200];size_t n50=0;snprintf(hk50,sizeof hk50,"@hero:%s:5:50",hb);const unsigned char *v50=lookup(hk50,&n50);if(v50){if(!out_add(o,",",1))return NULL;if(!out_hero_detail(o,v50,n50,sig,g_current_is_10x_challenge))return NULL;logmsg("getBaseHeroData: also emitted rank 5 level 50 for %s", hb);}char hk60[200];size_t n60=0;snprintf(hk60,sizeof hk60,"@hero:%s:6:60",hb);const unsigned char *v60=lookup(hk60,&n60);if(v60){if(!out_add(o,",",1))return NULL;if(!out_hero_detail(o,v60,n60,sig,g_current_is_10x_challenge))return NULL;logmsg("getBaseHeroData: also emitted rank 6 level 60 for %s", hb);}}}q=close;}
         v=lookup("@herodata:close",&n);if(!v||!out_add(o,v,n))return NULL; Out compact=*o; o->p=NULL;o->n=o->cap=0; v=json_default_spaces(compact.p,compact.n,o,outn);free(compact.p);logmsg("getBaseHeroData reply (%zu bytes): %.300s", *outn, (const char*)v);return v;
     }
     if(strstr(p, "/bcg/getHeroXPCurve")) {
@@ -2187,6 +2270,7 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         g_quest_state.is_final_boss = 0;
         g_quest_state.qid[0] = 0;
         g_active_quest_id[0] = 0;
+        g_current_is_10x_challenge = 0;
         for (int i = 0; i < 16; i++) {
             if (strcmp(g_pos[i].qid, "raid_base") == 0) {
                 g_pos[i].qid[0] = 0;

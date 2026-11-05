@@ -3243,8 +3243,17 @@ static void calc_enemy_stats_all(const char* bid, int rank, int level, float* ou
 }
 
 static int calc_enemy_rating(const char* bid, int rank, int level) {
+    float hp_f = 42000.0f, atk_f = 2300.0f;
     int pi = 0;
-    calc_enemy_stats_all(bid, rank, level, NULL, NULL, &pi, NULL, NULL);
+    calc_enemy_stats_all(bid, rank, level, &hp_f, &atk_f, &pi, NULL, NULL);
+    if (g_current_is_10x_challenge) {
+        float mult = tftf_get_challenge_hp_multiplier();
+        if (mult <= 0.05f) mult = 1.0f;
+        float atk_mult = (mult <= 1.5f) ? 0.8f : ((mult >= 9.0f) ? 1.25f : 1.0f);
+        hp_f *= mult;
+        atk_f *= atk_mult;
+        pi = (int)(hp_f + atk_f) / 20;
+    }
     return pi;
 }
 
