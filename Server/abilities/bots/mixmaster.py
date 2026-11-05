@@ -154,7 +154,7 @@ def build_mixmaster_abilities(base_hp: float = 32402.0, base_atk: float = 2306.0
     appr_spec = {
         "id": "appr_mixmaster_special_dmg",
         "a": "特殊伤害",
-        "s": "none",
+        "s": "",
         "l": "每5秒获得1层特殊伤害增益，提升特殊技伤害27%(上限6层)",
         "ss": "特殊伤害",
         "t": "\uE41C",

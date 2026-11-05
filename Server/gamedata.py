@@ -334,11 +334,11 @@ def base_stats(bid, rank=1, level=1):
     and original. Scaled so enemy encounters and player squad are evenly matched."""
     if bid in _BOT_BASE_STATS:
         max_hp, max_atk = _BOT_BASE_STATS[bid]
-        if rank == 5 and level == 50:
+        if (rank == 6 and level == 60) or (rank == 5 and level == 50):
             return max_hp, max_atk
         rank_mult = 1.0 + 0.05 * (max(1, rank) - 1)
         level_add = (max(1, level) - 1) / 500.0
-        scale = (rank_mult * (1.0 + level_add)) / 1.3176
+        scale = (rank_mult * (1.0 + level_add)) / 1.3975
         return int(round(max_hp * scale)), int(round(max_atk * scale))
 
     faction, klass, star = ROSTER.get(bid, ("decepticon", "tact", 5))
@@ -560,7 +560,7 @@ def build_blueprints(lang="en"):
             "msa": max_special_attacks(bid, star),
             "ab": 100.0, "gg": 1, "mfl": 0, "nfr": 0,
             "fcpg": "", "fhpag": "",
-            "mr": 5, "max_rank": 5,
+            "mr": 6, "max_rank": 6,
             "sb": character_profiles.get_bot_synergy_ids(bid),
             "synergy_bonuses": character_profiles.get_bot_synergy_ids(bid),
         }
@@ -1247,7 +1247,7 @@ def build_hero_base(bid, rank=1):
         crit_chance = _BASE_STATS_OVERRIDE[bid].get("crit_chance", crit_chance)
         crit_damage = _BASE_STATS_OVERRIDE[bid].get("crit_damage", crit_damage)
     return {
-        "id": bid, "r": rank, "m": 50, "max_level": 50, "s": star,
+        "id": bid, "r": rank, "m": level, "max_level": level, "s": star,
         "max_hp": hp, "mhpb": hp, "attack": atk, "attb": atk,
         "mana_start": _DIAG_MANA_START, "stun_time": 0,
         "special_attacks": max_special_attacks(bid, star),
@@ -1278,7 +1278,7 @@ def build_heroes():
     out = {}
     for bid in OWNED:
         faction, klass, star = ROSTER.get(bid, ("decepticon", "tact", 5))
-        out[bid] = {str(r): build_hero_base(bid, r) for r in range(1, max(2, star + 1))}
+        out[bid] = {str(r): build_hero_base(bid, r) for r in range(1, 7)}
     for m in _load_mods():
         mid = m["id"]
         star = m.get("default_star", 5)
@@ -1650,9 +1650,9 @@ def build_hero_entry(bid, rank=None, level=None):
     Defaults to 5-Star Rank 5 Level 10 Awakened (sig 100) so bots can level up to 50."""
     faction, klass, star = ROSTER.get(bid, ("decepticon", "tact", 5))
     if rank is None:
-        rank = max(1, star)
+        rank = 6
     if level is None:
-        level = 10
+        level = 60
     hp, atk = base_stats(bid, rank, level)
     sig_lvl = 100
     rating, r_hp, r_atk, r_hp_base, r_atk_base = calculate_hero_rating(hp, atk, sig_lvl=sig_lvl)
@@ -4361,7 +4361,7 @@ def export_bot_info_header():
     bots = sorted(ROSTER.keys())
     for bid in bots:
         faction, klass, star = ROSTER[bid]
-        hp, atk = base_stats(bid, 5, 50)
+        hp, atk = base_stats(bid, 6, 60)
         pi, _, _, _, _ = calculate_hero_rating(hp, atk, sig_lvl=100)
         cls_st = _CLASS_STATS.get(klass, {"crit_chance": 0.16, "crit_damage": 1.50})
         crit_chance = cls_st["crit_chance"]

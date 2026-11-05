@@ -54,7 +54,7 @@ def build_hotrod_abilities(base_hp: float = 29500.0, base_atk: float = 2420.0):
     appr_pwr = {
         "id": "appr_hotrod_decel_power_rate_debuff",
         "a": "时间停滞",
-        "s": "none",
+        "s": "",
         "l": "减速目标无法闪避规避，能量获取功率降低27.2%",
         "ss": "时空封锁",
         "t": "\uE606",
@@ -105,7 +105,7 @@ def build_hotrod_abilities(base_hp: float = 29500.0, base_atk: float = 2420.0):
     appr_decel = {
         "id": "appr_hotrod_sp2_deceleration",
         "a": "减速",
-        "s": "none",
+        "s": "",
         "l": "使目标陷入时空减速，无法规避闪避，持续3.2秒",
         "ss": "时空减速",
         "t": "\uE952",

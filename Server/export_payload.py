@@ -435,8 +435,8 @@ def build_entries(listen_port: int = 8080) -> dict[str, bytes]:
     add("@herodata:close", b"]}")
     all_owned = sorted(set(gamedata.OWNED) | {m["id"] for m in gamedata._load_mods()} | {r["id"] for r in gamedata._load_relics()})
     for bid in all_owned:
-        for rank in range(1, 6):
-            for level in range(1, 51):
+        for rank in range(1, 7):
+            for level in range(1, 61):
                 add(f"@hero:{bid}:{rank}:{level}", _hero_detail(bid, rank, level))
     add("@hero:*:1:1", _hero_detail("__unknown_bid__", 1, 1))
 

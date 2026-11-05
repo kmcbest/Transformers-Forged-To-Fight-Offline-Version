@@ -24,7 +24,7 @@ static void bonecrusher_on_hit_connected(SkillHitContext* ctx) {
 
     // 1. 碎骨魔作为受击方：受到近战暴击时 90% 概率反噬对手流血
     if (ctx->target_bot_id && strstr(ctx->target_bot_id, "bonecrusher") != NULL) {
-        if (ctx->is_crit && !ctx->is_ranged) {
+        if (!ctx->is_blocked && ctx->is_crit && !ctx->is_ranged) {
             float roll = skill_random_float();
             float chance = 0.90f;
             if (roll < chance) {

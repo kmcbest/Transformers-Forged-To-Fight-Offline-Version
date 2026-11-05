@@ -599,7 +599,8 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x012E8F34, "QUEST_FLOW_ENTER",    2, 0 }, // 209 QuestFlow.Enter
     { 0x012E900C, "QUEST_FLOW_RESUME",   2, 0 }, // 210 QuestFlow.Resume
     { 0x00C5FC70, "HOME_FLOW_RESUME",    2, 0 }, // 211 HomeFlow.Resume
-    { 0x0117E4AC, "DASH_ENTER",          2, 0 }  // 212 PlayerDashState.OnEnter -> track dash start timestamp
+    { 0x0117E4AC, "DASH_ENTER",          2, 0 }, // 212 PlayerDashState.OnEnter -> track dash start timestamp
+    { 0x01040AC8, "GET_SAVE_TEAM_ID",    2, 0 }  // 213 QuestUtils.GetSaveTeamIDForCategory -> return "raid" for raid
 };
 
 #define NH (int)(sizeof(H)/sizeof(H[0]))
@@ -7651,6 +7652,9 @@ float hook_177(void* self, float damage, void* damageType, int32_t blocked, void
     }
     extern float skill_megatronus_filter_damage(int target_player_index, float final_damage);
     res = skill_megatronus_filter_damage(is_enemy ? 1 : 0, res);
+
+    extern float skill_wheeljack_filter_damage(int target_player_index, float final_damage);
+    res = skill_wheeljack_filter_damage(is_enemy ? 1 : 0, res);
     return res;
 }
 
@@ -8916,9 +8920,20 @@ void skill_apply_buff_dur(int player_index, const char* mod_id, float override_d
         }
 
         if (found_sm && obj_ok(found_sm) && apply_buff) {
+            void* bcg_sm = *(void**)((char*)found_sm + 0x18);
+            int32_t target_type = (bcg_sm && obj_ok(bcg_sm)) ? *(int32_t*)((char*)bcg_sm + 0x48) : 1;
+            if (target_type == 2) {
+                // BuffTargetTypes.opponent: Instigator must be opp_bc so that opp_bc's opponent (player_index) receives the buff!
+                if (opp_bc && obj_ok(opp_bc)) {
+                    applicant_bc = opp_bc;
+                }
+            } else {
+                applicant_bc = bc;
+            }
+
             apply_buff(bc, applicant_bc, found_sm, 1, override_dur > 0.0f ? 1 : 0, override_dur, NULL);
-            flog("SKILL_APPLY_BUFF: Applied '%s' to P%d (applicant=%s, sm=%p, dur=%.2f)",
-                 mod_id, player_index, (applicant_bc == bc) ? "self" : "opp", found_sm, override_dur);
+            flog("SKILL_APPLY_BUFF: Applied '%s' to P%d (target_type=%d, applicant=%s, sm=%p, dur=%.2f)",
+                 mod_id, player_index, target_type, (applicant_bc == bc) ? "self" : "opp", found_sm, override_dur);
             return;
         }
 
@@ -10918,6 +10933,34 @@ void* hook_212(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
 }
 
 
+static int il2cpp_string_equals_ascii(void* s, const char* ascii) {
+    if (!s || !obj_ok(s)) return 0;
+    int32_t len = *(int32_t*)((char*)s + 0x10);
+    int ascii_len = (int)strlen(ascii);
+    if (len != ascii_len) return 0;
+    uint16_t* ch = (uint16_t*)((char*)s + 0x14);
+    for (int i = 0; i < len; i++) {
+        char c1 = (char)ch[i];
+        char c2 = ascii[i];
+        if (c1 >= 'A' && c1 <= 'Z') c1 += 32;
+        if (c2 >= 'A' && c2 <= 'Z') c2 += 32;
+        if (c1 != c2) return 0;
+    }
+    return 1;
+}
+
+// slot 213 GET_SAVE_TEAM_ID (0x01040AC8): QuestUtils.GetSaveTeamIDForCategory(string cat, Phase phase)
+void* hook_213(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    if (a0 && obj_ok(a0)) {
+        if (il2cpp_string_equals_ascii(a0, "raid")) {
+            if (g_strnew) {
+                return g_strnew("raid");
+            }
+        }
+    }
+    return H[213].orig(a0, a1, a2, a3, a4, a5, a6, a7);
+}
+
 static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hook_7,hook_8,
     hook_9,hook_10,hook_11,hook_12,hook_13,hook_14,hook_15,hook_16,hook_17,hook_18,hook_19,hook_20,hook_21,
     hook_22,hook_23,hook_24,hook_25,hook_26,hook_27,hook_28,hook_29,hook_30,
@@ -10940,7 +10983,7 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     hook_171,hook_172,hook_173,hook_174,hook_175,hook_176,(void*)hook_177,(void*)hook_178,
     (void*)hook_179,hook_180,hook_181,hook_182,hook_183,hook_184,hook_185,hook_186,(void*)hook_187,(void*)hook_188,(void*)hook_189,
     (void*)hook_190,(void*)hook_191,(void*)hook_192,(void*)hook_193,(void*)hook_194,(void*)hook_195,(void*)hook_196,(void*)hook_197,(void*)hook_198,hook_199,(void*)hook_200,(void*)hook_201,hook_202,hook_203,
-    (void*)hook_204,hook_205,hook_206,hook_207,hook_208,hook_209,hook_210,hook_211,hook_212 };
+    (void*)hook_204,hook_205,hook_206,hook_207,hook_208,hook_209,hook_210,hook_211,hook_212,hook_213 };
 _Static_assert(sizeof(handlers)/sizeof(handlers[0]) == sizeof(H)/sizeof(H[0]), "handlers count must match H count");
 
 

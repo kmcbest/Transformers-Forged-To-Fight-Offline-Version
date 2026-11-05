@@ -96,8 +96,8 @@ def build_optimus_abilities(base_hp: float = 30000.0, base_atk: float = 3000.0):
         pua_icon="\uE517",
         color_hex="29EBF4",
         gradient_bottom="00C5E8",
-        stackable=True,
-        max_stacks=5,
+        stackable=False,
+        max_stacks=1,
     )
     mods.update(m_armor)
     appears.update(a_armor)

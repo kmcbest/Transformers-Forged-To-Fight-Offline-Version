@@ -85,8 +85,8 @@ def build_optimusprime_cin_tf_abilities(base_hp: float = 29334.0, base_atk: floa
         pua_icon="\uE517",
         color_hex="29EBF4",
         gradient_bottom="00C5E8",
-        stackable=True,
-        max_stacks=5,
+        stackable=False,
+        max_stacks=1,
     )
     mods.update(m_arm)
     appears.update(a_arm)
@@ -116,7 +116,7 @@ def build_optimusprime_cin_tf_abilities(base_hp: float = 29334.0, base_atk: floa
     appr_willpower = {
         "id": "appr_optimusprime_cin_tf_willpower",
         "a": "意志力",
-        "s": "none",
+        "s": "",
         "l": "流血状态下造成的伤害35%转化为自身生命恢复；最多存在一层流血，超出部分净化并转化为10%最大能量",
         "ss": "意志力吸血与流血净化回能",
         "t": "\uE942",

@@ -67,7 +67,7 @@ def build_grimlock_abilities(base_hp: float = 34000.0, base_atk: float = 2100.0)
     appr_rage = {
         "id": "appr_grimlock_dino_rage",
         "a": "恐龙之怒",
-        "s": "none",
+        "s": "",
         "l": "受到伤害减益1秒后净化，并有30%概率获得近战增益",
         "ss": "伤害减益延时净化",
         "t": "\uE406",

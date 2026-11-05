@@ -1663,7 +1663,7 @@ def make_heal_statmod(
     appear = {
         "id": appr_id,
         "a": callout_text,
-        "s": "none",
+        "s": "",                      # 留空避免被当作常驻被动列表项
         "l": "",
         "ss": "",
         "t": pua_icon,

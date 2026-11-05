@@ -1,1 +1,16 @@
-{"error": null, "result": {"Level": 40, "IsEnabled": true, "DefaultCategory": "commander", "Types": {"commander": {"Name": "commander", "Level": 40, "NextResourceThreshold": 1000000, "PreviousResourceThreshold": 0}}}}
+{
+  "error": null,
+  "result": {
+    "Level": 60,
+    "IsEnabled": true,
+    "DefaultCategory": "commander",
+    "Types": {
+      "commander": {
+        "Name": "commander",
+        "Level": 60,
+        "NextResourceThreshold": 1000000,
+        "PreviousResourceThreshold": 0
+      }
+    }
+  }
+}

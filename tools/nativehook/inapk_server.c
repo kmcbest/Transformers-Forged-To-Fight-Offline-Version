@@ -708,14 +708,18 @@ static int out_hero_detail(Out *o, const unsigned char *s, size_t n, const char 
 
 int tftf_format_hero_detail(const char *bid, int rank, int level, int sig_lvl, char *out, size_t max_out) {
     if (!bid || !bid[0] || !out || max_out < 64) return 0;
-    if (rank <= 0) rank = 5;
-    if (level <= 0) level = 50;
+    if (rank <= 0) rank = 6;
+    if (level <= 0) level = 60;
     if (sig_lvl <= 0) sig_lvl = 100;
 
     char hk[128];
     size_t n = 0;
     snprintf(hk, sizeof hk, "@hero:%s:%d:%d", bid, rank, level);
     const unsigned char *tpl = lookup(hk, &n);
+    if (!tpl) {
+        snprintf(hk, sizeof hk, "@hero:%s:6:60", bid);
+        tpl = lookup(hk, &n);
+    }
     if (!tpl) {
         snprintf(hk, sizeof hk, "@hero:%s:5:50", bid);
         tpl = lookup(hk, &n);
@@ -856,6 +860,14 @@ static const char * const g_squad_config_paths[] = {
     NULL
 };
 
+static const char * const g_raid_squad_config_paths[] = {
+    "/sdcard/Android/data/com.kabam.bigrobot/files/raid_squad_config.json",
+    "/storage/emulated/0/Android/data/com.kabam.bigrobot/files/raid_squad_config.json",
+    "/data/data/com.kabam.bigrobot/files/raid_squad_config.json",
+    "/data/user/0/com.kabam.bigrobot/files/raid_squad_config.json",
+    NULL
+};
+
 void tftf_save_squad_config(const Team *team) {
     if (!team || team->count <= 0) return;
     char buf[1024];
@@ -928,6 +940,165 @@ int tftf_load_squad_config(Team *team) {
         }
     }
     return 0;
+}
+
+void tftf_save_raid_squad_config(const Team *team) {
+    if (!team || team->count <= 0) return;
+    char buf[1024];
+    int len = snprintf(buf, sizeof(buf), "{\n  \"team\": [\n");
+    for (int i = 0; i < team->count && i < 3; i++) {
+        len += snprintf(buf + len, sizeof(buf) - len, "    \"%s\"%s\n",
+                        team->bid[i], (i + 1 < team->count && i + 1 < 3) ? "," : "");
+    }
+    len += snprintf(buf + len, sizeof(buf) - len, "  ]\n}\n");
+
+    for (int p = 0; g_raid_squad_config_paths[p]; p++) {
+        FILE *fp = fopen(g_raid_squad_config_paths[p], "wb");
+        if (fp) {
+            fwrite(buf, 1, (size_t)len, fp);
+            fclose(fp);
+            logmsg("raid_squad_config saved to %s (%d bots)", g_raid_squad_config_paths[p], team->count > 3 ? 3 : team->count);
+        }
+    }
+}
+
+int tftf_load_raid_squad_config(Team *team) {
+    if (!team) return 0;
+    char buf[2048];
+    for (int p = 0; g_raid_squad_config_paths[p]; p++) {
+        FILE *fp = fopen(g_raid_squad_config_paths[p], "rb");
+        if (fp) {
+            size_t rd = fread(buf, 1, sizeof(buf) - 1, fp);
+            fclose(fp);
+            if (rd > 0) {
+                buf[rd] = 0;
+                char bids[3][64];
+                int count = 0, invalid = 0;
+                const char *q = json_value(buf, buf + rd, "team");
+                if (q && *q == '[') {
+                    q++;
+                    for (;;) {
+                        while (q < buf + rd && isspace((unsigned char)*q)) q++;
+                        if (q >= buf + rd || *q == ']') break;
+                        if (*q != '\"') break;
+                        q++;
+                        const char *e = q;
+                        while (e < buf + rd && *e != '\"') {
+                            if (*e == '\\') { invalid = 1; break; }
+                            e++;
+                        }
+                        if (invalid || e >= buf + rd) break;
+                        size_t l = (size_t)(e - q);
+                        if (count < 3 && l < sizeof(bids[0])) {
+                            memcpy(bids[count], q, l);
+                            bids[count][l] = 0;
+                            if (safe_id(bids[count])) count++;
+                            else invalid = 1;
+                        }
+                        q = e + 1;
+                        while (q < buf + rd && isspace((unsigned char)*q)) q++;
+                        if (q < buf + rd && *q == ',') q++;
+                    }
+                }
+                if (!invalid && count > 0) {
+                    team->count = count;
+                    for (int i = 0; i < count; i++) {
+                        snprintf(team->bid[i], sizeof(team->bid[i]), "%s", bids[i]);
+                    }
+                    logmsg("raid_squad_config loaded from %s (%d bots, leader: %s)",
+                           g_raid_squad_config_paths[p], count, team->bid[0]);
+                    return 1;
+                }
+            }
+        }
+    }
+    return 0;
+}
+
+static char g_raid_team[3][64];
+static int g_raid_team_count = 0;
+static int g_raid_config_loaded = 0;
+
+static void store_raid_team(const char bids[][64], int count, int invalid) {
+    int i;
+    pthread_mutex_lock(&g_pos_lock);
+    g_raid_team_count = invalid || count < 0 || count > 3 ? -1 : count;
+    if (g_raid_team_count > 0) {
+        for (i = 0; i < g_raid_team_count; i++) {
+            snprintf(g_raid_team[i], sizeof g_raid_team[i], "%s", bids[i]);
+        }
+        Team tm;
+        memset(&tm, 0, sizeof tm);
+        tm.count = g_raid_team_count;
+        for (i = 0; i < tm.count; i++) snprintf(tm.bid[i], sizeof(tm.bid[i]), "%s", g_raid_team[i]);
+        tftf_save_raid_squad_config(&tm);
+    }
+    pthread_mutex_unlock(&g_pos_lock);
+}
+
+static int resolve_raid_team(Team *team) {
+    const unsigned char *roster;
+    size_t rn;
+    int i, valid = 1;
+    roster = lookup("@roster", &rn);
+    if (!roster) return 0;
+
+    pthread_mutex_lock(&g_pos_lock);
+    if (!g_raid_config_loaded) {
+        g_raid_config_loaded = 1;
+        Team file_team;
+        memset(&file_team, 0, sizeof file_team);
+        if (tftf_load_raid_squad_config(&file_team)) {
+            int file_valid = 1;
+            for (i = 0; i < file_team.count; i++) {
+                if (!safe_id(file_team.bid[i]) || !list_has(roster, rn, file_team.bid[i])) {
+                    file_valid = 0;
+                    break;
+                }
+            }
+            if (file_valid && file_team.count > 0) {
+                g_raid_team_count = file_team.count > 3 ? 3 : file_team.count;
+                for (i = 0; i < g_raid_team_count; i++) {
+                    snprintf(g_raid_team[i], sizeof(g_raid_team[i]), "%s", file_team.bid[i]);
+                }
+            }
+        } else {
+            /* Seed raid team with first 3 of saved team if available, else default bots */
+            if (g_saved_team_count > 0) {
+                g_raid_team_count = g_saved_team_count > 3 ? 3 : g_saved_team_count;
+                for (i = 0; i < g_raid_team_count; i++) {
+                    snprintf(g_raid_team[i], sizeof(g_raid_team[i]), "%s", g_saved_team[i]);
+                }
+            } else {
+                g_raid_team_count = 3;
+                snprintf(g_raid_team[0], sizeof g_raid_team[0], "optimus_cin_t3");
+                snprintf(g_raid_team[1], sizeof g_raid_team[1], "bumblebee_cin_t3");
+                snprintf(g_raid_team[2], sizeof g_raid_team[2], "windblade_cin_t3");
+            }
+            Team tm;
+            memset(&tm, 0, sizeof tm);
+            tm.count = g_raid_team_count;
+            for (i = 0; i < tm.count; i++) snprintf(tm.bid[i], sizeof(tm.bid[i]), "%s", g_raid_team[i]);
+            tftf_save_raid_squad_config(&tm);
+        }
+    }
+
+    if (g_raid_team_count <= 0) valid = 0;
+    else {
+        Team saved;
+        memset(&saved, 0, sizeof saved);
+        saved.count = g_raid_team_count;
+        for (i = 0; i < saved.count; i++) snprintf(saved.bid[i], sizeof saved.bid[i], "%s", g_raid_team[i]);
+        for (i = 0; i < saved.count; i++) if (!safe_id(saved.bid[i]) || !list_has(roster, rn, saved.bid[i])) valid = 0;
+        if (valid) *team = saved;
+    }
+    pthread_mutex_unlock(&g_pos_lock);
+    return valid;
+}
+
+int tftf_get_raid_team(Team *team) {
+    if (!team) return 0;
+    return resolve_raid_team(team);
 }
 
 static void store_saved_team(const char bids[][64], int count, int invalid) {
@@ -1041,6 +1212,29 @@ static int render_steam(Out *o, const Team *team) {
     for(i=0;i<team->count;i++) { snprintf(key,sizeof key,"@savedteam:hero:%s",team->bid[i]);v=lookup(key,&n);if(!v)return 0;if(i&&!out_add(o,",",1))return 0;if(!out_add(o,v,n))return 0; }
     return out_add(o,"]",1);
 }
+
+static int render_steam_user_data(Out *o, const Team *team, const Team *raid_team) {
+    int i; char key[96]; const unsigned char *v; size_t n;
+    if(!out_add(o,"[",1)) return 0;
+    for(i=0; i<team->count; i++) {
+        snprintf(key, sizeof key, "@savedteam:hero:%s", team->bid[i]);
+        v=lookup(key, &n);
+        if(!v) return 0;
+        if(i && !out_add(o, ",", 1)) return 0;
+        if(!out_add(o, v, n)) return 0;
+    }
+    if (raid_team && raid_team->count > 0) {
+        if(!OUT_ADD_STR(o, "]},{\"sid\":\"raid\",\"heroes\":[")) return 0;
+        for(i=0; i<raid_team->count; i++) {
+            snprintf(key, sizeof key, "@savedteam:hero:%s", raid_team->bid[i]);
+            v=lookup(key, &n);
+            if(!v) return 0;
+            if(i && !out_add(o, ",", 1)) return 0;
+            if(!out_add(o, v, n)) return 0;
+        }
+    }
+    return out_add(o, "]", 1);
+}
 static const char *json_value(const char *s, const char *end, const char *want) {
     const char *p=s; size_t wl=strlen(want);
     while(p<end) { const char *q=strstr(p,"\""); if(!q||q>=end)return NULL;q++;if((size_t)(end-q)<wl+1||memcmp(q,want,wl)||q[wl]!='\"'){p=q;continue;}q+=wl+1;while(q<end&&isspace((unsigned char)*q))q++;if(q>=end||*q!=':'){p=q;continue;}q++;while(q<end&&isspace((unsigned char)*q))q++;return q; }
@@ -1088,6 +1282,23 @@ static void store_quest_team(const char *s, const char *end) {
     char bids[5][64]; int count=0,invalid=0,i,present=0;
     for(i=0;i<5;i++) { char key[4],value[64];snprintf(key,sizeof key,"tm%d",i);if(json_value(s,end,key)){present=1;if(!json_string(s,end,key,value,sizeof value)){invalid=1;continue;}if(value[0]){if(!safe_id(value))invalid=1;else snprintf(bids[count++],sizeof bids[0],"%s",value);}} }
     if(present)store_saved_team(bids,count,invalid);
+}
+
+static void store_raid_quest_team(const char *s, const char *end) {
+    char bids[3][64]; int count=0,invalid=0,i,present=0;
+    for(i=0;i<3;i++) {
+        char key[4],value[64];
+        snprintf(key,sizeof key,"tm%d",i);
+        if(json_value(s,end,key)){
+            present=1;
+            if(!json_string(s,end,key,value,sizeof value)){invalid=1;continue;}
+            if(value[0]){
+                if(!safe_id(value)) invalid=1;
+                else snprintf(bids[count++],sizeof bids[0],"%s",value);
+            }
+        }
+    }
+    if(present && count > 0) store_raid_team(bids,count,invalid);
 }
 static const char *path_last(const char *p) { const char *x=strrchr(p,'/'); return x?x+1:p; }
 static int has_suffix(const char *p, const char *s) { size_t a=strlen(p),b=strlen(s);return a>=b&&!memcmp(p+a-b,s,b); }
@@ -1282,8 +1493,9 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         if(v) return v;
     }
     /* This ordering deliberately mirrors fakeserver.H._dynamic. */
-    if(has_suffix(p,"/bcg/getUserData")) { Team team; Out saved={0},active={0}; TemplateArg args[2];
-        v=lookup("@userdata:template",&n);if(!v||!resolve_team(&team)||!render_steam(&saved,&team)||!render_ateam(&active,&team)){free(saved.p);free(active.p);return NULL;}
+    if(has_suffix(p,"/bcg/getUserData")) { Team team, raid_team; Out saved={0},active={0}; TemplateArg args[2];
+        int have_raid = resolve_raid_team(&raid_team);
+        v=lookup("@userdata:template",&n);if(!v||!resolve_team(&team)||!(have_raid ? render_steam_user_data(&saved,&team,&raid_team) : render_steam(&saved,&team))||!render_ateam(&active,&team)){free(saved.p);free(active.p);return NULL;}
         args[0]=(TemplateArg){"%STEAM%",saved.p,saved.n};args[1]=(TemplateArg){"%ATEAM%",active.p,active.n};
         if(!out_template_args(o,v,n,args,2)){free(saved.p);free(active.p);return NULL;}free(saved.p);free(active.p);*outn=o->n;return o->p;
     }
@@ -1637,7 +1849,7 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
             return fight_match_ok;
         }
         Team team;
-        int have_team = resolve_team(&team);
+        int have_team = resolve_raid_team(&team);
         pthread_mutex_lock(&g_pos_lock);
         snprintf(g_active_quest_id, sizeof g_active_quest_id, "raid_base");
         snprintf(g_quest_state.qid, sizeof g_quest_state.qid, "raid_base");
@@ -1760,7 +1972,7 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
                 } else {
                     if(!out_hero_detail(o,v,n,sig,0))return NULL;
                 }
-                first=0;if(rank==5&&level==1){char hk50[200];size_t n50=0;snprintf(hk50,sizeof hk50,"@hero:%s:5:50",hb);const unsigned char *v50=lookup(hk50,&n50);if(v50){if(!out_add(o,",",1))return NULL;if(!out_hero_detail(o,v50,n50,sig,0))return NULL;logmsg("getBaseHeroData: also emitted rank 5 level 50 for %s", hb);}}}q=close;}
+                first=0;if((rank==6&&level==1)||(rank==5&&level==1)){char hk60[200];size_t n60=0;snprintf(hk60,sizeof hk60,"@hero:%s:6:60",hb);const unsigned char *v60=lookup(hk60,&n60);if(v60){if(!out_add(o,",",1))return NULL;if(!out_hero_detail(o,v60,n60,sig,0))return NULL;logmsg("getBaseHeroData: also emitted rank 6 level 60 for %s", hb);}}}q=close;}
         v=lookup("@herodata:close",&n);if(!v||!out_add(o,v,n))return NULL; Out compact=*o; o->p=NULL;o->n=o->cap=0; v=json_default_spaces(compact.p,compact.n,o,outn);free(compact.p);logmsg("getBaseHeroData reply (%zu bytes): %.300s", *outn, (const char*)v);return v;
     }
     if(strstr(p, "/bcg/getHeroXPCurve")) {
@@ -1793,8 +2005,8 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
 
         int cur_lvl = get_hero_level(hero_bid, 10);
         int new_lvl = cur_lvl + ore_count;
-        if (new_lvl > 50) new_lvl = 50;
-        set_hero_level(hero_bid, new_lvl, 5);
+        if (new_lvl > 60) new_lvl = 60;
+        set_hero_level(hero_bid, new_lvl, 6);
 
         int hp = 30000 + new_lvl * 500;
         int atk = 1500 + new_lvl * 30;
@@ -1814,7 +2026,7 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
               "\"updates\":{"
                 "\"heroes\":[{"
                   "\"entity_type\":\"bot\",\"bid\":\"%s\","
-                  "\"rank\":5,\"level\":%d,\"sig_lvl\":100,"
+                  "\"rank\":6,\"level\":%d,\"sig_lvl\":100,"
                   "\"s\":5,\"rarity\":5,\"star\":5,\"faction\":\"decepticon\","
                   "\"required_xp\":0,\"max_xp\":100,"
                   "\"stamina\":100,\"stamina_ts\":0,\"stamina_full_ts\":0,\"stt\":\"\","
@@ -1866,7 +2078,7 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         } else {
             rlen = snprintf(resp_buf, sizeof(resp_buf),
                 "{\"error\":null,\"result\":{\"updates\":{\"heroes\":[{"
-                "\"entity_type\":\"bot\",\"bid\":\"%s\",\"rank\":5,\"level\":50,\"sig_lvl\":100,"
+                "\"entity_type\":\"bot\",\"bid\":\"%s\",\"rank\":6,\"level\":60,\"sig_lvl\":100,"
                 "\"stamina\":100,\"stamina_ts\":0,\"stamina_full_ts\":0,\"stt\":\"\","
                 "\"max_hp\":2000,\"attack\":500,\"rating\":2000,\"rating_hp\":2000,\"rating_attack\":500,"
                 "\"special_attacks\":3,\"pvpb\":{},\"exc\":{}"
@@ -1908,10 +2120,10 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
         return v?json_default_spaces(v,n,o,outn):NULL;
     }
     if(strstr(p, "/quests/quest-join/")) {
-        store_quest_team(body, end);
+        store_raid_quest_team(body, end);
         Team team;
         Out qteam = {0}, ateam = {0};
-        if (!resolve_team(&team)) return NULL;
+        if (!resolve_raid_team(&team)) return NULL;
         if (team.count > 3) team.count = 3;
         for (int h = 0; h < 5; h++) {
             g_quest_state.hero_hp[h] = 1.0f;
@@ -2164,6 +2376,7 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
             } else if(strcmp(qid, "1.1.6") == 0) {
                 if (team.count > 1) team.count = 1;
             } else if(strcmp(qid, "raid_base") == 0) {
+                resolve_raid_team(&team);
                 if (team.count > 3) team.count = 3;
                 for (int h = 0; h < 5; h++) {
                     if (g_quest_state.hero_hp[h] <= 0.0f) g_quest_state.hero_hp[h] = 1.0f;
@@ -2214,6 +2427,35 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
             args[2]=(TemplateArg){"%ATEAM%",ateam.p,ateam.n};
             v=template_spaced(o,v,n,args,3,outn);free(steam.p);free(ateam.p);return v;
         }
+        if (strcmp(teamid, "raid") == 0) {
+            store_raid_team(bids, count, invalid);
+            logmsg("RAID: setSavedTeam handled for Raid (%d bots), normal saved team untouched!", count);
+            if (!resolve_raid_team(&team)) {
+                memset(&team, 0, sizeof team);
+                team.count = count > 3 ? 3 : count;
+                for (int i = 0; i < team.count; i++) snprintf(team.bid[i], sizeof team.bid[i], "%s", bids[i]);
+            }
+            v=lookup("@savedteam:template",&n);
+            if(!v||!render_steam(&steam,&team)||!render_ateam(&ateam,&team)){free(steam.p);free(ateam.p);return NULL;}
+            args[0]=(TemplateArg){"%TID%",(const unsigned char*)teamid,strlen(teamid)};
+            args[1]=(TemplateArg){"%STEAM%",steam.p,steam.n};
+            args[2]=(TemplateArg){"%ATEAM%",ateam.p,ateam.n};
+            v=template_spaced(o,v,n,args,3,outn);free(steam.p);free(ateam.p);return v;
+        }
+        if (strcmp(teamid, "0") != 0 && teamid[0] != '\0') {
+            /* Temporary / PVP / Arena team - DO NOT save to disk, DO NOT touch g_saved_team or avatar! */
+            logmsg("PVP: setSavedTeam handled for temporary/arena team '%s' (%d bots), not saved to disk!", teamid, count);
+            memset(&team, 0, sizeof team);
+            team.count = count > 5 ? 5 : count;
+            for (int i = 0; i < team.count; i++) snprintf(team.bid[i], sizeof team.bid[i], "%s", bids[i]);
+            v=lookup("@savedteam:template",&n);
+            if(!v||!render_steam(&steam,&team)||!render_ateam(&ateam,&team)){free(steam.p);free(ateam.p);return NULL;}
+            args[0]=(TemplateArg){"%TID%",(const unsigned char*)teamid,strlen(teamid)};
+            args[1]=(TemplateArg){"%STEAM%",steam.p,steam.n};
+            args[2]=(TemplateArg){"%ATEAM%",ateam.p,ateam.n};
+            v=template_spaced(o,v,n,args,3,outn);free(steam.p);free(ateam.p);return v;
+        }
+        /* Default: Story / Special quests (teamID == "0") */
         store_saved_team(bids,count,invalid);
         v=lookup("@savedteam:template",&n);
         if(!v||!resolve_team(&team)||!render_steam(&steam,&team)||!render_ateam(&ateam,&team)){free(steam.p);free(ateam.p);return NULL;}

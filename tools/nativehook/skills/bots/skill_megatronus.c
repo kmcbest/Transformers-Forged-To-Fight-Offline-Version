@@ -124,7 +124,7 @@ static void megatronus_on_simulation_tick(uint64_t now_ms) {
             uint64_t dt_ms = now_ms - s_last_tick_ms[p];
             s_last_tick_ms[p] = now_ms;
 
-            if (!skill_has_buff(p, "power_lock")) {
+            if (!skill_has_buff(p, "power_lock") && !skill_is_special_attacking(p)) {
                 float base_rate = 1.0f / 14.0f; // 正常每秒自主产出 +0.0714 格
                 float net_rate = base_rate;
 
@@ -293,6 +293,18 @@ static void megatronus_on_hit_connected(SkillHitContext* ctx) {
 
         // 4. 特殊技 SP1 (action_type == 16 || special_index == 1)
         if (ctx->special_index == 1 || ctx->action_type == 16) {
+            // b) 狂怒遗迹生效时，第一击 100% 窃取对手 35% 现有能量 (必须第一击命中且未被防御)
+            if (ctx->hit_index == 0 && !ctx->is_blocked && s_active_relic[ap] == MEGATRONUS_RELIC_FURY) {
+                float opp_mana = skill_get_mana(tp);
+                if (opp_mana > 0.0f) {
+                    float stolen = opp_mana * 0.35f;
+                    skill_add_mana(tp, -stolen);
+                    skill_add_mana(ap, stolen);
+                    skill_apply_buff_dur(tp, "megatronus_power_steal", 1.0f);
+                    skill_overlay("[%s] 狂怒窃电！首击夺取对手 %.2f 格能量！", ap == 0 ? "震天尊" : "敌方震天尊", stolen);
+                    skill_log("MEGATRONUS: SP1 Power Steal transferred %.2f mana from P%d to P%d", stolen, tp, ap);
+                }
+            }
             if (ctx->is_last_hit) {
                 // a) 60% 破甲 (移除一层护甲增益，施加 8 秒破甲 -30%)
                 float roll = skill_random_float();
@@ -303,18 +315,6 @@ static void megatronus_on_hit_connected(SkillHitContext* ctx) {
                     skill_apply_buff_dur(tp, "megatronus_sp1_armor_break", 8.0f);
                     skill_overlay("[%s] SP1 破甲成功！削弱对手 30%% 护甲！", ap == 0 ? "震天尊" : "敌方震天尊");
                     skill_log("MEGATRONUS: SP1 Armor Break applied to P%d", tp);
-                }
-                // b) 狂怒遗迹生效时，100% 窃取对手 35% 现有能量
-                if (s_active_relic[ap] == MEGATRONUS_RELIC_FURY) {
-                    float opp_mana = skill_get_mana(tp);
-                    if (opp_mana > 0.0f) {
-                        float stolen = opp_mana * 0.35f;
-                        skill_add_mana(tp, -stolen);
-                        skill_add_mana(ap, stolen);
-                        skill_apply_buff_dur(tp, "megatronus_power_steal", 1.0f);
-                        skill_overlay("[%s] 狂怒窃电！夺取对手 %.2f 格能量！", ap == 0 ? "震天尊" : "敌方震天尊", stolen);
-                        skill_log("MEGATRONUS: SP1 Power Steal transferred %.2f mana from P%d to P%d", stolen, tp, ap);
-                    }
                 }
             }
         }
@@ -330,14 +330,14 @@ static void megatronus_on_hit_connected(SkillHitContext* ctx) {
                 skill_overlay("[%s] SP2 终结不可防御！", ap == 0 ? "震天尊" : "敌方震天尊");
                 skill_log("MEGATRONUS: SP2 final hit penetrated block on P%d", ap);
             }
-            // b) 保存遗迹生效时，第一击 100% 窃取对手 17.5% 震天尊最大生命值
-            if (ctx->hit_index == 0 && s_active_relic[ap] == MEGATRONUS_RELIC_PRESERVATION) {
+            // b) 保存遗迹生效时，第一击 100% 窃取对手 17.5% 震天尊最大生命值 (必须第一击命中且未被防御)
+            if (ctx->hit_index == 0 && !ctx->is_blocked && s_active_relic[ap] == MEGATRONUS_RELIC_PRESERVATION) {
                 float max_hp = skill_get_max_hp(ap);
                 float steal_amount = max_hp * 0.175f;
                 skill_deal_damage(tp, steal_amount);
                 skill_heal(ap, steal_amount);
                 skill_apply_buff_dur(tp, "megatronus_life_steal", 1.0f);
-                skill_overlay("[%s] 守护汲取！生命窃取 %.0f 点！", ap == 0 ? "震天尊" : "敌方震天尊", steal_amount);
+                skill_overlay("[%s] 守护汲取！首击生命窃取 %.0f 点！", ap == 0 ? "震天尊" : "敌方震天尊", steal_amount);
                 skill_log("MEGATRONUS: SP2 Life Steal drained %.1f HP from P%d to P%d", steal_amount, tp, ap);
             }
         }
@@ -354,8 +354,8 @@ static void megatronus_on_hit_connected(SkillHitContext* ctx) {
                               ap == 0 ? "震天尊" : "敌方震天尊", burn_dmg);
                 skill_log("MEGATRONUS: SP3 Dark Burn dealt %.1f instant dmg to P%d", burn_dmg, tp);
             }
-            // b) 第一击协同:
-            if (ctx->hit_index == 0) {
+            // b) 第一击协同 (必须命中且未被防御):
+            if (ctx->hit_index == 0 && !ctx->is_blocked) {
                 // 狂怒遗迹生效时，66% 概率窃取对手 35% 现有能量
                 if (s_active_relic[ap] == MEGATRONUS_RELIC_FURY) {
                     float roll = skill_random_float();

@@ -73,7 +73,7 @@ def build_optimusprimal_abilities(base_hp: float = 33000.0, base_atk: float = 22
     appr_conv = {
         "id": "appr_optimusprimal_armor_to_melee",
         "a": "野兽狂怒",
-        "s": "none",
+        "s": "",
         "l": "重击发起将所有护甲层数转化为近战增益",
         "ss": "护甲转近战增益",
         "t": "\uE412",
@@ -124,7 +124,7 @@ def build_optimusprimal_abilities(base_hp: float = 33000.0, base_atk: float = 22
     appr_sp3 = {
         "id": "appr_optimusprimal_sp3_atk_debuff",
         "a": "咆哮压制",
-        "s": "none",
+        "s": "",
         "l": "降低对手20%攻击力持续32秒",
         "ss": "攻击弱化",
         "t": "\uE916",

@@ -55,7 +55,7 @@ def build_ratchet_abilities(base_hp: float = 28352.0, base_atk: float = 2029.0):
     appr_diag_pwr = {
         "id": "appr_ratchet_self_diag_pwr",
         "a": "自我诊断回能",
-        "s": "none",
+        "s": "",
         "l": "自我诊断激活期间持续获取最大能量槽的20%",
         "ss": "持续回能20%",
         "t": "\uE606",
@@ -119,7 +119,7 @@ def build_ratchet_abilities(base_hp: float = 28352.0, base_atk: float = 2029.0):
     appr_pwr = {
         "id": "appr_ratchet_sp2_power_gain",
         "a": "能量虹吸",
-        "s": "none",
+        "s": "",
         "l": "依据损失血量动态获取最大能量槽的28.8%",
         "ss": "损血动态回能",
         "t": "\uE606",
