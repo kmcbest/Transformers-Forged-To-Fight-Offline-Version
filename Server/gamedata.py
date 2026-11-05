@@ -1194,10 +1194,11 @@ def build_hero_classes():
         name = _CLASS_NAMES[cid]
         out[cid] = {
             "id": cid, "cid": cid, "class_id": cid,
-            "n": name, "name": name, "class_name": name,
-            "ab": 1.1, "atkb": 1.1, "attack_bonus": 1.1,
-            "atkp": 0.9, "attack_penalty": 0.9,
-            "ic": [beats], "ideal_contender": [beats],
+            "cn": name, "n": name, "name": name, "class_name": name,
+            "i": beats, "ideal_contender": beats,
+            "ia": [beats], "ic": [beats], "ideal_contenders": [beats],
+            "b": 0.167, "ab": 0.167, "atkb": 0.167, "attack_bonus": 0.167,
+            "p": -0.167, "atkp": -0.167, "attack_penalty": -0.167,
         }
     return out
 
@@ -1259,7 +1260,7 @@ def build_hero_base(bid, rank=1):
         "hp": float(hp), "armor": 0.0, "crit_chance": crit_chance, "crit_damage": crit_damage,
         "perfect_block_chance": 0.0, "block_proficiency": 0.5, "mana_gain": _MANA_GAIN_RATE,
         "resist_magic": 0.0, "resist_physical": 0.0, "stun_chance": 0.05,
-        "cr": 0.0, "rcr": 0.0, "rcd": 0.0, "spb": 0.0, "pjb": 0.0, "cpw": 0.0,
+        "cr": 0.0, "rcr": 0.0, "rcd": 0.0, "spb": 0.0, "pjb": 0.0, "cpw": 1.0, "class_power": 1.0,
         "ap": 0.0, "bp": 0.0, "il": 0.0, "il2": 0.0, "il3": 0.0, "is4": 0.0,
         "eg": 0.0, "fg": 0.0, "ar": 0.0, "hr": 0.0, "hm": 0.0, "am": 0.0,
         "hrhp": 0.0, "hra": 0.0,
@@ -1296,7 +1297,7 @@ def build_heroes():
                 "hp": float(hp0), "armor": 500.0, "crit_chance": 0.1, "crit_damage": 1.5,
                 "perfect_block_chance": 0.0, "block_proficiency": 0.5, "mana_gain": 1.0,
                 "resist_magic": 0.0, "resist_physical": 0.0, "stun_chance": 0.0,
-                "cr": 0.0, "rcr": 0.0, "rcd": 0.0, "spb": 0.0, "pjb": 0.0, "cpw": 0.0,
+                "cr": 0.0, "rcr": 0.0, "rcd": 0.0, "spb": 0.0, "pjb": 0.0, "cpw": 1.0, "class_power": 1.0,
                 "ap": 0.0, "bp": 0.0, "il": 0.0, "il2": 0.0, "il3": 0.0, "is4": 0.0,
                 "eg": 0.0, "fg": 0.0, "ar": 0.0, "hr": 0.0, "hm": 0.0, "am": 0.0,
                 "hrhp": 0.0, "hra": 0.0,
@@ -1321,7 +1322,7 @@ def build_heroes():
                 "hp": float(hp0), "armor": 500.0, "crit_chance": 0.1, "crit_damage": 1.5,
                 "perfect_block_chance": 0.0, "block_proficiency": 0.5, "mana_gain": 1.0,
                 "resist_magic": 0.0, "resist_physical": 0.0, "stun_chance": 0.0,
-                "cr": 0.0, "rcr": 0.0, "rcd": 0.0, "spb": 0.0, "pjb": 0.0, "cpw": 0.0,
+                "cr": 0.0, "rcr": 0.0, "rcd": 0.0, "spb": 0.0, "pjb": 0.0, "cpw": 1.0, "class_power": 1.0,
                 "ap": 0.0, "bp": 0.0, "il": 0.0, "il2": 0.0, "il3": 0.0, "is4": 0.0,
                 "eg": 0.0, "fg": 0.0, "ar": 0.0, "hr": 0.0, "hm": 0.0, "am": 0.0,
                 "hrhp": 0.0, "hra": 0.0,
@@ -1671,7 +1672,7 @@ def build_hero_entry(bid, rank=None, level=None):
         "rating_attack_base": r_atk_base, "rating_hp_base": r_hp_base,
         "special_attacks": max_special_attacks(bid, star), "pvpb": {}, "exc": {},
         "stat_mods": bot_abilities(bid), "sig_mods": sig_mods, "buff_mods": [],
-        "mana_gain": _MANA_GAIN_RATE, "mana_start": _DIAG_MANA_START,
+        "mana_gain": _MANA_GAIN_RATE, "mana_start": _DIAG_MANA_START, "cpw": 1.0, "class_power": 1.0,
         "flvl": 100, "req_fxp": 0, "max_fxp": 100, "mfl": 100,
     }
 
@@ -3860,7 +3861,7 @@ def build_base_hero_details(req_heroes):
                 "health": hp, "armor": 0, "crit_rate": 0, "crit_dmg": 0,
                 "block_proficiency": 0.5, "perfect_block_chance": 0.0, "sig_ability": 0,
                 "special_attacks": 0, "user_owned": True,
-                "mana_gain": _MANA_GAIN_RATE, "mana_start": _DIAG_MANA_START,
+                "mana_gain": _MANA_GAIN_RATE, "mana_start": _DIAG_MANA_START, "cpw": 1.0, "class_power": 1.0,
                 "synergyBonuses": [], "pvpb": {},
             })
         else:
@@ -3894,7 +3895,7 @@ def build_base_hero_details(req_heroes):
                 "stat_mods": bot_abilities(bid),
                 "sig_mods": [character_profiles.get_bot_sig_mod_id(bid)] if character_profiles.get_bot_sig_mod_id(bid) else [],
                 "buff_mods": [],
-                "mana_gain": _MANA_GAIN_RATE, "mana_start": _DIAG_MANA_START,
+                "mana_gain": _MANA_GAIN_RATE, "mana_start": _DIAG_MANA_START, "cpw": 1.0, "class_power": 1.0,
                 "flvl": 100, "req_fxp": 0, "max_fxp": 100, "mfl": 100,
                 "synergyBonuses": [], "pvpb": {},
             })
