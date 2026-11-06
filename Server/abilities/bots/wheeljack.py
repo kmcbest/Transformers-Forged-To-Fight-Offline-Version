@@ -121,25 +121,57 @@ def build_wheeljack_abilities(base_hp: float = 32402.0, base_atk: float = 2306.0
     # -------------------------------------------------------------------------
     # 2. 觉醒技 - 力量护盾 (ID: 2888): 血量跌破 75%/50%/25% 触发 8s 100% 减伤护盾 (纯 Native 驱动触发，不可叠加不可刷新)
     # -------------------------------------------------------------------------
-    m_force_shield, a_force_shield = make_armor_up_statmod(
-        mod_id="wheeljack_sig_force_shield",
-        duration=8.0,
-        armor_bonus=1.00,
-        chance=1.0,
-        trigger="none",
-        trigger_scope="",
-        appr_id="appr_wheeljack_force_shield",
-        callout_text="力量护盾",
-        pua_icon="\uE515",
-        color_hex="29EBF4",
-        gradient_bottom="00C5E8",
-        stackable=False,
-        max_stacks=1,
-    )
-    m_force_shield["wheeljack_sig_force_shield"]["tr"] = []
-    m_force_shield["wheeljack_sig_force_shield"]["uit"] = []
-    mods.update(m_force_shield)
-    appears.update(a_force_shield)
+    validate_color_code("29EBF4", "force_shield_tc")
+    validate_color_code("00C5E8", "force_shield_gb")
+    appr_force_shield = {
+        "id": "appr_wheeljack_force_shield",
+        "a": "力量护盾",
+        "s": "",
+        "l": "升级激活中，以100%护甲抵挡即将受到的伤害8秒",
+        "ss": "力量护盾",
+        "t": "\uE515",
+        "f": "",
+        "st": "增益",
+        "ps": "护盾",
+        "pl": "护盾效果",
+        "tc": "29EBF4",
+        "gt": "29EBF4",
+        "gb": "00C5E8",
+    }
+    validate_appear(appr_force_shield)
+    appears["appr_wheeljack_force_shield"] = appr_force_shield
+
+    mod_force_shield = {
+        "id": "wheeljack_sig_force_shield",
+        "t": "force_shield",
+        "tm": "",
+        "tr": [],
+        "uit": [],
+        "pri": 0,
+        "trm": 0.0,
+        "trs": "",
+        "trr": "repeat",
+        "c": 1.0,
+        "m": 1.0,
+        "dur": 8.0,
+        "s": "none",
+        "ta": "self",
+        "mt": "buff",
+        "v": "",
+        "ms": "",
+        "st": 1,
+        "g": "force_shield",
+        "gc": 0.0,
+        "gcv": "",
+        "rcv": "",
+        "ti": 0,
+        "a": ["appr_wheeljack_force_shield"],
+        "au": [],
+        "rh": 0.0,
+        "ra": 0.0,
+    }
+    validate_statmod(mod_force_shield)
+    mods["wheeljack_sig_force_shield"] = mod_force_shield
 
     # -------------------------------------------------------------------------
     # 2.1 被动升级系统 - 重击构建 (4.0s 灰色倒计时图标)
@@ -299,12 +331,12 @@ def build_wheeljack_abilities(base_hp: float = 32402.0, base_atk: float = 2306.0
     mods["wheeljack_upgrade_power"] = mod_power
 
     # -------------------------------------------------------------------------
-    # 3. 被动 - 升级成功自愈 (ID: 3658): 三个同类升级触发立即修复 15% HP
+    # 3. 被动 - 升级成功自愈 (ID: 3658): 三个同类升级触发立即修复 10%~20% HP (由 C 层 skill_heal 随机结算，此处仅保留视觉与呼出条)
     # -------------------------------------------------------------------------
     m_succ_heal, a_succ_heal = make_heal_statmod(
         mod_id="wheeljack_upgrade_success_heal",
         duration=0.0,
-        heal_amount=float(round(base_hp * 0.15)),
+        heal_amount=0.0,
         chance=1.0,
         trigger="none",
         trigger_scope="",

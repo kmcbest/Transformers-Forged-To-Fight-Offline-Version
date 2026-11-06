@@ -176,7 +176,7 @@ def build_nemesisprime_abilities(base_hp: float = 31500.0, base_atk: float = 238
         short_desc="特技吸血25%",
         pua_icon="\uE503",
         color=AbilityColor.GREEN_HEALTH,
-        show_callout=True,
+        show_callout=False,
         active_desc="生命汲取生效中",
     )
     mod_mat_buff = {
@@ -184,7 +184,7 @@ def build_nemesisprime_abilities(base_hp: float = 31500.0, base_atk: float = 238
         "t": "buff",
         "tm": "",
         "tr": ["onSpecialActivate"],
-        "uit": ["onSpecialActivate"],
+        "uit": [],
         "pri": 0,
         "trm": 0.0,
         "trs": "",
@@ -223,7 +223,7 @@ def build_nemesisprime_abilities(base_hp: float = 31500.0, base_atk: float = 238
         trigger_scope="",
         buff_id="heal",
         appr_id="appr_nemesisprime_matrix_lifesteal",
-        callout_text="生命汲取",
+        callout_text="赝品领导模块",
         pua_icon="\uE503",
         show_callout=True,
     )

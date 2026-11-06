@@ -406,6 +406,12 @@ float skill_wheeljack_filter_damage(int target_player_index, float final_damage)
                   target_player_index, ratio * 100.0f, s_shield_triggered[target_player_index]);
     }
 
+    // 动态回血重置位掩码：如果当前生命值通过修复重新回升到了阈值以上，重置对应点位的触发状态，使其在再次跌破时能重新触发
+    float cur_ratio = cur_hp / max_hp;
+    if (cur_ratio > 0.75f) s_shield_triggered[target_player_index] &= ~1;
+    if (cur_ratio > 0.50f) s_shield_triggered[target_player_index] &= ~2;
+    if (cur_ratio > 0.25f) s_shield_triggered[target_player_index] &= ~4;
+
     // 3. 检查生命值跌破 75%、50%、25%
     // 门禁顺序从高到低检定未触发的下一个阈值
     float threshold = 0.0f;

@@ -10414,9 +10414,9 @@ float hook_197(void* self, int32_t attack_level, float mana_gain_pct, int32_t bl
         gain *= mana_gain_pct;
     }
 
-    // 攻击若被成功格挡，攻击方能量获取减少 50%
+    // 攻击若被成功格挡，攻击方严禁获取能量 (0%)
     if (blocked) {
-        gain *= 0.5f;
+        return 0.0f;
     }
 
     // PowerGainRate modifier
@@ -10523,7 +10523,10 @@ float hook_198(void* self, int32_t attack_level, float mana_gain_pct, int32_t bl
         }
     }
 
-    // 攻击若被成功格挡，受击方能量获取不变 (不扣减)
+    // 攻击若被成功格挡，受击方能量获取减半 (50%)
+    if (blocked) {
+        gain *= 0.5f;
+    }
 
     // PowerGainRate modifier
     float pgr = hook_195(self);
