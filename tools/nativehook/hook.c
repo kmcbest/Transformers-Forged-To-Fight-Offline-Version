@@ -600,7 +600,8 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x012E900C, "QUEST_FLOW_RESUME",   2, 0 }, // 210 QuestFlow.Resume
     { 0x00C5FC70, "HOME_FLOW_RESUME",    2, 0 }, // 211 HomeFlow.Resume
     { 0x0117E4AC, "DASH_ENTER",          2, 0 }, // 212 PlayerDashState.OnEnter -> track dash start timestamp
-    { 0x01040AC8, "GET_SAVE_TEAM_ID",    2, 0 }  // 213 QuestUtils.GetSaveTeamIDForCategory -> return "raid" for raid
+    { 0x01040AC8, "GET_SAVE_TEAM_ID",    2, 0 }, // 213 QuestUtils.GetSaveTeamIDForCategory -> return "raid" for raid
+    { 0x00C2075C, "CALC_RELATIVE_CONTENDER", 2, 0 } // 214 BCGHelper.CalculateRelativeContenderData
 };
 
 #define NH (int)(sizeof(H)/sizeof(H[0]))
@@ -3321,6 +3322,18 @@ static void load_combat_tuning_config(void) {
 // combat FighterData.Blueprint is NOT always the login-parsed instance the slot-13 hook fixed,
 // so patch the ACTUAL fighters' blueprints here: fighterData.Blueprint (fd+0x40) and
 // opponentFighterData.Blueprint. This is the fix that lets the FTE intro fight start.
+static inline int class_beats(int c1, int c2) {
+    int a = c1 & 0x3F;
+    int b = c2 & 0x3F;
+    if (a == 2 && b == 1) return 1;   // tact beats braw
+    if (a == 1 && b == 16) return 1;  // braw beats warr
+    if (a == 16 && b == 4) return 1;  // warr beats scou
+    if (a == 4 && b == 32) return 1;  // scou beats tech
+    if (a == 32 && b == 8) return 1;  // tech beats demo
+    if (a == 8 && b == 2) return 1;   // demo beats tact
+    return 0;
+}
+
 void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
     PROTECT({
         ensure_empty_tags();
@@ -3597,6 +3610,39 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
                     typedef float (*fn_get_hp)(void*, void*);
                     fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC660);
                     g_p1_last_hp = get_hp(a0, NULL);
+                }
+            }
+
+            // Apply asymmetric class advantage penalty in combat if self is disadvantageous
+            void* bp_self = (a3 && !((uintptr_t)a3 & 7)) ? *(void**)((char*)a3 + 0x40) : NULL;
+            void* bp_opp  = (a4 && !((uintptr_t)a4 & 7)) ? *(void**)((char*)a4 + 0x40) : NULL;
+            if (bp_self && bp_opp && obj_ok(bp_self) && obj_ok(bp_opp)) {
+                int c_self = *(int32_t*)((char*)bp_self + 0x68);
+                int c_opp  = *(int32_t*)((char*)bp_opp + 0x68);
+                if (class_beats(c_opp, c_self)) {
+                    // Self is disadvantageous: opponent has advantage
+                    void* opp_at = (a4 && !((uintptr_t)a4 & 7)) ? *(void**)((char*)a4 + 0x30) : NULL;
+                    void* self_at = (a3 && !((uintptr_t)a3 & 7)) ? *(void**)((char*)a3 + 0x30) : NULL;
+                    float opp_atk = (opp_at && obj_ok(opp_at)) ? (float)*(int32_t*)((char*)opp_at + 0x38) : 0.0f;
+                    float self_base_atk = (self_at && obj_ok(self_at)) ? (float)*(int32_t*)((char*)self_at + 0x3C) : 0.0f;
+                    if (self_base_atk <= 0.0f && self_at && obj_ok(self_at)) {
+                        self_base_atk = (float)*(int32_t*)((char*)self_at + 0x38);
+                    }
+                    float self_atk = self_base_atk;
+                    if (opp_atk > 0.0f && self_atk > 0.0f) {
+                        float penalty = opp_atk * 0.17f;
+                        float final_atk = self_atk - penalty;
+                        if (final_atk <= 0.0f) {
+                            final_atk = self_atk * 0.25f;
+                        }
+                        void* stat_atk = *(void**)((char*)a0 + 0x78); // _attack (StatAttribute*)
+                        if (stat_atk && obj_ok(stat_atk)) {
+                            // InitBaseValues(baseValue, modifiedBaseValue) RVA 0xCCD998
+                            ((void(*)(void*, float, float))(g_base + 0xCCD998))(stat_atk, self_base_atk, final_atk);
+                            LOG("COMBAT_CLASS_PENALTY: player=%d c_self=%d vs c_opp=%d -> self_atk=%.1f opp_atk=%.1f penalty=%.1f final_atk=%.1f",
+                                player_idx, c_self, c_opp, self_atk, opp_atk, penalty, final_atk);
+                        }
+                    }
                 }
             }
         }
@@ -10970,6 +11016,108 @@ void* hook_213(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     return H[213].orig(a0, a1, a2, a3, a4, a5, a6, a7);
 }
 
+typedef struct {
+    int32_t isValid;
+    int32_t attackBonus;
+    int32_t heroRating;
+    int32_t opponentAttackBonus;
+    int32_t opponentHeroRating;
+} RelativeContenderData;
+
+typedef RelativeContenderData (*fn_calc_relative)(void*, void*, void*, int, void*, void*);
+
+static int32_t get_hero_atk(void* h, int is_opp) {
+    if (!h || !obj_ok(h)) return 0;
+    void* attrs = NULL;
+    if (g_base) {
+        attrs = ((void*(*)(void*))(g_base + 0x12AD058))(h); // get_attributes
+        if (!attrs && is_opp) {
+            attrs = ((void*(*)(void*))(g_base + 0x12AD034))(h); // get_opponentBuffedAttributes
+        } else if (!attrs) {
+            attrs = ((void*(*)(void*))(g_base + 0x12ACF3C))(h); // get_buffedAttributes
+        }
+    }
+    if (attrs && obj_ok(attrs)) {
+        int32_t atk_base = *(int32_t*)((char*)attrs + 0x3C);
+        if (atk_base > 0) return atk_base;
+        int32_t atk = *(int32_t*)((char*)attrs + 0x38);
+        if (atk > 0) return atk;
+    }
+    return 0;
+}
+
+// slot 214 CALC_RELATIVE_CONTENDER (0x00C2075C): BCGHelper.CalculateRelativeContenderData
+RelativeContenderData hook_214(void* hero, void* opponent, void* heroTeam, int applyBuffs, void* opponentBuffs, void* method) {
+    RelativeContenderData res;
+    memset(&res, 0, sizeof(res));
+    fn_calc_relative orig_fn = (fn_calc_relative)H[214].orig;
+    if (orig_fn) {
+        res = orig_fn(hero, opponent, heroTeam, applyBuffs, opponentBuffs, method);
+    }
+    PROTECT({
+        if (res.isValid) {
+            if (res.attackBonus > 0) {
+                // hero is advantageous (+50% own atk)
+                // opponent is disadvantageous (-17% hero atk, floor 50% own atk)
+                int32_t adv_atk = get_hero_atk(hero, 0);
+                if (adv_atk <= 0 && res.attackBonus > 0) {
+                    adv_atk = (int32_t)((float)res.attackBonus / 0.50f + 0.5f);
+                }
+                int32_t dis_atk = get_hero_atk(opponent, 1);
+                if (dis_atk <= 0 && res.opponentAttackBonus < 0) {
+                    dis_atk = (int32_t)((float)(-res.opponentAttackBonus) / 0.17f + 0.5f);
+                }
+
+                int32_t new_hero_bonus = (int32_t)((float)adv_atk * 0.50f + 0.5f);
+                int32_t penalty = (int32_t)((float)adv_atk * 0.17f + 0.5f);
+                if (dis_atk > 0 && (dis_atk - penalty) <= 0) {
+                    penalty = (int32_t)((float)dis_atk * 0.75f + 0.5f);
+                }
+                int32_t new_opp_bonus = -penalty;
+
+                int delta_hero = new_hero_bonus - res.attackBonus;
+                int delta_opp  = new_opp_bonus - res.opponentAttackBonus;
+
+                res.attackBonus = new_hero_bonus;
+                res.opponentAttackBonus = new_opp_bonus;
+                res.heroRating += delta_hero;
+                res.opponentHeroRating += delta_opp;
+                flog("CALC_REL_ADV: hero_atk=%d opp_atk=%d -> hero_bonus=+%d opp_bonus=%d",
+                     adv_atk, dis_atk, new_hero_bonus, new_opp_bonus);
+            } else if (res.opponentAttackBonus > 0) {
+                // opponent is advantageous (+50% own atk)
+                // hero is disadvantageous (-17% opp atk, floor 50% own atk)
+                int32_t adv_atk = get_hero_atk(opponent, 1);
+                if (adv_atk <= 0 && res.opponentAttackBonus > 0) {
+                    adv_atk = (int32_t)((float)res.opponentAttackBonus / 0.50f + 0.5f);
+                }
+                int32_t dis_atk = get_hero_atk(hero, 0);
+                if (dis_atk <= 0 && res.attackBonus < 0) {
+                    dis_atk = (int32_t)((float)(-res.attackBonus) / 0.17f + 0.5f);
+                }
+
+                int32_t new_opp_bonus = (int32_t)((float)adv_atk * 0.50f + 0.5f);
+                int32_t penalty = (int32_t)((float)adv_atk * 0.17f + 0.5f);
+                if (dis_atk > 0 && (dis_atk - penalty) <= 0) {
+                    penalty = (int32_t)((float)dis_atk * 0.75f + 0.5f);
+                }
+                int32_t new_hero_bonus = -penalty;
+
+                int delta_opp  = new_opp_bonus - res.opponentAttackBonus;
+                int delta_hero = new_hero_bonus - res.attackBonus;
+
+                res.attackBonus = new_hero_bonus;
+                res.opponentAttackBonus = new_opp_bonus;
+                res.heroRating += delta_hero;
+                res.opponentHeroRating += delta_opp;
+                flog("CALC_REL_DIS: hero_atk=%d opp_atk=%d -> hero_bonus=%d opp_bonus=+%d",
+                     dis_atk, adv_atk, new_hero_bonus, new_opp_bonus);
+            }
+        }
+    });
+    return res;
+}
+
 static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hook_7,hook_8,
     hook_9,hook_10,hook_11,hook_12,hook_13,hook_14,hook_15,hook_16,hook_17,hook_18,hook_19,hook_20,hook_21,
     hook_22,hook_23,hook_24,hook_25,hook_26,hook_27,hook_28,hook_29,hook_30,
@@ -10992,7 +11140,7 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     hook_171,hook_172,hook_173,hook_174,hook_175,hook_176,(void*)hook_177,(void*)hook_178,
     (void*)hook_179,hook_180,hook_181,hook_182,hook_183,hook_184,hook_185,hook_186,(void*)hook_187,(void*)hook_188,(void*)hook_189,
     (void*)hook_190,(void*)hook_191,(void*)hook_192,(void*)hook_193,(void*)hook_194,(void*)hook_195,(void*)hook_196,(void*)hook_197,(void*)hook_198,hook_199,(void*)hook_200,(void*)hook_201,hook_202,hook_203,
-    (void*)hook_204,hook_205,hook_206,hook_207,hook_208,hook_209,hook_210,hook_211,hook_212,hook_213 };
+    (void*)hook_204,hook_205,hook_206,hook_207,hook_208,hook_209,hook_210,hook_211,hook_212,hook_213,(void*)hook_214 };
 _Static_assert(sizeof(handlers)/sizeof(handlers[0]) == sizeof(H)/sizeof(H[0]), "handlers count must match H count");
 
 

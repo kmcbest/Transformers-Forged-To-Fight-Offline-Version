@@ -1197,8 +1197,8 @@ def build_hero_classes():
             "cn": name, "n": name, "name": name, "class_name": name,
             "i": beats, "ideal_contender": beats,
             "ia": [beats], "ic": [beats], "ideal_contenders": [beats],
-            "b": 0.167, "ab": 0.167, "atkb": 0.167, "attack_bonus": 0.167,
-            "p": -0.167, "atkp": -0.167, "attack_penalty": -0.167,
+            "b": 0.50, "ab": 0.50, "atkb": 0.50, "attack_bonus": 0.50,
+            "p": -0.17, "atkp": -0.17, "attack_penalty": -0.17,
         }
     return out
 
@@ -2572,7 +2572,7 @@ def build_challenge_map(qid="1.1.2"):
                     "lab": label, "links": neighbors, "visibleLinks": neighbors,
                     "boss": key,
                     "entities": {
-                        key: build_quest_enemy(map_override=arena["theme"], tod_index=arena["todIndex"], key=key, is_final_boss=is_final_boss, rank=5, level=50),
+                        key: build_quest_enemy(map_override=arena["theme"], tod_index=arena["todIndex"], key=key, is_final_boss=is_final_boss, rank=5, level=50, sig_lvl=100),
                     },
                 })
             elif pt in adj:
@@ -2672,14 +2672,15 @@ def _build_combiner_linear_map(qid, encounters, start_label="起点 (Start)", di
                 elif idx in encounters:
                     key, is_final_boss, label = encounters[idx]
                     arena = encounter_arena_for(qid, idx)
-                    rank = 5 if qid in ("1.1.2", "1.1.3", "1.1.4", "1.1.5", "1.1.6", "1.1.7") else 1
-                    level = 50 if qid in ("1.1.2", "1.1.3", "1.1.4", "1.1.5", "1.1.6", "1.1.7") else 1
+                    rank = 5
+                    level = 50
+                    sig_lvl = 100
                     r.append({
                         "final": is_final_boss, "walkable": True, "hidden": False,
                         "lab": label, "links": lk, "visibleLinks": lk,
                         "boss": key,
                         "entities": {
-                            key: build_quest_enemy(map_override=arena["theme"], tod_index=arena["todIndex"], key=key, is_final_boss=is_final_boss, rank=rank, level=level),
+                            key: build_quest_enemy(map_override=arena["theme"], tod_index=arena["todIndex"], key=key, is_final_boss=is_final_boss, rank=rank, level=level, sig_lvl=sig_lvl),
                         },
                     })
                 else:
@@ -2744,7 +2745,7 @@ def build_quest_map(qid="1.1.1"):
     return _build_combiner_linear_map(qid, QUEST_ENCOUNTERS, start_label="起点 (Start)", dim=QUEST_DIM)
 
 
-def build_quest_enemy(map_override=None, tod_index=None, key=None, is_final_boss=True, rank=1, level=1):
+def build_quest_enemy(map_override=None, tod_index=None, key=None, is_final_boss=True, rank=5, level=50, sig_lvl=100):
     """An authored STORY BCGEntity in the exact QuestBoss wire schema.
 
     The field names were captured from the live QuestBoss.Deserialize call after the first
@@ -2766,7 +2767,7 @@ def build_quest_enemy(map_override=None, tod_index=None, key=None, is_final_boss
         "parentEntityType": "boss",
         "isFinalBoss": is_final_boss,
         "characters": [key],
-        "rank": rank, "level": level, "sig_lvl": 0, "flvl": 0,
+        "rank": rank, "level": level, "sig_lvl": sig_lvl, "flvl": 0,
         "aiType": 0, "aiString": "default", "aiPer": "default",
         "mapOverride": map_override, "todIndex": tod_index,
     }
@@ -2979,14 +2980,15 @@ def build_quest_movedir(qid="1.1.1", offx=1, offy=0, start=None, team=None):
     revealed_tiles = [{"x": r, "y": c} for r, c in tiles]
     if encounter is not None:
         key, is_final_boss, _ = encounter
-        rank = 5 if qid in ("1.1.2", "1.1.3", "1.1.4", "1.1.5", "1.1.6", "1.1.7", RAID_QID) else 1
-        level = 50 if qid in ("1.1.2", "1.1.3", "1.1.4", "1.1.5", "1.1.6", "1.1.7", RAID_QID) else 1
+        rank = 5
+        level = 50
+        sig_lvl = 100
         arena = encounter_arena_for(qid, step_idx if qid != "1.1.2" else nx)
         battle_dict = {
             "x": nx, "y": ny, "isFinalBoss": is_final_boss,
             "battleEnemy": build_quest_enemy(
                 map_override=arena["theme"], tod_index=arena["todIndex"],
-                key=key, is_final_boss=is_final_boss, rank=rank, level=level,
+                key=key, is_final_boss=is_final_boss, rank=rank, level=level, sig_lvl=sig_lvl,
             ),
         }
         if qid == RAID_QID and target_pos in RAID_SLOT_DEFS:
@@ -3476,7 +3478,7 @@ def build_raid_summary():
     for pos, (key, is_final, lab) in RAID_BASE_ENCOUNTERS.items():
         bosses[key] = build_quest_enemy(
             map_override="primordial_base", tod_index=0,
-            key=key, is_final_boss=is_final, rank=5, level=50
+            key=key, is_final_boss=is_final, rank=5, level=50, sig_lvl=100
         )
     for pos, (b_token, t_token) in RAID_SLOT_DEFS.items():
         bosses[t_token] = {
@@ -3591,7 +3593,7 @@ def build_raid_map():
                 tile["entities"] = {
                     key: build_quest_enemy(
                         map_override="primordial_base", tod_index=0,
-                        key=key, is_final_boss=is_final, rank=5, level=50
+                        key=key, is_final_boss=is_final, rank=5, level=50, sig_lvl=100
                     )
                 }
                 if pt in RAID_SLOT_DEFS:

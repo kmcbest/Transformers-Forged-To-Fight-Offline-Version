@@ -122,8 +122,9 @@ def _tutorial_templates() -> dict[str, bytes]:
 def _hero_detail(bid: str, rank: int, level: int) -> bytes:
     sentinel = 987654321
     detail = gamedata.build_base_hero_details(
-        [{"bid": bid, "rank": rank, "level": level, "sig_lvl": sentinel}]
+        [{"bid": bid, "rank": rank, "level": level, "sig_lvl": 100}]
     )[0]
+    detail["sig_lvl"] = sentinel
     encoded = json.dumps(detail, separators=(",", ":")).encode()
     token = str(sentinel).encode()
     if encoded.count(token) != 1:

@@ -2,6 +2,7 @@
 #include "bot_info.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
@@ -219,6 +220,23 @@ static void parse_json_string_array(const char *json, const char *key, char out_
     }
 }
 
+static void calc_rating_fields(int hp, int atk, int sig_lvl, int *r_hp, int *r_atk, int *r_hp_base, int *r_atk_base, int *rating) {
+    int base_hp = (int)ceilf((float)hp * 0.075f);
+    int base_atk = (int)ceilf((float)atk * 1.0f);
+    int rhp = base_hp;
+    int ratk = base_atk;
+    if (sig_lvl > 0) {
+        float sig_bonus = 0.035f * logf((float)sig_lvl);
+        rhp += (int)ceilf((float)base_hp * sig_bonus);
+        ratk += (int)ceilf((float)base_atk * sig_bonus);
+    }
+    if (r_hp) *r_hp = rhp;
+    if (r_atk) *r_atk = ratk;
+    if (r_hp_base) *r_hp_base = base_hp;
+    if (r_atk_base) *r_atk_base = base_atk;
+    if (rating) *rating = rhp + ratk;
+}
+
 static void generate_pvp_opponents(void) {
     int total_enemies = sizeof(ENEMY_STATS) / sizeof(ENEMY_STATS[0]);
     int used_indices[9];
@@ -248,8 +266,8 @@ static void generate_pvp_opponents(void) {
 
             const EnemyStat *stat = &ENEMY_STATS[bot_idx];
             snprintf(s_pvp.opponents[opp].bot_bids[b], sizeof(s_pvp.opponents[opp].bot_bids[b]), "%s", stat->id);
-            s_pvp.opponents[opp].bot_ranks[b] = 4;
-            s_pvp.opponents[opp].bot_levels[b] = 40;
+            s_pvp.opponents[opp].bot_ranks[b] = 5;
+            s_pvp.opponents[opp].bot_levels[b] = 50;
             s_pvp.opponents[opp].bot_hp[b] = stat->hp;
             s_pvp.opponents[opp].bot_atk[b] = stat->atk;
             s_pvp.opponents[opp].bot_rating[b] = stat->rating;
@@ -289,19 +307,23 @@ static int append_pvp_match_data_json(char *buf, size_t max_len, int offset) {
         offset += n;
 
         for (int b = 0; b < 3; b++) {
+            int rhp, ratk, rhp_b, ratk_b, tot_r;
+            calc_rating_fields(s_pvp.opponents[o].bot_hp[b], s_pvp.opponents[o].bot_atk[b], 100,
+                               &rhp, &ratk, &rhp_b, &ratk_b, &tot_r);
+            int display_rating = (s_pvp.opponents[o].bot_rating[b] > 0) ? s_pvp.opponents[o].bot_rating[b] : tot_r;
             n = snprintf(buf + offset, max_len - offset,
-                "%s{\"entity_type\":\"bot\",\"bid\":\"%s\",\"rank\":%d,\"level\":%d,\"sig_lvl\":20,\"max_hp\":%d,\"attack\":%d,\"rating\":%d,\"rating_hp\":%d,\"rating_attack\":%d,\"rating_hp_base\":%d,\"rating_attack_base\":%d,\"cpw\":1.0,\"class_power\":1.0,\"special_attacks\":3}",
+                "%s{\"entity_type\":\"bot\",\"bid\":\"%s\",\"rank\":%d,\"level\":%d,\"sig_lvl\":100,\"max_hp\":%d,\"attack\":%d,\"rating\":%d,\"rating_hp\":%d,\"rating_attack\":%d,\"rating_hp_base\":%d,\"rating_attack_base\":%d,\"cpw\":1.0,\"class_power\":1.0,\"special_attacks\":3}",
                 (b > 0 ? "," : ""),
                 s_pvp.opponents[o].bot_bids[b],
                 s_pvp.opponents[o].bot_ranks[b],
                 s_pvp.opponents[o].bot_levels[b],
                 s_pvp.opponents[o].bot_hp[b],
                 s_pvp.opponents[o].bot_atk[b],
-                s_pvp.opponents[o].bot_rating[b],
-                s_pvp.opponents[o].bot_hp[b],
-                s_pvp.opponents[o].bot_atk[b],
-                s_pvp.opponents[o].bot_hp[b],
-                s_pvp.opponents[o].bot_atk[b]);
+                display_rating,
+                rhp,
+                ratk,
+                rhp_b,
+                ratk_b);
             if (n < 0 || (size_t)n >= max_len - offset) return -1;
             offset += n;
         }
@@ -406,13 +428,16 @@ static int build_standard_pvp_response(char *buf, size_t max_len, int is_quit) {
                 }
             } else {
                 const EnemyStat *st = find_stat_or_default(s_pvp.user_heroes[h]);
+                int rhp, ratk, rhp_b, ratk_b, tot_r;
+                calc_rating_fields(st->hp, st->atk, 100, &rhp, &ratk, &rhp_b, &ratk_b, &tot_r);
+                int r = (st->rating > 0) ? st->rating : tot_r;
                 n = snprintf(buf + offset, max_len - offset,
-                    "{\"entity_type\":\"bot\",\"bid\":\"%s\",\"rank\":4,\"level\":40,\"sig_lvl\":20,"
-                    "\"stamina\":0,\"stamina_ts\":%ld,\"stamina_full_ts\":%ld,\"rating_hp\":%d,\"max_hp\":%d,"
+                    "{\"entity_type\":\"bot\",\"bid\":\"%s\",\"rank\":5,\"level\":50,\"sig_lvl\":100,"
+                    "\"stamina\":0,\"stamina_ts\":%ld,\"stamina_full_ts\":%ld,\"rating\":%d,\"rating_hp\":%d,\"max_hp\":%d,"
                     "\"rating_attack\":%d,\"attack\":%d,\"rating_hp_base\":%d,\"rating_attack_base\":%d,"
                     "\"cpw\":1.0,\"class_power\":1.0,\"special_attacks\":3,\"pvpb\":{\"m\":1.0}}",
                     s_pvp.user_heroes[h], cd_expiry, cd_expiry,
-                    st->hp, st->hp, st->atk, st->atk, st->hp, st->atk);
+                    r, rhp, st->hp, ratk, st->atk, rhp_b, ratk_b);
             }
             if (n < 0 || (size_t)n >= max_len - offset) return -1;
             offset += n;
@@ -466,9 +491,14 @@ static int build_standard_pvp_response(char *buf, size_t max_len, int is_quit) {
                     n = snprintf(buf + offset, max_len - offset, "\"%s\":%.*s", s_pvp.user_heroes[h], (int)vn, hv);
                 }
             } else {
+                const EnemyStat *st = find_stat_or_default(s_pvp.user_heroes[h]);
+                int rhp, ratk, rhp_b, ratk_b, tot_r;
+                calc_rating_fields(st->hp, st->atk, 100, &rhp, &ratk, &rhp_b, &ratk_b, &tot_r);
+                int r = (st->rating > 0) ? st->rating : tot_r;
                 n = snprintf(buf + offset, max_len - offset,
-                    "\"%s\":{\"bid\":\"%s\",\"rank\":4,\"level\":40,\"sig_lvl\":20,\"rating_hp\":2000,\"max_hp\":2000,\"rating_attack\":500,\"attack\":500,\"rating_hp_base\":2000,\"rating_attack_base\":500,\"cpw\":1.0,\"class_power\":1.0,\"special_attacks\":3,\"pvpb\":{\"m\":1.0}}",
-                    s_pvp.user_heroes[h], s_pvp.user_heroes[h]);
+                    "\"%s\":{\"bid\":\"%s\",\"rank\":5,\"level\":50,\"sig_lvl\":100,\"rating\":%d,\"rating_hp\":%d,\"max_hp\":%d,\"rating_attack\":%d,\"attack\":%d,\"rating_hp_base\":%d,\"rating_attack_base\":%d,\"cpw\":1.0,\"class_power\":1.0,\"special_attacks\":3,\"pvpb\":{\"m\":1.0}}",
+                    s_pvp.user_heroes[h], s_pvp.user_heroes[h],
+                    r, rhp, st->hp, ratk, st->atk, rhp_b, ratk_b);
             }
             if (n < 0 || (size_t)n >= max_len - offset) return -1;
             offset += n;
@@ -678,8 +708,8 @@ const unsigned char *handle_pvp_request(const char *method, const char *p, const
 
         int o_rank = s_pvp.opponents[cur_opp].bot_ranks[r];
         int o_level = s_pvp.opponents[cur_opp].bot_levels[r];
-        if (o_rank <= 0) o_rank = 4;
-        if (o_level <= 0) o_level = 40;
+        if (o_rank <= 0) o_rank = 5;
+        if (o_level <= 0) o_level = 50;
 
         const EnemyStat *u_stat = find_stat_or_default(u_bid);
         const EnemyStat *o_stat = find_stat_or_default(o_bid);
@@ -694,7 +724,7 @@ const unsigned char *handle_pvp_request(const char *method, const char *p, const
         static char u_hero_json[4096];
         static char o_hero_json[4096];
         tftf_format_hero_detail(u_bid, 5, 50, 100, u_hero_json, sizeof u_hero_json);
-        tftf_format_hero_detail(o_bid, o_rank, o_level, 20, o_hero_json, sizeof o_hero_json);
+        tftf_format_hero_detail(o_bid, o_rank, o_level, 100, o_hero_json, sizeof o_hero_json);
 
         int offset = snprintf(s_resp_buf, sizeof s_resp_buf,
             "{\"error\":null,\"result\":{},\"async\":[{\"component\":\"PVPManager\",\"message\":\"match-activated\",\"payload\":{"

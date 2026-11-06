@@ -49,20 +49,26 @@ typedef struct { unsigned char *p; size_t n, cap; } Out;
 typedef struct { const char *token; const unsigned char *p; size_t n; } TemplateArg;
 
 static const char * const g_enemy_pool[] = {
-    "fte_optimus_gs_t3", "fte_stars_gs_t3", "arcee_gs_deluxe2014", "blaster_gs_leader2016",
-    "bumblebee_cin_dotm", "bumblebee_gs_kabam", "cheetor_bw_transmetal", "cliffjumper_gs_kabam",
-    "dinobot_bw_kabam", "drift_cin_aoe", "grimlock_gs_mp08", "hotrod_cin_tlk",
-    "hound_cin_tlk", "ironhide_cin_rotf", "ironhide_gs_kabam", "jazz_gs_twm05",
-    "jetfire_gs_leader2014", "mirage_gs_deluxe2016", "optimusprimal_bw_mp32", "optimusprime_cin_tf",
-    "prowl_gs_deluxe2016", "ratchet_gs_kabam", "rhinox_gs_voyager2014", "rodimusprime_gs_mp09",
-    "sideswipe_gs", "sunstreaker_gs_deluxe2008", "ultramagnus_gs_leader", "wheeljack_gs_mp20",
-    "windblade_gs", "barricade_cin_dotm", "bludgeon_gs_rd20", "bonecrusher_cin_rotf",
-    "cyclonus_gs_uw06", "dirge_gs_deluxe2008", "galvatron_gs_voyager2016", "grindor_cin_rotf",
-    "kickback_gs_kabam", "megatron_cin_rotf", "megatron_gs_leader2015", "megatronus_gs_kabam",
-    "mixmaster_cin_rotf", "motormaster_gs_voyager2015", "necrotronus_gs_kabam", "nemesisprime_gs_voyager2015",
-    "ramjet_gs_deluxe2008", "scorponok_bw_kabam", "shockwave_gs", "skywarp_gs_leader2015",
-    "slipstream_gs", "soundblaster_gs_mp13b", "soundwave_gs", "thundercracker_gs_leader2015",
-    "tantrum_gs_kabam", "waspinator_gs_deluxe"
+    "acidstorm_gs_leader2015", "arcee_gs_deluxe2014", "barricade_cin_dotm", "bitstream_gs_leader2015",
+    "blaster_gs_leader2016", "bludgeon_gs_rd20", "bonecrusher_cin_rotf", "breakdown_gs",
+    "bumblebee_cin_dotm", "bumblebee_gs_kabam", "cheetor_bw_transmetal", "chromia_gs_kabam",
+    "cliffjumper_gs_kabam", "cyclonus_gs_uw06", "deadend_gs_deluxe2015", "dinobot_bw_kabam",
+    "dirge_gs_deluxe2008", "dragstrip_gs_deluxe2016", "drift_cin_aoe", "elita_one_gs",
+    "fte_optimus_gs_t3", "fte_stars_gs_t3", "galvatron_gs_voyager2016", "grimlock_gs_mp08",
+    "grindor_cin_rotf", "hotlink_gs_leader2015", "hotrod_cin_tlk", "hound_cin_tlk",
+    "ionstorm_gs_leader2015", "ironhide_cin_rotf", "ironhide_gs_kabam", "jazz_gs_twm05",
+    "jetfire_gs_leader2014", "kickback_gs_kabam", "lifeline_gs_deluxe2014", "megatron_cin_rotf",
+    "megatron_gs_leader2015", "megatronus_gs_kabam", "mirage_gs_deluxe2016", "mixmaster_cin_rotf",
+    "motormaster_gs_voyager2015", "necrotronus_gs_kabam", "nemesisprime_gs_voyager2015", "novastorm_gs_leader2015",
+    "optimusprimal_bw_mp32", "optimusprime_cin_tf", "optimusprime_sg_voyager2015", "prowl_gs_deluxe2016",
+    "ramjet_gs_deluxe2008", "ratchet_gs_kabam", "rhinox_gs_voyager2014", "rodimusprime_gs_mp09",
+    "scorponok_bw_kabam", "sharkticon_gs_brawler", "sharkticon_gs_demolition", "sharkticon_gs_kabam",
+    "sharkticon_gs_scout", "sharkticon_gs_tactician", "sharkticon_gs_tech", "sharkticon_gs_warrior",
+    "shockwave_gs", "sideswipe_gs", "skywarp_gs_leader2015", "slipstream_gs",
+    "soundblaster_gs_mp13b", "soundwave_gs", "starsaber_gs_leader2014", "starscream_ghost_gs",
+    "sunstorm_gs_leader2015", "sunstreaker_gs_deluxe2008", "tantrum_gs_kabam", "thrust_gs_deluxe2008",
+    "thundercracker_gs_leader2015", "ultramagnus_gs_leader", "ultramagnus_sg_leader", "waspinator_gs_deluxe",
+    "wheeljack_gs_mp20", "wildrider_gs_deluxe2016", "windblade_gs"
 };
 #define ENEMY_POOL_SIZE (sizeof(g_enemy_pool) / sizeof(g_enemy_pool[0]))
 
@@ -2055,7 +2061,47 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
                 } else {
                     if(!out_hero_detail(o,v,n,sig,g_current_is_10x_challenge))return NULL;
                 }
-                first=0;if((rank==6&&level==1)||(rank==5&&level==1)){char hk50[200];size_t n50=0;snprintf(hk50,sizeof hk50,"@hero:%s:5:50",hb);const unsigned char *v50=lookup(hk50,&n50);if(v50){if(!out_add(o,",",1))return NULL;if(!out_hero_detail(o,v50,n50,sig,g_current_is_10x_challenge))return NULL;logmsg("getBaseHeroData: also emitted rank 5 level 50 for %s", hb);}char hk60[200];size_t n60=0;snprintf(hk60,sizeof hk60,"@hero:%s:6:60",hb);const unsigned char *v60=lookup(hk60,&n60);if(v60){if(!out_add(o,",",1))return NULL;if(!out_hero_detail(o,v60,n60,sig,g_current_is_10x_challenge))return NULL;logmsg("getBaseHeroData: also emitted rank 6 level 60 for %s", hb);}}}q=close;}
+                first=0;
+                if(!is_wildcard){
+                    const char *alt_sig = (sl == 0) ? "100" : "0";
+                    if(!out_add(o,",",1))return NULL;
+                    if(!out_hero_detail(o,v,n,alt_sig,g_current_is_10x_challenge))return NULL;
+
+                    if(!(rank==5 && level==50)){
+                        char hk50[200];size_t n50=0;snprintf(hk50,sizeof hk50,"@hero:%s:5:50",hb);
+                        const unsigned char *v50=lookup(hk50,&n50);
+                        if(v50){
+                            if(!out_add(o,",",1))return NULL;
+                            if(!out_hero_detail(o,v50,n50,"100",g_current_is_10x_challenge))return NULL;
+                            if(!out_add(o,",",1))return NULL;
+                            if(!out_hero_detail(o,v50,n50,"0",g_current_is_10x_challenge))return NULL;
+                            logmsg("getBaseHeroData: also emitted 5:50 (sig 100 & 0) for %s", hb);
+                        }
+                    }
+                    if(!(rank==6 && level==60)){
+                        char hk60[200];size_t n60=0;snprintf(hk60,sizeof hk60,"@hero:%s:6:60",hb);
+                        const unsigned char *v60=lookup(hk60,&n60);
+                        if(v60){
+                            if(!out_add(o,",",1))return NULL;
+                            if(!out_hero_detail(o,v60,n60,"100",g_current_is_10x_challenge))return NULL;
+                            if(!out_add(o,",",1))return NULL;
+                            if(!out_hero_detail(o,v60,n60,"0",g_current_is_10x_challenge))return NULL;
+                            logmsg("getBaseHeroData: also emitted 6:60 (sig 100 & 0) for %s", hb);
+                        }
+                    }
+                    if(!(rank==4 && level==40)){
+                        char hk40[200];size_t n40=0;snprintf(hk40,sizeof hk40,"@hero:%s:4:40",hb);
+                        const unsigned char *v40=lookup(hk40,&n40);
+                        if(v40){
+                            if(!out_add(o,",",1))return NULL;
+                            if(!out_hero_detail(o,v40,n40,"100",g_current_is_10x_challenge))return NULL;
+                            if(!out_add(o,",",1))return NULL;
+                            if(!out_hero_detail(o,v40,n40,"0",g_current_is_10x_challenge))return NULL;
+                            logmsg("getBaseHeroData: also emitted 4:40 (sig 100 & 0) for %s", hb);
+                        }
+                    }
+                }
+            }q=close;}
         v=lookup("@herodata:close",&n);if(!v||!out_add(o,v,n))return NULL; Out compact=*o; o->p=NULL;o->n=o->cap=0; v=json_default_spaces(compact.p,compact.n,o,outn);free(compact.p);logmsg("getBaseHeroData reply (%zu bytes): %.300s", *outn, (const char*)v);return v;
     }
     if(strstr(p, "/bcg/getHeroXPCurve")) {

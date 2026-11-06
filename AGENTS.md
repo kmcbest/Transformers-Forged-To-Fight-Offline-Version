@@ -59,7 +59,6 @@
 - **Black-Box Data Diff First (对比排查优先)**:
   Always compare the HTTP request/response payloads (especially `/bcg/getBaseHeroData`, `/quests/quest-movedir`, and `/quests/quest-begin`) between working scenarios (e.g. 1.1.1) and failing scenarios (e.g. 1.1.2, 1.1.3). Verify that `(bid, rank, level)` in `/bcg/getBaseHeroData` strictly matches `battleEnemy` in `/quests/quest-movedir`. A mismatch causes the client's cache lookup to fail, resulting in 0 stats.
 - **Do Not Analyze Build Scripts for Game Logic Issues (禁止无关工具发散分析)**:
-  When diagnosing gameplay, quest, or UI bugs, do NOT inspect or analyze build scripts like `build_apk.py` or `INSTALL-ADB.py`. Focus exclusively on the data flow (`gamedata.py`, `export_payload.py`), native server responses (`inapk_server.c`), and relevant hooks (`hook.c`).
 
 ## Anti-cognitive-drift and regression defense protocol (防思维漂移与回归排查铁律)
 
@@ -85,4 +84,5 @@
   改好的代码只负责编译并通过本地验证/单测，**严禁自行或私自调用 ADB 往用户手机上安装**。必须等待用户明确要求或由用户自行安装验证。
 - **No Premature Commit and Push (未经验收严禁擅自 Commit 和 Push)**:
   未经实机或用户测试验收通过的内容，**严禁自行执行 commit 和 push 到远端仓库**，除非用户有明确的说明和指令。
-
+- **No Frequent Timer Polling on Background Build Tasks (严禁在构建长任务中频繁使用 Timer 轮询)**:
+  在执行 `build_apk.py`、大型打包或长耗时后台命令时，严禁使用 `schedule` / `timer` 频繁打断并轮询检查进度。系统会在后台长任务执行完毕后自动触发唤醒与通知，直接静默等待任务返回，并依据该后台 task 的最终执行结果进行下一步即可。
