@@ -1,0 +1,612 @@
+{
+  "mesh_to_mat": {
+    "rust_bldg_north_01_11_0_0_0": {
+      "go_name": "rust_bldg_north_01_11_0_0",
+      "materials": [
+        "rust_bldg_north_01_11_0_0_0"
+      ]
+    },
+    "2": {
+      "go_name": "Sky",
+      "materials": [
+        "skybox_2_baked",
+        "6980722325EBE67497AC2500A02D1CA3B4492676_STATIC"
+      ]
+    },
+    "proxy_22_0_0": {
+      "go_name": "proxy_22_0_0",
+      "materials": [
+        "proxy"
+      ]
+    },
+    "rust_trrn_floor_01_noplanar_11_0_0_0": {
+      "go_name": "rust_trrn_floor_01_noplanar_11_0_0",
+      "materials": [
+        "rust_trrn_floor_01_noplanar_11_0_0_0"
+      ]
+    },
+    "1": {
+      "go_name": "Sky",
+      "materials": [
+        "skybox_0_deferred",
+        "8C32671368134918D8647B536699BE4454C89362_STATIC"
+      ]
+    },
+    "rust_prop_debris_01_25_0_0_0": {
+      "go_name": "rust_prop_debris_01_25_0_0",
+      "materials": [
+        "rust_prop_debris_01_25_0_0_0"
+      ]
+    },
+    "rust_trrn_floor_03_noplanar_11_0_0_0": {
+      "go_name": "rust_trrn_floor_03_noplanar_11_0_0",
+      "materials": [
+        "rust_trrn_floor_03_noplanar_11_0_0_0"
+      ]
+    },
+    "rust_trrn_floor_02_noplanar_11_0_0_0": {
+      "go_name": "rust_trrn_floor_02_noplanar_11_0_0",
+      "materials": [
+        "rust_trrn_floor_02_noplanar_11_0_0_0"
+      ]
+    },
+    "rust_prop_debris_01_11_0_0_0": {
+      "go_name": "rust_prop_debris_01_11_0_0",
+      "materials": [
+        "rust_prop_debris_01_11_0_0_0"
+      ]
+    },
+    "rust_prop_stalagmite_01_11_0_0_0": {
+      "go_name": "rust_prop_stalagmite_01_11_0_0",
+      "materials": [
+        "rust_prop_stalagmite_01_11_0_0_0"
+      ]
+    },
+    "rust_trrn_floor_03_noplanar_25_0_0_0": {
+      "go_name": "rust_trrn_floor_03_noplanar_25_0_0",
+      "materials": [
+        "rust_trrn_floor_03_noplanar_25_0_0_0"
+      ]
+    },
+    "rust_trrn_floor_01_11_0_0_0": {
+      "go_name": "rust_trrn_floor_01_11_0_0",
+      "materials": [
+        "rust_trrn_floor_01_11_0_0_0"
+      ]
+    },
+    "rust_prop_head_01_11_0_0_0": {
+      "go_name": "rust_prop_head_01_11_0_0",
+      "materials": [
+        "rust_prop_head_01_11_0_0_0"
+      ]
+    },
+    "rust_bldg_robot_01_11_0_0_0": {
+      "go_name": "rust_bldg_robot_01_11_0_0",
+      "materials": [
+        "rust_bldg_robot_01_11_0_0_0"
+      ]
+    },
+    "rust_trrn_glow_03_noplanar_11_0_0_0": {
+      "go_name": "rust_trrn_glow_03_noplanar_11_0_0",
+      "materials": [
+        "rust_trrn_glow_03_noplanar_11_0_0_0"
+      ]
+    },
+    "rust_trrn_floor_02_11_0_0_0": {
+      "go_name": "rust_trrn_floor_02_11_0_0",
+      "materials": [
+        "rust_trrn_floor_02_11_0_0_0"
+      ]
+    },
+    "AreaLightMerged_10_0_0_Night_0": {
+      "go_name": "AreaLightMerged_10_0_0_Night",
+      "materials": [
+        "AreaLightMerged_10_0_0_Night_0"
+      ]
+    },
+    "light_flare_fx_t_lightglows_10_0_0_0": {
+      "go_name": "light_flare_fx_t_lightglows_10_0_0",
+      "materials": [
+        "light_flare_fx_t_lightglows_10_0_0_0"
+      ]
+    },
+    "rust_trrn_glow_01_11_0_0_0": {
+      "go_name": "rust_trrn_glow_01_11_0_0",
+      "materials": [
+        "rust_trrn_glow_01_11_0_0_0"
+      ]
+    },
+    "rust_prop_debris_01_15_0_0_0": {
+      "go_name": "rust_prop_debris_01_15_0_0",
+      "materials": [
+        "rust_prop_debris_01_15_0_0_0"
+      ]
+    },
+    "rust_trrn_glow_03_11_0_0_0": {
+      "go_name": "rust_trrn_glow_03_11_0_0",
+      "materials": [
+        "rust_trrn_glow_03_11_0_0_0"
+      ]
+    },
+    "rust_bldg_east_01_11_0_0_0": {
+      "go_name": "rust_bldg_east_01_11_0_0",
+      "materials": [
+        "rust_bldg_east_01_11_0_0_0"
+      ]
+    },
+    "proxy_22_0_2": {
+      "go_name": "proxy_22_0_2",
+      "materials": [
+        "proxy"
+      ]
+    },
+    "rust_bldg_north_02_11_0_0_0": {
+      "go_name": "rust_bldg_north_02_11_0_0",
+      "materials": [
+        "rust_bldg_north_02_11_0_0_0"
+      ]
+    },
+    "AreaLightMerged_10_0_0_Sunset_0": {
+      "go_name": "AreaLightMerged_10_0_0_Sunset",
+      "materials": [
+        "AreaLightMerged_10_0_0_Sunset_0"
+      ]
+    },
+    "AreaLightMerged_10_0_0_Greenday_0": {
+      "go_name": "AreaLightMerged_10_0_0_Greenday",
+      "materials": [
+        "AreaLightMerged_10_0_0_Greenday_0"
+      ]
+    },
+    "proxy_22_0_1": {
+      "go_name": "proxy_22_0_1",
+      "materials": [
+        "proxy"
+      ]
+    },
+    "rust_trrn_floor_02_noplanar_25_0_0_0": {
+      "go_name": "rust_trrn_floor_02_noplanar_25_0_0",
+      "materials": [
+        "rust_trrn_floor_02_noplanar_25_0_0_0"
+      ]
+    },
+    "destructable_simulation_15_0": {
+      "go_name": "Simulation Mesh",
+      "materials": [
+        "destructable_simulation_mat_15_0"
+      ]
+    },
+    "rust_bldg_robot_02_11_0_0_0": {
+      "go_name": "rust_bldg_robot_02_11_0_0",
+      "materials": [
+        "rust_bldg_robot_02_11_0_0_0"
+      ]
+    },
+    "rust_trrn_floor_03_11_0_0_0": {
+      "go_name": "rust_trrn_floor_03_11_0_0",
+      "materials": [
+        "rust_trrn_floor_03_11_0_0_0"
+      ]
+    },
+    "rust_water_01_11_0_0_0": {
+      "go_name": "rust_water_01_11_0_0",
+      "materials": [
+        "rust_water_01_11_0_0_0"
+      ]
+    },
+    "rust_prop_barge_11_0_0_0": {
+      "go_name": "rust_prop_barge_11_0_0",
+      "materials": [
+        "rust_prop_barge_11_0_0_0"
+      ]
+    }
+  },
+  "mat_to_tex": {
+    "rust_bldg_east_01_11_0_0_0": [
+      [
+        "_base_tex",
+        "rust_bldg_east_01_d"
+      ],
+      [
+        "_normal_tex",
+        "rust_bldg_east_01_n"
+      ],
+      [
+        "_pbr_composite_tex",
+        "B821AED887D1DDD4C6CB76C7C1E239748604AC20"
+      ]
+    ],
+    "AreaLightMerged_10_0_0_Greenday_0": [],
+    "rust_trrn_floor_03_11_0_0_0": [
+      [
+        "_base_tex",
+        "rust_trrn_platform_03_d"
+      ],
+      [
+        "_normal_tex",
+        "rust_trrn_platform_03_n"
+      ],
+      [
+        "_pbr_composite_tex",
+        "2A3304CC400365BD1B2A5B6D787B70F61EFC0A84"
+      ]
+    ],
+    "fx_m_lavaSparks_a": [],
+    "fx_m_foundry_smoke_b": [],
+    "rust_bldg_north_02_11_0_0_0": [
+      [
+        "_base_tex",
+        "rust_bldg_north_02_d"
+      ],
+      [
+        "_normal_tex",
+        "rust_bldg_north_02_n"
+      ],
+      [
+        "_pbr_composite_tex",
+        "BFBACA3F37169F75A233A487E1D3189D0C5C5B7F"
+      ]
+    ],
+    "fx_m_rust_debris_sand": [
+      [
+        "_base_tex",
+        "fx_t_Fallingsand"
+      ]
+    ],
+    "fx_m_fine_dust_b": [],
+    "rust_prop_stalagmite_01_11_0_0_0": [
+      [
+        "_base_tex",
+        "rust_prop_stalagmite_01_d"
+      ],
+      [
+        "_normal_tex",
+        "rust_prop_stalagmite_01_n"
+      ],
+      [
+        "_pbr_composite_tex",
+        "4BD98FBD7225EE6007218BE3A36D31A21BCED291"
+      ]
+    ],
+    "destructable_simulation_mat_15_0": [],
+    "skybox_0_baked": [
+      [
+        "_base_tex",
+        "rust_sky_day_01"
+      ]
+    ],
+    "Sparks": [],
+    "skybox_2_baked": [
+      [
+        "_base_tex",
+        "rust_sky_alt_01"
+      ]
+    ],
+    "rust_prop_debris_01_11_0_0_0": [
+      [
+        "_base_tex",
+        "rust_prop_debris_01_d"
+      ],
+      [
+        "_normal_tex",
+        "rust_prop_debris_01_n"
+      ],
+      [
+        "_pbr_composite_tex",
+        "CB952588E4269B0DB6E3EAD168AB7842982CD411"
+      ]
+    ],
+    "skybox_1_deferred": [
+      [
+        "_base_tex",
+        "rust_sky_night_01"
+      ]
+    ],
+    "8C32671368134918D8647B536699BE4454C89362_STATIC": [],
+    "rust_prop_debris_01_25_0_0_0": [
+      [
+        "_base_tex",
+        "rust_prop_debris_01_d"
+      ],
+      [
+        "_normal_tex",
+        "rust_prop_debris_01_n"
+      ],
+      [
+        "_pbr_composite_tex",
+        "CB952588E4269B0DB6E3EAD168AB7842982CD411"
+      ]
+    ],
+    "rust_prop_barge_11_0_0_0": [
+      [
+        "_base_tex",
+        "rust_prop_barge_01_d"
+      ],
+      [
+        "_normal_tex",
+        "rust_prop_barge_01_n"
+      ],
+      [
+        "_pbr_composite_tex",
+        "B6589C5F2592B2AB78009E8BB53C810506ECA3C3"
+      ]
+    ],
+    "rust_trrn_floor_03_noplanar_25_0_0_0": [
+      [
+        "_base_tex",
+        "rust_trrn_platform_03_d"
+      ],
+      [
+        "_normal_tex",
+        "rust_trrn_platform_03_n"
+      ],
+      [
+        "_pbr_composite_tex",
+        "2A3304CC400365BD1B2A5B6D787B70F61EFC0A84"
+      ]
+    ],
+    "rust_trrn_glow_03_noplanar_11_0_0_0": [
+      [
+        "_base_tex",
+        "prop_debris_metal_rough_02_r"
+      ],
+      [
+        "_normal_tex",
+        "rust_trn__hexpattern_01_n"
+      ],
+      [
+        "_pbr_composite_tex",
+        "4D6D33D75260EAC36FEF709382E78708289C4AEA"
+      ]
+    ],
+    "rust_trrn_floor_03_noplanar_11_0_0_0": [
+      [
+        "_base_tex",
+        "rust_trrn_platform_03_d"
+      ],
+      [
+        "_normal_tex",
+        "rust_trrn_platform_03_n"
+      ],
+      [
+        "_pbr_composite_tex",
+        "2A3304CC400365BD1B2A5B6D787B70F61EFC0A84"
+      ]
+    ],
+    "AreaLightMerged_10_0_0_Sunset_0": [],
+    "rust_trrn_glow_01_11_0_0_0": [
+      [
+        "_base_tex",
+        "gacha_trrn_metal_01_d"
+      ],
+      [
+        "_normal_tex",
+        "rust_trn__hexpattern_01_n"
+      ],
+      [
+        "_pbr_composite_tex",
+        "3705B594796819F815DBAA54B622154FFA41F6B9"
+      ]
+    ],
+    "fx_m_electric_clouds_a_ANIM": [
+      [
+        "_emissive_tex",
+        "fx_t_cloud_lightning"
+      ]
+    ],
+    "Default-Material": [],
+    "skybox_1_baked": [
+      [
+        "_base_tex",
+        "rust_sky_night_01"
+      ]
+    ],
+    "rust_trrn_glow_03_11_0_0_0": [
+      [
+        "_base_tex",
+        "prop_debris_metal_rough_02_r"
+      ],
+      [
+        "_normal_tex",
+        "rust_trn__hexpattern_01_n"
+      ],
+      [
+        "_pbr_composite_tex",
+        "4D6D33D75260EAC36FEF709382E78708289C4AEA"
+      ]
+    ],
+    "rust_trrn_floor_02_11_0_0_0": [
+      [
+        "_base_tex",
+        "rust_trrn_platform_02_d"
+      ],
+      [
+        "_normal_tex",
+        "rust_trrn_platform_02_n"
+      ],
+      [
+        "_pbr_composite_tex",
+        "4A86AB0C3F7382C78E950D900793D4488F6AE453"
+      ]
+    ],
+    "rust_trrn_floor_01_noplanar_11_0_0_0": [
+      [
+        "_base_tex",
+        "rust_trrn_platform_01_d"
+      ],
+      [
+        "_normal_tex",
+        "rust_trrn_platform_01_n"
+      ],
+      [
+        "_pbr_composite_tex",
+        "483470194AF4F9D108F0CA989E39CEEB579A8E35"
+      ]
+    ],
+    "AreaLightMerged_10_0_0_Night_0": [],
+    "rust_prop_debris_01_15_0_0_0": [
+      [
+        "_base_tex",
+        "rust_prop_debris_01_d"
+      ],
+      [
+        "_normal_tex",
+        "rust_prop_debris_01_n"
+      ],
+      [
+        "_pbr_composite_tex",
+        "CB952588E4269B0DB6E3EAD168AB7842982CD411"
+      ]
+    ],
+    "proxy": [],
+    "rust_prop_head_01_11_0_0_0": [
+      [
+        "_base_tex",
+        "rust_prop_head_01_d"
+      ],
+      [
+        "_normal_tex",
+        "rust_prop_head_01_n"
+      ],
+      [
+        "_pbr_composite_tex",
+        "4B6575EA63FBCD9EE18FC3C38DC3EE6181846D2D"
+      ]
+    ],
+    "4A2510F61C1234C2302142DF0AEED8C320B3D698_STATIC": [],
+    "rust_bldg_robot_02_11_0_0_0": [
+      [
+        "_base_tex",
+        "rust_bldg_robot_02_d"
+      ],
+      [
+        "_normal_tex",
+        "rust_bldg_robot_02_n"
+      ],
+      [
+        "_pbr_composite_tex",
+        "C1D1D86DB0FDB8D6789DF4A214107388AC96E5BC"
+      ]
+    ],
+    "fx_m_ground_smoke_c": [],
+    "skybox_2_forward": [
+      [
+        "_base_tex",
+        "rust_sky_alt_01"
+      ]
+    ],
+    "rust_water_01_11_0_0_0": [
+      [
+        "_normal2_tex",
+        "rust_water_n_01"
+      ],
+      [
+        "_normal_tex",
+        "rust_water_n_02"
+      ]
+    ],
+    "skybox_0_forward": [
+      [
+        "_base_tex",
+        "rust_sky_day_01"
+      ]
+    ],
+    "fx_m_foundryGlow_a": [],
+    "fx_m_fireblast_fire_a": [],
+    "rust_bldg_robot_01_11_0_0_0": [
+      [
+        "_base_tex",
+        "rust_bldg_robot_01_d"
+      ],
+      [
+        "_normal_tex",
+        "rust_bldg_robot_01_n"
+      ],
+      [
+        "_pbr_composite_tex",
+        "ECB7704F15F7EF5690E9A70A9F594E90F28E3E2B"
+      ]
+    ],
+    "skybox_0_deferred": [
+      [
+        "_base_tex",
+        "rust_sky_day_01"
+      ]
+    ],
+    "rust_trrn_floor_01_11_0_0_0": [
+      [
+        "_base_tex",
+        "rust_trrn_platform_01_d"
+      ],
+      [
+        "_normal_tex",
+        "rust_trrn_platform_01_n"
+      ],
+      [
+        "_pbr_composite_tex",
+        "483470194AF4F9D108F0CA989E39CEEB579A8E35"
+      ]
+    ],
+    "light_flare_fx_t_lightglows_10_0_0_0": [
+      [
+        "_MainTex",
+        "fx_t_lightglows"
+      ]
+    ],
+    "6980722325EBE67497AC2500A02D1CA3B4492676_STATIC": [],
+    "rust_bldg_north_01_11_0_0_0": [
+      [
+        "_base_tex",
+        "rust_bldg_north_01_d"
+      ],
+      [
+        "_normal_tex",
+        "rust_bldg_north_01_n"
+      ],
+      [
+        "_pbr_composite_tex",
+        "4B56D2E3A6D8CDA0C00C4806B622A6704E3B943E"
+      ]
+    ],
+    "skybox_1_forward": [
+      [
+        "_base_tex",
+        "rust_sky_night_01"
+      ]
+    ],
+    "rust_trrn_floor_02_noplanar_11_0_0_0": [
+      [
+        "_base_tex",
+        "rust_trrn_platform_02_d"
+      ],
+      [
+        "_normal_tex",
+        "rust_trrn_platform_02_n"
+      ],
+      [
+        "_pbr_composite_tex",
+        "4A86AB0C3F7382C78E950D900793D4488F6AE453"
+      ]
+    ],
+    "skybox_2_deferred": [
+      [
+        "_base_tex",
+        "rust_sky_alt_01"
+      ]
+    ],
+    "rust_trrn_floor_02_noplanar_25_0_0_0": [
+      [
+        "_base_tex",
+        "rust_trrn_platform_02_d"
+      ],
+      [
+        "_normal_tex",
+        "rust_trrn_platform_02_n"
+      ],
+      [
+        "_pbr_composite_tex",
+        "4A86AB0C3F7382C78E950D900793D4488F6AE453"
+      ]
+    ]
+  }
+}

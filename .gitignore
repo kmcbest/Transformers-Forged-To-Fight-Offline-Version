@@ -78,6 +78,7 @@ assets_redeco/*
 !assets_redeco/primordial_base.assetbundle
 !assets_redeco/towers.assetbundle
 !assets_redeco/relics.assetbundle
+!assets_redeco/rust_merged.assetbundle
 !assets_redeco/starsaber_gs_leader2014.assetbundle
 !assets_redeco/dragstrip_gs_deluxe2016.assetbundle
 !assets_redeco/*dragstrip*
@@ -114,3 +115,14 @@ demolishor_backup/
 
 *.mkv
 cookies.txt
+
+stage_project/[Ll]ibrary/
+stage_project/[Tt]emp/
+stage_project/[Oo]bj/
+stage_project/[Bb]uild/
+stage_project/[Bb]uilds/
+stage_project/[Ll]ogs/
+stage_project/[Uu]ser[Ss]ettings/
+stage_project/AssetBundles/
+stage_project/*.log
+stage_project_assets/

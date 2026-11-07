@@ -327,11 +327,25 @@ def build(
                     print(f"[*] Overriding {info.filename} with {rpath}")
                     data = rpath.read_bytes()
             elif info.filename.startswith("assets/assetpack/") and info.filename.endswith(".assetbundle"):
-                b_name = Path(info.filename).name
-                rpath = Path("assets_redeco") / b_name
+                if info.filename == "assets/assetpack/rust_merged_odr/rust_merged.assetbundle":
+                    pass
+                else:
+                    b_name = Path(info.filename).name
+                    rpath = Path("assets_redeco") / b_name
+                    if rpath.exists():
+                        print(f"[*] Overriding {info.filename} with {rpath}")
+                        data = rpath.read_bytes()
+            elif info.filename == "assets/rust/toc.txt":
+                rpath = Path("assets_redeco/rust_merged.assetbundle")
                 if rpath.exists():
-                    print(f"[*] Overriding {info.filename} with {rpath}")
-                    data = rpath.read_bytes()
+                    try:
+                        toc_dict = json.loads(data.decode("utf-8"))
+                        toc_dict["bundles"]["rust_merged"]["crc"] = 0
+                        toc_dict["bundles"]["rust_merged"]["size"] = rpath.stat().st_size
+                        data = json.dumps(toc_dict, indent=4).encode("utf-8")
+                        print(f"[*] Patched {info.filename}: crc=0, size={rpath.stat().st_size}")
+                    except Exception as e:
+                        print(f"Failed to patch rust toc: {e}")
             elif info.filename == "assets/towers_odr/toc.txt":
                 try:
                     toc_dict = json.loads(data.decode("utf-8"))
@@ -403,7 +417,7 @@ def build(
                     _rdir = Path("assets_redeco")
                     if _rdir.is_dir():
                         for _b in _rdir.glob("*.assetbundle"):
-                            if _b.stem not in ("towers", "relics", "buildings", "primordial_base", "character_audio", "moves"):
+                            if _b.stem not in ("towers", "relics", "buildings", "primordial_base", "character_audio", "moves", "rust_merged"):
                                 packs[f"{_b.stem}_odr"] = f"{_b.stem}_odr"
                     pdict["packs"] = packs
                     data = json.dumps(pdict, indent=4).encode("utf-8")
