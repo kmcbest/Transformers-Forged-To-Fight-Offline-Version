@@ -105,6 +105,7 @@ assets_redeco/*
 !assets_redeco/*elita*
 !assets_redeco/*bumblebee*
 !assets_redeco/*toxitron*
+!assets_redeco/*onslaught*
 
 # 3rd-party models & textures
 !3rd-party-models/**

@@ -5422,6 +5422,7 @@ static const struct ArtBaseMap ART_BASE_MAP[] = {
     { "necrotronus_gs_kabam", "necrotro_gs" },
     { "nemesisprime_gs_voyager2015", "nemesis_p" },
     { "novastorm_gs_leader2015", "novastorm" },
+    { "onslaught_gs", "onslaught_gs" },
     { "optimusprimal_bw_mp32", "oprimal_bw" },
     { "optimusprime_cin_tf", "optimus_c_tf" },
     { "optimusprime_sg_voyager2015", "optimus_sg" },
@@ -5560,6 +5561,12 @@ void* hook_162(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
                 return g_strnew("艾丽塔是塞伯坦女性汽车人反抗军的勇敢领袖之一，擎天柱最信赖的战斗伴侣与挚友。她拥有敏锐卓越的战术头脑、冷酷果决的战斗技巧，以及传说中足以扭转战局的神秘时间停滞核心力场。");
             }
             return g_strnew("艾丽塔");
+        }
+        if (strstr(k, "ONSLAUGHT") || strstr(k, "onslaught") || strstr(k, "Onslaught")) {
+            if (strstr(k, "BIO") || strstr(k, "desc") || strstr(k, "DESC") || strstr(k, "Bio")) {
+                return g_strnew("战车队冷酷沉着的战术指挥官，重装炮火专家。他擅长制定周密残忍的突袭计划，身披重甲，背负双联防空火箭炮与小臂转轮重机炮，在战场上以压倒性的火力粉碎一切阻碍。");
+            }
+            return g_strnew("袭击");
         }
     }
     return r;

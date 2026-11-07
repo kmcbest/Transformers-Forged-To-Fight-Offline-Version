@@ -118,6 +118,7 @@ ROSTER = {
     "cyclonus_gs_uw06":             ("decepticon", "tact", 5),
     "deadend_gs_deluxe2015":        ("decepticon", "demo", 5),
     "demolishor_gs":                ("decepticon", "demo", 5),
+    "onslaught_gs":                 ("decepticon", "demo", 5),
     "dragstrip_gs_deluxe2016":      ("decepticon", "warr", 5),
     "wildrider_gs_deluxe2016":      ("decepticon", "braw", 5),
     "breakdown_gs":                 ("decepticon", "scou", 5),
@@ -472,6 +473,7 @@ _ART_BASE = {
     "thrust_gs_deluxe2008": "thrust",
     "waspinator_gs_deluxe": "wasp_bw",  # Only the Beast Wars-styled art ships.
     "demolishor_gs": "demolishor_gs",
+    "onslaught_gs": "onslaught_gs",
     "elita_one_gs": "elita_one_gs",
 
     # --- Sharkticon NPC variants ---
@@ -660,6 +662,7 @@ _BOT_NAMES = {
     "tantrum_gs_kabam": "Tantrum",
     "waspinator_gs_deluxe": "Waspinator",
     "demolishor_gs": "Demolishor",
+    "onslaught_gs": "Onslaught",
     "elita_one_gs": "Elita One",
 
     # Sharkticons

@@ -365,4 +365,8 @@ if (strstr(k, "ELITA") || strstr(k, "elita") || strstr(k, "Elita")) {
 - [ ] **空间高度正立断言**：Mesh 与 SMR 的 Center $Y$ 是否处于站立区间（$Y > 3.0\text{m}$，Extent $Y > 3.0\text{m}$），严防网格轴向颠倒躺平？
 - [ ] **贴图材质原位隔离**：后续调整贴图或 Shader 浮点参数时，是否使用了原位补丁脚本（`patch_textures_and_materials_only.py`），绝不重新运行巨石全量网格重建？
 - [ ] **双眼对称自发光与 HDR 绽放**：外部模型 Diffuse 是否已补全双眼高饱和电光色（含深色眼线外框），RAOE.B 是否已写入带羽化的 255 发光掩码，材质 `_emissive_overbright_range` 是否拉满至 `120.0` 触发真机泛光？
-- [ ] **全套汉化闭环**：角色名、Bio 传记、SP1~SP3 技能是否已全部通过 Hook 拦截与头文件生成？
+- [ ] **全套汉化闭环**：角色名、Bio 传记、SP1~SP3 技能是否已全部通过 Hook 拦截与头文件生成（同步更新根目录与 `Server/` 双端 `bot_names_zh.json`）？
+- [ ] **零权重子件与飞轮审计（Onslaught 经验）**：静态子网格（如车轮 `STAT_Wheel`、肩甲盖 `CapL/R`、背炮）是否已消除空顶点组并严格遵守“同壳同骨”（如肩轮+肩甲同归 `Left/RightShoulderPad`，小腿轮归 `Left/RightLeg`），且通过了高踢腿（`attackLight_04`）测试？
+- [ ] **30 指节先接地后对齐与双壳拆分（Elita + Onslaught 经验）**：是否在对齐 30 根手指关节**之前**就已将原模骨架整体接地（`arm.location.z -= min_z`，严禁烘焙后再平移 Z 轴），对 UE3 双骨手指按连通壳体拆分为真三节指骨（`Delta <= 0.001mm`），并在 Unity 挂载 `<Bot>FingerTester` + `<Bot>HandFixer` 验收？
+- [ ] **AssetBundle 防隐形六项必查（严防游戏内空白人物）**：`AssetBundle.m_Container` 与根 Prefab `m_Name` 是否已从母体名替换为新角色名？多余道具 SMR（如 `grenade`）是否已 `m_Enabled = 0`？全幅 `2048×2048` 图集下主材质与载具材质三通道 `m_Scale=(1,1), m_Offset=(0,0)` 是否已归零？
+- [ ] **强制人工验收门禁**：在生成游戏 `assets_redeco/<bot>_gs.assetbundle` 与 `build_apk.py` 前，是否已完成 Unity 9 动作同步烘焙对比图自检并获得用户明确验收确认（详见 [`THIRD_PARTY_3D_MODEL_PIPELINE.md`](file:///e:/Agent/TFTF-blender/re_notes/THIRD_PARTY_3D_MODEL_PIPELINE.md) v2.0）？

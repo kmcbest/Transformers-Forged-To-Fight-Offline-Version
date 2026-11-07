@@ -1,35 +1,72 @@
 # 《TFTF 第三方 3D 模型导入与骨骼蒙皮全自动化管线指南》
 ## Complete Engineering Specification: 3rd-Party 3D Model Ingestion, Skeleton Retargeting, and AssetBundle Grafting in Transformers: Forged to Fight
 
-> **文档版本**：v1.0 (Revival Production Edition)  
-> **适用引擎**：Unity 5.5.x / 5.6.x (游戏底版运行时) & Unity 2020.3.x LTS (工具链网格编译器)  
-> **面向对象**：在不同机器上执行新角色 3D 移植的自主智能体（AI Agent）与逆向工程开发者  
-> **典型成功案例**：塞伯坦陨落（Fall of Cybertron）重装霸天虎 **破坏者（Demolishor）** 移植到电影版铁皮（Movie Ironhide `ironhide_cin_rotf`）母体
+> **文档版本**：v2.0 (Revival Production Edition — Demolishor + Elita One + Onslaught Complete Specification)  
+> **适用引擎**：Unity 5.5.x / 5.6.x (游戏底版运行时) & Unity 2020.3.31f1 LTS (工具链验收与网格编译器)  
+> **面向对象**：在不同机器或不同模型梯队（如 Gemini 3.8 初筛构建 + 高阶精修收尾）上执行新角色 3D 移植的自主智能体（AI Agent）与逆向工程开发者  
+> **三大标杆成功案例**：  
+> 1. **破坏者（Demolishor，`demolishor_gs`）** $\rightarrow$ 电影铁皮母体（`ironhide_cin_rotf`，刚体基础通路验证）  
+> 2. **艾丽塔（Elita One，`elita_one_gs`）** $\rightarrow$ 阿尔茜母体（`arcee_gs_deluxe2014`，30 指节灵动卷曲、3D 独立发光眼、`NM.Blue` 去金属化）  
+> 3. **袭击（Onslaught，`onslaught_gs`）** $\rightarrow$ 电影铁皮母体（`ironhide_cin_rotf`，Combaticons 合集剥离、常驻武器格斗化外挂、飞轮刚体归属修复、UE3 双壳拆三节灵动指骨、眼睛与狂派紫纹一次点亮）
 
 ---
 
 ## 目录
+0. [【AI 智能体必读铁律】严禁跳步与四道强制视觉验收门禁 (Mandatory Anti-Rush & Visual Gate Protocol)](#0-ai-智能体必读铁律严禁跳步与四道强制视觉验收门禁)
 1. [管线架构与核心原理 (Architecture & Principles)](#1-管线架构与核心原理)
 2. [开发环境与工具链自动化部署 (Toolchain Setup)](#2-开发环境与工具链自动化部署)
 3. [Unity 账户激活与无头编译配置 (Unity Licensing & Headless Build)](#3-unity-账户激活与无头编译配置)
 4. [全流程模型制作与资产嫁接 (End-to-End Asset Pipeline)](#4-全流程模型制作与资产嫁接)
    * 4.1 母体骨骼真值与层级树逆向提取
    * 4.2 空间坐标系变换与轴向重映射
-   * 4.3 顶点组语义映射与拓扑折叠（消除手指炸裂）
-   * 4.4 PBR 贴图转码与 RAOE 通道烘焙
+   * 4.3 手部双轨绑定策略（标准 30 根灵动指节 vs 兜底手掌折叠）与刚体子件权重审计
+   * 4.4 PBR 贴图转码、多材质 2048 图集与眼睛/能量纹一次点亮
    * 4.5 角色头像（Portrait）占位与工业化工作流规范
-   * 4.6 Unity 无头编译生成原生网格 AssetBundle
-   * 4.7 跨 Prefab 物理隔离与 BindPose 注入嫁接
-   * 4.8 服务端注册与客户端 Hook 接入
+   * 4.6 Unity 验收场景构建、防锁并发编译与人机交接机制
+   * 4.7 AssetBundle 容器重写、双 Prefab 物理隔离与 BindPose/Hash 注入（防隐形六大铁律）
+   * 4.8 全链路服务端注册、双端中文字典与客户端 NativeHook 接入
 5. [常见故障排查与已结案死胡同 (Troubleshooting & Settled Dead Ends)](#5-常见故障排查与已结案死胡同)
-6. [一键执行与后续角色复用模板 (Reusable Automation Scripts)](#6-一键执行与后续角色复用模板)
+6. [十步标准作业流水线模板 (10-Step Foolproof SOP)](#6-十步标准作业流水线模板)
 7. [架构复盘与真机渲染失真根因分析及演进路线 (Architecture Retrospective & Runtime Distortion Root Cause)](#7-架构复盘与真机渲染失真根因分析及演进路线-architecture-retrospective--runtime-distortion-root-cause)
-8. [高难实战攻坚专题：全 30 根手指灵活卷曲、3D 独立发光眼与载具 180° 朝向逆转深度避坑指南 (Advanced Practice: 30 Articulated Fingers, True 3D Eye Glow, and 180° Vehicle Orientation Correction)](#8-高难实战攻坚专题全-30-根手指灵活卷曲3d-独立发光眼与载具-180-朝向逆转深度避坑指南)
+8. [高难实战攻坚专题一：艾丽塔全 30 根手指灵活卷曲、3D 独立发光眼、载具 180° 修正与 NM.Blue 去金属化](#8-高难实战攻坚专题全-30-根手指灵活卷曲3d-独立发光眼与载具-180-朝向逆转深度避坑指南)
    * 8.1 第一攻坚难题：30 根手指灵活卷曲与 1:1 关节轴向精准对齐
    * 8.2 第二攻坚难题：眼睛点亮位置与发光遮罩（独立 3D 眼球镜片与 RAOE 通道图集错位）
    * 8.3 第三攻坚难题：载具模式朝向 180° 反转（Vehicle Mode Yaw Flip）
    * 8.4 关键资产与核心脚本速查表
    * 8.5 第四攻坚难题：Kabam 法线蓝通道隐藏金属度（NM.Blue）导致全身镜面发暗与珍珠白提亮
+9. [高难实战攻坚专题二：合集包角色剥离、射击游戏武器格斗化、飞轮归属修复与双壳三节灵动手指（FOC 袭击 Onslaught 全案）](#9-高难实战攻坚专题二合集包角色剥离射击游戏武器格斗化飞轮归属修复与双壳三节灵动手指foc-袭击-onslaught-全案)
+   * 9.1 多角色合集 FBX 精准剥离与大小写无关贴图重连
+   * 9.2 射击游戏常驻武器格斗化适配（母壳对比选型与前臂外挂重炮方案）
+   * 9.3 “车轮飞在半空/护甲脱节”根因排查与同壳同骨铁律
+   * 9.4 UE3 双骨手指拆分为真三节灵动指骨（连通壳体拓扑切分 + 先接地后对齐 `0.001mm` 铁律）
+   * 9.5 Unity 验收台四大工程暗坑（`BakeMesh` 无头渲染、5.6 `Avatar` 肌肉表保留、Hub 默认场景、防锁沙盒打包）
+   * 9.6 袭击（Onslaught）完整可复用脚本索引（供后续吵闹/诈骗/旋风/爆炸直接套用）
+
+---
+
+## 0. 【AI 智能体必读铁律】严禁跳步与四道强制视觉验收门禁
+
+> **致所有执行本管线的 AI 模型（特别是初筛构建模型）：**  
+> 历史教训证明：**凡是跳过 Blender/Unity 分步渲染比对、急于直接生成 `.assetbundle` 和 `build_apk.py` 的尝试，100% 会导致进游戏人物空白隐形、车轮悬空乱飞、贴图错位或全身散架！**  
+> 执行任何新角色移植时，必须严格遵守本地预置工具链固定路径，并**逐关通过以下四道强制视觉渲染门禁**（每一关输出 PNG 后，Agent 必须亲自用读图工具审阅画面，绝不允许“盲打”推进）：
+
+### 0.1 本地预置工具链绝对路径（严禁全盘递归搜索）
+* **Blender 3.6.23 无头引擎**：`E:\Agent\TFTF-blender\toolchain\blender\blender.exe`
+* **Unity 2020.3.31f1 编译器**：`E:\Agent\TFTF-blender\toolchain\Unity_2020.3.31f1\Editor\Unity.exe`
+* **标准 Unity 验收工程**：`E:\Agent\TFTF-blender\toolchain\unity_build_project`
+* **官方通用程序化动作包**：`E:\Agent\TFTF\assets_netflix\character_anim_procedural.assetbundle`
+
+### 0.2 四道不可跳过的强制视觉门禁（4 Mandatory Visual Gates）
+1. **【门禁一：资产剥离与贴图点亮三视图】**  
+   从原模/合集包提取目标角色的**人形 + 武器 + 载具**，自动重连 `textures/` 目录贴图后，必须在 Blender 中输出**三栏预览渲染图**并肉眼核查：无紫红色丢贴图、无背面剔除黑洞、眼部/能量纹发光贴图正确识别。
+2. **【门禁二：Blender 姿态对齐、先接地后对指节、零权重子件（车轮/甲片）清零】**  
+   对齐母壳站姿时，必须**先摆好双腿并将骨架整体接地（`arm.location.z -= min_z`），然后再把前臂、手腕和 30 根手指关节 1:1 对齐至母壳 `m_BindPose` 坐标**（严禁对齐手指后再平移网格 Z 轴！）。合并网格后必须检查是否所有静态子件（如 `STAT_Wheel` 车轮、背炮、肩甲盖）都拥有 `1.0` 刚体权重且与外层护甲同属一根骨骼（如肩轮与肩甲同归 `Left/RightShoulderPad`，小腿轮归 `Left/RightLeg`），并渲染与官方母体 OBJ 的并排站姿对比图。
+3. **【门禁三：Unity 权威并排场景 9 动作同步渲染 + 人工验收门禁（核心卡点！）】**  
+   在 `unity_build_project` 生成 `Assets/Scenes/<Bot>_Inspection.unity`（左：官方母体原版，右：新角色，挂载 `<Bot>PreviewController.cs` 与 `<Bot>FingerTester.cs`），使用 `SkinnedMeshRenderer.BakeMesh()` 渲染 **9 张同步动作对比图**（`00 绑定站姿`、`01 战斗待机`、`02 展厅 45° 待机`、`03 背面背炮与车轮`、`04 刺拳出击`、`05 必杀远程开炮`、`06 载具水平并排`、`07 高踢腿极限测试`、`08 胜利特写`）及**手指张开/握拳微距图**。  
+   * **自检重点**：特别放大检查 **`07 高踢腿`** 与 **`04 刺拳`** 中车轮/肩甲/武器是否悬空脱节、手指是否自然屈伸、眼睛是否发亮、载具是否四轮水平朝向 `+Z`。  
+   * **强制停顿点**：**在人类用户于 Unity 编辑器或渲染图中明确验收通过前，严禁生成游戏端 `assets_redeco/<bot>_gs.assetbundle`，更严禁运行 `build_apk.py`！**
+4. **【门禁四：AssetBundle 六项防隐形校验 + APK 四项完整性门禁】**  
+   人工验收通过后，导出 Android 原生网格包并合成 `assets_redeco/<bot>_gs.assetbundle`，必须通过脚本断言校验 **`m_Container` 路径已改名、双 Prefab 骨骼物理隔离、`m_BindPose` 与 `m_BoneNameHashes` 数量 100% 匹配母壳、多余挂件 SMR（如 `grenade`）已禁用、材质三通道 `m_Scale=(1,1)/m_Offset=(0,0)` 已归零、LZ4 压缩已开启**，最后打包签名 APK 并验证 ODR 包 0 缺失。
 
 ---
 
@@ -169,187 +206,134 @@ $$Z_{\text{new}} = -P_y \quad (\text{前后进深})$$
 
 > **高度缩放系数**：FOC 原生导出的网格经过 $1.775$ 倍等比缩放后，站立高度正好达到 $10.42$ 米，与游戏内铁皮的身高与重心包围盒完美贴合。
 
-### 4.3 顶点组语义映射与拓扑折叠（消除手指炸裂）
-第三方破坏者模型包含 79 个顶点组（Vertex Groups），代表 79 个独立的机械部件。
+### 4.3 手部双轨绑定策略（标准 30 根灵动指节 vs 兜底手掌折叠）与刚体子件权重审计
 
-#### 致命陷阱：铁皮的手指卷曲骨骼
-* **现象**：如果将破坏者的手指顶点组（如 `L_Finger01`, `L_Finger02`）一对一映射到铁皮的同名手指骨骼，进游戏后**整个手部会瞬间炸成几十米长的毛刺尖刺**。
-* **原因**：电影版铁皮的双手是内嵌式重炮，其动画骨架中的手指关节在静止时是**极端蜷缩在炮管内部**的。第三方破坏者平展的手指被卷曲骨骼强行扭转，产生严重的拓扑拉扯。
-* **拓扑折叠解决方案**：
-  * 将破坏者所有的左手手指（`L_Finger*`）**全部合流合并至手掌骨骼 `LeftHand`**；
-  * 将所有的右手手指（`R_Finger*`）**全部合流合并至手掌骨骼 `RightHand`**；
-  * 将所有的脚趾（`Toes`）**全部合流合并至脚掌骨骼 `LeftFoot` / `RightFoot`**；
-  * 头部所有零部件强制映射到官方头部中心锚点 `Head`。
+#### 1. 手部双轨策略（重要勘误与升级！）
+早期移植破坏者（`demolishor_gs`）时，曾在未对第三方手骨做 Pose 对齐的情况下直接映射指骨名，导致手部因逆绑定矩阵轴心错位炸成尖刺，误以为“电影铁皮的手指蜷缩在炮管内不可用”。  
+**经 `ironhide_80_authoritative_bindposes.json` 与 `arcee_bindposes.json` 逆向实测证实**：无论是阿尔茜（63 骨）还是电影版铁皮（80 骨），其官方 `m_BindPose` 中的 **30 根手指关节均为标准张手姿态**（四指垂直朝下 `Y: 4.395 -> 4.042 -> 3.757`，拇指水平朝前 `Z: 0.345 -> 0.726 -> 0.918`，左手局部 `+Z` / 右手局部 `-Z` 旋转即可自然屈指握拳）。因此手部绑定按原模条件执行双轨标准：
+* **轨道 A（标准推荐方案——全 30 根灵动指节 1:1 对齐）**：  
+  凡是原模拥有独立手指几何体（如艾丽塔、袭击、吵闹、声波等），一律在 Blender 中**先将骨架整体接地（`arm.location.z -= min_z`），再逐节把 `Thumb1..3`、`Index1..3`、`Middle1..3`、`Ring1..3`、`Pinky1..3` 对齐至母壳 `m_BindPose` 世界坐标**（误差 $\le 0.001\text{ mm}$；若 UE3 原模四指仅有两根骨骼但包含两块分离装甲壳体，按 **9.4 节** 拓扑连通分量拆分为真三节指骨），并在 Unity 挂载 `<Bot>FingerTester.cs` + `<Bot>HandFixer.cs`。这样角色在待机时手指自然微张松弛，出拳时自动收拢紧握！
+* **轨道 B（兜底方案——刚体手掌折叠）**：  
+  仅当第三方模型本身没有独立手指（例如手臂末端直接是封闭重炮筒或一体死拳，如破坏者 Demolishor）时，才将手部子顶点组统一折叠至 `LeftHand` / `RightHand`；脚趾统一合并至 `LeftFoot` / `RightFoot`。
 
-此折叠规则在 `tools/demolishor/build_aligned_demolishor.py` 中全自动执行，实现了 79 个顶点组 100% 覆盖，0 孤立顶点，0 兜底错误。
+#### 2. 静态子网格（车轮 / 肩甲盖 / 背炮）零权重必查铁律
+许多主机/PC 游戏提取模型（如 FOC 的 `.mo.dmx` / `.fbx`）中，车轮（`RB_Onslaught_STAT_Wheel.mo.005..008`）、护盾或武器是**直接作为子物体挂在某根骨骼下（Bone Parenting），自身 `vertex_groups` 完全为空**！
+* **致命后果**：一旦执行 `bpy.ops.object.join()` 合并全身网格，这些车轮变成 `len(v.groups) == 0` 的零权重孤立顶点；或者回退逻辑把肩部车轮绑到了大臂 `LeftArm`，而包裹车轮的肩甲外壳 `CapL` 绑在了 `LeftShoulderPad`——待机站立时看似正常，但一做高踢腿或挥拳动作，**车轮就会穿破肩甲或悬空飞在半空中**！
+* **强制审计准则**：
+  1. 在 `join()` 前或权重重映射时，显式检查所有 `not w_acc`（零权重）构件，按空间位置精确赋予 `1.0` 刚体权重；
+  2. **同壳同骨铁律**：凡是视觉上嵌在某块护甲内部的车轮/装饰件，必须与该护甲绑定在**完全相同的单一骨骼**上（例如肩轮 + 肩甲盖统一归 `LeftShoulderPad` / `RightShoulderPad`，小腿轮 + 胫甲统一归 `LeftLeg` / `RightLeg`，背部双炮归 `Spine1`）；
+  3. **硬表面刚体截断**：主导骨骼权重 $\ge 0.65$ 的顶点一律截断为 `1.0` 纯刚体权重，杜绝金属装甲像橡胶一样拉伸。
 
-### 4.4 PBR 贴图转码与 RAOE 通道烘焙
-TFTF 的 PBR 材质采用定制的通道压缩方案：
-1. **漫反射贴图（Diffuse / Albedo）**：RGBA 格式，提供基础纹理色彩；
-2. **法线贴图（Normal Map）**：标准切线空间法线；
-3. **RAOE 复合遮罩贴图（TFTF 独有核心）**：
-   * **R 通道 (Roughness)**：粗糙度（越低越亮滑，越高越哑光）；
-   * **A 通道 (Ambient Occlusion)**：环境光遮蔽；
-   * **O 通道 (Occlusion / Glow Mask)**：发光区域遮罩；
-   * **E 通道 (Emission Intensity)**：发光强度增益。
-
-由 `tools/demolishor/process_textures.py` 自动读取原模的贴图并生成合规的 `cha_demolishor_main_tform_misc_RAOE.png`。
+### 4.4 PBR 贴图转码、多材质 2048 图集与眼睛/能量纹一次点亮
+TFTF 的 `Character/PBR` 着色器采用三贴图通道规范（详见 **8.2** 与 **8.5** 节）：
+1. **`_base_tex`（漫反射图集，RGBA）**：**Alpha 通道必须强制填满 `255`（纯不透明）**，严禁携带透明镂空 Alpha；对于眼睛护目镜与赛星能量纹，直接读取原模 `_E / _Emis / _Glow` 贴图，在发光像素处将漫反射底色提亮为高饱和发光色（如护目镜金黄、狂派紫纹、汽车人冰青），避免底色暗灰导致发光浑浊。
+2. **`_normal_tex`（法线 + 金属度复合图）**：外部 DirectX 法线必须先翻转绿通道（`G = 255 - G`）转为 Unity OpenGL 标准；在启用 `_METALLIC_TEX` 的 Kabam 材质中，**蓝通道 `NM.B` 实为逐像素金属度遮罩**（陶瓷/白甲设 `0`，涂装金属装甲设 `110~140`），`A = 255`；而在给 Unity Editor `Standard` 验收场景预览的贴图中则保留常规三轴 `(Nx, Ny, Nz)`。
+3. **`_pbr_composite_tex`（RAOE 复合遮罩图）**：`R = Roughness`（推荐 `180~215` 防油腻镜面反射），`G = AO`，**`B = Emissive Mask`（直接写入原模发光贴图亮度 `0..255`，实现眼睛与全身能量线一次精准点亮！）**，`A = 255`。
+4. **多部件零出血 `2048×2048` 棋盘图集法**：当原模包含 6~10 个独立材质槽（胸、腿、头、上臂、前臂、车轮、重机枪、背炮、阵营徽章）时，按固定矩形格（`MAT_UV_BOX`）拼合为单张 `2048×2048` 图集，并在重映射多边形 UV 时先将原始 `(u, v)` 钳制在 `[0.004, 0.996]` 内再缩放到对应格子，彻底杜绝 Mipmap 跨格溢色！
 
 ### 4.5 角色头像（Portrait）占位与工业化工作流规范
-在开发新机体时，角色在游戏内需要提供 3 种规格的头像文件（放置在 `assets_redeco/`）：
-1. **大头像 (Large)**：`portrait_<bot>_large.png` (512x512 PNG，用于角色属性/展厅面板)；
-2. **小缩略图 (Small)**：`portrait_<bot>_small.jpg` (128x128 JPG，用于战队编队/背包网格)；
-3. **任务头像 (Quest)**：`portrait_<bot>_quest.png` (256x256 PNG，用于副本大地图与剧情关卡)。
+在开发新机体时，角色在游戏内需要提供全套规格的头像文件并放置在 `assets_redeco/`（同时覆盖带 `_gs` 后缀与不带后缀的键名，共 8 个文件以兼容所有 UI 面板）：
+* `portrait_<bot>_gs_large.png` & `portrait_<bot>_large.png` (大图)
+* `portrait_<bot>_gs_small.jpg` & `portrait_<bot>_small.jpg` (编队网格小图)
+* `portrait_<bot>_gs_quest.png` & `portrait_<bot>_quest.png` (副本棋盘头像)
+* `<bot>_gs.png` & `<bot>.png` (对话立绘占位)
 
 #### 严禁行为：切勿直接从 3D 贴图截取头像
-早期开发中，有自动化脚本尝试直接从机体 UV 展开贴图（如 `cha_demolishor_main_a.png`）中裁切一小块所谓的“面部”。这种做法是**完全错误的**：3D UV 展开图是扭曲且平铺的机械散件，裁剪出来的不仅完全看不出人形面孔，且分辨率与画风与游戏原生 UI 彻底违和。
+严禁从机体 3D UV 展开贴图中裁切所谓“面部”充当头像！在人工/AI 精修专属头像就绪前，直接提取母体官方角色的 3 套头像复制占位即可，后期直接同名覆盖 `assets_redeco/` 热替换。
 
-#### 标准占位工作流（Placeholder Protocol）
-在实际项目分工中，高质量角色头像是通过 **Midjourney/Stable Diffusion 结合人工 Photoshop 精修** 绘制的。在前期模型调试与代码跑通阶段，智能体必须遵守如下规范：
-1. **直接借用母体机器人的官方头像作为占位符**：
-   从 `extracted_apk/assets/assetpack/` 中提取“被借模机器人”（如电影版铁皮 `ironh_c_rotf`）的官方 3 套头像：
-   * 大头像：`portraits_odr/portraits/portrait_ironh_c_rotf_large.png`
-   * 小头像：`portraits_odr/portraits/portrait_ironh_c_rotf_small.jpg`
-   * 副本头像：`questboard_odr/questboard/portrait_ironh_c_rotf_quest.png`
-2. **重命名并注入 `assets_redeco/`**：
-   将其重命名为新机体的对应规格名称（如 `portrait_demolishor_gs_large.png`、`portrait_demolishor_large.png`、`demolishor.png` 等）并存入 `assets_redeco/`。
-3. **保证画风正常并支持后期无缝热替换**：
-   此举可确保在开发调试阶段，游戏背包、战队、副本结算界面有合法且规整的头像占位，不会出现白块或黑屏；当后续精修的 AI 头像完成后，只需将文件覆盖进 `assets_redeco/` 即可即时生效，无需重写代码或重打网格包。
+### 4.6 Unity 验收场景构建、防锁并发编译与人机交接机制
+1. **先验收后打包（绝对门禁）**：必须先在 `toolchain/unity_build_project` 构建 `Assets/Scenes/<Character>_Inspection.unity`，左侧放官方母体（如 `Ironhide_Official_Reference`），右侧放新角色（`Onslaught_Candidate`），头顶绘制醒目 3D 标签，挂载同步动作控制器与手指测试器，渲染 9 组动作并等待人类用户在 Unity 中确认无误后，才允许进入网格打包！
+2. **双模式零冲突编译 `mesh.assetbundle`**：
+   * **模式一（用户已在 Unity Editor 打开 `unity_build_project` 时——推荐沙盒无头编译或菜单点击）**：  
+     切勿对已打开的 `unity_build_project` 直接运行 `-batchmode`（会触发工程文件锁报错退出）！Agent 可先用 `Get-Process Unity` 检测：若主工程已打开，要么请用户在顶部菜单点击一键打包，要么将 `Assets/<Character>/*.asset` 与 `Packages/manifest.json` 同步到当前会话的独立无锁沙盒工程（如 `scratch/unity_ab_packer`）中调用 `Unity.exe -batchmode` 秒级编译输出 `AssetBundles/<character>_mesh.assetbundle`！
+   * **注意 Play Mode 保护**：任何写入 `Assets/Editor/` 的打包菜单脚本必须先判断 `if (EditorApplication.isPlaying)`，禁止在 Play 模式下直接调用 `BuildPipeline.BuildAssetBundles`。
 
-### 4.6 Unity 编辑器图形构建与人机交接机制（Human-in-the-Loop Handshake）
-在整个高度自动化的管线中，**网格 AssetBundle 的打包生成推荐采用“人机协同交接机制”**，由 Agent 准备好工程与菜单脚本，人类用户在已打开的 Unity Editor 界面中点击一次按钮完成编译，再由 Agent 接管后续工作。
+### 4.7 AssetBundle 容器重写、双 Prefab 物理隔离与 BindPose/Hash 注入（防隐形六大铁律）
+官方母体资产包（如 `ironhide_cin_rotf.assetbundle`）内包含展示厅 Prefab（`<bot>.prefab`）与战斗轻量 Prefab（`<bot>_lw.prefab`）。**以往 AI 模型直接改完 Mesh 保存后，进游戏人物模型完全空白/隐形，100% 是漏掉了以下六大必改项之一**（完整标准实现见 `tools/onslaught/generate_onslaught_bundle.py`）：
 
-#### 为什么采用 Editor GUI 构建而不是纯无头命令行？
-1. **防止工程文件锁冲突（File Lock Collision）**：用户在本地通常已经用 Unity Editor 打开了 `unity_build_project` 进行视口预览。若 Agent 此时在后台发起 `Unity.exe -batchmode`，Unity 会因检测到工程已被另一个实例锁定而直接报错退出（`Project is already open in another instance of Unity Editor`）。
-2. **AssetDatabase 资产导入的可靠性**：GUI 模式下 Unity 的主线程能够即时响应 FBX ModelImporter 的 Generic 骨骼模式配置、法线重计算与纹理压缩，避免无头模式偶发的资产缓存失效。
+1. **【防隐形第 1 铁律】重写 `AssetBundle.m_Container` 注册键与根 Prefab `m_Name`**：  
+   游戏客户端通过 `bundle.LoadAsset("assets/bundles/characters/merged/<new_bot>/<new_bot>.prefab")` 加载角色！若保留了母体的 `ironhide_cin_rotf.prefab` 路径键名，客户端加载直接返回 `null`，角色在展厅与战斗中完全隐形！必须将 `m_Container` 中所有母体路径字符串替换为 `<new_bot>`，同步修改 `m_AssetBundleName` 并重映射内部 `CAB-` 标识（24 字节等长替换），且将两个根 `GameObject.m_Name` 改为 `<new_bot>` 与 `<new_bot>_lw`。
+2. **【防隐形第 2 铁律】双 Prefab 骨骼 `Transform` PathID 严格物理隔离**：  
+   Prefab 1（展厅）与 Prefab 2（`_lw` 战斗）各自拥有独立的一整套骨骼树。重定向 SMR 的 `m_Bones` 与 `m_RootBone` 时，必须分别在各自根节点子树内查找对应骨骼名 PathID，严禁跨 Prefab 混用（否则切入战斗瞬间 `SIGTRAP` / `SIGSEGV` 闪退）。
+3. **【防隐形第 3 铁律】100% 注入母体权威 `m_BindPose` 与 `m_BoneNameHashes`**：  
+   将 Unity 嫁接校准好的 `cha_<bot>_grafted`（人形）与 `cha_<bot>_vehicle_grafted`（载具）字节流写入母体对应 Mesh 对象后，必须原封不动拷入母体原始 Mesh 的 `m_BindPose` **以及 `m_BoneNameHashes`**（确保与官方 Avatar TOS 哈希 100% 匹配，杜绝切场景 `fault addr 0x1` 闪退）。
+4. **【防隐形第 4 铁律】区分 Mesh `m_LocalAABB` 与 SMR 本地 `m_AABB`**：  
+   Mesh 的 `m_LocalAABB` 更新为新网格顶点真实包围盒（且加入硬断言 `center.y > 3.0` 防止躺平网格混入）；而 SMR 组件上的 `m_AABB` 是相对于 `Hips` 根骨骼的本地包围盒（中心接近 `0`），保留母体原值即可，切勿把世界高度填进 SMR `m_AABB` 引发视锥剔除闪烁。
+5. **【防隐形第 5 铁律】禁用母体残留挂件 SMR（如手雷/弹链/浮空配件）**：  
+   例如电影铁皮 Prefab 除 `_00`（人形）和 `_01`（载具）外，还带有 `grenade` 等独立配件 SMR。遍历所有 SMR 时，凡不属于人形主网格与载具主网格的附属 SMR，一律设 `m_Enabled = 0`，防止脚底或半空漂浮母体残留零件。
+6. **【防隐形第 6 铁律】重置材质三通道 UV `m_Scale=(1,1), m_Offset=(0,0)` + 强制 `packer="lz4"`**：  
+   母体原材质（如铁皮主材质与载具材质）的 `_base_tex`、`_normal_tex`、`_pbr_composite_tex` 往往带有 `(1.0, 0.5) / (0.0, 0.5)` 半幅裁剪偏移！使用新角色的 `2048×2048` 全幅图集时，必须将三张贴图槽的 `m_Scale` 全部重置为 `(1.0, 1.0)`、`m_Offset` 重置为 `(0.0, 0.0)`，将 SMR 的 `m_Materials` 精简为单一主材质槽 `[mat_pptr]`，最后强制调用 `env.file.save(packer="lz4")`！
 
-#### C# 编辑器扩展脚本（注入顶部菜单）
-Agent 自动将 `AssetBundleBuilder.cs` 写入工程的 `Assets/Editor/` 目录下，该脚本通过 `[MenuItem]` 在 Unity 顶部菜单栏注册一个一键打包按钮：
-
-```csharp
-// toolchain/unity_build_project/Assets/Editor/AssetBundleBuilder.cs
-using UnityEditor;
-using System.IO;
-using UnityEngine;
-
-public class AssetBundleBuilder {
-    [MenuItem("Build/Build Demolishor AssetBundle")]
-    public static void BuildBundles() {
-        Debug.Log("[AssetBundleBuilder] Setting AssetBundle names...");
-        
-        string fbxPath = "Assets/Demolishor/demolishor_prepared.fbx";
-        ModelImporter importer = AssetImporter.GetAtPath(fbxPath) as ModelImporter;
-        if (importer != null) {
-            importer.animationType = ModelImporterAnimationType.Generic;
-            importer.useFileScale = false;
-            importer.bakeAxisConversion = false;
-            importer.globalScale = 1.0f;
-            importer.assetBundleName = "demolishor_mesh.assetbundle";
-            importer.SaveAndReimport();
-        }
-        
-        // 标记 PBR 贴图
-        foreach (string file in Directory.GetFiles("Assets/Demolishor", "*.png")) {
-            AssetImporter texImp = AssetImporter.GetAtPath(file);
-            if (texImp != null) {
-                texImp.assetBundleName = "demolishor_mesh.assetbundle";
-            }
-        }
-        
-        string outDir = "AssetBundles";
-        if (!Directory.Exists(outDir)) Directory.CreateDirectory(outDir);
-        
-        Debug.Log("[AssetBundleBuilder] Building AssetBundles for Android...");
-        BuildPipeline.BuildAssetBundles(outDir, BuildAssetBundleOptions.None, BuildTarget.Android);
-        Debug.Log("[AssetBundleBuilder] Build complete! Output to " + outDir);
-    }
-}
-```
-
-#### 人机交接 4 步协议（Handshake Protocol）
-1. **Agent 阶段**：Agent 运行 Python 脚本生成对齐好的 FBX 与贴图，写入 `Assets/<Character>/`，并生成 `Assets/Editor/AssetBundleBuilder.cs`；
-2. **交接提示**：Agent 在聊天界面明确提示用户：  
-   > *“请在已打开的 Unity Editor 顶部菜单栏点击 `Build -> Build <Character> AssetBundle`。编译完成后在对话中回复我即可。”*
-3. **用户阶段**：用户切换至 Unity 窗口，点击菜单项（约需 2~5 秒完成打包，生成 `AssetBundles/<character>_mesh.assetbundle`），然后在聊天框回复 **“build好了”**；
-4. **Agent 接手**：Agent 收到消息后立即恢复执行，校验生成的 AssetBundle 尺寸与结构，继续执行后续的底盘嫁接与 APK 构建。
-
-### 4.7 跨 Prefab 物理隔离与 BindPose 注入嫁接
-官方角色资产包内必然包含两个关键 Prefab：
-1. **Prefab 1 (展示厅模型: `ironhide_cin_rotf.prefab`)**：根节点 PID = `5877212488468470809`；
-2. **Prefab 2 (战斗轻量模型: `ironhide_cin_rotf_lw.prefab`)**：根节点 PID = `-7121020727693412309`。
-
-#### 铁律：跨 Prefab 骨骼隔离守护
-两个 Prefab 各自拥有一套完全独立的 80 根 Transform 树。**绝对禁止让战斗 Prefab 的 SMR 去引用展厅 Prefab 的 Transform PathID**！一旦交叉引用，游戏在切换关卡进入战斗时，Unity 引擎在销毁展厅 GameObject 的同时会引发悬垂空指针引用，瞬间触发 Native 端 `SIGTRAP` 崩溃闪退。
-
-在 `tools/demolishor/generate_demolishor_bundle.py` 中：
-* 自动搜索并为 Prefab 1 与 Prefab 2 分别建立独立的 PathID 映射表；
-* 将编译出的新网格顶点字节流替换原有铁皮网格；
-* 注入官方标准 80 阶 BindPose；
-* 将材质主纹理与 RAOE 贴图绑定槽重定向；
-* **强制使用 LZ4 压缩保存**：`env.file.save(packer="lz4")`（杜绝体积膨胀）。
-
-### 4.8 服务端注册与客户端 Hook 接入
-为了让角色在脱机单机服务端与客户端 UI 中正常显化，需更新以下配置：
-1. **服务端花名册与属性注册** (`Server/gamedata.py`)：
-   * 在 `BASE_HEROES` 中添加：`"demolishor_gs": ("decepticon", "demo", 5)`；
-   * 在 `_ART_BASE` 中声明同名头像：`"demolishor_gs": "demolishor_gs"`；
-   * 在 `_BOT_NAMES` 中添加英文显示名称。
-2. **中文本地化字典** (`Server/bot_names_zh.json`)：
-   ```json
-   "demolishor_gs": {
-       "en": "Demolishor",
-       "zh": "破坏者",
-       "faction": "霸天虎",
-       "note": "塞伯坦陨落·爆破系"
-   }
-   ```
-3. **战斗属性钩子与数值表** (`tools/nativehook/bot_info.h`)：
-   在 `ENEMY_STATS` 数组中添加破坏者战力基准，并将 `#define NUM_ENEMY_STATS` 自增 1。
+### 4.8 全链路服务端注册、双端中文字典与客户端 NativeHook 接入
+为了让新角色在脱机服务端与客户端全界面显示正统中文名、专属必杀技与角色传记，必须同步完成以下 5 处闭环：
+1. **服务端花名册与模板存档** (`Server/gamedata.py`)：注册 `BASE_HEROES`、`_ART_BASE`、`_BOT_NAMES`，确保离线默认账号拥有该角色。
+2. **双端角色中文名字典同步**（缺一不可！）：同时更新 `Server/bot_names_zh.json` **与仓库根目录 `bot_names_zh.json`**（供离线 Payload 导出脚本构建 `@logindata:zh`）。
+3. **SP1~SP3 专属中文必杀技编译**：在 `assets/xlate/custom_special_attacks.json` 添加 `"<bot>"` 与 `"<bot>_gs"` 的三招名称与描述，并运行 `python tools/generate_special_attacks.py` 重新生成 `tools/nativehook/special_attacks_zh.h`。
+4. **底层 NativeHook 头像路由与传记拦截** (`tools/nativehook/hook.c`)：在 `ART_BASE_MAP` 添加 `{ "<bot>_gs", "<bot>_gs" }`，并在 `hook_162` 中拦截角色名与 `BIO` 传记词条返回中文。
+5. **战斗数值基准** (`tools/nativehook/bot_info.h`)：如为全新 `bot_id`，补充 `ENEMY_STATS` 并递增 `NUM_ENEMY_STATS`。
 
 ---
 
 ## 5. 常见故障排查与已结案死胡同 (Troubleshooting & Settled Dead Ends)
 
-下表总结了在实战中踩坑耗费大量调试周期后settled的经典问题，请务必作为首要排查标准：
+下表汇总了包含破坏者、艾丽塔、袭击三次完整实战后彻底结案的高频故障，排查时第一时间对照：
 
 | 故障现象 | 根因定位 | 正确解法与避坑措施 |
 | :--- | :--- | :--- |
-| **模型隐形 / 只有 16cm 蚊子大小** | Unity FBX Importer 默认自带 `0.01` 缩放，且网格数据流中的绝对坐标与变换矩阵未解耦 | 严禁依赖 Unity 的 Scale 参数。必须直接在 Python 脚本中将 Stream 0 的顶点绝对坐标乘以标定系数（如 1.775），使高度直接落在 $[0, 10.42\text{m}]$。 |
-| **模型局部炸裂、空中尖刺飞舞** | 映射了母体处于极端蜷缩状态的手指/微观骨骼，或者存在未加权的孤立顶点 | 将所有手指、脚趾折叠回归手掌/脚掌骨骼；校验顶点组映射率必须达到 100%，权重和归一化至 1.0。 |
-| **进入战斗加载界面闪退 (SIGTRAP)** | 展厅模型（Prefab 1）与战斗模型（Prefab 2）的骨骼 Transform PathID 发生了跨 Prefab 混用 | 建立双重隔离审查。确保 Prefab 1 的 SMR 只指向展厅根节点的子骨骼，Prefab 2 只指向 `_lw` 根节点的子骨骼。 |
-| **转动战斗视角时模型突然闪烁消失** | 网格的轴向包围盒（`m_LocalAABB`）未随新模型尺寸更新，被相机视锥体剔除（Frustum Culling） | 在 Python 注入脚本中，通过计算新顶点数据的 $\min/\max$，显式重新赋值 `m_LocalAABB.m_Center` 与 `m_LocalAABB.m_Extent`。 |
-| **生成的 AssetBundle 尺寸异常膨胀（如由 7MB 飙升至 20MB+）** | UnityPy 调用 `env.file.save()` 时未显式传入压缩参数，默认输出了未压缩 Raw 数据包 | **铁律**：严禁无参调用 `save()`。必须始终显式调用 `env.file.save(packer="lz4")` 或 `packer="original"`。 |
-| **UI 头像画风畸变 / 呈现平铺机械碎片** | 自动化脚本误从机体 3D UV 展开贴图中截取像素充当头像 | **铁律**：严禁从 3D 贴图裁切头像。开发期必须直接复制母体官方角色的 3 套头像（大图/小图/副本图）作为占位符；待 AI/人工精修图完工后直接覆盖替换。 |
-| **PowerShell 执行 Python 报 `ParameterBindingException`** | PowerShell 解释器会吞噬或错解析单引号、双引号、多行文本中的 `$` 符号与正则转义符 | **铁律**：严禁在终端执行多行内联命令（`python -c "..."`）。必须一律先写入 `.py` 脚本文件，再通过 `python <path>.py` 调用。 |
+| **进游戏人物完全空白/隐形（名字头像都在，但展厅和战斗空无一人）** | 1. `AssetBundle.m_Container` 未把母体路径（如 `ironhide_cin_rotf.prefab`）改成 `<new_bot>.prefab`；<br/>2. FBX 未开启 `isReadable: 1` 导致烘焙出 0 顶点空网格；<br/>3. 手机 `/sdcard/Android/media/com.kabam.bigrobot/tftf_offline_payload.bin` 残留旧热更包覆盖了 APK 内置数据 | 1. 合成脚本必须重写 `m_Container` 键名与根 Prefab `m_Name`；<br/>2. 强制断言 `vertexCount > 5000`；<br/>3. 真机验收前清理 SDCard 旧 `tftf_offline_payload.bin`。 |
+| **站立时正常，但出拳或高踢腿时车轮/护甲片悬空飞出体外** | 1. 原模静态子件（如 `STAT_Wheel`）采用骨骼父子挂载，自身顶点组为空，合并网格后变成零权重或被兜底逻辑绑错骨骼；<br/>2. 肩轮绑在 `LeftArm` 而肩甲盖绑在 `LeftShoulderPad`，抬臂时角度差撕裂 | 合并前/后显式审计零权重子件；严格遵守**同壳同骨铁律**（肩轮与肩甲同归 `Left/RightShoulderPad`，小腿轮归 `Left/RightLeg`），并在 Unity 必测 `attackLight_04` 高踢腿！ |
+| **手指死板扣死成铁块，或一绑 30 指骨就错位拉扯出尖刺** | 1. 误信“铁皮指骨不可用”而把手指全部焊死在手腕；<br/>2. 对齐了 30 指骨后，又对烘焙网格执行了 `location.z -= min_z` 接地平移，导致 30 个指节偏离 `m_BindPose` 达 19cm+！ | **铁律**：必须**先摆腿并将原模 Armature 整体接地，最后再将手腕与 30 指节 1:1 对齐至母体 `m_BindPose` 坐标**（误差 $\le 0.001\text{ mm}$）；UE3 双骨手指按连通壳体拆分为真三节指骨（见 9.4 节）。 |
+| **贴图在游戏里错位半截、眼睛不亮而脸颊/胸口乱亮** | 母体材质残留了 `_base_tex` 或 `_pbr_composite_tex` 的半幅裁剪 `scale=(1, 0.5), offset=(0, 0.5)` | 采用全幅 `2048×2048` 图集时，必须将主材质与载具材质中 Diffuse、Normal、RAOE 三槽的 `m_Scale` 重置为 `(1, 1)`、`m_Offset` 重置为 `(0, 0)`。 |
+| **从 Unity Hub 打开 `unity_build_project`，看到的还是上一个角色（如艾丽塔）** | Unity 默认加载上次关闭时的场景或 `EditorBuildSettings.scenes[0]` | 构建新角色验收场景时同步将其设为 `EditorBuildSettings.scenes[0]`，并提示用户在 Project 面板双击 `Assets/Scenes/<Bot>_Inspection.unity`（切换回已打开的 Unity 窗口即可自动热同步）。 |
+| **Unity 无头渲染截图里人物保持 T-Pose / 动作没生效，或报工程已打开锁冲突** | 1. 将 Unity 5.6 的 `Avatar` 用 Unity 2020 `CreateAsset` 另存为 `.asset` 会丢失 Mecanim 肌肉表；Edit Mode 下 `Camera.Render()` 未同步刷新 GPU 蒙皮；<br/>2. 用户已打开 `unity_build_project` | 1. 直接从母体 AssetBundle 实时读取 `prefab.GetComponent<Animator>().avatar`，渲染前调用 `smr.BakeMesh(tempMesh, true)` 同步烘焙；<br/>2. 若 `Get-Process Unity` 非空，在独立沙盒 `scratch/unity_ab_packer`（记得复制 `Packages/manifest.json`）运行无头任务。 |
+| **模型隐形 / 只有 16cm 蚊子大小** | FBX `useFileScale` 产生 `0.01x` 或 `100x` 缩放差异 | 在 C# 嫁接脚本中根据 `rawMesh.bounds.size` 自动判定 `scaleFix`（`<0.5 -> 100f`, `>100 -> 0.01f`）与 `zIsHeight`，统一输出至 `[0, 10.6m]` 标准高度。 |
+| **进入战斗加载界面闪退 (`SIGTRAP` / `SIGSEGV 0x1`)** | 展厅与战斗双 Prefab 骨骼 PathID 混用，或未同步母体 `m_BoneNameHashes` | 严格物理隔离 Prefab 1 / Prefab 2 骨骼映射表，并将母体 `m_BindPose` 与 `m_BoneNameHashes` 成对拷入新网格。 |
+| **生成的 AssetBundle 尺寸异常膨胀（1.35GB+ APK）** | `env.file.save()` 未传压缩参数，默认写出未压缩 Raw 包 | **铁律**：严禁无参调用 `save()`，必须显式传 `env.file.save(packer="lz4")`。 |
+| **PowerShell 执行 Python 报 `ParameterBindingException` 或 `UnicodeEncodeError`** | PowerShell 误解析多行 `python -c "..."` 字符串，且默认 GBK 控制台打印中文/符号崩溃 | **铁律**：严禁 `python -c` 多行内联命令；所有 `.py` 脚本头部必须加上 `sys.stdout.reconfigure(encoding='utf-8')`。 |
 
 ---
 
-## 6. 一键执行与后续角色复用模板
+## 6. 十步标准作业流水线模板 (10-Step Foolproof SOP)
 
-当后续需要移植新的第三方角色（如红蜘蛛、横炮、大力金刚）时，按如下人机协同流水线执行：
+后续任何 AI 模型（如 Gemini 3.8 初筛构建）在移植新第三方角色（如战车队吵闹 Brawl、诈骗 Swindle、旋风 Vortex、爆炸 Blast Off、声波、震荡波等）时，**必须严格按以下 10 步顺序执行，严禁跳过第 2、5、6、7 步视觉与人工门禁**：
 
 ```bash
-# 1. 确保在独立工作分支
-git checkout -b <character_name>
+# 步骤 1：从源 FBX/合集包剥离目标角色（人形 + 武器 + 载具）并自动重连贴图
+& "E:\Agent\TFTF-blender\toolchain\blender\blender.exe" -b -P tools/<bot>/extract_<bot>.py
+# -> 【门禁 1】读取渲染出的提取总览 PNG，确认人形/武器/载具完整、0 丢贴图！
 
-# 2. 准备源 FBX 与贴图至 tools/<character_name>/ 目录
-# 3. 运行骨骼对齐、顶点组重映射与 Unity 工程资源导入脚本
-python tools/<character_name>/build_aligned_model.py
-python tools/<character_name>/prepare_unity_assets.py
+# 步骤 2：构建 2048x2048 零出血 PBR 图集（Diffuse Alpha=255 + OpenGL 法线/NM.B + RAOE 眼睛/能量纹遮罩）
+python tools/<bot>/build_<bot>_texture_atlases.py
+
+# 步骤 3：提取母体权威骨骼 BindPose 真值（含全部 30 根手指关节矩阵）
+python tools/<bot>/extract_host_authoritative_bindposes.py
+
+# 步骤 4：Blender 姿态对齐（先摆腿接地 -> 拆双壳三节指骨 -> 1:1 对齐 30 指节 -> 刚体挂载外臂武器 -> 审计车轮零权重）
+& "E:\Agent\TFTF-blender\toolchain\blender\blender.exe" -b -P tools/<bot>/build_aligned_<bot>.py
+& "E:\Agent\TFTF-blender\toolchain\blender\blender.exe" -b -P tools/<bot>/build_aligned_<bot>_vh.py
+# -> 【门禁 2】读取 Blender 站姿对比图与手部微距图，确认指节误差 <= 0.005mm、足底 Z=0、车轮归属正确！
+
+# 步骤 5：在 Unity 构建权威并排验收场景（含 <Bot>PreviewController + <Bot>FingerTester + <Bot>HandFixer）并烘焙渲染 9 组动作图
+# （注意：先跑 Get-Process Unity，若用户已打开主工程，则在独立沙盒 unity_ab_packer 执行无头渲染验证！）
 
 # =====================================================================
-# 4. 【人机交接点 (Human-in-the-Loop)】：
-#    用户切换到已打开的 Unity Editor 窗口，在顶部菜单栏点击：
-#    -> Build -> Build <Character> AssetBundle
-#    编译完成后在聊天窗口给 Agent 发送消息：“build好了”
+# 步骤 6：【强制人工验收门禁 (Human-in-the-Loop Gate) —— 严禁擅自越过！】
+#   1) Agent 逐张检查 9 张同步动作图（尤其高踢腿车轮、刺拳握拳、SP1 开炮、载具水平朝向、30 指节松弛度）；
+#   2) 生成验收报告交付人类用户在 Unity (<Bot>_Inspection.unity) 中实地检阅；
+#   3) 只有收到用户明确指令“验收通过，可以输出打包”后，才允许进入步骤 7！
 # =====================================================================
 
-# 5. Agent 接收到通知后接手：逆向嫁接注入到官方母体 AssetBundle
-python tools/<character_name>/generate_character_bundle.py
+# 步骤 7：编译 Android 原生网格包 (<bot>_mesh.assetbundle)
+# （通过菜单项点击，或在同步了 Packages/manifest.json 的独立沙盒工程中无头编译）
 
-# 6. 打包 APK 并推流安装至真机/模拟器
+# 步骤 8：执行防隐形六铁律合成最终资产包 (assets_redeco/<bot>_gs.assetbundle, packer="lz4")
+python tools/<bot>/generate_<bot>_bundle.py
+
+# 步骤 9：全链路中文汉化与头像同步（gamedata.py + 双 bot_names_zh.json + custom_special_attacks.json + hook.c + 8 张占位头像）
+python tools/generate_special_attacks.py
+
+# 步骤 10：构建签名离线 APK 并运行 4 项完整性自动门禁（严禁未经用户指令擅自 ADB 安装或 git push！）
 python build_apk.py
-python INSTALL-ADB.py
 ```
 
 ---
@@ -566,3 +550,93 @@ flowchart TD
 * **严格按 Kabam `(Nx, Ny, Metallic, 255)` 规范打包法线贴图**：在 `build_clean_elita_textures.py` 中，100% 保留原始 `Nx, Ny` 微法线细节，将所有白色装甲、面部皮肤、彩色烤漆装甲、轮胎与发光灯带的 `NM.B` 强制置为 **`0`（纯电介质）**，仅在深灰中性机械关节（`lum ∈ [44, 116], sat < 0.15`）赋予柔和金属度（`~95`）；同步输出给 Unity Editor `Standard` 预览的法线图则保留常规三轴 `(Nx, Ny, Nz)`。
 * **丝绒哑光陶瓷粗糙度与清漆抑制**：人形白甲与面部 `RAOE.R` 保持在 `185~215` 丝滑哑光陶瓷区间，材质 `_roughness_range` 设为 `0.95`（对齐官方铁皮/阿尔茜的 `1.0`），并将 `_clearcoat_reflectance_range` 压低至 `0.02`，彻底隔绝暗色关卡环境贴图染色。
 * **保留立体雕塑细节的连续珍珠白提亮曲线**：采用无硬阈值连续权重与高光软膝（`tanh` soft-knee）曲线，将灰褐白甲平滑提亮至 `RGB ≈ [240, 238, 240]` 珍珠白，100% 保留嘴唇、鼻梁、眼窝雕塑层次与银色汽车人徽章内部刻线。
+
+---
+
+## 9. 高难实战攻坚专题二：合集包角色剥离、射击游戏武器格斗化、飞轮归属修复与双壳三节灵动手指（FOC 袭击 Onslaught 全案）
+### Advanced Practice II: Multi-Character Pack Extraction, Shooter-to-Brawler Weapon Adaptation, Flying-Wheel Rigid Housing Audit, and 2-Shell-to-3-Phalanx Finger Splitting
+
+> **开发背景**：  
+> 第三方主机游戏模型（如《塞伯坦的陨落》FOC 战车队 Combaticons 合集包，内含袭击 Onslaught、吵闹 Brawl、诈骗 Swindle、旋风 Vortex、爆炸 Blast Off 及混天豹 Bruticus）具有四大共性难点：  
+> 1. 所有角色挤在同一个超大 FBX 中，且贴图子目录路径大小写/扩展名失效；  
+> 2. 源自第三人称射击游戏，手臂常驻重型武器（带大臂断臂转接座），直接套入格斗游戏会遮挡拳头或穿模；  
+> 3. 车轮等静态子件（`STAT_Wheel`）通过骨骼父子关系挂载、自身无顶点组权重，极易在踢腿时飞到半空；  
+> 4. UE3 引擎手部仅有两节指骨（`bip_index_0`、`bip_index_1`），直接绑定不够细腻，焊死握拳又显得僵硬。  
+> 本节完整沉淀了 **袭击（`onslaught_gs` $\rightarrow$ 电影铁皮 `ironhide_cin_rotf`）** 的全流程标准解法，后续制作战车队其余成员或其他射击游戏机甲时可直接按模板套用。
+
+---
+
+### 9.1 多角色合集 FBX 精准剥离与大小写无关贴图重连
+1. **按骨架与命名前缀精准剥离三件套**：  
+   导入合集 FBX 后，先枚举所有 `ARMATURE` 与 `MESH` 的父子关系及材质名，严格保留目标角色的人形骨架（如 `Onslaught_ARM`）、载具骨架（`Onslaught_VH_ARM`）、身体与车轮部件（`RB_Onslaught_*`）、载具车体（`VH_Onslaught_*`）及专属武器（`RB_HeavyMG*`、`WEP_RocketLauncher*`），其余无关角色对象一律 `bpy.data.objects.remove(o, do_unlink=True)` 彻底清除，另存为干净的母版文件 `3rd-party-models/<bot>/<bot>_master.blend`。
+2. **大小写无关贴图扫描重连 + 门禁一渲染检验**：  
+   第三方 FBX 内嵌的绝对路径往往指向原作者硬盘。编写扫描器建立 `textures/` 目录下所有贴图的小写无后缀索引表，按材质名前缀自动关联漫反射（`_D / _Diff`）、法线（`_N / _Norm`）与自发光（`_E / _Emis / _Glow`），立即在 Blender 中并排摆开**人形 + 武器 + 载具**渲染一张高清三栏总览图，肉眼确认 0 粉紫丢贴图、护目镜与能量纹贴图位置准确后再推进。
+
+---
+
+### 9.2 射击游戏常驻武器格斗化适配（母壳对比选型与前臂外挂重炮方案）
+面对射击游戏原模的常驻大枪，动工前必须先对比候选官方母壳的武器显隐机制并向用户提供清晰选型方案：
+* **类型一（平时藏枪、开火显枪母壳，如 G1 铁皮 `ironhide`）**：武器挂在独立 `Prop` / 武器显隐骨骼上，仅在远程重击与 SP 动画帧由曲线控制弹出，适合手持步枪/手枪型角色。
+* **类型二（双臂外挂常驻重炮 + 裸拳近战母壳，如电影铁皮 `ironhide_cin_rotf`）**：双臂前臂外侧长期挂载重炮，抬手即可远程轰击，同时双拳完全裸露可执行刺拳、勾拳等近战肉搏，背部还支持常驻重炮。
+
+**袭击（Onslaught）采用的电影铁皮外挂重炮标准工艺**：
+1. **保留背部标志性双联重炮**：原模胸背网格自带的双联防空炮 `100%` 刚体绑定于 `Spine1`，随上半身挺胸/转身自然联动。
+2. **剥离射击游戏断臂转接座**：原模 `RB_HeavyMGL/R_SKEL` 包含两个材质槽——槽 0 为纯转管机炮炮身（`WEP_HeavyMG`），槽 1 为替换整个小臂的臃肿转接支架。进入编辑模式直接删除 `material_index != 0` 的转接座多边形，提取纯净炮身。
+3. **紧凑化外挂于前臂外侧导轨**：将纯净炮身旋转至枪口严格朝向手腕方向（Blender `-Z`），等比缩放到 **`0.50x`**，贴合安装在前臂外侧（`X = ±3.18m, Y = -0.05m`），且**枪口底端严格停在手腕高度 `Z = 4.65m`**（绝不超过拳峰！），赋予 `100%` `LeftForeArm` / `RightForeArm` 刚体权重。既完美契合电影铁皮抬手开炮动画，又完全不遮挡近战出拳与手指活动！
+
+---
+
+### 9.3 “车轮飞在半空/护甲脱节”根因排查与同壳同骨铁律
+在袭击初版动作测试中，待机站姿一切正常，但在 **`brawler_normal_attackLight_04_frontkick`（高踢腿）** 与 **`jab`（刺拳）** 渲染图中暴露出车轮飞出体外的典型硬表面隐患：
+* **根因 1（零顶点组父子挂载陷阱）**：`RB_Onslaught_STAT_Wheel.mo.005..008` 四个车轮在原模中是通过 `parent_bone` 直接挂在骨骼上的静态网格，自身 `vertex_groups` 为空。一旦应用修改器并 `join()` 进全身网格，车轮顶点的权重表为空（`not w_acc`）！
+* **根因 2（同部位异骨旋转差撕裂）**：肩部车轮（`006/008`）嵌在肩甲外罩（`CapL/CapR`）内部。若把肩甲外罩绑在 `LeftShoulderPad`，却把肩轮绑在大臂 `LeftArm`——当角色挥拳平举大臂（旋转 $90^\circ$）时，肩甲只随 `ShoulderPad` 抬起 $30^\circ$，肩轮就会直接穿透肩甲飞到半空！
+* **根治铁律**：
+  1. 在权重汇总循环中，对 `not w_acc` 的无顶点组构件按烘焙后高度精准兜底：`v.co.z > 6.5`（肩轮）强制归入 `LeftShoulderPad` / `RightShoulderPad`；`v.co.z <= 6.5`（小腿轮）强制归入 `LeftLeg` / `RightLeg`；
+  2. 同时在 `BONE_MAPPING` 字典中将 `STAT_Wheel.006/008` 与 `CapL/CapR` 显式锁定到同一个 `Left/RightShoulderPad`；
+  3. **验收必测高踢腿**：任何带车轮、机翼、裙甲、肩甲的角色，Unity 同步渲染矩阵中**必须包含一帧大幅度高踢腿（如 `attackLight_04_frontkick`）与一帧大跨度挥拳**，一眼即可揪出任何漏网的孤立飞件！
+
+---
+
+### 9.4 UE3 双骨手指拆分为真三节灵动指骨（连通壳体拓扑切分 + 先接地后对齐 `0.001mm` 铁律）
+FOC 等虚幻 3（UE3）模型的四根主手指在骨架上只有两节骨骼：`bip_{index,middle,ring,pinky}_0`（近节）与 `bip_{fn}_1`（远端合并节）。若想让手指像艾丽塔一样完美贴合电影铁皮/阿尔茜的 **30 根三节手指骨骼**，需执行以下两步核心工艺（完整代码见 `tools/onslaught/build_aligned_onslaught.py`）：
+
+1. **连通壳体拓扑自动切分（Connected-Shell Distal Phalanx Split）**：  
+   对 `bip_{fn}_1_{L/R}` 顶点组（各 38 个顶点）构建网格边邻接图求连通分量（`find_connected_shells`）并沿手指轴向投影排序——可发现这 38 个顶点在几何上原本就是**两块完全不相连的独立刚体指节装甲壳**：近端中节指骨壳（19 顶点）与远端指尖装甲壳（19 顶点）！  
+   * 自动取两块壳体投影间隙的中点 `hinge_proj = 0.5 * (mid_shell_max + tip_shell_min)` 创建第三节骨骼 `bip_{fn}_2_{L/R}` 及指尖辅助骨 `bip_{fn}_tip_{L/R}`；
+   * 将远端指尖壳体的 19 个顶点从 `bip_{fn}_1` 移入新建顶点组 `bip_{fn}_2`，分别一对一映射至母体的 `Hand{Fn}2` 与 `Hand{Fn}3`。由此在不破坏任何一块硬表面装甲刚性的前提下，无损升级为真三节机械手指！
+2. **【血泪铁律】必须“先摆腿接地，最后对齐手腕与 30 指节”**：  
+   * **错误顺序**：先将 30 根手指对齐到铁皮 `m_BindPose` 世界坐标，烘焙网格后再执行 `o.location.z -= min_z` 将脚底接地——若脚底抬升了 `0.197m`，全部 30 个手指关节就会整体向上偏离铁皮 `m_BindPose` 轴心 **`19.7 cm`**，一旋转就骨肉分离！
+   * **唯一正确顺序**：
+     1) 先在 Pose 模式下摆正大腿、小腿与脚掌；
+     2) 用 `evaluated_depsgraph_get()` 测量腿部最低点 `min_z`，直接平移整副骨架 `ons_arm.location.z -= min_z` 完成接地（此后严禁再对烘焙网格做任何 Z 轴平移！）；
+     3) 将手腕对齐至 `ih_b_pos["Left/RightHand"]`，用双轴约束锁死手掌朝向（手腕 $\rightarrow$ 指根中点垂直朝下，小指 $\rightarrow$ 食指跨度严格朝向 `+Y_blender` 正前方），再逐节调用 `pose_segment_world` 将全部指骨对齐至 `(ux, uz, uy)`（实测 30 指节最大误差 **`0.0010 mm`**！）；
+     4) 烘焙修改器后，对 `bip_hand_{L/R}` 虎口顶点施加半径 `0.18m` 的高斯平滑位移桥接（Thumb Saddle Bridge），消除拇指移位后的虎口折痕。
+
+---
+
+### 9.5 Unity 验收台四大工程暗坑（必防清单）
+在 `toolchain/unity_build_project` 搭建 `<Bot>_Inspection.unity` 与无头自检时，务必避开以下四个工程陷阱：
+1. **无头截图 T-Pose 陷阱（必须 `BakeMesh`）**：在 Unity `-batchmode`（注意**不要加 `-nographics`**，以便启用 DX11 GPU 渲染器）的 Edit Mode 下，仅调用 `clip.SampleAnimation(go, t)` 后直接 `cam.Render()`，SkinnedMeshRenderer 往往不会刷新蒙皮矩阵。必须在拍照前调用 `smr.BakeMesh(tempMesh, true)` 挂载到临时 `MeshFilter + MeshRenderer` 上渲染，拍完立即销毁临时物体。
+2. **Unity 5.6 `Avatar` 肌肉表丢失陷阱**：切勿把从官方 `ironhide_cin_rotf.assetbundle` 读取的 `Avatar` 通过 Unity 2020 的 `AssetDatabase.CreateAsset(Object.Instantiate(avatar), ...)` 序列化保存为 `.asset` 文件！Unity 2020 重序列化会清空旧版 5.6 Mecanim 的人形肌肉映射表，导致 `brawler_normal_idle` 等 Humanoid 通用动作失效。正确做法是在 `Build<Bot>InspectionScene.cs` 和 `<Bot>PreviewController.Start()` 中直接从 AssetBundle 内存实时读取 `prefab.GetComponent<Animator>().avatar` 赋给 `Animator`。
+3. **载具展示姿态的世界包围盒水平校验**：部分母体动画下 `transformed` 子节点在静止态可能带有 $90^\circ$ 俯仰旋转（车头朝天立起）。构建载具并排截图与展示模式时，必须用 `BakeMesh` 后的真实世界 `MeshRenderer.bounds` 校验 `size.y < 5.5f && size.z > 7.5f`（例如铁皮 `Ironhide_Normal_attackHeavy` + `_transformed` 在 `0.45s` 处为完美水平直立车姿）。
+4. **主工程已打开时的无锁沙盒机制**：运行任何 `-batchmode` 命令前先执行 `Get-Process Unity`。若用户已在 Unity Editor 打开 `unity_build_project`：
+   * 交互式脚本采用 `[InitializeOnLoad]`（如 `OnslaughtHandFixer.cs`，带 `isCompiling / isUpdating` 延迟重试队列），用户切回 Unity 窗口即可全自动重导 FBX、刷新 `.asset` 网格并弹出右上角手指测试面板；
+   * 需要后台无头渲染验证或编译 `<bot>_mesh.assetbundle` 时，将 `Packages/manifest.json` 与 `Assets/<Bot>/` 复制到会话临时目录 `scratch/unity_ab_packer` 中执行，彻底杜绝文件锁冲突！
+
+---
+
+### 9.6 袭击（Onslaught）完整可复用脚本索引（供后续新角色直接套用）
+
+后续开发新角色时，强烈建议直接以 `tools/onslaught/` 与对应 Unity 脚本作为黄金母版复制改名：
+
+| 阶段 | 标准参考脚本路径 | 核心功能说明 |
+| :--- | :--- | :--- |
+| **1. 合集包拆解与贴图重连** | `tools/onslaught/extract_onslaught.py`（或母版 `3rd-party-models/onslaught/onslaught_master.blend`） | 从 Combaticons 合集剥离人形、武器、载具并自动修复贴图 |
+| **2. 零出血 2048 图集与一次点亮眼睛** | `tools/onslaught/build_onslaught_texture_atlases.py` | 合成人形+武器 / 载具双套 `2048×2048` Diffuse、OpenGL 法线、`NM.B` 与 RAOE 发光图集 |
+| **3. 母壳 80 骨权威真值表** | `tools/onslaught/ironhide_80_authoritative_bindposes.json` | 电影铁皮全部 80 根骨骼（含 30 指骨）的精确 `m_BindPose` 逆矩阵世界坐标与父子表 |
+| **4. 人形 30 指节+外臂重炮+四轮对齐** | `tools/onslaught/build_aligned_onslaught.py` | 先摆腿接地 $\rightarrow$ 双壳拆三节指骨 $\rightarrow$ 30 指节 `0.001mm` 对齐 $\rightarrow$ 挂载 `0.5x` 外臂重炮与四轮刚体权重 |
+| **5. 载具正向水平对齐导出** | `tools/onslaught/build_aligned_onslaught_vh.py` | 赛星导弹车朝向 `+Z`、轮胎贴地 `Y=0`、刚体绑入载具底盘根骨 |
+| **6. Unity 并排验收场景与 9 图烘焙** | `toolchain/unity_build_project/Assets/Editor/BuildOnslaughtInspectionScene.cs` | 一键搭建母体 vs 新角色并排场景、实时绑定 5.6 Avatar、同步烘焙输出 9 张动作验收图 |
+| **7. Unity 16 动作实时切换台** | `toolchain/unity_build_project/Assets/Onslaught/OnslaughtPreviewController.cs` | 头顶蓝/紫双角色标签、自由轨道相机、16 组战斗/必杀/变身/载具动作一键播放 |
+| **8. Unity 30 指节热同步与测试器** | `toolchain/unity_build_project/Assets/Editor/OnslaughtHandFixer.cs`<br/>`toolchain/unity_build_project/Assets/Onslaught/OnslaughtFingerTester.cs` | `[InitializeOnLoad]` 自动感知 FBX 更新重构网格、`Delta=0.0mm` 诊断、滑块屈指与 Auto Wiggle |
+| **9. 防隐形六铁律 AssetBundle 合成** | `tools/onslaught/generate_onslaught_bundle.py` | 重写 `m_Container`、隔离双 Prefab SMR、同步 `m_BindPose`+`m_BoneNameHashes`、禁用 `grenade`、归零 UV Scale/Offset、`packer="lz4"` |
