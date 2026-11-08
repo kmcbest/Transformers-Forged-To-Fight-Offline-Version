@@ -86,3 +86,10 @@
   未经实机或用户测试验收通过的内容，**严禁自行执行 commit 和 push 到远端仓库**，除非用户有明确的说明和指令。
 - **No Frequent Timer Polling on Background Build Tasks (严禁在构建长任务中频繁使用 Timer 轮询)**:
   在执行 `build_apk.py`、大型打包或长耗时后台命令时，严禁使用 `schedule` / `timer` 频繁打断并轮询检查进度。系统会在后台长任务执行完毕后自动触发唤醒与通知，直接静默等待任务返回，并依据该后台 task 的最终执行结果进行下一步即可。
+
+
+## Cross-repository boundary isolation protocol (跨仓库边界物理隔离铁律)
+
+- **Zero-Cross-Directory Contamination (严禁跨仓库跨目录文件写入与同步)**:
+  `TFTF` 与 `TFTF-blender` 是两个职责与生命周期完全独立的工程仓库。
+  所有工具脚本严禁跨目录直接写入或自动同步到外部兄弟仓库中。每个工作区的修改必须 100% 收敛在各自的根目录内。跨仓库资源合并必须由用户明确指示后方可受控进行。

@@ -121,6 +121,7 @@ def init_database():
         ("decepticon", "霸天虎", "Decepticon", "#8B5CF6", "E133"),
         ("predacon",   "原始兽", "Predacon",   "#10B981", "E161"),
         ("maximal",    "巨无霸", "Maximal",    "#3B82F6", "E160"),
+        ("mercenary",  "雇佣兵", "Mercenary",  "#9333EA", "E99F"),
     ]
     c.executemany("INSERT OR REPLACE INTO factions VALUES (?,?,?,?,?)", faction_rows)
 
@@ -143,7 +144,7 @@ def init_database():
                 elif name.endswith(".sc"):
                     cat = "small_caps"
                 pua_items.append((f"0x{cp:04x}", cp, name, cat))
-        c.executemany("INSERT OR IGNORE INTO pua_icons_cache VALUES (?,?,?,?)", pua_items)
+        c.executemany("INSERT OR IGNORE INTO pua_icons_cache (codepoint_hex, codepoint_dec, glyph_name, category) VALUES (?,?,?,?)", pua_items)
         print(f"        -> Cached {len(pua_items)} PUA glyphs into database")
     except Exception as e:
         print(f"    [!] Failed to extract PUA glyphs: {e}")
@@ -152,8 +153,10 @@ def init_database():
     with open(BOT_NAMES_ZH_PATH, "r", encoding="utf-8") as f:
         bot_names_zh = json.load(f)
 
-    with open(JSON_ALL_PATH, "r", encoding="utf-8") as f:
-        wiki_all = json.load(f).get("characters", {})
+    wiki_all = {}
+    if JSON_ALL_PATH.exists():
+        with open(JSON_ALL_PATH, "r", encoding="utf-8") as f:
+            wiki_all = json.load(f).get("characters", {})
 
     # Official bots mapping: strictly original Kabam characters from the official game
     OFFICIAL_BOTS_WIKI_MAP = {
@@ -284,6 +287,8 @@ def init_database():
             pua_faction_icon = "E160"
         elif faction == "predacon":
             pua_faction_icon = "E161"
+        elif faction == "mercenary":
+            pua_faction_icon = "E99F"
         else:
             pua_faction_icon = ""
 
@@ -309,10 +314,9 @@ def init_database():
         ))
         char_count += 1
 
-        c.execute("DELETE FROM character_abilities WHERE bot_id=?", (bid,))
-
         # Check if official character
         if bid in OFFICIAL_BOTS_WIKI_MAP and OFFICIAL_BOTS_WIKI_MAP[bid] in wiki_all:
+            c.execute("DELETE FROM character_abilities WHERE bot_id=?", (bid,))
             wname = OFFICIAL_BOTS_WIKI_MAP[bid]
             wdata = wiki_all[wname]
             ga = wdata.get("game_abilities", {})

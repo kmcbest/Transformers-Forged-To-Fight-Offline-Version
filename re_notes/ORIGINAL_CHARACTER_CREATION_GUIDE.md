@@ -36,6 +36,7 @@ timeline
     2026-09 : Lifeline (回春手) : 常驻武器显化与胜利舞台全量借用 : 突破收刀机制常驻双持、借用Stage/Win序列、论证S3借用
     2026-09 : SG Ultra Magnus : 既有武器剥离剔除与异形武器换装 : 剔除雷神重锤骨骼网格、重新配重双持狂飙大剑
     2026-09 : Ghost Starscream : PBR 着色器汇编逆向与灵体光效极致调优 : 汇编揭秘B通道平方发光、格式RGBA32跃升、防过曝与反差血眼
+    2026-11 : Bug Bite (杀人蜂) : 跨模具 S3 终结舞台载具变形与微观 Matinee 空指针拦截 : 破译 Matinee 预热 NRE 循环加载、单层级载具骨骼轨道重定向、多段 S2 弹道重构与手工立绘隔离
 ```
 
 ---
@@ -281,7 +282,103 @@ u_xlat16_2.xyz = u_xlat16_1.zzz * u_xlat16_2.xyz;
 
 ---
 
-## 第八章：工业化标准制程（SOP）与全套避坑检查清单
+
+
+---
+
+## 第八章：杀人蜂（Bug Bite）——跨模具 S3 终结舞台借用、载具变形与 Matinee 预热崩溃终结
+
+作为百炼为战离线工程中第一位成功借调**载具变形终结技（Vehicle Transformation S3）**的原创雇佣兵角色，杀人蜂（Bug Bite，代号 `bugbite_gs_kabam`）攻克了动画镜头系统（Matinee System）最隐蔽的深水区 Bug，补齐了跨模具借调完整 S3 的核心拼图。
+
+```
+杀人蜂 (Bug Bite) 结构架构全解：
+├── 角色定位与阵营 (Faction)  <--- 雇佣兵 (Mercenary) 原创独立徽标与专属卡牌
+├── 基础素体模具 (Base Mold)  <--- G1 大黄蜂 (Bumblebee GS) 经典甲壳虫/飞过山同系素体
+├── 常规出招链 (Combos)      <--- 大黄蜂敏捷贴身打击流
+├── 特殊技 1 (Special 1)     <--- 大黄蜂 S1（3段判定同步修复）
+├── 特殊技 2 (Special 2)     <--- 双枪连发（多段射击弹道 PropMoveEvent 重建）
+├── 终结技 3 (Special 3)     <--- 飞过山 (Cliffjumper) 招牌战车漂移撞击终结舞台 (Stage)
+└── 光学目镜与涂装 (Optics)  <--- 纯血红冷光目镜（Crimson Red Optics）与暗黑车贴
+```
+
+### 8.1 致命隐患：Matinee 预热加载循环与 NRE 空指针终结
+在将飞过山或外部角色的 S3 Stage Prefab 接入新角色后，频繁出现在进入对战场景（Fight Scene）时进度条无限卡死、黑屏死循环并弹出“未知错误（ID_SPARX_ERROR_UNKNOWN）”的现象。
+
+#### 深度逆向破译：`PreInitializeMatinee` 与预热时序
+* **时序追踪**：
+  1. 对战加载阶段，客户端通过 `MatineeStage.PreInitializeMatinee()` 协程对全场 Matinee 电影级镜头和角色动画轨道进行**内存预热预初始化**；
+  2. 预热过程中，系统遍历调用 `MatineeContainer.ResetContents() -> MatineeContainer.Reset() -> PlayMecanimAnimationEvent.EndEvent()`；
+  3. `EndEvent()` 触发了 `PlayMecanimAnimationEvent.RestoreControllerAnimClipIfNeeded()`，旨在将暂态动画剪辑还原给底层状态机。
+* **致命代码缺陷（Unity 官方 C# 逻辑漏洞）**：
+  ```csharp
+  // PlayMecanimAnimationEvent.cs 反编译真实代码:
+  private void RestoreControllerAnimClipIfNeeded()
+  {
+      if ((Application.isPlaying || track.parentContainer.InRuntimeEditMode) 
+          && !string.IsNullOrEmpty(ActiveAnimationData._overwriteAnimatorEntityFullId) 
+          && !(_animator == null))
+      {
+          // 💥 致命崩溃点：此时处于尚未播放的预热重置期，_newControllerOverrideAnimClip 恒为 null！
+          // 代码未经判空直接求值 .name，瞬间触发 NullReferenceException！
+          ReplaceAnimationClip(_newControllerOverrideAnimClip.name, _animator, _origControllerOverrideAnimClip);
+      }
+  }
+  ```
+* **Native Hook 终极防御铁律**：
+  在 `tools/nativehook/hook.c` 中挂钩 `RestoreControllerAnimClipIfNeeded`（RVA `0x013B165C`），实施**全链路对象纯净性防护**：
+  ```c
+  // 必须全量校验：原始剪辑、目标剪辑、动画机组件、Track 轨道及其父容器均处于真实活跃内存
+  if (orig_clip && obj_ok(orig_clip) &&
+      new_clip && obj_ok(new_clip) &&
+      anim && obj_ok(anim) &&
+      track && obj_ok(track)) {
+      void* container = *(void**)((char*)track + 0x80);
+      if (container && obj_ok(container)) {
+          can_run = 1; // 仅在所有句柄安全完备时允许放行原生还原
+      }
+  }
+  if (!can_run) {
+      // 预热阶段或未覆盖状态下安全静默跳过，彻底消除加载期 NRE
+      return NULL;
+  }
+  ```
+
+### 8.2 S3 载具变形轨道（Track Hierarchy）命名空间层级对齐
+虽然模具同宗（飞过山与大黄蜂共享车形变身体系），但在跨角色借用 S3 Stage 时，往往发生“动作放完了，车子却完全隐形不出来”的窘境。
+
+* **层级断链真相**：
+  * 原版飞过山的 S3 Stage Prefab（`stage_cinematics_cliffjumper_special03_assets`）在 Track 8 中预设的实体路径为：
+    `cha_cliffjumper_gs_kabam_01 1|cha_cliffjumper_gs_kabam_01|transformed|Hips|Reference|...`（**包含克隆前缀的双层嵌套层级**）；
+  * 而大黄蜂/杀人蜂素体的载具实体挂载在单个根节点：
+    `cha_bugbite_gs_kabam_01|transformed|Hips|Reference|...`（**单层级**）；
+  * 路径匹配失败导致 `FindTrackFromEntityFullId` 返回 `null`，载具网格完全没有被挂接到运动曲线上，角色在整个后半段 S3 处于不可见状态。
+* **重定向解决方案**：
+  1. **Stage Prefab JSON 重定向**：通过资产打包工具重写 Track 的 `entityFullId`，将其扁平化为接收角色的单层命名路径；
+  2. **NativeHook 动态映射**：在 `hook.c` 的 `remap_track_for_redeco` 中加入通配重定向，并在角色的 Fight AOC（动画重写控制器）Slot 63 中严格挂载对应战车变形剪辑（`cliffjumper_gs_attackSpecial_03_transformed`），实现 100% 变形显形。
+
+### 8.3 多段远程攻击（S2）子弹事件（PropMoveEvent）搬运法则
+角色特殊技 2 若为多段射击（如左枪开火后接右枪射击），常见事故为“**只有开枪后坐力动画，没有射出实体光弹与击中爆炸**”。
+
+* **排查要点**：
+  1. **发射点挂件重定向**：第一段射击与第二段射击可能分别挂在 `leftgun` 与 `rightgun`。必须检查 `PropMoveEvent` 中的发射源 `p` 属性，将其修正为受体实际装配的武器节点名称；
+  2. **子弹预制体对齐**：必须显式指定子弹实体（如大黄蜂经典 `projectile_special_bullet`）、枪口火光（`fx_p_optimus_muzzle_flash`）以及击中爆炸特效（`oe="explode_special"`）；
+  3. **出招段数同步**：在 `hook.c` 的 `s_sp_moves` 表中补全该技能的多段映射（如 `{ "move_bugbite_special_02", 2 }`），确保打击判定框（HitBox）与 UI 连击数（Combo Counter）精准对应。
+
+### 8.4 人工精修立绘与脚本自动化的“防冲刷隔离法则”
+在追求工程自动化的同时，绝不能破坏高品质美术劳动成果：
+* **历史教训**：开发者在 Photoshop 中精细修饰出 107KB 高分辨率战损立绘（包含定制阵营印记与暗黑金属涂层），后续运行批量资产生成脚本（`tools/generate_*_assets.py`）时，因盲目执行“从母本解包覆盖”，一键将美术成果洗白回原生大黄蜂头像。
+* **开发纪律**：
+  * **脚本端写入保护检查**：凡是在 `assets_redeco/` 下检测到用户自定义的高品质 PNG/JPG 立绘，生成脚本必须强制只读保护，禁止覆写；
+  * **Git 追踪白名单完备**：必须在 `.gitignore` 中显式解除对新角色自定义立绘与 AssetBundle 的忽略（`!assets_redeco/*bugbite*`），防止宝贵的美术资产遗漏在版本库之外。
+
+### 8.5 纯血红冷光目镜（Crimson Red Optics）与全局材质调色
+大黄蜂原生模具为博派标志性的幽蓝目镜。制作狂派/雇佣兵杀人蜂时，必须呈现冷酷凶煞的猩红血眼：
+1. **贴图级覆膜**：在漫反射贴图（Albedo）精确定位眼部 UV（`[254, 361] x [780, 861]`），填涂纯正血红（`RGB(255, 20, 25)`）；在 `RAOE` 贴图中将发光遮罩刷高；
+2. **材质级偏色消除**：原版大黄蜂材质中残留有全局浅蓝环境染色，必须在 Material 属性中将 `_emissive_intensity_col` 与 `_EmissionColor` 同步重写为高纯度暗红（`r=1.0, g=0.05, b=0.05`），彻底消除杂色干扰。
+
+---
+
+## 第九章：工业化标准制程（SOP）与全套避坑检查清单
 
 经过上述 8 个里程碑的探索与磨砺，TFTF 原创角色制作已形成一套高度标准化的工业级 SOP。
 
@@ -311,6 +408,10 @@ flowchart TD
 | **异色眼眸法则** | 💡 建议 (P2) | 全局染色环境下制作异色双眼，眼部发光掩码必须清零（$B=0, A=0$），漫反射高饱和并压暗面罩。 |
 | **远程子弹哈希** | ⚠️ 严重 (P1) | 借用远程/S 技动作时，必须在服务端校验 `projectiles` 映射，确保动画事件哈希命中对应实体。 |
 | **头像四件套完整** | 💡 建议 (P2) | 每个角色必须齐备：Large PNG (512), Small JPG (256), Quest PNG (512), Dialogue PNG。 |
+| **Matinee 预热防崩溃** | 🛑 致命 (P0) | 跨角色借用 S3 舞台时，必须在 NativeHook 中空指针拦截 `RestoreControllerAnimClipIfNeeded`，防止加载期死循环。 |
+| **S3 载具轨线层级对齐** | ⚠️ 严重 (P1) | 借用载具变形 S3 时，检查 Stage Prefab 的 Track Entity 命名空间层级，避免因多层/单层不匹配导致载具隐形。 |
+| **多段远程子弹事件** | ⚠️ 严重 (P1) | 多段射击特殊技必须核验全部子弹事件的发射挂点（`p`）、实体（`projectile`）与出招段数映射表。 |
+| **手工立绘隔离保护** | ⚠️ 严重 (P1) | 自动化生成脚本严禁盲目覆写本地 PS 精修立绘，并在 `.gitignore` 显式解除新角色美术资产忽略。 |
 
 ---
 

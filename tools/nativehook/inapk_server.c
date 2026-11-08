@@ -50,7 +50,7 @@ typedef struct { const char *token; const unsigned char *p; size_t n; } Template
 
 static const char * const g_enemy_pool[] = {
     "acidstorm_gs_leader2015", "arcee_gs_deluxe2014", "barricade_cin_dotm", "bitstream_gs_leader2015",
-    "blaster_gs_leader2016", "bludgeon_gs_rd20", "bonecrusher_cin_rotf", "breakdown_gs",
+    "blaster_gs_leader2016", "bludgeon_gs_rd20", "bonecrusher_cin_rotf", "breakdown_gs", "bugbite_gs_kabam",
     "bumblebee_cin_dotm", "bumblebee_gs_kabam", "cheetor_bw_transmetal", "chromia_gs_kabam",
     "cliffjumper_gs_kabam", "cyclonus_gs_uw06", "deadend_gs_deluxe2015", "dinobot_bw_kabam",
     "dirge_gs_deluxe2008", "dragstrip_gs_deluxe2016", "drift_cin_aoe", "elita_one_gs",

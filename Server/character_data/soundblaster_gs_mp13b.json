@@ -2,7 +2,7 @@
   "bot_id": "soundblaster_gs_mp13b",
   "name_zh": "音板",
   "name_en": "Soundblaster",
-  "faction": "decepticon",
+  "faction": "mercenary",
   "class": "tact",
   "signature": {
     "title_zh": "信号扰乱 - Soundblaster 可以干扰对手的传感器，阻止他们使用自己的能力。",

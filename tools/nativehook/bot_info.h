@@ -21,6 +21,7 @@ static const EnemyStat ENEMY_STATS[] = {
     { "bludgeon_gs_rd20", 40966, 3245, 7338, 0.16f, 1.50f, "warr" },
     { "bonecrusher_cin_rotf", 40966, 3123, 7196, 0.16f, 1.50f, "warr" },
     { "breakdown_gs", 36504, 3488, 7231, 0.24f, 1.50f, "scou" },
+    { "bugbite_gs_kabam", 45022, 3637, 8146, 0.08f, 1.30f, "braw" },
     { "bumblebee_cin_dotm", 42182, 3001, 7159, 0.16f, 1.50f, "tact" },
     { "bumblebee_gs_kabam", 32854, 3001, 6348, 0.24f, 1.50f, "scou" },
     { "cheetor_bw_transmetal", 35693, 3691, 7395, 0.24f, 1.50f, "scou" },
@@ -93,6 +94,6 @@ static const EnemyStat ENEMY_STATS[] = {
     { "wildrider_gs_deluxe2016", 45022, 3637, 8146, 0.08f, 1.30f, "braw" },
     { "windblade_gs", 34882, 3366, 6948, 0.24f, 1.50f, "scou" },
 };
-#define NUM_ENEMY_STATS 79
+#define NUM_ENEMY_STATS 80
 
 #endif // BOT_INFO_H

@@ -256,7 +256,7 @@
     "dirge_gs_deluxe2008": {
         "en": "Dirge",
         "zh": "挽歌",
-        "faction": "霸天虎",
+        "faction": "雇佣兵",
         "note": "挽歌 勇士系"
     },
     "galvatron_gs_voyager2016": {
@@ -322,7 +322,7 @@
     "ramjet_gs_deluxe2008": {
         "en": "Ramjet",
         "zh": "喷气机",
-        "faction": "霸天虎",
+        "faction": "雇佣兵",
         "note": "经典G1 爆破系"
     },
     "scorponok_bw_kabam": {
@@ -352,7 +352,7 @@
     "soundblaster_gs_mp13b": {
         "en": "Soundblaster",
         "zh": "音板",
-        "faction": "霸天虎",
+        "faction": "雇佣兵",
         "note": "经典G1 战术系"
     },
     "soundwave_gs": {
@@ -430,7 +430,7 @@
     "thrust_gs_deluxe2008": {
         "en": "Thrust",
         "zh": "冲锋",
-        "faction": "霸天虎",
+        "faction": "雇佣兵",
         "note": "侦察系"
     },
     "acidstorm_gs_leader2015": {
@@ -475,5 +475,11 @@
         "faction": "汽车人",
         "note": "抵抗军女领袖·战术系",
         "desc": "艾丽塔是塞伯坦女性汽车人反抗军的勇敢领袖之一，擎天柱最信赖的战斗伴侣与挚友。她拥有敏锐卓越的战术头脑、冷酷果决的战斗技巧，以及传说中足以扭转战局的神秘时间停滞核心力场。"
+    },
+    "bugbite_gs_kabam": {
+        "en": "Bug Bite",
+        "zh": "杀人蜂",
+        "faction": "雇佣兵",
+        "note": "雇佣兵 格斗系"
     }
 }

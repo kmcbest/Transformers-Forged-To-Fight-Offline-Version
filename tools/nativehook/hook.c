@@ -1186,6 +1186,7 @@ static int faction_icon_code(const char* faction, const char* bid) {
     if (!strcmp(faction, "decepticon")) return is_movie ? 0xE135 : 0xE133;  // Movie Decepticon (0xE135) vs G1 Decepticon (0xE133)
     if (!strcmp(faction, "maximal"))    return 0xE160;  // Maximal
     if (!strcmp(faction, "predacon"))   return 0xE161;  // Predacon
+    if (!strcmp(faction, "mercenary"))  return 0xE99F;  // Mercenary
     return 0;
 }
 // UTF-8 bytes of that one glyph (il2cpp_string_new takes a UTF-8 C string).
@@ -1198,6 +1199,7 @@ static const char* faction_icon_glyph(const char* faction, const char* bid) {
         case 0xE160: return "\uE160";   // EE 85 A0 (Maximal)
         case 0xE161: return "\uE161";   // EE 85 A1 (Predacon)
         case 0xE99E: return "\uE99E";   // EE A6 9E (Sharkticon)
+        case 0xE99F: return "\uE99F";   // EE A6 9F (Mercenary)
     }
     return NULL;
 }
@@ -5071,6 +5073,42 @@ static void remap_track_for_redeco(void* track, const char* fullId, const char* 
             replaced = 1;
         } else if (replaced) {
             strncpy(new_fullId, temp, sizeof(new_fullId) - 1);
+        }
+    }
+    // 6. Bug Bite (borrows Cliffjumper S3)
+    else if (strstr(bot, "bugbite")) {
+        char temp[512] = {0};
+        const char* cur = fullId;
+        if (str_replace_first(cur, "Cliffjumper_GS_Kabam", "BugBite_GS_Kabam", temp, sizeof(temp))) {
+            cur = temp;
+            replaced = 1;
+        }
+        if (str_replace_first(cur, "cha_cliffjumper_gs_kabam_wpns_gun_right 1|gasgun", "cha_bugbite_gs_kabam_wpns_pistol_right|rightgun", new_fullId, sizeof(new_fullId))) {
+            cur = new_fullId;
+            replaced = 1;
+        } else if (str_replace_first(cur, "cha_cliffjumper_gs_kabam_wpns_gun_right 1", "cha_bugbite_gs_kabam_wpns_pistol_right", new_fullId, sizeof(new_fullId))) {
+            cur = new_fullId;
+            replaced = 1;
+        }
+        if (str_replace_first(cur, "cha_cliffjumper_gs_kabam_00 1", "cha_bugbite_gs_kabam_00", temp, sizeof(temp))) {
+            cur = temp;
+            replaced = 1;
+        } else if (str_replace_first(cur, "cha_cliffjumper_gs_kabam_00", "cha_bugbite_gs_kabam_00", temp, sizeof(temp))) {
+            cur = temp;
+            replaced = 1;
+        }
+        if (str_replace_first(cur, "cha_cliffjumper_gs_kabam_01 1|cha_cliffjumper_gs_kabam_01|transformed", "cha_bugbite_gs_kabam_01|transformed", new_fullId, sizeof(new_fullId))) {
+            cur = new_fullId;
+            replaced = 1;
+        } else if (str_replace_first(cur, "cha_cliffjumper_gs_kabam_01 1", "cha_bugbite_gs_kabam_01", new_fullId, sizeof(new_fullId))) {
+            cur = new_fullId;
+            replaced = 1;
+        } else if (str_replace_first(cur, "cha_cliffjumper_gs_kabam_01", "cha_bugbite_gs_kabam_01", new_fullId, sizeof(new_fullId))) {
+            cur = new_fullId;
+            replaced = 1;
+        }
+        if (replaced && cur != new_fullId) {
+            strncpy(new_fullId, cur, sizeof(new_fullId) - 1);
         }
     }
 
@@ -10209,6 +10247,8 @@ static const SPMoveHitEntry s_sp_moves[] = {
     { "move_bludgeon_special_02", 3 },
     { "move_bonecrusher_special_01", 2 },
     { "move_bonecrusher_special_02", 3 },
+    { "move_bugbite_special_01", 3 },
+    { "move_bugbite_special_02", 2 },
     { "move_bumblebee_gs_special_01", 2 },
     { "move_bumblebee_gs_special_02", 2 },
     { "move_bumblebee_special_01", 3 },
@@ -11910,6 +11950,41 @@ static bool hooked_Projectile_IgnoreCollisionDetection(void* self, void* method)
 }
 
 // ==================== FightFlow / Error Diagnostics ====================
+// EB.Animation.Matinee.PlayMecanimAnimationEvent.RestoreControllerAnimClipIfNeeded (0x013B165C)
+// Guard against NullReferenceException during Matinee pre-initialization / battle loading
+static fn8 orig_RestoreControllerAnimClipIfNeeded = NULL;
+static void* hooked_RestoreControllerAnimClipIfNeeded(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    void* res = NULL;
+    int can_run = 0;
+    PROTECT({
+        if (a0 && obj_ok(a0)) {
+            void* orig_clip = *(void**)((char*)a0 + 0x90); // _origControllerOverrideAnimClip
+            void* new_clip  = *(void**)((char*)a0 + 0x98); // _newControllerOverrideAnimClip
+            void* anim      = *(void**)((char*)a0 + 0x68); // _animator
+            void* track     = *(void**)((char*)a0 + 0x18); // track
+            if (orig_clip && obj_ok(orig_clip) &&
+                new_clip && obj_ok(new_clip) &&
+                anim && obj_ok(anim) &&
+                track && obj_ok(track)) {
+                void* container = *(void**)((char*)track + 0x80); // parentContainer
+                if (container && obj_ok(container)) {
+                    can_run = 1;
+                }
+            }
+            if (!can_run) {
+                flog("RestoreControllerAnimClipIfNeeded: safely skipping (orig=%p, new=%p, anim=%p, a0=%p)",
+                     orig_clip, new_clip, anim, a0);
+            }
+        }
+    });
+    if (can_run && orig_RestoreControllerAnimClipIfNeeded) {
+        PROTECT({
+            res = orig_RestoreControllerAnimClipIfNeeded(a0, a1, a2, a3, a4, a5, a6, a7);
+        });
+    }
+    return res;
+}
+
 // BattleArbiter.get_IsInitialized (0x00CF90A0) - guard against NullReferenceException during combat UI events
 static fn8 orig_BattleArbiter_get_IsInitialized = NULL;
 static bool hooked_BattleArbiter_get_IsInitialized(void* method) {
@@ -12726,6 +12801,8 @@ static void* installer(void* arg){
     inline_hook((void*)(g_base + 0x00CF90A0), (void*)hooked_BattleArbiter_get_IsInitialized, &orig_BattleArbiter_get_IsInitialized);
     // Hook Projectile.IgnoreCollisionDetection (0x00E9EA00) for Windblade Heavy Attack ranged penetration
     inline_hook((void*)(g_base + 0x00E9EA00), (void*)hooked_Projectile_IgnoreCollisionDetection, &orig_Projectile_IgnoreCollisionDetection);
+    // Guard EB.Animation.Matinee.PlayMecanimAnimationEvent.RestoreControllerAnimClipIfNeeded (0x013B165C)
+    inline_hook((void*)(g_base + 0x013B165C), (void*)hooked_RestoreControllerAnimClipIfNeeded, &orig_RestoreControllerAnimClipIfNeeded);
 
     LOG("install done (%d hooks)", NH);
     skill_dispatcher_init(g_base);

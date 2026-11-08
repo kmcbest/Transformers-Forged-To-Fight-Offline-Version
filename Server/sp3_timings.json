@@ -1922,5 +1922,28 @@
       ]
     },
     "notes": "风刃 (Windblade) - VTOL超音速喷气机"
+  },
+  "bugbite_gs_kabam": {
+    "intervals": [
+      [
+        4033,
+        5866
+      ]
+    ],
+    "props": {
+      "leftgun": [
+        [
+          0,
+          0
+        ]
+      ],
+      "gasgun": [
+        [
+          0,
+          0
+        ]
+      ]
+    },
+    "notes": "杀人蜂 (Bug Bite) - 借用飞过山S3舞台"
   }
 }
