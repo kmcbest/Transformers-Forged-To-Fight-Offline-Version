@@ -67,3 +67,11 @@
   高频属性查询类 Hook（如 `hook_194: get_Unstoppable`、`get_Health` 等）必须保持纯净只读（Pure Query），严禁在内部调用 `EnterMove`、`ExitMove` 或 `SwitchState` 去修改状态机或动画容器；所有状态变更必须收敛在动作发起、受击与判定事件中。
 - **Macro Enclosure Rule (信号保护宏块封闭性)**:
   `PROTECT({ ... })` 宏块内部严禁直接使用 `return` 跳出，否则会跳过宏尾部 `g_prot = 0`，导致全局异常保护标志被永久锁死在 1 并引发后续雪崩。必须统一使用局部变量配合 `break` 在宏块外统一返回。
+
+
+## Cross-repository boundary isolation protocol (跨仓库边界物理隔离铁律)
+
+- **Zero-Cross-Directory Contamination (严禁跨仓库跨目录文件写入与同步)**:
+  `TFTF-blender` 与 `TFTF` 是两个职责与生命周期完全独立的工程仓库。
+  所有在 `TFTF-blender` 中编写的工具脚本（包括 `tools/`、`tools/vortex/`、资源导出、元数据同步、AssetBundle 打包等）**严禁向外部兄弟仓库（如 `E:\Agent\TFTF`、`../TFTF` 等）进行任何直接的文件覆盖、配置篡改或写入操作**！
+  每个工作区的修改必须 100% 收敛在各自的根目录内。新角色或资源的跨仓库合并，必须由用户主导或在用户明确指令下通过标准 Git 分支合并或受控的导入脚本进行，严禁脚本擅自穿透边界自动同步。

@@ -5423,6 +5423,7 @@ static const struct ArtBaseMap ART_BASE_MAP[] = {
     { "nemesisprime_gs_voyager2015", "nemesis_p" },
     { "novastorm_gs_leader2015", "novastorm" },
     { "onslaught_gs", "onslaught_gs" },
+    { "vortex_gs", "vortex_gs" },
     { "optimusprimal_bw_mp32", "oprimal_bw" },
     { "optimusprime_cin_tf", "optimus_c_tf" },
     { "optimusprime_sg_voyager2015", "optimus_sg" },
@@ -5567,6 +5568,12 @@ void* hook_162(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
                 return g_strnew("战车队冷酷沉着的战术指挥官，重装炮火专家。他擅长制定周密残忍的突袭计划，身披重甲，背负双联防空火箭炮与小臂转轮重机炮，在战场上以压倒性的火力粉碎一切阻碍。");
             }
             return g_strnew("袭击");
+        }
+        if (strstr(k, "VORTEX") || strstr(k, "vortex") || strstr(k, "Vortex")) {
+            if (strstr(k, "BIO") || strstr(k, "desc") || strstr(k, "DESC") || strstr(k, "Bio")) {
+                return g_strnew("战车队阴险狂暴的突击兵与空中支援专家。旋风性格残忍好斗，狂热嗜杀，装备高频旋转离子切刃与重型导弹发射器，能够在半空化作杀戮旋风将一切敌人绞为碎片。");
+            }
+            return g_strnew("旋风");
         }
     }
     return r;
