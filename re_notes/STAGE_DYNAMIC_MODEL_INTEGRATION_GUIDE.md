@@ -65,15 +65,15 @@
 
 ---
 
-## 三、 Mecanim 动画循环两大陷阱及解决方案
+## 三、 Mecanim 动画循环陷阱与『正向合体 ➔ 定格瞻仰 ➔ 倒放解体 ➔ 归位重组』无缝 Ping-Pong 架构
 
-合体动作（`transform_r_Garage`，192 帧，约 6.36 秒）由 6 辆车分散在四周推进、空中变形、到最后一帧合体为擎天巨人。在实现无限循环演绎时，存在两个核心陷阱：
+合体动作（`transform_r_Garage`，原始 192 帧，约 6.37 秒）由 6 辆工程车分散在四周推进、空中变形、到最后一帧合体为擎天巨人。在实现沉浸式无限循环演绎时，经历了从解决底层崩溃到构建工业级丝滑动画的完整演进：
 
-### 陷阱 1：单次播放后永久定格（Clamp Forever）
+### 1. 陷阱 1：单次播放后永久定格（Clamp Forever）
 * **成因**：FBX 导入进 Unity 时，`AnimationClip` 的 `m_LoopTime` 默认为 `False`，`wrapMode` 为 `0`（Once）。在 Mecanim 单状态状态机中，动画播放到最后一帧即永久停滞。
 * **解决**：在底层 `MuscleClip` 中将 `m_LoopTime` 设为 `True`，`m_WrapMode` 设为 `2`（Loop）。
 
-### 陷阱 2：Loop Pose（闭环姿态平滑融合）引起的肢体支离破碎（最致命！）
+### 2. 陷阱 2：Loop Pose（闭环姿态平滑融合）引起的肢体支离破碎（最致命！）
 * **成因**：
   * 普通循环动作（如走跑待机）首尾姿态相同，Unity 的 `Loop Pose`（底层变量 `m_LoopBlend`）会自动将第 1 帧与最后一帧做加权融合消除跳跃。
   * 但合体动画**起点是“6 辆车分散在地面”，终点是“咬合为人型整体”**！
@@ -88,7 +88,38 @@
     mc.m_LoopBlendPositionY = False
     mc.m_LoopBlendPositionXZ = False
     ```
-  * 此时骨骼运动 100% 忠实还原原版动画曲线，合体锁死严丝合缝，到达尾帧后再瞬间干净切回起点，实现真正的完美循环。
+  * 此时骨骼运动 100% 忠实还原原版动画曲线，合体锁死严丝合缝。
+
+### 3. 终极体验提升：四阶段无缝对称镜像 Ping-Pong 动画架构
+单纯将单向合体动作循环播放，会导致大力神合体完成后**瞬间瞬间跳回（Snap back）** 6 辆小车状态，在激战中视觉冲击极其突兀断裂。
+为了实现最真实、震撼且自然的背景互动，我们设计并落地了**四阶段高精度数学逆序 Ping-Pong 动画管线**：
+
+```
+[0.00s]                           [6.37s]              [8.03s]                                      [14.40s]         [14.90s]
+   │ ──▶ 阶段 1：6车推进合体 ──▶      │ ──▶ 阶段 2：巨人定格 ──▶ │ ──▶ 阶段 3：数学严格逆序倒放解体（倒车归位） ──▶ │ ──▶ 阶段 4：发车待机 ──▶ │
+   └───────────────────────────────┴────────────────────┴──────────────────────────────────────────┴─────────────────┘
+                                                                                                            ▲
+                                                                                                (首尾零瞬移、无限平滑闭环)
+```
+
+#### 关键帧四阶段数学映射法则：
+设原正向动画帧数为 $N=192$ 帧（$0.0000s \sim 6.3667s$）：
+1. **阶段 1：正向推进合体（$0.0000s \sim 6.3667s$，192 帧）**：
+   * 原生忠实保留 1220 条骨骼曲线的所有关键帧 $(t_i, v_i)$。
+   * 尾帧（$t=6.3667s$）的 `outTangent` 平滑归零，平稳过渡到定格姿态。
+2. **阶段 2：合体完成巨人定格（$6.3667s \sim 8.0334s$，持续 1.6667s / 50 帧）**：
+   * 在尾帧追加定格关键帧，数值保持为合体完成值 $v_{191}$。
+   * 让玩家在激烈对决中有充足时间看清完全体大力神的巨构细节与威严霸气。
+3. **阶段 3：数学级严格逆序倒放解体（$8.0334s \sim 14.4000s$，192 帧）**：
+   * 倒放时间：$t_{rev} = t_{hold\_end} + (t_{fwd} - t_j) = 14.4000 - t_j$。
+   * 倒放数值：$v_{rev} = v_j$。
+   * **切线导数微分反转铁律**：根据微积分链式法则 $\frac{d}{dt}[f(C-t)] = -f'(C-t)$，逆序运动的切线必须严格反转对调：
+     $$inTangent_{rev} = -outTangent_j, \quad outTangent_{rev} = -inTangent_j$$
+   * 该映射使得 6 辆车从大力神躯干上严密反向拆解、原路倒车驶回各自初始落位点，绝无任何漂移或顿挫。
+4. **阶段 4：归位短暂停顿（$14.4000s \sim 14.9000s$，持续 0.5000s / 15 帧）**：
+   * 车辆回归初始点后驻车微歇 0.5 秒，尾帧关键帧数值 $v_{end} = v_0$。
+   * 尾帧的属性与位置与 $t=0.0s$ 起始帧 **100% 严格一致**。
+   * 当 Mecanim 触发循环时，从 14.90s 到 0.00s 的过渡误差为 0，实现了没有任何抽搐和突变的无限丝滑连贯循环！
 
 ---
 
@@ -175,6 +206,8 @@ TFTF 客户端通过 `ODRManager` 动态加载场景。在 `assets/rust/toc.txt`
 
 | 脚本路径 | 功能职责 |
 | :--- | :--- |
+| [`stage_project/Assets/Editor/GeneratePingPongAnimation.cs`](file:///E:/Agent/TFTF-blender/stage_project/Assets/Editor/GeneratePingPongAnimation.cs) | 自动化解析 1220 条骨骼曲线，生成微积分镜像逆序与定格的无缝 Ping-Pong 动画资产 |
+| [`stage_project/Assets/Editor/ExportDevastatorBundle.cs`](file:///E:/Agent/TFTF-blender/stage_project/Assets/Editor/ExportDevastatorBundle.cs) | Unity Headless 批量构建 Android 舞台 AssetBundle |
 | [`tools/merge_devastator_rust_stage.py`](file:///E:/Agent/TFTF-blender/tools/merge_devastator_rust_stage.py) | 提取 TypeTree，将模型层级与骨骼树注入生锈荒海主场景 |
 | [`tools/patch_rust_merged_devastator.py`](file:///E:/Agent/TFTF-blender/tools/patch_rust_merged_devastator.py) | 动态角色 PBR 着色器注入、单轨 resS 合并、光照提亮与纯净循环修正 |
 | [`Server/build_phone_apk.py`](file:///E:/Agent/TFTF-blender/Server/build_phone_apk.py) | 拦截 TOC CRC 并注入准确文件大小，防止场景回退 |

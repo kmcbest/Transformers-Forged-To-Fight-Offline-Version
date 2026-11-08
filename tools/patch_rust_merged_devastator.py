@@ -198,26 +198,29 @@ for m_pid, cfg in mat_configs.items():
         mat.save()
         print(f"    [✓] Upgraded to Character Dynamic PBR (diff={cfg['diffuse']}, norm={cfg['normal']}, comp={pbr_composite_tex_pid})")
 
-# 5. Fix Animation Clip to Loop without LoopPose distortion
-print("\n[5] Patching Devastator_Combine AnimationClip for clean infinite loop...")
-clip_pid = -4744859319559139663
-if clip_pid in sf.objects:
-    clip = sf.objects[clip_pid].read()
-    clip.m_WrapMode = 2 # Loop
-    if hasattr(clip, "m_MuscleClip"):
-        mc = clip.m_MuscleClip
-        mc.m_LoopTime = True # Keep state loop enabled
-        # STRICTLY DISABLE LOOP POSE BLEND:
-        # Loop Pose forces end frame (combined robot) to blend with start frame (scattered vehicles),
-        # causing limbs to rip apart and disjoint!
-        mc.m_LoopBlend = False
-        mc.m_LoopBlendOrientation = False
-        mc.m_LoopBlendPositionY = False
-        mc.m_LoopBlendPositionXZ = False
-    clip.save()
-    print(f"  [✓] AnimationClip '{clip.m_Name}' wrapMode=2, loopTime=True, loopBlend=False.")
-else:
-    print(f"  [!] AnimationClip {clip_pid} not found in bundle!")
+# 5. Fix Animation Clips to Loop without LoopPose distortion
+print("\n[5] Patching Devastator AnimationClips for clean infinite loop...")
+patched_clips = 0
+for pid, obj in sf.objects.items():
+    if obj.type.name == "AnimationClip":
+        clip = obj.read()
+        if "Combine" in clip.m_Name or "Devastator" in clip.m_Name:
+            clip.m_WrapMode = 2 # Loop
+            if hasattr(clip, "m_MuscleClip"):
+                mc = clip.m_MuscleClip
+                mc.m_LoopTime = True # Keep state loop enabled
+                # STRICTLY DISABLE LOOP POSE BLEND:
+                # Loop Pose forces end frame (combined robot) to blend with start frame (scattered vehicles),
+                # causing limbs to rip apart and disjoint!
+                mc.m_LoopBlend = False
+                mc.m_LoopBlendOrientation = False
+                mc.m_LoopBlendPositionY = False
+                mc.m_LoopBlendPositionXZ = False
+            clip.save()
+            print(f"  [✓] AnimationClip '{clip.m_Name}' (PID={pid}) wrapMode=2, loopTime=True, loopBlend=False.")
+            patched_clips += 1
+if patched_clips == 0:
+    print("  [!] WARNING: No Devastator AnimationClips found!")
 
 # 6. Ensure Devastator GameObjects Layer 11
 print("\n[6] Ensuring Devastator GameObjects are on Layer 11...")
@@ -290,12 +293,19 @@ s_name_v = getattr(ver_s, 'm_Name', '') or getattr(ver_s.m_ParsedForm, 'm_Name',
 assert "SECOND_DIRECTIONAL_LIGHT" in s_name_v, f"Unexpected shader name: {s_name_v}"
 print(f"  [✓] Verified Shader: '{s_name_v}'")
 
-# Verify Animation Clip
-ver_clip = ver_sf.objects[clip_pid].read()
-assert ver_clip.m_WrapMode == 2, f"WrapMode is {ver_clip.m_WrapMode}, expected 2"
-assert ver_clip.m_MuscleClip.m_LoopTime == True, f"LoopTime is {ver_clip.m_MuscleClip.m_LoopTime}, expected True"
-assert ver_clip.m_MuscleClip.m_LoopBlend == False, f"LoopBlend is {ver_clip.m_MuscleClip.m_LoopBlend}, expected False"
-print(f"  [✓] Verified AnimationClip: wrapMode={ver_clip.m_WrapMode}, loopTime={ver_clip.m_MuscleClip.m_LoopTime}, loopBlend={ver_clip.m_MuscleClip.m_LoopBlend}")
+# Verify Animation Clips
+ver_pingpong_found = False
+for pid, obj in ver_sf.objects.items():
+    if obj.type.name == "AnimationClip":
+        ver_clip = obj.read()
+        if "PingPong" in ver_clip.m_Name:
+            assert ver_clip.m_WrapMode == 2, f"WrapMode is {ver_clip.m_WrapMode}, expected 2"
+            assert ver_clip.m_MuscleClip.m_LoopTime == True, f"LoopTime is {ver_clip.m_MuscleClip.m_LoopTime}, expected True"
+            assert ver_clip.m_MuscleClip.m_LoopBlend == False, f"LoopBlend is {ver_clip.m_MuscleClip.m_LoopBlend}, expected False"
+            assert ver_clip.m_MuscleClip.m_StopTime > 14.0, f"StopTime is {ver_clip.m_MuscleClip.m_StopTime}, expected > 14.0s"
+            print(f"  [✓] Verified Ping-Pong AnimationClip '{ver_clip.m_Name}': duration={ver_clip.m_MuscleClip.m_StopTime:.2f}s, wrapMode={ver_clip.m_WrapMode}, loopTime={ver_clip.m_MuscleClip.m_LoopTime}, loopBlend={ver_clip.m_MuscleClip.m_LoopBlend}")
+            ver_pingpong_found = True
+assert ver_pingpong_found, "Devastator_Combine_PingPong clip not found in verified bundle!"
 
 # Verify All Textures
 for pid in dev_tex_pids:

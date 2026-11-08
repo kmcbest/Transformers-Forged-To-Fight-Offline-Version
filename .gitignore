@@ -126,3 +126,6 @@ stage_project/[Uu]ser[Ss]ettings/
 stage_project/AssetBundles/
 stage_project/*.log
 stage_project_assets/
+
+stage_project/Assets/Devastator/*.anim
+stage_project/Assets/Devastator/*.anim.meta

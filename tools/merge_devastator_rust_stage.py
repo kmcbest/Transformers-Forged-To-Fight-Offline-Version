@@ -11,7 +11,7 @@ from UnityPy.classes import PPtr
 
 # Paths
 rust_bak_path = r"E:\Agent\TFTF\extracted_apk\assets\assetpack\rust\rust_merged.assetbundle.bak"
-dev_bundle_path = r"E:\Agent\TFTF-blender\stage_build_worker\AssetBundles\devastator_stage.assetbundle"
+dev_bundle_path = r"E:\Agent\TFTF-blender\stage_project\AssetBundles\devastator_stage.assetbundle"
 
 out_apk_path = r"E:\Agent\TFTF\extracted_apk\assets\assetpack\rust\rust_merged.assetbundle"
 out_redeco_path = r"E:\Agent\TFTF-blender\assets_redeco\rust_merged.assetbundle"
