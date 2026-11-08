@@ -122,3 +122,5 @@ cookies.txt
 
 # Overridden Unity assets
 !assets_overrides/**
+
+*.backup
