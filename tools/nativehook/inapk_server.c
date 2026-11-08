@@ -333,6 +333,7 @@ typedef struct {
     int ai_difficulty;
     int player_invincible;
     int enable_custom_music;
+    int log_level;
 } UserSettings;
 
 static UserSettings g_user_settings = {
@@ -349,7 +350,8 @@ static UserSettings g_user_settings = {
     .enable_combat_debug_overlay = 0,
     .ai_difficulty = 0,
     .player_invincible = 0,
-    .enable_custom_music = 1
+    .enable_custom_music = 1,
+    .log_level = 0
 };
 static int g_settings_loaded = 0;
 
@@ -361,6 +363,7 @@ static void load_user_settings(void) {
         "/storage/emulated/0/Android/data/com.kabam.bigrobot/files/user_settings.json",
         NULL
     };
+    g_settings_loaded = 1;
     for (int i = 0; paths[i]; i++) {
         FILE *f = fopen(paths[i], "rb");
         if (f) {
@@ -480,6 +483,14 @@ static void load_user_settings(void) {
                         g_user_settings.enable_custom_music = !strncmp(c, "true", 4);
                     }
                 }
+                char *ll = strstr(buf, "\"log_level\"");
+                if (ll) {
+                    char *c = strchr(ll, ':');
+                    if (c) {
+                        int v = (int)strtol(c + 1, NULL, 10);
+                        if (v >= 0 && v <= 2) g_user_settings.log_level = v;
+                    }
+                }
                 g_settings_loaded = 1;
                 return;
             }
@@ -527,6 +538,11 @@ int tftf_get_enable_custom_music(void) {
     return g_user_settings.enable_custom_music;
 }
 
+int tftf_get_log_level(void) {
+    if (!g_settings_loaded) load_user_settings();
+    return g_user_settings.log_level;
+}
+
 int tftf_get_player_invincible(void) {
     if (!g_settings_loaded) load_user_settings();
     if (g_user_settings.player_invincible) return 1;
@@ -559,6 +575,7 @@ int tftf_get_freeze_enemy_ai(void) {
     return 0;
 }
 void tftf_reload_user_settings(void) {
+    g_settings_loaded = 0;
     load_user_settings();
 }
 

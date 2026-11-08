@@ -1484,6 +1484,70 @@
 
         </div>
 
+        <!-- 5. 调试日志等级 (Log Level) -->
+
+        <div class="card">
+
+          <div class="card-header">
+
+            <div class="card-title">
+
+              <span class="dot" style="background: var(--purple);"></span>
+
+              <span data-i18n="log_title">调试日志记录</span>
+
+            </div>
+
+            <span class="current-val game-font" id="txt-log-val">关闭 (零占用·推荐)</span>
+
+          </div>
+
+          <div class="pills-group" style="grid-template-columns: 1fr 1fr 1fr;">
+
+            <div class="pill-btn active" id="btn-log-0" onclick="setLogLevel(0, this)">
+
+              <span class="pill-name c-green" data-i18n="log_none">关闭</span>
+
+              <span class="pill-badge bg-green game-font" data-i18n="log_none_badge">零占用·推荐</span>
+
+            </div>
+
+            <div class="pill-btn" id="btn-log-1" onclick="setLogLevel(1, this)">
+
+              <span class="pill-name c-amber" data-i18n="log_fatal">仅严重</span>
+
+              <span class="pill-badge bg-amber game-font" data-i18n="log_fatal_badge">闪退崩溃记录</span>
+
+            </div>
+
+            <div class="pill-btn" id="btn-log-2" onclick="setLogLevel(2, this)">
+
+              <span class="pill-name c-rose" data-i18n="log_all">全部记录</span>
+
+              <span class="pill-badge bg-rose game-font" data-i18n="log_all_badge">全量跟踪排查</span>
+
+            </div>
+
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+
+            <div class="card-hint" style="font-size: 11px; color: var(--text-dim); line-height: 1.4;" data-i18n="log_hint">
+
+              默认关闭不写磁盘；开启将写入 Documents 目录
+
+            </div>
+
+            <button type="button" id="btn-clean-logs" class="btn-secondary game-font" style="padding: 4px 10px; font-size: 11px; white-space: nowrap; margin-left: 8px;" onclick="cleanOldLogs()" data-i18n="log_clean_btn">
+
+              🗑️ 清理历史日志
+
+            </button>
+
+          </div>
+
+        </div>
+
         <!-- 5. 下次跳过启动菜单 (Skip Next Time) -->
 
         <label class="skip-card" style="margin-top: 2px;">
@@ -1836,6 +1900,8 @@
 
       target_fps: 60,
 
+      log_level: 0,
+
       player_invincible: false,
 
       enable_custom_music: true,
@@ -1963,6 +2029,30 @@
         fps_val_120: "120 FPS",
 
         fps_val_144: "144 FPS (144Hz 屏幕)",
+
+        log_title: "调试日志记录",
+
+        log_val_0: "关闭 (零占用·推荐)",
+
+        log_val_1: "仅严重 (记录闪退)",
+
+        log_val_2: "全部 (全量排查)",
+
+        log_none: "关闭",
+
+        log_none_badge: "零占用·推荐",
+
+        log_fatal: "仅严重",
+
+        log_fatal_badge: "闪退崩溃记录",
+
+        log_all: "全部记录",
+
+        log_all_badge: "全量跟踪排查",
+
+        log_hint: "默认关闭不写磁盘；开启将写入 Documents 目录",
+
+        log_clean_btn: "🗑️ 清理历史日志",
 
         invincible_title: "玩家无敌（受击不掉血）",
 
@@ -2110,6 +2200,30 @@
 
         fps_val_144: "144 FPS (144 Hz Display)",
 
+        log_title: "Debug Logging",
+
+        log_val_0: "Disabled (Zero Overhead)",
+
+        log_val_1: "Fatal Only (Crash Log)",
+
+        log_val_2: "Full (Verbose Tracking)",
+
+        log_none: "Off",
+
+        log_none_badge: "Zero Overhead",
+
+        log_fatal: "Fatal Only",
+
+        log_fatal_badge: "Crash to Single File",
+
+        log_all: "Full Log",
+
+        log_all_badge: "Verbose Trace Files",
+
+        log_hint: "Disabled by default (0 disk write). Enabled writes to Documents.",
+
+        log_clean_btn: "🗑️ Clean Logs",
+
         invincible_title: "Player Invincibility (No HP Loss)",
 
         custom_music_title: "Custom Music (Jukebox)",
@@ -2217,6 +2331,8 @@
       updateManaDisplay();
 
       updateFpsDisplay();
+
+      updateLogLevelDisplay();
 
       updateAiDiffDisplay();
 
@@ -2388,6 +2504,118 @@
 
     }
 
+    function setLogLevel(lvl, el) {
+
+      config.log_level = lvl;
+
+      document.querySelectorAll('#btn-log-0, #btn-log-1, #btn-log-2').forEach(btn => btn.classList.remove('active'));
+
+      el.classList.add('active');
+
+      updateLogLevelDisplay();
+
+      updateJsonPreview();
+
+    }
+
+    function updateLogLevelDisplay() {
+
+      const lvl = config.log_level !== undefined ? config.log_level : 0;
+
+      const txt = document.getElementById('txt-log-val');
+
+      const dict = i18n[currentLang] || i18n.zh;
+
+      txt.textContent = dict['log_val_' + lvl] || (lvl === 0 ? '关闭 (零占用·推荐)' : (lvl === 1 ? '仅严重' : '全部记录'));
+
+    }
+
+    let isCleaningLogs = false;
+
+    function cleanOldLogs() {
+
+      if (isCleaningLogs) return;
+
+      const btn = document.getElementById('btn-clean-logs');
+
+      const isZh = (currentLang === 'zh');
+
+      if (window.Android && typeof window.Android.deleteOldLogs === 'function') {
+
+        try {
+
+          isCleaningLogs = true;
+
+          if (btn) btn.textContent = isZh ? '⏳ 正在清理...' : '⏳ Cleaning...';
+
+          setTimeout(() => {
+
+            try {
+
+              const resStr = window.Android.deleteOldLogs();
+
+              const res = JSON.parse(resStr);
+
+              if (btn) {
+
+                if (res.count > 0) {
+
+                  btn.textContent = isZh ? `✅ 已清理 ${res.count} 个 (${res.freed_mb} MB)` : `✅ Cleaned ${res.count} (${res.freed_mb} MB)`;
+
+                } else {
+
+                  btn.textContent = isZh ? '✅ 无历史日志 (0 MB)' : '✅ No old logs (0 MB)';
+
+                }
+
+              }
+
+            } catch(e) {
+
+              if (btn) btn.textContent = isZh ? '❌ 清理失败' : '❌ Failed';
+
+            }
+
+            setTimeout(() => {
+
+              if (btn) btn.textContent = isZh ? '🗑️ 清理历史日志' : '🗑️ Clean Logs';
+
+              isCleaningLogs = false;
+
+            }, 3000);
+
+          }, 100);
+
+        } catch(e) {
+
+          isCleaningLogs = false;
+
+          if (btn) btn.textContent = isZh ? '❌ 发生异常' : '❌ Error';
+
+          setTimeout(() => {
+
+            if (btn) btn.textContent = isZh ? '🗑️ 清理历史日志' : '🗑️ Clean Logs';
+
+          }, 2000);
+
+        }
+
+      } else {
+
+        if (btn) {
+
+          const orig = btn.textContent;
+
+          btn.textContent = isZh ? '⚠️ 仅在游戏内生效' : '⚠️ In-game only';
+
+          setTimeout(() => { btn.textContent = orig; }, 2000);
+
+        }
+
+      }
+
+    }
+
     function setFps(fps, el) {
 
       config.target_fps = fps;
@@ -2527,6 +2755,10 @@
       const fpsBtn60 = document.getElementById('btn-fps-60');
 
       if (fpsBtn60) fpsBtn60.click();
+
+      const logBtn0 = document.getElementById('btn-log-0');
+
+      if (logBtn0) logBtn0.click();
 
       const aiBtn0 = document.getElementById('btn-ai-diff-0');
 
@@ -2853,6 +3085,18 @@
             const fpsButton = document.getElementById('btn-fps-' + supportedFps);
 
             if (fpsButton) fpsButton.click();
+
+          }
+
+          if (parsed.log_level !== undefined) {
+
+            const lvl = parseInt(parsed.log_level, 10);
+
+            const validLvl = [0, 1, 2].includes(lvl) ? lvl : 0;
+
+            const logButton = document.getElementById('btn-log-' + validLvl);
+
+            if (logButton) logButton.click();
 
           }
 

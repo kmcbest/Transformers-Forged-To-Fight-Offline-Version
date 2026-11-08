@@ -53,10 +53,77 @@ static void seg_handler(int sig, siginfo_t* si, void* uc){
 #define PROTECT(...) do { g_prot=1; if (sigsetjmp(g_jb,1)==0) { __VA_ARGS__ } g_prot=0; } while(0)
 #define LOG(...) do { __android_log_print(ANDROID_LOG_ERROR, "TFTFHOOK", __VA_ARGS__); flog(__VA_ARGS__); } while(0)
 static FILE* g_f = NULL;
+static int g_f_is_crash_only = 0;
 static void flog(const char* fmt, ...){
     char buf[1024];
     va_list ap; va_start(ap, fmt); vsnprintf(buf, sizeof buf, fmt, ap); va_end(ap);
     __android_log_print(ANDROID_LOG_INFO, "TFTFHOOK", "%s", buf);
+
+    int level = tftf_get_log_level();
+    if (level == 0) {
+        if (g_f) {
+            fclose(g_f);
+            g_f = NULL;
+            g_f_is_crash_only = 0;
+        }
+        return;
+    }
+
+    if (level == 1) {
+        // Fatal / crash only: check if this message is a fault or exception
+        int is_fatal = (strstr(buf, "FAULT") != NULL) ||
+                       (strstr(buf, "sig=") != NULL) ||
+                       (strstr(buf, "FATAL") != NULL) ||
+                       (strstr(buf, "CRITICAL") != NULL) ||
+                       (strstr(buf, "Exception") != NULL) ||
+                       (strstr(buf, "ASSERT") != NULL) ||
+                       (strstr(buf, "VIOLATION") != NULL) ||
+                       (strstr(buf, "Crash") != NULL);
+        if (!is_fatal) {
+            return;
+        }
+        if (!g_f || !g_f_is_crash_only) {
+            if (g_f) { fclose(g_f); g_f = NULL; }
+            const char* dirs[] = {
+                "/sdcard/Documents",
+                "/storage/emulated/0/Documents",
+                "/sdcard/Download",
+                "/storage/emulated/0/Download",
+                "/sdcard/Android/data/com.kabam.bigrobot/files",
+                "/data/data/com.kabam.bigrobot/files",
+                NULL
+            };
+            for (int i = 0; dirs[i]; i++) {
+                char logpath[256];
+                snprintf(logpath, sizeof(logpath), "%s/tftf_crash.log", dirs[i]);
+                g_f = fopen(logpath, "a");
+                if (g_f) {
+                    g_f_is_crash_only = 1;
+                    time_t rawtime = time(NULL);
+                    struct tm* ti = localtime(&rawtime);
+                    if (ti) {
+                        fprintf(g_f, "\n=== TFTF CRASH [%04d-%02d-%02d %02d:%02d:%02d] ===\n",
+                                ti->tm_year + 1900, ti->tm_mon + 1, ti->tm_mday,
+                                ti->tm_hour, ti->tm_min, ti->tm_sec);
+                    } else {
+                        fprintf(g_f, "\n=== TFTF CRASH [%ld] ===\n", (long)rawtime);
+                    }
+                    fflush(g_f);
+                    break;
+                }
+            }
+        }
+        if (!g_f) return;
+        fputs(buf, g_f); fputc('\n', g_f); fflush(g_f);
+        return;
+    }
+
+    // level == 2: Full verbose logging to timestamped file
+    if (g_f && g_f_is_crash_only) {
+        fclose(g_f);
+        g_f = NULL;
+        g_f_is_crash_only = 0;
+    }
     if (!g_f) {
         char fname[64];
         time_t rawtime;
@@ -85,6 +152,7 @@ static void flog(const char* fmt, ...){
             snprintf(logpath, sizeof(logpath), "%s/%s", dirs[i], fname);
             g_f = fopen(logpath, "w");
             if (g_f) {
+                g_f_is_crash_only = 0;
                 __android_log_print(ANDROID_LOG_ERROR, "TFTFHOOK", "Logging to %s", logpath);
                 fprintf(g_f, "LOG FILE OPENED: %s\n", logpath);
                 fflush(g_f);

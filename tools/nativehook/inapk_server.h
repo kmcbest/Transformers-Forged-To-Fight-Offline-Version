@@ -31,6 +31,7 @@ int tftf_get_combat_debug_overlay(void);
 int tftf_get_ai_difficulty(void);
 int tftf_get_player_invincible(void);
 int tftf_get_enable_custom_music(void);
+int tftf_get_log_level(void);
 void tftf_reload_user_settings(void);
 
 int tftf_quest_is_leisure(void);

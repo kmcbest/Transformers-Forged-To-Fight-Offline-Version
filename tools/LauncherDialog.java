@@ -25,6 +25,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 public class LauncherDialog {
     private static final String TAG = "TFTF_LAUNCHER";
@@ -192,6 +197,62 @@ public class LauncherDialog {
         @JavascriptInterface
         public String getInitialSettings() {
             return initialConfig;
+        }
+
+        @JavascriptInterface
+        public String deleteOldLogs() {
+            int count = 0;
+            long totalBytes = 0;
+            Set<String> deleted = new HashSet<String>();
+            String[] targetDirs = new String[] {
+                "/sdcard/Documents",
+                "/storage/emulated/0/Documents",
+                "/sdcard/Download",
+                "/storage/emulated/0/Download"
+            };
+            List<File> dirList = new ArrayList<File>();
+            for (String p : targetDirs) {
+                dirList.add(new File(p));
+            }
+            try {
+                File extFiles = activity.getExternalFilesDir(null);
+                if (extFiles != null) dirList.add(extFiles);
+            } catch (Throwable t) {}
+            try {
+                File intFiles = activity.getFilesDir();
+                if (intFiles != null) dirList.add(intFiles);
+            } catch (Throwable t) {}
+
+            for (File d : dirList) {
+                if (d != null && d.exists() && d.isDirectory()) {
+                    File[] files = d.listFiles();
+                    if (files != null) {
+                        for (File f : files) {
+                            if (f != null && f.isFile()) {
+                                String name = f.getName();
+                                if (name.startsWith("tftf_") && name.endsWith(".log")) {
+                                    try {
+                                        String canon = f.getCanonicalPath();
+                                        if (!deleted.contains(canon)) {
+                                            long len = f.length();
+                                            if (f.delete()) {
+                                                deleted.add(canon);
+                                                count++;
+                                                totalBytes += len;
+                                                Log.i(TAG, "Deleted old log: " + canon + " (" + len + " bytes)");
+                                            }
+                                        }
+                                    } catch (Throwable e) {
+                                        Log.w(TAG, "Failed to delete log " + f.getAbsolutePath() + ": " + e.getMessage());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            double freedMb = (double) totalBytes / (1024.0 * 1024.0);
+            return String.format(Locale.US, "{\"count\":%d,\"freed_mb\":%.2f}", count, freedMb);
         }
 
         @JavascriptInterface
