@@ -36,6 +36,7 @@ public class CustomMusicPlayer {
     private static String sCurrentTrackName = "";
     private static String sSessionMainTrack = ""; // Fixed track for 'main' during this session
     private static String sCurrentQuestTrack = ""; // Fixed track for 'quest' during active map run
+    private static String sCurrentShowcaseTrack = ""; // Fixed track for 'bot_showcase' until exiting showcase
     private static boolean sQuestPendingReroll = false; // Flag to reroll quest track after map cleared
 
     private static MediaPlayer sActivePlayer;
@@ -311,6 +312,9 @@ public class CustomMusicPlayer {
 
     private static void doPlayCategory(String category) {
         if (!sEnabled || sContext == null) return;
+        if (!"bot_showcase".equals(category)) {
+            sCurrentShowcaseTrack = "";
+        }
         String trackPath = null;
         if ("main".equals(category)) {
             if (sQuestPendingReroll) {
@@ -347,6 +351,28 @@ public class CustomMusicPlayer {
                     Log.i(TAG, "Selected new locked quest track: " + sCurrentQuestTrack);
                 }
             }
+        } else if ("bot_showcase".equals(category)) {
+            if (sCurrentShowcaseTrack != null && !sCurrentShowcaseTrack.isEmpty()) {
+                trackPath = sCurrentShowcaseTrack;
+                Log.i(TAG, "Reusing locked bot_showcase track: " + trackPath);
+            } else {
+                List<String> list = sCategoryTracks.get("bot_showcase");
+                if (list != null && !list.isEmpty()) {
+                    if (list.size() == 1) {
+                        trackPath = list.get(0);
+                    } else {
+                        String last = sLastPlayedTrack.get("bot_showcase");
+                        List<String> candidates = new ArrayList<>(list);
+                        if (last != null && candidates.size() > 1) {
+                            candidates.remove(last);
+                        }
+                        trackPath = candidates.get(sRandom.nextInt(candidates.size()));
+                    }
+                    sLastPlayedTrack.put("bot_showcase", trackPath);
+                    sCurrentShowcaseTrack = trackPath;
+                    Log.i(TAG, "Selected new locked bot_showcase track: " + sCurrentShowcaseTrack);
+                }
+            }
         } else {
             List<String> list = sCategoryTracks.get(category);
             if (list == null || list.isEmpty()) {
@@ -379,8 +405,9 @@ public class CustomMusicPlayer {
         // If the exact same track is already playing, keep it playing smoothly
         if (trackPath.equals(sCurrentTrackName) && sActivePlayer != null) {
             try {
-                if (sActivePlayer.isPlaying()) {
+                if (sActivePlayer.isPlaying() || sAppInBackground || sIsPaused) {
                     Log.i(TAG, "Track already playing smoothly: " + trackPath);
+                    sCurrentCategory = category;
                     return;
                 }
             } catch (Exception ignored) {}
@@ -505,6 +532,7 @@ public class CustomMusicPlayer {
                                     sActivePlayer = null;
                                     sCurrentCategory = "";
                                     sCurrentTrackName = "";
+                                    sCurrentShowcaseTrack = "";
                                 }
                             }
                         }
@@ -564,6 +592,7 @@ public class CustomMusicPlayer {
                 }
                 sCurrentCategory = "";
                 sCurrentTrackName = "";
+                sCurrentShowcaseTrack = "";
             }
         });
     }

@@ -7236,7 +7236,7 @@ void* hook_162(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     if (read_str_utf8(a0, k, sizeof(k)) && k[0]) {
         if (strncmp(k, "ID_SPECIAL_", 11) == 0 || strncmp(k, "MS_ID_SPECIAL_", 14) == 0) {
             const char* tr = lookup_special_attack_zh(k);
-            if (tr) {
+            if (tr && tr[0]) {
                 LOG("LOCALIZE sp: %s -> %s", k, tr);
                 return g_strnew ? g_strnew(tr) : r;
             }
@@ -11031,9 +11031,19 @@ void* hook_201(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
 }
 
 void* hook_202(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    volatile int was_swapping = 0;
+    PROTECT({
+        if (obj_ok(a0)) {
+            was_swapping = (*(uint8_t*)((uintptr_t)a0 + 0x304) != 0);
+        }
+    });
     void* r = H[202].orig(a0, a1, a2, a3, a4, a5, a6, a7);
     if (tftf_get_enable_custom_music()) {
-        native_play_music_category("bot_showcase");
+        if (was_swapping) {
+            LOG("[Jukebox] CHAR_DETAIL_ENTER skipped while swapping bot (_swapingActor=1)");
+        } else {
+            native_play_music_category("bot_showcase");
+        }
     }
     return r;
 }
@@ -11041,7 +11051,9 @@ void* hook_202(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
 void* hook_203(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     void* r = H[203].orig(a0, a1, a2, a3, a4, a5, a6, a7);
     if (tftf_get_enable_custom_music()) {
-        native_play_music_category("main");
+        const char* cat = get_current_flow_music_category();
+        LOG("[Jukebox] CHAR_DETAIL_EXIT -> %s", cat);
+        native_play_music_category(cat);
     }
     return r;
 }

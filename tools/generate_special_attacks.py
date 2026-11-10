@@ -57,7 +57,8 @@ def load_translations():
             if jstart != -1:
                 builtin = json.loads(bdata[jstart:bdata.rfind(b'}')+1].decode('utf-8', errors='ignore'))
                 for s in builtin.get('strings', []):
-                    table[s['k']] = s['v']
+                    if s.get('v'):
+                        table[s['k']] = s['v']
                 print(f"Loaded {len(table)} strings from base APK.")
         except Exception as e:
             print(f"Warning: Could not read built-in APK translation: {e}")
@@ -67,7 +68,8 @@ def load_translations():
         with open(SNAPSHOT_PATH, 'r', encoding='utf-8', errors='ignore') as f:
             snap = json.load(f)
         for s in snap.get('strings', []):
-            table[s['k']] = s['v']
+            if s.get('v'):
+                table[s['k']] = s['v']
         print(f"Loaded strings from official snapshot (total: {len(table)}).")
 
     # 3. User-defined custom special attacks (takes highest priority)
