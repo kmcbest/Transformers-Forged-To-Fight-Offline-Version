@@ -1,0 +1,90 @@
+{
+  "chest_MD": {
+    "x0": 0,
+    "y0": 1024,
+    "width": 1024,
+    "height": 1024,
+    "atlas_size": 2048,
+    "scale_u": 0.5,
+    "scale_v": 0.5,
+    "offset_u": 0.0,
+    "offset_v": 0.5
+  },
+  "face_maskOn_MD": {
+    "x0": 0,
+    "y0": 0,
+    "width": 1024,
+    "height": 1024,
+    "atlas_size": 2048,
+    "scale_u": 0.5,
+    "scale_v": 0.5,
+    "offset_u": 0.0,
+    "offset_v": 0.0
+  },
+  "leg_MD": {
+    "x0": 1024,
+    "y0": 1536,
+    "width": 512,
+    "height": 512,
+    "atlas_size": 2048,
+    "scale_u": 0.25,
+    "scale_v": 0.25,
+    "offset_u": 0.5,
+    "offset_v": 0.75
+  },
+  "hand_MD": {
+    "x0": 1024,
+    "y0": 1024,
+    "width": 512,
+    "height": 512,
+    "atlas_size": 2048,
+    "scale_u": 0.25,
+    "scale_v": 0.25,
+    "offset_u": 0.5,
+    "offset_v": 0.5
+  },
+  "body_MD": {
+    "x0": 1024,
+    "y0": 512,
+    "width": 512,
+    "height": 512,
+    "atlas_size": 2048,
+    "scale_u": 0.25,
+    "scale_v": 0.25,
+    "offset_u": 0.5,
+    "offset_v": 0.25
+  },
+  "head_MD": {
+    "x0": 1024,
+    "y0": 0,
+    "width": 512,
+    "height": 512,
+    "atlas_size": 2048,
+    "scale_u": 0.25,
+    "scale_v": 0.25,
+    "offset_u": 0.5,
+    "offset_v": 0.0
+  },
+  "doorWing_MD": {
+    "x0": 1536,
+    "y0": 1536,
+    "width": 512,
+    "height": 512,
+    "atlas_size": 2048,
+    "scale_u": 0.25,
+    "scale_v": 0.25,
+    "offset_u": 0.75,
+    "offset_v": 0.75
+  },
+  "blaster_MD": {
+    "x0": 1536,
+    "y0": 1024,
+    "width": 512,
+    "height": 512,
+    "atlas_size": 2048,
+    "scale_u": 0.25,
+    "scale_v": 0.25,
+    "offset_u": 0.75,
+    "offset_v": 0.5
+  }
+}

@@ -5424,6 +5424,7 @@ static const struct ArtBaseMap ART_BASE_MAP[] = {
     { "novastorm_gs_leader2015", "novastorm" },
     { "onslaught_gs", "onslaught_gs" },
     { "vortex_gs", "vortex_gs" },
+    { "strongarm_gs", "strongarm_gs" },
     { "optimusprimal_bw_mp32", "oprimal_bw" },
     { "optimusprime_cin_tf", "optimus_c_tf" },
     { "optimusprime_sg_voyager2015", "optimus_sg" },
@@ -5574,6 +5575,12 @@ void* hook_162(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
                 return g_strnew("战车队阴险狂暴的突击兵与空中支援专家。旋风性格残忍好斗，狂热嗜杀，装备高频旋转离子切刃与重型导弹发射器，能够在半空化作杀戮旋风将一切敌人绞为碎片。");
             }
             return g_strnew("旋风");
+        }
+        if (strstr(k, "STRONGARM") || strstr(k, "strongarm") || strstr(k, "Strongarm")) {
+            if (strstr(k, "BIO") || strstr(k, "desc") || strstr(k, "DESC") || strstr(k, "Bio")) {
+                return g_strnew("来自《领袖之证/领袖的挑战》(RID2015) 的年轻热血汽车人警官。性格严谨刚正，一丝不苟地恪守警务条例，装备警用电击棍与重型霰弹枪，变形为越野警用巡逻皮卡。");
+            }
+            return g_strnew("铁腕");
         }
     }
     return r;

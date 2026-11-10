@@ -735,3 +735,137 @@ FOC 等虚幻 3（UE3）模型的四根主手指在骨架上只有两节骨骼�
 - [x] **3. 骨骼绑定归属**：机身全部顶点绑定至 `BodyTopCenterRight`，旋翼全部顶点绑定至 `RotorMain`（hash `3459633487`）。
 - [x] **4. FBX 权重自洽**：在 Unity 内部直接由 C# 解析 FBX 原生骨骼权重，规避 UV 拆点索引位移引发的“升天 Bug”。
 - [x] **5. 动画实测**：在 Unity 检视场景中切换 `Vehicle Mode Hover`，逐帧观察是否只有 4 片主桨叶与顶盖在平稳高速旋转，机身其余部分保持绝对刚性静止。
+
+
+---
+
+## 11. 铁腕（Strongarm）与战术轮式警用皮卡专属流水线（借壳 Prowl 实战）
+
+铁腕（Strongarm，来自 RID 2015）作为战术（Tactician）职业的女性汽车人，借壳警车（Prowl）的底盘与动作模组，胜利姿势借调通天晓（Ultra Magnus）。在制作过程中攻克了六大关键工程陷阱：
+
+### 11.1 战斗面罩永久剥离与精致女性面容重塑（Mask Removal & Clean Jaw Standard）
+* **陷阱现象**：原模型默认装配了突兀笨重的战术面罩（Battle Mask），遮盖了铁腕标志性的女性清秀下颌与唇形。
+* **剔除与重塑准则**：
+  * 在 Blender 导入阶段，精准识别并彻底剥离 `bot:mask_geo` 与 `bot:faceMaskOn_jaw_geo` 两组子网格；
+  * 保留完整的金色立体头冠与面颊女性弧度轮廓；
+  * 在贴图图集烘焙中，将眼眸通道注入纯净高亮的水蓝（Cyan）自发光（Emission），嘴唇映射微调，使角色在无面罩下依然具备极具辨识度的神采。
+
+### 11.2 低模车轮 32 分段径向细分平滑（Radial Wheel Smoothing & Subdivision）
+* **陷阱现象**：提取自早年手游的警用皮卡载具多边形面数较低，车轮为明显的粗糙多棱柱体，在百炼为战 60 FPS 镜头特写下极易穿帮。
+* **平滑解决方案**：
+  * 将车轮几何独立分离，应用局部径向 32 分段细分平滑（Subdivision Surface / Smooth）；
+  * 轮轴顶点精确吸附回 Prowl 车轮骨骼（`WheeFrontlLeft_R`, `WheelFrontRight_R`, `WheelRearLeft_R`, `WheelRearRight_R`）；
+  * 警车红蓝双色警灯、车头车尾车灯注入自发光图集，车漆辅以金属/粗糙度烘焙。
+
+### 11.3 跨骨骼空间变换三重取反陷阱与手性保护（Coordinate Flip Defense）
+* **陷阱现象**：在初版 Unity 检视中，铁腕出现左手臂反折穿过躯干、右臂脱节飞出数米外的严重畸变。
+* **根本溯源**：
+  * Blender FBX 导出在无 `bake_space_transform` 下保留高度在 $Z$、进深在 $Y$；
+  * Unity 导入 FBX 时内置规则会将 $X$ 轴取反（$X_{unity} = -X_{blender}$）；
+  * 在对齐脚本中骨骼坐标已被映射为 $(-ux, uz, uy)$；若在 Unity C# 顶点重映射代码中再次画蛇添足加上 `-v.x`，就会引发**第三次镜像取反**，导致左侧顶点被绑到右侧骨骼，骨骼向左拉扯、顶点向右撕裂！
+* **铁律**：C# 顶点映射必须使用标准的 `new Vector3(v.x, v.z, v.y)` 正向通道转换，严禁在外部再次对 $X$ 轴取负！
+
+### 11.4 严格子串匹配优先级铁律（Submesh Substring Precedence）
+* **陷阱现象**：角色大腿和手掌发生奇异拉扯，小腹到胯部产生 1 米巨大的悬空断裂。
+* **根本溯源**：
+  1. `upperleg` 冲突：`"leg_geo"` 的模糊匹配会错误截获 `"upperleg_geo"`，导致本应属于大腿根（`LeftUpLeg`/`RightUpLeg`）的顶点被强制归入了小腿（`LeftLeg`/`RightLeg`）；
+  2. `hand_geo` 遗漏：原模型手掌命名为 `bot:hand_geo_L/R`，模糊匹配只搜索了 `"palm"` 和 `"finger"`，导致整只手跌入兜底骨骼 `Spine1`，手掌像长在胸口一样；
+  3. `body_geo` 归属：小腹腰部属于 `bot:body_geo`，若绑定至 Prowl 几乎没有权重的 `Spine`，角色在战斗待机或叉腰时腰部瞬间上下脱节断裂！
+* **铁律**：
+  * 判定大腿必须严格先检查 `if "upperleg" in k:`，再检查普通小腿；
+  * 手部显式匹配 `"hand_geo"` 绑入 `LeftHand`/`RightHand`；
+  * `body_geo` 强制归入骨盆 `Hips`，消除腰部空洞。
+
+### 11.5 AssetBundle 官方 Avatar 容器注册与运行时动画解冻（Mecanim Avatar Container Gate）
+* **陷阱现象**：在 Unity Play 模式下，无论点击什么战斗动作，两个角色均毫无反应、纹丝不动卡在初始站姿。
+* **根本溯源**：
+  * TFTF 的通用战斗动作（如 `tactical_normal_attacklight_01`）为 Mecanim 骨骼动作，必须配合有效的 `Avatar` 骨骼映射表；
+  * 注入动画的工具若仅把 AnimationClip 写入 `m_Container`，未将母体官方 Avatar（`cha_prowl_gs_deluxe2016_00Avatar` 等）写入容器，Unity C# 的 `bundle.LoadAsset<Avatar>()` 将返回 `null`！
+  * 当 Animator 的 `avatar == null` 时，Unity 内部由于缺少骨骼映射，会直接丢弃所有动作帧求值，导致动画全面瘫痪冻结。
+* **铁律**：
+  * 必须使用 UnityPy 将全部官方 Avatar 注入 `m_Container`，且保存时强制使用 `packer="lz4"`；
+  * 在 C# 控制器中建立多层防御：若 `LoadAsset<Avatar>()` 失败，必须从官方预制体的 `prefab.GetComponent<Animator>().avatar` 中提取并赋予给新角色 Animator。
+
+### 11.6 交互预览控制器生命周期与根运动锚定（PlayableGraph Lifecycle & Root Anchor）
+* **陷阱现象**：动作点击后角色像踩着滑板一样在地面上向外漂移滑动；连续点击多个动作后动画失效。
+* **根本溯源**：
+  * `PlayableGraph` 在单次初始化后其全局时间 $T$ 持续流逝，直接替换片段会导致新动作被求值在 `T >> clip.length` 的末尾超时帧；
+  * 官方预制体的 `applyRootMotion` 默认为 `true`，出拳位移动作会将位移增量每帧累加到 Transform 上。
+* **铁律**：
+  * 每次切换动作，必须先调用 `DestroyGraphs()` 与 `RestoreInitialBones()`，重新创建独立图从 $T=0.0\text{s}$ 开始播放；
+  * 在 `Update()` 中加入循环重置判定：`if (loop && t >= clip.length) playable.SetTime(0.0);`；
+  * 强制禁用根运动 `animator.applyRootMotion = false`；在 `LateUpdate()` 中通过动态减去骨盆中心偏移量，将角色分别硬锁定在 $\pm 3.2\text{m}$，确保出拳永远原地爆发。
+
+### 11.7 载具形态骨盆倾角补偿方程（Hips Tilt Compensation for Vehicles）
+* **陷阱现象**：切入载具模式时，皮卡与巡逻车像火箭一样竖直立在地面上（车头朝天）。
+* **根本溯源**：
+  * 母体底盘的载具节点 `transformed` 挂载在骨盆 `Hips` 下方，而在人形待机骨骼位姿下，`Hips` 内部天然带有约 $-90^\circ$ 的 X 轴俯仰倾角；
+  * 若直接将根节点旋转设为 `Quaternion.identity`，下层的载具将完整继承骨盆的 $-90^\circ$ 倾角。
+* **铁律**：
+  * 在载具展示模式下，根节点必须施加 **$+90^\circ$ 的 X 轴水平低头俯仰补偿**：
+    $$\text{Strongarm} \rightarrow \text{Quaternion.Euler}(90^\circ, 180^\circ, 0^\circ)$$
+    $$\text{Prowl} \rightarrow \text{Quaternion.Euler}(90^\circ, 0^\circ, 0^\circ)$$
+  * 消除倾角后，两辆车水平平贴地面（$Y = 0$），车头呈现标准的前侧 45° 视角。
+
+### 11.8 非变身战斗动作纯净性（Pure Humanoid Heavy & SP Actions）
+* 警车与铁腕的重击（`Car_Normal_attackHeavy`）与 S 技并非空中悬停变身，而是人形向前滑铲突刺。严禁在此类动作中误套用直升机类的 `SetMode(false)` 隐藏机器人网格，战斗动作全程必须保持纯净的人形姿态。
+
+### 11.9 Kabam RAOE 3 通道自发光核爆陷阱与 `ContactShadow` 隔离铁律（White Supernova Fix）
+* **陷阱现象**：实机展厅与战斗中角色变成一个**刺眼的纯白色巨型发光剪影**（仅可见白色人形轮廓光晕），UI、动作和数值一切正常但材质完全过曝白化。
+* **三大精准根因**：
+  1. **误把 3 通道 `RAOE` 当成 4 通道 `RGBA` 打包，金属度漏入蓝通道变成全身自发光**：
+     Kabam `_pbr_composite_tex`（`RAOE`）为严格 **3 通道 RGB 贴图**（**R = Roughness 粗糙度、G = AO、B = Emissive 自发光蒙版**，而**金属度在 `_normal_tex` 的 `NM.B` 中**）。若错误地以 RGBA 四通道方式将 `Metallic = 50` 塞进第 3 通道（B）而将真正的 Emissive 放在第 4 通道（Alpha），随后 `.convert("RGB")` 会直接丢弃 Alpha，把 **`B = 50/255 ≈ 0.196` 喂给着色器当作全身 100% 像素的自发光系数**！叠加 `_emissive_overbright_range = 45.0`，全身产生 $8.8\times$ HDR 过曝核爆白光！
+  2. **颜色阈值误伤彩色装甲烤漆**：仅用泛泛的高蓝/高红阈值生成自发光，会误将铁腕肩部、翅膀、小腿大面积蓝色装甲与红条刷涂成灯泡。
+  3. **误覆写 `ContactShadowB` 脚底阴影贴图**：`ContactShadowA/B` 被预制体 `MonoBehaviour.TextureHip / TextureFoot` 引用作为角色地面接触阴影，严禁借用其 PathID 存放载具 RAOE！
+* **修正铁律**：
+  1. `RAOE` 必须严格生成 **`RGB` 3 通道**：`R = Roughness`、`G = AO`、`B = Emissive`（**非发光装甲与白/蓝车漆 `B` 必须严格为 `0`！仅眼眸、小灯带与警灯为非零，且全局非零像素占比 $< 2\%$**）；
+  2. 独立制作两套法线：**`_NM_unity.png`**（`B=Nz≈255` 专供 Unity Editor `Standard` 预览），**`_NM.png`**（`B=Metallic`，高光白/蓝车漆仅 `14~16`，深色金属骨架 `95~110` 专供真机 Kabam 着色器）；
+  3. 当母体武器（`wpns_RAOE`）仍需保留时，**严禁覆写 `ContactShadowB`**，应将载具 `512x512` RAOE 嵌入 `main_tform_misc_RAOE` 未使用的右下角空白象限（OpenGL UV `U∈[0.75, 1.0], V∈[0.0, 0.25]`），并在载具材质 `_pbr_composite_tex` 上配置 `Scale=(0.25, 0.25), Offset=(0.75, 0.0)`；
+  4. 对于明白色卡通烤漆角色（原图漫反射 `p95=255`），`Material._Color` 与 `_base_col` 宜控制在 `0.65~0.68`、`_emissive_overbright_range ≈ 18.0`，防止高光裁剪吞噬面部雕塑与板件刻线。
+
+### 11.10 进对战瞬秒闪退（`Matinee` 根节点改名禁忌）与艳蓝色烤漆 `NM.B=0` 校准
+* **故障现象 1（进对战加载阶段黑屏/弹窗退出）**：展厅一切正常，点击进入战斗在场景加载完毕瞬间触发 `NullReferenceException: PlayMecanimAnimationEvent.RestoreControllerAnimClipIfNeeded()`（由 `MatineeStage.PreInitializeMatinee` 调起）。
+* **根本溯源**：
+  1. 含 `PlayMecanimAnimationEvent` 轨迹（如警车 `Matinee_Prowl_Special03`、`Arcee` SP3）的过场数据 `jSONData` 中硬编码了按名称查找的路径前缀（例如 `transformed|Hips|Reference|character_model|Prowl_GS_Deluxe2016|Actor0_locator`）。
+  2. 一旦在 `generate_*_bundle.py` 中将预制体 Root `GameObject.m_Name` 从母体名（`Prowl_GS_Deluxe2016` / `Prowl_GS_Deluxe2016_lw`）改成 `<new_bot>`，战斗初始化绑定 `Matinee` 时就找不到该子节点，导致 `_animator == null`，进战清零重置阶段即刻崩溃！
+  3. 同时，构建真机包必须直接以纯净官方原始 Bundle 为母体，禁止使用 Unity 编辑器调试阶段克隆注入额外剪辑、撑大 `m_Container` 却未更新 `m_PreloadTable` 的临时 `*_anims_registered.assetbundle`。
+* **根治铁律**：
+  1. 仅重映射 `AssetBundle.m_Container` 中的 `.prefab` 虚拟资源路径键名（`assets/bundles/characters/merged/<new_bot>/<new_bot>.prefab`），**绝对保留母体 Root `GameObject.m_Name` 不改名**（对齐艾丽塔保留 `Arcee_GS_Deluxe2014`、袭击保留 `IronHide_Cin_ROTF`）；
+  2. 切换胜利姿势可直接借 Stage：将 `PlayerReferences.VictoryStagePrefab` 重定向至 `TFormStage_Brute_Victory`（`-902189099669460623`），并在战斗 AOC 与 `m_PreloadTable` 中同步替换为通天晓胜利剪辑；
+  3. 同步在 `Server/sp3_timings.json` 添加动作与道具区间，并调用 `gamedata.export_bot_info_header()` 生成 `tools/nativehook/bot_info.h`，补齐 `crit_damage` 与 `SP3` 形态切换时机。
+* **故障现象 2（蓝色变暗蓝 + 前臂红蓝警灯发白）**：若仅按灰度亮度判断金属度，低亮度高饱和度的宝蓝/青灰警车车漆会被误判为金属（`NM.B=110`）并在暗背景展厅中被压成暗海军蓝；而前臂红蓝大色块自发光给 `100` 会在 HDR Bloom 下过曝发白。
+* **视觉修正规范**：加入 HSV 饱和度判据，凡彩色烤漆与白色装甲 `NM.B` 必须强制为 `0`（纯电介质），仅中性深灰（`sat < 0.22`）机械骨架保留 `85~95`；在漫反射先做轻量饱和度提亮与白区柔顶限幅（`max≈238`），材质球保留 `_base_col = 1.0`；前臂与车顶红蓝大块警灯给 `RAOE.B = 8~20` 微自发光即可保色防白化。
+
+### 11.11 载具等比缩放、碎面焊接与统一 `CenterBackCarFront` 绑定铁律（Vehicle Uniform Scale & Weld Gate）
+* **故障现象**：载具车轮呈扁平椭圆（横向拉长）、车身纵向扁平；车灯、引擎盖与车门出现碎裂暗斑、锐利对角反光条纹以及金属箔般镜面反光，且警灯在真机 HDR 过曝发白。
+* **根本溯源**：
+  1. **非均匀缩放毁灭圆轮**：若强行用 `scale = (1.0, 1.45, 1.07)` 将短轴距皮卡拉伸对齐跑车轴距，会把原本 `1:1` 的正圆车胎拉成 `1.35:1` 椭圆；
+  2. **第三方提取 `.obj` 先天碎裂与法线倒置**：移动手游提取的载具 `.obj` 常含数百个未焊接孤立微面片（铁腕载具高达 `478` 块碎面）、向内包裹的多边形绕序（`poly.n < 0`）与相反朝外顶点法线（`loop.n > 0`），分拆平滑后碎裂加剧，导致相邻三角面产生 $180^\circ$ 对立阴影；
+  3. **多材质子网格 UV Atlas 错位与过曝 Emissive**：载具 `Mat 8471270994157717165` 的 `_emissive_overbright_range = 16.0`，若 `RAOE.B = 65`（$4.08\times$ HDR）会将红/青警灯洗成粉白色；而 Unity 检查场景左侧官方警车若漏配 `3` 个子网格材质与 `(1, 0.5) / (0, 0.5)` UV 偏移也会大面积花屏。
+* **铁律规范**：
+  1. **焊接优先 + 清零旧裂法线**：在 Blender 分离车轮前必须先执行 `bmesh.ops.remove_doubles(bm, dist=0.0002)`（保留 Loop UV 不变）将碎面焊合为少量清晰部件，清除破损自定义法线，重算向外法线并启用 `Auto Smooth`（约 $38^\circ$ / `0.66 rad`）让弯角平滑、平面锐利；
+  2. **100% 等比缩放 + 刚性骨绑定 + +Z 正前朝向校验**：载具必须使用等比缩放（`s, s, s`，如 `1.18`）维持正圆轮胎与天然比例；车体及 4 个车轮统一全权重绑定至 `CenterBackCarFront`；旋转落地后须确保车头位于 Blender `+Y`（Unity `+Z` 正前方，与 Prowl `CenterBackCarFront`、`WheeFrontlLeft` 的 `restZ > 0` 一致，否则重击冲锋 `Car_Prowl_Normal_attackHeavy_transformed` 会倒车撞击），并在预览台禁用任何视觉绕 Y 轴 `180°` 临时偏置。
+  3. **统一压缩前纹理清污与自发光定标**：将同步后的漫反射贴图清除低模烘焙残留的车顶灰污，纯白/宝蓝车漆保持 `NM.B <= 10`，将写入统一 `main_tform_misc_RAOE` 右下角象限 `[1536:2048, 1536:2048]` 内的载具 `RAOE.B` 限幅到 `<= 22`（防过曝），并在修改 `cha_strongarm_vh_tform_misc_RAOE.png` 后**务必同步刷新统一图集右下象限**再重合成 `.assetbundle`。
+
+### 11.12 Y/Z 轴交换奇偶性护栏与 Unity Mesh `.asset` 持久化铁律（Det=-1 Winding & Clear-Setter Gate）
+* **故障现象**：模型在 Game/Unity 窗口或手机中外表面半透明剔除，或者虽然外表面可见但受光面极度暗沉、呈反向高光（与官方角色同向均值 `+0.83` 相反，`fn · vn ≈ -0.80 ~ -0.90`）。
+* **根本溯源**：
+  1. **轴交换行列式为 `-1` 的法线陷阱**：将 Blender 坐标 `(x, y, z)` 映射为 `(x, z, y)` 时变换行列式 $\det = -1$。若未对三角形索引反转 `(t0, t1, t2) -> (t0, t2, t1)` 且未将切线分量 `.w` 取反为 `-t.w`，就会反转正面绕序；当原始模型凑巧本来绕序反了时，“负负得正”会让模型不被剔除却把顶点法线 `vn` 留在模型**内部**，酿成正面对光变黑、背面异常亮起的鬼影效果；
+  2. **`EditorUtility.CopySerialized` 序列化 Mesh 静默失灵**：在 Unity 2020 Editor 中对运行时 `new Mesh()` 调用 `EditorUtility.CopySerialized(built, existing)` 无法可靠覆写 `m_VertexData` 与 `m_IndexBuffer` 缓冲区，导致旧版顶点与新版索引混杂甚至撕裂爆炸。
+* **验收门禁**：
+  1. **Blender 出厂必为朝外正法线**（人形直接 `reverse_faces`，载具焊接后 `recalc_face_normals`），随后 Unity 导入脚本在 `(x, z, y)` 与 `(t.x, t.z, t.y, -t.w)` 后显式校验 $\sum \text{Cross}(p_1 - p_0, p_2 - p_0) \cdot n_0 > 0$（必要时翻转三角形），直至用解析脚本实测 `fn · vn > +0.85` 且 `+X` 外侧面 `fn.x > 0` 与 `vn.x > 0` 双正对齐；
+  2. **更新现有 `.asset` Mesh 资产**时严禁 `CopySerialized`，必须调用 `existing.Clear(false)` 后逐项赋值 `.vertices`、`.normals`、`.tangents`、`.uv`、`.boneWeights`、`.bindposes`、`.SetTriangles()` 并 `EditorUtility.SetDirty` + `AssetDatabase.SaveAssets()`；更新贴图/Mesh 后务必重新导出 `strongarm_mesh.assetbundle` 与 `strongarm_gs.assetbundle`。
+
+### 11.13 手臂外展角真实关节测算、三指节原始权重保真与拇指前向 Rest-Pose 对齐铁律（Arm Flare, 30-Finger Rig & Thumb Align）
+* **故障现象**：
+  1. 角色双臂明显向内收紧，手腕直接怼入大腿/膝盖护甲（LeftHand 位于 `X=+0.87m` 内侧穿模），而官方 Prowl 双臂自然微张外撇；
+  2. 战斗或待机时五指僵硬笔直不会握拳；
+  3. 开启原始多指节权重后，左右前臂外侧白色袖口壁出现黑色三角形穿模尖刺（在 `Prefight_Tactical_idle` 与 `jab_L` 中尤为明显）。
+* **根本溯源**：
+  1. **Submesh 命名错位陷阱（`hand_geo` 実為大臂）**：外部 Maya FBX 中名为 `bot:hand_geo_L` 的子网权重全绑在 `bot:jt_shoulder_L`，实则是上臂外壳而非手掌；拿它当手腕重心反推手臂夹角会错算约 $12^\circ\sim14^\circ$ 导致手臂反向内扣。必须直接读取 `orig_arm.data.bones["bot:jt_shoulder_L/R"].head_local` 到 `"bot:jt_wrist_L/R"].head_local` 的真实骨骼矢量来旋转手臂，将 A-Pose `50.33°` 对齐至约 **`+11.5°` 自然外展角**；
+  2. **子网质心一刀切抹杀 30 根指骨**：早期粗粒度子网重绑会清空 `palm_geo` 顶点组并统一写成 `LeftHand/RightHand=1.0`，直接丢掉原模型自带的全部 `jt_thumb1..3`、`index1..3`、`middle1..3`、`ring1..3`、`pinky1..3`（共 30 根三指节权重）；改为 `MAYA_TO_PROWL_BONE` 原生顶点权重 1:1 映射，即可无损继承官方 `Avatar00` 全套握拳、张手与武器动作；
+  3. **拇指默认朝向与官方 `Avatar00` 绑定态垂直正交**：官方 Prowl `Avatar00` 的 `LeftHandThumb1..3` 静止朝向水平正前方（Unity `+Z` / Blender `+Y`），动画剪辑从该基准向前下方收拢握拳；而第三方模型拇指静止时垂直朝下（Blender `-Z`，夹角差约 $80^\circ\sim83^\circ$），直接套用 Prowl 曲拳增量会让拇指逆向翻折约 $160^\circ$，从腕内直刺并贯穿前臂白色外墙。此外，腕部防脱袖套锚定（`v.co.z > 4.34` 渐混至 `ForeArm`）若不排除含拇指权重的顶点（`w_thumb < 0.05`），会把拇指根死锁到前臂引发拉扯。
+* **铁律规范**：
+  1. **真实骨骼起止点定角**：测算臂展一律使用骨骼 `jt_shoulder` -> `jt_wrist` 真实关节点，以肩关节为轴心精确调至 `+11.5°` 外展，并通过包含全指骨组名匹配收集左/右整臂子网（含护甲与 15 根指节关联网格）；
+  2. **原生权重 1:1 映射 + 腕袖隔离**：保留 `palm_geo` 全部 30 根指骨三指节平滑权重；仅对非手指/非拇指纯袖领顶点在袖口内侧做 `ForeArm` 渐变锚定；
+  3. **拇指 Rest-Pose 前向校准**：依据 `Thumb` 权重平滑围绕拇指根枢轴将垂直朝下的原始拇指前旋约 $+82^\circ$ 对齐至水平 `+Y`（Matching `Avatar00`），重打包 `strongarm_mesh.assetbundle` 与 `strongarm_gs.assetbundle` 后，务必在 Unity 预览台实际驱动 `PlayableGraph + Avatar00`（`Prefight_Tactical_idle` 与 `tactical_normal_attacklight_01_jab_L`）并截图确认前臂零黑刺、手部无穿膝且拳头握紧自然。

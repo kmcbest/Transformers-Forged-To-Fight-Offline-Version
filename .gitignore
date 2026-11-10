@@ -108,6 +108,9 @@ assets_redeco/*
 !assets_redeco/*toxitron*
 !assets_redeco/*onslaught*
 !assets_redeco/*vortex*
+!assets_redeco/strongarm*
+!assets_redeco/portrait_strongarm*.png
+!assets_redeco/portrait_strongarm*.jpg
 
 # 3rd-party models & textures
 !3rd-party-models/**

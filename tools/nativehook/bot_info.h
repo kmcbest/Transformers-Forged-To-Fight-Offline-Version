@@ -82,6 +82,7 @@ static const EnemyStat ENEMY_STATS[] = {
     { "soundwave_gs", 58106, 2878, 3049, 0.18f, 1.50f },
     { "starsaber_gs_leader2014", 55339, 3030, 2918, 0.14f, 1.50f },
     { "starscream_ghost_gs", 44686, 4545, 2461, 0.35f, 1.75f },
+    { "strongarm_gs", 55339, 3030, 2918, 0.14f, 1.50f },
     { "sunstorm_gs_leader2015", 52572, 3485, 2802, 0.24f, 1.55f },
     { "sunstreaker_gs_deluxe2008", 69174, 2727, 3595, 0.08f, 1.35f },
     { "tantrum_gs_kabam", 69174, 2727, 3595, 0.08f, 1.35f },
@@ -89,11 +90,12 @@ static const EnemyStat ENEMY_STATS[] = {
     { "thundercracker_gs_leader2015", 69174, 2727, 3595, 0.08f, 1.35f },
     { "ultramagnus_gs_leader", 55339, 3030, 2918, 0.14f, 1.50f },
     { "ultramagnus_sg_leader", 60873, 3182, 3202, 0.14f, 1.60f },
+    { "vortex_gs", 52572, 3485, 2802, 0.24f, 1.55f },
     { "waspinator_gs_deluxe", 60873, 3182, 3202, 0.14f, 1.60f },
     { "wheeljack_gs_mp20", 58106, 2878, 3049, 0.18f, 1.50f },
     { "wildrider_gs_deluxe2016", 69174, 2727, 3595, 0.08f, 1.35f },
     { "windblade_gs", 47038, 3636, 2533, 0.32f, 1.70f },
 };
-#define NUM_ENEMY_STATS 81
+#define NUM_ENEMY_STATS 83
 
 #endif // BOT_INFO_H

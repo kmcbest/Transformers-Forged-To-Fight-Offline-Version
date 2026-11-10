@@ -623,5 +623,13 @@
       "Sword": [[0, 0]]
     },
     "notes": "风刃 (Windblade) - VTOL超音速喷气机"
+  },
+  "strongarm_gs": {
+    "intervals": [[3333, 4967]],
+    "props": {
+      "gun": [[0, 0]],
+      "Baton": [[0, 0]]
+    },
+    "notes": "铁腕 (Strongarm) - 警用皮卡 (借模警车Prowl)"
   }
 }
