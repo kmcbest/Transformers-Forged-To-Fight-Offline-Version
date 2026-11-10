@@ -13,8 +13,11 @@
   },
   "special_attacks": {
     "sp1": {
-      "name_zh": "电磁脉冲爆轰",
-      "name_en": "EMP Shockwave",
+      "name_zh": "离子脉冲",
+      "name_en": "Ion Pulse Ray",
+      "desc_zh": "最后一击命中 85% 概率施加震击减益，造成攻击力 45% 的伤害，持续 4 秒；对拥有护甲增益或不可阻挡增益的敌人，额外造成 50% 的伤害。",
+      "pua_icon": "0xe914",
+      "ui_trigger": "onSpecial1Hit",
       "effects": [
         {
           "title_zh": "离子脉冲",
@@ -22,14 +25,14 @@
           "desc_zh": "最后一击命中 85% 概率施加震击减益，造成攻击力 45% 的伤害，持续 4 秒；对拥有护甲增益或不可阻挡增益的敌人，额外造成 50% 的伤害。",
           "pua_icon": "0xe914"
         }
-      ],
-      "desc_zh": "最后一击命中 85% 概率施加震击减益，造成攻击力 45% 的伤害，持续 4 秒；对拥有护甲增益或不可阻挡增益的敌人，额外造成 50% 的伤害。",
-      "pua_icon": "0xe914",
-      "ui_trigger": "onSpecial1Hit"
+      ]
     },
     "sp2": {
-      "name_zh": "连锁高压雷暴",
-      "name_en": "Chain Lightning Tempest",
+      "name_zh": "电磁暴风",
+      "name_en": "EMP Stormfall",
+      "desc_zh": "每一击有 90% 概率施加破甲，首先移除对方身上一层护甲增益，并施加 30% 的破甲减益，持续 6 秒；70% 概率追加震击减益，造成攻击力 50% 的伤害，持续 5 秒。",
+      "pua_icon": "0xe516",
+      "ui_trigger": "onSpecial2Hit",
       "effects": [
         {
           "title_zh": "电磁暴风",
@@ -37,14 +40,14 @@
           "desc_zh": "每一击有 90% 概率施加破甲，首先移除对方身上一层护甲增益，并施加 30% 的破甲减益，持续 6 秒；70% 概率追加震击减益，造成攻击力 50% 的伤害，持续 5 秒。",
           "pua_icon": "0xe516"
         }
-      ],
-      "desc_zh": "每一击有 90% 概率施加破甲，首先移除对方身上一层护甲增益，并施加 30% 的破甲减益，持续 6 秒；70% 概率追加震击减益，造成攻击力 50% 的伤害，持续 5 秒。",
-      "pua_icon": "0xe516",
-      "ui_trigger": "onSpecial2Hit"
+      ]
     },
     "sp3": {
-      "name_zh": "天顶电离地狱",
-      "name_en": "Total Ionization Annihilation",
+      "name_zh": "平流层风暴",
+      "name_en": "Stratospheric Tempest",
+      "desc_zh": "最后一击 100% 概率移除对方身上所有护甲增益，并施加一个 40% 的破甲减益，持续 8 秒；技能结束后离子风获得一个攻击增益，增加 30% 的攻击力，持续 6 秒。",
+      "pua_icon": "0xe516",
+      "ui_trigger": "onSpecial3Hit",
       "effects": [
         {
           "title_zh": "平流层风暴",
@@ -52,12 +55,69 @@
           "desc_zh": "最后一击 100% 概率移除对方身上所有护甲增益，并施加一个 40% 的破甲减益，持续 8 秒；技能结束后离子风获得一个攻击增益，增加 30% 的攻击力，持续 6 秒。",
           "pua_icon": "0xe516"
         }
-      ],
-      "desc_zh": "最后一击 100% 概率移除对方身上所有护甲增益，并施加一个 40% 的破甲减益，持续 8 秒；技能结束后离子风获得一个攻击增益，增加 30% 的攻击力，持续 6 秒。",
-      "pua_icon": "0xe516",
-      "ui_trigger": "onSpecial3Hit"
+      ]
     }
   },
+  "basic_abilities": [
+    {
+      "title_zh": "震击",
+      "title_en": "Shock",
+      "desc_zh": "持续造成电磁能量伤害。",
+      "pua_icon": "E914",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "破甲",
+      "title_en": "Armor Break",
+      "desc_zh": "移除护甲增益，降低护甲评级并提升受到攻击的伤害量。",
+      "pua_icon": "E516",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "电离极化",
+      "title_en": "Ionic Depolarization",
+      "desc_zh": "重击命中时100%概率移除对方身上1层护甲增益，并施加30%的破甲减益，持续 6 秒。\n若对手处于不可阻挡状态，离子风的重击命中100%概率驱散其不可阻挡增益并将其击倒。",
+      "pua_icon": "0xe516",
+      "category": "passive",
+      "ui_trigger": "电离极化",
+      "show_on_main_screen": false
+    }
+  ],
+  "abilities": [
+    {
+      "title_zh": "震击",
+      "title_en": "Shock",
+      "desc_zh": "持续造成电磁能量伤害。",
+      "pua_icon": "E914",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "破甲",
+      "title_en": "Armor Break",
+      "desc_zh": "移除护甲增益，降低护甲评级并提升受到攻击的伤害量。",
+      "pua_icon": "E516",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "电离极化",
+      "title_en": "Ionic Depolarization",
+      "desc_zh": "重击命中时100%概率移除对方身上1层护甲增益，并施加30%的破甲减益，持续 6 秒。\n若对手处于不可阻挡状态，离子风的重击命中100%概率驱散其不可阻挡增益并将其击倒。",
+      "pua_icon": "0xe516",
+      "category": "passive",
+      "ui_trigger": "电离极化",
+      "show_on_main_screen": false
+    }
+  ],
   "synergies": [
     {
       "title_zh": "雨师三人组",
@@ -84,31 +144,6 @@
       "desc_zh": "团队所有低星级队员获得 +{{var_3}} 电击伤害。",
       "pua_icon": "",
       "bonus_heroes": []
-    }
-  ],
-  "basic_abilities": [
-    {
-      "title_zh": "震击",
-      "title_en": "Shock",
-      "desc_zh": "持续造成电磁能量伤害。",
-      "desc_en": "Deals electrical energy damage over time.",
-      "pua_icon": "E914"
-    },
-    {
-      "title_zh": "破甲",
-      "title_en": "Armor Break",
-      "desc_zh": "移除护甲增益，降低护甲评级并提升受到攻击的伤害量。",
-      "desc_en": "Removes armor buffs and reduces armor rating, amplifying incoming damage.",
-      "pua_icon": "E516"
-    }
-  ],
-  "game_abilities": [
-    {
-      "title_zh": "电离极化",
-      "title_en": "Ionic Depolarization",
-      "desc_zh": "重击命中 100% 概率首先移除对方身上一层护甲增益，并施加 30% 的破甲减益，持续 6 秒。对手处于破甲减益状态下时，离子风的所有攻击造成额外 25% 的伤害。若对手处于不可阻挡状态，离子风的重击命中 100% 概率驱散其不可阻挡增益。",
-      "pua_icon": "0xe516",
-      "ui_trigger": "电离极化"
     }
   ]
 }

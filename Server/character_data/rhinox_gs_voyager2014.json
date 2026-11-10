@@ -7,7 +7,7 @@
   "signature": {
     "title_zh": "超频",
     "title_en": "Overclock",
-    "desc_zh": "护盾防御能力提升，每个护盾增益将一次攻击造成的伤害上限限制为对手攻击力的60%，如果对手单次攻击的伤害超过60%，则会被施加1层震击，造成犀牛攻击力160%的伤害，持续4秒。//用例：对方出近战重击击中犀牛，由于重击是攻击力的80%>60%，则会被施加震击。但如果犀牛防御，则不会触发震击。",
+    "desc_zh": "护盾防御能力提升，每个护盾增益将一次攻击造成的伤害上限限制为对手攻击力的60%，如果对手单次攻击的伤害超过60%，则会被施加1层震击，造成犀牛攻击力160%的伤害，持续4秒。",
     "pua_icon": "E914",
     "ui_trigger": "none"
   },
@@ -15,27 +15,30 @@
     "sp1": {
       "name_zh": "戈尔战术",
       "name_en": "Tactical Gore",
+      "desc_zh": "100%几率破坏目标的武器系统，驱散最多1个近战、远程或特殊伤害增益。",
+      "pua_icon": "0xe950",
+      "ui_trigger": "onSpecial1Hit",
       "effects": [
         {
           "title_zh": "驱散",
           "title_en": "Nulliffy",
-          "desc_zh": "100%几率破坏目标的武器系统，驱散最多1个近战、远程或特殊伤害增益。\n// 测试用例：对方有2层近战增益，2层远程增益，1层特殊伤害增益，则SP1击中后，对方被驱散3个增益，还剩1层近战增益，1层远程增益，0层特殊伤害增益",
+          "desc_zh": "100%几率破坏目标的武器系统，驱散最多1个近战、远程或特殊伤害增益。",
           "pua_icon": "0xe950"
         },
         {
           "title_zh": "流血",
           "title_en": "Bleed",
-          "desc_zh": "如果特殊技成功驱散，有100%几率触发流血，施加攻击力120%的流血伤害，持续14秒。\n// 测试用例：对方有2层近战增益，2层远程增益，1层特殊伤害增益，则SP1击中后，对方被驱散3个增益，被施加3层流血",
+          "desc_zh": "如果特殊技成功驱散，有100%几率触发流血，施加攻击力120%的流血伤害，持续14秒。",
           "pua_icon": "0xe401"
         }
-      ],
-      "desc_zh": "100%几率破坏目标的武器系统，驱散最多1个近战、远程或特殊伤害增益。\n// 测试用例：对方有2层近战增益，2层远程增益，1层特殊伤害增益，则SP1击中后，对方被驱散3个增益，还剩1层近战增益，1层远程增益，0层特殊伤害增益",
-      "pua_icon": "0xe950",
-      "ui_trigger": "onSpecial1Hit"
+      ]
     },
     "sp2": {
       "name_zh": "末日之机关枪",
       "name_en": "Chainguns of Doom",
+      "desc_zh": "40%概率触发流血，施加攻击力60%的伤害，持续8秒",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial2Hit",
       "effects": [
         {
           "title_zh": "流血",
@@ -43,14 +46,14 @@
           "desc_zh": "40%概率触发流血，施加攻击力60%的伤害，持续8秒",
           "pua_icon": ""
         }
-      ],
-      "desc_zh": "40%概率触发流血，施加攻击力60%的伤害，持续8秒",
-      "pua_icon": "",
-      "ui_trigger": "onSpecial2Hit"
+      ]
     },
     "sp3": {
       "name_zh": "猛虎出笼",
       "name_en": "A Beast Unleashed",
+      "desc_zh": "30%概率触发流血，施加攻击力45%的伤害，持续12秒\n如果对方生命值大于90%，伤害增加55%\n如果对方生命值大于75%，伤害增加25%\n如果对方生命值大于50%，伤害增加10%",
+      "pua_icon": "E401",
+      "ui_trigger": "onSpecial3Hit",
       "effects": [
         {
           "title_zh": "流血",
@@ -58,12 +61,141 @@
           "desc_zh": "30%概率触发流血，施加攻击力45%的伤害，持续12秒\n如果对方生命值大于90%，伤害增加55%\n如果对方生命值大于75%，伤害增加25%\n如果对方生命值大于50%，伤害增加10%",
           "pua_icon": "E401"
         }
-      ],
-      "desc_zh": "30%概率触发流血，施加攻击力45%的伤害，持续12秒\n如果对方生命值大于90%，伤害增加55%\n如果对方生命值大于75%，伤害增加25%\n如果对方生命值大于50%，伤害增加10%",
-      "pua_icon": "E401",
-      "ui_trigger": "onSpecial3Hit"
+      ]
     }
   },
+  "basic_abilities": [
+    {
+      "title_zh": "护盾",
+      "title_en": "Shield",
+      "desc_zh": "展开力场吸收来袭伤害，优先于生命值消耗。",
+      "pua_icon": "E515",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "能量锁定",
+      "title_en": "Power Lock",
+      "desc_zh": "临时阻止目标从攻击或被动机制中获取任何能量。",
+      "pua_icon": "E523",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "流血",
+      "title_en": "Bleed",
+      "desc_zh": "流失的能量晶体会持续造成直接伤害。",
+      "pua_icon": "E401",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "护盾",
+      "title_en": "Shield",
+      "desc_zh": "战斗开始时有6个护盾增益，每个护盾增益将一次攻击造成的伤害上限限制为对手攻击力的80%。\n护盾起效状态下，犀牛受到燃烧和震击伤害强度减少35%。\n被近战攻击命中或者防御近战攻击一次消耗一个护盾。\n护盾全消耗完之后进入8秒充能状态，倒计时结束后重新获得6个护盾。",
+      "pua_icon": "E515",
+      "category": "passive",
+      "ui_trigger": "护盾",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "远程流血",
+      "title_en": "Ranged Bleed",
+      "desc_zh": "远程攻击30%几率触发流血，造成攻击力60%的伤害，持续5秒",
+      "pua_icon": "0xe401",
+      "category": "passive",
+      "ui_trigger": "远程流血",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "近战增益",
+      "title_en": "Melee Buff",
+      "desc_zh": "基本近战攻击：对流血状态的敌人额外造成20%的伤害",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "近战增益",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "能量锁定",
+      "title_en": "Power Lock",
+      "desc_zh": "重击命中时施加4秒的能量锁定，并即时扣除对方最大能量值的12%。\n触发一次能量锁定后，16秒以内再次触发的概率为30%，16秒后恢复100%。",
+      "pua_icon": "E523",
+      "category": "passive",
+      "ui_trigger": "能量锁定",
+      "show_on_main_screen": false
+    }
+  ],
+  "abilities": [
+    {
+      "title_zh": "护盾",
+      "title_en": "Shield",
+      "desc_zh": "展开力场吸收来袭伤害，优先于生命值消耗。",
+      "pua_icon": "E515",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "能量锁定",
+      "title_en": "Power Lock",
+      "desc_zh": "临时阻止目标从攻击或被动机制中获取任何能量。",
+      "pua_icon": "E523",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "流血",
+      "title_en": "Bleed",
+      "desc_zh": "流失的能量晶体会持续造成直接伤害。",
+      "pua_icon": "E401",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "护盾",
+      "title_en": "Shield",
+      "desc_zh": "战斗开始时有6个护盾增益，每个护盾增益将一次攻击造成的伤害上限限制为对手攻击力的80%。\n护盾起效状态下，犀牛受到燃烧和震击伤害强度减少35%。\n被近战攻击命中或者防御近战攻击一次消耗一个护盾。\n护盾全消耗完之后进入8秒充能状态，倒计时结束后重新获得6个护盾。",
+      "pua_icon": "E515",
+      "category": "passive",
+      "ui_trigger": "护盾",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "远程流血",
+      "title_en": "Ranged Bleed",
+      "desc_zh": "远程攻击30%几率触发流血，造成攻击力60%的伤害，持续5秒",
+      "pua_icon": "0xe401",
+      "category": "passive",
+      "ui_trigger": "远程流血",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "近战增益",
+      "title_en": "Melee Buff",
+      "desc_zh": "基本近战攻击：对流血状态的敌人额外造成20%的伤害",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "近战增益",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "能量锁定",
+      "title_en": "Power Lock",
+      "desc_zh": "重击命中时施加4秒的能量锁定，并即时扣除对方最大能量值的12%。\n触发一次能量锁定后，16秒以内再次触发的概率为30%，16秒后恢复100%。",
+      "pua_icon": "E523",
+      "category": "passive",
+      "ui_trigger": "能量锁定",
+      "show_on_main_screen": false
+    }
+  ],
   "synergies": [
     {
       "title_zh": "",
@@ -123,59 +255,6 @@
       "desc_zh": "+{{var_53}} 功率率。",
       "pua_icon": "",
       "bonus_heroes": []
-    }
-  ],
-  "basic_abilities": [
-    {
-      "title_zh": "护盾",
-      "title_en": "Shield",
-      "desc_zh": "展开力场吸收来袭伤害，优先于生命值消耗。",
-      "desc_en": "Deploys a forcefield that absorbs incoming damage before reducing health.",
-      "pua_icon": "E515"
-    },
-    {
-      "title_zh": "能量锁定",
-      "title_en": "Power Lock",
-      "desc_zh": "临时阻止目标从攻击或被动机制中获取任何能量。",
-      "desc_en": "Temporarily prevents the target from gaining power from any source.",
-      "pua_icon": "E523"
-    },
-    {
-      "title_zh": "流血",
-      "title_en": "Bleed",
-      "desc_zh": "流失的能量晶体会持续造成直接伤害。",
-      "desc_en": "Bleeding energon causes direct damage over time.",
-      "pua_icon": "E401"
-    }
-  ],
-  "game_abilities": [
-    {
-      "title_zh": "护盾",
-      "title_en": "Shield",
-      "desc_zh": "战斗开始时有6个护盾增益，每个护盾增益将一次攻击造成的伤害上限限制为对手攻击力的80%。\n护盾起效状态下，犀牛受到燃烧和震击伤害强度减少35%。\n被近战攻击命中或者防御近战攻击一次消耗一个护盾。\n护盾全消耗完之后进入8秒充能状态，倒计时结束后重新获得6个护盾。",
-      "pua_icon": "E515",
-      "ui_trigger": "护盾"
-    },
-    {
-      "title_zh": "远程流血",
-      "title_en": "Ranged Bleed",
-      "desc_zh": "远程攻击30%几率触发流血，造成攻击力60%的伤害，持续5秒",
-      "pua_icon": "0xe401",
-      "ui_trigger": "远程流血"
-    },
-    {
-      "title_zh": "近战增益",
-      "title_en": "Melee Buff",
-      "desc_zh": "基本近战攻击：对流血状态的敌人额外造成20%的伤害  // 无图标",
-      "pua_icon": "",
-      "ui_trigger": "近战增益"
-    },
-    {
-      "title_zh": "能量锁定",
-      "title_en": "Power Lock",
-      "desc_zh": "重击命中时施加4秒的能量锁定，并即时扣除对方最大能量值的12%。\n触发一次能量锁定后，16秒以内再次触发的概率为30%，16秒后恢复100%。",
-      "pua_icon": "E523",
-      "ui_trigger": "能量锁定"
     }
   ]
 }

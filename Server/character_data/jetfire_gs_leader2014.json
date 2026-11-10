@@ -7,7 +7,7 @@
   "signature": {
     "title_zh": "损害控制",
     "title_en": "Damage Control",
-    "desc_zh": "生命值少于75%时，天火的修复系统处于在线状态。此时按住格挡1秒时，消耗一个能量充能，在0.5秒内修复6%的最大生命值。\n//连续站着按格挡会连续消耗能量充能和修复生命，但生命超过75%后不触发。",
+    "desc_zh": "生命值少于75%时，天火的修复系统处于在线状态。此时按住格挡1秒时，消耗一个能量充能，在0.5秒内修复6%的最大生命值。",
     "pua_icon": "E503",
     "ui_trigger": "none"
   },
@@ -15,6 +15,9 @@
     "sp1": {
       "name_zh": "武器的全部力量",
       "name_en": "Full Power to Weapons",
+      "desc_zh": "消耗全部能量充能，得到20秒的远程增益，提升射速20%，每层消耗的能量充能提升远程伤害20%。",
+      "pua_icon": "E41B",
+      "ui_trigger": "onSpecial1Hit",
       "effects": [
         {
           "title_zh": "远程增益",
@@ -28,19 +31,19 @@
           "desc_zh": "如果这次特殊技消耗5个或更多能量充能，则最后一击命中时100%概率触发能量锁定，阻止对方获得能量，持续8秒",
           "pua_icon": "0xe523"
         }
-      ],
-      "desc_zh": "消耗全部能量充能，得到20秒的远程增益，提升射速20%，每层消耗的能量充能提升远程伤害20%。",
-      "pua_icon": "E41B",
-      "ui_trigger": "onSpecial1Hit"
+      ]
     },
     "sp2": {
       "name_zh": "增援护盾",
       "name_en": "Reinforce Shields",
+      "desc_zh": "消耗所有能量充能，得到1个20秒的护盾，每层能量充能减少所有伤害的8%",
+      "pua_icon": "E515",
+      "ui_trigger": "onSpecial2Hit",
       "effects": [
         {
           "title_zh": "护盾",
           "title_en": "Shield",
-          "desc_zh": "消耗所有能量充能，得到1个20秒的护盾，每层能量充能减少所有伤害的8%\n//用例：消耗10个能量充能，得到一层80%减伤的护盾",
+          "desc_zh": "消耗所有能量充能，得到1个20秒的护盾，每层能量充能减少所有伤害的8%",
           "pua_icon": "E515"
         },
         {
@@ -49,33 +52,162 @@
           "desc_zh": "如果这次特殊技消耗5个或更多能量充能，则最后一击命中时100%概率触发修复阻止，阻止对方所有回血能力，持续15秒",
           "pua_icon": "E90C"
         }
-      ],
-      "desc_zh": "消耗所有能量充能，得到1个20秒的护盾，每层能量充能减少所有伤害的8%\n//用例：消耗10个能量充能，得到一层80%减伤的护盾",
-      "pua_icon": "E515",
-      "ui_trigger": "onSpecial2Hit"
+      ]
     },
     "sp3": {
       "name_zh": "全力开火",
       "name_en": "Fire At Will",
+      "desc_zh": "技能结束后获得3层能量充能。",
+      "pua_icon": "E914",
+      "ui_trigger": "onSpecial3Hit",
       "effects": [
         {
           "title_zh": "能量充能",
           "title_en": "Energy Charge",
-          "desc_zh": "技能结束后获得3层能量充能。//紫色图标",
+          "desc_zh": "技能结束后获得3层能量充能。",
           "pua_icon": "E914"
         },
         {
           "title_zh": "震击",
           "title_en": "Shock",
-          "desc_zh": "消耗所有能量充能，转化为同等层数的震击，每层造成攻击力45%的伤害，持续4秒。//我方紫色图标消失，敌方红色震击图标出现。",
+          "desc_zh": "消耗所有能量充能，转化为同等层数的震击，每层造成攻击力45%的伤害，持续4秒。",
           "pua_icon": "E914"
         }
-      ],
-      "desc_zh": "技能结束后获得3层能量充能。//紫色图标",
-      "pua_icon": "E914",
-      "ui_trigger": "onSpecial3Hit"
+      ]
     }
   },
+  "basic_abilities": [
+    {
+      "title_zh": "招架护盾",
+      "title_en": "Parry Shield",
+      "desc_zh": "成功格挡攻击时吸收冲击，并反弹来袭的近战攻击或远程火力。",
+      "pua_icon": "E911",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "震击",
+      "title_en": "Shock",
+      "desc_zh": "持续造成电磁能量伤害。",
+      "pua_icon": "E914",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "远程增益",
+      "title_en": "Ranged Buff",
+      "desc_zh": "临时增加远程攻击的速度、射击频率与伤害。",
+      "pua_icon": "E41B",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "护盾",
+      "title_en": "Shield",
+      "desc_zh": "展开力场吸收来袭伤害，优先于生命值消耗。",
+      "pua_icon": "E515",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "招架护盾",
+      "title_en": "Parry Shield",
+      "desc_zh": "在最接近状态下对普通远程攻击和远程重击进行格挡会激活招架护盾，将该远程攻击以100%的原始攻击力反弹回去。\n在最接近状态下对普通近战攻击进行格挡会激活招架护盾，本次格挡不产生防御伤害，并且对手会眩晕1秒",
+      "pua_icon": "E911",
+      "category": "passive",
+      "ui_trigger": "招架护盾",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "能量充能",
+      "title_en": "Energy Charge",
+      "desc_zh": "每次成功招架，获得一个能量充能，最多10层。\n每层能量充能提升能量功率5%",
+      "pua_icon": "E914",
+      "category": "passive",
+      "ui_trigger": "能量充能",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "震击",
+      "title_en": "Shock",
+      "desc_zh": "重击命中时，消耗一个能量充能，给对手施加一层震击，造成攻击力90%的伤害，持续4秒。",
+      "pua_icon": "E914",
+      "category": "passive",
+      "ui_trigger": "震击",
+      "show_on_main_screen": false
+    }
+  ],
+  "abilities": [
+    {
+      "title_zh": "招架护盾",
+      "title_en": "Parry Shield",
+      "desc_zh": "成功格挡攻击时吸收冲击，并反弹来袭的近战攻击或远程火力。",
+      "pua_icon": "E911",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "震击",
+      "title_en": "Shock",
+      "desc_zh": "持续造成电磁能量伤害。",
+      "pua_icon": "E914",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "远程增益",
+      "title_en": "Ranged Buff",
+      "desc_zh": "临时增加远程攻击的速度、射击频率与伤害。",
+      "pua_icon": "E41B",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "护盾",
+      "title_en": "Shield",
+      "desc_zh": "展开力场吸收来袭伤害，优先于生命值消耗。",
+      "pua_icon": "E515",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "招架护盾",
+      "title_en": "Parry Shield",
+      "desc_zh": "在最接近状态下对普通远程攻击和远程重击进行格挡会激活招架护盾，将该远程攻击以100%的原始攻击力反弹回去。\n在最接近状态下对普通近战攻击进行格挡会激活招架护盾，本次格挡不产生防御伤害，并且对手会眩晕1秒",
+      "pua_icon": "E911",
+      "category": "passive",
+      "ui_trigger": "招架护盾",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "能量充能",
+      "title_en": "Energy Charge",
+      "desc_zh": "每次成功招架，获得一个能量充能，最多10层。\n每层能量充能提升能量功率5%",
+      "pua_icon": "E914",
+      "category": "passive",
+      "ui_trigger": "能量充能",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "震击",
+      "title_en": "Shock",
+      "desc_zh": "重击命中时，消耗一个能量充能，给对手施加一层震击，造成攻击力90%的伤害，持续4秒。",
+      "pua_icon": "E914",
+      "category": "passive",
+      "ui_trigger": "震击",
+      "show_on_main_screen": false
+    }
+  ],
   "synergies": [
     {
       "title_zh": "盟友",
@@ -164,59 +296,6 @@
       "desc_zh": "作为团队的领导灯塔，所有较低级别的队友都获得+{{var_45}}功率率。",
       "pua_icon": "",
       "bonus_heroes": []
-    }
-  ],
-  "basic_abilities": [
-    {
-      "title_zh": "招架护盾",
-      "title_en": "Parry Shield",
-      "desc_zh": "成功格挡攻击时吸收冲击，并反弹来袭的近战攻击或远程火力。",
-      "desc_en": "Absorbs impact upon successful block and reflects melee or ranged strikes.",
-      "pua_icon": "E911"
-    },
-    {
-      "title_zh": "震击",
-      "title_en": "Shock",
-      "desc_zh": "持续造成电磁能量伤害。",
-      "desc_en": "Deals electrical energy damage over time.",
-      "pua_icon": "E914"
-    },
-    {
-      "title_zh": "远程增益",
-      "title_en": "Ranged Buff",
-      "desc_zh": "临时增加远程攻击的速度、射击频率与伤害。",
-      "desc_en": "Temporarily increases ranged attack speed and damage.",
-      "pua_icon": "E41B"
-    },
-    {
-      "title_zh": "护盾",
-      "title_en": "Shield",
-      "desc_zh": "展开力场吸收来袭伤害，优先于生命值消耗。",
-      "desc_en": "Deploys a forcefield that absorbs incoming damage before reducing health.",
-      "pua_icon": "E515"
-    }
-  ],
-  "game_abilities": [
-    {
-      "title_zh": "招架护盾",
-      "title_en": "Parry Shield",
-      "desc_zh": "在最接近状态下对普通远程攻击和远程重击进行格挡会激活招架护盾，将该远程攻击以100%的原始攻击力反弹回去。\n在最接近状态下对普通近战攻击进行格挡会激活招架护盾，本次格挡不产生防御伤害，并且对手会眩晕1秒\n//敌人如果连开三枪，则招架一次可以反弹这全部三枪\n//出护盾的时候有一个专门的光圈",
-      "pua_icon": "E911",
-      "ui_trigger": "招架护盾"
-    },
-    {
-      "title_zh": "能量充能",
-      "title_en": "Energy Charge",
-      "desc_zh": "每次成功招架，获得一个能量充能，最多10层。 //紫色图标，无倒计时\n每层能量充能提升能量功率5%",
-      "pua_icon": "E914",
-      "ui_trigger": "能量充能"
-    },
-    {
-      "title_zh": "震击",
-      "title_en": "Shock",
-      "desc_zh": "重击命中时，消耗一个能量充能，给对手施加一层震击，造成攻击力90%的伤害，持续4秒。",
-      "pua_icon": "E914",
-      "ui_trigger": "震击"
     }
   ]
 }

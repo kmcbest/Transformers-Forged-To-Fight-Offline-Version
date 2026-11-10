@@ -7,29 +7,32 @@
   "signature": {
     "title_zh": "赝品领导模块",
     "title_en": "Artificial Matrix",
-    "desc_zh": "暗天陨将所有特殊技造成伤害的25%变成自己的生命值。//用例：特殊技三击，每一击造成1000伤害，则回血三次，每次250，回血时出现绿色的503",
-    "pua_icon": "0xe503",
+    "desc_zh": "暗天陨将所有特殊技造成伤害的25%变成自己的生命值。",
+    "pua_icon": "E90C",
     "ui_trigger": "none"
   },
   "special_attacks": {
     "sp1": {
       "name_zh": "黑暗能量斩",
       "name_en": "Dark Energon Chop",
+      "desc_zh": "最后一击有30%概率把暗天陨身上所有减益复制到对手身上，每多一层黑暗能量，复制概率+3%。\n技能结束时立即获得获得2层黑暗能量充能",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial1Hit",
       "effects": [
         {
           "title_zh": "黑暗能量斩",
           "title_en": "Dark Energon Chop",
-          "desc_zh": "最后一击有30%概率把暗天陨身上所有减益复制到对手身上，每多一层黑暗能量，复制概率+3%\n技能结束时立即获得获得2层黑暗能量充能",
+          "desc_zh": "最后一击有30%概率把暗天陨身上所有减益复制到对手身上，每多一层黑暗能量，复制概率+3%。\n技能结束时立即获得获得2层黑暗能量充能",
           "pua_icon": ""
         }
-      ],
-      "desc_zh": "最后一击有30%概率把暗天陨身上所有减益复制到对手身上，每多一层黑暗能量，复制概率+3%\n技能结束时立即获得获得2层黑暗能量充能",
-      "pua_icon": "",
-      "ui_trigger": "onSpecial1Hit"
+      ]
     },
     "sp2": {
-      "name_zh": "恶魔之斧",
+      "name_zh": "邪恶之斧",
       "name_en": "Axe of Evil",
+      "desc_zh": "每一击有50%的概率驱散对方身上一个近战增益，并施加5%的近战减益，持续4秒，每多一层黑暗能量，驱散概率+5%。\n每一击有50%的概率驱散对方身上一个护甲增益，并施加5%的破甲，持续4秒，每多一层黑暗能量，驱散概率+5%。\n每驱散对方一个增益，消耗3层黑暗能量。",
+      "pua_icon": "0xe950",
+      "ui_trigger": "onSpecial2Hit",
       "effects": [
         {
           "title_zh": "驱散",
@@ -37,14 +40,14 @@
           "desc_zh": "每一击有50%的概率驱散对方身上一个近战增益，并施加5%的近战减益，持续4秒，每多一层黑暗能量，驱散概率+5%。\n每一击有50%的概率驱散对方身上一个护甲增益，并施加5%的破甲，持续4秒，每多一层黑暗能量，驱散概率+5%。\n每驱散对方一个增益，消耗3层黑暗能量。",
           "pua_icon": "0xe950"
         }
-      ],
-      "desc_zh": "每一击有50%的概率驱散对方身上一个近战增益，并施加5%的近战减益，持续4秒，每多一层黑暗能量，驱散概率+5%。\n每一击有50%的概率驱散对方身上一个护甲增益，并施加5%的破甲，持续4秒，每多一层黑暗能量，驱散概率+5%。\n每驱散对方一个增益，消耗3层黑暗能量。",
-      "pua_icon": "0xe950",
-      "ui_trigger": "onSpecial2Hit"
+      ]
     },
     "sp3": {
-      "name_zh": "不计困难",
+      "name_zh": "不避艰险",
       "name_en": "No Matter the Obstacle",
+      "desc_zh": "技能结束后，暗天陨的基础攻击全部不可防御，持续7秒，每多一层黑暗能量，持续时间增加0.5秒。\n消耗全部黑暗能量。",
+      "pua_icon": "0xe41f",
+      "ui_trigger": "onSpecial3Hit",
       "effects": [
         {
           "title_zh": "不可防御",
@@ -52,12 +55,123 @@
           "desc_zh": "技能结束后，暗天陨的基础攻击全部不可防御，持续7秒，每多一层黑暗能量，持续时间增加0.5秒。\n消耗全部黑暗能量。",
           "pua_icon": "0xe41f"
         }
-      ],
-      "desc_zh": "技能结束后，暗天陨的基础攻击全部不可防御，持续7秒，每多一层黑暗能量，持续时间增加0.5秒。\n消耗全部黑暗能量。",
-      "pua_icon": "0xe41f",
-      "ui_trigger": "onSpecial3Hit"
+      ]
     }
   },
+  "basic_abilities": [
+    {
+      "title_zh": "黑暗能量",
+      "title_en": "Dark Energy",
+      "desc_zh": "增加复制增益的几率，特殊攻击的效力和重击的伤害",
+      "pua_icon": "E90A",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "亚空间脉冲克隆",
+      "title_en": "Subspace Impulse Cloner",
+      "desc_zh": "每当对手获得近战增益或护甲增益时，有一定的概率复制相同的增益",
+      "pua_icon": "E90A",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "无法格挡",
+      "title_en": "Unblockable",
+      "desc_zh": "特定攻击无法被防御。",
+      "pua_icon": "E41F",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "黑暗能量",
+      "title_en": "Dark Energy",
+      "desc_zh": "暗天陨血量在50~100%时每10秒获得一个黑暗能量充能，血量在15~50%时，每7秒获得一个，低于15%时，每5秒获得一个，最多获得10层。",
+      "pua_icon": "E90A",
+      "category": "passive",
+      "ui_trigger": "黑暗能量",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "亚空间脉冲克隆体",
+      "title_en": "Subspace Impulse Cloner",
+      "desc_zh": "对手每次得到近战增益或者护甲增益，暗天陨有25%的概率在自己身上复制一份（同样强度，同样有效时间）\n每多一层黑暗能量，复制概率+5%",
+      "pua_icon": "E90A",
+      "category": "passive",
+      "ui_trigger": "亚空间脉冲克隆体",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "重击驱散",
+      "title_en": "Heavy Nullify",
+      "desc_zh": "重击命中时随机驱散对手一个近战增益或护甲增益。\n每多一层黑暗能量，重击伤害+5%",
+      "pua_icon": "E950",
+      "category": "passive",
+      "ui_trigger": "重击驱散",
+      "show_on_main_screen": false
+    }
+  ],
+  "abilities": [
+    {
+      "title_zh": "黑暗能量",
+      "title_en": "Dark Energy",
+      "desc_zh": "增加复制增益的几率，特殊攻击的效力和重击的伤害",
+      "pua_icon": "E90A",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "亚空间脉冲克隆",
+      "title_en": "Subspace Impulse Cloner",
+      "desc_zh": "每当对手获得近战增益或护甲增益时，有一定的概率复制相同的增益",
+      "pua_icon": "E90A",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "无法格挡",
+      "title_en": "Unblockable",
+      "desc_zh": "特定攻击无法被防御。",
+      "pua_icon": "E41F",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "黑暗能量",
+      "title_en": "Dark Energy",
+      "desc_zh": "暗天陨血量在50~100%时每10秒获得一个黑暗能量充能，血量在15~50%时，每7秒获得一个，低于15%时，每5秒获得一个，最多获得10层。",
+      "pua_icon": "E90A",
+      "category": "passive",
+      "ui_trigger": "黑暗能量",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "亚空间脉冲克隆体",
+      "title_en": "Subspace Impulse Cloner",
+      "desc_zh": "对手每次得到近战增益或者护甲增益，暗天陨有25%的概率在自己身上复制一份（同样强度，同样有效时间）\n每多一层黑暗能量，复制概率+5%",
+      "pua_icon": "E90A",
+      "category": "passive",
+      "ui_trigger": "亚空间脉冲克隆体",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "重击驱散",
+      "title_en": "Heavy Nullify",
+      "desc_zh": "重击命中时随机驱散对手一个近战增益或护甲增益。\n每多一层黑暗能量，重击伤害+5%",
+      "pua_icon": "E950",
+      "category": "passive",
+      "ui_trigger": "重击驱散",
+      "show_on_main_screen": false
+    }
+  ],
   "synergies": [
     {
       "title_zh": "分身——擎天柱",
@@ -100,52 +214,6 @@
       "desc_zh": "作为领导的灯塔，所有低级别队友都获得 +{{var_35}} 装甲等级。",
       "pua_icon": "",
       "bonus_heroes": []
-    }
-  ],
-  "basic_abilities": [
-    {
-      "title_zh": "黑暗能量",
-      "title_en": "Dark Energy",
-      "desc_zh": "聚集黑暗能量充能，提高攻击评级并为黑暗场提供动力。",
-      "desc_en": "Harvests dark energy charges, boosting attack rating and powering dark fields.",
-      "pua_icon": "E90A"
-    },
-    {
-      "title_zh": "驱散",
-      "title_en": "Nullify",
-      "desc_zh": "消除对手身上的增益效果，使其增益立即失效。",
-      "desc_en": "Clears active buffs from the opponent, instantly ending their effects.",
-      "pua_icon": "E950"
-    },
-    {
-      "title_zh": "无法格挡",
-      "title_en": "Unblockable",
-      "desc_zh": "特定攻击无法被防御。",
-      "desc_en": "Certain attacks cannot be blocked.",
-      "pua_icon": "E41F"
-    }
-  ],
-  "game_abilities": [
-    {
-      "title_zh": "黑暗能量",
-      "title_en": "Dark Energy",
-      "desc_zh": "暗天陨血量在50~100%时每10秒获得一个黑暗能量充能，血量在15~50%时，每7秒获得一个，低于15%时，每5秒获得一个，最多获得10层。//具体表现为，开局就有一个紫色（#d204f6）的倒计时图标（e407），倒计时走完，就获得一个同样紫色的E90A图标，可堆叠到10层。倒计时图标继续倒计时。直到获得10层后倒计时图标消失，少于10层时倒计时又出现。",
-      "pua_icon": "0xe90a",
-      "ui_trigger": "黑暗能量"
-    },
-    {
-      "title_zh": "亚空间脉冲克隆体",
-      "title_en": "Subspace Impulse Cloner",
-      "desc_zh": "对手每次得到近战增益或者护甲增益，暗天陨有25%的概率在自己身上复制一份（同样强度，同样有效时间）\n每多一层黑暗能量，复制概率+5%",
-      "pua_icon": "",
-      "ui_trigger": "亚空间脉冲克隆体"
-    },
-    {
-      "title_zh": "重击驱散",
-      "title_en": "Heavy Nullify",
-      "desc_zh": "重击命中时随机驱散对手一个近战增益或护甲增益。//没有则不驱散\n每多一层黑暗能量，重击伤害+5%",
-      "pua_icon": "0xe950",
-      "ui_trigger": "重击驱散"
     }
   ]
 }

@@ -7,7 +7,7 @@
   "signature": {
     "title_zh": "驱散所有希望",
     "title_en": "Nullify All Hope",
-    "desc_zh": "红蜘蛛的无效射线有 {{var_8}} 几率无效化任何类型的增益。这不会影响来自战术模块或增益道具的增益。\n\n每级大约+{{var_9}}",
+    "desc_zh": "远程普通攻击有70%驱散任何类型的增益，除了来自模块或增益道具的增益，每次驱散时造成攻击力95%的即时震击伤害",
     "pua_icon": "E950",
     "ui_trigger": "none"
   },
@@ -15,49 +15,199 @@
     "sp1": {
       "name_zh": "制空情结",
       "name_en": "Air Superiority Complex",
+      "desc_zh": "远程伤害提升70%，远程射速提升40%，持续10秒",
+      "pua_icon": "0xe41b",
+      "ui_trigger": "onSpecial1Hit",
       "effects": [
         {
-          "title_zh": "制空情结",
-          "title_en": "Air Superiority Complex",
-          "desc_zh": "阿谀奉承者终于报仇了。",
-          "pua_icon": ""
+          "title_zh": "远程伤害",
+          "title_en": "Ranged Damage",
+          "desc_zh": "远程伤害提升70%，远程射速提升40%，持续10秒",
+          "pua_icon": "0xe41b"
         }
-      ],
-      "desc_zh": "阿谀奉承者终于报仇了。",
-      "pua_icon": "",
-      "ui_trigger": "onSpecial1Hit"
+      ]
     },
     "sp2": {
-      "name_zh": "特殊技 2",
-      "name_en": "Special Attack 2",
-      "effects": [
-        {
-          "title_zh": "特殊技 2",
-          "title_en": "Special Attack 2",
-          "desc_zh": "{{var_10}} 有机会增加 {{var_11}} 的远程伤害和 {{var_12}} 的射弹速度。",
-          "pua_icon": ""
-        }
-      ],
-      "desc_zh": "{{var_10}} 有机会增加 {{var_11}} 的远程伤害和 {{var_12}} 的射弹速度。",
-      "pua_icon": "",
-      "ui_trigger": "onSpecial2Hit"
-    },
-    "sp3": {
       "name_zh": "狡猾的背叛",
       "name_en": "Cunning Treachery",
+      "desc_zh": "最后一击命中时有85%的概率施加70%的破甲减益，持续7秒",
+      "pua_icon": "E516",
+      "ui_trigger": "onSpecial2Hit",
+      "effects": [
+        {
+          "title_zh": "破甲",
+          "title_en": "Armor Break",
+          "desc_zh": "最后一击命中时有85%的概率施加70%的破甲减益，持续7秒",
+          "pua_icon": "E516"
+        }
+      ]
+    },
+    "sp3": {
+      "name_zh": "零射线毁灭",
+      "name_en": "Null-Ray to Oblivion",
+      "desc_zh": "驱散5个任意类型的增益，每次驱散造成攻击力95%的即时震击伤害。",
+      "pua_icon": "E950",
+      "ui_trigger": "onSpecial3Hit",
       "effects": [
         {
           "title_zh": "狡猾的背叛",
           "title_en": "Cunning Treachery",
-          "desc_zh": "他现在已经得到你了！",
-          "pua_icon": ""
+          "desc_zh": "驱散5个任意类型的增益，每次驱散造成攻击力95%的即时震击伤害。",
+          "pua_icon": "E950"
         }
-      ],
-      "desc_zh": "他现在已经得到你了！",
-      "pua_icon": "",
-      "ui_trigger": "onSpecial3Hit"
+      ]
     }
   },
+  "basic_abilities": [
+    {
+      "title_zh": "驱散",
+      "title_en": "Nullify",
+      "desc_zh": "消除对手身上的增益效果，使其增益立即失效。",
+      "pua_icon": "E950",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "燃烧",
+      "title_en": "Burn",
+      "desc_zh": "持续造成能量伤害。",
+      "pua_icon": "E41D",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "破甲",
+      "title_en": "Armor Break",
+      "desc_zh": "移除护甲增益，降低护甲评级并提升受到攻击的伤害量。",
+      "pua_icon": "E516",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "远程增益",
+      "title_en": "Ranged Buff",
+      "desc_zh": "临时增加远程攻击的速度、射击频率与伤害。",
+      "pua_icon": "E41B",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "零射线",
+      "title_en": "Null Ray",
+      "desc_zh": "基础远程攻击命中时100%概率驱散1个护甲、近战或者攻击增益。\n成功驱散时造成攻击力95%的即时震击伤害。",
+      "pua_icon": "E950",
+      "category": "passive",
+      "ui_trigger": "零射线",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "规避近战重击",
+      "title_en": "Evade Heavy Melee",
+      "desc_zh": "20%的概率机规避近战重击。",
+      "pua_icon": "E509",
+      "category": "passive",
+      "ui_trigger": "规避近战重击",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "暴击几率",
+      "title_en": "Crit Rate",
+      "desc_zh": "远程普通攻击暴击几率提升40%",
+      "pua_icon": "0xe40d",
+      "category": "passive",
+      "ui_trigger": "暴击几率",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "燃烧",
+      "title_en": "Burn",
+      "desc_zh": "重击命中时有20%几率造成燃烧，施加攻击力40%的伤害，持续4秒。",
+      "pua_icon": "0xe41d",
+      "category": "passive",
+      "ui_trigger": "燃烧",
+      "show_on_main_screen": false
+    }
+  ],
+  "abilities": [
+    {
+      "title_zh": "驱散",
+      "title_en": "Nullify",
+      "desc_zh": "消除对手身上的增益效果，使其增益立即失效。",
+      "pua_icon": "E950",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "燃烧",
+      "title_en": "Burn",
+      "desc_zh": "持续造成能量伤害。",
+      "pua_icon": "E41D",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "破甲",
+      "title_en": "Armor Break",
+      "desc_zh": "移除护甲增益，降低护甲评级并提升受到攻击的伤害量。",
+      "pua_icon": "E516",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "远程增益",
+      "title_en": "Ranged Buff",
+      "desc_zh": "临时增加远程攻击的速度、射击频率与伤害。",
+      "pua_icon": "E41B",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "零射线",
+      "title_en": "Null Ray",
+      "desc_zh": "基础远程攻击命中时100%概率驱散1个护甲、近战或者攻击增益。\n成功驱散时造成攻击力95%的即时震击伤害。",
+      "pua_icon": "E950",
+      "category": "passive",
+      "ui_trigger": "零射线",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "规避近战重击",
+      "title_en": "Evade Heavy Melee",
+      "desc_zh": "20%的概率机规避近战重击。",
+      "pua_icon": "E509",
+      "category": "passive",
+      "ui_trigger": "规避近战重击",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "暴击几率",
+      "title_en": "Crit Rate",
+      "desc_zh": "远程普通攻击暴击几率提升40%",
+      "pua_icon": "0xe40d",
+      "category": "passive",
+      "ui_trigger": "暴击几率",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "燃烧",
+      "title_en": "Burn",
+      "desc_zh": "重击命中时有20%几率造成燃烧，施加攻击力40%的伤害，持续4秒。",
+      "pua_icon": "0xe41d",
+      "category": "passive",
+      "ui_trigger": "燃烧",
+      "show_on_main_screen": false
+    }
+  ],
   "synergies": [
     {
       "title_zh": "红蜘蛛的探索者",
@@ -140,66 +290,6 @@
       "bonus_heroes": [
         "slipstream_gs"
       ]
-    }
-  ],
-  "basic_abilities": [
-    {
-      "title_zh": "驱散",
-      "title_en": "Nullify",
-      "desc_zh": "消除对手身上的增益效果，使其增益立即失效。",
-      "desc_en": "Clears active buffs from the opponent, instantly ending their effects.",
-      "pua_icon": "E950"
-    },
-    {
-      "title_zh": "燃烧",
-      "title_en": "Burn",
-      "desc_zh": "持续造成能量伤害。",
-      "desc_en": "Deals energy damage over time.",
-      "pua_icon": "E41D"
-    },
-    {
-      "title_zh": "破甲",
-      "title_en": "Armor Break",
-      "desc_zh": "移除护甲增益，降低护甲评级并提升受到攻击的伤害量。",
-      "desc_en": "Removes armor buffs and reduces armor rating, amplifying incoming damage.",
-      "pua_icon": "E516"
-    },
-    {
-      "title_zh": "远程增益",
-      "title_en": "Ranged Buff",
-      "desc_zh": "临时增加远程攻击的速度、射击频率与伤害。",
-      "desc_en": "Temporarily increases ranged attack speed and damage.",
-      "pua_icon": "E41B"
-    }
-  ],
-  "game_abilities": [
-    {
-      "title_zh": "零射线",
-      "title_en": "Null Ray",
-      "desc_zh": "基础远程攻击命中时100%概率驱散一个护甲、近战或者攻击增益。\n驱散时造成攻击力90%的即时震击伤害。",
-      "pua_icon": "E950",
-      "ui_trigger": "零射线"
-    },
-    {
-      "title_zh": "战斗被动",
-      "title_en": "Ranged attacks have {{var_1}} increase to Critical Chance.",
-      "desc_zh": "远程攻击的暴击率增加 {{var_1}}。",
-      "pua_icon": "",
-      "ui_trigger": "战斗被动"
-    },
-    {
-      "title_zh": "规避近战重击",
-      "title_en": "Evade Heavy Melee",
-      "desc_zh": "20%的概率机规避近战重击。//无图标，天然技能，在敌人近战重击即将命中时计算概率",
-      "pua_icon": "E509",
-      "ui_trigger": "规避近战重击"
-    },
-    {
-      "title_zh": "燃烧",
-      "title_en": "Burn",
-      "desc_zh": "重击命中时有20%几率造成燃烧，施加攻击力40%的伤害，持续4秒。",
-      "pua_icon": "0xe41d",
-      "ui_trigger": "燃烧"
     }
   ]
 }

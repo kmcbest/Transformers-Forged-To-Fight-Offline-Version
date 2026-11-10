@@ -7,7 +7,7 @@
   "signature": {
     "title_zh": "力量护盾",
     "title_en": "Force Shield",
-    "desc_zh": "如果敌人的攻击将千斤顶的生命值降低到75%，50%或25%以下，力量护盾将激活，100%降低敌人攻击造成的所有伤害，持续8秒。//护盾生效时降低伤害不包括DOT伤害，如果是流血/燃烧等DOT减益，依然会造成伤害。",
+    "desc_zh": "如果敌人的攻击将千斤顶的生命值降低到75%，50%或25%以下，力量护盾将激活，100%降低敌人攻击造成的所有伤害，持续8秒。",
     "pua_icon": "E515",
     "ui_trigger": "none"
   },
@@ -15,6 +15,9 @@
     "sp1": {
       "name_zh": "原型",
       "name_en": "Prototype",
+      "desc_zh": "60%概率施加震击，造成攻击力200%的伤害，持续6秒",
+      "pua_icon": "0xe914",
+      "ui_trigger": "onSpecial1Hit",
       "effects": [
         {
           "title_zh": "震击",
@@ -34,14 +37,14 @@
           "desc_zh": "10%的概率造成眩晕，持续3秒",
           "pua_icon": "0xe605"
         }
-      ],
-      "desc_zh": "60%概率施加震击，造成攻击力200%的伤害，持续6秒",
-      "pua_icon": "0xe914",
-      "ui_trigger": "onSpecial1Hit"
+      ]
     },
     "sp2": {
       "name_zh": "迭代",
       "name_en": "Iteration",
+      "desc_zh": "60%概率施加震击，造成攻击力200%的伤害，持续6秒",
+      "pua_icon": "0xe914",
+      "ui_trigger": "onSpecial2Hit",
       "effects": [
         {
           "title_zh": "震击",
@@ -64,17 +67,17 @@
         {
           "title_zh": "刷新升级",
           "title_en": "Upgrade Randomize",
-          "desc_zh": "把已有的升级全部随机替换  // 如果有三个升级，则对每个升级ROLL DICE，在攻击/防御/能量中随机三选一替换",
+          "desc_zh": "把已有的升级全部随机替换",
           "pua_icon": ""
         }
-      ],
-      "desc_zh": "60%概率施加震击，造成攻击力200%的伤害，持续6秒",
-      "pua_icon": "0xe914",
-      "ui_trigger": "onSpecial2Hit"
+      ]
     },
     "sp3": {
       "name_zh": "完美",
       "name_en": "Perfect",
+      "desc_zh": "60%概率施加震击，造成攻击力200%的伤害，持续6秒",
+      "pua_icon": "0xe914",
+      "ui_trigger": "onSpecial3Hit",
       "effects": [
         {
           "title_zh": "震击",
@@ -97,15 +100,144 @@
         {
           "title_zh": "升级对齐",
           "title_en": "Upgrade Normalize",
-          "desc_zh": "把所有升级变成与第一个升级相同\n\n//如果有三个升级，第一个是能量升级，则变成三个能量升级，从而也会触发“成功”技能，进行回血。但如果只有两个升级是不能触发回血的。",
+          "desc_zh": "把所有升级变成与第一个升级相同",
           "pua_icon": ""
         }
-      ],
-      "desc_zh": "60%概率施加震击，造成攻击力200%的伤害，持续6秒",
-      "pua_icon": "0xe914",
-      "ui_trigger": "onSpecial3Hit"
+      ]
     }
   },
+  "basic_abilities": [
+    {
+      "title_zh": "升级",
+      "title_en": "Upgrade",
+      "desc_zh": "构建进攻、防御或能量系统模块升级，全面强化机体性能。",
+      "pua_icon": "E306",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "震击",
+      "title_en": "Shock",
+      "desc_zh": "持续造成电磁能量伤害。",
+      "pua_icon": "E914",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "能量流失",
+      "title_en": "Power Leak",
+      "desc_zh": "随时间推移持续扣减对手一定比例的能量槽。",
+      "pua_icon": "E607",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "修复",
+      "title_en": "Repair",
+      "desc_zh": "随时间推移持续修复生命值，或按受损比例回血。",
+      "pua_icon": "E503",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "眩晕",
+      "title_en": "Stun",
+      "desc_zh": "临时阻止目标采取任何行动。",
+      "pua_icon": "E605",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "升级",
+      "title_en": "Upgrade",
+      "desc_zh": "每次发动重击时，构建一个随机的升级，构建时间为4秒，构建完成后，随机得到进攻/能量/防御升级中的一个\n构建过程中如果被暴击击中，构建失败\n\n每个进攻升级增加30%的攻击力，提升特殊技施加震击的概率20%\n每个防御升级增加20%的伤害避免，提升特殊技施加眩晕的概率20%\n每个能量升级增加20%的能量功率，提升特殊技施加能量流失的概率20%\n\n如果千斤顶被来自重击或者特殊技的近战暴击击中，他会丢失最新的一个升级。",
+      "pua_icon": "E306",
+      "category": "passive",
+      "ui_trigger": "升级",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "成功",
+      "title_en": "Success",
+      "desc_zh": "如果千斤顶得到三个同样的升级，会触发立即回血，随机得到最大生命值的10~20%",
+      "pua_icon": "E503",
+      "category": "passive",
+      "ui_trigger": "成功",
+      "show_on_main_screen": false
+    }
+  ],
+  "abilities": [
+    {
+      "title_zh": "升级",
+      "title_en": "Upgrade",
+      "desc_zh": "构建进攻、防御或能量系统模块升级，全面强化机体性能。",
+      "pua_icon": "E306",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "震击",
+      "title_en": "Shock",
+      "desc_zh": "持续造成电磁能量伤害。",
+      "pua_icon": "E914",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "能量流失",
+      "title_en": "Power Leak",
+      "desc_zh": "随时间推移持续扣减对手一定比例的能量槽。",
+      "pua_icon": "E607",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "修复",
+      "title_en": "Repair",
+      "desc_zh": "随时间推移持续修复生命值，或按受损比例回血。",
+      "pua_icon": "E503",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "眩晕",
+      "title_en": "Stun",
+      "desc_zh": "临时阻止目标采取任何行动。",
+      "pua_icon": "E605",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "升级",
+      "title_en": "Upgrade",
+      "desc_zh": "每次发动重击时，构建一个随机的升级，构建时间为4秒，构建完成后，随机得到进攻/能量/防御升级中的一个\n构建过程中如果被暴击击中，构建失败\n\n每个进攻升级增加30%的攻击力，提升特殊技施加震击的概率20%\n每个防御升级增加20%的伤害避免，提升特殊技施加眩晕的概率20%\n每个能量升级增加20%的能量功率，提升特殊技施加能量流失的概率20%\n\n如果千斤顶被来自重击或者特殊技的近战暴击击中，他会丢失最新的一个升级。",
+      "pua_icon": "E306",
+      "category": "passive",
+      "ui_trigger": "升级",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "成功",
+      "title_en": "Success",
+      "desc_zh": "如果千斤顶得到三个同样的升级，会触发立即回血，随机得到最大生命值的10~20%",
+      "pua_icon": "E503",
+      "category": "passive",
+      "ui_trigger": "成功",
+      "show_on_main_screen": false
+    }
+  ],
   "synergies": [
     {
       "title_zh": "盟友 – 擎天柱、钢锁、天火",
@@ -151,59 +283,6 @@
       "desc_zh": "作为团队的领导灯塔，所有较低级别的机器人都获得 +{{var_47}} 功率率。",
       "pua_icon": "",
       "bonus_heroes": []
-    }
-  ],
-  "basic_abilities": [
-    {
-      "title_zh": "升级",
-      "title_en": "Upgrade",
-      "desc_zh": "构建进攻、防御或能量系统模块升级，全面强化机体性能。",
-      "desc_en": "Constructs offensive, defensive, or energy module upgrades to enhance chassis performance.",
-      "pua_icon": "E306"
-    },
-    {
-      "title_zh": "震击",
-      "title_en": "Shock",
-      "desc_zh": "持续造成电磁能量伤害。",
-      "desc_en": "Deals electrical energy damage over time.",
-      "pua_icon": "E914"
-    },
-    {
-      "title_zh": "能量流失",
-      "title_en": "Power Leak",
-      "desc_zh": "随时间推移持续扣减对手一定比例的能量槽。",
-      "desc_en": "Drains a percentage of the opponent's power gauge over time.",
-      "pua_icon": "E607"
-    },
-    {
-      "title_zh": "修复",
-      "title_en": "Repair",
-      "desc_zh": "随时间推移持续修复生命值，或按受损比例回血。",
-      "desc_en": "Repairs health over time or restores a percentage of lost health.",
-      "pua_icon": "E503"
-    },
-    {
-      "title_zh": "眩晕",
-      "title_en": "Stun",
-      "desc_zh": "临时阻止目标采取任何行动。",
-      "desc_en": "Temporarily paralyzes the target, preventing all actions.",
-      "pua_icon": "E605"
-    }
-  ],
-  "game_abilities": [
-    {
-      "title_zh": "升级",
-      "title_en": "Upgrade",
-      "desc_zh": "每次发动重击时，构建一个随机的升级，构建时间为4秒，构建完成后，随机得到进攻/能量/防御升级中的一个// 出现灰色的图标带倒计时，倒计时结束后随机变成橙色/紫色/蓝色中的一个\n构建过程中如果被暴击击中，构建失败\n\n每个进攻升级增加30%的攻击力，提升特殊技施加震击的概率20%\n每个防御升级增加20%的伤害避免，提升特殊技施加眩晕的概率20%\n每个能量升级增加20%的能量功率，提升特殊技施加能量流失的概率20%\n\n如果千斤顶被来自重击或者特殊技的近战暴击击中，他会丢失最新的一个升级。\n\n//同类的升级不要写成图标加数字，例如，三个能量升级就三个紫图标排开",
-      "pua_icon": "E306",
-      "ui_trigger": "升级"
-    },
-    {
-      "title_zh": "成功",
-      "title_en": "Success",
-      "desc_zh": "如果千斤顶得到三个同样的升级，会触发立即回血，随机得到最大生命值的10~20%",
-      "pua_icon": "E503",
-      "ui_trigger": "成功"
     }
   ]
 }

@@ -7,7 +7,7 @@
   "signature": {
     "title_zh": "守卫者的残暴",
     "title_en": "Guardian's Ferocity",
-    "desc_zh": "阿尔茜总是想保护她的队友，对有威胁的对手发动强大的攻击。\n\n所有特殊技：{{var_8}} 的概率获得精确增益，增加 {{var_9}} 的暴击率并在 {{var_10}} 秒内防止对手规避。",
+    "desc_zh": "所有特殊技发动时：80%的概率获得暴击几率增益，提升25%的暴击率，并彻底阻止对手规避，持续10秒。",
     "pua_icon": "0xe40d",
     "ui_trigger": "none"
   },
@@ -15,49 +15,181 @@
     "sp1": {
       "name_zh": "特技射击",
       "name_en": "Trick Shot",
+      "desc_zh": "远程伤害提升35%，远程射速提升40%，持续6.5秒",
+      "pua_icon": "0xe41b",
+      "ui_trigger": "onSpecial1Hit",
       "effects": [
         {
           "title_zh": "远程伤害",
           "title_en": "Ranged Damage",
-          "desc_zh": "//阿尔茜炫耀着一点天赋；倒立在半空中也不会失准。\n\n远程伤害提升35%，远程射速提升20%，持续6.5秒",
+          "desc_zh": "远程伤害提升35%，远程射速提升40%，持续6.5秒",
           "pua_icon": "0xe41b"
         }
-      ],
-      "desc_zh": "//阿尔茜炫耀着一点天赋；倒立在半空中也不会失准。\n\n远程伤害提升35%，远程射速提升20%，持续6.5秒",
-      "pua_icon": "0xe41b",
-      "ui_trigger": "onSpecial1Hit"
+      ]
     },
     "sp2": {
       "name_zh": "黑寡妇",
       "name_en": "Femme's Fatality",
+      "desc_zh": "如果暴击，100%触发流血，4秒内造成攻击力108%的伤害。",
+      "pua_icon": "0xe401",
+      "ui_trigger": "onSpecial2Hit",
       "effects": [
         {
           "title_zh": "流血",
           "title_en": "Bleed",
-          "desc_zh": "//以无与伦比的优雅连斩三次。\n\n如果暴击，100%触发流血，4秒内造成攻击力108%的伤害。",
+          "desc_zh": "如果暴击，100%触发流血，4秒内造成攻击力108%的伤害。",
           "pua_icon": "0xe401"
         }
-      ],
-      "desc_zh": "//以无与伦比的优雅连斩三次。\n\n如果暴击，100%触发流血，4秒内造成攻击力108%的伤害。",
-      "pua_icon": "0xe401",
-      "ui_trigger": "onSpecial2Hit"
+      ]
     },
     "sp3": {
       "name_zh": "狙击",
       "name_en": "Snipe",
+      "desc_zh": "100%概率触发爆头射击，立即造成攻击力135%的伤害，并在9秒内造成攻击力135%的流血伤害。",
+      "pua_icon": "0xe401",
+      "ui_trigger": "onSpecial3Hit",
       "effects": [
         {
           "title_zh": "狙击",
           "title_en": "Snipe",
-          "desc_zh": "//当她瞄准你的时候，逃跑是徒劳的\n\n100%概率触发爆头射击，立即造成攻击力135%的伤害，并在9秒内造成攻击力135%的流血伤害。",
+          "desc_zh": "100%概率触发爆头射击，立即造成攻击力135%的伤害，并在9秒内造成攻击力135%的流血伤害。",
           "pua_icon": "0xe401"
         }
-      ],
-      "desc_zh": "//当她瞄准你的时候，逃跑是徒劳的\n\n100%概率触发爆头射击，立即造成攻击力135%的伤害，并在9秒内造成攻击力135%的流血伤害。",
-      "pua_icon": "0xe401",
-      "ui_trigger": "onSpecial3Hit"
+      ]
     }
   },
+  "basic_abilities": [
+    {
+      "title_zh": "爆头射击",
+      "title_en": "Headshot",
+      "desc_zh": "爆头导致瞬间的能量晶体流失伤害并持续造成直接伤害，对手回避时额外承受伤害。",
+      "pua_icon": "E401",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "远程增益",
+      "title_en": "Ranged Buff",
+      "desc_zh": "临时增加远程攻击的速度、射击频率与伤害。",
+      "pua_icon": "E41B",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "能量获取",
+      "title_en": "Power Gain",
+      "desc_zh": "暴击额外获得能量",
+      "pua_icon": "E608",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "远程规避",
+      "title_en": "Evade Ranged",
+      "desc_zh": "20.7%的几率规避对手的远程普通攻击和特殊远程攻击。",
+      "pua_icon": "E518",
+      "category": "passive",
+      "ui_trigger": "远程规避",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "爆头射击",
+      "title_en": "Headshot",
+      "desc_zh": "49.7%几率在远程攻击（包括SP1和SP3中的手枪射击）中爆头，立即造成攻击力60%的伤害，并在 3 秒内造成的攻击力 60% 的流血伤害。",
+      "pua_icon": "0xe401",
+      "category": "passive",
+      "ui_trigger": "爆头射击",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "前冲惩罚",
+      "title_en": "Dash punishment",
+      "desc_zh": "所有攻击命中前冲对手时50%的暴击率。",
+      "pua_icon": "0xe40d",
+      "category": "passive",
+      "ui_trigger": "前冲惩罚",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "能量获取",
+      "title_en": "Power Gain",
+      "desc_zh": "暴击时，立刻额外获得最大能量的4%",
+      "pua_icon": "E608",
+      "category": "passive",
+      "ui_trigger": "能量获取",
+      "show_on_main_screen": false
+    }
+  ],
+  "abilities": [
+    {
+      "title_zh": "爆头射击",
+      "title_en": "Headshot",
+      "desc_zh": "爆头导致瞬间的能量晶体流失伤害并持续造成直接伤害，对手回避时额外承受伤害。",
+      "pua_icon": "E401",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "远程增益",
+      "title_en": "Ranged Buff",
+      "desc_zh": "临时增加远程攻击的速度、射击频率与伤害。",
+      "pua_icon": "E41B",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "能量获取",
+      "title_en": "Power Gain",
+      "desc_zh": "暴击额外获得能量",
+      "pua_icon": "E608",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "远程规避",
+      "title_en": "Evade Ranged",
+      "desc_zh": "20.7%的几率规避对手的远程普通攻击和特殊远程攻击。",
+      "pua_icon": "E518",
+      "category": "passive",
+      "ui_trigger": "远程规避",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "爆头射击",
+      "title_en": "Headshot",
+      "desc_zh": "49.7%几率在远程攻击（包括SP1和SP3中的手枪射击）中爆头，立即造成攻击力60%的伤害，并在 3 秒内造成的攻击力 60% 的流血伤害。",
+      "pua_icon": "0xe401",
+      "category": "passive",
+      "ui_trigger": "爆头射击",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "前冲惩罚",
+      "title_en": "Dash punishment",
+      "desc_zh": "所有攻击命中前冲对手时50%的暴击率。",
+      "pua_icon": "0xe40d",
+      "category": "passive",
+      "ui_trigger": "前冲惩罚",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "能量获取",
+      "title_en": "Power Gain",
+      "desc_zh": "暴击时，立刻额外获得最大能量的4%",
+      "pua_icon": "E608",
+      "category": "passive",
+      "ui_trigger": "能量获取",
+      "show_on_main_screen": false
+    }
+  ],
   "synergies": [
     {
       "title_zh": "盟友",
@@ -116,59 +248,6 @@
       "desc_zh": "作为团队的领导灯塔，所有较低级别的队友都会获得 +{{var_32}} 暴击伤害。",
       "pua_icon": "",
       "bonus_heroes": []
-    }
-  ],
-  "basic_abilities": [
-    {
-      "title_zh": "爆头射击",
-      "title_en": "Headshot",
-      "desc_zh": "爆头导致瞬间的能量晶体流失伤害并持续造成直接伤害，对手回避时额外承受伤害。",
-      "desc_en": "Headshots cause instant damage and bleeding damage over time, dealing extra damage if the opponent evades.",
-      "pua_icon": "E401"
-    },
-    {
-      "title_zh": "远程增益",
-      "title_en": "Ranged Buff",
-      "desc_zh": "临时增加远程攻击的速度、射击频率与伤害。",
-      "desc_en": "Temporarily increases ranged attack speed and damage.",
-      "pua_icon": "E41B"
-    },
-    {
-      "title_zh": "能量获取",
-      "title_en": "Power Gain",
-      "desc_zh": "暴击额外获得能量",
-      "desc_en": "Passively gains power over time to fill special attack bars faster.",
-      "pua_icon": "E608"
-    }
-  ],
-  "game_abilities": [
-    {
-      "title_zh": "被动规避",
-      "title_en": "Passive Evade",
-      "desc_zh": "受到攻击时：20.7%的几率闪避对手的基本和特殊远程攻击。\n\n【注】本能力属于阿尔茜全场天然能力，不显示任何图标",
-      "pua_icon": "",
-      "ui_trigger": "被动规避"
-    },
-    {
-      "title_zh": "暴击加气",
-      "title_en": "Gains power on crit hits",
-      "desc_zh": "如果触发暴击，额外获得一格能量条的{{var_2}}的能量。\n\n【注】var_2为百分比\n【注】立即获得，没有图标\n【注】本次暴击应该产生的能量也还是要产生",
-      "pua_icon": "",
-      "ui_trigger": "暴击加气"
-    },
-    {
-      "title_zh": "爆头射击",
-      "title_en": "Headshot",
-      "desc_zh": "49.7%几率在远程攻击（包括SP1和SP3中的手枪射击）中爆头，立即造成攻击力60%的伤害，并在 3 秒内造成的攻击力 60% 的流血伤害。",
-      "pua_icon": "0xe401",
-      "ui_trigger": "爆头射击"
-    },
-    {
-      "title_zh": "前冲惩罚",
-      "title_en": "Dash punishment",
-      "desc_zh": "所有攻击命中前冲对手时50%的暴击率。",
-      "pua_icon": "0xe40d",
-      "ui_trigger": "前冲惩罚"
     }
   ]
 }

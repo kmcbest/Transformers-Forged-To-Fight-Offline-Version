@@ -15,21 +15,24 @@
     "sp1": {
       "name_zh": "诡诈打击",
       "name_en": "Deceitful Hit",
+      "desc_zh": "获得9秒能量燃烧状态，普通远程和远程重击命中或被防时立即扣除对手最大能量的8%",
+      "pua_icon": "0xe607",
+      "ui_trigger": "onSpecial1Hit",
       "effects": [
         {
           "title_zh": "能量燃烧",
           "title_en": "Power Burn",
-          "desc_zh": "获得9秒能量燃烧状态，普通远程和远程重击命中或被防时立即扣除对手最大能量的8%   //黄图标",
+          "desc_zh": "获得9秒能量燃烧状态，普通远程和远程重击命中或被防时立即扣除对手最大能量的8%",
           "pua_icon": "0xe607"
         }
-      ],
-      "desc_zh": "获得9秒能量燃烧状态，普通远程和远程重击命中或被防时立即扣除对手最大能量的8%   //黄图标",
-      "pua_icon": "0xe607",
-      "ui_trigger": "onSpecial1Hit"
+      ]
     },
     "sp2": {
       "name_zh": "从天而降的死亡",
       "name_en": "Death from Above",
+      "desc_zh": "最后一击命中时100%概率触发修复阻止，阻止对方所有回血能力，持续12秒",
+      "pua_icon": "E90C",
+      "ui_trigger": "onSpecial2Hit",
       "effects": [
         {
           "title_zh": "修复阻止",
@@ -37,19 +40,19 @@
           "desc_zh": "最后一击命中时100%概率触发修复阻止，阻止对方所有回血能力，持续12秒",
           "pua_icon": "E90C"
         }
-      ],
-      "desc_zh": "最后一击命中时100%概率触发修复阻止，阻止对方所有回血能力，持续12秒",
-      "pua_icon": "E90C",
-      "ui_trigger": "onSpecial2Hit"
+      ]
     },
     "sp3": {
       "name_zh": "游击打击",
       "name_en": "Seeker Strike",
+      "desc_zh": "100%的概率窃取对手最大能量的50%",
+      "pua_icon": "0xe607",
+      "ui_trigger": "onSpecial3Hit",
       "effects": [
         {
           "title_zh": "能量窃取",
           "title_en": "Power Steal",
-          "desc_zh": "100%的概率窃取对手最大能量的50% //立即结算，我方加能量，对方减能量，红色图标出现在对方侧，一闪而过",
+          "desc_zh": "100%的概率窃取对手最大能量的50%",
           "pua_icon": "0xe607"
         },
         {
@@ -58,12 +61,141 @@
           "desc_zh": "如果能量窃取之后对方能量减为0，则得到一个永久能量涌动增益，提升能量功率15%，只能叠加一层。",
           "pua_icon": "E608"
         }
-      ],
-      "desc_zh": "100%的概率窃取对手最大能量的50% //立即结算，我方加能量，对方减能量，红色图标出现在对方侧，一闪而过",
-      "pua_icon": "0xe607",
-      "ui_trigger": "onSpecial3Hit"
+      ]
     }
   },
+  "basic_abilities": [
+    {
+      "title_zh": "暴击率增益",
+      "title_en": "Crit Rate Buff",
+      "desc_zh": "临时增加攻击命中时触发暴击的几率。",
+      "pua_icon": "E40D",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "能量燃烧",
+      "title_en": "Power Burn",
+      "desc_zh": "立即扣减对手的能量槽。",
+      "pua_icon": "E607",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "能量窃取",
+      "title_en": "Power Steal",
+      "desc_zh": "盗取对手当前储存的能量槽，并将其转移给自己。",
+      "pua_icon": "E607",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "修复阻止",
+      "title_en": "Heal Block",
+      "desc_zh": "临时阻止目标回复生命值，全面抑制回血与再生效果。",
+      "pua_icon": "E90C",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "传送充能",
+      "title_en": "Teleport Charge",
+      "desc_zh": "每8秒得到一个传送充能，最大叠加3层\n如果闹翻天受到暴击，有25%的概率丢失一个传送充能，受到战士系暴击时概率为50%\n成功闪避一次特殊攻击，得到一个传送充能",
+      "pua_icon": "E98F",
+      "category": "passive",
+      "ui_trigger": "传送充能",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "特殊伤害减益",
+      "title_en": "Special Damage Debuff",
+      "desc_zh": "普通远程攻击命中时有20%的概率施加1层特殊伤害减益，减少10%的特殊伤害，持续5秒\n远程重击命中时有50%的概率施加1层特殊伤害减益，减少10%的特殊伤害，持续9秒",
+      "pua_icon": "E41C",
+      "category": "passive",
+      "ui_trigger": "特殊伤害减益",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "传送攻击",
+      "title_en": "Teleport Attack",
+      "desc_zh": "在拥有传送充能时，特殊攻击1和2会变为传送攻击\n\n传送攻击的暴击率增加27%\n传送攻击不可防御\n传送攻击有50%的概率施加8秒的能量锁定\n传送攻击100%概率净化所有震击减益",
+      "pua_icon": "E98F",
+      "category": "passive",
+      "ui_trigger": "传送攻击",
+      "show_on_main_screen": false
+    }
+  ],
+  "abilities": [
+    {
+      "title_zh": "暴击率增益",
+      "title_en": "Crit Rate Buff",
+      "desc_zh": "临时增加攻击命中时触发暴击的几率。",
+      "pua_icon": "E40D",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "能量燃烧",
+      "title_en": "Power Burn",
+      "desc_zh": "立即扣减对手的能量槽。",
+      "pua_icon": "E607",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "能量窃取",
+      "title_en": "Power Steal",
+      "desc_zh": "盗取对手当前储存的能量槽，并将其转移给自己。",
+      "pua_icon": "E607",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "修复阻止",
+      "title_en": "Heal Block",
+      "desc_zh": "临时阻止目标回复生命值，全面抑制回血与再生效果。",
+      "pua_icon": "E90C",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "传送充能",
+      "title_en": "Teleport Charge",
+      "desc_zh": "每8秒得到一个传送充能，最大叠加3层\n如果闹翻天受到暴击，有25%的概率丢失一个传送充能，受到战士系暴击时概率为50%\n成功闪避一次特殊攻击，得到一个传送充能",
+      "pua_icon": "E98F",
+      "category": "passive",
+      "ui_trigger": "传送充能",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "特殊伤害减益",
+      "title_en": "Special Damage Debuff",
+      "desc_zh": "普通远程攻击命中时有20%的概率施加1层特殊伤害减益，减少10%的特殊伤害，持续5秒\n远程重击命中时有50%的概率施加1层特殊伤害减益，减少10%的特殊伤害，持续9秒",
+      "pua_icon": "E41C",
+      "category": "passive",
+      "ui_trigger": "特殊伤害减益",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "传送攻击",
+      "title_en": "Teleport Attack",
+      "desc_zh": "在拥有传送充能时，特殊攻击1和2会变为传送攻击\n\n传送攻击的暴击率增加27%\n传送攻击不可防御\n传送攻击有50%的概率施加8秒的能量锁定\n传送攻击100%概率净化所有震击减益",
+      "pua_icon": "E98F",
+      "category": "passive",
+      "ui_trigger": "传送攻击",
+      "show_on_main_screen": false
+    }
+  ],
   "synergies": [
     {
       "title_zh": "红蜘蛛的探索者",
@@ -110,59 +242,6 @@
       "desc_zh": "作为领导的灯塔，所有较低级别的队友都获得+{{var_35}}功率率。",
       "pua_icon": "",
       "bonus_heroes": []
-    }
-  ],
-  "basic_abilities": [
-    {
-      "title_zh": "暴击率增益",
-      "title_en": "Crit Rate Buff",
-      "desc_zh": "临时增加攻击命中时触发暴击的几率。",
-      "desc_en": "Temporarily increases the chance of scoring critical hits.",
-      "pua_icon": "E40D"
-    },
-    {
-      "title_zh": "能量燃烧",
-      "title_en": "Power Burn",
-      "desc_zh": "立即扣减对手的能量槽。",
-      "desc_en": "Instantly burns the opponent's power gauge.",
-      "pua_icon": "E607"
-    },
-    {
-      "title_zh": "能量窃取",
-      "title_en": "Power Steal",
-      "desc_zh": "盗取对手当前储存的能量槽，并将其转移给自己。",
-      "desc_en": "Steals stored power from the opponent and transfers it to the user.",
-      "pua_icon": "E607"
-    },
-    {
-      "title_zh": "修复阻止",
-      "title_en": "Heal Block",
-      "desc_zh": "临时阻止目标回复生命值，全面抑制回血与再生效果。",
-      "desc_en": "Temporarily prevents the target from regaining health, shutting down all healing.",
-      "pua_icon": "E90C"
-    }
-  ],
-  "game_abilities": [
-    {
-      "title_zh": "传送充能",
-      "title_en": "Teleport Charge",
-      "desc_zh": "每8秒得到一个传送充能，最大叠加3层  // 图标显示的方式参考暗天陨的充能\n如果闹翻天受到暴击，有25%的概率丢失一个传送充能，受到战士系暴击时概率为50%\n成功闪避一次特殊攻击，得到一个传送充能  // 多段连击的特殊攻击也只算一次",
-      "pua_icon": "E98F",
-      "ui_trigger": "传送充能"
-    },
-    {
-      "title_zh": "特殊伤害减益",
-      "title_en": "Special Damage Debuff",
-      "desc_zh": "普通远程攻击命中时有20%的概率施加1层特殊伤害减益，减少10%的特殊伤害，持续5秒 \n远程重击命中时有50%的概率施加1层特殊伤害减益，减少10%的特殊伤害，持续9秒 \n // 可叠加，红图标",
-      "pua_icon": "E41C",
-      "ui_trigger": "特殊伤害减益"
-    },
-    {
-      "title_zh": "传送攻击",
-      "title_en": "Teleport Attack",
-      "desc_zh": "在拥有传送充能时，特殊攻击1和2会变为传送攻击  // 技能期间显示橙色图标，传送攻击会改变特殊技的动作，需要在asset中找到专属动作\n\n传送攻击的暴击率增加27%\n传送攻击不可防御\n传送攻击有50%的概率施加8秒的能量锁定\n传送攻击100%概率净化所有震击减益",
-      "pua_icon": "E98F",
-      "ui_trigger": "传送攻击"
     }
   ]
 }

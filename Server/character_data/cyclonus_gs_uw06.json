@@ -7,57 +7,207 @@
   "signature": {
     "title_zh": "黑暗奴役",
     "title_en": "Dark Servitude",
-    "desc_zh": "对宇宙大帝的忠诚赋予狂飙以难以想象的力量。\n\n黑暗场造成的黑暗灼伤会造成 {{var_13}} 点额外伤害。",
-    "pua_icon": "",
+    "desc_zh": "黑暗场造成的黑暗燃烧伤害提升120%。",
+    "pua_icon": "E810",
     "ui_trigger": "none"
   },
   "special_attacks": {
     "sp1": {
       "name_zh": "宇宙边缘",
       "name_en": "Cosmic Edge",
+      "desc_zh": "100%护甲穿透",
+      "pua_icon": "E409",
+      "ui_trigger": "onSpecial1Hit",
       "effects": [
         {
-          "title_zh": "宇宙边缘",
-          "title_en": "Cosmic Edge",
-          "desc_zh": "只有星之剑本身才能匹敌的剑。",
-          "pua_icon": ""
+          "title_zh": "护甲穿透",
+          "title_en": "Armor Piercing",
+          "desc_zh": "100%护甲穿透",
+          "pua_icon": "E409"
         }
-      ],
-      "desc_zh": "只有星之剑本身才能匹敌的剑。",
-      "pua_icon": "",
-      "ui_trigger": "onSpecial1Hit"
+      ]
     },
     "sp2": {
-      "name_zh": "特殊技 2",
-      "name_en": "Special Attack 2",
+      "name_zh": "银河枪",
+      "name_en": "Galaxy Gun",
+      "desc_zh": "技能最后一击不可防御。",
+      "pua_icon": "0xe41f",
+      "ui_trigger": "onSpecial2Hit",
       "effects": [
         {
-          "title_zh": "特殊技 2",
-          "title_en": "Special Attack 2",
-          "desc_zh": "{{var_14}} 穿甲弹。",
-          "pua_icon": ""
+          "title_zh": "不可防御",
+          "title_en": "Unblockable",
+          "desc_zh": "技能最后一击不可防御。",
+          "pua_icon": "0xe41f"
         }
-      ],
-      "desc_zh": "{{var_14}} 穿甲弹。",
-      "pua_icon": "",
-      "ui_trigger": "onSpecial2Hit"
+      ]
     },
     "sp3": {
       "name_zh": "星际旅行",
       "name_en": "Interstellar Ride",
+      "desc_zh": "狂飙获得黑暗能量，并且在10秒内连续释放黑暗场脉冲。",
+      "pua_icon": "E90A",
+      "ui_trigger": "onSpecial3Hit",
       "effects": [
         {
           "title_zh": "黑暗场",
           "title_en": "Dark Field",
           "desc_zh": "狂飙获得黑暗能量，并且在10秒内连续释放黑暗场脉冲。",
-          "pua_icon": "0xe701"
+          "pua_icon": "E90A"
         }
-      ],
-      "desc_zh": "狂飙获得黑暗能量，并且在10秒内连续释放黑暗场脉冲。",
-      "pua_icon": "0xe701",
-      "ui_trigger": "onSpecial3Hit"
+      ]
     }
   },
+  "basic_abilities": [
+    {
+      "title_zh": "黑暗能量",
+      "title_en": "Dark Energy",
+      "desc_zh": "聚集黑暗能量充能，提高攻击评级并为黑暗场提供动力。",
+      "pua_icon": "E90A",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "黑暗燃烧",
+      "title_en": "Dark Burn",
+      "desc_zh": "造成瞬时黑暗能量伤害。",
+      "pua_icon": "E810",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "黑暗场",
+      "title_en": "Dark Field",
+      "desc_zh": "施放黑暗脉冲造成伤害",
+      "pua_icon": "E701",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "黑暗能量",
+      "title_en": "Dark Energy",
+      "desc_zh": "每次填满一格能量，狂飙获得一层黑暗能量，提升攻击力30%，持续6秒",
+      "pua_icon": "0xe90a",
+      "category": "passive",
+      "ui_trigger": "黑暗能量",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "黑暗场",
+      "title_en": "Dark Field",
+      "desc_zh": "当狂飙获得一层黑暗能量或在拥有黑暗能量的情况下使用L4或者M2命中对手时，他会放出黑暗场脉冲。\n黑暗场对对方造成黑暗燃烧，立即造成攻击力20%的伤害，并有70%的概率驱散对方一个增益。如果对方处于不可阻挡的状态，概率变为100%\n如果具有不可阻挡增益的对手冲向狂飙，他会立即获得黑暗能量，驱散不可阻挡增益，并造成1.5秒眩晕。",
+      "pua_icon": "0xe701",
+      "category": "passive",
+      "ui_trigger": "黑暗场",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "训诫1",
+      "title_en": "Discipline 1",
+      "desc_zh": "被对手近战攻击击中5次后，狂飙会获得1层28%抗性增益，持续9秒。",
+      "pua_icon": "E507",
+      "category": "passive",
+      "ui_trigger": "训诫1",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "训诫2",
+      "title_en": "Discipline 2",
+      "desc_zh": "远程普通攻击命中对手6次后，狂飙会获得1层远程增益，提升远程攻击伤害25%，提升射速40%，持续7秒。",
+      "pua_icon": "E41B",
+      "category": "passive",
+      "ui_trigger": "训诫2",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "训诫3",
+      "title_en": "Discipline 3",
+      "desc_zh": "近战攻击命中对手10次后，狂飙会获得1层25%的近战增益，持续7秒。",
+      "pua_icon": "E412",
+      "category": "passive",
+      "ui_trigger": "训诫3",
+      "show_on_main_screen": false
+    }
+  ],
+  "abilities": [
+    {
+      "title_zh": "黑暗能量",
+      "title_en": "Dark Energy",
+      "desc_zh": "聚集黑暗能量充能，提高攻击评级并为黑暗场提供动力。",
+      "pua_icon": "E90A",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "黑暗燃烧",
+      "title_en": "Dark Burn",
+      "desc_zh": "造成瞬时黑暗能量伤害。",
+      "pua_icon": "E810",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "黑暗场",
+      "title_en": "Dark Field",
+      "desc_zh": "施放黑暗脉冲造成伤害",
+      "pua_icon": "E701",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "黑暗能量",
+      "title_en": "Dark Energy",
+      "desc_zh": "每次填满一格能量，狂飙获得一层黑暗能量，提升攻击力30%，持续6秒",
+      "pua_icon": "0xe90a",
+      "category": "passive",
+      "ui_trigger": "黑暗能量",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "黑暗场",
+      "title_en": "Dark Field",
+      "desc_zh": "当狂飙获得一层黑暗能量或在拥有黑暗能量的情况下使用L4或者M2命中对手时，他会放出黑暗场脉冲。\n黑暗场对对方造成黑暗燃烧，立即造成攻击力20%的伤害，并有70%的概率驱散对方一个增益。如果对方处于不可阻挡的状态，概率变为100%\n如果具有不可阻挡增益的对手冲向狂飙，他会立即获得黑暗能量，驱散不可阻挡增益，并造成1.5秒眩晕。",
+      "pua_icon": "0xe701",
+      "category": "passive",
+      "ui_trigger": "黑暗场",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "训诫1",
+      "title_en": "Discipline 1",
+      "desc_zh": "被对手近战攻击击中5次后，狂飙会获得1层28%抗性增益，持续9秒。",
+      "pua_icon": "E507",
+      "category": "passive",
+      "ui_trigger": "训诫1",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "训诫2",
+      "title_en": "Discipline 2",
+      "desc_zh": "远程普通攻击命中对手6次后，狂飙会获得1层远程增益，提升远程攻击伤害25%，提升射速40%，持续7秒。",
+      "pua_icon": "E41B",
+      "category": "passive",
+      "ui_trigger": "训诫2",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "训诫3",
+      "title_en": "Discipline 3",
+      "desc_zh": "近战攻击命中对手10次后，狂飙会获得1层25%的近战增益，持续7秒。",
+      "pua_icon": "E412",
+      "category": "passive",
+      "ui_trigger": "训诫3",
+      "show_on_main_screen": false
+    }
+  ],
   "synergies": [
     {
       "title_zh": "盟友 – 回扣、发脾气、威震天",
@@ -93,45 +243,6 @@
       "desc_zh": "作为团队领导的灯塔，所有下层队友+{{var_25}} 装甲等级。",
       "pua_icon": "",
       "bonus_heroes": []
-    }
-  ],
-  "basic_abilities": [
-    {
-      "title_zh": "黑暗能量",
-      "title_en": "Dark Energy",
-      "desc_zh": "聚集黑暗能量充能，提高攻击评级并为黑暗场提供动力。",
-      "desc_en": "Harvests dark energy charges, boosting attack rating and powering dark fields.",
-      "pua_icon": "E90A"
-    },
-    {
-      "title_zh": "黑暗燃烧",
-      "title_en": "Dark Burn",
-      "desc_zh": "造成瞬时黑暗能量伤害。",
-      "desc_en": "Deals instant dark energy damage.",
-      "pua_icon": "E810"
-    },
-    {
-      "title_zh": "黑暗场",
-      "title_en": "Dark Field",
-      "desc_zh": "施放黑暗脉冲造成伤害",
-      "desc_en": "Deals corrosive acid damage over time.",
-      "pua_icon": "E701"
-    }
-  ],
-  "game_abilities": [
-    {
-      "title_zh": "黑暗能量",
-      "title_en": "Dark Energy",
-      "desc_zh": "每次填满一格气，狂飙获得一层黑暗能量，提升攻击力30%，持续6秒",
-      "pua_icon": "0xe90a",
-      "ui_trigger": "黑暗能量"
-    },
-    {
-      "title_zh": "黑暗场",
-      "title_en": "Dark Field",
-      "desc_zh": "当狂飙获得一层黑暗能量或在拥有黑暗能量的情况下使用L4或者M2命中对手时，他会放出黑暗场脉冲。//狂飙身上会有一个紫色光圈扩散开\n黑暗场对对方造成黑暗燃烧，立即造成攻击力20%的伤害，并有70%的概率驱散对方一个增益。如果对方处于不可阻挡的状态，概率变为100%  //对方侧根据效果出现红字“黑暗燃烧”和/或“驱散”\n如果具有不可阻挡增益的对手冲向狂飙，他会立即获得黑暗能量，驱散不可阻挡增益，并造成1.5秒眩晕。",
-      "pua_icon": "0xe701",
-      "ui_trigger": "黑暗场"
     }
   ]
 }

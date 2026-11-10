@@ -15,6 +15,9 @@
     "sp1": {
       "name_zh": "野蛮变线侧撞",
       "name_en": "Road Rage Slam",
+      "desc_zh": "跑车野蛮变线狂暴侧撞，造成强力击退并使对手眩晕 {{var_1}} 秒。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial1Hit",
       "effects": [
         {
           "title_zh": "野蛮变线侧撞",
@@ -22,14 +25,14 @@
           "desc_zh": "跑车野蛮变线狂暴侧撞，造成强力击退并使对手眩晕 {{var_1}} 秒。",
           "pua_icon": ""
         }
-      ],
-      "desc_zh": "跑车野蛮变线狂暴侧撞，造成强力击退并使对手眩晕 {{var_1}} 秒。",
-      "pua_icon": "",
-      "ui_trigger": "onSpecial1Hit"
+      ]
     },
     "sp2": {
       "name_zh": "连环追尾爆破",
       "name_en": "Multi-Car Pileup",
+      "desc_zh": "猛踩油门狂暴顶推对手贯穿障碍物，造成破甲降低 {{var_2}} 护甲持续 {{var_3}} 秒，并附加震荡。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial2Hit",
       "effects": [
         {
           "title_zh": "连环追尾爆破",
@@ -37,14 +40,14 @@
           "desc_zh": "猛踩油门狂暴顶推对手贯穿障碍物，造成破甲降低 {{var_2}} 护甲持续 {{var_3}} 秒，并附加震荡。",
           "pua_icon": ""
         }
-      ],
-      "desc_zh": "猛踩油门狂暴顶推对手贯穿障碍物，造成破甲降低 {{var_2}} 护甲持续 {{var_3}} 秒，并附加震荡。",
-      "pua_icon": "",
-      "ui_trigger": "onSpecial2Hit"
+      ]
     },
     "sp3": {
       "name_zh": "狂徒末路狂飙",
       "name_en": "Highway to Havoc",
+      "desc_zh": "顶住能量壁引爆油箱发生冲天爆炸，自身获得狂暴增益提升 {{var_4}} 攻击力持续 {{var_5}} 秒。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit",
       "effects": [
         {
           "title_zh": "狂徒末路狂飙",
@@ -52,12 +55,87 @@
           "desc_zh": "顶住能量壁引爆油箱发生冲天爆炸，自身获得狂暴增益提升 {{var_4}} 攻击力持续 {{var_5}} 秒。",
           "pua_icon": ""
         }
-      ],
-      "desc_zh": "顶住能量壁引爆油箱发生冲天爆炸，自身获得狂暴增益提升 {{var_4}} 攻击力持续 {{var_5}} 秒。",
-      "pua_icon": "",
-      "ui_trigger": "onSpecial3Hit"
+      ]
     }
   },
+  "basic_abilities": [
+    {
+      "title_zh": "毁灭冲撞",
+      "title_en": "Kamikaze Charge",
+      "desc_zh": "冲刺攻击自带不可阻挡 (Unstoppable) 特性，撞击对手将其击退并削减其 20% 能量槽。",
+      "pua_icon": "",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "狂暴公路反震",
+      "title_en": "Road Rage Parrying",
+      "desc_zh": "成功格挡近战攻击时，将 35% 伤害反弹给对手，并有 50% 概率使其硬直 1 秒。",
+      "pua_icon": "",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "公路线狂热",
+      "title_en": "Pain & Chaos Junkie",
+      "desc_zh": "每次受到攻击或命中重击积累狂暴层数（最多 5 层）。每层提供 +{{var_1}} 攻击力与 +{{var_2}} 物理护甲。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "公路线狂热",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "毁灭伤痕加速",
+      "title_en": "Adrenaline Surge",
+      "desc_zh": "受到流血或燃烧效果时，攻击力额外暴涨 30%，能量获取速度提升 50%（越战越疯）。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "毁灭伤痕加速",
+      "show_on_main_screen": false
+    }
+  ],
+  "abilities": [
+    {
+      "title_zh": "毁灭冲撞",
+      "title_en": "Kamikaze Charge",
+      "desc_zh": "冲刺攻击自带不可阻挡 (Unstoppable) 特性，撞击对手将其击退并削减其 20% 能量槽。",
+      "pua_icon": "",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "狂暴公路反震",
+      "title_en": "Road Rage Parrying",
+      "desc_zh": "成功格挡近战攻击时，将 35% 伤害反弹给对手，并有 50% 概率使其硬直 1 秒。",
+      "pua_icon": "",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "公路线狂热",
+      "title_en": "Pain & Chaos Junkie",
+      "desc_zh": "每次受到攻击或命中重击积累狂暴层数（最多 5 层）。每层提供 +{{var_1}} 攻击力与 +{{var_2}} 物理护甲。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "公路线狂热",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "毁灭伤痕加速",
+      "title_en": "Adrenaline Surge",
+      "desc_zh": "受到流血或燃烧效果时，攻击力额外暴涨 30%，能量获取速度提升 50%（越战越疯）。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "毁灭伤痕加速",
+      "show_on_main_screen": false
+    }
+  ],
   "synergies": [
     {
       "title_zh": "飞天虎 (Menasor)",
@@ -87,38 +165,6 @@
       "desc_zh": "团队所有低星级队员获得 +{{var_7}} 攻击力。",
       "pua_icon": "",
       "bonus_heroes": []
-    }
-  ],
-  "basic_abilities": [
-    {
-      "title_zh": "毁灭冲撞",
-      "title_en": "Kamikaze Charge",
-      "desc_zh": "冲刺攻击自带不可阻挡 (Unstoppable) 特性，撞击对手将其击退并削减其 20% 能量槽。",
-      "desc_en": "Dash attacks feature Unstoppable momentum, knocking the opponent back and draining 20% of their Power.",
-      "pua_icon": ""
-    },
-    {
-      "title_zh": "狂暴公路反震",
-      "title_en": "Road Rage Parrying",
-      "desc_zh": "成功格挡近战攻击时，将 35% 伤害反弹给对手，并有 50% 概率使其硬直 1 秒。",
-      "desc_en": "Blocking melee strikes reflects 35% damage back to the attacker with a 50% chance to induce hitstun.",
-      "pua_icon": ""
-    }
-  ],
-  "game_abilities": [
-    {
-      "title_zh": "公路线狂热",
-      "title_en": "Pain & Chaos Junkie",
-      "desc_zh": "每次受到攻击或命中重击积累狂暴层数（最多 5 层）。每层提供 +{{var_1}} 攻击力与 +{{var_2}} 物理护甲。",
-      "pua_icon": "",
-      "ui_trigger": "公路线狂热"
-    },
-    {
-      "title_zh": "毁灭伤痕加速",
-      "title_en": "Adrenaline Surge",
-      "desc_zh": "受到流血或燃烧效果时，攻击力额外暴涨 30%，能量获取速度提升 50%（越战越疯）。",
-      "pua_icon": "",
-      "ui_trigger": "毁灭伤痕加速"
     }
   ]
 }

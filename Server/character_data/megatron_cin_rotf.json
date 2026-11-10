@@ -7,7 +7,7 @@
   "signature": {
     "title_zh": "威震天万岁！",
     "title_en": "All Hail Megaton!",
-    "desc_zh": "威震天总会回来的。当生命值降至10%以下时，威震天将在3秒内恢复最大生命值的30%。//每局只触发一次，如果敌方的致命攻击一次性造成10%以上的伤害，该技能不触发，威震天直接被KO。",
+    "desc_zh": "威震天总会回来的。当生命值降至10%以下时，威震天将在3秒内恢复最大生命值的30%。",
     "pua_icon": "E90C",
     "ui_trigger": "none"
   },
@@ -15,6 +15,9 @@
     "sp1": {
       "name_zh": "压制",
       "name_en": "Overpower",
+      "desc_zh": "施加10层伤害电荷。",
+      "pua_icon": "E81F",
+      "ui_trigger": "onSpecial1Hit",
       "effects": [
         {
           "title_zh": "伤害电荷",
@@ -22,29 +25,29 @@
           "desc_zh": "施加10层伤害电荷。",
           "pua_icon": "E81F"
         }
-      ],
-      "desc_zh": "施加10层伤害电荷。",
-      "pua_icon": "E81F",
-      "ui_trigger": "onSpecial1Hit"
+      ]
     },
     "sp2": {
       "name_zh": "和平与暴政",
       "name_en": "Peace and Tyranny",
+      "desc_zh": "技能结束后，增加远程攻击速度和40%的远程伤害，持续6秒",
+      "pua_icon": "E41B",
+      "ui_trigger": "onSpecial2Hit",
       "effects": [
         {
           "title_zh": "远程增益",
           "title_en": "Ranged Buff",
-          "desc_zh": "技能结束后，增加远程攻击速度和40%的远程伤害，持续6秒  // 不命中也可以",
+          "desc_zh": "技能结束后，增加远程攻击速度和40%的远程伤害，持续6秒",
           "pua_icon": "E41B"
         }
-      ],
-      "desc_zh": "技能结束后，增加远程攻击速度和40%的远程伤害，持续6秒  // 不命中也可以",
-      "pua_icon": "E41B",
-      "ui_trigger": "onSpecial2Hit"
+      ]
     },
     "sp3": {
       "name_zh": "黑暗赦免",
       "name_en": "Dark Absolution",
+      "desc_zh": "第一击施加20层伤害电荷。每1层伤害电荷增加5%的暴击几率。\n由于仅SP3施加的伤害电荷已将暴击几率拉满至100%，故最后一击必然暴击，每1层电荷增加2%的暴击伤害",
+      "pua_icon": "E81F",
+      "ui_trigger": "onSpecial3Hit",
       "effects": [
         {
           "title_zh": "伤害电荷",
@@ -52,12 +55,141 @@
           "desc_zh": "第一击施加20层伤害电荷。每1层伤害电荷增加5%的暴击几率。\n由于仅SP3施加的伤害电荷已将暴击几率拉满至100%，故最后一击必然暴击，每1层电荷增加2%的暴击伤害",
           "pua_icon": "E81F"
         }
-      ],
-      "desc_zh": "第一击施加20层伤害电荷。每1层伤害电荷增加5%的暴击几率。\n由于仅SP3施加的伤害电荷已将暴击几率拉满至100%，故最后一击必然暴击，每1层电荷增加2%的暴击伤害",
-      "pua_icon": "E81F",
-      "ui_trigger": "onSpecial3Hit"
+      ]
     }
   },
+  "basic_abilities": [
+    {
+      "title_zh": "不可阻挡",
+      "title_en": "Unstoppable",
+      "desc_zh": "进攻动作无视对手攻击冲击与受击打断。",
+      "pua_icon": "E915",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "远程增益",
+      "title_en": "Ranged Buff",
+      "desc_zh": "临时增加远程攻击的速度、射击频率与伤害。",
+      "pua_icon": "E41B",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "天然护甲",
+      "title_en": "Permanent Armor",
+      "desc_zh": "+10%的永久护甲增益，无图标，不可被破甲移除",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "天然护甲",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "不可阻挡",
+      "title_en": "Unstoppable",
+      "desc_zh": "当生命值降至80%/60%/40%时，获得不可阻挡增益，持续4秒",
+      "pua_icon": "0xe915",
+      "category": "passive",
+      "ui_trigger": "不可阻挡",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "攻击增益",
+      "title_en": "Attack Buff",
+      "desc_zh": "如果在不可阻挡状态发动重击未命中，获得一个40%的攻击增益，持续10秒",
+      "pua_icon": "0xe406",
+      "category": "passive",
+      "ui_trigger": "攻击增益",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "伤害电荷",
+      "title_en": "Impair Charge",
+      "desc_zh": "所有攻击（含特殊技）命中时，给对手施加一层伤害电荷，出于重击和SP3消耗",
+      "pua_icon": "E81F",
+      "category": "passive",
+      "ui_trigger": "伤害电荷",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "电荷消耗",
+      "title_en": "Consume charges",
+      "desc_zh": "重击命中时，每1层伤害电荷增加5%的暴击几率。\n如果重击出暴击，将消耗所有的伤害电荷，每1层电荷增加2%的暴击伤害",
+      "pua_icon": "E404",
+      "category": "passive",
+      "ui_trigger": "电荷消耗",
+      "show_on_main_screen": false
+    }
+  ],
+  "abilities": [
+    {
+      "title_zh": "不可阻挡",
+      "title_en": "Unstoppable",
+      "desc_zh": "进攻动作无视对手攻击冲击与受击打断。",
+      "pua_icon": "E915",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "远程增益",
+      "title_en": "Ranged Buff",
+      "desc_zh": "临时增加远程攻击的速度、射击频率与伤害。",
+      "pua_icon": "E41B",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "天然护甲",
+      "title_en": "Permanent Armor",
+      "desc_zh": "+10%的永久护甲增益，无图标，不可被破甲移除",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "天然护甲",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "不可阻挡",
+      "title_en": "Unstoppable",
+      "desc_zh": "当生命值降至80%/60%/40%时，获得不可阻挡增益，持续4秒",
+      "pua_icon": "0xe915",
+      "category": "passive",
+      "ui_trigger": "不可阻挡",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "攻击增益",
+      "title_en": "Attack Buff",
+      "desc_zh": "如果在不可阻挡状态发动重击未命中，获得一个40%的攻击增益，持续10秒",
+      "pua_icon": "0xe406",
+      "category": "passive",
+      "ui_trigger": "攻击增益",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "伤害电荷",
+      "title_en": "Impair Charge",
+      "desc_zh": "所有攻击（含特殊技）命中时，给对手施加一层伤害电荷，出于重击和SP3消耗",
+      "pua_icon": "E81F",
+      "category": "passive",
+      "ui_trigger": "伤害电荷",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "电荷消耗",
+      "title_en": "Consume charges",
+      "desc_zh": "重击命中时，每1层伤害电荷增加5%的暴击几率。\n如果重击出暴击，将消耗所有的伤害电荷，每1层电荷增加2%的暴击伤害",
+      "pua_icon": "E404",
+      "category": "passive",
+      "ui_trigger": "电荷消耗",
+      "show_on_main_screen": false
+    }
+  ],
   "synergies": [
     {
       "title_zh": "敌人 – 擎天柱 (MV1)、大黄蜂 (DOTM)",
@@ -109,59 +241,6 @@
       "bonus_heroes": [
         "megatronus_gs_kabam"
       ]
-    }
-  ],
-  "basic_abilities": [
-    {
-      "title_zh": "不可阻挡",
-      "title_en": "Unstoppable",
-      "desc_zh": "进攻动作无视对手攻击冲击与受击打断。",
-      "desc_en": "Shrugs off hit reactions; attacks cannot be interrupted.",
-      "pua_icon": "E915"
-    },
-    {
-      "title_zh": "远程增益",
-      "title_en": "Ranged Buff",
-      "desc_zh": "临时增加远程攻击的速度、射击频率与伤害。",
-      "desc_en": "Temporarily increases ranged attack speed and damage.",
-      "pua_icon": "E41B"
-    }
-  ],
-  "game_abilities": [
-    {
-      "title_zh": "天然护甲",
-      "title_en": "Permanent Armor",
-      "desc_zh": "+10%的永久护甲增益，无图标，不可被破甲移除",
-      "pua_icon": "",
-      "ui_trigger": "天然护甲"
-    },
-    {
-      "title_zh": "不可阻挡",
-      "title_en": "Unstoppable",
-      "desc_zh": "当生命值降至80%/60%/40%时，获得不可阻挡增益，持续4秒",
-      "pua_icon": "0xe915",
-      "ui_trigger": "不可阻挡"
-    },
-    {
-      "title_zh": "攻击增益",
-      "title_en": "Attack Buff",
-      "desc_zh": "如果在不可阻挡状态发动重击未命中，获得一个40%的攻击增益，持续10秒",
-      "pua_icon": "0xe406",
-      "ui_trigger": "攻击增益"
-    },
-    {
-      "title_zh": "伤害电荷",
-      "title_en": "Impair Charge",
-      "desc_zh": "所有攻击（含特殊技）命中时，给对手施加一层伤害电荷，出于重击和SP3消耗 //红色图标，无倒计时，可叠加",
-      "pua_icon": "E81F",
-      "ui_trigger": "伤害电荷"
-    },
-    {
-      "title_zh": "电荷消耗",
-      "title_en": "Consume charges",
-      "desc_zh": "重击命中时，每1层伤害电荷增加5%的暴击几率。\n如果重击出暴击，将消耗所有的伤害电荷，每1层电荷增加2%的暴击伤害",
-      "pua_icon": "E404",
-      "ui_trigger": "电荷消耗"
     }
   ]
 }

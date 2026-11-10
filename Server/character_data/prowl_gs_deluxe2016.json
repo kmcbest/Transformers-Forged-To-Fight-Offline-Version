@@ -7,7 +7,7 @@
   "signature": {
     "title_zh": "好警察",
     "title_en": "Good Cop",
-    "desc_zh": "每次近战充能完毕（变橙色图标）时，每层充能获得4%的能量（以满能量槽计算）。//10层充能成功则获得40%的能量，也就是1.33格能量槽。",
+    "desc_zh": "每次近战充能完毕（变橙色图标）时，每层充能获得4%的能量（以满能量槽计算）。",
     "pua_icon": "0xe608",
     "ui_trigger": "none"
   },
@@ -15,21 +15,24 @@
     "sp1": {
       "name_zh": "短路",
       "name_en": "Short Circuit",
+      "desc_zh": "100%概率触发能量燃烧，0.5秒内扣减对方最大能量（按三格满计）的40.5%",
+      "pua_icon": "0xe607",
+      "ui_trigger": "onSpecial1Hit",
       "effects": [
         {
           "title_zh": "能量燃烧",
           "title_en": "Power Burn",
-          "desc_zh": "100%概率触发能量燃烧，0.5秒内扣减对方最大能量（按三格满计）的40.5%\n//仅第一击触发\n//三格能量的40.5%，就是比一格多一点，属于扣除大量能量的招式",
+          "desc_zh": "100%概率触发能量燃烧，0.5秒内扣减对方最大能量（按三格满计）的40.5%",
           "pua_icon": "0xe607"
         }
-      ],
-      "desc_zh": "100%概率触发能量燃烧，0.5秒内扣减对方最大能量（按三格满计）的40.5%\n//仅第一击触发\n//三格能量的40.5%，就是比一格多一点，属于扣除大量能量的招式",
-      "pua_icon": "0xe607",
-      "ui_trigger": "onSpecial1Hit"
+      ]
     },
     "sp2": {
       "name_zh": "枪手",
       "name_en": "Gunslinger",
+      "desc_zh": "远程伤害提升50%，远程射速提升50%，持续6秒",
+      "pua_icon": "0xe41b",
+      "ui_trigger": "onSpecial2Hit",
       "effects": [
         {
           "title_zh": "远程伤害",
@@ -37,14 +40,14 @@
           "desc_zh": "远程伤害提升50%，远程射速提升50%，持续6秒",
           "pua_icon": "0xe41b"
         }
-      ],
-      "desc_zh": "远程伤害提升50%，远程射速提升50%，持续6秒",
-      "pua_icon": "0xe41b",
-      "ui_trigger": "onSpecial2Hit"
+      ]
     },
     "sp3": {
       "name_zh": "运输护卫",
       "name_en": "Ride Shotgun",
+      "desc_zh": "技能结束时100%概率触发能量锁定，阻止对方获得能量，持续16秒",
+      "pua_icon": "0xe523",
+      "ui_trigger": "onSpecial3Hit",
       "effects": [
         {
           "title_zh": "能量锁定",
@@ -52,12 +55,141 @@
           "desc_zh": "技能结束时100%概率触发能量锁定，阻止对方获得能量，持续16秒",
           "pua_icon": "0xe523"
         }
-      ],
-      "desc_zh": "技能结束时100%概率触发能量锁定，阻止对方获得能量，持续16秒",
-      "pua_icon": "0xe523",
-      "ui_trigger": "onSpecial3Hit"
+      ]
     }
   },
+  "basic_abilities": [
+    {
+      "title_zh": "近战增益",
+      "title_en": "Melee Buff",
+      "desc_zh": "临时增加近战普通攻击与近战重击的伤害。",
+      "pua_icon": "E412",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "能量燃烧",
+      "title_en": "Power Burn",
+      "desc_zh": "立即扣减对手的能量槽。",
+      "pua_icon": "E607",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "能量锁定",
+      "title_en": "Power Lock",
+      "desc_zh": "临时阻止目标从攻击或被动机制中获取任何能量。",
+      "pua_icon": "E523",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "眩晕",
+      "title_en": "Stun",
+      "desc_zh": "临时阻止目标采取任何行动。",
+      "pua_icon": "E605",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "远程增益",
+      "title_en": "Ranged Buff",
+      "desc_zh": "临时增加远程攻击的速度、射击频率与伤害。",
+      "pua_icon": "E41B",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "近战增益",
+      "title_en": "Melee Buff",
+      "desc_zh": "后闪一次开始充近战增益。\n0.5秒充一层，最多10层。\n充能过程中，有54%的概率规避对方近战、远程或特殊攻击\n充到10层或者被打断后，灰色图标变成橙色图标，每层增加11%的近战伤害，持续6秒。\n打断条件：警车前冲，被对方击中，近战击中对方，触发规避。",
+      "pua_icon": "0xe412",
+      "category": "passive",
+      "ui_trigger": "近战增益",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "远程眩晕",
+      "title_en": "Ranged Stun",
+      "desc_zh": "远程的第一枪有10%的概率眩晕对手1.5秒。\n如果警车正在近战增益充能中，眩晕概率提高到80%",
+      "pua_icon": "0xe605",
+      "category": "passive",
+      "ui_trigger": "远程眩晕",
+      "show_on_main_screen": false
+    }
+  ],
+  "abilities": [
+    {
+      "title_zh": "近战增益",
+      "title_en": "Melee Buff",
+      "desc_zh": "临时增加近战普通攻击与近战重击的伤害。",
+      "pua_icon": "E412",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "能量燃烧",
+      "title_en": "Power Burn",
+      "desc_zh": "立即扣减对手的能量槽。",
+      "pua_icon": "E607",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "能量锁定",
+      "title_en": "Power Lock",
+      "desc_zh": "临时阻止目标从攻击或被动机制中获取任何能量。",
+      "pua_icon": "E523",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "眩晕",
+      "title_en": "Stun",
+      "desc_zh": "临时阻止目标采取任何行动。",
+      "pua_icon": "E605",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "远程增益",
+      "title_en": "Ranged Buff",
+      "desc_zh": "临时增加远程攻击的速度、射击频率与伤害。",
+      "pua_icon": "E41B",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "近战增益",
+      "title_en": "Melee Buff",
+      "desc_zh": "后闪一次开始充近战增益。\n0.5秒充一层，最多10层。\n充能过程中，有54%的概率规避对方近战、远程或特殊攻击\n充到10层或者被打断后，灰色图标变成橙色图标，每层增加11%的近战伤害，持续6秒。\n打断条件：警车前冲，被对方击中，近战击中对方，触发规避。",
+      "pua_icon": "0xe412",
+      "category": "passive",
+      "ui_trigger": "近战增益",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "远程眩晕",
+      "title_en": "Ranged Stun",
+      "desc_zh": "远程的第一枪有10%的概率眩晕对手1.5秒。\n如果警车正在近战增益充能中，眩晕概率提高到80%",
+      "pua_icon": "0xe605",
+      "category": "passive",
+      "ui_trigger": "远程眩晕",
+      "show_on_main_screen": false
+    }
+  ],
   "synergies": [
     {
       "title_zh": "盟友",
@@ -142,59 +274,6 @@
       "bonus_heroes": [
         "fte_optimus_gs_t3"
       ]
-    }
-  ],
-  "basic_abilities": [
-    {
-      "title_zh": "近战增益",
-      "title_en": "Melee Buff",
-      "desc_zh": "临时增加近战普通攻击与近战重击的伤害。",
-      "desc_en": "Temporarily increases damage dealt by basic and heavy melee attacks.",
-      "pua_icon": "E412"
-    },
-    {
-      "title_zh": "能量燃烧",
-      "title_en": "Power Burn",
-      "desc_zh": "立即扣减对手的能量槽。",
-      "desc_en": "Instantly burns the opponent's power gauge.",
-      "pua_icon": "E607"
-    },
-    {
-      "title_zh": "能量锁定",
-      "title_en": "Power Lock",
-      "desc_zh": "临时阻止目标从攻击或被动机制中获取任何能量。",
-      "desc_en": "Temporarily prevents the target from gaining power from any source.",
-      "pua_icon": "E523"
-    },
-    {
-      "title_zh": "眩晕",
-      "title_en": "Stun",
-      "desc_zh": "临时阻止目标采取任何行动。",
-      "desc_en": "Temporarily paralyzes the target, preventing all actions.",
-      "pua_icon": "E605"
-    },
-    {
-      "title_zh": "远程增益",
-      "title_en": "Ranged Buff",
-      "desc_zh": "临时增加远程攻击的速度、射击频率与伤害。",
-      "desc_en": "Temporarily increases ranged attack speed and damage.",
-      "pua_icon": "E41B"
-    }
-  ],
-  "game_abilities": [
-    {
-      "title_zh": "近战增益",
-      "title_en": "Melee Buff",
-      "desc_zh": "后闪一次开始充近战增益。//提示文字“立即投降！”\n0.5秒充一层，最多10层。//充能图标为灰色，层数逐渐增长\n充能过程中，有54%的概率规避对方近战、远程或特殊攻击\n充到10层或者被打断后，灰色图标变成橙色图标，每层增加11%的近战伤害，持续6秒。//打断时正在充的一层计入获得的近战增益层数，所有层数6秒统一过期。过期前，不能再次开始充近战增益。\n打断条件：警车前冲，被对方击中，近战击中对方，触发规避。//其他情况不被打断，防御成功不打断\n//用例，后闪并按住防御，充到9层，被敌人击中，则变成9层橙色近战增益，6秒倒计时开始",
-      "pua_icon": "0xe412",
-      "ui_trigger": "近战增益"
-    },
-    {
-      "title_zh": "远程眩晕",
-      "title_en": "Ranged Stun",
-      "desc_zh": "远程的第一枪有10%的概率眩晕对手1.5秒。//用例：连开三枪，只有第一枪Roll Dice\n如果警车正在近战增益充能中，眩晕概率提高到80%",
-      "pua_icon": "0xe605",
-      "ui_trigger": "远程眩晕"
     }
   ]
 }

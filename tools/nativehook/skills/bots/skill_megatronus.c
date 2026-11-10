@@ -123,6 +123,7 @@ static void megatronus_on_simulation_tick(uint64_t now_ms) {
         } else if (now_ms > s_last_tick_ms[p]) {
             uint64_t dt_ms = now_ms - s_last_tick_ms[p];
             s_last_tick_ms[p] = now_ms;
+            if (dt_ms > 100) dt_ms = 100;
 
             if (!skill_has_buff(p, "power_lock") && !skill_is_special_attacking(p)) {
                 float base_rate = 1.0f / 14.0f; // 正常每秒自主产出 +0.0714 格

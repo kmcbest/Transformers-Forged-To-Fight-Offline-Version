@@ -7,7 +7,7 @@
   "signature": {
     "title_zh": "T-齿轮破坏",
     "title_en": "T-Cog Sabotage",
-    "desc_zh": "重击命中有80%的概率破坏对手的变形齿轮，对手能量获取功率降低30%，持续10秒。//红色图标\n如果对手此时使用重击，重击会失败且对手会眩晕2秒。",
+    "desc_zh": "重击命中有80%的概率破坏对手的变形齿轮，对手能量获取功率降低30%，持续10秒。\n如果对手此时使用重击，重击会失败且对手会眩晕2秒。",
     "pua_icon": "E60F",
     "ui_trigger": "none"
   },
@@ -15,6 +15,9 @@
     "sp1": {
       "name_zh": "震击伤口",
       "name_en": "Shock in the Wounds",
+      "desc_zh": "对于对方身上每1层能量流失，施加1层震击，造成攻击力40%的伤害，持续5秒",
+      "pua_icon": "0xe914",
+      "ui_trigger": "onSpecial1Hit",
       "effects": [
         {
           "title_zh": "震击",
@@ -22,14 +25,14 @@
           "desc_zh": "对于对方身上每1层能量流失，施加1层震击，造成攻击力40%的伤害，持续5秒",
           "pua_icon": "0xe914"
         }
-      ],
-      "desc_zh": "对于对方身上每1层能量流失，施加1层震击，造成攻击力40%的伤害，持续5秒",
-      "pua_icon": "0xe914",
-      "ui_trigger": "onSpecial1Hit"
+      ]
     },
     "sp2": {
       "name_zh": "划破",
       "name_en": "Lacerate",
+      "desc_zh": "技能命中时，获得一个30%的暴击率增益，持续8秒",
+      "pua_icon": "0xe40d",
+      "ui_trigger": "onSpecial2Hit",
       "effects": [
         {
           "title_zh": "暴击几率",
@@ -49,14 +52,14 @@
           "desc_zh": "第3击到最后一击，每一击暴击时100%的概率触发流血，造成攻击力26%的伤害，持续7秒。",
           "pua_icon": "0xe401"
         }
-      ],
-      "desc_zh": "技能命中时，获得一个30%的暴击率增益，持续8秒",
-      "pua_icon": "0xe40d",
-      "ui_trigger": "onSpecial2Hit"
+      ]
     },
     "sp3": {
       "name_zh": "需要投喂",
       "name_en": "Need to Feed",
+      "desc_zh": "技能所有攻击触发暴击时100%的概率造成能量流失，在10秒内扣除对方最大能量的9.6%，最多叠加5层。",
+      "pua_icon": "0xe607",
+      "ui_trigger": "onSpecial3Hit",
       "effects": [
         {
           "title_zh": "能量流失",
@@ -70,12 +73,195 @@
           "desc_zh": "对于对方身上每1层能量流失，反冲获得一个修复增益，5秒内修复最大生命值的3%。",
           "pua_icon": "E503"
         }
-      ],
-      "desc_zh": "技能所有攻击触发暴击时100%的概率造成能量流失，在10秒内扣除对方最大能量的9.6%，最多叠加5层。",
-      "pua_icon": "0xe607",
-      "ui_trigger": "onSpecial3Hit"
+      ]
     }
   },
+  "basic_abilities": [
+    {
+      "title_zh": "能量流失",
+      "title_en": "Power Leak",
+      "desc_zh": "随时间推移持续扣减对手一定比例的能量槽。",
+      "pua_icon": "E607",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "规避",
+      "title_en": "Evade",
+      "desc_zh": "自动闪避即将到来的攻击。",
+      "pua_icon": "E509",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "流血",
+      "title_en": "Bleed",
+      "desc_zh": "流失的能量晶体会持续造成直接伤害。",
+      "pua_icon": "E401",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "消耗",
+      "title_en": "Consume",
+      "desc_zh": "变形后，这个机器人可以消耗自己的震击和能量减益以及对手的能量增益，并将其转化为能量。",
+      "pua_icon": "E933",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "能量流失",
+      "title_en": "Power Leak",
+      "desc_zh": "触发暴击时100%的概率造成能量流失，在10秒内扣除对方最大能量的9.6%，最多叠加5层。",
+      "pua_icon": "0xe607",
+      "category": "passive",
+      "ui_trigger": "能量流失",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "暴击几率",
+      "title_en": "Crit Rate",
+      "desc_zh": "L4和M2命中时增加30%的暴击几率。",
+      "pua_icon": "0xe40d",
+      "category": "passive",
+      "ui_trigger": "暴击几率",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "能量功率",
+      "title_en": "Power Rate",
+      "desc_zh": "对手处于能量流失状态时，反冲的近战攻击能量获取效率提升50%。",
+      "pua_icon": "E606",
+      "category": "passive",
+      "ui_trigger": "能量功率",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "近战规避",
+      "title_en": "Melee Evade",
+      "desc_zh": "反冲的前冲攻击被对手闪避时，获得一个35%概率的近战规避增益，持续2秒。",
+      "pua_icon": "0xe509",
+      "category": "passive",
+      "ui_trigger": "近战规避",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "消耗（发起重击）",
+      "title_en": "Consume (Heavy start)",
+      "desc_zh": "重击发起时，自己身上所有震击、能量汲取、能量锁定和能量功率减益都会被净化，每个被移除的减益都变为一层能量获取增益，2秒内获得其最大能量的3%。",
+      "pua_icon": "E606",
+      "category": "passive",
+      "ui_trigger": "消耗（发起重击）",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "消耗（重击命中）",
+      "title_en": "Consume (Heavy start)",
+      "desc_zh": "重击命中时，驱散对方身上所有能量功率和能量获取增益，每驱散一个，反冲得到一层能量获取增益，2秒内获得其最大能量的3%。",
+      "pua_icon": "E606",
+      "category": "passive",
+      "ui_trigger": "消耗（重击命中）",
+      "show_on_main_screen": false
+    }
+  ],
+  "abilities": [
+    {
+      "title_zh": "能量流失",
+      "title_en": "Power Leak",
+      "desc_zh": "随时间推移持续扣减对手一定比例的能量槽。",
+      "pua_icon": "E607",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "规避",
+      "title_en": "Evade",
+      "desc_zh": "自动闪避即将到来的攻击。",
+      "pua_icon": "E509",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "流血",
+      "title_en": "Bleed",
+      "desc_zh": "流失的能量晶体会持续造成直接伤害。",
+      "pua_icon": "E401",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "消耗",
+      "title_en": "Consume",
+      "desc_zh": "变形后，这个机器人可以消耗自己的震击和能量减益以及对手的能量增益，并将其转化为能量。",
+      "pua_icon": "E933",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "能量流失",
+      "title_en": "Power Leak",
+      "desc_zh": "触发暴击时100%的概率造成能量流失，在10秒内扣除对方最大能量的9.6%，最多叠加5层。",
+      "pua_icon": "0xe607",
+      "category": "passive",
+      "ui_trigger": "能量流失",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "暴击几率",
+      "title_en": "Crit Rate",
+      "desc_zh": "L4和M2命中时增加30%的暴击几率。",
+      "pua_icon": "0xe40d",
+      "category": "passive",
+      "ui_trigger": "暴击几率",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "能量功率",
+      "title_en": "Power Rate",
+      "desc_zh": "对手处于能量流失状态时，反冲的近战攻击能量获取效率提升50%。",
+      "pua_icon": "E606",
+      "category": "passive",
+      "ui_trigger": "能量功率",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "近战规避",
+      "title_en": "Melee Evade",
+      "desc_zh": "反冲的前冲攻击被对手闪避时，获得一个35%概率的近战规避增益，持续2秒。",
+      "pua_icon": "0xe509",
+      "category": "passive",
+      "ui_trigger": "近战规避",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "消耗（发起重击）",
+      "title_en": "Consume (Heavy start)",
+      "desc_zh": "重击发起时，自己身上所有震击、能量汲取、能量锁定和能量功率减益都会被净化，每个被移除的减益都变为一层能量获取增益，2秒内获得其最大能量的3%。",
+      "pua_icon": "E606",
+      "category": "passive",
+      "ui_trigger": "消耗（发起重击）",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "消耗（重击命中）",
+      "title_en": "Consume (Heavy start)",
+      "desc_zh": "重击命中时，驱散对方身上所有能量功率和能量获取增益，每驱散一个，反冲得到一层能量获取增益，2秒内获得其最大能量的3%。",
+      "pua_icon": "E606",
+      "category": "passive",
+      "ui_trigger": "消耗（重击命中）",
+      "show_on_main_screen": false
+    }
+  ],
   "synergies": [
     {
       "title_zh": "盟友",
@@ -115,80 +301,6 @@
       "desc_zh": "+{{var_43}} 临界评级。",
       "pua_icon": "",
       "bonus_heroes": []
-    }
-  ],
-  "basic_abilities": [
-    {
-      "title_zh": "能量流失",
-      "title_en": "Power Leak",
-      "desc_zh": "随时间推移持续扣减对手一定比例的能量槽。",
-      "desc_en": "Drains a percentage of the opponent's power gauge over time.",
-      "pua_icon": "E607"
-    },
-    {
-      "title_zh": "规避",
-      "title_en": "Evade",
-      "desc_zh": "自动闪避即将到来的攻击。",
-      "desc_en": "Automatically evade incoming attack.",
-      "pua_icon": "E509"
-    },
-    {
-      "title_zh": "流血",
-      "title_en": "Bleed",
-      "desc_zh": "流失的能量晶体会持续造成直接伤害。",
-      "desc_en": "Bleeding energon causes direct damage over time.",
-      "pua_icon": "E401"
-    },
-    {
-      "title_zh": "消耗",
-      "title_en": "Consume",
-      "desc_zh": "变形后，这个机器人可以消耗自己的震击和能量减益以及对手的能量增益，并将其转化为能量。",
-      "desc_en": "Clears active buffs from the opponent, instantly ending their effects.",
-      "pua_icon": "E933"
-    }
-  ],
-  "game_abilities": [
-    {
-      "title_zh": "能量流失",
-      "title_en": "Power Leak",
-      "desc_zh": "触发暴击时100%的概率造成能量流失，在10秒内扣除对方最大能量的9.6%，最多叠加5层。",
-      "pua_icon": "0xe607",
-      "ui_trigger": "能量流失"
-    },
-    {
-      "title_zh": "暴击几率",
-      "title_en": "Crit Rate",
-      "desc_zh": "L4和M2命中时增加30%的暴击几率。//无图标，仅针对本次攻击本身",
-      "pua_icon": "0xe40d",
-      "ui_trigger": "暴击几率"
-    },
-    {
-      "title_zh": "能量功率",
-      "title_en": "Power Rate",
-      "desc_zh": "对手处于能量流失状态时，反冲的近战攻击能量获取效率提升50%。",
-      "pua_icon": "E606",
-      "ui_trigger": "能量功率"
-    },
-    {
-      "title_zh": "近战规避",
-      "title_en": "Melee Evade",
-      "desc_zh": "反冲的前冲攻击被对手闪避时，获得一个35%概率的近战规避增益，持续2秒。",
-      "pua_icon": "0xe509",
-      "ui_trigger": "近战规避"
-    },
-    {
-      "title_zh": "消耗（发起重击）",
-      "title_en": "Consume (Heavy start)",
-      "desc_zh": "重击发起时，自己身上所有震击、能量汲取、能量锁定和能量功率减益都会被净化，每个被移除的减益都变为一层能量获取增益，2秒内获得其最大能量的3%。",
-      "pua_icon": "E606",
-      "ui_trigger": "消耗（发起重击）"
-    },
-    {
-      "title_zh": "消耗（重击命中）",
-      "title_en": "Consume (Heavy start)",
-      "desc_zh": "重击命中时，驱散对方身上所有能量功率和能量获取增益，每驱散一个，反冲得到一层能量获取增益，2秒内获得其最大能量的3%。",
-      "pua_icon": "E606",
-      "ui_trigger": "消耗（重击命中）"
     }
   ]
 }

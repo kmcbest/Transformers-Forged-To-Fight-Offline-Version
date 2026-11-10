@@ -15,6 +15,9 @@
     "sp1": {
       "name_zh": "胜利飞斩",
       "name_en": "Victory Slash",
+      "desc_zh": "史达拔剑突进瞬斩，剑光撕裂长空穿透对手并施加流血，在 {{var_1}} 秒内造成 {{var_2}} 伤害。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial1Hit",
       "effects": [
         {
           "title_zh": "胜利飞斩",
@@ -22,14 +25,14 @@
           "desc_zh": "史达拔剑突进瞬斩，剑光撕裂长空穿透对手并施加流血，在 {{var_1}} 秒内造成 {{var_2}} 伤害。",
           "pua_icon": ""
         }
-      ],
-      "desc_zh": "史达拔剑突进瞬斩，剑光撕裂长空穿透对手并施加流血，在 {{var_1}} 秒内造成 {{var_2}} 伤害。",
-      "pua_icon": "",
-      "ui_trigger": "onSpecial1Hit"
+      ]
     },
     "sp2": {
       "name_zh": "智者合体冲天击",
       "name_en": "Brainset Buster",
+      "desc_zh": "王者之剑斩出十字极光波，削减敌方 {{var_3}} 护甲持续 {{var_4}} 秒，并使目标眩晕 {{var_5}} 秒。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial2Hit",
       "effects": [
         {
           "title_zh": "智者合体冲天击",
@@ -37,14 +40,14 @@
           "desc_zh": "王者之剑斩出十字极光波，削减敌方 {{var_3}} 护甲持续 {{var_4}} 秒，并使目标眩晕 {{var_5}} 秒。",
           "pua_icon": ""
         }
-      ],
-      "desc_zh": "王者之剑斩出十字极光波，削减敌方 {{var_3}} 护甲持续 {{var_4}} 秒，并使目标眩晕 {{var_5}} 秒。",
-      "pua_icon": "",
-      "ui_trigger": "onSpecial2Hit"
+      ]
     },
     "sp3": {
       "name_zh": "王者之剑·绝命制裁",
       "name_en": "Cosmic Blade Judgment",
+      "desc_zh": "王者之剑化作神光从天而降，造成巨额真实伤害，自身获得持续 {{var_6}} 秒的领袖光环，提升 {{var_7}} 攻击力与护甲。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit",
       "effects": [
         {
           "title_zh": "王者之剑·绝命制裁",
@@ -52,12 +55,69 @@
           "desc_zh": "王者之剑化作神光从天而降，造成巨额真实伤害，自身获得持续 {{var_6}} 秒的领袖光环，提升 {{var_7}} 攻击力与护甲。",
           "pua_icon": ""
         }
-      ],
-      "desc_zh": "王者之剑化作神光从天而降，造成巨额真实伤害，自身获得持续 {{var_6}} 秒的领袖光环，提升 {{var_7}} 攻击力与护甲。",
-      "pua_icon": "",
-      "ui_trigger": "onSpecial3Hit"
+      ]
     }
   },
+  "basic_abilities": [
+    {
+      "title_zh": "正义圣剑格挡反击",
+      "title_en": "Parry of Justice",
+      "desc_zh": "每次完美格挡对手近战攻击，必定发动“破剑反击”，打断对手攻击链并造成硬直与流血。",
+      "pua_icon": "",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "剑圣之姿",
+      "title_en": "Way of the Swordmaster",
+      "desc_zh": "近战连击每次命中积累一层“正义之气”（最多 10 层），每层提供 +{{var_1}} 攻击力与破甲。",
+      "pua_icon": "",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "最高总司令洞察",
+      "title_en": "Commander Insight",
+      "desc_zh": "面对格斗系 (Brawler) 或具有霸体/狂暴效果的敌人时，史达洞察其动作，无视对手的不可阻挡 (Unstoppable) 特性并直接将其打断！",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "最高总司令洞察",
+      "show_on_main_screen": false
+    }
+  ],
+  "abilities": [
+    {
+      "title_zh": "正义圣剑格挡反击",
+      "title_en": "Parry of Justice",
+      "desc_zh": "每次完美格挡对手近战攻击，必定发动“破剑反击”，打断对手攻击链并造成硬直与流血。",
+      "pua_icon": "",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "剑圣之姿",
+      "title_en": "Way of the Swordmaster",
+      "desc_zh": "近战连击每次命中积累一层“正义之气”（最多 10 层），每层提供 +{{var_1}} 攻击力与破甲。",
+      "pua_icon": "",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "最高总司令洞察",
+      "title_en": "Commander Insight",
+      "desc_zh": "面对格斗系 (Brawler) 或具有霸体/狂暴效果的敌人时，史达洞察其动作，无视对手的不可阻挡 (Unstoppable) 特性并直接将其打断！",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "最高总司令洞察",
+      "show_on_main_screen": false
+    }
+  ],
   "synergies": [
     {
       "title_zh": "总司令官同盟",
@@ -86,31 +146,6 @@
       "desc_zh": "团队所有低星级队员获得 +{{var_4}} 能量获取速率。",
       "pua_icon": "",
       "bonus_heroes": []
-    }
-  ],
-  "basic_abilities": [
-    {
-      "title_zh": "正义圣剑格挡反击",
-      "title_en": "Parry of Justice",
-      "desc_zh": "每次完美格挡对手近战攻击，必定发动“破剑反击”，打断对手攻击链并造成硬直与流血。",
-      "desc_en": "Perfect blocks trigger a Parry Counter, interrupting the opponent combo and causing heavy hitstun and Bleed.",
-      "pua_icon": ""
-    },
-    {
-      "title_zh": "剑圣之姿",
-      "title_en": "Way of the Swordmaster",
-      "desc_zh": "近战连击每次命中积累一层“正义之气”（最多 10 层），每层提供 +{{var_1}} 攻击力与破甲。",
-      "desc_en": "Melee strikes generate Spirit of Justice stacks (max 10), each granting +{{var_1}} Attack and Armor Piercing.",
-      "pua_icon": ""
-    }
-  ],
-  "game_abilities": [
-    {
-      "title_zh": "最高总司令洞察",
-      "title_en": "Commander Insight",
-      "desc_zh": "面对格斗系 (Brawler) 或具有霸体/狂暴效果的敌人时，史达洞察其动作，无视对手的不可阻挡 (Unstoppable) 特性并直接将其打断！",
-      "pua_icon": "",
-      "ui_trigger": "最高总司令洞察"
     }
   ]
 }

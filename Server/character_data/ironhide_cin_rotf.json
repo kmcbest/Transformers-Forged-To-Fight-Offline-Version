@@ -15,6 +15,9 @@
     "sp1": {
       "name_zh": "感觉走运",
       "name_en": "Feelin' Lucky",
+      "desc_zh": "最后一击有80%概率造成眩晕，持续2.5秒",
+      "pua_icon": "0xe605",
+      "ui_trigger": "onSpecial1Hit",
       "effects": [
         {
           "title_zh": "眩晕",
@@ -22,14 +25,14 @@
           "desc_zh": "最后一击有80%概率造成眩晕，持续2.5秒",
           "pua_icon": "0xe605"
         }
-      ],
-      "desc_zh": "最后一击有80%概率造成眩晕，持续2.5秒",
-      "pua_icon": "0xe605",
-      "ui_trigger": "onSpecial1Hit"
+      ]
     },
     "sp2": {
       "name_zh": "打破僵持",
       "name_en": "Standoff Break",
+      "desc_zh": "有76%的概率获得暴击伤害增益，增加75%的暴击伤害，持续4秒",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial2Hit",
       "effects": [
         {
           "title_zh": "暴击伤害",
@@ -37,14 +40,14 @@
           "desc_zh": "有76%的概率获得暴击伤害增益，增加75%的暴击伤害，持续4秒",
           "pua_icon": ""
         }
-      ],
-      "desc_zh": "有76%的概率获得暴击伤害增益，增加75%的暴击伤害，持续4秒",
-      "pua_icon": "",
-      "ui_trigger": "onSpecial2Hit"
+      ]
     },
     "sp3": {
       "name_zh": "全金属军械库",
       "name_en": "Full Metal Arsenal",
+      "desc_zh": "最后一击有30%几率造成燃烧，施加攻击力100%的伤害，持续8秒。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit",
       "effects": [
         {
           "title_zh": "燃烧",
@@ -52,12 +55,123 @@
           "desc_zh": "最后一击有30%几率造成燃烧，施加攻击力100%的伤害，持续8秒。",
           "pua_icon": ""
         }
-      ],
-      "desc_zh": "最后一击有30%几率造成燃烧，施加攻击力100%的伤害，持续8秒。",
-      "pua_icon": "",
-      "ui_trigger": "onSpecial3Hit"
+      ]
     }
   },
+  "basic_abilities": [
+    {
+      "title_zh": "燃烧",
+      "title_en": "Burn",
+      "desc_zh": "持续造成能量伤害。",
+      "pua_icon": "E41D",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "暴击伤害增益",
+      "title_en": "Crit Damage Buff",
+      "desc_zh": "临时增加暴击命中时造成的伤害。",
+      "pua_icon": "E906",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "眩晕",
+      "title_en": "Stun",
+      "desc_zh": "临时阻止目标采取任何行动。",
+      "pua_icon": "E605",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "暴击伤害",
+      "title_en": "Crit Damage",
+      "desc_zh": "铁皮受到攻击时：有12%的概率获得暴击伤害增益，增加140%的暴击伤害，持续8秒",
+      "pua_icon": "0xe906",
+      "category": "passive",
+      "ui_trigger": "暴击伤害",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "燃烧",
+      "title_en": "Burn",
+      "desc_zh": "所有导弹攻击（重击、SP1的最后一击，SP2的所有攻击）命中时有70%几率造成燃烧，施加攻击力80%的伤害，持续4秒。\n如果对手正在燃烧中，则燃烧可以叠加，每层依旧是4秒，但伤害为攻击力的30%。",
+      "pua_icon": "0xe41d",
+      "category": "passive",
+      "ui_trigger": "燃烧",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "导弹暴击",
+      "title_en": "Missile Crit",
+      "desc_zh": "所有导弹攻击（重击、SP1的最后一击，SP2的所有攻击）+100%暴击概率",
+      "pua_icon": "0xe40d",
+      "category": "passive",
+      "ui_trigger": "导弹暴击",
+      "show_on_main_screen": false
+    }
+  ],
+  "abilities": [
+    {
+      "title_zh": "燃烧",
+      "title_en": "Burn",
+      "desc_zh": "持续造成能量伤害。",
+      "pua_icon": "E41D",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "暴击伤害增益",
+      "title_en": "Crit Damage Buff",
+      "desc_zh": "临时增加暴击命中时造成的伤害。",
+      "pua_icon": "E906",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "眩晕",
+      "title_en": "Stun",
+      "desc_zh": "临时阻止目标采取任何行动。",
+      "pua_icon": "E605",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "暴击伤害",
+      "title_en": "Crit Damage",
+      "desc_zh": "铁皮受到攻击时：有12%的概率获得暴击伤害增益，增加140%的暴击伤害，持续8秒",
+      "pua_icon": "0xe906",
+      "category": "passive",
+      "ui_trigger": "暴击伤害",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "燃烧",
+      "title_en": "Burn",
+      "desc_zh": "所有导弹攻击（重击、SP1的最后一击，SP2的所有攻击）命中时有70%几率造成燃烧，施加攻击力80%的伤害，持续4秒。\n如果对手正在燃烧中，则燃烧可以叠加，每层依旧是4秒，但伤害为攻击力的30%。",
+      "pua_icon": "0xe41d",
+      "category": "passive",
+      "ui_trigger": "燃烧",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "导弹暴击",
+      "title_en": "Missile Crit",
+      "desc_zh": "所有导弹攻击（重击、SP1的最后一击，SP2的所有攻击）+100%暴击概率",
+      "pua_icon": "0xe40d",
+      "category": "passive",
+      "ui_trigger": "导弹暴击",
+      "show_on_main_screen": false
+    }
+  ],
   "synergies": [
     {
       "title_zh": "盟友",
@@ -124,52 +238,6 @@
       "desc_zh": "+{{var_37}} 对所有低等级队友造成特殊伤害。",
       "pua_icon": "",
       "bonus_heroes": []
-    }
-  ],
-  "basic_abilities": [
-    {
-      "title_zh": "燃烧",
-      "title_en": "Burn",
-      "desc_zh": "持续造成能量伤害。",
-      "desc_en": "Deals energy damage over time.",
-      "pua_icon": "E41D"
-    },
-    {
-      "title_zh": "暴击伤害增益",
-      "title_en": "Crit Damage Buff",
-      "desc_zh": "临时增加暴击命中时造成的伤害。",
-      "desc_en": "Temporarily increases the damage of critical hits.",
-      "pua_icon": "E906"
-    },
-    {
-      "title_zh": "眩晕",
-      "title_en": "Stun",
-      "desc_zh": "临时阻止目标采取任何行动。",
-      "desc_en": "Temporarily paralyzes the target, preventing all actions.",
-      "pua_icon": "E605"
-    }
-  ],
-  "game_abilities": [
-    {
-      "title_zh": "暴击伤害",
-      "title_en": "Crit Damage",
-      "desc_zh": "铁皮受到攻击时：有12%的概率获得暴击伤害增益，增加140%的暴击伤害，持续8秒",
-      "pua_icon": "0xe906",
-      "ui_trigger": "暴击伤害"
-    },
-    {
-      "title_zh": "燃烧",
-      "title_en": "Burn",
-      "desc_zh": "所有导弹攻击（重击、SP1的最后一击，SP2的所有攻击）命中时有70%几率造成燃烧，施加攻击力80%的伤害，持续4秒。\n如果对手正在燃烧中，则燃烧可以叠加，每层依旧是4秒，但伤害为攻击力的30%。",
-      "pua_icon": "0xe41d",
-      "ui_trigger": "燃烧"
-    },
-    {
-      "title_zh": "导弹暴击",
-      "title_en": "Missile Crit",
-      "desc_zh": "所有导弹攻击（重击、SP1的最后一击，SP2的所有攻击）+100%暴击概率",
-      "pua_icon": "0xe40d",
-      "ui_trigger": "导弹暴击"
     }
   ]
 }

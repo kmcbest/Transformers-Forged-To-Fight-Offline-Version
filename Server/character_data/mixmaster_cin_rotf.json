@@ -5,9 +5,9 @@
   "faction": "decepticon",
   "class": "demo",
   "signature": {
-    "title_zh": "震荡块",
+    "title_zh": "震荡格挡",
     "title_en": "Concussive Block",
-    "desc_zh": "根据当前生命值，格挡可减少物理攻击造成的最多 {{var_10}} 额外伤害。\n\n适时的格挡会招架对手的基本近战攻击，将其击退并造成 {{var_11}} 攻击。\n\n这提供了特殊或致命伤害增益。",
+    "desc_zh": "根据当前生命值，最多减少40%的格挡物理攻击的伤害。\n适时的格挡会招架对手的基本近战攻击，将其弹开并造成攻击力40%的伤害，并获得1层特殊伤害或暴击伤害增益。",
     "pua_icon": "",
     "ui_trigger": "none"
   },
@@ -15,6 +15,9 @@
     "sp1": {
       "name_zh": "后患无穷",
       "name_en": "Recipe for Disaster",
+      "desc_zh": "50%概率施加1层酸液减益，造成攻击力80%的伤害，持续10秒",
+      "pua_icon": "E524",
+      "ui_trigger": "onSpecial1Hit",
       "effects": [
         {
           "title_zh": "酸液",
@@ -22,29 +25,29 @@
           "desc_zh": "50%概率施加1层酸液减益，造成攻击力80%的伤害，持续10秒",
           "pua_icon": "E524"
         }
-      ],
-      "desc_zh": "50%概率施加1层酸液减益，造成攻击力80%的伤害，持续10秒",
-      "pua_icon": "E524",
-      "ui_trigger": "onSpecial1Hit"
+      ]
     },
     "sp2": {
       "name_zh": "混合",
       "name_en": "Concoction",
+      "desc_zh": "最后一击命中，60%概率造成燃烧，施加攻击力100%的伤害，持续8秒。",
+      "pua_icon": "0xe41d",
+      "ui_trigger": "onSpecial2Hit",
       "effects": [
         {
           "title_zh": "燃烧",
           "title_en": "Burn",
-          "desc_zh": "60%概率造成燃烧，施加攻击力100%的伤害，持续8秒。",
+          "desc_zh": "最后一击命中，60%概率造成燃烧，施加攻击力100%的伤害，持续8秒。",
           "pua_icon": "0xe41d"
         }
-      ],
-      "desc_zh": "60%概率造成燃烧，施加攻击力100%的伤害，持续8秒。",
-      "pua_icon": "0xe41d",
-      "ui_trigger": "onSpecial2Hit"
+      ]
     },
     "sp3": {
       "name_zh": "着手毁坏",
       "name_en": "Commence Devastation",
+      "desc_zh": "70%概率造成燃烧，施加攻击力120%的伤害，持续8秒。",
+      "pua_icon": "0xe41d",
+      "ui_trigger": "onSpecial3Hit",
       "effects": [
         {
           "title_zh": "燃烧",
@@ -58,12 +61,177 @@
           "desc_zh": "施加1层酸液减益，造成攻击力134%的伤害，持续20秒",
           "pua_icon": "E524"
         }
-      ],
-      "desc_zh": "70%概率造成燃烧，施加攻击力120%的伤害，持续8秒。",
-      "pua_icon": "0xe41d",
-      "ui_trigger": "onSpecial3Hit"
+      ]
     }
   },
+  "basic_abilities": [
+    {
+      "title_zh": "酸液",
+      "title_en": "Acid",
+      "desc_zh": "持续造成酸性伤害。",
+      "pua_icon": "E524",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "特殊伤害",
+      "title_en": "Special Damage",
+      "desc_zh": "增加组合连击与全部特殊攻击造成的破坏力。",
+      "pua_icon": "E41C",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "暴击伤害增益",
+      "title_en": "Crit Damage Buff",
+      "desc_zh": "临时增加暴击命中时造成的伤害。",
+      "pua_icon": "E906",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "燃烧",
+      "title_en": "Burn",
+      "desc_zh": "持续造成能量伤害。",
+      "pua_icon": "E41D",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "酸液",
+      "title_en": "Acid",
+      "desc_zh": "远程攻击第1击和第2击：30%的概率施加1层酸液减益，造成攻击力45%的伤害，持续9秒",
+      "pua_icon": "E524",
+      "category": "passive",
+      "ui_trigger": "酸液",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "特殊伤害",
+      "title_en": "Special Damage",
+      "desc_zh": "每5秒获得一个特殊伤害增益，增加27%的特殊伤害，最大叠加6层。",
+      "pua_icon": "E41C",
+      "category": "passive",
+      "ui_trigger": "特殊伤害",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "暴击伤害",
+      "title_en": "Crit Damage",
+      "desc_zh": "在拥有6层特殊伤害后，每5秒获得一个暴击伤害增益，每1层增加18.9%的暴击伤害，最多叠加6层",
+      "pua_icon": "0xe906",
+      "category": "passive",
+      "ui_trigger": "暴击伤害",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "特殊技消耗",
+      "title_en": "Special consumption",
+      "desc_zh": "所有特殊技的最后一击命中时，消耗全部特殊技伤害和暴击伤害增益。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "特殊技消耗",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "暴击几率",
+      "title_en": "Crit Rate",
+      "desc_zh": "如果对方身上有伤害减益，所有攻击增加50%的暴击几率。",
+      "pua_icon": "0xe40d",
+      "category": "passive",
+      "ui_trigger": "暴击几率",
+      "show_on_main_screen": false
+    }
+  ],
+  "abilities": [
+    {
+      "title_zh": "酸液",
+      "title_en": "Acid",
+      "desc_zh": "持续造成酸性伤害。",
+      "pua_icon": "E524",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "特殊伤害",
+      "title_en": "Special Damage",
+      "desc_zh": "增加组合连击与全部特殊攻击造成的破坏力。",
+      "pua_icon": "E41C",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "暴击伤害增益",
+      "title_en": "Crit Damage Buff",
+      "desc_zh": "临时增加暴击命中时造成的伤害。",
+      "pua_icon": "E906",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "燃烧",
+      "title_en": "Burn",
+      "desc_zh": "持续造成能量伤害。",
+      "pua_icon": "E41D",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "酸液",
+      "title_en": "Acid",
+      "desc_zh": "远程攻击第1击和第2击：30%的概率施加1层酸液减益，造成攻击力45%的伤害，持续9秒",
+      "pua_icon": "E524",
+      "category": "passive",
+      "ui_trigger": "酸液",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "特殊伤害",
+      "title_en": "Special Damage",
+      "desc_zh": "每5秒获得一个特殊伤害增益，增加27%的特殊伤害，最大叠加6层。",
+      "pua_icon": "E41C",
+      "category": "passive",
+      "ui_trigger": "特殊伤害",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "暴击伤害",
+      "title_en": "Crit Damage",
+      "desc_zh": "在拥有6层特殊伤害后，每5秒获得一个暴击伤害增益，每1层增加18.9%的暴击伤害，最多叠加6层",
+      "pua_icon": "0xe906",
+      "category": "passive",
+      "ui_trigger": "暴击伤害",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "特殊技消耗",
+      "title_en": "Special consumption",
+      "desc_zh": "所有特殊技的最后一击命中时，消耗全部特殊技伤害和暴击伤害增益。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "特殊技消耗",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "暴击几率",
+      "title_en": "Crit Rate",
+      "desc_zh": "如果对方身上有伤害减益，所有攻击增加50%的暴击几率。",
+      "pua_icon": "0xe40d",
+      "category": "passive",
+      "ui_trigger": "暴击几率",
+      "show_on_main_screen": false
+    }
+  ],
   "synergies": [
     {
       "title_zh": "盟友",
@@ -120,73 +288,6 @@
       "desc_zh": "+{{var_35}} 特殊伤害。",
       "pua_icon": "",
       "bonus_heroes": []
-    }
-  ],
-  "basic_abilities": [
-    {
-      "title_zh": "酸液",
-      "title_en": "Acid",
-      "desc_zh": "持续造成酸性伤害。",
-      "desc_en": "Deals corrosive acid damage over time.",
-      "pua_icon": "E524"
-    },
-    {
-      "title_zh": "特殊伤害",
-      "title_en": "Special Damage",
-      "desc_zh": "增加组合连击与全部特殊攻击造成的破坏力。",
-      "desc_en": "Increases damage dealt by combo finishers and special attacks.",
-      "pua_icon": "E41C"
-    },
-    {
-      "title_zh": "暴击伤害增益",
-      "title_en": "Crit Damage Buff",
-      "desc_zh": "临时增加暴击命中时造成的伤害。",
-      "desc_en": "Temporarily increases the damage of critical hits.",
-      "pua_icon": "E906"
-    },
-    {
-      "title_zh": "燃烧",
-      "title_en": "Burn",
-      "desc_zh": "持续造成能量伤害。",
-      "desc_en": "Deals energy damage over time.",
-      "pua_icon": "E41D"
-    }
-  ],
-  "game_abilities": [
-    {
-      "title_zh": "酸液",
-      "title_en": "Acid",
-      "desc_zh": "远程攻击第1击和第2击：30%的概率施加1层酸液减益，造成攻击力45%的伤害，持续9秒",
-      "pua_icon": "E524",
-      "ui_trigger": "酸液"
-    },
-    {
-      "title_zh": "特殊伤害",
-      "title_en": "Special Damage",
-      "desc_zh": "每5秒获得一个特殊伤害增益，增加27%的特殊伤害，最大叠加6层。// 先是灰色图标，5秒倒计时结束后出现一个橙色图标无倒计时可叠加6层。参照暗天陨充能的实现方式。",
-      "pua_icon": "E41C",
-      "ui_trigger": "特殊伤害"
-    },
-    {
-      "title_zh": "暴击伤害",
-      "title_en": "Crit Damage",
-      "desc_zh": "在拥有6层特殊伤害后，每5秒获得一个暴击伤害增益，每1层增加18.9%的暴击伤害，最多叠加6层",
-      "pua_icon": "0xe906",
-      "ui_trigger": "暴击伤害"
-    },
-    {
-      "title_zh": "特殊技消耗",
-      "title_en": "Special consumption",
-      "desc_zh": "所有特殊技的最后一击命中时，消耗全部特殊技伤害和暴击伤害增益。",
-      "pua_icon": "",
-      "ui_trigger": "特殊技消耗"
-    },
-    {
-      "title_zh": "暴击几率",
-      "title_en": "Crit Rate",
-      "desc_zh": "如果对方身上有伤害减益，所有攻击增加50%的暴击几率。",
-      "pua_icon": "0xe40d",
-      "ui_trigger": "暴击几率"
     }
   ]
 }

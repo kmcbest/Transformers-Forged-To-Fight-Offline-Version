@@ -13,8 +13,11 @@
   },
   "special_attacks": {
     "sp1": {
-      "name_zh": "耀斑等离子束",
-      "name_en": "Solar Flare Beam",
+      "name_zh": "烈火射线",
+      "name_en": "Solar Ray",
+      "desc_zh": "最后一击命中 100% 几率施加一层燃烧减益，造成攻击力 45% 的伤害，持续 4 秒；技能结束后获得一个暴击增益，增加 25% 暴击率，持续 4 秒。",
+      "pua_icon": "0xe41d",
+      "ui_trigger": "onSpecial1Hit",
       "effects": [
         {
           "title_zh": "烈火射线",
@@ -22,14 +25,14 @@
           "desc_zh": "最后一击命中 100% 几率施加一层燃烧减益，造成攻击力 45% 的伤害，持续 4 秒；技能结束后获得一个暴击增益，增加 25% 暴击率，持续 4 秒。",
           "pua_icon": "0xe41d"
         }
-      ],
-      "desc_zh": "最后一击命中 100% 几率施加一层燃烧减益，造成攻击力 45% 的伤害，持续 4 秒；技能结束后获得一个暴击增益，增加 25% 暴击率，持续 4 秒。",
-      "pua_icon": "0xe41d",
-      "ui_trigger": "onSpecial1Hit"
+      ]
     },
     "sp2": {
-      "name_zh": "日珥爆发光环",
-      "name_en": "Coronal Ejection",
+      "name_zh": "耀斑闪光",
+      "name_en": "Solar Flare Flash",
+      "desc_zh": "最后一击命中 80% 几率施加 2 层燃烧减益，造成攻击力 60% 的伤害，持续 5 秒；并有 50% 概率造成眩晕，持续 1.5 秒。",
+      "pua_icon": "0xe41d",
+      "ui_trigger": "onSpecial2Hit",
       "effects": [
         {
           "title_zh": "耀斑闪光",
@@ -37,14 +40,14 @@
           "desc_zh": "最后一击命中 80% 几率施加 2 层燃烧减益，造成攻击力 60% 的伤害，持续 5 秒；并有 50% 概率造成眩晕，持续 1.5 秒。",
           "pua_icon": "0xe41d"
         }
-      ],
-      "desc_zh": "最后一击命中 80% 几率施加 2 层燃烧减益，造成攻击力 60% 的伤害，持续 5 秒；并有 50% 概率造成眩晕，持续 1.5 秒。",
-      "pua_icon": "0xe41d",
-      "ui_trigger": "onSpecial2Hit"
+      ]
     },
     "sp3": {
-      "name_zh": "恒星天降神罚",
-      "name_en": "Supernova Descent",
+      "name_zh": "太阳风暴",
+      "name_en": "Cataclysmic Solar Storm",
+      "desc_zh": "最后一击命中 100% 几率施加 3 层燃烧减益，造成攻击力 90% 的伤害，持续 6 秒；技能结束后获得一个暴击伤害增益，增加 35% 暴击伤害，持续 6 秒。",
+      "pua_icon": "0xe404",
+      "ui_trigger": "onSpecial3Hit",
       "effects": [
         {
           "title_zh": "太阳风暴",
@@ -52,12 +55,87 @@
           "desc_zh": "最后一击命中 100% 几率施加 3 层燃烧减益，造成攻击力 90% 的伤害，持续 6 秒；技能结束后获得一个暴击伤害增益，增加 35% 暴击伤害，持续 6 秒。",
           "pua_icon": "0xe404"
         }
-      ],
-      "desc_zh": "最后一击命中 100% 几率施加 3 层燃烧减益，造成攻击力 90% 的伤害，持续 6 秒；技能结束后获得一个暴击伤害增益，增加 35% 暴击伤害，持续 6 秒。",
-      "pua_icon": "0xe404",
-      "ui_trigger": "onSpecial3Hit"
+      ]
     }
   },
+  "basic_abilities": [
+    {
+      "title_zh": "燃烧",
+      "title_en": "Burn",
+      "desc_zh": "持续造成能量伤害。",
+      "pua_icon": "E41D",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "近战增益",
+      "title_en": "Melee Buff",
+      "desc_zh": "临时增加近战普通攻击与近战重击的伤害。",
+      "pua_icon": "E412",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "暴击伤害增益",
+      "title_en": "Crit Damage Buff",
+      "desc_zh": "临时增加暴击命中时造成的伤害。",
+      "pua_icon": "E906",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "热核锁定",
+      "title_en": "Solar Lock",
+      "desc_zh": "重击命中 100% 概率施加一层燃烧减益，造成攻击力 50% 的伤害，持续 4.5 秒。暴击命中时 50% 概率额外施加一层燃烧减益，造成攻击力 30% 的伤害，持续 4 秒。当对手处于燃烧减益状态时，其规避几率降低 35%。",
+      "pua_icon": "0xe41d",
+      "category": "passive",
+      "ui_trigger": "热核锁定",
+      "show_on_main_screen": false
+    }
+  ],
+  "abilities": [
+    {
+      "title_zh": "燃烧",
+      "title_en": "Burn",
+      "desc_zh": "持续造成能量伤害。",
+      "pua_icon": "E41D",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "近战增益",
+      "title_en": "Melee Buff",
+      "desc_zh": "临时增加近战普通攻击与近战重击的伤害。",
+      "pua_icon": "E412",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "暴击伤害增益",
+      "title_en": "Crit Damage Buff",
+      "desc_zh": "临时增加暴击命中时造成的伤害。",
+      "pua_icon": "E906",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "热核锁定",
+      "title_en": "Solar Lock",
+      "desc_zh": "重击命中 100% 概率施加一层燃烧减益，造成攻击力 50% 的伤害，持续 4.5 秒。暴击命中时 50% 概率额外施加一层燃烧减益，造成攻击力 30% 的伤害，持续 4 秒。当对手处于燃烧减益状态时，其规避几率降低 35%。",
+      "pua_icon": "0xe41d",
+      "category": "passive",
+      "ui_trigger": "热核锁定",
+      "show_on_main_screen": false
+    }
+  ],
   "synergies": [
     {
       "title_zh": "狂热狂信徒",
@@ -84,38 +162,6 @@
       "desc_zh": "团队所有低星级队员获得 +{{var_3}} 暴击伤害。",
       "pua_icon": "",
       "bonus_heroes": []
-    }
-  ],
-  "basic_abilities": [
-    {
-      "title_zh": "燃烧",
-      "title_en": "Burn",
-      "desc_zh": "持续造成能量伤害。",
-      "desc_en": "Deals energy damage over time.",
-      "pua_icon": "E41D"
-    },
-    {
-      "title_zh": "近战增益",
-      "title_en": "Melee Buff",
-      "desc_zh": "临时增加近战普通攻击与近战重击的伤害。",
-      "desc_en": "Temporarily increases damage dealt by basic and heavy melee attacks.",
-      "pua_icon": "E412"
-    },
-    {
-      "title_zh": "暴击伤害增益",
-      "title_en": "Crit Damage Buff",
-      "desc_zh": "临时增加暴击命中时造成的伤害。",
-      "desc_en": "Temporarily increases the damage of critical hits.",
-      "pua_icon": "E906"
-    }
-  ],
-  "game_abilities": [
-    {
-      "title_zh": "热核锁定",
-      "title_en": "Solar Lock",
-      "desc_zh": "重击命中 100% 概率施加一层燃烧减益，造成攻击力 50% 的伤害，持续 4.5 秒。暴击命中时 50% 概率额外施加一层燃烧减益，造成攻击力 30% 的伤害，持续 4 秒。当对手处于燃烧减益状态时，其规避几率降低 35%。",
-      "pua_icon": "0xe41d",
-      "ui_trigger": "热核锁定"
     }
   ]
 }

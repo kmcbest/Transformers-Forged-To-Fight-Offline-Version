@@ -7,7 +7,7 @@
   "signature": {
     "title_zh": "回溯",
     "title_en": "Undo",
-    "desc_zh": "每充满一格能量时，有35%的概率激活回溯，持续4秒。当倒计时结束时，他会立即修复这4秒内受到的全部伤害。//灰色图标",
+    "desc_zh": "每充满一格能量时，有35%的概率激活回溯，持续4秒。当倒计时结束时，他会立即修复这4秒内受到的全部伤害。",
     "pua_icon": "E81E",
     "ui_trigger": "none"
   },
@@ -15,32 +15,35 @@
     "sp1": {
       "name_zh": "冲击波",
       "name_en": "Shockblast",
+      "desc_zh": "技能发动时（无论是否命中），得到3层能量充能，持续6秒",
+      "pua_icon": "E914",
+      "ui_trigger": "onSpecial1Hit",
       "effects": [
         {
           "title_zh": "能量充能",
           "title_en": "Energy Charge",
           "desc_zh": "技能发动时（无论是否命中），得到3层能量充能，持续6秒",
-          "pua_icon": ""
+          "pua_icon": "E914"
         },
         {
           "title_zh": "震击",
           "title_en": "Shock",
-          "desc_zh": "最后一击命中时，每层能量充能施加1层震击减益，造成攻击力85%的伤害，持续4秒",
+          "desc_zh": "最后一击命中时，每层能量充能施加1层震击减益，造成攻击力85%的伤害，持续4秒\n震击的同时触发能量流失，每秒扣除最大能量的0.87%，直到震击结束或者被净化",
           "pua_icon": "E914"
         }
-      ],
-      "desc_zh": "技能发动时（无论是否命中），得到3层能量充能，持续6秒",
-      "pua_icon": "",
-      "ui_trigger": "onSpecial1Hit"
+      ]
     },
     "sp2": {
       "name_zh": "激光扫射",
       "name_en": "Laser Sweep",
+      "desc_zh": "技能期间100%护甲穿透",
+      "pua_icon": "E409",
+      "ui_trigger": "onSpecial2Hit",
       "effects": [
         {
           "title_zh": "护甲穿透",
           "title_en": "Armor Piercing",
-          "desc_zh": "技能期间100%护甲穿透   //黄图标，技能期间显示",
+          "desc_zh": "技能期间100%护甲穿透",
           "pua_icon": "E409"
         },
         {
@@ -49,14 +52,14 @@
           "desc_zh": "最后一击命中，施加阻止修复，禁用对方所有回血能力，持续6.5秒",
           "pua_icon": "E90C"
         }
-      ],
-      "desc_zh": "技能期间100%护甲穿透   //黄图标，技能期间显示",
-      "pua_icon": "E409",
-      "ui_trigger": "onSpecial2Hit"
+      ]
     },
     "sp3": {
       "name_zh": "小朋友",
       "name_en": "Little Friend",
+      "desc_zh": "技能发动时，得到5层能量充能，持续7秒",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit",
       "effects": [
         {
           "title_zh": "能量充能",
@@ -76,12 +79,123 @@
           "desc_zh": "技能完成后，施加阻止修复，禁用对方所有回血能力，持续11秒",
           "pua_icon": "E90C"
         }
-      ],
-      "desc_zh": "技能发动时，得到5层能量充能，持续7秒",
-      "pua_icon": "",
-      "ui_trigger": "onSpecial3Hit"
+      ]
     }
   },
+  "basic_abilities": [
+    {
+      "title_zh": "震击",
+      "title_en": "Shock",
+      "desc_zh": "持续造成电磁能量伤害。",
+      "pua_icon": "E914",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "能量流失",
+      "title_en": "Power Leak",
+      "desc_zh": "随时间推移持续扣减对手一定比例的能量槽。",
+      "pua_icon": "E607",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "修复阻止",
+      "title_en": "Heal Block",
+      "desc_zh": "临时阻止目标回复生命值，全面抑制回血与再生效果。",
+      "pua_icon": "E90C",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "能量充能",
+      "title_en": "Energy Charge",
+      "desc_zh": "格挡远程能量攻击时，得到1层能量充能，持续6秒，最多叠加3层\n震荡波能量充能数少于3个时，格挡远程能量攻击承受0伤害。",
+      "pua_icon": "E914",
+      "category": "passive",
+      "ui_trigger": "能量充能",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "能量充能",
+      "title_en": "Energy Charge",
+      "desc_zh": "技能发动时（无论是否命中），得到3层能量充能，持续6秒",
+      "pua_icon": "E914",
+      "category": "passive",
+      "ui_trigger": "能量充能",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "震击",
+      "title_en": "Shock",
+      "desc_zh": "普通远程攻击命中时，如果有能量充能，消耗1层能量充能，施加1层震击减益，造成攻击力85%的伤害，持续4秒\n重击命中时，每层能量充能施加1层震击减益，造成攻击力85%的伤害，持续4秒\n震击的同时触发能量流失，每秒扣除最大能量的0.87%，直到震击结束或者被净化",
+      "pua_icon": "E914",
+      "category": "passive",
+      "ui_trigger": "震击",
+      "show_on_main_screen": false
+    }
+  ],
+  "abilities": [
+    {
+      "title_zh": "震击",
+      "title_en": "Shock",
+      "desc_zh": "持续造成电磁能量伤害。",
+      "pua_icon": "E914",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "能量流失",
+      "title_en": "Power Leak",
+      "desc_zh": "随时间推移持续扣减对手一定比例的能量槽。",
+      "pua_icon": "E607",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "修复阻止",
+      "title_en": "Heal Block",
+      "desc_zh": "临时阻止目标回复生命值，全面抑制回血与再生效果。",
+      "pua_icon": "E90C",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "能量充能",
+      "title_en": "Energy Charge",
+      "desc_zh": "格挡远程能量攻击时，得到1层能量充能，持续6秒，最多叠加3层\n震荡波能量充能数少于3个时，格挡远程能量攻击承受0伤害。",
+      "pua_icon": "E914",
+      "category": "passive",
+      "ui_trigger": "能量充能",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "能量充能",
+      "title_en": "Energy Charge",
+      "desc_zh": "技能发动时（无论是否命中），得到3层能量充能，持续6秒",
+      "pua_icon": "E914",
+      "category": "passive",
+      "ui_trigger": "能量充能",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "震击",
+      "title_en": "Shock",
+      "desc_zh": "普通远程攻击命中时，如果有能量充能，消耗1层能量充能，施加1层震击减益，造成攻击力85%的伤害，持续4秒\n重击命中时，每层能量充能施加1层震击减益，造成攻击力85%的伤害，持续4秒\n震击的同时触发能量流失，每秒扣除最大能量的0.87%，直到震击结束或者被净化",
+      "pua_icon": "E914",
+      "category": "passive",
+      "ui_trigger": "震击",
+      "show_on_main_screen": false
+    }
+  ],
   "synergies": [
     {
       "title_zh": "大脑增益——所有科技机器人",
@@ -179,52 +293,6 @@
       "desc_zh": "通过+{{var_50}} 增加功率增益。",
       "pua_icon": "",
       "bonus_heroes": []
-    }
-  ],
-  "basic_abilities": [
-    {
-      "title_zh": "震击",
-      "title_en": "Shock",
-      "desc_zh": "持续造成电磁能量伤害。",
-      "desc_en": "Deals electrical energy damage over time.",
-      "pua_icon": "E914"
-    },
-    {
-      "title_zh": "能量流失",
-      "title_en": "Power Leak",
-      "desc_zh": "随时间推移持续扣减对手一定比例的能量槽。",
-      "desc_en": "Drains a percentage of the opponent's power gauge over time.",
-      "pua_icon": "E607"
-    },
-    {
-      "title_zh": "修复阻止",
-      "title_en": "Heal Block",
-      "desc_zh": "临时阻止目标回复生命值，全面抑制回血与再生效果。",
-      "desc_en": "Temporarily prevents the target from regaining health, shutting down all healing.",
-      "pua_icon": "E90C"
-    }
-  ],
-  "game_abilities": [
-    {
-      "title_zh": "能量充能",
-      "title_en": "Energy Charge",
-      "desc_zh": "格挡远程能量攻击时，得到1层能量充能，持续6秒，最多叠加3层  //大部分远程普通攻击都是能量攻击，只有漂移、反冲和雷震是物理攻击，他们不会给震荡波得到护盾。\n震荡波能量充能数少于3个时，格挡远程能量攻击承受0伤害。",
-      "pua_icon": "",
-      "ui_trigger": "能量充能"
-    },
-    {
-      "title_zh": "震击",
-      "title_en": "Shock",
-      "desc_zh": "重击命中时，每层能量充能施加1层震击减益，造成攻击力85%的伤害，持续4秒  // 不消耗能量充能，无能量充能则不触发震击\n普通远程攻击命中时，如果有能量充能，消耗1层能量充能，施加1层震击减益，造成攻击力85%的伤害，持续4秒  // 无能量充能则不触发震击\n震击的同时触发能量流失，每秒扣除最大能量的0.87%，直到震击结束或者被净化  // 同步显示红色能量流失图标e607",
-      "pua_icon": "E914",
-      "ui_trigger": "震击"
-    },
-    {
-      "title_zh": "能量充能",
-      "title_en": "Energy Charge",
-      "desc_zh": "技能发动时（无论是否命中），得到3层能量充能，持续6秒",
-      "pua_icon": "",
-      "ui_trigger": "能量充能"
     }
   ]
 }

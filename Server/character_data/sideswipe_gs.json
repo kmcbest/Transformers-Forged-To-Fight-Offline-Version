@@ -15,6 +15,9 @@
     "sp1": {
       "name_zh": "招摇",
       "name_en": "Swagger",
+      "desc_zh": "40%的概率击晕对手2.5秒",
+      "pua_icon": "0xe605",
+      "ui_trigger": "onSpecial1Hit",
       "effects": [
         {
           "title_zh": "眩晕",
@@ -25,17 +28,17 @@
         {
           "title_zh": "暴击几率",
           "title_en": "Crit Rate",
-          "desc_zh": "本技能内+25.5%暴击率 //倒计时在技能结束后消失",
+          "desc_zh": "本技能内+25.5%暴击率",
           "pua_icon": "0xe40d"
         }
-      ],
-      "desc_zh": "40%的概率击晕对手2.5秒",
-      "pua_icon": "0xe605",
-      "ui_trigger": "onSpecial1Hit"
+      ]
     },
     "sp2": {
       "name_zh": "返校大作战",
       "name_en": "Kickin' It Old School",
+      "desc_zh": "最后一击100%几率造成燃烧，施加攻击力80%的伤害，持续6秒。",
+      "pua_icon": "0xe41d",
+      "ui_trigger": "onSpecial2Hit",
       "effects": [
         {
           "title_zh": "燃烧",
@@ -49,14 +52,14 @@
           "desc_zh": "获得8秒的近战规避，35%的概率规避基础近战和SP1/SP2中的近战攻击",
           "pua_icon": "0xe509"
         }
-      ],
-      "desc_zh": "最后一击100%几率造成燃烧，施加攻击力80%的伤害，持续6秒。",
-      "pua_icon": "0xe41d",
-      "ui_trigger": "onSpecial2Hit"
+      ]
     },
     "sp3": {
       "name_zh": "霹雳舞对决",
       "name_en": "Breakdance Fighting",
+      "desc_zh": "最后一击100%几率造成燃烧，施加攻击力100%的伤害，持续4秒。",
+      "pua_icon": "0xe41d",
+      "ui_trigger": "onSpecial3Hit",
       "effects": [
         {
           "title_zh": "燃烧",
@@ -70,12 +73,195 @@
           "desc_zh": "除最后一击外，每一击有60%的概率驱散对方一个增益",
           "pua_icon": "0xe950"
         }
-      ],
-      "desc_zh": "最后一击100%几率造成燃烧，施加攻击力100%的伤害，持续4秒。",
-      "pua_icon": "0xe41d",
-      "ui_trigger": "onSpecial3Hit"
+      ]
     }
   },
+  "basic_abilities": [
+    {
+      "title_zh": "暴击率增益",
+      "title_en": "Crit Rate Buff",
+      "desc_zh": "临时增加攻击命中时触发暴击的几率。",
+      "pua_icon": "E40D",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "能量获取",
+      "title_en": "Power Gain",
+      "desc_zh": "持续进行的被动能量积蓄，加速特殊技能量条充盈。",
+      "pua_icon": "E608",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "规避",
+      "title_en": "Evade",
+      "desc_zh": "自动闪避即将到来的攻击。",
+      "pua_icon": "E509",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "燃烧",
+      "title_en": "Burn",
+      "desc_zh": "持续造成能量伤害。",
+      "pua_icon": "E41D",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "近战规避",
+      "title_en": "Melee Evade",
+      "desc_zh": "受到7次普通攻击后，获得近战规避增益，38%的概率规避基础近战和SP1/SP2中的近战攻击，持续4秒。",
+      "pua_icon": "E509",
+      "category": "passive",
+      "ui_trigger": "近战规避",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "暴击率增益",
+      "title_en": "Crit Buff",
+      "desc_zh": "横炮触发暴击时，100%概率得到一层3.8%的暴击率增益，可叠加。一旦横炮被击倒，就失去5层暴击率增益。",
+      "pua_icon": "E40D",
+      "category": "passive",
+      "ui_trigger": "暴击率增益",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "重击净化",
+      "title_en": "Heavy Purify",
+      "desc_zh": "重击时净化所有震击减益",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "重击净化",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "重击刷新",
+      "title_en": "Heavy Refresh",
+      "desc_zh": "重击时刷新所有暴击伤害增益的倒计时。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "重击刷新",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "暴击伤害",
+      "title_en": "Crit Damage",
+      "desc_zh": "闪避对方前冲攻击时，获得暴击伤害增益，提升108%的暴击伤害，持续6秒",
+      "pua_icon": "0xe906",
+      "category": "passive",
+      "ui_trigger": "暴击伤害",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "能量获取",
+      "title_en": "Power Gain",
+      "desc_zh": "极限闪避远程普通攻击和远程重击时，1秒内获得最大能量的13%。",
+      "pua_icon": "E608",
+      "category": "passive",
+      "ui_trigger": "能量获取",
+      "show_on_main_screen": false
+    }
+  ],
+  "abilities": [
+    {
+      "title_zh": "暴击率增益",
+      "title_en": "Crit Rate Buff",
+      "desc_zh": "临时增加攻击命中时触发暴击的几率。",
+      "pua_icon": "E40D",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "能量获取",
+      "title_en": "Power Gain",
+      "desc_zh": "持续进行的被动能量积蓄，加速特殊技能量条充盈。",
+      "pua_icon": "E608",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "规避",
+      "title_en": "Evade",
+      "desc_zh": "自动闪避即将到来的攻击。",
+      "pua_icon": "E509",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "燃烧",
+      "title_en": "Burn",
+      "desc_zh": "持续造成能量伤害。",
+      "pua_icon": "E41D",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "近战规避",
+      "title_en": "Melee Evade",
+      "desc_zh": "受到7次普通攻击后，获得近战规避增益，38%的概率规避基础近战和SP1/SP2中的近战攻击，持续4秒。",
+      "pua_icon": "E509",
+      "category": "passive",
+      "ui_trigger": "近战规避",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "暴击率增益",
+      "title_en": "Crit Buff",
+      "desc_zh": "横炮触发暴击时，100%概率得到一层3.8%的暴击率增益，可叠加。一旦横炮被击倒，就失去5层暴击率增益。",
+      "pua_icon": "E40D",
+      "category": "passive",
+      "ui_trigger": "暴击率增益",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "重击净化",
+      "title_en": "Heavy Purify",
+      "desc_zh": "重击时净化所有震击减益",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "重击净化",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "重击刷新",
+      "title_en": "Heavy Refresh",
+      "desc_zh": "重击时刷新所有暴击伤害增益的倒计时。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "重击刷新",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "暴击伤害",
+      "title_en": "Crit Damage",
+      "desc_zh": "闪避对方前冲攻击时，获得暴击伤害增益，提升108%的暴击伤害，持续6秒",
+      "pua_icon": "0xe906",
+      "category": "passive",
+      "ui_trigger": "暴击伤害",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "能量获取",
+      "title_en": "Power Gain",
+      "desc_zh": "极限闪避远程普通攻击和远程重击时，1秒内获得最大能量的13%。",
+      "pua_icon": "E608",
+      "category": "passive",
+      "ui_trigger": "能量获取",
+      "show_on_main_screen": false
+    }
+  ],
   "synergies": [
     {
       "title_zh": "盟友",
@@ -121,80 +307,6 @@
       "desc_zh": "+{{var_33}} 对所有较低级别队友的关键评级。",
       "pua_icon": "",
       "bonus_heroes": []
-    }
-  ],
-  "basic_abilities": [
-    {
-      "title_zh": "暴击率增益",
-      "title_en": "Crit Rate Buff",
-      "desc_zh": "临时增加攻击命中时触发暴击的几率。",
-      "desc_en": "Temporarily increases the chance of scoring critical hits.",
-      "pua_icon": "E40D"
-    },
-    {
-      "title_zh": "能量获取",
-      "title_en": "Power Gain",
-      "desc_zh": "持续进行的被动能量积蓄，加速特殊技能量条充盈。",
-      "desc_en": "Passively gains power over time to fill special attack bars faster.",
-      "pua_icon": "E608"
-    },
-    {
-      "title_zh": "规避",
-      "title_en": "Evade",
-      "desc_zh": "自动闪避即将到来的攻击。",
-      "desc_en": "Automatically evade incoming attack.",
-      "pua_icon": "E509"
-    },
-    {
-      "title_zh": "燃烧",
-      "title_en": "Burn",
-      "desc_zh": "持续造成能量伤害。",
-      "desc_en": "Deals energy damage over time.",
-      "pua_icon": "E41D"
-    }
-  ],
-  "game_abilities": [
-    {
-      "title_zh": "近战规避",
-      "title_en": "Melee Evade",
-      "desc_zh": "受到7次普通攻击后，获得近战规避增益，38%的概率规避基础近战和SP1/SP2中的近战攻击，持续4秒。//显示一个灰色的规避图标，每次受到普通攻击计数加1，到7层变成带倒计时的绿色规避图标，特殊技中的攻击不计数",
-      "pua_icon": "E509",
-      "ui_trigger": "近战规避"
-    },
-    {
-      "title_zh": "暴击率增益",
-      "title_en": "Crit Buff",
-      "desc_zh": "横炮触发暴击时，100%概率得到一层3.8%的暴击率增益，可叠加。一旦横炮被击倒，就失去5层暴击率增益。",
-      "pua_icon": "E40D",
-      "ui_trigger": "暴击率增益"
-    },
-    {
-      "title_zh": "重击净化",
-      "title_en": "Heavy Purify",
-      "desc_zh": "重击时净化所有震击减益",
-      "pua_icon": "",
-      "ui_trigger": "重击净化"
-    },
-    {
-      "title_zh": "重击刷新",
-      "title_en": "Heavy Refresh",
-      "desc_zh": "重击时刷新所有暴击伤害增益的倒计时。",
-      "pua_icon": "",
-      "ui_trigger": "重击刷新"
-    },
-    {
-      "title_zh": "能量获取",
-      "title_en": "Power Gain",
-      "desc_zh": "闪避远程普通攻击和远程重击时，1秒内获得最大能量的13%。",
-      "pua_icon": "E608",
-      "ui_trigger": "能量获取"
-    },
-    {
-      "title_zh": "暴击伤害",
-      "title_en": "Crit Damage",
-      "desc_zh": "闪避对方前冲攻击时，获得暴击伤害增益，提升108%的暴击伤害，持续6秒",
-      "pua_icon": "0xe906",
-      "ui_trigger": "暴击伤害"
     }
   ]
 }

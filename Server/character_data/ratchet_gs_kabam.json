@@ -15,6 +15,9 @@
     "sp1": {
       "name_zh": "拧紧扳手",
       "name_en": "Impact Wrench",
+      "desc_zh": "40%的概率眩晕对手2.5秒，对手身上的每层震击增加20%的概率",
+      "pua_icon": "E605",
+      "ui_trigger": "onSpecial1Hit",
       "effects": [
         {
           "title_zh": "眩晕",
@@ -22,35 +25,35 @@
           "desc_zh": "40%的概率眩晕对手2.5秒，对手身上的每层震击增加20%的概率",
           "pua_icon": "E605"
         }
-      ],
-      "desc_zh": "40%的概率眩晕对手2.5秒，对手身上的每层震击增加20%的概率",
-      "pua_icon": "E605",
-      "ui_trigger": "onSpecial1Hit"
+      ]
     },
     "sp2": {
       "name_zh": "应急响应",
       "name_en": "Emergency Response",
+      "desc_zh": "根据损失的生命值，最多获取最大能量槽的28.8%。",
+      "pua_icon": "E606",
+      "ui_trigger": "onSpecial2Hit",
       "effects": [
         {
           "title_zh": "能量获取",
           "title_en": "Power Gain",
-          "desc_zh": "根据损失的生命值，最多获取最大能量槽的28.8%。\n//用例，50%的血量时，获取最大能量槽的14.4%。",
+          "desc_zh": "根据损失的生命值，最多获取最大能量槽的28.8%。",
           "pua_icon": "E606"
         },
         {
           "title_zh": "回血",
           "title_en": "Repair",
-          "desc_zh": "立即修复受到伤害的17%。\n\n//受到伤害=总血量-当前血量。用例：50%血量时，修复50%*17%=8.5%的总生命值",
+          "desc_zh": "立即修复受到伤害的17%。",
           "pua_icon": "E503"
         }
-      ],
-      "desc_zh": "根据损失的生命值，最多获取最大能量槽的28.8%。\n//用例，50%的血量时，获取最大能量槽的14.4%。",
-      "pua_icon": "E606",
-      "ui_trigger": "onSpecial2Hit"
+      ]
     },
     "sp3": {
       "name_zh": "诊断扫描",
       "name_en": "Diagnostic Scan",
+      "desc_zh": "100%概率施加震击，施加攻击力97.5%的震击伤害，持续4秒",
+      "pua_icon": "0xe914",
+      "ui_trigger": "onSpecial3Hit",
       "effects": [
         {
           "title_zh": "震击",
@@ -58,12 +61,123 @@
           "desc_zh": "100%概率施加震击，施加攻击力97.5%的震击伤害，持续4秒",
           "pua_icon": "0xe914"
         }
-      ],
-      "desc_zh": "100%概率施加震击，施加攻击力97.5%的震击伤害，持续4秒",
-      "pua_icon": "0xe914",
-      "ui_trigger": "onSpecial3Hit"
+      ]
     }
   },
+  "basic_abilities": [
+    {
+      "title_zh": "震击",
+      "title_en": "Shock",
+      "desc_zh": "持续造成电磁能量伤害。",
+      "pua_icon": "E914",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "修复",
+      "title_en": "Repair",
+      "desc_zh": "随时间推移持续修复生命值，或按受损比例回血。",
+      "pua_icon": "E503",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "能量获取",
+      "title_en": "Power Gain",
+      "desc_zh": "持续进行的被动能量积蓄，加速特殊技能量条充盈。",
+      "pua_icon": "E608",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "自我诊断",
+      "title_en": "Self-Diagnosis",
+      "desc_zh": "缓慢恢复生命与能量",
+      "pua_icon": "E60E",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "自我诊断",
+      "title_en": "Self-Diagnosis",
+      "desc_zh": "当救护车血量低于50%时，完成重击动作时会激活自我诊断，修复10%的生命值，并获得最大能量槽20%的能量，持续10秒",
+      "pua_icon": "0xe60e",
+      "category": "passive",
+      "ui_trigger": "自我诊断",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "远程震击",
+      "title_en": "Ranged Shock",
+      "desc_zh": "远程攻击+20%的暴击率，如果出暴击，将施加攻击力75%的震击伤害，持续6.5秒",
+      "pua_icon": "0xe914",
+      "category": "passive",
+      "ui_trigger": "远程震击",
+      "show_on_main_screen": false
+    }
+  ],
+  "abilities": [
+    {
+      "title_zh": "震击",
+      "title_en": "Shock",
+      "desc_zh": "持续造成电磁能量伤害。",
+      "pua_icon": "E914",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "修复",
+      "title_en": "Repair",
+      "desc_zh": "随时间推移持续修复生命值，或按受损比例回血。",
+      "pua_icon": "E503",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "能量获取",
+      "title_en": "Power Gain",
+      "desc_zh": "持续进行的被动能量积蓄，加速特殊技能量条充盈。",
+      "pua_icon": "E608",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "自我诊断",
+      "title_en": "Self-Diagnosis",
+      "desc_zh": "缓慢恢复生命与能量",
+      "pua_icon": "E60E",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "自我诊断",
+      "title_en": "Self-Diagnosis",
+      "desc_zh": "当救护车血量低于50%时，完成重击动作时会激活自我诊断，修复10%的生命值，并获得最大能量槽20%的能量，持续10秒",
+      "pua_icon": "0xe60e",
+      "category": "passive",
+      "ui_trigger": "自我诊断",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "远程震击",
+      "title_en": "Ranged Shock",
+      "desc_zh": "远程攻击+20%的暴击率，如果出暴击，将施加攻击力75%的震击伤害，持续6.5秒",
+      "pua_icon": "0xe914",
+      "category": "passive",
+      "ui_trigger": "远程震击",
+      "show_on_main_screen": false
+    }
+  ],
   "synergies": [
     {
       "title_zh": "盟友",
@@ -136,52 +250,6 @@
       "desc_zh": "+{{var_43}} 功率率。",
       "pua_icon": "",
       "bonus_heroes": []
-    }
-  ],
-  "basic_abilities": [
-    {
-      "title_zh": "震击",
-      "title_en": "Shock",
-      "desc_zh": "持续造成电磁能量伤害。",
-      "desc_en": "Deals electrical energy damage over time.",
-      "pua_icon": "E914"
-    },
-    {
-      "title_zh": "修复",
-      "title_en": "Repair",
-      "desc_zh": "随时间推移持续修复生命值，或按受损比例回血。",
-      "desc_en": "Repairs health over time or restores a percentage of lost health.",
-      "pua_icon": "E503"
-    },
-    {
-      "title_zh": "能量获取",
-      "title_en": "Power Gain",
-      "desc_zh": "持续进行的被动能量积蓄，加速特殊技能量条充盈。",
-      "desc_en": "Passively gains power over time to fill special attack bars faster.",
-      "pua_icon": "E608"
-    },
-    {
-      "title_zh": "自我诊断",
-      "title_en": "Self-Diagnosis",
-      "desc_zh": "缓慢恢复生命与能量",
-      "desc_en": "Certain attacks cannot be blocked.",
-      "pua_icon": "E60E"
-    }
-  ],
-  "game_abilities": [
-    {
-      "title_zh": "自我诊断",
-      "title_en": "Self-Diagnosis",
-      "desc_zh": "当救护车血量低于50%时，完成重击动作时会激活自我诊断，修复10%的生命值，并获得最大能量槽20%的能量，持续10秒",
-      "pua_icon": "0xe60e",
-      "ui_trigger": "自我诊断"
-    },
-    {
-      "title_zh": "远程震击",
-      "title_en": "Ranged Shock",
-      "desc_zh": "远程攻击+20%的暴击率，如果出暴击，将施加攻击力75%的震击伤害，持续6.5秒",
-      "pua_icon": "0xe914",
-      "ui_trigger": "远程震击"
     }
   ]
 }

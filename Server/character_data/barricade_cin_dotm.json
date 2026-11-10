@@ -7,57 +7,225 @@
   "signature": {
     "title_zh": "坏警察",
     "title_en": "Bad Cop",
-    "desc_zh": "被动：逆火可堆叠且其持续时间增加（由{{var_9}}决定）。",
-    "pua_icon": "",
+    "desc_zh": "施加的逆火可叠加，持续时间增加70%.",
+    "pua_icon": "E901",
     "ui_trigger": "none"
   },
   "special_attacks": {
     "sp1": {
       "name_zh": "惩罚",
       "name_en": "Punishment",
+      "desc_zh": "最后一击命中，施加1层逆火，持续9秒。在对方使用任意特殊技时，造成路障攻击力100%的瞬时伤害。",
+      "pua_icon": "E901",
+      "ui_trigger": "onSpecial1Hit",
       "effects": [
         {
-          "title_zh": "惩罚",
-          "title_en": "Punishment",
-          "desc_zh": "你有权保持沉默。",
-          "pua_icon": ""
+          "title_zh": "逆火",
+          "title_en": "Backfire",
+          "desc_zh": "最后一击命中，施加1层逆火，持续9秒。在对方使用任意特殊技时，造成路障攻击力100%的瞬时伤害。",
+          "pua_icon": "E901"
         }
-      ],
-      "desc_zh": "你有权保持沉默。",
-      "pua_icon": "",
-      "ui_trigger": "onSpecial1Hit"
+      ]
     },
     "sp2": {
-      "name_zh": "特殊技 2",
-      "name_en": "Special Attack 2",
+      "name_zh": "Subjugation",
+      "name_en": "镇压",
+      "desc_zh": "最后一击命中时，立即盗取对手当前储存的能量值的36%，并将其转移给自己。",
+      "pua_icon": "E607",
+      "ui_trigger": "onSpecial2Hit",
       "effects": [
         {
-          "title_zh": "特殊技 2",
-          "title_en": "Special Attack 2",
-          "desc_zh": "{{var_10}} 对 {{var_11}} 造成逆火。",
-          "pua_icon": ""
+          "title_zh": "能量窃取",
+          "title_en": "Power Steal",
+          "desc_zh": "最后一击命中时，立即盗取对手当前储存的能量值的36%，并将其转移给自己。",
+          "pua_icon": "E607"
         }
-      ],
-      "desc_zh": "{{var_10}} 对 {{var_11}} 造成逆火。",
-      "pua_icon": "",
-      "ui_trigger": "onSpecial2Hit"
+      ]
     },
     "sp3": {
-      "name_zh": "征服",
-      "name_en": "Subjugation",
+      "name_zh": "派遣",
+      "name_en": "Dispatch",
+      "desc_zh": "技能发动时获得25%的暴击几率增益，持续25秒",
+      "pua_icon": "0xe40d",
+      "ui_trigger": "onSpecial3Hit",
       "effects": [
         {
-          "title_zh": "征服",
-          "title_en": "Subjugation",
-          "desc_zh": "使对手屈服。",
-          "pua_icon": ""
+          "title_zh": "暴击几率",
+          "title_en": "Crit Rate",
+          "desc_zh": "技能发动时获得25%的暴击几率增益，持续25秒",
+          "pua_icon": "0xe40d"
         }
-      ],
-      "desc_zh": "使对手屈服。",
-      "pua_icon": "",
-      "ui_trigger": "onSpecial3Hit"
+      ]
     }
   },
+  "basic_abilities": [
+    {
+      "title_zh": "规避",
+      "title_en": "Evade",
+      "desc_zh": "自动闪避即将到来的攻击。",
+      "pua_icon": "E509",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "能量窃取",
+      "title_en": "Power Steal",
+      "desc_zh": "盗取对手当前储存的能量槽，并将其转移给自己。",
+      "pua_icon": "E607",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "暴击率增益",
+      "title_en": "Crit Rate Buff",
+      "desc_zh": "临时增加攻击命中时触发暴击的几率。",
+      "pua_icon": "E40D",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "逆火",
+      "title_en": "Backfire",
+      "desc_zh": "对手激活特殊攻击时受到直接伤害。",
+      "pua_icon": "E901",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "近战规避",
+      "title_en": "Melee Evade",
+      "desc_zh": "被击倒时，有85%的概率获得3秒的近战规避，可规避基础近战和SP1/SP2中的近战攻击",
+      "pua_icon": "0xe509",
+      "category": "passive",
+      "ui_trigger": "近战规避",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "暴击几率",
+      "title_en": "Crit Rate",
+      "desc_zh": "被击倒时，有40%的概率获得暴击几率增益，持续7.5秒",
+      "pua_icon": "0xe40d",
+      "category": "passive",
+      "ui_trigger": "暴击几率",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "暴击伤害",
+      "title_en": "Crit Damage",
+      "desc_zh": "根据对手当前的能量比例提升近战功能的暴击伤害，提升比例为144%*对方能量百分比。",
+      "pua_icon": "E906",
+      "category": "passive",
+      "ui_trigger": "暴击伤害",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "远程规避",
+      "title_en": "Ranged Evade",
+      "desc_zh": "被击倒时，有85%的概率获得3秒的远程规避，可规避基础近战和SP1/SP2中的远程攻击",
+      "pua_icon": "0xe518",
+      "category": "passive",
+      "ui_trigger": "远程规避",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "逆火",
+      "title_en": "Backfire",
+      "desc_zh": "远程普通攻击命中或被防时，20%的概率施加1层逆火，持续6秒。在对方使用任意特殊技时，每1层逆火造成路障攻击力100%的瞬时伤害。",
+      "pua_icon": "E901",
+      "category": "passive",
+      "ui_trigger": "逆火",
+      "show_on_main_screen": false
+    }
+  ],
+  "abilities": [
+    {
+      "title_zh": "规避",
+      "title_en": "Evade",
+      "desc_zh": "自动闪避即将到来的攻击。",
+      "pua_icon": "E509",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "能量窃取",
+      "title_en": "Power Steal",
+      "desc_zh": "盗取对手当前储存的能量槽，并将其转移给自己。",
+      "pua_icon": "E607",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "暴击率增益",
+      "title_en": "Crit Rate Buff",
+      "desc_zh": "临时增加攻击命中时触发暴击的几率。",
+      "pua_icon": "E40D",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "逆火",
+      "title_en": "Backfire",
+      "desc_zh": "对手激活特殊攻击时受到直接伤害。",
+      "pua_icon": "E901",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "近战规避",
+      "title_en": "Melee Evade",
+      "desc_zh": "被击倒时，有85%的概率获得3秒的近战规避，可规避基础近战和SP1/SP2中的近战攻击",
+      "pua_icon": "0xe509",
+      "category": "passive",
+      "ui_trigger": "近战规避",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "暴击几率",
+      "title_en": "Crit Rate",
+      "desc_zh": "被击倒时，有40%的概率获得暴击几率增益，持续7.5秒",
+      "pua_icon": "0xe40d",
+      "category": "passive",
+      "ui_trigger": "暴击几率",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "暴击伤害",
+      "title_en": "Crit Damage",
+      "desc_zh": "根据对手当前的能量比例提升近战功能的暴击伤害，提升比例为144%*对方能量百分比。",
+      "pua_icon": "E906",
+      "category": "passive",
+      "ui_trigger": "暴击伤害",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "远程规避",
+      "title_en": "Ranged Evade",
+      "desc_zh": "被击倒时，有85%的概率获得3秒的远程规避，可规避基础近战和SP1/SP2中的远程攻击",
+      "pua_icon": "0xe518",
+      "category": "passive",
+      "ui_trigger": "远程规避",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "逆火",
+      "title_en": "Backfire",
+      "desc_zh": "远程普通攻击命中或被防时，20%的概率施加1层逆火，持续6秒。在对方使用任意特殊技时，每1层逆火造成路障攻击力100%的瞬时伤害。",
+      "pua_icon": "E901",
+      "category": "passive",
+      "ui_trigger": "逆火",
+      "show_on_main_screen": false
+    }
+  ],
   "synergies": [
     {
       "title_zh": "宿敌",
@@ -97,59 +265,6 @@
       "bonus_heroes": [
         "megatron_gs_leader2015"
       ]
-    }
-  ],
-  "basic_abilities": [
-    {
-      "title_zh": "规避",
-      "title_en": "Evade",
-      "desc_zh": "自动闪避即将到来的攻击。",
-      "desc_en": "Automatically evade incoming attack.",
-      "pua_icon": "E509"
-    },
-    {
-      "title_zh": "能量窃取",
-      "title_en": "Power Steal",
-      "desc_zh": "盗取对手当前储存的能量槽，并将其转移给自己。",
-      "desc_en": "Steals stored power from the opponent and transfers it to the user.",
-      "pua_icon": "E607"
-    },
-    {
-      "title_zh": "暴击率增益",
-      "title_en": "Crit Rate Buff",
-      "desc_zh": "临时增加攻击命中时触发暴击的几率。",
-      "desc_en": "Temporarily increases the chance of scoring critical hits.",
-      "pua_icon": "E40D"
-    },
-    {
-      "title_zh": "逆火",
-      "title_en": "Backfire",
-      "desc_zh": "对手激活特殊攻击时受到直接伤害。",
-      "desc_en": "Causes backfire recoil when the opponent activates a special attack, dealing damage.",
-      "pua_icon": "E901"
-    }
-  ],
-  "game_abilities": [
-    {
-      "title_zh": "近战规避",
-      "title_en": "Melee Evade",
-      "desc_zh": "被击倒时，有85%的概率获得3秒的近战规避，可规避基础近战和SP1/SP2中的近战攻击",
-      "pua_icon": "0xe509",
-      "ui_trigger": "近战规避"
-    },
-    {
-      "title_zh": "远程规避",
-      "title_en": "Ranged Evade",
-      "desc_zh": "被击倒时，有85%的概率获得3秒的远程规避，可规避基础近战和SP1/SP2中的远程攻击",
-      "pua_icon": "0xe518",
-      "ui_trigger": "远程规避"
-    },
-    {
-      "title_zh": "暴击几率",
-      "title_en": "Crit Rate",
-      "desc_zh": "被击倒时，有40%的概率获得暴击几率增益，持续7.5秒",
-      "pua_icon": "0xe40d",
-      "ui_trigger": "暴击几率"
     }
   ]
 }

@@ -7,29 +7,32 @@
   "signature": {
     "title_zh": "帕拉德隆仁心",
     "title_en": "Paradron Mercy",
-    "desc_zh": "战斗濒死时（生命低于 20%），触发核心紧急重启，恢复 {{var_3}} 生命值，并获得无敌力场，免疫下一次致命伤害持续 5 秒。",
-    "pua_icon": "",
+    "desc_zh": "生命低于20%时，触发10秒护盾，免疫全部DOT伤害，并将受到攻击伤害或防御伤害的100%转化为自身生命值。\n护盾失效后，得到一个50%的抗性减益，持续5秒。",
+    "pua_icon": "E917",
     "ui_trigger": "none"
   },
   "special_attacks": {
     "sp1": {
       "name_zh": "纳米手术激光",
       "name_en": "Surgical Laser",
+      "desc_zh": "净化自身所有减益，但自己得到1层20%的抗性减益，持续3秒",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial1Hit",
       "effects": [
         {
-          "title_zh": "纳米手术激光",
-          "title_en": "Surgical Laser",
-          "desc_zh": "精准发射手术激光切割目标，净化自身所有减益，并根据净化的减益数量造成额外纯净能量伤害。",
+          "title_zh": "净化",
+          "title_en": "Purify",
+          "desc_zh": "净化自身所有减益，但自己得到1层20%的抗性减益，持续3秒",
           "pua_icon": ""
         }
-      ],
-      "desc_zh": "精准发射手术激光切割目标，净化自身所有减益，并根据净化的减益数量造成额外纯净能量伤害。",
-      "pua_icon": "",
-      "ui_trigger": "onSpecial1Hit"
+      ]
     },
     "sp2": {
       "name_zh": "战地除颤冲击",
       "name_en": "Defibrillator Burst",
+      "desc_zh": "贴身释放高压除颤电极脉冲，对敌方造成触电在 {{var_1}} 秒内造成 {{var_2}} 伤害，并眩晕对手 {{var_3}} 秒，同时自身修复 {{var_4}} 生命值。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial2Hit",
       "effects": [
         {
           "title_zh": "战地除颤冲击",
@@ -37,14 +40,14 @@
           "desc_zh": "贴身释放高压除颤电极脉冲，对敌方造成触电在 {{var_1}} 秒内造成 {{var_2}} 伤害，并眩晕对手 {{var_3}} 秒，同时自身修复 {{var_4}} 生命值。",
           "pua_icon": ""
         }
-      ],
-      "desc_zh": "贴身释放高压除颤电极脉冲，对敌方造成触电在 {{var_1}} 秒内造成 {{var_2}} 伤害，并眩晕对手 {{var_3}} 秒，同时自身修复 {{var_4}} 生命值。",
-      "pua_icon": "",
-      "ui_trigger": "onSpecial2Hit"
+      ]
     },
     "sp3": {
       "name_zh": "帕拉德隆圣光救赎",
       "name_en": "Paradron Sanctuary",
+      "desc_zh": "全功率激活帕拉德隆医疗矩阵，击飞敌人的同时自身获得持续修复协议，在 {{var_5}} 秒内恢复 {{var_6}} 生命值，并生成吸收 {{var_7}} 伤害的纳米护盾。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit",
       "effects": [
         {
           "title_zh": "帕拉德隆圣光救赎",
@@ -52,12 +55,105 @@
           "desc_zh": "全功率激活帕拉德隆医疗矩阵，击飞敌人的同时自身获得持续修复协议，在 {{var_5}} 秒内恢复 {{var_6}} 生命值，并生成吸收 {{var_7}} 伤害的纳米护盾。",
           "pua_icon": ""
         }
-      ],
-      "desc_zh": "全功率激活帕拉德隆医疗矩阵，击飞敌人的同时自身获得持续修复协议，在 {{var_5}} 秒内恢复 {{var_6}} 生命值，并生成吸收 {{var_7}} 伤害的纳米护盾。",
-      "pua_icon": "",
-      "ui_trigger": "onSpecial3Hit"
+      ]
     }
   },
+  "basic_abilities": [
+    {
+      "title_zh": "注射",
+      "title_en": "Injection",
+      "desc_zh": "",
+      "pua_icon": "E939",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "生命传递",
+      "title_en": "Life Transfer",
+      "desc_zh": "",
+      "pua_icon": "E917",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "特殊攻击护盾",
+      "title_en": "Special Shield",
+      "desc_zh": "对方发动特殊攻击时，有30%的概率激活一个护盾，降低30%的攻击伤害\n如果对方发起特殊攻击时对方处于注射状态，获得护盾的概率提升到70%，降低70%的攻击伤害\n如果对方发起特殊攻击时回春手处于注射状态，获得护盾的概率提升到100%，降低100%的攻击伤害",
+      "pua_icon": "E515",
+      "category": "passive",
+      "ui_trigger": "特殊攻击护盾",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "注射",
+      "title_en": "Injection",
+      "desc_zh": "重击命中时，给对手施加注射，3秒内如果未被对手击中，注射转化为攻击力80%的震击伤害，持续4.5秒。\n重击未命中，给自己施加注射，3秒内如果未被对手击中，注射转化为30%的攻击增益，持续4.5秒。",
+      "pua_icon": "E939",
+      "category": "passive",
+      "ui_trigger": "注射",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "反射护盾",
+      "title_en": "Reflecting Shield",
+      "desc_zh": "连续承受两次远程普通攻击时，有50%的概率获得一个3秒的反射护盾，护盾生效状态下，敌人近战攻击的伤害的70%反射给对方",
+      "pua_icon": "E502",
+      "category": "passive",
+      "ui_trigger": "反射护盾",
+      "show_on_main_screen": false
+    }
+  ],
+  "abilities": [
+    {
+      "title_zh": "注射",
+      "title_en": "Injection",
+      "desc_zh": "",
+      "pua_icon": "E939",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "生命传递",
+      "title_en": "Life Transfer",
+      "desc_zh": "",
+      "pua_icon": "E917",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "特殊攻击护盾",
+      "title_en": "Special Shield",
+      "desc_zh": "对方发动特殊攻击时，有30%的概率激活一个护盾，降低30%的攻击伤害\n如果对方发起特殊攻击时对方处于注射状态，获得护盾的概率提升到70%，降低70%的攻击伤害\n如果对方发起特殊攻击时回春手处于注射状态，获得护盾的概率提升到100%，降低100%的攻击伤害",
+      "pua_icon": "E515",
+      "category": "passive",
+      "ui_trigger": "特殊攻击护盾",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "注射",
+      "title_en": "Injection",
+      "desc_zh": "重击命中时，给对手施加注射，3秒内如果未被对手击中，注射转化为攻击力80%的震击伤害，持续4.5秒。\n重击未命中，给自己施加注射，3秒内如果未被对手击中，注射转化为30%的攻击增益，持续4.5秒。",
+      "pua_icon": "E939",
+      "category": "passive",
+      "ui_trigger": "注射",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "反射护盾",
+      "title_en": "Reflecting Shield",
+      "desc_zh": "连续承受两次远程普通攻击时，有50%的概率获得一个3秒的反射护盾，护盾生效状态下，敌人近战攻击的伤害的70%反射给对方",
+      "pua_icon": "E502",
+      "category": "passive",
+      "ui_trigger": "反射护盾",
+      "show_on_main_screen": false
+    }
+  ],
   "synergies": [
     {
       "title_zh": "医疗先锋",
@@ -84,38 +180,6 @@
       "desc_zh": "团队所有低星级队员获得 +{{var_7}} 护甲评级。",
       "pua_icon": "",
       "bonus_heroes": []
-    }
-  ],
-  "basic_abilities": [
-    {
-      "title_zh": "注射",
-      "title_en": "Injection",
-      "desc_zh": "",
-      "desc_en": "Ranged attacks and Critical Hits generate Nano Repair charges. Critical Hits inflict Shock on the opponent dealing Energy Damage.",
-      "pua_icon": "E939"
-    },
-    {
-      "title_zh": "生命传递",
-      "title_en": "Life Transfer",
-      "desc_zh": "",
-      "desc_en": "Taking damage exceeding 10% of Max Health instantly activates a Nano Shield absorbing {{var_1}} damage for 6 seconds.",
-      "pua_icon": "E917"
-    }
-  ],
-  "game_abilities": [
-    {
-      "title_zh": "战地检伤与净化",
-      "title_en": "Field Triage & Purify",
-      "desc_zh": "自身生命值低于 50% 时激活再生程序，8秒内修复 {{var_2}} 生命值；净化自身身上的所有流血 (Bleed) 与酸蚀 (Acid) 减益。",
-      "pua_icon": "",
-      "ui_trigger": "战地检伤与净化"
-    },
-    {
-      "title_zh": "医疗反制协议",
-      "title_en": "Medical Countermeasures",
-      "desc_zh": "受到持续伤害 (Damage-over-Time) 效果时，持续时间缩短 50%，并将受到的 DOT 伤害转化为自身的能量获取率。",
-      "pua_icon": "",
-      "ui_trigger": "医疗反制协议"
     }
   ]
 }

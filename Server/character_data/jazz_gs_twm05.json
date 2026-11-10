@@ -7,7 +7,7 @@
   "signature": {
     "title_zh": "耗竭",
     "title_en": "Exhaustion",
-    "desc_zh": "对手处于混乱状态时，爵士每次成功闪避对手的任何攻击，都会立即扣除对方最大能量的6%，如果对方因此失去一格能量，则会眩晕1秒。//失去一格能量指的是从某一格充满跌至未充满，比如3格满能量跌到不到3格，或者2格变成一格多。1格变成少于1格不能放SP1。",
+    "desc_zh": "对手处于混乱状态时，爵士每次成功闪避对手的任何攻击，都会立即扣除对方最大能量的6%，如果对方因此失去一格能量，则会眩晕1秒。",
     "pua_icon": "E605",
     "ui_trigger": "none"
   },
@@ -15,21 +15,24 @@
     "sp1": {
       "name_zh": "旋风踢",
       "name_en": "Windmill",
+      "desc_zh": "击中混乱状态下的对手时，每1击有20%的概率眩晕对手，持续3秒。",
+      "pua_icon": "0xe605",
+      "ui_trigger": "onSpecial1Hit",
       "effects": [
         {
           "title_zh": "眩晕",
           "title_en": "Stun",
-          "desc_zh": "击中混乱状态下的对手时，每1击有20%的概率眩晕对手，持续3秒。//如果连续触发眩晕，只刷新倒计时，不叠加。",
+          "desc_zh": "击中混乱状态下的对手时，每1击有20%的概率眩晕对手，持续3秒。",
           "pua_icon": "0xe605"
         }
-      ],
-      "desc_zh": "击中混乱状态下的对手时，每1击有20%的概率眩晕对手，持续3秒。//如果连续触发眩晕，只刷新倒计时，不叠加。",
-      "pua_icon": "0xe605",
-      "ui_trigger": "onSpecial1Hit"
+      ]
     },
     "sp2": {
       "name_zh": "炫目展示",
       "name_en": "Dazzling Display",
+      "desc_zh": "100%施加混乱，持续6秒，可以被重击的混乱刷新。\n混乱状态下的对手攻击力减少16%\n混乱状态下的对手使用特殊技的概率提高，使用特殊技则结束混乱状态\n技能命中后锁定对方特殊攻击3，直到混乱状态结束。",
+      "pua_icon": "E91B",
+      "ui_trigger": "onSpecial2Hit",
       "effects": [
         {
           "title_zh": "混乱",
@@ -37,14 +40,14 @@
           "desc_zh": "100%施加混乱，持续6秒，可以被重击的混乱刷新。\n混乱状态下的对手攻击力减少16%\n混乱状态下的对手使用特殊技的概率提高，使用特殊技则结束混乱状态\n技能命中后锁定对方特殊攻击3，直到混乱状态结束。",
           "pua_icon": "E91B"
         }
-      ],
-      "desc_zh": "100%施加混乱，持续6秒，可以被重击的混乱刷新。\n混乱状态下的对手攻击力减少16%\n混乱状态下的对手使用特殊技的概率提高，使用特殊技则结束混乱状态\n技能命中后锁定对方特殊攻击3，直到混乱状态结束。",
-      "pua_icon": "E91B",
-      "ui_trigger": "onSpecial2Hit"
+      ]
     },
     "sp3": {
       "name_zh": "搏击节奏",
       "name_en": "Grapple and Groove",
+      "desc_zh": "施加1层永久逆火，对方发动特殊技时瞬间承受爵士攻击力100%的震击伤害，并且不能移除逆火减益。",
+      "pua_icon": "0xe901",
+      "ui_trigger": "onSpecial3Hit",
       "effects": [
         {
           "title_zh": "永久逆火",
@@ -52,12 +55,141 @@
           "desc_zh": "施加1层永久逆火，对方发动特殊技时瞬间承受爵士攻击力100%的震击伤害，并且不能移除逆火减益。",
           "pua_icon": "0xe901"
         }
-      ],
-      "desc_zh": "施加1层永久逆火，对方发动特殊技时瞬间承受爵士攻击力100%的震击伤害，并且不能移除逆火减益。",
-      "pua_icon": "0xe901",
-      "ui_trigger": "onSpecial3Hit"
+      ]
     }
   },
+  "basic_abilities": [
+    {
+      "title_zh": "规避",
+      "title_en": "Evade",
+      "desc_zh": "自动闪避即将到来的攻击。",
+      "pua_icon": "E509",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "暴击率增益",
+      "title_en": "Crit Rate Buff",
+      "desc_zh": "临时增加攻击命中时触发暴击的几率。",
+      "pua_icon": "E40D",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "眩晕",
+      "title_en": "Stun",
+      "desc_zh": "临时阻止目标采取任何行动。",
+      "pua_icon": "E605",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "混乱",
+      "title_en": "Confused",
+      "desc_zh": "阻止对手躲避攻击，并减少对手行动时的能量流速。",
+      "pua_icon": "E91B",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "混乱",
+      "title_en": "Confused",
+      "desc_zh": "重击命中100%施加混乱，持续6秒\n混乱状态下的对手攻击力减少16%\n混乱状态下的对手使用特殊技的概率提高，使用特殊技则结束混乱状态",
+      "pua_icon": "E91B",
+      "category": "passive",
+      "ui_trigger": "混乱",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "规避",
+      "title_en": "Evade",
+      "desc_zh": "成功闪避对手特殊攻击的第1击时得到6秒的规避，40%的概率规避所有攻击。",
+      "pua_icon": "E509",
+      "category": "passive",
+      "ui_trigger": "规避",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "暴击几率",
+      "title_en": "Crit Rate",
+      "desc_zh": "连击数每增加5，得到1层6%的暴击几率增益，直到被对手击中。",
+      "pua_icon": "0xe40d",
+      "category": "passive",
+      "ui_trigger": "暴击几率",
+      "show_on_main_screen": false
+    }
+  ],
+  "abilities": [
+    {
+      "title_zh": "规避",
+      "title_en": "Evade",
+      "desc_zh": "自动闪避即将到来的攻击。",
+      "pua_icon": "E509",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "暴击率增益",
+      "title_en": "Crit Rate Buff",
+      "desc_zh": "临时增加攻击命中时触发暴击的几率。",
+      "pua_icon": "E40D",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "眩晕",
+      "title_en": "Stun",
+      "desc_zh": "临时阻止目标采取任何行动。",
+      "pua_icon": "E605",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "混乱",
+      "title_en": "Confused",
+      "desc_zh": "阻止对手躲避攻击，并减少对手行动时的能量流速。",
+      "pua_icon": "E91B",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "混乱",
+      "title_en": "Confused",
+      "desc_zh": "重击命中100%施加混乱，持续6秒\n混乱状态下的对手攻击力减少16%\n混乱状态下的对手使用特殊技的概率提高，使用特殊技则结束混乱状态",
+      "pua_icon": "E91B",
+      "category": "passive",
+      "ui_trigger": "混乱",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "规避",
+      "title_en": "Evade",
+      "desc_zh": "成功闪避对手特殊攻击的第1击时得到6秒的规避，40%的概率规避所有攻击。",
+      "pua_icon": "E509",
+      "category": "passive",
+      "ui_trigger": "规避",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "暴击几率",
+      "title_en": "Crit Rate",
+      "desc_zh": "连击数每增加5，得到1层6%的暴击几率增益，直到被对手击中。",
+      "pua_icon": "0xe40d",
+      "category": "passive",
+      "ui_trigger": "暴击几率",
+      "show_on_main_screen": false
+    }
+  ],
   "synergies": [
     {
       "title_zh": "盟友——棘轮、钢锁",
@@ -131,59 +263,6 @@
       "desc_zh": "+{{var_37}} 临界评级。",
       "pua_icon": "",
       "bonus_heroes": []
-    }
-  ],
-  "basic_abilities": [
-    {
-      "title_zh": "规避",
-      "title_en": "Evade",
-      "desc_zh": "自动闪避即将到来的攻击。",
-      "desc_en": "Automatically evade incoming attack.",
-      "pua_icon": "E509"
-    },
-    {
-      "title_zh": "暴击率增益",
-      "title_en": "Crit Rate Buff",
-      "desc_zh": "临时增加攻击命中时触发暴击的几率。",
-      "desc_en": "Temporarily increases the chance of scoring critical hits.",
-      "pua_icon": "E40D"
-    },
-    {
-      "title_zh": "眩晕",
-      "title_en": "Stun",
-      "desc_zh": "临时阻止目标采取任何行动。",
-      "desc_en": "Temporarily paralyzes the target, preventing all actions.",
-      "pua_icon": "E605"
-    },
-    {
-      "title_zh": "混乱",
-      "title_en": "Confused",
-      "desc_zh": "阻止对手躲避攻击，并减少对手行动时的能量流速。",
-      "desc_en": "Prevents the opponent from dodging and slows their power flow.",
-      "pua_icon": "E91B"
-    }
-  ],
-  "game_abilities": [
-    {
-      "title_zh": "混乱",
-      "title_en": "Confused",
-      "desc_zh": "重击命中100%施加混乱，持续6秒  //最大1层，可刷新\n混乱状态下的对手攻击力减少16%\n混乱状态下的对手使用特殊技的概率提高，使用特殊技则结束混乱状态",
-      "pua_icon": "E91B",
-      "ui_trigger": "混乱"
-    },
-    {
-      "title_zh": "规避",
-      "title_en": "Evade",
-      "desc_zh": "成功闪避对手特殊攻击的第1击时得到6秒的规避，40%的概率规避所有攻击。",
-      "pua_icon": "E509",
-      "ui_trigger": "规避"
-    },
-    {
-      "title_zh": "暴击几率",
-      "title_en": "Crit Rate",
-      "desc_zh": "连击数每增加5，得到1层6%的暴击几率增益，直到被对手击中。//黄图标，无倒计时，在5次，10次，15次…连击时依次获得，被对手击中时全部消失。",
-      "pua_icon": "0xe40d",
-      "ui_trigger": "暴击几率"
     }
   ]
 }

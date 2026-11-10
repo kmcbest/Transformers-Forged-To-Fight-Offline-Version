@@ -6,15 +6,18 @@
   "class": "warr",
   "signature": {
     "title_zh": "再生毒素",
-    "title_en": "REGENERATIVE TOXIN",
-    "desc_zh": "在蝎子毒液充能的推动下，蝎子隐藏的机器人增强功能使他能够修复。\n\n被击中时：在天蝎座毒液充能的推动下，天蝎座隐藏的机器人增强功能使他能够被动修复非特殊技造成的 {{var_10}}~ {{var_11}} 伤害。\n\n<small>*统计数据是根据游戏中的估计观察到的。</small>",
-    "pua_icon": "",
+    "title_en": "Regenerative Toxin",
+    "desc_zh": "受到非特殊攻击时，修复65%所造成的伤害。",
+    "pua_icon": "E511",
     "ui_trigger": "none"
   },
   "special_attacks": {
     "sp1": {
       "name_zh": "目眩和毁坏",
       "name_en": "Daze and Destroy",
+      "desc_zh": "技能命中时施加目眩，敌人的基础远程攻击有60%的概率无法命中，特殊远程攻击100%无法命中，持续9.5秒。",
+      "pua_icon": "E519",
+      "ui_trigger": "onSpecial1Hit",
       "effects": [
         {
           "title_zh": "目眩",
@@ -22,29 +25,29 @@
           "desc_zh": "技能命中时施加目眩，敌人的基础远程攻击有60%的概率无法命中，特殊远程攻击100%无法命中，持续9.5秒。",
           "pua_icon": "E519"
         }
-      ],
-      "desc_zh": "技能命中时施加目眩，敌人的基础远程攻击有60%的概率无法命中，特殊远程攻击100%无法命中，持续9.5秒。",
-      "pua_icon": "E519",
-      "ui_trigger": "onSpecial1Hit"
+      ]
     },
     "sp2": {
       "name_zh": "隧道恐怖",
       "name_en": "Tunneling Terror",
+      "desc_zh": "技能最后1击命中，将所有毒液充能转化为对应层数的逆火减益，持续12秒。\n对手在逆火减益状态下使用特殊技，将被施加与逆火相同层数的瞬间震击，每层造成攻击力153%的伤害\n如果3层或更多的逆火在对方使用特殊技前倒计时结束，向对手身上施加攻击力500%的震击，持续4秒",
+      "pua_icon": "0xe901",
+      "ui_trigger": "onSpecial2Hit",
       "effects": [
         {
           "title_zh": "毒液逆火",
           "title_en": "Venom Backfire",
-          "desc_zh": "技能结束时，将所有毒液充能转化为对应层数的逆火减益，持续12秒。\n对手在逆火减益状态下使用特殊技，将被施加与逆火相同层数的瞬间震击，每层造成攻击力153%的伤害。",
+          "desc_zh": "技能最后1击命中，将所有毒液充能转化为对应层数的逆火减益，持续12秒。\n对手在逆火减益状态下使用特殊技，将被施加与逆火相同层数的瞬间震击，每层造成攻击力153%的伤害\n如果3层或更多的逆火在对方使用特殊技前倒计时结束，向对手身上施加攻击力500%的震击，持续4秒",
           "pua_icon": "0xe901"
         }
-      ],
-      "desc_zh": "技能结束时，将所有毒液充能转化为对应层数的逆火减益，持续12秒。\n对手在逆火减益状态下使用特殊技，将被施加与逆火相同层数的瞬间震击，每层造成攻击力153%的伤害。",
-      "pua_icon": "0xe901",
-      "ui_trigger": "onSpecial2Hit"
+      ]
     },
     "sp3": {
       "name_zh": "原始兽迫害",
       "name_en": "Predacon Persecution",
+      "desc_zh": "技能命中时施加目眩，敌人的基础远程攻击有60%的概率无法命中，特殊远程攻击100%无法命中，持续26秒。",
+      "pua_icon": "E519",
+      "ui_trigger": "onSpecial3Hit",
       "effects": [
         {
           "title_zh": "目眩",
@@ -52,12 +55,141 @@
           "desc_zh": "技能命中时施加目眩，敌人的基础远程攻击有60%的概率无法命中，特殊远程攻击100%无法命中，持续26秒。",
           "pua_icon": "E519"
         }
-      ],
-      "desc_zh": "技能命中时施加目眩，敌人的基础远程攻击有60%的概率无法命中，特殊远程攻击100%无法命中，持续26秒。",
-      "pua_icon": "E519",
-      "ui_trigger": "onSpecial3Hit"
+      ]
     }
   },
+  "basic_abilities": [
+    {
+      "title_zh": "毒液充能",
+      "title_en": "Venom Charge",
+      "desc_zh": "积累毒囊充能，转化为致命神经毒素与腐蚀伤害。",
+      "pua_icon": "E40A",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "逆火",
+      "title_en": "Backfire",
+      "desc_zh": "对手激活特殊攻击时受到直接伤害。",
+      "pua_icon": "E901",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "流血",
+      "title_en": "Bleed",
+      "desc_zh": "流失的能量晶体会持续造成直接伤害。",
+      "pua_icon": "E401",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "震击",
+      "title_en": "Shock",
+      "desc_zh": "持续造成电磁能量伤害。",
+      "pua_icon": "E914",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "毒液充能",
+      "title_en": "Venom Charge",
+      "desc_zh": "充满一格能量时，获得一层毒液充能，无倒计时，可叠加，每层充能增加20%的攻击力。",
+      "pua_icon": "E40A",
+      "category": "passive",
+      "ui_trigger": "毒液充能",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "流血",
+      "title_en": "Bleed",
+      "desc_zh": "近战攻击出暴击时，40%的概率触发流血，施加攻击力60%的伤害，持续4秒",
+      "pua_icon": "0xe401",
+      "category": "passive",
+      "ui_trigger": "流血",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "毒液逆火",
+      "title_en": "Venom Backfire",
+      "desc_zh": "重击命中，将所有毒液充能转化为对应层数的逆火减益，持续12秒。\n对手在逆火减益状态下使用特殊技，将被施加与逆火相同层数的瞬间震击，每层造成攻击力153%的伤害\n如果3层或更多的逆火在对方使用特殊技前倒计时结束，向对手身上施加攻击力500%的震击，持续4秒",
+      "pua_icon": "0xe901",
+      "category": "passive",
+      "ui_trigger": "毒液逆火",
+      "show_on_main_screen": false
+    }
+  ],
+  "abilities": [
+    {
+      "title_zh": "毒液充能",
+      "title_en": "Venom Charge",
+      "desc_zh": "积累毒囊充能，转化为致命神经毒素与腐蚀伤害。",
+      "pua_icon": "E40A",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "逆火",
+      "title_en": "Backfire",
+      "desc_zh": "对手激活特殊攻击时受到直接伤害。",
+      "pua_icon": "E901",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "流血",
+      "title_en": "Bleed",
+      "desc_zh": "流失的能量晶体会持续造成直接伤害。",
+      "pua_icon": "E401",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "震击",
+      "title_en": "Shock",
+      "desc_zh": "持续造成电磁能量伤害。",
+      "pua_icon": "E914",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "毒液充能",
+      "title_en": "Venom Charge",
+      "desc_zh": "充满一格能量时，获得一层毒液充能，无倒计时，可叠加，每层充能增加20%的攻击力。",
+      "pua_icon": "E40A",
+      "category": "passive",
+      "ui_trigger": "毒液充能",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "流血",
+      "title_en": "Bleed",
+      "desc_zh": "近战攻击出暴击时，40%的概率触发流血，施加攻击力60%的伤害，持续4秒",
+      "pua_icon": "0xe401",
+      "category": "passive",
+      "ui_trigger": "流血",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "毒液逆火",
+      "title_en": "Venom Backfire",
+      "desc_zh": "重击命中，将所有毒液充能转化为对应层数的逆火减益，持续12秒。\n对手在逆火减益状态下使用特殊技，将被施加与逆火相同层数的瞬间震击，每层造成攻击力153%的伤害\n如果3层或更多的逆火在对方使用特殊技前倒计时结束，向对手身上施加攻击力500%的震击，持续4秒",
+      "pua_icon": "0xe901",
+      "category": "passive",
+      "ui_trigger": "毒液逆火",
+      "show_on_main_screen": false
+    }
+  ],
   "synergies": [
     {
       "title_zh": "盟友",
@@ -118,73 +250,6 @@
       "bonus_heroes": [
         "slipstream_gs"
       ]
-    }
-  ],
-  "basic_abilities": [
-    {
-      "title_zh": "毒液充能",
-      "title_en": "Venom Charge",
-      "desc_zh": "积累毒囊充能，转化为致命神经毒素与腐蚀伤害。",
-      "desc_en": "Accumulates venom charges, converting them into neurotoxins and corrosive damage.",
-      "pua_icon": "E40A"
-    },
-    {
-      "title_zh": "逆火",
-      "title_en": "Backfire",
-      "desc_zh": "对手激活特殊攻击时受到直接伤害。",
-      "desc_en": "Causes backfire recoil when the opponent activates a special attack, dealing damage.",
-      "pua_icon": "E901"
-    },
-    {
-      "title_zh": "流血",
-      "title_en": "Bleed",
-      "desc_zh": "流失的能量晶体会持续造成直接伤害。",
-      "desc_en": "Bleeding energon causes direct damage over time.",
-      "pua_icon": "E401"
-    },
-    {
-      "title_zh": "震击",
-      "title_en": "Shock",
-      "desc_zh": "持续造成电磁能量伤害。",
-      "desc_en": "Deals electrical energy damage over time.",
-      "pua_icon": "E914"
-    }
-  ],
-  "game_abilities": [
-    {
-      "title_zh": "毒液充能",
-      "title_en": "Venom Charge",
-      "desc_zh": "充满一格能量时，获得一层毒液充能，无倒计时，可叠加，每层充能增加20%的攻击力。//橙色图标",
-      "pua_icon": "E40A",
-      "ui_trigger": "毒液充能"
-    },
-    {
-      "title_zh": "毒液适得其反",
-      "title_en": "Venom Backfire",
-      "desc_zh": "毒液适得其反",
-      "pua_icon": "",
-      "ui_trigger": "毒液适得其反"
-    },
-    {
-      "title_zh": "战斗被动",
-      "title_en": "If 3 or more Backfire charges expires simultaneously, the opponent takes Shock Damage equal to {{var_8}} of Attack Rating over {{var_9}}.",
-      "desc_zh": "如果 3 个或更多逆火球同时失效，对手将受到攻击评级 {{var_8}} 高于 {{var_9}} 的感应触电伤害。",
-      "pua_icon": "",
-      "ui_trigger": "战斗被动"
-    },
-    {
-      "title_zh": "流血",
-      "title_en": "Bleed",
-      "desc_zh": "近战攻击出暴击时，40%的概率触发流血，施加攻击力60%的伤害，持续4秒",
-      "pua_icon": "0xe401",
-      "ui_trigger": "流血"
-    },
-    {
-      "title_zh": "毒液逆火",
-      "title_en": "Venom Backfire",
-      "desc_zh": "重击命中，将所有毒液充能转化为对应层数的逆火减益，持续12秒。\n对手在逆火减益状态下使用特殊技，将被施加与逆火相同层数的瞬间震击，每层造成攻击力153%的伤害。",
-      "pua_icon": "0xe901",
-      "ui_trigger": "毒液逆火"
     }
   ]
 }

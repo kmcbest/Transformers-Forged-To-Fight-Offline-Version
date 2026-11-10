@@ -5,59 +5,215 @@
   "faction": "decepticon",
   "class": "braw",
   "signature": {
-    "title_zh": "穿孔",
+    "title_zh": "贯穿",
     "title_en": "Perforate",
-    "desc_zh": "所有攻击：作为近战专家，Grindor 能够利用对手储存的力量来发挥自己的优势，将近战伤害提高最多 <s>{{var_11}}</s> {{var_12}}。\n\n+ 每级大约 {{var_13}}。",
-    "pua_icon": "",
+    "desc_zh": "碾碎器所有近战攻击伤害得到提升，提升值等于110%*敌方能量槽的百分比。",
+    "pua_icon": "E412",
     "ui_trigger": "none"
   },
   "special_attacks": {
     "sp1": {
       "name_zh": "物理治疗",
       "name_en": "Physical Therapy",
+      "desc_zh": "施加1层暴击率减益，降低对手暴击率40%，持续8秒\n每1层暴击率减益还会降低对手15%的格挡精通",
+      "pua_icon": "E912",
+      "ui_trigger": "onSpecial1Hit",
       "effects": [
         {
-          "title_zh": "物理治疗",
-          "title_en": "Physical Therapy",
-          "desc_zh": "战争记忆会引发身体爆发，损害对手的利益。",
-          "pua_icon": ""
+          "title_zh": "暴击率减益",
+          "title_en": "Crit Debuff",
+          "desc_zh": "施加1层暴击率减益，降低对手暴击率40%，持续8秒\n每1层暴击率减益还会降低对手15%的格挡精通",
+          "pua_icon": "E912"
+        },
+        {
+          "title_zh": "战术封锁",
+          "title_en": "Tactical Lockdown",
+          "desc_zh": "35%的概率锁定对手特殊技2，持续6秒\n75%的概率锁定对手特殊技3，持续6秒",
+          "pua_icon": "E419"
         }
-      ],
-      "desc_zh": "战争记忆会引发身体爆发，损害对手的利益。",
-      "pua_icon": "",
-      "ui_trigger": "onSpecial1Hit"
+      ]
     },
     "sp2": {
       "name_zh": "愤怒旋转",
       "name_en": "Rotor Rage",
+      "desc_zh": "根据对手当前的能量，最高造成40%的额外伤害。",
+      "pua_icon": "0xe406",
+      "ui_trigger": "onSpecial2Hit",
       "effects": [
         {
           "title_zh": "增伤",
           "title_en": "Increase Damage",
-          "desc_zh": "根据对手当前的能量，最高造成40%的额外伤害。\n//用例：对手无能量，额外伤害为0，对手一格能量，额外伤害为40%/3，对手三格能量，额外伤害为40%",
+          "desc_zh": "根据对手当前的能量，最高造成40%的额外伤害。",
           "pua_icon": "0xe406"
+        },
+        {
+          "title_zh": "战术封锁",
+          "title_en": "Tactical Lockdown",
+          "desc_zh": "50%的概率锁定对手特殊技3，持续6秒",
+          "pua_icon": "E419"
         }
-      ],
-      "desc_zh": "根据对手当前的能量，最高造成40%的额外伤害。\n//用例：对手无能量，额外伤害为0，对手一格能量，额外伤害为40%/3，对手三格能量，额外伤害为40%",
-      "pua_icon": "0xe406",
-      "ui_trigger": "onSpecial2Hit"
+      ]
     },
     "sp3": {
       "name_zh": "俯冲",
       "name_en": "Skydive",
+      "desc_zh": "100%的概率锁定对手特殊技2和3，持续10秒",
+      "pua_icon": "E419",
+      "ui_trigger": "onSpecial3Hit",
       "effects": [
         {
-          "title_zh": "特殊技 3",
-          "title_en": "Special Attack 3",
-          "desc_zh": "{{var_16}} 有机会为 {{var_17}} 锁定特殊 2。",
-          "pua_icon": ""
+          "title_zh": "战术封锁",
+          "title_en": "Tactical Lockdown",
+          "desc_zh": "100%的概率锁定对手特殊技2和3，持续10秒",
+          "pua_icon": "E419"
+        },
+        {
+          "title_zh": "暴击率减益",
+          "title_en": "Crit Debuff",
+          "desc_zh": "施加1层永久暴击率减益，降低对手暴击率16%，可叠加。",
+          "pua_icon": "E912"
+        },
+        {
+          "title_zh": "燃烧",
+          "title_en": "Burn",
+          "desc_zh": "最后一击的暴击率增加50%，如果暴击，100%概率造成燃烧，施加攻击力80%的伤害，持续6秒。",
+          "pua_icon": "0xe41d"
         }
-      ],
-      "desc_zh": "{{var_16}} 有机会为 {{var_17}} 锁定特殊 2。",
-      "pua_icon": "",
-      "ui_trigger": "onSpecial3Hit"
+      ]
     }
   },
+  "basic_abilities": [
+    {
+      "title_zh": "护甲增益",
+      "title_en": "Armor Buff",
+      "desc_zh": "临时提升装甲厚度，降低受到攻击的伤害。",
+      "pua_icon": "E517",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "暴击率减益",
+      "title_en": "Crit Rate Debuff",
+      "desc_zh": "降低对手攻击命中时触发暴击的几率。",
+      "pua_icon": "E912",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "燃烧",
+      "title_en": "Burn",
+      "desc_zh": "持续造成能量伤害。",
+      "pua_icon": "E41D",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "护甲增益",
+      "title_en": "Armor Buff",
+      "desc_zh": "当受到攻击时，有8%的概率获得护甲增益，降低受到攻击伤害的41%，持续6秒",
+      "pua_icon": "0xe517",
+      "category": "passive",
+      "ui_trigger": "护甲增益",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "暴击率减益",
+      "title_en": "Crit Debuff",
+      "desc_zh": "当受到攻击时，有11%概率造成一层暴击率减益，降低对手暴击率40%，持续8秒\n每1层暴击率减益还会降低对手15%的格挡精通",
+      "pua_icon": "E912",
+      "category": "passive",
+      "ui_trigger": "暴击率减益",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "天然护甲",
+      "title_en": "Permanent Armor",
+      "desc_zh": "+17%的永久护甲增益，无图标，不可被破甲移除",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "天然护甲",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "燃烧",
+      "title_en": "Burn",
+      "desc_zh": "重击如果暴击，100%概率造成燃烧，施加攻击力80%的伤害，持续6秒。",
+      "pua_icon": "0xe41d",
+      "category": "passive",
+      "ui_trigger": "燃烧",
+      "show_on_main_screen": false
+    }
+  ],
+  "abilities": [
+    {
+      "title_zh": "护甲增益",
+      "title_en": "Armor Buff",
+      "desc_zh": "临时提升装甲厚度，降低受到攻击的伤害。",
+      "pua_icon": "E517",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "暴击率减益",
+      "title_en": "Crit Rate Debuff",
+      "desc_zh": "降低对手攻击命中时触发暴击的几率。",
+      "pua_icon": "E912",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "燃烧",
+      "title_en": "Burn",
+      "desc_zh": "持续造成能量伤害。",
+      "pua_icon": "E41D",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "护甲增益",
+      "title_en": "Armor Buff",
+      "desc_zh": "当受到攻击时，有8%的概率获得护甲增益，降低受到攻击伤害的41%，持续6秒",
+      "pua_icon": "0xe517",
+      "category": "passive",
+      "ui_trigger": "护甲增益",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "暴击率减益",
+      "title_en": "Crit Debuff",
+      "desc_zh": "当受到攻击时，有11%概率造成一层暴击率减益，降低对手暴击率40%，持续8秒\n每1层暴击率减益还会降低对手15%的格挡精通",
+      "pua_icon": "E912",
+      "category": "passive",
+      "ui_trigger": "暴击率减益",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "天然护甲",
+      "title_en": "Permanent Armor",
+      "desc_zh": "+17%的永久护甲增益，无图标，不可被破甲移除",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "天然护甲",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "燃烧",
+      "title_en": "Burn",
+      "desc_zh": "重击如果暴击，100%概率造成燃烧，施加攻击力80%的伤害，持续6秒。",
+      "pua_icon": "0xe41d",
+      "category": "passive",
+      "ui_trigger": "燃烧",
+      "show_on_main_screen": false
+    }
+  ],
   "synergies": [
     {
       "title_zh": "盟友",
@@ -101,73 +257,6 @@
       "desc_zh": "所有较低级别的队友都会获得 +{{var_40}} 攻击评级。",
       "pua_icon": "",
       "bonus_heroes": []
-    }
-  ],
-  "basic_abilities": [
-    {
-      "title_zh": "护甲增益",
-      "title_en": "Armor Buff",
-      "desc_zh": "临时提升装甲厚度，降低受到攻击的伤害。",
-      "desc_en": "Temporarily increases armor thickness, reducing damage from incoming attacks.",
-      "pua_icon": "E517"
-    },
-    {
-      "title_zh": "暴击率减益",
-      "title_en": "Crit Rate Debuff",
-      "desc_zh": "降低对手攻击命中时触发暴击的几率。",
-      "desc_en": "Reduces the opponent's chance of scoring critical hits.",
-      "pua_icon": "E912"
-    },
-    {
-      "title_zh": "燃烧",
-      "title_en": "Burn",
-      "desc_zh": "持续造成能量伤害。",
-      "desc_en": "Deals energy damage over time.",
-      "pua_icon": "E41D"
-    }
-  ],
-  "game_abilities": [
-    {
-      "title_zh": "护甲增益",
-      "title_en": "Armor Buff",
-      "desc_zh": "当受到攻击时，有8%的概率获得护甲增益，降低受到攻击伤害的41%，持续6秒",
-      "pua_icon": "0xe517",
-      "ui_trigger": "护甲增益"
-    },
-    {
-      "title_zh": "暴击率减益",
-      "title_en": "Crit Debuff",
-      "desc_zh": "当受到攻击时，有11%概率造成一层暴击率减益，降低对手暴击率40%，持续",
-      "pua_icon": "E912",
-      "ui_trigger": "暴击率减益"
-    },
-    {
-      "title_zh": "常驻被动",
-      "title_en": "Passive:",
-      "desc_zh": "被动：",
-      "pua_icon": "",
-      "ui_trigger": "常驻被动"
-    },
-    {
-      "title_zh": "战斗被动",
-      "title_en": "Decreases the opponent's Block Proficiency against Melee Attacks by {{var_7}} per active Crit Rate Debuff.",
-      "desc_zh": "每激活暴击率减益，使对手对近战攻击的格挡熟练度降低 {{var_7}}。",
-      "pua_icon": "",
-      "ui_trigger": "战斗被动"
-    },
-    {
-      "title_zh": "天然护甲",
-      "title_en": "Permanent Armor",
-      "desc_zh": "+17%的永久护甲增益，无图标，不可被破甲移除",
-      "pua_icon": "",
-      "ui_trigger": "天然护甲"
-    },
-    {
-      "title_zh": "燃烧",
-      "title_en": "Burn",
-      "desc_zh": "重击暴击时有100%概率造成燃烧，施加攻击力80%的伤害，持续6秒。",
-      "pua_icon": "0xe41d",
-      "ui_trigger": "燃烧"
     }
   ]
 }

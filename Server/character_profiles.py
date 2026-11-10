@@ -114,12 +114,11 @@ def _init_profiles():
     if _INITIALIZED:
         return
 
-    # 优先检测明文 JSON 目录 (Server/character_data)
-    json_files = list(CHAR_DATA_DIR.glob("*.json")) if CHAR_DATA_DIR.exists() else []
-    if json_files:
-        _init_from_json_files(json_files)
-    elif DB_PATH.exists():
+    # 核心真理源：优先读取 Server/tftf_database.db 数据库
+    if DB_PATH.exists():
         _init_from_database()
+    elif CHAR_DATA_DIR.exists() and list(CHAR_DATA_DIR.glob("*.json")):
+        _init_from_json_files(list(CHAR_DATA_DIR.glob("*.json")))
     else:
         print(f"[WARN] Neither {CHAR_DATA_DIR} nor {DB_PATH} found!")
 
@@ -195,6 +194,10 @@ def _init_from_json_files(json_files: List[Path]):
         game_list = data.get("game_abilities", [])
         legacy_list = data.get("abilities", [])
 
+        if not basic_list and not game_list and legacy_list:
+            basic_list = [a for a in legacy_list if a.get("category") == "basic"]
+            game_list = [a for a in legacy_list if a.get("category") == "passive"]
+
         if basic_list or game_list:
             mod_counter = 0
             # 2a. 基础能力卡片 (显示在主界面卡片区 "能力会随着升阶而提升")
@@ -249,6 +252,8 @@ def _init_from_json_files(json_files: List[Path]):
                 icon_char = _hex_to_pua_char(ab.get("pua_icon", ""))
                 tc, gt, gb = _choose_ability_colors(name, clean_desc)
                 ui_tr = ab.get("ui_trigger") or name
+                if ui_tr == "none":
+                    ui_tr = name
 
                 _BOT_UI_MOD_IDS[bot_id].append(mod_id)
                 _UI_MODS[mod_id] = {
@@ -448,22 +453,75 @@ def _init_from_database():
 
     for bot_id in all_bots:
         _BOT_UI_MOD_IDS[bot_id] = []
+        mod_counter = 0
+
+        # 2a. 基础能力 (category = 'basic') -> 渲染在主界面卡片区和弹窗顶部“能力会随着升阶而提升”，l 必须为空，uit 为 ["none"]
         cur.execute(
-            "SELECT id, category, title_zh, title_en, desc_zh, pua_icon FROM character_abilities "
-            "WHERE bot_id=? AND category IN ('basic', 'passive') ORDER BY sort_order",
+            "SELECT id, title_zh, title_en, desc_zh, pua_icon FROM character_abilities "
+            "WHERE bot_id=? AND category='basic' ORDER BY sort_order",
             (bot_id,),
         )
-        for idx, (row_id, ab_cat, title_zh, title_en, desc_zh, pua_icon) in enumerate(cur.fetchall()):
+        basics = cur.fetchall()
+        for row_id, title_zh, title_en, desc_zh, pua_icon in basics:
             if not title_zh or "基础特长" in title_zh:
                 continue
-            mod_id = f"ability_{bot_id}_{idx}"
-            appr_id = f"appr_ability_{bot_id}_{idx}"
+            name = (title_zh if title_zh else title_en).strip()
             clean_desc = _clean_comment(desc_zh)
             icon_char = _hex_to_pua_char(pua_icon)
-            name = title_zh if title_zh else title_en
-            tc, gt, gb = _choose_ability_colors(title_zh, clean_desc)
+            tc, gt, gb = _choose_ability_colors(name, clean_desc)
 
-            ui_tr = "onHeavyHit" if "重击" in title_zh else "none"
+            mod_id = f"ability_{bot_id}_{mod_counter}"
+            appr_id = f"appr_ability_{bot_id}_{mod_counter}"
+            mod_counter += 1
+
+            _BOT_UI_MOD_IDS[bot_id].append(mod_id)
+            _UI_MODS[mod_id] = {
+                "id": mod_id,
+                "AppearanceID": appr_id,
+                "Type": "combat",
+                "t": "combat",
+                "d": 0.0,
+                "m": 0.0,
+                "p": 1.0,
+                "tr": [],
+                "uit": ["none"],
+                "a": [appr_id],
+                "au": [],
+                "rh": 0.0,
+                "ra": 0.0,
+            }
+            _UI_APPEARS[appr_id] = {
+                "id": appr_id,
+                "a": name,
+                "s": name,          # ShortStringID 非空 -> 渲染在上方卡片区
+                "ss": clean_desc,    # 一句话摘要
+                "l": "",             # LongStringID 为空 -> 绝不污染下方详细触发器分类列表！
+                "t": icon_char,
+                "tc": tc,
+                "gt": gt,
+                "gb": gb,
+            }
+
+        # 2b. 实战能力 (category = 'passive') -> 展开在下方详细列表，使用专属技能标题作为分类标题，不调用“被动”官方字段
+        cur.execute(
+            "SELECT id, title_zh, title_en, desc_zh, pua_icon FROM character_abilities "
+            "WHERE bot_id=? AND category='passive' ORDER BY sort_order",
+            (bot_id,),
+        )
+        passives = cur.fetchall()
+        for row_id, title_zh, title_en, desc_zh, pua_icon in passives:
+            if not title_zh or "基础特长" in title_zh:
+                continue
+            name = (title_zh if title_zh else title_en).strip()
+            clean_desc = _clean_comment(desc_zh)
+            icon_char = _hex_to_pua_char(pua_icon)
+            tc, gt, gb = _choose_ability_colors(name, clean_desc)
+            ui_tr = name  # 以专属技能标题作为分类，客户端 hook_162 直接显示该标题，不调用“被动”
+
+            mod_id = f"ability_{bot_id}_{mod_counter}"
+            appr_id = f"appr_ability_{bot_id}_{mod_counter}"
+            mod_counter += 1
+
             _BOT_UI_MOD_IDS[bot_id].append(mod_id)
             _UI_MODS[mod_id] = {
                 "id": mod_id,
@@ -483,15 +541,16 @@ def _init_from_database():
             _UI_APPEARS[appr_id] = {
                 "id": appr_id,
                 "a": name,
-                "s": name,
-                "ss": clean_desc,
-                "l": clean_desc,
+                "s": "",             # ShortStringID 为空 -> 绝不污染上方卡片区！
+                "ss": "",
+                "l": clean_desc,     # LongStringID -> 展开在对应分类标题下
                 "t": icon_char,
                 "tc": tc,
                 "gt": gt,
                 "gb": gb,
             }
 
+        # 3. 特殊攻击 (SP1 / SP2 / SP3)
         cur.execute("SELECT sp1_name_zh, sp2_name_zh, sp3_name_zh FROM characters WHERE bot_id=?", (bot_id,))
         sp_custom_row = cur.fetchone()
         sp_custom_names = list(sp_custom_row) if sp_custom_row else ["", "", ""]
@@ -502,45 +561,46 @@ def _init_from_database():
                 "WHERE bot_id=? AND category=? ORDER BY sort_order",
                 (bot_id, cat),
             )
-            sp_row = cur.fetchone()
-            if not sp_row:
-                continue
-            row_id, title_zh, title_en, desc_zh, pua_icon = sp_row
-            mod_id = f"sp_ui_{bot_id}_{sp_idx}"
-            appr_id = f"appr_sp_ui_{bot_id}_{sp_idx}"
-            clean_desc = _clean_comment(desc_zh)
-            icon_char = _hex_to_pua_char(pua_icon)
-            name = sp_custom_names[sp_idx - 1] or title_zh or title_en
-            tc, gt, gb = _choose_ability_colors(title_zh, clean_desc)
-            ui_tr = f"onSpecial{sp_idx}Hit"
+            sp_rows = cur.fetchall()
+            for eff_idx, (row_id, title_zh, title_en, desc_zh, pua_icon) in enumerate(sp_rows):
+                clean_desc = _clean_comment(desc_zh)
+                if not clean_desc:
+                    continue
+                icon_char = _hex_to_pua_char(pua_icon)
+                eff_name = (title_zh or title_en or sp_custom_names[sp_idx - 1] or f"SP{sp_idx}").strip()
+                tc, gt, gb = _choose_ability_colors(eff_name, clean_desc)
+                ui_tr = f"onSpecial{sp_idx}Hit"
 
-            _BOT_UI_MOD_IDS[bot_id].append(mod_id)
-            _UI_MODS[mod_id] = {
-                "id": mod_id,
-                "AppearanceID": appr_id,
-                "Type": "combat",
-                "t": "combat",
-                "d": 0.0,
-                "m": 0.0,
-                "p": 1.0,
-                "tr": [ui_tr],
-                "uit": [ui_tr],
-                "a": [appr_id],
-                "au": [],
-                "rh": 0.0,
-                "ra": 0.0,
-            }
-            _UI_APPEARS[appr_id] = {
-                "id": appr_id,
-                "a": name,
-                "s": "",
-                "ss": "",
-                "l": clean_desc,
-                "t": icon_char,
-                "tc": tc,
-                "gt": gt,
-                "gb": gb,
-            }
+                mod_id = f"sp_ui_{bot_id}_{sp_idx}_{eff_idx}"
+                appr_id = f"appr_sp_ui_{bot_id}_{sp_idx}_{eff_idx}"
+
+                _BOT_UI_MOD_IDS[bot_id].append(mod_id)
+                _UI_MODS[mod_id] = {
+                    "id": mod_id,
+                    "AppearanceID": appr_id,
+                    "Type": "combat",
+                    "t": "combat",
+                    "d": 0.0,
+                    "m": 0.0,
+                    "p": 1.0,
+                    "tr": [ui_tr],
+                    "uit": [ui_tr],
+                    "a": [appr_id],
+                    "au": [],
+                    "rh": 0.0,
+                    "ra": 0.0,
+                }
+                _UI_APPEARS[appr_id] = {
+                    "id": appr_id,
+                    "a": eff_name,
+                    "s": "",
+                    "ss": "",
+                    "l": clean_desc,
+                    "t": icon_char,
+                    "tc": tc,
+                    "gt": gt,
+                    "gb": gb,
+                }
 
     cur.execute(
         "SELECT id, bot_id, title_zh, title_en, desc_zh, pua_icon, synergy_bots "
@@ -559,6 +619,11 @@ def _init_from_database():
 
         clean_desc = _clean_comment(desc_zh)
         syn_title = title_zh if title_zh else title_en
+        if not syn_title:
+            if "-" in clean_desc:
+                syn_title = clean_desc.split("-")[0].replace("*", "").strip()
+            if not syn_title:
+                syn_title = "协同加成"
         tex = _hex_to_pua_char(pua_icon) or _choose_synergy_icon(syn_title, clean_desc)
 
         _SYNERGY_BONUSES[syn_id] = {

@@ -96,11 +96,14 @@ static void tantrum_on_block_state(int p, int entered) {
 }
 
 static void tantrum_on_simulation_tick(uint64_t now_ms) {
+    (void)now_ms;
+    uint64_t current_ms = skill_now_ms();
     for (int p = 0; p < 2; p++) {
         // 检查蓄力是否满 1.5s:
         if (s_tantrum_charge_active[p] && s_tantrum_block_start_ms[p] > 0) {
-            uint64_t elapsed = now_ms - s_tantrum_block_start_ms[p];
-            if (elapsed >= 1500) {
+            if (current_ms >= s_tantrum_block_start_ms[p]) {
+                uint64_t elapsed = current_ms - s_tantrum_block_start_ms[p];
+                if (elapsed >= 1500) {
                 // 蓄力完成！
                 s_tantrum_charge_active[p] = 0;
                 s_tantrum_block_start_ms[p] = 0;
@@ -117,6 +120,7 @@ static void tantrum_on_simulation_tick(uint64_t now_ms) {
                 skill_overlay("[%s] 防御蓄力完成！激活 4.5s 不可阻挡霸体！",
                               p == 0 ? "野牛" : "敌方野牛");
                 skill_log("TANTRUM: Block held for 1.5s on P%d! Activated 4.5s Unstoppable", p);
+                }
             }
         }
     }

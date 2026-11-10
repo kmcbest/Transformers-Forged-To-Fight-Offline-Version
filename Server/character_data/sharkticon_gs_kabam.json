@@ -15,6 +15,9 @@
     "sp1": {
       "name_zh": "特殊技 1",
       "name_en": "Special Attack 1",
+      "desc_zh": "3. 鲨鱼袭击 - 这些鲨鱼在陆地上同样致命。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial1Hit",
       "effects": [
         {
           "title_zh": "特殊技 1",
@@ -22,28 +25,28 @@
           "desc_zh": "3. 鲨鱼袭击 - 这些鲨鱼在陆地上同样致命。",
           "pua_icon": ""
         }
-      ],
-      "desc_zh": "3. 鲨鱼袭击 - 这些鲨鱼在陆地上同样致命。",
-      "pua_icon": "",
-      "ui_trigger": "onSpecial1Hit"
+      ]
     },
     "sp2": {
-      "name_zh": "",
-      "name_en": "",
-      "effects": [],
+      "name_zh": "SP2",
+      "name_en": "SP2",
       "desc_zh": "",
       "pua_icon": "",
-      "ui_trigger": "onSpecial2Hit"
+      "ui_trigger": "onSpecial2Hit",
+      "effects": []
     },
     "sp3": {
-      "name_zh": "",
-      "name_en": "",
-      "effects": [],
+      "name_zh": "SP3",
+      "name_en": "SP3",
       "desc_zh": "",
       "pua_icon": "",
-      "ui_trigger": "onSpecial3Hit"
+      "ui_trigger": "onSpecial3Hit",
+      "effects": []
     }
   },
+  "basic_abilities": [],
+  "game_abilities": [],
+  "abilities": [],
   "synergies": [
     {
       "title_zh": "鲨鱼狂潮",
@@ -54,7 +57,5 @@
         "sharkticon_gs_kabam"
       ]
     }
-  ],
-  "basic_abilities": [],
-  "game_abilities": []
+  ]
 }

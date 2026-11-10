@@ -5,59 +5,239 @@
   "faction": "mercenary",
   "class": "tact",
   "signature": {
-    "title_zh": "信号扰乱 - Soundblaster 可以干扰对手的传感器，阻止他们使用自己的能力。",
-    "title_en": "Signal Scramble - Soundblaster can jam the opponent's sensors, preventing them from using their abilities.",
-    "desc_zh": "远程攻击：应用触发率减益效果，使敌人触发减益效果的几率降低 {{var_8}} 至 {{var_9}}。 [最大堆叠数：1]\n\n+{{var_10}} 每级",
-    "pua_icon": "",
+    "title_zh": "信号扰乱",
+    "title_en": "Signal Scramble",
+    "desc_zh": "远程攻击或远程重击命中：施加1层概率减益，使敌人触发增益效果的几率降低10%。",
+    "pua_icon": "E909",
     "ui_trigger": "none"
   },
   "special_attacks": {
     "sp1": {
-      "name_zh": "那兆赫兹！",
+      "name_zh": "兆赫兹！",
       "name_en": "That Megahertz!",
+      "desc_zh": "最后一击命中80%的概率施加20%的破甲减益，持续8秒",
+      "pua_icon": "E516",
+      "ui_trigger": "onSpecial1Hit",
       "effects": [
         {
-          "title_zh": "那兆赫兹！",
-          "title_en": "That Megahertz!",
-          "desc_zh": "快速的一二连击，将对手打飞。",
-          "pua_icon": ""
+          "title_zh": "破甲",
+          "title_en": "Armor Break",
+          "desc_zh": "最后一击命中80%的概率施加20%的破甲减益，持续8秒",
+          "pua_icon": "E516"
+        },
+        {
+          "title_zh": "增伤",
+          "title_en": "Increase Damage",
+          "desc_zh": "连击槽每多20，此技能伤害增加10%。",
+          "pua_icon": "0xe406"
         }
-      ],
-      "desc_zh": "快速的一二连击，将对手打飞。",
-      "pua_icon": "",
-      "ui_trigger": "onSpecial1Hit"
+      ]
     },
     "sp2": {
-      "name_zh": "特殊技 2",
-      "name_en": "Special Attack 2",
+      "name_zh": "悍豹",
+      "name_en": "Howlback",
+      "desc_zh": "100%的概率施加震击，造成攻击120%的伤害，持续3秒。\n连击槽每多10，震击时间延长1秒。",
+      "pua_icon": "0xe914",
+      "ui_trigger": "onSpecial2Hit",
       "effects": [
         {
-          "title_zh": "特殊技 2",
-          "title_en": "Special Attack 2",
-          "desc_zh": "{{var_11}} 有机会为 {{var_13}} 进行 {{var_12}} 破甲。",
-          "pua_icon": ""
+          "title_zh": "震击",
+          "title_en": "Shock",
+          "desc_zh": "100%的概率施加震击，造成攻击120%的伤害，持续3秒。\n连击槽每多10，震击时间延长1秒。",
+          "pua_icon": "0xe914"
         }
-      ],
-      "desc_zh": "{{var_11}} 有机会为 {{var_13}} 进行 {{var_12}} 破甲。",
-      "pua_icon": "",
-      "ui_trigger": "onSpecial2Hit"
+      ]
     },
     "sp3": {
-      "name_zh": "特殊技 3",
-      "name_en": "Special Attack 3",
+      "name_zh": "致命反馈",
+      "name_en": "Fatal Feedback",
+      "desc_zh": "技能结束时，施加一个增益控制，缩短对手50%的增益有效时间，持续45秒。",
+      "pua_icon": "E50B",
+      "ui_trigger": "onSpecial3Hit",
       "effects": [
         {
-          "title_zh": "特殊技 3",
-          "title_en": "Special Attack 3",
-          "desc_zh": "连击计数器每 20 次命中造成 +{{var_14}} 伤害",
-          "pua_icon": ""
+          "title_zh": "增益控制",
+          "title_en": "Buff Control",
+          "desc_zh": "技能结束时，施加一个增益控制，缩短对手50%的增益有效时间，持续45秒。",
+          "pua_icon": "E50B"
+        },
+        {
+          "title_zh": "破甲",
+          "title_en": "Armor Break",
+          "desc_zh": "每1击有5%的概率施加1层20%的破甲减益，持续20秒，连击数每多1，概率提升1%。",
+          "pua_icon": "E516"
         }
-      ],
-      "desc_zh": "连击计数器每 20 次命中造成 +{{var_14}} 伤害",
-      "pua_icon": "",
-      "ui_trigger": "onSpecial3Hit"
+      ]
     }
   },
+  "basic_abilities": [
+    {
+      "title_zh": "震击",
+      "title_en": "Shock",
+      "desc_zh": "持续造成电磁能量伤害。",
+      "pua_icon": "E914",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "眩晕",
+      "title_en": "Stun",
+      "desc_zh": "临时阻止目标采取任何行动。",
+      "pua_icon": "E605",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "破甲",
+      "title_en": "Armor Break",
+      "desc_zh": "移除护甲增益，降低护甲评级并提升受到攻击的伤害量。",
+      "pua_icon": "E516",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "连击保护",
+      "title_en": "Combo Meter Guard",
+      "desc_zh": "临时提升装甲厚度，降低受到攻击的伤害。",
+      "pua_icon": "E50B",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "连击保护",
+      "title_en": "Combo Meter Guard",
+      "desc_zh": "音板的连击数只有在受到远程暴击和特殊攻击中的暴击时才被重置，其他攻击不会重置连击。",
+      "pua_icon": "E50B",
+      "category": "passive",
+      "ui_trigger": "连击保护",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "驱散",
+      "title_en": "Nullify",
+      "desc_zh": "远程攻击和重击有30%的概率驱散对方身上一个护甲或近战增益。\n连击数每多5，概率增加10%。",
+      "pua_icon": "E950",
+      "category": "passive",
+      "ui_trigger": "驱散",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "眩晕",
+      "title_en": "Stun",
+      "desc_zh": "重击命中不可阻挡状态下的对手，立即造成2.5秒的眩晕",
+      "pua_icon": "0xe605",
+      "category": "passive",
+      "ui_trigger": "眩晕",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "攻击增益",
+      "title_en": "Attack Buff",
+      "desc_zh": "任何特殊技结束后，如果音板的连击数为偶数，音板获得25%的攻击增益，持续10秒。",
+      "pua_icon": "0xe406",
+      "category": "passive",
+      "ui_trigger": "攻击增益",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "攻击减益",
+      "title_en": "Attack Debuff",
+      "desc_zh": "任何特殊技结束后，如果音板的连击数为奇数，向对手施加1层30%的攻击减益，持续10秒",
+      "pua_icon": "E916",
+      "category": "passive",
+      "ui_trigger": "攻击减益",
+      "show_on_main_screen": false
+    }
+  ],
+  "abilities": [
+    {
+      "title_zh": "震击",
+      "title_en": "Shock",
+      "desc_zh": "持续造成电磁能量伤害。",
+      "pua_icon": "E914",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "眩晕",
+      "title_en": "Stun",
+      "desc_zh": "临时阻止目标采取任何行动。",
+      "pua_icon": "E605",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "破甲",
+      "title_en": "Armor Break",
+      "desc_zh": "移除护甲增益，降低护甲评级并提升受到攻击的伤害量。",
+      "pua_icon": "E516",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "连击保护",
+      "title_en": "Combo Meter Guard",
+      "desc_zh": "临时提升装甲厚度，降低受到攻击的伤害。",
+      "pua_icon": "E50B",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "连击保护",
+      "title_en": "Combo Meter Guard",
+      "desc_zh": "音板的连击数只有在受到远程暴击和特殊攻击中的暴击时才被重置，其他攻击不会重置连击。",
+      "pua_icon": "E50B",
+      "category": "passive",
+      "ui_trigger": "连击保护",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "驱散",
+      "title_en": "Nullify",
+      "desc_zh": "远程攻击和重击有30%的概率驱散对方身上一个护甲或近战增益。\n连击数每多5，概率增加10%。",
+      "pua_icon": "E950",
+      "category": "passive",
+      "ui_trigger": "驱散",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "眩晕",
+      "title_en": "Stun",
+      "desc_zh": "重击命中不可阻挡状态下的对手，立即造成2.5秒的眩晕",
+      "pua_icon": "0xe605",
+      "category": "passive",
+      "ui_trigger": "眩晕",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "攻击增益",
+      "title_en": "Attack Buff",
+      "desc_zh": "任何特殊技结束后，如果音板的连击数为偶数，音板获得25%的攻击增益，持续10秒。",
+      "pua_icon": "0xe406",
+      "category": "passive",
+      "ui_trigger": "攻击增益",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "攻击减益",
+      "title_en": "Attack Debuff",
+      "desc_zh": "任何特殊技结束后，如果音板的连击数为奇数，向对手施加1层30%的攻击减益，持续10秒",
+      "pua_icon": "E916",
+      "category": "passive",
+      "ui_trigger": "攻击减益",
+      "show_on_main_screen": false
+    }
+  ],
   "synergies": [
     {
       "title_zh": "能量走私者",
@@ -102,115 +282,6 @@
       "desc_zh": "作为团队的领导灯塔，所有低级别队友都获得 +{{var_34}} 装甲等级。",
       "pua_icon": "",
       "bonus_heroes": []
-    }
-  ],
-  "basic_abilities": [
-    {
-      "title_zh": "震击",
-      "title_en": "Shock",
-      "desc_zh": "持续造成电磁能量伤害。",
-      "desc_en": "Deals electrical energy damage over time.",
-      "pua_icon": "E914"
-    },
-    {
-      "title_zh": "眩晕",
-      "title_en": "Stun",
-      "desc_zh": "临时阻止目标采取任何行动。",
-      "desc_en": "Temporarily paralyzes the target, preventing all actions.",
-      "pua_icon": "E605"
-    },
-    {
-      "title_zh": "破甲",
-      "title_en": "Armor Break",
-      "desc_zh": "移除护甲增益，降低护甲评级并提升受到攻击的伤害量。",
-      "desc_en": "Removes armor buffs and reduces armor rating, amplifying incoming damage.",
-      "pua_icon": "E516"
-    },
-    {
-      "title_zh": "连击保护",
-      "title_en": "Combo Meter Guard",
-      "desc_zh": "临时提升装甲厚度，降低受到攻击的伤害。",
-      "desc_en": "Temporarily increases armor thickness, reducing damage from incoming attacks.",
-      "pua_icon": "E50B"
-    }
-  ],
-  "game_abilities": [
-    {
-      "title_zh": "无源/组合仪表",
-      "title_en": "Passive/Combo Meter",
-      "desc_zh": "无源/组合仪表",
-      "pua_icon": "",
-      "ui_trigger": "无源/组合仪表"
-    },
-    {
-      "title_zh": "战斗被动",
-      "title_en": "Soundblaster records his Combo success, preventing his Combo Meter from being reset.",
-      "desc_zh": "Soundblaster 记录了他的连击成功，防止他的连击计被重置。",
-      "pua_icon": "",
-      "ui_trigger": "战斗被动"
-    },
-    {
-      "title_zh": "战斗被动",
-      "title_en": "If Soundblaster is hit by a Special Attack Critical Hit or Ranged Critical Hit, his Combo Meter is immediately reset.",
-      "desc_zh": "如果声爆者受到特殊技暴击或远程暴击，他的连击计数器会立即重置。",
-      "pua_icon": "",
-      "ui_trigger": "战斗被动"
-    },
-    {
-      "title_zh": "远程射击",
-      "title_en": "Ranged Attacks",
-      "desc_zh": "远程攻击",
-      "pua_icon": "",
-      "ui_trigger": "远程射击"
-    },
-    {
-      "title_zh": "战斗被动",
-      "title_en": "Soundblaster’s Ranged Attacks have a {{var_1}} chance to Nullify an Armor or Melee Buff on the opponent. Increase chance by {{var_2}} for each 5 points of Combo Meter.",
-      "desc_zh": "Soundblaster 的远程攻击有 {{var_1}} 几率无效化对手的装甲或近战增益。 Combo Meter 每 5 点，几率增加 {{var_2}}。",
-      "pua_icon": "",
-      "ui_trigger": "战斗被动"
-    },
-    {
-      "title_zh": "强力重击",
-      "title_en": "Heavy Attack",
-      "desc_zh": "重击",
-      "pua_icon": "",
-      "ui_trigger": "强力重击"
-    },
-    {
-      "title_zh": "Buzzsaw 发射 3 发追踪对手的子弹。",
-      "title_en": "Buzzsaw fires 3 shots that track the opponent.",
-      "desc_zh": "Buzzsaw 发射 3 发追踪对手的子弹。",
-      "pua_icon": "",
-      "ui_trigger": "Buzzsaw 发射 3 发追踪对手的子弹。"
-    },
-    {
-      "title_zh": "战斗被动",
-      "title_en": "Hitting an Unstoppable enemy causes Stun for {{var_3}}.",
-      "desc_zh": "击中不可阻挡的敌人会导致 {{var_3}} 眩晕。",
-      "pua_icon": "",
-      "ui_trigger": "战斗被动"
-    },
-    {
-      "title_zh": "特殊技",
-      "title_en": "Special Attacks",
-      "desc_zh": "特殊技",
-      "pua_icon": "",
-      "ui_trigger": "特殊技"
-    },
-    {
-      "title_zh": "战斗被动",
-      "title_en": "After ending a Special Attack, if Combo meter is even, Soundblaster gains {{var_4}} Attack Up for {{var_5}}.",
-      "desc_zh": "结束特殊技后，如果连击计数器为偶数，Soundblaster 将为 {{var_5}} 获得 {{var_4}} 攻击力提升。",
-      "pua_icon": "",
-      "ui_trigger": "战斗被动"
-    },
-    {
-      "title_zh": "战斗被动",
-      "title_en": "After ending a Special Attack, if Combo meter is odd, the opponent gets a -{{var_6}} Attack Debuff for {{var_7}}.",
-      "desc_zh": "特殊技结束后，如果连击计为奇数，对手将获得 {{var_7}} 的 -{{var_6}} 攻击减益效果。",
-      "pua_icon": "",
-      "ui_trigger": "战斗被动"
     }
   ]
 }

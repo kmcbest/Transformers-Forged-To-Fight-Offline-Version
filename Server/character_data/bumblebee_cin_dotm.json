@@ -5,16 +5,19 @@
   "faction": "autobot",
   "class": "tact",
   "signature": {
-    "title_zh": "欢快",
+    "title_zh": "敏捷",
     "title_en": "Alacrity",
-    "desc_zh": "大黄蜂在远程和近战校准模式之间切换得更快。此外，大黄蜂的敏捷性使他在躲避传入的近战攻击后获得 {{var_7}} 的临时 {{var_6}} 攻击增益。",
-    "pua_icon": "",
+    "desc_zh": "大黄蜂在远程和近战校准模式之间切换时间缩短16%。\n闪避近战攻击可以获得1层75%的攻击增益，持续5秒。",
+    "pua_icon": "E406",
     "ui_trigger": "none"
   },
   "special_attacks": {
     "sp1": {
-      "name_zh": "嗡嗡声踢",
+      "name_zh": "速踢",
       "name_en": "Buzz Kick",
+      "desc_zh": "每一击都有60%的概率施加破甲，移除对方身上所有护甲增益，并施加35%的破甲减益，持续6秒。",
+      "pua_icon": "0xe516",
+      "ui_trigger": "onSpecial1Hit",
       "effects": [
         {
           "title_zh": "破甲",
@@ -22,42 +25,171 @@
           "desc_zh": "每一击都有60%的概率施加破甲，移除对方身上所有护甲增益，并施加35%的破甲减益，持续6秒。",
           "pua_icon": "0xe516"
         }
-      ],
-      "desc_zh": "每一击都有60%的概率施加破甲，移除对方身上所有护甲增益，并施加35%的破甲减益，持续6秒。",
-      "pua_icon": "0xe516",
-      "ui_trigger": "onSpecial1Hit"
+      ]
     },
     "sp2": {
-      "name_zh": "蜜蜂射击",
+      "name_zh": "漏洞射击",
       "name_en": "Bug Shot",
+      "desc_zh": "最后一击施加震击，造成攻击力80%的伤害，持续10秒，对方身上如果有护甲，震击伤害增加150%",
+      "pua_icon": "0xe914",
+      "ui_trigger": "onSpecial2Hit",
       "effects": [
         {
           "title_zh": "震击",
           "title_en": "Shock",
-          "desc_zh": "最后一击施加震击，造成攻击力80%的伤害，持续10秒，对方身上如果有护甲，震击伤害增加",
+          "desc_zh": "最后一击施加震击，造成攻击力80%的伤害，持续10秒，对方身上如果有护甲，震击伤害增加150%",
           "pua_icon": "0xe914"
         }
-      ],
-      "desc_zh": "最后一击施加震击，造成攻击力80%的伤害，持续10秒，对方身上如果有护甲，震击伤害增加",
-      "pua_icon": "0xe914",
-      "ui_trigger": "onSpecial2Hit"
+      ]
     },
     "sp3": {
-      "name_zh": "弹壳震击",
+      "name_zh": "炮弹冲击波",
       "name_en": "Shell Shock",
+      "desc_zh": "最后一击施加震击，造成攻击力80%的伤害，持续10秒，对方身上如果有护甲，震击伤害增加100%",
+      "pua_icon": "0xe914",
+      "ui_trigger": "onSpecial3Hit",
       "effects": [
         {
           "title_zh": "震击",
           "title_en": "Shock",
-          "desc_zh": "最后一击施加震击，造成攻击力80%的伤害，持续10秒，对方身上如果有护甲，震击伤害变为攻击力的180%",
+          "desc_zh": "最后一击施加震击，造成攻击力80%的伤害，持续10秒，对方身上如果有护甲，震击伤害增加100%",
           "pua_icon": "0xe914"
         }
-      ],
-      "desc_zh": "最后一击施加震击，造成攻击力80%的伤害，持续10秒，对方身上如果有护甲，震击伤害变为攻击力的180%",
-      "pua_icon": "0xe914",
-      "ui_trigger": "onSpecial3Hit"
+      ]
     }
   },
+  "basic_abilities": [
+    {
+      "title_zh": "规避",
+      "title_en": "Evade",
+      "desc_zh": "自动闪避即将到来的攻击。",
+      "pua_icon": "E509",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "破甲",
+      "title_en": "Armor Break",
+      "desc_zh": "移除护甲增益，降低护甲评级并提升受到攻击的伤害量。",
+      "pua_icon": "E516",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "震击",
+      "title_en": "Shock",
+      "desc_zh": "持续造成电磁能量伤害。",
+      "pua_icon": "E914",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "攻击增益",
+      "title_en": "Attack Buff",
+      "desc_zh": "临时增加机体攻击评分与造成的全部伤害。",
+      "pua_icon": "E406",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "近战校准",
+      "title_en": "Melee Calibration",
+      "desc_zh": "开局自动获得一个近战规避，无倒计时。25.5%的概率规避对手的近战攻击。\n如果拥有远程规避时被对手近战攻击击中，则出现灰色的近战规避倒计时图标1.5秒，结束后重新获得近战规避。",
+      "pua_icon": "0xe509",
+      "category": "passive",
+      "ui_trigger": "近战校准",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "远程校准",
+      "title_en": "Ranged Calibration",
+      "desc_zh": "拥有近战规避时被对手远程攻击击中，近战规避消失，出现灰色的远程规避倒计时图标1.5秒，结束后获得远程规避，无倒计时，25.5%的概率规避对手的远程攻击。近战规避消失。",
+      "pua_icon": "0xe518",
+      "category": "passive",
+      "ui_trigger": "远程校准",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "攻击增益",
+      "title_en": "Attack Buff",
+      "desc_zh": "每击倒对手一次：获得一个永久攻击增益，攻击力增加13.5%。\n永久增益最多堆叠15层，第16层开始出现倒计时，持续3秒。",
+      "pua_icon": "0xe406",
+      "category": "passive",
+      "ui_trigger": "攻击增益",
+      "show_on_main_screen": false
+    }
+  ],
+  "abilities": [
+    {
+      "title_zh": "规避",
+      "title_en": "Evade",
+      "desc_zh": "自动闪避即将到来的攻击。",
+      "pua_icon": "E509",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "破甲",
+      "title_en": "Armor Break",
+      "desc_zh": "移除护甲增益，降低护甲评级并提升受到攻击的伤害量。",
+      "pua_icon": "E516",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "震击",
+      "title_en": "Shock",
+      "desc_zh": "持续造成电磁能量伤害。",
+      "pua_icon": "E914",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "攻击增益",
+      "title_en": "Attack Buff",
+      "desc_zh": "临时增加机体攻击评分与造成的全部伤害。",
+      "pua_icon": "E406",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "近战校准",
+      "title_en": "Melee Calibration",
+      "desc_zh": "开局自动获得一个近战规避，无倒计时。25.5%的概率规避对手的近战攻击。\n如果拥有远程规避时被对手近战攻击击中，则出现灰色的近战规避倒计时图标1.5秒，结束后重新获得近战规避。",
+      "pua_icon": "0xe509",
+      "category": "passive",
+      "ui_trigger": "近战校准",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "远程校准",
+      "title_en": "Ranged Calibration",
+      "desc_zh": "拥有近战规避时被对手远程攻击击中，近战规避消失，出现灰色的远程规避倒计时图标1.5秒，结束后获得远程规避，无倒计时，25.5%的概率规避对手的远程攻击。近战规避消失。",
+      "pua_icon": "0xe518",
+      "category": "passive",
+      "ui_trigger": "远程校准",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "攻击增益",
+      "title_en": "Attack Buff",
+      "desc_zh": "每击倒对手一次：获得一个永久攻击增益，攻击力增加13.5%。\n永久增益最多堆叠15层，第16层开始出现倒计时，持续3秒。",
+      "pua_icon": "0xe406",
+      "category": "passive",
+      "ui_trigger": "攻击增益",
+      "show_on_main_screen": false
+    }
+  ],
   "synergies": [
     {
       "title_zh": "盟友",
@@ -126,59 +258,6 @@
       "bonus_heroes": [
         "hotrod_cin_tlk"
       ]
-    }
-  ],
-  "basic_abilities": [
-    {
-      "title_zh": "规避",
-      "title_en": "Evade",
-      "desc_zh": "自动闪避即将到来的攻击。",
-      "desc_en": "Automatically evade incoming attack.",
-      "pua_icon": "E509"
-    },
-    {
-      "title_zh": "破甲",
-      "title_en": "Armor Break",
-      "desc_zh": "移除护甲增益，降低护甲评级并提升受到攻击的伤害量。",
-      "desc_en": "Removes armor buffs and reduces armor rating, amplifying incoming damage.",
-      "pua_icon": "E516"
-    },
-    {
-      "title_zh": "震击",
-      "title_en": "Shock",
-      "desc_zh": "持续造成电磁能量伤害。",
-      "desc_en": "Deals electrical energy damage over time.",
-      "pua_icon": "E914"
-    },
-    {
-      "title_zh": "攻击增益",
-      "title_en": "Attack Buff",
-      "desc_zh": "临时增加机体攻击评分与造成的全部伤害。",
-      "desc_en": "Temporarily increases overall attack rating and damage dealt.",
-      "pua_icon": "E406"
-    }
-  ],
-  "game_abilities": [
-    {
-      "title_zh": "近战校准",
-      "title_en": "Melee Calibration",
-      "desc_zh": "开局自动获得一个近战规避，无倒计时。25.5%的概率规避对手的近战攻击。\n如果拥有远程规避时被对手近战攻击击中，则出现灰色的近战规避倒计时图标1.5秒，结束后重新获得近战规避。",
-      "pua_icon": "0xe509",
-      "ui_trigger": "近战校准"
-    },
-    {
-      "title_zh": "远程校准",
-      "title_en": "Ranged Calibration",
-      "desc_zh": "拥有近战规避时被对手远程攻击击中，近战规避消失，出现灰色的远程规避倒计时图标1.5秒，结束后获得远程规避，无倒计时，25.5%的概率规避对手的远程攻击。近战规避消失。",
-      "pua_icon": "0xe518",
-      "ui_trigger": "远程校准"
-    },
-    {
-      "title_zh": "攻击增益",
-      "title_en": "Attack Buff",
-      "desc_zh": "每击倒对手一次：获得一个永久攻击增益，攻击力增加13.5%。\n永远增益最多堆叠15 层，第16层开始出现倒计时，3秒后消失。",
-      "pua_icon": "0xe406",
-      "ui_trigger": "攻击增益"
     }
   ]
 }

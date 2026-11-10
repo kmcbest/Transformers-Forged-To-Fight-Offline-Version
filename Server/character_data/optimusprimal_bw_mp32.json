@@ -5,31 +5,34 @@
   "faction": "maximal",
   "class": "braw",
   "signature": {
-    "title_zh": "这不就是总理吗",
+    "title_zh": "猩猩队长赛高",
     "title_en": "Isn't That Just Prime",
-    "desc_zh": "擎天柱抱最好的希望，但总是做最坏的准备。伤害减益的持续时间较短，并在到期后恢复生命值。\n\n擎天柱上的每个装甲增益的伤害减益效果会更快 {{var_1}} 过期。每次流血结束时，擎天柱都会获得最大生命值的 {{var_2}}。\n\n+每级大约 {{var_3}}",
-    "pua_icon": "",
+    "desc_zh": "猩猩队长身上每层护甲增益可以让他身上的伤害减益的有效时间减少8%\n如果流血减益在猩猩队长身上过期，他会修复最大生命值的5%。",
+    "pua_icon": "E90C",
     "ui_trigger": "none"
   },
   "special_attacks": {
     "sp1": {
       "name_zh": "丛林的法则",
       "name_en": "Law of the Jungle",
+      "desc_zh": "如果在战斗中猩猩队长受到任何流血减益，此技能最后1击命中会施加1层流血，造成40%攻击力的伤害，持续4秒。若战斗中每多被施加1层流血减益，那么他施加给对手的流血的强度就增加20%。",
+      "pua_icon": "E401",
+      "ui_trigger": "onSpecial1Hit",
       "effects": [
         {
-          "title_zh": "丛林法则",
-          "title_en": "Law of the Jungle",
-          "desc_zh": "擎天柱升空，为敌人伸张正义。",
-          "pua_icon": ""
+          "title_zh": "血债血偿",
+          "title_en": "Revenge Bleed",
+          "desc_zh": "如果在战斗中猩猩队长受到任何流血减益，此技能最后1击命中会施加1层流血，造成40%攻击力的伤害，持续4秒。若战斗中每多被施加1层流血减益，那么他施加给对手的流血的强度就增加20%。",
+          "pua_icon": "E401"
         }
-      ],
-      "desc_zh": "擎天柱升空，为敌人伸张正义。",
-      "pua_icon": "",
-      "ui_trigger": "onSpecial1Hit"
+      ]
     },
     "sp2": {
       "name_zh": "野兽勇士",
       "name_en": "Beast Warrior",
+      "desc_zh": "除第一击外，每一击均有50%的概率施加流血，造成攻击力60%的伤害，持续5秒。",
+      "pua_icon": "0xe401",
+      "ui_trigger": "onSpecial2Hit",
       "effects": [
         {
           "title_zh": "流血",
@@ -37,19 +40,19 @@
           "desc_zh": "除第一击外，每一击均有50%的概率施加流血，造成攻击力60%的伤害，持续5秒。",
           "pua_icon": "0xe401"
         }
-      ],
-      "desc_zh": "除第一击外，每一击均有50%的概率施加流血，造成攻击力60%的伤害，持续5秒。",
-      "pua_icon": "0xe401",
-      "ui_trigger": "onSpecial2Hit"
+      ]
     },
     "sp3": {
       "name_zh": "大猩猩的战争",
       "name_en": "Gorilla Warfare",
+      "desc_zh": "获得10层护甲增益。",
+      "pua_icon": "E517",
+      "ui_trigger": "onSpecial3Hit",
       "effects": [
         {
           "title_zh": "野兽战士",
           "title_en": "Beast Warrior",
-          "desc_zh": "获得10层护甲增益。//黄图标",
+          "desc_zh": "获得10层护甲增益。",
           "pua_icon": "E517"
         },
         {
@@ -58,12 +61,123 @@
           "desc_zh": "100%的概率施加攻击减益，降低对手攻击力20%，持续32秒",
           "pua_icon": "E916"
         }
-      ],
-      "desc_zh": "获得10层护甲增益。//黄图标",
-      "pua_icon": "E517",
-      "ui_trigger": "onSpecial3Hit"
+      ]
     }
   },
+  "basic_abilities": [
+    {
+      "title_zh": "流血",
+      "title_en": "Bleed",
+      "desc_zh": "流失的能量晶体会持续造成直接伤害。",
+      "pua_icon": "E401",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "抗暴护甲",
+      "title_en": "Anti Crit Armor",
+      "desc_zh": "临时提升装甲厚度，降低受到攻击的伤害并阻止对手暴击。",
+      "pua_icon": "E517",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "近战增益",
+      "title_en": "Melee Buff",
+      "desc_zh": "临时增加近战普通攻击与近战重击的伤害。",
+      "pua_icon": "E412",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "护甲增益",
+      "title_en": "Armor Buff",
+      "desc_zh": "当受到攻击时，有20%的概率获得护甲增益，降低受到攻击伤害的4%，无倒计时，最大堆叠10层。\n当猩猩队长身上没有护甲增益，也没有破甲减益的时候，他会在6秒内获得一个护甲增益。\n护甲增益拥有100%的暴击抗性，任何攻击在猩猩队长的护甲上均无法打出暴击。",
+      "pua_icon": "0xe517",
+      "category": "passive",
+      "ui_trigger": "护甲增益",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "近战增益",
+      "title_en": "Melee Buff",
+      "desc_zh": "格挡近战攻击时有30%的概率得到1层18%的近战增益，持续6秒。",
+      "pua_icon": "E412",
+      "category": "passive",
+      "ui_trigger": "近战增益",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "增益转换",
+      "title_en": "Convert Buff",
+      "desc_zh": "发动重击时，将所有护甲增益转化为近战增益，每一层增加18%的近战伤害，持续6秒。",
+      "pua_icon": "E412",
+      "category": "passive",
+      "ui_trigger": "增益转换",
+      "show_on_main_screen": false
+    }
+  ],
+  "abilities": [
+    {
+      "title_zh": "流血",
+      "title_en": "Bleed",
+      "desc_zh": "流失的能量晶体会持续造成直接伤害。",
+      "pua_icon": "E401",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "抗暴护甲",
+      "title_en": "Anti Crit Armor",
+      "desc_zh": "临时提升装甲厚度，降低受到攻击的伤害并阻止对手暴击。",
+      "pua_icon": "E517",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "近战增益",
+      "title_en": "Melee Buff",
+      "desc_zh": "临时增加近战普通攻击与近战重击的伤害。",
+      "pua_icon": "E412",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "护甲增益",
+      "title_en": "Armor Buff",
+      "desc_zh": "当受到攻击时，有20%的概率获得护甲增益，降低受到攻击伤害的4%，无倒计时，最大堆叠10层。\n当猩猩队长身上没有护甲增益，也没有破甲减益的时候，他会在6秒内获得一个护甲增益。\n护甲增益拥有100%的暴击抗性，任何攻击在猩猩队长的护甲上均无法打出暴击。",
+      "pua_icon": "0xe517",
+      "category": "passive",
+      "ui_trigger": "护甲增益",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "近战增益",
+      "title_en": "Melee Buff",
+      "desc_zh": "格挡近战攻击时有30%的概率得到1层18%的近战增益，持续6秒。",
+      "pua_icon": "E412",
+      "category": "passive",
+      "ui_trigger": "近战增益",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "增益转换",
+      "title_en": "Convert Buff",
+      "desc_zh": "发动重击时，将所有护甲增益转化为近战增益，每一层增加18%的近战伤害，持续6秒。",
+      "pua_icon": "E412",
+      "category": "passive",
+      "ui_trigger": "增益转换",
+      "show_on_main_screen": false
+    }
+  ],
   "synergies": [
     {
       "title_zh": "盟友恐龙机器人、犀牛、猎豹",
@@ -103,52 +217,6 @@
       "desc_zh": "所有机器人 - 作为团队领导的灯塔，所有较低级别的队友都获得 +{{var_23}} 攻击评级。",
       "pua_icon": "",
       "bonus_heroes": []
-    }
-  ],
-  "basic_abilities": [
-    {
-      "title_zh": "流血",
-      "title_en": "Bleed",
-      "desc_zh": "流失的能量晶体会持续造成直接伤害。",
-      "desc_en": "Bleeding energon causes direct damage over time.",
-      "pua_icon": "E401"
-    },
-    {
-      "title_zh": "抗暴护甲",
-      "title_en": "Anti Crit Armor",
-      "desc_zh": "临时提升装甲厚度，降低受到攻击的伤害并阻止对手暴击。",
-      "desc_en": "Temporarily increases armor thickness, reducing damage from incoming attacks.",
-      "pua_icon": "E517"
-    },
-    {
-      "title_zh": "近战增益",
-      "title_en": "Melee Buff",
-      "desc_zh": "临时增加近战普通攻击与近战重击的伤害。",
-      "desc_en": "Temporarily increases damage dealt by basic and heavy melee attacks.",
-      "pua_icon": "E412"
-    }
-  ],
-  "game_abilities": [
-    {
-      "title_zh": "护甲增益",
-      "title_en": "Armor Buff",
-      "desc_zh": "当受到攻击时，有20%的概率获得护甲增益，降低受到攻击伤害的4%，无倒计时，最大堆叠10层。 //黄色护甲图标\n当猩猩队长身上没有护甲增益，也没有破甲减益的时候，他会在6秒内获得一个护甲增益。\n护甲增益拥有100%的暴击抗性，任何攻击在猩猩队长身上均无法打出暴击。",
-      "pua_icon": "0xe517",
-      "ui_trigger": "护甲增益"
-    },
-    {
-      "title_zh": "近战增益",
-      "title_en": "Melee Buff",
-      "desc_zh": "格挡近战攻击时有30%的概率得到一层18%的近战增益，持续6秒。",
-      "pua_icon": "E412",
-      "ui_trigger": "近战增益"
-    },
-    {
-      "title_zh": "增益转换",
-      "title_en": "Convert Buff",
-      "desc_zh": "发动重击时，将所有护甲增益转化为近战增益，每一层增加18%的近战伤害，持续6秒。\n\n//用例：6层护甲时发动重击，得到6层近战增益，总共增加108%的近战伤害。",
-      "pua_icon": "E412",
-      "ui_trigger": "增益转换"
     }
   ]
 }

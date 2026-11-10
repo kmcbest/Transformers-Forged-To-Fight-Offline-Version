@@ -15,6 +15,9 @@
     "sp1": {
       "name_zh": "破片导弹蜂群",
       "name_en": "Cluster Missile Swarm",
+      "desc_zh": "肩扛导弹巢瞬间齐射，打出漫天爆鸣，撕碎敌方防御并削减敌方 {{var_1}} 护甲持续 {{var_2}} 秒。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial1Hit",
       "effects": [
         {
           "title_zh": "破片导弹蜂群",
@@ -22,14 +25,14 @@
           "desc_zh": "肩扛导弹巢瞬间齐射，打出漫天爆鸣，撕碎敌方防御并削减敌方 {{var_1}} 护甲持续 {{var_2}} 秒。",
           "pua_icon": ""
         }
-      ],
-      "desc_zh": "肩扛导弹巢瞬间齐射，打出漫天爆鸣，撕碎敌方防御并削减敌方 {{var_1}} 护甲持续 {{var_2}} 秒。",
-      "pua_icon": "",
-      "ui_trigger": "onSpecial1Hit"
+      ]
     },
     "sp2": {
       "name_zh": "死神磁轨重炮",
       "name_en": "Railgun Decapitation",
+      "desc_zh": "充能发射毁灭性电磁轨道重炮，无视护盾并造成触电，在 {{var_3}} 秒内造成 {{var_4}} 能量伤害。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial2Hit",
       "effects": [
         {
           "title_zh": "死神磁轨重炮",
@@ -37,14 +40,14 @@
           "desc_zh": "充能发射毁灭性电磁轨道重炮，无视护盾并造成触电，在 {{var_3}} 秒内造成 {{var_4}} 能量伤害。",
           "pua_icon": ""
         }
-      ],
-      "desc_zh": "充能发射毁灭性电磁轨道重炮，无视护盾并造成触电，在 {{var_3}} 秒内造成 {{var_4}} 能量伤害。",
-      "pua_icon": "",
-      "ui_trigger": "onSpecial2Hit"
+      ]
     },
     "sp3": {
       "name_zh": "审判日地毯轰炸",
       "name_en": "Doomsday Carpet Bombing",
+      "desc_zh": "展开全武器库地毯式饱和火力轰炸，造成大范围燃烧与辐射，在 {{var_5}} 秒内造成 {{var_6}} 伤害并摧毁对手 {{var_7}} 能量。",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit",
       "effects": [
         {
           "title_zh": "审判日地毯轰炸",
@@ -52,12 +55,69 @@
           "desc_zh": "展开全武器库地毯式饱和火力轰炸，造成大范围燃烧与辐射，在 {{var_5}} 秒内造成 {{var_6}} 伤害并摧毁对手 {{var_7}} 能量。",
           "pua_icon": ""
         }
-      ],
-      "desc_zh": "展开全武器库地毯式饱和火力轰炸，造成大范围燃烧与辐射，在 {{var_5}} 秒内造成 {{var_6}} 伤害并摧毁对手 {{var_7}} 能量。",
-      "pua_icon": "",
-      "ui_trigger": "onSpecial3Hit"
+      ]
     }
   },
+  "basic_abilities": [
+    {
+      "title_zh": "毁灭破片弹药",
+      "title_en": "Devastation Munitions",
+      "desc_zh": "所有攻击均装填高爆破片弹，命中造成持续范围爆炸与破甲削弱。",
+      "pua_icon": "",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "战争狂热杀戮",
+      "title_en": "Bloodlust Cannon",
+      "desc_zh": "暴击在敌人脚下引爆高爆地雷，削减敌人 25% 能量槽并造成深度破甲。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "战争狂热杀戮",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "要塞化钢铁重躯",
+      "title_en": "Fortified Heavy Armor",
+      "desc_zh": "超重型装甲使物理抗性提升 40%，且受到重击与击退时绝不产生硬直。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "要塞化钢铁重躯",
+      "show_on_main_screen": false
+    }
+  ],
+  "abilities": [
+    {
+      "title_zh": "毁灭破片弹药",
+      "title_en": "Devastation Munitions",
+      "desc_zh": "所有攻击均装填高爆破片弹，命中造成持续范围爆炸与破甲削弱。",
+      "pua_icon": "",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "战争狂热杀戮",
+      "title_en": "Bloodlust Cannon",
+      "desc_zh": "暴击在敌人脚下引爆高爆地雷，削减敌人 25% 能量槽并造成深度破甲。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "战争狂热杀戮",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "要塞化钢铁重躯",
+      "title_en": "Fortified Heavy Armor",
+      "desc_zh": "超重型装甲使物理抗性提升 40%，且受到重击与击退时绝不产生硬直。",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "要塞化钢铁重躯",
+      "show_on_main_screen": false
+    }
+  ],
   "synergies": [
     {
       "title_zh": "碎玻璃军阀",
@@ -84,31 +144,6 @@
       "desc_zh": "团队所有低星级队员获得 +{{var_3}} 爆炸穿透。",
       "pua_icon": "",
       "bonus_heroes": []
-    }
-  ],
-  "basic_abilities": [
-    {
-      "title_zh": "毁灭破片弹药",
-      "title_en": "Devastation Munitions",
-      "desc_zh": "所有攻击均装填高爆破片弹，命中造成持续范围爆炸与破甲削弱。",
-      "desc_en": "All munitions are loaded with high-explosive shrapnel, inflicting continuous explosions and Armor Break.",
-      "pua_icon": ""
-    }
-  ],
-  "game_abilities": [
-    {
-      "title_zh": "战争狂热杀戮",
-      "title_en": "Bloodlust Cannon",
-      "desc_zh": "暴击在敌人脚下引爆高爆地雷，削减敌人 25% 能量槽并造成深度破甲。",
-      "pua_icon": "",
-      "ui_trigger": "战争狂热杀戮"
-    },
-    {
-      "title_zh": "要塞化钢铁重躯",
-      "title_en": "Fortified Heavy Armor",
-      "desc_zh": "超重型装甲使物理抗性提升 40%，且受到重击与击退时绝不产生硬直。",
-      "pua_icon": "",
-      "ui_trigger": "要塞化钢铁重躯"
     }
   ]
 }

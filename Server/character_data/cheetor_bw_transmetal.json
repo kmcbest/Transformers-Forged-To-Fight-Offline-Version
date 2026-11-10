@@ -15,6 +15,9 @@
     "sp1": {
       "name_zh": "变形金属创伤",
       "name_en": "Transmetal Trauma",
+      "desc_zh": "施加阻止修复，禁用对方所有回血能力，直到对方流血状态解除。",
+      "pua_icon": "E90C",
+      "ui_trigger": "onSpecial1Hit",
       "effects": [
         {
           "title_zh": "阻止修复",
@@ -28,19 +31,19 @@
           "desc_zh": "最后一击命中时100%概率触发流血，施加攻击力100%的伤害，持续8秒",
           "pua_icon": "E401"
         }
-      ],
-      "desc_zh": "施加阻止修复，禁用对方所有回血能力，直到对方流血状态解除。",
-      "pua_icon": "E90C",
-      "ui_trigger": "onSpecial1Hit"
+      ]
     },
     "sp2": {
       "name_zh": "类星体突破",
       "name_en": "Quasar Blaster",
+      "desc_zh": "对手能量越少，该攻击伤害越大，最大造成50%的额外伤害。",
+      "pua_icon": "E41B",
+      "ui_trigger": "onSpecial2Hit",
       "effects": [
         {
           "title_zh": "伤害放大",
           "title_en": "Damage Increase",
-          "desc_zh": "对手能量越少，该攻击伤害越大，最大造成50%的额外伤害。//用例：对方能量为空，造成50%的额外伤害，能量为一半（1.5格），造成25%的额外伤害",
+          "desc_zh": "对手能量越少，该攻击伤害越大，最大造成50%的额外伤害。",
           "pua_icon": "E41B"
         },
         {
@@ -49,19 +52,19 @@
           "desc_zh": "获得能量功率增益，能量获取量增加50%，持续12秒",
           "pua_icon": "E608"
         }
-      ],
-      "desc_zh": "对手能量越少，该攻击伤害越大，最大造成50%的额外伤害。//用例：对方能量为空，造成50%的额外伤害，能量为一半（1.5格），造成25%的额外伤害",
-      "pua_icon": "E41B",
-      "ui_trigger": "onSpecial2Hit"
+      ]
     },
     "sp3": {
       "name_zh": "巨无霸过载",
       "name_en": "Maximal Overdrive",
+      "desc_zh": "对手能量越少，该攻击伤害越大，最大造成100%的额外伤害。",
+      "pua_icon": "E41B",
+      "ui_trigger": "onSpecial3Hit",
       "effects": [
         {
           "title_zh": "伤害放大",
           "title_en": "Damage Increase",
-          "desc_zh": "对手能量越少，该攻击伤害越大，最大造成100%的额外伤害。//用例：对方能量为空，造成100%的额外伤害，能量为一半（1.5格），造成50%的额外伤害",
+          "desc_zh": "对手能量越少，该攻击伤害越大，最大造成100%的额外伤害。",
           "pua_icon": "E41B"
         },
         {
@@ -76,12 +79,159 @@
           "desc_zh": "0.5秒内扣减对方最大能量的3%",
           "pua_icon": "0xe607"
         }
-      ],
-      "desc_zh": "对手能量越少，该攻击伤害越大，最大造成100%的额外伤害。//用例：对方能量为空，造成100%的额外伤害，能量为一半（1.5格），造成50%的额外伤害",
-      "pua_icon": "E41B",
-      "ui_trigger": "onSpecial3Hit"
+      ]
     }
   },
+  "basic_abilities": [
+    {
+      "title_zh": "流血",
+      "title_en": "Bleed",
+      "desc_zh": "流失的能量晶体会持续造成直接伤害。",
+      "pua_icon": "E401",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "修复阻止",
+      "title_en": "Heal Block",
+      "desc_zh": "临时阻止目标回复生命值，全面抑制回血与再生效果。",
+      "pua_icon": "E90C",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "能量涌动",
+      "title_en": "Power Flow",
+      "desc_zh": "提高所有攻击与受击时所产生的能量功率。",
+      "pua_icon": "E608",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "能量锁定",
+      "title_en": "Power Lock",
+      "desc_zh": "临时阻止目标从攻击或被动机制中获取任何能量。",
+      "pua_icon": "E523",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "暴击流血",
+      "title_en": "Critical Bleed",
+      "desc_zh": "近战攻击出暴击时，有45%的概率触发流血，造成攻击力65%的伤害，持续4秒。",
+      "pua_icon": "0xe401",
+      "category": "passive",
+      "ui_trigger": "暴击流血",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "能量获取",
+      "title_en": "Power Gain",
+      "desc_zh": "L4或者M2命中对手的时候，在1秒内获得最大能量槽的2.5%",
+      "pua_icon": "E608",
+      "category": "passive",
+      "ui_trigger": "能量获取",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "重击规避远程",
+      "title_en": "Heavy Evade Range",
+      "desc_zh": "黄豹重击过程中有35%的概率穿透对方的基础远程和远程重击\n如果没有触发穿透，则100%的概率触发规避",
+      "pua_icon": "E518",
+      "category": "passive",
+      "ui_trigger": "重击规避远程",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "能量守护",
+      "title_en": "Power Guard",
+      "desc_zh": "黄豹对吸取能量的技能（能量流失、能量燃烧）免疫，此类技能无法扣减黄豹的能量",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "能量守护",
+      "show_on_main_screen": false
+    }
+  ],
+  "abilities": [
+    {
+      "title_zh": "流血",
+      "title_en": "Bleed",
+      "desc_zh": "流失的能量晶体会持续造成直接伤害。",
+      "pua_icon": "E401",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "修复阻止",
+      "title_en": "Heal Block",
+      "desc_zh": "临时阻止目标回复生命值，全面抑制回血与再生效果。",
+      "pua_icon": "E90C",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "能量涌动",
+      "title_en": "Power Flow",
+      "desc_zh": "提高所有攻击与受击时所产生的能量功率。",
+      "pua_icon": "E608",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "能量锁定",
+      "title_en": "Power Lock",
+      "desc_zh": "临时阻止目标从攻击或被动机制中获取任何能量。",
+      "pua_icon": "E523",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "暴击流血",
+      "title_en": "Critical Bleed",
+      "desc_zh": "近战攻击出暴击时，有45%的概率触发流血，造成攻击力65%的伤害，持续4秒。",
+      "pua_icon": "0xe401",
+      "category": "passive",
+      "ui_trigger": "暴击流血",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "能量获取",
+      "title_en": "Power Gain",
+      "desc_zh": "L4或者M2命中对手的时候，在1秒内获得最大能量槽的2.5%",
+      "pua_icon": "E608",
+      "category": "passive",
+      "ui_trigger": "能量获取",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "重击规避远程",
+      "title_en": "Heavy Evade Range",
+      "desc_zh": "黄豹重击过程中有35%的概率穿透对方的基础远程和远程重击\n如果没有触发穿透，则100%的概率触发规避",
+      "pua_icon": "E518",
+      "category": "passive",
+      "ui_trigger": "重击规避远程",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "能量守护",
+      "title_en": "Power Guard",
+      "desc_zh": "黄豹对吸取能量的技能（能量流失、能量燃烧）免疫，此类技能无法扣减黄豹的能量",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "能量守护",
+      "show_on_main_screen": false
+    }
+  ],
   "synergies": [
     {
       "title_zh": "盟友 – 犀牛、恐龙机器人、擎天柱",
@@ -126,66 +276,6 @@
       "desc_zh": "所有较低级别的队友都会获得 +{{var_39}} 临界评级。",
       "pua_icon": "",
       "bonus_heroes": []
-    }
-  ],
-  "basic_abilities": [
-    {
-      "title_zh": "流血",
-      "title_en": "Bleed",
-      "desc_zh": "流失的能量晶体会持续造成直接伤害。",
-      "desc_en": "Bleeding energon causes direct damage over time.",
-      "pua_icon": "E401"
-    },
-    {
-      "title_zh": "修复阻止",
-      "title_en": "Heal Block",
-      "desc_zh": "临时阻止目标回复生命值，全面抑制回血与再生效果。",
-      "desc_en": "Temporarily prevents the target from regaining health, shutting down all healing.",
-      "pua_icon": "E90C"
-    },
-    {
-      "title_zh": "能量涌动",
-      "title_en": "Power Flow",
-      "desc_zh": "提高所有攻击与受击时所产生的能量功率。",
-      "desc_en": "Increases power generation rate from all attacks and hits taken.",
-      "pua_icon": "E608"
-    },
-    {
-      "title_zh": "能量锁定",
-      "title_en": "Power Lock",
-      "desc_zh": "临时阻止目标从攻击或被动机制中获取任何能量。",
-      "desc_en": "Temporarily prevents the target from gaining power from any source.",
-      "pua_icon": "E523"
-    }
-  ],
-  "game_abilities": [
-    {
-      "title_zh": "能量守护",
-      "title_en": "Power Guard",
-      "desc_zh": "黄豹对吸取能量的技能（能量流失、能量燃烧）免疫，此类技能无法扣减黄豹的能量",
-      "pua_icon": "",
-      "ui_trigger": "能量守护"
-    },
-    {
-      "title_zh": "暴击流血",
-      "title_en": "Critical Bleed",
-      "desc_zh": "近战攻击出暴击时，有45%的概率触发流血，造成攻击力65%的伤害，持续4秒。",
-      "pua_icon": "0xe401",
-      "ui_trigger": "暴击流血"
-    },
-    {
-      "title_zh": "能量获取",
-      "title_en": "Power Gain",
-      "desc_zh": "L4或者M2命中对手的时候，在1秒内获得最大能量槽的2.5%",
-      "pua_icon": "E608",
-      "ui_trigger": "能量获取"
-    },
-    {
-      "title_zh": "重击规避远程",
-      "title_en": "Heavy Evade Range",
-      "desc_zh": "黄豹重击过程中有35%的概率穿透对方的基础远程和远程重击 // 参考风刃的重击\n如果没有触发穿透，则100%的概率触发规避",
-      "pua_icon": "E518",
-      "ui_trigger": "重击规避远程"
     }
   ]
 }

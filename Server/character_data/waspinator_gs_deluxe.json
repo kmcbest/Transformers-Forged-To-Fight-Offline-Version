@@ -15,6 +15,9 @@
     "sp1": {
       "name_zh": "激光眼",
       "name_en": "Eye Lasers",
+      "desc_zh": "45%的概率得到暴击几率增益，提升30%的暴击几率，持续4秒",
+      "pua_icon": "0xe40d",
+      "ui_trigger": "onSpecial1Hit",
       "effects": [
         {
           "title_zh": "暴击几率",
@@ -28,14 +31,14 @@
           "desc_zh": "施加规避克制，降低对手30%的规避概率，持续4秒",
           "pua_icon": "E92A"
         }
-      ],
-      "desc_zh": "45%的概率得到暴击几率增益，提升30%的暴击几率，持续4秒",
-      "pua_icon": "0xe40d",
-      "ui_trigger": "onSpecial1Hit"
+      ]
     },
     "sp2": {
       "name_zh": "不稳定叮刺",
       "name_en": "Unsteady Sting Shot",
+      "desc_zh": "最后一击施加一层30%的抗性减益，持续5秒",
+      "pua_icon": "E60A",
+      "ui_trigger": "onSpecial2Hit",
       "effects": [
         {
           "title_zh": "抗性减益",
@@ -43,14 +46,14 @@
           "desc_zh": "最后一击施加一层30%的抗性减益，持续5秒",
           "pua_icon": "E60A"
         }
-      ],
-      "desc_zh": "最后一击施加一层30%的抗性减益，持续5秒",
-      "pua_icon": "E60A",
-      "ui_trigger": "onSpecial2Hit"
+      ]
     },
     "sp3": {
       "name_zh": "核惊喜",
       "name_en": "Surprise Nuke",
+      "desc_zh": "100%概率施加燃烧，造成攻击力100%的伤害，持续5秒。",
+      "pua_icon": "0xe41d",
+      "ui_trigger": "onSpecial3Hit",
       "effects": [
         {
           "title_zh": "燃烧",
@@ -58,12 +61,123 @@
           "desc_zh": "100%概率施加燃烧，造成攻击力100%的伤害，持续5秒。",
           "pua_icon": "0xe41d"
         }
-      ],
-      "desc_zh": "100%概率施加燃烧，造成攻击力100%的伤害，持续5秒。",
-      "pua_icon": "0xe41d",
-      "ui_trigger": "onSpecial3Hit"
+      ]
     }
   },
+  "basic_abilities": [
+    {
+      "title_zh": "抗性减益",
+      "title_en": "Resistance Debuff",
+      "desc_zh": "降低目标抗性评级，放大其承受的所有伤害。",
+      "pua_icon": "E60A",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "远程增益",
+      "title_en": "Ranged Buff",
+      "desc_zh": "临时增加远程攻击的速度、射击频率与伤害。",
+      "pua_icon": "E41B",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "特殊伤害",
+      "title_en": "Special Damage",
+      "desc_zh": "增加组合连击与全部特殊攻击造成的破坏力。",
+      "pua_icon": "E41C",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "远程增益",
+      "title_en": "Ranged Buff",
+      "desc_zh": "体力少于50%时，获得远程增益，远程攻击速度提升50%",
+      "pua_icon": "E41B",
+      "category": "passive",
+      "ui_trigger": "远程增益",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "特殊技伤害",
+      "title_en": "Special Damage",
+      "desc_zh": "生命值小于25%时，获得30%的永久特殊技伤害",
+      "pua_icon": "E41C",
+      "category": "passive",
+      "ui_trigger": "特殊技伤害",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "抗性减益",
+      "title_en": "Resistance Debuff",
+      "desc_zh": "普通远程攻击命中对手时施加一层30%的抗性减益，持续2秒\n重击命中对手时施加一层30%的抗性减益，持续5秒",
+      "pua_icon": "E60A",
+      "category": "passive",
+      "ui_trigger": "抗性减益",
+      "show_on_main_screen": false
+    }
+  ],
+  "abilities": [
+    {
+      "title_zh": "抗性减益",
+      "title_en": "Resistance Debuff",
+      "desc_zh": "降低目标抗性评级，放大其承受的所有伤害。",
+      "pua_icon": "E60A",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "远程增益",
+      "title_en": "Ranged Buff",
+      "desc_zh": "临时增加远程攻击的速度、射击频率与伤害。",
+      "pua_icon": "E41B",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "特殊伤害",
+      "title_en": "Special Damage",
+      "desc_zh": "增加组合连击与全部特殊攻击造成的破坏力。",
+      "pua_icon": "E41C",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "远程增益",
+      "title_en": "Ranged Buff",
+      "desc_zh": "体力少于50%时，获得远程增益，远程攻击速度提升50%",
+      "pua_icon": "E41B",
+      "category": "passive",
+      "ui_trigger": "远程增益",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "特殊技伤害",
+      "title_en": "Special Damage",
+      "desc_zh": "生命值小于25%时，获得30%的永久特殊技伤害",
+      "pua_icon": "E41C",
+      "category": "passive",
+      "ui_trigger": "特殊技伤害",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "抗性减益",
+      "title_en": "Resistance Debuff",
+      "desc_zh": "普通远程攻击命中对手时施加一层30%的抗性减益，持续2秒\n重击命中对手时施加一层30%的抗性减益，持续5秒",
+      "pua_icon": "E60A",
+      "category": "passive",
+      "ui_trigger": "抗性减益",
+      "show_on_main_screen": false
+    }
+  ],
   "synergies": [
     {
       "title_zh": "宿敌",
@@ -129,52 +243,6 @@
       "desc_zh": "所有较低级别的队友都会获得 +{{var_35}} 特殊伤害。",
       "pua_icon": "",
       "bonus_heroes": []
-    }
-  ],
-  "basic_abilities": [
-    {
-      "title_zh": "抗性减益",
-      "title_en": "Resistance Debuff",
-      "desc_zh": "降低目标抗性评级，放大其承受的所有伤害。",
-      "desc_en": "Reduces target resistance rating, amplifying all incoming damage.",
-      "pua_icon": "E60A"
-    },
-    {
-      "title_zh": "远程增益",
-      "title_en": "Ranged Buff",
-      "desc_zh": "临时增加远程攻击的速度、射击频率与伤害。",
-      "desc_en": "Temporarily increases ranged attack speed and damage.",
-      "pua_icon": "E41B"
-    },
-    {
-      "title_zh": "特殊伤害",
-      "title_en": "Special Damage",
-      "desc_zh": "增加组合连击与全部特殊攻击造成的破坏力。",
-      "desc_en": "Increases damage dealt by combo finishers and special attacks.",
-      "pua_icon": "E41C"
-    }
-  ],
-  "game_abilities": [
-    {
-      "title_zh": "远程增益",
-      "title_en": "Ranged Buff",
-      "desc_zh": "体力少于50%时，获得远程增益，远程攻击速度提升50%",
-      "pua_icon": "E41B",
-      "ui_trigger": "远程增益"
-    },
-    {
-      "title_zh": "特殊技伤害",
-      "title_en": "Special Damage",
-      "desc_zh": "生命值小于25%时，获得30%的永久特殊技伤害",
-      "pua_icon": "E41C",
-      "ui_trigger": "特殊技伤害"
-    },
-    {
-      "title_zh": "抗性减益",
-      "title_en": "Resistance Debuff",
-      "desc_zh": "普通远程攻击命中对手时施加一层30%的抗性减益，持续2秒\n重击命中对手时施加一层30%的抗性减益，持续5秒\n//抗性减益将受到的伤害放大",
-      "pua_icon": "E60A",
-      "ui_trigger": "抗性减益"
     }
   ]
 }

@@ -7,14 +7,17 @@
   "signature": {
     "title_zh": "蜂之勇气",
     "title_en": "Bee Brave",
-    "desc_zh": "与敌人处于近战距离时得到能量涌动，每秒自动产生最大能量的1.2%  //额外能量，不影响攻击和被攻击应得的能量\n同时，得到10%的近战增益\n//一旦离开近战距离，上面两个增益立即消失",
+    "desc_zh": "与敌人处于近战距离时得到能量涌动，每秒自动产生最大能量的1.2%\n同时，得到10%的近战增益",
     "pua_icon": "E608",
     "ui_trigger": "none"
   },
   "special_attacks": {
     "sp1": {
-      "name_zh": "金靴",
+      "name_zh": "黄金猛踢",
       "name_en": "Gold Boot",
+      "desc_zh": "技能发动过程中暴击伤害提升60%",
+      "pua_icon": "0xe906",
+      "ui_trigger": "onSpecial1Hit",
       "effects": [
         {
           "title_zh": "暴击伤害",
@@ -22,14 +25,14 @@
           "desc_zh": "技能发动过程中暴击伤害提升60%",
           "pua_icon": "0xe906"
         }
-      ],
-      "desc_zh": "技能发动过程中暴击伤害提升60%",
-      "pua_icon": "0xe906",
-      "ui_trigger": "onSpecial1Hit"
+      ]
     },
     "sp2": {
-      "name_zh": "特殊技 2",
+      "name_zh": "能量拥堵",
       "name_en": "Special Attack 2",
+      "desc_zh": "第一击命中时100%概率触发能量锁定，阻止对方获得能量，持续10秒",
+      "pua_icon": "0xe523",
+      "ui_trigger": "onSpecial2Hit",
       "effects": [
         {
           "title_zh": "能量锁定",
@@ -37,56 +40,60 @@
           "desc_zh": "第一击命中时100%概率触发能量锁定，阻止对方获得能量，持续10秒",
           "pua_icon": "0xe523"
         }
-      ],
-      "desc_zh": "第一击命中时100%概率触发能量锁定，阻止对方获得能量，持续10秒",
-      "pua_icon": "0xe523",
-      "ui_trigger": "onSpecial2Hit"
+      ]
     },
     "sp3": {
-      "name_zh": "动力堵塞",
-      "name_en": "Power Jam",
+      "name_zh": "驰骋之旅",
+      "name_en": "Ticket to Ride",
+      "desc_zh": "技能完成后获得20个暴击几率增益，提升28%的暴击几率，每次小黄蜂命中对手时（无论是否出暴击），消耗一个增益。",
+      "pua_icon": "0xe40d",
+      "ui_trigger": "onSpecial3Hit",
       "effects": [
         {
           "title_zh": "暴击几率增益",
           "title_en": "Crit Rate Buff",
-          "desc_zh": "技能完成后获得20个暴击几率增益，提升28%的暴击几率，每次小黄蜂命中对手时（无论是否出暴击），消耗一个增益。//被防不消耗增益",
+          "desc_zh": "技能完成后获得20个暴击几率增益，提升28%的暴击几率，每次小黄蜂命中对手时（无论是否出暴击），消耗一个增益。",
           "pua_icon": "0xe40d"
         }
-      ],
-      "desc_zh": "技能完成后获得20个暴击几率增益，提升28%的暴击几率，每次小黄蜂命中对手时（无论是否出暴击），消耗一个增益。//被防不消耗增益",
-      "pua_icon": "0xe40d",
-      "ui_trigger": "onSpecial3Hit"
+      ]
     }
   },
-  "synergies": [],
   "basic_abilities": [
     {
       "title_zh": "规避",
       "title_en": "Evade",
       "desc_zh": "自动闪避即将到来的攻击。",
-      "desc_en": "Automatically evade incoming attack.",
-      "pua_icon": "E509"
+      "pua_icon": "E509",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
     },
     {
       "title_zh": "暴击率增益",
       "title_en": "Crit Rate Buff",
       "desc_zh": "临时增加攻击命中时触发暴击的几率。",
-      "desc_en": "Temporarily increases the chance of scoring critical hits.",
-      "pua_icon": "E40D"
+      "pua_icon": "E40D",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
     },
     {
       "title_zh": "能量锁定",
       "title_en": "Power Lock",
       "desc_zh": "临时阻止目标从攻击或被动机制中获取任何能量。",
-      "desc_en": "Temporarily prevents the target from gaining power from any source.",
-      "pua_icon": "E523"
+      "pua_icon": "E523",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
     },
     {
       "title_zh": "破盾",
       "title_en": "Shield Break",
       "desc_zh": "粉碎对手的护盾力场。",
-      "desc_en": "Shatters the opponent's shield.",
-      "pua_icon": "E807"
+      "pua_icon": "E807",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
     }
   ],
   "game_abilities": [
@@ -95,21 +102,93 @@
       "title_en": "Melee Evade",
       "desc_zh": "后闪会获得一个32%概率的近战规避，无倒计时，触发规避后消耗。",
       "pua_icon": "0xe509",
-      "ui_trigger": "近战规避"
+      "category": "passive",
+      "ui_trigger": "近战规避",
+      "show_on_main_screen": false
     },
     {
       "title_zh": "暴击几率增益",
       "title_en": "Crit Rate Buff",
-      "desc_zh": "侧闪时获得一个28%的暴击几率增益，最多累积3个。每次小黄蜂命中对手时（无论是否出暴击），消耗一个增益。//被防不消耗增益",
+      "desc_zh": "侧闪时获得1层28%的暴击几率增益，最多累积3层。每次小黄蜂命中对手时（无论是否出暴击），消耗一个增益。",
       "pua_icon": "0xe40d",
-      "ui_trigger": "暴击几率增益"
+      "category": "passive",
+      "ui_trigger": "暴击几率增益",
+      "show_on_main_screen": false
     },
     {
       "title_zh": "护盾崩解",
       "title_en": "Shield Break",
-      "desc_zh": "暴击时清除对方身上所有的护盾并施加攻击力90%的震击伤害，持续5秒",
-      "pua_icon": "E914",
-      "ui_trigger": "护盾崩解"
+      "desc_zh": "近战或远程暴击时，清除对方身上所有的护盾并施加攻击力90%的震击伤害，持续5秒",
+      "pua_icon": "E807",
+      "category": "passive",
+      "ui_trigger": "护盾崩解",
+      "show_on_main_screen": false
     }
-  ]
+  ],
+  "abilities": [
+    {
+      "title_zh": "规避",
+      "title_en": "Evade",
+      "desc_zh": "自动闪避即将到来的攻击。",
+      "pua_icon": "E509",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "暴击率增益",
+      "title_en": "Crit Rate Buff",
+      "desc_zh": "临时增加攻击命中时触发暴击的几率。",
+      "pua_icon": "E40D",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "能量锁定",
+      "title_en": "Power Lock",
+      "desc_zh": "临时阻止目标从攻击或被动机制中获取任何能量。",
+      "pua_icon": "E523",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "破盾",
+      "title_en": "Shield Break",
+      "desc_zh": "粉碎对手的护盾力场。",
+      "pua_icon": "E807",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "近战规避",
+      "title_en": "Melee Evade",
+      "desc_zh": "后闪会获得一个32%概率的近战规避，无倒计时，触发规避后消耗。",
+      "pua_icon": "0xe509",
+      "category": "passive",
+      "ui_trigger": "近战规避",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "暴击几率增益",
+      "title_en": "Crit Rate Buff",
+      "desc_zh": "侧闪时获得1层28%的暴击几率增益，最多累积3层。每次小黄蜂命中对手时（无论是否出暴击），消耗一个增益。",
+      "pua_icon": "0xe40d",
+      "category": "passive",
+      "ui_trigger": "暴击几率增益",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "护盾崩解",
+      "title_en": "Shield Break",
+      "desc_zh": "近战或远程暴击时，清除对方身上所有的护盾并施加攻击力90%的震击伤害，持续5秒",
+      "pua_icon": "E807",
+      "category": "passive",
+      "ui_trigger": "护盾崩解",
+      "show_on_main_screen": false
+    }
+  ],
+  "synergies": []
 }

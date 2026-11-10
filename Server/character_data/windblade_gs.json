@@ -7,7 +7,7 @@
   "signature": {
     "title_zh": "决心",
     "title_en": "Resolution",
-    "desc_zh": "根据对手失去的生命值提高暴击率，最高提升25%\n//用例：对手生命值50%的时候，风刃所有攻击的暴击率提升12.5%",
+    "desc_zh": "根据对手失去的生命值提高暴击率，最高提升25%",
     "pua_icon": "E40D",
     "ui_trigger": "none"
   },
@@ -15,6 +15,9 @@
     "sp1": {
       "name_zh": "电路切片器",
       "name_en": "Circuit Slicer",
+      "desc_zh": "如果对手身上有能量增益，则全部驱散，并施加攻击力80%的即时伤害。",
+      "pua_icon": "E950",
+      "ui_trigger": "onSpecial1Hit",
       "effects": [
         {
           "title_zh": "能量增益驱散",
@@ -25,32 +28,32 @@
         {
           "title_zh": "风暴喷发",
           "title_en": "Stormfall Blasst",
-          "desc_zh": "最后一击施加震击，造成攻击力60%的伤害，持续6秒。  //“风暴喷发”是弹出字样，实际加载的效果就是震击。",
+          "desc_zh": "最后一击施加震击，造成攻击力60%的伤害，持续6秒。",
           "pua_icon": "0xe914"
         }
-      ],
-      "desc_zh": "如果对手身上有能量增益，则全部驱散，并施加攻击力80%的即时伤害。",
-      "pua_icon": "E950",
-      "ui_trigger": "onSpecial1Hit"
+      ]
     },
     "sp2": {
       "name_zh": "剑舞",
       "name_en": "Sword Dance",
+      "desc_zh": "最后一击命中后，获得6秒的的护甲穿透增益，所有攻击无视对方100%的护甲值。",
+      "pua_icon": "E409",
+      "ui_trigger": "onSpecial2Hit",
       "effects": [
         {
           "title_zh": "护甲穿透",
           "title_en": "Armor Piercing",
-          "desc_zh": "最后一击命中后，获得6秒的的护甲穿透增益，所有攻击无视对方100%的护甲值。//图标用黄色",
+          "desc_zh": "最后一击命中后，获得6秒的的护甲穿透增益，所有攻击无视对方100%的护甲值。",
           "pua_icon": "E409"
         }
-      ],
-      "desc_zh": "最后一击命中后，获得6秒的的护甲穿透增益，所有攻击无视对方100%的护甲值。//图标用黄色",
-      "pua_icon": "E409",
-      "ui_trigger": "onSpecial2Hit"
+      ]
     },
     "sp3": {
       "name_zh": "空中扫射",
       "name_en": "Strafing Run",
+      "desc_zh": "技能完成后，35%概率施加眩晕，持续3秒",
+      "pua_icon": "0xe605",
+      "ui_trigger": "onSpecial3Hit",
       "effects": [
         {
           "title_zh": "眩晕",
@@ -58,12 +61,159 @@
           "desc_zh": "技能完成后，35%概率施加眩晕，持续3秒",
           "pua_icon": "0xe605"
         }
-      ],
-      "desc_zh": "技能完成后，35%概率施加眩晕，持续3秒",
-      "pua_icon": "0xe605",
-      "ui_trigger": "onSpecial3Hit"
+      ]
     }
   },
+  "basic_abilities": [
+    {
+      "title_zh": "流血",
+      "title_en": "Bleed",
+      "desc_zh": "流失的能量晶体会持续造成直接伤害。",
+      "pua_icon": "E401",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "震击",
+      "title_en": "Shock",
+      "desc_zh": "持续造成电磁能量伤害。",
+      "pua_icon": "E914",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "暴击率增益",
+      "title_en": "Crit Rate Buff",
+      "desc_zh": "临时增加攻击命中时触发暴击的几率。",
+      "pua_icon": "E40D",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "眩晕",
+      "title_en": "Stun",
+      "desc_zh": "临时阻止目标采取任何行动。",
+      "pua_icon": "E605",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "剑刃暴击流血",
+      "title_en": "Critical Bleed",
+      "desc_zh": "近战（包括近战普通攻击和重击）出暴击时，有66%的概率触发流血，造成攻击力68%的伤害，持续4秒。",
+      "pua_icon": "0xe401",
+      "category": "passive",
+      "ui_trigger": "剑刃暴击流血",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "剑刃暴击率",
+      "title_en": "Crit Buff",
+      "desc_zh": "使用剑刃攻击时暴击率增加25%。",
+      "pua_icon": "E40D",
+      "category": "passive",
+      "ui_trigger": "剑刃暴击率",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "重击远程穿透",
+      "title_en": "Heavy Range Immunue",
+      "desc_zh": "重击全程不会被远程普通攻击和远程重击击中。",
+      "pua_icon": "0xe518",
+      "category": "passive",
+      "ui_trigger": "重击远程穿透",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "眩晕",
+      "title_en": "Stun",
+      "desc_zh": "如果对手正处于流血状态，远程攻击命中有35%的概率造成眩晕，持续1.5秒",
+      "pua_icon": "E605",
+      "category": "passive",
+      "ui_trigger": "眩晕",
+      "show_on_main_screen": false
+    }
+  ],
+  "abilities": [
+    {
+      "title_zh": "流血",
+      "title_en": "Bleed",
+      "desc_zh": "流失的能量晶体会持续造成直接伤害。",
+      "pua_icon": "E401",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "震击",
+      "title_en": "Shock",
+      "desc_zh": "持续造成电磁能量伤害。",
+      "pua_icon": "E914",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "暴击率增益",
+      "title_en": "Crit Rate Buff",
+      "desc_zh": "临时增加攻击命中时触发暴击的几率。",
+      "pua_icon": "E40D",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "眩晕",
+      "title_en": "Stun",
+      "desc_zh": "临时阻止目标采取任何行动。",
+      "pua_icon": "E605",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "剑刃暴击流血",
+      "title_en": "Critical Bleed",
+      "desc_zh": "近战（包括近战普通攻击和重击）出暴击时，有66%的概率触发流血，造成攻击力68%的伤害，持续4秒。",
+      "pua_icon": "0xe401",
+      "category": "passive",
+      "ui_trigger": "剑刃暴击流血",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "剑刃暴击率",
+      "title_en": "Crit Buff",
+      "desc_zh": "使用剑刃攻击时暴击率增加25%。",
+      "pua_icon": "E40D",
+      "category": "passive",
+      "ui_trigger": "剑刃暴击率",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "重击远程穿透",
+      "title_en": "Heavy Range Immunue",
+      "desc_zh": "重击全程不会被远程普通攻击和远程重击击中。",
+      "pua_icon": "0xe518",
+      "category": "passive",
+      "ui_trigger": "重击远程穿透",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "眩晕",
+      "title_en": "Stun",
+      "desc_zh": "如果对手正处于流血状态，远程攻击命中有35%的概率造成眩晕，持续1.5秒",
+      "pua_icon": "E605",
+      "category": "passive",
+      "ui_trigger": "眩晕",
+      "show_on_main_screen": false
+    }
+  ],
   "synergies": [
     {
       "title_zh": "与铁皮的盟友",
@@ -113,66 +263,6 @@
       "desc_zh": "+{{var_32}} 批评评级",
       "pua_icon": "",
       "bonus_heroes": []
-    }
-  ],
-  "basic_abilities": [
-    {
-      "title_zh": "流血",
-      "title_en": "Bleed",
-      "desc_zh": "流失的能量晶体会持续造成直接伤害。",
-      "desc_en": "Bleeding energon causes direct damage over time.",
-      "pua_icon": "E401"
-    },
-    {
-      "title_zh": "震击",
-      "title_en": "Shock",
-      "desc_zh": "持续造成电磁能量伤害。",
-      "desc_en": "Deals electrical energy damage over time.",
-      "pua_icon": "E914"
-    },
-    {
-      "title_zh": "暴击率增益",
-      "title_en": "Crit Rate Buff",
-      "desc_zh": "临时增加攻击命中时触发暴击的几率。",
-      "desc_en": "Temporarily increases the chance of scoring critical hits.",
-      "pua_icon": "E40D"
-    },
-    {
-      "title_zh": "眩晕",
-      "title_en": "Stun",
-      "desc_zh": "临时阻止目标采取任何行动。",
-      "desc_en": "Temporarily paralyzes the target, preventing all actions.",
-      "pua_icon": "E605"
-    }
-  ],
-  "game_abilities": [
-    {
-      "title_zh": "剑刃暴击流血",
-      "title_en": "Critical Bleed",
-      "desc_zh": "近战（包括近战普通攻击和重击）出暴击时，有66%的概率触发流血，造成攻击力68%的伤害，持续4秒。",
-      "pua_icon": "0xe401",
-      "ui_trigger": "剑刃暴击流血"
-    },
-    {
-      "title_zh": "剑刃暴击率",
-      "title_en": "Crit Buff",
-      "desc_zh": "使用剑刃攻击时暴击率增加25%。//包括所有近战攻击，S1和S2",
-      "pua_icon": "E40D",
-      "ui_trigger": "剑刃暴击率"
-    },
-    {
-      "title_zh": "重击远程穿透",
-      "title_en": "Heavy Range Immunue",
-      "desc_zh": "重击全程不会被远程普通攻击和远程重击击中。//对方的远程普通攻击和远程重击会直接从风刃身边飞过，这个过程显示一个黄色的图标，重击完成后消失。",
-      "pua_icon": "0xe518",
-      "ui_trigger": "重击远程穿透"
-    },
-    {
-      "title_zh": "眩晕",
-      "title_en": "Stun",
-      "desc_zh": "如果对手正处于流血状态，远程攻击命中有35%的概率造成眩晕，持续1.5秒",
-      "pua_icon": "E605",
-      "ui_trigger": "眩晕"
     }
   ]
 }

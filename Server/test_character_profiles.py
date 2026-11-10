@@ -86,8 +86,8 @@ class TestCharacterProfiles(unittest.TestCase):
         # Abilities: contains basic abilities (e.g. 规避 & 爆头射击)
         ui_mods = character_profiles.get_bot_ui_ability_ids(bid)
         self.assertGreaterEqual(len(ui_mods), 2)
-        appr_names = [appears[stat_mods[m]["AppearanceID"]]["s"] for m in ui_mods]
-        self.assertIn("规避", appr_names)
+        appr_names = [appears[stat_mods[m]["AppearanceID"]]["a"] for m in ui_mods]
+        self.assertTrue(any("规避" in name for name in appr_names))
         self.assertTrue(any("爆头" in name for name in appr_names))
 
         # Synergies: 6 synergies

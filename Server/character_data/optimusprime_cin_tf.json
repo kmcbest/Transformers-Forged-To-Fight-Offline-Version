@@ -5,16 +5,19 @@
   "faction": "autobot",
   "class": "braw",
   "signature": {
-    "title_zh": "我会带你们一起去的！ - 擎天柱的毅力改变了战斗的潮流，在生命值较低时提供更高的装甲值和三个近战增益。每场战斗可能会发生一次。",
-    "title_en": "I'll Take You All On! - Optimus Prime's perseverance changes the tide of the battle, providing increased Armor and three Melee Buffs when at low health. This may occur once per fight.",
-    "desc_zh": "生命值低于 {{var_1}}：擎天柱的毅力改变了战斗的潮流，为 {{var_4}} 提供了 +{{var_2}} 增加的装甲值和三个 {{var_3}} 近战增益。每场战斗可能会发生一次。\n\n每级 +{{var_5}}。",
-    "pua_icon": "",
+    "title_zh": "我会带上你们！",
+    "title_en": "I'll Take You All on!",
+    "desc_zh": "当生命值低于20%，擎天柱获得1层90%的护甲增益和3层44.4%的近战增益，持续7秒。\n此技能每回合只能触发一次。",
+    "pua_icon": "E412",
     "ui_trigger": "none"
   },
   "special_attacks": {
     "sp1": {
-      "name_zh": "守护斩",
+      "name_zh": "守护者猛击",
       "name_en": "Guardian Slash",
+      "desc_zh": "60%概率施加流血，造成攻击力40%的伤害，持续4秒",
+      "pua_icon": "E401",
+      "ui_trigger": "onSpecial1Hit",
       "effects": [
         {
           "title_zh": "流血",
@@ -25,17 +28,17 @@
         {
           "title_zh": "伤害增益",
           "title_en": "Dynamic Damage Boost",
-          "desc_zh": "擎天柱失去体力越多，该技能伤害越高，最高增伤150% (50% HP 时增伤 75%)",
+          "desc_zh": "擎天柱失去体力越多，该技能伤害越高，最高增伤150%",
           "pua_icon": "E406"
         }
-      ],
-      "desc_zh": "60%概率施加流血，造成攻击力40%的伤害，持续4秒",
-      "pua_icon": "E401",
-      "ui_trigger": "onSpecial1Hit"
+      ]
     },
     "sp2": {
       "name_zh": "单挑全场！",
       "name_en": "I'll Take You All On!",
+      "desc_zh": "前两击每一击有90%概率施加流血，造成攻击力40%的伤害，持续4秒。",
+      "pua_icon": "E401",
+      "ui_trigger": "onSpecial2Hit",
       "effects": [
         {
           "title_zh": "流血",
@@ -43,14 +46,14 @@
           "desc_zh": "前两击每一击有90%概率施加流血，造成攻击力40%的伤害，持续4秒。",
           "pua_icon": "E401"
         }
-      ],
-      "desc_zh": "前两击每一击有90%概率施加流血，造成攻击力40%的伤害，持续4秒。",
-      "pua_icon": "E401",
-      "ui_trigger": "onSpecial2Hit"
+      ]
     },
     "sp3": {
-      "name_zh": "我会带你们一起去的！",
+      "name_zh": "汽车人的力量",
       "name_en": "Strength of the Autobots",
+      "desc_zh": "此技能每一击有60%概率施加流血，造成攻击力40%的伤害，持续4秒。",
+      "pua_icon": "E401",
+      "ui_trigger": "onSpecial3Hit",
       "effects": [
         {
           "title_zh": "流血",
@@ -58,12 +61,141 @@
           "desc_zh": "此技能每一击有60%概率施加流血，造成攻击力40%的伤害，持续4秒。",
           "pua_icon": "E401"
         }
-      ],
-      "desc_zh": "此技能每一击有60%概率施加流血，造成攻击力40%的伤害，持续4秒。",
-      "pua_icon": "E401",
-      "ui_trigger": "onSpecial3Hit"
+      ]
     }
   },
+  "basic_abilities": [
+    {
+      "title_zh": "护甲增益",
+      "title_en": "Armor Buff",
+      "desc_zh": "临时提升装甲厚度，降低受到攻击的伤害。",
+      "pua_icon": "E517",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "流血",
+      "title_en": "Bleed",
+      "desc_zh": "流失的能量晶体会持续造成直接伤害。",
+      "pua_icon": "E401",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "攻击增益",
+      "title_en": "Attack Buff",
+      "desc_zh": "临时增加机体攻击评分与造成的全部伤害。",
+      "pua_icon": "E406",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "意志力",
+      "title_en": "Willpower",
+      "desc_zh": "处于减益状态时，将受到的部分伤害转化为生命值回复。",
+      "pua_icon": "E942",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "护甲增益",
+      "title_en": "Armor Buff",
+      "desc_zh": "当进入格挡姿态时，有100%的概率获得护甲增益，降低受到攻击伤害的16.5%，持续7秒。",
+      "pua_icon": "E517",
+      "category": "passive",
+      "ui_trigger": "护甲增益",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "近战增益",
+      "title_en": "Melee Buff",
+      "desc_zh": "所有攻击：10%的概率获得近战增益，提升近战伤害60%，持续4秒。",
+      "pua_icon": "E412",
+      "category": "passive",
+      "ui_trigger": "近战增益",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "意志力",
+      "title_en": "Willpower",
+      "desc_zh": "如果擎天柱正在流血状态，他将自己造成所有伤害的35%转化为自己的生命值。身上最多只能被施加一层流血，超过一层的流血会被当场净化，并转化为擎天柱最大能量的10%",
+      "pua_icon": "E942",
+      "category": "passive",
+      "ui_trigger": "意志力",
+      "show_on_main_screen": false
+    }
+  ],
+  "abilities": [
+    {
+      "title_zh": "护甲增益",
+      "title_en": "Armor Buff",
+      "desc_zh": "临时提升装甲厚度，降低受到攻击的伤害。",
+      "pua_icon": "E517",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "流血",
+      "title_en": "Bleed",
+      "desc_zh": "流失的能量晶体会持续造成直接伤害。",
+      "pua_icon": "E401",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "攻击增益",
+      "title_en": "Attack Buff",
+      "desc_zh": "临时增加机体攻击评分与造成的全部伤害。",
+      "pua_icon": "E406",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "意志力",
+      "title_en": "Willpower",
+      "desc_zh": "处于减益状态时，将受到的部分伤害转化为生命值回复。",
+      "pua_icon": "E942",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "护甲增益",
+      "title_en": "Armor Buff",
+      "desc_zh": "当进入格挡姿态时，有100%的概率获得护甲增益，降低受到攻击伤害的16.5%，持续7秒。",
+      "pua_icon": "E517",
+      "category": "passive",
+      "ui_trigger": "护甲增益",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "近战增益",
+      "title_en": "Melee Buff",
+      "desc_zh": "所有攻击：10%的概率获得近战增益，提升近战伤害60%，持续4秒。",
+      "pua_icon": "E412",
+      "category": "passive",
+      "ui_trigger": "近战增益",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "意志力",
+      "title_en": "Willpower",
+      "desc_zh": "如果擎天柱正在流血状态，他将自己造成所有伤害的35%转化为自己的生命值。身上最多只能被施加一层流血，超过一层的流血会被当场净化，并转化为擎天柱最大能量的10%",
+      "pua_icon": "E942",
+      "category": "passive",
+      "ui_trigger": "意志力",
+      "show_on_main_screen": false
+    }
+  ],
   "synergies": [
     {
       "title_zh": "盟友",
@@ -139,59 +271,6 @@
       "desc_zh": "作为团队的领导灯塔，所有较低级别的队友都获得 +{{var_26}} 攻击评级。",
       "pua_icon": "",
       "bonus_heroes": []
-    }
-  ],
-  "basic_abilities": [
-    {
-      "title_zh": "护甲增益",
-      "title_en": "Armor Buff",
-      "desc_zh": "临时提升装甲厚度，降低受到攻击的伤害。",
-      "desc_en": "Temporarily increases armor thickness, reducing damage from incoming attacks.",
-      "pua_icon": "E517"
-    },
-    {
-      "title_zh": "流血",
-      "title_en": "Bleed",
-      "desc_zh": "流失的能量晶体会持续造成直接伤害。",
-      "desc_en": "Bleeding energon causes direct damage over time.",
-      "pua_icon": "E401"
-    },
-    {
-      "title_zh": "攻击增益",
-      "title_en": "Attack Buff",
-      "desc_zh": "临时增加机体攻击评分与造成的全部伤害。",
-      "desc_en": "Temporarily increases overall attack rating and damage dealt.",
-      "pua_icon": "E406"
-    },
-    {
-      "title_zh": "意志力",
-      "title_en": "Willpower",
-      "desc_zh": "处于减益状态时，将受到的部分伤害转化为生命值回复。",
-      "desc_en": "Converts a portion of incoming damage into health recovery while suffering debuffs.",
-      "pua_icon": "E942"
-    }
-  ],
-  "game_abilities": [
-    {
-      "title_zh": "护甲增益",
-      "title_en": "Armor Buff",
-      "desc_zh": "当进入格挡姿态时，有100%的概率获得护甲增益，降低受到攻击伤害的16.5%，持续7秒。",
-      "pua_icon": "E517",
-      "ui_trigger": "护甲增益"
-    },
-    {
-      "title_zh": "近战增益",
-      "title_en": "Melee Buff",
-      "desc_zh": "所有攻击：10%的概率获得近战增益，提升近战伤害60%，持续4秒。//最大一层，不可叠加，再次获得就刷新当前的",
-      "pua_icon": "E412",
-      "ui_trigger": "近战增益"
-    },
-    {
-      "title_zh": "意志力",
-      "title_en": "Willpower",
-      "desc_zh": "如果擎天柱正在流血状态，他将自己造成所有伤害的35%转化为自己的生命值。身上最多只能被施加一层流血，超过一层的流血会被当场净化，并转化为擎天柱最大能量的10%",
-      "pua_icon": "E942",
-      "ui_trigger": "意志力"
     }
   ]
 }

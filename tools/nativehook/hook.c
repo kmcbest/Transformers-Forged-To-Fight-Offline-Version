@@ -6063,7 +6063,7 @@ void* hook_145(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
                 uint32_t dt_ms = (uint32_t)(dt_sec * 1000.0f);
                 if (dt_ms == 0) dt_ms = 1;
                 g_combat_sim_clock_ms += dt_ms;
-                skill_dispatch_simulation_tick(g_combat_sim_clock_ms);
+                skill_dispatch_simulation_tick(propgo_now_ms());
             }
         }
         // HP tracking (Hit reactions are natively handled via slot 165 PlayerHitReactState.OnEnter)
@@ -7429,6 +7429,32 @@ static void* hooked_PlayerBlockState_OnExit(void* a0, void* a1, void* a2, void* 
     void* r = NULL;
     if (orig_PlayerBlockState_OnExit) {
         r = orig_PlayerBlockState_OnExit(a0, a1, a2, a3, a4, a5, a6, a7);
+    }
+    return r;
+}
+
+void skill_consume_buff(int player_index, const char* mod_id, int count);
+
+// PlayerNewHeavyAttackState.OnExit (0x011828E0) - Instant heavy attack unstoppable cleanup
+static fn8 orig_PlayerNewHeavyAttackState_OnExit = NULL;
+static void* hooked_PlayerNewHeavyAttackState_OnExit(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    void* pc = fld_p(a0, 0x18);
+    PROTECT({
+        if (obj_ok(pc)) {
+            int32_t pidx = *(int32_t*)((uintptr_t)pc + 0xF4);
+            if (pidx >= 0 && pidx < 2) {
+                skill_consume_buff(pidx, "ramjet_heavy_unstoppable", 99);
+                skill_consume_buff(pidx, "grimlock_heavy_unstoppable", 99);
+                if (pidx == 0) {
+                    g_p0_after_heavy = 0;
+                }
+                flog("HEAVY_ATTACK_EXIT (0x011828E0): P%d exited heavy attack, consumed unstoppable buff & cleared state", pidx);
+            }
+        }
+    });
+    void* r = NULL;
+    if (orig_PlayerNewHeavyAttackState_OnExit) {
+        r = orig_PlayerNewHeavyAttackState_OnExit(a0, a1, a2, a3, a4, a5, a6, a7);
     }
     return r;
 }
@@ -9510,7 +9536,7 @@ buff_gate_done: ;
             // 不可阻挡霸体生效时间窗口跟踪 (Unstoppable Buff Activated)
             // 注意：dash 类霸体属于动作状态机约束（仅限前冲位移中有效，由 hook_194 中精确判定 state==Dash），
             // 严禁在此为 dash 类霸体设置全局定时器，否则会导致霸体持续时间溢出到普通近战轻中攻击（M1/L1），破坏正常格斗手感！
-            if (mod_id[0] && strstr(mod_id, "unstoppable") != NULL && strstr(mod_id, "dash") == NULL) {
+            if (mod_id[0] && strstr(mod_id, "unstoppable") != NULL && strstr(mod_id, "dash") == NULL && strstr(mod_id, "heavy") == NULL) {
                 float dur_sec = 0.0f;
                 if (useOverrideDuration && overrideDuration > 0.0f) {
                     dur_sec = overrideDuration;
@@ -10202,6 +10228,31 @@ int hook_194(void* self) {
     if (!self || !obj_ok(self)) return 0;
     typedef int (*fn_get_bool)(void*);
     int orig_val = H[194].orig ? ((fn_get_bool)H[194].orig)(self) : 0;
+    if (orig_val) {
+        // 重击专属霸体角色（喷气机、钢锁）：一旦脱离 HeavyCharge 与 HeavyAttack 动作状态，绝不继承残留霸体！
+        int is_p0 = is_player0_attr(self);
+        const char* bot_id = is_p0 ? g_p0_bot_id : g_p1_bot_id;
+        if (bot_id && (strstr(bot_id, "ramjet") != NULL || strstr(bot_id, "grimlock") != NULL)) {
+            void* pc = is_p0 ? g_p0_controller : g_p1_controller;
+            int in_heavy = 0;
+            if (pc && obj_ok(pc)) {
+                void* cur_state = *(void**)((char*)pc + 0x48);
+                if (cur_state && obj_ok(cur_state)) {
+                    void* sname_obj = *(void**)((char*)cur_state + 0x10);
+                    if (sname_obj && obj_ok(sname_obj)) {
+                        char sname[32] = {0};
+                        read_str(sname_obj, sname, sizeof(sname));
+                        if (strcmp(sname, "HeavyAttack") == 0 || strcmp(sname, "HeavyCharge") == 0) {
+                            in_heavy = 1;
+                        }
+                    }
+                }
+            }
+            if (!in_heavy) {
+                orig_val = 0;
+            }
+        }
+    }
     if (orig_val) return 1;
 
     int ret_val = 0;
@@ -12865,6 +12916,8 @@ static void* installer(void* arg){
     inline_hook((void*)(g_base + 0x010D24C4), (void*)hooked_TFormGachaPurchaseItem_SetupStoreItems, &orig_TFormGachaPurchaseItem_SetupStoreItems);
     // Hook PlayerBlockState.OnExit (0x01173B28) for symmetric block state exit dispatch:
     inline_hook((void*)(g_base + 0x01173B28), (void*)hooked_PlayerBlockState_OnExit, &orig_PlayerBlockState_OnExit);
+    // Hook PlayerNewHeavyAttackState.OnExit (0x011828E0) for instant heavy attack unstoppable expiration:
+    inline_hook((void*)(g_base + 0x011828E0), (void*)hooked_PlayerNewHeavyAttackState_OnExit, &orig_PlayerNewHeavyAttackState_OnExit);
     // Guard BattleArbiter.get_IsInitialized (0x00CF90A0) against NRE on UI touch
     inline_hook((void*)(g_base + 0x00CF90A0), (void*)hooked_BattleArbiter_get_IsInitialized, &orig_BattleArbiter_get_IsInitialized);
     // Hook Projectile.IgnoreCollisionDetection (0x00E9EA00) for Windblade Heavy Attack ranged penetration

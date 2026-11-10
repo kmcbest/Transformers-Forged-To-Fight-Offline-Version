@@ -15,36 +15,39 @@
     "sp1": {
       "name_zh": "起起落落",
       "name_en": "Fall and Rise Again",
+      "desc_zh": "60%概率得到30%的能量功率增益，持续6秒\n技能命中消耗10层泰坦充能",
+      "pua_icon": "E606",
+      "ui_trigger": "onSpecial1Hit",
       "effects": [
         {
           "title_zh": "能量功率",
           "title_en": "Power Rate",
-          "desc_zh": "60%概率得到30%的能量功率增益，持续6秒\n技能命中消耗10层泰坦充能  //未命中不扣",
+          "desc_zh": "60%概率得到30%的能量功率增益，持续6秒\n技能命中消耗10层泰坦充能",
           "pua_icon": "E606"
         }
-      ],
-      "desc_zh": "60%概率得到30%的能量功率增益，持续6秒\n技能命中消耗10层泰坦充能  //未命中不扣",
-      "pua_icon": "E606",
-      "ui_trigger": "onSpecial1Hit"
+      ]
     },
     "sp2": {
       "name_zh": "两种看法",
       "name_en": "Two Minds",
+      "desc_zh": "65%的概率得到20%的暴击几率增益，持续12秒\n技能命中消耗15层泰坦充能",
+      "pua_icon": "E40D",
+      "ui_trigger": "onSpecial2Hit",
       "effects": [
         {
           "title_zh": "暴击几率",
           "title_en": "Crit Rate",
-          "desc_zh": "65%的概率得到20%的暴击几率增益，持续12秒\n技能命中消耗15层泰坦充能 //未命中不扣",
+          "desc_zh": "65%的概率得到20%的暴击几率增益，持续12秒\n技能命中消耗15层泰坦充能",
           "pua_icon": "E40D"
         }
-      ],
-      "desc_zh": "65%的概率得到20%的暴击几率增益，持续12秒\n技能命中消耗15层泰坦充能 //未命中不扣",
-      "pua_icon": "E40D",
-      "ui_trigger": "onSpecial2Hit"
+      ]
     },
     "sp3": {
       "name_zh": "时间的主人",
       "name_en": "Master of Timelines",
+      "desc_zh": "85%概率施加流血，造成攻击力40%的伤害，持续7秒。\n技能命中消耗20层泰坦充能",
+      "pua_icon": "E401",
+      "ui_trigger": "onSpecial3Hit",
       "effects": [
         {
           "title_zh": "流血",
@@ -52,12 +55,195 @@
           "desc_zh": "85%概率施加流血，造成攻击力40%的伤害，持续7秒。\n技能命中消耗20层泰坦充能",
           "pua_icon": "E401"
         }
-      ],
-      "desc_zh": "85%概率施加流血，造成攻击力40%的伤害，持续7秒。\n技能命中消耗20层泰坦充能",
-      "pua_icon": "E401",
-      "ui_trigger": "onSpecial3Hit"
+      ]
     }
   },
+  "basic_abilities": [
+    {
+      "title_zh": "势不可当的力量",
+      "title_en": "Overwhelming Power",
+      "desc_zh": "降低格挡精通，并降低对近战攻击的防御力。",
+      "pua_icon": "E91A",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "能量功率下降",
+      "title_en": "Power Rate Debuff",
+      "desc_zh": "减少对手获取能量的能力。",
+      "pua_icon": "E607",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "流血",
+      "title_en": "Bleed",
+      "desc_zh": "流失的能量晶体会持续造成直接伤害。",
+      "pua_icon": "E401",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "流血",
+      "title_en": "Bleed",
+      "desc_zh": "进入势不可挡的力量模式后，所有攻击100%概率施加流血，造成攻击力25%的伤害，持续6秒。流血不可叠加，如果对方正在流血，则刷新倒计时。",
+      "pua_icon": "0xe401",
+      "category": "passive",
+      "ui_trigger": "流血",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "能量功率减益",
+      "title_en": "Power Rate Debuff",
+      "desc_zh": "当对手比自己能量更多时，对手能量功率降低30%",
+      "pua_icon": "E606",
+      "category": "passive",
+      "ui_trigger": "能量功率减益",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "泰坦充能",
+      "title_en": "Titan Charge",
+      "desc_zh": "所有攻击命中时，获得1层泰坦充能\n每层泰坦充能增加1.5%的攻击力",
+      "pua_icon": "E91A",
+      "category": "passive",
+      "ui_trigger": "泰坦充能",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "势不可挡的力量",
+      "title_en": "Overwhelming Power",
+      "desc_zh": "当泰坦充能达到20层时，进入势不可挡的力量模式\n进入此状态时，自身受到的近战伤害放大30%",
+      "pua_icon": "E91A",
+      "category": "passive",
+      "ui_trigger": "势不可挡的力量",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "不可阻挡",
+      "title_en": "Unstoppable",
+      "desc_zh": "对方发动特殊技时，我方有30%的概率获得不可阻挡增益，持续0.95秒",
+      "pua_icon": "0xe915",
+      "category": "passive",
+      "ui_trigger": "不可阻挡",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "暴击几率",
+      "title_en": "Crit Rate",
+      "desc_zh": "重击命中时，每个泰坦充能增加1%的的暴击几率",
+      "pua_icon": "0xe40d",
+      "category": "passive",
+      "ui_trigger": "暴击几率",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "规避克制",
+      "title_en": "Anti Evade",
+      "desc_zh": "近战攻击降低对手20%的规避几率",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "规避克制",
+      "show_on_main_screen": false
+    }
+  ],
+  "abilities": [
+    {
+      "title_zh": "势不可当的力量",
+      "title_en": "Overwhelming Power",
+      "desc_zh": "降低格挡精通，并降低对近战攻击的防御力。",
+      "pua_icon": "E91A",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "能量功率下降",
+      "title_en": "Power Rate Debuff",
+      "desc_zh": "减少对手获取能量的能力。",
+      "pua_icon": "E607",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "流血",
+      "title_en": "Bleed",
+      "desc_zh": "流失的能量晶体会持续造成直接伤害。",
+      "pua_icon": "E401",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "流血",
+      "title_en": "Bleed",
+      "desc_zh": "进入势不可挡的力量模式后，所有攻击100%概率施加流血，造成攻击力25%的伤害，持续6秒。流血不可叠加，如果对方正在流血，则刷新倒计时。",
+      "pua_icon": "0xe401",
+      "category": "passive",
+      "ui_trigger": "流血",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "能量功率减益",
+      "title_en": "Power Rate Debuff",
+      "desc_zh": "当对手比自己能量更多时，对手能量功率降低30%",
+      "pua_icon": "E606",
+      "category": "passive",
+      "ui_trigger": "能量功率减益",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "泰坦充能",
+      "title_en": "Titan Charge",
+      "desc_zh": "所有攻击命中时，获得1层泰坦充能\n每层泰坦充能增加1.5%的攻击力",
+      "pua_icon": "E91A",
+      "category": "passive",
+      "ui_trigger": "泰坦充能",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "势不可挡的力量",
+      "title_en": "Overwhelming Power",
+      "desc_zh": "当泰坦充能达到20层时，进入势不可挡的力量模式\n进入此状态时，自身受到的近战伤害放大30%",
+      "pua_icon": "E91A",
+      "category": "passive",
+      "ui_trigger": "势不可挡的力量",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "不可阻挡",
+      "title_en": "Unstoppable",
+      "desc_zh": "对方发动特殊技时，我方有30%的概率获得不可阻挡增益，持续0.95秒",
+      "pua_icon": "0xe915",
+      "category": "passive",
+      "ui_trigger": "不可阻挡",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "暴击几率",
+      "title_en": "Crit Rate",
+      "desc_zh": "重击命中时，每个泰坦充能增加1%的的暴击几率",
+      "pua_icon": "0xe40d",
+      "category": "passive",
+      "ui_trigger": "暴击几率",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "规避克制",
+      "title_en": "Anti Evade",
+      "desc_zh": "近战攻击降低对手20%的规避几率",
+      "pua_icon": "",
+      "category": "passive",
+      "ui_trigger": "规避克制",
+      "show_on_main_screen": false
+    }
+  ],
   "synergies": [
     {
       "title_zh": "",
@@ -100,80 +286,6 @@
       "desc_zh": "作为领导者的灯塔，所有较低级别的队友都获得+{{var_22}}暴击率。",
       "pua_icon": "",
       "bonus_heroes": []
-    }
-  ],
-  "basic_abilities": [
-    {
-      "title_zh": "势不可当的力量",
-      "title_en": "Overwhelming Power",
-      "desc_zh": "降低格挡精通，并降低对近战攻击的防御力。",
-      "desc_en": "Reduces Block Proficiency and reduces defense against Melee Attacks.",
-      "pua_icon": "E91A"
-    },
-    {
-      "title_zh": "能量功率下降",
-      "title_en": "Power Rate Debuff",
-      "desc_zh": "减少对手获取能量的能力。",
-      "desc_en": "Drains a percentage of the opponent's power gauge over time.",
-      "pua_icon": "E607"
-    },
-    {
-      "title_zh": "流血",
-      "title_en": "Bleed",
-      "desc_zh": "流失的能量晶体会持续造成直接伤害。",
-      "desc_en": "Bleeding energon causes direct damage over time.",
-      "pua_icon": "E401"
-    }
-  ],
-  "game_abilities": [
-    {
-      "title_zh": "流血",
-      "title_en": "Bleed",
-      "desc_zh": "进入势不可挡的力量模式后，所有攻击100%概率施加流血，造成攻击力25%的伤害，持续6秒。流血不可叠加，如果对方正在流血，则刷新倒计时。",
-      "pua_icon": "0xe401",
-      "ui_trigger": "流血"
-    },
-    {
-      "title_zh": "能量功率减益",
-      "title_en": "Power Rate Debuff",
-      "desc_zh": "当对手比自己能量更多时，对手能量功率降低30%  // 显示一个红色的图标，对手能量少于我方时减益消失",
-      "pua_icon": "E606",
-      "ui_trigger": "能量功率减益"
-    },
-    {
-      "title_zh": "泰坦充能",
-      "title_en": "Titan Charge",
-      "desc_zh": "所有攻击命中时，获得1层泰坦充能  // 浅紫色图标\n每层泰坦充能增加1.5%的攻击力",
-      "pua_icon": "E91A",
-      "ui_trigger": "泰坦充能"
-    },
-    {
-      "title_zh": "势不可挡的力量",
-      "title_en": "Overwhelming Power",
-      "desc_zh": "当泰坦充能达到20层时，进入势不可挡的力量模式  // 多一个红色E91A图标，无倒计时，不叠加，但泰坦充能的浅紫色计数器不消失，红图标在泰坦充能少于20的时候消失\n进入此状态时，自身受到的近战伤害放大30%",
-      "pua_icon": "E91A",
-      "ui_trigger": "势不可挡的力量"
-    },
-    {
-      "title_zh": "不可阻挡",
-      "title_en": "Unstoppable",
-      "desc_zh": "对方发动特殊技时，我方有30%的概率获得不可阻挡增益，持续0.95秒",
-      "pua_icon": "0xe915",
-      "ui_trigger": "不可阻挡"
-    },
-    {
-      "title_zh": "暴击几率",
-      "title_en": "Crit Rate",
-      "desc_zh": "重击命中时，每个泰坦充能增加1%的的暴击几率",
-      "pua_icon": "0xe40d",
-      "ui_trigger": "暴击几率"
-    },
-    {
-      "title_zh": "规避克制",
-      "title_en": "Anti Evade",
-      "desc_zh": "近战攻击降低对手20%的规避几率  //不是减益，是如果对方要对亡灵天尊的近战计算规避时，概率减少20%\n//无图标",
-      "pua_icon": "",
-      "ui_trigger": "规避克制"
     }
   ]
 }

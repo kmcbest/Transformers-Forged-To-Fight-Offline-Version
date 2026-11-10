@@ -13,8 +13,11 @@
   },
   "special_attacks": {
     "sp1": {
-      "name_zh": "熔岩推进冲撞",
-      "name_en": "Thermal Rush",
+      "name_zh": "热能推进",
+      "name_en": "Thermal Thrusters",
+      "desc_zh": "最后一击命中 100% 概率施加燃烧减益，造成攻击力 50% 的伤害，持续 5 秒；技能结束后自身获得一层 20% 的近战增益，持续 6 秒。",
+      "pua_icon": "0xe41d",
+      "ui_trigger": "onSpecial1Hit",
       "effects": [
         {
           "title_zh": "热能推进",
@@ -22,14 +25,14 @@
           "desc_zh": "最后一击命中 100% 概率施加燃烧减益，造成攻击力 50% 的伤害，持续 5 秒；技能结束后自身获得一层 20% 的近战增益，持续 6 秒。",
           "pua_icon": "0xe41d"
         }
-      ],
-      "desc_zh": "最后一击命中 100% 概率施加燃烧减益，造成攻击力 50% 的伤害，持续 5 秒；技能结束后自身获得一层 20% 的近战增益，持续 6 秒。",
-      "pua_icon": "0xe41d",
-      "ui_trigger": "onSpecial1Hit"
+      ]
     },
     "sp2": {
-      "name_zh": "炼狱清洗喷射",
-      "name_en": "Infernal Purge",
+      "name_zh": "炼狱火幕",
+      "name_en": "Infernal Barrage",
+      "desc_zh": "每一击有 85% 概率施加燃烧减益，造成攻击力 70% 的伤害，持续 6 秒；并有 50% 概率造成眩晕，持续 1.5 秒。",
+      "pua_icon": "0xe41d",
+      "ui_trigger": "onSpecial2Hit",
       "effects": [
         {
           "title_zh": "炼狱火幕",
@@ -37,14 +40,14 @@
           "desc_zh": "每一击有 85% 概率施加燃烧减益，造成攻击力 70% 的伤害，持续 6 秒；并有 50% 概率造成眩晕，持续 1.5 秒。",
           "pua_icon": "0xe41d"
         }
-      ],
-      "desc_zh": "每一击有 85% 概率施加燃烧减益，造成攻击力 70% 的伤害，持续 6 秒；并有 50% 概率造成眩晕，持续 1.5 秒。",
-      "pua_icon": "0xe41d",
-      "ui_trigger": "onSpecial2Hit"
+      ]
     },
     "sp3": {
-      "name_zh": "终极熔炉焚毁",
-      "name_en": "The Grand Foundry",
+      "name_zh": "熔铁焚毁",
+      "name_en": "Foundry Incineration",
+      "desc_zh": "最后一击 100% 概率施加燃烧减益，造成攻击力 100% 的伤害，持续 8 秒；技能结束后获得一层 30% 的护甲增益，持续 8 秒，以及持续 4 秒的不可阻挡增益。",
+      "pua_icon": "0xe915",
+      "ui_trigger": "onSpecial3Hit",
       "effects": [
         {
           "title_zh": "熔铁焚毁",
@@ -52,12 +55,69 @@
           "desc_zh": "最后一击 100% 概率施加燃烧减益，造成攻击力 100% 的伤害，持续 8 秒；技能结束后获得一层 30% 的护甲增益，持续 8 秒，以及持续 4 秒的不可阻挡增益。",
           "pua_icon": "0xe915"
         }
-      ],
-      "desc_zh": "最后一击 100% 概率施加燃烧减益，造成攻击力 100% 的伤害，持续 8 秒；技能结束后获得一层 30% 的护甲增益，持续 8 秒，以及持续 4 秒的不可阻挡增益。",
-      "pua_icon": "0xe915",
-      "ui_trigger": "onSpecial3Hit"
+      ]
     }
   },
+  "basic_abilities": [
+    {
+      "title_zh": "燃烧",
+      "title_en": "Burn",
+      "desc_zh": "持续造成能量伤害。",
+      "pua_icon": "E41D",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "不可阻挡",
+      "title_en": "Unstoppable",
+      "desc_zh": "进攻动作无视对手攻击冲击与受击打断。",
+      "pua_icon": "E915",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "淬火装甲",
+      "title_en": "Tempered Armor",
+      "desc_zh": "重击命中 100% 概率施加燃烧减益，造成攻击力 60% 的伤害，持续 6 秒。当对手处于燃烧状态时，热链接的近战攻击命中 100% 刷新该燃烧减益的持续时间，且额外造成 25% 的近战物理伤害。热链接自身受到流血减益影响时，受到的流血伤害降低 30%。",
+      "pua_icon": "E41D",
+      "category": "passive",
+      "ui_trigger": "淬火装甲",
+      "show_on_main_screen": false
+    }
+  ],
+  "abilities": [
+    {
+      "title_zh": "燃烧",
+      "title_en": "Burn",
+      "desc_zh": "持续造成能量伤害。",
+      "pua_icon": "E41D",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "不可阻挡",
+      "title_en": "Unstoppable",
+      "desc_zh": "进攻动作无视对手攻击冲击与受击打断。",
+      "pua_icon": "E915",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "淬火装甲",
+      "title_en": "Tempered Armor",
+      "desc_zh": "重击命中 100% 概率施加燃烧减益，造成攻击力 60% 的伤害，持续 6 秒。当对手处于燃烧状态时，热链接的近战攻击命中 100% 刷新该燃烧减益的持续时间，且额外造成 25% 的近战物理伤害。热链接自身受到流血减益影响时，受到的流血伤害降低 30%。",
+      "pua_icon": "E41D",
+      "category": "passive",
+      "ui_trigger": "淬火装甲",
+      "show_on_main_screen": false
+    }
+  ],
   "synergies": [
     {
       "title_zh": "军火工程师",
@@ -84,31 +144,6 @@
       "desc_zh": "团队所有低星级队员获得 +{{var_3}} 护甲。",
       "pua_icon": "",
       "bonus_heroes": []
-    }
-  ],
-  "basic_abilities": [
-    {
-      "title_zh": "燃烧",
-      "title_en": "Burn",
-      "desc_zh": "持续造成能量伤害。",
-      "desc_en": "Deals energy damage over time.",
-      "pua_icon": "E41D"
-    },
-    {
-      "title_zh": "不可阻挡",
-      "title_en": "Unstoppable",
-      "desc_zh": "进攻动作无视对手攻击冲击与受击打断。",
-      "desc_en": "Shrugs off hit reactions; attacks cannot be interrupted.",
-      "pua_icon": "E915"
-    }
-  ],
-  "game_abilities": [
-    {
-      "title_zh": "淬火装甲",
-      "title_en": "Tempered Armor",
-      "desc_zh": "重击命中 100% 概率施加燃烧减益，造成攻击力 60% 的伤害，持续 6 秒。当对手处于燃烧状态时，热链接的近战攻击命中 100% 刷新该燃烧减益的持续时间，且额外造成 25% 的近战物理伤害。热链接自身受到流血减益影响时，受到的流血伤害降低 30%。",
-      "pua_icon": "0xe517",
-      "ui_trigger": "淬火装甲"
     }
   ]
 }
