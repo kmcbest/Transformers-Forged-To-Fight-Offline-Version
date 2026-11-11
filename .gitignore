@@ -112,6 +112,10 @@ assets_redeco/*
 !assets_redeco/bugbite_gs_kabam.assetbundle
 !assets_redeco/bugbite_gs_kabam.assetbundle.manifest
 !assets_redeco/*bugbite*
+!assets_redeco/rust_merged.assetbundle
+!assets_redeco/*onslaught*
+!assets_redeco/*vortex*
+!assets_redeco/*strongarm*
 assets_redeco/*.ds
 assets_redeco/*.psd
 !assets_redeco/music

@@ -37,6 +37,7 @@ timeline
     2026-09 : SG Ultra Magnus : 既有武器剥离剔除与异形武器换装 : 剔除雷神重锤骨骼网格、重新配重双持狂飙大剑
     2026-09 : Ghost Starscream : PBR 着色器汇编逆向与灵体光效极致调优 : 汇编揭秘B通道平方发光、格式RGBA32跃升、防过曝与反差血眼
     2026-11 : Bug Bite (杀人蜂) : 跨模具 S3 终结舞台载具变形与微观 Matinee 空指针拦截 : 破译 Matinee 预热 NRE 循环加载、单层级载具骨骼轨道重定向、多段 S2 弹道重构与手工立绘隔离
+    2026-11 : Vortex & Onslaught : 跨包克隆 Prefab 的 script_types 崩溃修复与跨模具必杀技移植 : 根除 Instantiate SIGTRAP 断言崩溃、补齐 LocalSerializedObjectIdentifier、SP 招式骨骼路径与受击光效全量对齐
 ```
 
 ---
@@ -378,11 +379,119 @@ u_xlat16_2.xyz = u_xlat16_1.zzz * u_xlat16_2.xyz;
 
 ---
 
-## 第九章：工业化标准制程（SOP）与全套避坑检查清单
+## 第九章：旋风（Vortex）与袭击（Onslaught）——跨包克隆 Prefab 的 `script_types` 崩溃深坑与跨模具 SP 移植规范
 
-经过上述 8 个里程碑的探索与磨砺，TFTF 原创角色制作已形成一套高度标准化的工业级 SOP。
+在为原创战车派角色**旋风（`vortex_gs`）**与**袭击（`onslaught_gs`）**跨角色移植必杀技动作与特效预制体（Vortex S1 ← 电影擎天柱 S1；Vortex S2 ← 猩猩队长 S1 连带激光弹道；Onslaught S2 ← 惊破天 S2）时，暴露出了使用 `UnityPy` 跨 AssetBundle 克隆 Prefab 闭包时**极易触发且极其隐蔽的进战瞬间 `SIGTRAP` 崩溃陷阱**。
 
-### 8.1 从零打造新角色的标准流水线（7 步法）
+```
+跨模具 SP 技与特效克隆对照：
+├── 袭击 (onslaught_gs) : 借用惊破天 S2 (含炮弹/能量球/冲击波 47 个对象)
+│     └── 目标包已有全部 MonoScript -> 复用了现有 SerializedType -> 侥幸未触发崩溃
+└── 旋风 (vortex_gs)    : 借用电影柱 S1 剪辑 + 猩猩队长 S1 (含火光/光弹 92 个对象)
+      └── 克隆 fx_p_primal_muzzle_flash 引入新脚本 EBParticleLightSync -> 触发进战瞬间闪退！
+```
+
+### 9.1 致命崩溃真相：`PrefabLib.RegisterPrefabs` 触发的 `script_types` 越位错指
+
+* **故障现象**：
+  * 角色大厅、选人列表、3D 角色详情界面的模型、贴图与待机动画 **100% 正常显示，毫无报错**；
+  * 一旦带着旋风进入战斗加载阶段，立即原生闪退，真机 `adb logcat` 捕获为 `Fatal signal 5 (SIGTRAP)`（`__tgkill` in `libunity.so`）。
+* **C# 源码级调用栈还原**（参见 `Assembly-CSharp/EB.MoveEditor/PrefabLib.cs`）：
+  * 选人/展示界面不预热战斗特效池；而进入战斗初始化时，客户端固定执行：
+    `BattleArbiterInitState.InitPlayer` → `PlayerController.Init` → `PrefabLib.RegisterAll()` → `PrefabLib.RegisterPrefabs(PrefabList)` → `ObjectPoolManager.Register` → `ObjectPool.Add` → `UnityEngine.Object.Instantiate`；
+  * 当遍历到 `PrefabList[18]`（从猩猩队长克隆进来的 `fx_p_primal_muzzle_flash`）并执行 `Instantiate` 时，Unity 原生层触发断言终止。
+
+#### 深层序列化原理：`SerializedType.script_type_index` 与 `script_types` 脱节
+在 Unity `SerializedFile` 格式（`header.version >= 17`，本工程为 `v22` / Unity `2020.3.31f1`）中，一个 `MonoBehaviour` 对象（`class_id == 114`）在反序列化和 `Instantiate` 实例化时，底层 C++ 引擎并不只看对象数据流里的 `m_Script` PPtr，还强依赖于类型表中的索引链：
+
+```text
+Object (type_id = 58)
+  └─> SerializedFile.types[58] (class_id = 114, script_id = EBParticleLightSync 的 Hash128)
+        └─> script_type_index (= 3)
+              └─> SerializedFile.script_types[3]  <--- 本应是 EBParticleLightSync (-5275233707481885610)
+                    └─> 实际指向了 vortex_gs 自己的 script_types[3] = PlayerInput (-7449854805890782173) 💥
+```
+
+* **脚本代码漏洞（两层叠加陷阱）**：
+  常见的 `UnityPy` 跨包克隆辅助函数往往在**第一层**和**第二层**先后踩坑：
+  1. **第一层（`script_type_index` 越位）**：只做了 `new_st = copy.copy(st_src); dst_sf.types.append(new_st)`，`new_st.script_type_index` 保留了**源包（`optimusprimal_bw_mp32`）的下标 `3`**，而目标包（`vortex_gs`）的 `script_types[3]` 指向完全无关的 `PlayerInput`，且新克隆的 `MonoScript`（`EBParticleLightSync`，PID `-5275233707481885610`）未注册进 `dst_sf.script_types`。
+  2. **第二层（`script_types` 未排序 + `m_PreloadTable` 缺失预加载）**：即便修好了 `script_types` 与 `script_type_index`，真机实测 `vortex_gs` 仍会在进战加载期连续报错并触发 `SIGTRAP`：
+     ```text
+     W/Unity: The referenced script (Unknown) on this Behaviour is missing!
+     W/Unity: The referenced script on this Behaviour (Game Object 'fx_p_primal_muzzle_flash') is missing!
+     E/Unity: The file 'none' is corrupted! Remove it and launch unity again! [Position out of bounds!]
+     Fatal signal 5 (SIGTRAP) in libunity.so (PrefabLib.RegisterPrefabs -> ObjectPool.Add -> Object.Instantiate)
+     ```
+     对照全部 100+ 原生包与工作正常包可见：
+     * 全部原生包的 `SerializedFile.script_types` 均**严格按 `(local_serialized_file_index, local_identifier_in_file)` 升序排列**；直接把负数 PID 的 `EBParticleLightSync`（`-5275233707481885610`）`.append()` 到末尾会破坏有序表，导致运行时脚本查找与解析失败（`Unknown`）；
+     * `AssetBundle.m_PreloadTable` 与 `m_Container` 的 `[preloadIndex : preloadIndex + preloadSize]` 切片**未收录**新引入的 `MonoScript`、克隆的 92 个局部特效对象及外链弹道/动画剪辑，导致 `MonoScript` 未随主 Prefab 预加载而报脚本丢失，进而在 `Object.Instantiate` 序列化克隆时流越界崩溃。
+  3. 而 `onslaught_gs` 之所以未先暴雷，是因为惊破天特效所用到的 `MonoScript` 恰好全部已在原包 `script_types` 与预加载切片中。
+
+### 9.2 跨包克隆对象的黄金工程规范（The Cross-Bundle Cloning Contract）
+
+今后使用 `UnityPy` 向角色包克隆任何 `GameObject` / `MonoBehaviour` / `Shader` / `AnimationClip` 闭包时，必须严格遵守以下四条铁律：
+
+1. **正确重映射、注册并升序重排 `LocalSerializedObjectIdentifier`（`script_types`）**：
+   * 当 `src_obj.serialized_type.script_type_index >= 0` 时，先从源包的 `src_sf.script_types[src_sti]` 读出 `(local_serialized_file_index, local_identifier_in_file)`，再经过 `(fid_map, pid_map)` 映射为目标包的 `(dst_fidx, dst_spid)`；
+   * 在目标包 `dst_sf.types` 中查重匹配时，除比对 `(class_id, script_id, old_type_hash)` 外，**必须同时核验 `dst_sf.script_types[t.script_type_index]` 恰好等于 `(dst_fidx, dst_spid)`**；
+   * 若目标包不存在该 `SerializedType`，必须查重或新建 `LocalSerializedObjectIdentifier` 注册进 `dst_sf.script_types`，并清空源包遗留的 `type_dependencies`；
+   * **全表升序重排并重映射所有 `script_type_index`**：全部克隆完成后，必须按 `(local_serialized_file_index, local_identifier_in_file)` 对 `dst_sf.script_types` 执行升序排序，并同步把 `dst_sf.types` 中所有 `script_type_index >= 0` 的条目更新为排序后的新下标：
+     ```python
+     from UnityPy.files.SerializedFile import LocalSerializedObjectIdentifier
+
+     # 注意：UnityPy 的 LocalSerializedObjectIdentifier 自定义了 __init__(header, reader)，
+     # 必须通过 __new__ 绕过二进制读取构造器后直接赋值槽位字段！
+     ls = LocalSerializedObjectIdentifier.__new__(LocalSerializedObjectIdentifier)
+     ls.local_serialized_file_index = dst_fidx
+     ls.local_identifier_in_file = dst_spid
+     dst_sf.script_types.append(ls)
+     new_st.script_type_index = len(dst_sf.script_types) - 1
+     if getattr(new_st, "type_dependencies", None):
+         new_st.type_dependencies = ()
+
+     # 克隆收尾后统一按 (FileID, PathID) 升序重排 script_types 并重映射全部类型的 script_type_index
+     old_targets = [(x.local_serialized_file_index, x.local_identifier_in_file) for x in dst_sf.script_types]
+     dst_sf.script_types.sort(key=lambda x: (x.local_serialized_file_index, x.local_identifier_in_file))
+     idx_map = {(x.local_serialized_file_index, x.local_identifier_in_file): i for i, x in enumerate(dst_sf.script_types)}
+     for st in dst_sf.types:
+         if getattr(st, "script_type_index", -1) >= 0:
+             st.script_type_index = idx_map[old_targets[st.script_type_index]]
+     ```
+2. **全量刷新 `AssetBundle.m_PreloadTable` 与 `m_Container` 预加载切片**：
+   * 在完成闭包克隆以及 `MoveSet` / `AnimatorOverrideController` / `PrefabLib` 改写后（注意：若通过 `ObjectReader.save_typetree` 就地改写了既有对象，需先 `io.BytesIO(env.file.save(packer="none"))` 重载一次，保证递归遍历读取到的是修改后的最新字节），从容器根 `asset` 出发递归收集全部可达 `(m_FileID, m_PathID)` 依赖（含新增本地 `MonoScript`、特效预制体子孙对象、外链动画剪辑与受击光效）；
+   * 将缺失条目按原有 `m_FileID` 分段顺序插回对应容器切片并保证段内 `m_PathID` 升序，同步更新主资源的 `preloadSize` 并顺延后续容器条目（如 `*_lw.prefab`）的 `preloadIndex`。
+3. **`MonoScript` / `Shader` 共享复用必须校验签名一致性**：
+   按 `PathID` 复用目标包中已存在的 `MonoScript` 或 `Shader` 时，必须断言校验 `m_ClassName`/`m_Namespace`/`m_AssemblyName`（以及 Shader 的 `m_ParsedForm.m_Name`）完全一致，严禁仅凭 PID 相同就盲目复用。
+4. **保存后强制重载全量校验门禁（Reload Integrity Gate）**：
+   任何修改完 `AssetBundle` 的脚本，在 `save(packer="lz4")` 后**必须立即用 `UnityPy.load(...)` 重新读回**，对全包执行 P0 断言：
+   * `sf.script_types` 按 `(local_serialized_file_index, local_identifier_in_file)` 严格升序；
+   * 全包所有 `class_id == 114` 的 `SerializedType` 均有 `0 <= script_type_index < len(sf.script_types)`；
+   * 全包每一个 `MonoBehaviour` 的 `m_Script` (`m_FileID`, `m_PathID`) 与 `sf.script_types[sf.types[obj.type_id].script_type_index]` **100% 严格相等**；
+   * 全包所有本地 `MonoScript` 及所有从 `m_Container` 根预制体递归可达的 PPtr（含 `PrefabLib` 与新借用动作/特效）**100% 落在对应 `m_PreloadTable` 切片内**，切片连续不重叠且每段内 `m_FileID` 成块、`m_PathID` 升序；
+   * 全包所有本地 `PPtr`（`m_FileID == 0`）均可在 `sf.objects` 中闭环解析，无悬空指针。
+
+### 9.3 跨模具移植 SP 必杀（含光弹/受击光效）完整检查步骤
+
+移植其他角色必杀技时（如 电影柱 S1、猩猩队长 S1、惊破天 S2），除了 `script_types` 外还须同步核验以下 4 项：
+1. **外部共有动画 vs 角色包独占动画**：
+   部分角色的必杀动作剪辑并不在自身角色包中，而存放在公共流程包 `character_anim_procedural.assetbundle`（如电影擎天柱 S1 剪辑 `optimus_Cin_attackSpecial_01_crossLash`），直接通过目标包的对应外链 `FileID` 挂载至 Fight AOC（Slot `SpecialAttack01` / `SpecialAttack02`）即可，无需强行内联克隆；若动画位于供体角色自身包内（如猩猩队长 S1、惊破天 S2），则连同其全依赖闭包一起克隆。
+2. **`MoveEvent` 骨骼路径与武器事件适配**：
+   检查并清洗借用招式 JSON（`moves.assetbundle`）中的所有节点路径与事件：
+   * 移除供体专有且受体缺失的外部武器显隐事件（如剑/手炮 `PlayPropAnimatorStateMoveEvent`、`PropMoveEvent` 中对不存在部件的调用）；
+   * 将供体专有骨骼路径映射为受体的实际节点（例如电影擎天柱脚本中的 `"LeftToes"`/`"RightToes"` → 威震天/眩晕系模具的 `"LeftToe"`/`"RightToe"`；猩猩队长的 `shoulderguns/.../FX_right|left` → `RightShoulder`/`LeftShoulder`；各类剑柄/炮管尖端 `sword`/`gun_barrel` → `RightHand/RightProp` 或 `LeftHand/LeftProp`）。
+3. **补全本体 `PrefabLib` 与弹道闭包的全部粒子及受击光效**：
+   * 对照主招式 JSON 及关联弹道子招式 JSON（如猩猩队长弹道的 `move_primal_sp2_fire` / `explode`）提取全部 `fx_*` 与 `projectile_*` 字符串；
+   * 除了把克隆进来的本地粒子与子弹预制体加入主体 `PrefabLib.PrefabList`，还必须核对并补入引用自 `character_fx` 与 `character_fx_procedural` 的**外部受击光效**（例如 `fx_l_hit_large_perceptual`、`fx_l_hit_small_perceptual_orange`），确保主包与弹道 `PrefabLib` 的缺失列表均为空 `[]`。
+4. **验证外部 Shader 与 Mesh（`.resS`）安全边界**：
+   尽量仅克隆不依赖源包私有 `.resS` 的轻量局部对象（如 `AnimationClip`、带外部/内建网格引用的粒子预制体、弹道控制器），所有通用粒子材质、Shader、Slash Mesh 与光效尽可能复用公共包 `character_fx` / `character_fx_procedural` 及 `Library/unity default resources`，避免出现跨包 `.resS` 流偏移错位。
+
+---
+
+## 第十章：工业化标准制程（SOP）与全套避坑检查清单
+
+经过上述 9 个里程碑的探索与磨砺，TFTF 原创角色制作已形成一套高度标准化的工业级 SOP。
+
+### 10.1 从零打造新角色的标准流水线（7 步法）
 
 ```mermaid
 flowchart TD
@@ -394,12 +503,13 @@ flowchart TD
     S6 --> S7["步骤 7: 离线 APK 编译与 6 大战斗质量门禁验证 (hook.c 与 真机测试)"]
 ```
 
-### 8.2 终极避坑检查清单 (Master Checklist)
+### 10.2 终极避坑检查清单 (Master Checklist)
 
 | 检查项 | 严重级别 | 规范与避坑要点 |
 |---|---|---|
 | **动作总数断言** | 🛑 致命 (P0) | 任何更新 `moves.assetbundle` 的脚本，必须强制断言 `moves >= 945`，严禁打坏 Chromia 与 Dead End。 |
 | **CAB 命名空间** | 🛑 致命 (P0) | 新角色的 AssetBundle 内部 CAB 标识符必须全局唯一，服务端 `ModelID` 必须与原生金刚解耦，防止覆盖原版。 |
+| **跨包克隆 `script_types` 与 `m_PreloadTable`** | 🛑 致命 (P0) | 跨包克隆 `MonoBehaviour` 必须同步注册 `LocalSerializedObjectIdentifier`、**升序重排 `script_types` 并重映射全部 `script_type_index`**，同时全量更新 **`AssetBundle.m_PreloadTable` 与 `m_Container` 预加载切片**；重载断言 `st_sorted`、`m_Script == script_types[sti]` 且所有本地 `MonoScript` 与可达 PPtr 无缺失，否则进战 `PrefabLib.RegisterPrefabs -> Instantiate` 秒崩 (`SIGTRAP`)。 |
 | **AssetBundle 压缩** | ⚠️ 严重 (P1) | 使用 UnityPy 保存 Bundle 时必须显式指定 `packer="lz4"`，绝不能留空，防止安装包体积膨胀 400MB+。 |
 | **武器手心对齐** | ⚠️ 严重 (P1) | 武器网格必须挂载于 **`RightProp`** 而非 `RightHand`，BindPose 必须为单位矩阵。 |
 | **贴图格式陷阱** | ⚠️ 严重 (P1) | 涉及发光或透明的贴图，必须在写入 Bundle 时提升为 **Format 4 (RGBA32)**，杜绝 Format 7/34 丢 Alpha。 |
@@ -407,6 +517,7 @@ flowchart TD
 | **防白化过曝** | 💡 建议 (P2) | 大面积发光灰度控制在 $40 \sim 65$，`_emissive_overbright_range` 处于 $25.0 \sim 35.0$ 黄金区间。 |
 | **异色眼眸法则** | 💡 建议 (P2) | 全局染色环境下制作异色双眼，眼部发光掩码必须清零（$B=0, A=0$），漫反射高饱和并压暗面罩。 |
 | **远程子弹哈希** | ⚠️ 严重 (P1) | 借用远程/S 技动作时，必须在服务端校验 `projectiles` 映射，确保动画事件哈希命中对应实体。 |
+| **跨模具 SP 光效与骨骼** | ⚠️ 严重 (P1) | 借用外部 SP 动作时，须对齐 `MoveEvent` 骨骼路径（如 `LeftToes`->`LeftToe`、武器挂点），并将本地弹道及外部 `character_fx_procedural` 受击光效全量补入 `PrefabLib`。 |
 | **头像四件套完整** | 💡 建议 (P2) | 每个角色必须齐备：Large PNG (512), Small JPG (256), Quest PNG (512), Dialogue PNG。 |
 | **Matinee 预热防崩溃** | 🛑 致命 (P0) | 跨角色借用 S3 舞台时，必须在 NativeHook 中空指针拦截 `RestoreControllerAnimClipIfNeeded`，防止加载期死循环。 |
 | **S3 载具轨线层级对齐** | ⚠️ 严重 (P1) | 借用载具变形 S3 时，检查 Stage Prefab 的 Track Entity 命名空间层级，避免因多层/单层不匹配导致载具隐形。 |

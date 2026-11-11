@@ -42,6 +42,10 @@
 - Never extract or overwrite `moves.assetbundle` from the base Kabam 9.2.0 APK. Chromia (克劳莉娅, 12 moves) and Dead End (封锁, 8 moves) are Netflix exclusives; their moves only exist in `assets_netflix/moves.assetbundle`.
 - Any tool generating `assets_redeco/moves.assetbundle` must base on `assets_netflix/moves.assetbundle`, preserve Lifeline's stitched moves (`move_lifeline_special_01` & `02`), and verify that total moves count is >= 945.
 
+## Deprecated SP3 timings configuration (`sp3_timings.json`)
+
+- `Server/sp3_timings.json` 在后续版本中已弃用，新角色合并或日常功能开发无需再为其补充或维护条目（保留既有兼容性即可）。
+
 ## Combat and combo quality gates
 
 - Any modification affecting combat input handling, attack chains, or state machines in `tools/nativehook/hook.c` must strictly adhere to the 6 quality gate test cases defined in `re_notes/combat-test-cases.md`.

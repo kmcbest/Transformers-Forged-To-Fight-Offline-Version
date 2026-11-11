@@ -103,6 +103,7 @@ ROSTER = {
     "rodimusprime_gs_mp09":         ("autobot",    "tact", 5),
     "sideswipe_gs":                 ("autobot",    "scou", 5),
     "starsaber_gs_leader2014":      ("autobot",    "tact", 5),
+    "strongarm_gs":                 ("autobot",    "tact", 5),
     "sunstreaker_gs_deluxe2008":    ("autobot",    "braw", 5),
     "ultramagnus_gs_leader":        ("autobot",    "tact", 5),
     "ultramagnus_sg_leader":        ("autobot",    "demo", 5),
@@ -134,6 +135,7 @@ ROSTER = {
     "necrotronus_gs_kabam":         ("decepticon", "warr", 5),
     "nemesisprime_gs_voyager2015":  ("decepticon", "tact", 5),
     "novastorm_gs_leader2015":      ("decepticon", "demo", 5),
+    "onslaught_gs":                 ("decepticon", "demo", 5),
     "ramjet_gs_deluxe2008":         ("mercenary",  "demo", 5),
     "scorponok_bw_kabam":           ("predacon",   "warr", 5),
     "shockwave_gs":                 ("decepticon", "tech", 5),
@@ -147,6 +149,7 @@ ROSTER = {
     "thrust_gs_deluxe2008":         ("mercenary",  "scou", 5),
     "tantrum_gs_kabam":             ("decepticon", "braw", 5),
     "bugbite_gs_kabam":             ("mercenary",  "braw", 5),
+    "vortex_gs":                    ("decepticon", "warr", 5),
     "waspinator_gs_deluxe":         ("predacon",   "demo", 5),
 
     # --- Sharkticons (unlocked 5-star cards; cannon-fodder combat stats preserved) ---
@@ -258,6 +261,7 @@ _BOT_BASE_STATS = {
     "necrotronus_gs_kabam": (46150, 3075),
     "nemesisprime_gs_voyager2015": (38200, 2785),
     "novastorm_gs_leader2015": (45200, 2980),
+    "onslaught_gs": (42588, 2914),
     "optimusprimal_bw_mp32": (45927, 3578),
     "optimusprime_cin_tf": (46340, 3457),
     "optimusprime_sg_voyager2015": (45150, 3495),
@@ -282,6 +286,7 @@ _BOT_BASE_STATS = {
     "soundwave_gs": (38100, 2760),
     "starsaber_gs_leader2014": (37900, 2775),
     "starscream_ghost_gs": (41100, 3060),
+    "strongarm_gs": (42182, 3001),
     "sunstorm_gs_leader2015": (45300, 2950),
     "sunstreaker_gs_deluxe2008": (44250, 3560),
     "tantrum_gs_kabam": (44850, 3590),
@@ -290,6 +295,7 @@ _BOT_BASE_STATS = {
     "thundercracker_gs_leader2015": (45514, 3531),
     "ultramagnus_gs_leader": (38500, 2760),
     "ultramagnus_sg_leader": (45650, 3025),
+    "vortex_gs": (40154, 3062),
     "waspinator_gs_deluxe": (43800, 2955),
     "wheeljack_gs_mp20": (36838, 2729),
     "wildrider_gs_deluxe2016": (44380, 3545),
@@ -645,6 +651,7 @@ _ART_BASE = {
     "rodimusprime_gs_mp09": "rodimus_gs",
     "sideswipe_gs": "sides_gs",
     "starsaber_gs_leader2014": "starsaber",
+    "strongarm_gs": "strongarm_gs",
     "sunstreaker_gs_deluxe2008": "sunstreak_gs",
     "ultramagnus_gs_leader": "ultram_gs",
     "ultramagnus_sg_leader": "ultram_sg",
@@ -676,6 +683,7 @@ _ART_BASE = {
     "necrotronus_gs_kabam": "necrotro_gs",
     "nemesisprime_gs_voyager2015": "nemesis_p",
     "novastorm_gs_leader2015": "novastorm",
+    "onslaught_gs": "onslaught_gs",
     "ramjet_gs_deluxe2008": "ramjet_gs",
     "shockwave_gs": "shock_c",
     "soundblaster_gs_mp13b": "soundblast_gs",
@@ -684,6 +692,7 @@ _ART_BASE = {
     "sunstorm_gs_leader2015": "sunstorm",
     "thundercracker_gs_leader2015": "thunder_gs",
     "thrust_gs_deluxe2008": "thrust",
+    "vortex_gs": "vortex_gs",
     "waspinator_gs_deluxe": "wasp_bw",  # Only the Beast Wars-styled art ships.
 
     # --- Sharkticon NPC variants ---
@@ -837,6 +846,7 @@ _BOT_NAMES = {
     "rodimusprime_gs_mp09": "Rodimus Prime",
     "sideswipe_gs": "Sideswipe",
     "starsaber_gs_leader2014": "Star Saber",
+    "strongarm_gs": "Strongarm",
     "sunstreaker_gs_deluxe2008": "Sunstreaker",
     "ultramagnus_gs_leader": "Ultra Magnus",
     "ultramagnus_sg_leader": "SG Ultra Magnus",
@@ -862,6 +872,7 @@ _BOT_NAMES = {
     "motormaster_gs_voyager2015": "Motormaster",
     "necrotronus_gs_kabam": "Necrotronus",
     "nemesisprime_gs_voyager2015": "Nemesis Prime",
+    "onslaught_gs": "Onslaught",
     "ramjet_gs_deluxe2008": "Ramjet",
     "scorponok_bw_kabam": "Scorponok",
     "shockwave_gs": "Shockwave",
@@ -872,6 +883,7 @@ _BOT_NAMES = {
     "starscream_ghost_gs": "Ghost Starscream",
     "thundercracker_gs_leader2015": "Thundercracker",
     "tantrum_gs_kabam": "Tantrum",
+    "vortex_gs": "Vortex",
     "waspinator_gs_deluxe": "Waspinator",
 
     # Sharkticons

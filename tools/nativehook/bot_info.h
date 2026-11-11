@@ -58,6 +58,7 @@ static const EnemyStat ENEMY_STATS[] = {
     { "necrotronus_gs_kabam", 45022, 3245, 7691, 0.16f, 1.50f, "warr" },
     { "nemesisprime_gs_voyager2015", 44210, 3001, 7336, 0.16f, 1.50f, "tact" },
     { "novastorm_gs_leader2015", 42994, 2914, 7129, 0.16f, 1.50f, "demo" },
+    { "onslaught_gs", 42588, 2914, 7094, 0.16f, 1.50f, "demo" },
     { "optimusprimal_bw_mp32", 45022, 3542, 8035, 0.08f, 1.30f, "braw" },
     { "optimusprime_cin_tf", 45427, 3427, 7938, 0.08f, 1.30f, "braw" },
     { "optimusprime_sg_voyager2015", 45427, 3427, 7938, 0.08f, 1.30f, "braw" },
@@ -82,6 +83,7 @@ static const EnemyStat ENEMY_STATS[] = {
     { "soundwave_gs", 41777, 2792, 6883, 0.16f, 1.50f, "tech" },
     { "starsaber_gs_leader2014", 42182, 3001, 7159, 0.16f, 1.50f, "tact" },
     { "starscream_ghost_gs", 38938, 3488, 7443, 0.35f, 1.75f, "scou" },
+    { "strongarm_gs", 42182, 3001, 7159, 0.16f, 1.50f, "tact" },
     { "sunstorm_gs_leader2015", 40154, 3062, 7054, 0.16f, 1.50f, "warr" },
     { "sunstreaker_gs_deluxe2008", 45022, 3637, 8146, 0.08f, 1.30f, "braw" },
     { "tantrum_gs_kabam", 45022, 3637, 8146, 0.08f, 1.30f, "braw" },
@@ -89,11 +91,12 @@ static const EnemyStat ENEMY_STATS[] = {
     { "thundercracker_gs_leader2015", 44616, 3502, 7954, 0.08f, 1.30f, "braw" },
     { "ultramagnus_gs_leader", 42182, 3001, 7159, 0.16f, 1.50f, "tact" },
     { "ultramagnus_sg_leader", 45833, 3096, 7589, 0.16f, 1.50f, "demo" },
+    { "vortex_gs", 40154, 3062, 7054, 0.16f, 1.50f, "warr" },
     { "waspinator_gs_deluxe", 38532, 2853, 6669, 0.16f, 1.50f, "demo" },
     { "wheeljack_gs_mp20", 36098, 2704, 6285, 0.16f, 1.50f, "tech" },
     { "wildrider_gs_deluxe2016", 45022, 3637, 8146, 0.08f, 1.30f, "braw" },
     { "windblade_gs", 34882, 3366, 6948, 0.24f, 1.50f, "scou" },
 };
-#define NUM_ENEMY_STATS 80
+#define NUM_ENEMY_STATS 83
 
 #endif // BOT_INFO_H

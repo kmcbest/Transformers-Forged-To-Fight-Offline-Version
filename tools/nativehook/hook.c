@@ -7114,6 +7114,7 @@ static const struct ArtBaseMap ART_BASE_MAP[] = {
     { "necrotronus_gs_kabam", "necrotro_gs" },
     { "nemesisprime_gs_voyager2015", "nemesis_p" },
     { "novastorm_gs_leader2015", "novastorm" },
+    { "onslaught_gs", "onslaught_gs" },
     { "optimusprimal_bw_mp32", "oprimal_bw" },
     { "optimusprime_cin_tf", "optimus_c_tf" },
     { "optimusprime_sg_voyager2015", "optimus_sg" },
@@ -7167,6 +7168,7 @@ static const struct ArtBaseMap ART_BASE_MAP[] = {
     { "soundblaster_gs_mp13b", "soundblast_gs" },
     { "soundwave_gs", "sound_gs" },
     { "starsaber_gs_leader2014", "starsaber" },
+    { "strongarm_gs", "strongarm_gs" },
     { "sunstorm_gs_leader2015", "sunstorm" },
     { "sunstreaker_gs_deluxe2008", "sunstreak_gs" },
     { "tantrum_gs_kabam", "tantrum_gs" },
@@ -7175,6 +7177,7 @@ static const struct ArtBaseMap ART_BASE_MAP[] = {
     { "ultramagnus_gs_leader", "ultram_gs" },
     { "ultramagnus_sg_leader", "ultram_sg" },
     { "ultramagnus_sg", "ultram_sg" },
+    { "vortex_gs", "vortex_gs" },
     { "waspinator_gs_deluxe", "wasp_bw" },
     { "wheeljack_gs_mp20", "wheelj_gs" },
     { "wildrider_gs_deluxe2016", "wildrider" },
@@ -7262,6 +7265,24 @@ void* hook_162(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
                 return g_strnew ? g_strnew("飞虎队成员抢劫。他是个极度渴望胜利的战士，为了获胜不惜采用一切手段。第一名就是一切，第二名就是头号输家。") : r;
             }
             return g_strnew ? g_strnew("抢劫") : r;
+        }
+        if (strstr(k, "ONSLAUGHT") || strstr(k, "onslaught") || strstr(k, "Onslaught")) {
+            if (strstr(k, "BIO") || strstr(k, "desc") || strstr(k, "DESC") || strstr(k, "Bio")) {
+                return g_strnew ? g_strnew("战车队冷酷沉着的战术指挥官，重装炮火专家。他擅长制定周密残忍的突袭计划，身披重甲，背负双联防空火箭炮与小臂转轮重机炮，在战场上以压倒性的火力粉碎一切阻碍。") : r;
+            }
+            return g_strnew ? g_strnew("袭击") : r;
+        }
+        if (strstr(k, "VORTEX") || strstr(k, "vortex") || strstr(k, "Vortex")) {
+            if (strstr(k, "BIO") || strstr(k, "desc") || strstr(k, "DESC") || strstr(k, "Bio")) {
+                return g_strnew ? g_strnew("战车队阴险狂暴的突击兵与空中支援专家。旋风性格残忍好斗，狂热嗜杀，装备高频旋转离子切刃与重型导弹发射器，能够在半空化作杀戮旋风将一切敌人绞为碎片。") : r;
+            }
+            return g_strnew ? g_strnew("旋风") : r;
+        }
+        if (strstr(k, "STRONGARM") || strstr(k, "strongarm") || strstr(k, "Strongarm")) {
+            if (strstr(k, "BIO") || strstr(k, "desc") || strstr(k, "DESC") || strstr(k, "Bio")) {
+                return g_strnew ? g_strnew("“根据塞伯坦警例，你已经违反了安全条例！”\n作为精英卫队的优秀毕业生，铁腕严守规章，时刻准备着执行长官的每道指令。这名充满热忱的年轻执法官或许偶尔显得不知变通，但在战场上，她重装突击的正义重拳从来不会对霸天虎留情。") : r;
+            }
+            return g_strnew ? g_strnew("铁腕") : r;
         }
     }
     // Check if Localization.Get prepended "MS_" on missing string lookup
@@ -10422,6 +10443,7 @@ static const SPMoveHitEntry s_sp_moves[] = {
     { "move_necrotronus_special_02", 9 },
     { "move_nemesis_gs_special_01", 3 },
     { "move_nemesis_gs_special_02", 3 },
+    { "move_onslaught_special_02", 2 },
     { "move_optimus_gs_special_01", 3 },
     { "move_optimus_gs_special_02", 3 },
     { "move_optimus_special_01", 1 },
@@ -10473,6 +10495,8 @@ static const SPMoveHitEntry s_sp_moves[] = {
     { "move_thundercracker_special_01", 1 },
     { "move_thundercracker_special_02", 2 },
     { "move_ultramagnus_special_02", 1 },
+    { "move_vortex_special_01", 1 },
+    { "move_vortex_special_02", 2 },
     { "move_waspinator_special_01", 4 },
     { "move_waspinator_special_02", 1 },
     { "move_wheeljack_special_01", 1 },

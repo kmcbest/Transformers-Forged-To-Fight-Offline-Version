@@ -126,6 +126,15 @@ This skill documents critical domain knowledge, reverse-engineered architecture,
     * `rlc_one_shot_01`, `rlc_one_shot_02`, `rlc_one_shot_03`, `rlc_one_shot_04`
     * `rlc_raid_t1..4`, `rlc_alliance_t1..4`
 
+### 1.4 Cross-Bundle Object Cloning: `script_types`, Sorting & `m_PreloadTable` Crash (跨包克隆 Prefab 脚本索引、排序与预加载表陷阱)
+* **Pitfall**: When cloning a prefab closure (e.g., FX/projectile prefabs) between AssetBundles via `UnityPy`, two distinct failure layers both trigger an immediate `Fatal signal 5 (SIGTRAP)` in `libunity.so` on battle entry during `PrefabLib.RegisterPrefabs -> ObjectPool.Add -> Object.Instantiate`:
+  1. Leaving `SerializedType.script_type_index` pointing to the source bundle's index or failing to append/remap `dst_sf.script_types` points `MonoBehaviour` to the wrong script in the destination bundle.
+  2. Even with `script_type_index` remapped, **appending** a negative-`PathID` script to the end of `dst_sf.script_types` (leaving `script_types` unsorted) AND omitting the cloned objects / external FX / new `MonoScript` from `AssetBundle.m_PreloadTable` makes Unity fail script resolution on load (`"The referenced script (Unknown) on this Behaviour is missing!"` -> `"The file 'none' is corrupted! [Position out of bounds!]"` -> `SIGTRAP`).
+* **Rule**:
+  * Whenever cloning/adding a `class_id == 114` `SerializedType`, remap `src_sf.script_types[st_src.script_type_index]` via `(fid_map, pid_map)`, register `LocalSerializedObjectIdentifier` (`__new__` bypassing `__init__(header, reader)`) into `dst_sf.script_types`, clear stale `type_dependencies = ()`, then **sort `dst_sf.script_types` strictly ascending by `(local_serialized_file_index, local_identifier_in_file)`** and remap all `SerializedType.script_type_index` to their sorted positions.
+  * After all prefab/MoveSet/AOC/PrefabLib edits are flushed cleanly, update `AssetBundle.m_PreloadTable` & `m_Container` (`preloadSize`, shifting subsequent slices' `preloadIndex`) so every container slice contains **all** reachable `(m_FileID, m_PathID)` PPtrs (including every local `MonoScript`, cloned object, `PrefabLib` entry, clip, and external FX), grouped in contiguous `m_FileID` runs sorted ascending by `m_PathID`.
+  * When borrowing external SP moves, also verify all referenced `fx_*`/`projectile_*` (including external `character_fx_procedural` hit lights) are registered in `PrefabLib.PrefabList` and bone paths are remapped. See [`re_notes/ORIGINAL_CHARACTER_CREATION_GUIDE.md`](file:///d:/Agent/tftf/re_notes/ORIGINAL_CHARACTER_CREATION_GUIDE.md) 第九章.
+
 ---
 
 ## 2. Blueprint & Gamedata Architecture

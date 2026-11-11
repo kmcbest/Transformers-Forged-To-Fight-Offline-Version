@@ -60,14 +60,14 @@ static const char * const g_enemy_pool[] = {
     "jetfire_gs_leader2014", "kickback_gs_kabam", "lifeline_gs_deluxe2014", "megatron_cin_rotf",
     "megatron_gs_leader2015", "megatronus_gs_kabam", "mirage_gs_deluxe2016", "mixmaster_cin_rotf",
     "motormaster_gs_voyager2015", "necrotronus_gs_kabam", "nemesisprime_gs_voyager2015", "novastorm_gs_leader2015",
-    "optimusprimal_bw_mp32", "optimusprime_cin_tf", "optimusprime_sg_voyager2015", "prowl_gs_deluxe2016",
+    "onslaught_gs", "optimusprimal_bw_mp32", "optimusprime_cin_tf", "optimusprime_sg_voyager2015", "prowl_gs_deluxe2016",
     "ramjet_gs_deluxe2008", "ratchet_gs_kabam", "rhinox_gs_voyager2014", "rodimusprime_gs_mp09",
     "scorponok_bw_kabam", "sharkticon_gs_brawler", "sharkticon_gs_demolition", "sharkticon_gs_kabam",
     "sharkticon_gs_scout", "sharkticon_gs_tactician", "sharkticon_gs_tech", "sharkticon_gs_warrior",
     "shockwave_gs", "sideswipe_gs", "skywarp_gs_leader2015", "slipstream_gs",
     "soundblaster_gs_mp13b", "soundwave_gs", "starsaber_gs_leader2014", "starscream_ghost_gs",
-    "sunstorm_gs_leader2015", "sunstreaker_gs_deluxe2008", "tantrum_gs_kabam", "thrust_gs_deluxe2008",
-    "thundercracker_gs_leader2015", "ultramagnus_gs_leader", "ultramagnus_sg_leader", "waspinator_gs_deluxe",
+    "strongarm_gs", "sunstorm_gs_leader2015", "sunstreaker_gs_deluxe2008", "tantrum_gs_kabam", "thrust_gs_deluxe2008",
+    "thundercracker_gs_leader2015", "ultramagnus_gs_leader", "ultramagnus_sg_leader", "vortex_gs", "waspinator_gs_deluxe",
     "wheeljack_gs_mp20", "wildrider_gs_deluxe2016", "windblade_gs"
 };
 #define ENEMY_POOL_SIZE (sizeof(g_enemy_pool) / sizeof(g_enemy_pool[0]))
