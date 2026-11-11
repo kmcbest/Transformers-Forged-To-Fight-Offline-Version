@@ -12,6 +12,8 @@ from typing import Dict, Any, Callable, List
 
 # 全局机器人模块注册表: { bot_id: registration_info }
 _BOT_REGISTRY: Dict[str, Dict[str, Any]] = {}
+_BOTS_LOADED: bool = False
+_BOT_MOD_IDS_CACHE: Dict[str, List[str]] = {}
 
 
 def register_bot(bot_id: str, name_zh: str = "", desc: str = ""):
@@ -23,14 +25,19 @@ def register_bot(bot_id: str, name_zh: str = "", desc: str = ""):
             "desc": desc,
             "builder": fn,
         }
+        _BOT_MOD_IDS_CACHE.pop(bot_id, None)
         return fn
     return decorator
 
 
-def load_all_bots():
+def load_all_bots(force: bool = False):
     """动态扫描并加载 Server/abilities/bots/ 目录下的全部机器人能力模块。"""
+    global _BOTS_LOADED
+    if _BOTS_LOADED and not force:
+        return
     bots_dir = Path(__file__).resolve().parent / "bots"
     if not bots_dir.exists():
+        _BOTS_LOADED = True
         return
 
     # 遍历 bots 目录下的所有 python 模块
@@ -45,6 +52,7 @@ def load_all_bots():
                     importlib.import_module(f"Server.abilities.bots.{module_name}")
                 except Exception as e2:
                     print(f"[WARN][Ability Registry] 加载机器人模块 {module_name} 失败: {e2}")
+    _BOTS_LOADED = True
 
 
 def get_registered_bots() -> List[str]:
@@ -56,6 +64,8 @@ def get_registered_bots() -> List[str]:
 def get_bot_mod_ids(bot_id: str) -> List[str]:
     """返回指定机器人绑定的专属能力修饰器 ID 列表。"""
     load_all_bots()
+    if bot_id in _BOT_MOD_IDS_CACHE:
+        return list(_BOT_MOD_IDS_CACHE[bot_id])
     reg = _BOT_REGISTRY.get(bot_id)
     if not reg:
         return []
@@ -65,7 +75,9 @@ def get_bot_mod_ids(bot_id: str) -> List[str]:
         mods = res[0]
     else:
         mods = res
-    return list(mods.keys())
+    mod_ids = list(mods.keys())
+    _BOT_MOD_IDS_CACHE[bot_id] = mod_ids
+    return list(mod_ids)
 
 
 def collect_all_bot_statmods_and_appears() -> tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any]]:

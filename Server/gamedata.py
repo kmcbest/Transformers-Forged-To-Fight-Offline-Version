@@ -450,31 +450,39 @@ def special_damage_ratios(bid, star):
 
 
 # ---------------------------------------------------------------------------
-# Defense Modules (MODS) catalog loader
+# Defense Modules (MODS) & Relics catalog loaders (cached per process)
 # ---------------------------------------------------------------------------
+_CATALOG_CACHE = {}
+_CATALOG_DICT_CACHE = {}
+
+
+def _load_catalog_list(filename):
+    if filename in _CATALOG_CACHE:
+        return _CATALOG_CACHE[filename]
+    cpath = os.path.join(HERE, filename)
+    if os.path.exists(cpath):
+        try:
+            with open(cpath, "r", encoding="utf-8") as f:
+                _CATALOG_CACHE[filename] = json.load(f)
+                return _CATALOG_CACHE[filename]
+        except Exception:
+            pass
+    _CATALOG_CACHE[filename] = []
+    return _CATALOG_CACHE[filename]
+
+
+def _load_catalog_dict(filename):
+    if filename not in _CATALOG_DICT_CACHE:
+        _CATALOG_DICT_CACHE[filename] = {item["id"]: item for item in _load_catalog_list(filename)}
+    return _CATALOG_DICT_CACHE[filename]
+
+
 def _load_mods():
-    mpath = os.path.join(HERE, "mods_catalog.json")
-    if os.path.exists(mpath):
-        try:
-            with open(mpath, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except Exception:
-            pass
-    return []
+    return _load_catalog_list("mods_catalog.json")
 
 
-# ---------------------------------------------------------------------------
-# Relics catalog loader
-# ---------------------------------------------------------------------------
 def _load_relics():
-    rpath = os.path.join(HERE, "relics_catalog.json")
-    if os.path.exists(rpath):
-        try:
-            with open(rpath, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except Exception:
-            pass
-    return []
+    return _load_catalog_list("relics_catalog.json")
 
 
 # ---------------------------------------------------------------------------
@@ -2187,7 +2195,7 @@ def build_active_team(activity_id="1.1.1-0", heroes=None, team_type=None):
 
 def build_mod_entry(mid, rank=1, level=1):
     """One owned-module record for getUserData `updates.heroes` (entity_type='tower')."""
-    mod_dict = {m["id"]: m for m in _load_mods()}
+    mod_dict = _load_catalog_dict("mods_catalog.json")
     mod_info = mod_dict.get(mid, {})
     star = mod_info.get("default_star", 5)
     hp0, atk0 = _STAR_BASE.get(star, _STAR_BASE[5])
@@ -2209,7 +2217,7 @@ def build_mod_entry(mid, rank=1, level=1):
 
 def build_relic_entry(rid, rank=1, level=1):
     """One owned-relic record for getUserData `updates.heroes` (entity_type='relic')."""
-    relic_dict = {r["id"]: r for r in _load_relics()}
+    relic_dict = _load_catalog_dict("relics_catalog.json")
     relic_info = relic_dict.get(rid, {})
     star = relic_info.get("default_star", 5)
     hp0, atk0 = _STAR_BASE.get(star, _STAR_BASE[5])
@@ -3853,8 +3861,8 @@ def build_base_hero_details(req_heroes):
     requested hero, drawn from the authored stat curve so the numbers match the roster
     instead of the old crude ad-hoc curve in fakeserver."""
     out = []
-    mod_dict = {m["id"]: m for m in _load_mods()}
-    relic_dict = {r["id"]: r for r in _load_relics()}
+    mod_dict = _load_catalog_dict("mods_catalog.json")
+    relic_dict = _load_catalog_dict("relics_catalog.json")
     for h in (req_heroes or []):
         bid = h.get("bid", "")
         rank = int(h.get("rank", 1) or 1)

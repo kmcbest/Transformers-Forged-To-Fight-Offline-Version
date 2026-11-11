@@ -219,6 +219,21 @@ def patch_globalgamemanagers(data: bytes) -> bytes:
         return data
 
 
+def _resolve_payload(server_port: int, payload_bin: Path | None = None) -> bytes:
+    """Load and validate a pre-built payload binary, or build one in-process."""
+    if payload_bin is None:
+        return export_payload.build_payload(server_port)
+    if not payload_bin.is_file():
+        raise ValueError(f"payload binary is missing: {payload_bin}")
+    blob = payload_bin.read_bytes()
+    parsed = export_payload.load_payload(blob)
+    if parsed.listen_port != server_port:
+        raise ValueError(
+            f"payload {payload_bin} listen_port is {parsed.listen_port}, expected {server_port}"
+        )
+    return blob
+
+
 def build(
     source: Path,
     destination: Path,
@@ -230,15 +245,18 @@ def build(
     server_port: int = 8443,
     *,
     bundle_server: bool = False,
+    payload_bin: Path | None = None,
 ) -> list[str]:
     if source.resolve() == destination.resolve():
         raise ValueError("destination must differ from source; the original APK is preserved")
+    if payload_bin is not None and not bundle_server:
+        raise ValueError("--payload-bin requires --bundle-server")
     if bundle_server and scheme != "http":
         raise ValueError("bundled server requires --scheme http")
     if bundle_server and server_host != "127.0.0.1":
         raise ValueError("bundled server binds loopback only; --server-host must be 127.0.0.1")
     destination.parent.mkdir(parents=True, exist_ok=True)
-    payload = export_payload.build_payload(server_port) if bundle_server else None
+    payload = _resolve_payload(server_port, payload_bin) if bundle_server else None
     hook_path = ABIS[abi][0]
     if not hook_path.is_file():
         raise ValueError(f"current runtime hook is missing: {hook_path}")
@@ -853,6 +871,12 @@ def main() -> None:
             "(requires --scheme http --server-host 127.0.0.1)"
         ),
     )
+    parser.add_argument(
+        "--payload-bin",
+        type=Path,
+        default=None,
+        help="reuse a pre-built payload binary from export_payload.py (requires --bundle-server)",
+    )
     args = parser.parse_args()
     # Intelligent default: if neither --server-host nor --bundle-server was explicitly specified,
     # and build/libil2cpp-arm64-patched.so exists, automatically build the standalone in-APK offline server build.
@@ -866,6 +890,8 @@ def main() -> None:
             args.server_host = "127.0.0.1"
             args.server_port = 8080
             args.patched_il2cpp = default_patched
+    if args.payload_bin is not None and not args.bundle_server:
+        parser.error("--payload-bin requires --bundle-server")
 
     hosts = build(
         args.source,
@@ -877,6 +903,7 @@ def main() -> None:
         scheme=args.scheme,
         server_port=args.server_port,
         bundle_server=args.bundle_server,
+        payload_bin=args.payload_bin,
     )
     hook_path = ABIS[args.abi][0]
     print(f"wrote unsigned APK: {args.destination}")
@@ -884,7 +911,7 @@ def main() -> None:
     print("redirected: " + ", ".join(hosts))
     print(f"fake server: {args.scheme}://{args.server_host}:{args.server_port}")
     if args.bundle_server:
-        payload = export_payload.build_payload(args.server_port)
+        payload = _resolve_payload(args.server_port, args.payload_bin)
         route_count = len(export_payload.load_payload(payload).entries)
         print(
             f"bundled server payload: {PAYLOAD_ASSET} "

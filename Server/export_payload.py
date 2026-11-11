@@ -152,14 +152,16 @@ def _replace_exact(body: bytes, old: bytes, new: bytes, expected: int, label: st
     return body.replace(old, new)
 
 
-def _team_values(team: list[str] | None = None, qid: str | None = None) -> tuple[bytes, bytes, bytes]:
+@functools.lru_cache(maxsize=None)
+def _team_values_cached(team: tuple[str, ...] | None = None, qid: str | None = None) -> tuple[bytes, bytes, bytes]:
     """Return compact saved, active, and quest team JSON values from gamedata."""
+    team_list = list(team) if team is not None else None
     if qid == "1.1.5":
         bids = ["rodimusprime_gs_mp09"]
     elif qid == "raid_base":
-        bids = gamedata.resolve_team(team)[:3]
+        bids = gamedata.resolve_team(team_list)[:3]
     else:
-        bids = gamedata.resolve_team(team)
+        bids = gamedata.resolve_team(team_list)
     saved = json.dumps([gamedata.build_hero_entry(bid) for bid in bids], separators=(",", ":")).encode()
     active = json.dumps({bid: gamedata.build_hero_entry(bid) for bid in bids}, separators=(",", ":")).encode()
     quest = json.dumps(
@@ -167,6 +169,11 @@ def _team_values(team: list[str] | None = None, qid: str | None = None) -> tuple
         separators=(",", ":"),
     ).encode()
     return saved, active, quest
+
+
+def _team_values(team: list[str] | None = None, qid: str | None = None) -> tuple[bytes, bytes, bytes]:
+    """Return compact saved, active, and quest team JSON values from gamedata."""
+    return _team_values_cached(tuple(team) if team is not None else None, qid)
 
 
 def _quest_begin_template(qid: str, set_id: str) -> bytes:

@@ -599,6 +599,20 @@ def build_buffs_set():
     }
 
 
+_CHARACTER_PROFILES_MOD = None
+
+
+def _get_character_profiles():
+    global _CHARACTER_PROFILES_MOD
+    if _CHARACTER_PROFILES_MOD is None:
+        try:
+            from .. import character_profiles
+        except Exception:
+            import character_profiles
+        _CHARACTER_PROFILES_MOD = character_profiles
+    return _CHARACTER_PROFILES_MOD
+
+
 def build_stat_mod_appears():
     """汇总全员 SP 技能呼出外观配置与各机器人专属能力表现配置、英雄招牌与 UI 展示能力。"""
     # 1. 78 位英雄 SP 呼出外观
@@ -609,11 +623,7 @@ def build_stat_mod_appears():
     appears.update(bot_appears)
 
     # 3. 官方英雄招牌技能外观与 UI 基础能力外观
-    try:
-        from .. import character_profiles
-    except Exception:
-        import character_profiles
-    appears.update(character_profiles.get_profile_stat_mod_appears())
+    appears.update(_get_character_profiles().get_profile_stat_mod_appears())
 
     # 4. 全局规避呼出文字外观
     appears["appr_evade_callout"] = {
@@ -867,11 +877,7 @@ def build_stat_mods():
     mods.update(bot_mods)
 
     # 3. 官方英雄招牌技能与 UI 基础能力
-    try:
-        from .. import character_profiles
-    except Exception:
-        import character_profiles
-    mods.update(character_profiles.get_profile_stat_modifiers())
+    mods.update(_get_character_profiles().get_profile_stat_modifiers())
 
     return mods
 
@@ -884,9 +890,5 @@ def bot_abilities(bot_id: str):
     """查询指定金刚拥有的全部能力修饰器 ID 列表（包含通用 SP 技名呼出、UI 展示基础能力与专属技能）。"""
     sp_mods = [f"sp_callout_{bot_id}_{lvl}" for lvl in (1, 2, 3)] if bot_id in BOT_SP_MAP else []
     bot_custom_mods = get_bot_mod_ids(bot_id)
-    try:
-        from .. import character_profiles
-    except Exception:
-        import character_profiles
-    ui_mods = character_profiles.get_bot_ui_ability_ids(bot_id)
+    ui_mods = _get_character_profiles().get_bot_ui_ability_ids(bot_id)
     return ["gp_evade_callout"] + sp_mods + bot_custom_mods + ui_mods

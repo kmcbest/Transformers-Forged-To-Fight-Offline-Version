@@ -68,6 +68,7 @@ def main():
         "--server-host", "127.0.0.1",
         "--server-port", "8080",
         "--bundle-server",
+        "--payload-bin", str(payload_bin),
         "--patched-il2cpp", str(patched_il2cpp)
     ], check=True, cwd=ROOT)
 
