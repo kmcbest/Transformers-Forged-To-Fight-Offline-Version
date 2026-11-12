@@ -36,7 +36,7 @@ timeline
     2026-09 : Lifeline (回春手) : 常驻武器显化与胜利舞台全量借用 : 突破收刀机制常驻双持、借用Stage/Win序列、论证S3借用
     2026-09 : SG Ultra Magnus : 既有武器剥离剔除与异形武器换装 : 剔除雷神重锤骨骼网格、重新配重双持狂飙大剑
     2026-09 : Ghost Starscream : PBR 着色器汇编逆向与灵体光效极致调优 : 汇编揭秘B通道平方发光、格式RGBA32跃升、防过曝与反差血眼
-    2026-11 : Bug Bite (杀人蜂) : 跨模具 S3 终结舞台载具变形与微观 Matinee 空指针拦截 : 破译 Matinee 预热 NRE 循环加载、单层级载具骨骼轨道重定向、多段 S2 弹道重构与手工立绘隔离
+    2026-11 : Bug Bite (杀人蜂) : 跨模具 SP3 全套跨包克隆与三层耦合破译 : 破译 Matinee 预热 NRE、揭示 SP3 混搭本质（AOC/MatineeAOC/Stage三端联动）、补全音频流拼接与 UnityPy 脏读隔离
     2026-11 : Vortex & Onslaught : 跨包克隆 Prefab 的 script_types 崩溃修复与跨模具必杀技移植 : 根除 Instantiate SIGTRAP 断言崩溃、补齐 LocalSerializedObjectIdentifier、SP 招式骨骼路径与受击光效全量对齐
 ```
 
@@ -353,9 +353,10 @@ u_xlat16_2.xyz = u_xlat16_1.zzz * u_xlat16_2.xyz;
   * 而大黄蜂/杀人蜂素体的载具实体挂载在单个根节点：
     `cha_bugbite_gs_kabam_01|transformed|Hips|Reference|...`（**单层级**）；
   * 路径匹配失败导致 `FindTrackFromEntityFullId` 返回 `null`，载具网格完全没有被挂接到运动曲线上，角色在整个后半段 S3 处于不可见状态。
-* **重定向解决方案**：
-  1. **Stage Prefab JSON 重定向**：通过资产打包工具重写 Track 的 `entityFullId`，将其扁平化为接收角色的单层命名路径；
-  2. **NativeHook 动态映射**：在 `hook.c` 的 `remap_track_for_redeco` 中加入通配重定向，并在角色的 Fight AOC（动画重写控制器）Slot 63 中严格挂载对应战车变形剪辑（`cliffjumper_gs_attackSpecial_03_transformed`），实现 100% 变形显形。
+* **重定向与整包移植原则**（⚠️ 血泪教训：切勿像早期方案那样只拷 `MatineeData` 硬塞进母本旧 Stage，完整方案见 **8.6 节**）：
+  1. **整包克隆供体 Stage + 更新 `MatineeData.jSONData`**：按第九章闭包克隆规范搬入供体完整 `SpecialStagePrefab`，重写 `eid`/`teoacn` 并核对每个轨道的直接父节点 `enp`（如 `track_5` `rightgun`、`track_8` `transformed`）；
+  2. **Fight AOC 槽位 31/32 + Car AOC 槽位 63 + `MatineeAOC` 三方对齐**：除状态机 AOC 外，必须同步改写 `MatineeAnimatorOverrideController._overrideControllerList`，否则会触发“攻方放 A 角色 SP3、受方放 B 角色受击”的混搭故障。
+  3. **`hook.c` 兜底映射**：`tools/nativehook/hook.c` 的 `remap_track_for_redeco` 可作为运行时兜底重定向，但根本治理必须在资产层一次对齐。
 
 ### 8.3 多段远程攻击（S2）子弹事件（PropMoveEvent）搬运法则
 角色特殊技 2 若为多段射击（如左枪开火后接右枪射击），常见事故为“**只有开枪后坐力动画，没有射出实体光弹与击中爆炸**”。
@@ -376,6 +377,68 @@ u_xlat16_2.xyz = u_xlat16_1.zzz * u_xlat16_2.xyz;
 大黄蜂原生模具为博派标志性的幽蓝目镜。制作狂派/雇佣兵杀人蜂时，必须呈现冷酷凶煞的猩红血眼：
 1. **贴图级覆膜**：在漫反射贴图（Albedo）精确定位眼部 UV（`[254, 361] x [780, 861]`），填涂纯正血红（`RGB(255, 20, 25)`）；在 `RAOE` 贴图中将发光遮罩刷高；
 2. **材质级偏色消除**：原版大黄蜂材质中残留有全局浅蓝环境染色，必须在 Material 属性中将 `_emissive_intensity_col` 与 `_EmissionColor` 同步重写为高纯度暗红（`r=1.0, g=0.05, b=0.05`），彻底消除杂色干扰。
+
+### 8.6 血泪复盘（2026-11）：SP3 完整跨包借用实操与 6 大致命深坑
+
+在早期的杀人蜂实现中，只机械抽离了飞过山的 3 个 SP3 `AnimationClip` 塞进大黄蜂包，并把飞过山的 `MatineeData` 生硬覆盖到大黄蜂原有的 `TFormStage` 上，实机测试出现了极度诡异的**“双角色 SP3 混搭故障”**：杀人蜂按飞过山 SP3 抬枪射击，对手却按小黄蜂 SP3 往地上踩了一脚（踩空动作），随后杀人蜂又按飞过山后半段变车撞飞对手。
+
+这场 Bug 不仅暴露了跨包移植 SP3 的全部隐藏链路，也意外揭示了一个新认知：**SP3 并非铁板一块的不可拆分黑盒，而是一个由“状态机 AOC + `MatineeAOC` + `SpecialStagePrefab` 舞台/轨道 + 音频闭包”组成的三层联动系统**——理解这套契约后，未来既能实现**纯粹的整套 SP3 移植**，也能做**受控的招式混搭创作**。
+
+```text
+SP3 运行时四端协同全景（任一端遗漏都会造成动作/受击/运镜/音效割裂）：
+├── 1. 状态机 AOC
+│     ├── Fight AOC (override_*_fight): 槽位 31 (SP3 攻方), 槽位 32 (SP3 受击)
+│     └── Car AOC   (override_*_car)  : 槽位 63 (SP3 载具形态变形动作，且被 *_lw.prefab 共享)
+├── 2. MatineeAnimatorOverrideController (⚠️ MonoBehaviour，非 AOC!)
+│     └── _overrideControllerList[StateHash == -1919714467 / 966217297] -> 字符串 OverrideClipName
+├── 3. PlayerReferences.SpecialStagePrefab -> 供体完整克隆的 Stage 子树
+│     ├── Stage CameraRig (含 StageCamera_Offset 等运镜节点) + Actor0/1_locator 站位坐标
+│     ├── TFormMatineeStage (actorInfoList[0].actor_id)
+│     ├── MatineeData.jSONData (各轨道 eid / en / enp / teoacn 与 AttachToTransformEvent)
+│     └── 特效/灯光/MeshRenderer/BoxCollider(class_id=65) 及新 MonoScript 依赖
+└── 4. 独立 SP3 音频树与 .resource 流
+      ├── CharacterAudio._events["_genEvent" == "gen_special_3"]._override
+      ├── CharacterAudio._specialCharacterAudio -> RandomComponent -> AudioComponent -> AudioClip
+      └── .resource 原始压缩流切片拼接 + AudioClip.m_Resource (Offset / Size / Source CAB)
+```
+
+要做到**零混搭、100% 完整跨包借用目标角色 SP3**（已在 `tools/generate_bugbite_assets.py` 修复并通过真机实测验证），必须跨过以下 **6 个真实深坑**：
+
+#### 深坑 1：`MatineeAnimatorOverrideController` 不是 `AnimatorOverrideController`！
+* **混搭 Bug 根源**：脚本此前只改了 Fight AOC 的槽位 `31`/`32`，而控制过场动画剪辑解析的 `MatineeAOC`（杀人蜂中 `PID=-3364085224588132041`）实际上是一个 **`MonoBehaviour`**（而非 `class_id=221` 的 `AnimatorOverrideController`），里面根本没有 `m_Clips`，而是 **`_overrideControllerList`**。旧脚本按类型判断直接跳过，导致其中 `Base.SpecialAttack03`（`StateHash=-1919714467`）和 `Base.SpecialAttack03HitReaction`（`StateHash=966217297`）一直保留着 `bumblebee_gs_attackSpecial_03*`。当飞过山 `MatineeData` 对不上或状态机回调时，受方直接切回了小黄蜂 SP3 受击动画！
+* **铁律**：必须遍历 `_overrideControllerList`，按 `StateHash`（`-1919714467` 与 `966217297`）显式将 `OverrideClipName` 重写为重命名后的目标剪辑名，并与 Fight AOC 槽位 `31/32`、`MatineeData` 的 `teoacn` 保持三方完全同名。
+
+#### 深坑 2：必须整棵克隆供体 `SpecialStagePrefab`，绝不能把新 `MatineeData` 套进旧舞台
+* **混搭现象与空间错位**：供体与母本的 Stage Prefab 往往结构迥异——例如飞过山的舞台比大黄蜂多了 `StageCamera_Offset` 层级，`Actor1_locator`（对手站位坐标）相差达 `36.5` 个世界单位，粒子/灯光/网格也完全不同。强套旧舞台不仅会让受击站位错位、镜头丢失，还会混入母本的旧特效。
+* **铁律**：用第九章的闭包克隆器从供体包把整个 Stage Prefab 闭包（飞过山共计 305 个局部对象）原封不动克隆进来，重命名舞台根 GO（如 `TFormStage_BugBite_GS_Special03`）和 Matinee GO（`Matinee_BugBite_GS_Special03`），再把角色 `PlayerReferences.SpecialStagePrefab` 指到新 Stage PID。
+
+#### 深坑 3：不仅有新 `MonoScript`，还可能缺少原生 `class_id` 类型（如 `BoxCollider` = 65）
+* **底层坑点**：克隆供体 Stage 闭包时，不仅要处理缺失的脚本（`MatineeSharedResource`、特光脚本 `EBParticleLightSync`），还必须检查目标包 `sf.types` 是否缺失供体使用的**非 `MonoBehaviour` 原生类型**——例如大黄蜂包原本没有任何碰撞盒，克隆飞过山舞台引入了 `BoxCollider`（`class_id=65`）。若不连同 `SerializedType` 一并克隆（注意 `TypeTreeNode` 不可 `copy.deepcopy`，需用浅拷贝 `copy.copy(src_tp)`）并在 `.manifest` 的 `ClassTypes` 中补充 `- Class: 65`，反序列化会直接出错。
+* **外部文件表与 `script_types`**：跨包克隆时按 `sf.externals[i].path` 动态构建 `src_fid -> dst_fid` 映射；新建 `LocalSerializedObjectIdentifier` 可用 `copy.copy(src_sref)` 绕开 `UnityPy` 的二进制读取构造器，并在全部类型注册后对 `dst_sf.script_types` 执行升序重排及全表回写 `tp.script_type_index`。
+
+#### 深坑 4：SP3 音效是独立节点树 + 外置 `.resource` 音频流，不会随 Stage 自动带入
+* **无声/串音事故**：Stage Prefab 本身不包含 `ratchet_special_3` / `bumblebee_gs_special_3` 等音效子树，如果只迁移 Stage 而忘迁音效，开 SP3 时要么静音要么还在播放旧角色的甲壳虫引擎声。
+* **完整接法**：
+  1. 单独从供体包克隆 SP3 音频根节点闭包（9 个对象，含 `RandomComponent`、`AudioComponent`、`AudioClip`）；
+  2. 从供体 `.resource` 切出 `AudioClip.m_Resource` 对应的音频字节（如飞过山/救护车复用 `ratchet_special_3` 为 `77,920` 字节），**追加拼接到目标包 `.resource` 末尾**，重写 `AudioClip` 的 `m_Offset`、`m_Size` 与 `m_Source`（更新为 `archive:/<new_cab>/<new_cab>.resource`）；
+  3. **极易写错的字段名与校验**：`CharacterAudio` 的事件数组字段是 **`_genEvent`**（并非 `_eventName`！），且 `CharacterAudio.Validate()` 会强校验 `_specialCharacterAudio[i].name == _override`。因此 `CharacterAudio._events["gen_special_3"]._override`、音效根/子 `GameObject.m_Name` 与 `AudioClip.m_Name` 必须完全一致（如统一为 `bugbite_gs_special_3`），并把 `_specialCharacterAudio` 中的旧 PID 替换为新 `RandomComponent` PID；同时别忘了把全包原有的其他 `AudioClip.m_Resource.m_Source` 一起从旧 `CAB` 改写为新 `CAB`。
+
+#### 深坑 5：`MatineeData.jSONData` 轨道的路径、大小写与直接父节点字段 `enp`
+* **不仅要改 `eid` 和 `teoacn`**：`MatineeTrack.RuntimeFixup` 在场景中查找挂点同时依赖轨道上的 `en`（节点名）、`enp`（直接父节点名）和 `eid`（完整路径）。即使主干骨骼兼容，细节差异依然致命：
+  * 供体 `track_5` 的枪械父节点写为 `rightGun`（或 `gasgun`），而受体（大黄蜂素体）的武器节点名是**全小写 `rightgun`**——必须同步把 `track_5.enp` 改为 `"rightgun"`；
+  * 供体 `track_8`（载具车壳 Mesh 轨道）`enp` 为 `"character_model"`，但大黄蜂/杀人蜂的 `cha_*_01` 挂在 `transformed` 节点下——必须改 `track_8.enp = "transformed"`（注意不能误伤 `track_0`，`track_0.enp` 必须维持为空字符串 `""`）；
+  * 若供体载具变形动画可以通用（本例 `cliffjumper_gs_attackSpecial_03_transformed` 原生作者基于救护车刚体层级 `Reference/COG`、`BodyBase` 等制作，恰好与大黄蜂载具骨架同构），则仅重命名即可直接复用；否则需要重映射曲线或单独重做载具动画。
+* **打包期防呆校验**：重写入包后，强烈建议用脚本解析生成的 `MatineeData.jSONData` 与全包所有 `Transform` 父子链做自动化比对（确认 `AttachToTransformEvent` 的 `pn`/`tn` 与每条 `track` 均能在主 Prefab + 新 Stage 中 100% 解析）。
+
+#### 深坑 6：`UnityPy` 原位 `save_typetree` 的“脏读幻觉”与双预制体 `m_PreloadTable` 清理
+* **最隐蔽的脚本陷阱**：在 `UnityPy` 中调用 `obj.save_typetree(tree)` 只会把新字节放进 `obj.data`（待最终 `SerializedFile.save()` 才写出），**`obj.reader`、`obj.byte_start`、`obj.byte_size` 仍然指向旧数据！** 如果在同一个生成脚本里：
+  * 先改了 `PlayerReferences` / `CharacterAudio` / `MatineeData`，
+  * 后面又跑一轮全局对象遍历（如批量替换 `CAB` 字符串），或立刻运行 `collect_closure()` 从各入口计算存活对象和 `m_PreloadTable`，
+  `obj.read_typetree()` **读到的仍是未修改的旧内容**！这会直接造成“改了等于白改”、“后续逻辑用旧 bytes 覆盖冲掉前面所有修改”以及“旧小黄蜂 Stage 依然被误判为存活对象、1 个死对象都删不掉”！
+* **工程解法（`tools/generate_bugbite_assets.py` 中 `commit_obj_typetree`）**：
+  1. 封装提交函数，在每次 `obj.save_typetree(tree)` 后立刻重绑 `obj.reader = EndianBinaryReader(data, endian=obj.reader.endian)`、`obj.byte_start = 0`、`obj.byte_size = len(data)`，确保内存读写一致；
+  2. `UnityPy` 会把 `Material.m_SavedProperties` 和 `AssetBundle.m_Container` 的项反序列化为 **`tuple`**，遍历 PPtr 闭包和替换字符串时**必须同时兼容 `dict`、`list` 和 `tuple`**，否则材质外链会漏掉，导致 `m_PreloadTable` 算不准；
+  3. 计算旧 SP3 废弃对象时，必须以 **`m_Container` 中的全部入口（包括 `*.prefab` 与 `*_lw.prefab`，因为 `_lw` 共享 `Car AOC` 槽位 63！）** 合并求可达闭包后再做差集删除（本例清理 376 个小黄蜂旧 Stage/音效/旧剪辑对象），然后用精确闭包重建所有容器切片的 `preloadIndex` 与 `preloadSize`，最后由重载门禁全包重读校验零错误、零悬空引用、零残留字符串。
 
 ---
 
@@ -520,6 +583,8 @@ flowchart TD
 | **跨模具 SP 光效与骨骼** | ⚠️ 严重 (P1) | 借用外部 SP 动作时，须对齐 `MoveEvent` 骨骼路径（如 `LeftToes`->`LeftToe`、武器挂点），并将本地弹道及外部 `character_fx_procedural` 受击光效全量补入 `PrefabLib`。 |
 | **头像四件套完整** | 💡 建议 (P2) | 每个角色必须齐备：Large PNG (512), Small JPG (256), Quest PNG (512), Dialogue PNG。 |
 | **Matinee 预热防崩溃** | 🛑 致命 (P0) | 跨角色借用 S3 舞台时，必须在 NativeHook 中空指针拦截 `RestoreControllerAnimClipIfNeeded`，防止加载期死循环。 |
+| **SP3 完整跨包四端闭环** | 🛑 致命 (P0) | 跨包完整移植 SP3 必须：**整棵克隆供体 Stage 闭包（含 `BoxCollider` 等缺失原生类型）**、**按 `StateHash` 更新 `MatineeAOC._overrideControllerList`（`MonoBehaviour`）**、**对齐 Fight/Car AOC 槽位 31/32/63**，并**拼接 `.resource` 音效流与更新 `CharacterAudio._genEvent`/`_specialCharacterAudio`**，否则必现“攻方与受击动画错位混搭”或静音/镜头错位。 |
+| **MatineeData 轨道父子与 `UnityPy` 脏读防护** | 🛑 致命 (P0) | 同步校验 `MatineeData.jSONData` 中 `eid`/`teoacn` 与直接父节点 `enp`（如 `rightgun` 大小写、`transformed`）；在同一脚本内多次读写 typetree 或重构 `m_PreloadTable` 时，`save_typetree()` 后必须同步刷新 `obj.reader` 并对 `main`+`_lw` 双入口求 `tuple` 感知闭包，避免旧数据反覆盖与死对象残留。 |
 | **S3 载具轨线层级对齐** | ⚠️ 严重 (P1) | 借用载具变形 S3 时，检查 Stage Prefab 的 Track Entity 命名空间层级，避免因多层/单层不匹配导致载具隐形。 |
 | **多段远程子弹事件** | ⚠️ 严重 (P1) | 多段射击特殊技必须核验全部子弹事件的发射挂点（`p`）、实体（`projectile`）与出招段数映射表。 |
 | **手工立绘隔离保护** | ⚠️ 严重 (P1) | 自动化生成脚本严禁盲目覆写本地 PS 精修立绘，并在 `.gitignore` 显式解除新角色美术资产忽略。 |
