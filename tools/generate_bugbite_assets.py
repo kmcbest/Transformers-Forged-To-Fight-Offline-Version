@@ -39,8 +39,12 @@ import copy
 import json
 import os
 import shutil
+import sys
+from collections import deque
 from pathlib import Path
 from PIL import Image
+from UnityPy.files import ObjectReader
+from UnityPy.streams import EndianBinaryReader
 
 ROOT = Path(__file__).resolve().parent.parent
 os.chdir(ROOT)
@@ -56,17 +60,442 @@ BUGBITE_S2_PID = -8888888888888888884
 
 def replace_str_in_tree(tree_obj, old_s, new_s):
     if isinstance(tree_obj, dict):
-        for k, v in tree_obj.items():
-            if isinstance(v, str) and old_s in v:
-                tree_obj[k] = v.replace(old_s, new_s)
+        for k, v in list(tree_obj.items()):
+            if isinstance(v, str):
+                if old_s in v:
+                    tree_obj[k] = v.replace(old_s, new_s)
+            elif isinstance(v, tuple):
+                tree_obj[k] = replace_str_in_tree(v, old_s, new_s)
             else:
                 replace_str_in_tree(v, old_s, new_s)
+        return tree_obj
     elif isinstance(tree_obj, list):
         for idx, item in enumerate(tree_obj):
-            if isinstance(item, str) and old_s in item:
-                tree_obj[idx] = item.replace(old_s, new_s)
+            if isinstance(item, str):
+                if old_s in item:
+                    tree_obj[idx] = item.replace(old_s, new_s)
+            elif isinstance(item, tuple):
+                tree_obj[idx] = replace_str_in_tree(item, old_s, new_s)
             else:
                 replace_str_in_tree(item, old_s, new_s)
+        return tree_obj
+    elif isinstance(tree_obj, tuple):
+        out = []
+        changed = False
+        for item in tree_obj:
+            if isinstance(item, str):
+                if old_s in item:
+                    out.append(item.replace(old_s, new_s))
+                    changed = True
+                else:
+                    out.append(item)
+            elif isinstance(item, tuple):
+                new_item = replace_str_in_tree(item, old_s, new_s)
+                if new_item is not item:
+                    changed = True
+                out.append(new_item)
+            else:
+                replace_str_in_tree(item, old_s, new_s)
+                out.append(item)
+        return tuple(out) if changed else tree_obj
+    return tree_obj
+
+
+def commit_obj_typetree(obj, tree):
+    """Persist typetree into obj.data AND update obj.reader/byte_start/byte_size
+    so subsequent in-memory read_typetree()/collect_closure() calls observe mutations."""
+    data = obj.save_typetree(tree)
+    obj.reader = EndianBinaryReader(data, endian=obj.reader.endian)
+    obj.byte_start = 0
+    obj.byte_size = len(data)
+    return data
+
+
+def iter_pptrs_in_tree(node):
+    if isinstance(node, dict):
+        if "m_FileID" in node and "m_PathID" in node:
+            yield node
+        else:
+            for v in node.values():
+                yield from iter_pptrs_in_tree(v)
+    elif isinstance(node, (list, tuple)):
+        for item in node:
+            yield from iter_pptrs_in_tree(item)
+
+
+def collect_closure(sf, root_pids):
+    """Collect reachable local PIDs and all non-null (m_FileID, m_PathID) PPtrs from root_pids."""
+    visited_local = set()
+    all_pptrs = set()
+    queue = deque()
+
+    for pid in root_pids:
+        if pid and pid in sf.objects and pid not in visited_local:
+            visited_local.add(pid)
+            all_pptrs.add((0, pid))
+            queue.append(pid)
+
+    while queue:
+        pid = queue.popleft()
+        obj = sf.objects[pid]
+        tree = obj.read_typetree()
+        for pptr in iter_pptrs_in_tree(tree):
+            fid = pptr.get("m_FileID", 0)
+            target_pid = pptr.get("m_PathID", 0)
+            if not target_pid:
+                continue
+            all_pptrs.add((fid, target_pid))
+            if fid == 0 and target_pid not in visited_local:
+                if target_pid not in sf.objects:
+                    raise RuntimeError(
+                        f"Dangling local PPtr in closure from {pid} ({obj.type.name}): m_PathID={target_pid}"
+                    )
+                visited_local.add(target_pid)
+                queue.append(target_pid)
+
+    return visited_local, all_pptrs
+
+
+def _build_ext_file_id_map(src_sf, dst_sf):
+    dst_by_path = {}
+    for idx, ext in enumerate(dst_sf.externals, start=1):
+        dst_by_path[ext.path] = idx
+
+    ext_map = {}
+    for idx, ext in enumerate(src_sf.externals, start=1):
+        if ext.path in dst_by_path:
+            ext_map[idx] = dst_by_path[ext.path]
+    return ext_map
+
+
+def _find_matching_dst_type_id(dst_sf, src_tp, remapped_script_key):
+    if src_tp.class_id != 114:
+        for idx, tp in enumerate(dst_sf.types):
+            if tp.class_id == src_tp.class_id and tp.is_stripped_type == src_tp.is_stripped_type:
+                return idx
+        return None
+
+    for idx, tp in enumerate(dst_sf.types):
+        if tp.class_id == 114 and tp.script_type_index >= 0:
+            sref = dst_sf.script_types[tp.script_type_index]
+            if (sref.local_serialized_file_index, sref.local_identifier_in_file) == remapped_script_key:
+                return idx
+    return None
+
+
+def clone_closure_into_sf(src_sf, dst_sf, root_pids):
+    """Clone reachable local objects (excluding existing MonoScripts) from src_sf into dst_sf,
+    safely remapping externals, registering missing SerializedTypes/MonoScripts, and sorting script_types."""
+    local_pids, _ = collect_closure(src_sf, root_pids)
+    ext_map = _build_ext_file_id_map(src_sf, dst_sf)
+
+    # Snapshot existing script_types key for every MonoBehaviour SerializedType before mutating/sorting
+    existing_tp_script_keys = {}
+    for idx, tp in enumerate(dst_sf.types):
+        if tp.script_type_index >= 0:
+            sref = dst_sf.script_types[tp.script_type_index]
+            existing_tp_script_keys[idx] = (
+                sref.local_serialized_file_index,
+                sref.local_identifier_in_file,
+            )
+
+    existing_script_keys = {
+        (sref.local_serialized_file_index, sref.local_identifier_in_file)
+        for sref in dst_sf.script_types
+    }
+
+    # First ensure all missing MonoScripts and SerializedTypes exist in dst_sf
+    pending_new_tp_keys = {}
+    src_obj_to_dst_type_id = {}
+
+    for pid in sorted(local_pids):
+        src_obj = src_sf.objects[pid]
+        src_tp = src_obj.serialized_type
+        if src_tp is None:
+            raise RuntimeError(f"Source object {pid} ({src_obj.type.name}) has serialized_type=None")
+
+        if src_tp.class_id == 115:
+            # Shared MonoScript: skip if already present in dst_sf
+            if pid in dst_sf.objects:
+                if dst_sf.objects[pid].class_id != 115:
+                    raise RuntimeError(f"MonoScript PID collision at {pid}: dst class_id={dst_sf.objects[pid].class_id}")
+                continue
+        elif pid in dst_sf.objects:
+            raise RuntimeError(f"Non-MonoScript PID collision at {pid}: src={src_obj.type.name}, dst={dst_sf.objects[pid].type.name}")
+
+        remapped_script_key = None
+        if src_tp.class_id == 114:
+            if src_tp.script_type_index < 0:
+                raise RuntimeError(f"MonoBehaviour {pid} has script_type_index={src_tp.script_type_index}")
+            src_sref = src_sf.script_types[src_tp.script_type_index]
+            orig_fid = src_sref.local_serialized_file_index
+            if orig_fid == 0:
+                remapped_fid = 0
+            else:
+                if orig_fid not in ext_map:
+                    raise RuntimeError(f"Missing external mapping for MonoScript FileID {orig_fid}")
+                remapped_fid = ext_map[orig_fid]
+            remapped_script_key = (remapped_fid, src_sref.local_identifier_in_file)
+
+            if remapped_script_key not in existing_script_keys:
+                new_sref = copy.copy(src_sref)
+                new_sref.local_serialized_file_index = remapped_script_key[0]
+                new_sref.local_identifier_in_file = remapped_script_key[1]
+                dst_sf.script_types.append(new_sref)
+                existing_script_keys.add(remapped_script_key)
+
+        dst_type_id = _find_matching_dst_type_id(dst_sf, src_tp, remapped_script_key)
+        if dst_type_id is None:
+            new_tp = copy.copy(src_tp)
+            dst_type_id = len(dst_sf.types)
+            dst_sf.types.append(new_tp)
+            if remapped_script_key is not None:
+                pending_new_tp_keys[dst_type_id] = remapped_script_key
+                existing_tp_script_keys[dst_type_id] = remapped_script_key
+        elif remapped_script_key is not None:
+            existing_tp_script_keys[dst_type_id] = remapped_script_key
+
+        src_obj_to_dst_type_id[pid] = dst_type_id
+
+    # Sort dst_sf.script_types ascending and remap ALL tp.script_type_index across dst_sf.types
+    dst_sf.script_types.sort(key=lambda s: (s.local_serialized_file_index, s.local_identifier_in_file))
+    script_key_to_idx = {
+        (sref.local_serialized_file_index, sref.local_identifier_in_file): idx
+        for idx, sref in enumerate(dst_sf.script_types)
+    }
+    for tp_idx, key in existing_tp_script_keys.items():
+        dst_sf.types[tp_idx].script_type_index = script_key_to_idx[key]
+
+    # Clone objects into dst_sf
+    cloned_pids = []
+    for pid in sorted(local_pids):
+        if pid in dst_sf.objects:
+            continue  # existing MonoScript kept as-is
+        src_obj = src_sf.objects[pid]
+        dst_type_id = src_obj_to_dst_type_id[pid]
+        dst_tp = dst_sf.types[dst_type_id]
+
+        raw_bytes = src_obj.get_raw_data()
+        reader = EndianBinaryReader(raw_bytes, endian=dst_sf.header.endian)
+        new_obj = ObjectReader(
+            assets_file=dst_sf,
+            reader=reader,
+            path_id=pid,
+            type_id=dst_type_id,
+            serialized_type=dst_tp,
+            class_id=src_obj.class_id,
+            type=src_obj.type,
+            byte_start=0,
+            byte_size=len(raw_bytes),
+            is_destroyed=src_obj.is_destroyed,
+            is_stripped=src_obj.is_stripped,
+        )
+
+        # Remap any external PPtrs in the cloned object's typetree
+        tree = src_obj.read_typetree()
+        changed = False
+        for pptr in iter_pptrs_in_tree(tree):
+            fid = pptr.get("m_FileID", 0)
+            target_pid = pptr.get("m_PathID", 0)
+            if fid > 0 and target_pid != 0:
+                if fid not in ext_map:
+                    src_ext_path = (
+                        src_sf.externals[fid - 1].path
+                        if 1 <= fid <= len(src_sf.externals)
+                        else "<out-of-range>"
+                    )
+                    raise RuntimeError(
+                        f"Object {pid} ({src_obj.type.name}) references unmapped external FileID={fid} ({src_ext_path})"
+                    )
+                new_fid = ext_map[fid]
+                if new_fid != fid:
+                    pptr["m_FileID"] = new_fid
+                    changed = True
+
+        if changed:
+            commit_obj_typetree(new_obj, tree)
+        else:
+            new_obj.set_raw_data(raw_bytes)
+
+        dst_sf.objects[pid] = new_obj
+        cloned_pids.append(pid)
+
+    return cloned_pids
+
+
+def verify_bugbite_bundle_integrity(target_bundle, new_cab, forbidden_pids):
+    """Strict Reload Integrity Gate: validate rebuilt bundle on disk with UnityPy."""
+    env = UnityPy.load(str(target_bundle))
+    bf = list(env.files.values())[0]
+    sf = list(env.assets)[0]
+
+    res_name = f"{new_cab}.resource"
+    assert res_name in bf.files, f"Missing resource stream {res_name} in bundle"
+    res_bytes = bytes(bf.files[res_name].bytes)
+
+    # 1. Verify forbidden dead BB objects were removed
+    remaining_forbidden = [pid for pid in forbidden_pids if pid in sf.objects]
+    assert not remaining_forbidden, f"Forbidden dead BB objects still present: {remaining_forbidden}"
+
+    # 2. Verify required CJ-cloned & BugBite core objects exist
+    required_pids = [
+        -4178259269510828426,  # main GO
+        5495859601297396382,   # _lw GO
+        1157624665093363023,   # PlayerReferences
+        -3364085224588132041,  # MatineeAnimatorOverrideController
+        -135521353996395750,   # CharacterAudio
+        4786041819736037741,   # Fight AOC
+        -5475676132653162908,  # Car AOC
+        -513981948225030119,   # Cloned CJ Stage GO -> TFormStage_BugBite_GS_Special03
+        -3164215817585307476,  # Cloned CJ Matinee GO -> Matinee_BugBite_GS_Special03
+        4051884971414969356,   # Cloned CJ TFormMatineeStage
+        -8867447285746891126,  # Cloned CJ MatineeData
+        -4808014442274116898,  # Cloned CJ Audio root GO -> bugbite_gs_special_3
+        8019343707475621852,   # Cloned CJ Audio child GO -> bugbite_gs_special_3
+        1281847170586998338,   # Cloned CJ Audio RandomComponent
+        5829207288378332728,   # Cloned CJ AudioClip -> bugbite_gs_special_3
+        992031, 992032, 992033,
+    ]
+    missing_req = [pid for pid in required_pids if pid not in sf.objects]
+    assert not missing_req, f"Missing required objects in reloaded bundle: {missing_req}"
+
+    # 3. Verify script_types ordering and MonoBehaviour type consistency
+    skeys = [(s.local_serialized_file_index, s.local_identifier_in_file) for s in sf.script_types]
+    assert skeys == sorted(skeys), "sf.script_types is not sorted ascending!"
+    for tp in sf.types:
+        if tp.script_type_index >= 0:
+            assert tp.script_type_index < len(sf.script_types), f"Out of range script_type_index {tp.script_type_index}"
+            sref = sf.script_types[tp.script_type_index]
+            if sref.local_serialized_file_index == 0:
+                assert sref.local_identifier_in_file in sf.objects, (
+                    f"Missing local MonoScript {sref.local_identifier_in_file} referenced by sf.types"
+                )
+
+    # 4. Read EVERY object typetree & check all PPtrs, AudioClips, and forbidden strings
+    expected_source = f"archive:/{new_cab}/{new_cab}.resource"
+    asset_bundle_obj = None
+    for pid, obj in sf.objects.items():
+        tree = obj.read_typetree()
+        if obj.type.name == "AssetBundle":
+            asset_bundle_obj = tree
+        if obj.type.name == "MonoBehaviour":
+            assert obj.serialized_type is sf.types[obj.type_id], f"Type mismatch on MonoBehaviour {pid}"
+            m_script = tree.get("m_Script", {})
+            if m_script.get("m_FileID", 0) == 0:
+                spid = m_script.get("m_PathID", 0)
+                sref = sf.script_types[obj.serialized_type.script_type_index]
+                assert (sref.local_serialized_file_index, sref.local_identifier_in_file) == (0, spid), (
+                    f"MonoBehaviour {pid} script mismatch: type={(sref.local_serialized_file_index, sref.local_identifier_in_file)} vs m_Script=(0, {spid})"
+                )
+        for pptr in iter_pptrs_in_tree(tree):
+            fid = pptr.get("m_FileID", 0)
+            target_pid = pptr.get("m_PathID", 0)
+            if not target_pid:
+                continue
+            if fid == 0:
+                assert target_pid in sf.objects, f"Dangling local PPtr in {pid} ({obj.type.name}): {target_pid}"
+            else:
+                assert 1 <= fid <= len(sf.externals), f"Out-of-range external m_FileID={fid} in {pid} ({obj.type.name})"
+        if obj.type.name == "AudioClip":
+            res_info = tree.get("m_Resource", {})
+            src = res_info.get("m_Source", "")
+            off = res_info.get("m_Offset", 0)
+            sz = res_info.get("m_Size", 0)
+            if sz > 0:
+                assert src == expected_source, f"AudioClip {pid} ({tree.get('m_Name')}) bad m_Source={src}"
+                assert off + sz <= len(res_bytes), (
+                    f"AudioClip {pid} out of bounds: {off}+{sz} > {len(res_bytes)}"
+                )
+
+    # 5. Targeted SP3 clean-state checks (no BB SP3 or raw CJ/Ratchet remnants)
+    forbidden_sp3_strs = [
+        "bumblebee_gs_attackSpecial_03",
+        "cliffjumper_gs_attackSpecial_03",
+        "bumblebee_gs_special_3",
+        "ratchet_special_3",
+        "Cliffjumper_GS_Kabam",
+        "f48ebf5cf07fc99194be43e86f34ac74",
+    ]
+    check_pids = [
+        1157624665093363023,
+        -3364085224588132041,
+        -135521353996395750,
+        -513981948225030119,
+        -3164215817585307476,
+        4051884971414969356,
+        -8867447285746891126,
+        -4808014442274116898,
+        8019343707475621852,
+        1281847170586998338,
+        5829207288378332728,
+        992031, 992032, 992033,
+    ]
+    for cpid in check_pids:
+        blob = json.dumps(sf.objects[cpid].read_typetree(), ensure_ascii=False)
+        for bad in forbidden_sp3_strs:
+            assert bad not in blob, f"Forbidden string {bad!r} found in object {cpid}"
+
+    # Verify MatineeAOC SP3 slots (_overrideControllerList MonoBehaviour)
+    maoc = sf.objects[-3364085224588132041].read_typetree()
+    maoc_map = {e["StateHash"]: e["OverrideClipName"] for e in maoc.get("_overrideControllerList", [])}
+    assert maoc_map.get(-1919714467) == "bugbite_gs_attackSpecial_03", (
+        f"MatineeAOC SP3 fight slot wrong: {maoc_map.get(-1919714467)}"
+    )
+    assert maoc_map.get(966217297) == "bugbite_gs_attackSpecial_03_hitReaction", (
+        f"MatineeAOC SP3 hit slot wrong: {maoc_map.get(966217297)}"
+    )
+
+    # Verify Fight AOC & Car AOC SP3 clip bindings
+    fight_aoc = sf.objects[4786041819736037741].read_typetree()
+    fclips = fight_aoc.get("m_Clips", [])
+    assert fclips[31]["m_OverrideClip"] == {"m_FileID": 0, "m_PathID": 992031}, f"FightAOC slot 31 wrong: {fclips[31]}"
+    assert fclips[32]["m_OverrideClip"] == {"m_FileID": 0, "m_PathID": 992032}, f"FightAOC slot 32 wrong: {fclips[32]}"
+    car_aoc = sf.objects[-5475676132653162908].read_typetree()
+    cclips = car_aoc.get("m_Clips", [])
+    assert cclips[63]["m_OverrideClip"] == {"m_FileID": 0, "m_PathID": 992033}, f"CarAOC slot 63 wrong: {cclips[63]}"
+
+    # Verify MatineeData tracks & teoacn
+    md_tree = sf.objects[-8867447285746891126].read_typetree()
+    mtracks = json.loads(md_tree["jSONData"])["TRACKS"]
+    assert mtracks["track_5"]["enp"] == "rightgun", f"track_5 enp wrong: {mtracks['track_5']}"
+    assert mtracks["track_8"]["enp"] == "transformed", f"track_8 enp wrong: {mtracks['track_8']}"
+    assert mtracks["track_1_econtainer_0"]["e_0"]["ad"]["teoacn"] == "bugbite_gs_attackSpecial_03"
+    assert mtracks["track_2_econtainer_0"]["e_0"]["ad"]["teoacn"] == "bugbite_gs_attackSpecial_03_hitReaction"
+    assert mtracks["track_6_econtainer_0"]["e_0"]["ad"]["teoacn"] == "bugbite_gs_attackSpecial_03_transformed"
+
+    # Verify PlayerReferences SpecialStagePrefab
+    pref = sf.objects[1157624665093363023].read_typetree()
+    assert pref["SpecialStagePrefab"]["m_PathID"] == -513981948225030119, "PlayerReferences.SpecialStagePrefab wrong"
+
+    # Verify CharacterAudio SP3 wiring
+    caudio = sf.objects[-135521353996395750].read_typetree()
+    ev_map = {e["_genEvent"]: e["_override"] for e in caudio.get("_events", [])}
+    assert ev_map.get("gen_special_3") == "bugbite_gs_special_3", f"CharacterAudio gen_special_3={ev_map.get('gen_special_3')}"
+    spec_pids = [x["m_PathID"] for x in caudio.get("_specialCharacterAudio", [])]
+    assert 1281847170586998338 in spec_pids and -3561701419133919622 not in spec_pids, (
+        f"CharacterAudio _specialCharacterAudio wrong: {spec_pids}"
+    )
+
+    # 6. Verify m_PreloadTable slices exactly match BFS closures of container roots
+    assert asset_bundle_obj is not None, "Missing AssetBundle object"
+    preload_list = [(p["m_FileID"], p["m_PathID"]) for p in asset_bundle_obj["m_PreloadTable"]]
+    for cname, cinfo in asset_bundle_obj["m_Container"]:
+        root_pid = cinfo["asset"]["m_PathID"]
+        idx = cinfo["preloadIndex"]
+        sz = cinfo["preloadSize"]
+        slice_set = set(preload_list[idx : idx + sz])
+        _, expected_set = collect_closure(sf, [root_pid])
+        missing = expected_set - slice_set
+        extra = slice_set - expected_set
+        assert not missing and not extra, (
+            f"Preload mismatch for {cname}: missing={len(missing)} extra={len(extra)}"
+        )
+
+    print(
+        f"[+] Reload Integrity Gate PASSED! objects={len(sf.objects)}, "
+        f"types={len(sf.types)}, script_types={len(sf.script_types)}, "
+        f"preload={len(preload_list)}, resource_bytes={len(res_bytes)}"
+    )
 
 
 def patch_bugbite_move_s2():
@@ -297,8 +726,6 @@ def generate_bugbite_assets(output_dir: str = "assets_redeco") -> None:
     clip_s3_fight = None
     clip_s3_hit = None
     clip_s3_car = None
-    cj_stage_mb = None
-    cj_matinee_data = None
 
     for obj in cj_env.objects:
         if obj.type.name == "AnimationClip":
@@ -313,16 +740,10 @@ def generate_bugbite_assets(output_dir: str = "assets_redeco") -> None:
             elif name == "cliffjumper_gs_attackSpecial_03_transformed":
                 clip_s3_car = t
                 clip_s3_car["m_Name"] = "bugbite_gs_attackSpecial_03_transformed"
-        elif obj.path_id == 4051884971414969356:
-            cj_stage_mb = obj.read_typetree()
-        elif obj.path_id == -8867447285746891126:
-            cj_matinee_data = obj.read_typetree()
 
     assert clip_s3_fight is not None, "Failed to find Cliffjumper S3 fight clip!"
     assert clip_s3_hit is not None, "Failed to find Cliffjumper S3 hitReaction clip!"
     assert clip_s3_car is not None, "Failed to find Cliffjumper S3 transformed car clip!"
-    assert cj_stage_mb is not None, "Failed to find Cliffjumper stage MonoBehaviour!"
-    assert cj_matinee_data is not None, "Failed to find Cliffjumper MatineeData!"
 
     print("[+] Successfully extracted all external clips (Jazz S1, Waspinator S2, Tantrum L1..L4, Ironhide M1, Megatronus M2, Cliffjumper S3)!")
 
@@ -372,7 +793,7 @@ def generate_bugbite_assets(output_dir: str = "assets_redeco") -> None:
         new_obj = copy.copy(template_clip)
         new_obj.path_id = pid
         replace_str_in_tree(ctree, old_cab, new_cab)
-        new_obj.save_typetree(ctree)
+        commit_obj_typetree(new_obj, ctree)
         bb_asset.objects[pid] = new_obj
     print(f"[+] Injected {len(new_clips)} new self-contained AnimationClips into Bug Bite asset!")
 
@@ -382,132 +803,247 @@ def generate_bugbite_assets(output_dir: str = "assets_redeco") -> None:
     user_wpns_path = out_dir / "cha_bugbite_gs_wpns_a.png"
     user_raoe_path = out_dir / "cha_bugbite_gs_raoe.png"
 
-    # Rewire existing objects in Bumblebee bundle
-    for obj in bb_env.objects:
-        # Fight AOC: override_Bumblebee_GS_Kabam_fight (PathID=4786041819736037741)
-        if obj.path_id == 4786041819736037741 and obj.type.name == "AnimatorOverrideController":
-            tree = obj.read_typetree()
-            clips = tree.get("m_Clips", [])
+    # Snapshot old Bumblebee SP3 Stage & Audio closures before rewiring
+    BB_SP3_STAGE_ROOT = 3762158464405546467
+    BB_SP3_AUDIO_ROOT = -428821236856854288
+    BB_SP3_OLD_CLIP_PIDS = {-9071274386392300993, 3809667128409547372, 1332696529797843162}
+    old_bb_sp3_local_pids, _ = collect_closure(bb_asset, [BB_SP3_STAGE_ROOT, BB_SP3_AUDIO_ROOT])
+    old_bb_sp3_candidates = old_bb_sp3_local_pids | BB_SP3_OLD_CLIP_PIDS
 
-            # L1: Tantrum L1
-            clips[2]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": PID_L1}
-            # L2: Tantrum L2
-            clips[3]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": PID_L2}
-            # S1: Jazz S1
-            clips[4]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": PID_S1}
-            # S2: Waspinator S2
-            clips[5]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": PID_S2}
-            # S3: Cliffjumper S3 (slots 31 & 32)
-            clips[31]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": PID_S3_FIGHT}
-            clips[32]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": PID_S3_HIT}
-            # L3: Tantrum L3
-            clips[41]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": PID_L3}
-            # M1: Movie Ironhide M1 (FileID 0, PID 992021)
-            clips[42]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": PID_M1}
-            # L4: Tantrum L4
-            clips[43]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": PID_L4}
-            # M2: Megatronus M2
-            clips[44]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": PID_M2}
+    # Clone Cliffjumper SP3 Stage & Audio closures and append .resource audio stream
+    cj_bf = list(cj_env.files.values())[0]
+    cj_asset = list(cj_env.assets)[0]
 
-            tree["m_Clips"] = clips
-            replace_str_in_tree(tree, old_cab, new_cab)
-            obj.save_typetree(tree)
-            print("[+] Configured Bug Bite Fight AOC with full stitched moveset (all clips FileID 0)!")
+    cj_res_key = [k for k in cj_bf.files.keys() if k.endswith(".resource")][0]
+    cj_res_bytes = bytes(cj_bf.files[cj_res_key].bytes)
+    cj_audio_clip_tree = cj_asset.objects[5829207288378332728].read_typetree()
+    cj_audio_off = cj_audio_clip_tree["m_Resource"]["m_Offset"]
+    cj_audio_size = cj_audio_clip_tree["m_Resource"]["m_Size"]
+    assert cj_audio_size > 0 and cj_audio_off + cj_audio_size <= len(cj_res_bytes), (
+        f"Invalid CJ AudioClip resource slice: off={cj_audio_off}, size={cj_audio_size}, total={len(cj_res_bytes)}"
+    )
+    cj_audio_slice = cj_res_bytes[cj_audio_off : cj_audio_off + cj_audio_size]
 
-        # Car AOC: override_Bumblebee_GS_Kabam_car (PathID=-5475676132653162908)
-        elif obj.path_id == -5475676132653162908 and obj.type.name == "AnimatorOverrideController":
-            tree = obj.read_typetree()
-            clips = tree.get("m_Clips", [])
-            # Slot 63: Cliffjumper S3 transformed vehicle animation
-            clips[63]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": PID_S3_CAR}
-            tree["m_Clips"] = clips
-            replace_str_in_tree(tree, old_cab, new_cab)
-            obj.save_typetree(tree)
-            print("[+] Configured Bug Bite Car AOC slot 63 with Cliffjumper S3 transformed car animation!")
+    bb_res_key = [k for k in bf.files.keys() if k.endswith(".resource")][0]
+    orig_bb_res_subf = bf.files[bb_res_key]
+    orig_bb_res_bytes = bytes(orig_bb_res_subf.bytes)
+    appended_audio_off = len(orig_bb_res_bytes)
+    combined_res_bytes = orig_bb_res_bytes + cj_audio_slice
+    new_bb_res_reader = EndianBinaryReader(combined_res_bytes, endian=orig_bb_res_subf.endian)
+    new_bb_res_reader.flags = orig_bb_res_subf.flags
+    new_bb_res_reader.name = bb_res_key
+    bf.files[bb_res_key] = new_bb_res_reader
+    print(
+        f"[+] Appended Cliffjumper SP3 audio stream ({cj_audio_size} bytes) at offset {appended_audio_off} "
+        f"(total resource={len(combined_res_bytes)} bytes)"
+    )
 
-        # MoveSet: PathID=-7496201166252604881
-        elif obj.path_id == -7496201166252604881 and obj.type.name == "MonoBehaviour":
-            tree = obj.read_typetree()
-            moves = tree.get("_moves", [])
+    CJ_SP3_STAGE_ROOT = -513981948225030119
+    CJ_SP3_AUDIO_ROOT = -4808014442274116898
+    cloned_pids = clone_closure_into_sf(cj_asset, bb_asset, [CJ_SP3_STAGE_ROOT, CJ_SP3_AUDIO_ROOT])
+    print(f"[+] Cloned {len(cloned_pids)} objects from Cliffjumper SP3 Stage & Audio closures into Bug Bite!")
 
-            # Move [0] Base.LightAttack01 -> Tantrum L1
-            moves[0]["_name"] = "move_tantrum_attack_light_01"
-            moves[0]["_asset"] = {"m_FileID": 4, "m_PathID": -2890002397111034488}
+    # Rewire explicit objects in Bug Bite asset
+    # 1. Fight AOC: override_Bumblebee_GS_Kabam_fight (PathID=4786041819736037741)
+    fight_aoc_obj = bb_asset.objects[4786041819736037741]
+    tree = fight_aoc_obj.read_typetree()
+    clips = tree.get("m_Clips", [])
+    clips[2]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": PID_L1}
+    clips[3]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": PID_L2}
+    clips[4]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": PID_S1}
+    clips[5]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": PID_S2}
+    clips[31]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": PID_S3_FIGHT}
+    clips[32]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": PID_S3_HIT}
+    clips[41]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": PID_L3}
+    clips[42]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": PID_M1}
+    clips[43]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": PID_L4}
+    clips[44]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": PID_M2}
+    tree["m_Clips"] = clips
+    replace_str_in_tree(tree, old_cab, new_cab)
+    commit_obj_typetree(fight_aoc_obj, tree)
+    print("[+] Configured Bug Bite Fight AOC with full stitched moveset (all clips FileID 0)!")
 
-            # Move [1] Base.LightAttack02 -> Tantrum L2
-            moves[1]["_name"] = "move_tantrum_attack_light_02"
-            moves[1]["_asset"] = {"m_FileID": 4, "m_PathID": -4825681619876116179}
+    # 2. Car AOC: override_Bumblebee_GS_Kabam_car (PathID=-5475676132653162908)
+    car_aoc_obj = bb_asset.objects[-5475676132653162908]
+    tree = car_aoc_obj.read_typetree()
+    clips = tree.get("m_Clips", [])
+    clips[63]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": PID_S3_CAR}
+    tree["m_Clips"] = clips
+    replace_str_in_tree(tree, old_cab, new_cab)
+    commit_obj_typetree(car_aoc_obj, tree)
+    print("[+] Configured Bug Bite Car AOC slot 63 with Cliffjumper S3 transformed car animation!")
 
-            # Move [2] Base.LightAttack03 -> Tantrum L3
-            moves[2]["_name"] = "move_tantrum_attack_light_03"
-            moves[2]["_asset"] = {"m_FileID": 4, "m_PathID": -8759699025821425951}
+    # 3. MatineeAOC: PathID=-3364085224588132041 (MonoBehaviour _overrideControllerList; keep S1/S2/etc., update SP3)
+    matinee_aoc_obj = bb_asset.objects[-3364085224588132041]
+    tree = matinee_aoc_obj.read_typetree()
+    updated_maoc = set()
+    for ov in tree.get("_overrideControllerList", []):
+        shash = ov.get("StateHash")
+        if shash == -1919714467:
+            ov["OverrideClipName"] = "bugbite_gs_attackSpecial_03"
+            updated_maoc.add(-1919714467)
+        elif shash == 966217297:
+            ov["OverrideClipName"] = "bugbite_gs_attackSpecial_03_hitReaction"
+            updated_maoc.add(966217297)
+    assert updated_maoc == {-1919714467, 966217297}, f"Missing SP3 hashes in MatineeAOC: {updated_maoc}"
+    replace_str_in_tree(tree, old_cab, new_cab)
+    commit_obj_typetree(matinee_aoc_obj, tree)
+    print("[+] Configured Bug Bite MatineeAOC Base.SpecialAttack03 & HitReaction to bugbite_gs_attackSpecial_03*!")
 
-            # Move [3] Base.LightAttack04 -> Tantrum L4
-            moves[3]["_name"] = "move_tantrum_attack_light_04"
-            moves[3]["_asset"] = {"m_FileID": 4, "m_PathID": -4208587366598665143}
+    # 4. MoveSet: PathID=-7496201166252604881
+    moveset_obj = bb_asset.objects[-7496201166252604881]
+    tree = moveset_obj.read_typetree()
+    moves = tree.get("_moves", [])
+    moves[0]["_name"] = "move_tantrum_attack_light_01"
+    moves[0]["_asset"] = {"m_FileID": 4, "m_PathID": -2890002397111034488}
+    moves[1]["_name"] = "move_tantrum_attack_light_02"
+    moves[1]["_asset"] = {"m_FileID": 4, "m_PathID": -4825681619876116179}
+    moves[2]["_name"] = "move_tantrum_attack_light_03"
+    moves[2]["_asset"] = {"m_FileID": 4, "m_PathID": -8759699025821425951}
+    moves[3]["_name"] = "move_tantrum_attack_light_04"
+    moves[3]["_asset"] = {"m_FileID": 4, "m_PathID": -4208587366598665143}
+    moves[4]["_name"] = "move_brawler_attack_medium_02"
+    moves[4]["_asset"] = {"m_FileID": 4, "m_PathID": 8863364277361988242}
+    moves[5]["_name"] = "move_megatronus_attack_medium_02"
+    moves[5]["_asset"] = {"m_FileID": 4, "m_PathID": 5104354136730126689}
+    moves[6]["_name"] = "move_jazz_special_01"
+    moves[6]["_asset"] = {"m_FileID": 4, "m_PathID": -8221976179409562418}
+    moves[7]["_name"] = "move_bugbite_special_02"
+    moves[7]["_asset"] = {"m_FileID": 4, "m_PathID": BUGBITE_S2_PID}
+    tree["_moves"] = moves
+    replace_str_in_tree(tree, old_cab, new_cab)
+    commit_obj_typetree(moveset_obj, tree)
+    print("[+] Configured Bug Bite MoveSet (L1..L4=Tantrum, M1=Ironhide, M2=Megatronus, S1=Jazz, S2=BugBite)!")
 
-            # Move [4] Base.MediumAttack01 -> Movie Ironhide M1
-            moves[4]["_name"] = "move_brawler_attack_medium_02"
-            moves[4]["_asset"] = {"m_FileID": 4, "m_PathID": 8863364277361988242}
+    # 5. PlayerReferences: point SpecialStagePrefab to cloned Cliffjumper Stage (-513981948225030119)
+    pref_obj = bb_asset.objects[1157624665093363023]
+    tree = pref_obj.read_typetree()
+    tree["SpecialStagePrefab"] = {"m_FileID": 0, "m_PathID": CJ_SP3_STAGE_ROOT}
+    replace_str_in_tree(tree, old_cab, new_cab)
+    commit_obj_typetree(pref_obj, tree)
+    print(f"[+] Wired PlayerReferences.SpecialStagePrefab -> {CJ_SP3_STAGE_ROOT} (cloned Cliffjumper S3 Stage)!")
 
-            # Move [5] Base.MediumAttack02 -> Megatronus M2
-            moves[5]["_name"] = "move_megatronus_attack_medium_02"
-            moves[5]["_asset"] = {"m_FileID": 4, "m_PathID": 5104354136730126689}
+    # 6. CharacterAudio: point gen_special_3 & _specialCharacterAudio to cloned ratchet_special_3 -> bugbite_gs_special_3
+    caudio_obj = bb_asset.objects[-135521353996395750]
+    tree = caudio_obj.read_typetree()
+    found_ev = False
+    for ev in tree.get("_events", []):
+        if ev.get("_genEvent") == "gen_special_3":
+            ev["_override"] = "bugbite_gs_special_3"
+            found_ev = True
+    assert found_ev, "Failed to find gen_special_3 in CharacterAudio._events!"
+    spec_audio = tree.get("_specialCharacterAudio", [])
+    replaced_spec = False
+    for item in spec_audio:
+        if item.get("m_PathID") == -3561701419133919622:
+            item["m_FileID"] = 0
+            item["m_PathID"] = 1281847170586998338
+            replaced_spec = True
+    assert replaced_spec, "Failed to find BB special audio PID in CharacterAudio._specialCharacterAudio!"
+    replace_str_in_tree(tree, old_cab, new_cab)
+    commit_obj_typetree(caudio_obj, tree)
+    print("[+] Rewired CharacterAudio gen_special_3 -> bugbite_gs_special_3 (PID 1281847170586998338)!")
 
-            # Move [6] Base.SpecialAttack01 -> Jazz S1
-            moves[6]["_name"] = "move_jazz_special_01"
-            moves[6]["_asset"] = {"m_FileID": 4, "m_PathID": -8221976179409562418}
+    # 7. Rename cloned Stage, Matinee, Audio GOs and update AudioClip & TFormMatineeStage & MatineeData
+    for go_pid, new_go_name in [
+        (-513981948225030119, "TFormStage_BugBite_GS_Special03"),
+        (-3164215817585307476, "Matinee_BugBite_GS_Special03"),
+        (-4808014442274116898, "bugbite_gs_special_3"),
+        (8019343707475621852, "bugbite_gs_special_3"),
+    ]:
+        go_obj = bb_asset.objects[go_pid]
+        gtree = go_obj.read_typetree()
+        gtree["m_Name"] = new_go_name
+        replace_str_in_tree(gtree, old_cab, new_cab)
+        commit_obj_typetree(go_obj, gtree)
 
-            # Move [7] Base.SpecialAttack02 -> Bug Bite S2
-            moves[7]["_name"] = "move_bugbite_special_02"
-            moves[7]["_asset"] = {"m_FileID": 4, "m_PathID": BUGBITE_S2_PID}
+    aclip_obj = bb_asset.objects[5829207288378332728]
+    atree = aclip_obj.read_typetree()
+    atree["m_Name"] = "bugbite_gs_special_3"
+    atree["m_Resource"]["m_Offset"] = appended_audio_off
+    atree["m_Resource"]["m_Size"] = cj_audio_size
+    atree["m_Resource"]["m_Source"] = f"archive:/{new_cab}/{new_cab}.resource"
+    commit_obj_typetree(aclip_obj, atree)
 
-            tree["_moves"] = moves
-            replace_str_in_tree(tree, old_cab, new_cab)
-            obj.save_typetree(tree)
-            print("[+] Configured Bug Bite MoveSet (L1..L4=Tantrum, M1=Ironhide, M2=Megatronus, S1=Jazz, S2=BugBite)!")
+    stage_mb_obj = bb_asset.objects[4051884971414969356]
+    stree = stage_mb_obj.read_typetree()
+    if stree.get("actorInfoList"):
+        stree["actorInfoList"][0]["actor_id"] = "BugBite_GS_Kabam"
+    replace_str_in_tree(stree, old_cab, new_cab)
+    commit_obj_typetree(stage_mb_obj, stree)
 
-        # Character Root MonoBehaviour: Keep Bumblebee's native Beetle stage
-        elif obj.path_id == 1157624665093363023 and obj.type.name == "MonoBehaviour":
-            tree = obj.read_typetree()
-            # Bumblebee SpecialStagePrefab (3762158464405546467) is natively preserved
-            replace_str_in_tree(tree, old_cab, new_cab)
-            obj.save_typetree(tree)
-            print("[+] Preserved native Volkswagen Beetle SpecialStagePrefab (3762158464405546467) for Bug Bite S3!")
+    matinee_obj = bb_asset.objects[-8867447285746891126]
+    mtree = matinee_obj.read_typetree()
+    json_str = mtree.get("jSONData", "")
+    for old_s, new_s in [
+        ("cha_cliffjumper_gs_kabam_01 1|cha_cliffjumper_gs_kabam_01|transformed", "cha_bugbite_gs_kabam_01|transformed"),
+        ("cha_cliffjumper_gs_kabam_01|transformed", "cha_bugbite_gs_kabam_01|transformed"),
+        ("cha_cliffjumper_gs_kabam_01 1", "cha_bugbite_gs_kabam_01"),
+        ("cha_cliffjumper_gs_kabam_01", "cha_bugbite_gs_kabam_01"),
+        ("cha_cliffjumper_gs_kabam_00 1", "cha_bugbite_gs_kabam_00"),
+        ("cha_cliffjumper_gs_kabam_00", "cha_bugbite_gs_kabam_00"),
+        ("cha_cliffjumper_gs_kabam_wpns_gun_right 1|gasgun", "cha_bugbite_gs_kabam_wpns_pistol_right|rightgun"),
+        ("cha_cliffjumper_gs_kabam_wpns_gun_right|gasgun", "cha_bugbite_gs_kabam_wpns_pistol_right|rightgun"),
+        ("cha_cliffjumper_gs_kabam_wpns_gun_right 1", "cha_bugbite_gs_kabam_wpns_pistol_right"),
+        ("cha_cliffjumper_gs_kabam_wpns_gun_right", "cha_bugbite_gs_kabam_wpns_pistol_right"),
+        ("Cliffjumper_GS_Kabam", "BugBite_GS_Kabam"),
+        ("TFormStage_Cliffjumper_GS_Special03", "TFormStage_BugBite_GS_Special03"),
+        ("cliffjumper_gs_attackSpecial_03_hitReaction", "bugbite_gs_attackSpecial_03_hitReaction"),
+        ("cliffjumper_gs_attackSpecial_03_transformed", "bugbite_gs_attackSpecial_03_transformed"),
+        ("cliffjumper_gs_attackSpecial_03", "bugbite_gs_attackSpecial_03"),
+    ]:
+        json_str = json_str.replace(old_s, new_s)
 
-        # Stage MonoBehaviour: Graft Cliffjumper S3 stage
-        elif obj.path_id == 865296372479790604 and obj.type.name == "MonoBehaviour":
-            tree = copy.deepcopy(cj_stage_mb)
-            tree["m_GameObject"] = {"m_FileID": 0, "m_PathID": 3762158464405546467}
-            tree["matineeData"] = {"m_FileID": 0, "m_PathID": -1441228310389542968}
-            tree["actorInfoList"] = [
-                {"actor_id": "BugBite_GS_Kabam", "avatarScale": 0.0, "sourceAvatar": {"m_FileID": 0, "m_PathID": 0}, "active": 1},
-                {"actor_id": "Bludgeon_GS_RD20", "avatarScale": 0.0, "sourceAvatar": {"m_FileID": 0, "m_PathID": 0}, "active": 1}
-            ]
-            replace_str_in_tree(tree, old_cab, new_cab)
-            obj.save_typetree(tree)
-            print("[+] Grafted Cliffjumper S3 stage MonoBehaviour into Bug Bite stage!")
+    mjson = json.loads(json_str)
 
-        # MatineeData MonoBehaviour: Graft Cliffjumper vehicle transformation MatineeData
-        elif obj.path_id == -1441228310389542968 and obj.type.name == "MonoBehaviour":
-            tree = copy.deepcopy(cj_matinee_data)
-            tree["m_GameObject"] = {"m_FileID": 0, "m_PathID": -2568755476095504919}
-            json_str = tree.get("jSONData", "")
-            json_str = json_str.replace("cha_cliffjumper_gs_kabam_wpns_gun_right 1|gasgun", "cha_bugbite_gs_kabam_wpns_pistol_right|rightgun")
-            json_str = json_str.replace("cha_cliffjumper_gs_kabam_wpns_gun_right 1", "cha_bugbite_gs_kabam_wpns_pistol_right")
-            json_str = json_str.replace("cha_cliffjumper_gs_kabam_00 1", "cha_bugbite_gs_kabam_00")
-            json_str = json_str.replace("cha_cliffjumper_gs_kabam_01 1|cha_cliffjumper_gs_kabam_01|transformed", "cha_bugbite_gs_kabam_01|transformed")
-            json_str = json_str.replace("cha_cliffjumper_gs_kabam_01 1", "cha_bugbite_gs_kabam_01")
-            json_str = json_str.replace("cha_cliffjumper_gs_kabam_01", "cha_bugbite_gs_kabam_01")
-            json_str = json_str.replace("Cliffjumper_GS_Kabam", "BugBite_GS_Kabam")
-            json_str = json_str.replace("TFormStage_Cliffjumper_GS_Special03", "TFormStage_BugBite_GS_attackSpecial03")
-            tree["jSONData"] = json_str
-            replace_str_in_tree(tree, old_cab, new_cab)
-            obj.save_typetree(tree)
-            print("[+] Grafted Cliffjumper MatineeData with full vehicle transformation tracks into Bug Bite!")
+    def _fix_matinee_json_nodes(node):
+        if isinstance(node, dict):
+            if node.get("enp") in ("gasgun", "rightGun") or node.get("en") == "cha_bugbite_gs_kabam_wpns_pistol_right":
+                node["enp"] = "rightgun"
+            if (
+                node.get("en") == "cha_bugbite_gs_kabam_01"
+                and node.get("enp") in ("cha_bugbite_gs_kabam_01", "character_model")
+                and "|transformed|" in node.get("eid", "")
+            ):
+                node["enp"] = "transformed"
+            for v in node.values():
+                _fix_matinee_json_nodes(v)
+        elif isinstance(node, list):
+            for item in node:
+                _fix_matinee_json_nodes(item)
 
+    _fix_matinee_json_nodes(mjson)
+    fixed_json_str = json.dumps(mjson, separators=(",", ":"))
+    assert "cliffjumper" not in fixed_json_str.lower(), "Residual cliffjumper in MatineeData jSONData!"
+    assert "bumblebee" not in fixed_json_str.lower(), "Residual bumblebee in MatineeData jSONData!"
+    assert "gasgun" not in fixed_json_str.lower(), "Residual gasgun in MatineeData jSONData!"
+    mtree["jSONData"] = fixed_json_str
+    replace_str_in_tree(mtree, old_cab, new_cab)
+    commit_obj_typetree(matinee_obj, mtree)
+    print("[+] Configured cloned Cliffjumper TFormMatineeStage & MatineeData for Bug Bite!")
+
+    explicit_handled_pids = {
+        4786041819736037741,
+        -5475676132653162908,
+        -3364085224588132041,
+        -7496201166252604881,
+        1157624665093363023,
+        -135521353996395750,
+        -513981948225030119,
+        -3164215817585307476,
+        -4808014442274116898,
+        8019343707475621852,
+        5829207288378332728,
+        4051884971414969356,
+        -8867447285746891126,
+    }
+
+    # 8. Materials, Textures, GameObjects, and remaining CAB references
+    for obj in list(bb_asset.objects.values()):
+        if obj.path_id in explicit_handled_pids:
+            continue
         # Materials: glowing crimson red eyes and headlights
-        elif obj.type.name == "Material":
+        if obj.type.name == "Material":
             tree = obj.read_typetree()
             if obj.path_id in (3469483409826248538, -4405333283484697666):
                 cols = tree.get("m_SavedProperties", {}).get("m_Colors", [])
@@ -526,7 +1062,7 @@ def generate_bugbite_assets(output_dir: str = "assets_redeco") -> None:
                                 v.update({"r": 1.0, "g": 0.05, "b": 0.05, "a": 1.0})
                 print(f"[+] Set glowing RED emissive material on {tree.get('m_Name')} (PID {obj.path_id})")
             replace_str_in_tree(tree, old_cab, new_cab)
-            obj.save_typetree(tree)
+            commit_obj_typetree(obj, tree)
 
         # Texture2D: Load custom recolored textures
         elif obj.type.name == "Texture2D":
@@ -555,34 +1091,9 @@ def generate_bugbite_assets(output_dir: str = "assets_redeco") -> None:
             else:
                 tree = obj.read_typetree()
                 replace_str_in_tree(tree, old_cab, new_cab)
-                obj.save_typetree(tree)
+                commit_obj_typetree(obj, tree)
 
-        # AssetBundle container & preload table
-        elif obj.type.name == "AssetBundle":
-            tree = obj.read_typetree()
-            tree["m_Name"] = "data/bugbite_gs_kabam_odr/bugbite_gs_kabam.assetbundle"
-            container = tree.get("m_Container", [])
-            new_container = []
-            for item in container:
-                path_str = item[0].replace("bumblebee_gs_kabam", "bugbite_gs_kabam")
-                asset_info = item[1]
-                if "preloadSize" in asset_info and asset_info.get("preloadIndex", 0) > 0:
-                    # Update preloadSize to encompass all newly appended clips!
-                    asset_info["preloadSize"] = 1100 + len(new_clips)
-                new_container.append([path_str, asset_info])
-            tree["m_Container"] = new_container
-
-            # Append injected clips to preload table
-            preload = tree.get("m_PreloadTable", [])
-            for pid, _ in new_clips:
-                preload.append({"m_FileID": 0, "m_PathID": pid})
-            tree["m_PreloadTable"] = preload
-
-            replace_str_in_tree(tree, old_cab, new_cab)
-            obj.save_typetree(tree)
-            print(f"[+] Updated AssetBundle container table and preload list! Preload size: {len(preload)}")
-
-        # Root GameObjects: Rename
+        # Root GameObjects: Rename (skip existing S1/S2/heavy audio GOs)
         elif obj.type.name == "GameObject":
             tree = obj.read_typetree()
             gname = tree.get("m_Name", "")
@@ -592,16 +1103,60 @@ def generate_bugbite_assets(output_dir: str = "assets_redeco") -> None:
             if "bumblebee" in gname.lower() and not is_audio_go:
                 tree["m_Name"] = gname.replace("Bumblebee", "BugBite").replace("bumblebee", "bugbite")
             replace_str_in_tree(tree, old_cab, new_cab)
-            obj.save_typetree(tree)
+            commit_obj_typetree(obj, tree)
 
-        # All other MonoBehaviours / Controllers
-        elif obj.type.name in ["AnimatorOverrideController", "MonoBehaviour", "AnimatorController", "Material"]:
+        # All other MonoBehaviours / Controllers / AudioClips (includes existing AudioClips' m_Resource.m_Source!)
+        elif obj.type.name in ["AnimatorOverrideController", "MonoBehaviour", "AnimatorController", "AudioClip"]:
             try:
                 tree = obj.read_typetree()
                 replace_str_in_tree(tree, old_cab, new_cab)
-                obj.save_typetree(tree)
+                commit_obj_typetree(obj, tree)
             except Exception:
                 pass
+
+    # 9. Compute live closures from AssetBundle container roots and delete dead old BB SP3 objects
+    ab_objs = [o for o in bb_asset.objects.values() if o.type.name == "AssetBundle"]
+    assert len(ab_objs) == 1, f"Expected 1 AssetBundle object, found {len(ab_objs)}"
+    ab_obj = ab_objs[0]
+    ab_tree = ab_obj.read_typetree()
+
+    live_local_pids = set()
+    for _, cinfo in ab_tree.get("m_Container", []):
+        rpid = cinfo["asset"]["m_PathID"]
+        loc, _ = collect_closure(bb_asset, [rpid])
+        live_local_pids |= loc
+
+    all_monoscript_pids = {pid for pid, o in bb_asset.objects.items() if o.class_id == 115}
+    dead_pids = old_bb_sp3_candidates - live_local_pids - all_monoscript_pids - {ab_obj.path_id}
+    for dpid in dead_pids:
+        if dpid in bb_asset.objects:
+            del bb_asset.objects[dpid]
+    print(f"[+] Deleted {len(dead_pids)} dead Bumblebee SP3 objects (stage/audio/old clips)!")
+
+    # Verify the core old BB SP3 objects are all among dead_pids (not held alive anywhere else)
+    must_be_dead = BB_SP3_OLD_CLIP_PIDS | {BB_SP3_STAGE_ROOT, BB_SP3_AUDIO_ROOT}
+    still_alive = must_be_dead & live_local_pids
+    assert not still_alive, f"Old Bumblebee SP3 objects are still referenced by live prefab! {still_alive}"
+
+    # 10. Rebuild AssetBundle container & exact m_PreloadTable slices from live closures
+    ab_tree["m_Name"] = "data/bugbite_gs_kabam_odr/bugbite_gs_kabam.assetbundle"
+    new_container = []
+    new_preload = []
+    for path_str, asset_info in ab_tree.get("m_Container", []):
+        new_path_str = path_str.replace("bumblebee_gs_kabam", "bugbite_gs_kabam")
+        rpid = asset_info["asset"]["m_PathID"]
+        _, closure_pptrs = collect_closure(bb_asset, [rpid])
+        sorted_pptrs = sorted(closure_pptrs)
+        asset_info["preloadIndex"] = len(new_preload)
+        asset_info["preloadSize"] = len(sorted_pptrs)
+        for fid, pid in sorted_pptrs:
+            new_preload.append({"m_FileID": fid, "m_PathID": pid})
+        new_container.append([new_path_str, asset_info])
+    ab_tree["m_Container"] = new_container
+    ab_tree["m_PreloadTable"] = new_preload
+    replace_str_in_tree(ab_tree, old_cab, new_cab)
+    commit_obj_typetree(ab_obj, ab_tree)
+    print(f"[+] Rebuilt exact AssetBundle container table and preload list! Preload size: {len(new_preload)}")
 
     # Save rebuilt AssetBundle
     new_files = {}
@@ -620,10 +1175,9 @@ def generate_bugbite_assets(output_dir: str = "assets_redeco") -> None:
     target_bundle.write_bytes(bf.save(packer="lz4"))
     print(f"[+] Rebuilt UnityFS AssetBundle -> {target_bundle} ({target_bundle.stat().st_size:,} bytes)")
 
-    # Verify loaded bundle with UnityPy to ensure zero errors and valid type tree
-    print("[*] Validating rebuilt bundle with UnityPy...")
-    check_env = UnityPy.load(str(target_bundle))
-    print(f"[+] Validation successful! Total objects in bundle: {len(check_env.objects)}")
+    # Verify loaded bundle with UnityPy Reload Integrity Gate
+    print("[*] Running Chapter 9 Reload Integrity Gate...")
+    verify_bugbite_bundle_integrity(target_bundle, new_cab, must_be_dead)
 
     # Generate Manifest
     mf_text = f"""ManifestFileVersion: 0
@@ -649,7 +1203,11 @@ ClassTypes:
   Script: {{instanceID: 0}}
 - Class: 48
   Script: {{instanceID: 0}}
+- Class: 65
+  Script: {{instanceID: 0}}
 - Class: 74
+  Script: {{instanceID: 0}}
+- Class: 83
   Script: {{instanceID: 0}}
 - Class: 90
   Script: {{instanceID: 0}}
@@ -662,6 +1220,10 @@ ClassTypes:
 - Class: 115
   Script: {{instanceID: 0}}
 - Class: 137
+  Script: {{instanceID: 0}}
+- Class: 198
+  Script: {{instanceID: 0}}
+- Class: 199
   Script: {{instanceID: 0}}
 - Class: 221
   Script: {{instanceID: 0}}
