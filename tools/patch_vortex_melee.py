@@ -8,7 +8,7 @@ and register `move_vortex_attack_light_04` inside `assets_redeco/moves.assetbund
 
   - L1 (Base.LightAttack01)  <- G1 Optimus Prime L1 (OptimusPrime_GS_V / move_brawler_2_attack_light_01)
   - L2 (Base.LightAttack02)  <- G1 Optimus Prime L2 (OptimusPrime_GS_V / move_brawler_2_attack_light_02)
-  - L3 (Base.LightAttack03)  <- Jazz L1 (jazz_gs_twm05 / move_jazz_attack_light_01)
+  - L3 (Base.LightAttack03)  <- Blaster L2 (blaster_gs_leader2016 / move_blaster_attack_light_02)
   - L4 (Base.LightAttack04)  <- Hound L2 (hound_cin_tlk / move_vortex_attack_light_04 cloned w/ L4 ender window d=19)
   - M1 (Base.MediumAttack01) <- Optimus Primal M1 (optimusprimal_bw_mp32 / move_primal_attack_medium_01)
   - M2 (Base.MediumAttack02) <- Bonecrusher M2 (bonecrusher_cin_rotf / move_feral_attack_medium_02 + fx_r_dash_trail)
@@ -43,7 +43,7 @@ HOUND_L2_MOVE_PID = 4630904994207091556
 # Donor Move PathIDs inside moves.assetbundle (Vortex FileID = 5)
 MOVE_G1_OP_L1_PID = 6034126977261442960   # move_brawler_2_attack_light_01
 MOVE_G1_OP_L2_PID = 1957860170544410956   # move_brawler_2_attack_light_02
-MOVE_JAZZ_L1_PID = 8466871985765689713    # move_jazz_attack_light_01
+MOVE_BLASTER_L2_PID = -5768502813711380021 # move_blaster_attack_light_02
 MOVE_PRIMAL_M1_PID = -6973531985879257707 # move_primal_attack_medium_01
 MOVE_BONE_M2_PID = 5917300479849172794    # move_feral_attack_medium_02
 
@@ -161,7 +161,7 @@ def load_donor_clips() -> dict:
     specs = {
         "L1": (ROOT / "extracted_apk/assets/assetpack/characters/characters.assetbundle", -3430411122056989002, "brawler2_normal_attackLight_01_hook"),
         "L2": (ROOT / "extracted_apk/assets/assetpack/characters/characters.assetbundle", -4356099580166283104, "brawler2_normal_attackLight_02_hook"),
-        "L3": (ROOT / "extracted_apk/assets/assetpack/jazz_gs_twm05_odr/jazz_gs_twm05.assetbundle", -6242698120350777026, "Jazz_GS_attackLight_01_upperCut"),
+        "L3": (ROOT / "extracted_apk/assets/assetpack/blaster_gs_leader2016_odr/blaster_gs_leader2016.assetbundle", 2310569694197683561, "blaster_GS_attackLight_02_leftKick"),
         "L4": (ROOT / "extracted_apk/assets/assetpack/hound_cin_tlk_odr/hound_cin_tlk.assetbundle", 3044918183802867597, "Hound_Cin_attackLight_02_rightPunch"),
         "M1": (ROOT / "extracted_apk/assets/assetpack/optimusprimal_bw_mp32_odr/optimusprimal_bw_mp32.assetbundle", 91323492706800577, "OPtimusPrimal_BW_attackMedium_01_smash"),
         "M2": (ROOT / "extracted_apk/assets/assetpack/characters_procedural_odr/character_anim_procedural.assetbundle", 835124858721742528, "feral_normal_attackMedium_02_big_up_slash_L"),
@@ -353,7 +353,7 @@ def verify_bundle_integrity(bundle_path: Path, expected_clips: dict):
     expected_moves = [
         ("Base.LightAttack01",  "move_brawler_2_attack_light_01", MOVE_G1_OP_L1_PID),
         ("Base.LightAttack02",  "move_brawler_2_attack_light_02", MOVE_G1_OP_L2_PID),
-        ("Base.LightAttack03",  "move_jazz_attack_light_01",      MOVE_JAZZ_L1_PID),
+        ("Base.LightAttack03",  "move_blaster_attack_light_02",  MOVE_BLASTER_L2_PID),
         ("Base.LightAttack04",  "move_vortex_attack_light_04",    VORTEX_L4_MOVE_PID),
         ("Base.MediumAttack01", "move_primal_attack_medium_01",   MOVE_PRIMAL_M1_PID),
         ("Base.MediumAttack02", "move_feral_attack_medium_02",    MOVE_BONE_M2_PID),
@@ -411,7 +411,7 @@ def patch_vortex_bundle():
     new_move_defs = [
         (0, "Base.LightAttack01",  "move_brawler_2_attack_light_01", MOVE_G1_OP_L1_PID),
         (1, "Base.LightAttack02",  "move_brawler_2_attack_light_02", MOVE_G1_OP_L2_PID),
-        (2, "Base.LightAttack03",  "move_jazz_attack_light_01",      MOVE_JAZZ_L1_PID),
+        (2, "Base.LightAttack03",  "move_blaster_attack_light_02",  MOVE_BLASTER_L2_PID),
         (3, "Base.LightAttack04",  "move_vortex_attack_light_04",    VORTEX_L4_MOVE_PID),
         (4, "Base.MediumAttack01", "move_primal_attack_medium_01",   MOVE_PRIMAL_M1_PID),
         (5, "Base.MediumAttack02", "move_feral_attack_medium_02",    MOVE_BONE_M2_PID),

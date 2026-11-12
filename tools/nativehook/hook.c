@@ -669,7 +669,8 @@ static struct { uint32_t rva; const char* tag; int jp; fn8 orig; } H[] = {
     { 0x00C5FC70, "HOME_FLOW_RESUME",    2, 0 }, // 211 HomeFlow.Resume
     { 0x0117E4AC, "DASH_ENTER",          2, 0 }, // 212 PlayerDashState.OnEnter -> track dash start timestamp
     { 0x01040AC8, "GET_SAVE_TEAM_ID",    2, 0 }, // 213 QuestUtils.GetSaveTeamIDForCategory -> return "raid" for raid
-    { 0x00C2075C, "CALC_RELATIVE_CONTENDER", 2, 0 } // 214 BCGHelper.CalculateRelativeContenderData
+    { 0x00C2075C, "CALC_RELATIVE_CONTENDER", 2, 0 }, // 214 BCGHelper.CalculateRelativeContenderData
+    { 0x0119E498, "GACHA_DRAG_READY_ENTER", 2, 0 }  // 215 GachaRevealPresentation.DragReadyEnter -> enlarge bounds
 };
 
 #define NH (int)(sizeof(H)/sizeof(H[0]))
@@ -11316,6 +11317,39 @@ RelativeContenderData hook_214(void* hero, void* opponent, void* heroTeam, int a
     return res;
 }
 
+// slot 215 GACHA_DRAG_READY_ENTER (0x0119E498): GachaRevealPresentation.DragReadyEnter
+void hook_215(void* this_ptr, void* method) {
+    PROTECT({
+        if (this_ptr) {
+            void* bounds = *(void**)((uintptr_t)this_ptr + 0x160); // _crystalDragBounds (BoxCollider*)
+            if (bounds) {
+                typedef struct { float x, y, z; } V3_gacha;
+                V3_gacha sz = { 10000.0f, 10000.0f, 100.0f };
+                // BoxCollider.set_size_Injected @ 0x21B547C
+                ((void(*)(void*, V3_gacha*))(g_base + 0x21B547C))(bounds, &sz);
+                V3_gacha ctr = { 0.0f, 0.0f, 0.0f };
+                // BoxCollider.set_center_Injected @ 0x21B5324
+                ((void(*)(void*, V3_gacha*))(g_base + 0x21B5324))(bounds, &ctr);
+                LOG("GACHA_DRAG_READY_ENTER: enlarged _crystalDragBounds to 10000x10000 for widescreen follow-finger drag");
+            }
+            void* dragWidget = *(void**)((uintptr_t)this_ptr + 0x130); // _dragWidget (GameObject*)
+            if (dragWidget) {
+                // GameObject.get_transform @ 0x1B50BD8
+                void* trans = ((void*(*)(void*))(g_base + 0x1B50BD8))(dragWidget);
+                if (trans) {
+                    typedef struct { float x, y, z; } V3_gacha;
+                    V3_gacha zero = { 0.0f, 0.0f, 0.0f };
+                    // Transform.set_localPosition_Injected @ 0x16B7E64
+                    ((void(*)(void*, V3_gacha*))(g_base + 0x16B7E64))(trans, &zero);
+                }
+            }
+        }
+    });
+    if (H[215].orig) {
+        ((void(*)(void*, void*))H[215].orig)(this_ptr, method);
+    }
+}
+
 static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hook_7,hook_8,
     hook_9,hook_10,hook_11,hook_12,hook_13,hook_14,hook_15,hook_16,hook_17,hook_18,hook_19,hook_20,hook_21,
     hook_22,hook_23,hook_24,hook_25,hook_26,hook_27,hook_28,hook_29,hook_30,
@@ -11338,7 +11372,8 @@ static void* handlers[] = { hook_0,hook_1,hook_2,hook_3,hook_4,hook_5,hook_6,hoo
     hook_171,hook_172,hook_173,hook_174,hook_175,hook_176,(void*)hook_177,(void*)hook_178,
     (void*)hook_179,hook_180,hook_181,hook_182,hook_183,hook_184,hook_185,hook_186,(void*)hook_187,(void*)hook_188,(void*)hook_189,
     (void*)hook_190,(void*)hook_191,(void*)hook_192,(void*)hook_193,(void*)hook_194,(void*)hook_195,(void*)hook_196,(void*)hook_197,(void*)hook_198,hook_199,(void*)hook_200,(void*)hook_201,hook_202,hook_203,
-    (void*)hook_204,hook_205,hook_206,hook_207,hook_208,hook_209,hook_210,hook_211,hook_212,hook_213,(void*)hook_214 };
+    (void*)hook_204,hook_205,hook_206,hook_207,hook_208,hook_209,hook_210,hook_211,hook_212,hook_213,(void*)hook_214,
+    (void*)hook_215 };
 _Static_assert(sizeof(handlers)/sizeof(handlers[0]) == sizeof(H)/sizeof(H[0]), "handlers count must match H count");
 
 
@@ -12733,8 +12768,10 @@ static void* installer(void* arg){
     // 6) HeroPortrait.SetEnabledItems (@0xE8002C): nop child widgets deactivation loop.
     poke32(0xE80220, 0xD503201F);   // bl 0xDE0D18 -> nop
 
-    // 7) HeroesScreen.<OnGridItemInitialized>b__99_1 (@0xC5D26C): pass mask 0x1B to SetEnabledItems.
-    poke32(0xC5D888, 0x52800361);   // mov w1, #8 -> mov w1, #0x1b
+    // 7) HeroesScreen.<OnGridItemInitialized>b__99_1: REMOVED.
+    // 0xC5D888 is actually HexHeroRedeemerDisplay.OnHeroReady (gacha spinner card), which originally passes 8 (stars only).
+    // Poking 0x1B forced bot name, rating, and class badge onto the spinner card, causing duplicate display with GachaBotOverlay.
+    // poke32(0xC5D888, 0x52800361);   // mov w1, #8 -> mov w1, #0x1b
 
     // =========================================================================
     // FPS & GRAPHICS ENHANCEMENT (Complete iOS High-Tier Graphics & Battle Damage)
