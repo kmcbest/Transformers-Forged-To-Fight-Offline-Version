@@ -7,53 +7,53 @@
   "signature": {
     "title_zh": "冷酷的嘲讽",
     "title_en": "Grim Mockery",
-    "desc_zh": "挽歌嘲讽对手，增加挽歌的信心，让对手更难克服恐惧。\n\n被动：如果对手在恐惧效果下错过近战攻击，Dirge 会为 {{var_12}} 获得 +{{var_11}} 攻击力。减少 {{var_13}} 消除恐惧的机会，直到下一次消除恐惧为止。 （最大堆叠数：1）",
-    "pua_icon": "",
+    "desc_zh": "如果敌人处于恐惧状态下，使用近战攻击被挽歌闪避，挽歌得到1层60%的攻击力增益，持续5秒。\n触发攻击力增益后，对方驱散恐惧的概率降低10%，直到下一次成功驱散恐惧后恢复。",
+    "pua_icon": "E406",
     "ui_trigger": "none"
   },
   "special_attacks": {
     "sp1": {
-      "name_zh": "莫罗斯导弹",
+      "name_zh": "忧郁导弹",
       "name_en": "Morose Missile",
-      "desc_zh": "逃离你的厄运！",
-      "pua_icon": "",
+      "desc_zh": "对方处于恐怖状态下时，此技能增加35%的伤害",
+      "pua_icon": "E41C",
       "ui_trigger": "onSpecial1Hit",
       "effects": [
         {
-          "title_zh": "莫罗斯导弹",
-          "title_en": "Morose Missile",
-          "desc_zh": "逃离你的厄运！",
-          "pua_icon": ""
+          "title_zh": "特殊伤害",
+          "title_en": "Special Damage",
+          "desc_zh": "对方处于恐怖状态下时，此技能增加35%的伤害",
+          "pua_icon": "E41C"
         }
       ]
     },
     "sp2": {
-      "name_zh": "特殊技 2",
-      "name_en": "Special Attack 2",
-      "desc_zh": "如果对手有恐惧，+{{var_14}} 伤害",
-      "pua_icon": "",
+      "name_zh": "毁灭火箭",
+      "name_en": "Ruinous Rocket",
+      "desc_zh": "最后一击命中时施加燃烧，造成攻击力35%的伤害，持续4秒，如果敌人处于恐惧状态下，则造成攻击力70%的伤害，持续8秒",
+      "pua_icon": "0xe41d",
       "ui_trigger": "onSpecial2Hit",
       "effects": [
         {
-          "title_zh": "特殊技 2",
-          "title_en": "Special Attack 2",
-          "desc_zh": "如果对手有恐惧，+{{var_14}} 伤害",
-          "pua_icon": ""
+          "title_zh": "燃烧",
+          "title_en": "Burn",
+          "desc_zh": "最后一击命中时施加燃烧，造成攻击力35%的伤害，持续4秒，如果敌人处于恐惧状态下，则造成攻击力70%的伤害，持续8秒",
+          "pua_icon": "0xe41d"
         }
       ]
     },
     "sp3": {
-      "name_zh": "毁灭性火箭",
-      "name_en": "Ruinous Rocket",
-      "desc_zh": "每犯一个错误，死亡就会一步步逼近。",
-      "pua_icon": "",
+      "name_zh": "无处可逃",
+      "name_en": "No Escape",
+      "desc_zh": "技能完成后施加30秒的恐惧，此期间内恐惧无法被驱散，流血伤害强度翻倍。",
+      "pua_icon": "E907",
       "ui_trigger": "onSpecial3Hit",
       "effects": [
         {
-          "title_zh": "毁灭性火箭",
-          "title_en": "Ruinous Rocket",
-          "desc_zh": "每犯一个错误，死亡就会一步步逼近。",
-          "pua_icon": ""
+          "title_zh": "恐惧",
+          "title_en": "Fear",
+          "desc_zh": "技能完成后施加30秒的恐惧，此期间内恐惧无法被驱散，流血伤害强度翻倍。",
+          "pua_icon": "E907"
         }
       ]
     }
@@ -89,21 +89,66 @@
   ],
   "game_abilities": [
     {
-      "title_zh": "战斗被动",
-      "title_en": "Whenever an opponent Backdashes or Sidesteps, they get -{{var_7}} Attack for {{var_8}}.",
-      "desc_zh": "每当对手 Backdash 或 Sidesteps 时，他们都会获得 {{var_8}} 的 -{{var_7}} 攻击。",
-      "pua_icon": "",
+      "title_zh": "恐惧",
+      "title_en": "Fear",
+      "desc_zh": "敌人开局带着恐惧状态\n敌人用近战轻攻击击中挽歌，有20%的概率驱散自己的恐惧状态，中等攻击则有40%的概率。",
+      "pua_icon": "E907",
       "category": "passive",
-      "ui_trigger": "战斗被动",
+      "ui_trigger": "恐惧",
       "show_on_main_screen": false
     },
     {
-      "title_zh": "对手流血时",
-      "title_en": "On Bleeding Opponent",
-      "desc_zh": "对手流血时",
-      "pua_icon": "",
+      "title_zh": "恐惧阴影",
+      "title_en": "Fear Influence",
+      "desc_zh": "如果敌人驱散了恐惧状态，则进入恐惧阴影状态。\n此状态下，敌人格挡、后闪或者侧闪累计3次，则又会进入恐惧状态。\n累计到3次之前只要击中挽歌，则计数器清零重新计数。",
+      "pua_icon": "E907",
       "category": "passive",
-      "ui_trigger": "对手流血时",
+      "ui_trigger": "恐惧阴影",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "恐惧流血",
+      "title_en": "Bleed by Fear",
+      "desc_zh": "敌人进入恐惧状态后每10秒被施加1层流血，造成挽歌攻击力145%的伤害，持续2秒。",
+      "pua_icon": "E401",
+      "category": "passive",
+      "ui_trigger": "恐惧流血",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "暴击几率",
+      "title_en": "Crit Rate",
+      "desc_zh": "对方处于恐惧状态下时，挽歌的所有攻击提升40%的暴击几率。",
+      "pua_icon": "0xe40d",
+      "category": "passive",
+      "ui_trigger": "暴击几率",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "攻击减益",
+      "title_en": "Attack Debuff",
+      "desc_zh": "处于恐惧状态的敌方每次后闪或侧闪，会被施加1层40%的攻击力减益，持续5秒。",
+      "pua_icon": "0xe916",
+      "category": "passive",
+      "ui_trigger": "攻击减益",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "暴击伤害",
+      "title_en": "Crit Damage",
+      "desc_zh": "对方处于流血状态下时，挽歌的所有攻击提升30%的暴击伤害。",
+      "pua_icon": "0xe906",
+      "category": "passive",
+      "ui_trigger": "暴击伤害",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "能量功率",
+      "title_en": "Power Rate",
+      "desc_zh": "对方处于流血状态下时，挽歌的所有攻击提升10%的能量功率。",
+      "pua_icon": "E606",
+      "category": "passive",
+      "ui_trigger": "能量功率",
       "show_on_main_screen": false
     }
   ],
@@ -136,21 +181,66 @@
       "show_on_main_screen": true
     },
     {
-      "title_zh": "战斗被动",
-      "title_en": "Whenever an opponent Backdashes or Sidesteps, they get -{{var_7}} Attack for {{var_8}}.",
-      "desc_zh": "每当对手 Backdash 或 Sidesteps 时，他们都会获得 {{var_8}} 的 -{{var_7}} 攻击。",
-      "pua_icon": "",
+      "title_zh": "恐惧",
+      "title_en": "Fear",
+      "desc_zh": "敌人开局带着恐惧状态\n敌人用近战轻攻击击中挽歌，有20%的概率驱散自己的恐惧状态，中等攻击则有40%的概率。",
+      "pua_icon": "E907",
       "category": "passive",
-      "ui_trigger": "战斗被动",
+      "ui_trigger": "恐惧",
       "show_on_main_screen": false
     },
     {
-      "title_zh": "对手流血时",
-      "title_en": "On Bleeding Opponent",
-      "desc_zh": "对手流血时",
-      "pua_icon": "",
+      "title_zh": "恐惧阴影",
+      "title_en": "Fear Influence",
+      "desc_zh": "如果敌人驱散了恐惧状态，则进入恐惧阴影状态。\n此状态下，敌人格挡、后闪或者侧闪累计3次，则又会进入恐惧状态。\n累计到3次之前只要击中挽歌，则计数器清零重新计数。",
+      "pua_icon": "E907",
       "category": "passive",
-      "ui_trigger": "对手流血时",
+      "ui_trigger": "恐惧阴影",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "恐惧流血",
+      "title_en": "Bleed by Fear",
+      "desc_zh": "敌人进入恐惧状态后每10秒被施加1层流血，造成挽歌攻击力145%的伤害，持续2秒。",
+      "pua_icon": "E401",
+      "category": "passive",
+      "ui_trigger": "恐惧流血",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "暴击几率",
+      "title_en": "Crit Rate",
+      "desc_zh": "对方处于恐惧状态下时，挽歌的所有攻击提升40%的暴击几率。",
+      "pua_icon": "0xe40d",
+      "category": "passive",
+      "ui_trigger": "暴击几率",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "攻击减益",
+      "title_en": "Attack Debuff",
+      "desc_zh": "处于恐惧状态的敌方每次后闪或侧闪，会被施加1层40%的攻击力减益，持续5秒。",
+      "pua_icon": "0xe916",
+      "category": "passive",
+      "ui_trigger": "攻击减益",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "暴击伤害",
+      "title_en": "Crit Damage",
+      "desc_zh": "对方处于流血状态下时，挽歌的所有攻击提升30%的暴击伤害。",
+      "pua_icon": "0xe906",
+      "category": "passive",
+      "ui_trigger": "暴击伤害",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "能量功率",
+      "title_en": "Power Rate",
+      "desc_zh": "对方处于流血状态下时，挽歌的所有攻击提升10%的能量功率。",
+      "pua_icon": "E606",
+      "category": "passive",
+      "ui_trigger": "能量功率",
       "show_on_main_screen": false
     }
   ],

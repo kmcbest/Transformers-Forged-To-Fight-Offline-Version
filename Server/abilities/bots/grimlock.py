@@ -18,7 +18,7 @@ Bot ID: grimlock_gs_mp08
 5. [SP1 - 近战增益] (ID: 2544, pua_icon: 0xe406)
    - 100% 概率得到一层近战增益，增加近战伤害 12%，持续 5 秒。
 6. [SP1 - 燃烧] (ID: 2545, pua_icon: 0xe41d)
-   - 100% 几率造成燃烧，施加攻击力 100% 的伤害，持续 4 秒。
+   - 第2击喷火命中时 100% 几率造成燃烧，施加攻击力 100% 的伤害，持续 4 秒。
 7. [SP2 - 近战增益] (ID: 2546, pua_icon: 0xe406)
    - 100% 概率得到一层近战增益，增加近战伤害 18%，持续 5 秒。
 -----------------------------------------------------------------------------
@@ -157,14 +157,14 @@ def build_grimlock_abilities(base_hp: float = 34000.0, base_atk: float = 2100.0)
     mods.update(m_sp1_atk)
     appears.update(a_sp1_atk)
 
-    # 6. SP1 燃烧 (ID: 2545): 100% 施加 4 秒 100% ATK 燃烧
+    # 6. SP1 燃烧 (ID: 2545): 100% 施加 4 秒 100% ATK 燃烧 (仅第2击喷火终结击命中触发)
     m_sp1_b, a_sp1_b = make_burn_statmod(
         mod_id="grimlock_sp1_burn",
         duration=4.0,
         total_dmg=float(round(base_atk * 1.00)),
         chance=1.0,
         trigger="onHit",
-        trigger_scope="level=Special1",
+        trigger_scope="level=Special1;dmgFlags=LastHit",
         appr_id="appr_grimlock_sp1_burn",
         callout_text="燃烧",
         show_callout=True,
