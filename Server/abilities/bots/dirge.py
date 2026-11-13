@@ -38,10 +38,13 @@ Bot ID: dirge_gs_deluxe2008
 """
 
 import sys
-if hasattr(sys.stdout, 'reconfigure'):
-    sys.stdout.reconfigure(encoding='utf-8')
-if hasattr(sys.stderr, 'reconfigure'):
-    sys.stderr.reconfigure(encoding='utf-8')
+try:
+    if hasattr(sys.stdout, 'reconfigure') and not sys.stdout.closed:
+        sys.stdout.reconfigure(encoding='utf-8')
+    if hasattr(sys.stderr, 'reconfigure') and not sys.stderr.closed:
+        sys.stderr.reconfigure(encoding='utf-8')
+except Exception:
+    pass
 
 from ..core import (
     AbilityColor,

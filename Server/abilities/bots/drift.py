@@ -235,7 +235,7 @@ def build_drift_abilities(base_hp: float = 40154.0, base_atk: float = 3062.0):
     )
     mod_evade = {
         "id": "drift_evade_buff",
-        "t": "evade_melee",
+        "t": "modify_stat",
         "tm": "",
         "tr": [],
         "uit": [],
@@ -244,7 +244,7 @@ def build_drift_abilities(base_hp: float = 40154.0, base_atk: float = 3062.0):
         "trs": "",
         "trr": "repeat",
         "c": 1.0,
-        "m": 0.10,
+        "m": 0.0,
         "d": -1.0,
         "s": "none",
         "ta": "self",
@@ -252,7 +252,7 @@ def build_drift_abilities(base_hp: float = 40154.0, base_atk: float = 3062.0):
         "v": "",
         "ms": "",
         "st": 1,
-        "g": "evade_melee",
+        "g": "drift_evade_display",
         "gc": 0.0,
         "gcv": "",
         "rcv": "",

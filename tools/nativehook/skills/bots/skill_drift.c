@@ -20,6 +20,34 @@
 static int s_drift_combo[2] = {0, 0};
 static int s_drift_focus_level[2] = {0, 0}; // 0=无, 1=集中(5+), 2=中度(10+), 3=高度(15+)
 
+// 检测对手是否处于流血状态 (任何带 bleed 的 Debuff)
+static int drift_is_opponent_bleeding(int drift_p) {
+    int opp = 1 - drift_p;
+    return skill_has_buff(opp, "bleed");
+}
+
+// 模拟帧驱动: 实时监测对手流血状态，动态同步漂移的近战规避图标
+static void drift_on_simulation_tick(uint64_t now_ms) {
+    (void)now_ms;
+    for (int p = 0; p < 2; p++) {
+        const char* bid = skill_get_bot_id(p);
+        if (!bid || strstr(bid, "drift") == NULL) continue;
+
+        int bleeding = drift_is_opponent_bleeding(p);
+        if (bleeding) {
+            if (!skill_has_buff(p, "drift_evade_buff")) {
+                skill_apply_buff_dur(p, "drift_evade_buff", -1.0f);
+                skill_log("DRIFT: P%d gained evade buff (opponent is bleeding)", p);
+            }
+        } else {
+            if (skill_has_buff(p, "drift_evade_buff")) {
+                skill_consume_buff(p, "drift_evade_buff", 99);
+                skill_log("DRIFT: P%d lost evade buff (opponent stopped bleeding)", p);
+            }
+        }
+    }
+}
+
 static void drift_update_focus(int drift_p) {
     int combo = s_drift_combo[drift_p];
     int old_level = s_drift_focus_level[drift_p];
@@ -85,16 +113,8 @@ static void drift_on_hit_connected(SkillHitContext* ctx) {
             drift_update_focus(ap);
         }
 
-        // 对手流血状态监测与近战规避图标维护
-        int opp_is_bleeding = skill_has_buff(tp, "dmg_bleed") ||
-                              skill_has_buff(tp, "drift_sword_crit_bleed") ||
-                              skill_has_buff(tp, "drift_sp1_bleed") ||
-                              skill_has_buff(tp, "drift_sp2_bleed");
-        if (opp_is_bleeding) {
-            if (!skill_has_buff(ap, "drift_evade_buff")) {
-                skill_apply_buff_dur(ap, "drift_evade_buff", -1.0f);
-            }
-        }
+        // 击中时立即驱动一次规避状态同步
+        drift_on_simulation_tick(0);
     }
 }
 
@@ -120,10 +140,7 @@ static int drift_on_evade_check(SkillEvadeContext* ctx, int* out_evade) {
 
     // 1. 漂移作为防御方: 对手处于流血状态时的近战规避
     if (ctx->bot_id && strstr(ctx->bot_id, "drift") != NULL && !ctx->is_ranged) {
-        int opp_is_bleeding = skill_has_buff(ap, "dmg_bleed") ||
-                              skill_has_buff(ap, "drift_sword_crit_bleed") ||
-                              skill_has_buff(ap, "drift_sp1_bleed") ||
-                              skill_has_buff(ap, "drift_sp2_bleed");
+        int opp_is_bleeding = drift_is_opponent_bleeding(def_p);
         if (opp_is_bleeding) {
             float evade_chance = 0.10f; // 基础 10%
             int focus_lvl = s_drift_focus_level[def_p];
@@ -137,8 +154,16 @@ static int drift_on_evade_check(SkillEvadeContext* ctx, int* out_evade) {
                 skill_overlay("[%s] 剑意空蝉！近战规避！", def_p == 0 ? "漂移" : "敌方漂移");
                 skill_log("DRIFT: P%d evaded melee attack against bleeding opponent (chance=%.2f, roll=%.2f)",
                           def_p, evade_chance, roll);
-                return 1;
+            } else {
+                *out_evade = 0;
+                skill_log("DRIFT: P%d melee evade MISSED against bleeding opponent (chance=%.2f, roll=%.2f)",
+                          def_p, evade_chance, roll);
             }
+            return 1; // 明确已裁决，杜绝回退到 hook.c 兜底
+        } else {
+            // 对手未处于流血状态，漂移无近战规避能力
+            *out_evade = 0;
+            return 1; // 明确已裁决，杜绝回退到 hook.c 兜底
         }
     }
 
@@ -158,6 +183,7 @@ static void drift_on_fight_reset(int player_index) {
     if (player_index >= 0 && player_index < 2) {
         s_drift_combo[player_index] = 0;
         s_drift_focus_level[player_index] = 0;
+        skill_consume_buff(player_index, "drift_evade_buff", 99);
     }
 }
 
@@ -172,7 +198,7 @@ BotSkillModule g_module_drift = {
     .on_reflect_proj = NULL,
     .on_projectile_speed = NULL,
     .on_fight_reset = drift_on_fight_reset,
-    .on_simulation_tick = NULL,
+    .on_simulation_tick = drift_on_simulation_tick,
     .on_block_state = NULL,
     .on_dodge_enter = NULL,
     .on_opponent_block_state = NULL,
