@@ -128,6 +128,8 @@ typedef struct {
     // 动作状态进入与退出回调 (格挡、闪避、受击等)
     void (*on_block_state)(int player_index, int entered); // entered=1 进入格挡, entered=0 退出格挡
     void (*on_dodge_enter)(int player_index);
+    void (*on_opponent_block_state)(int opponent_index, int entered); // 对手进入/退出格挡
+    void (*on_opponent_dodge_enter)(int opponent_index);             // 对手进入闪避
     void (*on_hitreact_enter)(int player_index);
     void (*on_attack_start)(int player_index, int action_type);
 } BotSkillModule;

@@ -35,6 +35,7 @@ extern BotSkillModule g_module_sideswipe;
 extern BotSkillModule g_module_necrotronus;
 extern BotSkillModule g_module_motormaster;
 extern BotSkillModule g_module_elita;
+extern BotSkillModule g_module_dirge;
 
 static const BotSkillModule* s_registry[] = {
     &g_module_arcee,
@@ -62,6 +63,7 @@ static const BotSkillModule* s_registry[] = {
     &g_module_necrotronus,
     &g_module_motormaster,
     &g_module_elita,
+    &g_module_dirge,
     NULL
 };
 
@@ -248,6 +250,11 @@ void skill_dispatch_block_state(int player_index, int entered) {
     if (mod && mod->on_block_state) {
         mod->on_block_state(player_index, entered);
     }
+    const char* opp_bot_id = (player_index == 0) ? g_p1_bot_id : g_p0_bot_id;
+    const BotSkillModule* opp_mod = find_module_by_bot(opp_bot_id);
+    if (opp_mod && opp_mod->on_opponent_block_state) {
+        opp_mod->on_opponent_block_state(player_index, entered);
+    }
 }
 
 void skill_dispatch_dodge_enter(int player_index) {
@@ -256,6 +263,11 @@ void skill_dispatch_dodge_enter(int player_index) {
     const BotSkillModule* mod = find_module_by_bot(bot_id);
     if (mod && mod->on_dodge_enter) {
         mod->on_dodge_enter(player_index);
+    }
+    const char* opp_bot_id = (player_index == 0) ? g_p1_bot_id : g_p0_bot_id;
+    const BotSkillModule* opp_mod = find_module_by_bot(opp_bot_id);
+    if (opp_mod && opp_mod->on_opponent_dodge_enter) {
+        opp_mod->on_opponent_dodge_enter(player_index);
     }
 }
 
