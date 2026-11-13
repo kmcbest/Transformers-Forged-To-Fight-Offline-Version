@@ -88,6 +88,12 @@ static void dirge_on_simulation_tick(uint64_t now_ms) {
                 skill_log("DIRGE: SP3 Empowered Fear expired on P%d, restored normal Fear", opp);
             }
 
+            // 同步外部/沙盒状态：若存在恐惧阴影 buff，标记阴影激活
+            if (skill_has_buff(opp, "dirge_fear_shadow")) {
+                s_shadow_active[opp] = 1;
+                s_fear_active[opp] = 0;
+            }
+
             // 3. 恐惧流血 10 秒周期性结算
             if (s_fear_active[opp]) {
                 if (s_next_bleed_tick_ms[opp] > 0 && now_ms >= s_next_bleed_tick_ms[opp]) {
@@ -143,8 +149,13 @@ static void dirge_on_opponent_dodge_enter(int opponent_index) {
     if (now_ms - s_last_opp_dodge_tick_ms[opponent_index] < 150) return; // 去抖保护
     s_last_opp_dodge_tick_ms[opponent_index] = now_ms;
 
+    int in_shadow = s_shadow_active[opponent_index] || skill_has_buff(opponent_index, "dirge_fear_shadow");
+    int in_fear = s_fear_active[opponent_index] || skill_has_buff(opponent_index, "dirge_fear_debuff") || skill_has_buff(opponent_index, "dirge_sp3_fear_empower");
+
     // 场景 A：敌方处于恐惧阴影状态，闪避增加 1 次计数
-    if (s_shadow_active[opponent_index]) {
+    if (in_shadow) {
+        s_shadow_active[opponent_index] = 1;
+        s_fear_active[opponent_index] = 0;
         s_shadow_counter[opponent_index]++;
         skill_overlay("[%s] 闪避！恐惧阴影累计 %d/3 次",
                       opponent_index == 0 ? "我方" : "敌方", s_shadow_counter[opponent_index]);
@@ -168,7 +179,7 @@ static void dirge_on_opponent_dodge_enter(int opponent_index) {
         }
     }
     // 场景 B：敌方处于恐惧状态，每次闪避施加 1 层 40% 攻击力减益 (5秒)
-    else if (s_fear_active[opponent_index]) {
+    else if (in_fear) {
         skill_apply_buff_dur(opponent_index, "dirge_evade_atk_debuff", 5.0f);
         skill_overlay("[%s] 恐惧中闪避！遭受 -40%% 攻击力减益 (5秒)！",
                       opponent_index == 0 ? "我方" : "敌方");
@@ -187,8 +198,12 @@ static void dirge_on_opponent_block_state(int opponent_index, int entered) {
     if (now_ms - s_last_opp_block_tick_ms[opponent_index] < 150) return; // 去抖保护
     s_last_opp_block_tick_ms[opponent_index] = now_ms;
 
+    int in_shadow = s_shadow_active[opponent_index] || skill_has_buff(opponent_index, "dirge_fear_shadow");
+
     // 敌方处于恐惧阴影状态，格挡增加 1 次计数
-    if (s_shadow_active[opponent_index]) {
+    if (in_shadow) {
+        s_shadow_active[opponent_index] = 1;
+        s_fear_active[opponent_index] = 0;
         s_shadow_counter[opponent_index]++;
         skill_overlay("[%s] 格挡！恐惧阴影累计 %d/3 次",
                       opponent_index == 0 ? "我方" : "敌方", s_shadow_counter[opponent_index]);
