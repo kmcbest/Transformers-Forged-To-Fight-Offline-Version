@@ -153,7 +153,7 @@ def build_wheeljack_abilities(base_hp: float = 32402.0, base_atk: float = 2306.0
         "trr": "repeat",
         "c": 1.0,
         "m": 1.0,
-        "dur": 8.0,
+        "d": 8.0,
         "s": "none",
         "ta": "self",
         "mt": "buff",

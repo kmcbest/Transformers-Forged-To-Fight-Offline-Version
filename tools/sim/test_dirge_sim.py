@@ -62,20 +62,33 @@ def run_dirge_simulation_tests():
 
     assert_true("dirge_fear_debuff" in p1_buffs, "敌方 (P1) 开局自动挂上红色恐惧图标 (dirge_fear_debuff)")
     assert_true(p1_buffs["dirge_fear_debuff"]["rem_ms"] == -1, "敌方恐惧状态为常驻 (rem_ms = -1, 无倒计时)")
+    assert_true(p1_buffs["dirge_fear_debuff"]["stacks"] == 1, "敌方开局恐惧严格为 1 层 (无多余叠加)")
     assert_true("dirge_bleed_timer" in p1_buffs, "敌方获得 10 秒流血预备倒计时图标 (dirge_bleed_timer)")
     assert_true("dirge_fear_crit_buff" in p0_buffs, "挽歌侧开局自动激活黄色暴击几率图标 (dirge_fear_crit_buff)")
+
+    # 验证：普攻命中绝不能施加流血（流血只能由 10 秒倒计时周期性触发）
+    for act in [1, 1, 1, 2, 2]:
+        g_engine.attack(0, act, 0, 1, 0)
+        g_engine.tick(200)
+    st = g_engine.get_state()
+    p1_buffs = {b["id"]: b for b in st["p1"]["buffs"]}
+    assert_true("dirge_fear_bleed" not in p1_buffs, "挽歌近战普攻命中绝不施加流血 (完全由 10s 倒计时触发)")
 
     # -------------------------------------------------------------------------
     # 门禁 2：10 秒流血周期性结算与暴伤/能量功率联动
     # -------------------------------------------------------------------------
     print("\n--- [TEST 2] 恐惧流血周期结算: 10s 倒计时结束施加流血，挽歌激活暴伤与回能加成 ---")
-    for _ in range(10):
-        g_engine.tick(1000) # 按常规时钟推进 10 秒
-    st = g_engine.get_state()
-    p0_buffs = {b["id"]: b for b in st["p0"]["buffs"]}
-    p1_buffs = {b["id"]: b for b in st["p1"]["buffs"]}
+    bleed_triggered = False
+    for _ in range(50):
+        g_engine.tick(200) # 每次推进 200ms
+        st = g_engine.get_state()
+        p1_buffs = {b["id"]: b for b in st["p1"]["buffs"]}
+        if "dirge_fear_bleed" in p1_buffs:
+            bleed_triggered = True
+            break
 
-    assert_true("dirge_fear_bleed" in p1_buffs, "10 秒倒计时结束，敌方成功被施加恐惧流血 (dirge_fear_bleed)")
+    p0_buffs = {b["id"]: b for b in st["p0"]["buffs"]}
+    assert_true(bleed_triggered, "10 秒倒计时结束，敌方成功被施加恐惧流血 (dirge_fear_bleed)")
     assert_true("dirge_bleed_timer" in p1_buffs, "施加流血的同时，灰色 10 秒流血倒计时重新开始计数")
     assert_true("dirge_bleed_crit_dmg" in p0_buffs, "敌方流血时，挽歌侧实时激活暴伤强化图标 (dirge_bleed_crit_dmg)")
     assert_true("dirge_bleed_power_rate" in p0_buffs, "敌方流血时，挽歌侧实时激活能量功率图标 (dirge_bleed_power_rate)")
@@ -122,6 +135,8 @@ def run_dirge_simulation_tests():
     st = g_engine.get_state()
     p1_buffs = {b["id"]: b for b in st["p1"]["buffs"]}
     assert_true("dirge_sp2_burn_fear" in p1_buffs, "敌方处于恐惧时，SP2 终结击成功施加强化燃烧 (dirge_sp2_burn_fear)")
+    assert_true(p1_buffs["dirge_sp2_burn_fear"]["stacks"] == 1, "SP2 终结击强化燃烧严格为 1 层 (无多余叠加)")
+    assert_true("dirge_sp2_burn" not in p1_buffs, "普通燃烧未被触发，严格单层互斥")
     assert_true(p1_buffs["dirge_sp2_burn_fear"]["rem_ms"] > 7000, "强化燃烧持续时间为 8 秒")
 
     # -------------------------------------------------------------------------
@@ -164,16 +179,24 @@ def run_dirge_simulation_tests():
     assert_true("dirge_fear_shadow" in p1_buffs, "敌方处于恐惧阴影状态 (dirge_fear_shadow)")
     assert_true("dirge_fear_crit_buff" not in p0_buffs, "恐惧驱散后挽歌侧黄色暴击率图标消失")
 
-    # 执行 3 次动作累计 (格挡 1 次 + 后闪 1 次 + 侧闪 1 次)
+    # 执行 3 次动作累计 (后闪 1 次 + 格挡 1 次 + 侧闪 1 次)
     print("  -> 步骤 1: 敌方后闪 (1/3)")
     g_engine.dodge(1, 0)
     g_engine.tick(200)
+    st = g_engine.get_state()
+    p1_buffs = {b["id"]: b for b in st["p1"]["buffs"]}
+    assert_true("dirge_fear_shadow" in p1_buffs, "阴影图标仍在")
+    assert_true(p1_buffs["dirge_fear_shadow"]["stacks"] == 2, "第 1 次后闪后恐惧阴影叠加为 2 层 (图标显示 +1)")
 
     print("  -> 步骤 2: 敌方格挡 (2/3)")
     g_engine.set_block(1, 1)
     g_engine.tick(200)
     g_engine.set_block(1, 0)
     g_engine.tick(200)
+    st = g_engine.get_state()
+    p1_buffs = {b["id"]: b for b in st["p1"]["buffs"]}
+    assert_true("dirge_fear_shadow" in p1_buffs, "阴影图标仍在")
+    assert_true(p1_buffs["dirge_fear_shadow"]["stacks"] == 3, "第 2 次动作后恐惧阴影叠加为 3 层 (图标显示 +2)")
 
     print("  -> 步骤 3: 敌方侧闪 (3/3 达到上限)")
     g_engine.dodge(1, 1)
@@ -219,6 +242,55 @@ def run_dirge_simulation_tests():
     st = g_engine.get_state()
     p1_buffs = {b["id"]: b for b in st["p1"]["buffs"]}
     assert_true("dirge_fear_shadow" in p1_buffs, "清零后闪避 1 次仍在阴影状态 (1/3)，未错误恢复恐惧")
+
+    # -------------------------------------------------------------------------
+    # 门禁 8b：触屏滑屏手势去重门禁 (先触碰触发格挡、随后瞬间划出闪避，严格只计 1 次)
+    # -------------------------------------------------------------------------
+    print("\n--- [TEST 8b] 触屏滑屏手势去重: 单次后闪滑屏触发格挡+闪避，严格仅计 1 次 ---")
+    g_engine.remove_buff(1, "dirge_fear_debuff", 99)
+    g_engine.remove_buff(1, "dirge_bleed_timer", 99)
+    g_engine.remove_buff(0, "dirge_fear_crit_buff", 99)
+    g_engine.remove_buff(1, "dirge_fear_shadow", 99)
+    g_engine.inject_buff(1, "dirge_fear_shadow", -1.0, 1)
+    # 命中挽歌重置阴影计数器为 0，确立干净的 1 层 0 计数起点
+    g_engine.attack(1, 1, 0, 1, 0)
+    g_engine.tick(300)
+
+    # 模拟触屏向后划动手势：手指先落左屏触发 BLOCK_ENTER，50ms 后识别为划动触发 DODGE_ENTER
+    g_engine.set_block(1, 1)
+    g_engine.tick(50)
+    g_engine.dodge(1, 0)
+    g_engine.set_block(1, 0)
+    g_engine.tick(200)
+
+    st = g_engine.get_state()
+    p1_buffs = {b["id"]: b for b in st["p1"]["buffs"]}
+    assert_true("dirge_fear_shadow" in p1_buffs, "单次滑屏手势后仍在阴影状态，未因双计而提前退出")
+    assert_true(p1_buffs["dirge_fear_shadow"]["stacks"] == 2, "单次滑屏严格仅计 1 次 (+1 层，总计 2 层)")
+
+    # 再次进行第 2 次滑屏手势
+    g_engine.set_block(1, 1)
+    g_engine.tick(50)
+    g_engine.dodge(1, 0)
+    g_engine.set_block(1, 0)
+    g_engine.tick(200)
+
+    st = g_engine.get_state()
+    p1_buffs = {b["id"]: b for b in st["p1"]["buffs"]}
+    assert_true("dirge_fear_shadow" in p1_buffs, "两次滑屏手势后仍在阴影状态 (2/3)，绝不能提前恢复恐惧！")
+    assert_true(p1_buffs["dirge_fear_shadow"]["stacks"] == 3, "两次滑屏后阴影图标叠加为 3 层 (+2 层)")
+
+    # 第 3 次滑屏手势 -> 累计满 3 次才恢复恐惧
+    g_engine.set_block(1, 1)
+    g_engine.tick(50)
+    g_engine.dodge(1, 0)
+    g_engine.set_block(1, 0)
+    g_engine.tick(200)
+
+    st = g_engine.get_state()
+    p1_buffs = {b["id"]: b for b in st["p1"]["buffs"]}
+    assert_true("dirge_fear_shadow" not in p1_buffs, "第 3 次滑屏后满 3 次退出阴影")
+    assert_true("dirge_fear_debuff" in p1_buffs, "第 3 次滑屏后敌方重新陷入恐惧状态")
 
     # -------------------------------------------------------------------------
     # 门禁 9：冷酷嘲讽闪避近战攻击力加成 (+60%)

@@ -12620,6 +12620,74 @@ static void* hooked_HudScreenSetupWindow(void* self, void* a1, void* a2, void* a
     return NULL;
 }
 
+// -----------------------------------------------------------------------------
+// HudBuffWidget.Refresh (RVA: 0x00C645E8) - 恐惧阴影等 Buff 图标角标层数显示映射
+// 原生逻辑: Count > 1 时显示 text = Count.ToString()
+// 映射逻辑: dirge_fear_shadow 在 2 层时显示 "1"，3 层时显示 "2"，1 层不显示数字
+// -----------------------------------------------------------------------------
+static fn8 orig_HudBuffWidget_Refresh = NULL;
+static void* hooked_HudBuffWidget_Refresh(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    void* r = NULL;
+    if (orig_HudBuffWidget_Refresh) {
+        r = orig_HudBuffWidget_Refresh(self, a1, a2, a3, a4, a5, a6, a7);
+    }
+    PROTECT({
+        if (self && obj_ok(self)) {
+            void* buffs_list = *(void**)((uintptr_t)self + 0x70);
+            if (buffs_list && obj_ok(buffs_list)) {
+                int32_t count = *(int32_t*)((uintptr_t)buffs_list + 0x18);
+                if (count > 0 && count < 128) {
+                    void* items = *(void**)((uintptr_t)buffs_list + 0x10);
+                    if (items && obj_ok(items)) {
+                        void* first_buff = *(void**)((uintptr_t)items + 0x20);
+                        if (first_buff && obj_ok(first_buff)) {
+                            void* id_str = *(void**)((uintptr_t)first_buff + 0x28);
+                            void* app_str = *(void**)((uintptr_t)first_buff + 0x38);
+                            char b_id[64] = {0};
+                            char a_id[64] = {0};
+                            if (id_str && obj_ok(id_str)) read_str(id_str, b_id, sizeof(b_id));
+                            if (app_str && obj_ok(app_str)) read_str(app_str, a_id, sizeof(a_id));
+
+                            if (strstr(b_id, "dirge_fear_shadow") != NULL || strstr(a_id, "dirge_fear_shadow") != NULL) {
+                                void* count_label = *(void**)((uintptr_t)self + 0x48);
+                                void* count_glow = *(void**)((uintptr_t)self + 0x50);
+                                void (*set_is_rendering)(void*, int, void*) = (void(*)(void*, int, void*))(g_base + 0x199CA34);
+                                void (*set_text)(void*, void*, void*) = (void(*)(void*, void*, void*))(g_base + 0x1B60DE0);
+
+                                if (count == 1) {
+                                    if (count_label && obj_ok(count_label) && set_is_rendering) {
+                                        set_is_rendering(count_label, 0, NULL);
+                                    }
+                                    if (count_glow && obj_ok(count_glow) && set_is_rendering) {
+                                        set_is_rendering(count_glow, 0, NULL);
+                                    }
+                                } else if (count == 2) {
+                                    if (count_label && obj_ok(count_label)) {
+                                        if (set_is_rendering) set_is_rendering(count_label, 1, NULL);
+                                        if (set_text && g_strnew) set_text(count_label, g_strnew("1"), NULL);
+                                    }
+                                    if (count_glow && obj_ok(count_glow) && set_is_rendering) {
+                                        set_is_rendering(count_glow, 1, NULL);
+                                    }
+                                } else if (count == 3) {
+                                    if (count_label && obj_ok(count_label)) {
+                                        if (set_is_rendering) set_is_rendering(count_label, 1, NULL);
+                                        if (set_text && g_strnew) set_text(count_label, g_strnew("2"), NULL);
+                                    }
+                                    if (count_glow && obj_ok(count_glow) && set_is_rendering) {
+                                        set_is_rendering(count_glow, 1, NULL);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    });
+    return r;
+}
+
 static fn8 orig_CharacterAudio_LoadGenAudio = NULL;
 typedef bool (*fn_hashset_add)(void*, void*, void*);
 static fn_hashset_add s_hashset_string_add = NULL;
@@ -12681,6 +12749,48 @@ static void* hooked_CharacterAudio_TranslateEvent(void* self, void* audioEvent, 
         }
     } else {
         flog("[AUDIO_XLATE] in='%s' -> NULL", in_buf);
+    }
+    return ret;
+}
+
+// ============================================================================
+// Auto-enter SplashScreenOverlay (auto-click "Play Now" / OnDismiss)
+// ============================================================================
+static fn8 orig_SplashScreenOverlay_SetupWindow = NULL;
+static fn8 orig_SplashScreenOverlay_OnIntroTransitionComplete = NULL;
+static fn8 orig_SplashScreenOverlay_OnDismiss = NULL;
+static int s_splash_autoclicked = 0;
+
+static void* hooked_SplashScreenOverlay_SetupWindow(void* self, void* method, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    s_splash_autoclicked = 0;
+    flog("SPLASH_SETUP_WINDOW (0x00CC49BC): self=%p (reset s_splash_autoclicked)", self);
+    if (orig_SplashScreenOverlay_SetupWindow) {
+        return orig_SplashScreenOverlay_SetupWindow(self, method, a2, a3, a4, a5, a6, a7);
+    }
+    return NULL;
+}
+
+static void* hooked_SplashScreenOverlay_OnDismiss(void* self, void* go, void* method, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    s_splash_autoclicked = 1;
+    flog("SPLASH_ON_DISMISS (0x00CC51A4): self=%p go=%p", self, go);
+    if (orig_SplashScreenOverlay_OnDismiss) {
+        return orig_SplashScreenOverlay_OnDismiss(self, go, method, a3, a4, a5, a6, a7);
+    }
+    return NULL;
+}
+
+static void* hooked_SplashScreenOverlay_OnIntroTransitionComplete(void* self, void* method, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
+    flog("SPLASH_INTRO_COMPLETE (0x00CC4C84): self=%p", self);
+    void* ret = NULL;
+    if (orig_SplashScreenOverlay_OnIntroTransitionComplete) {
+        ret = orig_SplashScreenOverlay_OnIntroTransitionComplete(self, method, a2, a3, a4, a5, a6, a7);
+    }
+    if (!s_splash_autoclicked) {
+        s_splash_autoclicked = 1;
+        flog("SPLASH: auto-triggering OnDismiss(self=%p)", self);
+        if (orig_SplashScreenOverlay_OnDismiss) {
+            orig_SplashScreenOverlay_OnDismiss(self, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+        }
     }
     return ret;
 }
@@ -12922,6 +13032,7 @@ static void* installer(void* arg){
     // Diagnostic hooks for AutoFight actions:
     inline_hook((void*)(g_base + 0x00FEFC24), (void*)hooked_HudScreenAwake, &orig_HudScreenAwake);
     inline_hook((void*)(g_base + 0x00FEDEC4), (void*)hooked_HudScreenSetupWindow, &orig_HudScreenSetupWindow);
+    inline_hook((void*)(g_base + 0x00C645E8), (void*)hooked_HudBuffWidget_Refresh, &orig_HudBuffWidget_Refresh);
     inline_hook((void*)(g_base + 0x00C9C540), (void*)hooked_ToggleAutoFight, &orig_ToggleAutoFight);
     inline_hook((void*)(g_base + 0x01179630), (void*)hooked_PlayerController_ApplyDamage, &orig_PlayerController_ApplyDamage);
     inline_hook((void*)(g_base + 0x00DAD08C), (void*)hooked_PlayerAttributes_ApplyDamage, &orig_PlayerAttributes_ApplyDamage);
@@ -12997,6 +13108,11 @@ static void* installer(void* arg){
     inline_hook((void*)(g_base + 0x00E9EA00), (void*)hooked_Projectile_IgnoreCollisionDetection, &orig_Projectile_IgnoreCollisionDetection);
     // Guard EB.Animation.Matinee.PlayMecanimAnimationEvent.RestoreControllerAnimClipIfNeeded (0x013B165C)
     inline_hook((void*)(g_base + 0x013B165C), (void*)hooked_RestoreControllerAnimClipIfNeeded, &orig_RestoreControllerAnimClipIfNeeded);
+
+    // Auto-enter on splash screen overlay (Play Now / OnDismiss):
+    inline_hook((void*)(g_base + 0x00CC49BC), (void*)hooked_SplashScreenOverlay_SetupWindow, &orig_SplashScreenOverlay_SetupWindow);
+    inline_hook((void*)(g_base + 0x00CC4C84), (void*)hooked_SplashScreenOverlay_OnIntroTransitionComplete, &orig_SplashScreenOverlay_OnIntroTransitionComplete);
+    inline_hook((void*)(g_base + 0x00CC51A4), (void*)hooked_SplashScreenOverlay_OnDismiss, &orig_SplashScreenOverlay_OnDismiss);
 
     LOG("install done (%d hooks)", NH);
     skill_dispatcher_init(g_base);

@@ -694,6 +694,7 @@ SIM_API int sim_inject_buff(int target_idx, const char* mod_id, float duration_s
                                   strstr(mod_id, "bumblebee_crit_buff") != NULL ||
                                   strstr(mod_id, "tantrum_dash_melee_buff") != NULL ||
                                   strstr(mod_id, "sideswipe_evade_counter") != NULL ||
+                                  strstr(mod_id, "dirge_fear_shadow") != NULL ||
                                   strstr(mod_id, "venom_charge") != NULL);
             // 滑流专属减益与风刃震击严格限制为单层 (严禁多重叠加，刷新仅重置持续时间)
             if (strstr(mod_id, "slipstream_") != NULL || strstr(mod_id, "windblade_") != NULL) {

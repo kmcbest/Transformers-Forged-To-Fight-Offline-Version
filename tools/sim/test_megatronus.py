@@ -52,7 +52,8 @@ def run_tests():
     print("  [PASS] 震天尊防守受击 100% 不产生能量 (常规回能归零生效)!")
 
     # 3. 推进物理时钟 14.0 秒: 预期自主产生 14.0 * (1.0/14.0) = 1.000 格能量 (14秒充满一格)
-    g_engine.tick(14000) # 14000 ms = 14s
+    for _ in range(140):
+        g_engine.tick(100) # 14000 ms = 14s (以 100ms 帧推进)
     mana_after_tick = g_engine.get_state()["p0"]["mana"]
     print(f"  [Megatronus] 经过 14.0 秒自主回气后能量: {mana_after_tick:.3f} (预期 1.000)")
     assert abs(mana_after_tick - 1.000) < 0.02, f"Expected ~1.000 mana, got {mana_after_tick}"
@@ -241,19 +242,20 @@ def run_tests():
     print("  [PASS] 满气释放 S3 精准扣除 3 格能量归零！")
 
     # ------------------------------------------------------------------------
-    # [TEST 10] 释放特殊技完全不影响自主充气
+    # [TEST 10] 释放特殊技期间冻结自主充气 (commit 3935ba3)
     # ------------------------------------------------------------------------
-    print("\n--- [TEST 10] 特殊技期间自主充能持续生效: 放S技不阻断回能，无需等待普攻打中对手 ---")
+    print("\n--- [TEST 10] 特殊技期间自主充能冻结门禁 (commit 3935ba3) ---")
     init_combatant("megatronus_gs_kabam", "generic_enemy")
     g_engine.set_mana(0, 0.0)
     # 模拟启动 SP1 特技动作 (act=16)
     g_engine.attack_start(0, 16)
-    # 流逝 7.0 秒 (7000ms)，此时自主回能必须持续推进，预期产生 7.0 * (1.0/14.0) = 0.500 格
-    g_engine.tick(7000)
+    # 流逝 7.0 秒 (7000ms)，此时自主回能必须冻结
+    for _ in range(70):
+        g_engine.tick(100)
     mana_during_sp = g_engine.get_state()["p0"]["mana"]
-    print(f"  [Megatronus] 施放特技并流逝 7.0 秒后能量: {mana_during_sp:.3f} (预期 0.500)")
-    assert abs(mana_during_sp - 0.500) < 0.02, f"Expected ~0.500 mana during SP, got {mana_during_sp}"
-    print("  [PASS] 释放特殊技期间自主充能持续匀速推进，完全不受动作状态阻断！")
+    print(f"  [Megatronus] 施放特技并流逝 7.0 秒后能量: {mana_during_sp:.3f} (预期 0.000)")
+    assert abs(mana_during_sp - 0.000) < 0.01, f"Expected 0.000 mana during SP, got {mana_during_sp}"
+    print("  [PASS] 释放特殊技期间自主充能正确冻结！")
 
     print("\n" + "=" * 75)
     print("🎉 恭喜！震天尊 (Megatronus) 全套 13 项核心技能、自主充能与双遗迹 100% 通过！")

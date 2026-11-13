@@ -49,6 +49,11 @@ static uint64_t s_sp3_fear_end_ms[2]           = {0, 0}; // SP3 30 秒不可驱�
 static int      s_mockery_dispel_reduction[2]  = {0, 0}; // 冷酷嘲讽：使对手驱散几率 -10% (1=生效中, 0=未生效)
 static uint64_t s_last_opp_dodge_tick_ms[2]    = {0, 0}; // 对手闪避去抖时间戳
 static uint64_t s_last_opp_block_tick_ms[2]    = {0, 0}; // 对手格挡去抖时间戳
+static uint64_t s_opp_block_enter_ms[2]        = {0, 0}; // 对手进入格挡姿态时间戳
+static int      s_opp_block_counted[2]         = {0, 0}; // 本次格挡是否已计入阴影动作
+static uint64_t s_last_shadow_action_ms[2]     = {0, 0}; // 上一次有效阴影动作 (闪避/格挡) 时间戳
+
+static void dirge_handle_shadow_action(int opponent_index, int dirge_p, int is_block);
 
 static void dirge_on_simulation_tick(uint64_t now_ms) {
     for (int p = 0; p < 2; p++) {
@@ -67,11 +72,17 @@ static void dirge_on_simulation_tick(uint64_t now_ms) {
                 s_sp3_fear_end_ms[opp] = 0;
                 s_mockery_dispel_reduction[p] = 0;
 
-                // 敌方开局挂常驻红色恐惧图标与 10 秒流血预备图标
-                skill_apply_buff_dur(opp, "dirge_fear_debuff", -1.0f);
-                skill_apply_buff_dur(opp, "dirge_bleed_timer", 10.0f);
+                // 敌方开局挂常驻红色恐惧图标与 10 秒流血预备图标 (确保未持有才施加，防止双层)
+                if (!skill_has_buff(opp, "dirge_fear_debuff")) {
+                    skill_apply_buff_dur(opp, "dirge_fear_debuff", -1.0f);
+                }
+                if (!skill_has_buff(opp, "dirge_bleed_timer")) {
+                    skill_apply_buff_dur(opp, "dirge_bleed_timer", 10.0f);
+                }
                 // 挽歌开局获得黄色暴击几率图标
-                skill_apply_buff_dur(p, "dirge_fear_crit_buff", -1.0f);
+                if (!skill_has_buff(p, "dirge_fear_crit_buff")) {
+                    skill_apply_buff_dur(p, "dirge_fear_crit_buff", -1.0f);
+                }
 
                 skill_overlay("[%s] 散布恐惧！敌人开局陷入恐惧状态！", p == 0 ? "挽歌" : "敌方挽歌");
                 skill_log("DIRGE: Battle started! Initialized Fear on opponent P%d", opp);
@@ -92,6 +103,14 @@ static void dirge_on_simulation_tick(uint64_t now_ms) {
             if (skill_has_buff(opp, "dirge_fear_shadow")) {
                 s_shadow_active[opp] = 1;
                 s_fear_active[opp] = 0;
+            }
+
+            // 敌方持续格挡满 200ms 且未计入阴影动作时，计为 1 次有效格挡
+            if (s_shadow_active[opp] && s_opp_block_enter_ms[opp] > 0 && !s_opp_block_counted[opp]) {
+                if (now_ms - s_opp_block_enter_ms[opp] >= 200 && (now_ms - s_last_shadow_action_ms[opp] >= 200)) {
+                    s_opp_block_counted[opp] = 1;
+                    dirge_handle_shadow_action(opp, p, 1); // 1 = block
+                }
             }
 
             // 3. 恐惧流血 10 秒周期性结算
@@ -138,6 +157,53 @@ static void dirge_on_simulation_tick(uint64_t now_ms) {
     }
 }
 
+// 恐惧阴影核心动作处理：闪避或格挡累计 1 次计数并给阴影图标叠加层数 (+1)
+static void dirge_handle_shadow_action(int opponent_index, int dirge_p, int is_block) {
+    uint64_t now_ms = skill_now_ms();
+    s_last_shadow_action_ms[opponent_index] = now_ms;
+
+    int in_shadow = s_shadow_active[opponent_index] || skill_has_buff(opponent_index, "dirge_fear_shadow");
+    int in_fear = s_fear_active[opponent_index] || skill_has_buff(opponent_index, "dirge_fear_debuff") || skill_has_buff(opponent_index, "dirge_sp3_fear_empower");
+
+    if (in_shadow) {
+        s_shadow_active[opponent_index] = 1;
+        s_fear_active[opponent_index] = 0;
+        s_shadow_counter[opponent_index]++;
+
+        skill_overlay("[%s] %s！恐惧阴影累计 %d/3 次",
+                      opponent_index == 0 ? "我方" : "敌方",
+                      is_block ? "格挡" : "闪避",
+                      s_shadow_counter[opponent_index]);
+        skill_log("DIRGE: Opponent P%d %s under Fear Shadow, counter = %d/3",
+                  opponent_index, is_block ? "blocked" : "dodged", s_shadow_counter[opponent_index]);
+
+        if (s_shadow_counter[opponent_index] >= 3) {
+            // 累计满 3 次变回红色恐惧状态
+            s_shadow_counter[opponent_index] = 0;
+            s_shadow_active[opponent_index] = 0;
+            s_fear_active[opponent_index] = 1;
+            skill_consume_buff(opponent_index, "dirge_fear_shadow", 99);
+            skill_apply_buff_dur(opponent_index, "dirge_fear_debuff", -1.0f);
+            skill_apply_buff_dur(opponent_index, "dirge_bleed_timer", 10.0f);
+            s_next_bleed_tick_ms[opponent_index] = now_ms + 10000;
+            skill_apply_buff_dur(dirge_p, "dirge_fear_crit_buff", -1.0f);
+
+            skill_overlay("[%s] 累计满3次！恐惧阴影爆发，重新陷入恐惧！",
+                          opponent_index == 0 ? "我方" : "敌方");
+            skill_log("DIRGE: Fear Shadow counter reached 3! Restored Fear on P%d", opponent_index);
+        } else {
+            // 未满 3 次，为恐惧阴影图标叠加层数 (+1 层，显示 +1/+2)
+            skill_apply_buff_dur(opponent_index, "dirge_fear_shadow", -1.0f);
+        }
+    } else if (in_fear && !is_block) {
+        // 场景 B：敌方处于恐惧状态，每次闪避施加 1 层 40% 攻击力减益 (5秒)
+        skill_apply_buff_dur(opponent_index, "dirge_evade_atk_debuff", 5.0f);
+        skill_overlay("[%s] 恐惧中闪避！遭受 -40%% 攻击力减益 (5秒)！",
+                      opponent_index == 0 ? "我方" : "敌方");
+        skill_log("DIRGE: Opponent P%d dodged under Fear, applied 40%% attack debuff", opponent_index);
+    }
+}
+
 // 敌方闪避 (后闪或侧闪) 回调
 static void dirge_on_opponent_dodge_enter(int opponent_index) {
     if (opponent_index < 0 || opponent_index >= 2) return;
@@ -146,84 +212,36 @@ static void dirge_on_opponent_dodge_enter(int opponent_index) {
     if (!bid || strstr(bid, "dirge") == NULL) return;
 
     uint64_t now_ms = skill_now_ms();
-    if (now_ms - s_last_opp_dodge_tick_ms[opponent_index] < 150) return; // 去抖保护
-    s_last_opp_dodge_tick_ms[opponent_index] = now_ms;
 
-    int in_shadow = s_shadow_active[opponent_index] || skill_has_buff(opponent_index, "dirge_fear_shadow");
-    int in_fear = s_fear_active[opponent_index] || skill_has_buff(opponent_index, "dirge_fear_debuff") || skill_has_buff(opponent_index, "dirge_sp3_fear_empower");
+    // 闪避手势防误触：手指触控滑屏通常先触发格挡再触发闪避，在此取消伴随的格挡，防止单次滑屏计入两次
+    s_opp_block_enter_ms[opponent_index] = 0;
+    s_opp_block_counted[opponent_index] = 1; // 标记已消费，防止松手时再次误判为格挡
 
-    // 场景 A：敌方处于恐惧阴影状态，闪避增加 1 次计数
-    if (in_shadow) {
-        s_shadow_active[opponent_index] = 1;
-        s_fear_active[opponent_index] = 0;
-        s_shadow_counter[opponent_index]++;
-        skill_overlay("[%s] 闪避！恐惧阴影累计 %d/3 次",
-                      opponent_index == 0 ? "我方" : "敌方", s_shadow_counter[opponent_index]);
-        skill_log("DIRGE: Opponent P%d dodged under Fear Shadow, counter = %d/3",
-                  opponent_index, s_shadow_counter[opponent_index]);
-
-        if (s_shadow_counter[opponent_index] >= 3) {
-            // 累计满 3 次变回红色恐惧状态
-            s_shadow_counter[opponent_index] = 0;
-            s_shadow_active[opponent_index] = 0;
-            s_fear_active[opponent_index] = 1;
-            skill_consume_buff(opponent_index, "dirge_fear_shadow", 99);
-            skill_apply_buff_dur(opponent_index, "dirge_fear_debuff", -1.0f);
-            skill_apply_buff_dur(opponent_index, "dirge_bleed_timer", 10.0f);
-            s_next_bleed_tick_ms[opponent_index] = now_ms + 10000;
-            skill_apply_buff_dur(dirge_p, "dirge_fear_crit_buff", -1.0f);
-
-            skill_overlay("[%s] 累计满3次！恐惧阴影爆发，重新陷入恐惧！",
-                          opponent_index == 0 ? "我方" : "敌方");
-            skill_log("DIRGE: Fear Shadow counter reached 3! Restored Fear on P%d", opponent_index);
-        }
-    }
-    // 场景 B：敌方处于恐惧状态，每次闪避施加 1 层 40% 攻击力减益 (5秒)
-    else if (in_fear) {
-        skill_apply_buff_dur(opponent_index, "dirge_evade_atk_debuff", 5.0f);
-        skill_overlay("[%s] 恐惧中闪避！遭受 -40%% 攻击力减益 (5秒)！",
-                      opponent_index == 0 ? "我方" : "敌方");
-        skill_log("DIRGE: Opponent P%d dodged under Fear, applied 40%% attack debuff", opponent_index);
-    }
+    if (now_ms - s_last_shadow_action_ms[opponent_index] < 200) return; // 动作去抖
+    dirge_handle_shadow_action(opponent_index, dirge_p, 0); // 0 = dodge
 }
 
 // 敌方格挡回调
 static void dirge_on_opponent_block_state(int opponent_index, int entered) {
-    if (opponent_index < 0 || opponent_index >= 2 || !entered) return;
+    if (opponent_index < 0 || opponent_index >= 2) return;
     int dirge_p = 1 - opponent_index;
     const char* bid = skill_get_bot_id(dirge_p);
     if (!bid || strstr(bid, "dirge") == NULL) return;
 
     uint64_t now_ms = skill_now_ms();
-    if (now_ms - s_last_opp_block_tick_ms[opponent_index] < 150) return; // 去抖保护
-    s_last_opp_block_tick_ms[opponent_index] = now_ms;
-
-    int in_shadow = s_shadow_active[opponent_index] || skill_has_buff(opponent_index, "dirge_fear_shadow");
-
-    // 敌方处于恐惧阴影状态，格挡增加 1 次计数
-    if (in_shadow) {
-        s_shadow_active[opponent_index] = 1;
-        s_fear_active[opponent_index] = 0;
-        s_shadow_counter[opponent_index]++;
-        skill_overlay("[%s] 格挡！恐惧阴影累计 %d/3 次",
-                      opponent_index == 0 ? "我方" : "敌方", s_shadow_counter[opponent_index]);
-        skill_log("DIRGE: Opponent P%d blocked under Fear Shadow, counter = %d/3",
-                  opponent_index, s_shadow_counter[opponent_index]);
-
-        if (s_shadow_counter[opponent_index] >= 3) {
-            // 累计满 3 次变回红色恐惧状态
-            s_shadow_counter[opponent_index] = 0;
-            s_shadow_active[opponent_index] = 0;
-            s_fear_active[opponent_index] = 1;
-            skill_consume_buff(opponent_index, "dirge_fear_shadow", 99);
-            skill_apply_buff_dur(opponent_index, "dirge_fear_debuff", -1.0f);
-            skill_apply_buff_dur(opponent_index, "dirge_bleed_timer", 10.0f);
-            s_next_bleed_tick_ms[opponent_index] = now_ms + 10000;
-            skill_apply_buff_dur(dirge_p, "dirge_fear_crit_buff", -1.0f);
-
-            skill_overlay("[%s] 累计满3次！恐惧阴影爆发，重新陷入恐惧！",
-                          opponent_index == 0 ? "我方" : "敌方");
-            skill_log("DIRGE: Fear Shadow counter reached 3! Restored Fear on P%d", opponent_index);
+    if (entered) {
+        s_opp_block_enter_ms[opponent_index] = now_ms;
+        s_opp_block_counted[opponent_index] = 0;
+    } else {
+        uint64_t enter_ms = s_opp_block_enter_ms[opponent_index];
+        s_opp_block_enter_ms[opponent_index] = 0;
+        if (enter_ms > 0 && !s_opp_block_counted[opponent_index]) {
+            uint64_t held = now_ms - enter_ms;
+            // 维持蓄力格挡时间 >= 150ms 且与上一次动作间隔 >= 200ms，计为 1 次真实格挡
+            if (held >= 150 && (now_ms - s_last_shadow_action_ms[opponent_index] >= 200)) {
+                s_opp_block_counted[opponent_index] = 1;
+                dirge_handle_shadow_action(opponent_index, dirge_p, 1); // 1 = block
+            }
         }
     }
 }
@@ -264,10 +282,12 @@ static void dirge_on_hit_connected(SkillHitContext* ctx) {
         int dirge_p = ctx->target_player_index;
         int opp = ctx->attacker_player_index;
 
-        // a) 阴影状态下击中挽歌：计数器清零重新计数
+        // a) 阴影状态下击中挽歌：计数器清零重新计数，并恢复为 1 层基础阴影图标
         if (s_shadow_active[opp]) {
             if (s_shadow_counter[opp] > 0) {
                 s_shadow_counter[opp] = 0;
+                skill_consume_buff(opp, "dirge_fear_shadow", 99);
+                skill_apply_buff_dur(opp, "dirge_fear_shadow", -1.0f);
                 skill_overlay("[%s] 击中挽歌！恐惧阴影计数清零重新计数！",
                               opp == 0 ? "我方" : "敌方");
                 skill_log("DIRGE: Opponent P%d hit Dirge under Fear Shadow, counter reset to 0", opp);
@@ -300,6 +320,7 @@ static void dirge_on_hit_connected(SkillHitContext* ctx) {
                         s_shadow_active[opp] = 1;
                         s_shadow_counter[opp] = 0;
                         s_mockery_dispel_reduction[dirge_p] = 0; // 成功驱散后恢复降率
+                        s_next_bleed_tick_ms[opp] = 0; // 暂停流血倒计时
 
                         // 移除敌方恐惧与流血预备图标
                         skill_consume_buff(opp, "dirge_fear_debuff", 99);
@@ -356,8 +377,10 @@ static void dirge_on_hit_connected(SkillHitContext* ctx) {
             skill_log("DIRGE: SP1 damage boosted x1.35 against feared opponent P%d", tp);
         }
 
-        // d) SP2 燃烧：最后一击命中时施加燃烧
+        // d) SP2 燃烧：最后一击命中时施加燃烧 (严格单层互斥)
         if (ctx->special_index == 2 && ctx->is_last_hit) {
+            skill_consume_buff(tp, "dirge_sp2_burn", 99);
+            skill_consume_buff(tp, "dirge_sp2_burn_fear", 99);
             if (s_fear_active[tp]) {
                 // 恐惧状态下造成 70% 攻击力燃烧持续 8 秒
                 skill_apply_buff_dur(tp, "dirge_sp2_burn_fear", 8.0f);
@@ -438,6 +461,9 @@ static void dirge_on_fight_reset(int player_index) {
         s_mockery_dispel_reduction[player_index] = 0;
         s_last_opp_dodge_tick_ms[player_index]   = 0;
         s_last_opp_block_tick_ms[player_index]   = 0;
+        s_opp_block_enter_ms[player_index]       = 0;
+        s_opp_block_counted[player_index]        = 0;
+        s_last_shadow_action_ms[player_index]    = 0;
     }
 }
 

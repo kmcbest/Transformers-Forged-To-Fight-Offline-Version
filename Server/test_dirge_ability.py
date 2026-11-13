@@ -27,7 +27,8 @@ class TestDirgeAbility(unittest.TestCase):
         self.assertEqual(fear_mod["d"], -1.0)
         self.assertEqual(fear_mod["ta"], "opponent")
         self.assertEqual(fear_mod["mt"], "debuff")
-        self.assertEqual(fear_mod["tr"], ["always"])
+        self.assertEqual(fear_mod["tr"], [])
+        self.assertEqual(fear_mod["st"], 1)
 
         # 2. 恐惧阴影
         self.assertIn("dirge_fear_shadow", mods)
@@ -51,6 +52,7 @@ class TestDirgeAbility(unittest.TestCase):
         expected_bleed_dmg = float(round(base_atk * 1.45))
         self.assertEqual(bleed_mod["m"], expected_bleed_dmg)
         self.assertEqual(bleed_mod["d"], 2.0)
+        self.assertEqual(bleed_mod["tr"], [])  # 严禁配置 onHit，完全由 10s 倒计时触发
 
         # 5. 暴击几率 (+40% crit rate)
         self.assertIn("dirge_fear_crit_buff", mods)
@@ -73,6 +75,9 @@ class TestDirgeAbility(unittest.TestCase):
         self.assertIn("dirge_bleed_power_rate", mods)
         power_mod = mods["dirge_bleed_power_rate"]
         self.assertEqual(power_mod["m"], 0.10)
+        # 验证紫色图标使用 core.py 标准浅紫色 (LIGHT_PURPLE_POWER: C4BBF8 / 7E22CE)
+        self.assertEqual(appears["appr_dirge_bleed_power_rate"]["tc"], "C4BBF8")
+        self.assertEqual(appears["appr_dirge_bleed_power_rate"]["gb"], "7E22CE")
 
         # 9. SP1 特殊伤害 (+35% ATK)
         self.assertIn("dirge_sp1_fear_boost", mods)
@@ -86,13 +91,23 @@ class TestDirgeAbility(unittest.TestCase):
         sp2_fear = mods["dirge_sp2_burn_fear"]
         self.assertEqual(sp2_norm["m"], float(round(base_atk * 0.35)))
         self.assertEqual(sp2_norm["d"], 4.0)
+        self.assertEqual(sp2_norm["tr"], [])
         self.assertEqual(sp2_fear["m"], float(round(base_atk * 0.70)))
         self.assertEqual(sp2_fear["d"], 8.0)
+        self.assertEqual(sp2_fear["tr"], [])
 
         # 11. SP3 强化恐惧 (30s)
         self.assertIn("dirge_sp3_fear_empower", mods)
         sp3_mod = mods["dirge_sp3_fear_empower"]
         self.assertEqual(sp3_mod["d"], 30.0)
+
+        # 12. 专属底层 BuffEffect 模板 (流血倒计时灰色圆环、恐惧、阴影)
+        self.assertIn("dirge_bleed_timer", buffs)
+        self.assertEqual(buffs["dirge_bleed_timer"]["time"]["amount"], 10.0)
+        self.assertEqual(appears["appr_dirge_bleed_timer"]["tc"], "CBD5E1")
+        self.assertEqual(appears["appr_dirge_bleed_timer"]["gb"], "94A3B8")
+        self.assertIn("dirge_fear", buffs)
+        self.assertIn("dirge_shadow", buffs)
 
 
 if __name__ == "__main__":

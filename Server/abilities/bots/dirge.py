@@ -44,6 +44,7 @@ if hasattr(sys.stderr, 'reconfigure'):
     sys.stderr.reconfigure(encoding='utf-8')
 
 from ..core import (
+    AbilityColor,
     make_attack_boost_statmod,
     make_bleed_statmod,
     make_burn_statmod,
@@ -66,8 +67,8 @@ def build_dirge_abilities(base_hp: float = 44950.0, base_atk: float = 2945.0):
     # -------------------------------------------------------------------------
     # 1. [被动 - 恐惧] (ID: 3038): 敌人开局常驻恐惧状态，可被近战轻(20%)/中(40%)驱散
     # -------------------------------------------------------------------------
-    validate_color_code("EF4444", "dirge_fear_tc")
-    validate_color_code("B91C1C", "dirge_fear_gb")
+    validate_color_code(AbilityColor.RED_DEBUFF_TC, "dirge_fear_tc")
+    validate_color_code(AbilityColor.RED_DEBUFF_GB, "dirge_fear_gb")
     appr_fear = {
         "id": "appr_dirge_fear",
         "a": "恐惧",
@@ -79,29 +80,29 @@ def build_dirge_abilities(base_hp: float = 44950.0, base_atk: float = 2945.0):
         "st": "恐惧",
         "ps": "恐惧",
         "pl": "恐惧中",
-        "tc": "EF4444",
-        "gt": "EF4444",
-        "gb": "B91C1C",
+        "tc": AbilityColor.RED_DEBUFF_TC,
+        "gt": AbilityColor.RED_DEBUFF_TC,
+        "gb": AbilityColor.RED_DEBUFF_GB,
     }
     mod_fear = {
         "id": "dirge_fear_debuff",
-        "t": "passive",
+        "t": "dirge_fear",
         "tm": "",
-        "tr": ["always"],
-        "uit": ["always"],
+        "tr": [],           # 移除 always，由 NativeHook 统一施加与判定驱散，防止开局双层
+        "uit": [],
         "pri": 0,
         "trm": 0.0,
         "trs": "",
         "trr": "repeat",
         "c": 1.0,
         "m": 1.0,
-        "d": -1.0,  # 永久常驻状态，由 NativeHook 根据击中概率净化
+        "d": -1.0,          # 永久常驻状态
         "s": "none",
         "ta": "opponent",
         "mt": "debuff",
         "v": "",
         "ms": "",
-        "st": 0,
+        "st": 1,            # 显式限制最大堆叠数为 1
         "g": "dirge_fear",
         "gc": 0.0,
         "gcv": "",
@@ -119,8 +120,8 @@ def build_dirge_abilities(base_hp: float = 44950.0, base_atk: float = 2945.0):
     # -------------------------------------------------------------------------
     # 2. [被动 - 恐惧阴影] (ID: 3039): 驱散后进入阴影，敌人格挡/闪避累计3次重回恐惧
     # -------------------------------------------------------------------------
-    validate_color_code("9CA3AF", "dirge_shadow_tc")
-    validate_color_code("4B5563", "dirge_shadow_gb")
+    validate_color_code(AbilityColor.GRAY_COOLDOWN["tc"], "dirge_shadow_tc")
+    validate_color_code(AbilityColor.GRAY_COOLDOWN["gb"], "dirge_shadow_gb")
     appr_shadow = {
         "id": "appr_dirge_fear_shadow",
         "a": "恐惧阴影",
@@ -132,13 +133,13 @@ def build_dirge_abilities(base_hp: float = 44950.0, base_atk: float = 2945.0):
         "st": "恐惧阴影",
         "ps": "恐惧阴影",
         "pl": "恐惧阴影笼罩",
-        "tc": "9CA3AF",
-        "gt": "6B7280",
-        "gb": "4B5563",
+        "tc": AbilityColor.GRAY_COOLDOWN["tc"],
+        "gt": AbilityColor.GRAY_COOLDOWN["gt"],
+        "gb": AbilityColor.GRAY_COOLDOWN["gb"],
     }
     mod_shadow = {
         "id": "dirge_fear_shadow",
-        "t": "passive",
+        "t": "dirge_shadow",
         "tm": "",
         "tr": [],
         "uit": [],
@@ -192,25 +193,27 @@ def build_dirge_abilities(base_hp: float = 44950.0, base_atk: float = 2945.0):
     # -------------------------------------------------------------------------
     # 4. [被动 - 恐惧流血预备与结算] (ID: 3040): 10s 预备计时 -> 2s 造成 145% ATK 暴烈流血
     # -------------------------------------------------------------------------
-    # 4a. 灰色预备流血图标 (10秒周期倒计时)
+    # 4a. 灰色预备流血图标 (10秒周期倒计时，带圆环)
+    validate_color_code(AbilityColor.GRAY_COOLDOWN["tc"], "dirge_bleed_timer_tc")
+    validate_color_code(AbilityColor.GRAY_COOLDOWN["gb"], "dirge_bleed_timer_gb")
     appr_b_timer = {
         "id": "appr_dirge_bleed_timer",
-        "a": "流血预备",
+        "a": "流血倒计时",
         "s": "",
         "l": "恐惧加剧倒计时，周期结束将造成大额流血伤害。",
         "ss": "流血倒计时",
-        "t": "\uE401",
+        "t": "\uE401",  # 灰色流血字形
         "f": "",
-        "st": "流血预备",
-        "ps": "流血预备",
-        "pl": "流血预备中",
-        "tc": "9CA3AF",
-        "gt": "6B7280",
-        "gb": "4B5563",
+        "st": "流血倒计时",
+        "ps": "流血倒计时",
+        "pl": "流血倒计时中",
+        "tc": AbilityColor.GRAY_COOLDOWN["tc"],
+        "gt": AbilityColor.GRAY_COOLDOWN["gt"],
+        "gb": AbilityColor.GRAY_COOLDOWN["gb"],
     }
     mod_b_timer = {
         "id": "dirge_bleed_timer",
-        "t": "passive",
+        "t": "dirge_bleed_timer",
         "tm": "",
         "tr": [],
         "uit": [],
@@ -219,14 +222,14 @@ def build_dirge_abilities(base_hp: float = 44950.0, base_atk: float = 2945.0):
         "trs": "",
         "trr": "repeat",
         "c": 1.0,
-        "m": 1.0,
+        "m": 0.0,
         "d": 10.0,
         "s": "none",
         "ta": "opponent",
         "mt": "debuff",
         "v": "",
         "ms": "",
-        "st": 0,
+        "st": 1,
         "g": "dirge_bleed_timer",
         "gc": 0.0,
         "gcv": "",
@@ -242,17 +245,22 @@ def build_dirge_abilities(base_hp: float = 44950.0, base_atk: float = 2945.0):
     appears["appr_dirge_bleed_timer"] = appr_b_timer
 
     # 4b. 红色流血结算: 2秒造成 145% ATK 伤害 (2945 * 1.45 = 4270)
+    # 注意：挽歌给对方施加的流血完全由 10 秒倒计时周期性触发，严禁配置 onHit 触发器！
     m_bleed, a_bleed = make_bleed_statmod(
         mod_id="dirge_fear_bleed",
         duration=2.0,
         total_dmg=float(round(base_atk * 1.45)),
         chance=1.0,
-        trigger="onHit",
+        trigger="",
+        trigger_scope="",
         appr_id="appr_dirge_fear_bleed",
         callout_text="恐惧流血",
         pua_icon="\uE401",
         stackable=True,
     )
+    m_bleed["dirge_fear_bleed"]["tr"] = []
+    m_bleed["dirge_fear_bleed"]["uit"] = []
+    m_bleed["dirge_fear_bleed"]["trs"] = ""
     mods.update(m_bleed)
     appears.update(a_bleed)
 
@@ -264,12 +272,17 @@ def build_dirge_abilities(base_hp: float = 44950.0, base_atk: float = 2945.0):
         duration=-1.0,
         crit_bonus=0.40,
         chance=1.0,
+        trigger="",
+        trigger_scope="",
         appr_id="appr_dirge_fear_crit_buff",
         callout_text="暴击提升",
         pua_icon="\uE40D",
         color_hex="F59E0B",
         gradient_bottom="D97706",
     )
+    m_crit["dirge_fear_crit_buff"]["tr"] = []
+    m_crit["dirge_fear_crit_buff"]["uit"] = []
+    m_crit["dirge_fear_crit_buff"]["trs"] = ""
     mods.update(m_crit)
     appears.update(a_crit)
 
@@ -293,10 +306,10 @@ def build_dirge_abilities(base_hp: float = 44950.0, base_atk: float = 2945.0):
     }
     mod_debuff = {
         "id": "dirge_evade_atk_debuff",
-        "t": "passive",
+        "t": "attack_debuff",
         "tm": "",
-        "tr": ["onDodge"],
-        "uit": ["onDodge"],
+        "tr": [],
+        "uit": [],
         "pri": 0,
         "trm": 0.0,
         "trs": "",
@@ -309,7 +322,7 @@ def build_dirge_abilities(base_hp: float = 44950.0, base_atk: float = 2945.0):
         "mt": "debuff",
         "v": "",
         "ms": "",
-        "st": 1,
+        "st": 5,
         "g": "dirge_atk_debuff",
         "gc": 0.0,
         "gcv": "",
@@ -332,20 +345,25 @@ def build_dirge_abilities(base_hp: float = 44950.0, base_atk: float = 2945.0):
         duration=-1.0,
         crit_dmg_bonus=0.30,
         chance=1.0,
+        trigger="",
+        trigger_scope="",
         appr_id="appr_dirge_bleed_crit_dmg",
         callout_text="暴伤强化",
         pua_icon="\uE906",
         color_hex="F59E0B",
         gradient_bottom="D97706",
     )
+    m_cdmg["dirge_bleed_crit_dmg"]["tr"] = []
+    m_cdmg["dirge_bleed_crit_dmg"]["uit"] = []
+    m_cdmg["dirge_bleed_crit_dmg"]["trs"] = ""
     mods.update(m_cdmg)
     appears.update(a_cdmg)
 
     # -------------------------------------------------------------------------
     # 8. [被动 - 能量功率] (ID: 3044): 对方流血状态下，挽歌攻击提升 10% 能量功率
     # -------------------------------------------------------------------------
-    validate_color_code("8B5CF6", "dirge_power_tc")
-    validate_color_code("6D28D9", "dirge_power_gb")
+    validate_color_code(AbilityColor.LIGHT_PURPLE_POWER_TC, "dirge_power_tc")
+    validate_color_code(AbilityColor.LIGHT_PURPLE_POWER_GB, "dirge_power_gb")
     appr_power = {
         "id": "appr_dirge_bleed_power_rate",
         "a": "能量功率",
@@ -357,9 +375,9 @@ def build_dirge_abilities(base_hp: float = 44950.0, base_atk: float = 2945.0):
         "st": "能量功率",
         "ps": "能量功率",
         "pl": "能量充沛",
-        "tc": "8B5CF6",
-        "gt": "7C3AED",
-        "gb": "6D28D9",
+        "tc": AbilityColor.LIGHT_PURPLE_POWER_TC,
+        "gt": AbilityColor.LIGHT_PURPLE_POWER["gt"],
+        "gb": AbilityColor.LIGHT_PURPLE_POWER_GB,
     }
     mod_power = {
         "id": "dirge_bleed_power_rate",
@@ -423,12 +441,18 @@ def build_dirge_abilities(base_hp: float = 44950.0, base_atk: float = 2945.0):
         total_dmg=float(round(base_atk * 0.35)),
         chance=1.0,
         trigger="onHit",
-        trigger_scope="level=Special2;dmgFlags=LastHit",
+        trigger_scope="",
         appr_id="appr_dirge_sp2_burn",
         callout_text="燃烧",
         show_callout=True,
         pua_icon="\uE41D",
+        stackable=False,
     )
+    # 清空自动触发器，交由 NativeHook 根据恐惧状态精准互斥施加，防止双重触发
+    m_sp2_norm["dirge_sp2_burn"]["tr"] = []
+    m_sp2_norm["dirge_sp2_burn"]["uit"] = []
+    m_sp2_norm["dirge_sp2_burn"]["trs"] = ""
+    m_sp2_norm["dirge_sp2_burn"]["st"] = 1
     mods.update(m_sp2_norm)
     appears.update(a_sp2_norm)
 
@@ -439,12 +463,18 @@ def build_dirge_abilities(base_hp: float = 44950.0, base_atk: float = 2945.0):
         total_dmg=float(round(base_atk * 0.70)),
         chance=1.0,
         trigger="onHit",
-        trigger_scope="level=Special2;dmgFlags=LastHit",
+        trigger_scope="",
         appr_id="appr_dirge_sp2_burn_fear",
         callout_text="暴烈燃烧",
         show_callout=True,
         pua_icon="\uE41D",
+        stackable=False,
     )
+    # 清空自动触发器
+    m_sp2_fear["dirge_sp2_burn_fear"]["tr"] = []
+    m_sp2_fear["dirge_sp2_burn_fear"]["uit"] = []
+    m_sp2_fear["dirge_sp2_burn_fear"]["trs"] = ""
+    m_sp2_fear["dirge_sp2_burn_fear"]["st"] = 1
     mods.update(m_sp2_fear)
     appears.update(a_sp2_fear)
 
@@ -500,5 +530,69 @@ def build_dirge_abilities(base_hp: float = 44950.0, base_atk: float = 2945.0):
     validate_statmod(mod_sp3)
     mods["dirge_sp3_fear_empower"] = mod_sp3
     appears["appr_dirge_sp3_fear"] = appr_sp3
+
+    # -------------------------------------------------------------------------
+    # 12. 注册挽歌专属底层 BuffEffect 模板 (供 Client BuffsController 实例与 HUD 挂件绑定)
+    # -------------------------------------------------------------------------
+    buffs["dirge_bleed_timer"] = {
+        "id": "dirge_bleed_timer",
+        "iconTexture": "",
+        "image": "",
+        "images3": False,
+        "modeAvail": [],
+        "scope": "global",
+        "valueType": "absolute",
+        "displayValue": 0.0,
+        "c": 1,
+        "value": 0.0,
+        "buffType": "attribute",
+        "group": "dirge_bleed_timer",
+        "p": {},
+        "hasDuration": True,
+        "e": 0,
+        "time": {"amount": 10.0},
+        "loc_name": "dirge_bleed_timer",
+        "loc_desc": "dirge_bleed_timer",
+    }
+    buffs["dirge_fear"] = {
+        "id": "dirge_fear",
+        "iconTexture": "",
+        "image": "",
+        "images3": False,
+        "modeAvail": [],
+        "scope": "global",
+        "valueType": "absolute",
+        "displayValue": 0.0,
+        "c": 1,
+        "value": 0.0,
+        "buffType": "attribute",
+        "group": "dirge_fear",
+        "p": {},
+        "hasDuration": False,
+        "e": 0,
+        "time": {"amount": 0.0},
+        "loc_name": "dirge_fear",
+        "loc_desc": "dirge_fear",
+    }
+    buffs["dirge_shadow"] = {
+        "id": "dirge_shadow",
+        "iconTexture": "",
+        "image": "",
+        "images3": False,
+        "modeAvail": [],
+        "scope": "global",
+        "valueType": "absolute",
+        "displayValue": 0.0,
+        "c": 1,
+        "value": 0.0,
+        "buffType": "attribute",
+        "group": "dirge_shadow",
+        "p": {},
+        "hasDuration": False,
+        "e": 0,
+        "time": {"amount": 0.0},
+        "loc_name": "dirge_shadow",
+        "loc_desc": "dirge_shadow",
+    }
 
     return mods, appears, buffs

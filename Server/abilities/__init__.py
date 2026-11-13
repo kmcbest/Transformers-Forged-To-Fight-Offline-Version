@@ -73,6 +73,13 @@ def build_buffs_config():
         "parry_shield": {"stackable": False, "active_display": True},
         # 能量充能：可堆叠，在血条下方显示紫色图标
         "energy_charge": {"stackable": True, "active_display": True},
+        # 挽歌专属能力与指示器组：在血条下方显示图标与倒计时圆环
+        "dirge_bleed_timer": {"stackable": False, "active_display": True},
+        "dirge_fear": {"stackable": False, "active_display": True},
+        "dirge_shadow": {"stackable": True, "active_display": True},
+        "dirge_power": {"stackable": False, "active_display": True},
+        "dirge_sp3_fear": {"stackable": False, "active_display": True},
+        "dirge_atk_debuff": {"stackable": True, "active_display": True},
     }
     return {
         "groups": groups_data,
@@ -523,6 +530,27 @@ def build_buffs_set():
             "time": {"amount": 6.0},
             "loc_name": "attack_buff",
             "loc_desc": "attack_buff",
+        },
+        # 攻击力减益 Debuff
+        "attack_debuff": {
+            "id": "attack_debuff",
+            "iconTexture": "",
+            "image": "",
+            "images3": False,
+            "modeAvail": [],
+            "scope": "global",
+            "valueType": "multiplier",
+            "displayValue": 1.0,
+            "c": 1,
+            "value": 1.0,
+            "buffType": "attribute",
+            "group": "attack_debuff",
+            "p": {},
+            "hasDuration": True,
+            "e": 0,
+            "time": {"amount": 5.0},
+            "loc_name": "attack_debuff",
+            "loc_desc": "attack_debuff",
         },
         # 燃烧持续能量伤害 DOT
         "dmg_burn": {
