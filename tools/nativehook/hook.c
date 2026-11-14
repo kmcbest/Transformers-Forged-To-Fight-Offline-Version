@@ -7172,6 +7172,7 @@ static const struct ArtBaseMap ART_BASE_MAP[] = {
     { "soundwave_gs", "sound_gs" },
     { "starsaber_gs_leader2014", "starsaber" },
     { "strongarm_gs", "strongarm_gs" },
+    { "tarn_gs", "tarn_gs" },
     { "sunstorm_gs_leader2015", "sunstorm" },
     { "sunstreaker_gs_deluxe2008", "sunstreak_gs" },
     { "tantrum_gs_kabam", "tantrum_gs" },
@@ -7286,6 +7287,12 @@ void* hook_162(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
                 return g_strnew ? g_strnew("“根据塞伯坦警例，你已经违反了安全条例！”\n作为精英卫队的优秀毕业生，铁腕严守规章，时刻准备着执行长官的每道指令。这名充满热忱的年轻执法官或许偶尔显得不知变通，但在战场上，她重装突击的正义重拳从来不会对霸天虎留情。") : r;
             }
             return g_strnew ? g_strnew("铁腕") : r;
+        }
+        if (strstr(k, "TARN") || strstr(k, "tarn") || strstr(k, "Tarn")) {
+            if (strstr(k, "BIO") || strstr(k, "desc") || strstr(k, "DESC") || strstr(k, "Bio")) {
+                return g_strnew ? g_strnew("霸天虎黑狗队 (D.J.D.) 领袖，狂热的霸天虎教条处刑者。右臂搭载标志性双联融合炮，能以谐振声波直接瓦解敌方火种，变形为塞伯坦重型战地双管坦克。") : r;
+            }
+            return g_strnew ? g_strnew("塔恩") : r;
         }
     }
     // Check if Localization.Get prepended "MS_" on missing string lookup

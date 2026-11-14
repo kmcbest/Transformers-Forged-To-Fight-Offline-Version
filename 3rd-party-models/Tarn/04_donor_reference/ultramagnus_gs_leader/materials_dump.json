@@ -1,0 +1,1819 @@
+{
+  "fx_m_energy_wave_a_-8252988663645228829": {
+    "path_id": -8252988663645228829,
+    "name": "fx_m_energy_wave_a",
+    "texs": {
+      "_base_tex": {
+        "path_id": -8469648921255051922,
+        "name": "-8469648921255051922",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_emissive_tex": {
+        "path_id": -8469648921255051922,
+        "name": "-8469648921255051922",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_particle_lifetime_color_tex": {
+        "path_id": 0,
+        "name": "0",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_particle_sheet_animation_tex": {
+        "path_id": 0,
+        "name": "0",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    "floats": {
+      "EBG_HUE_SHIFT": 0.0,
+      "EB_ADDITIVE": 0.0,
+      "EB_DECAY": 0.0,
+      "EB_PARTICLE_ALPHA_FROM_EMISSIVE": 0.0,
+      "EB_PARTICLE_HEIGHT_FADE": 1.0,
+      "EB_PARTICLE_TINT_EMISSIVE": 0.0,
+      "EB_POSTFX_COLOR": 0.0,
+      "EB_RB_PARTICLE": 0.0,
+      "EB_RB_PARTICLE_STRETCH": 0.0,
+      "EB_TEXTURE_SHEET_ANIM": 0.0,
+      "_BlendOp": 0.0,
+      "_BumpScale": 1.0,
+      "_Cutoff": 0.5,
+      "_DepthSoftness": 3.0,
+      "_DepthTest": 4.0,
+      "_DetailNormalMapScale": 1.0,
+      "_DstAFactor": 1.0,
+      "_DstBlend": 0.0,
+      "_DstFactor": 1.0,
+      "_Glossiness": 0.5,
+      "_GroundHeight": -2.0,
+      "_HeightFade": 0.10000000149011612,
+      "_HueShift": 0.0,
+      "_Metallic": 0.0,
+      "_Mode": 0.0,
+      "_OcclusionStrength": 1.0,
+      "_Parallax": 0.019999999552965164,
+      "_ParticleNormalBend": 0.0,
+      "_Sat": 1.0,
+      "_SrcAFactor": 0.0,
+      "_SrcBlend": 1.0,
+      "_SrcFactor": 5.0,
+      "_UVSec": 0.0,
+      "_Value": 1.0,
+      "_Whitespace": 0.0,
+      "_ZWrite": 1.0,
+      "_emissive_none": 0.0,
+      "_emissive_overbright_range": 46.400001525878906,
+      "_emissive_pulse_intensity_range": 0.0,
+      "_emissive_pulse_time_range": 1.0,
+      "_emissive_ramp_range": 2.2300000190734863,
+      "_metallic_range": 0.0,
+      "_normal_vertex": 0.0,
+      "_particle_lifetime_color_inv_height": 1.0,
+      "_roughness_range": 1.0
+    },
+    "cols": {
+      "_Color": {
+        "r": 1.0,
+        "g": 1.0,
+        "b": 1.0,
+        "a": 1.0
+      },
+      "_EmissionColor": {
+        "r": 0.0,
+        "g": 0.0,
+        "b": 0.0,
+        "a": 1.0
+      },
+      "_UVScroll": {
+        "r": 0.0,
+        "g": 0.0,
+        "b": 0.0,
+        "a": 0.0
+      },
+      "_emissive_intensity_col": {
+        "r": 0.8227224946022034,
+        "g": 0.11029410362243652,
+        "b": 1.0,
+        "a": 1.0
+      }
+    }
+  },
+  "Default-Particle_-8102022550769449044": {
+    "path_id": -8102022550769449044,
+    "name": "Default-Particle",
+    "texs": {
+      "_MainTex": {
+        "path_id": 8501139332677272989,
+        "name": "Default-Particle",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    "floats": {
+      "_InvFade": 1.0,
+      "_Shininess": 0.078125
+    },
+    "cols": {
+      "_Color": {
+        "r": 1.0,
+        "g": 1.0,
+        "b": 1.0,
+        "a": 1.0
+      },
+      "_SpecColor": {
+        "r": 0.5,
+        "g": 0.5,
+        "b": 0.5,
+        "a": 1.0
+      }
+    }
+  },
+  "fx_m_fine_dust_b_-6436762460528696137": {
+    "path_id": -6436762460528696137,
+    "name": "fx_m_fine_dust_b",
+    "texs": {
+      "_MainTex": {
+        "path_id": -4117005291785525941,
+        "name": "-4117005291785525941",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    "floats": {
+      "EBG_HUE_SHIFT": 1.0,
+      "EB_ADDITIVE": 0.0,
+      "EB_PARTICLE_HEIGHT_FADE": 0.0,
+      "EB_POSTFX_COLOR": 0.0,
+      "_BlendOp": 0.0,
+      "_BumpScale": 1.0,
+      "_Cutoff": 0.5,
+      "_DepthTest": 4.0,
+      "_DetailNormalMapScale": 1.0,
+      "_DstAFactor": 1.0,
+      "_DstBlend": 0.0,
+      "_DstFactor": 10.0,
+      "_Glossiness": 0.5,
+      "_GroundHeight": 0.0,
+      "_HeightFade": 0.10000000149011612,
+      "_HueShift": 0.0,
+      "_Metallic": 0.0,
+      "_Mode": 0.0,
+      "_OcclusionStrength": 1.0,
+      "_Parallax": 0.019999999552965164,
+      "_ParticleGlobalColorIntensity": 0.0,
+      "_Sat": 1.25,
+      "_SrcAFactor": 0.0,
+      "_SrcBlend": 1.0,
+      "_SrcFactor": 5.0,
+      "_StencilComparison": 8.0,
+      "_StencilReference": 0.0,
+      "_UVSec": 0.0,
+      "_Value": 1.75,
+      "_Whitespace": 0.0,
+      "_ZWrite": 1.0
+    },
+    "cols": {
+      "_Color": {
+        "r": 1.0,
+        "g": 1.0,
+        "b": 1.0,
+        "a": 1.0
+      },
+      "_EmissionColor": {
+        "r": 0.0,
+        "g": 0.0,
+        "b": 0.0,
+        "a": 1.0
+      },
+      "_UVScroll": {
+        "r": 0.0,
+        "g": 0.0,
+        "b": 0.0,
+        "a": 0.0
+      }
+    }
+  },
+  "fx_m_tiled_crack_rock_hot_-5813945392773663879": {
+    "path_id": -5813945392773663879,
+    "name": "fx_m_tiled_crack_rock_hot",
+    "texs": {
+      "_base_tex": {
+        "path_id": -6567071638006230182,
+        "name": "qb_ruinedcity_tileablerocks_01_a",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_emissive_tex": {
+        "path_id": -6199539506393080551,
+        "name": "trrn_cliff_rock_01_h",
+        "scale": {
+          "x": 0.8799999952316284,
+          "y": 1.0499999523162842
+        },
+        "offset": {
+          "x": 0.1899999976158142,
+          "y": -0.7099999785423279
+        }
+      },
+      "_normal_tex": {
+        "path_id": -6937722478981215459,
+        "name": "qb_ruinedcity_tileablerocks_01_n",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_particle_lifetime_color_tex": {
+        "path_id": 0,
+        "name": "0",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_particle_sheet_animation_tex": {
+        "path_id": 0,
+        "name": "0",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    "floats": {
+      "EBG_HUE_SHIFT": 0.0,
+      "EB_ADDITIVE": 0.0,
+      "EB_DECAY": 0.0,
+      "EB_PARTICLE_ALPHA_FROM_EMISSIVE": 0.0,
+      "EB_PARTICLE_HEIGHT_FADE": 0.0,
+      "EB_PARTICLE_TINT_EMISSIVE": 0.0,
+      "EB_POSTFX_COLOR": 2.0,
+      "EB_RB_PARTICLE": 0.0,
+      "EB_RB_PARTICLE_STRETCH": 0.0,
+      "EB_TEXTURE_SHEET_ANIM": 0.0,
+      "_BlendOp": 0.0,
+      "_BumpScale": 1.0,
+      "_Cutoff": 0.5,
+      "_DepthTest": 4.0,
+      "_DetailNormalMapScale": 1.0,
+      "_DstAFactor": 1.0,
+      "_DstBlend": 0.0,
+      "_DstFactor": 10.0,
+      "_Glossiness": 0.5,
+      "_GroundHeight": -0.20999999344348907,
+      "_HeightFade": 0.1599999964237213,
+      "_HueShift": 0.0,
+      "_Metallic": 0.0,
+      "_Mode": 0.0,
+      "_OcclusionStrength": 1.0,
+      "_Parallax": 0.019999999552965164,
+      "_ParticleNormalBend": 1.0,
+      "_Sat": 1.0,
+      "_SrcAFactor": 0.0,
+      "_SrcBlend": 1.0,
+      "_SrcFactor": 5.0,
+      "_StencilComparison": 4.0,
+      "_StencilReference": 0.0,
+      "_UVSec": 0.0,
+      "_Value": 1.0,
+      "_Whitespace": 0.0,
+      "_ZWrite": 1.0,
+      "_ao_none": 0.0,
+      "_base_vertex": 0.0,
+      "_blendoffset_range": 0.3400000035762787,
+      "_blendremap_range": 1.399999976158142,
+      "_clearcoat_reflectance_range": 0.10000000149011612,
+      "_emissive_none": 0.0,
+      "_emissive_overbright_range": 26.200000762939453,
+      "_emissive_pulse_intensity_range": 0.0,
+      "_emissive_pulse_time_range": 0.009999999776482582,
+      "_emissive_ramp_range": 2.390000104904175,
+      "_emissive_range": 0.0,
+      "_metallic_range": 0.0,
+      "_metallic_toggle": 0.0,
+      "_metallic_uv": 0.0,
+      "_normal_vertex": 0.0,
+      "_particle_lifetime_color_inv_height": 1.0,
+      "_reflectance_enum": 0.0,
+      "_roughness_range": 0.9810000061988831,
+      "_roughness_uv": 0.0,
+      "_translucency_extinction_range": 0.0,
+      "_translucency_opaqueness_range": 0.0,
+      "_translucency_refraction_index_range": 0.0,
+      "_vertex_roughness_range": 1.0,
+      "eb_destructible": 0.0,
+      "eb_planar_reflection": 0.0,
+      "eb_second_directional_light": 0.0
+    },
+    "cols": {
+      "_Color": {
+        "r": 1.0,
+        "g": 1.0,
+        "b": 1.0,
+        "a": 1.0
+      },
+      "_EmissionColor": {
+        "r": 0.0,
+        "g": 0.0,
+        "b": 0.0,
+        "a": 1.0
+      },
+      "_UVScroll": {
+        "r": 0.0,
+        "g": 0.0,
+        "b": 0.0,
+        "a": 0.0
+      },
+      "_base_b_col": {
+        "r": 0.501960813999176,
+        "g": 0.501960813999176,
+        "b": 0.501960813999176,
+        "a": 1.0
+      },
+      "_base_col": {
+        "r": 0.501960813999176,
+        "g": 0.501960813999176,
+        "b": 0.501960813999176,
+        "a": 1.0
+      },
+      "_base_g_col": {
+        "r": 0.501960813999176,
+        "g": 0.501960813999176,
+        "b": 0.501960813999176,
+        "a": 1.0
+      },
+      "_base_r_col": {
+        "r": 0.501960813999176,
+        "g": 0.501960813999176,
+        "b": 0.501960813999176,
+        "a": 1.0
+      },
+      "_emissive_intensity_col": {
+        "r": 1.0,
+        "g": 0.6340769529342651,
+        "b": 0.3970588445663452,
+        "a": 1.0
+      },
+      "_emissive_scroll_speed_vector": {
+        "r": 0.0,
+        "g": 0.0,
+        "b": 0.0,
+        "a": 0.0
+      },
+      "_normal2_scroll_speed_vector": {
+        "r": 0.0,
+        "g": 0.0,
+        "b": 0.0,
+        "a": 0.0
+      },
+      "_normal_scroll_speed_vector": {
+        "r": 0.0,
+        "g": 0.0,
+        "b": 0.0,
+        "a": 0.0
+      }
+    }
+  },
+  "5FD4163EE04CDE0E18729FB84B07EA951C1F332E_-4795255949371152767": {
+    "path_id": -4795255949371152767,
+    "name": "5FD4163EE04CDE0E18729FB84B07EA951C1F332E",
+    "texs": {
+      "_ao_tex": {
+        "path_id": 0,
+        "name": "0",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_base_tex": {
+        "path_id": -695917625355825749,
+        "name": "tform_misc_A",
+        "scale": {
+          "x": 1.0,
+          "y": 0.5
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_damage_tex": {
+        "path_id": 0,
+        "name": "0",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_emissive_tex": {
+        "path_id": 0,
+        "name": "0",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_metallic_tex": {
+        "path_id": 0,
+        "name": "0",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_normal2_tex": {
+        "path_id": 0,
+        "name": "0",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_normal_tex": {
+        "path_id": -3742620179713543448,
+        "name": "tform_misc_NM",
+        "scale": {
+          "x": 1.0,
+          "y": 0.5
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_pbr_composite_tex": {
+        "path_id": -7076967624015231670,
+        "name": "main_tform_misc_RAOE",
+        "scale": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_roughness_tex": {
+        "path_id": 0,
+        "name": "0",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_translucency_thickness_tex": {
+        "path_id": 0,
+        "name": "0",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    "floats": {
+      "_Mode": 3.0,
+      "_ao_none": 0.0,
+      "_base_vertex": 0.0,
+      "_blendcrunch_range": 0.05000000074505806,
+      "_blendoffset_range": 0.0,
+      "_blendremap_range": 1.0,
+      "_clearcoat_reflectance_range": 0.10000000149011612,
+      "_emissive_none": 0.0,
+      "_emissive_overbright_range": 120.0,
+      "_emissive_pulse_intensity_range": 0.10000000149011612,
+      "_emissive_pulse_time_range": 1.5,
+      "_emissive_ramp_range": 0.699999988079071,
+      "_emissive_range": 0.0,
+      "_falloff_range": 111.0,
+      "_metallic_range": 0.8445888161659241,
+      "_metallic_toggle": 0.0,
+      "_metallic_uv": 0.0,
+      "_normal_vertex": 0.0,
+      "_reflectance": 0.03999999910593033,
+      "_reflectance_enum": 0.0,
+      "_remap_range": 5.0,
+      "_roughness_range": 1.0,
+      "_roughness_uv": 0.0,
+      "_translucency_extinction_range": 0.0,
+      "_translucency_opaqueness_range": 0.0,
+      "_translucency_refraction_index_range": 0.0,
+      "_vertex_roughness_range": 1.0,
+      "eb_destructible": 0.0,
+      "eb_planar_reflection": 0.0,
+      "eb_second_directional_light": 1.0
+    },
+    "cols": {
+      "_Color": {
+        "r": 0.5879999995231628,
+        "g": 0.5879999995231628,
+        "b": 0.5879999995231628,
+        "a": 1.0
+      },
+      "_base2_col": {
+        "r": 0.5,
+        "g": 0.5,
+        "b": 0.5,
+        "a": 1.0
+      },
+      "_base_b_col": {
+        "r": 0.5,
+        "g": 0.5,
+        "b": 0.5,
+        "a": 1.0
+      },
+      "_base_col": {
+        "r": 0.5,
+        "g": 0.5,
+        "b": 0.5,
+        "a": 1.0
+      },
+      "_base_g_col": {
+        "r": 0.5,
+        "g": 0.5,
+        "b": 0.5,
+        "a": 1.0
+      },
+      "_base_r_col": {
+        "r": 0.5,
+        "g": 0.5,
+        "b": 0.5,
+        "a": 1.0
+      },
+      "_blend2_col": {
+        "r": 1.0,
+        "g": 1.0,
+        "b": 1.0,
+        "a": 1.0
+      },
+      "_blend_col": {
+        "r": 1.0,
+        "g": 1.0,
+        "b": 1.0,
+        "a": 1.0
+      },
+      "_emissive_intensity_col": {
+        "r": 0.017271773889660835,
+        "g": 0.02199999988079071,
+        "b": 0.0003519980818964541,
+        "a": 0.0
+      },
+      "_emissive_scroll_speed_vector": {
+        "r": 0.0,
+        "g": 0.0,
+        "b": 0.0,
+        "a": 0.0
+      },
+      "_normal2_scroll_speed_vector": {
+        "r": 0.0,
+        "g": 0.0,
+        "b": 0.0,
+        "a": 0.0
+      },
+      "_normal_scroll_speed_vector": {
+        "r": 0.0,
+        "g": 0.0,
+        "b": 0.0,
+        "a": 0.0
+      }
+    }
+  },
+  "C8D6B159C98EA020F28F590106210BAD2578D25B_-4094851034238062376": {
+    "path_id": -4094851034238062376,
+    "name": "C8D6B159C98EA020F28F590106210BAD2578D25B",
+    "texs": {
+      "_ao_tex": {
+        "path_id": 0,
+        "name": "0",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_base_tex": {
+        "path_id": -5773515023939498855,
+        "name": "cha_ultramagnus_gs_leader_wpns_a",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_damage_tex": {
+        "path_id": 0,
+        "name": "0",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_emissive_tex": {
+        "path_id": 0,
+        "name": "0",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_metallic_tex": {
+        "path_id": 0,
+        "name": "0",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_normal2_tex": {
+        "path_id": 0,
+        "name": "0",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_normal_tex": {
+        "path_id": 1058726723983752318,
+        "name": "wpns_NM",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_pbr_composite_tex": {
+        "path_id": -8868189788918103369,
+        "name": "wpns_RAOE",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_roughness_tex": {
+        "path_id": 0,
+        "name": "0",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_translucency_thickness_tex": {
+        "path_id": 0,
+        "name": "0",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    "floats": {
+      "_BumpScale": 1.0,
+      "_Cutoff": 0.5,
+      "_DetailNormalMapScale": 1.0,
+      "_DstBlend": 0.0,
+      "_Glossiness": 0.5,
+      "_Metallic": 0.0,
+      "_Mode": 3.0,
+      "_OcclusionStrength": 1.0,
+      "_Parallax": 0.019999999552965164,
+      "_SrcBlend": 1.0,
+      "_UVSec": 0.0,
+      "_ZWrite": 1.0,
+      "_ao_none": 0.0,
+      "_base_vertex": 0.0,
+      "_clearcoat_reflectance_range": 0.10000000149011612,
+      "_emissive_none": 0.0,
+      "_emissive_overbright_range": 120.0,
+      "_emissive_pulse_intensity_range": 0.10000000149011612,
+      "_emissive_pulse_time_range": 1.5,
+      "_emissive_ramp_range": 0.699999988079071,
+      "_emissive_range": 0.0,
+      "_metallic_range": 0.0,
+      "_metallic_toggle": 0.0,
+      "_metallic_uv": 0.0,
+      "_normal_vertex": 0.0,
+      "_reflectance": 0.03999999910593033,
+      "_reflectance_enum": 0.0,
+      "_roughness_range": 1.0,
+      "_roughness_uv": 0.0,
+      "_translucency_extinction_range": 0.0,
+      "_translucency_opaqueness_range": 0.0,
+      "_translucency_refraction_index_range": 0.0,
+      "_vertex_roughness_range": 1.0,
+      "eb_destructible": 0.0,
+      "eb_planar_reflection": 0.0,
+      "eb_second_directional_light": 1.0
+    },
+    "cols": {
+      "_Color": {
+        "r": 0.5879999995231628,
+        "g": 0.5879999995231628,
+        "b": 0.5879999995231628,
+        "a": 1.0
+      },
+      "_EmissionColor": {
+        "r": 0.0,
+        "g": 0.0,
+        "b": 0.0,
+        "a": 1.0
+      },
+      "_base_b_col": {
+        "r": 0.5,
+        "g": 0.5,
+        "b": 0.5,
+        "a": 1.0
+      },
+      "_base_col": {
+        "r": 0.5,
+        "g": 0.5,
+        "b": 0.5,
+        "a": 1.0
+      },
+      "_base_g_col": {
+        "r": 0.5,
+        "g": 0.5,
+        "b": 0.5,
+        "a": 1.0
+      },
+      "_base_r_col": {
+        "r": 0.5,
+        "g": 0.5,
+        "b": 0.5,
+        "a": 1.0
+      },
+      "_emissive_intensity_col": {
+        "r": 0.1720000058412552,
+        "g": 0.0580311119556427,
+        "b": 0.006745097693055868,
+        "a": 0.0
+      },
+      "_emissive_scroll_speed_vector": {
+        "r": 0.0,
+        "g": 0.0,
+        "b": 0.0,
+        "a": 0.0
+      },
+      "_normal2_scroll_speed_vector": {
+        "r": 0.0,
+        "g": 0.0,
+        "b": 0.0,
+        "a": 0.0
+      },
+      "_normal_scroll_speed_vector": {
+        "r": 0.0,
+        "g": 0.0,
+        "b": 0.0,
+        "a": 0.0
+      }
+    }
+  },
+  "fx_m_tiled_crack_rock_-487659167540195070": {
+    "path_id": -487659167540195070,
+    "name": "fx_m_tiled_crack_rock",
+    "texs": {
+      "_base_tex": {
+        "path_id": -6567071638006230182,
+        "name": "qb_ruinedcity_tileablerocks_01_a",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_emissive_tex": {
+        "path_id": -6567071638006230182,
+        "name": "qb_ruinedcity_tileablerocks_01_a",
+        "scale": {
+          "x": 0.8799999952316284,
+          "y": 1.0499999523162842
+        },
+        "offset": {
+          "x": 0.1899999976158142,
+          "y": -0.7099999785423279
+        }
+      },
+      "_normal_tex": {
+        "path_id": -6937722478981215459,
+        "name": "qb_ruinedcity_tileablerocks_01_n",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_particle_lifetime_color_tex": {
+        "path_id": 0,
+        "name": "0",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_particle_sheet_animation_tex": {
+        "path_id": 0,
+        "name": "0",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    "floats": {
+      "EBG_HUE_SHIFT": 0.0,
+      "EB_ADDITIVE": 0.0,
+      "EB_DECAY": 0.0,
+      "EB_PARTICLE_ALPHA_FROM_EMISSIVE": 0.0,
+      "EB_PARTICLE_HEIGHT_FADE": 0.0,
+      "EB_PARTICLE_TINT_EMISSIVE": 1.0,
+      "EB_POSTFX_COLOR": 2.0,
+      "EB_RB_PARTICLE": 0.0,
+      "EB_RB_PARTICLE_STRETCH": 0.0,
+      "EB_TEXTURE_SHEET_ANIM": 0.0,
+      "_BlendOp": 0.0,
+      "_BumpScale": 1.0,
+      "_Cutoff": 0.5,
+      "_DepthTest": 4.0,
+      "_DetailNormalMapScale": 1.0,
+      "_DstAFactor": 1.0,
+      "_DstBlend": 0.0,
+      "_DstFactor": 10.0,
+      "_Glossiness": 0.5,
+      "_GroundHeight": -0.20999999344348907,
+      "_HeightFade": 0.1599999964237213,
+      "_HueShift": 0.0,
+      "_Metallic": 0.0,
+      "_Mode": 0.0,
+      "_OcclusionStrength": 1.0,
+      "_Parallax": 0.019999999552965164,
+      "_ParticleNormalBend": 1.0,
+      "_Sat": 1.0,
+      "_SrcAFactor": 0.0,
+      "_SrcBlend": 1.0,
+      "_SrcFactor": 5.0,
+      "_StencilComparison": 4.0,
+      "_StencilReference": 0.0,
+      "_UVSec": 0.0,
+      "_Value": 1.0,
+      "_Whitespace": 0.0,
+      "_ZWrite": 1.0,
+      "_ao_none": 0.0,
+      "_base_vertex": 0.0,
+      "_blendoffset_range": 0.3400000035762787,
+      "_blendremap_range": 1.399999976158142,
+      "_clearcoat_reflectance_range": 0.10000000149011612,
+      "_emissive_none": 0.0,
+      "_emissive_overbright_range": 120.0,
+      "_emissive_pulse_intensity_range": 0.0,
+      "_emissive_pulse_time_range": 0.009999999776482582,
+      "_emissive_ramp_range": 1.899999976158142,
+      "_emissive_range": 0.0,
+      "_metallic_range": 0.0,
+      "_metallic_toggle": 0.0,
+      "_metallic_uv": 0.0,
+      "_normal_vertex": 0.0,
+      "_particle_lifetime_color_inv_height": 1.0,
+      "_reflectance_enum": 0.0,
+      "_roughness_range": 0.9810000061988831,
+      "_roughness_uv": 0.0,
+      "_translucency_extinction_range": 0.0,
+      "_translucency_opaqueness_range": 0.0,
+      "_translucency_refraction_index_range": 0.0,
+      "_vertex_roughness_range": 1.0,
+      "eb_destructible": 0.0,
+      "eb_planar_reflection": 0.0,
+      "eb_second_directional_light": 0.0
+    },
+    "cols": {
+      "_Color": {
+        "r": 1.0,
+        "g": 1.0,
+        "b": 1.0,
+        "a": 1.0
+      },
+      "_EmissionColor": {
+        "r": 0.0,
+        "g": 0.0,
+        "b": 0.0,
+        "a": 1.0
+      },
+      "_UVScroll": {
+        "r": 0.0,
+        "g": 0.0,
+        "b": 0.0,
+        "a": 0.0
+      },
+      "_base_b_col": {
+        "r": 0.501960813999176,
+        "g": 0.501960813999176,
+        "b": 0.501960813999176,
+        "a": 1.0
+      },
+      "_base_col": {
+        "r": 0.501960813999176,
+        "g": 0.501960813999176,
+        "b": 0.501960813999176,
+        "a": 1.0
+      },
+      "_base_g_col": {
+        "r": 0.501960813999176,
+        "g": 0.501960813999176,
+        "b": 0.501960813999176,
+        "a": 1.0
+      },
+      "_base_r_col": {
+        "r": 0.501960813999176,
+        "g": 0.501960813999176,
+        "b": 0.501960813999176,
+        "a": 1.0
+      },
+      "_emissive_intensity_col": {
+        "r": 1.0,
+        "g": 0.6340769529342651,
+        "b": 0.3970588445663452,
+        "a": 1.0
+      },
+      "_emissive_scroll_speed_vector": {
+        "r": 0.0,
+        "g": 0.0,
+        "b": 0.0,
+        "a": 0.0
+      },
+      "_normal2_scroll_speed_vector": {
+        "r": 0.0,
+        "g": 0.0,
+        "b": 0.0,
+        "a": 0.0
+      },
+      "_normal_scroll_speed_vector": {
+        "r": 0.0,
+        "g": 0.0,
+        "b": 0.0,
+        "a": 0.0
+      }
+    }
+  },
+  "fx_m_energy_shockwave_a_147355351511293498": {
+    "path_id": 147355351511293498,
+    "name": "fx_m_energy_shockwave_a",
+    "texs": {
+      "_base_tex": {
+        "path_id": -1371326672651154281,
+        "name": "fx_t_gradient_l2r",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_emissive_tex": {
+        "path_id": -1371326672651154281,
+        "name": "fx_t_gradient_l2r",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_particle_lifetime_color_tex": {
+        "path_id": 0,
+        "name": "0",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_particle_sheet_animation_tex": {
+        "path_id": 0,
+        "name": "0",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    "floats": {
+      "EBG_HUE_SHIFT": 0.0,
+      "EB_ADDITIVE": 0.0,
+      "EB_DECAY": 0.0,
+      "EB_PARTICLE_ALPHA_FROM_EMISSIVE": 0.0,
+      "EB_PARTICLE_HEIGHT_FADE": 1.0,
+      "EB_PARTICLE_TINT_EMISSIVE": 0.0,
+      "EB_POSTFX_COLOR": 0.0,
+      "EB_RB_PARTICLE": 0.0,
+      "EB_RB_PARTICLE_STRETCH": 0.0,
+      "EB_TEXTURE_SHEET_ANIM": 0.0,
+      "_BlendOp": 0.0,
+      "_BumpScale": 1.0,
+      "_Cutoff": 0.5,
+      "_DepthSoftness": 3.0,
+      "_DepthTest": 4.0,
+      "_DetailNormalMapScale": 1.0,
+      "_DstAFactor": 1.0,
+      "_DstBlend": 0.0,
+      "_DstFactor": 1.0,
+      "_Glossiness": 0.5,
+      "_GroundHeight": -2.0,
+      "_HeightFade": 0.10000000149011612,
+      "_HueShift": 0.0,
+      "_Metallic": 0.0,
+      "_Mode": 0.0,
+      "_OcclusionStrength": 1.0,
+      "_Parallax": 0.019999999552965164,
+      "_ParticleNormalBend": 0.0,
+      "_Sat": 1.0,
+      "_SrcAFactor": 0.0,
+      "_SrcBlend": 1.0,
+      "_SrcFactor": 5.0,
+      "_UVSec": 0.0,
+      "_Value": 1.0,
+      "_Whitespace": 0.0,
+      "_ZWrite": 1.0,
+      "_emissive_none": 0.0,
+      "_emissive_overbright_range": 46.400001525878906,
+      "_emissive_pulse_intensity_range": 0.0,
+      "_emissive_pulse_time_range": 1.0,
+      "_emissive_ramp_range": 2.2300000190734863,
+      "_metallic_range": 0.0,
+      "_normal_vertex": 0.0,
+      "_particle_lifetime_color_inv_height": 1.0,
+      "_roughness_range": 1.0
+    },
+    "cols": {
+      "_Color": {
+        "r": 1.0,
+        "g": 1.0,
+        "b": 1.0,
+        "a": 1.0
+      },
+      "_EmissionColor": {
+        "r": 0.0,
+        "g": 0.0,
+        "b": 0.0,
+        "a": 1.0
+      },
+      "_UVScroll": {
+        "r": 0.0,
+        "g": 0.0,
+        "b": 0.0,
+        "a": 0.0
+      },
+      "_emissive_intensity_col": {
+        "r": 0.8227224946022034,
+        "g": 0.11029410362243652,
+        "b": 1.0,
+        "a": 1.0
+      }
+    }
+  },
+  "fx_m_axe_glow_ultramagnus_a_982866352748045095": {
+    "path_id": 982866352748045095,
+    "name": "fx_m_axe_glow_ultramagnus_a",
+    "texs": {
+      "_base_tex": {
+        "path_id": 0,
+        "name": "0",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_emissive_tex": {
+        "path_id": 2233633543840100175,
+        "name": "2233633543840100175",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_normal_tex": {
+        "path_id": 0,
+        "name": "0",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_particle_lifetime_color_tex": {
+        "path_id": 0,
+        "name": "0",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_particle_sheet_animation_tex": {
+        "path_id": 0,
+        "name": "0",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    "floats": {
+      "EBG_HUE_SHIFT": 0.0,
+      "EB_ADDITIVE": 0.0,
+      "EB_DECAY": 0.0,
+      "EB_PARTICLE_ALPHA_FROM_EMISSIVE": 1.0,
+      "EB_PARTICLE_HEIGHT_FADE": 0.0,
+      "EB_PARTICLE_TINT_EMISSIVE": 1.0,
+      "EB_POSTFX_COLOR": 2.0,
+      "EB_RB_PARTICLE": 0.0,
+      "EB_RB_PARTICLE_STRETCH": 0.0,
+      "EB_TEXTURE_SHEET_ANIM": 0.0,
+      "_BlendOp": 0.0,
+      "_BumpScale": 1.0,
+      "_Cutoff": 0.5,
+      "_DepthSoftness": 3.0,
+      "_DepthTest": 8.0,
+      "_DetailNormalMapScale": 1.0,
+      "_DstAFactor": 1.0,
+      "_DstBlend": 0.0,
+      "_DstFactor": 10.0,
+      "_Glossiness": 0.5,
+      "_GroundHeight": -0.10000000149011612,
+      "_HeightFade": 0.6200000047683716,
+      "_HueShift": 0.0,
+      "_Metallic": 0.0,
+      "_Mode": 1.0,
+      "_OcclusionStrength": 1.0,
+      "_Parallax": 0.019999999552965164,
+      "_ParticleGlobalColorIntensity": 0.0,
+      "_ParticleNormalBend": 0.0,
+      "_Sat": 1.0,
+      "_SrcAFactor": 0.0,
+      "_SrcBlend": 1.0,
+      "_SrcFactor": 5.0,
+      "_StencilComparison": 8.0,
+      "_StencilReference": 0.0,
+      "_UVSec": 0.0,
+      "_Value": 1.0,
+      "_Whitespace": 0.0,
+      "_ZWrite": 1.0,
+      "_emissive_none": 0.0,
+      "_emissive_overbright_range": 150.0,
+      "_emissive_pulse_intensity_range": 0.0,
+      "_emissive_pulse_time_range": 1.0,
+      "_emissive_ramp_range": 2.75,
+      "_metallic_range": 0.0,
+      "_normal_vertex": 0.0,
+      "_particle_lifetime_color_inv_height": 1.0,
+      "_roughness_range": 1.0
+    },
+    "cols": {
+      "_Color": {
+        "r": 1.0,
+        "g": 1.0,
+        "b": 1.0,
+        "a": 1.0
+      },
+      "_EmissionColor": {
+        "r": 0.0,
+        "g": 0.0,
+        "b": 0.0,
+        "a": 1.0
+      },
+      "_UVScroll": {
+        "r": 0.0,
+        "g": 0.0,
+        "b": 0.0,
+        "a": 0.0
+      },
+      "_emissive_intensity_col": {
+        "r": 1.0,
+        "g": 0.7470588684082031,
+        "b": 0.36764705181121826,
+        "a": 1.0
+      }
+    }
+  },
+  "33382EA972750CA2519CCC8B888BCC647E5843DD_5520268204611603145": {
+    "path_id": 5520268204611603145,
+    "name": "33382EA972750CA2519CCC8B888BCC647E5843DD",
+    "texs": {
+      "_ao_tex": {
+        "path_id": 0,
+        "name": "0",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_base_tex": {
+        "path_id": -6970767896792368081,
+        "name": "cha_ultramagnus_gs_leader_main_a",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_damage_tex": {
+        "path_id": 0,
+        "name": "0",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_emissive_tex": {
+        "path_id": 0,
+        "name": "0",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_metallic_tex": {
+        "path_id": 0,
+        "name": "0",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_normal2_tex": {
+        "path_id": 0,
+        "name": "0",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_normal_tex": {
+        "path_id": 5841746967496826142,
+        "name": "main_NM",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_pbr_composite_tex": {
+        "path_id": -7076967624015231670,
+        "name": "main_tform_misc_RAOE",
+        "scale": {
+          "x": 1.0,
+          "y": 0.5
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.5
+        }
+      },
+      "_roughness_tex": {
+        "path_id": 0,
+        "name": "0",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_translucency_thickness_tex": {
+        "path_id": 0,
+        "name": "0",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    "floats": {
+      "_Mode": 3.0,
+      "_ao_none": 0.0,
+      "_base_vertex": 0.0,
+      "_blendcrunch_range": 0.05000000074505806,
+      "_blendoffset_range": 0.0,
+      "_blendremap_range": 1.0,
+      "_clearcoat_reflectance_range": 0.10000000149011612,
+      "_emissive_none": 0.0,
+      "_emissive_overbright_range": 120.0,
+      "_emissive_pulse_intensity_range": 0.10000000149011612,
+      "_emissive_pulse_time_range": 1.5,
+      "_emissive_ramp_range": 0.699999988079071,
+      "_emissive_range": 0.0,
+      "_falloff_range": 111.0,
+      "_metallic_range": 0.8445888161659241,
+      "_metallic_toggle": 0.0,
+      "_metallic_uv": 0.0,
+      "_normal_vertex": 0.0,
+      "_reflectance": 0.03999999910593033,
+      "_reflectance_enum": 0.0,
+      "_remap_range": 5.0,
+      "_roughness_range": 0.42100000381469727,
+      "_roughness_uv": 0.0,
+      "_translucency_extinction_range": 0.0,
+      "_translucency_opaqueness_range": 0.0,
+      "_translucency_refraction_index_range": 0.0,
+      "_vertex_roughness_range": 1.0,
+      "eb_destructible": 0.0,
+      "eb_planar_reflection": 0.0,
+      "eb_second_directional_light": 1.0
+    },
+    "cols": {
+      "_Color": {
+        "r": 0.5879999995231628,
+        "g": 0.5879999995231628,
+        "b": 0.5879999995231628,
+        "a": 1.0
+      },
+      "_base2_col": {
+        "r": 0.5,
+        "g": 0.5,
+        "b": 0.5,
+        "a": 1.0
+      },
+      "_base_b_col": {
+        "r": 0.5,
+        "g": 0.5,
+        "b": 0.5,
+        "a": 1.0
+      },
+      "_base_col": {
+        "r": 0.5,
+        "g": 0.5,
+        "b": 0.5,
+        "a": 1.0
+      },
+      "_base_g_col": {
+        "r": 0.5,
+        "g": 0.5,
+        "b": 0.5,
+        "a": 1.0
+      },
+      "_base_r_col": {
+        "r": 0.5,
+        "g": 0.5,
+        "b": 0.5,
+        "a": 1.0
+      },
+      "_blend2_col": {
+        "r": 1.0,
+        "g": 1.0,
+        "b": 1.0,
+        "a": 1.0
+      },
+      "_blend_col": {
+        "r": 1.0,
+        "g": 1.0,
+        "b": 1.0,
+        "a": 1.0
+      },
+      "_emissive_intensity_col": {
+        "r": 0.018999934196472168,
+        "g": 0.06635864078998566,
+        "b": 1.0,
+        "a": 0.0
+      },
+      "_emissive_scroll_speed_vector": {
+        "r": 0.0,
+        "g": 0.0,
+        "b": 0.0,
+        "a": 0.0
+      },
+      "_normal2_scroll_speed_vector": {
+        "r": 0.0,
+        "g": 0.0,
+        "b": 0.0,
+        "a": 0.0
+      },
+      "_normal_scroll_speed_vector": {
+        "r": 0.0,
+        "g": 0.0,
+        "b": 0.0,
+        "a": 0.0
+      }
+    }
+  },
+  "2DF2A110F86329564B86EF24BAEE7370B2977BD2_5691636987978222339": {
+    "path_id": 5691636987978222339,
+    "name": "2DF2A110F86329564B86EF24BAEE7370B2977BD2",
+    "texs": {
+      "_ao_tex": {
+        "path_id": 0,
+        "name": "0",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_base_tex": {
+        "path_id": -695917625355825749,
+        "name": "tform_misc_A",
+        "scale": {
+          "x": 1.0,
+          "y": 0.5
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.5
+        }
+      },
+      "_damage_tex": {
+        "path_id": 0,
+        "name": "0",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_emissive_tex": {
+        "path_id": 0,
+        "name": "0",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_metallic_tex": {
+        "path_id": 0,
+        "name": "0",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_normal2_tex": {
+        "path_id": 0,
+        "name": "0",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_normal_tex": {
+        "path_id": -3742620179713543448,
+        "name": "tform_misc_NM",
+        "scale": {
+          "x": 1.0,
+          "y": 0.5
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.5
+        }
+      },
+      "_pbr_composite_tex": {
+        "path_id": -7076967624015231670,
+        "name": "main_tform_misc_RAOE",
+        "scale": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "offset": {
+          "x": 0.5,
+          "y": 0.0
+        }
+      },
+      "_roughness_tex": {
+        "path_id": 0,
+        "name": "0",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      "_translucency_thickness_tex": {
+        "path_id": 0,
+        "name": "0",
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "offset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    "floats": {
+      "_BumpScale": 1.0,
+      "_Cutoff": 0.5,
+      "_DetailNormalMapScale": 1.0,
+      "_DstBlend": 0.0,
+      "_Glossiness": 0.5,
+      "_Metallic": 0.0,
+      "_Mode": 3.0,
+      "_OcclusionStrength": 1.0,
+      "_Parallax": 0.019999999552965164,
+      "_SrcBlend": 1.0,
+      "_UVSec": 0.0,
+      "_ZWrite": 1.0,
+      "_ao_none": 0.0,
+      "_base_vertex": 0.0,
+      "_clearcoat_reflectance_range": 0.10000000149011612,
+      "_emissive_none": 0.0,
+      "_emissive_overbright_range": 120.0,
+      "_emissive_pulse_intensity_range": 0.10000000149011612,
+      "_emissive_pulse_time_range": 1.5,
+      "_emissive_ramp_range": 0.699999988079071,
+      "_emissive_range": 0.0,
+      "_metallic_range": 0.0,
+      "_metallic_toggle": 0.0,
+      "_metallic_uv": 0.0,
+      "_normal_vertex": 0.0,
+      "_reflectance": 0.03999999910593033,
+      "_reflectance_enum": 0.0,
+      "_roughness_range": 1.0,
+      "_roughness_uv": 0.0,
+      "_translucency_extinction_range": 0.0,
+      "_translucency_opaqueness_range": 0.0,
+      "_translucency_refraction_index_range": 0.0,
+      "_vertex_roughness_range": 1.0,
+      "eb_destructible": 0.0,
+      "eb_planar_reflection": 0.0,
+      "eb_second_directional_light": 1.0
+    },
+    "cols": {
+      "_Color": {
+        "r": 0.5879999995231628,
+        "g": 0.5879999995231628,
+        "b": 0.5879999995231628,
+        "a": 1.0
+      },
+      "_EmissionColor": {
+        "r": 0.0,
+        "g": 0.0,
+        "b": 0.0,
+        "a": 1.0
+      },
+      "_base_b_col": {
+        "r": 0.5,
+        "g": 0.5,
+        "b": 0.5,
+        "a": 1.0
+      },
+      "_base_col": {
+        "r": 0.5,
+        "g": 0.5,
+        "b": 0.5,
+        "a": 1.0
+      },
+      "_base_g_col": {
+        "r": 0.5,
+        "g": 0.5,
+        "b": 0.5,
+        "a": 1.0
+      },
+      "_base_r_col": {
+        "r": 0.5,
+        "g": 0.5,
+        "b": 0.5,
+        "a": 1.0
+      },
+      "_emissive_intensity_col": {
+        "r": 0.07898485660552979,
+        "g": 0.08399999886751175,
+        "b": 0.01024799793958664,
+        "a": 0.0
+      },
+      "_emissive_scroll_speed_vector": {
+        "r": 0.0,
+        "g": 0.0,
+        "b": 0.0,
+        "a": 0.0
+      },
+      "_normal2_scroll_speed_vector": {
+        "r": 0.0,
+        "g": 0.0,
+        "b": 0.0,
+        "a": 0.0
+      },
+      "_normal_scroll_speed_vector": {
+        "r": 0.0,
+        "g": 0.0,
+        "b": 0.0,
+        "a": 0.0
+      }
+    }
+  }
+}

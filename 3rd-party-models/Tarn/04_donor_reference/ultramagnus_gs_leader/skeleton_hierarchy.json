@@ -1,0 +1,105 @@
+{
+  "bundle_name": "ultramagnus_gs_leader.assetbundle",
+  "skinned_mesh_renderers": [
+    {
+      "path_id": -6929876573960912518,
+      "prefab": "Showcase",
+      "hierarchy_path": "UltraMagnus_GS_Leader/character_model/Reference/Hips/Spine/Spine1/RightShoulder/RightArm/RightArmRoll/RightForeArm/RightForeArmRoll/RightHand/axe/cha_ultramagnus_gs_leader_wpns_axe_right",
+      "mesh_name": "cha_ultramagnus_gs_leader_wpns_axe_right",
+      "mesh_pid": 7654643335206966799,
+      "enabled": false,
+      "bone_count": 1,
+      "root_bone": "UltraMagnus_GS_Leader/character_model/Reference/Hips/Spine/Spine1/RightShoulder/RightArm/RightArmRoll/RightForeArm/RightForeArmRoll/RightHand/axe/Reference/COG"
+    },
+    {
+      "path_id": -5669485655896040359,
+      "prefab": "Combat_LW",
+      "hierarchy_path": "UltraMagnus_GS_Leader_lw/character_model/cha_ultramagnus_gs_leader_00",
+      "mesh_name": "cha_ultramagnus_gs_leader_00",
+      "mesh_pid": -3677919709812409737,
+      "enabled": true,
+      "bone_count": 53,
+      "root_bone": "UltraMagnus_GS_Leader_lw/character_model/Reference/Hips"
+    },
+    {
+      "path_id": -4497864873147514607,
+      "prefab": "Showcase",
+      "hierarchy_path": "UltraMagnus_GS_Leader/character_model/cha_ultramagnus_gs_leader_00",
+      "mesh_name": "cha_ultramagnus_gs_leader_00",
+      "mesh_pid": -3677919709812409737,
+      "enabled": true,
+      "bone_count": 53,
+      "root_bone": "UltraMagnus_GS_Leader/character_model/Reference/Hips"
+    },
+    {
+      "path_id": -3806277267122844283,
+      "prefab": "Showcase",
+      "hierarchy_path": "UltraMagnus_GS_Leader/character_model/Reference/Hips/Spine/Spine1/RightShoulder/RightArm/RightArmRoll/RightForeArm/RightForeArmRoll/RightHand/rightgun/cha_ultramagnus_gs_leader_wpns_gun_right",
+      "mesh_name": "cha_ultramagnus_gs_leader_wpns_gun_right",
+      "mesh_pid": 5893260762754590423,
+      "enabled": false,
+      "bone_count": 2,
+      "root_bone": "UltraMagnus_GS_Leader/character_model/Reference/Hips/Spine/Spine1/RightShoulder/RightArm/RightArmRoll/RightForeArm/RightForeArmRoll/RightHand/rightgun/Reference/COG"
+    },
+    {
+      "path_id": -3099658301619870697,
+      "prefab": "Showcase",
+      "hierarchy_path": "UltraMagnus_GS_Leader/character_model/Reference/Hips/Spine/Spine1/LeftShoulder/LeftArm/LeftArmRoll/LeftForeArm/LeftForeArmRoll/LeftHand/leftgun/cha_ultramagnus_gs_leader_wpns_pistol_left",
+      "mesh_name": "cha_ultramagnus_gs_leader_wpns_pistol_left",
+      "mesh_pid": 5568134650043144874,
+      "enabled": false,
+      "bone_count": 2,
+      "root_bone": "UltraMagnus_GS_Leader/character_model/Reference/Hips/Spine/Spine1/LeftShoulder/LeftArm/LeftArmRoll/LeftForeArm/LeftForeArmRoll/LeftHand/leftgun/Reference/COG"
+    },
+    {
+      "path_id": 4543470380929569169,
+      "prefab": "Combat_LW",
+      "hierarchy_path": "UltraMagnus_GS_Leader_lw/character_model/Reference/Hips/Spine/Spine1/LeftShoulder/LeftArm/LeftArmRoll/LeftForeArm/LeftForeArmRoll/LeftHand/leftgun/cha_ultramagnus_gs_leader_wpns_pistol_left",
+      "mesh_name": "cha_ultramagnus_gs_leader_wpns_pistol_left",
+      "mesh_pid": 5568134650043144874,
+      "enabled": false,
+      "bone_count": 2,
+      "root_bone": "UltraMagnus_GS_Leader_lw/character_model/Reference/Hips/Spine/Spine1/LeftShoulder/LeftArm/LeftArmRoll/LeftForeArm/LeftForeArmRoll/LeftHand/leftgun/Reference/COG"
+    },
+    {
+      "path_id": 5537406516109862368,
+      "prefab": "Combat_LW",
+      "hierarchy_path": "UltraMagnus_GS_Leader_lw/character_model/Reference/Hips/Spine/Spine1/RightShoulder/RightArm/RightArmRoll/RightForeArm/RightForeArmRoll/RightHand/rightgun/cha_ultramagnus_gs_leader_wpns_gun_right",
+      "mesh_name": "cha_ultramagnus_gs_leader_wpns_gun_right",
+      "mesh_pid": 5893260762754590423,
+      "enabled": false,
+      "bone_count": 2,
+      "root_bone": "UltraMagnus_GS_Leader_lw/character_model/Reference/Hips/Spine/Spine1/RightShoulder/RightArm/RightArmRoll/RightForeArm/RightForeArmRoll/RightHand/rightgun/Reference/COG"
+    },
+    {
+      "path_id": 6374655313817044002,
+      "prefab": "Showcase",
+      "hierarchy_path": "UltraMagnus_GS_Leader/character_model/Reference/Hips/transformed/cha_ultramagnus_gs_leader_01",
+      "mesh_name": "cha_ultramagnus_gs_leader_01",
+      "mesh_pid": 1965915829973675685,
+      "enabled": false,
+      "bone_count": 40,
+      "root_bone": "UltraMagnus_GS_Leader/character_model/Reference/Hips/transformed/Reference/COG/BodyBase/Trailer/chop1_shoulder_side_right"
+    },
+    {
+      "path_id": 7769099272486437918,
+      "prefab": "Combat_LW",
+      "hierarchy_path": "UltraMagnus_GS_Leader_lw/character_model/Reference/Hips/transformed/cha_ultramagnus_gs_leader_01",
+      "mesh_name": "cha_ultramagnus_gs_leader_01",
+      "mesh_pid": 1965915829973675685,
+      "enabled": false,
+      "bone_count": 40,
+      "root_bone": "UltraMagnus_GS_Leader_lw/character_model/Reference/Hips/transformed/Reference/COG/BodyBase/Trailer/chop1_shoulder_side_right"
+    },
+    {
+      "path_id": 8776407398459535180,
+      "prefab": "Combat_LW",
+      "hierarchy_path": "UltraMagnus_GS_Leader_lw/character_model/Reference/Hips/Spine/Spine1/RightShoulder/RightArm/RightArmRoll/RightForeArm/RightForeArmRoll/RightHand/axe/cha_ultramagnus_gs_leader_wpns_axe_right",
+      "mesh_name": "cha_ultramagnus_gs_leader_wpns_axe_right",
+      "mesh_pid": 7654643335206966799,
+      "enabled": false,
+      "bone_count": 1,
+      "root_bone": "UltraMagnus_GS_Leader_lw/character_model/Reference/Hips/Spine/Spine1/RightShoulder/RightArm/RightArmRoll/RightForeArm/RightForeArmRoll/RightHand/axe/Reference/COG"
+    }
+  ]
+}

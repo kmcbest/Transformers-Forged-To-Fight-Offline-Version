@@ -1,0 +1,505 @@
+{
+  "sp3_timings": {
+    "intervals": [
+      [
+        2800,
+        5566
+      ],
+      [
+        2233,
+        8666
+      ]
+    ],
+    "props": {
+      "cannon": [
+        [
+          0,
+          0
+        ]
+      ],
+      "mace": [
+        [
+          30,
+          2900
+        ]
+      ],
+      "staticCannon": [
+        [
+          0,
+          2870
+        ],
+        [
+          4860,
+          8000
+        ]
+      ]
+    },
+    "notes": "G1\u5a01\u9707\u5929 (Megatron) - \u5766\u514b"
+  },
+  "materials": [
+    {
+      "path_id": -9117353815363826346,
+      "name": "ABF3614F712C3EB2DB194B9EAF236A433C6B1676",
+      "textures": {
+        "_ao_tex": null,
+        "_base_tex": "cha_megatron_gs_leader2015_wpns_a",
+        "_damage_tex": null,
+        "_emissive_tex": null,
+        "_metallic_tex": null,
+        "_normal2_tex": null,
+        "_normal_tex": "wpns_NM",
+        "_pbr_composite_tex": "wpns_RAOE",
+        "_roughness_tex": null,
+        "_translucency_thickness_tex": null
+      },
+      "colors": {
+        "_Color": [
+          0.588,
+          0.588,
+          0.588,
+          1.0
+        ],
+        "_EmissionColor": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "_base_b_col": [
+          0.5,
+          0.5,
+          0.5,
+          1.0
+        ],
+        "_base_col": [
+          0.5,
+          0.5,
+          0.5,
+          1.0
+        ],
+        "_base_g_col": [
+          0.5,
+          0.5,
+          0.5,
+          1.0
+        ],
+        "_base_r_col": [
+          0.5,
+          0.5,
+          0.5,
+          1.0
+        ],
+        "_emissive_intensity_col": [
+          0.0246,
+          0.0058,
+          0.109,
+          0.0
+        ],
+        "_emissive_scroll_speed_vector": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "_normal2_scroll_speed_vector": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "_normal_scroll_speed_vector": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "floats": {
+        "_BumpScale": 1.0,
+        "_Cutoff": 0.5,
+        "_DetailNormalMapScale": 1.0,
+        "_DstBlend": 0.0,
+        "_Glossiness": 0.5,
+        "_Metallic": 0.0,
+        "_Mode": 3.0,
+        "_OcclusionStrength": 1.0,
+        "_Parallax": 0.02,
+        "_SrcBlend": 1.0,
+        "_UVSec": 0.0,
+        "_ZWrite": 1.0,
+        "_ao_none": 0.0,
+        "_base_vertex": 0.0,
+        "_clearcoat_reflectance_range": 0.1,
+        "_emissive_none": 0.0,
+        "_emissive_overbright_range": 120.0,
+        "_emissive_pulse_intensity_range": 0.1,
+        "_emissive_pulse_time_range": 1.5,
+        "_emissive_ramp_range": 0.7,
+        "_emissive_range": 0.0,
+        "_metallic_range": 0.0,
+        "_metallic_toggle": 0.0,
+        "_metallic_uv": 0.0,
+        "_normal_vertex": 0.0,
+        "_reflectance": 0.04,
+        "_reflectance_enum": 0.0,
+        "_roughness_range": 1.0,
+        "_roughness_uv": 0.0,
+        "_translucency_extinction_range": 0.0,
+        "_translucency_opaqueness_range": 0.0,
+        "_translucency_refraction_index_range": 0.0,
+        "_vertex_roughness_range": 1.0,
+        "eb_destructible": 0.0,
+        "eb_planar_reflection": 0.0,
+        "eb_second_directional_light": 1.0
+      }
+    },
+    {
+      "path_id": 1722215546450231611,
+      "name": "F847A7F9D2C5EEE2F58F82B394F39A6BED718169",
+      "textures": {
+        "_ao_tex": null,
+        "_base_tex": "tform_misc_A",
+        "_damage_tex": null,
+        "_emissive_tex": null,
+        "_metallic_tex": null,
+        "_normal2_tex": null,
+        "_normal_tex": "tform_misc_NM",
+        "_pbr_composite_tex": "main_tform_misc_RAOE",
+        "_roughness_tex": null,
+        "_translucency_thickness_tex": null
+      },
+      "colors": {
+        "_Color": [
+          0.1922,
+          0.1922,
+          0.1922,
+          1.0
+        ],
+        "_EmissionColor": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "_base_b_col": [
+          0.5,
+          0.5,
+          0.5,
+          1.0
+        ],
+        "_base_col": [
+          0.5,
+          0.5,
+          0.5,
+          1.0
+        ],
+        "_base_g_col": [
+          0.5,
+          0.5,
+          0.5,
+          1.0
+        ],
+        "_base_r_col": [
+          0.5,
+          0.5,
+          0.5,
+          1.0
+        ],
+        "_emissive_intensity_col": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "_emissive_scroll_speed_vector": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "_normal2_scroll_speed_vector": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "_normal_scroll_speed_vector": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "floats": {
+        "_BumpScale": 1.0,
+        "_Cutoff": 0.5,
+        "_DetailNormalMapScale": 1.0,
+        "_DstBlend": 0.0,
+        "_Glossiness": 0.5,
+        "_Metallic": 0.0,
+        "_Mode": 3.0,
+        "_OcclusionStrength": 1.0,
+        "_Parallax": 0.02,
+        "_SrcBlend": 1.0,
+        "_UVSec": 0.0,
+        "_ZWrite": 1.0,
+        "_ao_none": 0.0,
+        "_base_vertex": 0.0,
+        "_clearcoat_reflectance_range": 0.1,
+        "_emissive_none": 0.0,
+        "_emissive_overbright_range": 120.0,
+        "_emissive_pulse_intensity_range": 0.1,
+        "_emissive_pulse_time_range": 1.5,
+        "_emissive_ramp_range": 0.7,
+        "_emissive_range": 0.0,
+        "_metallic_range": 0.0,
+        "_metallic_toggle": 0.0,
+        "_metallic_uv": 0.0,
+        "_normal_vertex": 0.0,
+        "_reflectance": 0.04,
+        "_reflectance_enum": 0.0,
+        "_roughness_range": 1.0,
+        "_roughness_uv": 0.0,
+        "_translucency_extinction_range": 0.0,
+        "_translucency_opaqueness_range": 0.0,
+        "_translucency_refraction_index_range": 0.0,
+        "_vertex_roughness_range": 1.0,
+        "eb_destructible": 0.0,
+        "eb_planar_reflection": 0.0,
+        "eb_second_directional_light": 1.0
+      }
+    },
+    {
+      "path_id": 8075787426780741283,
+      "name": "D1CD5AE615022349AB66EA90D9DFAD094C04CF96",
+      "textures": {
+        "_ao_tex": null,
+        "_base_tex": "cha_megatron_gs_leader2015_main_a",
+        "_damage_tex": null,
+        "_emissive_tex": null,
+        "_metallic_tex": null,
+        "_normal2_tex": null,
+        "_normal_tex": "main_NM",
+        "_pbr_composite_tex": "main_tform_misc_RAOE",
+        "_roughness_tex": null,
+        "_translucency_thickness_tex": null
+      },
+      "colors": {
+        "_Color": [
+          0.2549,
+          0.2627,
+          0.2431,
+          1.0
+        ],
+        "_EmissionColor": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "_base_b_col": [
+          0.5,
+          0.5,
+          0.5,
+          1.0
+        ],
+        "_base_col": [
+          0.5,
+          0.5,
+          0.5,
+          1.0
+        ],
+        "_base_g_col": [
+          0.5,
+          0.5,
+          0.5,
+          1.0
+        ],
+        "_base_r_col": [
+          0.5,
+          0.5,
+          0.5,
+          1.0
+        ],
+        "_emissive_intensity_col": [
+          0.11,
+          0.007,
+          0.007,
+          0.0
+        ],
+        "_emissive_scroll_speed_vector": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "_normal2_scroll_speed_vector": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "_normal_scroll_speed_vector": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "floats": {
+        "_BumpScale": 1.0,
+        "_Cutoff": 0.5,
+        "_DetailNormalMapScale": 1.0,
+        "_DstBlend": 0.0,
+        "_Glossiness": 0.5,
+        "_Metallic": 0.0,
+        "_Mode": 3.0,
+        "_OcclusionStrength": 1.0,
+        "_Parallax": 0.02,
+        "_SrcBlend": 1.0,
+        "_UVSec": 0.0,
+        "_ZWrite": 1.0,
+        "_ao_none": 0.0,
+        "_base_vertex": 0.0,
+        "_clearcoat_reflectance_range": 0.1,
+        "_emissive_none": 0.0,
+        "_emissive_overbright_range": 120.0,
+        "_emissive_pulse_intensity_range": 0.1,
+        "_emissive_pulse_time_range": 1.5,
+        "_emissive_ramp_range": 0.7,
+        "_emissive_range": 0.0,
+        "_metallic_range": 0.0,
+        "_metallic_toggle": 0.0,
+        "_metallic_uv": 0.0,
+        "_normal_vertex": 0.0,
+        "_reflectance": 0.04,
+        "_reflectance_enum": 0.0,
+        "_roughness_range": 1.0,
+        "_roughness_uv": 0.0,
+        "_translucency_extinction_range": 0.0,
+        "_translucency_opaqueness_range": 0.0,
+        "_translucency_refraction_index_range": 0.0,
+        "_vertex_roughness_range": 1.0,
+        "eb_destructible": 0.0,
+        "eb_planar_reflection": 0.0,
+        "eb_second_directional_light": 1.0
+      }
+    },
+    {
+      "path_id": 8175378592256487408,
+      "name": "1F85244593F23198CEF4BF965CA4B806424D22CC",
+      "textures": {
+        "_ao_tex": null,
+        "_base_tex": "tform_misc_A",
+        "_damage_tex": null,
+        "_emissive_tex": null,
+        "_metallic_tex": null,
+        "_normal2_tex": null,
+        "_normal_tex": "tform_misc_NM",
+        "_pbr_composite_tex": "main_tform_misc_RAOE",
+        "_roughness_tex": null,
+        "_translucency_thickness_tex": null
+      },
+      "colors": {
+        "_Color": [
+          0.5882,
+          0.5882,
+          0.5882,
+          1.0
+        ],
+        "_EmissionColor": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "_base_b_col": [
+          0.5,
+          0.5,
+          0.5,
+          1.0
+        ],
+        "_base_col": [
+          0.5,
+          0.5,
+          0.5,
+          1.0
+        ],
+        "_base_g_col": [
+          0.5,
+          0.5,
+          0.5,
+          1.0
+        ],
+        "_base_r_col": [
+          0.5,
+          0.5,
+          0.5,
+          1.0
+        ],
+        "_emissive_intensity_col": [
+          0.0245,
+          0.006,
+          0.1098,
+          0.0
+        ],
+        "_emissive_scroll_speed_vector": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "_normal2_scroll_speed_vector": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "_normal_scroll_speed_vector": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "floats": {
+        "_BumpScale": 1.0,
+        "_Cutoff": 0.5,
+        "_DetailNormalMapScale": 1.0,
+        "_DstBlend": 0.0,
+        "_Glossiness": 0.5,
+        "_Metallic": 0.0,
+        "_Mode": 3.0,
+        "_OcclusionStrength": 1.0,
+        "_Parallax": 0.02,
+        "_SrcBlend": 1.0,
+        "_UVSec": 0.0,
+        "_ZWrite": 1.0,
+        "_ao_none": 0.0,
+        "_base_vertex": 0.0,
+        "_clearcoat_reflectance_range": 0.1,
+        "_emissive_none": 0.0,
+        "_emissive_overbright_range": 120.0,
+        "_emissive_pulse_intensity_range": 0.1,
+        "_emissive_pulse_time_range": 1.5,
+        "_emissive_ramp_range": 0.7,
+        "_emissive_range": 0.0,
+        "_metallic_range": 0.0,
+        "_metallic_toggle": 0.0,
+        "_metallic_uv": 0.0,
+        "_normal_vertex": 0.0,
+        "_reflectance": 0.04,
+        "_reflectance_enum": 0.0,
+        "_roughness_range": 1.0,
+        "_roughness_uv": 0.0,
+        "_translucency_extinction_range": 0.0,
+        "_translucency_opaqueness_range": 0.0,
+        "_translucency_refraction_index_range": 0.0,
+        "_vertex_roughness_range": 1.0,
+        "eb_destructible": 0.0,
+        "eb_planar_reflection": 0.0,
+        "eb_second_directional_light": 1.0
+      }
+    }
+  ]
+}

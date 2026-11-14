@@ -151,6 +151,7 @@ ROSTER = {
     "bugbite_gs_kabam":             ("mercenary",  "braw", 5),
     "blackout_cin_tf":              ("decepticon", "demo", 5),
     "vortex_gs":                    ("decepticon", "warr", 5),
+    "tarn_gs":                      ("decepticon", "braw", 5),
     "waspinator_gs_deluxe":         ("predacon",   "demo", 5),
 
     # --- Sharkticons (unlocked 5-star cards; cannon-fodder combat stats preserved) ---
@@ -292,6 +293,7 @@ _BOT_BASE_STATS = {
     "sunstorm_gs_leader2015": (45300, 2950),
     "sunstreaker_gs_deluxe2008": (44250, 3560),
     "tantrum_gs_kabam": (44850, 3590),
+    "tarn_gs": (45022, 3637),
     "bugbite_gs_kabam": (45022, 3637),
     "thrust_gs_deluxe2008": (40400, 2950),
     "thundercracker_gs_leader2015": (45514, 3531),
@@ -703,6 +705,7 @@ _ART_BASE = {
     "thundercracker_gs_leader2015": "thunder_gs",
     "thrust_gs_deluxe2008": "thrust",
     "blackout_cin_tf": "blackout_c_tf",
+    "tarn_gs": "tarn_gs",
     "vortex_gs": "vortex_gs",
     "waspinator_gs_deluxe": "wasp_bw",  # Only the Beast Wars-styled art ships.
 
@@ -895,6 +898,7 @@ _BOT_NAMES = {
     "starscream_ghost_gs": "Ghost Starscream",
     "thundercracker_gs_leader2015": "Thundercracker",
     "tantrum_gs_kabam": "Tantrum",
+    "tarn_gs": "Tarn",
     "vortex_gs": "Vortex",
     "waspinator_gs_deluxe": "Waspinator",
 
