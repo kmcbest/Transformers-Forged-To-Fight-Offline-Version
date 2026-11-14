@@ -113,6 +113,7 @@ assets_redeco/*
 !assets_redeco/bugbite_gs_kabam.assetbundle.manifest
 !assets_redeco/*bugbite*
 !assets_redeco/rust_merged.assetbundle
+!assets_redeco/karnak_merged.assetbundle
 !assets_redeco/*onslaught*
 !assets_redeco/*vortex*
 !assets_redeco/*strongarm*
@@ -127,5 +128,17 @@ cookies.txt
 
 # Overridden Unity assets
 !assets_overrides/**
+
+# Unity stage_project ignores
+stage_project/[Ll]ibrary/
+stage_project/[Tt]emp/
+stage_project/[Oo]bj/
+stage_project/[Bb]uild/
+stage_project/[Bb]uilds/
+stage_project/[Ll]ogs/
+stage_project/[Uu]ser[Ss]ettings/
+stage_project/AssetBundles/
+stage_project/*.log
+stage_project_assets/
 
 *.backup

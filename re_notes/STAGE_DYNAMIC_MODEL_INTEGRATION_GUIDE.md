@@ -1,29 +1,29 @@
 # TFTF 战斗场景动态模型嫁接与背景演绎技术指南
 # (Battle Stage Dynamic Model Integration & Background Animation Specification)
 
-本文档系统性总结了《变形金刚：百炼为战》（Transformers: Forged to Fight）离线重构版本中，**在既有战斗场景（Stage / Arena）中添加全新外部 3D 动态模型、绑定背景循环动画、调教动态 PBR 着色器以及规避 AssetBundle 底层陷阱的全套端到端工业化流程**。
+本文档系统性总结了《变形金刚：百炼为战》（Transformers: Forged to Fight）离线重构版本中，**在既有战斗场景（Stage / Arena）中添加全新外部 3D 动态模型、绑定背景循环动画、调教动态 PBR 着色器以及规避 AssetBundle 底层陷阱的全套端到端工业化流程**。涵盖“生锈荒海（Rust Sea）6车合体大力神”与“卡纳克沙漠（Karnak Desert）修罗王 vs 凯旋女神双巨像对峙”两套经典实战案例。
 
 ---
 
 ## 一、 核心架构与技术挑战
 
-在 TFTF 场景中植入如“6车合体大力神（Devastator）”这类高复杂度动态资产，存在数个跨引擎与底层打包层面的致命技术壁垒：
+在 TFTF 场景中植入外部高复杂度动态资产（如 6 车合体大力神 Devastator、修罗王 Volcanicus、凯旋女神 Victorion），存在跨引擎与底层打包层面的数个致命技术壁垒：
 
 ```
 [外部 3D 模具与动作 FBX] ──▶ [Unity 2020.3.31f1 独立舞台工程]
                                             │ (导出舞台临时 AssetBundle)
                                             ▼
-[原版 Stage rust_merged.assetbundle] ◀── [merge_devastator_rust_stage.py] (TypeTree & 层次合并)
-                                            │
+[原版 Stage assetbundle] ◀─── [merge_and_patch_*.py] (TypeTree & 层次合并)
+ (rust_merged / karnak_merged)              │
                                             ▼
-                               [patch_rust_merged_devastator.py]
                                ┌────────────┴────────────┐
                                ▼                         ▼
                   [动态角色 PBR 着色器注入]       [resS 纹理流单轨归一化]
-                  [材质光照与暗面补偿调色]       [Mecanim 纯净循环防畸变]
+                  [材质光照与粉红超新星防御]       [Mecanim 纯净循环防畸变]
+                  [战斗围栏避让与沙丘贴地标定]     [双机视线聚焦与等高配比]
                                │
                                ▼
-            [assets_redeco/rust_merged.assetbundle]
+            [assets_redeco/*_merged.assetbundle]
                                │
                                ▼
         [Server/build_phone_apk.py] (TOC CRC=0 & 文件大小动态重写)
@@ -121,6 +121,15 @@
    * 尾帧的属性与位置与 $t=0.0s$ 起始帧 **100% 严格一致**。
    * 当 Mecanim 触发循环时，从 14.90s 到 0.00s 的过渡误差为 0，实现了没有任何抽搐和突变的无限丝滑连贯循环！
 
+### 4. 陷阱 3：动作位移引发模型倒地翻覆与多机拼装肢体脱节（卡纳克双巨像实战教训）
+在卡纳克沙漠引入凯旋女神（Victorion，由 6 台载具拼装而成）时，踩中了动作选择与肢体绑定的严重陷阱：
+* **动作位移翻滚陷阱**：
+  * 若误选了包含大幅多段下劈、前滚翻位移的攻击动画（如 `attack_3`），在未搭载 Root Motion 物理约束的场景背景中，末段位移会导致模型重力朝向翻覆，甚至整尊人物“躺倒卧地”。
+  * **法则**：背景观战模型必须选用**重心稳定、动作刚劲、在原地起手与收招的专属动作剪辑**（如稳定的 `Victorion_Attack_1`，时长 2.83 秒，挥舞巨剑霸气挥砍后自然回正）。
+* **多部件拼装关节脱节与散架**：
+  * 组合金刚（Combiner）由多机拼接。如果开启了 `m_LoopBlend`，首尾帧强制融合会硬生生拉断关节约束，导致直升机双臂悬空断裂、跑车双腿脱节飞离躯干。
+  * **必须坚决贯彻 `m_LoopBlend = False`**，严格关闭姿态闭环平滑，让每台机体的骨骼曲线按照原生关键帧精确贴合咬合。
+
 ---
 
 ## 四、 PBR 着色器与光照调色避坑指南
@@ -149,9 +158,70 @@
 4. **金属与清漆高光锐化**：
    * 设置 `_reflectance = 0.08` 与 `_clearcoat_reflectance_range = 0.20`，在沙漠阳光下激发出醒目的金属高光边缘轮廓。
 
+### 3. PBR 自发光遮罩与移动端泛光失真（“粉红超新星”强光陷阱，最隐蔽杀手！）
+在卡纳克沙漠调优修罗王与凯旋女神材质时，遭遇了模型在实机上通体爆发出极度刺眼的粉红色超新星强光的重大 Bug：
+* **TFTF 角色着色器 RAOE 通道真理**：
+  * 原生角色 PBR 着色器 `Hidden/PBR_EB_SECOND_DIRECTIONAL_LIGHT_ON...` 采用特殊的 **RAOE 复合通道标准**（`_pbr_composite_tex`）：
+    - `R` (Red) = 粗糙度 (Roughness)
+    - `G` (Green) = 环境光遮蔽 (Ambient Occlusion, AO)
+    - `B` (Blue) = **自发光遮罩 (Emissive Mask)**！
+    - `A` (Alpha) = 金属度 / 附加属性 (Metallic / Specular)
+  * 着色器中总自发光计算公式如下：
+    $$\text{TotalEmissive} = \text{tex2D}(\_pbr\_composite\_tex, uv).b \times \_emissive\_overbright\_range \times \_EmissionColor.rgb$$
+* **强光致盲成因剖析**：
+  * 此前为了消除全黑剪影，误将复合贴图绑定到特效贴图（如 `fx_t_energy_vortex`），该贴图的 Blue 通道全图恒为 255（1.0）。
+  * 角色着色器默认预埋了 `_emissive_overbright_range = 120.0`。
+  * 只要材质上赋予哪怕一点微弱的 `_EmissionColor = (0.35, 0.35, 0.35)`，两者相乘便会产生 **$1.0 \times 120.0 \times 0.35 = 42.0$ 的毁灭级自发光强度**！
+  * 移动端后处理（Post-Processing）的 HDR 泛光（Bloom）阈值通常为 1.0。高达 42 倍的发光强度直接击穿了 Tone-mapping 映射上限，在暖黄色的卡纳克沙漠中严重色偏溢出为通体发白、边缘泛粉的巨大超新星光球！
+* **治本防御铁律**：
+  * ① **自发光通道参数物理归零**：将材质浮点属性中的 `_emissive_overbright_range = 0.0`、`_emissive_range = 0.0`，并开启 `_emissive_none = 1.0`；颜色属性 `_EmissionColor = (0, 0, 0, 1)` 与 `_emissive_intensity_col = (0, 0, 0, 0)` 坚决清零。
+  * ② **选用纯净 RAOE 复合贴图**：使用 `Victorion_AO`（PID `-890209823152787406`），其 G 通道均值 126.5（min 56，层次丰富绝无死黑），B 通道均值仅 2.99/255 ≈ 0.01（自发光遮罩近乎零）。
+  * ③ **解除 AO 强制压暗**：将 `_OcclusionStrength` 强制置为 `0.0`，杜绝暗部被环境遮蔽腰斩成黑块。
+  * ④ **沙漠日光漫反射增益**：将基础颜色 `_Color` 设为 `(1.5, 1.5, 1.5, 1.0)`，平行光与环境散射增益 `_base_col`、`_base_r/g/b_col` 统一设为 `1.2`，获得日光下通透鲜活、高对比度的高清金属机甲质感。
+  * ⑤ **防法线缺失空指针黑块**：凯旋女神等缺少原装法线贴图的模型，统一绑定场景平整法线（如 `krnk_prop_pillar_01_n`），严禁留空触发 Shader 异常黑块。
+
 ---
 
-## 五、 UnityFS 单轨 resS 纹理流归一化
+
+---
+
+## 五、 战斗场地活动围栏与背景巨像落位避让法则
+
+在格斗游戏中，背景动态演绎角色绝不能干扰或侵入前景英雄的对战体验：
+
+### 1. 致命误区：将视觉装饰地标误当成全部活动空间
+* **现象**：初次配置时，若误以为卡纳克中央只有内圈小圆盘（半径约 15 米）是战斗场地，将巨像放置在半径 20~30 米处（如 `(-22, 0, 20)` 与 `(22, 2.06, 20)`）。在实机对战中，战斗英雄一旦闪避后撤或蓄力突进，便会直接穿模移动到巨像脚下甚至踢到巨像小腿。
+* **真实架构真相**：
+  * 卡纳克沙漠中央的内环小圆盘仅为视觉起点中心；
+  * 整个外环刻花金属大圆盘 `krnk_trrn_metal_panel_floor_01`（半径约 35.3 米）**全都是角色可以自由移动的平地**；
+  * 真正的战斗活动物理边界是由场景摄像机辅助系统 `HELPERS_CAMERAScale/player_wall` 约束的八角形空气墙，其有效边界半径高达 **45~50 米**！
+
+### 2. 背景巨像落位五大黄金法则
+为彻底杜绝穿模并营造震撼的观赛构图，提炼出以下五项工程标定法则：
+
+1. **绝对安全避让距离（$R \ge 60$ 米）**：
+   * 背景模型摆放半径必须严格大于空气墙外沿 15 米以上。
+   * **修罗王（① 号位）**：放置在左上角沙丘废墟后方 `X = -48.0, Y = 1.5, Z = 46.0`（距中心 $R = 66.5$ 米）。
+   * **凯旋女神（② 号位）**：放置在右上角狮身人面像前沙丘 `X = 46.0, Y = 4.13, Z = 46.0`（距中心 $R = 65.0$ 米）。
+2. **视线绝对聚焦法则（$\text{atan2}$ 朝向计算）**：
+   * 模型从坐标 $(X, Z)$ 看向战场中心 $(0, 0)$ 的向量为 $(-X, -Z)$，其航向角应严格设为 $\theta = \text{atan2}(-X, -Z)$：
+     - ① 号位：$\text{atan2}(48, -46) \approx 133.78^\circ$，四元数 `{x: 0, y: 0.91976, z: 0, w: 0.39249}`；
+     - ② 号位：$\text{atan2}(-46, -46) = -135.0^\circ$，四元数 `{x: 0, y: -0.92388, z: 0, w: 0.38268}`。
+   * 双巨像视线 100% 聚焦于圆盘中央的格斗对决。
+3. **双巨像对立夹角（Angular Separation）**：
+   * 双机夹角保持在 $90^\circ \sim 150^\circ$ 之间（本次为 $91.22^\circ$）。在主对战摄像机广角画幅中左一尊、右一尊遥相呼应，构筑出极富层次感的史诗竞技场纵深。
+4. **沙丘斜坡地面贴合度（Terrain Grounding）**：
+   * 沙漠边缘沙丘具有自然坡高（卡纳克沙丘地表高度约为 $Y = 1.5$ 米）。
+   * 凯旋女神模型因动作中心自带约 2.63 米的局部中心偏移，其 Transform Y 坐标需相应设为 $Y = 1.5 + 2.63 = 4.13$ 米，从而使其双脚紧密服帖地踩在沙丘表面，杜绝漂浮或陷地。
+5. **远景等高巨像透视配比（Colossus Equalized Scale）**：
+   * 移至 65 米远景后，模型需按视网膜远近透视比放大：
+     - 修罗王：`Scale = (600, 600, 600)`（体高约 31.1 米）；
+     - 凯旋女神：`Scale = (130, 130, 130)`（体高约 31.2 米）；
+   * 二者在远景地平线上呈现等高平齐的巍峨身躯，与前景英雄形成鲜明的巨微对比。
+
+---
+
+## 六、 UnityFS 单轨 resS 纹理流归一化
 
 Unity 在 Android 运行时的 AssetBundle 资源加载器遵循“单归档单流”规则：
 * 当主场景包名为 `CAB-8047d50cb53b499f81473861dbf0f211` 时，Android 底层只会打开并持有 `CAB-8047d50cb53b499f81473861dbf0f211.resS`。
@@ -181,7 +251,7 @@ for tex in dev_textures:
 
 ---
 
-## 六、 ODR 目录与 TOC CRC 校验绕过
+## 七、 ODR 目录与 TOC CRC 校验绕过
 
 TFTF 客户端通过 `ODRManager` 动态加载场景。在 `assets/rust/toc.txt` 中预埋了场景包的 CRC 校验码与尺寸：
 * 一旦修改了 `rust_merged.assetbundle`，文件哈希改变，`ODRManager.LoadAssetBundle` 会报 CRC 校验失败，并**强制安全回退至 Karnak（卡纳克）沙漠场景**。
@@ -195,19 +265,29 @@ TFTF 客户端通过 `ODRManager` 动态加载场景。在 `assets/rust/toc.txt`
           toc_dict["bundles"]["rust_merged"]["crc"] = 0
           toc_dict["bundles"]["rust_merged"]["size"] = rpath.stat().st_size
           data = json.dumps(toc_dict, indent=4).encode("utf-8")
+  elif info.filename == "assets/karnak/toc.txt":
+      rpath = Path("assets_redeco/karnak_merged.assetbundle")
+      if rpath.exists():
+          toc_dict = json.loads(data.decode("utf-8"))
+          toc_dict["bundles"]["karnak_merged"]["crc"] = 0
+          toc_dict["bundles"]["karnak_merged"]["size"] = rpath.stat().st_size
+          data = json.dumps(toc_dict, indent=4).encode("utf-8")
   ```
-  同时在 `packs.txt` 中防止 `rust_merged_odr` 污染，确保游戏 100% 稳定读取自定义生锈荒海地图。
+  同时在 `packs.txt` 中防止 `rust_merged_odr` 与 `karnak_merged_odr` 污染，确保游戏 100% 稳定读取自定义生锈荒海与卡纳克沙漠地图。
 
 ---
 
-## 七、 维护与自动化工具链
+## 八、 维护与自动化工具链
 
 整个工作流已高度收敛并固化至工具集中，后续任何场景模型追加均可一键复用：
 
 | 脚本路径 | 功能职责 |
 | :--- | :--- |
 | [`stage_project/Assets/Editor/GeneratePingPongAnimation.cs`](file:///E:/Agent/TFTF-blender/stage_project/Assets/Editor/GeneratePingPongAnimation.cs) | 自动化解析 1220 条骨骼曲线，生成微积分镜像逆序与定格的无缝 Ping-Pong 动画资产 |
-| [`stage_project/Assets/Editor/ExportDevastatorBundle.cs`](file:///E:/Agent/TFTF-blender/stage_project/Assets/Editor/ExportDevastatorBundle.cs) | Unity Headless 批量构建 Android 舞台 AssetBundle |
-| [`tools/merge_devastator_rust_stage.py`](file:///E:/Agent/TFTF-blender/tools/merge_devastator_rust_stage.py) | 提取 TypeTree，将模型层级与骨骼树注入生锈荒海主场景 |
-| [`tools/patch_rust_merged_devastator.py`](file:///E:/Agent/TFTF-blender/tools/patch_rust_merged_devastator.py) | 动态角色 PBR 着色器注入、单轨 resS 合并、光照提亮与纯净循环修正 |
-| [`Server/build_phone_apk.py`](file:///E:/Agent/TFTF-blender/Server/build_phone_apk.py) | 拦截 TOC CRC 并注入准确文件大小，防止场景回退 |
+| [`stage_project/Assets/Editor/ExportDevastatorBundle.cs`](file:///E:/Agent/TFTF-blender/stage_project/Assets/Editor/ExportDevastatorBundle.cs) | Unity 批量构建生锈荒海大力神 AssetBundle |
+| [`stage_project/Assets/Editor/ExportKarnakBundle.cs`](file:///E:/Agent/TFTF-blender/stage_project/Assets/Editor/ExportKarnakBundle.cs) | Unity 批量构建卡纳克双巨像 AssetBundle |
+| [`tools/merge_devastator_rust_stage.py`](file:///E:/Agent/TFTF-blender/tools/merge_devastator_rust_stage.py) | 生锈荒海：提取 TypeTree，将模型层级与骨骼树注入主场景 |
+| [`tools/patch_rust_merged_devastator.py`](file:///E:/Agent/TFTF-blender/tools/patch_rust_merged_devastator.py) | 生锈荒海：动态角色 PBR 着色器注入、单轨 resS 合并与纯净循环修正 |
+| [`tools/merge_and_patch_karnak_combiners.py`](file:///E:/Agent/TFTF-blender/tools/merge_and_patch_karnak_combiners.py) | 卡纳克沙漠：一站式合并 TypeTree、流资源单轨合并、PBR 防粉红超新星校准、沙丘落位与动画闭环 |
+| [`tools/update_unity_scene_colossi.py`](file:///E:/Agent/TFTF-blender/tools/update_unity_scene_colossi.py) | 卡纳克沙漠：Unity 场景 YAML 批量更新修罗王与凯旋女神位姿与缩放 |
+| [`Server/build_phone_apk.py`](file:///E:/Agent/TFTF-blender/Server/build_phone_apk.py) | 拦截 TOC CRC 并注入准确文件大小，防止生锈荒海与卡纳克沙漠回退 |
