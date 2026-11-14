@@ -1,0 +1,840 @@
+{
+  "blend_version": "Blender 2.79",
+  "summary": {
+    "mesh_objects": 116,
+    "curve_objects": [
+      "BezierCurve.000",
+      "BezierCurve.001",
+      "BezierCurve.002",
+      "BezierCurve.003"
+    ],
+    "armatures": [
+      "Armature.000",
+      "Armature.001"
+    ],
+    "total_base_verts": 481301,
+    "total_base_tris": 1018483,
+    "estimated_post_modifier_tris": "~3,431,224 (Subsurf + Mirror before optimization)",
+    "uvless_mesh_count": 64,
+    "uvless_base_tris": 299080,
+    "negative_determinant_objects": [
+      {
+        "name": "Armature.000",
+        "det": -23.5126,
+        "scale": [
+          2.8648,
+          -2.8648,
+          2.8648
+        ]
+      },
+      {
+        "name": "Cylinder.001",
+        "det": -0.1023,
+        "scale": [
+          0.1509,
+          0.1294,
+          0.2229
+        ]
+      },
+      {
+        "name": "Plane.020",
+        "det": -63.1713,
+        "scale": [
+          3.9827,
+          3.9827,
+          -3.9827
+        ]
+      }
+    ]
+  },
+  "missing_external_textures_resolved_in_fallback": [
+    "MetalGrime013_COL_VAR2_3K.jpg",
+    "MetalGrime013_NRM_3K.jpg",
+    "MetalScratched016_GLOSS_HIRES.jpg",
+    "MetalScratched016_NRM_HIRES.jpg",
+    "decals02_33_ao_curv_height.png",
+    "decals02_33_nrm_alpha.png",
+    "decals02_33_subset.png",
+    "disppng.png",
+    "paneling01_04_ao_curv_height.png",
+    "paneling01_04_mat2_alpha.png",
+    "paneling01_04_nrm_alpha.png"
+  ],
+  "uvless_objects": [
+    {
+      "name": "Circle.001",
+      "verts": 24,
+      "tris": 44
+    },
+    {
+      "name": "Circle.002",
+      "verts": 24,
+      "tris": 44
+    },
+    {
+      "name": "Circle.003",
+      "verts": 24,
+      "tris": 44
+    },
+    {
+      "name": "Cube.000",
+      "verts": 184,
+      "tris": 364
+    },
+    {
+      "name": "Cube.002",
+      "verts": 8,
+      "tris": 12
+    },
+    {
+      "name": "Cube.007",
+      "verts": 6,
+      "tris": 8
+    },
+    {
+      "name": "Cube.017",
+      "verts": 48,
+      "tris": 92
+    },
+    {
+      "name": "Cube.028",
+      "verts": 6,
+      "tris": 8
+    },
+    {
+      "name": "Cube.029",
+      "verts": 12,
+      "tris": 20
+    },
+    {
+      "name": "Cube.047",
+      "verts": 40,
+      "tris": 76
+    },
+    {
+      "name": "Cube.049",
+      "verts": 35232,
+      "tris": 105600
+    },
+    {
+      "name": "Cube.051",
+      "verts": 156,
+      "tris": 308
+    },
+    {
+      "name": "Cube.055",
+      "verts": 28,
+      "tris": 44
+    },
+    {
+      "name": "Cube.056",
+      "verts": 192,
+      "tris": 380
+    },
+    {
+      "name": "Cylinder.005",
+      "verts": 592,
+      "tris": 1180
+    },
+    {
+      "name": "Cylinder.010",
+      "verts": 320,
+      "tris": 636
+    },
+    {
+      "name": "Cylinder.011",
+      "verts": 4642,
+      "tris": 9280
+    },
+    {
+      "name": "Cylinder.014",
+      "verts": 1448,
+      "tris": 2892
+    },
+    {
+      "name": "Cylinder.015",
+      "verts": 4642,
+      "tris": 9280
+    },
+    {
+      "name": "Cylinder.016",
+      "verts": 1160,
+      "tris": 2316
+    },
+    {
+      "name": "Cylinder.017",
+      "verts": 320,
+      "tris": 636
+    },
+    {
+      "name": "Cylinder.019",
+      "verts": 1312,
+      "tris": 2620
+    },
+    {
+      "name": "Cylinder.021",
+      "verts": 352,
+      "tris": 700
+    },
+    {
+      "name": "Cylinder.031",
+      "verts": 8,
+      "tris": 12
+    },
+    {
+      "name": "Cylinder.033",
+      "verts": 56,
+      "tris": 108
+    },
+    {
+      "name": "Cylinder.034",
+      "verts": 320,
+      "tris": 636
+    },
+    {
+      "name": "Cylinder.036",
+      "verts": 320,
+      "tris": 636
+    },
+    {
+      "name": "Cylinder.037",
+      "verts": 320,
+      "tris": 636
+    },
+    {
+      "name": "Cylinder.038",
+      "verts": 11266,
+      "tris": 22528
+    },
+    {
+      "name": "Cylinder.040",
+      "verts": 64,
+      "tris": 124
+    },
+    {
+      "name": "Cylinder.042",
+      "verts": 600,
+      "tris": 1158
+    },
+    {
+      "name": "Cylinder.044",
+      "verts": 320,
+      "tris": 606
+    },
+    {
+      "name": "Cylinder.045",
+      "verts": 23392,
+      "tris": 69560
+    },
+    {
+      "name": "Cylinder.053",
+      "verts": 384,
+      "tris": 760
+    },
+    {
+      "name": "Cylinder.054",
+      "verts": 600,
+      "tris": 1158
+    },
+    {
+      "name": "Cylinder.055",
+      "verts": 1160,
+      "tris": 2316
+    },
+    {
+      "name": "Cylinder.057",
+      "verts": 592,
+      "tris": 1180
+    },
+    {
+      "name": "Cylinder.058",
+      "verts": 1312,
+      "tris": 2620
+    },
+    {
+      "name": "Cylinder.060",
+      "verts": 352,
+      "tris": 700
+    },
+    {
+      "name": "Cylinder.061",
+      "verts": 352,
+      "tris": 700
+    },
+    {
+      "name": "Cylinder.062",
+      "verts": 11266,
+      "tris": 22528
+    },
+    {
+      "name": "Cylinder.063",
+      "verts": 56,
+      "tris": 108
+    },
+    {
+      "name": "Cylinder.064",
+      "verts": 320,
+      "tris": 636
+    },
+    {
+      "name": "Cylinder.065",
+      "verts": 320,
+      "tris": 636
+    },
+    {
+      "name": "Cylinder.066",
+      "verts": 320,
+      "tris": 636
+    },
+    {
+      "name": "Cylinder.067",
+      "verts": 320,
+      "tris": 636
+    },
+    {
+      "name": "Cylinder.068",
+      "verts": 320,
+      "tris": 636
+    },
+    {
+      "name": "Cylinder.069",
+      "verts": 8,
+      "tris": 12
+    },
+    {
+      "name": "Gear.000",
+      "verts": 336,
+      "tris": 576
+    },
+    {
+      "name": "Plane.001",
+      "verts": 134,
+      "tris": 264
+    },
+    {
+      "name": "Plane.009",
+      "verts": 2288,
+      "tris": 4488
+    },
+    {
+      "name": "Plane.010",
+      "verts": 2288,
+      "tris": 4488
+    },
+    {
+      "name": "Plane.012",
+      "verts": 6240,
+      "tris": 12240
+    },
+    {
+      "name": "Plane.019",
+      "verts": 12,
+      "tris": 20
+    },
+    {
+      "name": "Plane.020",
+      "verts": 20,
+      "tris": 38
+    },
+    {
+      "name": "Plane.024",
+      "verts": 12,
+      "tris": 20
+    },
+    {
+      "name": "Plane.025",
+      "verts": 12,
+      "tris": 20
+    },
+    {
+      "name": "Plane.026",
+      "verts": 12,
+      "tris": 20
+    },
+    {
+      "name": "Plane.027",
+      "verts": 12,
+      "tris": 20
+    },
+    {
+      "name": "Plane.028",
+      "verts": 12,
+      "tris": 20
+    },
+    {
+      "name": "Plane.029",
+      "verts": 12,
+      "tris": 20
+    },
+    {
+      "name": "Plane.030",
+      "verts": 12,
+      "tris": 20
+    },
+    {
+      "name": "Plane.058",
+      "verts": 2288,
+      "tris": 4488
+    },
+    {
+      "name": "Plane.059",
+      "verts": 2288,
+      "tris": 4488
+    }
+  ],
+  "top_30_meshes_by_tris": [
+    {
+      "name": "Sphere.001",
+      "verts": 89923,
+      "polys": 89888,
+      "tris": 179776,
+      "uv_count": 1,
+      "modifiers": [],
+      "det": 44.4754,
+      "world_loc": [
+        -33.5518,
+        1.7735,
+        -3.3382
+      ]
+    },
+    {
+      "name": "Plane.050",
+      "verts": 80274,
+      "polys": 80272,
+      "tris": 160544,
+      "uv_count": 1,
+      "modifiers": [],
+      "det": 4.925,
+      "world_loc": [
+        -34.8431,
+        -1.6492,
+        0.0059
+      ]
+    },
+    {
+      "name": "Cube.049",
+      "verts": 35232,
+      "polys": 52800,
+      "tris": 105600,
+      "uv_count": 0,
+      "modifiers": [
+        "rror(5)"
+      ],
+      "det": 103.0142,
+      "world_loc": [
+        -25.9401,
+        3.1945,
+        -38.2095
+      ]
+    },
+    {
+      "name": "Cube.019",
+      "verts": 37700,
+      "polys": 37696,
+      "tris": 75392,
+      "uv_count": 1,
+      "modifiers": [],
+      "det": 151.0847,
+      "world_loc": [
+        -25.9401,
+        3.1945,
+        -38.2095
+      ]
+    },
+    {
+      "name": "Cylinder.045",
+      "verts": 23392,
+      "polys": 34724,
+      "tris": 69560,
+      "uv_count": 0,
+      "modifiers": [
+        "rror(5)"
+      ],
+      "det": 0.5175,
+      "world_loc": [
+        -23.4533,
+        6.0293,
+        -58.8817
+      ]
+    },
+    {
+      "name": "Torus.000",
+      "verts": 26440,
+      "polys": 26044,
+      "tris": 52440,
+      "uv_count": 1,
+      "modifiers": [],
+      "det": 0.0064,
+      "world_loc": [
+        -33.7265,
+        0.2005,
+        -8.0854
+      ]
+    },
+    {
+      "name": "Cylinder.001",
+      "verts": 21828,
+      "polys": 21898,
+      "tris": 43536,
+      "uv_count": 1,
+      "modifiers": [
+        "mature(8)"
+      ],
+      "det": -0.1023,
+      "world_loc": [
+        -15.0798,
+        -3.2817,
+        -37.4524
+      ]
+    },
+    {
+      "name": "Cylinder.002",
+      "verts": 21828,
+      "polys": 21898,
+      "tris": 43536,
+      "uv_count": 1,
+      "modifiers": [
+        "mature(8)"
+      ],
+      "det": 0.1023,
+      "world_loc": [
+        -56.0156,
+        -11.6431,
+        -34.773
+      ]
+    },
+    {
+      "name": "Cube.020",
+      "verts": 12834,
+      "polys": 12832,
+      "tris": 25664,
+      "uv_count": 1,
+      "modifiers": [],
+      "det": 0.019,
+      "world_loc": [
+        -52.3208,
+        -4.3207,
+        -26.0942
+      ]
+    },
+    {
+      "name": "Cube.025",
+      "verts": 12834,
+      "polys": 12832,
+      "tris": 25664,
+      "uv_count": 1,
+      "modifiers": [],
+      "det": 0.019,
+      "world_loc": [
+        -15.4121,
+        -0.59,
+        -27.8219
+      ]
+    },
+    {
+      "name": "Cylinder.038",
+      "verts": 11266,
+      "polys": 11264,
+      "tris": 22528,
+      "uv_count": 0,
+      "modifiers": [],
+      "det": 2.548,
+      "world_loc": [
+        -49.8127,
+        6.6597,
+        -3.0424
+      ]
+    },
+    {
+      "name": "Cylinder.062",
+      "verts": 11266,
+      "polys": 11264,
+      "tris": 22528,
+      "uv_count": 0,
+      "modifiers": [],
+      "det": 2.548,
+      "world_loc": [
+        -9.2412,
+        3.266,
+        -13.8027
+      ]
+    },
+    {
+      "name": "Cube.030",
+      "verts": 9750,
+      "polys": 9733,
+      "tris": 19476,
+      "uv_count": 1,
+      "modifiers": [
+        "rror(5)"
+      ],
+      "det": 0.6149,
+      "world_loc": [
+        -19.5591,
+        -7.2933,
+        -71.0414
+      ]
+    },
+    {
+      "name": "Cylinder.003",
+      "verts": 7516,
+      "polys": 7230,
+      "tris": 15028,
+      "uv_count": 1,
+      "modifiers": [
+        "bsurf(1)"
+      ],
+      "det": 18.6208,
+      "world_loc": [
+        -61.4055,
+        -5.4458,
+        -33.0531
+      ]
+    },
+    {
+      "name": "Circle.000",
+      "verts": 7392,
+      "polys": 7436,
+      "tris": 14696,
+      "uv_count": 1,
+      "modifiers": [],
+      "det": 0.0596,
+      "world_loc": [
+        -28.4388,
+        -0.5212,
+        -32.7157
+      ]
+    },
+    {
+      "name": "Plane.012",
+      "verts": 6240,
+      "polys": 6120,
+      "tris": 12240,
+      "uv_count": 0,
+      "modifiers": [],
+      "det": 1.1675,
+      "world_loc": [
+        -22.0435,
+        4.4696,
+        11.5259
+      ]
+    },
+    {
+      "name": "Plane.036",
+      "verts": 5142,
+      "polys": 5097,
+      "tris": 10276,
+      "uv_count": 1,
+      "modifiers": [],
+      "det": 1.0,
+      "world_loc": [
+        -25.0771,
+        -3.2698,
+        -9.9544
+      ]
+    },
+    {
+      "name": "Cube.008",
+      "verts": 4894,
+      "polys": 4894,
+      "tris": 9788,
+      "uv_count": 1,
+      "modifiers": [],
+      "det": 1.2021,
+      "world_loc": [
+        -34.6965,
+        -1.2908,
+        -6.9693
+      ]
+    },
+    {
+      "name": "Cylinder.011",
+      "verts": 4642,
+      "polys": 4596,
+      "tris": 9280,
+      "uv_count": 0,
+      "modifiers": [
+        "bsurf(1)",
+        "rror(5)"
+      ],
+      "det": 13.7937,
+      "world_loc": [
+        -32.0493,
+        2.9721,
+        -30.4059
+      ]
+    },
+    {
+      "name": "Cylinder.015",
+      "verts": 4642,
+      "polys": 4596,
+      "tris": 9280,
+      "uv_count": 0,
+      "modifiers": [
+        "bsurf(1)",
+        "rror(5)"
+      ],
+      "det": 1.0,
+      "world_loc": [
+        -22.4191,
+        4.3171,
+        -8.192
+      ]
+    },
+    {
+      "name": "Plane.008",
+      "verts": 3332,
+      "polys": 3328,
+      "tris": 6656,
+      "uv_count": 1,
+      "modifiers": [],
+      "det": 195.6101,
+      "world_loc": [
+        -20.2488,
+        -0.9587,
+        -4.3327
+      ]
+    },
+    {
+      "name": "Plane.000",
+      "verts": 3259,
+      "polys": 3280,
+      "tris": 6560,
+      "uv_count": 1,
+      "modifiers": [],
+      "det": 1.0,
+      "world_loc": [
+        -35.2887,
+        -2.8574,
+        -2.7041
+      ]
+    },
+    {
+      "name": "Plane.004",
+      "verts": 3230,
+      "polys": 3154,
+      "tris": 6513,
+      "uv_count": 2,
+      "modifiers": [
+        "bsurf(1)"
+      ],
+      "det": 1.0,
+      "world_loc": [
+        -33.6786,
+        -2.3013,
+        -16.7844
+      ]
+    },
+    {
+      "name": "Cylinder.004",
+      "verts": 2618,
+      "polys": 2584,
+      "tris": 5232,
+      "uv_count": 1,
+      "modifiers": [
+        "bsurf(1)"
+      ],
+      "det": 1.0,
+      "world_loc": [
+        -61.9241,
+        -12.1749,
+        -30.3443
+      ]
+    },
+    {
+      "name": "Plane.009",
+      "verts": 2288,
+      "polys": 2244,
+      "tris": 4488,
+      "uv_count": 0,
+      "modifiers": [
+        "bsurf(1)"
+      ],
+      "det": 1.1675,
+      "world_loc": [
+        -15.8465,
+        9.9977,
+        11.4127
+      ]
+    },
+    {
+      "name": "Plane.010",
+      "verts": 2288,
+      "polys": 2244,
+      "tris": 4488,
+      "uv_count": 0,
+      "modifiers": [
+        "bsurf(1)"
+      ],
+      "det": 1.1675,
+      "world_loc": [
+        -33.6786,
+        6.4142,
+        -5.599
+      ]
+    },
+    {
+      "name": "Plane.058",
+      "verts": 2288,
+      "polys": 2244,
+      "tris": 4488,
+      "uv_count": 0,
+      "modifiers": [
+        "bsurf(1)"
+      ],
+      "det": 1.1675,
+      "world_loc": [
+        -15.7455,
+        3.6911,
+        -6.4642
+      ]
+    },
+    {
+      "name": "Plane.059",
+      "verts": 2288,
+      "polys": 2244,
+      "tris": 4488,
+      "uv_count": 0,
+      "modifiers": [
+        "bsurf(1)"
+      ],
+      "det": 1.1675,
+      "world_loc": [
+        -10.1514,
+        2.9624,
+        -6.1831
+      ]
+    },
+    {
+      "name": "Cylinder.007",
+      "verts": 1924,
+      "polys": 1920,
+      "tris": 3840,
+      "uv_count": 1,
+      "modifiers": [],
+      "det": 1.0,
+      "world_loc": [
+        -30.3151,
+        -1.8026,
+        -16.4337
+      ]
+    },
+    {
+      "name": "Cylinder.014",
+      "verts": 1448,
+      "polys": 1409,
+      "tris": 2892,
+      "uv_count": 0,
+      "modifiers": [
+        "bsurf(1)",
+        "rror(5)"
+      ],
+      "det": 5.8495,
+      "world_loc": [
+        -25.219,
+        7.5275,
+        4.7244
+      ]
+    }
+  ]
+}

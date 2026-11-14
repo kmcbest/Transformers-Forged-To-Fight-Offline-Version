@@ -1,0 +1,90 @@
+{
+  "bundle_name": "megatron_gs_leader2015.assetbundle",
+  "critical_notes": [
+    "Note TWO wpns_cannon_right SMRs per Prefab: one at Reference/cannon/ (transform/detach shoot) and one at RightForeArm/staticCannon/ (arm-mounted)! Keep weights/meshes synchronized on BOTH or hide staticCannon/cannon intentionally.",
+    "Note wpns_mace_left SMR under LeftHand/mace/: if Tarn does not wield Megatron's energon mace, empty its mesh verts/tris OR deactivate the GameObject cleanly instead of leaving a floating mace.",
+    "Cha _01 tank mesh local Y rests at -1.549m (tread bottom = -1.549), NOT Y=0! Lower Tarn tank treads to match Y=-1.549 in tank bindpose space."
+  ],
+  "skinned_mesh_renderers": [
+    {
+      "path_id": -8610528988658655013,
+      "prefab": "Combat_LW",
+      "hierarchy_path": "Megatron_GS_Leader2015_lw/character_model/cha_megatron_gs_leader2015_00",
+      "mesh_name": "cha_megatron_gs_leader2015_00",
+      "bone_count": 51,
+      "root_bone": "Megatron_GS_Leader2015_lw/character_model/Reference/Hips"
+    },
+    {
+      "path_id": -7481134504555158405,
+      "prefab": "Combat_LW",
+      "hierarchy_path": "Megatron_GS_Leader2015_lw/character_model/Reference/cannon/cha_megatron_gs_leader2015_wpns_cannon_right",
+      "mesh_name": "cha_megatron_gs_leader2015_wpns_cannon_right",
+      "bone_count": 3,
+      "root_bone": "Megatron_GS_Leader2015_lw/character_model/Reference/cannon/Reference/COG"
+    },
+    {
+      "path_id": -6758328762533593613,
+      "prefab": "Showcase",
+      "hierarchy_path": "Megatron_GS_Leader2015/character_model/Reference/Hips/Spine/Spine1/LeftShoulder/LeftArm/LeftArmRoll/LeftForeArm/LeftForeArmRoll/LeftHand/mace/cha_megatron_gs_leader2015_wpns_mace_left",
+      "mesh_name": "cha_megatron_gs_leader2015_wpns_mace_left",
+      "bone_count": 12,
+      "root_bone": "Megatron_GS_Leader2015/character_model/Reference/Hips/Spine/Spine1/LeftShoulder/LeftArm/LeftArmRoll/LeftForeArm/LeftForeArmRoll/LeftHand/mace/Reference/COG"
+    },
+    {
+      "path_id": -4173104293130818967,
+      "prefab": "Showcase",
+      "hierarchy_path": "Megatron_GS_Leader2015/character_model/cha_megatron_gs_leader2015_00",
+      "mesh_name": "cha_megatron_gs_leader2015_00",
+      "bone_count": 51,
+      "root_bone": "Megatron_GS_Leader2015/character_model/Reference/Hips"
+    },
+    {
+      "path_id": 2138194849323017337,
+      "prefab": "Combat_LW",
+      "hierarchy_path": "Megatron_GS_Leader2015_lw/character_model/Reference/Hips/transformed/cha_megatron_gs_leader2015_01",
+      "mesh_name": "cha_megatron_gs_leader2015_01",
+      "bone_count": 21,
+      "root_bone": "Megatron_GS_Leader2015_lw/character_model/Reference/Hips/transformed/Reference/COG/chop1_turret_center/chop1_forearm_armor_right"
+    },
+    {
+      "path_id": 3992037002325232027,
+      "prefab": "Showcase",
+      "hierarchy_path": "Megatron_GS_Leader2015/character_model/Reference/cannon/cha_megatron_gs_leader2015_wpns_cannon_right",
+      "mesh_name": "cha_megatron_gs_leader2015_wpns_cannon_right",
+      "bone_count": 3,
+      "root_bone": "Megatron_GS_Leader2015/character_model/Reference/cannon/Reference/COG"
+    },
+    {
+      "path_id": 4561093141354196631,
+      "prefab": "Combat_LW",
+      "hierarchy_path": "Megatron_GS_Leader2015_lw/character_model/Reference/Hips/Spine/Spine1/RightShoulder/RightArm/RightArmRoll/RightForeArm/staticCannon/cha_megatron_gs_leader2015_wpns_cannon_right",
+      "mesh_name": "cha_megatron_gs_leader2015_wpns_cannon_right",
+      "bone_count": 3,
+      "root_bone": "Megatron_GS_Leader2015_lw/character_model/Reference/Hips/Spine/Spine1/RightShoulder/RightArm/RightArmRoll/RightForeArm/staticCannon/Reference/COG"
+    },
+    {
+      "path_id": 4626197738286450028,
+      "prefab": "Showcase",
+      "hierarchy_path": "Megatron_GS_Leader2015/character_model/Reference/Hips/transformed/cha_megatron_gs_leader2015_01",
+      "mesh_name": "cha_megatron_gs_leader2015_01",
+      "bone_count": 21,
+      "root_bone": "Megatron_GS_Leader2015/character_model/Reference/Hips/transformed/Reference/COG/chop1_turret_center/chop1_forearm_armor_right"
+    },
+    {
+      "path_id": 7267330081541926865,
+      "prefab": "Combat_LW",
+      "hierarchy_path": "Megatron_GS_Leader2015_lw/character_model/Reference/Hips/Spine/Spine1/LeftShoulder/LeftArm/LeftArmRoll/LeftForeArm/LeftForeArmRoll/LeftHand/mace/cha_megatron_gs_leader2015_wpns_mace_left",
+      "mesh_name": "cha_megatron_gs_leader2015_wpns_mace_left",
+      "bone_count": 12,
+      "root_bone": "Megatron_GS_Leader2015_lw/character_model/Reference/Hips/Spine/Spine1/LeftShoulder/LeftArm/LeftArmRoll/LeftForeArm/LeftForeArmRoll/LeftHand/mace/Reference/COG"
+    },
+    {
+      "path_id": 8495398593779105175,
+      "prefab": "Showcase",
+      "hierarchy_path": "Megatron_GS_Leader2015/character_model/Reference/Hips/Spine/Spine1/RightShoulder/RightArm/RightArmRoll/RightForeArm/staticCannon/cha_megatron_gs_leader2015_wpns_cannon_right",
+      "mesh_name": "cha_megatron_gs_leader2015_wpns_cannon_right",
+      "bone_count": 3,
+      "root_bone": "Megatron_GS_Leader2015/character_model/Reference/Hips/Spine/Spine1/RightShoulder/RightArm/RightArmRoll/RightForeArm/staticCannon/Reference/COG"
+    }
+  ]
+}

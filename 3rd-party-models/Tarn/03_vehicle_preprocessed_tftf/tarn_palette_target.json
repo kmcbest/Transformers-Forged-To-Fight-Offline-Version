@@ -1,0 +1,85 @@
+{
+  "description": "Calibrated Tarn target palette (sRGB 0..255 + Kabam PBR targets) shared across Robot & Vehicle",
+  "regions": {
+    "purple_armor": {
+      "median_rgb": [
+        100,
+        74,
+        191
+      ],
+      "p25_rgb": [
+        75,
+        46,
+        189
+      ],
+      "p75_rgb": [
+        107,
+        83,
+        194
+      ],
+      "kabam_metallic_B": 0,
+      "kabam_roughness_R": [
+        182,
+        210
+      ]
+    },
+    "charcoal_frame_and_treads": {
+      "median_rgb": [
+        17,
+        16,
+        22
+      ],
+      "kabam_metallic_B": 28,
+      "kabam_roughness_R": [
+        222,
+        240
+      ]
+    },
+    "silver_gunmetal": {
+      "median_rgb": [
+        183,
+        181,
+        215
+      ],
+      "kabam_metallic_B": 145,
+      "kabam_roughness_R": [
+        145,
+        170
+      ]
+    },
+    "gold_exhaust_accent": {
+      "median_rgb": [
+        190,
+        141,
+        49
+      ],
+      "kabam_metallic_B": 155,
+      "kabam_roughness_R": [
+        148,
+        172
+      ]
+    },
+    "neon_magenta_emissive": {
+      "base_rgb": [
+        255,
+        78,
+        212
+      ],
+      "kabam_metallic_B": 0,
+      "kabam_raoe_B_and_A": 255,
+      "shader_emissive_intensity_col": [
+        0.95,
+        0.16,
+        0.78,
+        0.0
+      ],
+      "shader_emissive_overbright_range": 120.0,
+      "shader_emissive_range": 0.0
+    }
+  },
+  "ao_target_range_G": [
+    165,
+    255
+  ],
+  "clearcoat_reflectance_range": 0.1
+}

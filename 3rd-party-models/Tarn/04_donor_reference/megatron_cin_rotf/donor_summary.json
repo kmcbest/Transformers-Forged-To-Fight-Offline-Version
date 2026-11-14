@@ -1,0 +1,14 @@
+{
+  "role": "Secondary reference only (Cybertronian tank silhouette, 37 tank bones, 39 robot bones WITHOUT right fingers)",
+  "sp3_timings": {
+    "intervals": [
+      [
+        2233,
+        4033
+      ]
+    ],
+    "props": {},
+    "notes": "电影威震天 (Megatron) - 外星战车/飞船"
+  },
+  "why_megatron_gs_is_preferred": "megatron_gs_leader2015 has full 30 fingers + right-arm cannon slot + already purple beam/fire FX"
+}
