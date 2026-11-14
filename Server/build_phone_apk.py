@@ -381,6 +381,17 @@ def build(
                         print(f"[*] Patched {info.filename}: crc=0, size={rpath.stat().st_size}")
                     except Exception as e:
                         print(f"Failed to patch rust toc: {e}")
+            elif info.filename == "assets/karnak/toc.txt":
+                rpath = Path("assets_redeco/karnak_merged.assetbundle")
+                if rpath.exists():
+                    try:
+                        toc_dict = json.loads(data.decode("utf-8"))
+                        toc_dict["bundles"]["karnak_merged"]["crc"] = 0
+                        toc_dict["bundles"]["karnak_merged"]["size"] = rpath.stat().st_size
+                        data = json.dumps(toc_dict, indent=4).encode("utf-8")
+                        print(f"[*] Patched {info.filename}: crc=0, size={rpath.stat().st_size}")
+                    except Exception as e:
+                        print(f"Failed to patch karnak toc: {e}")
             elif info.filename == "assets/chinesesimplified_odr/toc.txt":
                 rpath = Path("assets_redeco/chinesesimplified.assetbundle")
                 if rpath.exists():
@@ -463,7 +474,7 @@ def build(
                     _rdir = Path("assets_redeco")
                     if _rdir.is_dir():
                         for _b in _rdir.glob("*.assetbundle"):
-                            if _b.stem not in ("towers", "relics", "buildings", "primordial_base", "character_audio", "character_fx", "character_fx_procedural", "moves", "chinesesimplified", "rust_merged"):
+                            if _b.stem not in ("towers", "relics", "buildings", "primordial_base", "character_audio", "character_fx", "character_fx_procedural", "moves", "chinesesimplified", "rust_merged", "karnak_merged"):
                                 packs[f"{_b.stem}_odr"] = f"{_b.stem}_odr"
                     pdict["packs"] = packs
                     data = json.dumps(pdict, indent=4).encode("utf-8")
@@ -728,7 +739,7 @@ def build(
         if redeco_dir.is_dir():
             for bpath in redeco_dir.glob("*.assetbundle"):
                 bot_id = bpath.stem
-                if bot_id in ("towers", "relics", "buildings", "primordial_base", "character_audio", "character_fx", "moves", "character_fx_procedural", "chinesesimplified", "chromia_gs_kabam", "deadend_gs_deluxe2015", "rust_merged"):
+                if bot_id in ("towers", "relics", "buildings", "primordial_base", "character_audio", "character_fx", "moves", "character_fx_procedural", "chinesesimplified", "chromia_gs_kabam", "deadend_gs_deluxe2015", "rust_merged", "karnak_merged"):
                     continue
                 bdata = bpath.read_bytes()
                 bundle_target = f"assets/assetpack/{bot_id}_odr/{bot_id}.assetbundle"
