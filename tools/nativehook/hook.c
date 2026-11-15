@@ -7045,6 +7045,8 @@ static const struct ArtBaseMap ART_BASE_MAP[] = {
     { "barricade_cin_dotm", "barri_c" },
     { "bitstream_gs_leader2015", "bitstream" },
     { "blaster_gs_leader2016", "blastr_gs" },
+    { "blitzwing_gs", "blitzwing_gs" },
+    { "blitzwing", "blitzwing_gs" },
     { "bludgeon_gs_rd20", "bludge_gs" },
     { "bonecrusher_cin_rotf", "bonec_c" },
     { "breakdown_gs", "breakdown" },

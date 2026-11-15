@@ -502,13 +502,43 @@ def main():
             obj_map[cog_pid].save_typetree(cog_tr)
             print(f"  [Transform COG] Aligned {cog_pid} -> Pos=(0,0,0) Rot=(0.5, 0.5, -0.5, -0.5)")
 
-    for smr_tr_pid in (-4070916873066828308, -3207237225000537856, -8637124854016160271, 7273197848394815578):
+    for smr_tr_pid in (
+        -4070916873066828308, -3207237225000537856,
+        -8637124854016160271, 7273197848394815578,
+        -5727109540658706581, 8905508169500533586,
+    ):
         if smr_tr_pid in obj_map:
             smr_tr = obj_map[smr_tr_pid].read_typetree()
             smr_tr["m_LocalPosition"] = {"x": 0.0, "y": 0.0, "z": 0.0}
             smr_tr["m_LocalRotation"] = {"x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0}
             smr_tr["m_LocalScale"] = {"x": 1.0, "y": 1.0, "z": 1.0}
             obj_map[smr_tr_pid].save_typetree(smr_tr)
+
+    # Reparent Jet prop 'cannon' (transformed_2) from Reference -> Hips and match Ramjet's
+    # (-0.5, -0.5, 0.5, 0.5) local rotation. PropData.RootPath / RotationOffset are Editor-only
+    # and ignored at runtime (PropData.cs only applies PositionOffset).
+    for label, ref_pid, hips_pid, cannon_pid in [
+        ("Combat", -6028308954984925732, -2150442408177557830, -1893245760279338324),
+        ("Showcase", -6848276043409792716, -820080875074696244, -464464231220373427),
+    ]:
+        if ref_pid in obj_map and hips_pid in obj_map and cannon_pid in obj_map:
+            ref_tr = obj_map[ref_pid].read_typetree()
+            hips_tr = obj_map[hips_pid].read_typetree()
+            cannon_tr = obj_map[cannon_pid].read_typetree()
+
+            ref_tr["m_Children"] = [c for c in ref_tr["m_Children"] if c.get("m_PathID") != cannon_pid]
+            if not any(c.get("m_PathID") == cannon_pid for c in hips_tr["m_Children"]):
+                hips_tr["m_Children"].append({"m_FileID": 0, "m_PathID": cannon_pid})
+
+            cannon_tr["m_Father"] = {"m_FileID": 0, "m_PathID": hips_pid}
+            cannon_tr["m_LocalPosition"] = {"x": 0.0, "y": 0.0, "z": 0.0}
+            cannon_tr["m_LocalRotation"] = {"x": -0.5, "y": -0.5, "z": 0.5, "w": 0.5}
+            cannon_tr["m_LocalScale"] = {"x": 1.0, "y": 1.0, "z": 1.0}
+
+            obj_map[ref_pid].save_typetree(ref_tr)
+            obj_map[hips_pid].save_typetree(hips_tr)
+            obj_map[cannon_pid].save_typetree(cannon_tr)
+            print(f"  [Jet Parent {label}] Reparented cannon({cannon_pid}) Reference({ref_pid}) -> Hips({hips_pid}) rot=(-0.5,-0.5,0.5,0.5)")
 
     # 6d. Configure Jet Prop Animator Override Controller with Ramjet Jet clips
     # BaseController MUST be animator_prop_gameplay (PID 341294063036995988), NOT animator_weapons_gameplay!
@@ -559,17 +589,23 @@ def main():
             sm_data = sm.get("data", sm)
             states = sm_data.get("m_StateConstantArray", [])
             ha_transitions = None
+            ha_ik_on_feet = False
+            ha_tag_id = 1080829965
             for st in states:
                 d = st.get("data", st)
                 if d.get("m_NameID") == 2579208148:  # HeavyAttack
                     ha_transitions = list(d.get("m_TransitionConstantArray", []))
+                    ha_ik_on_feet = d.get("m_IKOnFeet", False)
+                    ha_tag_id = d.get("m_TagID", 1080829965)
             if ha_transitions:
                 for st in states:
                     d = st.get("data", st)
                     if d.get("m_NameID") == 732291567:  # Misc01
                         d["m_TransitionConstantArray"] = ha_transitions
+                        d["m_IKOnFeet"] = ha_ik_on_feet
+                        d["m_TagID"] = ha_tag_id
         obj_map[CHAR_FIGHT_AC_PID].save_typetree(ac)
-        print(f"  [Char Fight AC] Synced Base.Misc01 transitions with Base.HeavyAttack on {CHAR_FIGHT_AC_PID}")
+        print(f"  [Char Fight AC] Synced Base.Misc01 transitions, m_IKOnFeet={ha_ik_on_feet}, m_TagID={ha_tag_id} with Base.HeavyAttack on {CHAR_FIGHT_AC_PID}")
 
     # 6f. Register move_heavy_ramjet_donut in MoveSet with _animStateName = "Base.Misc01"
     # so Base.HeavyAttack (Tank: move_heavy_megatron_gs_shoot) and Base.Misc01 (Jet: move_heavy_ramjet_donut)
