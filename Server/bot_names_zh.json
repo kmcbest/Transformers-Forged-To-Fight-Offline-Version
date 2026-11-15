@@ -289,6 +289,12 @@
         "faction": "霸天虎",
         "note": "经典G1 战术系"
     },
+    "blitzwing_gs": {
+        "en": "Blitzwing",
+        "zh": "闪电",
+        "faction": "霸天虎",
+        "note": "经典G1 战术系三变战士"
+    },
     "megatronus_gs_kabam": {
         "en": "Megatronus",
         "zh": "震天尊",

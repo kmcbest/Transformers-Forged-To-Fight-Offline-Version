@@ -119,6 +119,7 @@ assets_redeco/*
 !assets_redeco/*strongarm*
 !assets_redeco/*blackout*
 !assets_redeco/*tarn*
+!assets_redeco/*blitzwing*
 assets_redeco/*.ds
 assets_redeco/*.psd
 !assets_redeco/music

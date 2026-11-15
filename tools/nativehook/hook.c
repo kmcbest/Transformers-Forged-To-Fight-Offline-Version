@@ -11215,6 +11215,270 @@ static int il2cpp_string_equals_ascii(void* s, const char* ascii) {
     return 1;
 }
 
+// ---------------------------------------------------------------------------
+// PlayerController.PlayAnimatorState (0x11799C0) Hook
+// Blitzwing Triple-Changer heavy attack character animation redirection:
+//   - Tank Mode (0): plays HeavyAttack (-1715759148 -> Base.HeavyAttack: megatron_GS_attackHeavy + move_heavy_megatron_gs_shoot)
+//   - Jet Mode (1):  redirects HeavyAttack to Misc01 (732291567 -> Base.Misc01: Ramjet_Normal_attackHeavy + move_heavy_ramjet_donut)
+// ---------------------------------------------------------------------------
+extern int skill_blitzwing_get_mode(int player_index);
+typedef void (*fn_pc_playanim_t)(void* pc, int32_t hash, float normalized_time, void* method);
+static fn_pc_playanim_t orig_PC_PlayAnimatorState = NULL;
+
+static void hooked_PC_PlayAnimatorState(void* pc, int32_t hash, float normalized_time, void* method) {
+    if (pc && obj_ok(pc)) {
+        int p = -1;
+        if (pc == g_p0_controller) p = 0;
+        else if (pc == g_p1_controller) p = 1;
+        if (p >= 0) {
+            const char* bid = (p == 0) ? g_p0_bot_id : g_p1_bot_id;
+            if (bid && strstr(bid, "blitzwing") != NULL) {
+                // Animator.StringToHash("HeavyAttack") == (int32_t)2579208148u == -1715759148
+                // Animator.StringToHash("Misc01")      == 732291567
+                if (hash == (int32_t)2579208148u) {
+                    int mode = skill_blitzwing_get_mode(p);
+                    if (mode == 1) {
+                        hash = 732291567; // "Misc01" -> plays Ramjet_Normal_attackHeavy & triggers move_heavy_ramjet_donut
+                        flog("BLITZWING_ANIM: P%d redirected HeavyAttack anim state to Misc01 (Ramjet_Normal_attackHeavy) in Jet Mode", p);
+                    } else {
+                        flog("BLITZWING_ANIM: P%d playing HeavyAttack anim state (megatron_GS_attackHeavy) in Tank Mode", p);
+                    }
+                }
+            }
+        }
+    }
+    if (orig_PC_PlayAnimatorState) {
+        orig_PC_PlayAnimatorState(pc, hash, normalized_time, method);
+    }
+}
+
+// ---------------------------------------------------------------------------
+// GameplayUtils.HasRangedHeavy (0xB6D404) Hook
+//   - Tank Mode (0): true (1)
+//   - Jet Mode (1):  false (0)
+// ---------------------------------------------------------------------------
+typedef int (*fn_has_ranged_heavy_t)(void* pc, void* method);
+static fn_has_ranged_heavy_t orig_HasRangedHeavy = NULL;
+
+static int hooked_HasRangedHeavy(void* pc, void* method) {
+    if (pc && obj_ok(pc)) {
+        int p = -1;
+        if (pc == g_p0_controller) p = 0;
+        else if (pc == g_p1_controller) p = 1;
+        if (p >= 0) {
+            const char* bid = (p == 0) ? g_p0_bot_id : g_p1_bot_id;
+            if (bid && strstr(bid, "blitzwing") != NULL) {
+                int mode = skill_blitzwing_get_mode(p);
+                return (mode == 0) ? 1 : 0;
+            }
+        }
+    }
+    return orig_HasRangedHeavy ? orig_HasRangedHeavy(pc, method) : 0;
+}
+
+// ---------------------------------------------------------------------------
+// MoveSequencer.EnterMove (0x100C438) Hook
+// Blitzwing Triple-Changer heavy attack dynamic substitution safeguard:
+//   - Tank Mode (0): ensures move_heavy_megatron_gs_shoot
+//   - Jet Mode (1):  ensures move_heavy_ramjet_donut
+// ---------------------------------------------------------------------------
+typedef void (*fn_entermove_t)(void* seq, void* move_info, float offset, int queueAll, void* method);
+static fn_entermove_t orig_EnterMove = NULL;
+
+static void hooked_EnterMove(void* seq, void* move_info, float offset, int queueAll, void* method) {
+    if (move_info && obj_ok(move_info) && g_base && g_strnew) {
+        void* move_name = *(void**)((char*)move_info + 0x10);
+        if (move_name && obj_ok(move_name)) {
+            int p = -1;
+            if (g_p0_controller && obj_ok(g_p0_controller) && seq == *(void**)((char*)g_p0_controller + 0xA8)) {
+                p = 0;
+            } else if (g_p1_controller && obj_ok(g_p1_controller) && seq == *(void**)((char*)g_p1_controller + 0xA8)) {
+                p = 1;
+            } else if (g_p0_controller && obj_ok(g_p0_controller) && strstr(g_p0_bot_id, "blitzwing") != NULL) {
+                if (!g_p1_controller || !obj_ok(g_p1_controller) || seq != *(void**)((char*)g_p1_controller + 0xA8)) {
+                    p = 0;
+                }
+            }
+            if (p >= 0) {
+                const char* bid = (p == 0) ? g_p0_bot_id : g_p1_bot_id;
+                if (bid && strstr(bid, "blitzwing") != NULL) {
+                    int mode = skill_blitzwing_get_mode(p);
+                    int is_tank_move = il2cpp_string_equals_ascii(move_name, "move_heavy_megatron_gs_shoot");
+                    int is_jet_move  = il2cpp_string_equals_ascii(move_name, "move_heavy_ramjet_donut");
+                    if (is_tank_move || is_jet_move) {
+                        flog("BLITZWING_HEAVY: P%d EnterMove('%s') in mode=%d (0=Tank, 1=Jet)",
+                             p, is_tank_move ? "move_heavy_megatron_gs_shoot" : "move_heavy_ramjet_donut", mode);
+                        if (mode == 1 && is_tank_move) {
+                            void* moveset = *(void**)((char*)seq + 0x20);
+                            if (moveset && obj_ok(moveset)) {
+                                typedef void* (*fn_get_move_t)(void* ms, void* name, void* method);
+                                fn_get_move_t get_move = (fn_get_move_t)(g_base + 0x100A648);
+                                void* jet_str = g_strnew("move_heavy_ramjet_donut");
+                                if (jet_str) {
+                                    void* jet_move = get_move(moveset, jet_str, NULL);
+                                    if (jet_move && obj_ok(jet_move)) {
+                                        flog("BLITZWING_HEAVY: P%d swapped heavy move to move_heavy_ramjet_donut (Jet Mode)", p);
+                                        move_info = jet_move;
+                                    }
+                                }
+                            }
+                        } else if (mode == 0 && is_jet_move) {
+                            void* moveset = *(void**)((char*)seq + 0x20);
+                            if (moveset && obj_ok(moveset)) {
+                                typedef void* (*fn_get_move_t)(void* ms, void* name, void* method);
+                                fn_get_move_t get_move = (fn_get_move_t)(g_base + 0x100A648);
+                                void* tank_str = g_strnew("move_heavy_megatron_gs_shoot");
+                                if (tank_str) {
+                                    void* tank_move = get_move(moveset, tank_str, NULL);
+                                    if (tank_move && obj_ok(tank_move)) {
+                                        flog("BLITZWING_HEAVY: P%d swapped heavy move to move_heavy_megatron_gs_shoot (Tank Mode)", p);
+                                        move_info = tank_move;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if (orig_EnterMove) {
+        orig_EnterMove(seq, move_info, offset, queueAll, method);
+    }
+}
+
+// ---------------------------------------------------------------------------
+// PropsController.SetScale (0xEA1090) Hook
+// Blitzwing Triple-Changer dual-prop scale redirection (TransformedStateScaleEvent):
+//   - For Blitzwing, applies scale factor to BOTH "transformed" and "transformed_2"
+// ---------------------------------------------------------------------------
+typedef void (*fn_props_setscale_t)(void* this_props, void* prop_name, float factor, void* method);
+static fn_props_setscale_t orig_PropsController_SetScale = NULL;
+
+static void hooked_PropsController_SetScale(void* this_props, void* prop_name, float factor, void* method) {
+    if (prop_name && obj_ok(prop_name) && g_base && g_strnew) {
+        if (il2cpp_string_equals_ascii(prop_name, "transformed")) {
+            int p = -1;
+            if (g_p0_controller && obj_ok(g_p0_controller) && *(void**)((char*)g_p0_controller + 0x90) == this_props) p = 0;
+            else if (g_p1_controller && obj_ok(g_p1_controller) && *(void**)((char*)g_p1_controller + 0x90) == this_props) p = 1;
+            if (p >= 0) {
+                const char* bid = (p == 0) ? g_p0_bot_id : g_p1_bot_id;
+                if (bid && strstr(bid, "blitzwing") != NULL) {
+                    void* s_t2 = g_strnew("transformed_2");
+                    if (s_t2 && orig_PropsController_SetScale) {
+                        orig_PropsController_SetScale(this_props, s_t2, factor, method);
+                    }
+                }
+            }
+        }
+    }
+    if (orig_PropsController_SetScale) {
+        orig_PropsController_SetScale(this_props, prop_name, factor, method);
+    }
+}
+
+// ---------------------------------------------------------------------------
+// PropsController.PlayAnimatorState (0xEA1734) Hook
+// Blitzwing Triple-Changer dual-prop animation redirection:
+//   - Jet Mode (1): redirects "transformed" animation state to "transformed_2"
+// ---------------------------------------------------------------------------
+typedef void (*fn_props_playanim_t)(void* this_props, void* prop_name, void* state_name, void* method);
+static fn_props_playanim_t orig_PropsController_PlayAnimatorState = NULL;
+
+static void hooked_PropsController_PlayAnimatorState(void* this_props, void* prop_name, void* state_name, void* method) {
+    if (prop_name && obj_ok(prop_name) && g_base && g_strnew) {
+        if (il2cpp_string_equals_ascii(prop_name, "transformed")) {
+            int p = -1;
+            if (g_p0_controller && obj_ok(g_p0_controller) && *(void**)((char*)g_p0_controller + 0x90) == this_props) p = 0;
+            else if (g_p1_controller && obj_ok(g_p1_controller) && *(void**)((char*)g_p1_controller + 0x90) == this_props) p = 1;
+            if (p >= 0) {
+                const char* bid = (p == 0) ? g_p0_bot_id : g_p1_bot_id;
+                if (bid && strstr(bid, "blitzwing") != NULL) {
+                    char sn_buf[64] = {0};
+                    if (state_name && obj_ok(state_name)) read_str(state_name, sn_buf, sizeof(sn_buf));
+                    int mode = skill_blitzwing_get_mode(p);
+                    flog("BLITZWING_PROP: PlayAnimatorState called for 'transformed', state='%s', mode=%d", sn_buf, mode);
+                    if (mode == 1) {
+                        void* s_t2 = g_strnew("transformed_2");
+                        if (s_t2) {
+                            prop_name = s_t2;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if (orig_PropsController_PlayAnimatorState) {
+        orig_PropsController_PlayAnimatorState(this_props, prop_name, state_name, method);
+    }
+}
+
+// ---------------------------------------------------------------------------
+// PropsController.SetActive (0xEA0DB8) Hook
+// Blitzwing Triple-Changer dual-prop dynamic activation:
+//   - Tank Mode (0): activates "transformed" (Tank), deactivates "transformed_2"
+//   - Jet Mode (1):  activates "transformed_2" (Jet), deactivates "transformed"
+//   - Exit transform (active=0): deactivates BOTH "transformed" and "transformed_2"
+// ---------------------------------------------------------------------------
+typedef void (*fn_props_setactive_t)(void* this_props, void* prop_name, int active, void* client, void* method);
+static fn_props_setactive_t orig_PropsController_SetActive = NULL;
+
+static void hooked_PropsController_SetActive(void* this_props, void* prop_name, int active, void* client, void* method) {
+    if (prop_name && obj_ok(prop_name) && g_base && g_strnew) {
+        int p = -1;
+        if (client == g_p0_controller) p = 0;
+        else if (client == g_p1_controller) p = 1;
+        else if (g_p0_controller && obj_ok(g_p0_controller) && *(void**)((char*)g_p0_controller + 0x90) == this_props) p = 0;
+        else if (g_p1_controller && obj_ok(g_p1_controller) && *(void**)((char*)g_p1_controller + 0x90) == this_props) p = 1;
+
+        if (p >= 0) {
+            const char* bid = (p == 0) ? g_p0_bot_id : g_p1_bot_id;
+            if (bid && strstr(bid, "blitzwing") != NULL) {
+                if (il2cpp_string_equals_ascii(prop_name, "transformed")) {
+                    int mode = skill_blitzwing_get_mode(p);
+                    if (active) {
+                        if (mode == 1) {
+                            // Jet Mode: redirect to transformed_2
+                            void* s_t2 = g_strnew("transformed_2");
+                            if (s_t2 && orig_PropsController_SetActive) {
+                                orig_PropsController_SetActive(this_props, s_t2, 1, client, method);
+                            }
+                            if (orig_PropsController_SetActive) {
+                                orig_PropsController_SetActive(this_props, prop_name, 0, client, method);
+                            }
+                            // Trigger HeavyAttack state on transformed_2 immediately
+                            void* s_ha = g_strnew("HeavyAttack");
+                            if (s_ha && orig_PropsController_PlayAnimatorState) {
+                                orig_PropsController_PlayAnimatorState(this_props, s_t2, s_ha, NULL);
+                                flog("BLITZWING_PROP: P%d triggered PlayAnimatorState('transformed_2', 'HeavyAttack')", p);
+                            }
+                            flog("BLITZWING_PROP: P%d activated transformed_2 (Jet Mode)", p);
+                            return;
+                        } else {
+                            // Tank Mode: ensure transformed_2 is deactivated
+                            void* s_t2 = g_strnew("transformed_2");
+                            if (s_t2 && orig_PropsController_SetActive) {
+                                orig_PropsController_SetActive(this_props, s_t2, 0, client, method);
+                            }
+                            flog("BLITZWING_PROP: P%d activated transformed (Tank Mode)", p);
+                        }
+                    } else {
+                        // Exit transform: deactivate BOTH!
+                        void* s_t2 = g_strnew("transformed_2");
+                        if (s_t2 && orig_PropsController_SetActive) {
+                            orig_PropsController_SetActive(this_props, s_t2, 0, client, method);
+                        }
+                        flog("BLITZWING_PROP: P%d deactivated both transform props", p);
+                    }
+                }
+            }
+        }
+    }
+    if (orig_PropsController_SetActive) {
+        orig_PropsController_SetActive(this_props, prop_name, active, client, method);
+    }
+}
+
 // slot 213 GET_SAVE_TEAM_ID (0x01040AC8): QuestUtils.GetSaveTeamIDForCategory(string cat, Phase phase)
 void* hook_213(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     if (a0 && obj_ok(a0)) {
@@ -13120,6 +13384,15 @@ static void* installer(void* arg){
     inline_hook((void*)(g_base + 0x00E9EA00), (void*)hooked_Projectile_IgnoreCollisionDetection, &orig_Projectile_IgnoreCollisionDetection);
     // Guard EB.Animation.Matinee.PlayMecanimAnimationEvent.RestoreControllerAnimClipIfNeeded (0x013B165C)
     inline_hook((void*)(g_base + 0x013B165C), (void*)hooked_RestoreControllerAnimClipIfNeeded, &orig_RestoreControllerAnimClipIfNeeded);
+    // Hook PlayerController.PlayAnimatorState (0x11799C0), GameplayUtils.HasRangedHeavy (0xB6D404),
+    // and MoveSequencer.EnterMove (0x100C438) for Blitzwing Triple-Changer heavy attack dynamic substitution:
+    inline_hook((void*)(g_base + 0x011799C0), (void*)hooked_PC_PlayAnimatorState, (fn8*)&orig_PC_PlayAnimatorState);
+    inline_hook((void*)(g_base + 0x00B6D404), (void*)hooked_HasRangedHeavy, (fn8*)&orig_HasRangedHeavy);
+    inline_hook((void*)(g_base + 0x0100C438), (void*)hooked_EnterMove, (fn8*)&orig_EnterMove);
+    // Hook PropsController.SetActive (0xEA0DB8), PlayAnimatorState (0xEA1734), & SetScale (0xEA1090) for Blitzwing dual-prop activation:
+    inline_hook((void*)(g_base + 0x00EA0DB8), (void*)hooked_PropsController_SetActive, (fn8*)&orig_PropsController_SetActive);
+    inline_hook((void*)(g_base + 0x00EA1734), (void*)hooked_PropsController_PlayAnimatorState, (fn8*)&orig_PropsController_PlayAnimatorState);
+    inline_hook((void*)(g_base + 0x00EA1090), (void*)hooked_PropsController_SetScale, (fn8*)&orig_PropsController_SetScale);
 
     // Auto-enter on splash screen overlay (Play Now / OnDismiss):
     inline_hook((void*)(g_base + 0x00CC49BC), (void*)hooked_SplashScreenOverlay_SetupWindow, &orig_SplashScreenOverlay_SetupWindow);
