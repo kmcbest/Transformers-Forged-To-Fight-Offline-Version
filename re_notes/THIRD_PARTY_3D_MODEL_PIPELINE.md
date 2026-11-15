@@ -1125,3 +1125,6 @@ FOC 等虚幻 3（UE3）模型的四根主手指在骨架上只有两节骨骼�
   1. **16 字节对齐计算 Stream 偏移**：修改 `m_VertexData` 时一律使用 `s0 = (vcount * 40 + 15) & ~15`、`s1 = (vcount * 8 + 15) & ~15`、`stream2_off = s0 + s1`；
   2. **`Reference/COG` 逆矩阵 `BindPose`**：单骨绑定 `COG` 时，`m_BoneNameHashes` 必须设为 `[239972378]`，`m_BindPose[0]` 必须设为 $M_{\text{tf}\leftarrow\text{COG}}^{-1}$（`e01 = 1.0, e12 = -1.0, e20 = -1.0, e33 = 1.0`），并将 Prefab 中 `COG` 的 `m_LocalRotation` 同步设为 `(0.5, 0.5, -0.5, -0.5)`；
   3. **双载具同挂 `Hips` + `Base.Misc01` 分流**：在 `PropsController` 中移除 `staticCannon`/`mace`，将 `"transformed"`（坦克）与 `"transformed_2"`（飞机）统一挂载至 `"character_model/Reference/Hips"`（`RotationOffset = (0, -90, 90)`）；将 `Ramjet_Normal_attackHeavy` 绑入战斗 AOC 的 `char_misc_01` 槽位，将 `move_heavy_ramjet_donut` 注册为 `"Base.Misc01"`，并在 `hook.c` 的 `PlayerController.PlayAnimatorState` 中按形态动态分流 `"HeavyAttack"` 与 `"Misc01"`（详见 [`TRIPLE_CHANGER_ARCHITECTURE_GUIDE.md`](file:///e:/Agent/TFTF-blender/re_notes/TRIPLE_CHANGER_ARCHITECTURE_GUIDE.md) 第九节）。
+
+### 11.15 三变金刚连环 SP3 混剪、粒子发射与接地校验铁律
+* 闪电 `7.40s`（`222f`）连环三变 SP3 的完整工艺（风刃前半 + 三次 Hermite 过渡 + 汽车大师锚定后半、Unity `-batchmode` 按实测 `Hips` 反算双载具 `COG` 动画、`track_44` 与三网互斥显隐、清除母包粒子 `ClampVelocityModule` 死锁使子弹射出、砸地后 `Actor1` 下沉 `-14.0m` 瞬失及消除坦克 `+1.199m` 悬空偏置等七大实战避坑规范）详见 [`TRIPLE_CHANGER_ARCHITECTURE_GUIDE.md`](file:///e:/Agent/TFTF-blender/re_notes/TRIPLE_CHANGER_ARCHITECTURE_GUIDE.md) **第十节**。
