@@ -676,7 +676,7 @@ _ART_BASE = {
     "acidstorm_gs_leader2015": "acidstorm",
     "barricade_cin_dotm": "barri_c",
     "bitstream_gs_leader2015": "bitstream",
-    "blitzwing_gs": "megat_gs",
+    "blitzwing_gs": "blitzwing_gs",
     "bludgeon_gs_rd20": "bludge_gs",
     "bonecrusher_cin_rotf": "bonec_c",
     # The misspelled clyclon_gs is large-only; use the correctly spelled paired art.

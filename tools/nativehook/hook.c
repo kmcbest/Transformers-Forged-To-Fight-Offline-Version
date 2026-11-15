@@ -7047,6 +7047,8 @@ static const struct ArtBaseMap ART_BASE_MAP[] = {
     { "blackout_cin_tf", "blackout_c_tf" },
     { "blackout", "blackout_c_tf" },
     { "blaster_gs_leader2016", "blastr_gs" },
+    { "blitzwing_gs", "blitzwing_gs" },
+    { "blitzwing", "blitzwing_gs" },
     { "bludgeon_gs_rd20", "bludge_gs" },
     { "bonecrusher_cin_rotf", "bonec_c" },
     { "breakdown_gs", "breakdown" },
