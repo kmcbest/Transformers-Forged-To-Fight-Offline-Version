@@ -699,6 +699,13 @@ def main():
                     o.save_typetree(mat)
                     print(f"  [Material Safeguard] Patched {o.path_id} ('{mname}')")
 
+    # 9b. Inject Custom Triple-Changer SP3 AnimationClips & MatineeData if compiled bundle exists
+    sp3_clips_path = Path(r"E:\Agent\TFTF-blender\toolchain\unity_build_project\AssetBundles\bw_sp3_clips.assetbundle")
+    if sp3_clips_path.exists():
+        import patch_sp3_matinee
+        print("[*] Applying Phase 3C Triple-Changer SP3 clips & MatineeData patch...")
+        patch_sp3_matinee.apply_sp3_matinee(env, sp3_clips_path=sp3_clips_path)
+
     # 10. Rename CAB file entries right before saving
     new_files = {}
     for k, v in env.file.files.items():

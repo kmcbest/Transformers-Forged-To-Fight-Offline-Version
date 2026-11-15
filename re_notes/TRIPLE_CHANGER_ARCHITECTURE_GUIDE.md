@@ -308,3 +308,36 @@ flowchart LR
 
 ### 4. 母体残留武器 Prop（`staticCannon` / `mace`）清理铁律
 - G1 威震天母体的 `PropsController._props` 中带有 `staticCannon`（`InitFlags = 7`，默认在展厅与战斗人形常驻激活，且原 SMR 引用了被我们替换为单骨喷气机的 `MESH_JET_PID`）与 `mace`。在生成三变角色 Bundle 时，必须从 `PropsController._props` 的 `_serializedKeys` 与 `_serializedValues` 中将 `staticCannon` 和 `mace` 彻底移除。
+
+---
+
+## 十、 连环三变自定义 SP3 实战全流程与七大避坑手册（2026-11 闪电实装验收沉淀）
+
+> 本节记录闪电（`blitzwing_gs`）在真机上从 `0` 落地 `7.40s`（`222` 帧 @ `30fps`）“**人形拔击 → 喷气机缩圈俯射 → 空中变形切换 → 坦克锤地碾压 → 人形起身收招**”连环三变 SP3 的最终实装工艺与实机排查修正后的全部铁律。
+
+### 1. 最终实装管线与模块分工
+
+1. **时间轴与双片无缝桥接（[`sp3_curves.py`](file:///e:/Agent/TFTF-blender/tools/blitzwing/sp3_curves.py) + [`sp3_timeline.py`](file:///e:/Agent/TFTF-blender/tools/blitzwing/sp3_timeline.py)）**：
+   - **区间 I（`0..107f`，`0.00..3.57s`）**：复用风刃前半段骨骼节拍，`f=35`（`1.17s`）切为喷气机（`transformed_2` / `cannon`）；`f=48..102` 让机头 `+Z` 平滑瞄向 `Actor1`（`55..95f` 瞄准偏差保持在 `1°~2°`）。
+   - **区间 II（`108..125f`，`3.60..4.17s`）**：以三次 Hermite 曲线将缩圈飞机攀升至高空过渡点，于 **`f=123`** 空中瞬间隐去飞机并显示坦克（`_01`），`Actor1` 同步完成被炸倒卧等待姿态。
+   - **区间 III（`126..222f`，`4.20..7.40s`）**：以 **`MM_ANCHOR_OFFSET_U = (-7.44, 0.104, 6.59)`** 将汽车大师（Motormaster `mm 134..230`）的后半段锚定至闪电战斗舞台中心，坦克锤地碾压后于 **`f=178`**（`= mm 186`）切回人形落地收招。
+2. **无头 Blender 与 Unity 联合烘焙（[`export_sp3_humanoid_fbx.py`](file:///e:/Agent/TFTF-blender/tools/blitzwing/export_sp3_humanoid_fbx.py)、[`export_sp3_vehicle_targets.py`](file:///e:/Agent/TFTF-blender/tools/blitzwing/export_sp3_vehicle_targets.py)、`CompileSp3Clips.cs`）**：
+   - Blender 仅负责合并双母片世界骨骼空间与导出 `bw_sp3_actor0.fbx`、`bw_sp3_actor1.fbx` 以及 `sp3_vehicle_targets.json`；
+   - Unity `-batchmode` 下由 `CompileSp3Clips.cs` 挂载闪电真实 `Avatar` 编译 `typeID=95` 人形剪辑（`blitzwing_gs_attackSpecial_03` 与 `_hitReaction`），并在场景中实际步进回放提取逐帧 `Hips` 世界矩阵 `wProp`，反向精确解算出双载具 `Reference/COG` 局部 `AnimationClip`（`typeID=4`），`VerifyCOG` 位置/角度误差均收敛至 **`0.0000m` / `0.000deg`**。
+3. **Matinee 轨道与 Bundle 注入（[`patch_sp3_matinee.py`](file:///e:/Agent/TFTF-blender/tools/blitzwing/patch_sp3_matinee.py) + [`generate_blitzwing_bundle.py`](file:///e:/Agent/TFTF-blender/tools/blitzwing/generate_blitzwing_bundle.py)）**：
+   - 将 4 条剪辑写回母包（其中喷气机剪辑复用闲置 `megatron_gs_attackSpecial_03_mace` 槽位 `PID=2172489900769684748`，并在 `override_Blitzwing_GS_jet` AOC 中改绑 `5620803938405291589`）；
+   - 将 `MatineeData`（`PID=-6557821159884267804`）扩充为 `45` 条轨道（新增 **`track_44`** 驱动 `cannon` Prop 动画，重定向 `track_9` 控制喷气机 SMR 显隐，清空 `track_7` 并强制关闭 `track_8`），最后通过 `UnityPy` 以 `packer="lz4"` 打包输出。
+
+---
+
+### 2. 闪电 SP3 实机调试踩过的七大关键坑位与铁律
+
+| # | 踩坑现象（真机/校验表现） | 根因定位 | 实装根治标准 |
+|---|---|---|---|
+| **1** | **跨角色混剪后人形高度错乱、受击方位移缩放异常** | 风刃（`5.801`）、汽车大师（`7.052`）、闪电（`7.1961`）的 `Avatar.m_Scale` 不同；直接拼接曲线或漏设 `srm` 会导致骨骼与 RootMotion 比例失真。 | Unity 烘焙 `Actor0` / `Actor1` 时统一以 **`humanScale = 7.1961`** 编译并跑通 `VerifyHips`；在 `MatineeData` 中把 `track_3`、`track_4` 的 `avs` 同设为 **`7.1961`**，且对受击方 `track_4` 启用 **`srm = True`**。 |
+| **2** | **母体 `MatineeData` 缺少第二载具控制轨，飞机不播动画或双载具同时穿模** | 威震天母包仅 44 条轨（`0..43`），`track_7/8` 归属 `mace`、`track_9` 原为 `staticCannon`，缺少 `transformed_2`（`cannon`）专属动画轨与互斥开关。 | 重定向 `track_9` 至 `cannon` 下喷气机 SMR、新添 **`track_44`**（`en="cannon", enp="Hips"`）播放 `blitzwing_gs_attackSpecial_03_jet`，并按 `f=35 / 123 / 178` 写入严格阶跃互斥显隐曲线（3 网任意帧并发可见数恒为 `1`）。 |
+| **3** | **开场踢击看不见闪电、飞机绕飞出画外、坦克砸地不在屏幕中心** | 原版风刃绕飞半径过大、相机初始距离偏离近身交互点；区间 III 相机未对齐坦克高空下砸与地面裂纹中心。 | 重导三段分镜相机：开场（`0..34f`）特写追踪 `0.62*a0 + 0.38*a1`；空中段收紧 **`ORBIT_CENTER=(1.5, 16.5, 0.0)`、`ORBIT_SCALE=0.65`** 并加 `f=35..55` 二次贝塞尔入轨；砸地段相机锁定 `(-5.2, 2.6, 0.3)` 同步对齐 `Impact_crack` / `ground_crack_quad_01`（`(-5.2, 0.21, 0.2)`）。 |
+| **4** | **飞机开火时“机身冒紫色放射速度线，且机头前面射不出子弹”** | ① 母包 `PS 7196867372041124456`（`Track[39] fx_p_galvatron_blast_streaks`）暗开 **`ClampVelocityModule`（`magnitude=1.0, dampen=0.75`）**、**`SizeModule`** 与 **淡黑 `ColorModule`**，把世界空间子弹死锁在 `1 m/s` 糊在机鼻；<br>② `Track[41]`（`fx_p_galvatron_blast_discharge`）是 `4.0m` 球形紫色辐射速度线。 | 关闭 `PS 7196867372041124456` 的 `ClampVelocityModule / SizeModule / ColorModule`，设为窄锥射流（`shapeType=4, angle=3.0, radius=0.25, speed=72.0, life=0.28, size=0.30, rate=24.0`）、金白色及拉伸参数 `PSR(velScale=-0.028, lenScale=-1.5)`；清空 `Track[41]` 事件；严格按对准窗口 `1.83..3.18s` 同步收紧扫射粒子、10 段命中与受击火星。 |
+| **5** | **坦克砸下后“对手僵直躺在地里不消失”** | 仅将 `Actor1` 留在地面 `y=-0.15` 等待收招，未复刻汽车大师原版消失机制。实测 `mm_actor1_bw.json` 原版并未隐藏对手模型，而是在砸扁瞬间后把 `Hips_y` 直接拉至 **`-12.68m`**。 | `sp3_timeline.py` 保留 `f=155..159` 压扁在地面（`y = -0.15`）供镜头展示撞击质感，`f=160` 过渡至 `-4.5`，**`f=161..222` 直接深埋至地下 `y = -14.0m`**，实现与原版汽车大师一致的“压扁后瞬失”表现。 |
+| **6** | **对手消失后“闪电坦克仍浮在半空 1.2m，未能压实地面”** | `cha_blitzwing_gs_01` 在 `generate_blitzwing_bundle.py` 中已把履带底面置于局部 `Y=0.00`（`bounds Y=[0.00, 2.59]`），且汽车大师 `BodyBase` 在砸地期（`mm=166..179`）本就贴地（`y ≈ -0.05..+0.07m`）；`export_sp3_vehicle_targets.py` 残留的 `+1.199 * up` 偏置误将坦克整车托起 `1.2m`。 | 移除 `+1.199` 过时高度补偿，改用微贴地余量 **`+0.06 * up`**，使压地保持帧 `f=158..171` 的 `tankPos.y` 精准落回 `-0.055..+0.130m`，履带紧贴地面与裂纹。 |
+| **7** | **全流程伤害分布与包体自动化校验** | 增删连招或扫射次数后若 `sum(dp) != 1.00`，会导致 SP3 总伤害异常；Unity 编译与包内轨道任何改动也需防止回退。 | 全流程 `13` 次 `MatineeHitEvent`（Robot 2 次 `0.07+0.08` + Jet 10 次 `0.045×10` + Tank 终砸 `0.40, db=True`）严格锁定 **`sum(dp) == 1.00`**；每次打包前自动校验 `Duration == 7.4s`、`track_41 == 0`、互斥违例 `== 0` 及 APK 内 `blitzwing_gs.assetbundle` CRC32 一致。 |
