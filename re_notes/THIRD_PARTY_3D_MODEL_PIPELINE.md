@@ -1111,3 +1111,17 @@ FOC 等虚幻 3（UE3）模型的四根主手指在骨架上只有两节骨骼�
   1. **真实骨骼起止点定角**：测算臂展一律使用骨骼 `jt_shoulder` -> `jt_wrist` 真实关节点，以肩关节为轴心精确调至 `+11.5°` 外展，并通过包含全指骨组名匹配收集左/右整臂子网（含护甲与 15 根指节关联网格）；
   2. **原生权重 1:1 映射 + 腕袖隔离**：保留 `palm_geo` 全部 30 根指骨三指节平滑权重；仅对非手指/非拇指纯袖领顶点在袖口内侧做 `ForeArm` 渐变锚定；
   3. **拇指 Rest-Pose 前向校准**：依据 `Thumb` 权重平滑围绕拇指根枢轴将垂直朝下的原始拇指前旋约 $+82^\circ$ 对齐至水平 `+Y`（Matching `Avatar00`），重打包 `strongarm_mesh.assetbundle` 与 `strongarm_gs.assetbundle` 后，务必在 Unity 预览台实际驱动 `PlayableGraph + Avatar00`（`Prefight_Tactical_idle` 与 `tactical_normal_attacklight_01_jab_L`）并截图确认前臂零黑刺、手部无穿膝且拳头握紧自然。
+
+### 11.14 三变金刚（闪电 Blitzwing）双载具单骨 `COG` 逆矩阵绑定与 16 字节顶点流对齐铁律
+* **故障现象**：
+  1. 坦克网格（`6645` 顶点）在展厅和战斗中完全隐形，而相同流程导出的喷气机网格（`6330` 顶点）却能显示；
+  2. 将载具顶点在 `Stream 0` 中预旋转至 Unity 正向直立（`+Y` 朝上贴地、`+Z` 朝前）并将 `COG` 的 `m_BindPose[0]` 设为单位矩阵 `Identity` 后，进游戏载具却侧翻 $90^\circ$ 且车头朝向 `-X`；
+  3. 喷气机重击（借用 Ramjet `move_heavy_ramjet_donut`）只在地面平移，不飞升空大回环，且导致坦克重击无法开炮。
+* **根本溯源**：
+  1. **奇数顶点数触发 Unity `m_VertexData` 16 字节流对齐偏移**：Unity 对每个顶点流（Stream 0: `40B/v`，Stream 1: `8B/v`，Stream 2: `4B/v`）起始地址强制按 **16 字节对齐（`(vcount * stride + 15) & ~15`）**。`6330` 为偶数，`6330 * 40` 和 `6330 * 8` 均为 16 的倍数；而坦克 `6645` 为奇数，Stream 0 填充 8 字节（`265808`）、Stream 1 填充 8 字节（`53168`），Stream 2 真实偏移为 `318976` 而非 `6645 * 48 = 318960`。少算 16 字节导致最后 4 个顶点保留了 `boneIndex = 20`，在单骨骼 SMR（`m_Bones.size() == 1`）上越界产生 `NaN` 被整网剔除；
+  2. **`_transformed` 动画剪辑恒定覆写 `Reference/COG` 局部旋转**：所有官方载具动画每帧都会把 `Reference/COG`（Avatar TOS Hash = **`239972378`**）的 `localRotation` 设为 $q = (0.5, 0.5, -0.5, -0.5)$（矩阵 $M_{\text{tf}\leftarrow\text{COG}}$ 的 $e_{02}=-1, e_{10}=1, e_{21}=-1$）。若 `BindPose[0] = I_4`，已转正的顶点会被 $M_{\text{tf}\leftarrow\text{COG}}$ 强行侧翻；
+  3. **飞行轨迹位于主骨骼动画且 `MoveSet` 存在 `_animStateName` 哈希冲突**：Ramjet 重击的三维升空回环轨迹烘焙在角色主 Animator 的 `Ramjet_Normal_attackHeavy`（`5:-8287216037977883126`）的 `Reference/Hips` 上，且若两个重击 MoveInfo 都设为 `"Base.HeavyAttack"`，后者会在 `MoveSet.LoadMoves()` 中覆盖前者。
+* **铁律规范**：
+  1. **16 字节对齐计算 Stream 偏移**：修改 `m_VertexData` 时一律使用 `s0 = (vcount * 40 + 15) & ~15`、`s1 = (vcount * 8 + 15) & ~15`、`stream2_off = s0 + s1`；
+  2. **`Reference/COG` 逆矩阵 `BindPose`**：单骨绑定 `COG` 时，`m_BoneNameHashes` 必须设为 `[239972378]`，`m_BindPose[0]` 必须设为 $M_{\text{tf}\leftarrow\text{COG}}^{-1}$（`e01 = 1.0, e12 = -1.0, e20 = -1.0, e33 = 1.0`），并将 Prefab 中 `COG` 的 `m_LocalRotation` 同步设为 `(0.5, 0.5, -0.5, -0.5)`；
+  3. **双载具同挂 `Hips` + `Base.Misc01` 分流**：在 `PropsController` 中移除 `staticCannon`/`mace`，将 `"transformed"`（坦克）与 `"transformed_2"`（飞机）统一挂载至 `"character_model/Reference/Hips"`（`RotationOffset = (0, -90, 90)`）；将 `Ramjet_Normal_attackHeavy` 绑入战斗 AOC 的 `char_misc_01` 槽位，将 `move_heavy_ramjet_donut` 注册为 `"Base.Misc01"`，并在 `hook.c` 的 `PlayerController.PlayAnimatorState` 中按形态动态分流 `"HeavyAttack"` 与 `"Misc01"`（详见 [`TRIPLE_CHANGER_ARCHITECTURE_GUIDE.md`](file:///e:/Agent/TFTF-blender/re_notes/TRIPLE_CHANGER_ARCHITECTURE_GUIDE.md) 第九节）。

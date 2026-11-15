@@ -114,6 +114,7 @@ ROSTER = {
     "acidstorm_gs_leader2015":      ("decepticon", "tech", 5),
     "barricade_cin_dotm":           ("decepticon", "scou", 5),
     "bitstream_gs_leader2015":      ("decepticon", "tech", 5),
+    "blitzwing_gs":                 ("decepticon", "tact", 5),
     "bludgeon_gs_rd20":             ("decepticon", "warr", 5),
     "bonecrusher_cin_rotf":         ("decepticon", "warr", 5),
     "cyclonus_gs_uw06":             ("decepticon", "tact", 5),
@@ -223,6 +224,7 @@ _BOT_BASE_STATS = {
     "barricade_cin_dotm": (40250, 3040),
     "bitstream_gs_leader2015": (37400, 2770),
     "blaster_gs_leader2016": (37850, 2780),
+    "blitzwing_gs": (38250, 2795),
     "bludgeon_gs_rd20": (44820, 3040),
     "bonecrusher_cin_rotf": (45450, 2965),
     "breakdown_gs": (40150, 3020),
@@ -672,6 +674,7 @@ _ART_BASE = {
     "acidstorm_gs_leader2015": "acidstorm",
     "barricade_cin_dotm": "barri_c",
     "bitstream_gs_leader2015": "bitstream",
+    "blitzwing_gs": "megat_gs",
     "bludgeon_gs_rd20": "bludge_gs",
     "bonecrusher_cin_rotf": "bonec_c",
     # The misspelled clyclon_gs is large-only; use the correctly spelled paired art.
@@ -866,6 +869,7 @@ _BOT_NAMES = {
 
     # Decepticons
     "barricade_cin_dotm": "Barricade",
+    "blitzwing_gs": "Blitzwing",
     "bludgeon_gs_rd20": "Bludgeon",
     "bonecrusher_cin_rotf": "Bonecrusher",
     "cyclonus_gs_uw06": "Cyclonus",

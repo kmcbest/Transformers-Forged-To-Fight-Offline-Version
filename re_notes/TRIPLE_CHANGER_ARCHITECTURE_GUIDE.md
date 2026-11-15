@@ -258,3 +258,53 @@ flowchart LR
 1. **双载具显隐互斥核验**：第 `0` 帧仅 `"character_model"` 可见；飞机展示期间坦克网格 `m_Enabled == 0`；坦克下砸期间飞机与人形网格 `m_Enabled == 0`；大招结束或中途退出 Stage 时两套载具同时强制归零隐藏。
 2. **音频与特效绑定核验**：SP3 原生音效由 `MatineePlayFabricLvl3Event` 触发角色专属音库（参考 [`ORIGINAL_CHARACTER_CREATION_GUIDE.md`](file:///d:/Agent/tftf/re_notes/ORIGINAL_CHARACTER_CREATION_GUIDE.md) 第 8.6 节关于四端强耦合与 `.resource` 音频的规范），如更换音轨或调整爆炸声节点需同步对照重排事件帧号。
 3. **打包压缩门禁**：任何重写的 `.assetbundle` 必须使用 `packer="lz4"` 输出，并在真机运行确认无 `NullReferenceException` / 无姿态回退 / 总伤害结算精确符合技能数值设定。
+
+---
+
+## 九、 闪电（Blitzwing `blitzwing_gs`）展厅与战斗双载具实装四大铁律（2026-11 实战沉淀）
+
+在将闪电（`blitzwing_gs`，借壳 G1 威震天 `megatron_gs_leader2015`）的人形、坦克（`"transformed"`）与喷气机（`"transformed_2"`，借用原 `"cannon"` 槽位）实装进游戏时，攻克了以下四个决定成败的核心底层机制：
+
+### 1. 载具动画 `Reference/COG` 预旋转覆盖与逆矩阵 `BindPose` 铁律
+- **问题现象**：已在顶点流 `Stream 0` 中把 Blender 坐标 `(x, y, z)` 预变换为 Unity 正向直立坐标 `(x', y', z') = (x, z, -y)`（使履带/机腹贴地 `Y >= 0`、炮管/机头朝 `+Z`），若将单骨骼 `COG` 的 `m_BindPose[0]` 设为单位矩阵 `Identity`，进游戏后坦克与飞机依然侧翻 $90^\circ$ 且炮管/机头朝向侧面 `-X`！
+- **数学根因**：
+  - 当载具 Prop（`"transformed"` 或 `"transformed_2"`）以 `RootPath = "character_model/Reference/Hips"` 及 `RotationOffset = (0, -90, 90)` 挂载到角色骨盆时，在所有官方载具动画（展厅 `frontend_Megatron_GS_levelup_vehicle_idle`、坦克重击 `megatron_GS_attackHeavy`、喷气机重击 `Ramjet_Normal_attackHeavy`）中，载具根节点 `'transformed'` 的世界坐标系恰好是标准水平正向的（`+X` 右、`+Y` 上、`+Z` 前）。
+  - **但是**，所有官方 `_transformed` 载具动画剪辑（如 `frontend_Megatron_GS_levelup_vehicle_idle_transformed`、`megatron_GS_attackHeavy_transformed`、`Ramjet_Normal_attackHeavy_transformed`）都会在每一帧强行把子骨骼 `Reference/COG`（CRC32 = `239972378`）的 `localRotation` 驱动为：
+    $$q_{\text{COG}} = (0.5, 0.5, -0.5, -0.5) \implies M_{\text{transformed}\leftarrow\text{COG}} = \begin{bmatrix} 0 & 0 & -1 & 0 \\ 1 & 0 & 0 & 0 \\ 0 & -1 & 0 & 0 \\ 0 & 0 & 0 & 1 \end{bmatrix}$$
+  - 蒙皮公式为 $v_{\text{transformed}} = M_{\text{transformed}\leftarrow\text{COG}} \times \text{BindPose}[0] \times v'$。若 $\text{BindPose}[0] = I_4$，已转正的顶点 $v'$ 会被 $M_{\text{transformed}\leftarrow\text{COG}}$ 再次旋转导致侧翻！
+- **根治公式**：
+  1. 单骨骼 `COG` 的 `m_BoneNameHashes` 与 `m_RootBoneNameHash` 必须设为 Avatar TOS 中 `"Reference/COG"` 的精确哈希 **`239972378`**（而非裸字符串 `"COG"` 的 `3001343542`）；
+  2. `m_BindPose[0]` 必须设为 $M_{\text{transformed}\leftarrow\text{COG}}^{-1}$：
+     $$\text{BindPose}[0] = \begin{bmatrix} 0 & 1 & 0 & 0 \\ 0 & 0 & -1 & 0 \\ -1 & 0 & 0 & 0 \\ 0 & 0 & 0 & 1 \end{bmatrix} \quad (\text{即 } e_{01}=1,\; e_{12}=-1,\; e_{20}=-1,\; e_{33}=1)$$
+     此时 $M_{\text{transformed}\leftarrow\text{COG}} \times \text{BindPose}[0] = I_4$，预变换后的正向直立网格在展厅和战斗中 100% 水平贴地、正对前方！
+  3. 同时将 Prefab 中四个 `COG` Transform 的初始 `m_LocalRotation` 统一设为 `(0.5, 0.5, -0.5, -0.5)`，确保 Animator 未采样时静止姿态也与动画姿态完全一致。
+
+### 2. Unity `m_VertexData` 多流 16 字节对齐铁律（奇数顶点数隐形陷阱）
+- **问题现象**：喷气机（`vcount = 6330`，偶数）在战斗中正常显示，而完全相同方式绑定的坦克（`vcount = 6645`，奇数）在展厅和战斗中彻底隐形！
+- **二进制根因**：
+  - Unity 在 `m_VertexData` 中拼接多个 Vertex Stream 时，**每个 Stream 的字节长度都会向上对齐到 16 字节（`(size + 15) & ~15`）**！
+  - 对于喷气机 `vcount = 6330`：`Stream 0` (`6330 * 40 = 253200`) 与 `Stream 1` (`6330 * 8 = 50640`) 恰好都是 16 的整数倍，`vcount * 48` 凑巧命中 `Stream 2` 起点。
+  - 对于坦克 `vcount = 6645`（奇数）：
+    - `Stream 0` 实际占 `(6645 * 40 + 15) & ~15 = 265808` 字节（含 8 字节填充）；
+    - `Stream 1` 实际占 `(6645 * 8 + 15) & ~15 = 53168` 字节（含 8 字节填充）；
+    - `Stream 2`（骨骼权重与索引）真实起点为 `265808 + 53168 = 318976`，而非 `6645 * 48 = 318960`！
+  - 偏移少算 16 字节导致坦克最后 4 个顶点（`6641..6644`）保留了原模型未清零的 `boneIndex = 20`，而在单骨骼 SMR（`m_Bones.size() == 1`）中越界访问第 20 号骨骼矩阵会产生 `NaN` 顶点，触发 GPU 整网剔除！
+- **铁律**：计算 `m_VertexData` 各 Stream 偏移时，严禁手写 `vcount * 48`，必须严格按 16 字节对齐累加：
+  ```python
+  s0_bytes = (vcount * 40 + 15) & ~15
+  s1_bytes = (vcount * 8 + 15) & ~15
+  stream2_off = s0_bytes + s1_bytes
+  ```
+
+### 3. 喷气机重击 3D 盘旋冲撞的双动画协同与 `Base.Misc01` 无冲突分流
+- **问题现象**：切换到飞机形态（`mode == 1`）释放重击时，飞机只在原地贴地平移，没有像喷气机（Ramjet）一样侧倾升空绕圈撞击再飞回；且切换回坦克形态后无法发射炮弹。
+- **三大根因与标准解法**：
+  1. **`MoveSet._moveHashDictionary` 键冲突**：若将 `move_heavy_ramjet_donut` 也以 `_animStateName = "Base.HeavyAttack"` 追加到 `MoveSet._moves` 末尾，`MoveSet.LoadMoves()` 会用它覆盖掉索引在前的 `move_heavy_megatron_gs_shoot`，导致坦克形态也触发喷气机的近战 MoveInfo。
+  2. **3D 飞行轨迹在角色 Humanoid 动画而非 Prop 动画中**：`Ramjet_Normal_attackHeavy_transformed`（`5:2235498278053343569`）仅驱动载具自身的局部自转，真正的三维升空大回环位移烘焙在角色主 Animator 的 **`Ramjet_Normal_attackHeavy`（`5:-8287216037977883126`）** 的 `RootT/RootQ` 与 `Reference/Hips` 曲线中！同时 `"transformed_2"` 在 `PropsController` 中必须挂载在 **`RootPath = "character_model/Reference/Hips"`**（配 `RotationOffset = (0, -90, 90)`），绝不能挂在静态的 `"character_model/Reference"` 上。
+  3. **`Base.Misc01` 独立通道分流**：
+     - 在角色战斗 AOC（`-7755666207738536548`）中，将闲置槽位 `char_misc_01`（`5:4070315435280742960`）绑定为 `Ramjet_Normal_attackHeavy`（`5:-8287216037977883126`），并在 `animator_char_fight`（`-6923321525341018075`）中将 `State[50] (HeavyAttack)` 的退出过渡复制给 `State[55] (Misc01)`；
+     - 在 `MoveSet`（`5996528693102170603`）中，将 `move_heavy_ramjet_donut` 的 `_animStateName` 设为 **`"Base.Misc01"`**；
+     - 在 `hook.c` 中 Hook `PlayerController.PlayAnimatorState`（`0x11799C0`）：当闪电处于飞机形态（`mode == 1`）且请求播放 `HeavyAttack`（`-1715759148`）时，将状态 Hash 重定向为 `Misc01`（`732291567`），同时通过 `PropsController.SetScale`（`0xEA1090`）与 `GameplayUtils.HasRangedHeavy`（`0xB6D404`）同步缩放与远近程判定。
+
+### 4. 母体残留武器 Prop（`staticCannon` / `mace`）清理铁律
+- G1 威震天母体的 `PropsController._props` 中带有 `staticCannon`（`InitFlags = 7`，默认在展厅与战斗人形常驻激活，且原 SMR 引用了被我们替换为单骨喷气机的 `MESH_JET_PID`）与 `mace`。在生成三变角色 Bundle 时，必须从 `PropsController._props` 的 `_serializedKeys` 与 `_serializedValues` 中将 `staticCannon` 和 `mace` 彻底移除。
