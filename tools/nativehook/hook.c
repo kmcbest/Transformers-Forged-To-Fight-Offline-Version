@@ -7051,6 +7051,8 @@ static const struct ArtBaseMap ART_BASE_MAP[] = {
     { "blitzwing", "blitzwing_gs" },
     { "bludgeon_gs_rd20", "bludge_gs" },
     { "bonecrusher_cin_rotf", "bonec_c" },
+    { "brawl_gs", "brawl_gs" },
+    { "brawl", "brawl" },
     { "breakdown_gs", "breakdown" },
     { "breakdown", "breakdown" },
     { "bumblebee_cin_dotm", "bumbl_c" },
@@ -7295,6 +7297,12 @@ void* hook_162(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
                 return g_strnew ? g_strnew("霸天虎黑狗队 (D.J.D.) 领袖，狂热的霸天虎教条处刑者。右臂搭载标志性双联融合炮，能以谐振声波直接瓦解敌方火种，变形为塞伯坦重型战地双管坦克。") : r;
             }
             return g_strnew ? g_strnew("塔恩") : r;
+        }
+        if (strstr(k, "BRAWL") || strstr(k, "brawl") || strstr(k, "Brawl")) {
+            if (strstr(k, "BIO") || strstr(k, "desc") || strstr(k, "DESC") || strstr(k, "Bio")) {
+                return g_strnew ? g_strnew("战车队暴躁凶悍的重装突击兵。吵闹热衷破坏，脾气火爆，搭载塞伯坦重型突击加农炮，变形为重装塞伯坦坦克，在战场上以纯粹的暴力粉碎一切敌人。") : r;
+            }
+            return g_strnew ? g_strnew("吵闹") : r;
         }
     }
     // Check if Localization.Get prepended "MS_" on missing string lookup
@@ -10211,6 +10219,7 @@ int hook_192(void* self, void* statModifier, float* pRoll, float* pChance, void*
             else if (strstr(bot_id, "mixmaster") != NULL) hero = "搅拌者";
             else if (strstr(bot_id, "waspinator") != NULL) hero = "黄蜂勇士";
             else if (strstr(bot_id, "bonecrusher") != NULL) hero = "碎骨魔";
+            else if (strstr(bot_id, "brawl") != NULL) hero = "吵闹";
             else if (strstr(bot_id, "motormaster") != NULL) hero = "汽车大师";
             else if (bot_id[0]) hero = bot_id;
 
