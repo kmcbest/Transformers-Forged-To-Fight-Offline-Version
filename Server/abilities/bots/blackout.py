@@ -101,7 +101,7 @@ def build_blackout_abilities(base_hp: float = 40519.0, base_atk: float = 3272.0)
     mods["blackout_sp1_emp_shock"] = statmod_emp
     appears["appr_blackout_emp_shock"] = appr_emp
 
-    # 3. 特殊技 2 (电影铁皮S2) - 重型火炮齐射燃烧 (Artillery Burn): 100% 施加持续燃烧 DOT
+    # 3. 特殊技 2 (碾碎器原版S2) - 旋翼导弹齐射 (Rotor Missile Barrage): 100% 施加持续燃烧 DOT
     m_burn, a_burn = make_burn_statmod(
         mod_id="blackout_sp2_burn",
         duration=6.0,
@@ -110,7 +110,7 @@ def build_blackout_abilities(base_hp: float = 40519.0, base_atk: float = 3272.0)
         trigger="onSpecial2Hit",
         trigger_scope="",
         appr_id="appr_blackout_burn",
-        callout_text="炮火灼烧",
+        callout_text="导弹灼烧",
         pua_icon="\uE41D",
         color_hex="FF4400",
         gradient_bottom="881100",

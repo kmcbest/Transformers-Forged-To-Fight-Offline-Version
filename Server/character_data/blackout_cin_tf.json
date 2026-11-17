@@ -21,9 +21,9 @@
       "effects": []
     },
     "sp2": {
-      "name_zh": "重型火炮齐射",
-      "name_en": "Heavy Artillery Barrage",
-      "desc_zh": "双联重炮饱和火力压制，造成大范围破甲与持续燃烧伤害。",
+      "name_zh": "旋翼导弹齐射",
+      "name_en": "Rotor Missile Barrage",
+      "desc_zh": "展开旋翼斩击并倾泻追踪导弹，命中100%施加持续燃烧伤害。",
       "pua_icon": "0xe406",
       "ui_trigger": "onSpecial2Hit",
       "effects": []

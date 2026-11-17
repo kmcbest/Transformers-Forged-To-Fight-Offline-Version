@@ -10404,7 +10404,6 @@ static const SPMoveHitEntry s_sp_moves[] = {
     { "move_barricade_special_01", 2 },
     { "move_barricade_special_02", 3 },
     { "move_blackout_special_01", 2 },
-    { "move_blackout_special_02", 5 },
     { "move_blaster_special_01", 1 },
     { "move_blaster_special_02", 3 },
     { "move_bludgeon_special_01", 4 },
