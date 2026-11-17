@@ -149,6 +149,7 @@ ROSTER = {
     "thrust_gs_deluxe2008":         ("mercenary",  "scou", 5),
     "tantrum_gs_kabam":             ("decepticon", "braw", 5),
     "bugbite_gs_kabam":             ("mercenary",  "braw", 5),
+    "blackout_cin_tf":              ("decepticon", "demo", 5),
     "vortex_gs":                    ("decepticon", "warr", 5),
     "waspinator_gs_deluxe":         ("predacon",   "demo", 5),
 
@@ -221,6 +222,7 @@ _BOT_BASE_STATS = {
     "arcee_gs_deluxe2014": (43750, 3070),
     "barricade_cin_dotm": (40250, 3040),
     "bitstream_gs_leader2015": (37400, 2770),
+    "blackout_cin_tf": (40519, 3272),
     "blaster_gs_leader2016": (37850, 2780),
     "bludgeon_gs_rd20": (44820, 3040),
     "bonecrusher_cin_rotf": (45450, 2965),
@@ -700,6 +702,7 @@ _ART_BASE = {
     "sunstorm_gs_leader2015": "sunstorm",
     "thundercracker_gs_leader2015": "thunder_gs",
     "thrust_gs_deluxe2008": "thrust",
+    "blackout_cin_tf": "blackout_c_tf",
     "vortex_gs": "vortex_gs",
     "waspinator_gs_deluxe": "wasp_bw",  # Only the Beast Wars-styled art ships.
 
@@ -872,6 +875,7 @@ _BOT_NAMES = {
     "breakdown_gs": "Breakdown",
     "galvatron_gs_voyager2016": "Galvatron",
     "grindor_cin_rotf": "Grindor",
+    "blackout_cin_tf": "Blackout",
     "kickback_gs_kabam": "Kickback",
     "megatron_cin_rotf": "Megatron (ROTF)",
     "megatron_gs_leader2015": "Megatron",

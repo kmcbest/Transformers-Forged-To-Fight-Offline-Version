@@ -116,6 +116,7 @@ assets_redeco/*
 !assets_redeco/*onslaught*
 !assets_redeco/*vortex*
 !assets_redeco/*strongarm*
+!assets_redeco/*blackout*
 assets_redeco/*.ds
 assets_redeco/*.psd
 !assets_redeco/music

@@ -7044,6 +7044,8 @@ static const struct ArtBaseMap ART_BASE_MAP[] = {
     { "arcee_gs_deluxe2014", "arcee_gs" },
     { "barricade_cin_dotm", "barri_c" },
     { "bitstream_gs_leader2015", "bitstream" },
+    { "blackout_cin_tf", "blackout_c_tf" },
+    { "blackout", "blackout_c_tf" },
     { "blaster_gs_leader2016", "blastr_gs" },
     { "bludgeon_gs_rd20", "bludge_gs" },
     { "bonecrusher_cin_rotf", "bonec_c" },
@@ -10178,6 +10180,7 @@ int hook_192(void* self, void* statModifier, float* pRoll, float* pChance, void*
             const char* hero = "英雄";
             if (strstr(bot_id, "optimus") != NULL) hero = "擎天柱";
             else if (strstr(bot_id, "ultramagnus") != NULL) hero = "通天晓";
+            else if (strstr(bot_id, "blackout") != NULL) hero = "眩晕";
             else if (strstr(bot_id, "grindor") != NULL) hero = "碾碎器";
             else if (strstr(bot_id, "bumblebee") != NULL) hero = "大黄蜂";
             else if (strstr(bot_id, "barricade") != NULL) hero = "路障";
@@ -10382,6 +10385,8 @@ static const SPMoveHitEntry s_sp_moves[] = {
     { "move_arcee_special_02", 2 },
     { "move_barricade_special_01", 2 },
     { "move_barricade_special_02", 3 },
+    { "move_blackout_special_01", 2 },
+    { "move_blackout_special_02", 5 },
     { "move_blaster_special_01", 1 },
     { "move_blaster_special_02", 3 },
     { "move_bludgeon_special_01", 4 },

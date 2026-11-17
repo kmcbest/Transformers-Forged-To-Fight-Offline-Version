@@ -17,6 +17,7 @@ static const EnemyStat ENEMY_STATS[] = {
     { "arcee_gs_deluxe2014", 36098, 3488, 7196, 0.16f, 1.50f, "warr" },
     { "barricade_cin_dotm", 34882, 3515, 7121, 0.24f, 1.50f, "scou" },
     { "bitstream_gs_leader2015", 45022, 2555, 6889, 0.16f, 1.50f, "tech" },
+    { "blackout_cin_tf", 40519, 3272, 7329, 0.16f, 1.50f, "demo" },
     { "blaster_gs_leader2016", 38938, 3089, 6979, 0.16f, 1.50f, "tech" },
     { "bludgeon_gs_rd20", 40966, 3245, 7338, 0.16f, 1.50f, "warr" },
     { "bonecrusher_cin_rotf", 40966, 3123, 7196, 0.16f, 1.50f, "warr" },
@@ -97,6 +98,6 @@ static const EnemyStat ENEMY_STATS[] = {
     { "wildrider_gs_deluxe2016", 45022, 3637, 8146, 0.08f, 1.30f, "braw" },
     { "windblade_gs", 34882, 3366, 6948, 0.24f, 1.50f, "scou" },
 };
-#define NUM_ENEMY_STATS 83
+#define NUM_ENEMY_STATS 84
 
 #endif // BOT_INFO_H

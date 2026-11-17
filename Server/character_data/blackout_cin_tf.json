@@ -1,0 +1,44 @@
+{
+  "bot_id": "blackout_cin_tf",
+  "name_zh": "眩晕",
+  "name_en": "Blackout",
+  "faction": "decepticon",
+  "class": "demo",
+  "signature": {
+    "title_zh": "电磁脉冲过载",
+    "title_en": "EMP Overload",
+    "desc_zh": "眩晕发射电磁冲击脉冲，每次特殊攻击命中100%破坏对手能量槽并造成能量过载持续扣除能量。",
+    "pua_icon": "E419",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "电磁震荡炮",
+      "name_en": "EMP Shock Blast",
+      "desc_zh": "发射高频电磁震荡炮，造成高额直接伤害并施加感电减益。",
+      "pua_icon": "E41D",
+      "ui_trigger": "onSpecial1Hit",
+      "effects": []
+    },
+    "sp2": {
+      "name_zh": "重型火炮齐射",
+      "name_en": "Heavy Artillery Barrage",
+      "desc_zh": "双联重炮饱和火力压制，造成大范围破甲与持续燃烧伤害。",
+      "pua_icon": "0xe406",
+      "ui_trigger": "onSpecial2Hit",
+      "effects": []
+    },
+    "sp3": {
+      "name_zh": "战术地毯轰炸",
+      "name_en": "Tactical Carpet Bombing",
+      "desc_zh": "升空盘旋并发射毁灭性的战术导弹雨，地毯式轰炸彻底瓦解对手一切防御。",
+      "pua_icon": "E419",
+      "ui_trigger": "onSpecial3Hit",
+      "effects": []
+    }
+  },
+  "basic_abilities": [],
+  "game_abilities": [],
+  "abilities": [],
+  "synergies": []
+}
