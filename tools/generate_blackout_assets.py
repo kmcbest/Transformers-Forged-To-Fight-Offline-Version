@@ -63,27 +63,15 @@ def recolor_to_dark_gunmetal(img: Image.Image, sat_keep: float = 0.10, gamma: fl
     return Image.fromarray((out * 255.0 + 0.5).astype(np.uint8), mode="RGBA")
 
 
-def recolor_fx_material_bright_blue(mat_tree: dict, is_from_cfxp: bool = False):
-    """Shift purple Galvatron material properties & flare texture to bright electric blue."""
-    if is_from_cfxp:
-        mat_tree["m_Shader"] = {"m_FileID": 0, "m_PathID": PARTICLE_SHADER_PID}
+def fix_cfxp_material_for_local(mat_tree: dict):
+    """Preserve Galvatron's native purple/violet FX colors, updating external refs to cfxp (fid=1)."""
+    mat_tree["m_Shader"] = {"m_FileID": 0, "m_PathID": PARTICLE_SHADER_PID}
     props = mat_tree.get("m_SavedProperties", {})
-    for idx, (ck, cv) in enumerate(props.get("m_Colors", [])):
-        if ck == "_emissive_intensity_col":
-            props["m_Colors"][idx] = [ck, dict(BRIGHT_BLUE_EMISSIVE)]
-        elif ck == "_TintColor":
-            r, g, b, a = cv.get("r", 0.5), cv.get("g", 0.5), cv.get("b", 0.5), cv.get("a", 0.5)
-            if abs(r - g) > 0.04 or abs(b - g) > 0.04:
-                props["m_Colors"][idx] = [ck, {**BRIGHT_BLUE_TINT, "a": a}]
     for idx, (tk, tv) in enumerate(props.get("m_TexEnvs", [])):
         tex_ref = tv.get("m_Texture", {})
         tpid = int(tex_ref.get("m_PathID", 0))
-        if tpid != 0:
-            if is_from_cfxp and int(tex_ref.get("m_FileID", 0)) == 0:
-                tex_ref["m_FileID"] = 1
-            if tpid == PURPLE_FLARE_PID:
-                tex_ref["m_FileID"] = 1
-                tex_ref["m_PathID"] = BLUE_FLARE_PID
+        if tpid != 0 and int(tex_ref.get("m_FileID", 0)) == 0:
+            tex_ref["m_FileID"] = 1
 
 
 def trace_local_closure(sf, roots):
@@ -216,7 +204,7 @@ def generate_blackout_assets(output_dir: str = "assets_redeco") -> None:
         elif o.type.name not in g_tpl_by_type:
             g_tpl_by_type[o.type.name] = o
 
-    # Clone the 5 external cfxp materials used by Galvatron FX locally so we can recolor them bright blue
+    # Clone the 5 external cfxp materials used by Galvatron FX locally preserving native purple
     cfxp_mat_pids = [
         6875643828576203248,   # fx_m_galvatron_charge_laser_a
         8846740354647462645,   # fx_m_galvatron_lines_a
@@ -230,7 +218,7 @@ def generate_blackout_assets(output_dir: str = "assets_redeco") -> None:
         new_mpid = alloc_pid()
         mt = copy.deepcopy(cfxp_sf.objects[old_mpid].read_typetree())
         mt["m_Name"] = mt.get("m_Name", "").replace("galvatron", "blackout")
-        recolor_fx_material_bright_blue(mt, is_from_cfxp=True)
+        fix_cfxp_material_for_local(mt)
         new_mat = copy.copy(g_tpl_by_type["Material"])
         new_mat.path_id = new_mpid
         commit_obj_typetree(new_mat, mt)
@@ -255,7 +243,13 @@ def generate_blackout_assets(output_dir: str = "assets_redeco") -> None:
             tree["m_Name"] = "fx_p_blackout_projectile_impact"
         if tp == "Material":
             tree["m_Name"] = tree.get("m_Name", "").replace("galvatron", "blackout")
-            recolor_fx_material_bright_blue(tree, is_from_cfxp=False)
+            if "canon_streaks" in tree.get("m_Name", ""):
+                for c_tuple in tree.get("m_SavedProperties", {}).get("m_Colors", []):
+                    if c_tuple[0] == "_emissive_intensity_col":
+                        c_tuple[1]["r"] = 0.7321422
+                        c_tuple[1]["g"] = 0.5955882
+                        c_tuple[1]["b"] = 1.0
+                        c_tuple[1]["a"] = 1.0
 
         def remap_cfx(node):
             if isinstance(node, dict):
@@ -334,7 +328,13 @@ def generate_blackout_assets(output_dir: str = "assets_redeco") -> None:
             tree["m_Father"] = {"m_FileID": 0, "m_PathID": 0}
         if tp == "Material":
             tree["m_Name"] = tree.get("m_Name", "").replace("galvatron", "blackout")
-            recolor_fx_material_bright_blue(tree, is_from_cfxp=False)
+            if "canon_streaks" in tree.get("m_Name", ""):
+                for c_tuple in tree.get("m_SavedProperties", {}).get("m_Colors", []):
+                    if c_tuple[0] == "_emissive_intensity_col":
+                        c_tuple[1]["r"] = 0.7321422
+                        c_tuple[1]["g"] = 0.5955882
+                        c_tuple[1]["b"] = 1.0
+                        c_tuple[1]["a"] = 1.0
 
         def remap_gal(node):
             if isinstance(node, dict):
@@ -370,7 +370,7 @@ def generate_blackout_assets(output_dir: str = "assets_redeco") -> None:
                         mv["_asset"] = {"m_FileID": 5, "m_PathID": BLACKOUT_EXPLODE_MOVE_PID}
             elif spid == -3815473324432562333:  # PrefabLib on projectile_blackout_energy_bullet
                 tree["PrefabList"] = [
-                    {"Prefab": {"m_FileID": 1, "m_PathID": -2054079777877699854}, "Amount": 1},  # fx_l_hit_small_blue_perceptual
+                    {"Prefab": {"m_FileID": 1, "m_PathID": 2223755685215444488}, "Amount": 1},  # fx_l_hit_small_galvatron_perceptual
                     {"Prefab": {"m_FileID": 0, "m_PathID": gal_pid_map[1707416394268060215]}, "Amount": 1},  # fx_p_blackout_large_projectile
                     {"Prefab": {"m_FileID": 0, "m_PathID": impact_new_pid}, "Amount": 1},  # fx_p_blackout_projectile_impact
                 ]
@@ -385,9 +385,9 @@ def generate_blackout_assets(output_dir: str = "assets_redeco") -> None:
         grafted_pids.append(new_pid)
 
     proj_new_pid = gal_pid_map[7844017693230829075]
-    print(f"[+] Grafted & recolored bright-blue Galvatron S2 FX ({len(grafted_pids)} objects, proj={proj_new_pid}).")
+    print(f"[+] Grafted Galvatron S2 FX ({len(grafted_pids)} objects, proj={proj_new_pid}) in native purple.")
 
-    # Register all S1 prefabs + shared blue trail/lights in Blackout's main PrefabLib (-5353390358171322875)
+    # Register all S1 prefabs + shared trail/lights in Blackout's main PrefabLib (-5353390358171322875)
     prefablib_obj = g_sf.objects[-5353390358171322875]
     prefablib_tree = prefablib_obj.read_typetree()
     plist = prefablib_tree.get("PrefabList", [])
@@ -402,11 +402,11 @@ def generate_blackout_assets(output_dir: str = "assets_redeco") -> None:
         (0, gal_pid_map[7248483950455624021], 1),          # fx_p_blackout_blast_streaks
         (0, gal_pid_map[-6802706632167550083], 1),         # fx_p_blackout_blast_discharge
         (0, gal_pid_map[-7568857660993260739], 1),         # fx_p_blackout_large_blast
-        (4, 3383258741578490413, 2),                       # fx_r_trail_optimus_gs (bright blue trail)
+        (4, 4246747886251243458, 2),                       # fx_r_trail_galvatron (Galvatron native purple trail)
         (4, 5846517154461878008, 1),                       # fx_p_hit_large_lite
         (4, -1685458833540413680, 1),                      # fx_p_hit_punch_sparks_special
         (1, -1981576416574566773, 1),                      # fx_l_hit_special_perceptual
-        (1, -2054079777877699854, 1),                      # fx_l_hit_small_blue_perceptual
+        (1, 2223755685215444488, 1),                       # fx_l_hit_small_galvatron_perceptual
     ]
     for fid, pid, amt in s1_required_prefabs:
         if (fid, pid) not in existing_refs:
@@ -527,12 +527,12 @@ def generate_blackout_assets(output_dir: str = "assets_redeco") -> None:
                 [(0, ipid) for ipid in injected_pids]
                 + [(0, gpid) for gpid in grafted_pids]
                 + [
-                    (4, 3383258741578490413),
+                    (4, 4246747886251243458),  # fx_r_trail_galvatron
                     (4, 5846517154461878008),
                     (4, -1685458833540413680),
                     (1, -1981576416574566773),
-                    (1, -2054079777877699854),
-                    (1, BLUE_FLARE_PID),
+                    (1, 2223755685215444488),   # fx_l_hit_small_galvatron_perceptual
+                    (1, PURPLE_FLARE_PID),
                     (1, 3731911469176567051),
                     (1, -4392597687826872290),
                     (1, -4772189363306452888),

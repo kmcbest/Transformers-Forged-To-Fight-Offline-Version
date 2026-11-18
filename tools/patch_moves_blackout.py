@@ -25,7 +25,6 @@ RIGHT_PROP_PATH = (
 )
 
 FX_RENAME_MAP = {
-    "fx_r_trail_galvatron": "fx_r_trail_optimus_gs",
     "fx_p_galvatron_blast_streaks": "fx_p_blackout_blast_streaks",
     "fx_p_galvatron_charge_up": "fx_p_blackout_charge_up",
     "fx_p_galvatron_energy_ball": "fx_p_blackout_energy_ball",
@@ -33,7 +32,6 @@ FX_RENAME_MAP = {
     "fx_p_galvatron_large_blast": "fx_p_blackout_large_blast",
     "fx_p_galvatron_large_projectile": "fx_p_blackout_large_projectile",
     "fx_p_galvatron_projectile_impact": "fx_p_blackout_projectile_impact",
-    "fx_l_hit_small_galvatron_perceptual": "fx_l_hit_small_blue_perceptual",
     "projectile_galvatron_heavy_bullet": "projectile_blackout_energy_bullet",
 }
 
@@ -80,7 +78,7 @@ def patch_moves_for_blackout():
     else:
         new_s1.write_typetree(s1_tree)
     sf.objects[BLACKOUT_S1_PID] = new_s1
-    print(f"[+] Updated move_blackout_special_01 (PID {BLACKOUT_S1_PID}) <- Galvatron S2 (bright blue FX)")
+    print(f"[+] Updated move_blackout_special_01 (PID {BLACKOUT_S1_PID}) <- Galvatron S2 (native purple FX)")
 
     # 2. Author move_blackout_heavy_bullet_fire
     gal_fire_obj = sf.objects[GALVATRON_FIRE_PID]

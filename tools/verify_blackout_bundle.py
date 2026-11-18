@@ -57,7 +57,7 @@ assert clips[58]['m_OverrideClip']['m_PathID'] == -7224602046215420873, "Slot 58
 assert clips[4]['m_OverrideClip']['m_PathID'] == 991107, "Slot 4 (Galvatron S2 -> S1) mismatch!"
 assert clips[5]['m_OverrideClip']['m_PathID'] == 5129418086538677414, "Slot 5 (Grindor S2) mismatch!"
 
-# 4.5. Check grafted bright-blue projectile_blackout_energy_bullet & PrefabLib
+# 4.5. Check grafted Galvatron native purple projectile_blackout_energy_bullet & PrefabLib
 pl = sf.objects[-5353390358171322875].read_typetree().get("PrefabList", [])
 pl_names = {}
 for p in pl:
@@ -70,15 +70,16 @@ for fx_n in [
     "fx_p_blackout_blast_streaks", "fx_p_blackout_blast_discharge", "fx_p_blackout_large_blast"
 ]:
     assert fx_n in pl_names, f"PrefabLib missing {fx_n}!"
-# Verify all grafted FX materials are bright blue (not purple)
+# Verify all grafted FX materials have Galvatron's native purple/violet palette
 for pid, o in sf.objects.items():
     if o.type.name == "Material":
         mt = o.read_typetree()
-        if "blackout" in mt.get("m_Name", "").lower():
+        if "blackout" in mt.get("m_Name", "").lower() and "cha_" not in mt.get("m_Name", "").lower():
             cols = dict(mt.get("m_SavedProperties", {}).get("m_Colors", []))
             em = cols.get("_emissive_intensity_col", {})
-            assert em.get("b", 0) > 0.9 and em.get("g", 0) > 0.6 and em.get("r", 1) < 0.2, f"Material {mt['m_Name']} not bright blue: {em}"
-print(f"[+] Verified bright-blue projectile & 5 S1 FX prefabs in PrefabLib!")
+            if em:
+                assert em.get("b", 0) > 0.9 and (em.get("b", 0) - em.get("g", 0)) > 0.2, f"Material {mt['m_Name']} not native Galvatron purple: {em}"
+print(f"[+] Verified Galvatron native purple projectile & 5 S1 FX prefabs in PrefabLib!")
 
 # 5. Check MoveSet
 moveset = sf.objects[-2282744758651308026].read_typetree()

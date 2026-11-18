@@ -7304,6 +7304,27 @@ void* hook_162(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
             }
             return g_strnew ? g_strnew("吵闹") : r;
         }
+        if (strstr(k, "BLACKOUT") || strstr(k, "blackout") || strstr(k, "Blackout")) {
+            if (strstr(k, "BIO") || strstr(k, "desc") || strstr(k, "DESC") || strstr(k, "Bio")) {
+                int is_en = 0;
+                if (g_base) {
+                    typedef void* (*fn_get_lang)(void);
+                    fn_get_lang get_lang = (fn_get_lang)(g_base + 0x1268020);
+                    void* l_obj = get_lang ? get_lang() : NULL;
+                    char l_buf[32];
+                    if (l_obj && read_str_utf8(l_obj, l_buf, sizeof(l_buf))) {
+                        if (strstr(l_buf, "English") || strstr(l_buf, "en") || strstr(l_buf, "En")) {
+                            is_en = 1;
+                        }
+                    }
+                }
+                if (is_en) {
+                    return g_strnew ? g_strnew("BLACKOUT is one of the tallest of the DECEPTICONS. Most often seen looming silently over the right shoulder of MEGATRON, he is his leader's hound. He pursues any target he is given with relentless efficiency, allowing nothing to stop him in his task. Those who defy him beware: his rage knows no bounds.He will fill the air with fire and burn the land clear to take his revenge. Paired with his minion SCORPONOK, he is a dangerous and deadly foe.") : r;
+                }
+                return g_strnew ? g_strnew("眩晕是一个巨大的霸天虎。通常会默默出现在威震天的右肩侧，他是首领的猎犬。他以不懈的效率追踪任何目标，没有什么事情可以阻止他完成任务。那些蔑视他的人要小心：他的愤怒是无止境的。他会让空气中弥漫着火焰并烧毁地面上的一切以进行报复。与他的爪牙巨蝎一起，他是一个危险而致命的敌人。") : r;
+            }
+            return g_strnew ? g_strnew("眩晕") : r;
+        }
     }
     // Check if Localization.Get prepended "MS_" on missing string lookup
     // If the input key was NOT an ID (i.e. does not start with "ID_" or "MS_ID_"),

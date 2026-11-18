@@ -4,6 +4,8 @@
   "name_en": "Blackout",
   "faction": "decepticon",
   "class": "demo",
+  "desc_en": "BLACKOUT is one of the tallest of the DECEPTICONS. Most often seen looming silently over the right shoulder of MEGATRON, he is his leader's hound. He pursues any target he is given with relentless efficiency, allowing nothing to stop him in his task. Those who defy him beware: his rage knows no bounds.He will fill the air with fire and burn the land clear to take his revenge. Paired with his minion SCORPONOK, he is a dangerous and deadly foe.",
+  "desc_zh": "眩晕是一个巨大的霸天虎。通常会默默出现在威震天的右肩侧，他是首领的猎犬。他以不懈的效率追踪任何目标，没有什么事情可以阻止他完成任务。那些蔑视他的人要小心：他的愤怒是无止境的。他会让空气中弥漫着火焰并烧毁地面上的一切以进行报复。与他的爪牙巨蝎一起，他是一个危险而致命的敌人。",
   "signature": {
     "title_zh": "电磁脉冲过载",
     "title_en": "EMP Overload",
