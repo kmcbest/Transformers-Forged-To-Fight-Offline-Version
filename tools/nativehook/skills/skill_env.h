@@ -62,6 +62,7 @@ void skill_stun_player(int target_player_index, float duration_s);
 // Buff / Debuff 活性与层数查询
 int skill_has_buff(int player_index, const char* buff_id_substr);
 int skill_count_buffs(int player_index, const char* buff_id_substr);
+float skill_get_total_crit_chance(int player_index);
 
 // Buff 与修饰器主动施加与消耗
 void skill_apply_buff(int player_index, const char* mod_id);

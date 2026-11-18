@@ -7,40 +7,276 @@
   "desc_en": "BLACKOUT is one of the tallest of the DECEPTICONS. Most often seen looming silently over the right shoulder of MEGATRON, he is his leader's hound. He pursues any target he is given with relentless efficiency, allowing nothing to stop him in his task. Those who defy him beware: his rage knows no bounds.He will fill the air with fire and burn the land clear to take his revenge. Paired with his minion SCORPONOK, he is a dangerous and deadly foe.",
   "desc_zh": "眩晕是一个巨大的霸天虎。通常会默默出现在威震天的右肩侧，他是首领的猎犬。他以不懈的效率追踪任何目标，没有什么事情可以阻止他完成任务。那些蔑视他的人要小心：他的愤怒是无止境的。他会让空气中弥漫着火焰并烧毁地面上的一切以进行报复。与他的爪牙巨蝎一起，他是一个危险而致命的敌人。",
   "signature": {
-    "title_zh": "电磁脉冲过载",
-    "title_en": "EMP Overload",
-    "desc_zh": "眩晕发射电磁冲击脉冲，每次特殊攻击命中100%破坏对手能量槽并造成能量过载持续扣除能量。",
-    "pua_icon": "E419",
+    "title_zh": "追猎",
+    "title_en": "I'll Hunt You Down!",
+    "desc_zh": "当眩晕的近战攻击落空时，他猎杀对手的渴望变得更强，在3秒内获得最大能量的5%  //3秒倒计时结束前不可再次触发",
+    "pua_icon": "E608",
     "ui_trigger": "none"
   },
   "special_attacks": {
     "sp1": {
-      "name_zh": "电磁震荡炮",
-      "name_en": "EMP Shock Blast",
-      "desc_zh": "发射高频电磁震荡炮，造成高额直接伤害并施加感电减益。",
-      "pua_icon": "E41D",
+      "name_zh": "能量炮",
+      "name_en": "Energy Blast",
+      "desc_zh": "发射高能粒子能量炮，最后一击强行穿透对手格挡，不可防御。",
+      "pua_icon": "0xe41f",
       "ui_trigger": "onSpecial1Hit",
-      "effects": []
+      "effects": [
+        {
+          "title_zh": "不可防御",
+          "title_en": "Unblockable",
+          "desc_zh": "最后1击不可防御",
+          "pua_icon": "0xe41f"
+        }
+      ]
     },
     "sp2": {
-      "name_zh": "旋翼导弹齐射",
-      "name_en": "Rotor Missile Barrage",
-      "desc_zh": "展开旋翼斩击并倾泻追踪导弹，命中100%施加持续燃烧伤害。",
-      "pua_icon": "0xe406",
+      "name_zh": "翼刃回旋",
+      "name_en": "Spinning Rotor",
+      "desc_zh": "高速旋转旋翼斩击，技能期间提升100%暴击伤害，每击暴击100%概率造成3秒流血（60%攻击力伤害）。",
+      "pua_icon": "0xe906",
       "ui_trigger": "onSpecial2Hit",
-      "effects": []
+      "effects": [
+        {
+          "title_zh": "暴击伤害",
+          "title_en": "Crit Damage",
+          "desc_zh": "技能期间提升100%的暴击伤害",
+          "pua_icon": "0xe906"
+        },
+        {
+          "title_zh": "暴击流血",
+          "title_en": "Bleed on Crit",
+          "desc_zh": "每1击暴击时有100%的概率触发流血，在3秒内造成攻击力60%的伤害。",
+          "pua_icon": "0xe401"
+        }
+      ]
     },
     "sp3": {
-      "name_zh": "战术地毯轰炸",
-      "name_en": "Tactical Carpet Bombing",
-      "desc_zh": "升空盘旋并发射毁灭性的战术导弹雨，地毯式轰炸彻底瓦解对手一切防御。",
-      "pua_icon": "E419",
+      "name_zh": "猎杀",
+      "name_en": "Hunt Down",
+      "desc_zh": "全力升空歼灭压制，最后一击暴击率增加50%，如果暴击100%造成6秒燃烧（80%攻击力伤害）。技能结束向对手施加1层永久暴击抗性减益（受暴击率提升20%）。",
+      "pua_icon": "0xe41d",
       "ui_trigger": "onSpecial3Hit",
-      "effects": []
+      "effects": [
+        {
+          "title_zh": "燃烧",
+          "title_en": "Burn",
+          "desc_zh": "最后一击的暴击率增加50%，如果暴击，100%概率造成燃烧，施加攻击力80%的伤害，持续6秒。",
+          "pua_icon": "0xe41d"
+        },
+        {
+          "title_zh": "暴击抗性减益",
+          "title_en": "Crit Resistance Debuff",
+          "desc_zh": "技能结束时，向对手施加1层永久暴击抗性减益，在对手身上打出暴击的几率提升20%。",
+          "pua_icon": "0xe409"
+        }
+      ]
     }
   },
-  "basic_abilities": [],
+  "basic_abilities": [
+    {
+      "title_zh": "暴击率增益",
+      "title_en": "Crit Rate Buff",
+      "desc_zh": "临时增加攻击命中时触发暴击的几率。",
+      "pua_icon": "E40D",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "暴击伤害增益",
+      "title_en": "Crit Damage Buff",
+      "desc_zh": "临时增加暴击命中时造成的伤害。",
+      "pua_icon": "E906",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "远程增益",
+      "title_en": "Ranged Buff",
+      "desc_zh": "临时增加远程攻击的速度、射击频率与伤害。",
+      "pua_icon": "E41B",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "燃烧",
+      "title_en": "Burn",
+      "desc_zh": "持续造成能量伤害。",
+      "pua_icon": "E41D",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
   "game_abilities": [],
-  "abilities": [],
+  "abilities": [
+    {
+      "id": 1794966881651,
+      "title_zh": "暴击率增益",
+      "title_en": "Crit Rate Buff",
+      "desc_zh": "临时增加攻击命中时触发暴击的几率。",
+      "desc_en": "Temporarily increases the chance of scoring critical hits.",
+      "pua_icon": "E40D",
+      "category": "basic",
+      "status": "unimplemented",
+      "sort_order": 1
+    },
+    {
+      "id": 1794966881652,
+      "title_zh": "暴击伤害增益",
+      "title_en": "Crit Damage Buff",
+      "desc_zh": "临时增加暴击命中时造成的伤害。",
+      "desc_en": "Temporarily increases the damage of critical hits.",
+      "pua_icon": "E906",
+      "category": "basic",
+      "status": "unimplemented",
+      "sort_order": 2
+    },
+    {
+      "id": 1794966881653,
+      "title_zh": "远程增益",
+      "title_en": "Ranged Buff",
+      "desc_zh": "临时增加远程攻击的速度、射击频率与伤害。",
+      "desc_en": "Temporarily increases ranged attack speed and damage.",
+      "pua_icon": "E41B",
+      "category": "basic",
+      "status": "unimplemented",
+      "sort_order": 3
+    },
+    {
+      "id": 1794966881654,
+      "title_zh": "燃烧",
+      "title_en": "Burn",
+      "desc_zh": "持续造成能量伤害。",
+      "desc_en": "Deals energy damage over time.",
+      "pua_icon": "E41D",
+      "category": "basic",
+      "status": "unimplemented",
+      "sort_order": 4
+    },
+    {
+      "id": 1794966881655,
+      "title_zh": "暴击几率",
+      "title_en": "Crit Rate",
+      "desc_zh": "连击数每增加5，获得1层8%的暴击几率增益，被敌人命中打断连击时全部移除。",
+      "desc_en": "Deep focus\nThe ancient martial art of Diffusion has one final level to attain.\nAt 15 hits Drift achieves full focus and gains a Deep Focus Buff that increases the duration of his bleeds by {{var_10}} until hit next by the opponent.\n+ about {{var_11}} per level.",
+      "pua_icon": "E40D",
+      "category": "passive",
+      "status": "priority",
+      "sort_order": 5
+    },
+    {
+      "id": 1794966881656,
+      "title_zh": "暴击伤害",
+      "title_en": "Crit Damage",
+      "desc_zh": "连击数每增加5，获得1层16%的暴击伤害增益，被敌人命中打断连击时全部移除。",
+      "desc_en": "{{var_13}} chance to Stun for {{var_14}}.",
+      "pua_icon": "E906",
+      "category": "passive",
+      "status": "priority",
+      "sort_order": 6
+    },
+    {
+      "id": 1794966881657,
+      "title_zh": "无尽怒火",
+      "title_en": "Infinite Fury",
+      "desc_zh": "当暴击率超过100%时，溢出的每1%暴击率会转化为1%暴击伤害增益，这个增益会在暴击率低于100%时移除。",
+      "desc_en": "",
+      "pua_icon": "E906",
+      "category": "passive",
+      "status": "priority",
+      "sort_order": 7
+    },
+    {
+      "id": 1794966881658,
+      "title_zh": "加特林机枪",
+      "title_en": "Gatling Gun",
+      "desc_zh": "连续3次远程攻击后（无论是否命中），得到1层远程增益，不可叠加，提升50%的远程伤害和40%的远程射速，增益将会在此机器人防御、近战、重击、特殊攻击时移除。",
+      "desc_en": "",
+      "pua_icon": "E41B",
+      "category": "passive",
+      "status": "priority",
+      "sort_order": 8
+    },
+    {
+      "id": 1794966881659,
+      "title_zh": "燃烧",
+      "title_en": "Burn",
+      "desc_zh": "重击如果暴击，100%概率造成燃烧，施加攻击力80%的伤害，持续6秒。",
+      "desc_en": "Heavy Attacks: Double Missile Attack has +{{var_4}} chance to inflict Burn.",
+      "pua_icon": "0xe41d",
+      "category": "passive",
+      "status": "priority",
+      "sort_order": 9
+    },
+    {
+      "id": 1794966881660,
+      "title_zh": "燃烧",
+      "title_en": "Burn",
+      "desc_zh": "最后一击的暴击率增加50%，如果暴击，100%概率造成燃烧，施加攻击力80%的伤害，持续6秒。",
+      "desc_en": "Heavy Attacks: Double Missile Attack has +{{var_4}} chance to inflict Burn.",
+      "pua_icon": "0xe41d",
+      "category": "sp3",
+      "status": "priority",
+      "sort_order": 10
+    },
+    {
+      "id": 1794966881661,
+      "title_zh": "暴击抗性减益",
+      "title_en": "Crit Resistance Debuff",
+      "desc_zh": "技能结束时，向对手施加1层永久暴击抗性减益，在对手身上打出暴击的几率提升20%。",
+      "desc_en": "",
+      "pua_icon": "E409",
+      "category": "sp3",
+      "status": "priority",
+      "sort_order": 11
+    },
+    {
+      "id": 1794966881662,
+      "title_zh": "暴击伤害",
+      "title_en": "Crit Damage",
+      "desc_zh": "技能期间提升100%的暴击伤害",
+      "desc_en": "When Attacked: {{var_1}} chance to increase Critical Damage by {{var_2}} for {{var_3}}.",
+      "pua_icon": "0xe906",
+      "category": "sp2",
+      "status": "priority",
+      "sort_order": 12
+    },
+    {
+      "id": 1794966881663,
+      "title_zh": "暴击流血",
+      "title_en": "Bleed on Crit",
+      "desc_zh": "每1击暴击时有100%的概率触发流血，在3秒内造成攻击力60%的伤害。",
+      "desc_en": "25% chance to inflict Bleed on Critical Hits, dealing 120% of Attack over 5 seconds. If it's a Critical Blade Attack in Special Attacks, chance is increased by 60%.",
+      "pua_icon": "0xe401",
+      "category": "sp2",
+      "status": "priority",
+      "sort_order": 13
+    },
+    {
+      "id": 1794966881664,
+      "title_zh": "不可防御",
+      "title_en": "Unblockable",
+      "desc_zh": "最后1击不可防御",
+      "desc_en": "Gain 2 charges of Dark Energy.",
+      "pua_icon": "0xe41f",
+      "category": "sp1",
+      "status": "priority",
+      "sort_order": 14
+    },
+    {
+      "id": 1794966881665,
+      "title_zh": "追猎",
+      "title_en": "I'll Hunt You Down!",
+      "desc_zh": "当眩晕的近战攻击落空时，他猎杀对手的渴望变得更强，在3秒内获得最大能量的5%  //3秒倒计时结束前不可再次触发",
+      "desc_en": "",
+      "pua_icon": "E608",
+      "category": "signature",
+      "status": "priority",
+      "sort_order": 15
+    }
+  ],
   "synergies": []
 }

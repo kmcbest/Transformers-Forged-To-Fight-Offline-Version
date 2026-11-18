@@ -65,10 +65,18 @@ def patch_moves_for_blackout():
     s1_tree["m_Name"] = "move_blackout_special_01"
     s1_data = json.loads(s1_tree["m_Script"])
     s1_data["moves"]["m_Name"] = "move_blackout_special_01"
-    s1_data["moves"]["events"] = [
-        remap_event_fx(ev, "move_blackout_special_01")
-        for ev in s1_data.get("moves", {}).get("events", [])
-    ]
+    s1_events = []
+    for ev in s1_data.get("moves", {}).get("events", []):
+        ev = remap_event_fx(ev, "move_blackout_special_01")
+        if "hd" in ev and isinstance(ev["hd"], dict):
+            # 将源自惊破天 S2 的 attackLevel 从 32 (Special2) 修正为 16 (Special1)
+            if ev["hd"].get("al") == 32:
+                ev["hd"]["al"] = 16
+            # 最后一击 (idx == 100) 设为不可防御 (Unblockable: 'u': True)
+            if ev["hd"].get("idx") == 100:
+                ev["hd"]["u"] = True
+        s1_events.append(ev)
+    s1_data["moves"]["events"] = s1_events
     s1_tree["m_Script"] = json.dumps(s1_data)
 
     new_s1 = copy.copy(gal_s2_obj)

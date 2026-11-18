@@ -40,6 +40,7 @@ extern BotSkillModule g_module_dinobot;
 extern BotSkillModule g_module_drift;
 extern BotSkillModule g_module_bludgeon;
 extern BotSkillModule g_module_blitzwing;
+extern BotSkillModule g_module_blackout;
 
 static const BotSkillModule* s_registry[] = {
     &g_module_arcee,
@@ -72,6 +73,7 @@ static const BotSkillModule* s_registry[] = {
     &g_module_drift,
     &g_module_bludgeon,
     &g_module_blitzwing,
+    &g_module_blackout,
     NULL
 };
 

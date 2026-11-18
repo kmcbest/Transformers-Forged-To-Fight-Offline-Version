@@ -5617,6 +5617,14 @@ void* hook_143(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
             flog("SP3_EXIT pc=%p tms=%llu", pc, (unsigned long long)propgo_now_ms());
             sp3_update_character_weapons(pc, 0);
             reset_player_attack_chain(pc);
+
+            int32_t pidx = *(int32_t*)((uintptr_t)pc + 0xF4);
+            const char* bid = (pidx == 0) ? g_p0_bot_id : g_p1_bot_id;
+            if (bid && strstr(bid, "blackout") != NULL) {
+                extern void skill_apply_buff_dur(int target_player, const char* modifier_id, float duration);
+                skill_apply_buff_dur(1 - pidx, "blackout_sp3_crit_resist_debuff", -1.0f);
+                flog("BLACKOUT_SP3_EXIT: applied permanent crit resist debuff to P%d", 1 - pidx);
+            }
         }
         if (s_saved_actor0_obj && obj_ok(s_saved_actor0_obj) && s_saved_actor0_name[0] && g_strnew) {
             void* orig_name_str = g_strnew(s_saved_actor0_name);
@@ -6856,6 +6864,7 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
                 if (post_r >= 3) {
                     g_p0_ranged_recovery_ms = now_ms + 420;
                 }
+                skill_dispatch_attack_start(0, 8);
                 // 敌方原生行为树自动处理远程招架与侧闪，无需人工干预注入动作
             }
             // DIAGNOSTIC ONLY -- no behavior change. Prints the chain counters AFTER the native
@@ -6912,12 +6921,174 @@ void* hook_155(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     return r;
 }
 static volatile int g_p0_last_hit_is_crit = 0;
+static float s_last_roll_crit_chance[2] = {0.0f, 0.0f};
+static uint64_t s_last_roll_crit_ms[2]  = {0, 0};
+
+int skill_has_buff(int player_index, const char* buff_id_substr);
+
+// 实时累加角色自身活跃的暴击率增益 (crit_rate / crit_chance) 与对手身上的暴击抗性减益 (crit_resist / crit_rate_resist)
+static float get_live_crit_chance_bonus(int player_index, void* fallback_pc) {
+    if (player_index < 0 || player_index >= 2) return 0.0f;
+    float total_bonus = 0.0f;
+
+    // 1. 自身暴击率 Buff / Debuff
+    void* pc = (player_index == 0) ? g_p0_controller : g_p1_controller;
+    if ((!pc || !obj_ok(pc)) && fallback_pc && obj_ok(fallback_pc)) pc = fallback_pc;
+    if (pc && obj_ok(pc)) {
+        void* bc = *(void**)((char*)pc + 0x88);
+        if (bc && obj_ok(bc)) {
+            PROTECT({
+                void* list = *(void**)((char*)bc + 0x40);
+                if (!list || !obj_ok(list)) list = *(void**)((char*)bc + 0x20);
+                if (list && obj_ok(list)) {
+                    void* items = *(void**)((char*)list + 0x10);
+                    int32_t size = *(int32_t*)((char*)list + 0x18);
+                    if (items && obj_ok(items) && size > 0 && size < 128) {
+                        for (int i = 0; i < size; i++) {
+                            void* buff = *(void**)((char*)items + 0x20 + i * 8);
+                            if (!buff || !obj_ok(buff)) continue;
+                            if (*(uint8_t*)((char*)buff + 0x6C)) continue; // _isStopped
+
+                            int32_t mod_type = *(int32_t*)((char*)buff + 0x18); // 1=buff,2=debuff,4=passive,8=passive_buff,16=passive_debuff
+                            void* type_obj = *(void**)((char*)buff + 0x10);     // _buffType
+                            void* id_obj   = *(void**)((char*)buff + 0x28);     // _id
+                            float amount   = *(float*)((char*)buff + 0x44);     // _amount
+
+                            char b_type[64] = {0};
+                            char b_id[64] = {0};
+                            if (type_obj && obj_ok(type_obj)) read_str(type_obj, b_type, sizeof(b_type));
+                            if (id_obj && obj_ok(id_obj)) read_str(id_obj, b_id, sizeof(b_id));
+
+                            if (strcmp(b_type, "crit_rate") == 0 || strcmp(b_type, "crit_chance") == 0) {
+                                // 排除施加在自己身上的对手暴抗减益 (它提升的是对手打我的暴击率，不是我的暴击率)
+                                if (strstr(b_id, "crit_resist") != NULL) continue;
+                                if (mod_type == 1 || mod_type == 4 || mod_type == 8) {
+                                    total_bonus += amount;
+                                } else if (mod_type == 2 || mod_type == 16) {
+                                    total_bonus -= (amount >= 0.0f ? amount : -amount);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    // 2. 对手身上的暴击抗性减益 (削弱对手暴抗 => 提升我方对其暴击率)
+    int opp_idx = 1 - player_index;
+    void* opp_pc = (opp_idx == 0) ? g_p0_controller : g_p1_controller;
+    if (opp_pc && obj_ok(opp_pc)) {
+        void* opp_bc = *(void**)((char*)opp_pc + 0x88);
+        if (opp_bc && obj_ok(opp_bc)) {
+            PROTECT({
+                void* list = *(void**)((char*)opp_bc + 0x40);
+                if (!list || !obj_ok(list)) list = *(void**)((char*)opp_bc + 0x20);
+                if (list && obj_ok(list)) {
+                    void* items = *(void**)((char*)list + 0x10);
+                    int32_t size = *(int32_t*)((char*)list + 0x18);
+                    if (items && obj_ok(items) && size > 0 && size < 128) {
+                        for (int i = 0; i < size; i++) {
+                            void* buff = *(void**)((char*)items + 0x20 + i * 8);
+                            if (!buff || !obj_ok(buff)) continue;
+                            if (*(uint8_t*)((char*)buff + 0x6C)) continue; // _isStopped
+
+                            int32_t mod_type = *(int32_t*)((char*)buff + 0x18);
+                            void* type_obj = *(void**)((char*)buff + 0x10);
+                            void* id_obj   = *(void**)((char*)buff + 0x28);
+                            float amount   = *(float*)((char*)buff + 0x44);
+
+                            char b_type[64] = {0};
+                            char b_id[64] = {0};
+                            if (type_obj && obj_ok(type_obj)) read_str(type_obj, b_type, sizeof(b_type));
+                            if (id_obj && obj_ok(id_obj)) read_str(id_obj, b_id, sizeof(b_id));
+
+                            int is_crit_resist_debuff = (
+                                (strstr(b_id, "crit_resist") != NULL && (mod_type == 2 || mod_type == 16)) ||
+                                (strcmp(b_type, "crit_rate_resist") == 0 && (mod_type == 2 || mod_type == 16))
+                            );
+                            if (is_crit_resist_debuff) {
+                                total_bonus += (amount >= 0.0f ? amount : -amount);
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    return total_bonus;
+}
+
+// 实时累加角色自身活跃的暴击伤害增益 (crit_damage / crit_dmg)
+static float get_live_crit_damage_bonus(int player_index, void* fallback_pc) {
+    if (player_index < 0 || player_index >= 2) return 0.0f;
+    float total_bonus = 0.0f;
+
+    void* pc = (player_index == 0) ? g_p0_controller : g_p1_controller;
+    if ((!pc || !obj_ok(pc)) && fallback_pc && obj_ok(fallback_pc)) pc = fallback_pc;
+    if (pc && obj_ok(pc)) {
+        void* bc = *(void**)((char*)pc + 0x88);
+        if (bc && obj_ok(bc)) {
+            PROTECT({
+                void* list = *(void**)((char*)bc + 0x40);
+                if (!list || !obj_ok(list)) list = *(void**)((char*)bc + 0x20);
+                if (list && obj_ok(list)) {
+                    void* items = *(void**)((char*)list + 0x10);
+                    int32_t size = *(int32_t*)((char*)list + 0x18);
+                    if (items && obj_ok(items) && size > 0 && size < 128) {
+                        for (int i = 0; i < size; i++) {
+                            void* buff = *(void**)((char*)items + 0x20 + i * 8);
+                            if (!buff || !obj_ok(buff)) continue;
+                            if (*(uint8_t*)((char*)buff + 0x6C)) continue; // _isStopped
+
+                            int32_t mod_type = *(int32_t*)((char*)buff + 0x18);
+                            void* type_obj = *(void**)((char*)buff + 0x10);
+                            void* id_obj   = *(void**)((char*)buff + 0x28);
+                            float amount   = *(float*)((char*)buff + 0x44);
+
+                            char b_type[64] = {0};
+                            char b_id[64] = {0};
+                            if (type_obj && obj_ok(type_obj)) read_str(type_obj, b_type, sizeof(b_type));
+                            if (id_obj && obj_ok(id_obj)) read_str(id_obj, b_id, sizeof(b_id));
+
+                            // 眩晕【无尽怒火】的暴击率溢出转化在 hook_179 中 1:1 实时动态计算，此处跳过防重复叠加
+                            if (strstr(b_id, "blackout_infinite_fury") != NULL) continue;
+
+                            if (strcmp(b_type, "crit_damage") == 0 || strcmp(b_type, "crit_dmg") == 0) {
+                                if (mod_type == 1 || mod_type == 4 || mod_type == 8) {
+                                    total_bonus += amount;
+                                } else if (mod_type == 2 || mod_type == 16) {
+                                    total_bonus -= (amount >= 0.0f ? amount : -amount);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    return total_bonus;
+}
+
+float skill_get_total_crit_chance(int player_index) {
+    if (player_index < 0 || player_index >= 2) return 0.16f;
+    const char* bid = (player_index == 0) ? g_p0_bot_id : g_p1_bot_id;
+    float base_cc = 0.16f;
+    if (bid && bid[0]) {
+        calc_enemy_stats_all(bid, 5, 50, NULL, NULL, NULL, &base_cc, NULL);
+    }
+    float total_cc = base_cc + get_live_crit_chance_bonus(player_index, NULL);
+    if (total_cc < 0.0f) total_cc = 0.0f;
+    return total_cc;
+}
 
 void* hook_156(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
-    float crit_chance = 0.16f;
+    float base_crit_chance = 0.16f;
     void* owner = (a0 && obj_ok(a0)) ? *(void**)((char*)a0 + 0x28) : NULL;
     int player_idx = (owner && obj_ok(owner)) ? *(int32_t*)((char*)owner + 0xF4) : -1;
-    const char* bid = (player_idx == 0) ? g_p0_bot_id : g_p1_bot_id;
+    const char* bid = (player_idx == 0) ? g_p0_bot_id : (player_idx == 1 ? g_p1_bot_id : NULL);
 
     if (!bid || !bid[0]) {
         void* bp = (a0 && obj_ok(a0)) ? *(void**)((char*)a0 + 0x48) : NULL;
@@ -6931,10 +7102,26 @@ void* hook_156(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     }
 
     if (bid && bid[0]) {
-        calc_enemy_stats_all(bid, 5, 50, NULL, NULL, NULL, &crit_chance, NULL);
+        calc_enemy_stats_all(bid, 5, 50, NULL, NULL, NULL, &base_crit_chance, NULL);
     }
 
     int atk_level = (int)(intptr_t)a1;
+    float cc_bonus = (player_idx >= 0 && player_idx < 2) ? get_live_crit_chance_bonus(player_idx, owner) : 0.0f;
+
+    // 眩晕 SP3 终击保底 +50% 暴击率 (防止 onHitStarted 未覆盖时遗漏)
+    if (player_idx >= 0 && player_idx < 2 && bid && strstr(bid, "blackout") != NULL && atk_level == 64) {
+        if (!skill_has_buff(player_idx, "blackout_sp3_last_crit_rate")) {
+            cc_bonus += 0.50f;
+        }
+    }
+
+    float total_cc = base_crit_chance + cc_bonus;
+    if (total_cc < 0.0f) total_cc = 0.0f;
+
+    if (player_idx >= 0 && player_idx < 2) {
+        s_last_roll_crit_chance[player_idx] = total_cc;
+        s_last_roll_crit_ms[player_idx] = propgo_now_ms();
+    }
 
     static int s_seeded = 0;
     if (!s_seeded) {
@@ -6943,16 +7130,16 @@ void* hook_156(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
     }
 
     float roll = (float)(rand() % 10000) / 10000.0f;
-    int is_crit = (roll < crit_chance) ? 1 : 0;
+    int is_crit = (total_cc >= 1.0f) ? 1 : ((roll < total_cc) ? 1 : 0);
 
     if (player_idx == 0) {
         g_p0_last_hit_is_crit = is_crit;
     }
 
     static int s_crit_log_cnt = 0;
-    if (s_crit_log_cnt++ < 60) {
-        flog("ROLL_CRIT: pidx=%d bid=%s al=%d (cc=%.2f, roll=%.4f) -> is_crit=%d (a0=%p)",
-             player_idx, bid ? bid : "unknown", atk_level, crit_chance, roll, is_crit, a0);
+    if (s_crit_log_cnt++ < 120) {
+        flog("ROLL_CRIT: pidx=%d bid=%s al=%d (base=%.2f bonus=+%.2f total=%.2f, roll=%.4f) -> is_crit=%d (a0=%p)",
+             player_idx, bid ? bid : "unknown", atk_level, base_crit_chance, cc_bonus, total_cc, roll, is_crit, a0);
     }
     return (void*)(intptr_t)is_crit;
 }
@@ -8093,11 +8280,15 @@ float hook_178(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
 
 // slot 179 CRIT_DMG_MULT (0x0DAD558): PlayerAttributes.GetCritDamageMultiplier(float oppCritDamageResist)
 float hook_179(void* self, float oppCritDamageResist) {
-    float crit_mult = 1.50f;
+    float base_mult = 1.50f;
+    void* owner = NULL;
+    int player_idx = -1;
+    const char* bid = NULL;
+
     PROTECT({
-        void* owner = (self && obj_ok(self)) ? *(void**)((char*)self + 0x28) : NULL;
-        int player_idx = (owner && obj_ok(owner)) ? *(int32_t*)((char*)owner + 0xF4) : -1;
-        const char* bid = (player_idx == 0) ? g_p0_bot_id : (player_idx == 1 ? g_p1_bot_id : NULL);
+        owner = (self && obj_ok(self)) ? *(void**)((char*)self + 0x28) : NULL;
+        player_idx = (owner && obj_ok(owner)) ? *(int32_t*)((char*)owner + 0xF4) : -1;
+        bid = (player_idx == 0) ? g_p0_bot_id : (player_idx == 1 ? g_p1_bot_id : NULL);
 
         if (!bid || !bid[0]) {
             void* bp = (self && obj_ok(self)) ? *(void**)((char*)self + 0x48) : NULL;
@@ -8111,24 +8302,44 @@ float hook_179(void* self, float oppCritDamageResist) {
         }
 
         if (bid && bid[0]) {
-            calc_enemy_stats_all(bid, 5, 50, NULL, NULL, NULL, NULL, &crit_mult);
+            calc_enemy_stats_all(bid, 5, 50, NULL, NULL, NULL, NULL, &base_mult);
         }
 
         if (player_idx == 0 && g_combat_player_crit_mult >= 1.0f) {
-            crit_mult = g_combat_player_crit_mult;
-        }
-
-        if (oppCritDamageResist > 0.0f) {
-            crit_mult -= oppCritDamageResist;
-            if (crit_mult < 1.0f) crit_mult = 1.0f;
-        }
-
-        static int s_crit_dmg_log = 0;
-        if (s_crit_dmg_log++ < 60) {
-            flog("CRIT_DMG_MULT: pidx=%d bid=%s mult=%.2f (opp_resist=%.2f)",
-                 player_idx, bid ? bid : "unknown", crit_mult, oppCritDamageResist);
+            base_mult = g_combat_player_crit_mult;
         }
     });
+
+    // 在外层 PROTECT 之外顺序调用 Buff 遍历，严禁嵌套 PROTECT！
+    float cd_bonus = (player_idx >= 0 && player_idx < 2) ? get_live_crit_damage_bonus(player_idx, owner) : 0.0f;
+    float fury_overflow = 0.0f;
+
+    // 眩晕【无尽怒火】：当真实暴击率 > 100% 时，溢出的每 1% 暴击率 1:1 转化为 +1% 暴击伤害增益
+    if (player_idx >= 0 && player_idx < 2 && bid && strstr(bid, "blackout") != NULL) {
+        uint64_t now_ms = propgo_now_ms();
+        float eff_cc = skill_get_total_crit_chance(player_idx);
+        if (s_last_roll_crit_ms[player_idx] > 0 && now_ms >= s_last_roll_crit_ms[player_idx] &&
+            (now_ms - s_last_roll_crit_ms[player_idx] <= 100)) {
+            if (s_last_roll_crit_chance[player_idx] > eff_cc) {
+                eff_cc = s_last_roll_crit_chance[player_idx];
+            }
+        }
+        if (eff_cc > 1.0f) {
+            fury_overflow = eff_cc - 1.0f;
+        }
+    }
+
+    float crit_mult = base_mult + cd_bonus + fury_overflow;
+    if (oppCritDamageResist > 0.0f) {
+        crit_mult -= oppCritDamageResist;
+    }
+    if (crit_mult < 1.0f) crit_mult = 1.0f;
+
+    static int s_crit_dmg_log = 0;
+    if (s_crit_dmg_log++ < 120) {
+        flog("CRIT_DMG_MULT: pidx=%d bid=%s base=%.2f bonus=+%.2f fury=+%.2f -> mult=%.2f (opp_resist=%.2f)",
+             player_idx, bid ? bid : "unknown", base_mult, cd_bonus, fury_overflow, crit_mult, oppCritDamageResist);
+    }
     return crit_mult;
 }
 
@@ -8424,6 +8635,16 @@ void* hook_186(void* this_pc, void* hitResult, void* method) {
                         skill_apply_buff_dur(p_idx, "sideswipe_evade_dash_crit_damage", 6.0f);
                         combat_overlay_push("[%s] 闪避冲锋！暴击伤害提升+108%%！", p_idx == 0 ? "横炮" : "敌方横炮");
                         flog("SIDESWIPE_EVADE_DASH (REG_HIT): P%d evaded dash attack (al=%d), gained +108%% crit dmg", p_idx, atk_level);
+                    }
+                }
+
+                // --- 眩晕近战攻击落空激活追猎渴望 (RegisterHitResult is_missed) ---
+                const char* atk_bot_id = (p_idx == 0) ? g_p0_bot_id : g_p1_bot_id;
+                if (atk_bot_id && strstr(atk_bot_id, "blackout") != NULL) {
+                    int is_melee_atk = (atk_level == 1 || atk_level == 2 || atk_level == 4 || atk_level == 32);
+                    if (is_melee_atk && !(flags & 4)) {
+                        extern void blackout_trigger_hunt_if_ready(int blackout_p, const char* reason);
+                        blackout_trigger_hunt_if_ready(p_idx, "RegisterHitResult our melee missed");
                     }
                 }
             } else {
