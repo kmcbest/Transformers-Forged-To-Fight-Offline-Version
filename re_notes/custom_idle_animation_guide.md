@@ -191,3 +191,95 @@ LIFELINE_DUAL_SWORD_GRIP = {
    - 使用 `packer="lz4"` 写回 `assets_redeco/arcee_gs_deluxe2014.assetbundle`。
 3. **阶段 C（真机状态机与四视角门禁校验）**：[`VerifyRealGameAnimator.cs`](file:///d:/Agent/tftf/unity_lifeline/Assets/Editor/VerifyRealGameAnimator.cs)
    - 验证通过标准：`LeftToeY / RightToeY` 贴近 `0.00~0.04`、`minMeshY >= -0.1`（无腿部折叠、无悬浮或深陷），且 `180°/130°/060°/300°` 四视角截图人工确认双肩与手指无穿模后，方可进入 APK 打包。
+
+---
+
+## 五、 标准方案四：完整长周期多帧动态动画替换（从静态姿势到几十秒连续动态演出）
+
+当静态单帧 Pose 显得单薄，需要将第三方（如 Mixamo、外部动捕资产）长达十余秒甚至几十秒的**完整长动作（如双手叉腰 -> 侧身环视 -> 缓缓抱胸 -> 细腻微动循环）** 整体替换进游戏展厅待机（`TeamSelect_Female_idle`）时，必须解决多帧重定向、流式曲线组织、首尾无缝循环与 Foot IK 动态贴地等工程挑战。
+
+以下是在克劳莉娅（`chromia_gs_kabam`，19.167 秒、576 帧全量动态待机）实机交付中沉淀的最佳工程实践。
+
+### 核心技术突破与工程铁律
+
+#### 1. Mixamo FBX 导入规范：声明为 Humanoid (`ModelImporterAnimationType.Human`) 启用引擎级自动重定向
+- **原理解耦**：在之前的静态单帧方案中，为了修正机甲 I-Pose 与人体 T-Pose 的差异，曾花费大量精力在 C# 中手动反算 `bindposes`、局部欧拉角与双骨骼 IK。
+- **正解**：导入外部 FBX 动捕资产时，直接通过 `ModelImporter` 将动画类型设为 **`ModelImporterAnimationType.Human`**：
+  ```csharp
+  ModelImporter mi = AssetImporter.GetAtPath(fbxPath) as ModelImporter;
+  if (mi.animationType != ModelImporterAnimationType.Human) {
+      mi.animationType = ModelImporterAnimationType.Human;
+      mi.SaveAndReimport();
+  }
+  ```
+- Unity 引擎底层的 Mecanim Humanoid 系统拥有顶级的工业级骨骼重定向算法。只需通过两个 `HumanPoseHandler`：
+  ```csharp
+  HumanPoseHandler hphSource = new HumanPoseHandler(sourceAnim.avatar, sourceInst.transform);
+  HumanPoseHandler hphTarget = new HumanPoseHandler(targetAnim.avatar, targetModelTransform);
+  ```
+  在每一帧对源模型调用 `clip.SampleAnimation(sourceInst, t)` 并通过 `hphSource.GetHumanPose(ref hp)` 获取肌肉数据，再直接传入 `hphTarget.SetHumanPose(ref hp)`，**全身体态、手腕手指与腰肢扭转即由引擎 100% 自动精确映射至机甲，彻底告别繁琐易错的骨骼轴向手工补偿**！
+
+#### 2. 底层曲线架构重构：将 130 通道全部提升为纯密集阵列（`DenseClip`）
+- **旧架构瓶颈**：原版游戏待机动作受限于官方压包策略，被拆分为 `StreamedClip`（51 条）、`DenseClip`（24 条）与 `ConstantClip`（55 条）。若强行在旧架构上注入多帧动画，原本存放在 `ConstantClip` 中的关节（如手指、头部、小腿）会被硬编码锁死，而 `StreamedClip` 的 Hermite 样条由于关键帧稀疏，极易引发前文大坑 #7 的斜率抽搐。
+- **最佳重构方案**：**彻底抛弃混合架构，将 `genericBindings` 的全部 130 个通道统一纳入 `m_DenseClip`**：
+  - **`m_StreamedClip`**：清空曲线，仅保留正无穷哨兵标记：
+    ```python
+    streamed["curveCount"] = 0
+    streamed["data"] = [2139095040, 0]  # 0x7f800000 (+inf), keyCount = 0
+    ```
+  - **`m_ConstantClip`**：清空常数阵列：
+    ```python
+    constant["data"] = []
+    ```
+  - **`m_DenseClip`**：接管全部 130 通道与 $N$ 帧数据（形状为 `(N, 130)`）：
+    ```python
+    dense["m_CurveCount"] = 130
+    dense["m_FrameCount"] = frame_count  # 如 576
+    dense["m_SampleRate"] = 30.0
+    dense["m_SampleArray"] = d_samples.flatten().tolist()
+    ```
+  - **`m_MuscleClip`**：同步更新总时长与首尾姿态：
+    ```python
+    mc["m_StartTime"] = 0.0
+    mc["m_StopTime"] = duration  # 19.166667
+    for b_idx in range(130):
+        deltas[b_idx]["m_Start"] = float(d_samples[0, b_idx])
+        deltas[b_idx]["m_Stop"]  = float(d_samples[-1, b_idx])
+    mc["m_ValueArrayDelta"] = deltas
+    ```
+- **验证结论**：该结构与游戏原生大招动画（如 `chromia_gs_attackspecial_03`、`frontend_Arcee_levelup_exit`）底层规范 100% 一致，引擎原生深度支持，且 576 帧经 LZ4 压缩后体积仅增大约 220 KB，对加载和运行内存零压力。
+
+#### 3. 首尾循环（Seamless Looping）双重防跳帧机制
+- **展厅机制**：角色展示界面的待机动作以 `WrapMode.Loop` 方式无限循环。若最后一帧与第一帧存在肢体姿态断层，在每次循环重置时均会出现瞬移跳帧。
+- **校验原则**：
+  - 优质动捕资产（如 Mixamo 的标准 Idle 动作）往往天然首尾相连。在采样前需提取 $t=0.0s$ 与 $t=T$ 的 `bodyPosition`、`bodyRotation` 与手脚通道比对。
+  - 若外部动画非首尾循环，**必须在最后 0.8 秒（约 24 帧）施加余弦缓动平滑混合（Cosine Blend）**：
+    $$\alpha = 0.5 \times \left(1 - \cos\left(\frac{\pi (t - t_{\text{blend}})}{T - t_{\text{blend}}}\right)\right)$$
+    将姿态逐帧向第 0 帧平滑插值（四元数采用 `Quaternion.Slerp`，标量肌肉采用 `Mathf.Lerp`），实现无感衔接。
+
+#### 4. 逐帧动态接地与 Foot IK 矩阵反算
+- **动态沉降消除**：真实动捕演员在呼吸晃动或交叉双臂时，膝盖微屈常引起骨盆下沉 5~15 cm。在逐帧循环中，通过 `GetMinMeshY(clean)` 实时探测脚底网格与地板的相对高度，每帧动态补偿 `hp.bodyPosition.y -= curMinY / scaleEst`，确保两脚脚底无论动作如何起伏，始终严密贴合 $Y=0$ 地面。
+- **Foot IK Goal 逐帧生成**：
+  根据每帧角色的实时重心世界坐标与旋转逆矩阵，动态反算 `LeftFootT/Q` 与 `RightFootT/Q`：
+  ```csharp
+  Vector3 bodyWorldPos = hp.bodyPosition * actualHs;
+  Quaternion invBodyRot = Quaternion.Inverse(hp.bodyRotation);
+
+  Vector3 lfSoleWorld = new Vector3(lf.position.x, 0f, lf.position.z);
+  Vector3 rfSoleWorld = new Vector3(rf.position.x, 0f, rf.position.z);
+
+  Vector3 lfT = invBodyRot * ((lfSoleWorld - bodyWorldPos) / actualHs);
+  Quaternion lfQ = invBodyRot * (lf.rotation * offsetFoot);
+  Vector3 rfT = invBodyRot * ((rfSoleWorld - bodyWorldPos) / actualHs);
+  Quaternion rfQ = invBodyRot * (rf.rotation * offsetFoot);
+  ```
+  配合脚踝外撇修正（`muscles[27] = 0.0f, muscles[35] = 0.0f, muscles[25] = -0.05f, muscles[33] = +0.05f`），确保游戏原生状态机 `animator_char_lw` 在开启 `iKOnFeet = True` 时，不仅不会引起下半身折叠，反而能让双脚稳如磐石。
+
+### 固化的完整长动画工具链
+
+1. **Unity 批量采样导出**：[`unity_lifeline/Assets/Editor/ExportChromiaAngryAnimation.cs`](file:///d:/Agent/tftf/unity_lifeline/Assets/Editor/ExportChromiaAngryAnimation.cs)
+   - 自动导入 FBX 为 Humanoid，逐帧重定向、动态接地并反算 IK 目标，导出包含全部 576 帧数据的 JSON（`build/chromia_anim_angry_export.json`）。
+2. **Python 纯 DenseClip 注入**：[`tools/inject_chromia_angry_animation.py`](file:///d:/Agent/tftf/tools/inject_chromia_angry_animation.py)
+   - 重构 `TeamSelect_Female_idle` 的 `m_DenseClip`、`m_StreamedClip` 与 `m_ConstantClip`，按 LZ4 高效压缩写入 `assets_redeco/chromia_gs_kabam.assetbundle`。
+3. **原生状态机回放检验**：[`unity_lifeline/Assets/Editor/VerifyPatchedAnimationPlayback.cs`](file:///d:/Agent/tftf/unity_lifeline/Assets/Editor/VerifyPatchedAnimationPlayback.cs)
+   - 加载真实 `characters.assetbundle` 控制器与打好的 Bundle，分段推进回放整套 19 秒动作，门禁验证无 NaN、无破面、接地高度浮动收敛在安全范围内。
