@@ -283,3 +283,43 @@ LIFELINE_DUAL_SWORD_GRIP = {
    - 重构 `TeamSelect_Female_idle` 的 `m_DenseClip`、`m_StreamedClip` 与 `m_ConstantClip`，按 LZ4 高效压缩写入 `assets_redeco/chromia_gs_kabam.assetbundle`。
 3. **原生状态机回放检验**：[`unity_lifeline/Assets/Editor/VerifyPatchedAnimationPlayback.cs`](file:///d:/Agent/tftf/unity_lifeline/Assets/Editor/VerifyPatchedAnimationPlayback.cs)
    - 加载真实 `characters.assetbundle` 控制器与打好的 Bundle，分段推进回放整套 19 秒动作，门禁验证无 NaN、无破面、接地高度浮动收敛在安全范围内。
+
+---
+
+## 六、 滑流（Slipstream）与风刃（Windblade）实机交付规范与持械解耦
+
+在滑流（Slipstream，看左手指甲 4.433 秒待机）与风刃（Windblade，叉腰持刀待机）的开发中，进一步完善了共享切片解耦、持械角色手指融合与双脚平踏接地的规范：
+
+### 1. 共享外部 Procedural 待机切片的独立解耦铁律
+- **风险背景**：原版风刃在 `override_WindBlade_GS_lw` 中的 `FE_Idle` 条目默认引用外部 `character_anim_procedural.assetbundle` 中的通用持刀待机 `Frontend_Sword_idle`（`PathID = 4726225886941715276`）。该切片被漂移（Drift）与钢锁（Grimlock）等多名持剑角色共享。若直接修改外部切片，将导致其他全部持刀角色动作同步被改。
+- **解耦规范**：
+  1. 在风刃自身 Bundle（`windblade_gs.assetbundle`）内克隆创建一个全新的独立内部 `AnimationClip`（分配唯一 PathID 如 `8888777766665555`）。
+  2. 修改 `override_WindBlade_GS_lw` 中 `FE_Idle` 的重定向指针：从 `{'m_FileID': 3, 'm_PathID': 4726225886941715276}` 修改为 `{'m_FileID': 0, 'm_PathID': 8888777766665555}`。
+  3. 实现风刃展厅动作彻底私有化，不影响任何其他角色。
+
+### 2. 单手持武器角色的“真实握姿 + 动捕姿态”精准融合
+- 当为持武器角色（如右手握刀的风刃）定制展示动作时，身体四肢与左手来自外部动捕 FBX，而**右手及手指 20 通道肌肉（`muscles[75..94]`）必须完整继承官方持刀动作（`Frontend_Sword_idle`）的真实握姿**。
+- 这避免了外部动捕中右手五指张开穿透武器刀柄的硬伤，实现刀柄与五指的严密贴合。
+
+### 3. Humanoid 肌肉核心索引速查（排查肢体错位的真理基线）
+在编写 Unity 脚本调节肢体姿态时，必须严格遵守引擎底层 `HumanTrait.MuscleName` 的真实下标：
+- **下肢与双脚**：
+  - `Left Upper Leg`: 21 (FB), 22 (IO), 23 (Twist) | `Right Upper Leg`: 29 (FB), 30 (IO), 31 (Twist)
+  - `Left Lower Leg`: 24 (Stretch), 25 (Twist) | `Right Lower Leg`: 32 (Stretch), 33 (Twist)
+  - `Left Foot`: 26 (Up-Down), 27 (Twist) | `Right Foot`: 34 (Up-Down), 35 (Twist)
+  - `Left Toes`: 28 (Up-Down) | `Right Toes`: 36 (Up-Down)
+- **左上肢与手腕**：
+  - `37`: Left Shoulder Down-Up, `38`: Left Shoulder Front-Back
+  - `39`: Left Arm Down-Up, `40`: Left Arm Front-Back, `41`: Left Arm Twist In-Out
+  - `42`: Left Forearm Stretch（前臂弯曲伸展，负数为折肘，正数为伸直）, `43`: Left Forearm Twist
+  - `44`: Left Hand Down-Up, `45`: Left Hand In-Out
+- **左手手指（`55..74`）**：
+  - `55..58`: Left Thumb (T1, Spread, T2, T3)
+  - `59..62`: Left Index (I1, Spread, I2, I3)
+  - `63..66`: Left Middle | `67..70`: Left Ring | `71..74`: Left Little
+- **右手手指（`75..94`）**：
+  - `75..78`: Right Thumb | `79..82`: Right Index | `83..86`: Right Middle | `87..90`: Right Ring | `91..94`: Right Little
+
+### 4. 动捕踮脚浮空与叉腰悬空修正
+- **踮脚浮空（High-Heel Float）根治**：外部女性站姿动捕中，常有单腿下扣踮脚动作（如 `Left Foot UD = 0.736`）。在开启游戏 `iKOnFeet = True` 的状态机下，此参数会导致该腿脚后跟浮空无法踩实地面。修正时必须将双脚统一设为水平平踏（`FootUD ≈ 0.04`，`CalfStretch ≈ 0.82`），确保脚底网格严密贴合地面。
+- **叉腰贴合度与大拇指朝向**：机甲角色的腰部结构与人体不同（外侧通常有突出的髋部护甲）。叉腰时需将大臂稍下放（`ArmDU ≈ -0.28`）并后拉（`ArmFB ≈ 0.35`），使手腕落在髋骨护甲边缘；将大拇指展开度设为负向紧收（`ThumbSpread ≈ -0.85`），使其顺着护甲上沿自然水平贴合，防止反向翻翘。
