@@ -50,13 +50,13 @@ def build_attr_map(data: dict) -> dict[int, float]:
         m[42 + i] = float(v)
     return m
 
-# Gentle breathing micro-motion (seamless 2.5s loop): 0 -> amp -> 0
+# Subtle silky-smooth chest & shoulder breathing (seamless 2.5s loop): 0 -> amp -> 0
+# Keep lower torso & hip-resting left hand ultra-steady while chest/shoulders breathe gently.
 BREATH_AMP = {
-    42: -0.010,  # Spine Front-Back
-    45: +0.022,  # Chest Front-Back
-    48: +0.022,  # UpperChest Front-Back
-    79: +0.014,  # Left Shoulder Down-Up
-    88: +0.014,  # Right Shoulder Down-Up
+    42: -0.004,  # Spine Front-Back (Dense, 77 frames)
+    45: +0.020,  # Chest Front-Back (Streamed, exact cubic Hermite)
+    79: +0.006,  # Left Shoulder Down-Up (Dense, 77 frames)
+    88: +0.014,  # Right Shoulder Down-Up (Dense, 77 frames)
 }
 
 def eval_val(base_val: float, attr: int, t: float, duration: float) -> float:
@@ -65,6 +65,16 @@ def eval_val(base_val: float, attr: int, t: float, duration: float) -> float:
         return base_val
     phase = 0.5 * (1.0 - math.cos(2.0 * math.pi * t / duration))
     return base_val + amp * phase
+
+def eval_deriv(attr: int, t: float, duration: float) -> float:
+    amp = BREATH_AMP.get(attr, 0.0)
+    if amp == 0.0 or duration <= 0.0 or not (0.0 <= t <= duration):
+        return 0.0
+    omega = 2.0 * math.pi / duration
+    return amp * 0.5 * omega * math.sin(omega * t)
+
+def f32_to_u32(v: float) -> int:
+    return struct.unpack("<I", struct.pack("<f", float(v)))[0]
 
 def main():
     if not ORIG_BUNDLE.exists():
@@ -126,7 +136,13 @@ def main():
                         c_data[c_idx] = base_val
 
             # 2. Update ALL StreamedClip frames (0 <= c_idx < num_s)
+            # Unity StreamedClip stores unnormalized cubic Hermite polynomials per key:
+            #   y(dt) = c0*dt^3 + c1*dt^2 + c2*dt + c3
+            #   kp+0: curveIdx, kp+1: c0, kp+2: c1, kp+3: c2, kp+4: c3
+            # CRITICAL: All three derivative terms (kp+1, kp+2, kp+3) MUST be overwritten!
+            # Leaving kp+3 (c2, linear slope) untouched leaks original arm-swing velocities as sawtooth jitter!
             if num_s > 0 and len(s_data) > 0:
+                curve_keys: dict[int, list[tuple[float, int]]] = {}
                 pos = 0
                 while pos < len(s_data):
                     t_raw = struct.unpack("<f", struct.pack("<I", s_data[pos]))[0]
@@ -136,13 +152,51 @@ def main():
                         kp = pos + 2 + k * 5
                         c_idx = s_data[kp]
                         if c_idx < len(bind):
-                            attr = bind[c_idx]["attribute"]
-                            val = eval_val(attr_map[attr], attr, t_clamped, duration)
-                            val_u32 = struct.unpack("<I", struct.pack("<f", float(val)))[0]
-                            s_data[kp + 1] = 0  # inSlope (step/flat breathing keeps pose rock solid)
-                            s_data[kp + 2] = 0  # outSlope
-                            s_data[kp + 4] = val_u32
+                            curve_keys.setdefault(c_idx, []).append((t_clamped, kp))
                     pos += 2 + num_keys * 5
+
+                for c_idx, entries in curve_keys.items():
+                    attr = bind[c_idx]["attribute"]
+                    base_val = attr_map[attr]
+                    amp = BREATH_AMP.get(attr, 0.0)
+                    if amp == 0.0:
+                        val_u32 = f32_to_u32(base_val)
+                        for _, kp in entries:
+                            s_data[kp + 1] = 0
+                            s_data[kp + 2] = 0
+                            s_data[kp + 3] = 0
+                            s_data[kp + 4] = val_u32
+                    else:
+                        # Compute exact smooth cubic Hermite coefficients between consecutive valid keyframe times
+                        valid = [(t, kp) for (t, kp) in entries if 0.0 <= t <= duration]
+                        for t, kp in entries:
+                            if not (0.0 <= t <= duration):
+                                s_data[kp + 1] = 0
+                                s_data[kp + 2] = 0
+                                s_data[kp + 3] = 0
+                                s_data[kp + 4] = f32_to_u32(base_val)
+                        for i, (t0, kp0) in enumerate(valid):
+                            v0 = eval_val(base_val, attr, t0, duration)
+                            if i + 1 < len(valid):
+                                t1, _ = valid[i + 1]
+                                dx = t1 - t0
+                                if dx > 1e-6:
+                                    v1 = eval_val(base_val, attr, t1, duration)
+                                    m0 = eval_deriv(attr, t0, duration)
+                                    m1 = eval_deriv(attr, t1, duration)
+                                    c3 = v0
+                                    c2 = m0
+                                    c1 = (3.0 * (v1 - v0) - (2.0 * m0 + m1) * dx) / (dx * dx)
+                                    c0 = (2.0 * (v0 - v1) + (m0 + m1) * dx) / (dx * dx * dx)
+                                    s_data[kp0 + 1] = f32_to_u32(c0)
+                                    s_data[kp0 + 2] = f32_to_u32(c1)
+                                    s_data[kp0 + 3] = f32_to_u32(c2)
+                                    s_data[kp0 + 4] = f32_to_u32(c3)
+                                    continue
+                            s_data[kp0 + 1] = 0
+                            s_data[kp0 + 2] = 0
+                            s_data[kp0 + 3] = 0
+                            s_data[kp0 + 4] = f32_to_u32(v0)
 
             streamed["data"] = s_data
             constant["data"] = c_data

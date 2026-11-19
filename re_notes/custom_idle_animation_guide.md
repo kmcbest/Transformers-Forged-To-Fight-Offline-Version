@@ -163,8 +163,16 @@ LIFELINE_DUAL_SWORD_GRIP = {
 
 4. **大坑 #6：千万不要只拍正面单视角 —— 必须用真机 `characters.assetbundle` 状态机 + 360° 多视角联合验收**
    - 仅在正面单相机下看“大概像”，极易掩盖右手/刀鞘穿入侧腰、脚尖悬空或脚后跟陷入地板等问题。
-   - 本工程已沉淀专用真机级验证器 [`VerifyRealGameAnimator.cs`](file:///d:/Agent/tftf/unity_lifeline/Assets/Editor/VerifyRealGameAnimator.cs)：同时加载 `characters.assetbundle`（真实 `animator_char_lw` 的 `FE_Idle` 状态，开启 `iKOnFeet = True`）与待测角色 Bundle，运行帧步进更新后打印 `HipsY / LeftFootY / RightFootY / LeftToeY / RightToeY / minMeshY` 接地数据，并固定输出 **`180°`、`130°`、`060°`、`300°` 四方向环绕截图**。
+   - 本工程已沉淀专用真机级验证器 [`VerifyRealGameAnimator.cs`](file:///d:/Agent/tftf/unity_lifeline/Assets/Editor/VerifyRealGameAnimator.cs)：同时加载 `characters.assetbundle`（真实 `animator_char_lw` 的 `FE_Idle` 状态，开启 `iKOnFeet = True`）与待测角色 Bundle，运行帧步进更新后打印 `HipsY / LeftFootY / RightFootY / LeftToeY / RightToeY / minMeshY` 接地数据与整周期位移平滑度，并固定输出 **`180°`、`130°`、`060°`、`300°` 四方向环绕截图**。
    - **Unity 命令行卡死提醒**：在本机 Windows 环境下运行上述验证/导出 Batchmode 时，**不要附加 `-nographics`**（该参数易触发 Unity 包管理或域重载卡死），保持标准 `-batchmode -quit -executeMethod ...` 即可快速退出。
+
+5. **大坑 #7：改写 `m_StreamedClip` 时漏清 `kp + 3`（一次项斜率 $c_2$）会导致角色手脚疯狂锯齿抖动**
+   - **数据结构**：Unity `m_StreamedClip` 中每个关键帧占 5 个 `uint32`：`[curveIdx, c0(dt³), c1(dt²), c2(dt¹), c3(const)]`（`kp+0` 到 `kp+4`），插值公式为 $y(dt) = c_0 dt^3 + c_1 dt^2 + c_2 dt + c_3$。
+   - **常见误区**：误把 `kp+1 / kp+2` 当作 `inSlope / outSlope` 清零而**漏清 `kp+3`（`c2`）**！原版 `TeamSelect_Female_idle` 的手臂/前臂等 51 条曲线全部存在 `StreamedClip` 中，残留的 `c2` 会让手臂在每两个关键帧之间按原版挥手速度线性漂移、到下一帧瞬间弹回，肉眼表现为**整只手高频抽搐跳动**。
+   - **正解**：
+     - 静止通道必须将 `kp+1`、`kp+2`、**`kp+3`** 全部置 `0`，仅写入 `kp+4 = val`；
+     - 叠加呼吸微动的 `StreamedClip` 通道（如 `attr 45` `Chest Front-Back`）必须按相邻关键帧间隔 $dx = t_1 - t_0$ 解析计算精确三次 Hermite 系数 `(c0, c1, c2, c3)`；
+     - 同步核查支撑脚脚踝内/外翻肌肉（如 `muscles[27]` `Left Foot Twist In-Out`、`muscles[25]` `Left Lower Leg Twist In-Out`），避免人类软体网格的轻微崴脚角度在机甲硬质脚踝护甲上被放大为明显“外撇”，且支撑脚 Foot IK Goal（`LeftFootT`）应正对脚踝正下方地面 `(lf.x, 0, lf.z)`。
 
 ### 跨骨骼重定向标准流水线（以阿尔茜为例）
 
