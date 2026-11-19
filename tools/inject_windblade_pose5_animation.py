@@ -11,6 +11,8 @@ import numpy as np
 import UnityPy
 
 ORIG_BUNDLE = Path("backup/windblade_gs.assetbundle.orig")
+if not ORIG_BUNDLE.exists():
+    ORIG_BUNDLE = Path("extracted_apk/assets/assetpack/windblade_gs_odr/windblade_gs.assetbundle")
 ANIM_JSON = Path("build/windblade_anim_pose5_export.json")
 OUT_BUNDLE = Path("assets_redeco/windblade_gs.assetbundle")
 
@@ -123,23 +125,33 @@ def main():
     # 4. Deltas & Times
     mc["m_StartTime"] = 0.0
     mc["m_StopTime"] = duration
+    mc["m_LoopTime"] = True
+    mc["m_LoopBlend"] = False
+    mc["m_LoopBlendOrientation"] = True
+    mc["m_LoopBlendPositionY"] = True
+    mc["m_LoopBlendPositionXZ"] = True
+    mc["m_KeepOriginalOrientation"] = True
+    mc["m_KeepOriginalPositionY"] = True
+    mc["m_KeepOriginalPositionXZ"] = False
+
     deltas = mc.get("m_ValueArrayDelta", [])
     assert len(deltas) == num_bindings, f"Expected {num_bindings} deltas"
+    end_idx = min(75, frame_count - 1)
     for b_idx in range(num_bindings):
         deltas[b_idx]["m_Start"] = float(d_samples[0, b_idx])
-        deltas[b_idx]["m_Stop"]  = float(d_samples[-1, b_idx])
+        deltas[b_idx]["m_Stop"]  = float(d_samples[end_idx, b_idx])
     mc["m_ValueArrayDelta"] = deltas
 
     # 5. Start/Stop transforms & Root/Foot start poses
     f0 = frames[0]
-    f_last = frames[-1]
+    f_end = frames[end_idx]
     rt0, rq0 = f0["rootT"], f0["rootQ"]
-    rt_last, rq_last = f_last["rootT"], f_last["rootQ"]
+    rt_end, rq_end = f_end["rootT"], f_end["rootQ"]
     lft0, lfq0 = f0["leftFootT"], f0["leftFootQ"]
     rft0, rfq0 = f0["rightFootT"], f0["rightFootQ"]
 
     mc["m_StartX"] = {"t": {"x": rt0[0], "y": rt0[1], "z": rt0[2]}, "q": {"x": rq0[0], "y": rq0[1], "z": rq0[2], "w": rq0[3]}, "s": {"x": 1.0, "y": 1.0, "z": 1.0}}
-    mc["m_StopX"]  = {"t": {"x": rt_last[0], "y": rt_last[1], "z": rt_last[2]}, "q": {"x": rq_last[0], "y": rq_last[1], "z": rq_last[2], "w": rq_last[3]}, "s": {"x": 1.0, "y": 1.0, "z": 1.0}}
+    mc["m_StopX"]  = {"t": {"x": rt_end[0], "y": rt_end[1], "z": rt_end[2]}, "q": {"x": rq_end[0], "y": rq_end[1], "z": rq_end[2], "w": rq_end[3]}, "s": {"x": 1.0, "y": 1.0, "z": 1.0}}
     mc["m_LeftFootStartX"]  = {"t": {"x": lft0[0], "y": lft0[1], "z": lft0[2]}, "q": {"x": lfq0[0], "y": lfq0[1], "z": lfq0[2], "w": lfq0[3]}, "s": {"x": 1.0, "y": 1.0, "z": 1.0}}
     mc["m_RightFootStartX"] = {"t": {"x": rft0[0], "y": rft0[1], "z": rft0[2]}, "q": {"x": rfq0[0], "y": rfq0[1], "z": rfq0[2], "w": rfq0[3]}, "s": {"x": 1.0, "y": 1.0, "z": 1.0}}
 
