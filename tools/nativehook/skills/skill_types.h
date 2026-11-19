@@ -89,6 +89,38 @@ typedef struct {
     void* method;
 } SkillTestRollContext;
 
+// 官方 HitResultFlags 位掩码 (源自 HitResultFlags.cs)
+#define HIT_FLAG_HIT            0x0001u
+#define HIT_FLAG_MISSED         0x0002u
+#define HIT_FLAG_BLOCKED        0x0004u
+#define HIT_FLAG_IGNORE_DMG     0x0008u
+#define HIT_FLAG_IGNORE_REACT   0x0010u
+#define HIT_FLAG_INVULNERABLE   0x0018u
+#define HIT_FLAG_CRIT           0x0020u
+#define HIT_FLAG_PERFECT_BLOCK  0x0040u
+#define HIT_FLAG_LAST_HIT       0x0080u
+#define HIT_FLAG_PROJECTILE     0x0100u
+#define HIT_FLAG_AVOIDED        0x0200u
+#define HIT_FLAG_EVADED         0x0400u
+#define HIT_FLAG_CANCELLED      0x0800u
+#define HIT_FLAG_REFLECTED      0x1000u
+
+// 单次打击事件终态结算上下文 (ResolveHitResult + ResolveAttackEvent / Projectile.OnDisable)
+typedef struct {
+    int attacker_player_index;   // 0 = P0, 1 = P1
+    int target_player_index;     // 0 = P0, 1 = P1
+    const char* attacker_bot_id;
+    const char* target_bot_id;
+    int event_id;                // HitResultData.Id
+    int attack_level;            // 1=L, 2=M, 4=Heavy, 8=Ranged, 16=SP1, 32=SP2, 64=SP3
+    int hit_index;               // HitResultData.HitIndex
+    int attack_count;            // HitResultData.AttackCount
+    uint32_t flags;              // 最终结算 HitResultFlags
+    bool is_last_hit;            // (flags & HIT_FLAG_LAST_HIT) != 0
+    bool is_missed;              // 统一落空判定：非 Hit/Blocked/Cancelled/Reflected 且带 Missed/Evaded/Avoided/Invulnerable
+    float damage;                // 最终伤害
+} SkillAttackEndContext;
+
 // ---------------------------------------------------------------------------
 // 2. 独立角色技能模块抽象接口 (Bot Module Interface)
 // ---------------------------------------------------------------------------
@@ -132,4 +164,9 @@ typedef struct {
     void (*on_opponent_dodge_enter)(int opponent_index);             // 对手进入闪避
     void (*on_hitreact_enter)(int player_index);
     void (*on_attack_start)(int player_index, int action_type);
+
+    // 单次打击事件终态结算回调 (精确落空状态机与打击完成通知)
+    void (*on_attack_ended)(SkillAttackEndContext* ctx);
+    // 必杀技状态机进出回调 (sp_level: 1=SP1, 2=SP2, 3=SP3; entered: 1=进入, 0=退出)
+    void (*on_special_state)(int player_index, int sp_level, int entered);
 } BotSkillModule;

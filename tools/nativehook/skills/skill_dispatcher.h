@@ -44,6 +44,11 @@ void skill_dispatch_dodge_enter(int player_index);
 void skill_dispatch_hitreact_enter(int player_index);
 void skill_dispatch_attack_start(int player_index, int action_type);
 
+// 单次打击事件终态结算分发 (含统一“落空”状态机判定)
+void skill_dispatch_attack_ended(SkillAttackEndContext* ctx);
+// 必杀技状态机进出分发 (sp_level: 1=SP1, 2=SP2, 3=SP3; entered: 1=进入, 0=退出)
+void skill_dispatch_special_state(int player_index, int sp_level, int entered);
+
 #ifdef __cplusplus
 }
 #endif

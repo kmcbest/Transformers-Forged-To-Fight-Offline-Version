@@ -5398,6 +5398,8 @@ void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     g_p1_buffs_nullified_this_attack = 0;
     s_current_hit_active = 0;
     s_current_hit_is_last = 0;
+    extern void reset_attack_end_tracker(void);
+    reset_attack_end_tracker();
     s_current_hit_is_heavy = 0;
     s_current_hit_is_ranged = 0;
     s_last_hit_flags = 0;
@@ -5612,6 +5614,7 @@ void* hook_143(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     void* pc = fld_p(a0, 0x18);
     sp3_xf_remove(pc);
     void* r = H[143].orig(a0,a1,a2,a3,a4,a5,a6,a7);
+    int sp3_exit_pidx = -1;
     PROTECT({
         if (obj_ok(pc)) {
             flog("SP3_EXIT pc=%p tms=%llu", pc, (unsigned long long)propgo_now_ms());
@@ -5619,11 +5622,12 @@ void* hook_143(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
             reset_player_attack_chain(pc);
 
             int32_t pidx = *(int32_t*)((uintptr_t)pc + 0xF4);
+            sp3_exit_pidx = pidx;
             const char* bid = (pidx == 0) ? g_p0_bot_id : g_p1_bot_id;
             if (bid && strstr(bid, "blackout") != NULL) {
                 extern void skill_apply_buff_dur(int target_player, const char* modifier_id, float duration);
                 skill_apply_buff_dur(1 - pidx, "blackout_sp3_crit_resist_debuff", -1.0f);
-                flog("BLACKOUT_SP3_EXIT: applied permanent crit resist debuff to P%d", 1 - pidx);
+                flog("BLACKOUT_SP3_EXIT: applied permanent stackable crit resist debuff to P%d", 1 - pidx);
             }
         }
         if (s_saved_actor0_obj && obj_ok(s_saved_actor0_obj) && s_saved_actor0_name[0] && g_strnew) {
@@ -5641,6 +5645,9 @@ void* hook_143(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
             s_saved_actor1_name[0] = 0;
         }
     });
+    if (sp3_exit_pidx >= 0 && sp3_exit_pidx < 2) {
+        skill_dispatch_special_state(sp3_exit_pidx, 3, 0);
+    }
     return r;
 }
 // SP3 Testing Aid: Automatically keeps Player 0 special power gauge full (3 bars).
@@ -8638,15 +8645,8 @@ void* hook_186(void* this_pc, void* hitResult, void* method) {
                     }
                 }
 
-                // --- 眩晕近战攻击落空激活追猎渴望 (RegisterHitResult is_missed) ---
-                const char* atk_bot_id = (p_idx == 0) ? g_p0_bot_id : g_p1_bot_id;
-                if (atk_bot_id && strstr(atk_bot_id, "blackout") != NULL) {
-                    int is_melee_atk = (atk_level == 1 || atk_level == 2 || atk_level == 4 || atk_level == 32);
-                    if (is_melee_atk && !(flags & 4)) {
-                        extern void blackout_trigger_hunt_if_ready(int blackout_p, const char* reason);
-                        blackout_trigger_hunt_if_ready(p_idx, "RegisterHitResult our melee missed");
-                    }
-                }
+                // 注：眩晕【追猎】已迁移至统一的终态结算状态机 (ResolveHitResult + ResolveAttackEvent / Projectile.OnDisable -> on_attack_ended)
+                // 严禁在 RegisterHitResult 逐帧脏回调中判定落空！
             } else {
                 s_current_hit_active = 1;
                 s_current_hit_is_ranged = (atk_level == 8);
@@ -12667,6 +12667,219 @@ static bool hooked_Projectile_IgnoreCollisionDetection(void* self, void* method)
     return res;
 }
 
+// ==================== Unified Attack-End & Special-State Tracking ====================
+// 1. PlayerController.ResolveHitResult (RVA 0x01178628): 捕获 ReceiveHit 之后最终的 HitResultData
+// 2. PlayerController.ResolveAttackEvent (RVA 0x01179FF4): 单次打击事件彻底结束时唯一派发 on_attack_ended
+// 3. Projectile.OnDisable (RVA 0x00E9DDD4): 兜底对手前冲/近战穿弹躲过导致 2s 超时回收的远程落空
+// 4. PlayerSpecialAttackState.OnEnter / OnExit (RVA 0x00E339D8 / 0x00E33D60): 精准派发 SP1/SP2 进出状态
+
+typedef struct {
+    int valid;
+    int event_id;
+    int instigator_id;
+    int target_id;
+    int attack_level;
+    int hit_index;
+    int attack_count;
+    uint32_t flags;
+    float damage;
+} PendingAttackResult;
+
+static PendingAttackResult s_pending_attack_results[2][16];
+static int s_resolved_event_ids[2][32];
+static int s_resolved_event_cursor[2] = {0, 0};
+
+void reset_attack_end_tracker(void) {
+    memset(s_pending_attack_results, 0, sizeof(s_pending_attack_results));
+    memset(s_resolved_event_ids, 0, sizeof(s_resolved_event_ids));
+    s_resolved_event_cursor[0] = 0;
+    s_resolved_event_cursor[1] = 0;
+}
+
+static int is_event_already_resolved(int p_idx, int event_id) {
+    if (p_idx < 0 || p_idx >= 2 || event_id == 0) return 0;
+    for (int i = 0; i < 32; i++) {
+        if (s_resolved_event_ids[p_idx][i] == event_id) return 1;
+    }
+    return 0;
+}
+
+static void mark_event_resolved(int p_idx, int event_id) {
+    if (p_idx < 0 || p_idx >= 2 || event_id == 0) return;
+    int pos = s_resolved_event_cursor[p_idx] & 31;
+    s_resolved_event_ids[p_idx][pos] = event_id;
+    s_resolved_event_cursor[p_idx] = (pos + 1) & 31;
+}
+
+static void upsert_pending_attack_result(int p_idx, const PendingAttackResult* rec) {
+    if (p_idx < 0 || p_idx >= 2 || !rec || rec->event_id == 0) return;
+    int empty_slot = -1;
+    for (int i = 0; i < 16; i++) {
+        if (s_pending_attack_results[p_idx][i].valid &&
+            s_pending_attack_results[p_idx][i].event_id == rec->event_id) {
+            s_pending_attack_results[p_idx][i] = *rec;
+            return;
+        }
+        if (!s_pending_attack_results[p_idx][i].valid && empty_slot < 0) {
+            empty_slot = i;
+        }
+    }
+    if (empty_slot < 0) empty_slot = 0;
+    s_pending_attack_results[p_idx][empty_slot] = *rec;
+}
+
+static int pop_pending_attack_result(int p_idx, int event_id, PendingAttackResult* out) {
+    if (p_idx < 0 || p_idx >= 2 || event_id == 0 || !out) return 0;
+    for (int i = 0; i < 16; i++) {
+        if (s_pending_attack_results[p_idx][i].valid &&
+            s_pending_attack_results[p_idx][i].event_id == event_id) {
+            *out = s_pending_attack_results[p_idx][i];
+            s_pending_attack_results[p_idx][i].valid = 0;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+// PlayerController.ResolveHitResult (RVA: 0x01178628)
+static fn8 orig_PlayerController_ResolveHitResult = NULL;
+static void hooked_PlayerController_ResolveHitResult(void* self, void* hitResult, void* method) {
+    if (orig_PlayerController_ResolveHitResult) {
+        typedef void (*fn_rhr)(void*, void*, void*);
+        ((fn_rhr)orig_PlayerController_ResolveHitResult)(self, hitResult, method);
+    }
+    if (!self || !obj_ok(self) || !hitResult || !obj_ok(hitResult)) return;
+    PROTECT({
+        int p_idx = *(int32_t*)((uintptr_t)self + 0xF4);
+        if (p_idx >= 0 && p_idx < 2) {
+            PendingAttackResult rec;
+            memset(&rec, 0, sizeof(rec));
+            rec.valid         = 1;
+            rec.event_id      = *(int32_t*)((uintptr_t)hitResult + 0x10); // HitResultData.Id
+            rec.instigator_id = *(int32_t*)((uintptr_t)hitResult + 0x18); // HitResultData.InstigatorId
+            rec.target_id     = *(int32_t*)((uintptr_t)hitResult + 0x1C); // HitResultData.TargetId
+            rec.flags         = *(uint32_t*)((uintptr_t)hitResult + 0x20); // HitResultData.Flags
+            rec.attack_level  = *(int32_t*)((uintptr_t)hitResult + 0x24); // HitResultData.AttackLevel
+            rec.hit_index     = *(int32_t*)((uintptr_t)hitResult + 0x30); // HitResultData.HitIndex
+            rec.attack_count  = *(int32_t*)((uintptr_t)hitResult + 0x34); // HitResultData.AttackCount
+            rec.damage        = *(float*)((uintptr_t)hitResult + 0x3C);   // HitResultData.Damage
+            if (rec.instigator_id != rec.target_id) {
+                upsert_pending_attack_result(p_idx, &rec);
+            }
+        }
+    });
+}
+
+// PlayerController.ResolveAttackEvent (RVA: 0x01179FF4)
+static fn8 orig_PlayerController_ResolveAttackEvent = NULL;
+static void hooked_PlayerController_ResolveAttackEvent(void* self, int32_t event_id, void* method) {
+    if (orig_PlayerController_ResolveAttackEvent) {
+        typedef void (*fn_rae)(void*, int32_t, void*);
+        ((fn_rae)orig_PlayerController_ResolveAttackEvent)(self, event_id, method);
+    }
+    if (!self || !obj_ok(self) || event_id == 0) return;
+
+    int p_idx = -1;
+    int is_ranged = 0;
+    int is_medium = 0;
+    int is_light = 0;
+    PROTECT({
+        p_idx = *(int32_t*)((uintptr_t)self + 0xF4);
+        is_ranged = (*(uint32_t*)((uintptr_t)self + 0x1c8) > 0);
+        is_medium = (*(uint32_t*)((uintptr_t)self + 0x1c4) > 0);
+        is_light  = (*(uint32_t*)((uintptr_t)self + 0x1c0) > 0);
+    });
+    if (p_idx < 0 || p_idx >= 2) return;
+
+    PendingAttackResult rec;
+    int has_rec = pop_pending_attack_result(p_idx, event_id, &rec);
+    mark_event_resolved(p_idx, event_id);
+
+    SkillAttackEndContext end_ctx;
+    memset(&end_ctx, 0, sizeof(end_ctx));
+    end_ctx.attacker_player_index = p_idx;
+    end_ctx.target_player_index   = 1 - p_idx;
+    end_ctx.attacker_bot_id       = (p_idx == 0) ? g_p0_bot_id : g_p1_bot_id;
+    end_ctx.target_bot_id         = (p_idx == 0) ? g_p1_bot_id : g_p0_bot_id;
+    end_ctx.event_id              = event_id;
+
+    if (has_rec) {
+        end_ctx.attack_level = rec.attack_level;
+        end_ctx.hit_index    = rec.hit_index;
+        end_ctx.attack_count = rec.attack_count;
+        end_ctx.flags        = rec.flags;
+        end_ctx.damage       = rec.damage;
+    } else {
+        // 无命中/无格挡记录 -> 真实挥空 / 穿弹落空 (Pure Whiff)
+        int al = 1;
+        if (is_ranged) al = 8;
+        else if (is_medium) al = 2;
+        else if (is_light) al = 1;
+        else if (s_last_atk_level > 0) al = s_last_atk_level;
+
+        end_ctx.attack_level = al;
+        end_ctx.flags        = (al == 8 ? HIT_FLAG_PROJECTILE : 0) | HIT_FLAG_MISSED;
+        end_ctx.damage       = 0.0f;
+    }
+
+    flog("ATTACK_ENDED: P%d(%s) ev=%d al=%d hit_idx=%d flags=0x%x dmg=%.1f (has_rec=%d)",
+         p_idx, end_ctx.attacker_bot_id ? end_ctx.attacker_bot_id : "?",
+         end_ctx.event_id, end_ctx.attack_level, end_ctx.hit_index, end_ctx.flags, end_ctx.damage, has_rec);
+
+    // 在 PROTECT 外分发，杜绝嵌套 PROTECT
+    skill_dispatch_attack_ended(&end_ctx);
+}
+
+// PlayerSpecialAttackState.OnEnter (RVA: 0x00E339D8) & OnExit (RVA: 0x00E33D60)
+static fn8 orig_PlayerSpecialAttackState_OnEnter = NULL;
+static void hooked_PlayerSpecialAttackState_OnEnter(void* self, void* initArgs, void* method) {
+    if (orig_PlayerSpecialAttackState_OnEnter) {
+        typedef void (*fn_sp_enter)(void*, void*, void*);
+        ((fn_sp_enter)orig_PlayerSpecialAttackState_OnEnter)(self, initArgs, method);
+    }
+    int pidx = -1;
+    int sp_level = 0;
+    if (self && obj_ok(self)) {
+        PROTECT({
+            void* pc = fld_p(self, 0x18);
+            sp_level = *(int32_t*)((char*)self + 0x34); // SpecialLevel (1=SP1, 2=SP2)
+            if (pc && obj_ok(pc)) {
+                pidx = *(int32_t*)((uintptr_t)pc + 0xF4);
+            }
+        });
+    }
+    if (pidx >= 0 && pidx < 2 && (sp_level == 1 || sp_level == 2)) {
+        if (pidx == 0) {
+            g_p0_current_special_index = sp_level;
+        }
+        flog("SP_STATE_ENTER: P%d sp_level=%d", pidx, sp_level);
+        skill_dispatch_special_state(pidx, sp_level, 1);
+    }
+}
+
+static fn8 orig_PlayerSpecialAttackState_OnExit = NULL;
+static void hooked_PlayerSpecialAttackState_OnExit(void* self, void* method) {
+    int pidx = -1;
+    int sp_level = 0;
+    if (self && obj_ok(self)) {
+        PROTECT({
+            void* pc = fld_p(self, 0x18);
+            sp_level = *(int32_t*)((char*)self + 0x34);
+            if (pc && obj_ok(pc)) {
+                pidx = *(int32_t*)((uintptr_t)pc + 0xF4);
+            }
+        });
+    }
+    if (orig_PlayerSpecialAttackState_OnExit) {
+        typedef void (*fn_sp_exit)(void*, void*);
+        ((fn_sp_exit)orig_PlayerSpecialAttackState_OnExit)(self, method);
+    }
+    if (pidx >= 0 && pidx < 2 && (sp_level == 1 || sp_level == 2)) {
+        flog("SP_STATE_EXIT: P%d sp_level=%d", pidx, sp_level);
+        skill_dispatch_special_state(pidx, sp_level, 0);
+    }
+}
+
 // ==================== FightFlow / Error Diagnostics ====================
 // EB.Animation.Matinee.PlayMecanimAnimationEvent.RestoreControllerAnimClipIfNeeded (0x013B165C)
 // Guard against NullReferenceException during Matinee pre-initialization / battle loading
@@ -13634,6 +13847,11 @@ static void* installer(void* arg){
     inline_hook((void*)(g_base + 0x00CF90A0), (void*)hooked_BattleArbiter_get_IsInitialized, &orig_BattleArbiter_get_IsInitialized);
     // Hook Projectile.IgnoreCollisionDetection (0x00E9EA00) for Windblade Heavy Attack ranged penetration
     inline_hook((void*)(g_base + 0x00E9EA00), (void*)hooked_Projectile_IgnoreCollisionDetection, &orig_Projectile_IgnoreCollisionDetection);
+    // Unified Attack-End / Miss State Machine & Special State Hooks (verified in dump.cs):
+    inline_hook((void*)(g_base + 0x01178628), (void*)hooked_PlayerController_ResolveHitResult, &orig_PlayerController_ResolveHitResult);
+    inline_hook((void*)(g_base + 0x01179FF4), (void*)hooked_PlayerController_ResolveAttackEvent, &orig_PlayerController_ResolveAttackEvent);
+    inline_hook((void*)(g_base + 0x00E339D8), (void*)hooked_PlayerSpecialAttackState_OnEnter, &orig_PlayerSpecialAttackState_OnEnter);
+    inline_hook((void*)(g_base + 0x00E33D60), (void*)hooked_PlayerSpecialAttackState_OnExit, &orig_PlayerSpecialAttackState_OnExit);
     // Guard EB.Animation.Matinee.PlayMecanimAnimationEvent.RestoreControllerAnimClipIfNeeded (0x013B165C)
     inline_hook((void*)(g_base + 0x013B165C), (void*)hooked_RestoreControllerAnimClipIfNeeded, &orig_RestoreControllerAnimClipIfNeeded);
     // Hook PlayerController.PlayAnimatorState (0x11799C0), GameplayUtils.HasRangedHeavy (0xB6D404),

@@ -330,3 +330,34 @@ void skill_dispatch_attack_start(int player_index, int action_type) {
         mod1->on_attack_start(player_index, action_type);
     }
 }
+
+void skill_dispatch_attack_ended(SkillAttackEndContext* ctx) {
+    if (!ctx) return;
+
+    // 统一“落空”标准判定：
+    // 1. 绝非命中 (Hit)、非格挡 (Blocked)、非对波抵消 (Cancelled)、非被反射 (Reflected)
+    // 2. 带有 Missed / Evaded / Avoided / Invulnerable 之一
+    uint32_t f = ctx->flags;
+    bool excluded = (f & (HIT_FLAG_HIT | HIT_FLAG_BLOCKED | HIT_FLAG_CANCELLED | HIT_FLAG_REFLECTED)) != 0;
+    bool miss_bit = (f & (HIT_FLAG_MISSED | HIT_FLAG_EVADED | HIT_FLAG_AVOIDED | HIT_FLAG_INVULNERABLE)) != 0;
+    ctx->is_missed = (!excluded && miss_bit);
+    ctx->is_last_hit = ((f & HIT_FLAG_LAST_HIT) != 0);
+
+    const BotSkillModule* att_mod = find_module_by_bot(ctx->attacker_bot_id);
+    if (att_mod && att_mod->on_attack_ended) {
+        att_mod->on_attack_ended(ctx);
+    }
+    const BotSkillModule* tgt_mod = find_module_by_bot(ctx->target_bot_id);
+    if (tgt_mod && tgt_mod != att_mod && tgt_mod->on_attack_ended) {
+        tgt_mod->on_attack_ended(ctx);
+    }
+}
+
+void skill_dispatch_special_state(int player_index, int sp_level, int entered) {
+    if (player_index < 0 || player_index >= 2) return;
+    const char* bot_id = (player_index == 0) ? g_p0_bot_id : g_p1_bot_id;
+    const BotSkillModule* mod = find_module_by_bot(bot_id);
+    if (mod && mod->on_special_state) {
+        mod->on_special_state(player_index, sp_level, entered);
+    }
+}

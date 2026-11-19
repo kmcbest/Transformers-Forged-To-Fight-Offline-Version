@@ -10,120 +10,100 @@
 // 职业: 破坏分子 (Demolitions / demo) | 阵营: 霸天虎 (Decepticon)
 // ===========================================================================
 // 1. [被动 - 暴击几率 & 暴击伤害]
-//    - 连击数每增加 5，获得 1 层 8% 暴击率与 1 层 16% 暴击伤害 (上限 10 层)。
+//    - 连击数每增加 5，获得 1 层 8% 暴击率与 1 层 16% 暴击伤害 (上限 99 层)。
 //    - 被敌人命中打断连击时，全部移除。
 // 2. [被动 - 无尽怒火] (Infinite Fury)
-//    - 连击数达到 15 击及以上时 (暴击几率突破 100%)，激活暴伤溢出转化增益。
-//    - 连击被打断受创时一并移除。
-// 3. [被动 - 加特林机枪] (Gatling Gun)
-//    - 连续 3 次远程攻击后 (无论是否命中)，获得加特林机枪超频增益 (+50% 远程伤害, +40% 射速)。
-//    - 在防御、近战、重击、特殊攻击时精准移除。
-// 4. [特殊技 1 - 能量炮] (SP1 Unblockable)
-//    - 最后一击强行穿透对手防御，严禁产生流血效果 (纯净门禁)。
-// 5. [特殊技 3 - 猎杀] (SP3 Burn & Crit Resist Debuff)
-//    - 最后一击命中与特殊技退出时，向对手施加永久 20% 暴击抗性削弱减益 (PUA: \uE409)。
+//    - 真实暴击率 > 100% 时点亮图标，hook_179 实时将溢出暴击率 1:1 转为暴击伤害。
+//    - 暴击率回落 <= 100% 或连击打断受创时立即移除。
+// 3. [特殊技 1 - 能量炮]
+//    - 最后一击不可防御：最后一击时间窗内点亮浅紫色不可防御图标 (E41F)，最后一击结束立即熄灭。
+//    - 最后一击未格挡命中时，施加 1 层 6 秒暴击抗性减益 (+40% 受暴击率, E409)。
+//    - 纯净门禁：SP1 期间严禁触发流血。
+// 4. [特殊技 2 - 翼刃回旋]
+//    - 技能期间提升 60% 暴击伤害：SP2 进入激活，SP2 退出瞬间立即移除。
+//    - 每 1 击暴击 100% 触发可叠加流血 (3 秒 60% ATK)。
+// 5. [特殊技 3 - 猎杀]
+//    - 技能结束由 SP3_EXIT 唯一施加 1 层可叠加永久 20% 暴击抗性减益 (E409)。
 // 6. [觉醒 - 追猎] (I'll Hunt You Down!)
-//    - 我方近战招式被对方闪避掉时，猎杀渴望激增，3 秒内恢复 5% 最大能量。
-//    - 3 秒倒计时冷却结束前不可再次触发。
-//    - 严格门禁：我方闪避/防御对手招式绝不触发回能。
+//    - 由引擎终态结算回调 on_attack_ended 精准驱动：
+//      仅普通攻击 (轻/中/重/远程, 排除 S1/S2/S3) 落空 (非Hit、非Blocked、非对波抵消、非被反射；
+//      包含对手前冲/近战穿弹躲过) 时触发。
+//    - 触发瞬间立即到账 +6% 最大能量 (0.18 格)，挂 3 秒浅紫色倒计时冷却图标，3 秒内不重复触发。
 // ===========================================================================
 
-static int      s_blackout_combo[2]            = {0, 0};
-static int      s_blackout_ranged_shots[2]     = {0, 0};
-static int      s_blackout_gatling_active[2]   = {0, 0};
-static int      s_blackout_fury_active[2]      = {0, 0};
-static uint64_t s_blackout_last_hunt_ms[2]     = {0, 0};
-static uint64_t s_blackout_melee_start_ms[2]   = {0, 0};
-static int      s_blackout_melee_in_flight[2]  = {0, 0};
-static int      s_blackout_attack_connected[2] = {0, 0};
+static int      s_blackout_combo[2]               = {0, 0};
+static int      s_blackout_fury_active[2]         = {0, 0};
+static uint64_t s_blackout_last_hunt_ms[2]        = {0, 0};
 
-// 触发觉醒技“追猎”
+static int      s_blackout_active_sp[2]           = {0, 0}; // 0=无, 1=SP1, 2=SP2, 3=SP3
+static int      s_blackout_sp1_window_active[2]   = {0, 0};
+static int      s_blackout_sp1_unblockable_on[2]  = {0, 0};
+static uint64_t s_blackout_sp1_start_ms[2]        = {0, 0};
+static uint64_t s_blackout_sp1_exit_ms[2]         = {0, 0};
+
+static void blackout_clear_sp1_unblockable(int p, const char* reason) {
+    if (p < 0 || p >= 2) return;
+    if (s_blackout_sp1_unblockable_on[p] || skill_has_buff(p, "blackout_sp1_unblockable")) {
+        skill_consume_buff(p, "blackout_sp1_unblockable", 99);
+        skill_log("BLACKOUT: P%d cleared SP1 light-purple unblockable icon (%s)", p, reason);
+    }
+    s_blackout_sp1_unblockable_on[p] = 0;
+    s_blackout_sp1_window_active[p] = 0;
+    s_blackout_sp1_start_ms[p] = 0;
+    s_blackout_sp1_exit_ms[p] = 0;
+}
+
+static void blackout_show_sp1_unblockable(int p, const char* reason) {
+    if (p < 0 || p >= 2) return;
+    if (s_blackout_sp1_unblockable_on[p]) return;
+    s_blackout_sp1_unblockable_on[p] = 1;
+    skill_apply_buff_dur(p, "blackout_sp1_unblockable", 3.5f);
+    skill_overlay("[%s] 能量炮终击！不可防御！", p == 0 ? "眩晕" : "敌方眩晕");
+    skill_log("BLACKOUT: P%d showed SP1 light-purple unblockable icon (%s)", p, reason);
+}
+
+// 触发觉醒技“追猎” (+6% 瞬间回能 + 3 秒冷却提示图标)
 void blackout_trigger_hunt_if_ready(int blackout_p, const char* reason) {
     if (blackout_p < 0 || blackout_p >= 2) return;
     const char* bid = skill_get_bot_id(blackout_p);
     if (!bid || strstr(bid, "blackout") == NULL) return;
 
     uint64_t now_ms = skill_now_ms();
-    // 3 秒倒计时冷却保护 (官方描述: 3秒倒计时结束前不可再次触发)
-    if (now_ms - s_blackout_last_hunt_ms[blackout_p] >= 3000) {
-        s_blackout_last_hunt_ms[blackout_p] = now_ms;
-        s_blackout_melee_in_flight[blackout_p] = 0;
-
-        // 3格满气基准为 3.0f，5% 最大能量即为 0.15f
-        skill_add_mana(blackout_p, 0.15f);
-
-        // 显示 3 秒倒计时紫色追猎能量图标
-        skill_apply_buff_dur(blackout_p, "blackout_sig_whiff_power_gain", 3.0f);
-        skill_overlay("[%s] 追猎渴望激活！恢复5%%最大能量！", blackout_p == 0 ? "眩晕" : "敌方眩晕");
-        skill_log("BLACKOUT: P%d Hunt activated (%s) -> +5%% mana (0.15 bars)", blackout_p, reason);
+    // 3 秒倒计时冷却保护 (3 秒倒计时结束前不可再次触发)
+    if (s_blackout_last_hunt_ms[blackout_p] > 0 && now_ms < s_blackout_last_hunt_ms[blackout_p] + 3000) {
+        return;
     }
+    if (skill_has_buff(blackout_p, "blackout_sig_whiff_power_gain")) {
+        return;
+    }
+
+    s_blackout_last_hunt_ms[blackout_p] = now_ms;
+
+    // 3格满气基准为 3.0f，6% 最大能量即为 0.18f，触发瞬间立刻到账
+    skill_add_mana(blackout_p, 0.18f);
+
+    // 挂 3 秒浅紫色倒计时冷却提示图标 (纯提示 m=0.0，绝不重复加能量)
+    skill_apply_buff_dur(blackout_p, "blackout_sig_whiff_power_gain", 3.0f);
+    skill_overlay("[%s] 追猎渴望！瞬间获得+6%%最大能量！", blackout_p == 0 ? "眩晕" : "敌方眩晕");
+    skill_log("BLACKOUT: P%d Hunt activated (%s) -> instant +6%% mana (0.18 bars) + 3.0s CD icon",
+              blackout_p, reason);
 }
 
 // 战斗重置
 static void blackout_on_fight_reset(int player_index) {
     if (player_index < 0 || player_index >= 2) return;
     s_blackout_combo[player_index] = 0;
-    s_blackout_ranged_shots[player_index] = 0;
-    s_blackout_gatling_active[player_index] = 0;
     s_blackout_fury_active[player_index] = 0;
     s_blackout_last_hunt_ms[player_index] = 0;
-    s_blackout_melee_start_ms[player_index] = 0;
-    s_blackout_melee_in_flight[player_index] = 0;
-    s_blackout_attack_connected[player_index] = 0;
+    s_blackout_active_sp[player_index] = 0;
+    s_blackout_sp1_window_active[player_index] = 0;
+    s_blackout_sp1_unblockable_on[player_index] = 0;
+    s_blackout_sp1_start_ms[player_index] = 0;
+    s_blackout_sp1_exit_ms[player_index] = 0;
     skill_log("BLACKOUT: P%d reset combat state", player_index);
 }
 
-// 出招判定 (攻击开始)
-static void blackout_on_attack_start(int player_index, int action_type) {
-    if (player_index < 0 || player_index >= 2) return;
-    const char* bid = skill_get_bot_id(player_index);
-    if (!bid || strstr(bid, "blackout") == NULL) return;
-
-    uint64_t now_ms = skill_now_ms();
-
-    // 1. 远程射击 (action_type == 8)
-    if (action_type == 8) {
-        s_blackout_melee_in_flight[player_index] = 0;
-        s_blackout_attack_connected[player_index] = 0;
-        s_blackout_ranged_shots[player_index]++;
-        skill_log("BLACKOUT: P%d ranged shot fired (count=%d/3)", player_index, s_blackout_ranged_shots[player_index]);
-
-        if (s_blackout_ranged_shots[player_index] >= 3) {
-            if (!s_blackout_gatling_active[player_index]) {
-                s_blackout_gatling_active[player_index] = 1;
-                // 底层射速与伤害加成
-                skill_set_ranged_boost(player_index, 15000, 0.50f, 0.40f);
-                // 血条下方常驻/倒计时橙色图标 (E41B)
-                skill_apply_buff_dur(player_index, "blackout_gatling_ranged_buff", 15.0f);
-                skill_overlay("[%s] 连续3发远程射击！加特林机枪超频激活 (+50%%伤害, +40%%射速)！",
-                              player_index == 0 ? "眩晕" : "敌方眩晕");
-                skill_log("BLACKOUT: P%d Gatling Gun buff activated", player_index);
-            }
-        }
-        return;
-    }
-
-    // 2. 近战出招 (轻击 1, 中击 2, 重击 4/0x100, 冲锋 32)
-    int is_melee = (action_type == 1 || action_type == 2 || action_type == 4 || action_type == 0x100 || action_type == 32);
-    if (is_melee) {
-        s_blackout_melee_start_ms[player_index] = now_ms;
-        s_blackout_melee_in_flight[player_index] = 1;
-        s_blackout_attack_connected[player_index] = 0;
-    } else {
-        s_blackout_melee_in_flight[player_index] = 0;
-    }
-
-    // 3. 任何近战、重击、特殊攻击均移除加特林机枪增益
-    if (s_blackout_ranged_shots[player_index] > 0 || s_blackout_gatling_active[player_index]) {
-        s_blackout_ranged_shots[player_index] = 0;
-        s_blackout_gatling_active[player_index] = 0;
-        skill_set_ranged_boost(player_index, 0, 0.0f, 0.0f);
-        skill_consume_buff(player_index, "blackout_gatling_ranged_buff", 99);
-        skill_log("BLACKOUT: P%d Gatling Gun cancelled due to melee/heavy/special (action=%d)", player_index, action_type);
-    }
-}
-
-// 同步【无尽怒火】图标状态：真实暴击率 > 100% 时点亮图标 (hook_179 实时 1:1 溢出转暴伤)，回落至 <= 100% 时移除
+// 同步【无尽怒火】图标状态：真实暴击率 > 100% 时点亮图标，回落至 <= 100% 时移除
 static void blackout_sync_infinite_fury(int p) {
     if (p < 0 || p >= 2) return;
     const char* bid = skill_get_bot_id(p);
@@ -148,6 +128,48 @@ static void blackout_sync_infinite_fury(int p) {
     }
 }
 
+// 必杀技状态机进出回调 (PlayerSpecialAttackState.OnEnter / OnExit & SP3_EXIT)
+static void blackout_on_special_state(int player_index, int sp_level, int entered) {
+    if (player_index < 0 || player_index >= 2) return;
+    const char* bid = skill_get_bot_id(player_index);
+    if (!bid || strstr(bid, "blackout") == NULL) return;
+
+    uint64_t now_ms = skill_now_ms();
+
+    if (entered) {
+        s_blackout_active_sp[player_index] = sp_level;
+        if (sp_level == 1) {
+            // SP1 进入：启动最后一击浅紫色图标时间窗跟踪 (ev[15]在f=15, 终击蓄力ev[18]在f=26≈867ms, 发射在f=56≈1867ms)
+            blackout_clear_sp1_unblockable(player_index, "sp1_reenter");
+            s_blackout_sp1_window_active[player_index] = 1;
+            s_blackout_sp1_start_ms[player_index] = now_ms;
+            s_blackout_sp1_exit_ms[player_index] = 0;
+            skill_log("BLACKOUT: P%d entered SP1 (tracking last-hit unblockable window)", player_index);
+        } else if (sp_level == 2) {
+            // SP2 进入：确保 +60% 暴击伤害增益已激活 (仅技能期间生效)
+            if (!skill_has_buff(player_index, "blackout_sp2_crit_damage")) {
+                skill_apply_buff_dur(player_index, "blackout_sp2_crit_damage", 4.0f);
+            }
+            skill_log("BLACKOUT: P%d entered SP2 (+60%% crit damage active)", player_index);
+        }
+    } else {
+        if (s_blackout_active_sp[player_index] == sp_level) {
+            s_blackout_active_sp[player_index] = 0;
+        }
+        if (sp_level == 1) {
+            // SP1 动画退出：终击能量炮投射物可能仍在飞行，记录退出时间，等终击结算回调立即熄灭或兜底 1.2s 熄灭
+            s_blackout_sp1_exit_ms[player_index] = now_ms;
+            skill_log("BLACKOUT: P%d exited SP1 state (waiting for last-hit projectile resolution)", player_index);
+        } else if (sp_level == 2) {
+            // SP2 退出：立即移除 +60% 暴击伤害增益，严格限定在技能期间
+            if (skill_has_buff(player_index, "blackout_sp2_crit_damage")) {
+                skill_consume_buff(player_index, "blackout_sp2_crit_damage", 99);
+                skill_log("BLACKOUT: P%d exited SP2 -> removed SP2 +60%% crit damage buff", player_index);
+            }
+        }
+    }
+}
+
 // 命中连接
 static void blackout_on_hit_connected(SkillHitContext* ctx) {
     if (!ctx) return;
@@ -157,62 +179,88 @@ static void blackout_on_hit_connected(SkillHitContext* ctx) {
     const char* atk_id = ctx->attacker_bot_id;
 
     if (atk_id && strstr(atk_id, "blackout") != NULL) {
-        // 近战真正命中对手，清除挥空标记
-        s_blackout_attack_connected[ap] = 1;
-        s_blackout_melee_in_flight[ap] = 0;
+        // 连击数自增 (仅非格挡真实命中计入连击)
+        if (!ctx->is_blocked) {
+            s_blackout_combo[ap]++;
 
-        // 连击数自增
-        s_blackout_combo[ap]++;
+            // 每增加 5 连击叠加 1 层 8% 暴击率与 16% 暴击伤害
+            if (s_blackout_combo[ap] % 5 == 0) {
+                int stacks = s_blackout_combo[ap] / 5;
+                if (stacks > 99) stacks = 99;
 
-        // 每增加 5 连击叠加 1 层 8% 暴击率与 16% 暴击伤害 (放开至引擎最大 99 层，使暴击率可自然突破 100%)
-        if (s_blackout_combo[ap] % 5 == 0) {
-            int stacks = s_blackout_combo[ap] / 5;
-            if (stacks > 99) stacks = 99;
-
-            skill_apply_buff_dur(ap, "blackout_combo_crit_rate", -1.0f);
-            skill_apply_buff_dur(ap, "blackout_combo_crit_dmg", -1.0f);
-            skill_overlay("[%s] %d 连击！暴击几率+8%%, 暴击伤害+16%% (第%d层)！",
-                          ap == 0 ? "眩晕" : "敌方眩晕", s_blackout_combo[ap], stacks);
-            skill_log("BLACKOUT: P%d combo reached %d -> applied crit rate & dmg layer %d",
-                      ap, s_blackout_combo[ap], stacks);
+                skill_apply_buff_dur(ap, "blackout_combo_crit_rate", -1.0f);
+                skill_apply_buff_dur(ap, "blackout_combo_crit_dmg", -1.0f);
+                skill_overlay("[%s] %d 连击！暴击几率+8%%, 暴击伤害+16%% (第%d层)！",
+                              ap == 0 ? "眩晕" : "敌方眩晕", s_blackout_combo[ap], stacks);
+                skill_log("BLACKOUT: P%d combo reached %d -> applied crit rate & dmg layer %d",
+                          ap, s_blackout_combo[ap], stacks);
+            }
         }
 
-        // SP3 最后一击命中，主动施加永久暴击抗性减益 (PUA: \uE409)
-        if (ctx->special_index == 3 && ctx->is_last_hit) {
-            skill_apply_buff_dur(tp, "blackout_sp3_crit_resist_debuff", -1.0f);
-            skill_overlay("[%s] 猎杀！对手暴击抗性永久降低20%%！", ap == 0 ? "眩晕" : "敌方眩晕");
-            skill_log("BLACKOUT: P%d SP3 last hit -> applied permanent crit resist debuff to P%d", ap, tp);
+        // SP1 最后一击命中 (未格挡)：施加 6 秒暴击抗性减益 (+40% 受暴击率)
+        int is_sp1 = (ctx->special_index == 1 || ctx->action_type == 16);
+        if (is_sp1 && ctx->is_last_hit && !ctx->is_blocked) {
+            skill_apply_buff_dur(tp, "blackout_sp1_crit_resist_debuff", 6.0f);
+            skill_overlay("[%s] 能量炮终击命中！对手暴击抗性降低40%%(6秒)！", ap == 0 ? "眩晕" : "敌方眩晕");
+            skill_log("BLACKOUT: P%d SP1 last hit connected -> applied 6.0s -40%% crit resist debuff to P%d", ap, tp);
         }
+
+        // SP2 暴击流血保障：若由原生 onCrit 未覆盖（如模拟器路径），在暴击时确保流血层叠加
+        // (实机真机上 blackout_sp2_crit_bleed 通过 onCrit 自动触发，此处绝不重复施加；见 blackout.py st=99)
 
         // 实时检查暴击率是否突破 100%，同步【无尽怒火】状态
         blackout_sync_infinite_fury(ap);
     }
 }
 
-// 防御状态变化：防御时清除加特林机枪增益 (纯净防守，绝不增加能量)
-static void blackout_on_block_state(int player_index, int entered) {
-    if (player_index < 0 || player_index >= 2) return;
-    const char* bid = skill_get_bot_id(player_index);
-    if (!bid || strstr(bid, "blackout") == NULL) return;
+// 统一单次打击事件终态结算回调 (精确落空状态机 + SP1 最后一击图标起止)
+static void blackout_on_attack_ended(SkillAttackEndContext* ctx) {
+    if (!ctx) return;
+    if (!ctx->attacker_bot_id || strstr(ctx->attacker_bot_id, "blackout") == NULL) return;
 
-    if (entered) {
-        if (s_blackout_ranged_shots[player_index] > 0 || s_blackout_gatling_active[player_index]) {
-            s_blackout_ranged_shots[player_index] = 0;
-            s_blackout_gatling_active[player_index] = 0;
-            skill_set_ranged_boost(player_index, 0, 0.0f, 0.0f);
-            skill_consume_buff(player_index, "blackout_gatling_ranged_buff", 99);
-            skill_log("BLACKOUT: P%d Gatling Gun cancelled due to block", player_index);
+    int ap = ctx->attacker_player_index;
+    int al = ctx->attack_level;
+
+    // 1. SP1 浅紫色不可防御图标时间窗精确驱动
+    if (al == 16) {
+        if (!ctx->is_last_hit) {
+            // SP1 第一击 (idx=0) 结束 -> 进入最后一击不可防御阶段，立即点亮浅紫色图标
+            if (s_blackout_sp1_window_active[ap]) {
+                blackout_show_sp1_unblockable(ap, "sp1_hit0_ended");
+            }
+        } else {
+            // SP1 最后一击 (idx=100, LastHit) 结算完毕 -> 立即熄灭浅紫色图标
+            blackout_clear_sp1_unblockable(ap, "sp1_last_hit_ended");
         }
+        return; // S 技落空绝不触发追猎
+    }
+
+    // 2. S2 / S3 落空绝不触发追猎
+    if (al == 32 || al == 64) {
+        return;
+    }
+
+    // 3. 觉醒技【追猎】：仅普通攻击 (轻=1, 中=2, 重=4, 远程=8) 落空时触发
+    int is_normal_attack = (al == 1 || al == 2 || al == 4 || al == 8);
+    if (is_normal_attack && ctx->is_missed) {
+        const char* kind = (al == 8) ? "ranged missed" : (al == 4 ? "heavy missed" : "melee missed");
+        blackout_trigger_hunt_if_ready(ap, kind);
     }
 }
 
-// 受创硬直：被打断连击，全部清空暴击增益
+// 受创硬直：被打断连击，全部清空暴击增益；若 SP1/SP2 被打断则同步清理
 static void blackout_on_hitreact_enter(int player_index) {
     if (player_index < 0 || player_index >= 2) return;
     const char* bid = skill_get_bot_id(player_index);
     if (!bid || strstr(bid, "blackout") == NULL) return;
 
-    s_blackout_melee_in_flight[player_index] = 0;
+    if (s_blackout_sp1_unblockable_on[player_index]) {
+        blackout_clear_sp1_unblockable(player_index, "hitreact_interrupted");
+    }
+    if (skill_has_buff(player_index, "blackout_sp2_crit_damage")) {
+        skill_consume_buff(player_index, "blackout_sp2_crit_damage", 99);
+    }
+    s_blackout_active_sp[player_index] = 0;
 
     if (s_blackout_combo[player_index] > 0) {
         skill_log("BLACKOUT: P%d hit, combo reset from %d to 0", player_index, s_blackout_combo[player_index]);
@@ -225,36 +273,16 @@ static void blackout_on_hitreact_enter(int player_index) {
     }
 }
 
-// 对手进入闪避：我方近战招式被对方闪避掉时激活“追猎”
-static void blackout_on_opponent_dodge_enter(int opponent_index) {
-    if (opponent_index < 0 || opponent_index >= 2) return;
-    int blackout_p = 1 - opponent_index;
-    const char* bid = skill_get_bot_id(blackout_p);
-    if (!bid || strstr(bid, "blackout") == NULL) return;
-
-    uint64_t now_ms = skill_now_ms();
-    uint64_t melee_start = s_blackout_melee_start_ms[blackout_p];
-
-    // 检查眩晕是否正处于近战出招中、或 700ms 内刚刚发起了近战攻击
-    int is_melee_active = s_blackout_melee_in_flight[blackout_p] || skill_is_melee_attacking(blackout_p);
-    int in_recent_melee = (melee_start > 0 && now_ms >= melee_start && (now_ms - melee_start <= 700));
-
-    // 且本次近战攻击未命中对手 (确实被对方闪避掉)
-    if ((is_melee_active || in_recent_melee) && !s_blackout_attack_connected[blackout_p]) {
-        blackout_trigger_hunt_if_ready(blackout_p, "opponent dodged our melee attack");
-    }
-}
-
-// 修饰器过滤门禁：严格杜绝 SP1 误触发流血
+// 修饰器过滤门禁：严格杜绝 SP1 误触发流血 (使用本机精确 s_blackout_active_sp，绝不误伤 SP2)
 static int blackout_on_buff_gated(SkillBuffGateContext* ctx) {
     if (!ctx || !ctx->modifier_id || !ctx->modifier_id[0]) return 0;
 
     int ap = ctx->attacker_player_index;
+    if (ap < 0 || ap >= 2) return 0;
     const char* atk_id = skill_get_bot_id(ap);
     if (!atk_id || strstr(atk_id, "blackout") == NULL) return 0;
 
-    // SP1 绝不施加流血！流血是 SP2 专属！
-    if (ctx->current_special_index == 1) {
+    if (s_blackout_active_sp[ap] == 1) {
         if (strstr(ctx->modifier_id, "bleed") != NULL) {
             skill_log("BLACKOUT_GATE: suppressed bleed modifier during SP1 (mod=%s)", ctx->modifier_id);
             ctx->allow_application = false;
@@ -265,9 +293,28 @@ static int blackout_on_buff_gated(SkillBuffGateContext* ctx) {
     return 0;
 }
 
-// 轻量级周期同步：仅检测【无尽怒火】暴击率是否跨越 100% 阈值 (每 250ms 一次，绝不干涉追猎)
+// 周期同步：1) 精准驱动 SP1 最后一击浅紫色图标时间窗；2) 同步【无尽怒火】100% 暴击率阈值
 static uint64_t s_blackout_last_fury_sync_ms = 0;
 static void blackout_on_simulation_tick(uint64_t now_ms) {
+    // A. SP1 最后一击时间窗 (每帧轻量检查)
+    for (int p = 0; p < 2; p++) {
+        if (s_blackout_sp1_window_active[p]) {
+            // 如果第一击未触发或时间已到蓄力起手 (f=26 ≈ 800ms)，点亮浅紫色不可防御图标
+            if (!s_blackout_sp1_unblockable_on[p] &&
+                s_blackout_sp1_start_ms[p] > 0 &&
+                now_ms >= s_blackout_sp1_start_ms[p] + 800) {
+                blackout_show_sp1_unblockable(p, "sp1_charge_window_800ms");
+            }
+            // 安全兜底：SP1 退出超过 1200ms 或总时长超 3500ms 自动熄灭
+            if (s_blackout_sp1_exit_ms[p] > 0 && now_ms >= s_blackout_sp1_exit_ms[p] + 1200) {
+                blackout_clear_sp1_unblockable(p, "sp1_exit_timeout");
+            } else if (s_blackout_sp1_start_ms[p] > 0 && now_ms >= s_blackout_sp1_start_ms[p] + 3500) {
+                blackout_clear_sp1_unblockable(p, "sp1_max_timeout");
+            }
+        }
+    }
+
+    // B. 每 250ms 同步一次【无尽怒火】
     if (now_ms < s_blackout_last_fury_sync_ms + 250) return;
     s_blackout_last_fury_sync_ms = now_ms;
     for (int p = 0; p < 2; p++) {
@@ -276,21 +323,23 @@ static void blackout_on_simulation_tick(uint64_t now_ms) {
 }
 
 BotSkillModule g_module_blackout = {
-    .bot_prefix             = "blackout",
-    .on_hit_connected       = blackout_on_hit_connected,
-    .on_buff_gated          = blackout_on_buff_gated,
-    .on_buff_applied        = NULL,
-    .on_evade_check         = NULL,
-    .on_test_roll           = NULL,
-    .on_power_gain_rate     = NULL,
-    .on_reflect_proj        = NULL,
-    .on_projectile_speed    = NULL,
-    .on_fight_reset         = blackout_on_fight_reset,
-    .on_simulation_tick     = blackout_on_simulation_tick,
-    .on_block_state         = blackout_on_block_state,
-    .on_dodge_enter         = NULL,
-    .on_opponent_block_state= NULL,
-    .on_opponent_dodge_enter= blackout_on_opponent_dodge_enter,
-    .on_hitreact_enter      = blackout_on_hitreact_enter,
-    .on_attack_start        = blackout_on_attack_start
+    .bot_prefix              = "blackout",
+    .on_hit_connected        = blackout_on_hit_connected,
+    .on_buff_gated           = blackout_on_buff_gated,
+    .on_buff_applied         = NULL,
+    .on_evade_check          = NULL,
+    .on_test_roll            = NULL,
+    .on_power_gain_rate      = NULL,
+    .on_reflect_proj         = NULL,
+    .on_projectile_speed     = NULL,
+    .on_fight_reset          = blackout_on_fight_reset,
+    .on_simulation_tick      = blackout_on_simulation_tick,
+    .on_block_state          = NULL,
+    .on_dodge_enter          = NULL,
+    .on_opponent_block_state = NULL,
+    .on_opponent_dodge_enter = NULL,
+    .on_hitreact_enter       = blackout_on_hitreact_enter,
+    .on_attack_start         = NULL,
+    .on_attack_ended         = blackout_on_attack_ended,
+    .on_special_state        = blackout_on_special_state,
 };

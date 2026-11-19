@@ -287,6 +287,32 @@ float skill_get_attack(int player_index) {
     return 2000.0f;
 }
 
+float skill_get_total_crit_chance(int player_index) {
+    if (player_index < 0 || player_index >= 2) return 0.25f;
+    float total = 0.25f; // 默认基础暴击率 25%
+    SimCombatant* self = &g_players[player_index];
+    for (int i = 0; i < self->buff_count; i++) {
+        const char* id = self->buffs[i].mod_id;
+        int st = self->buffs[i].stacks;
+        if (strstr(id, "blackout_combo_crit_rate") != NULL) {
+            total += 0.08f * st;
+        } else if (strstr(id, "crit_rate") != NULL && strstr(id, "crit_resist") == NULL) {
+            total += 0.30f * st;
+        }
+    }
+    SimCombatant* opp = &g_players[1 - player_index];
+    for (int i = 0; i < opp->buff_count; i++) {
+        const char* id = opp->buffs[i].mod_id;
+        int st = opp->buffs[i].stacks;
+        if (strstr(id, "blackout_sp1_crit_resist_debuff") != NULL) {
+            total += 0.40f * st;
+        } else if (strstr(id, "blackout_sp3_crit_resist_debuff") != NULL) {
+            total += 0.20f * st;
+        }
+    }
+    return total;
+}
+
 void skill_deal_damage(int target_player_index, float damage) {
     if (target_player_index >= 0 && target_player_index < 2 && damage > 0.0f) {
         g_players[target_player_index].hp -= damage;
@@ -1314,6 +1340,29 @@ SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
     }
 
     return (int)final_dmg;
+}
+
+SIM_API void sim_fire_attack_ended(int attacker_idx, int attack_level, int hit_index, uint32_t flags, float damage) {
+    if (attacker_idx < 0 || attacker_idx >= 2) return;
+    int target_idx = 1 - attacker_idx;
+    SkillAttackEndContext ctx;
+    memset(&ctx, 0, sizeof(ctx));
+    ctx.attacker_player_index = attacker_idx;
+    ctx.target_player_index   = target_idx;
+    ctx.attacker_bot_id       = g_players[attacker_idx].bot_id;
+    ctx.target_bot_id         = g_players[target_idx].bot_id;
+    ctx.event_id              = 1;
+    ctx.attack_level          = attack_level;
+    ctx.hit_index             = hit_index;
+    ctx.attack_count          = 1;
+    ctx.flags                 = flags;
+    ctx.damage                = damage;
+    skill_dispatch_attack_ended(&ctx);
+}
+
+SIM_API void sim_fire_special_state(int player_idx, int sp_level, int entered) {
+    if (player_idx < 0 || player_idx >= 2) return;
+    skill_dispatch_special_state(player_idx, sp_level, entered);
 }
 
 // ---------------------------------------------------------------------------
