@@ -133,3 +133,53 @@ LIFELINE_DUAL_SWORD_GRIP = {
 4. **导出与注入严禁整包替换 `AnimationClip`**：
    - 导出阶段由 [`LifelinePoseWorkbench.cs`](file:///d:/Agent/tftf/unity_lifeline/Assets/Editor/LifelinePoseWorkbench.cs) 将 `pose.muscles[55..94]` 按 `attr = 42 + mIdx`（即 `97..136`）写入 `unity_lifeline/Assets/AssetBundles/lifeline_finger_pose.json`（支持双手独立导出或右手一键镜像到左手）；
    - 注入阶段运行 `python tools/apply_unity_idle_clip.py`，脚本设有安全门禁（仅允许 `97 <= attr <= 136` 共 40 项），只微创更新原版 `TeamSelect_Female_idle` 与 `Prefight_Female_idle` 的手指通道，100% 保护原版身体呼吸曲线与重心高度。
+
+---
+
+## 四、 标准方案三：从 Mixamo 等第三方 Pose 库跨骨骼重定向全身展厅待机（实机踩坑与血泪总结）
+
+当需要给机甲角色套用全新全身待机姿势（例如从 Mixamo 下载的人体 FBX Pose）而非仅微调手指时，必须修改全部 130 个 Humanoid 通道。以下是在阿尔茜（`arcee_gs_deluxe2014` / `TeamSelect_Female_idle`）实机验证中用多次返工换来的 **6 条核心教训与标准流水线**，后续扩展到其他角色必须严格遵循。
+
+### 核心踩坑清单（严禁重蹈覆辙）
+
+1. **大坑 #3：严禁用 `BuildPipeline.BuildAssetBundles` 打包新建 `.anim` 替换原版 Clip —— 会丢失 Foot IK 导致“下半身折叠消失”**
+   - **实机症状**：在独立渲染预览看似正常，打进 APK 上真机后角色只有上半身飘在半空、双腿完全折叠塞进骨盆内部。
+   - **根因**：真机展厅使用的是 `characters.assetbundle` 中的公共状态机 `animator_char_lw`（`PathID=6875678843721788313`），其中 `FE_Idle` 状态默认开启了 **`iKOnFeet = True`**。
+   - 用 `AnimationClip.SetCurve` + `BuildPipeline.BuildAssetBundles` 新建的 Clip 只包含肌肉曲线或裸动画属性，**完全缺失 `attr 14..27`（`LeftFootT/Q`、`RightFootT/Q`）与 `m_LeftFootStartX` / `m_RightFootStartX` 等 Foot IK 目标通道**；而且通过 `HumanTrait.MuscleName` 绑定手指曲线时，Unity 编译出的手指名（如 `"Left Thumb 1 Stretched"`）与内部 `Animator` 索引不匹配，会被编成 `customType = 0`（无法驱动引擎骨骼）。
+   - `iKOnFeet = True` 读不到合法 `LeftFootT/RightFootT` 目标时，会把双脚 IK 目标拉向零点/骨盆高度（实测曾导致 `LeftFootY = 5.9157, RightFootY = 5.7814` 倒挂进 `HipsY = 5.5022`），直接把两条腿折进胯里。
+   - **唯一正解**：与标准方案一相同，**永远不要整包替换原版 Clip 的 TypeTree**，而是在原版 `TeamSelect_Female_idle`（130 个 `typeID=95, customType=8` 通道）基础上，用 Python 脚本做**全通道原位数值替换**。
+
+2. **大坑 #4：实机 Prefab 与编辑器原型 Prefab 的 `HumanPoseHandler` 根节点不一致**
+   - **对比差异**：独立搭建的 `Lifeline_Showroom` 顶层节点直接挂骨架；但真机 AssetBundle（如 `Arcee_GS_Deluxe2014_lw`）中，`Animator` 挂在最外层 Prefab 根节点，而 `Avatar`（`cha_arcee_gs_deluxe2014_00Avatar`）的 `m_TOS` 路径却挂在子物体 **`character_model/`** 之下（以 `"Reference/Hips/..."` 开头）。
+   - **后果**：若误传最外层 `inst.transform` 给 `new HumanPoseHandler(avatar, root)`，Unity 不会报错，但会**静默采样/回写全默认站姿**（实测 `Hips` 停留在 `(0.0023, 1.0, 0.0061)`）。
+   - **规则**：对游戏原生 AssetBundle Prefab 调用 `HumanPoseHandler` 前，先检查是否存在 `inst.transform.Find("character_model")`，存在则必须传入 `character_model` 节点作为根节点。
+
+3. **大坑 #5：纯骨骼方向向量（`FromToRotation`）会丢失脊柱/骨盆“扭转轴向（Contrapposto Twist）”**
+   - Mixamo 站姿的美感往往来自骨盆与胸腔之间的反向拧转（如本次 Pose 1 存在约 `+85.4°` 的水平面拧转），两骨骼连线向量只包含俯仰/侧倾，**会丢失绕骨骼自转轴的 Roll/Yaw 分量**，直接导致摆出来的姿势僵硬或朝向错误。
+   - **正解**：从双方模型的 `SkinnedMeshRenderer.sharedMesh.bindposes` 提取精确的世界空间绑定姿势逆矩阵，计算世界旋转增量 `poseRot * Quaternion.Inverse(bindRot)`，并做局部坐标系修正：
+     - 处理 Mixamo（标准 T-Pose）与 TFTF 机甲（I-Pose 手臂下垂）的绑定差异：上臂/小臂需施加 `invT2I_L = Quaternion.Euler(0, 0, -90)` 与 `invT2I_R = Quaternion.Euler(0, 0, +90)` 补偿；
+     - 映射胸椎链（如 Mixamo `Spine2 -> Arcee Spine1`）；
+     - 机甲与真人的肩宽/胯宽/臂长比例差异极易引起叉腰或垂手**穿模（手臂插进腰甲/大腿）**：不能只抄关节旋转角度，必须对双手目标位置结合腰部边界施加外扩偏置（`±Z` 外移），再通过双骨骼解析 IK（`SolveTwoBoneIK`）重算上臂与前臂旋转，保证自然搭胯不穿模。
+
+4. **大坑 #6：千万不要只拍正面单视角 —— 必须用真机 `characters.assetbundle` 状态机 + 360° 多视角联合验收**
+   - 仅在正面单相机下看“大概像”，极易掩盖右手/刀鞘穿入侧腰、脚尖悬空或脚后跟陷入地板等问题。
+   - 本工程已沉淀专用真机级验证器 [`VerifyRealGameAnimator.cs`](file:///d:/Agent/tftf/unity_lifeline/Assets/Editor/VerifyRealGameAnimator.cs)：同时加载 `characters.assetbundle`（真实 `animator_char_lw` 的 `FE_Idle` 状态，开启 `iKOnFeet = True`）与待测角色 Bundle，运行帧步进更新后打印 `HipsY / LeftFootY / RightFootY / LeftToeY / RightToeY / minMeshY` 接地数据，并固定输出 **`180°`、`130°`、`060°`、`300°` 四方向环绕截图**。
+   - **Unity 命令行卡死提醒**：在本机 Windows 环境下运行上述验证/导出 Batchmode 时，**不要附加 `-nographics`**（该参数易触发 Unity 包管理或域重载卡死），保持标准 `-batchmode -quit -executeMethod ...` 即可快速退出。
+
+### 跨骨骼重定向标准流水线（以阿尔茜为例）
+
+已固化的完整工具链位于 [`tools/run_arcee_pose1_pipeline.py`](file:///d:/Agent/tftf/tools/run_arcee_pose1_pipeline.py)：
+
+1. **阶段 A（Unity C# 求解与通道导出）**：[`ExportArceePose1Data.cs`](file:///d:/Agent/tftf/unity_lifeline/Assets/Editor/ExportArceePose1Data.cs)
+   - 加载 Mixamo FBX 与目标角色 Bundle，按 `sharedMesh.bindposes`、`T <-> I` 补偿、`Spine2 -> Spine1`、`SolveTwoBoneIK` 防穿模外扩及手指弯曲（`muscles[55..94]`）求解出目标世界姿态；
+   - 通过 `HumanPoseHandler(avatar, character_model)` 读出精确 `bodyPosition`、`bodyRotation` 与 95 维 `muscles`；
+   - **按游戏原生偏移反算 Foot/Hand IK Goal**：
+     - Foot/HandGoal 局部坐标公式：`inv(bodyRot) * ((TargetWorldPos - bodyWorldPos) / humanScale)`、`inv(bodyRot) * (BoneRot * Offset)`（阿尔茜实测 `Offset_Foot = Quaternion(0.2421f, 0.6641f, -0.6647f, 0.2419f)`）；
+   - 将所有 130 个通道参数导出至中间 JSON（如 `build/arcee_pose1_export.json`）。
+2. **阶段 B（Python 130 通道原位注入 + 微动呼吸）**：[`inject_arcee_showroom_pose1.py`](file:///d:/Agent/tftf/tools/inject_arcee_showroom_pose1.py)
+   - 从原版备份（`backup/arcee_gs_deluxe2014.assetbundle.orig`）读取 `TeamSelect_Female_idle`（`PathID=807675994726628539`）；
+   - 原位重写全部 `customType = 8` 通道的 `m_ValueArrayDelta`、`m_StreamedClip`、`m_DenseClip`（77 帧采样）、`m_ConstantClip`，并同步更新 Clip 根端的 `m_StartX`、`m_StopX`、`m_LeftFootStartX`、`m_RightFootStartX`；
+   - 在 `Spine / Chest / Head / Shoulders` 相关肌肉通道（`attrs 42, 45, 48, 79, 88`）叠加周期余弦呼吸微动 $0.5 \times (1 - \cos(2\pi t / T))$，确保静止站姿具备自然呼吸起伏而不改变首尾衔接；
+   - 使用 `packer="lz4"` 写回 `assets_redeco/arcee_gs_deluxe2014.assetbundle`。
+3. **阶段 C（真机状态机与四视角门禁校验）**：[`VerifyRealGameAnimator.cs`](file:///d:/Agent/tftf/unity_lifeline/Assets/Editor/VerifyRealGameAnimator.cs)
+   - 验证通过标准：`LeftToeY / RightToeY` 贴近 `0.00~0.04`、`minMeshY >= -0.1`（无腿部折叠、无悬浮或深陷），且 `180°/130°/060°/300°` 四视角截图人工确认双肩与手指无穿模后，方可进入 APK 打包。
