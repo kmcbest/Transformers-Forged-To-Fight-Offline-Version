@@ -946,6 +946,9 @@ static void combat_overlay_push(const char *fmt, ...) {
 static volatile uint64_t g_combat_sim_clock_ms = 1000;
 static volatile int g_p0_power_seeded = 0;
 static volatile int g_p0_current_special_index = -1;
+static volatile int g_p1_current_special_index = -1;
+void process_waiting_attack_events_tick(uint64_t now_ms);
+void flush_waiting_attack_events_for_player(int p_idx, const char* reason);
 static volatile uint64_t g_ranged_boost_end_ms[2] = {0, 0};
 static volatile float g_ranged_damage_bonus[2] = {0.0f, 0.0f};
 static volatile float g_ranged_speed_bonus[2] = {0.0f, 0.0f};
@@ -6079,7 +6082,9 @@ void* hook_145(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
                 uint32_t dt_ms = (uint32_t)(dt_sec * 1000.0f);
                 if (dt_ms == 0) dt_ms = 1;
                 g_combat_sim_clock_ms += dt_ms;
-                skill_dispatch_simulation_tick(propgo_now_ms());
+                uint64_t now_ms = propgo_now_ms();
+                skill_dispatch_simulation_tick(now_ms);
+                process_waiting_attack_events_tick(now_ms);
             }
         }
         // HP tracking (Hit reactions are natively handled via slot 165 PlayerHitReactState.OnEnter)
@@ -6885,6 +6890,7 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
 
             if (action_ok && (action == 1 || action == 32 || action == 0x100)) {
                 g_p0_last_attack_ms = propgo_now_ms();
+                flush_waiting_attack_events_for_player(0, "new_action_flush");
             }
             // Arm the ender flag only on a CONFIRMED combo end -- never on an anticipated one.
             // Root cause of "L4 unreachable" (measured 2026-09-16): the old conditions
@@ -12683,14 +12689,24 @@ typedef struct {
     int attack_count;
     uint32_t flags;
     float damage;
-} PendingAttackResult;
+} PendingHitResult;
 
-static PendingAttackResult s_pending_attack_results[2][16];
-static int s_resolved_event_ids[2][32];
-static int s_resolved_event_cursor[2] = {0, 0};
+typedef struct {
+    int valid;
+    int event_id;
+    int attack_level;
+    int in_special;
+    uint64_t start_ms;
+} WaitingAttackEvent;
+
+static PendingHitResult   s_pending_hit_results[2][16];
+static WaitingAttackEvent s_waiting_attack_events[2][16];
+static int                s_resolved_event_ids[2][32];
+static int                s_resolved_event_cursor[2] = {0, 0};
 
 void reset_attack_end_tracker(void) {
-    memset(s_pending_attack_results, 0, sizeof(s_pending_attack_results));
+    memset(s_pending_hit_results, 0, sizeof(s_pending_hit_results));
+    memset(s_waiting_attack_events, 0, sizeof(s_waiting_attack_events));
     memset(s_resolved_event_ids, 0, sizeof(s_resolved_event_ids));
     s_resolved_event_cursor[0] = 0;
     s_resolved_event_cursor[1] = 0;
@@ -12711,34 +12727,137 @@ static void mark_event_resolved(int p_idx, int event_id) {
     s_resolved_event_cursor[p_idx] = (pos + 1) & 31;
 }
 
-static void upsert_pending_attack_result(int p_idx, const PendingAttackResult* rec) {
+static void upsert_pending_hit_result(int p_idx, const PendingHitResult* rec) {
     if (p_idx < 0 || p_idx >= 2 || !rec || rec->event_id == 0) return;
     int empty_slot = -1;
     for (int i = 0; i < 16; i++) {
-        if (s_pending_attack_results[p_idx][i].valid &&
-            s_pending_attack_results[p_idx][i].event_id == rec->event_id) {
-            s_pending_attack_results[p_idx][i] = *rec;
+        if (s_pending_hit_results[p_idx][i].valid &&
+            s_pending_hit_results[p_idx][i].event_id == rec->event_id) {
+            s_pending_hit_results[p_idx][i] = *rec;
             return;
         }
-        if (!s_pending_attack_results[p_idx][i].valid && empty_slot < 0) {
+        if (!s_pending_hit_results[p_idx][i].valid && empty_slot < 0) {
             empty_slot = i;
         }
     }
     if (empty_slot < 0) empty_slot = 0;
-    s_pending_attack_results[p_idx][empty_slot] = *rec;
+    s_pending_hit_results[p_idx][empty_slot] = *rec;
 }
 
-static int pop_pending_attack_result(int p_idx, int event_id, PendingAttackResult* out) {
+static int pop_pending_hit_result(int p_idx, int event_id, PendingHitResult* out) {
     if (p_idx < 0 || p_idx >= 2 || event_id == 0 || !out) return 0;
     for (int i = 0; i < 16; i++) {
-        if (s_pending_attack_results[p_idx][i].valid &&
-            s_pending_attack_results[p_idx][i].event_id == event_id) {
-            *out = s_pending_attack_results[p_idx][i];
-            s_pending_attack_results[p_idx][i].valid = 0;
+        if (s_pending_hit_results[p_idx][i].valid &&
+            s_pending_hit_results[p_idx][i].event_id == event_id) {
+            *out = s_pending_hit_results[p_idx][i];
+            s_pending_hit_results[p_idx][i].valid = 0;
             return 1;
         }
     }
     return 0;
+}
+
+static void add_waiting_attack_event(int p_idx, int event_id, int al, int in_sp, uint64_t now_ms) {
+    if (p_idx < 0 || p_idx >= 2 || event_id == 0) return;
+    int empty_slot = -1;
+    for (int i = 0; i < 16; i++) {
+        if (s_waiting_attack_events[p_idx][i].valid &&
+            s_waiting_attack_events[p_idx][i].event_id == event_id) {
+            s_waiting_attack_events[p_idx][i].start_ms = now_ms;
+            s_waiting_attack_events[p_idx][i].attack_level = al;
+            s_waiting_attack_events[p_idx][i].in_special = in_sp;
+            return;
+        }
+        if (!s_waiting_attack_events[p_idx][i].valid && empty_slot < 0) {
+            empty_slot = i;
+        }
+    }
+    if (empty_slot < 0) empty_slot = 0;
+    s_waiting_attack_events[p_idx][empty_slot].valid = 1;
+    s_waiting_attack_events[p_idx][empty_slot].event_id = event_id;
+    s_waiting_attack_events[p_idx][empty_slot].attack_level = al;
+    s_waiting_attack_events[p_idx][empty_slot].in_special = in_sp;
+    s_waiting_attack_events[p_idx][empty_slot].start_ms = now_ms;
+}
+
+static int pop_waiting_attack_event(int p_idx, int event_id, WaitingAttackEvent* out) {
+    if (p_idx < 0 || p_idx >= 2 || event_id == 0 || !out) return 0;
+    for (int i = 0; i < 16; i++) {
+        if (s_waiting_attack_events[p_idx][i].valid &&
+            s_waiting_attack_events[p_idx][i].event_id == event_id) {
+            *out = s_waiting_attack_events[p_idx][i];
+            s_waiting_attack_events[p_idx][i].valid = 0;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static void dispatch_attack_end_event(int p_idx, int event_id, int attack_level, int hit_idx,
+                                      int attack_count, uint32_t flags, float damage, const char* source) {
+    if (p_idx < 0 || p_idx >= 2 || event_id == 0) return;
+    if (is_event_already_resolved(p_idx, event_id)) return;
+    mark_event_resolved(p_idx, event_id);
+
+    SkillAttackEndContext end_ctx;
+    memset(&end_ctx, 0, sizeof(end_ctx));
+    end_ctx.attacker_player_index = p_idx;
+    end_ctx.target_player_index   = 1 - p_idx;
+    end_ctx.attacker_bot_id       = (p_idx == 0) ? g_p0_bot_id : g_p1_bot_id;
+    end_ctx.target_bot_id         = (p_idx == 0) ? g_p1_bot_id : g_p0_bot_id;
+    end_ctx.event_id              = event_id;
+    end_ctx.attack_level          = attack_level;
+    end_ctx.hit_index             = hit_idx;
+    end_ctx.attack_count          = attack_count;
+    end_ctx.flags                 = flags;
+    end_ctx.damage                = damage;
+
+    flog("ATTACK_ENDED: P%d(%s) ev=%d al=%d hit_idx=%d flags=0x%x dmg=%.1f (src=%s)",
+         p_idx, end_ctx.attacker_bot_id ? end_ctx.attacker_bot_id : "?",
+         end_ctx.event_id, end_ctx.attack_level, end_ctx.hit_index, end_ctx.flags, end_ctx.damage, source);
+
+    skill_dispatch_attack_ended(&end_ctx);
+}
+
+static void flush_waiting_whiff_event(int p_idx, WaitingAttackEvent* ev, const char* reason) {
+    if (!ev || !ev->valid || ev->event_id == 0) return;
+    ev->valid = 0;
+
+    int al = ev->attack_level;
+    int in_sp = ev->in_special;
+    uint32_t flags = (al == 8 ? HIT_FLAG_PROJECTILE : 0) | HIT_FLAG_MISSED;
+
+    // 若属于 S 技，flags 绝对不带普通落空，且 al 必须为 16/32/64
+    if (in_sp || al == 16 || al == 32 || al == 64) {
+        flags = (al == 16 ? 0x2000 : 0) | HIT_FLAG_LAST_HIT;
+    }
+
+    dispatch_attack_end_event(p_idx, ev->event_id, al, 0, 0, flags, 0.0f, reason);
+}
+
+void process_waiting_attack_events_tick(uint64_t now_ms) {
+    for (int p = 0; p < 2; p++) {
+        for (int i = 0; i < 16; i++) {
+            if (s_waiting_attack_events[p][i].valid) {
+                if (now_ms >= s_waiting_attack_events[p][i].start_ms + 120) {
+                    WaitingAttackEvent ev = s_waiting_attack_events[p][i];
+                    s_waiting_attack_events[p][i].valid = 0;
+                    flush_waiting_whiff_event(p, &ev, "whiff_timeout_120ms");
+                }
+            }
+        }
+    }
+}
+
+void flush_waiting_attack_events_for_player(int p_idx, const char* reason) {
+    if (p_idx < 0 || p_idx >= 2) return;
+    for (int i = 0; i < 16; i++) {
+        if (s_waiting_attack_events[p_idx][i].valid) {
+            WaitingAttackEvent ev = s_waiting_attack_events[p_idx][i];
+            s_waiting_attack_events[p_idx][i].valid = 0;
+            flush_waiting_whiff_event(p_idx, &ev, reason);
+        }
+    }
 }
 
 // PlayerController.ResolveHitResult (RVA: 0x01178628)
@@ -12752,7 +12871,7 @@ static void hooked_PlayerController_ResolveHitResult(void* self, void* hitResult
     PROTECT({
         int p_idx = *(int32_t*)((uintptr_t)self + 0xF4);
         if (p_idx >= 0 && p_idx < 2) {
-            PendingAttackResult rec;
+            PendingHitResult rec;
             memset(&rec, 0, sizeof(rec));
             rec.valid         = 1;
             rec.event_id      = *(int32_t*)((uintptr_t)hitResult + 0x10); // HitResultData.Id
@@ -12763,8 +12882,34 @@ static void hooked_PlayerController_ResolveHitResult(void* self, void* hitResult
             rec.hit_index     = *(int32_t*)((uintptr_t)hitResult + 0x30); // HitResultData.HitIndex
             rec.attack_count  = *(int32_t*)((uintptr_t)hitResult + 0x34); // HitResultData.AttackCount
             rec.damage        = *(float*)((uintptr_t)hitResult + 0x3C);   // HitResultData.Damage
-            if (rec.instigator_id != rec.target_id) {
-                upsert_pending_attack_result(p_idx, &rec);
+
+            if (rec.instigator_id != rec.target_id && rec.event_id != 0) {
+                // 1. 精确 ID 匹配此前已到达的等待事件 (时序倒挂防御)
+                WaitingAttackEvent wait_ev;
+                int matched = pop_waiting_attack_event(p_idx, rec.event_id, &wait_ev);
+
+                // 2. 兜底时间窗口互锁：若精确 ID 没对上，但最近 60ms 内刚好有该玩家等待中的攻击事件
+                if (!matched) {
+                    uint64_t now_ms = propgo_now_ms();
+                    for (int i = 0; i < 16; i++) {
+                        if (s_waiting_attack_events[p_idx][i].valid &&
+                            now_ms <= s_waiting_attack_events[p_idx][i].start_ms + 60) {
+                            wait_ev = s_waiting_attack_events[p_idx][i];
+                            s_waiting_attack_events[p_idx][i].valid = 0;
+                            matched = 1;
+                            break;
+                        }
+                    }
+                }
+
+                if (matched) {
+                    // 握手成功！直接以真实受击数据结算，阻断抢跑误判挥空
+                    dispatch_attack_end_event(p_idx, rec.event_id, rec.attack_level, rec.hit_index,
+                                             rec.attack_count, rec.flags, rec.damage, "hit_after_event_match");
+                } else {
+                    // ResolveAttackEvent 尚未到达，存入 pending 供后续消费
+                    upsert_pending_hit_result(p_idx, &rec);
+                }
             }
         }
     });
@@ -12783,51 +12928,63 @@ static void hooked_PlayerController_ResolveAttackEvent(void* self, int32_t event
     int is_ranged = 0;
     int is_medium = 0;
     int is_light = 0;
+    int in_special = 0;
+    int sp_level = 0;
     PROTECT({
         p_idx = *(int32_t*)((uintptr_t)self + 0xF4);
         is_ranged = (*(uint32_t*)((uintptr_t)self + 0x1c8) > 0);
         is_medium = (*(uint32_t*)((uintptr_t)self + 0x1c4) > 0);
         is_light  = (*(uint32_t*)((uintptr_t)self + 0x1c0) > 0);
+
+        if (p_idx == 0 && g_p0_current_special_index > 0) {
+            in_special = 1;
+            sp_level = g_p0_current_special_index;
+        } else if (p_idx == 1 && g_p1_current_special_index > 0) {
+            in_special = 1;
+            sp_level = g_p1_current_special_index;
+        }
     });
     if (p_idx < 0 || p_idx >= 2) return;
 
-    PendingAttackResult rec;
-    int has_rec = pop_pending_attack_result(p_idx, event_id, &rec);
-    mark_event_resolved(p_idx, event_id);
+    // 1. 精确 ID 匹配此前已到达的受击记录
+    PendingHitResult rec;
+    int has_rec = pop_pending_hit_result(p_idx, event_id, &rec);
 
-    SkillAttackEndContext end_ctx;
-    memset(&end_ctx, 0, sizeof(end_ctx));
-    end_ctx.attacker_player_index = p_idx;
-    end_ctx.target_player_index   = 1 - p_idx;
-    end_ctx.attacker_bot_id       = (p_idx == 0) ? g_p0_bot_id : g_p1_bot_id;
-    end_ctx.target_bot_id         = (p_idx == 0) ? g_p1_bot_id : g_p0_bot_id;
-    end_ctx.event_id              = event_id;
-
-    if (has_rec) {
-        end_ctx.attack_level = rec.attack_level;
-        end_ctx.hit_index    = rec.hit_index;
-        end_ctx.attack_count = rec.attack_count;
-        end_ctx.flags        = rec.flags;
-        end_ctx.damage       = rec.damage;
-    } else {
-        // 无命中/无格挡记录 -> 真实挥空 / 穿弹落空 (Pure Whiff)
-        int al = 1;
-        if (is_ranged) al = 8;
-        else if (is_medium) al = 2;
-        else if (is_light) al = 1;
-        else if (s_last_atk_level > 0) al = s_last_atk_level;
-
-        end_ctx.attack_level = al;
-        end_ctx.flags        = (al == 8 ? HIT_FLAG_PROJECTILE : 0) | HIT_FLAG_MISSED;
-        end_ctx.damage       = 0.0f;
+    // 2. 兜底时间窗口互锁：若精确 ID 没对上，但 pending 队列中有最近 60ms 内到达的受击记录
+    if (!has_rec) {
+        for (int i = 0; i < 16; i++) {
+            if (s_pending_hit_results[p_idx][i].valid &&
+                s_pending_hit_results[p_idx][i].event_id != 0) {
+                rec = s_pending_hit_results[p_idx][i];
+                s_pending_hit_results[p_idx][i].valid = 0;
+                has_rec = 1;
+                break;
+            }
+        }
     }
 
-    flog("ATTACK_ENDED: P%d(%s) ev=%d al=%d hit_idx=%d flags=0x%x dmg=%.1f (has_rec=%d)",
-         p_idx, end_ctx.attacker_bot_id ? end_ctx.attacker_bot_id : "?",
-         end_ctx.event_id, end_ctx.attack_level, end_ctx.hit_index, end_ctx.flags, end_ctx.damage, has_rec);
+    if (has_rec) {
+        dispatch_attack_end_event(p_idx, event_id, rec.attack_level, rec.hit_index,
+                                 rec.attack_count, rec.flags, rec.damage, "hit_before_event_match");
+        return;
+    }
 
-    // 在 PROTECT 外分发，杜绝嵌套 PROTECT
-    skill_dispatch_attack_ended(&end_ctx);
+    // 3. 既无先到受击记录也无匹配：绝对不直接视作落空！加入 waiting 队列等待后续物理判定
+    int al = 1;
+    if (in_special) {
+        al = (sp_level == 1) ? 16 : ((sp_level == 2) ? 32 : 64);
+    } else if (is_ranged) {
+        al = 8;
+    } else if (is_medium) {
+        al = 2;
+    } else if (is_light) {
+        al = 1;
+    } else if (s_last_atk_level > 0) {
+        al = s_last_atk_level;
+    }
+
+    uint64_t now_ms = propgo_now_ms();
+    add_waiting_attack_event(p_idx, event_id, al, in_special, now_ms);
 }
 
 // PlayerSpecialAttackState.OnEnter (RVA: 0x00E339D8) & OnExit (RVA: 0x00E33D60)
@@ -12851,6 +13008,8 @@ static void hooked_PlayerSpecialAttackState_OnEnter(void* self, void* initArgs, 
     if (pidx >= 0 && pidx < 2 && (sp_level == 1 || sp_level == 2)) {
         if (pidx == 0) {
             g_p0_current_special_index = sp_level;
+        } else if (pidx == 1) {
+            g_p1_current_special_index = sp_level;
         }
         flog("SP_STATE_ENTER: P%d sp_level=%d", pidx, sp_level);
         skill_dispatch_special_state(pidx, sp_level, 1);
@@ -12875,6 +13034,12 @@ static void hooked_PlayerSpecialAttackState_OnExit(void* self, void* method) {
         ((fn_sp_exit)orig_PlayerSpecialAttackState_OnExit)(self, method);
     }
     if (pidx >= 0 && pidx < 2 && (sp_level == 1 || sp_level == 2)) {
+        if (pidx == 0 && g_p0_current_special_index == sp_level) {
+            g_p0_current_special_index = 0;
+        } else if (pidx == 1 && g_p1_current_special_index == sp_level) {
+            g_p1_current_special_index = 0;
+        }
+        flush_waiting_attack_events_for_player(pidx, "sp_exit_flush");
         flog("SP_STATE_EXIT: P%d sp_level=%d", pidx, sp_level);
         skill_dispatch_special_state(pidx, sp_level, 0);
     }
