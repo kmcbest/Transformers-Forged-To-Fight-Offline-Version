@@ -46,6 +46,22 @@ if hasattr(sys.stderr, 'reconfigure'):
 
 ---
 
+## 1.6 必杀技呼出大字（SP Callout）独立命名铁律 (SP Callout Decoupling Protocol)
+
+**借动作绝不借名字（Decouple Animation from Skill Identification）**：
+- 角色借用外部角色的动作或子弹时，严禁在 `sp_callouts.py` 中直接借用被借者的语言键值！
+- 所有机体统一使用自身 BotID 全大写格式绑定专属三连 Key：
+  ```python
+  "bot_id": (
+      "ID_SPECIAL_ATTACK_" + bot_id.upper() + "_0",
+      "ID_SPECIAL_ATTACK_" + bot_id.upper() + "_1",
+      "ID_SPECIAL_ATTACK_" + bot_id.upper() + "_2",
+  )
+  ```
+- 技能真理源登记在 `Server/tftf_database.db` 与 `assets/xlate/custom_special_attacks.json`，运行 `python tools/generate_special_attacks.py` 自动生成 C 层升序查找字典 `tools/nativehook/special_attacks_zh.h`。即使暂时无具体名称也生成专属占位符，绝不污染或错乱其他角色。
+
+---
+
 ## 2. 编写步骤与流程规范 (Step-by-Step Workflow)
 
 制作任何新英雄能力时，严格遵循以下 4 步工业化流程：

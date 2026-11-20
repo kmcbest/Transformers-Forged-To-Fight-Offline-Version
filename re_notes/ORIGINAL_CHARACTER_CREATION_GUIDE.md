@@ -588,6 +588,39 @@ flowchart TD
 | **S3 载具轨线层级对齐** | ⚠️ 严重 (P1) | 借用载具变形 S3 时，检查 Stage Prefab 的 Track Entity 命名空间层级，避免因多层/单层不匹配导致载具隐形。 |
 | **多段远程子弹事件** | ⚠️ 严重 (P1) | 多段射击特殊技必须核验全部子弹事件的发射挂点（`p`）、实体（`projectile`）与出招段数映射表。 |
 | **手工立绘隔离保护** | ⚠️ 严重 (P1) | 自动化生成脚本严禁盲目覆写本地 PS 精修立绘，并在 `.gitignore` 显式解除新角色美术资产忽略。 |
+| **必杀技 Callout 独立锚定** | 🛑 致命 (P0) | **借动作绝不借名字！** 任何角色（包括原创/借招角色）必须拥有独立的专属 Key `ID_SPECIAL_ATTACK_<BOT_ID_UPPER>_<0/1/2>`，严禁在 `sp_callouts.py` 中直接借用其他角色的 Key。新技能名称统一在数据库与 `custom_special_attacks.json` 中登记，通过 `generate_special_attacks.py` 注入客户端头文件。 |
+
+### 10.3 技能描述与必杀技呼出大字（SP Callout）独立锚定规范【铁律】
+
+在 TFTF 原创角色的开发中，借用其他角色的必杀技剪辑（Animation Clip）、发射体（Projectile）或受击粒子非常普遍（例如眩晕 S1 借用巨蝎动作与天火飞弹）。然而，**代码逻辑必须将“动作渲染”与“技能文字标识”彻底解耦**。
+
+#### 1. 核心铁律：借动作绝不借名字
+- 借用别人的招式，**借的仅仅是动作骨骼与特效，绝对不能借用被借者的语言键值（Localization Key）**！
+- 严禁在 `Server/abilities/sp_callouts.py` 中直接将供体角色的 Key 赋给受体（例如严禁让眩晕挂载惊破天的 `ID_SPECIAL_ATTACK_GALVATRON_GS_1`，否则战斗释放时会荒谬地弹出“原子弹头”）。
+
+#### 2. 服务端命名标准（全大写 BotID 格式）
+在 `Server/abilities/sp_callouts.py` 的 `BOT_SP_MAP` 字典中，无论原生还是原创角色，必须无条件且唯一地按以下全大写格式映射：
+```python
+"bot_id": (
+    f"ID_SPECIAL_ATTACK_{bot_id.upper()}_0",
+    f"ID_SPECIAL_ATTACK_{bot_id.upper()}_1",
+    f"ID_SPECIAL_ATTACK_{bot_id.upper()}_2",
+),
+```
+*例如*：
+```python
+"blackout_cin_tf": ("ID_SPECIAL_ATTACK_BLACKOUT_CIN_TF_0", "ID_SPECIAL_ATTACK_BLACKOUT_CIN_TF_1", "ID_SPECIAL_ATTACK_BLACKOUT_CIN_TF_2"),
+"blitzwing_gs": ("ID_SPECIAL_ATTACK_BLITZWING_GS_0", "ID_SPECIAL_ATTACK_BLITZWING_GS_1", "ID_SPECIAL_ATTACK_BLITZWING_GS_2"),
+```
+
+#### 3. 客户端本地化映射与流水线同步（3 步闭环）
+1. **数据库登记真理源**：在 `Server/tftf_database.db` 的 `characters` 表中登记 `sp1_name_zh`, `sp2_name_zh`, `sp3_name_zh`。
+2. **自定义配置登记**：在 `assets/xlate/custom_special_attacks.json` 中配置该机体的 `display_name` 与 3 个技能的 `name` / `desc`。
+3. **自动化编译更新**：运行自动化生成流水线：
+   ```bash
+   python tools/generate_special_attacks.py
+   ```
+   脚本会自动展开生成 `ID_SPECIAL_ATTACK_<BOT_ID_UPPER>_<0/1/2>` 与 `MS_ID_...` 镜像，并以 `strcmp` 升序排版写入 `tools/nativehook/special_attacks_zh.h`，确保客户端 C 层 `bsearch` 零延迟瞬时命中。即便某个新角色暂时未写具体技能名，脚本也会自动生成干净的占位符，保证绝不闪退或显示他人技能。
 
 ---
 
