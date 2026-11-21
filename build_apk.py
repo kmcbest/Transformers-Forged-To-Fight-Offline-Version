@@ -4,6 +4,7 @@ Dynamically sets output APK name based on current git branch.
 """
 
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -11,6 +12,33 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 BUILD_DIR = ROOT / "build"
 BUILD_DIR.mkdir(exist_ok=True)
+OUT_DIR = (BUILD_DIR / "out").resolve()
+OUT_DIR.mkdir(exist_ok=True)
+
+def sync_tools_to_out(out_dir: Path, root: Path) -> tuple[Path, Path]:
+    """Sync zipalign and apksigner (~2MB) to C: SSD out/.tools to ensure 100% silent, zero-HDD steps 4 & 5."""
+    tools_dir = out_dir / ".tools"
+    tools_dir.mkdir(exist_ok=True)
+    (tools_dir / "lib").mkdir(exist_ok=True)
+
+    src_bt = root / "toolchain" / "android-sdk" / "build-tools" / "34.0.0"
+    if not src_bt.exists():
+        src_bt = root / "toolchain" / "android-sdk" / "build-tools" / "36.0.0"
+
+    for fname in ["zipalign.exe", "apksigner.bat"]:
+        sf = src_bt / fname
+        df = tools_dir / fname
+        if sf.exists() and (not df.exists() or df.stat().st_size != sf.stat().st_size):
+            shutil.copy2(sf, df)
+
+    sf_jar = src_bt / "lib" / "apksigner.jar"
+    df_jar = tools_dir / "lib" / "apksigner.jar"
+    if sf_jar.exists() and (not df_jar.exists() or df_jar.stat().st_size != sf_jar.stat().st_size):
+        shutil.copy2(sf_jar, df_jar)
+
+    zipalign = tools_dir / "zipalign.exe" if (tools_dir / "zipalign.exe").exists() else (src_bt / "zipalign.exe")
+    apksigner = tools_dir / "apksigner.bat" if (tools_dir / "apksigner.bat").exists() else (src_bt / "apksigner.bat")
+    return zipalign, apksigner
 
 def get_git_branch() -> str:
     try:
@@ -33,7 +61,7 @@ def main():
         output_apk_name = "Transformers-9.2-offline-redeco-edition.apk"
     else:
         output_apk_name = f'Transformers-9.2-offline-{branch}.apk'
-    output_apk_path = BUILD_DIR / output_apk_name
+    output_apk_path = OUT_DIR / output_apk_name
     print(f"=== Building Offline APK for branch [{branch}] ===")
     print(f"Target APK: {output_apk_path}")
 
@@ -58,7 +86,7 @@ def main():
     # 3. Build phone unsigned APK
     print("\n[3/5] Packaging unsigned APK...")
     base_apk = ROOT / "com.kabam.bigrobot_9.2.0-123129100_minAPI23(arm64-v8a,armeabi-v7a)(nodpi)_apkmirror.com.apk"
-    unsigned_apk = BUILD_DIR / "phone-unsigned.apk"
+    unsigned_apk = OUT_DIR / "phone-unsigned.apk"
     patched_il2cpp = BUILD_DIR / "libil2cpp-arm64-patched.so"
 
     subprocess.run([
@@ -72,41 +100,36 @@ def main():
         "--patched-il2cpp", str(patched_il2cpp)
     ], check=True, cwd=ROOT)
 
+    # Prepare tools and keystore on C: SSD to ensure 100% silent, zero-HDD steps 4 & 5
+    zipalign, apksigner = sync_tools_to_out(OUT_DIR, ROOT)
+    keystore = OUT_DIR / "debug.keystore"
+    src_ks = BUILD_DIR / "debug.keystore"
+    if src_ks.exists() and (not keystore.exists() or keystore.stat().st_size != src_ks.stat().st_size):
+        shutil.copy2(src_ks, keystore)
+
     # 4. Zipalign
     print("\n[4/5] Aligning APK (zipalign)...")
-    aligned_apk = BUILD_DIR / "phone-aligned.apk"
-    build_tools = list((ROOT / "toolchain").glob("**/zipalign.exe"))
-    if build_tools:
-        zipalign = build_tools[0]
-    else:
-        zipalign = ROOT / "toolchain" / "android-sdk" / "build-tools" / "34.0.0" / "zipalign.exe"
+    aligned_apk = OUT_DIR / "phone-aligned.apk"
     subprocess.run([
         str(zipalign), "-f", "-p", "4",
         str(unsigned_apk), str(aligned_apk)
-    ], check=True, cwd=ROOT)
+    ], check=True, cwd=OUT_DIR)
 
     # 5. Sign with apksigner
     print("\n[5/5] Signing APK (apksigner)...")
-    apksigner_list = list((ROOT / "toolchain").glob("**/apksigner.bat"))
-    if apksigner_list:
-        apksigner = apksigner_list[0]
-    else:
-        apksigner = ROOT / "toolchain" / "android-sdk" / "build-tools" / "34.0.0" / "apksigner.bat"
-    keystore = BUILD_DIR / "debug.keystore"
     env = os.environ.copy()
-    if "JAVA_HOME" not in env:
-        # Check default Microsoft / Oracle JDK paths if needed
-        jdk_candidates = [
-            ROOT / "toolchain" / "jdk-17",
-            ROOT / "toolchain" / "jdk-21",
-            Path("C:/Program Files/Microsoft/jdk-17.0.20.8-hotspot"),
-            Path("C:/Program Files/Java/jdk-17"),
-        ]
-        for cand in jdk_candidates:
-            if cand.exists():
-                env["JAVA_HOME"] = str(cand)
-                env["PATH"] = f"{cand}\\bin;{env.get('PATH', '')}"
-                break
+    # Prioritize C: SSD JDK to prevent HDD random I/O during JVM startup
+    jdk_candidates = [
+        Path("C:/Program Files/Java/jdk-17"),
+        Path("C:/Program Files/Microsoft/jdk-17.0.20.8-hotspot"),
+        ROOT / "toolchain" / "jdk-21",
+        ROOT / "toolchain" / "jdk-17",
+    ]
+    for cand in jdk_candidates:
+        if cand.exists():
+            env["JAVA_HOME"] = str(cand)
+            env["PATH"] = f"{cand}\\bin;{env.get('PATH', '')}"
+            break
 
     subprocess.run([
         str(apksigner), "sign",
@@ -114,12 +137,16 @@ def main():
         "--ks-pass", "pass:android",
         "--out", str(output_apk_path),
         str(aligned_apk)
-    ], check=True, cwd=ROOT, env=env)
+    ], check=True, cwd=OUT_DIR, env=env)
 
     # 6. Clean up temporary unsigned and aligned APKs
     print("\n[6/6] Cleaning up temporary APK files...")
     unsigned_apk.unlink(missing_ok=True)
     aligned_apk.unlink(missing_ok=True)
+    for p in OUT_DIR.glob("*unsigned*.apk"):
+        p.unlink(missing_ok=True)
+    for p in OUT_DIR.glob("*aligned*.apk"):
+        p.unlink(missing_ok=True)
     for p in BUILD_DIR.glob("*unsigned*.apk"):
         p.unlink(missing_ok=True)
     for p in BUILD_DIR.glob("*aligned*.apk"):
