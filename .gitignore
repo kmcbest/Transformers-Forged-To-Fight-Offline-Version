@@ -124,6 +124,7 @@ assets_redeco/*
 !assets_redeco/*blitzwing*
 !assets_redeco/*brawl*
 !assets_redeco/*sideswipe*
+!assets_redeco/*swoop*
 assets_redeco/*.ds
 assets_redeco/*.psd
 assets_redeco/*.bak*
