@@ -47,6 +47,12 @@
    * 10.1 载具朝向防垂直与纯刚体旋转铁律（Anti-Vertical Yaw-Pitch Standard）
    * 10.2 载具 45 骨骼多部件权重挂载与副 SMR 屏蔽
    * 10.3 直升机主旋翼持续旋转动画机制与双重暗坑排查标准（Rotor Continuous Spin Engineering Protocol）
+11. [高难实战攻坚专题三：特型角色与武器模具专属流水线实战](#11-铁腕strongarm与战术轮式警用皮卡专属流水线借壳-prowl-实战)
+   * 11.1 ~ 11.13 铁腕（Strongarm）与战术轮式警用皮卡专属流水线（借壳 Prowl 实战）
+   * 11.14 ~ 11.15 三变金刚（闪电 Blitzwing）双载具单骨 COG 逆矩阵与连环 SP3
+   * 11.16 ~ 11.17 第三方持械角色（史达 Star Saber）Unity HITL 握剑精调台与 Alliance 模具
+   * 11.18 飞标（Swoop）与飞行动物/鸟兽模具
+   * 11.19 横炮（Sideswipe ROTF）双刀刺客与反关节轮滑模具：3 指非对称手掌安全收敛、正面朝向确认门禁、跨角色直立待机（Necrotronus）反关节自适应、SP3 跨角色 Stage 借用载具变形三重齿轮与混合连招招式缝合
 
 ---
 
@@ -1204,10 +1210,39 @@ FOC 等虚幻 3（UE3）模型的四根主手指在骨架上只有两节骨骼�
        * 近战常驻剑在 `cha_*_wpns_*` 贴图集（512x512）中通常仅占用左半区（$U \in [0.0, 0.5]$）；
        * 将 Alliance 原生激光步枪（`Tx_StarSaberGun_D/N/S.png`，256x256）缩放至 256x512 并拼入武器贴图右半区（$X \in [256, 512]$），步枪网格 UV 统一施加线性映射 $U' = 0.5 + 0.5U$；
        * 如此近战王者之剑与远程激光步枪 **100% 共享唯一的 `cha_*_wpns` Kabam 材质球**（`MAT_WPNS_PID`），无需在母体预制体中引入任何额外材质定义或增加 DrawCall。
-     * **枪体层级重父化与挂载点定位**：
-       * 天火母壳的 `gun` 挂载在 `RightHand` 下，左手开枪必须在两个预制体（正常版与 `_lw` 版）中将其父节点重定向到 `LeftHand`（更新 `RightHand.m_Children` 与 `LeftHand.m_Children`）；
-       * 提取 `StarSaberGun_R` 时通过 Blender 正交旋转使枪管对准 Unity $+Z$ 正前方、枪顶导轨朝向 $+Y$ 上方、握把朝向 $-Y$ 下方，并将握把中心对齐至局部原点 $(0, 0, 0)$，绑定单骨 `COG`；
-       * 挂载在 `LeftHand` 局部坐标：`LocalPosition = (0.074, 0.525, -0.224)`，`LocalRotation = (-0.979, -0.006, -0.006, -0.202)`，使枪械在开火时自然贴合拳面指向前侧击发。
+     * **枪体层级重父化与汽车大师（Motormaster）原生挂载点标准**：
+       * 天火母壳的 `gun` 原挂载在 `RightHand` 下，左手开枪必须在两个预制体（正常版与 `_lw` 版）中将其父节点重定向到 `LeftHand`（更新 `RightHand.m_Children` 与 `LeftHand.m_Children`）；
+        * **PropsController 运行时强制覆写铁律（PropsController Runtime Reset Rule，核心物理根因）**：
+          * 游戏启动及战前初始化时，`PropsController.InitProps()` 会严格依据自身 `_props["gun"]` 中的 `RootPath`（字符串骨骼全路径）将道具 `_instance` 动态 Re-parent 挂载到目标骨骼，并将其 `localPosition` 强制覆写为 `PositionOffset`、`localEulerAngles` 强制覆写为 `RotationOffset`！
+          * 若仅在预制体层级中修改了 Transform，而未同步更新 `PropsController`：`RootPath` 仍为母壳的 `.../RightHand`，且 `PositionOffset = (0,0,0)`，游戏在运行时将无视 Transform 设置，把枪重新挂回右手（臀部位置），导致在游戏实机中枪体永远停留在右手/腰际下方悬空！
+          * **必须同步更新 PropsController**：
+            * `RootPath = "character_model/Reference/Hips/Spine/Spine1/LeftShoulder/LeftArm/LeftArmRoll/LeftForeArm/LeftForeArmRoll/LeftHand"`；
+            * `PositionOffset = {"x": -1.0465, "y": -0.8073, "z": 2.5779}`；
+            * `RotationOffset = {"x": 0.0, "y": -90.0, "z": 0.0}`；
+            * `Scale = {"x": 1.0, "y": 1.0, "z": 1.0}`。
+       * **左手持枪坐标系黄金基准（Motormaster Donor Truth）**：
+         * `LeftHand` 下的 `gun` 节点 Transform 标准姿态：`LocalPosition = (-1.0465, -0.8073, 2.5779)`（以 $0.04\text{mm}$ 精度严丝合缝嵌入左掌心挂载点 `LeftProp`），`LocalRotation = (0.0, -0.707107, 0.0, 0.707107)`（Euler $Y = -90^\circ$ 前倾使枪管正对敌人）；
+         * 挂载在 `gun` 下的步枪子网格 Transform 具有固定的 $Z$ 轴 $-90^\circ$ 偏转：`LocalPosition = (-1.04534, 0.30061, 1.47442)`，`LocalRotation = (0.0, 0.0, -0.707106, 0.707107)`；
+         * 在网格局部空间中，$-Y$ 轴为枪管正前方、$-Z$ 轴为握把下沿方向、$+Z$ 轴为枪身顶部导轨、$X$ 轴为枪身横宽；
+         * 提取 `StarSaberGun_R` 时通过 Blender 等比放大 $4.0\times$（使包围盒与汽车大师重枪 $x=0.406, y=2.943, z=0.873$ 严丝合缝匹配），对齐握把中心至 $(0.0001, 0.4582, -1.9340)$，导出 FBX 时使用 `axis_forward='Y', axis_up='Z'`，并设置枪口 `Reference` 节点为 `LocalPosition = (-0.599203, 0.297155, 0.0)`，`LocalRotation = (0, 0, -0.707107, 0.707107)`；
+         * 此标准彻底根除了“步枪斜插在左肩后方反向朝天”的几何翻转缺陷，使枪管笔直指向正前方锁定敌人。
+   8. **副手远程招式子弹预制体匹配、命中伤害判定与汽车大师重型枪声音效注入铁律（Ranged Projectile Pool Mapping, Hit Reaction & Motormaster Audio FSB5 Injection）**：
+      * **子弹实体缺失与不掉血根因（Projectile Pool Mismatch）**：
+        * 汽车大师的左手远程招式 `move_attackRanged_handGun_left_XL_01..03B` 在击发帧触发 `ProjectileMoveEvent`，事件内部硬编码要求发射名为 `"projectile_optimus_bullet"` 的激光子弹实体；
+        * 母体（如天火）Bundle 内部原对象池和 `PrefabList` 只有 `projectile_jetfire_bullet`，引擎在子弹池中通过字符串查找 `"projectile_optimus_bullet"` 失败，`SpawnProjectile` 返回 NULL，导致**屏幕上既不生成飞行的红光/激光弹丸，敌人也不会触发任何受击动画与伤害判定**（“没射出子弹，敌人也没中枪”）；
+        * **标准根治解法**：在母壳 Bundle 中将现有的子弹 GameObject（PID `-3806194776990344199`）直接更名为 `"projectile_optimus_bullet"`，并将其 `MoveSet` 重新挂载/重定向为标准激光弹招式：
+          * `fire` $\rightarrow$ `move_optimus_bullet_fire` (`6337232768847846927`, FileID=3)
+          * `explode` $\rightarrow$ `move_optimus_bullet_explode` (`98785653677070406`, FileID=3)
+          * `explode_special` $\rightarrow$ `move_optimus_bullet_explode_special` (`182607865359928388`, FileID=3)
+          * 并在其 `Projectile` 组件上配置 `CollisionPointOffset = {"x": 0, "y": 0, "z": 3.0}`，确保子弹飞出时具有完整的碰撞体并精准命中敌人触发真实受击硬直与扣血；
+          * 角色预制体上的 `PrefabList` 组件将该 PID 注册在 `m_Prefabs` 中（Amount=2），为战斗提供即插即用的对象池。
+      * **开枪音效软弱无力根因与正统 FSB5 音频注入（Gunshot Audio Injection）**：
+        * 天火母体的 `CharacterAudio._events["gen_projectile_fire"]` 默认指向 `jetfire_projectile_fire`，其对应的 4 个 AudioClip 采用的是天火原装的细声滋水枪音效（时长仅 0.5s~0.8s，单薄无威慑力）；
+        * **标准根治解法**：
+          * 从全局 `character_audio_procedural.assetbundle` 中提取汽车大师/擎天柱正统重型枪械击发音频样本（`optimus_prime_gs_projectile_fire_a..d`，每个 21,984 字节，时长 2.664s，FSB5 Vorbis 音频流）；
+          * 将这 4 段 FSB5 数据直接追加写进史达 Bundle 的 `.resource` 二进制流末尾（+87,936 字节）；
+          * 回写修正 `jetfire_projectile_fire_1..4` 的 `m_Resource` Offset 与 Size，并将 `m_Length` 设为 `2.664s`；
+          * 保留 `CharacterAudio._events["gen_projectile_fire"] -> "jetfire_projectile_fire"`。开枪瞬间即可爆发出汽车大师浑厚霸气的重型爆鸣射击声！
 * **Alliance 系列模具标准执行双轨铁律**：
   1. **左手 / 非持械手（默认 Track B 掌心刚性折叠）**：在自动化对齐脚本（如 `tools/starsaber/build_aligned_starsaber_robot.py`）中，将 `Dummy_hand_01`、`Hand_L_1..9` 全部权重安全折叠并入 **`LeftHand`**，保留原模雕塑级微合掌造型；整手随手腕刚性摆动，零撕裂风险；
   2. **需要握持武器之手（HITL 屈指 + 烘焙僵化合并回 `RightHand`）**：
@@ -1231,3 +1266,47 @@ FOC 等虚幻 3（UE3）模型的四根主手指在骨架上只有两节骨骼�
   3. **胸口翼龙嘴吐火重击（借用钢锁 `projectile_grimlock_fireball`）与跨包克隆序列化安全矩阵**：
      * 在飞标胸口上喙与下喙交汇处（Beak Tip）设立发射定位器 `joint_Torso/loc_mouth_flame`，在 `moves.assetbundle` 中将重击发射节点与事件重定向；
      * 跨包克隆 Prefab 严格遵循 `ORIGINAL_CHARACTER_CREATION_GUIDE.md` 铁律：`script_types` 必须按 `(FileID, PathID)` 严格升序排列并同步回写所有 `script_type_index`，全量更新 `m_PreloadTable` 与 `m_Container` 切片，动作总数强制断言 $\ge 945$。
+
+### 11.19 横炮（Sideswipe ROTF）双刀刺客与反关节轮滑模具：3 指非对称手掌安全收敛、正面朝向确认门禁、跨角色直立待机（Necrotronus）反关节自适应、SP3 跨角色 Stage 借用载具变形三重齿轮与混合连招招式缝合
+* **适用模具**：横炮（Sideswipe ROTF，`sideswipe_cin_rotf`，勇士系 `warr`）及所有反关节足部（Digitigrade / Wheel Piston）、异形手指（3 指 / 双刀手）、以及跨角色深度缝合 SP3/招式组合的变形金刚模具。
+* **五大核心攻坚复盘、暗坑规避与沉淀**：
+  1. **异形 3 指/双刀手与母体 15 指骨（5 指 × 3 节）的不一致处理（安全并指收敛方案）**：
+     * **现象与痛点**：横炮 ROTF 电影风格模型每只手仅有 3 根粗大机械手指（拇指 + 食指 + 中指）及常驻前臂刀刃，而 TFTF 原版母壳（如路障）具有标准 15 根指骨（`Thumb/Index/Middle/Ring/Pinky 1..3`）。
+     * **三大方案评估与结论**：
+       * 方案 A（**主推收敛方案**）：主 3 指精准 1:1 映射至母壳 `Thumb1..3`、`Index1..3`、`Middle1..3`；母壳多余的 `Ring1..3` 与 `Pinky1..3` 不赋顶点权重（保持空置，手掌邻近过渡顶点权重安全并入 `Hand` 或与中指平滑过渡）。
+       * 方案 B（拓扑补面切骨）：在 Blender 中为模型手动切割生成无名指与小拇指，工期漫长且极易破坏电影原模硬表面拓扑风格。
+       * 方案 C（整手刚性折叠）：全部 3 指折叠至 `Hand`，损失手指在挥刀中的微动态。
+     * **核心经验**：双刀刺客常驻手持臂刃，战斗中不需要五指独立握拳抓握细小道具；方案 A 既保留了 3 根主机械手指的灵活伸展，又完全避免了未映射骨骼造成的网格撕扯或反向翻折，实机表现极其自然。
+  2. **Blender 姿态对齐与正面朝向确认门禁（Front/Back Orientation Gate）**：
+     * **踩坑惨痛教训**：异形机械金刚（尤其是前后胸背皆挂载车壳、且下肢为反关节单轮对称结构的角色）在纯灰模或未贴图状态下，前后轮廓极具迷惑性（极易误将背部引擎/车顶挡板当成胸甲）。若在 Stage 1 骨骼对齐时误将模型背部对齐至母壳正面（180° 朝向逆转），后续所有权重绑定、动作测试和贴图都将全面报错，造成重大返工。
+     * **强制门禁标准**：
+       * 在 Blender 视口中，必须依据车灯、博派标志、面部细节严格确认正面（`-Y` 面向摄像机，`+Y` 为深度，`+Z` 为头部正上方）；
+       * **必须在对齐完骨骼后、进入权重绑定前，先带材质渲染一张正面与 3/4 侧面全身高清图供人类用户核验确认**，确认无误后方可推进后续管线。
+  3. **反关节机械腿（Digitigrade Wheel Legs）与跨角色站姿移植（Cross-Character Idle Stance Borrowing）**：
+     * **现象与痛点**：横炮下肢为独特的反向双关节、后置活动液压连杆与单轮滑行结构。若直接沿用路障原版的战斗待机动作（`feral_normal_idle_02`），路障深蹲、前倾、大角度屈膝的恶犬姿势会导致横炮膝关节过度折叠，后侧液压连接杆被拉长至极端怪异的大角度斜向外伸，严重破坏机械美感与重心平衡。
+     * **机制解法（Mecanim Humanoid 动作切片无损自适应）**：
+       * TFTF 所有标准角色的战斗待机动作（Slot 00 `char_idle`）均为 Mecanim Humanoid 肌肉动作切片（Class ID 74 `AnimationClip`，`typeID: 95`）；
+       * 从内克罗特隆（Necrotronus，`necrotronus_gs_kabam.assetbundle`）中克隆其专属直立待机动作 **`Prefight_Brawler_idle_Megatron`**（PID `-8455018533602519118`）；
+       * 该动作的特征是双腿自然笔挺绷直站立、膝关节几乎不弯曲；
+       * 仅重定向 Fight AOC 的 Slot 00（`char_idle`）以及 MatineeAOC 的 `Base.Idle`（StateHash `-1405706489`），**其余所有普攻、重击冲撞与特技技能保持不变**。横炮在战斗中立即呈现出双腿笔挺、高挑威严的轮滑刺客站姿，反关节连接杆平滑紧凑，视觉瑕疵彻底消除。
+  4. **SP3 特技3 跨角色 Stage 借用与载具变形三大齿轮咬合铁律（Cross-Bot SP3 Cutscene & Vehicle Transformation Architecture）**：
+     * **现象与痛点**：借用电影擎天柱 SP3（双形态 Stage 大招特写）后，横炮特写全程只有机器人形态，在特写镜头切到汽车飞撞时未变形为跑车（仍显示机器人）。
+     * **根本原因与三重齿轮咬合机制**：
+       1. **齿轮一：MatineeData 动画轨道骨骼网格实体名称失联（`FixupEntity` NULL）**：
+          * 擎天柱原版 Stage 的 `MatineeData`（PID `8781936353626196161`）中，**Track 29**（机器人网格轨道）绑定的实体名称为 `cha_optimus_cin_tf_00`，**Track 06**（载具网格轨道）绑定的实体名称为 `cha_optimusprime_cin_tf_01`；
+          * 横炮 Prefab 网格名称基于路障母壳为 `cha_barricade_cin_dotm_00` 与 `cha_barricade_cin_dotm_01`；
+          * 运行时引擎 C# 层的 `FixupEntity()` 在尝试为轨道绑定 GameObject 时因名称不符返回 NULL（`FIXUP_UNBOUND`），导致在变形时间点机器人网格无法被隐藏、载具网格也无法显形；
+          * **解法**：在 `MatineeData.jSONData` 中做全局字符串替换：`cha_optimus_cin_tf_00` $\to$ `cha_barricade_cin_dotm_00`，`cha_optimusprime_cin_tf_01` $\to$ `cha_barricade_cin_dotm_01`。
+       2. **齿轮二：Car AOC Slot 63 载具变形动作切片必须精准绑定**：
+          * 横炮的 Car AOC（`override_barricade_cin_dotm_car`，PID `9188181967379678347`）Slot 63（`Base.SpecialAttack03`）默认仍指向路障的载具动作，必须重定向至擎天柱的载具变形动作切片 `optimus_prime_attackSpecial_03_transformed`（FileID 5, PathID `-341215899653024`），否则载具在特写中无动画或定格。
+       3. **齿轮三：NativeHook 运行时安全重映射双保险**：
+          * 在 `tools/nativehook/hook.c` 的 `remap_track_for_redeco()` 中为横炮增加拦截规则，在底层动态拦截 Track 的 `entityFullId`，确保即使遇到未补丁的 Stage 资产，引擎也能自动重映射为当前角色的真实网格路径。
+  5. **多角色动作混合缝合与打击手感定制标准（Hybrid Multi-Bot Moveset Stitching）**：
+     * 为契合横炮作为“双刀刺客 + 高速轮滑”的独特格斗定位，采用了 5 位不同角色的动作精准混剪缝合：
+       * **M2（中击2）**：黄豹 `cheetor_attackMedium_02`（前翻滚双刀下劈刺击）；
+       * **S1（特技1）**：漂移 `drift_attackSpecial_01`（疾速双刀前冲突刺）；
+       * **S2（特技2）**：黄豹 `cheetor_attackSpecial_01`（双刀大风车回旋旋风斩）；
+       * **Heavy（重击）**：路障重击改轮滑前冲撞击（NativeHook `0xEA1090`，保留疾速冲锋打击感并禁用原版手炮发射）；
+       * **S3（特技3）**：电影擎天柱 SP3（双形态 Stage 借用，拔刀斩切入 $\to$ 概念跑车飞撞 $\to$ 终结斩）；
+       * **Victory（胜利姿态）**：漂移收刀入鞘胜利 Stage（双刀收拢入背气势特写）。
+     * 混剪多角色动作时，必须通过 `tools/validate_port_gates.py` 严格校验各动作槽位 OriginalClip 与 OverrideClip 的 FileID/PathID 依赖链，确保所有被引用的动作切片在预加载表与依赖包（如 `moves`、`character_anim_procedural`）中 100% 解析成功。

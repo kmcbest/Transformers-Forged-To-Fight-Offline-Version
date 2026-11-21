@@ -5075,6 +5075,7 @@ static char s_saved_actor0_name[64] = {0};
 static void* s_saved_actor0_obj = NULL;
 static char s_saved_actor1_name[64] = {0};
 static void* s_saved_actor1_obj = NULL;
+static void* s_saved_starsaber_sword_mat = NULL;
 
 static int str_replace_first(const char* src, const char* from, const char* to, char* dst, size_t dst_sz) {
     if (!src || !from || !to || !dst || dst_sz == 0) return 0;
@@ -5131,7 +5132,7 @@ static void remap_track_for_redeco(void* track, const char* fullId, const char* 
         }
     }
     // 5. Star Saber (borrows Jetfire)
-    else if (strstr(bot, "starsaber")) {
+    else if (strstr(bot, "starsaber") || (g_p0_bot_id[0] && strstr(g_p0_bot_id, "starsaber"))) {
         char temp[512] = {0};
         const char* cur = fullId;
         if (str_replace_first(cur, "jetfire_gs_leader2014", "starsaber_gs_leader2014", temp, sizeof(temp))) {
@@ -5173,6 +5174,22 @@ static void remap_track_for_redeco(void* track, const char* fullId, const char* 
             cur = new_fullId;
             replaced = 1;
         } else if (str_replace_first(cur, "cha_cliffjumper_gs_kabam_01", "cha_bugbite_gs_kabam_01", new_fullId, sizeof(new_fullId))) {
+            cur = new_fullId;
+            replaced = 1;
+        }
+        if (replaced && cur != new_fullId) {
+            strncpy(new_fullId, cur, sizeof(new_fullId) - 1);
+        }
+    }
+    // 7. Sideswipe (borrows Optimus Prime S3)
+    else if (strstr(bot, "sideswipe") || (g_p0_bot_id[0] && strstr(g_p0_bot_id, "sideswipe"))) {
+        char temp[512] = {0};
+        const char* cur = fullId;
+        if (str_replace_first(cur, "cha_optimus_cin_tf_00", "cha_barricade_cin_dotm_00", temp, sizeof(temp))) {
+            cur = temp;
+            replaced = 1;
+        }
+        if (str_replace_first(cur, "cha_optimusprime_cin_tf_01", "cha_barricade_cin_dotm_01", new_fullId, sizeof(new_fullId))) {
             cur = new_fullId;
             replaced = 1;
         }
@@ -5324,6 +5341,7 @@ void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     s_saved_actor0_name[0] = 0;
     s_saved_actor1_obj = NULL;
     s_saved_actor1_name[0] = 0;
+    s_saved_starsaber_sword_mat = NULL;
     sp3_xf_clear();
     if (a2 && obj_ok(a2)) {
         g_p0_controller = a2;
@@ -5587,6 +5605,63 @@ static void sp3_update_character_weapons(void* pc, int active) {
         int sword_active = active ? 0 : 1;
         set_prop_active_full(props_ctrl, "sword", sword_active);
         flog("SP3_WEAPON_STARSABER: sword -> %d (active=%d)", sword_active, active);
+
+        // Hide/restore Submesh 1 (King's Sword) on character_model via sharedMaterials
+        if (g_base && g_strnew) {
+            void* s_cm = g_strnew("character_model");
+            void* prop_data = ((void*(*)(void*, void*, void*))(g_base + 0xEA16C0))(props_ctrl, s_cm, NULL);
+            if (prop_data && obj_ok(prop_data)) {
+                void* r_arr = *(void**)((char*)prop_data + 0x70);
+                if (r_arr && obj_ok(r_arr)) {
+                    int32_t r_len = *(int32_t*)((char*)r_arr + 0x18);
+                    if (r_len > 0) {
+                        void* robot_renderer = *(void**)((char*)r_arr + 0x20);
+                        if (robot_renderer && obj_ok(robot_renderer)) {
+                            typedef void* (*fn_get_mats)(void*, void*);
+                            typedef void (*fn_set_mats)(void*, void*, void*);
+                            fn_get_mats get_mats = (fn_get_mats)(g_base + 0x16ADD08);
+                            fn_set_mats set_mats = (fn_set_mats)(g_base + 0x16ADD48);
+
+                            void* mats_arr = get_mats(robot_renderer, NULL);
+                            if (mats_arr && obj_ok(mats_arr)) {
+                                int32_t mat_cnt = *(int32_t*)((char*)mats_arr + 0x18);
+                                void** mat_items = (void**)((char*)mats_arr + 0x20);
+
+                                if (!sword_active) {
+                                    // SP3 ENTER: HIDE SWORD (reduce materials to 1)
+                                    if (mat_cnt >= 2 && mat_items[1]) {
+                                        s_saved_starsaber_sword_mat = mat_items[1];
+                                        if (g_arraynew && mat_items[0]) {
+                                            void* elem_class = *(void**)mat_items[0];
+                                            void* new_arr = g_arraynew(elem_class, 1);
+                                            if (new_arr && obj_ok(new_arr)) {
+                                                void** new_items = (void**)((char*)new_arr + 0x20);
+                                                new_items[0] = mat_items[0];
+                                                set_mats(robot_renderer, new_arr, NULL);
+                                                flog("SP3_STARSABER_SWORD: Hidden! Saved sword_mat=%p, set mats len=1", s_saved_starsaber_sword_mat);
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    // SP3 EXIT: RESTORE SWORD (restore materials to 2)
+                                    if (mat_cnt == 1 && s_saved_starsaber_sword_mat && g_arraynew && mat_items[0]) {
+                                        void* elem_class = *(void**)mat_items[0];
+                                        void* new_arr = g_arraynew(elem_class, 2);
+                                        if (new_arr && obj_ok(new_arr)) {
+                                            void** new_items = (void**)((char*)new_arr + 0x20);
+                                            new_items[0] = mat_items[0];
+                                            new_items[1] = s_saved_starsaber_sword_mat;
+                                            set_mats(robot_renderer, new_arr, NULL);
+                                            flog("SP3_STARSABER_SWORD: Restored! Restored sword_mat=%p, set mats len=2", s_saved_starsaber_sword_mat);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 

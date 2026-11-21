@@ -53,6 +53,9 @@ screen_*.jpg
 Snipaste_*.png
 scratch_*.png
 *.assetbundle.old
+*.bak
+*.bak_*
+*.blend1
 assets/characters.assetbundle
 [0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]*
 tools/apk_asset_index.json
@@ -120,8 +123,10 @@ assets_redeco/*
 !assets_redeco/*tarn*
 !assets_redeco/*blitzwing*
 !assets_redeco/*brawl*
+!assets_redeco/*sideswipe*
 assets_redeco/*.ds
 assets_redeco/*.psd
+assets_redeco/*.bak*
 !assets_redeco/music
 !assets_redeco/music/**
 
