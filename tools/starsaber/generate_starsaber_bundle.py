@@ -19,6 +19,7 @@ TFTF_READ_ROOT = Path(r"E:\Agent\TFTF")
 
 DONOR_BUNDLE = TFTF_READ_ROOT / "extracted_apk" / "assets" / "assetpack" / "jetfire_gs_leader2014_odr" / "jetfire_gs_leader2014.assetbundle"
 WINDBLADE_BUNDLE = TFTF_READ_ROOT / "extracted_apk" / "assets" / "assetpack" / "windblade_gs_odr" / "windblade_gs.assetbundle"
+CAP_BUNDLE = TFTF_READ_ROOT / "extracted_apk" / "assets" / "assetpack" / "characters_procedural_odr" / "character_audio_procedural.assetbundle"
 MOVES_BUNDLE = TFTF_READ_ROOT / "assets_netflix" / "moves.assetbundle"
 PROC_BUNDLE = TFTF_READ_ROOT / "assets_netflix" / "character_anim_procedural.assetbundle"
 
@@ -36,10 +37,21 @@ MESH_WPNS_PID = -4439679313609908059
 
 GUN_TR_PID = -4730893461018512753
 GUN_TR_LW_PID = 554951969684897351
+GUN_MESH_TR_PID = -6795244851938642244
+GUN_MESH_TR_LW_PID = 1384330063095302475
+GUN_REF_TR_PID = -2428015461386027468
+GUN_REF_TR_LW_PID = 3008609123456375921
 RIGHT_HAND_TR_PID = 3851215361647809481
 RIGHT_HAND_TR_LW_PID = 1102718053531941910
 LEFT_HAND_TR_PID = 5470798411232420407
 LEFT_HAND_TR_LW_PID = -7917525829014857244
+
+# Projectile Optimus Bullet
+BULLET_GO_PID = -3806194776990344199
+BULLET_MOVESET_PID = -7987045836701848350
+BULLET_PROJ_PID = 4876975163880886549
+BULLET_PREF_PID = 7976934786116503278
+BOT_PREF_PID = 9200960997345802874
 
 SMR_ROBOT_PIDS = (-2741591127294404007, 2800854444751231408)
 SMR_VEHICLE_PIDS = (-6848498868240829709, 2289053572927707393)
@@ -70,6 +82,7 @@ PROPS_CTRL_PIDS = (-9009354885740569570, 1062452820465670706)
 
 AUDIO_HEAVY_PID = 6510216056584927456
 AUDIO_HEAVY_HIT_PIDS = (-6040142654073938373, -1683915847129078070, 6184518808667980096)
+AUDIO_GUN_FIRE_PIDS = (5765912829461940224, 8819501287347053159, 3045197054732182151, 4483602982996036395)
 
 
 def iter_pptrs_in_tree(node):
@@ -226,13 +239,43 @@ def build_starsaber_bundle():
     ab_tt["m_Container"] = new_container
     ab_objs[0].save_typetree(ab_tt)
 
-    # 2. Append Windblade heavy attack audio into .resource BEFORE stream path remap
+    print(f"Loading Procedural Audio Bundle for Motormaster Gunshot: {CAP_BUNDLE}")
+    env_cap = UnityPy.load(str(CAP_BUNDLE))
+    cap_res = next((f for n, f in env_cap.file.files.items() if n.endswith(".resource")), None)
+    assert cap_res is not None, "Missing procedural .resource!"
+
+    mm_fire_clips = {}
+    for o in env_cap.objects:
+        if o.type.name == "AudioClip":
+            tt = o.read_typetree()
+            name = tt.get("m_Name", "")
+            if name in ("optimus_prime_gs_projectile_fire_a", "optimus_prime_gs_projectile_fire_b",
+                        "optimus_prime_gs_projectile_fire_c", "optimus_prime_gs_projectile_fire_d"):
+                res = tt.get("m_Resource", {})
+                offset = res.get("m_Offset")
+                size = res.get("m_Size")
+                cap_res.seek(offset)
+                chunk = cap_res.read(size)
+                assert len(chunk) == size and chunk[:4] == b"FSB5"
+                mm_fire_clips[name] = (chunk, tt.get("m_Length", 2.6644897))
+
+    fire_clip_names = [
+        "optimus_prime_gs_projectile_fire_a",
+        "optimus_prime_gs_projectile_fire_b",
+        "optimus_prime_gs_projectile_fire_c",
+        "optimus_prime_gs_projectile_fire_d"
+    ]
+    mm_fire_bytes = b"".join(mm_fire_clips[name][0] for name in fire_clip_names)
+
+    # 2. Append Windblade heavy attack audio & Motormaster gunshot audio into .resource
     res_name, res_file = next(((n, f) for n, f in env.file.files.items() if n.endswith(".resource")), (None, None))
     assert res_file is not None, "Missing donor .resource!"
     old_res_len = len(res_file.bytes)
     offset1 = old_res_len
     offset2 = old_res_len + len(wb_clip1_data)
-    new_res_reader = EndianBinaryReader(res_file.bytes + wb_clip1_data + wb_clip2_data)
+    curr_fire_offset = offset2 + len(wb_clip2_data)
+
+    new_res_reader = EndianBinaryReader(res_file.bytes + wb_clip1_data + wb_clip2_data + mm_fire_bytes)
     new_res_reader.flags = getattr(res_file, "flags", 0)
     env.file.files[res_name] = new_res_reader
 
@@ -252,14 +295,28 @@ def build_starsaber_bundle():
             "m_Size": len(wb_clip2_data),
         }
         obj_map[pid].save_typetree(t_hit)
-    print(f"[+] Appended Windblade heavy audio (+{len(wb_clip1_data)+len(wb_clip2_data)} bytes) to .resource")
+
+    # Wire the 4 gunshot audio clips to Motormaster/Optimus authentic audio
+    for pid, cname in zip(AUDIO_GUN_FIRE_PIDS, fire_clip_names):
+        chunk, length = mm_fire_clips[cname]
+        t_fire = obj_map[pid].read_typetree()
+        t_fire["m_Length"] = length
+        t_fire["m_Resource"] = {
+            "m_Source": f"archive:/{NEW_CAB}/{NEW_CAB}.resource",
+            "m_Offset": curr_fire_offset,
+            "m_Size": len(chunk),
+        }
+        obj_map[pid].save_typetree(t_fire)
+        curr_fire_offset += len(chunk)
+
+    print(f"[+] Appended Windblade heavy audio (+{len(wb_clip1_data)+len(wb_clip2_data)} bytes) & Motormaster gunshot audio (+{len(mm_fire_bytes)} bytes) to .resource")
 
     # 3. Remap stream paths across untouched AudioClips / Textures / Meshes
     replaced_pids = {
         MESH_ROBOT_PID, MESH_VEHICLE_PID, MESH_WPNS_PID,
         TEX_MAIN_DIFF_PID, TEX_MAIN_NM_PID, TEX_MAIN_RAOE_PID,
         TEX_WPNS_DIFF_PID, TEX_WPNS_NM_PID, TEX_WPNS_RAOE_PID,
-        AUDIO_HEAVY_PID, *AUDIO_HEAVY_HIT_PIDS,
+        AUDIO_HEAVY_PID, *AUDIO_HEAVY_HIT_PIDS, *AUDIO_GUN_FIRE_PIDS,
     }
     remapped_streams = 0
     for o in env.objects:
@@ -404,9 +461,11 @@ def build_starsaber_bundle():
         smr_tt["m_Enabled"] = False
         obj_map[pid].save_typetree(smr_tt)
 
-    # Reparent gun Transform to LeftHand in both standard and _lw prefabs
-    gun_local_pos = {"x": 0.07427, "y": 0.52481, "z": -0.22442}
-    gun_local_rot = {"x": -0.97941047, "y": -0.00644705, "z": -0.00644722, "w": -0.20167319}
+    # Reparent gun Transform to LeftHand in both standard and _lw prefabs matching Motormaster's exact donor transform
+    # Pitch forward 90 deg around Y axis (euler y = -90 deg): barrel points forward, top rail points up
+    # Docked with fine-tuned palm height (x=-0.80 lowers gun by 0.25 into palm grasp)
+    gun_local_pos = {"x": -0.80, "y": -0.8073, "z": 2.5779}
+    gun_local_rot = {"x": 0.0, "y": -0.707107, "z": 0.0, "w": 0.707107}
 
     for gun_pid, rh_pid, lh_pid in (
         (GUN_TR_PID, RIGHT_HAND_TR_PID, LEFT_HAND_TR_PID),
@@ -431,6 +490,21 @@ def build_starsaber_bundle():
         lh_tr["m_Children"] = lh_children
         obj_map[lh_pid].save_typetree(lh_tr)
 
+    # Set child mesh and reference transforms under gun matching Motormaster's exact donor transforms
+    for mesh_tr_pid, ref_tr_pid in (
+        (GUN_MESH_TR_PID, GUN_REF_TR_PID),
+        (GUN_MESH_TR_LW_PID, GUN_REF_TR_LW_PID),
+    ):
+        m_tr = obj_map[mesh_tr_pid].read_typetree()
+        m_tr["m_LocalPosition"] = {"x": -1.04534149, "y": 0.30060622, "z": 1.4744184}
+        m_tr["m_LocalRotation"] = {"x": 0.0, "y": 0.0, "z": -0.707106, "w": 0.707107}
+        obj_map[mesh_tr_pid].save_typetree(m_tr)
+
+        r_tr = obj_map[ref_tr_pid].read_typetree()
+        r_tr["m_LocalPosition"] = {"x": -0.599203, "y": 0.297155, "z": 0.0}
+        r_tr["m_LocalRotation"] = {"x": 0.0, "y": 0.0, "z": -0.707107, "w": 0.707107}
+        obj_map[ref_tr_pid].save_typetree(r_tr)
+
     for pid in SMR_WPNS_PIDS:
         smr_tt = obj_map[pid].read_typetree()
         smr_tt["m_Mesh"] = {"m_FileID": 0, "m_PathID": MESH_WPNS_PID}
@@ -450,6 +524,10 @@ def build_starsaber_bundle():
             if kname == "gun":
                 vals[idx]["InitFlags"] = 0
                 vals[idx]["_startActive"] = False
+                vals[idx]["RootPath"] = "character_model/Reference/Hips/Spine/Spine1/LeftShoulder/LeftArm/LeftArmRoll/LeftForeArm/LeftForeArmRoll/LeftHand"
+                vals[idx]["PositionOffset"] = gun_local_pos
+                vals[idx]["RotationOffset"] = {"x": 0.0, "y": -90.0, "z": 0.0}
+                vals[idx]["Scale"] = {"x": 1.0, "y": 1.0, "z": 1.0}
                 vals[idx]["_renderers"] = [{"m_FileID": 0, "m_PathID": gun_smr_pid}]
             elif kname == "sword":
                 vals[idx]["InitFlags"] = 0
@@ -459,7 +537,24 @@ def build_starsaber_bundle():
         props["_serializedValues"] = vals
         tree["_props"] = props
         obj_map[pid].save_typetree(tree)
-    print("[✓] Reparented gun to LeftHand; wired laser rifle SMRs & PropsController dynamic conjure.")
+    print("[✓] Reparented gun to LeftHand; wired laser rifle SMRs & PropsController dynamic conjure (RootPath=LeftHand).")
+
+    # 7.5 Rename GameObjects for Matinee SP3 binding (§11.10 Matinee Redeclaration)
+    GO_RENAME_MAP = {
+        -6817761090324618334: "cha_starsaber_gs_leader2014_00",
+        2993967100659652211: "cha_starsaber_gs_leader2014_00",
+        1114556319445073345: "cha_starsaber_gs_leader2014_01",
+        -8153771467703977950: "cha_starsaber_gs_leader2014_01",
+        -5992972865116901858: "fx_r_trail_starsaber_gs",
+        -4872077377913359269: "fx_r_trail_starsaber_gs_02",
+    }
+    for gpid, new_name in GO_RENAME_MAP.items():
+        if gpid in obj_map:
+            go_tt = obj_map[gpid].read_typetree()
+            old_name = go_tt.get("m_Name", "")
+            go_tt["m_Name"] = new_name
+            obj_map[gpid].save_typetree(go_tt)
+            print(f"[✓] Renamed GameObject {gpid}: '{old_name}' -> '{new_name}' for Matinee SP3 binding.")
 
     # 8. Wire Windblade S2 Clip, Fight AOC, MoveSet & Swords Audio
     obj_map[S2_CLIP_SLOT_PID].save_typetree(wb_s2_clip_tree)
@@ -518,6 +613,46 @@ def build_starsaber_bundle():
     ms_tt["_moves"] = moves
     obj_map[MOVESET_PID].save_typetree(ms_tt)
 
+    # Configure Projectile Optimus Bullet (matches Motormaster ranged attack)
+    go_bullet = obj_map[BULLET_GO_PID].read_typetree()
+    go_bullet["m_Name"] = "projectile_optimus_bullet"
+    obj_map[BULLET_GO_PID].save_typetree(go_bullet)
+
+    ms_bullet = obj_map[BULLET_MOVESET_PID].read_typetree()
+    ms_bullet["_moves"] = [
+        {"_name": "fire", "_animStateName": "", "_asset": {"m_FileID": 3, "m_PathID": 6337232768847846927}},
+        {"_name": "explode", "_animStateName": "", "_asset": {"m_FileID": 3, "m_PathID": 98785653677070406}},
+        {"_name": "explode_special", "_animStateName": "", "_asset": {"m_FileID": 3, "m_PathID": 182607865359928388}},
+    ]
+    obj_map[BULLET_MOVESET_PID].save_typetree(ms_bullet)
+
+    proj_comp = obj_map[BULLET_PROJ_PID].read_typetree()
+    proj_comp["CollisionPointOffset"] = {"x": 0.0, "y": 0.0, "z": 3.0}
+    obj_map[BULLET_PROJ_PID].save_typetree(proj_comp)
+
+    # Wire bullet PrefabList (red laser bolt + impact particles + light)
+    pref_bullet = obj_map[BULLET_PREF_PID].read_typetree()
+    pref_bullet["PrefabList"] = [
+        {"Prefab": {"m_FileID": 5, "m_PathID": -8062247508178286595}, "Amount": 1},  # fx_p_red_projectile_impact
+        {"Prefab": {"m_FileID": 5, "m_PathID": -6715103446334267986}, "Amount": 3},  # fx_p_red_projectile
+        {"Prefab": {"m_FileID": 1, "m_PathID": 8149109851183567790}, "Amount": 1},   # fx_l_hit_small_perceptual
+    ]
+    obj_map[BULLET_PREF_PID].save_typetree(pref_bullet)
+
+    # Register red projectile particles in Bot's root PrefabList pool
+    bot_pref = obj_map[BOT_PREF_PID].read_typetree()
+    bot_pref_list = bot_pref.get("PrefabList", [])
+    for fid, pid, amt in (
+        (5, -6715103446334267986, 3),  # fx_p_red_projectile
+        (5, -8062247508178286595, 2),  # fx_p_red_projectile_impact
+        (1, 8149109851183567790, 2),   # fx_l_hit_small_perceptual
+    ):
+        if not any(item.get("Prefab", {}).get("m_PathID") == pid for item in bot_pref_list):
+            bot_pref_list.append({"Prefab": {"m_FileID": fid, "m_PathID": pid}, "Amount": amt})
+    bot_pref["PrefabList"] = bot_pref_list
+    obj_map[BOT_PREF_PID].save_typetree(bot_pref)
+    print("[✓] Configured projectile_optimus_bullet (red laser bolt & impact particles) for Motormaster ranged attack.")
+
     aud_tt = obj_map[CHAR_AUDIO_PID].read_typetree()
     aud_tt["_categories"] = ["Swords", "Generations"]
     ev_overrides = {
@@ -529,6 +664,8 @@ def build_starsaber_bundle():
         "gen_attack_6": "", "gen_attack_hit_6": "",
         "gen_attack_heavy": "jetfire_attack_heavy",
         "gen_attack_heavy_hit": "jetfire_attack_heavy_hit",
+        "gen_projectile_fire": "jetfire_projectile_fire",
+        "gen_projectile_impact": "",
         "gen_special_3": "jetfire_special_3",
         "gen_block": "", "gen_block_react": "",
     }
@@ -625,6 +762,9 @@ def verify_starsaber_bundle_integrity(bundle_path: Path):
     # Verify root GameObject m_Name NOT renamed (§11.10 Matinee safety)
     go_names = {o.read().m_Name for o in sf.objects.values() if o.type.name == "GameObject"}
     assert "Jetfire_GS_Leader2014" in go_names, f"Missing preserved root GO 'Jetfire_GS_Leader2014'! (got sample: {sorted(go_names)[:10]})"
+    assert "cha_starsaber_gs_leader2014_00" in go_names, "Missing cha_starsaber_gs_leader2014_00 in GameObjects!"
+    assert "cha_starsaber_gs_leader2014_01" in go_names, "Missing cha_starsaber_gs_leader2014_01 in GameObjects!"
+    assert "fx_r_trail_starsaber_gs" in go_names, "Missing fx_r_trail_starsaber_gs in GameObjects!"
     for pid in SMR_WPNS_PIDS:
         assert not sf.objects[pid].read_typetree()["m_Enabled"], f"Legacy weapon SMR {pid} is still enabled!"
 

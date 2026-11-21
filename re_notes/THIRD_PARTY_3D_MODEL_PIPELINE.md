@@ -1243,6 +1243,37 @@ FOC 等虚幻 3（UE3）模型的四根主手指在骨架上只有两节骨骼�
           * 将这 4 段 FSB5 数据直接追加写进史达 Bundle 的 `.resource` 二进制流末尾（+87,936 字节）；
           * 回写修正 `jetfire_projectile_fire_1..4` 的 `m_Resource` Offset 与 Size，并将 `m_Length` 设为 `2.664s`；
           * 保留 `CharacterAudio._events["gen_projectile_fire"] -> "jetfire_projectile_fire"`。开枪瞬间即可爆发出汽车大师浑厚霸气的重型爆鸣射击声！
+   9. **红光激光粒子束与爆破火花缺失根因与预制体池双层级纳管铁律（Projectile PrefabList Dual-Registration Rule）**：
+      * **视觉缺失现象**：实机测试中虽然开枪音效震撼、敌人扣血硬直，但从枪口到敌人之间没有飞行的红色激光束，击中敌人时也没有爆破火花；
+      * **根因复盘**：
+        * 汽车大师激光子弹依赖两个核心粒子预制体：`fx_p_red_projectile`（飞行光束粒子，PID `-6715103446334267986`）与 `fx_p_red_projectile_impact`（击中爆炸粒子，PID `-8062247508178286595`）；
+        * 仅在子弹 GameObject 的 `PrefabList`（PID `7976934786116503278`）中配置这两项仍不够，因为 Unity 战斗场景的全局对象池管理器在战前只会扫描并实例化**角色根节点预制体上的 `PrefabList`（PID `9200960997345802874`）**；
+        * 若角色根预制体的 `PrefabList` 缺少这两项粒子或子弹本身，对象池 `PrefabPool` 无法在战斗初始化时完成预热缓存，导致运行时 `SpawnParticle` 静默失败；
+      * **标准解法**：在母壳重构脚本中，将 `projectile_optimus_bullet`、`fx_p_red_projectile`、`fx_p_red_projectile_impact` **同时注册进子弹与角色根节点这两层 `PrefabList`**，彻底激活完整的红色激光弹道与爆鸣命中火花。
+   10. **SP3 电影化必杀技 Matinee 轨道节点名强绑定与大剑/机体变形互斥隐显铁律（SP3 Cutscene Matinee Name Binding & Weapon Exclusion Rule）**：
+       * **问题复盘**：在 SP3 连招测试中，进入大招动画后大剑悬空浮在半空不消失，或者飞机形态变成透明隐形；
+       * **根因定位**：
+         * SP3 电影级动画剪辑（如 `cin_sp3_jetfire_gs_01`）中的骨骼运动、网格显隐（Renderer `m_Enabled`）以及拖尾粒子发射（Trail FX），在 Unity Matinee / Animation 系统中是通过 **GameObject 的层级字符串全路径或节点名称严格绑定**的；
+         * 母壳原装动画绑定的对象名为 `cha_jetfire_gs_leader2014_00`（人形）、`cha_jetfire_gs_leader2014_01`（载具）、`fx_r_trail_jetfire_gs`（喷气尾迹）；
+         * 若随意重命名预制体层级内的 GameObject 为新角色名字，Matinee 轨道在动画第 0 帧触发时查找节点名失败，导致隐藏人形与显示飞机的曲线失效；
+       * **标准解法**：
+         * 保持 SP3 动画轨道关键 GameObject 的命名与母体动画曲线完全一致；
+         * 由于王者之剑已在 §11.16 作为 SubMesh 1 烘焙进入 `_00` 网格中，因此当 SP3 轨道关停 `_00` 的 SkinnedMeshRenderer 时，王者之剑会伴随人形身体自然、完美地隐去，随后战机 `_01` 正常亮起变出飞行动作，实现零穿帮的纯正原生级变形体验。
+   11. **左手持枪微调的局部坐标轴向投影陷阱（LeftHand Local Axis Mapping Precision）**：
+       * **现象**：用户在微调左手握枪高低时，多次调整 $Y$ 轴坐标却发现实机中枪体完全没有上下移动；
+       * **根因**：`LeftHand` 手腕骨骼经过人体工学摆姿后，其局部坐标系存在大幅欧拉角偏转。在手掌坐标系中，垂直于掌心平面的法向轴实际上是 **局部 $X$ 轴**，而非直觉上的世界 $Y$ 轴；
+       * **标准定位数值**：将枪身在 `LeftHand` 下的 `LocalPosition.x` 从原始 `-1.0465` 调升至 `-0.8000`（偏移量 $\Delta X = +0.2465\text{m}$），恰好克服手掌空隙，使枪柄精准平稳地卡在手心横纹上方；同时必须同步回写 `PropsController._props["gun"].PositionOffset.x = -0.8000`，杜绝运行时覆盖。
+   12. **多 SubMesh 网格资产跨版本还原的“精度污染”与分流拼接铁律（Multi-SubMesh Buffer Splicing Standard）**：
+       * **严重踩坑复盘**：为了将王者之剑的角度恢复到平直角度，若通过脚本直接用旧 Commit（如 `6f315e6`）的完整 `00` 网格覆盖当前 Bundle，会引发极其隐蔽的“修复倒退”惨剧：
+         * 旧 Commit 虽然具有正确的平直剑身（SubMesh 1），但它是在**胸口立体标志修复之前提交的**；
+         * 粗暴整件替换导致 SubMesh 0（身体与徽章）中已做好的 828 个顶点 $+0.015\text{m}$ 法向抬升与纯净安全调色板映射被无差别抹除，重新引发严重的共面 Z-Fighting 撕裂噪点！
+       * **标准解法（Stream 0 / Stream 1 顶点分流切片拼接）**：
+         * 对于包含多个 SubMesh 的复杂网格资产，任何单部件姿态或几何回滚**严禁整件覆盖**，必须采用二进制切片拼接：
+           * `Stream 0`（坐标/法线/切线）：前 21,929 顶点（SubMesh 0）取自已修复标志版，后 1,316 顶点（SubMesh 1）取自平直剑身版；
+           * `Stream 1`（UV 坐标）：前 21,929 顶点取自已修复标志版（保持纯净红/黑调色板），后 1,316 顶点取自平直剑身版；
+           * `Stream 2`（骨骼权重）：保持两者一致的 54 骨蒙皮流；
+           * `IndexBuffer` 与 SubMesh 0 AABB 保持不变，SubMesh 1 AABB 继承平直剑身包围盒；
+         * 凭借这种显微镜级切片嫁接，可在瞬间同时兼得完美的平直握剑角度与毫无破损的纯净博派金属徽章。
 * **Alliance 系列模具标准执行双轨铁律**：
   1. **左手 / 非持械手（默认 Track B 掌心刚性折叠）**：在自动化对齐脚本（如 `tools/starsaber/build_aligned_starsaber_robot.py`）中，将 `Dummy_hand_01`、`Hand_L_1..9` 全部权重安全折叠并入 **`LeftHand`**，保留原模雕塑级微合掌造型；整手随手腕刚性摆动，零撕裂风险；
   2. **需要握持武器之手（HITL 屈指 + 烘焙僵化合并回 `RightHand`）**：

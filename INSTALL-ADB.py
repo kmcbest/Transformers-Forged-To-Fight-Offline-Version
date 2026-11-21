@@ -846,10 +846,15 @@ class ApkInstallerApp:
         recent_apks = hist.get("recent_apks", [])
         self.combo_apk["values"] = recent_apks
         last_apk = hist.get("last_apk", "")
-        if last_apk:
+        if last_apk and Path(last_apk).exists():
             self.apk_path.set(last_apk)
-        elif recent_apks:
-            self.apk_path.set(recent_apks[0])
+        else:
+            candidates = list(Path("build/out").glob("*.apk")) + list(Path("build").glob("*.apk"))
+            if candidates:
+                newest = str(sorted(candidates, key=lambda p: p.stat().st_mtime, reverse=True)[0])
+                self.apk_path.set(newest)
+            elif recent_apks:
+                self.apk_path.set(recent_apks[0])
 
         # 加载 Push 文件历史记录
         recent_push = hist.get("recent_push_files", [])
@@ -1816,7 +1821,7 @@ if __name__ == "__main__":
     elif args.auto:
         target_apk = args.apk
         if not target_apk:
-            build_apks = list(Path("build").glob("*.apk"))
+            build_apks = list(Path("build/out").glob("*.apk")) + list(Path("build").glob("*.apk"))
             if build_apks:
                 target_apk = str(sorted(build_apks, key=lambda p: p.stat().st_mtime, reverse=True)[0])
         if not target_apk or not Path(target_apk).exists():

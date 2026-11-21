@@ -6,11 +6,10 @@ if hasattr(sys.stderr, 'reconfigure'):
 
 import bpy
 from mathutils import Vector, Matrix
-import math
 from pathlib import Path
 import shutil
 
-print("=== [StarSaber] Building Centered & Oriented Gun FBX ===")
+print("=== [StarSaber] Building Authentic Motormaster-Aligned Laser Rifle FBX ===")
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
 
@@ -33,33 +32,41 @@ SCALE = 4.0
 gun.data.transform(Matrix.Scale(SCALE, 4))
 gun.data.update()
 
-# 2. Rotate around X by -90 deg: barrel (-Y) -> +Z, top rail (+Z) -> +Y, grip (-Z) -> -Y
-rot_x = Matrix.Rotation(math.radians(-90.0), 4, 'X')
-gun.data.transform(rot_x)
-gun.data.update()
+# 2. Align grip to Motormaster reference grip
+# MM reference grip center: Vector((0.0001, 0.4582, -1.9340))
+TARGET_GRIP_MM = Vector((0.0, 0.4582, -1.9340))
 
-# 3. Center grip at (0, 0, 0)
-verts = [v.co for v in gun.data.vertices]
-ys = [v.y for v in verts]
-min_y = min(ys)
-handle_verts = [v for v in verts if v.y < min_y + 0.6]
-handle_center = Vector((
-    sum(v.x for v in handle_verts) / len(handle_verts),
-    sum(v.y for v in handle_verts) / len(handle_verts),
-    sum(v.z for v in handle_verts) / len(handle_verts)
+verts_ss = [v.co for v in gun.data.vertices]
+min_z_ss = min(v.z for v in verts_ss)
+grip_ss = [v for v in verts_ss if v.z < min_z_ss + 0.3]
+center_ss = Vector((
+    sum(v.x for v in grip_ss) / len(grip_ss),
+    sum(v.y for v in grip_ss) / len(grip_ss),
+    sum(v.z for v in grip_ss) / len(grip_ss)
 ))
-print(f"Grip Center before translation: {handle_center}")
+print(f"Current SS grip center: {center_ss}")
+print(f"Target MM grip center:  {TARGET_GRIP_MM}")
 
-gun.data.transform(Matrix.Translation(-handle_center))
+trans = TARGET_GRIP_MM - center_ss
+gun.data.transform(Matrix.Translation(trans))
 gun.data.update()
 
-# 4. Remap UVs: U' = 0.5 + 0.5 * U
+# Verify aligned bounds
+xs = [v.co.x for v in gun.data.vertices]
+ys = [v.co.y for v in gun.data.vertices]
+zs = [v.co.z for v in gun.data.vertices]
+print(f"Aligned bounds:")
+print(f"  X: [{min(xs):.4f}, {max(xs):.4f}]")
+print(f"  Y: [{min(ys):.4f}, {max(ys):.4f}] (barrel along -Y, length {max(ys)-min(ys):.4f})")
+print(f"  Z: [{min(zs):.4f}, {max(zs):.4f}] (grip along -Z, top rail along +Z)")
+
+# 3. Remap UVs: U' = 0.5 + 0.5 * U
 uv_layer = gun.data.uv_layers.active.data
 for loop in uv_layer:
     loop.uv[0] = 0.5 + 0.5 * loop.uv[0]
 gun.data.update()
 
-# 5. Create 1-bone Armature for COG
+# 4. Create 1-bone Armature for COG
 arm_data = bpy.data.armatures.new(name="GunArmature")
 arm_obj = bpy.data.objects.new(name="cha_starsaber_gun_rig", object_data=arm_data)
 bpy.context.collection.objects.link(arm_obj)
@@ -91,14 +98,14 @@ gun.select_set(True)
 arm_obj.select_set(True)
 bpy.context.view_layer.objects.active = arm_obj
 
-# Export with standard -Z forward, Y up
+# Export with axis_forward='Y', axis_up='Z' so coordinates in Unity match MM mesh coordinates exactly!
 bpy.ops.export_scene.fbx(
     filepath=str(OUT_FBX),
     use_selection=True,
     add_leaf_bones=False,
     bake_anim=False,
-    axis_forward='-Z',
-    axis_up='Y'
+    axis_forward='Y',
+    axis_up='Z'
 )
 print(f"[✓] Exported FBX to {OUT_FBX} ({OUT_FBX.stat().st_size} bytes)")
 
