@@ -1300,7 +1300,7 @@ FOC 等虚幻 3（UE3）模型的四根主手指在骨架上只有两节骨骼�
 
 ### 11.19 横炮（Sideswipe ROTF）双刀刺客与反关节轮滑模具：3 指非对称手掌安全收敛、正面朝向确认门禁、跨角色直立待机（Necrotronus）反关节自适应、SP3 跨角色 Stage 借用载具变形三重齿轮与混合连招招式缝合
 * **适用模具**：横炮（Sideswipe ROTF，`sideswipe_cin_rotf`，勇士系 `warr`）及所有反关节足部（Digitigrade / Wheel Piston）、异形手指（3 指 / 双刀手）、以及跨角色深度缝合 SP3/招式组合的变形金刚模具。
-* **五大核心攻坚复盘、暗坑规避与沉淀**：
+* **六大核心攻坚复盘、暗坑规避与沉淀**：
   1. **异形 3 指/双刀手与母体 15 指骨（5 指 × 3 节）的不一致处理（安全并指收敛方案）**：
      * **现象与痛点**：横炮 ROTF 电影风格模型每只手仅有 3 根粗大机械手指（拇指 + 食指 + 中指）及常驻前臂刀刃，而 TFTF 原版母壳（如路障）具有标准 15 根指骨（`Thumb/Index/Middle/Ring/Pinky 1..3`）。
      * **三大方案评估与结论**：
@@ -1341,3 +1341,24 @@ FOC 等虚幻 3（UE3）模型的四根主手指在骨架上只有两节骨骼�
        * **S3（特技3）**：电影擎天柱 SP3（双形态 Stage 借用，拔刀斩切入 $\to$ 概念跑车飞撞 $\to$ 终结斩）；
        * **Victory（胜利姿态）**：漂移收刀入鞘胜利 Stage（双刀收拢入背气势特写）。
      * 混剪多角色动作时，必须通过 `tools/validate_port_gates.py` 严格校验各动作槽位 OriginalClip 与 OverrideClip 的 FileID/PathID 依赖链，确保所有被引用的动作切片在预加载表与依赖包（如 `moves`、`character_anim_procedural`）中 100% 解析成功。
+  6. **Kabam PBR 单材质全局发光着色限制与多 SubMesh/多材质槽物理分离实战（Multi-Submesh Dual-Color Emissive & Metallic Lacquer Polish Protocol）**：
+     * **核心机理与根本限制**：
+       * Kabam `EB/Character/PBR` 着色器的发光计算公式为：
+         $$\text{Emissive} = (\text{RAOE.B})^2 \times (\text{\_emissive\_intensity\_col.rgb})^2 \times \text{Overbright}$$
+       * **关键限制**：`_emissive_intensity_col` 是材质级全局统一变量（Uniform Vector4），而非逐像素贴图！因此，**单个 Material/Shader 实例在物理数学上绝不可能同时发出蓝色和红色两种不同色相的光**（单材质发光只能是单色发光乘以强弱灰度）。
+     * **母体多 SubMesh 物理分离架构（解法）**：
+       * 官方母体（如路障 Barricade DOTM）正是采用双 SubMesh 结构：`SubMesh 0` 绑定红眼材质（`MAT_ROBOT_PID`），`SubMesh 1` 绑定警灯蓝光材质（`MAT_WEAPON_PID`）。
+       * **实战改版方案**：
+         1. **胸口车灯独立 SubMesh 剥离**：在源 FBX 中将胸前 2 块车灯面板（Mesh 20，42 顶点，56 个三角形面）分配给材质槽 1（`M_Sideswipe_Lights`），其余全身 23,472 个三角形面分配给材质槽 0（`M_Sideswipe_Main`）；
+         2. **UV 独立色块隔离**：将 Mesh 20 车灯面 UV 统一平移至左下角独立色块区（UV $\approx 0.012, 0.011$），漫反射赋予红色 `[255, 30, 20]`，RAOE.B 发光遮罩设为 `225`，彻底切断与主躯干车壳的贴图复用溢色；
+         3. **双 Material 槽位精准绑定**：在 Unity 编译与 AssetBundle 容器重写中，将 SkinnedMeshRenderer 的 `m_Materials` 明确绑定为两个材质：
+            * `m_Materials[0] = MAT_WEAPON_PID`：胸口车灯红色材质，`_emissive_intensity_col = (1.0, 0.05, 0.05, 0.0)`，Overbright `22.0`；
+            * `m_Materials[1] = MAT_ROBOT_PID`：主身体银漆与蓝眼材质，`_emissive_intensity_col = (0.05, 0.45, 1.0, 0.0)`，Overbright `18.0`；
+         4. **瞳孔点状蓝眼防扩散（Pinpoint Optics Isolation）**：
+            * 避免在贴图上粗暴绘制大矩形发光色块（会导致前额与护目镜连片发光变成大白板）；
+            * 逆向定位原模真正瞳孔像素：左眼 `[1748..1753, 744..748]`，右眼 `[1748..1753, 828..832]`（仅 4×5 像素范围）；
+            * 仅在瞳孔核心像素写入天蓝色 `[30, 165, 255]` 与 `RAOE.B = 200`，面部其余部位 RAOE.B 全部清零，完美还原电影设定中深嵌在银色金属面具下的锐利电蓝双瞳！
+         5. **亮银车漆高光与金属度调校（Metallic Lacquer Polish）**：
+            * 原版贴图漫反射均值仅为 78.8（31% 亮度），导致游戏内呈现深灰黑炭色；
+            * 漫反射亮度算法：针对车身银甲区域（`lum >= 35`）应用非线性曲线提亮至均值 170.1（峰值 245），同时严密保留内部黑色机械关节在 19.4 纯深色；
+            * 粗糙度从哑光粉质的 178 降至 105，法线蓝通道金属度 `NM.B` 赋予 75，材质端启用 `_clearcoat_reflectance_range = 0.08`，彻底呈现电影原版 Corvette Stingray 概念跑车闪闪发光的金属亮银清漆质感！

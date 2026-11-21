@@ -53,21 +53,22 @@ def compute_kabam_pbr_channels(diff_arr: np.ndarray, norm_gl: np.ndarray, em_mas
     dmin = df.min(axis=2)
     sat = (dmax - dmin) / np.maximum(dmax, 1.0)
 
-    # Silver clearcoat armor (lum >= 65) vs dark chassis joints (lum < 65)
-    is_silver_armor = (lum >= 65.0) & (sat < 0.25)
-    is_dark_joint = (lum < 65.0)
+    # Silver clearcoat armor (lum >= 40) vs dark chassis joints (lum < 40)
+    is_silver_armor = (lum >= 40.0) & (sat < 0.22) & (em_mask < 30)
+    is_dark_joint = (lum < 40.0) & (em_mask < 30)
 
-    # Kabam metallic in NM.B: silver armor ~105, dark joints ~135
-    metallic = np.where(is_silver_armor, 105.0, 50.0)
+    # Kabam metallic in NM.B: silver armor ~75 (brilliant clearcoat lacquer reflection), dark joints ~135 (gunmetal)
+    metallic = np.where(is_silver_armor, 75.0, 50.0)
     metallic = np.where(is_dark_joint, 135.0, metallic)
     metallic = np.where(em_mask >= 30, 0.0, metallic)
 
-    # Roughness (R): smooth silver lacquer ~175, gunmetal joints ~155
-    rough = np.where(is_silver_armor, 178.0, 190.0)
-    rough = np.where(is_dark_joint, 155.0, rough)
+    # Roughness (R): smooth silver lacquer ~105 (sharp specular sheen), gunmetal joints ~160, lights ~90
+    rough = np.where(is_silver_armor, 105.0, 185.0)
+    rough = np.where(is_dark_joint, 160.0, rough)
+    rough = np.where(em_mask >= 30, 90.0, rough)
 
     # Soft cavity AO (G)
-    ao = np.clip(205.0 + (lum / 255.0) * 50.0, 205.0, 255.0)
+    ao = np.clip(215.0 + (lum / 255.0) * 40.0, 215.0, 255.0)
 
     raoe = np.stack([
         rough.astype(np.uint8),
@@ -92,57 +93,30 @@ def build_robot_atlas():
     diff = load_rgb("Body_Diffuse.png", size)
     norm = load_normal_gl("Body_Normal.png", size)
 
-    # Build clean emissive mask around eye optics
-    # Eye position in 2048 space: Y in [1746, 1754], X in [742, 834]
-    em_mask = np.zeros(size, dtype=np.uint8)
-    
-    # Fill eye visor area with gradient glow
-    for y in range(1738, 1762):
-        for x in range(736, 840):
-            # calculate distance to center
-            cy = 1750.0
-            cx = 788.0
-            dy = abs(y - cy) / 12.0
-            dx = abs(x - cx) / 52.0
-            dist = max(dx, dy)
-            if dist <= 1.0:
-                val = int(255.0 * (1.0 - dist * 0.4))
-                em_mask[y, x] = max(em_mask[y, x], val)
-
-    # Add chest accent light trapezoids (the iconic red chest vents from Image 2!)
-    # On Sideswipe's chest: Y around 880..930, X around 580..680 and 880..980
-    # Let's paint the two crisp angled chest light strips
-    for y in range(890, 915):
-        # Left chest vent
-        for x in range(600, 680):
-            if (x - 600) + (y - 890) * 0.5 < 70:
-                em_mask[y, x] = 230
-        # Right chest vent
-        for x in range(880, 960):
-            if (960 - x) + (y - 890) * 0.5 < 70:
-                em_mask[y, x] = 230
-
-    # Smooth the edges slightly
-    em_img = Image.fromarray(em_mask).filter(ImageFilter.GaussianBlur(1.0))
-    em_mask = np.array(em_img, dtype=np.uint8)
-
-    # Boost diffuse in eye visor (cyan glow) and chest vents (crimson glow)
+    # 1. Boost silver armor luminance to gleaming movie silver (mean ~170, max ~245)
     df = diff.astype(np.float32)
-    m = (em_mask.astype(np.float32) / 255.0)[..., None]
-    
-    # Eye region gets electric cyan
-    eye_region = np.zeros((2048, 2048, 1), dtype=np.float32)
-    eye_region[1730:1770, 720:860] = 1.0
-    cyan_glow = np.array([45.0, 205.0, 255.0], dtype=np.float32)
-    
-    # Chest region gets crimson red (as seen in Image 2!)
-    chest_region = np.zeros((2048, 2048, 1), dtype=np.float32)
-    chest_region[870:940, :] = 1.0
-    red_glow = np.array([255.0, 45.0, 35.0], dtype=np.float32)
+    lum = df.mean(axis=2)
+    sat = (df.max(axis=2) - df.min(axis=2)) / np.maximum(df.max(axis=2), 1.0)
+    is_silver = (lum >= 40.0) & (sat < 0.22)
+    boost_factor = np.where(is_silver, np.clip(2.05 + (lum - 40.0) / 100.0 * 0.4, 1.8, 2.6), 1.0)[..., None]
+    diff = np.clip(df * boost_factor, 0, 245).astype(np.uint8)
 
-    glow_target = cyan_glow * eye_region + red_glow * chest_region
-    active_m = m * np.clip(eye_region + chest_region, 0, 1)
-    diff = np.clip(df * (1.0 - active_m) + glow_target * active_m, 0, 255).astype(np.uint8)
+    # 2. Build precise emissive mask
+    em_mask = np.zeros(size, dtype=np.uint8)
+
+    # Eye optics: strictly only the two eye pupil centers from Body_Emission.png
+    # Left eye optic (pinpoint cluster):
+    em_mask[1748:1753, 744:748] = 200
+    diff[1748:1753, 744:748] = [30, 165, 255]  # Electric Autobot Blue
+
+    # Right eye optic (pinpoint cluster):
+    em_mask[1748:1753, 828:832] = 200
+    diff[1748:1753, 828:832] = [30, 165, 255]  # Electric Autobot Blue
+
+    # Chest headlight patch in bottom-left corner of atlas:
+    # Dedicated isolated region (PIL y in [2000..2048], x in [0..48], Blender UV u,v in [0..0.024])
+    em_mask[2000:2048, 0:48] = 225
+    diff[2000:2048, 0:48] = [255, 30, 20]  # Vibrant Crimson Red
 
     em_pct = (em_mask > 20).mean() * 100.0
     print(f"  Robot Final Emissive Pixel Ratio: {em_pct:.3f}% (Target: 0.05%..20.0%)")

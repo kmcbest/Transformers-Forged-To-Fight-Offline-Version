@@ -91,7 +91,7 @@ def collect_closure(sf, root_pids):
     return visited, all_pptrs
 
 
-def patch_kabam_character_mat(mat_tt: dict, tex_overrides: dict):
+def patch_kabam_character_mat(mat_tt: dict, tex_overrides: dict, custom_floats: dict = None, custom_colors: dict = None):
     old_envs = mat_tt.get("m_SavedProperties", {}).get("m_TexEnvs", [])
     new_envs = []
     for item in old_envs:
@@ -112,11 +112,14 @@ def patch_kabam_character_mat(mat_tt: dict, tex_overrides: dict):
         "_metallic_range": 0.0,
         "_metallic_toggle": 0.0,
         "_roughness_range": 0.85,
-        "_clearcoat_reflectance_range": 0.04,
+        "_clearcoat_reflectance_range": 0.08,
         "_emissive_range": 0.0,
         "_emissive_none": 0.0,
         "_emissive_overbright_range": 20.0,
     }
+    if custom_floats:
+        float_overrides.update(custom_floats)
+
     floats = mat_tt["m_SavedProperties"]["m_Floats"]
     existing_keys = {k for k, _ in floats}
     new_floats = [(k, float_overrides[k] if k in float_overrides else v) for k, v in floats]
@@ -130,6 +133,9 @@ def patch_kabam_character_mat(mat_tt: dict, tex_overrides: dict):
         "_base_col": {"r": 1.0, "g": 1.0, "b": 1.0, "a": 1.0},
         "_emissive_intensity_col": {"r": 1.0, "g": 1.0, "b": 1.0, "a": 0.0},
     }
+    if custom_colors:
+        color_overrides.update(custom_colors)
+
     colors = mat_tt["m_SavedProperties"]["m_Colors"]
     mat_tt["m_SavedProperties"]["m_Colors"] = [
         (k, dict(color_overrides[k]) if k in color_overrides else v) for k, v in colors
@@ -285,14 +291,28 @@ def build_sideswipe_bundle():
     set_texture(obj_map[TEX_VEH_RAOE_PID], TEX_DIR / "cha_sideswipe_tform_misc_RAOE.png", "cha_sideswipe_tform_misc_RAOE", is_raoe=True)
 
     # 5. Patch Kabam PBR Materials
+    # Robot Body Material: Radiant Silver Lacquer Armor + Autobot Blue Eye Optics
     r_mat_tt = obj_map[MAT_ROBOT_PID].read_typetree()
-    patch_kabam_character_mat(r_mat_tt, {
-        "_base_tex": TEX_ROBOT_DIFF_PID,
-        "_normal_tex": TEX_ROBOT_NM_PID,
-        "_pbr_composite_tex": TEX_ROBOT_RAOE_PID,
-    })
+    patch_kabam_character_mat(
+        r_mat_tt,
+        {
+            "_base_tex": TEX_ROBOT_DIFF_PID,
+            "_normal_tex": TEX_ROBOT_NM_PID,
+            "_pbr_composite_tex": TEX_ROBOT_RAOE_PID,
+        },
+        custom_floats={
+            "_emissive_overbright_range": 18.0,
+            "_clearcoat_reflectance_range": 0.08,
+            "_roughness_range": 0.85,
+        },
+        custom_colors={
+            "_Color": {"r": 0.95, "g": 0.95, "b": 0.95, "a": 1.0},
+            "_base_col": {"r": 1.0, "g": 1.0, "b": 1.0, "a": 1.0},
+            "_emissive_intensity_col": {"r": 0.05, "g": 0.45, "b": 1.0, "a": 0.0}, # Autobot Blue Optics!
+        }
+    )
     obj_map[MAT_ROBOT_PID].save_typetree(r_mat_tt)
-    print(f"[✓] Patched Robot Material {MAT_ROBOT_PID}")
+    print(f"[✓] Patched Robot Material {MAT_ROBOT_PID} (Autobot Blue Optics)")
 
     for vpid in (MAT_VEHICLE_PID, MAT_VEHICLE_ALT_PID):
         v_mat_tt = obj_map[vpid].read_typetree()
@@ -304,14 +324,28 @@ def build_sideswipe_bundle():
         obj_map[vpid].save_typetree(v_mat_tt)
         print(f"[✓] Patched Vehicle Material {vpid}")
 
+    # Robot Chest Headlights Material (Mesh 20): Crimson Red Headlights
     w_mat_tt = obj_map[MAT_WEAPON_PID].read_typetree()
-    patch_kabam_character_mat(w_mat_tt, {
-        "_base_tex": TEX_ROBOT_DIFF_PID,
-        "_normal_tex": TEX_ROBOT_NM_PID,
-        "_pbr_composite_tex": TEX_ROBOT_RAOE_PID,
-    })
+    patch_kabam_character_mat(
+        w_mat_tt,
+        {
+            "_base_tex": TEX_ROBOT_DIFF_PID,
+            "_normal_tex": TEX_ROBOT_NM_PID,
+            "_pbr_composite_tex": TEX_ROBOT_RAOE_PID,
+        },
+        custom_floats={
+            "_emissive_overbright_range": 22.0,
+            "_clearcoat_reflectance_range": 0.08,
+            "_roughness_range": 0.85,
+        },
+        custom_colors={
+            "_Color": {"r": 1.0, "g": 0.2, "b": 0.2, "a": 1.0},
+            "_base_col": {"r": 1.0, "g": 0.2, "b": 0.2, "a": 1.0},
+            "_emissive_intensity_col": {"r": 1.0, "g": 0.05, "b": 0.05, "a": 0.0}, # Crimson Red Chest Lights!
+        }
+    )
     obj_map[MAT_WEAPON_PID].save_typetree(w_mat_tt)
-    print(f"[✓] Patched Weapon Material {MAT_WEAPON_PID}")
+    print(f"[✓] Patched Chest Lights Material {MAT_WEAPON_PID} (Crimson Red Chest Lights)")
 
     # 6. Update SMRs
     generous_aabb = {
@@ -321,7 +355,12 @@ def build_sideswipe_bundle():
     for pid in SMR_ROBOT_PIDS:
         smr_obj = obj_map[pid]
         smr_tt = smr_obj.read_typetree()
-        smr_tt["m_Materials"] = [{"m_FileID": 0, "m_PathID": MAT_ROBOT_PID}]
+        # SubMesh[0] (168 indices) = Chest Headlights -> MAT_WEAPON_PID (Crimson Red)
+        # SubMesh[1] (70416 indices) = Main Body -> MAT_ROBOT_PID (Silver Armor + Autobot Blue Optics)
+        smr_tt["m_Materials"] = [
+            {"m_FileID": 0, "m_PathID": MAT_WEAPON_PID},
+            {"m_FileID": 0, "m_PathID": MAT_ROBOT_PID},
+        ]
         smr_tt["m_AABB"] = generous_aabb
         smr_tt["m_UpdateWhenOffscreen"] = True
         smr_obj.save_typetree(smr_tt)

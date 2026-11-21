@@ -162,8 +162,30 @@ def make_sideswipe_preview_material():
     te.image = bpy.data.images.load(str(TEX_DIR / "cha_sideswipe_main_Emission.png"))
     nt.links.new(te.outputs["Color"], bsdf.inputs["Emission"])
     bsdf.inputs["Emission Strength"].default_value = 3.0
-    bsdf.inputs["Roughness"].default_value = 0.55
-    bsdf.inputs["Metallic"].default_value = 0.45
+    bsdf.inputs["Roughness"].default_value = 0.40
+    bsdf.inputs["Metallic"].default_value = 0.30
+    return mat
+
+
+def make_sideswipe_lights_material():
+    mat = bpy.data.materials.new("M_Sideswipe_Lights")
+    mat.use_nodes = True
+    nt = mat.node_tree
+    nt.nodes.clear()
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    bsdf = nt.nodes.new("ShaderNodeBsdfPrincipled")
+    nt.links.new(bsdf.outputs["BSDF"], out.inputs["Surface"])
+
+    ta = nt.nodes.new("ShaderNodeTexImage")
+    ta.image = bpy.data.images.load(str(TEX_DIR / "cha_sideswipe_main_Diffuse.png"))
+    nt.links.new(ta.outputs["Color"], bsdf.inputs["Base Color"])
+
+    te = nt.nodes.new("ShaderNodeTexImage")
+    te.image = bpy.data.images.load(str(TEX_DIR / "cha_sideswipe_main_Emission.png"))
+    nt.links.new(te.outputs["Color"], bsdf.inputs["Emission"])
+    bsdf.inputs["Emission Strength"].default_value = 4.0
+    bsdf.inputs["Roughness"].default_value = 0.25
+    bsdf.inputs["Metallic"].default_value = 0.0
     return mat
 
 
@@ -205,20 +227,18 @@ def main():
             v.co.z *= scale_factor
         o.data.update()
 
-    # 2.5 Remap Mesh 20 (chest headlights) to red intake light region in atlas BEFORE join to fix torn UVs
+    # 2.5 Tag Mesh 20 (chest headlights) and remap UVs to isolated red vent coords (0.012, 0.011)
     for o in mesh_objs:
         if o.name == "20" or any(m and m.name == "Lights" for m in o.data.materials):
+            vg = o.vertex_groups.new(name="VG_ChestLights")
+            vg.add(list(range(len(o.data.vertices))), 1.0, "REPLACE")
             uvl = o.data.uv_layers.active
             if uvl:
                 for p in o.data.polygons:
-                    p_xs = [o.data.vertices[vi].co.x for vi in p.vertices]
-                    is_left = (sum(p_xs) / len(p_xs)) > 0
-                    base_u = 0.310 if is_left else 0.445
-                    base_v = 0.560
                     for li in p.loop_indices:
-                        uvl.data[li].uv = (base_u, base_v)
+                        uvl.data[li].uv = (0.012, 0.011)
                 o.data.update()
-                print("[✓] Remapped Mesh 20 (chest headlights) to red vent atlas coords.")
+                print("[✓] Tagged Mesh 20 (VG_ChestLights) and remapped to isolated red vent coords (0.012, 0.011).")
 
     # 3. Join all submeshes into a single master mesh
     bpy.ops.object.select_all(action='DESELECT')
@@ -388,12 +408,24 @@ def main():
     mod = robot.modifiers.new("Armature", "ARMATURE")
     mod.object = new_arm
 
-    # Consolidate material to unified PBR preview material
+    # Consolidate materials: Slot 0 = Main Body (Silver armor + Blue eyes), Slot 1 = Chest Headlights (Red lights)
     robot.data.materials.clear()
     mat_prev = make_sideswipe_preview_material()
+    mat_lights = make_sideswipe_lights_material()
     robot.data.materials.append(mat_prev)
+    robot.data.materials.append(mat_lights)
+
+    uv_layer = robot.data.uv_layers.active.data
+    lights_poly_count = 0
     for poly in robot.data.polygons:
-        poly.material_index = 0
+        u_mean = sum(uv_layer[li].uv[0] for li in poly.loop_indices) / len(poly.loop_indices)
+        v_mean = sum(uv_layer[li].uv[1] for li in poly.loop_indices) / len(poly.loop_indices)
+        if u_mean < 0.025 and v_mean < 0.025:
+            poly.material_index = 1
+            lights_poly_count += 1
+        else:
+            poly.material_index = 0
+    print(f"[✓] Assigned {lights_poly_count} polygons to Slot 1 (M_Sideswipe_Lights), {len(robot.data.polygons)-lights_poly_count} to Slot 0 (M_Sideswipe_Main)")
 
     # Verify bounds
     xs = [v.co.x for v in robot.data.vertices]

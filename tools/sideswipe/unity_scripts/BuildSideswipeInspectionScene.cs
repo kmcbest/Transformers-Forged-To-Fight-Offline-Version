@@ -134,6 +134,10 @@ public static class BuildSideswipeInspectionScene {
             "Assets/Sideswipe/Textures/cha_sideswipe_main_Diffuse.png",
             "Assets/Sideswipe/Textures/cha_sideswipe_main_Normal_unity.png",
             "Assets/Sideswipe/Textures/cha_sideswipe_main_Emission.png", 0.55f, 0.35f, Vector2.one, Vector2.zero);
+        Material matSideswipeLights = CreateOrUpdateMat("Assets/Sideswipe/M_Sideswipe_Lights.mat",
+            "Assets/Sideswipe/Textures/cha_sideswipe_main_Diffuse.png",
+            "Assets/Sideswipe/Textures/cha_sideswipe_main_Normal_unity.png",
+            "Assets/Sideswipe/Textures/cha_sideswipe_main_Emission.png", 0.85f, 0.15f, Vector2.one, Vector2.zero);
         Material matSideswipeVh = CreateOrUpdateMat("Assets/Sideswipe/M_Sideswipe_Vh.mat",
             "Assets/Sideswipe/Textures/cha_sideswipe_tform_misc_Diffuse.png",
             "Assets/Sideswipe/Textures/cha_sideswipe_tform_misc_Normal_unity.png",
@@ -188,7 +192,7 @@ public static class BuildSideswipeInspectionScene {
             if (smr.name == "cha_barricade_cin_dotm_00") {
                 smr.gameObject.name = "cha_sideswipe_cin_rotf_00";
                 smr.sharedMesh = savedRobot00;
-                smr.sharedMaterials = new[] { matSideswipeMain };
+                smr.sharedMaterials = new[] { matSideswipeMain, matSideswipeLights };
                 smr.updateWhenOffscreen = true;
                 smr.enabled = true;
                 sideswipeSmr00 = smr;
