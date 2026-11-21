@@ -227,18 +227,20 @@ def main():
             v.co.z *= scale_factor
         o.data.update()
 
-    # 2.5 Tag Mesh 20 (chest headlights) and remap UVs to isolated red vent coords (0.012, 0.011)
+    # 2.5 Tag Mesh 20 (chest headlights), push forward along -Y by 0.025m, and remap UVs to isolated red vent coords (0.012, 0.011)
     for o in mesh_objs:
         if o.name == "20" or any(m and m.name == "Lights" for m in o.data.materials):
             vg = o.vertex_groups.new(name="VG_ChestLights")
             vg.add(list(range(len(o.data.vertices))), 1.0, "REPLACE")
+            for v in o.data.vertices:
+                v.co.y -= 0.025
             uvl = o.data.uv_layers.active
             if uvl:
                 for p in o.data.polygons:
                     for li in p.loop_indices:
                         uvl.data[li].uv = (0.012, 0.011)
                 o.data.update()
-                print("[✓] Tagged Mesh 20 (VG_ChestLights) and remapped to isolated red vent coords (0.012, 0.011).")
+                print("[✓] Tagged Mesh 20 (VG_ChestLights), offset forward by 0.025m, and remapped to (0.012, 0.011).")
 
     # 3. Join all submeshes into a single master mesh
     bpy.ops.object.select_all(action='DESELECT')
@@ -420,9 +422,21 @@ def main():
     for poly in robot.data.polygons:
         u_mean = sum(uv_layer[li].uv[0] for li in poly.loop_indices) / len(poly.loop_indices)
         v_mean = sum(uv_layer[li].uv[1] for li in poly.loop_indices) / len(poly.loop_indices)
-        if u_mean < 0.025 and v_mean < 0.025:
+        c = poly.center
+        is_mesh20 = (u_mean < 0.025 and v_mean < 0.025)
+        is_pocket_face = (
+            (0.55 <= abs(c.x) <= 1.45) and
+            (-1.30 <= c.y <= -0.95) and
+            (9.40 <= c.z <= 10.05) and
+            poly.normal.y < -0.2 and
+            (0.38 <= u_mean <= 0.44 and 0.58 <= v_mean <= 0.66)
+        )
+        if is_mesh20 or is_pocket_face:
             poly.material_index = 1
             lights_poly_count += 1
+            if is_pocket_face:
+                for li in poly.loop_indices:
+                    uv_layer[li].uv = (0.012, 0.011)
         else:
             poly.material_index = 0
     print(f"[✓] Assigned {lights_poly_count} polygons to Slot 1 (M_Sideswipe_Lights), {len(robot.data.polygons)-lights_poly_count} to Slot 0 (M_Sideswipe_Main)")

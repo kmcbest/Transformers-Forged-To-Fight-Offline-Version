@@ -118,6 +118,15 @@ def build_robot_atlas():
     em_mask[2000:2048, 0:48] = 225
     diff[2000:2048, 0:48] = [255, 30, 20]  # Vibrant Crimson Red
 
+    # 3. Fill chest taillight/headlight cavity on diffuse atlas with vibrant crimson red
+    # (replaces the black shadow cavity so the pocket never renders as pitch black!)
+    sub = diff[700:840, 785:875]
+    sub_lum = sub.mean(axis=2)
+    is_cavity = (sub_lum < 65) | ((sub[:, :, 0] > sub[:, :, 1] + 25) & (sub[:, :, 0] > sub[:, :, 2] + 25))
+    is_silver = (sub_lum > 85) & (abs(sub[:, :, 0].astype(int) - sub[:, :, 1].astype(int)) < 25)
+    is_cavity = is_cavity & (~is_silver)
+    sub[is_cavity] = [235, 25, 20]  # Vibrant Crimson Red diffuse in pocket cavity
+
     em_pct = (em_mask > 20).mean() * 100.0
     print(f"  Robot Final Emissive Pixel Ratio: {em_pct:.3f}% (Target: 0.05%..20.0%)")
 

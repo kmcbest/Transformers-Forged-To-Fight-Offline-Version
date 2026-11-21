@@ -88,8 +88,8 @@ bpy.ops.render.render(write_still=True)
 print(f"[✓] Rendered: {scene.render.filepath}")
 
 # 3. Chest Headlights Close-up
-cam.location = Vector((0.0, -5.2, 8.8))
-target = Vector((0.0, 0.0, 8.9))
+cam.location = Vector((0.0, -4.5, 9.5))
+target = Vector((0.0, 0.0, 9.3))
 cam.rotation_euler = (target - cam.location).to_track_quat("-Z", "Y").to_euler()
 cam_d.lens = 70
 
