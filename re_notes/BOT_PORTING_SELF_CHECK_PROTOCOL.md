@@ -2,6 +2,7 @@
 
 > **定位**：[THIRD_PARTY_3D_MODEL_PIPELINE.md](file:///e:/Agent/TFTF-blender/re_notes/THIRD_PARTY_3D_MODEL_PIPELINE.md) 的**强约束执行层与防呆门禁**。
 > **适用对象**：所有执行第三方向游戏移植新角色模型（Blender 对齐 → Unity 导出 → AssetBundle 嫁接 → APK 打包）的模型/智能体。
+> **⚠️ Alliance 模具专属前置入口**：若源模型来自 ***Transformers: Alliance***（如 Star Saber、Swoop 等三指拓扑/自带变形动画/鸟兽模具），**请务必最先阅读 [`ALLIANCE_MODEL_PORTING_GUIDE.md`](file:///e:/Agent/TFTF-blender/re_notes/ALLIANCE_MODEL_PORTING_GUIDE.md)** 并使用 `tools/starsaber/` 或 `tools/swoop/` 黄金模板。
 
 ---
 
