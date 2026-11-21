@@ -32,6 +32,14 @@ BOT_ID = "starsaber_gs_leader2014"
 # Donor Meshes & SMRs (Jetfire_GS_Leader2014)
 MESH_ROBOT_PID = -2458698293407160617
 MESH_VEHICLE_PID = -8840240213025646850
+MESH_WPNS_PID = -4439679313609908059
+
+GUN_TR_PID = -4730893461018512753
+GUN_TR_LW_PID = 554951969684897351
+RIGHT_HAND_TR_PID = 3851215361647809481
+RIGHT_HAND_TR_LW_PID = 1102718053531941910
+LEFT_HAND_TR_PID = 5470798411232420407
+LEFT_HAND_TR_LW_PID = -7917525829014857244
 
 SMR_ROBOT_PIDS = (-2741591127294404007, 2800854444751231408)
 SMR_VEHICLE_PIDS = (-6848498868240829709, 2289053572927707393)
@@ -248,7 +256,7 @@ def build_starsaber_bundle():
 
     # 3. Remap stream paths across untouched AudioClips / Textures / Meshes
     replaced_pids = {
-        MESH_ROBOT_PID, MESH_VEHICLE_PID,
+        MESH_ROBOT_PID, MESH_VEHICLE_PID, MESH_WPNS_PID,
         TEX_MAIN_DIFF_PID, TEX_MAIN_NM_PID, TEX_MAIN_RAOE_PID,
         TEX_WPNS_DIFF_PID, TEX_WPNS_NM_PID, TEX_WPNS_RAOE_PID,
         AUDIO_HEAVY_PID, *AUDIO_HEAVY_HIT_PIDS,
@@ -273,10 +281,11 @@ def build_starsaber_bundle():
                 remapped_streams += 1
     print(f"[*] Remapped external stream paths on {remapped_streams} objects")
 
-    # 4. Graft Robot (_00: 54 bones, 2 submeshes Body+Sword) & Vehicle (_01: 29 bones, 1 submesh Jet)
+    # 4. Graft Robot (_00: 54 bones, 2 submeshes Body+Sword), Vehicle (_01: 29 bones, 1 submesh Jet), and Laser Rifle (wpns: 1 bone, 1 submesh)
     for dst_pid, src_key, final_mesh_name, expected_subs in (
         (MESH_ROBOT_PID, "cha_jetfire_gs_leader2014_00", "cha_starsaber_gs_leader2014_00", 2),
         (MESH_VEHICLE_PID, "cha_jetfire_gs_leader2014_01", "cha_starsaber_gs_leader2014_01", 1),
+        (MESH_WPNS_PID, "cha_jetfire_gs_leader2014_wpns_rifle_right", "cha_jetfire_gs_leader2014_wpns_rifle_right", 1),
     ):
         src_tt = ss_meshes[src_key]
         dst_obj = obj_map[dst_pid]
@@ -291,7 +300,7 @@ def build_starsaber_bundle():
             f"{final_mesh_name} submeshes {len(src_tt['m_SubMeshes'])} != {expected_subs}"
         )
         vcount = src_tt["m_VertexData"]["m_VertexCount"]
-        assert vcount > 10000, f"{final_mesh_name} vertexCount={vcount} too low!"
+        assert vcount > 1000, f"{final_mesh_name} vertexCount={vcount} too low!"
 
         dst_tt["m_Name"] = final_mesh_name
         for field in (
@@ -395,8 +404,39 @@ def build_starsaber_bundle():
         smr_tt["m_Enabled"] = False
         obj_map[pid].save_typetree(smr_tt)
 
+    # Reparent gun Transform to LeftHand in both standard and _lw prefabs
+    gun_local_pos = {"x": 0.07427, "y": 0.52481, "z": -0.22442}
+    gun_local_rot = {"x": -0.97941047, "y": -0.00644705, "z": -0.00644722, "w": -0.20167319}
+
+    for gun_pid, rh_pid, lh_pid in (
+        (GUN_TR_PID, RIGHT_HAND_TR_PID, LEFT_HAND_TR_PID),
+        (GUN_TR_LW_PID, RIGHT_HAND_TR_LW_PID, LEFT_HAND_TR_LW_PID),
+    ):
+        gun_tr = obj_map[gun_pid].read_typetree()
+        gun_tr["m_Father"] = {"m_FileID": 0, "m_PathID": lh_pid}
+        gun_tr["m_LocalPosition"] = gun_local_pos
+        gun_tr["m_LocalRotation"] = gun_local_rot
+        obj_map[gun_pid].save_typetree(gun_tr)
+
+        # Remove gun from RightHand children
+        rh_tr = obj_map[rh_pid].read_typetree()
+        rh_tr["m_Children"] = [c for c in rh_tr.get("m_Children", []) if int(c.get("m_PathID", 0)) != gun_pid]
+        obj_map[rh_pid].save_typetree(rh_tr)
+
+        # Add gun to LeftHand children if not present
+        lh_tr = obj_map[lh_pid].read_typetree()
+        lh_children = lh_tr.get("m_Children", [])
+        if not any(int(c.get("m_PathID", 0)) == gun_pid for c in lh_children):
+            lh_children.append({"m_FileID": 0, "m_PathID": gun_pid})
+        lh_tr["m_Children"] = lh_children
+        obj_map[lh_pid].save_typetree(lh_tr)
+
     for pid in SMR_WPNS_PIDS:
         smr_tt = obj_map[pid].read_typetree()
+        smr_tt["m_Mesh"] = {"m_FileID": 0, "m_PathID": MESH_WPNS_PID}
+        smr_tt["m_Materials"] = [{"m_FileID": 0, "m_PathID": MAT_WPNS_PID}]
+        smr_tt["m_AABB"] = generous_aabb
+        smr_tt["m_UpdateWhenOffscreen"] = True
         smr_tt["m_Enabled"] = False
         obj_map[pid].save_typetree(smr_tt)
 
@@ -405,8 +445,13 @@ def build_starsaber_bundle():
         props = tree.get("_props", {})
         keys = props.get("_serializedKeys", [])
         vals = props.get("_serializedValues", [])
+        gun_smr_pid = 738325550751503188 if pid == -9009354885740569570 else -6612254241771744554
         for idx, kname in enumerate(keys):
-            if kname in ("gun", "sword"):
+            if kname == "gun":
+                vals[idx]["InitFlags"] = 0
+                vals[idx]["_startActive"] = False
+                vals[idx]["_renderers"] = [{"m_FileID": 0, "m_PathID": gun_smr_pid}]
+            elif kname == "sword":
                 vals[idx]["InitFlags"] = 0
                 vals[idx]["_startActive"] = False
                 vals[idx]["_renderers"] = []
@@ -414,7 +459,7 @@ def build_starsaber_bundle():
         props["_serializedValues"] = vals
         tree["_props"] = props
         obj_map[pid].save_typetree(tree)
-    print("[✓] Wired Robot (2 mats) & Vehicle (1 mat, 29 bones) SMRs; disabled legacy rifle prop.")
+    print("[✓] Reparented gun to LeftHand; wired laser rifle SMRs & PropsController dynamic conjure.")
 
     # 8. Wire Windblade S2 Clip, Fight AOC, MoveSet & Swords Audio
     obj_map[S2_CLIP_SLOT_PID].save_typetree(wb_s2_clip_tree)
@@ -432,16 +477,16 @@ def build_starsaber_bundle():
         46: 7146863003282264883,   # BlockReact Ranged
         4: -3664095140934993801,   # Drift S1
         58: 2534697979766001969,   # Windblade Heavy
+        51: -3948795660449728024,  # Motormaster Ranged 01 (LH)
+        52: 6078334979657561662,   # Motormaster Ranged 02 (LH)
+        53: 8599663582438923052,   # Motormaster Ranged 03 (LH)
     }
     for slot, cid in aoc_clip_verify.items():
         if proc_pids:
             assert cid in proc_pids, f"Missing clip PID {cid} in procBundle!"
         clips[slot]["m_OverrideClip"] = {"m_FileID": 2, "m_PathID": cid}
     clips[5]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": S2_CLIP_SLOT_PID}
-    # Jetfire Ranged & SP3 kept local (FileID=0)
-    clips[51]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": 7808332553383168359}
-    clips[52]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": -7264490462704346615}
-    clips[53]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": -1145688102861077554}
+    # Jetfire SP3 kept local (FileID=0)
     clips[31]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": -4700446166485423738}
     clips[32]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": 5007219591915846681}
     aoc_tt["m_Clips"] = clips
@@ -460,9 +505,9 @@ def build_starsaber_bundle():
         (8, "move_sword_block_react", "Base.BlockReact", 2656533506074151531),
         (9, "move_sword_block_react", "Base.BlockReactRanged", 6843684539569461767),
         (41, "move_heavy_plane_donut", "Base.HeavyAttack", 4908036883554989015),
-        (42, "move_attackRanged_jetfire_handGun_right_01", "Base.RangedAttack01", 4026438278308373272),
-        (43, "move_attackRanged_jetfire_handGun_right_02", "Base.RangedAttack02", -3609132228276371244),
-        (44, "move_attackRanged_jetfire_handGun_right_03", "Base.RangedAttack03", -4303718209525360164),
+        (42, "move_attackRanged_handGun_left_XL_01", "Base.RangedAttack01", 6811001981586741581),
+        (43, "move_attackRanged_handGun_left_XL_02", "Base.RangedAttack02", 4776763212269214863),
+        (44, "move_attackRanged_handGun_left_XL_03B", "Base.RangedAttack03", -4795991277224341066),
     ]
     moves = ms_tt.get("_moves", [])
     assert len(moves) >= 50

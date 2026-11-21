@@ -78,6 +78,7 @@ static const EnemyStat ENEMY_STATS[] = {
     { "sharkticon_gs_tech", 33800, 1920, 5174, 0.16f, 1.50f, "tech" },
     { "sharkticon_gs_warrior", 30758, 2434, 5506, 0.16f, 1.50f, "warr" },
     { "shockwave_gs", 45022, 2555, 6889, 0.16f, 1.50f, "tech" },
+    { "sideswipe_cin_rotf", 43500, 3120, 7412, 0.16f, 1.50f, "warr" },
     { "sideswipe_gs", 34882, 3515, 7121, 0.24f, 1.50f, "scou" },
     { "skywarp_gs_leader2015", 45022, 2555, 6889, 0.16f, 1.50f, "tech" },
     { "slipstream_gs", 38938, 3488, 7443, 0.24f, 1.50f, "scou" },
@@ -100,6 +101,6 @@ static const EnemyStat ENEMY_STATS[] = {
     { "wildrider_gs_deluxe2016", 45022, 3637, 8146, 0.08f, 1.30f, "braw" },
     { "windblade_gs", 34882, 3366, 6948, 0.24f, 1.50f, "scou" },
 };
-#define NUM_ENEMY_STATS 86
+#define NUM_ENEMY_STATS 87
 
 #endif // BOT_INFO_H

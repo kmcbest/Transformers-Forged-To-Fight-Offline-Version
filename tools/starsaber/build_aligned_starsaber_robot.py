@@ -223,6 +223,21 @@ def main():
 
     # Merge Autobot symbol into main mesh
     if ab_sym:
+        # Offset forward along -Y by 0.015m (scaled space) to lift emblem off plate & eliminate Z-fighting
+        ab_sym.data.transform(Matrix.Translation(Vector((0.0, -0.015, 0.0))))
+        ab_sym.data.update()
+
+        # Assign clean palette UVs based on material index BEFORE clearing materials:
+        # Mat 0 (raised Autobot crest, 496 polys) -> clean vibrant red patch at U=0.362, V=0.425
+        # Mat 1 (dark charcoal backing, 34 polys) -> clean dark charcoal patch at U=0.388, V=0.425
+        if not ab_sym.data.uv_layers:
+            ab_sym.data.uv_layers.new(name="UVMap")
+        uvl = ab_sym.data.uv_layers.active.data
+        for p in ab_sym.data.polygons:
+            target_uv = (0.362, 0.425) if p.material_index == 0 else (0.388, 0.425)
+            for li in p.loop_indices:
+                uvl[li].uv = target_uv
+
         ab_sym.data.materials.clear()
         if mesh.data.materials:
             ab_sym.data.materials.append(mesh.data.materials[0])
@@ -231,7 +246,7 @@ def main():
         mesh.select_set(True)
         bpy.context.view_layer.objects.active = mesh
         bpy.ops.object.join()
-        print("[✓] Merged Symbol_AB into StarSaber main mesh.")
+        print("[✓] Prepared and merged clean 3D Autobot emblems into StarSaber main mesh.")
 
     # Explicit material setup
     mesh.data.materials.clear()

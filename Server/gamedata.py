@@ -102,6 +102,7 @@ ROSTER = {
     "rhinox_gs_voyager2014":        ("maximal",    "tech", 5),
     "rodimusprime_gs_mp09":         ("autobot",    "tact", 5),
     "sideswipe_gs":                 ("autobot",    "scou", 5),
+    "sideswipe_cin_rotf":           ("autobot",    "warr", 5),
     "starsaber_gs_leader2014":      ("autobot",    "tact", 5),
     "strongarm_gs":                 ("autobot",    "tact", 5),
     "sunstreaker_gs_deluxe2008":    ("autobot",    "braw", 5),
@@ -284,6 +285,7 @@ _BOT_BASE_STATS = {
     "sharkticon_gs_warrior": (44700, 2990),
     "shockwave_gs": (38600, 2825),
     "sideswipe_gs": (39800, 3050),
+    "sideswipe_cin_rotf": (43500, 3120),
     "skywarp_gs_leader2015": (37200, 2765),
     "slipstream_gs": (40800, 2980),
     "soundblaster_gs_mp13b": (37450, 2765),
@@ -664,6 +666,7 @@ _ART_BASE = {
     "rhinox_gs_voyager2014": "rhino_bw",  # Only the Beast Wars-styled art ships.
     "rodimusprime_gs_mp09": "rodimus_gs",
     "sideswipe_gs": "sides_gs",
+    "sideswipe_cin_rotf": "sideswipe_cin_rotf",
     "starsaber_gs_leader2014": "starsaber",
     "strongarm_gs": "strongarm_gs",
     "sunstreaker_gs_deluxe2008": "sunstreak_gs",
@@ -863,6 +866,7 @@ _BOT_NAMES = {
     "rhinox_gs_voyager2014": "Rhinox",
     "rodimusprime_gs_mp09": "Rodimus Prime",
     "sideswipe_gs": "Sideswipe",
+    "sideswipe_cin_rotf": "Sideswipe (ROTF)",
     "starsaber_gs_leader2014": "Star Saber",
     "strongarm_gs": "Strongarm",
     "sunstreaker_gs_deluxe2008": "Sunstreaker",
@@ -1805,6 +1809,7 @@ _CHALLENGE_SPOKE_ENEMIES = [
         "bludgeon_gs_rd20",
         "drift_cin_aoe",
         "dragstrip_gs_deluxe2016",
+        "sideswipe_cin_rotf",
     ],
     # 3: Tactician (West, 180 deg) - 13 bots
     [

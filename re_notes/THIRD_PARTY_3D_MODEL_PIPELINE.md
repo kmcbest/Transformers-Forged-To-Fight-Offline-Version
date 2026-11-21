@@ -1174,9 +1174,60 @@ FOC 等虚幻 3（UE3）模型的四根主手指在骨架上只有两节骨骼�
   4. **Alliance 贴图 `Tx_*_D.png` Alpha 全零预乘清黑与 `Tx_*_S.png` 通道错读**：
      * Alliance `Tx_*_D.png` 的 **Alpha 通道实为极窄眼部/眼罩自发光遮罩**（非眼部区域 `Alpha = 0`，眼区约占 `0.06%~0.10%`），而漫反射 RGB 眼区底色偏暗灰（`[48, 48, 48]`）；若使用 Pillow 对 `RGBA` 直接 `.resize(..., LANCZOS)`，LANCZOS 会把 `RGB × Alpha` 预乘，**瞬间把 99% 身体漫反射涂成纯黑 `[1.6, 1.6, 1.6]`**！
      * `Tx_*_S.png` 三通道语义：`R ≈ 金属/磨损高光`，`G ≈ 源粗糙度`，**`B = 极高质量烘焙环境光遮蔽 (AO)`**（而非金属度）；严禁从漫反射粗略按颜色（如“蓝色/金色”）提取 `RAOE.B` 自发光，否则会把全部蓝甲大腿/金甲胸口点亮成 HDR 过曝白光（`>10%`）。
+  5. **3D 程序化无贴图阵营标（`Symbol_AB` / `Symbol_DC`）UV 采样脏噪与共面 Z-Fighting 撕裂陷阱**：
+     * Alliance 模具的博派/狂派标志（如 `Symbol_AB.001`，530 面 826 顶点的独立立体浮雕）在原档中并未展平至机体 UV，而是挂载了 3ds Max 程序化纯色材质（`M_Symbol_AB` 纯红 + `M_Symbol_Black` 纯黑底托）；
+     * **致命踩坑**：一旦直接合并进身体主网格 `cha_*_main` 并共用身体贴图，其未初始化的 UV（默认堆叠在 `[0.02..0.89, 0.03..0.98]`）会胡乱采样机体漫反射上的螺丝、暗部接缝与划痕噪点；且标志网格与胸部/肩甲挡板完全共面（$Y = -0.215$），在移动端深度缓冲精度下会触发极具破坏力的 **Z-Fighting 剧烈闪烁穿模与黑洞镂空撕裂**（呈现为“标志破破烂烂”）；
+     * **标准解法（安全调色板隔离 + 法向微抬升）**：
+       * 在身体主贴图 `cha_*_main_Diffuse.png`、`_RAOE.png`、`_Normal.png` 寻找空置 UV 孤岛（如 $U \in [0.35, 0.40], V \in [0.40, 0.45]$），分别烙印纯净的 **博派亮红**（Diff=`[215, 25, 28]`，RAOE=`[175, 255, 0]`，Norm=`[128, 128, 0]`）与 **炭黑底衬**（Diff=`[22, 22, 26]`，RAOE=`[160, 255, 0]`，Norm=`[128, 128, 40]`）；
+       * 将阵营标立体几何的红面与黑面 UV 分别定向坍缩映射至这两个色块中心；
+       * 将标志沿外法向（$-Y$ 方向）**整体微抬升 $3.6\text{mm}$（模型空间 $+0.015\text{m}$）**，彻底物理消除与肩甲底面的深度共面竞争，呈现博物馆级纯净立体的金属徽章。
+  6. **对称型冷兵器（王者之剑/双刃阔剑）纵轴 90° 刀刃朝向纠正与 Unity 免二次调手重做机制**：
+     * 史达王者之剑等重剑几何在模型局部空间中，局部 Z 轴为剑身纵深轴（$Z \in [-0.39, 6.86]$），剑格护手延展在 X 轴，双面刃口延展在 Y 轴；
+     * 若人工在 Unity HITL 中微调握姿时，误将剑格顺着手掌贴合（导致宽面朝外、刃口向侧面），**切勿让用户重新打开 Unity 重调手指**；
+     * 剑格与双刃具备 $180^\circ$ 双边几何对称性，只需在配置文件 `starsaber_grip_config.json` 中直接将 `swordLocalRotationEuler.z` 偏转 $+90^\circ$（由 $\approx 0^\circ$ 改为 $89.58^\circ$），并在 Unity 批处理脚本中调用 `studio.BakeAndSaveGrip()` 重新将武器顶点与手指顶点融合烘焙到 54 骨网格资产 `cha_jetfire_gs_leader2014_00.asset`，即可在 100% 保持用户已调好的完美手指屈度与握拳姿态的前提下，实现刀刃自然朝前、剑格横护拳面的标准实战握剑手位。
+  7. **副手远程武器动态显隐系统（`PropsController` + Motormaster 左手射击）与武器材质图集共用规范（Off-Hand Dynamic Conjure & Atlas Sharing Standard）**：
+     * **设计初衷与逻辑合理性**：持械角色（如史达右手持王者之剑）若继续借用天火的双手机枪动作进行远程攻击，会导致“一边右手持剑一边双手端枪”的视觉逻辑崩坏。合理的战斗逻辑应为：右手保持常驻持剑，远程攻击时由空闲的左手（`LeftHand`）动态变出激光步枪进行单手射击，击发完毕后步枪隐去恢复常态持剑。
+     * **动态道具机制（`PropsController` 与 `PropMoveEvent`）**：
+       * 远程枪械不可像常驻近战武器那样烘焙在机体网格中，必须作为独立 GameObject 挂载在手腕骨骼下（如 `gun` 挂载在 `LeftHand`），并通过预制体上的 `PropsController._props["gun"]` 进行纳管；
+       * `PropsController` 中枪械道具配置：`InitFlags = 0`, `_startActive = False`, `_renderers = [{'m_FileID': 0, 'm_PathID': gun_smr_pid}]`。角色待机、走位与近战普通连招时枪械保持绝对隐形；
+       * 当触发远程招式（借调自汽车大师 Motormaster 的 `move_attackRanged_handGun_left_XL_01..03B`）时，动作事件流中的 `PropMoveEvent` 会在开枪帧区间（Duration $d \approx 16\text{f}$）自动激活该渲染器，开枪完成后自动归隐。
+     * **左手远程招式与动画剪辑嫁接**：
+       * `moves.assetbundle` 中替换远程攻击动作 42/43/44 槽位为左手版本：
+         * `move_attackRanged_handGun_left_XL_01` (PID: `6811001981586741581`)
+         * `move_attackRanged_handGun_left_XL_02` (PID: `4776763212269214863`)
+         * `move_attackRanged_handGun_left_XL_03B` (PID: `-4795991277224341066`)
+       * `FIGHT_AOC` 中将对应的 51/52/53 剪辑槽位重定向至 `character_anim_procedural.assetbundle` 中的左手开枪动作：
+         * Slot 51: `handGun_L_attackRanged_01` (PID: `-3948795660449728024`, FileID=2)
+         * Slot 52: `handGun_L_attackRanged_02` (PID: `6078334979657561662`, FileID=2)
+         * Slot 53: `handGun_L_attackRanged_03_B` (PID: `8599663582438923052`, FileID=2)
+     * **武器贴图零开销图集拼合（$U \in [0.5, 1.0]$ Atlas Sharing）**：
+       * 近战常驻剑在 `cha_*_wpns_*` 贴图集（512x512）中通常仅占用左半区（$U \in [0.0, 0.5]$）；
+       * 将 Alliance 原生激光步枪（`Tx_StarSaberGun_D/N/S.png`，256x256）缩放至 256x512 并拼入武器贴图右半区（$X \in [256, 512]$），步枪网格 UV 统一施加线性映射 $U' = 0.5 + 0.5U$；
+       * 如此近战王者之剑与远程激光步枪 **100% 共享唯一的 `cha_*_wpns` Kabam 材质球**（`MAT_WPNS_PID`），无需在母体预制体中引入任何额外材质定义或增加 DrawCall。
+     * **枪体层级重父化与挂载点定位**：
+       * 天火母壳的 `gun` 挂载在 `RightHand` 下，左手开枪必须在两个预制体（正常版与 `_lw` 版）中将其父节点重定向到 `LeftHand`（更新 `RightHand.m_Children` 与 `LeftHand.m_Children`）；
+       * 提取 `StarSaberGun_R` 时通过 Blender 正交旋转使枪管对准 Unity $+Z$ 正前方、枪顶导轨朝向 $+Y$ 上方、握把朝向 $-Y$ 下方，并将握把中心对齐至局部原点 $(0, 0, 0)$，绑定单骨 `COG`；
+       * 挂载在 `LeftHand` 局部坐标：`LocalPosition = (0.074, 0.525, -0.224)`，`LocalRotation = (-0.979, -0.006, -0.006, -0.202)`，使枪械在开火时自然贴合拳面指向前侧击发。
 * **Alliance 系列模具标准执行双轨铁律**：
   1. **左手 / 非持械手（默认 Track B 掌心刚性折叠）**：在自动化对齐脚本（如 `tools/starsaber/build_aligned_starsaber_robot.py`）中，将 `Dummy_hand_01`、`Hand_L_1..9` 全部权重安全折叠并入 **`LeftHand`**，保留原模雕塑级微合掌造型；整手随手腕刚性摆动，零撕裂风险；
   2. **需要握持武器之手（HITL 屈指 + 烘焙僵化合并回 `RightHand`）**：
      * 建调优工程时在 `RightHand` 下屏蔽母体 15 根死指骨，仅基于 `mesh.matrix_local.inverted()` 重建真实的 **`Hand_R_1->4->5` / `Hand_R_2->6->7` / `Hand_R_3->8->9`** 三条链；
      * 在 Unity HITL 工具中人工微调剑柄方位与手指内卷贴合度后，执行 **`BakeMesh()` 冻结顶点**并将手指顶点连同武器 Submesh 1 **100% 合并重绑回母体 `RightHand`**（`DeleteAsset + CreateAsset` 写入 54 骨 `.asset`），最终使游服内既具备完美实体握持姿势、又完全免疫官方指骨动画覆写导致的畸变；
      * 贴图构建脚本必须**先 `im.convert("RGB")` 与 `im.getchannel("A")` 拆离后再分别重采样**，严格限定 `RAOE.B` 仅点亮头部眼罩 ROI（`< 0.2%`），并使用 `sat < 0.22` 确保红/白/蓝/黄彩漆盔甲 `NM.B = 0`（纯电介质）。
+
+
+### 11.18 飞标（Swoop）与飞行动物/鸟兽模具：Blender FBX 非单位 BindPose 缩放剥离大爆炸破局、原生 58 帧拍翅循环解构与胸口翼龙嘴火球重击
+* **详见独立专题工程指南**：[`re_notes/BIRD_BEAST_TRANSFORMATION_PIPELINE.md`](file:///e:/Agent/TFTF-blender/re_notes/BIRD_BEAST_TRANSFORMATION_PIPELINE.md)
+* **适用模具**：飞标（Swoop，`swoop_gs_deluxe2008`，科技系 `tech`）等借用喷气机/空军骨架的鸟形、飞龙形野兽金刚。
+* **三大核心攻坚复盘与沉淀**：
+  1. **Blender FBX 导入剥离 `Lcl Scaling != 1.0` 触发断头断喙大爆炸根治（FK 绝对矩阵重算）**：
+     * 3ds Max 制作的模型常在 `bird_neck` (0.3366)、`bird_Head` (0.6236)、`beak` (0.4659) 等骨骼带有非单位缩放；
+     * Blender `io_scene_fbx` 会将 EditBone 缩放强制置 1，但在应用动画或读取骨骼姿态时导致 BindMatrix 与局部变换脱节，子部件（如鸟嘴、长颈、翅膀）沿轴向飞脱数米之外；
+     * **根本解法**：在 `tools/swoop/build_aligned_swoop_vh.py` 中直接解析 FBX 文本的 `Properties70["Lcl Scaling"]`，在纯 Python 中按正向运动学递归重算 $\mathbf{W}_{\text{rest}}$ 与 $\mathbf{W}_{\text{pose}}$，并进行局部线性混合蒙皮（LBS）顶点烘焙，彻底杜绝几何撕脱断裂，误差 $< 0.0001\text{mm}$。
+  2. **翼龙原生 58 帧拍翅循环（`vehicle_idle01`）解构与喷气机 10 骨平滑映射**：
+     * 将源模型自带的 58 帧双周波扑翼（内翼 $22.4^\circ$、外翼 $34.3^\circ$、下喙 $3.8^\circ$、爪子 $13.9^\circ$）精准映射到 Ramjet 喷气机的 10 根主要骨骼；
+     * 翼膜连接处采用 50/50 线性渐变权重，消除折叠锐角；
+     * 通过 Unity `BuildSwoopWingFlapClip()` 烘焙为标准 `AnimationClip` 注入 Car AOC，使载具悬停飞行充满生物扑翼生机感。
+  3. **胸口翼龙嘴吐火重击（借用钢锁 `projectile_grimlock_fireball`）与跨包克隆序列化安全矩阵**：
+     * 在飞标胸口上喙与下喙交汇处（Beak Tip）设立发射定位器 `joint_Torso/loc_mouth_flame`，在 `moves.assetbundle` 中将重击发射节点与事件重定向；
+     * 跨包克隆 Prefab 严格遵循 `ORIGINAL_CHARACTER_CREATION_GUIDE.md` 铁律：`script_types` 必须按 `(FileID, PathID)` 严格升序排列并同步回写所有 `script_type_index`，全量更新 `m_PreloadTable` 与 `m_Container` 切片，动作总数强制断言 $\ge 945$。

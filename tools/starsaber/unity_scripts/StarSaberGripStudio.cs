@@ -336,6 +336,44 @@ public class StarSaberGripStudio : MonoBehaviour {
     }
 
 #if UNITY_EDITOR
+    public void LoadAndApplyConfig(string jsonPath = null) {
+        FindReferences();
+        if (string.IsNullOrEmpty(jsonPath)) {
+            jsonPath = Path.Combine(Application.dataPath, "StarSaber/starsaber_grip_config.json");
+        }
+        if (!File.Exists(jsonPath)) {
+            Debug.LogError("[StarSaber Grip Studio] Config file not found: " + jsonPath);
+            return;
+        }
+        string json = File.ReadAllText(jsonPath);
+        var config = JsonUtility.FromJson<GripConfig>(json);
+        if (config == null) return;
+
+        curlAll = config.curlAll;
+        thumbCurl = config.thumbCurl;
+        thumbSplay = config.thumbSplay;
+        indexCurl = config.indexCurl;
+        fingersCurl = config.fingersCurl;
+
+        if (thumb1 != null) thumb1.localEulerAngles = config.thumb1Rot;
+        if (thumb2 != null) thumb2.localEulerAngles = config.thumb2Rot;
+        if (thumb3 != null) thumb3.localEulerAngles = config.thumb3Rot;
+        if (index1 != null) index1.localEulerAngles = config.index1Rot;
+        if (index2 != null) index2.localEulerAngles = config.index2Rot;
+        if (index3 != null) index3.localEulerAngles = config.index3Rot;
+        if (fingers1 != null) fingers1.localEulerAngles = config.fingers1Rot;
+        if (fingers2 != null) fingers2.localEulerAngles = config.fingers2Rot;
+        if (fingers3 != null) fingers3.localEulerAngles = config.fingers3Rot;
+
+        if (swordTransform != null) {
+            swordTransform.localPosition = config.swordLocalPosition;
+            swordTransform.localEulerAngles = config.swordLocalRotationEuler;
+            swordTransform.localScale = Vector3.one * (config.swordScale > 0.01f ? config.swordScale : 1.0f);
+            SyncSwordFieldsFromTransform();
+        }
+        Debug.Log("[StarSaber Grip Studio] Loaded and applied saved grip config.");
+    }
+
     public void BakeAndSaveGrip() {
         Debug.Log("=== [StarSaber Grip Studio] Baking Posed Grip & Sword into Game-Ready 54-Bone Mesh Asset ===");
         FindReferences();

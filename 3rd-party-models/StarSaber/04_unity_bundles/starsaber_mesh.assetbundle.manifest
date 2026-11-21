@@ -1,9 +1,9 @@
 ManifestFileVersion: 0
-CRC: 1186497537
+CRC: 4083623616
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: b6f57dd75d1bb56c2045d16e6a60dbef
+    Hash: bdaedf7b882c83c419641866e67ff009
   TypeTreeHash:
     serializedVersion: 2
     Hash: 78b4eb24b215c292a3fbe4dfa013d0e8
@@ -14,5 +14,6 @@ ClassTypes:
 SerializeReferenceClassIdentifiers: []
 Assets:
 - Assets/StarSaber/cha_jetfire_gs_leader2014_00.asset
+- Assets/StarSaber/cha_jetfire_gs_leader2014_wpns_rifle_right.asset
 - Assets/StarSaber/cha_jetfire_gs_leader2014_01.asset
 Dependencies: []
