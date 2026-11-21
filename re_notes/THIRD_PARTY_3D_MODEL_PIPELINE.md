@@ -1128,3 +1128,55 @@ FOC 等虚幻 3（UE3）模型的四根主手指在骨架上只有两节骨骼�
 
 ### 11.15 三变金刚连环 SP3 混剪、粒子发射与接地校验铁律
 * 闪电 `7.40s`（`222f`）连环三变 SP3 的完整工艺（风刃前半 + 三次 Hermite 过渡 + 汽车大师锚定后半、Unity `-batchmode` 按实测 `Hips` 反算双载具 `COG` 动画、`track_44` 与三网互斥显隐、清除母包粒子 `ClampVelocityModule` 死锁使子弹射出、砸地后 `Actor1` 下沉 `-14.0m` 瞬失及消除坦克 `+1.199m` 悬空偏置等七大实战避坑规范）详见 [`TRIPLE_CHANGER_ARCHITECTURE_GUIDE.md`](file:///e:/Agent/TFTF-blender/re_notes/TRIPLE_CHANGER_ARCHITECTURE_GUIDE.md) **第十节**。
+
+### 11.16 第三方持械角色（史达 Star Saber）Unity HITL 握剑精调台、0.01x 外壳缩放泄露与 `CopySerialized` 刷盘失败铁律
+* **故障现象**：
+  1. 导出带独立手指骨（`Hand_R_1..9`）的 Unity HITL 调优 FBX 后，进入 Unity 一摆预设，右手几块手指竟集体飞到角色脚底与地面周围散落（`StarSaber.001` 包围盒被撑大），而 `RightHand` 节点处空空如也；
+  2. 在 Unity HITL 场景中肉眼和 `BakeMesh()` 实测手指都已经弯进掌心并握住剑柄（`Live BakeMesh tip verts Y=[5.835, 6.152]`），但点击烘焙并跑真机 `FE_Idle` 渲染却发现右手手指依然笔直下垂未弯（磁盘上的 `.asset` 顶点仍停在 `Y=[5.168, 5.478]`），且无头渲染画面中混入了 HITL 原场景站在原地的静态角色残影。
+* **三大精确根因**：
+  1. **FBX 外层 `0.01x` 包装节点缩放泄露**：第三方手游 FBX（如《Transformers: Alliance》）骨架 `Bip001` 外往往包有一层父容器（如 `StarSaber_pbr`，`scale = (0.01, 0.01, 0.01), rot_x = 90°`）。脚本若在解绑 `mesh.parent = None` 之前直接用 `orig_arm.matrix_world @ b.head_local` 读取手指关节坐标，骨骼坐标会自带 `0.01x` 缩小并旋转倒地，掉在 `(0, 0, 0)` 原点地板上；而网格顶点仍处在半空 `Y ≈ 6.0m` 处。一旦对位于地板的枢轴施加上手腕旋转，手指网格就被以 6 米为半径甩到地面四周！
+  2. **`EditorUtility.CopySerialized` 静默遗漏原生网格顶点流**：当 `BakeAndSaveGrip()` 使用 `EditorUtility.CopySerialized(combinedMesh, existing)` 覆写已存在的 `Mesh` `.asset` 时，Unity 2020.3 仅更新了 `m_LocalAABB` 等外围字段，并未可靠刷新 C++ 底层的 `m_VertexData` 原生字节流（即使调用 `SetDirty` + `SaveAssets` 也可能仍留旧顶点），导致磁盘 `cha_*_00.asset` 里保存的还是未弯曲的 Rest Pose！
+  3. **左手坐标系 `Cross` 屈指符号陷阱与域重载覆盖手动微调**：
+     * 在 Unity 左手坐标系中手算 `Vector3.Cross(fingerDown, worldInward)` 配合 `AngleAxis(+deg, axis)` 极易差一个负号把“向掌心内扣”变成“向手背外翻”；
+     * `[ExecuteInEditMode]` 脚本若未在 `OnEnable()` 中同步 `prevCurlAll = curlAll` 与剑 Transform 缓存，Unity 每次代码域重载后 `Update()` 会判定滑块变更并把用户刚在 Scene 手动捏好的指节或剑位覆盖回旧值；
+     * HITL 工程同时保留天火 15 根无用死手指骨（`RightHandIndex1..Pinky3`）会让 `RightHand` 层级混乱；验证脚本 `Verify*RealGameAnimator.cs` 若仅在 `!Application.isBatchMode` 时隐藏现场景根节点，从命令行 `OpenScene` 后调起验证仍会让场景里的 `StarSaber_Candidate` 与 `Stage Floor` 穿帮入镜。
+* **可复用工程铁律**：
+  1. **读取原模骨骼位置一律经 `mesh.matrix_local.inverted()`**：先用 `mesh.matrix_local.inverted() @ b.head_local` 把骨骼关节点变换到**未解绑时的原始网格局部空间**，再施加与网格完全一致的 `SCALE_FACTOR` 与 `ground_z_offset`；导出前在 Blender 重新导入 FBX 渲染对比张手与握拳，并校验所有指节头与对应顶点组质心距离 $< 0.05\text{m}$；
+  2. **HITL 屈指轴必用 `Quaternion.FromToRotation` 零歧义直算**：
+     ```csharp
+     Quaternion q = Quaternion.FromToRotation(worldFrom.normalized, worldTo.normalized);
+     q.ToAngleAxis(out float ang, out Vector3 worldAxis);
+     if (ang < 0f) worldAxis = -worldAxis;
+     Vector3 localAxis = Quaternion.Inverse(bone.rotation) * worldAxis.normalized;
+     ```
+     严禁在 Unity 左手坐标系手猜 `Cross` 符号；剑体旋转轴同样按 `swordMesh.bounds.size` 最长轴与 `FromToRotation` 对齐；
+  3. **烘焙保存 Mesh 资产严禁用 `CopySerialized`，改用 `DeleteAsset + CreateAsset`（或 `Clear(false)` 逐字段赋值）并当场回读校验顶点**：在 `BakeAndSaveGrip()` 中先加载官方母体 SMR 的**权威 54 骨 `bones` 与 `bindposes`**（将 HITL 指骨 `Hand_R_*` 与剑网格 `100%` 刚性折叠映射至 `RightHand`），再用 `AssetDatabase.DeleteAsset(path)` + `AssetDatabase.CreateAsset(combinedMesh, path)` + `AssetDatabase.SaveAssets()` 落盘，随后立即从磁盘回读 `savedAsset.vertices[tipIdx]` 与 `Live BakeMesh` 比对确认误差 $= 0.000\text{mm}$；
+  4. **HITL 调整台交互四大体验守则**：
+     * 清除 `RightHand` 下母体死指骨仅保留真实受控骨（`Hand_R_1..9` + 剑子物体），剑 Pivot 居中于剑柄中点并锚定至左右指根中点掌心口袋；
+     * `OnEnable()` 同步滑块旧值防止域重载覆盖手调姿态（仅当持久化版本号升级时重算内卷轴并保护剑 Transform）；
+     * `OnSceneGUI` 为指骨与剑柄绘制彩色球体与骨连线，且把**【💾 烘焙并保存】绿色按钮置顶于 Inspector 最上方 + 挂载顶部 `TFTF/` 菜单项**（避免用户选中剑或指骨时找不到宿主身上的按钮）；
+     * 验证脚本在 `try/finally` 中无条件临时隐藏当前已加载场景全部 `RootGameObjects`（不区分是否 `isBatchMode`），且每次修改 C# 后用批处理日志与回读图片 `read_file` 双重验收。
+
+### 11.17 《Transformers: Alliance》系列模具 9 骨合并手指防崩铁律、默认载具轨道与纹理 `RGBA` 预乘清零陷阱
+* **适用范围**：所有源自《Transformers: Alliance》的手游模具（如史达 Star Saber，共同特征为 `Bip001` 骨架 + 外层 `0.01x` `*_pbr` 父容器 + `Hand_L/R_1..9` 指骨命名 + `Tx_*_D/N/S.png` 贴图集）。
+* **四大核心暗坑与根因**：
+  1. **非 5 指对称的“3 分支 × 3 节 = 9 骨”合并拓扑（直接硬绑母体 15 根指骨必崩）**：
+     * 不同于 UE3/FOC（双节 5 指）或 Maya 标准 30 指骨（`Thumb/Index/Middle/Ring/Pinky 1..3`），Alliance 模具每只手仅有 **`1` 根掌骨 + `9` 根跳跃编号指骨**，真实拓扑分工为：
+       * 掌骨：`Dummy_hand_01`（左）/ `Dummy_hand_002`（右）
+       * 大拇指 3 节：`Hand_L/R_1 -> 4 -> 5`
+       * 食指 3 节：`Hand_L/R_2 -> 6 -> 7`
+       * **中指+无名指+小指“三指合一”3 节**：`Hand_L/R_3 -> 8 -> 9`
+     * **致命踩坑**：若按常规 5 指角色习惯把 `Hand_*_1..9` 直接一对一映射去驱动母体 `LeftHandThumb1..Pinky3`，不仅编号完全不连续，更因为 `Hand_*_3/8/9` 同时拖拽三根手指、且 Alliance 局部骨轴与 Kabam `Avatar` 固有静止轴正交/反向，进战斗或待机动画瞬间就会触发手指各指节**拧断、反向翻折与散架穿模**（“手指明显崩了”）。
+  2. **源 FBX 默认激活载具动画轨道（一导入只剩飞机）**：
+     * Alliance `StarSaber.fbx` 等原档把 `Bip001|vehicle_idle01_Garage|Base Layer` 等变形动作直接存为当前默认 Action；在 Blender/Unity 中不清理或未先清零 Pose/Action 直接看，只能看到变形后的载具而看不到人形，清动画前必须先 `animation_data_clear()` + 全骨复位或仅在提取载具时显式切回 `vehicle_idle` 并 `eval_mesh.to_mesh()` 烘出。
+  3. **`0.01x` 外壳缩放与父子坐标空间错位**：
+     * 同 §11.16，Alliance `*_pbr` 外包装自带 `scale=(0.01, 0.01, 0.01)` 与 `rot_x=90°`；任何指关节位置采集必须通过 **`mesh.matrix_local.inverted() @ b.head_local`** 转回未解绑网格局部空间，严禁直接用解绑前 `arm.matrix_world @ b.head_local`。
+  4. **Alliance 贴图 `Tx_*_D.png` Alpha 全零预乘清黑与 `Tx_*_S.png` 通道错读**：
+     * Alliance `Tx_*_D.png` 的 **Alpha 通道实为极窄眼部/眼罩自发光遮罩**（非眼部区域 `Alpha = 0`，眼区约占 `0.06%~0.10%`），而漫反射 RGB 眼区底色偏暗灰（`[48, 48, 48]`）；若使用 Pillow 对 `RGBA` 直接 `.resize(..., LANCZOS)`，LANCZOS 会把 `RGB × Alpha` 预乘，**瞬间把 99% 身体漫反射涂成纯黑 `[1.6, 1.6, 1.6]`**！
+     * `Tx_*_S.png` 三通道语义：`R ≈ 金属/磨损高光`，`G ≈ 源粗糙度`，**`B = 极高质量烘焙环境光遮蔽 (AO)`**（而非金属度）；严禁从漫反射粗略按颜色（如“蓝色/金色”）提取 `RAOE.B` 自发光，否则会把全部蓝甲大腿/金甲胸口点亮成 HDR 过曝白光（`>10%`）。
+* **Alliance 系列模具标准执行双轨铁律**：
+  1. **左手 / 非持械手（默认 Track B 掌心刚性折叠）**：在自动化对齐脚本（如 `tools/starsaber/build_aligned_starsaber_robot.py`）中，将 `Dummy_hand_01`、`Hand_L_1..9` 全部权重安全折叠并入 **`LeftHand`**，保留原模雕塑级微合掌造型；整手随手腕刚性摆动，零撕裂风险；
+  2. **需要握持武器之手（HITL 屈指 + 烘焙僵化合并回 `RightHand`）**：
+     * 建调优工程时在 `RightHand` 下屏蔽母体 15 根死指骨，仅基于 `mesh.matrix_local.inverted()` 重建真实的 **`Hand_R_1->4->5` / `Hand_R_2->6->7` / `Hand_R_3->8->9`** 三条链；
+     * 在 Unity HITL 工具中人工微调剑柄方位与手指内卷贴合度后，执行 **`BakeMesh()` 冻结顶点**并将手指顶点连同武器 Submesh 1 **100% 合并重绑回母体 `RightHand`**（`DeleteAsset + CreateAsset` 写入 54 骨 `.asset`），最终使游服内既具备完美实体握持姿势、又完全免疫官方指骨动画覆写导致的畸变；
+     * 贴图构建脚本必须**先 `im.convert("RGB")` 与 `im.getchannel("A")` 拆离后再分别重采样**，严格限定 `RAOE.B` 仅点亮头部眼罩 ROI（`< 0.2%`），并使用 `sat < 0.22` 确保红/白/蓝/黄彩漆盔甲 `NM.B = 0`（纯电介质）。
