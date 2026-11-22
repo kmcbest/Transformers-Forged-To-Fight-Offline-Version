@@ -155,6 +155,8 @@ ROSTER = {
     "vortex_gs":                    ("decepticon", "warr", 5),
     "tarn_gs":                      ("decepticon", "braw", 5),
     "brawl_gs":                     ("decepticon", "braw", 5),
+    "swindle_gs":                   ("decepticon", "tech", 5),
+    "blastoff_gs":                  ("decepticon", "demo", 5),
     "waspinator_gs_deluxe":         ("predacon",   "demo", 5),
 
     # --- Sharkticons (unlocked 5-star cards; cannon-fodder combat stats preserved) ---
@@ -299,6 +301,8 @@ _BOT_BASE_STATS = {
     "sunstreaker_gs_deluxe2008": (44250, 3560),
     "tantrum_gs_kabam": (44850, 3590),
     "brawl_gs": (45427, 3427),
+    "swindle_gs": (38520, 2854),
+    "blastoff_gs": (46500, 3150),
     "tarn_gs": (45022, 3637),
     "bugbite_gs_kabam": (45022, 3637),
     "thrust_gs_deluxe2008": (40400, 2950),
@@ -716,6 +720,10 @@ _ART_BASE = {
     "tarn_gs": "tarn_gs",
     "brawl_gs": "brawl_gs",
     "brawl": "brawl_gs",
+    "swindle_gs": "swindle_gs",
+    "swindle": "swindle_gs",
+    "blastoff_gs": "blastoff_gs",
+    "blastoff": "blastoff_gs",
     "vortex_gs": "vortex_gs",
     "waspinator_gs_deluxe": "wasp_bw",  # Only the Beast Wars-styled art ships.
 
@@ -913,6 +921,10 @@ _BOT_NAMES = {
     "tarn_gs": "Tarn",
     "brawl_gs": "Brawl",
     "brawl": "Brawl",
+    "swindle_gs": "Swindle",
+    "swindle": "Swindle",
+    "blastoff_gs": "Blast Off",
+    "blastoff": "Blast Off",
     "vortex_gs": "Vortex",
     "waspinator_gs_deluxe": "Waspinator",
 

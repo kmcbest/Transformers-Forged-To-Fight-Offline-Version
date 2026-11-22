@@ -67,7 +67,7 @@ static const char * const g_enemy_pool[] = {
     "sharkticon_gs_scout", "sharkticon_gs_tactician", "sharkticon_gs_tech", "sharkticon_gs_warrior",
     "shockwave_gs", "sideswipe_gs", "skywarp_gs_leader2015", "slipstream_gs",
     "soundblaster_gs_mp13b", "soundwave_gs", "starsaber_gs_leader2014", "starscream_ghost_gs",
-    "strongarm_gs", "sunstorm_gs_leader2015", "sunstreaker_gs_deluxe2008", "tantrum_gs_kabam", "thrust_gs_deluxe2008",
+    "strongarm_gs", "sunstorm_gs_leader2015", "sunstreaker_gs_deluxe2008", "swindle_gs", "blastoff_gs", "tantrum_gs_kabam", "thrust_gs_deluxe2008",
     "thundercracker_gs_leader2015", "ultramagnus_gs_leader", "ultramagnus_sg_leader", "vortex_gs", "waspinator_gs_deluxe",
     "wheeljack_gs_mp20", "wildrider_gs_deluxe2016", "windblade_gs"
 };

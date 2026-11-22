@@ -1372,6 +1372,18 @@ FOC 等虚幻 3（UE3）模型的四根主手指在骨架上只有两节骨骼�
               2. **几何微移与材质槽并入发光组**：在模型准备脚本 `build_aligned_sideswipe_robot.py` 中：
                  * 将 Mesh 20 沿外侧法线方向微调前推 `0.025m`（`v.co.y -= 0.025`），确保透光面板稳定浮出底舱外沿；
                  * 将主躯干网格中原本属于 Slot 0 的 14 个凹槽底板三角形（共 70 个面）同步划归材质槽 1（`M_Sideswipe_Lights`），并将 UV 全部重映射至左下角红光发射色块区，使整个凹陷腔体与透光透镜统一作为一体化红光光源，彻底消灭深度遮挡与伪影！
+      * **成品 AssetBundle 多 SubMesh 热拆、3-SubMesh 内构还原与旋风/战车队实操铁律**（参考 `tools/vortex/fix_vortex_final.py`、`tools/onslaught/patch_onslaught_dual_emissive.py`、`tools/brawl/patch_brawl_dual_emissive.py`）：
+        1. **共用 `RAOE` 贴图禁写铁律（防载具/全身泛粉）**：修改任何 `RAOE` 前必须先扫描全包所有 Material 的 `_pbr_composite_tex` 引用；`wpns_RAOE` 等常被载具主材质与武器共用的贴图**严禁直写局部高亮**（如旋风直接写 `wpns_RAOE` 会导致直升机机身与机炮大面积泛粉），必须剥离独立 `SubMesh` 并绑定独占贴图槽。
+        2. **三步原地热拆与双容器 `PreloadTable` 闭环**：无需回 Unity 重导完整 Prefab，可在 `UnityPy` 层面直接按三角面集合重排 `m_IndexBuffer` 并扩充 `m_SubMeshes`（`firstByte` 按 `uint16` 字节递增）：
+           * **同形态 Shader 深拷贝**：Robot 新槽深拷贝宿主 `MAT_ROBOT_PID`、Vehicle 新槽深拷贝宿主 `MAT_VEHICLE_PID`（保持完全一致的 `m_Shader` 与关键字布局），仅覆写 `_emissive_intensity_col`、`_emissive_overbright_range` 与纹理槽；
+           * **双 SMR 与 `m_PreloadTable` 同步**：必须同步绑定标准版（`*.prefab`）与轻量化版（`*_lw.prefab`）两份 `SkinnedMeshRenderer.m_Materials`，并在保存前调用 `rebuild_container_preload_table` 重建两份 Container 的 `m_PreloadTable`（防止 `_lw` 容器漏预加载新材质 PathID）。
+        3. **`m_VertexData` Stream 1 16 字节对齐法则（致命坑）**：Unity 对顶点缓冲各 Stream 强制按 **16 字节边界对齐**。当顶点数 `vc` 为奇数且 Stream 0 步长为 `40B` 时（如旋风载具 `vc = 6457`，`6457 * 40 = 258,280`），`UV0`（Stream 1）真实偏移在 **`258,288`** 而非 `vc * 40`！所有热改 UV 脚本必须严格使用 `s1_off = (vc * stride0 + 15) & ~15`（`align16`），否则差 8 字节会直接把整片 UV 拧乱花屏。
+        4. **复用冗余 `Texture2D` 槽位必清 `.resS` 指针与锁死 WrapMode**：借用空闲武器贴图槽位前必须在 `t.save()` 前显式清零 `t.m_StreamData`（`offset = 0, size = 0, path = ""`），按贴图语义设定 `t.m_TextureSettings.m_WrapU / m_WrapV`（孤立标志图集设为 `1 = Clamp` 防渗边；平铺机械管道设为 `0 = Repeat`），再调用 `t.set_image(img, target_format=TextureFormat.RGB24, mipmap_count=1)`（且禁止随后再用旧 `typetree` 覆盖写回）。
+        5. **保留平铺内构第 3 材质（如 FOC `TR_Test_Mat_INST`）**：第三方载具除壳体和阵营标外，往往另有靠 `Repeat` UV 驱动的推进器/进气道/风挡内构（如 `vh_interior_mat`）；不可强行合入单一 UV 图集，必须分入第 3 `SubMesh` 并配专属原生平铺纹理 + 非发光克隆材质（`_emissive_range = 0`）。
+        6. **浮雕/贴花阵营标“射线融底 + 法线微抬 + RAOE 平方衰减防糊白”**：
+           * 对独立 Quad 贴花面，按面片外法线反向 Raycast 采样背部机身真实 `Diffuse` 生成无缝底色后再叠加锐化标志，并沿外法线微抬 **`+0.008m`** 防共面 Z-Fighting；
+           * 因 Kabam 着色器按 $(\text{RAOE.B})^2$ 放大，精细黑缝标志只建议 **`RAOE.B ≈ 85~90`**（且内部黑眼/轮廓像素严格保留 **`0`** 防 Bloom 糊成白块），斜向蜂窝散热槽通过像素颜色/位置精确掩码赋 `155~170`，剑刃与大条灯带可赋 `155~220`。
+        7. **邻近部位精切与 `HEAD` 基线幂等重算**：当头雕存在相邻多结构（如水平目镜与鼻梁竖条、额头圆点）时，仅将水平目镜划入黄色 `SubMesh 1` 并把无关邻区 `RAOE.B` 显式抹 `0`；凡改写 `m_IndexBuffer` 或法线微抬的脚本必须**开头先从 `git show HEAD:...` 拉取干净基线全量重算**，严禁对已改包原地二次增量执行导致三角面序号错乱冲毁 `SubMesh`。
 
 ---
 
@@ -1407,3 +1419,37 @@ FOC 等虚幻 3（UE3）模型的四根主手指在骨架上只有两节骨骼�
        1. 严格执行 **Ground-First** 先对齐下肢：在对齐双臂之前，先把 `Thigh -> Calf -> Foot` 对齐至接近宿主垂轴的挺拔站位（如 `X = ±1.05m`，保留双脚舒适间距的同时缩减偏心距 85%+），保持 `Foot` 水平踩平地面并重置 `Z = 0`；
        2. 刚性整靴并入 **`LeftFoot` / `RightFoot`**：无分体前趾需求的机械坦克靴部件（前甲、后跟、外侧尾翼）统一绑回 `Foot`，消除脚面开裂；
        3. **脚踝插头深嵌 + 球形渐变权重**：将小腿底端 `Bone005*` 最末圈锥头顶点垂直延伸深扎入脚窝底部（留足离底安全距 `>= 0.28m`），并对靠近脚踝旋转心的插柱区域（`Z ∈ [0.65, 1.15]`）做 `LeftLeg <-> LeftFoot` 线性渐变柔顺权重，实现全角度弯折无死角、零悬空实心联动！
+
+
+---
+
+### 11.21 爆炸（Blast Off / FOC Combaticons）基于高大母壳（震天尊）的四重隔离、等比缩放与自发光防白化铁律
+* **适用模具**：赛博坦陨落（FOC）战车队 **爆炸（Blast Off，`blastoff_gs`，爆破系 `demo`）** 等需要大幅下调身高体格、且多角色打包同源的 UE3/FOC 角色模具（宿主：`megatronus_gs_kabam`）。参考实现：`tools/blastoff/build_blastoff_atlased_textures.py`、`tools/blastoff/build_aligned_blastoff_robot.py`、`tools/blastoff/generate_blastoff_bundle.py`。
+* **五大核心攻坚复盘、暗坑机制与标准解法**：
+  1. **严禁在 Blender 预缩网格破坏宿主 BindPose（“侏儒矮人 + 手指缩进前臂”灾难根治与 `character_model` 等比缩放铁律）**：
+     * **现象与血泪教训**：当需要让大母壳衍生角色（如 12.84m 震天尊骨架上的爆炸）在身高上低于队友（袭击 10.61m、吵闹 12.58m，原版设定爆炸处于 10.5m 区间）时，**绝对严禁在 Blender 对网格尺寸和骨骼坐标乘以 `SCALE_FACTOR = 0.80` 后导出！**
+     * **数学根因**：Unity 运行时蒙皮公式为 $\mathbf{v}_{\text{world}} = \sum w_i \cdot \mathbf{M}_{\text{bone\_i}} \cdot \mathbf{M}_{\text{bind\_i}}^{-1} \cdot \mathbf{v}_{\text{mesh}}$。Prefab 骨骼在 `megatronus_gs_kabam` 预制体中仍维持 $1.0\times$ 长度，而若 `m_BindPose` 在 Blender 被压缩至 $0.80\times$，两者就会产生严重错位：过长的宿主小臂骨把 $0.80\times$ 网格的手腕向外拖拽，将**全部手指活生生吸进前臂护甲内部**；过长的大腿骨将双膝向外掰开并把胸腰下压，使挺拔身材退化成严重的**蹲姿“侏儒”畸变**！
+     * **标准解法（1.0x 纯正网格 + `character_model.m_LocalScale` 容器级等比缩放）**：
+       1. Blender 对齐阶段必须严格维持 `SCALE_FACTOR = 1.0` 与宿主 55 骨 1:1 吻合（确保 $\mathbf{M}_{\text{bone}} \cdot \mathbf{M}_{\text{bind}}^{-1} \equiv \mathbf{I}$、30 节手指完全舒展）；
+       2. 在 `generate_blastoff_bundle.py` 中，直接对**标准版与轻量化双 Prefab 内的 `character_model` 子节点 `Transform.m_LocalScale`** 设置统一等比系数（如 `(0.82, 0.82, 0.82)`，输出 $12.84\text{m} \times 0.82 = 10.53\text{m}$）；
+       3. **原理优势**：`character_model` 坐标原点位于地面 `(0, 0, 0)`，且同时统领 `cha_*_00`、`Reference` 全身骨骼与 `transformed` 载具；同时游戏代码仅通过 `PropsController.SetActive` 控制其显隐、从不覆写 `character_model.localScale`（不同于根节点和 `Reference` 会在 `CharacterDetailScreen` / `BattleArbiter` 被动态重设）。从而实现 100% 零畸变的真·等比例缩小！
+  2. **母体同场共存四重物理隔离（根治爆炸与震天尊同台双隐形崩溃）**：
+     * **根因**：仅在代码中声明新的 `CAB` 字符串变量而不改写 `env.file.files` 底层字典键名，导致运行时两个包在 Unity 底层产生相同 CAB 命名空间冲突，双机同时上场即全部隐形；未保护重写 `AssetBundle.m_Container` 或未改名根节点亦会导致加载空指针。
+     * **标准四重隔离**：
+       1. 分配全局唯一 `NEW_CAB`（如 `CAB-7b0f00007b0f00007b0f00007b0f0001`）；
+       2. 保存前遍历全包对象替换 typetree 内的 `m_StreamData.path` / `m_Resource.m_Source` 字符串，并在写出前对 **`env.file.files` 执行 100% 字典键名与 `.resS`/`.resource` 重映射**；
+       3. 独立重命名双 Prefab 根 GameObject（`<Bot>_GS`、`<Bot>_GS_lw`）与网格节点（`cha_<bot>_00`、`cha_<bot>_01`）；
+       4. 同步重写 `AssetBundle.m_Name`、`m_AssetBundleName`、`m_Container` 键名（含 `_lw` 轻量化容器），按闭包精确重建 `m_PreloadTable` 切片。
+  3. **多角色合包中 FOC `*_e.jpg` 错配陷阱与“骨骼+UV+色度”三合一精准发光提取（修复头顶误亮、肩/胸/腿暗哑）**：
+     * **隐蔽大坑**：FOC 战车队多角色解包贴图目录（`O:\agent\transformers-fall-of-cybertron-combaticons\textures`）中的通用名称发光图（如 `head_e.jpg`、`chest_e.jpg`、`armup_e.jpg`、`legs_e.jpg`、`armlo_e.jpg`、`vh.jpg`）**实际属于包内其他角色**而非爆炸！若直接将其作为爆炸的 `RAOE.B` 掩码，会导致**头顶散热孔误点亮**，而真正的**肩甲齿轮弧、胸口格栅竖条、下胸双月牙散热槽、小腿竖光条、前臂腕部光槽全部熄灭不亮**！
+     * **标准定位与提取方法**：
+       1. 先用 Blender 读取 FBX 网格各多边形的真实**主导骨骼权重 + 3D 空间坐标**并绘制 UV 分区图，直接锁定目标人物独有的漫反射原图（如 `rb_blastoff_*_cust_matinst.jpg`）内的真实发光结构所在 UV 区域（胸格栅 `[0..375, 350..495]`、下胸月牙 `[340..488, 415..535]`、肩甲弧 `[92..200, 240..348]` & 轮辐、小腿条纹、前臂槽、双眼、航天飞机进气/喷口）；
+       2. 在目标区域内提取紫蓝通道差值信号（`B - G >= 5` 且 `B >= R * 0.84`），将其漫反射微提饱和至纯紫 `[155, 25, 245]` 并写入 `RAOE.B`；
+       3. **严格剔除哑光紫色涂装区**：明确跳过 `bip_pelvis`（胯部）与 `Lumbar02Robo02`（衣领）及头顶皇冠区域（`Y < 195`），确保胯部、衣领和头顶保持哑光紫/铜质感而不误发亮。
+  4. **高饱纯紫防白化校准铁律（根治“白眼”与“粉白胸标”过曝）**：
+     * **根因**：对 `RAOE.B` 满涂 `230~255`、底图 Diffuse 使用高亮粉紫 `[245, 60, 255]`、并将材质设为 `_emissive_overbright_range >= 20.0` 且 `_emissive_intensity_col.g = 0.15`（同时漏设 `_emissive_range = 1.0`）时，HDR 通道叠加 `G = 3.0+ > 1.0`，经由手游后处理 Bloom 直接全通道裁剪成**刺眼纯白或淡粉白**。
+     * **黄金校准配方**：
+       * 发光区 `RAOE.B` 精准控制在 **`105 ~ 155`**（双眼 `150`、霸天虎标 `105`、胸/肩/腿槽 `125~150`），底图漫反射赋高饱纯紫 `[145..165, 22..32, 235..255]`；
+       * 材质强制开启 **`_emissive_range = 1.0`**，`_emissive_overbright_range` 收敛至 **`15.0`**，并将 `_emissive_intensity_col` 的绿通道压死为 **`0.02`**（`{"r": 0.62, "g": 0.02, "b": 1.0, "a": 0.0}`）；确保所有部位发光在战斗与展厅界面皆呈现饱满深邃的赛博坦霓虹紫色、绝不泛白。
+  5. **驼背宽胸宿主颈胸净空保护（Spine/Neck Natural Clearance）**：
+     * 在对齐震天尊等宽胸宽肩基模时，保持新角色躯干、锁骨与颈/头部自然高度，绝不把 `Spine/Spine1` 强行拉伸或压向宿主高低肩部位，防止胸甲/领口上移遮挡下巴与面部轮廓。

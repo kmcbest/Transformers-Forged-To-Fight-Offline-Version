@@ -125,6 +125,8 @@ assets_redeco/*
 !assets_redeco/*brawl*
 !assets_redeco/*sideswipe*
 !assets_redeco/*swoop*
+!assets_redeco/*swindle*
+!assets_redeco/*blastoff*
 assets_redeco/*.ds
 assets_redeco/*.psd
 assets_redeco/*.bak*

@@ -18,6 +18,7 @@ static const EnemyStat ENEMY_STATS[] = {
     { "barricade_cin_dotm", 34882, 3515, 7121, 0.24f, 1.50f, "scou" },
     { "bitstream_gs_leader2015", 45022, 2555, 6889, 0.16f, 1.50f, "tech" },
     { "blaster_gs_leader2016", 38938, 3089, 6979, 0.16f, 1.50f, "tech" },
+    { "blastoff_gs", 46500, 3150, 7709, 0.16f, 1.50f, "demo" },
     { "blitzwing_gs", 38250, 2795, 6578, 0.16f, 1.50f, "tact" },
     { "bludgeon_gs_rd20", 40966, 3245, 7338, 0.16f, 1.50f, "warr" },
     { "bonecrusher_cin_rotf", 40966, 3123, 7196, 0.16f, 1.50f, "warr" },
@@ -89,6 +90,7 @@ static const EnemyStat ENEMY_STATS[] = {
     { "strongarm_gs", 42182, 3001, 7159, 0.16f, 1.50f, "tact" },
     { "sunstorm_gs_leader2015", 40154, 3062, 7054, 0.16f, 1.50f, "warr" },
     { "sunstreaker_gs_deluxe2008", 45022, 3637, 8146, 0.08f, 1.30f, "braw" },
+    { "swindle_gs", 38520, 2854, 6670, 0.16f, 1.50f, "tech" },
     { "swoop_gs_deluxe2008", 39200, 2980, 6875, 0.16f, 1.50f, "tech" },
     { "tantrum_gs_kabam", 45022, 3637, 8146, 0.08f, 1.30f, "braw" },
     { "tarn_gs", 45022, 3637, 8146, 0.08f, 1.30f, "braw" },
@@ -102,6 +104,6 @@ static const EnemyStat ENEMY_STATS[] = {
     { "wildrider_gs_deluxe2016", 45022, 3637, 8146, 0.08f, 1.30f, "braw" },
     { "windblade_gs", 34882, 3366, 6948, 0.24f, 1.50f, "scou" },
 };
-#define NUM_ENEMY_STATS 88
+#define NUM_ENEMY_STATS 90
 
 #endif // BOT_INFO_H

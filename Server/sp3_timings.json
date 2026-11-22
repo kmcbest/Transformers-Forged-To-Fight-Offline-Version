@@ -1965,5 +1965,25 @@
     ],
     "props": {},
     "notes": "吵闹 (Brawl) - 塞伯坦重型重炮战车 (基于威震天骨架)"
+  },
+  "swindle_gs": {
+    "intervals": [
+      [
+        266,
+        2366
+      ]
+    ],
+    "props": {},
+    "notes": "诈骗 (Swindle) - 塞伯坦突击战车 (基于千斤顶骨架)"
+  },
+  "blastoff_gs": {
+    "intervals": [
+      [
+        2500,
+        5000
+      ]
+    ],
+    "props": {},
+    "notes": "爆炸 (Blast Off) - 塞伯坦航天战机 (基于震天尊骨架)"
   }
 }
