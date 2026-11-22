@@ -1333,10 +1333,10 @@ FOC 等虚幻 3（UE3）模型的四根主手指在骨架上只有两节骨骼�
        3. **齿轮三：NativeHook 运行时安全重映射双保险**：
           * 在 `tools/nativehook/hook.c` 的 `remap_track_for_redeco()` 中为横炮增加拦截规则，在底层动态拦截 Track 的 `entityFullId`，确保即使遇到未补丁的 Stage 资产，引擎也能自动重映射为当前角色的真实网格路径。
   5. **多角色动作混合缝合与打击手感定制标准（Hybrid Multi-Bot Moveset Stitching）**：
-     * 为契合横炮作为“双刀刺客 + 高速轮滑”的独特格斗定位，采用了 5 位不同角色的动作精准混剪缝合：
+     * 为契合横炮作为“双刀刺客 + 高速轮滑”的独特格斗定位，采用了多位官方角色的动作精准混剪缝合：
        * **M2（中击2）**：黄豹 `cheetor_attackMedium_02`（前翻滚双刀下劈刺击）；
-       * **S1（特技1）**：漂移 `drift_attackSpecial_01`（疾速双刀前冲突刺）；
-       * **S2（特技2）**：黄豹 `cheetor_attackSpecial_01`（双刀大风车回旋旋风斩）；
+       * **S1（特技1）**：路障 `barricade_cin_attackSpecial_01`（疾速轮滑突进连击与重踢，纯肉搏无需外挂武器）；
+       * **S2（特技2）**：阿尔茜 `Arcee_Normal_attackSpecial_02`（双臂战刃灵动疾速乱舞穿刺，纯肉搏无需外挂武器）；
        * **Heavy（重击）**：路障重击改轮滑前冲撞击（NativeHook `0xEA1090`，保留疾速冲锋打击感并禁用原版手炮发射）；
        * **S3（特技3）**：电影擎天柱 SP3（双形态 Stage 借用，拔刀斩切入 $\to$ 概念跑车飞撞 $\to$ 终结斩）；
        * **Victory（胜利姿态）**：漂移收刀入鞘胜利 Stage（双刀收拢入背气势特写）。
@@ -1372,3 +1372,38 @@ FOC 等虚幻 3（UE3）模型的四根主手指在骨架上只有两节骨骼�
               2. **几何微移与材质槽并入发光组**：在模型准备脚本 `build_aligned_sideswipe_robot.py` 中：
                  * 将 Mesh 20 沿外侧法线方向微调前推 `0.025m`（`v.co.y -= 0.025`），确保透光面板稳定浮出底舱外沿；
                  * 将主躯干网格中原本属于 Slot 0 的 14 个凹槽底板三角形（共 70 个面）同步划归材质槽 1（`M_Sideswipe_Lights`），并将 UV 全部重映射至左下角红光发射色块区，使整个凹陷腔体与透光透镜统一作为一体化红光光源，彻底消灭深度遮挡与伪影！
+
+---
+
+### 11.20 闪电（Eternal War Blitzwing）三变模具：跨周期负 U 镜像平铺还原、世界轴心拳头烘焙与载具材质防泛白铁律
+* **适用模具**：`H_shandian_G1` 类第三方三变/双形态对称建模（Robot + Tank + Jet，`blitzwing_gs`，宿主 `megatron_gs_leader2015`）。参考实现见 `tools/blitzwing/build_aligned_blitzwing_ew.py`、`tools/blitzwing/generate_blitzwing_bundle.py`。
+* **四大隐蔽高危坑复盘与根治方案**：
+  1. **对称载具负象限 UV（`U ∈ [-1.0, 0.0)`）被 `clamp(0,1)` 拍扁导致的“半边车身花白拉丝”大坑**：
+     * **现象表征**：坦克与战机在 Unity/真机中沿着身体中轴线 `X = 0` 被一刀切开，一侧贴图完全正常（如右侧沙黄炮塔+霸天虎标），另一侧沿竖直方向拉满混乱的紫色、白色条纹；人形局部胸甲也有小块错花。
+     * **根本原因**：此类模型使用 `Repeat` 贴图并在另一半对称网格中将 UV 直接平移到了 **`U ∈ [-1.0, 0.0)` 负象限**（实测对称面满足 $U_{\text{neg}} + 1.0 = U_{\text{pos}}$，坦克负 `U` 占比高达 **57.7%**，战机占比 **49.9%**，人形 **576** 个环）。重映射进 2048 图集象限时若误写 `u_c = min(max(uv.x, 0.0), 1.0)`，就会将整整一半车身的所有顶点 UV 压死在贴图最左缘 `U = 0.004` 这条像素列上。
+     * **标准解法 (`remap_polygon_uv_to_tile`)**：严格在**多边形（`poly`）粒度**计算均值整数周期偏移 `shift_u = math.floor(mean_u)`、`shift_v = math.floor(mean_v)`，整张三角面同步平移 `-shift` 回 `[0, 1]`，再缩放到目标象限内并做 `[0.004, 0.996]` 微缩防渗色：
+       ```python
+       mean_u = sum(uv_layer.data[li].uv.x for li in poly.loop_indices) / len(poly.loop_indices)
+       shift_u = math.floor(mean_u)  # 将 [-1, 0) 精确平移 +1.0 回 [0, 1]，且绝不撕裂跨缝边
+       ```
+  2. **前臂非等比拉伸沿层级污染手掌（`Hand` Shear）与 `Biped` 指骨“全反手折断 / 拇指消失”大坑**：
+     * **现象表征**：
+       1. 若在 Blender 对 `UpperArm -> Forearm` 进行 `pose_segment_world` 拉长对位威震天手腕 `Hand`（或连带用 `pose_segment_world(Hand -> Finger2)`），父骨非等比缩放沿着骨骼层级传递给子指骨，直接把五指剪爆/拉离 4 米（初版真机“四指变形”主因）；
+       2. 转为轨道 B 在 Blender 中弯指握拳时，若误在加了额外 `Rz(-90°)` 的脚本测试角度再抄回无 `Rz` 主脚本、或未区分 `Bip001 L/R` 镜像骨骼局部轴正反，左右手四指会全部朝**手背外侧反关节折断 175°**，大拇指斜插入腕内消失。
+     * **标准解法（正交隔离 `pose_hand_rigid_world` + 世界空间铰链轴 `curl_bone_world_axis`）**：
+       1. 对齐 `UpperArm -> Forearm -> Hand` 后，立刻执行 `pose_hand_rigid_world`：提取 `Hand` 世界矩阵 `3x3` 旋转并强制**四元数正交归一化（`Scale = (1, 1, 1)`）**，将前臂非等比拉伸彻底隔绝于腕关节之上；
+       2. 弃用易左右混淆的 Biped 局部欧拉角，直接实时读取世界中 `Finger1`（食指根）到 `Finger4`（小指根）的矢量构造**确定性世界空间铰链轴**：左拳取 `(f4_pos - f1_pos).normalized()`、右拳取 `(f1_pos - f4_pos).normalized()`，用右手定则正角（如 `58° / 68° / 52°`）驱动四指精准向**掌心内侧**自然扣拢；
+       3. 大拇指 `Finger0..02` 围绕世界内折轴向轻扣（`14° / 26° / 28°`）平稳环抱于食指中指正面，随后 `Apply Armature` 并 100% 合并权重至 `LeftHand` / `RightHand`。导出后**必须在 Blender 中多角度渲染双手正面与掌心内侧微距图并 `read_file` 验图**。
+  3. **材质兜底脚本无差别覆写载具贴图槽（Tank 误采 Robot 黄胸块）**：
+     * **现象表征**：坦克全身呈现人形紫色，右履带莫名出现一小块人形胸口的亮黄色涂装。
+     * **根本原因**：`generate_*_bundle.py` 末尾的材质兜底循环未设白名单且调用 `patch_kabam_character_mat(mat, TEX_ROBOT_DIFF_PID, ...)`，顺手把已独立配置好的载具材质 `MAT_VEHICLE_PID`（`1722215546450231611`）的主贴图指针强制覆盖成了 `TEX_ROBOT_DIFF_PID`。
+     * **标准解法**：兜底循环必须使用只改自发光参数而不碰 `m_TexEnvs` 的 `neutralize_emissive_only(mat)`，并将主要角色与载具材质加入豁免集合；出包验证末尾增加强制断言核对 `MAT_VEHICLE_PID._base_tex == TEX_VEH_DIFF_PID`。
+  4. **非全金属浅色漆面误设高金属度导致的“载具高光过曝泛白”问题**：
+     * **根本原因**：Kabam `EB/Character/PBR` Shader（尤其是载具独立 Shader）以 `_base_col ≈ 0.50` 为原色基准、以法线贴图 `NM.B` 区分金属度；当全局 `_metallic_range` 被人为抬高到 `0.65`、`_clearcoat_reflectance_range = 0.10`、`_base_col = 0.72` 时，坦克/战机大面积哑光沙黄装甲在强方向灯照射下泛出刺眼白边与银灰过曝。
+     * **标准调校准则**：参考官方母版及 Brawl/Swoop 成功经验，设为 `_metallic_range = 0.0`（完全由 `NM.B` 精准驱动关节/履带金属反光）、`_roughness_range = 0.90`、`_clearcoat_reflectance_range = 0.03`、`_Color = 0.72`（满足 Gate 4 `>= 0.65` 阈值）且 `_base_col = 0.56`，即可完美还原原模醇厚的沙土黄与深紫漆面。
+  5. **A 字外八字源模“脚踝杠杆偏心悬空”与机械脚靴开裂根治（Ground-First 对位 + 锥头深嵌球窝渐变）**：
+     * **现象与双重机理**：原模站姿常带较宽外八字（脚踝中心在 `X = ±2.20m`），而 TFTF 宿主垂直双腿骨（如威震天 `LeftFoot`）位于 `X = ±0.838m`，**横偏 `1.36 米`**；且原模小腿末端仅带一截浅插 15cm 的锥形球头。未对正下肢直接绑骨后，在真机大跨步下蹲/斜踢动作下，`LeftLeg` 与 `LeftFoot` 的 `1.36m` 杠杆臂差叠加浅插销使整条小腿向上漂浮脱离脚窝悬空（并连带 `ToeBase` 将刚性前脚甲与侧翼撕开）。
+     * **标准解法（三合一闭环）**：
+       1. 严格执行 **Ground-First** 先对齐下肢：在对齐双臂之前，先把 `Thigh -> Calf -> Foot` 对齐至接近宿主垂轴的挺拔站位（如 `X = ±1.05m`，保留双脚舒适间距的同时缩减偏心距 85%+），保持 `Foot` 水平踩平地面并重置 `Z = 0`；
+       2. 刚性整靴并入 **`LeftFoot` / `RightFoot`**：无分体前趾需求的机械坦克靴部件（前甲、后跟、外侧尾翼）统一绑回 `Foot`，消除脚面开裂；
+       3. **脚踝插头深嵌 + 球形渐变权重**：将小腿底端 `Bone005*` 最末圈锥头顶点垂直延伸深扎入脚窝底部（留足离底安全距 `>= 0.28m`），并对靠近脚踝旋转心的插柱区域（`Z ∈ [0.65, 1.15]`）做 `LeftLeg <-> LeftFoot` 线性渐变柔顺权重，实现全角度弯折无死角、零悬空实心联动！

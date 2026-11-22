@@ -19,10 +19,12 @@ SS_BACKUP_PATH = ROOT / "assets_redeco" / "sideswipe_cin_rotf.assetbundle.bak_be
 
 CHEETOR_BUNDLE = ROOT / "extracted_apk" / "assets" / "assetpack" / "cheetor_bw_transmetal_odr" / "cheetor_bw_transmetal.assetbundle"
 OPTIMUS_BUNDLE = ROOT / "extracted_apk" / "assets" / "assetpack" / "optimusprime_cin_tf_odr" / "optimusprime_cin_tf.assetbundle"
+ARCEE_BUNDLE = ROOT / "extracted_apk" / "assets" / "assetpack" / "arcee_gs_deluxe2014_odr" / "arcee_gs_deluxe2014.assetbundle"
 
 OP_STAGE_ROOT = 3256447252977910551
 CHEETOR_M2_CLIP_PID = -1929738649458782990
-CHEETOR_S1_CLIP_PID = 868105726138923071
+ARCEE_S2_CLIP_PID = 1304560969345666953
+BARRICADE_S1_CLIP_PID = -2570347918429811085
 
 def iter_pptrs_in_tree(node):
     if isinstance(node, dict):
@@ -241,12 +243,18 @@ def main():
     cloned_stage = clone_closure_into_sf(sf_op, sf_ss, [OP_STAGE_ROOT])
     print(f"[✓] Cloned {len(cloned_stage)} objects from Optimus Prime SP3 Stage!")
 
-    # 2. Clone Cheetor M2 & S1 AnimationClips
-    print("[*] Cloning Cheetor M2 and S1 AnimationClips into Sideswipe...")
+    # 2. Clone Cheetor M2 & Arcee S2 AnimationClips
+    print("[*] Cloning Cheetor M2 AnimationClip into Sideswipe...")
     env_ch = UnityPy.load(str(CHEETOR_BUNDLE))
     sf_ch = list(env_ch.assets)[0]
-    cloned_cheetor = clone_closure_into_sf(sf_ch, sf_ss, [CHEETOR_M2_CLIP_PID, CHEETOR_S1_CLIP_PID])
-    print(f"[✓] Cloned {len(cloned_cheetor)} AnimationClips from Cheetor (M2={CHEETOR_M2_CLIP_PID}, S1={CHEETOR_S1_CLIP_PID})!")
+    cloned_cheetor = clone_closure_into_sf(sf_ch, sf_ss, [CHEETOR_M2_CLIP_PID])
+    print(f"[✓] Cloned {len(cloned_cheetor)} AnimationClip from Cheetor (M2={CHEETOR_M2_CLIP_PID})!")
+
+    print("[*] Cloning Arcee S2 AnimationClip into Sideswipe...")
+    env_ar = UnityPy.load(str(ARCEE_BUNDLE))
+    sf_ar = list(env_ar.assets)[0]
+    cloned_arcee = clone_closure_into_sf(sf_ar, sf_ss, [ARCEE_S2_CLIP_PID])
+    print(f"[✓] Cloned {len(cloned_arcee)} AnimationClip from Arcee (S2={ARCEE_S2_CLIP_PID})!")
 
     # 3. Update PlayerReferences
     # Find PlayerReferences
@@ -274,10 +282,10 @@ def main():
     fight_aoc_tree = fight_aoc_obj.read_typetree()
 
     slot_updates = {
-        # S1 -> Drift S1 (FileID 5, PID -3664095140934993801)
-        4: (6889857548200950017, {"m_FileID": 5, "m_PathID": -3664095140934993801}, "S1 -> Drift S1"),
-        # S2 -> Cheetor S1 (FileID 0, PID 868105726138923071)
-        5: (4730099292729452391, {"m_FileID": 0, "m_PathID": CHEETOR_S1_CLIP_PID}, "S2 -> Cheetor S1"),
+        # S1 -> Barricade S1 (FileID 0, PID -2570347918429811085)
+        4: (6889857548200950017, {"m_FileID": 0, "m_PathID": BARRICADE_S1_CLIP_PID}, "S1 -> Barricade S1"),
+        # S2 -> Arcee S2 (FileID 0, PID 1304560969345666953)
+        5: (4730099292729452391, {"m_FileID": 0, "m_PathID": ARCEE_S2_CLIP_PID}, "S2 -> Arcee S2"),
         # S3 -> Optimus S3 (FileID 5, PID -4693390210307202245)
         31: (1238132665975540792, {"m_FileID": 5, "m_PathID": -4693390210307202245}, "S3 -> Optimus S3"),
         # S3 HitReaction -> Optimus S3 HitReaction (FileID 5, PID -7999335457178782659)
@@ -310,8 +318,8 @@ def main():
     mat_aoc_tree = mat_aoc_obj.read_typetree()
 
     hash_updates = {
-        1671240305: ("drift_cin_attackSpecial_01", "S1"),
-        -90944565: ("Cheetor_BW_attackSpecial_01", "S2"),
+        1671240305: ("barricade_cin_attackSpecial_01", "S1"),
+        -90944565: ("Arcee_Normal_attackSpecial_02", "S2"),
         297974710: ("Cheetor_BW_attackMedium_02_doubleHand", "M2"),
         -1919714467: ("optimus_prime_attackSpecial_03", "S3"),
         966217297: ("optimus_prime_attackSpecial_03_hitReaction", "S3 HitReact"),
@@ -343,10 +351,10 @@ def main():
     moveset_updates = {
         # Move 05: Cheetor M2
         5: ("move_cheetor_attack_medium_02", {"m_FileID": 4, "m_PathID": -8892327269443784769}),
-        # Move 06: Drift S1
-        6: ("move_drift_special_01", {"m_FileID": 4, "m_PathID": -6173328959056132852}),
-        # Move 07: Cheetor S1
-        7: ("move_cheetor_special_01", {"m_FileID": 4, "m_PathID": 7655358371711847767}),
+        # Move 06: Barricade S1
+        6: ("move_barricade_special_01", {"m_FileID": 4, "m_PathID": -2314167995554698461}),
+        # Move 07: Arcee S2
+        7: ("move_arcee_special_02", {"m_FileID": 4, "m_PathID": -5106228049567400610}),
         # Move 43: Sideswipe Heavy Donut
         43: ("move_heavy_car_donut", {"m_FileID": 4, "m_PathID": -6072851833384157097}),
     }
