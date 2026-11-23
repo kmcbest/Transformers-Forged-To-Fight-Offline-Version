@@ -10491,6 +10491,10 @@ static const SPMoveHitEntry s_sp_moves[] = {
     { "move_blaster_special_02", 3 },
     { "move_bludgeon_special_01", 4 },
     { "move_bludgeon_special_02", 3 },
+    { "move_blitzwing_jet_s1", 2 },
+    { "move_blitzwing_jet_s2", 3 },
+    { "move_blitzwing_tank_s1", 1 },
+    { "move_blitzwing_tank_s2", 3 },
     { "move_bonecrusher_special_01", 2 },
     { "move_bonecrusher_special_02", 3 },
     { "move_bugbite_special_01", 3 },
@@ -11326,15 +11330,30 @@ static void hooked_PC_PlayAnimatorState(void* pc, int32_t hash, float normalized
         if (p >= 0) {
             const char* bid = (p == 0) ? g_p0_bot_id : g_p1_bot_id;
             if (bid && strstr(bid, "blitzwing") != NULL) {
-                // Animator.StringToHash("HeavyAttack") == (int32_t)2579208148u == -1715759148
-                // Animator.StringToHash("Misc01")      == 732291567
+                // Animator.StringToHash("HeavyAttack")     == (int32_t)2579208148u  -> "Misc01" (732291567)
+                // Animator.StringToHash("SpecialAttack01") == 1809527195           -> "Misc02" ((int32_t)2997661781u)
+                // Animator.StringToHash("SpecialAttack02") == (int32_t)4073873441u -> "Misc03" ((int32_t)3316351171u)
+                int mode = skill_blitzwing_get_mode(p);
                 if (hash == (int32_t)2579208148u) {
-                    int mode = skill_blitzwing_get_mode(p);
                     if (mode == 1) {
-                        hash = 732291567; // "Misc01" -> plays Ramjet_Normal_attackHeavy & triggers move_heavy_ramjet_donut
-                        flog("BLITZWING_ANIM: P%d redirected HeavyAttack anim state to Misc01 (Ramjet_Normal_attackHeavy) in Jet Mode", p);
+                        hash = 732291567;
+                        flog("BLITZWING_ANIM: P%d HeavyAttack -> Misc01 (Jet Mode)", p);
                     } else {
-                        flog("BLITZWING_ANIM: P%d playing HeavyAttack anim state (megatron_GS_attackHeavy) in Tank Mode", p);
+                        flog("BLITZWING_ANIM: P%d HeavyAttack (Tank Mode)", p);
+                    }
+                } else if (hash == 1809527195) {
+                    if (mode == 1) {
+                        hash = (int32_t)2997661781u;
+                        flog("BLITZWING_ANIM: P%d SpecialAttack01 -> Misc02 (Windblade S1, Jet Mode)", p);
+                    } else {
+                        flog("BLITZWING_ANIM: P%d SpecialAttack01 (Mixmaster S1, Tank Mode)", p);
+                    }
+                } else if (hash == (int32_t)4073873441u) {
+                    if (mode == 1) {
+                        hash = (int32_t)3316351171u;
+                        flog("BLITZWING_ANIM: P%d SpecialAttack02 -> Misc03 (Sideswipe S2, Jet Mode)", p);
+                    } else {
+                        flog("BLITZWING_ANIM: P%d SpecialAttack02 (Bludgeon S2, Tank Mode)", p);
                     }
                 }
             }
@@ -11396,40 +11415,38 @@ static void hooked_EnterMove(void* seq, void* move_info, float offset, int queue
                 const char* bid = (p == 0) ? g_p0_bot_id : g_p1_bot_id;
                 if (bid && strstr(bid, "blitzwing") != NULL) {
                     int mode = skill_blitzwing_get_mode(p);
-                    int is_tank_move = il2cpp_string_equals_ascii(move_name, "move_heavy_megatron_gs_shoot");
-                    int is_jet_move  = il2cpp_string_equals_ascii(move_name, "move_heavy_ramjet_donut");
-                    if (is_tank_move || is_jet_move) {
-                        flog("BLITZWING_HEAVY: P%d EnterMove('%s') in mode=%d (0=Tank, 1=Jet)",
-                             p, is_tank_move ? "move_heavy_megatron_gs_shoot" : "move_heavy_ramjet_donut", mode);
-                        if (mode == 1 && is_tank_move) {
+                    static const struct {
+                        const char* tank;
+                        const char* jet;
+                    } bw_mode_moves[3] = {
+                        { "move_heavy_megatron_gs_shoot", "move_heavy_ramjet_donut" },
+                        { "move_blitzwing_tank_s1",       "move_blitzwing_jet_s1"   },
+                        { "move_blitzwing_tank_s2",       "move_blitzwing_jet_s2"   },
+                    };
+                    for (int mi = 0; mi < 3; mi++) {
+                        int is_tank_move = il2cpp_string_equals_ascii(move_name, bw_mode_moves[mi].tank);
+                        int is_jet_move  = il2cpp_string_equals_ascii(move_name, bw_mode_moves[mi].jet);
+                        if (!is_tank_move && !is_jet_move) continue;
+                        const char* target_mv = (mode == 1 && is_tank_move) ? bw_mode_moves[mi].jet
+                                              : (mode == 0 && is_jet_move)  ? bw_mode_moves[mi].tank
+                                              : NULL;
+                        if (target_mv) {
                             void* moveset = *(void**)((char*)seq + 0x20);
                             if (moveset && obj_ok(moveset)) {
                                 typedef void* (*fn_get_move_t)(void* ms, void* name, void* method);
                                 fn_get_move_t get_move = (fn_get_move_t)(g_base + 0x100A648);
-                                void* jet_str = g_strnew("move_heavy_ramjet_donut");
-                                if (jet_str) {
-                                    void* jet_move = get_move(moveset, jet_str, NULL);
-                                    if (jet_move && obj_ok(jet_move)) {
-                                        flog("BLITZWING_HEAVY: P%d swapped heavy move to move_heavy_ramjet_donut (Jet Mode)", p);
-                                        move_info = jet_move;
-                                    }
-                                }
-                            }
-                        } else if (mode == 0 && is_jet_move) {
-                            void* moveset = *(void**)((char*)seq + 0x20);
-                            if (moveset && obj_ok(moveset)) {
-                                typedef void* (*fn_get_move_t)(void* ms, void* name, void* method);
-                                fn_get_move_t get_move = (fn_get_move_t)(g_base + 0x100A648);
-                                void* tank_str = g_strnew("move_heavy_megatron_gs_shoot");
-                                if (tank_str) {
-                                    void* tank_move = get_move(moveset, tank_str, NULL);
-                                    if (tank_move && obj_ok(tank_move)) {
-                                        flog("BLITZWING_HEAVY: P%d swapped heavy move to move_heavy_megatron_gs_shoot (Tank Mode)", p);
-                                        move_info = tank_move;
+                                void* swap_str = g_strnew(target_mv);
+                                if (swap_str) {
+                                    void* swap_move = get_move(moveset, swap_str, NULL);
+                                    if (swap_move && obj_ok(swap_move)) {
+                                        flog("BLITZWING_MODE: P%d swapped '%s' -> '%s' (mode=%d)",
+                                             p, is_tank_move ? bw_mode_moves[mi].tank : bw_mode_moves[mi].jet, target_mv, mode);
+                                        move_info = swap_move;
                                     }
                                 }
                             }
                         }
+                        break;
                     }
                 }
             }
