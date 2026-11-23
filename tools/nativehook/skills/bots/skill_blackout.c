@@ -23,17 +23,16 @@
 //    - 技能期间提升 60% 暴击伤害：SP2 进入激活，SP2 退出瞬间立即移除。
 //    - 每 1 击暴击 100% 触发可叠加流血 (3 秒 60% ATK)。
 // 5. [特殊技 3 - 猎杀]
-//    - 技能结束由 SP3_EXIT 唯一施加 1 层可叠加永久 20% 暴击抗性减益 (E409)。
+//    - 最后一击命中由 onSpecial3Hit (LastHit) 施加 1 层可叠加永久 20% 暴击抗性减益 (E409)。
 // 6. [觉醒 - 追猎] (I'll Hunt You Down!)
 //    - 由引擎终态结算回调 on_attack_ended 精准驱动：
 //      仅普通攻击 (轻/中/重/远程, 排除 S1/S2/S3) 落空 (非Hit、非Blocked、非对波抵消、非被反射；
 //      包含对手前冲/近战穿弹躲过) 时触发。
-//    - 触发瞬间立即到账 +6% 最大能量 (0.18 格)，挂 3 秒浅紫色倒计时冷却图标，3 秒内不重复触发。
+//    - 获得 1 层 50% 能量功率增益，持续 5 秒；最大 1 层，再次触发刷新倒计时。
 // ===========================================================================
 
 static int      s_blackout_combo[2]               = {0, 0};
 static int      s_blackout_fury_active[2]         = {0, 0};
-static uint64_t s_blackout_last_hunt_ms[2]        = {0, 0};
 
 static int      s_blackout_active_sp[2]           = {0, 0}; // 0=无, 1=SP1, 2=SP2, 3=SP3
 static int      s_blackout_sp1_window_active[2]   = {0, 0};
@@ -62,35 +61,22 @@ static void blackout_show_sp1_unblockable(int p, const char* reason) {
     skill_log("BLACKOUT: P%d showed SP1 light-purple unblockable icon (%s)", p, reason);
 }
 
-// 触发觉醒技“追猎” (+6% 瞬间回能 + 3 秒冷却提示图标)
+// 触发觉醒技“追猎” (普通攻击落空获得 1 层 50% 能量功率增益，持续 5 秒；最大 1 层，再次触发刷新倒计时)
 void blackout_trigger_hunt_if_ready(int blackout_p, const char* reason) {
     if (blackout_p < 0 || blackout_p >= 2) return;
     const char* bid = skill_get_bot_id(blackout_p);
     if (!bid || strstr(bid, "blackout") == NULL) return;
 
-    uint64_t now_ms = skill_now_ms();
-    // 3 秒倒计时冷却保护 (3 秒倒计时结束前不可再次触发)
-    if (s_blackout_last_hunt_ms[blackout_p] > 0 && now_ms < s_blackout_last_hunt_ms[blackout_p] + 3000) {
-        return;
-    }
+    // 刷新或施加 5 秒 50% 能量功率增益 (最大 1 层，再次触发刷新倒计时)
     if (skill_has_buff(blackout_p, "blackout_sig_whiff_power_gain")) {
-        return;
+        skill_consume_buff(blackout_p, "blackout_sig_whiff_power_gain", 1);
+        skill_log("BLACKOUT: P%d Hunt refreshed 5.0s countdown (%s)", blackout_p, reason);
+    } else {
+        skill_log("BLACKOUT: P%d Hunt gained +50%% power rate buff 5.0s (%s)", blackout_p, reason);
     }
 
-    s_blackout_last_hunt_ms[blackout_p] = now_ms;
-
-    float cur_m = skill_get_mana(blackout_p);
-
-    // 3格满气基准为 3.0f，6% 最大能量即为 0.18f，触发瞬间立刻到账
-    skill_add_mana(blackout_p, 0.18f);
-
-    float next_m = skill_get_mana(blackout_p);
-
-    // 挂 3 秒浅紫色倒计时冷却提示图标 (纯提示 m=0.0，绝不重复加能量)
-    skill_apply_buff_dur(blackout_p, "blackout_sig_whiff_power_gain", 3.0f);
-    skill_overlay("[%s] 追猎渴望！瞬间获得+6%%最大能量！", blackout_p == 0 ? "眩晕" : "敌方眩晕");
-    skill_log("BLACKOUT: P%d Hunt activated (%s) -> mana: %.2f + 0.18 -> %.2f + 3.0s CD icon",
-              blackout_p, reason, cur_m, next_m);
+    skill_apply_buff_dur(blackout_p, "blackout_sig_whiff_power_gain", 5.0f);
+    skill_overlay("[%s] 追猎！获得50%%能量功率增益 (5秒)！", blackout_p == 0 ? "眩晕" : "敌方眩晕");
 }
 
 // 战斗重置
@@ -98,7 +84,6 @@ static void blackout_on_fight_reset(int player_index) {
     if (player_index < 0 || player_index >= 2) return;
     s_blackout_combo[player_index] = 0;
     s_blackout_fury_active[player_index] = 0;
-    s_blackout_last_hunt_ms[player_index] = 0;
     s_blackout_active_sp[player_index] = 0;
     s_blackout_sp1_window_active[player_index] = 0;
     s_blackout_sp1_unblockable_on[player_index] = 0;
@@ -291,6 +276,15 @@ static int blackout_on_buff_gated(SkillBuffGateContext* ctx) {
     if (s_blackout_active_sp[ap] == 1) {
         if (strstr(ctx->modifier_id, "bleed") != NULL) {
             skill_log("BLACKOUT_GATE: suppressed bleed modifier during SP1 (mod=%s)", ctx->modifier_id);
+            ctx->allow_application = false;
+            return 1;
+        }
+    }
+
+    // SP3 暴击抗性减益：严格限定最后一击命中方可施加
+    if (strstr(ctx->modifier_id, "blackout_sp3_crit_resist_debuff") != NULL) {
+        if (!ctx->current_hit_is_last) {
+            skill_log("BLACKOUT_GATE: suppressed crit resist debuff on non-last hit (mod=%s)", ctx->modifier_id);
             ctx->allow_application = false;
             return 1;
         }

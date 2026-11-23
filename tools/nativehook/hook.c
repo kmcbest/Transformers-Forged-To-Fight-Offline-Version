@@ -5699,12 +5699,6 @@ void* hook_143(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
 
             int32_t pidx = *(int32_t*)((uintptr_t)pc + 0xF4);
             sp3_exit_pidx = pidx;
-            const char* bid = (pidx == 0) ? g_p0_bot_id : g_p1_bot_id;
-            if (bid && strstr(bid, "blackout") != NULL) {
-                extern void skill_apply_buff_dur(int target_player, const char* modifier_id, float duration);
-                skill_apply_buff_dur(1 - pidx, "blackout_sp3_crit_resist_debuff", -1.0f);
-                flog("BLACKOUT_SP3_EXIT: applied permanent stackable crit resist debuff to P%d", 1 - pidx);
-            }
         }
         if (s_saved_actor0_obj && obj_ok(s_saved_actor0_obj) && s_saved_actor0_name[0] && g_strnew) {
             void* orig_name_str = g_strnew(s_saved_actor0_name);

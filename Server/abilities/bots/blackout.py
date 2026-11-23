@@ -31,12 +31,12 @@ Bot ID: blackout_cin_tf
 
 7. [特殊技 3 - 猎杀 / SP3 Burn & Stackable Permanent Crit Resistance Debuff] (PUA: \uE41D, \uE409)
    - 最后一击的暴击率增加50%，如果暴击，100%概率造成燃烧，施加攻击力80%的伤害，持续6秒。
-   - 技能结束时，向对手施加1层永久暴击抗性减益，在对手身上打出暴击的几率提升20%。//可叠加 (st=99, 仅由 SP3_EXIT 唯一施加 1 层)
+   - 最后一击命中时，向对手施加1层永久暴击抗性减益，在对手身上打出暴击的几率提升20%。//可叠加 (st=99, 由 SP3 终击或退出结算施加 1 层)
 
 8. [觉醒能力 - 追猎 / I'll Hunt You Down!] (PUA: \uE608)
-   - 当眩晕的普通攻击落空时，他猎杀对手的渴望变得更强，在3秒内获得最大能量的6%
+   - 当眩晕的普通攻击落空时，他猎杀对手的渴望变得更强，获得1层50%的能量功率增益，持续5秒
    - //仅近战、远程、重击落空（未命中且未被防视为落空，排除对波抵消与反射，包含对手前冲穿弹）时触发，
-     S技落空不触发；触发瞬间立即到账+6%能量，3秒浅紫色图标作冷却提示，倒计时结束前不可再次触发。
+     S技落空不触发。最大1层，再次触发时刷新倒计时。
 -----------------------------------------------------------------------------
 """
 
@@ -368,8 +368,7 @@ def build_blackout_abilities(base_hp: float = 40519.0, base_atk: float = 3272.0)
     # 8. [ID: 1794966881660 & 1794966881661] 特殊技 3 (猎杀) - 暴击燃烧与可叠加永久暴抗减益
     #    a) 最后一击暴击率+50%
     #    b) 最后一击暴击造成持续6秒80%攻击力燃烧伤害
-    #    c) 技能结束向对手施加1层永久暴击抗性减益 (对手受暴击率提升20%，可叠加)
-    #       仅由 hook.c SP3_EXIT 唯一施加 1 层，防止单次 SP3 误叠多层
+    #    c) 最后一击命中向对手施加1层永久暴击抗性减益 (对手受暴击率提升20%，可叠加)
     # =========================================================================
     m_sp3_crit_rate, a_sp3_crit_rate = make_crit_rate_statmod(
         mod_id="blackout_sp3_last_crit_rate",
@@ -415,11 +414,11 @@ def build_blackout_abilities(base_hp: float = 40519.0, base_atk: float = 3272.0)
         "id": "blackout_sp3_crit_resist_debuff",
         "t": "crit_rate",
         "tm": "",
-        "tr": [],
-        "uit": [],
+        "tr": ["onSpecial3Hit"],
+        "uit": ["onSpecial3Hit"],
         "pri": 0,
         "trm": 0.0,
-        "trs": "",
+        "trs": "level=Special3;dmgFlags=LastHit",
         "trr": "repeat",
         "c": 1.0,
         "m": 0.20,
@@ -447,20 +446,20 @@ def build_blackout_abilities(base_hp: float = 40519.0, base_atk: float = 3272.0)
 
     # =========================================================================
     # 9. [ID: 1794966881665] 觉醒能力 - 追猎 (I'll Hunt You Down!)
-    #    普通攻击（近战/远程/重击）落空时，瞬间获得 6% 最大能量 (0.18 格)；
-    #    本修饰器为纯 3 秒 HUD 冷却倒计时提示 (m=0.0)，杜绝重复回能。
+    #    普通攻击（近战/远程/重击）落空时，获得 1 层 50% 能量功率增益，持续 5 秒；
+    #    最大 1 层，再次触发时刷新倒计时。
     # =========================================================================
     appr_sig_power = make_statmod_appearance(
         appr_id="appr_blackout_sig_power",
-        callout_text="追猎渴望",
-        desc="普通攻击落空立即获得6%最大能量，3秒冷却内不可再次触发",
+        callout_text="能量功率",
+        desc="普通攻击落空获得50%能量功率增益持续5秒，再次触发刷新倒计时",
         pua_icon="\uE608",
         color=AbilityColor.LIGHT_PURPLE_POWER,
         show_callout=True,
     )
     mod_sig_power = {
         "id": "blackout_sig_whiff_power_gain",
-        "t": "modify_stat",
+        "t": "power_rate",
         "tm": "",
         "tr": [],
         "uit": [],
@@ -469,15 +468,15 @@ def build_blackout_abilities(base_hp: float = 40519.0, base_atk: float = 3272.0)
         "trs": "",
         "trr": "repeat",
         "c": 1.0,
-        "m": 0.0,
-        "d": 3.0,
+        "m": 0.50,
+        "d": 5.0,
         "s": "none",
         "ta": "self",
         "mt": "buff",
         "v": "",
         "ms": "",
         "st": 1,
-        "g": "blackout_hunt_cd",
+        "g": "power_rate_buff",
         "gc": 0.0,
         "gcv": "",
         "rcv": "",
