@@ -21,9 +21,24 @@ def sync_tools_to_out(out_dir: Path, root: Path) -> tuple[Path, Path]:
     tools_dir.mkdir(exist_ok=True)
     (tools_dir / "lib").mkdir(exist_ok=True)
 
-    src_bt = root / "toolchain" / "android-sdk" / "build-tools" / "34.0.0"
-    if not src_bt.exists():
-        src_bt = root / "toolchain" / "android-sdk" / "build-tools" / "36.0.0"
+    candidates = [
+        root / "toolchain" / "android-13",
+        root / "toolchain" / "android-sdk" / "build-tools" / "34.0.0",
+        root / "toolchain" / "android-sdk" / "build-tools" / "36.0.0",
+        Path(os.environ.get("LOCALAPPDATA", "")) / "Android" / "Sdk" / "build-tools" / "34.0.0",
+        Path("D:/Android/Sdk/build-tools/36.0.0"),
+    ]
+    src_bt = None
+    for cand in candidates:
+        if (cand / "zipalign.exe").exists():
+            src_bt = cand
+            break
+    if src_bt is None:
+        found = list((root / "toolchain").glob("**/zipalign.exe"))
+        if found:
+            src_bt = found[0].parent
+        else:
+            raise FileNotFoundError("Could not find Android build-tools with zipalign.exe")
 
     for fname in ["zipalign.exe", "apksigner.bat"]:
         sf = src_bt / fname

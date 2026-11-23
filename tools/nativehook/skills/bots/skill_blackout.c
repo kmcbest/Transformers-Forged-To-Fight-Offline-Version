@@ -17,7 +17,7 @@
 //    - 暴击率回落 <= 100% 或连击打断受创时立即移除。
 // 3. [特殊技 1 - 能量炮]
 //    - 最后一击不可防御：最后一击时间窗内点亮浅紫色不可防御图标 (E41F)，最后一击结束立即熄灭。
-//    - 最后一击未格挡命中时，施加 1 层 6 秒暴击抗性减益 (+40% 受暴击率, E409)。
+//    - 技能期间提升 35% 暴击伤害 (E906)：SP1 进入激活，SP1 退出瞬间立即移除。
 //    - 纯净门禁：SP1 期间严禁触发流血。
 // 4. [特殊技 2 - 翼刃回旋]
 //    - 技能期间提升 60% 暴击伤害：SP2 进入激活，SP2 退出瞬间立即移除。
@@ -79,14 +79,18 @@ void blackout_trigger_hunt_if_ready(int blackout_p, const char* reason) {
 
     s_blackout_last_hunt_ms[blackout_p] = now_ms;
 
+    float cur_m = skill_get_mana(blackout_p);
+
     // 3格满气基准为 3.0f，6% 最大能量即为 0.18f，触发瞬间立刻到账
     skill_add_mana(blackout_p, 0.18f);
+
+    float next_m = skill_get_mana(blackout_p);
 
     // 挂 3 秒浅紫色倒计时冷却提示图标 (纯提示 m=0.0，绝不重复加能量)
     skill_apply_buff_dur(blackout_p, "blackout_sig_whiff_power_gain", 3.0f);
     skill_overlay("[%s] 追猎渴望！瞬间获得+6%%最大能量！", blackout_p == 0 ? "眩晕" : "敌方眩晕");
-    skill_log("BLACKOUT: P%d Hunt activated (%s) -> instant +6%% mana (0.18 bars) + 3.0s CD icon",
-              blackout_p, reason);
+    skill_log("BLACKOUT: P%d Hunt activated (%s) -> mana: %.2f + 0.18 -> %.2f + 3.0s CD icon",
+              blackout_p, reason, cur_m, next_m);
 }
 
 // 战斗重置
@@ -100,6 +104,9 @@ static void blackout_on_fight_reset(int player_index) {
     s_blackout_sp1_unblockable_on[player_index] = 0;
     s_blackout_sp1_start_ms[player_index] = 0;
     s_blackout_sp1_exit_ms[player_index] = 0;
+    if (skill_has_buff(player_index, "blackout_sp1_crit_damage")) {
+        skill_consume_buff(player_index, "blackout_sp1_crit_damage", 99);
+    }
     skill_log("BLACKOUT: P%d reset combat state", player_index);
 }
 
@@ -144,7 +151,10 @@ static void blackout_on_special_state(int player_index, int sp_level, int entere
             s_blackout_sp1_window_active[player_index] = 1;
             s_blackout_sp1_start_ms[player_index] = now_ms;
             s_blackout_sp1_exit_ms[player_index] = 0;
-            skill_log("BLACKOUT: P%d entered SP1 (tracking last-hit unblockable window)", player_index);
+            if (!skill_has_buff(player_index, "blackout_sp1_crit_damage")) {
+                skill_apply_buff_dur(player_index, "blackout_sp1_crit_damage", 3.5f);
+            }
+            skill_log("BLACKOUT: P%d entered SP1 (+35%% crit damage active, tracking last-hit unblockable window)", player_index);
         } else if (sp_level == 2) {
             // SP2 进入：确保 +60% 暴击伤害增益已激活 (仅技能期间生效)
             if (!skill_has_buff(player_index, "blackout_sp2_crit_damage")) {
@@ -159,6 +169,10 @@ static void blackout_on_special_state(int player_index, int sp_level, int entere
         if (sp_level == 1) {
             // SP1 动画退出：终击能量炮投射物可能仍在飞行，记录退出时间，等终击结算回调立即熄灭或兜底 1.2s 熄灭
             s_blackout_sp1_exit_ms[player_index] = now_ms;
+            if (skill_has_buff(player_index, "blackout_sp1_crit_damage")) {
+                skill_consume_buff(player_index, "blackout_sp1_crit_damage", 99);
+                skill_log("BLACKOUT: P%d exited SP1 -> removed SP1 +35%% crit damage buff", player_index);
+            }
             skill_log("BLACKOUT: P%d exited SP1 state (waiting for last-hit projectile resolution)", player_index);
         } else if (sp_level == 2) {
             // SP2 退出：立即移除 +60% 暴击伤害增益，严格限定在技能期间
@@ -196,17 +210,6 @@ static void blackout_on_hit_connected(SkillHitContext* ctx) {
                           ap, s_blackout_combo[ap], stacks);
             }
         }
-
-        // SP1 最后一击命中 (未格挡)：施加 6 秒暴击抗性减益 (+40% 受暴击率)
-        int is_sp1 = (ctx->special_index == 1 || ctx->action_type == 16);
-        if (is_sp1 && ctx->is_last_hit && !ctx->is_blocked) {
-            skill_apply_buff_dur(tp, "blackout_sp1_crit_resist_debuff", 6.0f);
-            skill_overlay("[%s] 能量炮终击命中！对手暴击抗性降低40%%(6秒)！", ap == 0 ? "眩晕" : "敌方眩晕");
-            skill_log("BLACKOUT: P%d SP1 last hit connected -> applied 6.0s -40%% crit resist debuff to P%d", ap, tp);
-        }
-
-        // SP2 暴击流血保障：若由原生 onCrit 未覆盖（如模拟器路径），在暴击时确保流血层叠加
-        // (实机真机上 blackout_sp2_crit_bleed 通过 onCrit 自动触发，此处绝不重复施加；见 blackout.py st=99)
 
         // 实时检查暴击率是否突破 100%，同步【无尽怒火】状态
         blackout_sync_infinite_fury(ap);
@@ -256,6 +259,9 @@ static void blackout_on_hitreact_enter(int player_index) {
 
     if (s_blackout_sp1_unblockable_on[player_index]) {
         blackout_clear_sp1_unblockable(player_index, "hitreact_interrupted");
+    }
+    if (skill_has_buff(player_index, "blackout_sp1_crit_damage")) {
+        skill_consume_buff(player_index, "blackout_sp1_crit_damage", 99);
     }
     if (skill_has_buff(player_index, "blackout_sp2_crit_damage")) {
         skill_consume_buff(player_index, "blackout_sp2_crit_damage", 99);

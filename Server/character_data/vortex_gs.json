@@ -1,0 +1,44 @@
+{
+  "bot_id": "vortex_gs",
+  "name_zh": "旋风",
+  "name_en": "Vortex",
+  "faction": "decepticon",
+  "class": "warr",
+  "signature": {
+    "title_zh": "名称待定",
+    "title_en": "TBD",
+    "desc_zh": "技能暂未实现",
+    "pua_icon": "",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "离子切刃突袭",
+      "name_en": "Ion Blade Blitz",
+      "desc_zh": "",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial1Hit",
+      "effects": []
+    },
+    "sp2": {
+      "name_zh": "狂暴旋翼切割",
+      "name_en": "Frenzied Rotor Slash",
+      "desc_zh": "",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial2Hit",
+      "effects": []
+    },
+    "sp3": {
+      "name_zh": "塞伯坦空中死神",
+      "name_en": "Cybertronian Sky Reaper",
+      "desc_zh": "",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit",
+      "effects": []
+    }
+  },
+  "basic_abilities": [],
+  "game_abilities": [],
+  "abilities": [],
+  "synergies": []
+}

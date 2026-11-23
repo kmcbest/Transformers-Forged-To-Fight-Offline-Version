@@ -304,9 +304,7 @@ float skill_get_total_crit_chance(int player_index) {
     for (int i = 0; i < opp->buff_count; i++) {
         const char* id = opp->buffs[i].mod_id;
         int st = opp->buffs[i].stacks;
-        if (strstr(id, "blackout_sp1_crit_resist_debuff") != NULL) {
-            total += 0.40f * st;
-        } else if (strstr(id, "blackout_sp3_crit_resist_debuff") != NULL) {
+        if (strstr(id, "blackout_sp3_crit_resist_debuff") != NULL) {
             total += 0.20f * st;
         }
     }

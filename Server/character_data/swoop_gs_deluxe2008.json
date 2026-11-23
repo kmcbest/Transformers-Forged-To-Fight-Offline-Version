@@ -1,0 +1,87 @@
+{
+  "bot_id": "swoop_gs_deluxe2008",
+  "name_zh": "飞标",
+  "name_en": "Swoop",
+  "faction": "autobot",
+  "class": "tech",
+  "signature": {
+    "title_zh": "翼龙咆哮·科技狂怒",
+    "title_en": "Pteranodon Tech Fury",
+    "desc_zh": "机器恐龙科技核心超频运转，重击喷吐烈火引燃目标，并在特殊技施放期间提升自身暴击率与力场能量流转。",
+    "pua_icon": "E41C",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "空对地轰炸",
+      "name_en": "Aerial Bombardment",
+      "desc_zh": "飞标双翼挂载导弹齐射，对目标造成大范围剧烈爆炸并施加燃烧效果，持续6秒。",
+      "pua_icon": "0xe41d",
+      "ui_trigger": "onSpecial1Hit",
+      "effects": [
+        {
+          "title_zh": "燃烧",
+          "title_en": "Burn",
+          "desc_zh": "每一击有60%的概率施加燃烧，造成攻击力35%的伤害，持续6秒。",
+          "pua_icon": "0xe41d"
+        }
+      ]
+    },
+    "sp2": {
+      "name_zh": "翼刃烈空斩",
+      "name_en": "Wingblade Skystrike",
+      "desc_zh": "飞标高速俯冲盘旋，双翼锋利破空切割对手，最后一击触发眩晕。",
+      "pua_icon": "0xe41d",
+      "ui_trigger": "onSpecial2Hit",
+      "effects": [
+        {
+          "title_zh": "破甲",
+          "title_en": "Armor Break",
+          "desc_zh": "削减目标护甲持续6秒。",
+          "pua_icon": "0xe41d"
+        },
+        {
+          "title_zh": "眩晕",
+          "title_en": "Stun",
+          "desc_zh": "最后一击有80%概率造成眩晕，持续3.5秒。",
+          "pua_icon": "E605"
+        }
+      ]
+    },
+    "sp3": {
+      "name_zh": "终极翼龙火风暴",
+      "name_en": "Ultimate Pteranodon Firestorm",
+      "desc_zh": "飞标变形为机械翼龙冲入高空，俯冲突袭并从兽嘴中倾泻狂暴烈焰，对敌方全域造成焚尽打击。",
+      "pua_icon": "0xe41d",
+      "ui_trigger": "onSpecial3Hit",
+      "effects": [
+        {
+          "title_zh": "焚尽",
+          "title_en": "Incinerate",
+          "desc_zh": "施加强力焚尽减益，完全移除敌方护甲并造成持续烈焰伤害。",
+          "pua_icon": "0xe41d"
+        }
+      ]
+    }
+  },
+  "basic_abilities": [
+    {
+      "title_zh": "翼龙兽嘴火球吐息",
+      "title_en": "Beak Fireball Breath",
+      "desc_zh": "重击时从胸口翼龙嘴中喷吐烈焰火球，飞行命中目标造成重击硬直与额外伤害。",
+      "pua_icon": "0xe41d",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "机器恐龙科技合金",
+      "title_en": "Dinobot Tech Alloy",
+      "desc_zh": "身为汽车人机器恐龙一员，高强度科技合金装甲提供额外护甲与异常状态抗性。",
+      "pua_icon": "E41C",
+      "category": "passive",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ]
+}

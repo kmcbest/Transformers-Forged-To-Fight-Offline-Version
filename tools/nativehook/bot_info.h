@@ -19,6 +19,7 @@ static const EnemyStat ENEMY_STATS[] = {
     { "bitstream_gs_leader2015", 45022, 2555, 6889, 0.16f, 1.50f, "tech" },
     { "blackout_cin_tf", 40519, 3272, 7329, 0.16f, 1.50f, "demo" },
     { "blaster_gs_leader2016", 38938, 3089, 6979, 0.16f, 1.50f, "tech" },
+    { "blastoff_gs", 46500, 3150, 7709, 0.16f, 1.50f, "demo" },
     { "blitzwing_gs", 38250, 2795, 6578, 0.16f, 1.50f, "tact" },
     { "bludgeon_gs_rd20", 40966, 3245, 7338, 0.16f, 1.50f, "warr" },
     { "bonecrusher_cin_rotf", 40966, 3123, 7196, 0.16f, 1.50f, "warr" },
@@ -79,6 +80,7 @@ static const EnemyStat ENEMY_STATS[] = {
     { "sharkticon_gs_tech", 33800, 1920, 5174, 0.16f, 1.50f, "tech" },
     { "sharkticon_gs_warrior", 30758, 2434, 5506, 0.16f, 1.50f, "warr" },
     { "shockwave_gs", 45022, 2555, 6889, 0.16f, 1.50f, "tech" },
+    { "sideswipe_cin_rotf", 55760, 3696, 9149, 0.16f, 1.50f, "warr" },
     { "sideswipe_gs", 34882, 3515, 7121, 0.24f, 1.50f, "scou" },
     { "skywarp_gs_leader2015", 45022, 2555, 6889, 0.16f, 1.50f, "tech" },
     { "slipstream_gs", 38938, 3488, 7443, 0.24f, 1.50f, "scou" },
@@ -89,6 +91,8 @@ static const EnemyStat ENEMY_STATS[] = {
     { "strongarm_gs", 42182, 3001, 7159, 0.16f, 1.50f, "tact" },
     { "sunstorm_gs_leader2015", 40154, 3062, 7054, 0.16f, 1.50f, "warr" },
     { "sunstreaker_gs_deluxe2008", 45022, 3637, 8146, 0.08f, 1.30f, "braw" },
+    { "swindle_gs", 38520, 2854, 6670, 0.16f, 1.50f, "tech" },
+    { "swoop_gs_deluxe2008", 61629, 3053, 8915, 0.16f, 1.50f, "tech" },
     { "tantrum_gs_kabam", 45022, 3637, 8146, 0.08f, 1.30f, "braw" },
     { "tarn_gs", 45022, 3637, 8146, 0.08f, 1.30f, "braw" },
     { "thrust_gs_deluxe2008", 38938, 3488, 7443, 0.24f, 1.50f, "scou" },
@@ -101,6 +105,6 @@ static const EnemyStat ENEMY_STATS[] = {
     { "wildrider_gs_deluxe2016", 45022, 3637, 8146, 0.08f, 1.30f, "braw" },
     { "windblade_gs", 34882, 3366, 6948, 0.24f, 1.50f, "scou" },
 };
-#define NUM_ENEMY_STATS 87
+#define NUM_ENEMY_STATS 91
 
 #endif // BOT_INFO_H

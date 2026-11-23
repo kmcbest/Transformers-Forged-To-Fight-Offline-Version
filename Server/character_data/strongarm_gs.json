@@ -1,0 +1,44 @@
+{
+  "bot_id": "strongarm_gs",
+  "name_zh": "铁腕",
+  "name_en": "Strongarm",
+  "faction": "autobot",
+  "class": "tact",
+  "signature": {
+    "title_zh": "名称待定",
+    "title_en": "TBD",
+    "desc_zh": "技能暂未实现",
+    "pua_icon": "",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "电击警棍制伏",
+      "name_en": "Stun Baton Subdual",
+      "desc_zh": "",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial1Hit",
+      "effects": []
+    },
+    "sp2": {
+      "name_zh": "执法霰弹轰鸣",
+      "name_en": "Lawbringer Shotgun Blast",
+      "desc_zh": "",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial2Hit",
+      "effects": []
+    },
+    "sp3": {
+      "name_zh": "警用能量锁链",
+      "name_en": "Cybertronian Energy Cuffs",
+      "desc_zh": "",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit",
+      "effects": []
+    }
+  },
+  "basic_abilities": [],
+  "game_abilities": [],
+  "abilities": [],
+  "synergies": []
+}

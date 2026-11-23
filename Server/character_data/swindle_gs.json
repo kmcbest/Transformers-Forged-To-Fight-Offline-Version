@@ -1,0 +1,273 @@
+{
+  "bot_id": "swindle_gs",
+  "name_zh": "诈骗",
+  "name_en": "Swindle",
+  "faction": "decepticon",
+  "class": "tech",
+  "signature": {
+    "title_zh": "黑市军火买卖",
+    "title_en": "Black Market Dealing",
+    "desc_zh": "作为战车队的军火掮客，诈骗在自身生命值降低至75%、50%或25%以下时激活高频科技护盾，获得100%伤害减免并加速能量充填，持续8秒。",
+    "pua_icon": "E515",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "陀螺平衡破坏炮",
+      "name_en": "Gyro-Disruptor",
+      "desc_zh": "手臂高能重炮发射陀螺干扰震荡弹，60%概率施加震击，造成攻击力200%的伤害，持续6秒；30%概率造成能量流失；10%概率造成眩晕。",
+      "pua_icon": "0xe914",
+      "ui_trigger": "onSpecial1Hit",
+      "effects": [
+        {
+          "title_zh": "震击",
+          "title_en": "Shock",
+          "desc_zh": "60%概率施加震击，造成攻击力200%的伤害，持续6秒",
+          "pua_icon": "0xe914"
+        },
+        {
+          "title_zh": "能量流失",
+          "title_en": "Power Leak",
+          "desc_zh": "30%的概率造成能量流失，在3秒内扣除对方一格能量的40%。",
+          "pua_icon": "0xe607"
+        },
+        {
+          "title_zh": "眩晕",
+          "title_en": "Stun",
+          "desc_zh": "10%的概率造成眩晕，持续3秒",
+          "pua_icon": "0xe605"
+        }
+      ]
+    },
+    "sp2": {
+      "name_zh": "散射高爆离子弹",
+      "name_en": "Scatter Cluster Bomb",
+      "desc_zh": "向近距离目标倾泻改装散射高爆离子弹，密集轰击敌方护甲，施加震击、能量流失与眩晕效果并重置模块升级。",
+      "pua_icon": "0xe914",
+      "ui_trigger": "onSpecial2Hit",
+      "effects": [
+        {
+          "title_zh": "震击",
+          "title_en": "Shock",
+          "desc_zh": "60%概率施加震击，造成攻击力200%的伤害，持续6秒",
+          "pua_icon": "0xe914"
+        },
+        {
+          "title_zh": "能量流失",
+          "title_en": "Power Leak",
+          "desc_zh": "30%的概率造成能量流失，在3秒内扣除对方一格能量的40%。",
+          "pua_icon": "0xe607"
+        },
+        {
+          "title_zh": "眩晕",
+          "title_en": "Stun",
+          "desc_zh": "10%的概率造成眩晕，持续3秒",
+          "pua_icon": "0xe605"
+        },
+        {
+          "title_zh": "军火刷新",
+          "title_en": "Upgrade Randomize",
+          "desc_zh": "把已有的军火改装模块全部随机替换",
+          "pua_icon": ""
+        }
+      ]
+    },
+    "sp3": {
+      "name_zh": "战车突袭·军火狂潮",
+      "name_en": "Black Market Blitzkrieg",
+      "desc_zh": "变形为塞伯坦吉普战车全速撞击敌人，随后主炮与背部副炮火力全开近距饱和轰炸，重创并完全瘫痪目标！",
+      "pua_icon": "0xe914",
+      "ui_trigger": "onSpecial3Hit",
+      "effects": [
+        {
+          "title_zh": "震击",
+          "title_en": "Shock",
+          "desc_zh": "60%概率施加震击，造成攻击力200%的伤害，持续6秒",
+          "pua_icon": "0xe914"
+        },
+        {
+          "title_zh": "能量流失",
+          "title_en": "Power Leak",
+          "desc_zh": "30%的概率造成能量流失，在3秒内扣除对方一格能量的40%。",
+          "pua_icon": "0xe607"
+        },
+        {
+          "title_zh": "眩晕",
+          "title_en": "Stun",
+          "desc_zh": "10%的概率造成眩晕，持续3秒",
+          "pua_icon": "0xe605"
+        },
+        {
+          "title_zh": "模块对齐",
+          "title_en": "Upgrade Normalize",
+          "desc_zh": "把所有改装模块变成与第一个模块相同",
+          "pua_icon": ""
+        }
+      ]
+    }
+  },
+  "basic_abilities": [
+    {
+      "title_zh": "军火改装",
+      "title_en": "Weapon Mod",
+      "desc_zh": "构建进攻、防御或能量系统改装模块，全面强化机体战斗性能。",
+      "pua_icon": "E306",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "震击",
+      "title_en": "Shock",
+      "desc_zh": "持续造成电磁能量伤害。",
+      "pua_icon": "E914",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "能量流失",
+      "title_en": "Power Leak",
+      "desc_zh": "随时间推移持续扣减对手一定比例的能量槽。",
+      "pua_icon": "E607",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "纳米修复",
+      "title_en": "Repair",
+      "desc_zh": "随时间推移持续修复生命值，或按受损比例回血。",
+      "pua_icon": "E503",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "眩晕",
+      "title_en": "Stun",
+      "desc_zh": "临时阻止目标采取任何行动。",
+      "pua_icon": "E605",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    }
+  ],
+  "game_abilities": [
+    {
+      "title_zh": "军火改装",
+      "title_en": "Weapon Mod",
+      "desc_zh": "每次发动重击时，构建一个随机的军火升级改装，构建时间为4秒。构建完成后，随机获得进攻/能量/防御改装中的一个。\n构建过程中若受到暴击攻击，构建将被打断。\n\n每个进攻升级增加30%攻击力，提升特殊技施加震击概率20%；\n每个防御升级增加20%伤害避免，提升特殊技施加眩晕概率20%；\n每个能量升级增加20%能量功率，提升特殊技施加能量流失概率20%。\n\n受到近战暴击时，将损失最新获得的一个改装。",
+      "pua_icon": "E306",
+      "category": "passive",
+      "ui_trigger": "升级",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "黑市暴利",
+      "title_en": "Windfall",
+      "desc_zh": "当诈骗集齐三个同类升级改装时，立即激活应急纳米回血，恢复最大生命值的10%~20%。",
+      "pua_icon": "E503",
+      "category": "passive",
+      "ui_trigger": "成功",
+      "show_on_main_screen": false
+    }
+  ],
+  "abilities": [
+    {
+      "title_zh": "军火改装",
+      "title_en": "Weapon Mod",
+      "desc_zh": "构建进攻、防御或能量系统改装模块，全面强化机体战斗性能。",
+      "pua_icon": "E306",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "震击",
+      "title_en": "Shock",
+      "desc_zh": "持续造成电磁能量伤害。",
+      "pua_icon": "E914",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "能量流失",
+      "title_en": "Power Leak",
+      "desc_zh": "随时间推移持续扣减对手一定比例的能量槽。",
+      "pua_icon": "E607",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "纳米修复",
+      "title_en": "Repair",
+      "desc_zh": "随时间推移持续修复生命值，或按受损比例回血。",
+      "pua_icon": "E503",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "眩晕",
+      "title_en": "Stun",
+      "desc_zh": "临时阻止目标采取任何行动。",
+      "pua_icon": "E605",
+      "category": "basic",
+      "ui_trigger": "none",
+      "show_on_main_screen": true
+    },
+    {
+      "title_zh": "军火改装",
+      "title_en": "Weapon Mod",
+      "desc_zh": "每次发动重击时，构建一个随机的军火升级改装，构建时间为4秒。构建完成后，随机获得进攻/能量/防御改装中的一个。\n构建过程中若受到暴击攻击，构建将被打断。\n\n每个进攻升级增加30%攻击力，提升特殊技施加震击概率20%；\n每个防御升级增加20%伤害避免，提升特殊技施加眩晕概率20%；\n每个能量升级增加20%能量功率，提升特殊技施加能量流失概率20%。\n\n受到近战暴击时，将损失最新获得的一个改装。",
+      "pua_icon": "E306",
+      "category": "passive",
+      "ui_trigger": "升级",
+      "show_on_main_screen": false
+    },
+    {
+      "title_zh": "黑市暴利",
+      "title_en": "Windfall",
+      "desc_zh": "当诈骗集齐三个同类升级改装时，立即激活应急纳米回血，恢复最大生命值的10%~20%。",
+      "pua_icon": "E503",
+      "category": "passive",
+      "ui_trigger": "成功",
+      "show_on_main_screen": false
+    }
+  ],
+  "synergies": [
+    {
+      "title_zh": "战车队同盟 – 袭击、吵闹、旋风",
+      "title_en": "Combaticons – Onslaught, Brawl, Vortex",
+      "desc_zh": "+20%~+35% 能量生成功率与装甲值。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "onslaught_gs",
+        "brawl_gs",
+        "vortex_gs"
+      ]
+    },
+    {
+      "title_zh": "黑市主顾 – 威震天、红蜘蛛",
+      "title_en": "Arms Clients – Megatron, Starscream",
+      "desc_zh": "+15%~+25% 攻击评级与暴击伤害。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "megatron_gs_leader2015",
+        "starscream_ghost_gs"
+      ]
+    },
+    {
+      "title_zh": "宿敌 – 千斤顶",
+      "title_en": "Rivals – Wheeljack",
+      "desc_zh": "+20% 针对科技系与发明家角色的暴击率。",
+      "pua_icon": "",
+      "bonus_heroes": [
+        "wheeljack_gs_mp20"
+      ]
+    }
+  ]
+}

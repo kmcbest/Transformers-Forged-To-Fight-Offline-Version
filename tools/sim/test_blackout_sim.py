@@ -61,7 +61,8 @@ print("\n--- [TEST 1] 数据契约与删除项核验 ---")
 mods, appears, _ = build_blackout_abilities()
 assert_true("blackout_gatling_ranged_buff" not in mods, "加特林机枪已彻底移除")
 assert_true("blackout_sp2_crit_resist_debuff" not in mods, "SP2 暴击抗性减益不存在")
-assert_true("blackout_sp1_crit_resist_debuff" in mods and mods["blackout_sp1_crit_resist_debuff"]["m"] == 0.40 and mods["blackout_sp1_crit_resist_debuff"]["d"] == 6.0, "SP1 暴击抗性减益 (+40%, 6s) 定义正确")
+assert_true("blackout_sp1_crit_resist_debuff" not in mods, "SP1 暴击抗性减益已彻底从 mods 中移除")
+assert_true("blackout_sp1_crit_damage" in mods and mods["blackout_sp1_crit_damage"]["m"] == 0.35 and mods["blackout_sp1_crit_damage"]["d"] == 3.5, "SP1 暴击伤害 (+35%, 3.5s) 定义正确")
 assert_true(mods["blackout_sp2_crit_damage"]["m"] == 0.60, "SP2 暴击伤害已修正为 60%")
 assert_true(mods["blackout_sp2_crit_bleed"]["st"] >= 10, "SP2 暴击流血支持可叠加 (st=%d)" % mods["blackout_sp2_crit_bleed"]["st"])
 assert_true(mods["blackout_sp3_crit_resist_debuff"]["st"] >= 10 and mods["blackout_sp3_crit_resist_debuff"]["tr"] == [], "SP3 永久暴抗减益可叠加且无重复自动触发器")
@@ -115,12 +116,13 @@ lib.sim_fire_attack_ended(0, 4, 0, HIT_FLAG_INVULNERABLE | HIT_FLAG_EVADED, 0.0)
 st = g_engine.get_state()
 assert_true(abs(st["p0"]["mana"] - (mana_before_heavy + 0.18)) < 0.01, "重击被规避 (Evaded) 触发追猎 +6% 能量")
 
-# 3. SP1 浅紫色不可防御时间窗 + 末击命中 6 秒 40% 暴击抗性减益
-print("\n--- [TEST 3] SP1 浅紫色不可防御图标时间窗 & 末击 6 秒 40% 暴抗减益 ---")
+# 3. SP1 浅紫色不可防御时间窗 + 技能期间 35% 暴击伤害
+print("\n--- [TEST 3] SP1 浅紫色不可防御图标时间窗 & 技能期间 35% 暴伤 ---")
 g_engine.reset()
 g_engine.tick(100)
 lib.sim_fire_special_state(0, 1, 1) # SP1 enter
 st = g_engine.get_state()
+assert_true(has_buff(st, "p0", "blackout_sp1_crit_damage"), "SP1 启动 -> 获得 35% 暴击伤害增益")
 assert_true(not has_buff(st, "p0", "blackout_sp1_unblockable"), "SP1 刚起手第一击前，不提前亮不可防御图标")
 
 # SP1 Hit 0 ends -> last-hit unblockable window opens!
@@ -128,16 +130,17 @@ lib.sim_fire_attack_ended(0, 16, 0, HIT_FLAG_HIT, 300.0)
 st = g_engine.get_state()
 assert_true(has_buff(st, "p0", "blackout_sp1_unblockable"), "SP1 第一击结束进入最后一击阶段 -> 浅紫色不可防御图标亮起")
 
-# SP1 Last Hit connects -> applies 6s -40% crit resist debuff to opponent
+# SP1 Last Hit connects -> 不再施加旧的暴击抗性减益
 g_engine.attack(0, 16, 1, 1, 0) # P0 SP1 last hit (not blocked)
 st = g_engine.get_state()
-assert_true(has_buff(st, "p1", "blackout_sp1_crit_resist_debuff"), "SP1 最后一击命中 -> 对手获得 6 秒 40% 暴击抗性减益")
+assert_true(not has_buff(st, "p1", "blackout_sp1_crit_resist_debuff"), "SP1 最后一击命中 -> 不再施加已移除的暴击抗性减益")
 
 # SP1 Last Hit ends -> light-purple icon vanishes immediately!
 lib.sim_fire_attack_ended(0, 16, 100, HIT_FLAG_PROJECTILE | HIT_FLAG_HIT | HIT_FLAG_LAST_HIT, 700.0)
 lib.sim_fire_special_state(0, 1, 0) # SP1 exit
 st = g_engine.get_state()
 assert_true(not has_buff(st, "p0", "blackout_sp1_unblockable"), "SP1 最后一击结算完毕 -> 浅紫色不可防御图标立即消失")
+assert_true(not has_buff(st, "p0", "blackout_sp1_crit_damage"), "SP1 退出瞬间 -> 35% 暴击伤害增益立即移除，绝不残留")
 
 # 4. SP2 60% 暴伤严格限定在技能期间
 print("\n--- [TEST 4] SP2 60% 暴击伤害严格限定在技能期间 ---")

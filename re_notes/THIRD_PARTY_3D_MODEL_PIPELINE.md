@@ -47,6 +47,12 @@
    * 10.1 载具朝向防垂直与纯刚体旋转铁律（Anti-Vertical Yaw-Pitch Standard）
    * 10.2 载具 45 骨骼多部件权重挂载与副 SMR 屏蔽
    * 10.3 直升机主旋翼持续旋转动画机制与双重暗坑排查标准（Rotor Continuous Spin Engineering Protocol）
+11. [高难实战攻坚专题三：特型角色与武器模具专属流水线实战](#11-铁腕strongarm与战术轮式警用皮卡专属流水线借壳-prowl-实战)
+   * 11.1 ~ 11.13 铁腕（Strongarm）与战术轮式警用皮卡专属流水线（借壳 Prowl 实战）
+   * 11.14 ~ 11.15 三变金刚（闪电 Blitzwing）双载具单骨 COG 逆矩阵与连环 SP3
+   * 11.16 ~ 11.17 第三方持械角色（史达 Star Saber）Unity HITL 握剑精调台与 Alliance 模具
+   * 11.18 飞标（Swoop）与飞行动物/鸟兽模具
+   * 11.19 横炮（Sideswipe ROTF）双刀刺客与反关节轮滑模具：3 指非对称手掌安全收敛、正面朝向确认门禁、跨角色直立待机（Necrotronus）反关节自适应、SP3 跨角色 Stage 借用载具变形三重齿轮与混合连招招式缝合
 
 ---
 
@@ -1128,3 +1134,322 @@ FOC 等虚幻 3（UE3）模型的四根主手指在骨架上只有两节骨骼�
 
 ### 11.15 三变金刚连环 SP3 混剪、粒子发射与接地校验铁律
 * 闪电 `7.40s`（`222f`）连环三变 SP3 的完整工艺（风刃前半 + 三次 Hermite 过渡 + 汽车大师锚定后半、Unity `-batchmode` 按实测 `Hips` 反算双载具 `COG` 动画、`track_44` 与三网互斥显隐、清除母包粒子 `ClampVelocityModule` 死锁使子弹射出、砸地后 `Actor1` 下沉 `-14.0m` 瞬失及消除坦克 `+1.199m` 悬空偏置等七大实战避坑规范）详见 [`TRIPLE_CHANGER_ARCHITECTURE_GUIDE.md`](file:///e:/Agent/TFTF-blender/re_notes/TRIPLE_CHANGER_ARCHITECTURE_GUIDE.md) **第十节**。
+
+### 11.16 第三方持械角色（史达 Star Saber）Unity HITL 握剑精调台、0.01x 外壳缩放泄露与 `CopySerialized` 刷盘失败铁律
+* **故障现象**：
+  1. 导出带独立手指骨（`Hand_R_1..9`）的 Unity HITL 调优 FBX 后，进入 Unity 一摆预设，右手几块手指竟集体飞到角色脚底与地面周围散落（`StarSaber.001` 包围盒被撑大），而 `RightHand` 节点处空空如也；
+  2. 在 Unity HITL 场景中肉眼和 `BakeMesh()` 实测手指都已经弯进掌心并握住剑柄（`Live BakeMesh tip verts Y=[5.835, 6.152]`），但点击烘焙并跑真机 `FE_Idle` 渲染却发现右手手指依然笔直下垂未弯（磁盘上的 `.asset` 顶点仍停在 `Y=[5.168, 5.478]`），且无头渲染画面中混入了 HITL 原场景站在原地的静态角色残影。
+* **三大精确根因**：
+  1. **FBX 外层 `0.01x` 包装节点缩放泄露**：第三方手游 FBX（如《Transformers: Alliance》）骨架 `Bip001` 外往往包有一层父容器（如 `StarSaber_pbr`，`scale = (0.01, 0.01, 0.01), rot_x = 90°`）。脚本若在解绑 `mesh.parent = None` 之前直接用 `orig_arm.matrix_world @ b.head_local` 读取手指关节坐标，骨骼坐标会自带 `0.01x` 缩小并旋转倒地，掉在 `(0, 0, 0)` 原点地板上；而网格顶点仍处在半空 `Y ≈ 6.0m` 处。一旦对位于地板的枢轴施加上手腕旋转，手指网格就被以 6 米为半径甩到地面四周！
+  2. **`EditorUtility.CopySerialized` 静默遗漏原生网格顶点流**：当 `BakeAndSaveGrip()` 使用 `EditorUtility.CopySerialized(combinedMesh, existing)` 覆写已存在的 `Mesh` `.asset` 时，Unity 2020.3 仅更新了 `m_LocalAABB` 等外围字段，并未可靠刷新 C++ 底层的 `m_VertexData` 原生字节流（即使调用 `SetDirty` + `SaveAssets` 也可能仍留旧顶点），导致磁盘 `cha_*_00.asset` 里保存的还是未弯曲的 Rest Pose！
+  3. **左手坐标系 `Cross` 屈指符号陷阱与域重载覆盖手动微调**：
+     * 在 Unity 左手坐标系中手算 `Vector3.Cross(fingerDown, worldInward)` 配合 `AngleAxis(+deg, axis)` 极易差一个负号把“向掌心内扣”变成“向手背外翻”；
+     * `[ExecuteInEditMode]` 脚本若未在 `OnEnable()` 中同步 `prevCurlAll = curlAll` 与剑 Transform 缓存，Unity 每次代码域重载后 `Update()` 会判定滑块变更并把用户刚在 Scene 手动捏好的指节或剑位覆盖回旧值；
+     * HITL 工程同时保留天火 15 根无用死手指骨（`RightHandIndex1..Pinky3`）会让 `RightHand` 层级混乱；验证脚本 `Verify*RealGameAnimator.cs` 若仅在 `!Application.isBatchMode` 时隐藏现场景根节点，从命令行 `OpenScene` 后调起验证仍会让场景里的 `StarSaber_Candidate` 与 `Stage Floor` 穿帮入镜。
+* **可复用工程铁律**：
+  1. **读取原模骨骼位置一律经 `mesh.matrix_local.inverted()`**：先用 `mesh.matrix_local.inverted() @ b.head_local` 把骨骼关节点变换到**未解绑时的原始网格局部空间**，再施加与网格完全一致的 `SCALE_FACTOR` 与 `ground_z_offset`；导出前在 Blender 重新导入 FBX 渲染对比张手与握拳，并校验所有指节头与对应顶点组质心距离 $< 0.05\text{m}$；
+  2. **HITL 屈指轴必用 `Quaternion.FromToRotation` 零歧义直算**：
+     ```csharp
+     Quaternion q = Quaternion.FromToRotation(worldFrom.normalized, worldTo.normalized);
+     q.ToAngleAxis(out float ang, out Vector3 worldAxis);
+     if (ang < 0f) worldAxis = -worldAxis;
+     Vector3 localAxis = Quaternion.Inverse(bone.rotation) * worldAxis.normalized;
+     ```
+     严禁在 Unity 左手坐标系手猜 `Cross` 符号；剑体旋转轴同样按 `swordMesh.bounds.size` 最长轴与 `FromToRotation` 对齐；
+  3. **烘焙保存 Mesh 资产严禁用 `CopySerialized`，改用 `DeleteAsset + CreateAsset`（或 `Clear(false)` 逐字段赋值）并当场回读校验顶点**：在 `BakeAndSaveGrip()` 中先加载官方母体 SMR 的**权威 54 骨 `bones` 与 `bindposes`**（将 HITL 指骨 `Hand_R_*` 与剑网格 `100%` 刚性折叠映射至 `RightHand`），再用 `AssetDatabase.DeleteAsset(path)` + `AssetDatabase.CreateAsset(combinedMesh, path)` + `AssetDatabase.SaveAssets()` 落盘，随后立即从磁盘回读 `savedAsset.vertices[tipIdx]` 与 `Live BakeMesh` 比对确认误差 $= 0.000\text{mm}$；
+  4. **HITL 调整台交互四大体验守则**：
+     * 清除 `RightHand` 下母体死指骨仅保留真实受控骨（`Hand_R_1..9` + 剑子物体），剑 Pivot 居中于剑柄中点并锚定至左右指根中点掌心口袋；
+     * `OnEnable()` 同步滑块旧值防止域重载覆盖手调姿态（仅当持久化版本号升级时重算内卷轴并保护剑 Transform）；
+     * `OnSceneGUI` 为指骨与剑柄绘制彩色球体与骨连线，且把**【💾 烘焙并保存】绿色按钮置顶于 Inspector 最上方 + 挂载顶部 `TFTF/` 菜单项**（避免用户选中剑或指骨时找不到宿主身上的按钮）；
+     * 验证脚本在 `try/finally` 中无条件临时隐藏当前已加载场景全部 `RootGameObjects`（不区分是否 `isBatchMode`），且每次修改 C# 后用批处理日志与回读图片 `read_file` 双重验收。
+
+### 11.17 《Transformers: Alliance》系列模具 9 骨合并手指防崩铁律、默认载具轨道与纹理 `RGBA` 预乘清零陷阱
+* **适用范围**：所有源自《Transformers: Alliance》的手游模具（如史达 Star Saber，共同特征为 `Bip001` 骨架 + 外层 `0.01x` `*_pbr` 父容器 + `Hand_L/R_1..9` 指骨命名 + `Tx_*_D/N/S.png` 贴图集）。
+* **四大核心暗坑与根因**：
+  1. **非 5 指对称的“3 分支 × 3 节 = 9 骨”合并拓扑（直接硬绑母体 15 根指骨必崩）**：
+     * 不同于 UE3/FOC（双节 5 指）或 Maya 标准 30 指骨（`Thumb/Index/Middle/Ring/Pinky 1..3`），Alliance 模具每只手仅有 **`1` 根掌骨 + `9` 根跳跃编号指骨**，真实拓扑分工为：
+       * 掌骨：`Dummy_hand_01`（左）/ `Dummy_hand_002`（右）
+       * 大拇指 3 节：`Hand_L/R_1 -> 4 -> 5`
+       * 食指 3 节：`Hand_L/R_2 -> 6 -> 7`
+       * **中指+无名指+小指“三指合一”3 节**：`Hand_L/R_3 -> 8 -> 9`
+     * **致命踩坑**：若按常规 5 指角色习惯把 `Hand_*_1..9` 直接一对一映射去驱动母体 `LeftHandThumb1..Pinky3`，不仅编号完全不连续，更因为 `Hand_*_3/8/9` 同时拖拽三根手指、且 Alliance 局部骨轴与 Kabam `Avatar` 固有静止轴正交/反向，进战斗或待机动画瞬间就会触发手指各指节**拧断、反向翻折与散架穿模**（“手指明显崩了”）。
+  2. **源 FBX 默认激活载具动画轨道（一导入只剩飞机）**：
+     * Alliance `StarSaber.fbx` 等原档把 `Bip001|vehicle_idle01_Garage|Base Layer` 等变形动作直接存为当前默认 Action；在 Blender/Unity 中不清理或未先清零 Pose/Action 直接看，只能看到变形后的载具而看不到人形，清动画前必须先 `animation_data_clear()` + 全骨复位或仅在提取载具时显式切回 `vehicle_idle` 并 `eval_mesh.to_mesh()` 烘出。
+  3. **`0.01x` 外壳缩放与父子坐标空间错位**：
+     * 同 §11.16，Alliance `*_pbr` 外包装自带 `scale=(0.01, 0.01, 0.01)` 与 `rot_x=90°`；任何指关节位置采集必须通过 **`mesh.matrix_local.inverted() @ b.head_local`** 转回未解绑网格局部空间，严禁直接用解绑前 `arm.matrix_world @ b.head_local`。
+  4. **Alliance 贴图 `Tx_*_D.png` Alpha 全零预乘清黑与 `Tx_*_S.png` 通道错读**：
+     * Alliance `Tx_*_D.png` 的 **Alpha 通道实为极窄眼部/眼罩自发光遮罩**（非眼部区域 `Alpha = 0`，眼区约占 `0.06%~0.10%`），而漫反射 RGB 眼区底色偏暗灰（`[48, 48, 48]`）；若使用 Pillow 对 `RGBA` 直接 `.resize(..., LANCZOS)`，LANCZOS 会把 `RGB × Alpha` 预乘，**瞬间把 99% 身体漫反射涂成纯黑 `[1.6, 1.6, 1.6]`**！
+     * `Tx_*_S.png` 三通道语义：`R ≈ 金属/磨损高光`，`G ≈ 源粗糙度`，**`B = 极高质量烘焙环境光遮蔽 (AO)`**（而非金属度）；严禁从漫反射粗略按颜色（如“蓝色/金色”）提取 `RAOE.B` 自发光，否则会把全部蓝甲大腿/金甲胸口点亮成 HDR 过曝白光（`>10%`）。
+  5. **3D 程序化无贴图阵营标（`Symbol_AB` / `Symbol_DC`）UV 采样脏噪与共面 Z-Fighting 撕裂陷阱**：
+     * Alliance 模具的博派/狂派标志（如 `Symbol_AB.001`，530 面 826 顶点的独立立体浮雕）在原档中并未展平至机体 UV，而是挂载了 3ds Max 程序化纯色材质（`M_Symbol_AB` 纯红 + `M_Symbol_Black` 纯黑底托）；
+     * **致命踩坑**：一旦直接合并进身体主网格 `cha_*_main` 并共用身体贴图，其未初始化的 UV（默认堆叠在 `[0.02..0.89, 0.03..0.98]`）会胡乱采样机体漫反射上的螺丝、暗部接缝与划痕噪点；且标志网格与胸部/肩甲挡板完全共面（$Y = -0.215$），在移动端深度缓冲精度下会触发极具破坏力的 **Z-Fighting 剧烈闪烁穿模与黑洞镂空撕裂**（呈现为“标志破破烂烂”）；
+     * **标准解法（安全调色板隔离 + 法向微抬升）**：
+       * 在身体主贴图 `cha_*_main_Diffuse.png`、`_RAOE.png`、`_Normal.png` 寻找空置 UV 孤岛（如 $U \in [0.35, 0.40], V \in [0.40, 0.45]$），分别烙印纯净的 **博派亮红**（Diff=`[215, 25, 28]`，RAOE=`[175, 255, 0]`，Norm=`[128, 128, 0]`）与 **炭黑底衬**（Diff=`[22, 22, 26]`，RAOE=`[160, 255, 0]`，Norm=`[128, 128, 40]`）；
+       * 将阵营标立体几何的红面与黑面 UV 分别定向坍缩映射至这两个色块中心；
+       * 将标志沿外法向（$-Y$ 方向）**整体微抬升 $3.6\text{mm}$（模型空间 $+0.015\text{m}$）**，彻底物理消除与肩甲底面的深度共面竞争，呈现博物馆级纯净立体的金属徽章。
+  6. **对称型冷兵器（王者之剑/双刃阔剑）纵轴 90° 刀刃朝向纠正与 Unity 免二次调手重做机制**：
+     * 史达王者之剑等重剑几何在模型局部空间中，局部 Z 轴为剑身纵深轴（$Z \in [-0.39, 6.86]$），剑格护手延展在 X 轴，双面刃口延展在 Y 轴；
+     * 若人工在 Unity HITL 中微调握姿时，误将剑格顺着手掌贴合（导致宽面朝外、刃口向侧面），**切勿让用户重新打开 Unity 重调手指**；
+     * 剑格与双刃具备 $180^\circ$ 双边几何对称性，只需在配置文件 `starsaber_grip_config.json` 中直接将 `swordLocalRotationEuler.z` 偏转 $+90^\circ$（由 $\approx 0^\circ$ 改为 $89.58^\circ$），并在 Unity 批处理脚本中调用 `studio.BakeAndSaveGrip()` 重新将武器顶点与手指顶点融合烘焙到 54 骨网格资产 `cha_jetfire_gs_leader2014_00.asset`，即可在 100% 保持用户已调好的完美手指屈度与握拳姿态的前提下，实现刀刃自然朝前、剑格横护拳面的标准实战握剑手位。
+  7. **副手远程武器动态显隐系统（`PropsController` + Motormaster 左手射击）与武器材质图集共用规范（Off-Hand Dynamic Conjure & Atlas Sharing Standard）**：
+     * **设计初衷与逻辑合理性**：持械角色（如史达右手持王者之剑）若继续借用天火的双手机枪动作进行远程攻击，会导致“一边右手持剑一边双手端枪”的视觉逻辑崩坏。合理的战斗逻辑应为：右手保持常驻持剑，远程攻击时由空闲的左手（`LeftHand`）动态变出激光步枪进行单手射击，击发完毕后步枪隐去恢复常态持剑。
+     * **动态道具机制（`PropsController` 与 `PropMoveEvent`）**：
+       * 远程枪械不可像常驻近战武器那样烘焙在机体网格中，必须作为独立 GameObject 挂载在手腕骨骼下（如 `gun` 挂载在 `LeftHand`），并通过预制体上的 `PropsController._props["gun"]` 进行纳管；
+       * `PropsController` 中枪械道具配置：`InitFlags = 0`, `_startActive = False`, `_renderers = [{'m_FileID': 0, 'm_PathID': gun_smr_pid}]`。角色待机、走位与近战普通连招时枪械保持绝对隐形；
+       * 当触发远程招式（借调自汽车大师 Motormaster 的 `move_attackRanged_handGun_left_XL_01..03B`）时，动作事件流中的 `PropMoveEvent` 会在开枪帧区间（Duration $d \approx 16\text{f}$）自动激活该渲染器，开枪完成后自动归隐。
+     * **左手远程招式与动画剪辑嫁接**：
+       * `moves.assetbundle` 中替换远程攻击动作 42/43/44 槽位为左手版本：
+         * `move_attackRanged_handGun_left_XL_01` (PID: `6811001981586741581`)
+         * `move_attackRanged_handGun_left_XL_02` (PID: `4776763212269214863`)
+         * `move_attackRanged_handGun_left_XL_03B` (PID: `-4795991277224341066`)
+       * `FIGHT_AOC` 中将对应的 51/52/53 剪辑槽位重定向至 `character_anim_procedural.assetbundle` 中的左手开枪动作：
+         * Slot 51: `handGun_L_attackRanged_01` (PID: `-3948795660449728024`, FileID=2)
+         * Slot 52: `handGun_L_attackRanged_02` (PID: `6078334979657561662`, FileID=2)
+         * Slot 53: `handGun_L_attackRanged_03_B` (PID: `8599663582438923052`, FileID=2)
+     * **武器贴图零开销图集拼合（$U \in [0.5, 1.0]$ Atlas Sharing）**：
+       * 近战常驻剑在 `cha_*_wpns_*` 贴图集（512x512）中通常仅占用左半区（$U \in [0.0, 0.5]$）；
+       * 将 Alliance 原生激光步枪（`Tx_StarSaberGun_D/N/S.png`，256x256）缩放至 256x512 并拼入武器贴图右半区（$X \in [256, 512]$），步枪网格 UV 统一施加线性映射 $U' = 0.5 + 0.5U$；
+       * 如此近战王者之剑与远程激光步枪 **100% 共享唯一的 `cha_*_wpns` Kabam 材质球**（`MAT_WPNS_PID`），无需在母体预制体中引入任何额外材质定义或增加 DrawCall。
+     * **枪体层级重父化与汽车大师（Motormaster）原生挂载点标准**：
+       * 天火母壳的 `gun` 原挂载在 `RightHand` 下，左手开枪必须在两个预制体（正常版与 `_lw` 版）中将其父节点重定向到 `LeftHand`（更新 `RightHand.m_Children` 与 `LeftHand.m_Children`）；
+        * **PropsController 运行时强制覆写铁律（PropsController Runtime Reset Rule，核心物理根因）**：
+          * 游戏启动及战前初始化时，`PropsController.InitProps()` 会严格依据自身 `_props["gun"]` 中的 `RootPath`（字符串骨骼全路径）将道具 `_instance` 动态 Re-parent 挂载到目标骨骼，并将其 `localPosition` 强制覆写为 `PositionOffset`、`localEulerAngles` 强制覆写为 `RotationOffset`！
+          * 若仅在预制体层级中修改了 Transform，而未同步更新 `PropsController`：`RootPath` 仍为母壳的 `.../RightHand`，且 `PositionOffset = (0,0,0)`，游戏在运行时将无视 Transform 设置，把枪重新挂回右手（臀部位置），导致在游戏实机中枪体永远停留在右手/腰际下方悬空！
+          * **必须同步更新 PropsController**：
+            * `RootPath = "character_model/Reference/Hips/Spine/Spine1/LeftShoulder/LeftArm/LeftArmRoll/LeftForeArm/LeftForeArmRoll/LeftHand"`；
+            * `PositionOffset = {"x": -1.0465, "y": -0.8073, "z": 2.5779}`；
+            * `RotationOffset = {"x": 0.0, "y": -90.0, "z": 0.0}`；
+            * `Scale = {"x": 1.0, "y": 1.0, "z": 1.0}`。
+       * **左手持枪坐标系黄金基准（Motormaster Donor Truth）**：
+         * `LeftHand` 下的 `gun` 节点 Transform 标准姿态：`LocalPosition = (-1.0465, -0.8073, 2.5779)`（以 $0.04\text{mm}$ 精度严丝合缝嵌入左掌心挂载点 `LeftProp`），`LocalRotation = (0.0, -0.707107, 0.0, 0.707107)`（Euler $Y = -90^\circ$ 前倾使枪管正对敌人）；
+         * 挂载在 `gun` 下的步枪子网格 Transform 具有固定的 $Z$ 轴 $-90^\circ$ 偏转：`LocalPosition = (-1.04534, 0.30061, 1.47442)`，`LocalRotation = (0.0, 0.0, -0.707106, 0.707107)`；
+         * 在网格局部空间中，$-Y$ 轴为枪管正前方、$-Z$ 轴为握把下沿方向、$+Z$ 轴为枪身顶部导轨、$X$ 轴为枪身横宽；
+         * 提取 `StarSaberGun_R` 时通过 Blender 等比放大 $4.0\times$（使包围盒与汽车大师重枪 $x=0.406, y=2.943, z=0.873$ 严丝合缝匹配），对齐握把中心至 $(0.0001, 0.4582, -1.9340)$，导出 FBX 时使用 `axis_forward='Y', axis_up='Z'`，并设置枪口 `Reference` 节点为 `LocalPosition = (-0.599203, 0.297155, 0.0)`，`LocalRotation = (0, 0, -0.707107, 0.707107)`；
+         * 此标准彻底根除了“步枪斜插在左肩后方反向朝天”的几何翻转缺陷，使枪管笔直指向正前方锁定敌人。
+   8. **副手远程招式子弹预制体匹配、命中伤害判定与汽车大师重型枪声音效注入铁律（Ranged Projectile Pool Mapping, Hit Reaction & Motormaster Audio FSB5 Injection）**：
+      * **子弹实体缺失与不掉血根因（Projectile Pool Mismatch）**：
+        * 汽车大师的左手远程招式 `move_attackRanged_handGun_left_XL_01..03B` 在击发帧触发 `ProjectileMoveEvent`，事件内部硬编码要求发射名为 `"projectile_optimus_bullet"` 的激光子弹实体；
+        * 母体（如天火）Bundle 内部原对象池和 `PrefabList` 只有 `projectile_jetfire_bullet`，引擎在子弹池中通过字符串查找 `"projectile_optimus_bullet"` 失败，`SpawnProjectile` 返回 NULL，导致**屏幕上既不生成飞行的红光/激光弹丸，敌人也不会触发任何受击动画与伤害判定**（“没射出子弹，敌人也没中枪”）；
+        * **标准根治解法**：在母壳 Bundle 中将现有的子弹 GameObject（PID `-3806194776990344199`）直接更名为 `"projectile_optimus_bullet"`，并将其 `MoveSet` 重新挂载/重定向为标准激光弹招式：
+          * `fire` $\rightarrow$ `move_optimus_bullet_fire` (`6337232768847846927`, FileID=3)
+          * `explode` $\rightarrow$ `move_optimus_bullet_explode` (`98785653677070406`, FileID=3)
+          * `explode_special` $\rightarrow$ `move_optimus_bullet_explode_special` (`182607865359928388`, FileID=3)
+          * 并在其 `Projectile` 组件上配置 `CollisionPointOffset = {"x": 0, "y": 0, "z": 3.0}`，确保子弹飞出时具有完整的碰撞体并精准命中敌人触发真实受击硬直与扣血；
+          * 角色预制体上的 `PrefabList` 组件将该 PID 注册在 `m_Prefabs` 中（Amount=2），为战斗提供即插即用的对象池。
+      * **开枪音效软弱无力根因与正统 FSB5 音频注入（Gunshot Audio Injection）**：
+        * 天火母体的 `CharacterAudio._events["gen_projectile_fire"]` 默认指向 `jetfire_projectile_fire`，其对应的 4 个 AudioClip 采用的是天火原装的细声滋水枪音效（时长仅 0.5s~0.8s，单薄无威慑力）；
+        * **标准根治解法**：
+          * 从全局 `character_audio_procedural.assetbundle` 中提取汽车大师/擎天柱正统重型枪械击发音频样本（`optimus_prime_gs_projectile_fire_a..d`，每个 21,984 字节，时长 2.664s，FSB5 Vorbis 音频流）；
+          * 将这 4 段 FSB5 数据直接追加写进史达 Bundle 的 `.resource` 二进制流末尾（+87,936 字节）；
+          * 回写修正 `jetfire_projectile_fire_1..4` 的 `m_Resource` Offset 与 Size，并将 `m_Length` 设为 `2.664s`；
+          * 保留 `CharacterAudio._events["gen_projectile_fire"] -> "jetfire_projectile_fire"`。开枪瞬间即可爆发出汽车大师浑厚霸气的重型爆鸣射击声！
+   9. **红光激光粒子束与爆破火花缺失根因与预制体池双层级纳管铁律（Projectile PrefabList Dual-Registration Rule）**：
+      * **视觉缺失现象**：实机测试中虽然开枪音效震撼、敌人扣血硬直，但从枪口到敌人之间没有飞行的红色激光束，击中敌人时也没有爆破火花；
+      * **根因复盘**：
+        * 汽车大师激光子弹依赖两个核心粒子预制体：`fx_p_red_projectile`（飞行光束粒子，PID `-6715103446334267986`）与 `fx_p_red_projectile_impact`（击中爆炸粒子，PID `-8062247508178286595`）；
+        * 仅在子弹 GameObject 的 `PrefabList`（PID `7976934786116503278`）中配置这两项仍不够，因为 Unity 战斗场景的全局对象池管理器在战前只会扫描并实例化**角色根节点预制体上的 `PrefabList`（PID `9200960997345802874`）**；
+        * 若角色根预制体的 `PrefabList` 缺少这两项粒子或子弹本身，对象池 `PrefabPool` 无法在战斗初始化时完成预热缓存，导致运行时 `SpawnParticle` 静默失败；
+      * **标准解法**：在母壳重构脚本中，将 `projectile_optimus_bullet`、`fx_p_red_projectile`、`fx_p_red_projectile_impact` **同时注册进子弹与角色根节点这两层 `PrefabList`**，彻底激活完整的红色激光弹道与爆鸣命中火花。
+   10. **SP3 电影化必杀技 Matinee 轨道节点名强绑定与大剑/机体变形互斥隐显铁律（SP3 Cutscene Matinee Name Binding & Weapon Exclusion Rule）**：
+       * **问题复盘**：在 SP3 连招测试中，进入大招动画后大剑悬空浮在半空不消失，或者飞机形态变成透明隐形；
+       * **根因定位**：
+         * SP3 电影级动画剪辑（如 `cin_sp3_jetfire_gs_01`）中的骨骼运动、网格显隐（Renderer `m_Enabled`）以及拖尾粒子发射（Trail FX），在 Unity Matinee / Animation 系统中是通过 **GameObject 的层级字符串全路径或节点名称严格绑定**的；
+         * 母壳原装动画绑定的对象名为 `cha_jetfire_gs_leader2014_00`（人形）、`cha_jetfire_gs_leader2014_01`（载具）、`fx_r_trail_jetfire_gs`（喷气尾迹）；
+         * 若随意重命名预制体层级内的 GameObject 为新角色名字，Matinee 轨道在动画第 0 帧触发时查找节点名失败，导致隐藏人形与显示飞机的曲线失效；
+       * **标准解法**：
+         * 保持 SP3 动画轨道关键 GameObject 的命名与母体动画曲线完全一致；
+         * 由于王者之剑已在 §11.16 作为 SubMesh 1 烘焙进入 `_00` 网格中，因此当 SP3 轨道关停 `_00` 的 SkinnedMeshRenderer 时，王者之剑会伴随人形身体自然、完美地隐去，随后战机 `_01` 正常亮起变出飞行动作，实现零穿帮的纯正原生级变形体验。
+   11. **左手持枪微调的局部坐标轴向投影陷阱（LeftHand Local Axis Mapping Precision）**：
+       * **现象**：用户在微调左手握枪高低时，多次调整 $Y$ 轴坐标却发现实机中枪体完全没有上下移动；
+       * **根因**：`LeftHand` 手腕骨骼经过人体工学摆姿后，其局部坐标系存在大幅欧拉角偏转。在手掌坐标系中，垂直于掌心平面的法向轴实际上是 **局部 $X$ 轴**，而非直觉上的世界 $Y$ 轴；
+       * **标准定位数值**：将枪身在 `LeftHand` 下的 `LocalPosition.x` 从原始 `-1.0465` 调升至 `-0.8000`（偏移量 $\Delta X = +0.2465\text{m}$），恰好克服手掌空隙，使枪柄精准平稳地卡在手心横纹上方；同时必须同步回写 `PropsController._props["gun"].PositionOffset.x = -0.8000`，杜绝运行时覆盖。
+   12. **多 SubMesh 网格资产跨版本还原的“精度污染”与分流拼接铁律（Multi-SubMesh Buffer Splicing Standard）**：
+       * **严重踩坑复盘**：为了将王者之剑的角度恢复到平直角度，若通过脚本直接用旧 Commit（如 `6f315e6`）的完整 `00` 网格覆盖当前 Bundle，会引发极其隐蔽的“修复倒退”惨剧：
+         * 旧 Commit 虽然具有正确的平直剑身（SubMesh 1），但它是在**胸口立体标志修复之前提交的**；
+         * 粗暴整件替换导致 SubMesh 0（身体与徽章）中已做好的 828 个顶点 $+0.015\text{m}$ 法向抬升与纯净安全调色板映射被无差别抹除，重新引发严重的共面 Z-Fighting 撕裂噪点！
+       * **标准解法（Stream 0 / Stream 1 顶点分流切片拼接）**：
+         * 对于包含多个 SubMesh 的复杂网格资产，任何单部件姿态或几何回滚**严禁整件覆盖**，必须采用二进制切片拼接：
+           * `Stream 0`（坐标/法线/切线）：前 21,929 顶点（SubMesh 0）取自已修复标志版，后 1,316 顶点（SubMesh 1）取自平直剑身版；
+           * `Stream 1`（UV 坐标）：前 21,929 顶点取自已修复标志版（保持纯净红/黑调色板），后 1,316 顶点取自平直剑身版；
+           * `Stream 2`（骨骼权重）：保持两者一致的 54 骨蒙皮流；
+           * `IndexBuffer` 与 SubMesh 0 AABB 保持不变，SubMesh 1 AABB 继承平直剑身包围盒；
+         * 凭借这种显微镜级切片嫁接，可在瞬间同时兼得完美的平直握剑角度与毫无破损的纯净博派金属徽章。
+* **Alliance 系列模具标准执行双轨铁律**：
+  1. **左手 / 非持械手（默认 Track B 掌心刚性折叠）**：在自动化对齐脚本（如 `tools/starsaber/build_aligned_starsaber_robot.py`）中，将 `Dummy_hand_01`、`Hand_L_1..9` 全部权重安全折叠并入 **`LeftHand`**，保留原模雕塑级微合掌造型；整手随手腕刚性摆动，零撕裂风险；
+  2. **需要握持武器之手（HITL 屈指 + 烘焙僵化合并回 `RightHand`）**：
+     * 建调优工程时在 `RightHand` 下屏蔽母体 15 根死指骨，仅基于 `mesh.matrix_local.inverted()` 重建真实的 **`Hand_R_1->4->5` / `Hand_R_2->6->7` / `Hand_R_3->8->9`** 三条链；
+     * 在 Unity HITL 工具中人工微调剑柄方位与手指内卷贴合度后，执行 **`BakeMesh()` 冻结顶点**并将手指顶点连同武器 Submesh 1 **100% 合并重绑回母体 `RightHand`**（`DeleteAsset + CreateAsset` 写入 54 骨 `.asset`），最终使游服内既具备完美实体握持姿势、又完全免疫官方指骨动画覆写导致的畸变；
+     * 贴图构建脚本必须**先 `im.convert("RGB")` 与 `im.getchannel("A")` 拆离后再分别重采样**，严格限定 `RAOE.B` 仅点亮头部眼罩 ROI（`< 0.2%`），并使用 `sat < 0.22` 确保红/白/蓝/黄彩漆盔甲 `NM.B = 0`（纯电介质）。
+
+
+### 11.18 飞标（Swoop）与飞行动物/鸟兽模具：Blender FBX 非单位 BindPose 缩放剥离大爆炸破局、原生 58 帧拍翅循环解构与胸口翼龙嘴火球重击
+* **详见独立专题工程指南**：[`re_notes/BIRD_BEAST_TRANSFORMATION_PIPELINE.md`](file:///e:/Agent/TFTF-blender/re_notes/BIRD_BEAST_TRANSFORMATION_PIPELINE.md)
+* **适用模具**：飞标（Swoop，`swoop_gs_deluxe2008`，科技系 `tech`）等借用喷气机/空军骨架的鸟形、飞龙形野兽金刚。
+* **三大核心攻坚复盘与沉淀**：
+  1. **Blender FBX 导入剥离 `Lcl Scaling != 1.0` 触发断头断喙大爆炸根治（FK 绝对矩阵重算）**：
+     * 3ds Max 制作的模型常在 `bird_neck` (0.3366)、`bird_Head` (0.6236)、`beak` (0.4659) 等骨骼带有非单位缩放；
+     * Blender `io_scene_fbx` 会将 EditBone 缩放强制置 1，但在应用动画或读取骨骼姿态时导致 BindMatrix 与局部变换脱节，子部件（如鸟嘴、长颈、翅膀）沿轴向飞脱数米之外；
+     * **根本解法**：在 `tools/swoop/build_aligned_swoop_vh.py` 中直接解析 FBX 文本的 `Properties70["Lcl Scaling"]`，在纯 Python 中按正向运动学递归重算 $\mathbf{W}_{\text{rest}}$ 与 $\mathbf{W}_{\text{pose}}$，并进行局部线性混合蒙皮（LBS）顶点烘焙，彻底杜绝几何撕脱断裂，误差 $< 0.0001\text{mm}$。
+  2. **翼龙原生 58 帧拍翅循环（`vehicle_idle01`）解构与喷气机 10 骨平滑映射**：
+     * 将源模型自带的 58 帧双周波扑翼（内翼 $22.4^\circ$、外翼 $34.3^\circ$、下喙 $3.8^\circ$、爪子 $13.9^\circ$）精准映射到 Ramjet 喷气机的 10 根主要骨骼；
+     * 翼膜连接处采用 50/50 线性渐变权重，消除折叠锐角；
+     * 通过 Unity `BuildSwoopWingFlapClip()` 烘焙为标准 `AnimationClip` 注入 Car AOC，使载具悬停飞行充满生物扑翼生机感。
+  3. **胸口翼龙嘴吐火重击（借用钢锁 `projectile_grimlock_fireball`）与跨包克隆序列化安全矩阵**：
+     * 在飞标胸口上喙与下喙交汇处（Beak Tip）设立发射定位器 `joint_Torso/loc_mouth_flame`，在 `moves.assetbundle` 中将重击发射节点与事件重定向；
+     * 跨包克隆 Prefab 严格遵循 `ORIGINAL_CHARACTER_CREATION_GUIDE.md` 铁律：`script_types` 必须按 `(FileID, PathID)` 严格升序排列并同步回写所有 `script_type_index`，全量更新 `m_PreloadTable` 与 `m_Container` 切片，动作总数强制断言 $\ge 945$。
+
+### 11.19 横炮（Sideswipe ROTF）双刀刺客与反关节轮滑模具：3 指非对称手掌安全收敛、正面朝向确认门禁、跨角色直立待机（Necrotronus）反关节自适应、SP3 跨角色 Stage 借用载具变形三重齿轮与混合连招招式缝合
+* **适用模具**：横炮（Sideswipe ROTF，`sideswipe_cin_rotf`，勇士系 `warr`）及所有反关节足部（Digitigrade / Wheel Piston）、异形手指（3 指 / 双刀手）、以及跨角色深度缝合 SP3/招式组合的变形金刚模具。
+* **六大核心攻坚复盘、暗坑规避与沉淀**：
+  1. **异形 3 指/双刀手与母体 15 指骨（5 指 × 3 节）的不一致处理（安全并指收敛方案）**：
+     * **现象与痛点**：横炮 ROTF 电影风格模型每只手仅有 3 根粗大机械手指（拇指 + 食指 + 中指）及常驻前臂刀刃，而 TFTF 原版母壳（如路障）具有标准 15 根指骨（`Thumb/Index/Middle/Ring/Pinky 1..3`）。
+     * **三大方案评估与结论**：
+       * 方案 A（**主推收敛方案**）：主 3 指精准 1:1 映射至母壳 `Thumb1..3`、`Index1..3`、`Middle1..3`；母壳多余的 `Ring1..3` 与 `Pinky1..3` 不赋顶点权重（保持空置，手掌邻近过渡顶点权重安全并入 `Hand` 或与中指平滑过渡）。
+       * 方案 B（拓扑补面切骨）：在 Blender 中为模型手动切割生成无名指与小拇指，工期漫长且极易破坏电影原模硬表面拓扑风格。
+       * 方案 C（整手刚性折叠）：全部 3 指折叠至 `Hand`，损失手指在挥刀中的微动态。
+     * **核心经验**：双刀刺客常驻手持臂刃，战斗中不需要五指独立握拳抓握细小道具；方案 A 既保留了 3 根主机械手指的灵活伸展，又完全避免了未映射骨骼造成的网格撕扯或反向翻折，实机表现极其自然。
+  2. **Blender 姿态对齐与正面朝向确认门禁（Front/Back Orientation Gate）**：
+     * **踩坑惨痛教训**：异形机械金刚（尤其是前后胸背皆挂载车壳、且下肢为反关节单轮对称结构的角色）在纯灰模或未贴图状态下，前后轮廓极具迷惑性（极易误将背部引擎/车顶挡板当成胸甲）。若在 Stage 1 骨骼对齐时误将模型背部对齐至母壳正面（180° 朝向逆转），后续所有权重绑定、动作测试和贴图都将全面报错，造成重大返工。
+     * **强制门禁标准**：
+       * 在 Blender 视口中，必须依据车灯、博派标志、面部细节严格确认正面（`-Y` 面向摄像机，`+Y` 为深度，`+Z` 为头部正上方）；
+       * **必须在对齐完骨骼后、进入权重绑定前，先带材质渲染一张正面与 3/4 侧面全身高清图供人类用户核验确认**，确认无误后方可推进后续管线。
+  3. **反关节机械腿（Digitigrade Wheel Legs）与跨角色站姿移植（Cross-Character Idle Stance Borrowing）**：
+     * **现象与痛点**：横炮下肢为独特的反向双关节、后置活动液压连杆与单轮滑行结构。若直接沿用路障原版的战斗待机动作（`feral_normal_idle_02`），路障深蹲、前倾、大角度屈膝的恶犬姿势会导致横炮膝关节过度折叠，后侧液压连接杆被拉长至极端怪异的大角度斜向外伸，严重破坏机械美感与重心平衡。
+     * **机制解法（Mecanim Humanoid 动作切片无损自适应）**：
+       * TFTF 所有标准角色的战斗待机动作（Slot 00 `char_idle`）均为 Mecanim Humanoid 肌肉动作切片（Class ID 74 `AnimationClip`，`typeID: 95`）；
+       * 从内克罗特隆（Necrotronus，`necrotronus_gs_kabam.assetbundle`）中克隆其专属直立待机动作 **`Prefight_Brawler_idle_Megatron`**（PID `-8455018533602519118`）；
+       * 该动作的特征是双腿自然笔挺绷直站立、膝关节几乎不弯曲；
+       * 仅重定向 Fight AOC 的 Slot 00（`char_idle`）以及 MatineeAOC 的 `Base.Idle`（StateHash `-1405706489`），**其余所有普攻、重击冲撞与特技技能保持不变**。横炮在战斗中立即呈现出双腿笔挺、高挑威严的轮滑刺客站姿，反关节连接杆平滑紧凑，视觉瑕疵彻底消除。
+  4. **SP3 特技3 跨角色 Stage 借用与载具变形三大齿轮咬合铁律（Cross-Bot SP3 Cutscene & Vehicle Transformation Architecture）**：
+     * **现象与痛点**：借用电影擎天柱 SP3（双形态 Stage 大招特写）后，横炮特写全程只有机器人形态，在特写镜头切到汽车飞撞时未变形为跑车（仍显示机器人）。
+     * **根本原因与三重齿轮咬合机制**：
+       1. **齿轮一：MatineeData 动画轨道骨骼网格实体名称失联（`FixupEntity` NULL）**：
+          * 擎天柱原版 Stage 的 `MatineeData`（PID `8781936353626196161`）中，**Track 29**（机器人网格轨道）绑定的实体名称为 `cha_optimus_cin_tf_00`，**Track 06**（载具网格轨道）绑定的实体名称为 `cha_optimusprime_cin_tf_01`；
+          * 横炮 Prefab 网格名称基于路障母壳为 `cha_barricade_cin_dotm_00` 与 `cha_barricade_cin_dotm_01`；
+          * 运行时引擎 C# 层的 `FixupEntity()` 在尝试为轨道绑定 GameObject 时因名称不符返回 NULL（`FIXUP_UNBOUND`），导致在变形时间点机器人网格无法被隐藏、载具网格也无法显形；
+          * **解法**：在 `MatineeData.jSONData` 中做全局字符串替换：`cha_optimus_cin_tf_00` $\to$ `cha_barricade_cin_dotm_00`，`cha_optimusprime_cin_tf_01` $\to$ `cha_barricade_cin_dotm_01`。
+       2. **齿轮二：Car AOC Slot 63 载具变形动作切片必须精准绑定**：
+          * 横炮的 Car AOC（`override_barricade_cin_dotm_car`，PID `9188181967379678347`）Slot 63（`Base.SpecialAttack03`）默认仍指向路障的载具动作，必须重定向至擎天柱的载具变形动作切片 `optimus_prime_attackSpecial_03_transformed`（FileID 5, PathID `-341215899653024`），否则载具在特写中无动画或定格。
+       3. **齿轮三：NativeHook 运行时安全重映射双保险**：
+          * 在 `tools/nativehook/hook.c` 的 `remap_track_for_redeco()` 中为横炮增加拦截规则，在底层动态拦截 Track 的 `entityFullId`，确保即使遇到未补丁的 Stage 资产，引擎也能自动重映射为当前角色的真实网格路径。
+  5. **多角色动作混合缝合与打击手感定制标准（Hybrid Multi-Bot Moveset Stitching）**：
+     * 为契合横炮作为“双刀刺客 + 高速轮滑”的独特格斗定位，采用了多位官方角色的动作精准混剪缝合：
+       * **M2（中击2）**：黄豹 `cheetor_attackMedium_02`（前翻滚双刀下劈刺击）；
+       * **S1（特技1）**：路障 `barricade_cin_attackSpecial_01`（疾速轮滑突进连击与重踢，纯肉搏无需外挂武器）；
+       * **S2（特技2）**：阿尔茜 `Arcee_Normal_attackSpecial_02`（双臂战刃灵动疾速乱舞穿刺，纯肉搏无需外挂武器）；
+       * **Heavy（重击）**：路障重击改轮滑前冲撞击（NativeHook `0xEA1090`，保留疾速冲锋打击感并禁用原版手炮发射）；
+       * **S3（特技3）**：电影擎天柱 SP3（双形态 Stage 借用，拔刀斩切入 $\to$ 概念跑车飞撞 $\to$ 终结斩）；
+       * **Victory（胜利姿态）**：漂移收刀入鞘胜利 Stage（双刀收拢入背气势特写）。
+     * 混剪多角色动作时，必须通过 `tools/validate_port_gates.py` 严格校验各动作槽位 OriginalClip 与 OverrideClip 的 FileID/PathID 依赖链，确保所有被引用的动作切片在预加载表与依赖包（如 `moves`、`character_anim_procedural`）中 100% 解析成功。
+  6. **Kabam PBR 单材质全局发光着色限制与多 SubMesh/多材质槽物理分离实战（Multi-Submesh Dual-Color Emissive & Metallic Lacquer Polish Protocol）**：
+     * **核心机理与根本限制**：
+       * Kabam `EB/Character/PBR` 着色器的发光计算公式为：
+         $$\text{Emissive} = (\text{RAOE.B})^2 \times (\text{\_emissive\_intensity\_col.rgb})^2 \times \text{Overbright}$$
+       * **关键限制**：`_emissive_intensity_col` 是材质级全局统一变量（Uniform Vector4），而非逐像素贴图！因此，**单个 Material/Shader 实例在物理数学上绝不可能同时发出蓝色和红色两种不同色相的光**（单材质发光只能是单色发光乘以强弱灰度）。
+     * **母体多 SubMesh 物理分离架构（解法）**：
+       * 官方母体（如路障 Barricade DOTM）正是采用双 SubMesh 结构：`SubMesh 0` 绑定红眼材质（`MAT_ROBOT_PID`），`SubMesh 1` 绑定警灯蓝光材质（`MAT_WEAPON_PID`）。
+       * **实战改版方案**：
+         1. **胸口车灯独立 SubMesh 剥离**：在源 FBX 中将胸前 2 块车灯面板（Mesh 20，42 顶点，56 个三角形面）分配给材质槽 1（`M_Sideswipe_Lights`），其余全身 23,472 个三角形面分配给材质槽 0（`M_Sideswipe_Main`）；
+         2. **UV 独立色块隔离**：将 Mesh 20 车灯面 UV 统一平移至左下角独立色块区（UV $\approx 0.012, 0.011$），漫反射赋予红色 `[255, 30, 20]`，RAOE.B 发光遮罩设为 `225`，彻底切断与主躯干车壳的贴图复用溢色；
+         3. **双 Material 槽位精准绑定**：在 Unity 编译与 AssetBundle 容器重写中，将 SkinnedMeshRenderer 的 `m_Materials` 明确绑定为两个材质：
+            * `m_Materials[0] = MAT_WEAPON_PID`：胸口车灯红色材质，`_emissive_intensity_col = (1.0, 0.05, 0.05, 0.0)`，Overbright `22.0`；
+            * `m_Materials[1] = MAT_ROBOT_PID`：主身体银漆与蓝眼材质，`_emissive_intensity_col = (0.05, 0.45, 1.0, 0.0)`，Overbright `18.0`；
+         4. **瞳孔点状蓝眼防扩散（Pinpoint Optics Isolation）**：
+            * 避免在贴图上粗暴绘制大矩形发光色块（会导致前额与护目镜连片发光变成大白板）；
+            * 逆向定位原模真正瞳孔像素：左眼 `[1748..1753, 744..748]`，右眼 `[1748..1753, 828..832]`（仅 4×5 像素范围）；
+            * 仅在瞳孔核心像素写入天蓝色 `[30, 165, 255]` 与 `RAOE.B = 200`，面部其余部位 RAOE.B 全部清零，完美还原电影设定中深嵌在银色金属面具下的锐利电蓝双瞳！
+         5. **亮银车漆高光与金属度调校（Metallic Lacquer Polish）**：
+            * 原版贴图漫反射均值仅为 78.8（31% 亮度），导致游戏内呈现深灰黑炭色；
+            * 漫反射亮度算法：针对车身银甲区域（`lum >= 35`）应用非线性曲线提亮至均值 170.1（峰值 245），同时严密保留内部黑色机械关节在 19.4 纯深色；
+            * 粗糙度从哑光粉质的 178 降至 105，法线蓝通道金属度 `NM.B` 赋予 75，材质端启用 `_clearcoat_reflectance_range = 0.08`，彻底呈现电影原版 Corvette Stingray 概念跑车闪闪发光的金属亮银清漆质感！
+         6. **车灯透光腔体与黑底遮挡深度冲突巨坑与双重根治（Chest Headlight Cavity & Depth Occlusion Pitfall）**：
+            * **现象表征**：在 Unity 中 Mesh 20（车灯透光板）虽然赋予了独立红光材质槽，但在游戏视线下却像“一片红色玻璃被内部黑色挡板完全挡住”，仅有边缘一圈透红光，中心大面积发黑。
+            * **根本原因**：
+              1. **贴图黑腔残留**：原模型作者在主身体 Diffuse 贴图上的车灯底舱区域（UV 坐标 $(0.41, 0.61)$ 处）绘制了超过 6,400 像素的纯黑底色（$\text{RGB} = [5, 5, 5]$）；
+              2. **几何共面与深度遮挡（Z-Fighting & Depth Occlusion）**：主身体网格（Slot 0）内部含有 14 个朝前的车灯凹槽底板多边形（Pocket Cavity Polygons），其空间三维坐标与外挂车灯面板 Mesh 20 几乎共面（间距仅 $1 \sim 3\text{ cm}$）。在 Unity PBR 不透明渲染通道中，Slot 0 的凹槽黑底多边形在深度测试中胜出或发生严重 Z-Fighting，导致黑腔覆压在透光面板之上，直观呈现为“黑挡板遮挡红玻璃”。
+            * **双重物理根治方案**：
+              1. **贴图底舱红光覆盖**：在贴图管线脚本 `build_sideswipe_atlased_textures.py` 中，精准锁定底舱 UV 区域，将黑腔低明度区域统一填充为高饱和鲜红 `[235, 25, 20]`，彻底消除任何残留黑底；
+              2. **几何微移与材质槽并入发光组**：在模型准备脚本 `build_aligned_sideswipe_robot.py` 中：
+                 * 将 Mesh 20 沿外侧法线方向微调前推 `0.025m`（`v.co.y -= 0.025`），确保透光面板稳定浮出底舱外沿；
+                 * 将主躯干网格中原本属于 Slot 0 的 14 个凹槽底板三角形（共 70 个面）同步划归材质槽 1（`M_Sideswipe_Lights`），并将 UV 全部重映射至左下角红光发射色块区，使整个凹陷腔体与透光透镜统一作为一体化红光光源，彻底消灭深度遮挡与伪影！
+      * **成品 AssetBundle 多 SubMesh 热拆、3-SubMesh 内构还原与旋风/战车队实操铁律**（参考 `tools/vortex/fix_vortex_final.py`、`tools/onslaught/patch_onslaught_dual_emissive.py`、`tools/brawl/patch_brawl_dual_emissive.py`）：
+        1. **共用 `RAOE` 贴图禁写铁律（防载具/全身泛粉）**：修改任何 `RAOE` 前必须先扫描全包所有 Material 的 `_pbr_composite_tex` 引用；`wpns_RAOE` 等常被载具主材质与武器共用的贴图**严禁直写局部高亮**（如旋风直接写 `wpns_RAOE` 会导致直升机机身与机炮大面积泛粉），必须剥离独立 `SubMesh` 并绑定独占贴图槽。
+        2. **三步原地热拆与双容器 `PreloadTable` 闭环**：无需回 Unity 重导完整 Prefab，可在 `UnityPy` 层面直接按三角面集合重排 `m_IndexBuffer` 并扩充 `m_SubMeshes`（`firstByte` 按 `uint16` 字节递增）：
+           * **同形态 Shader 深拷贝**：Robot 新槽深拷贝宿主 `MAT_ROBOT_PID`、Vehicle 新槽深拷贝宿主 `MAT_VEHICLE_PID`（保持完全一致的 `m_Shader` 与关键字布局），仅覆写 `_emissive_intensity_col`、`_emissive_overbright_range` 与纹理槽；
+           * **双 SMR 与 `m_PreloadTable` 同步**：必须同步绑定标准版（`*.prefab`）与轻量化版（`*_lw.prefab`）两份 `SkinnedMeshRenderer.m_Materials`，并在保存前调用 `rebuild_container_preload_table` 重建两份 Container 的 `m_PreloadTable`（防止 `_lw` 容器漏预加载新材质 PathID）。
+        3. **`m_VertexData` Stream 1 16 字节对齐法则（致命坑）**：Unity 对顶点缓冲各 Stream 强制按 **16 字节边界对齐**。当顶点数 `vc` 为奇数且 Stream 0 步长为 `40B` 时（如旋风载具 `vc = 6457`，`6457 * 40 = 258,280`），`UV0`（Stream 1）真实偏移在 **`258,288`** 而非 `vc * 40`！所有热改 UV 脚本必须严格使用 `s1_off = (vc * stride0 + 15) & ~15`（`align16`），否则差 8 字节会直接把整片 UV 拧乱花屏。
+        4. **复用冗余 `Texture2D` 槽位必清 `.resS` 指针与锁死 WrapMode**：借用空闲武器贴图槽位前必须在 `t.save()` 前显式清零 `t.m_StreamData`（`offset = 0, size = 0, path = ""`），按贴图语义设定 `t.m_TextureSettings.m_WrapU / m_WrapV`（孤立标志图集设为 `1 = Clamp` 防渗边；平铺机械管道设为 `0 = Repeat`），再调用 `t.set_image(img, target_format=TextureFormat.RGB24, mipmap_count=1)`（且禁止随后再用旧 `typetree` 覆盖写回）。
+        5. **保留平铺内构第 3 材质（如 FOC `TR_Test_Mat_INST`）**：第三方载具除壳体和阵营标外，往往另有靠 `Repeat` UV 驱动的推进器/进气道/风挡内构（如 `vh_interior_mat`）；不可强行合入单一 UV 图集，必须分入第 3 `SubMesh` 并配专属原生平铺纹理 + 非发光克隆材质（`_emissive_range = 0`）。
+        6. **浮雕/贴花阵营标“射线融底 + 法线微抬 + RAOE 平方衰减防糊白”**：
+           * 对独立 Quad 贴花面，按面片外法线反向 Raycast 采样背部机身真实 `Diffuse` 生成无缝底色后再叠加锐化标志，并沿外法线微抬 **`+0.008m`** 防共面 Z-Fighting；
+           * 因 Kabam 着色器按 $(\text{RAOE.B})^2$ 放大，精细黑缝标志只建议 **`RAOE.B ≈ 85~90`**（且内部黑眼/轮廓像素严格保留 **`0`** 防 Bloom 糊成白块），斜向蜂窝散热槽通过像素颜色/位置精确掩码赋 `155~170`，剑刃与大条灯带可赋 `155~220`。
+        7. **邻近部位精切与 `HEAD` 基线幂等重算**：当头雕存在相邻多结构（如水平目镜与鼻梁竖条、额头圆点）时，仅将水平目镜划入黄色 `SubMesh 1` 并把无关邻区 `RAOE.B` 显式抹 `0`；凡改写 `m_IndexBuffer` 或法线微抬的脚本必须**开头先从 `git show HEAD:...` 拉取干净基线全量重算**，严禁对已改包原地二次增量执行导致三角面序号错乱冲毁 `SubMesh`。
+
+---
+
+### 11.20 闪电（Eternal War Blitzwing）三变模具：跨周期负 U 镜像平铺还原、世界轴心拳头烘焙与载具材质防泛白铁律
+* **适用模具**：`H_shandian_G1` 类第三方三变/双形态对称建模（Robot + Tank + Jet，`blitzwing_gs`，宿主 `megatron_gs_leader2015`）。参考实现见 `tools/blitzwing/build_aligned_blitzwing_ew.py`、`tools/blitzwing/generate_blitzwing_bundle.py`。
+* **四大隐蔽高危坑复盘与根治方案**：
+  1. **对称载具负象限 UV（`U ∈ [-1.0, 0.0)`）被 `clamp(0,1)` 拍扁导致的“半边车身花白拉丝”大坑**：
+     * **现象表征**：坦克与战机在 Unity/真机中沿着身体中轴线 `X = 0` 被一刀切开，一侧贴图完全正常（如右侧沙黄炮塔+霸天虎标），另一侧沿竖直方向拉满混乱的紫色、白色条纹；人形局部胸甲也有小块错花。
+     * **根本原因**：此类模型使用 `Repeat` 贴图并在另一半对称网格中将 UV 直接平移到了 **`U ∈ [-1.0, 0.0)` 负象限**（实测对称面满足 $U_{\text{neg}} + 1.0 = U_{\text{pos}}$，坦克负 `U` 占比高达 **57.7%**，战机占比 **49.9%**，人形 **576** 个环）。重映射进 2048 图集象限时若误写 `u_c = min(max(uv.x, 0.0), 1.0)`，就会将整整一半车身的所有顶点 UV 压死在贴图最左缘 `U = 0.004` 这条像素列上。
+     * **标准解法 (`remap_polygon_uv_to_tile`)**：严格在**多边形（`poly`）粒度**计算均值整数周期偏移 `shift_u = math.floor(mean_u)`、`shift_v = math.floor(mean_v)`，整张三角面同步平移 `-shift` 回 `[0, 1]`，再缩放到目标象限内并做 `[0.004, 0.996]` 微缩防渗色：
+       ```python
+       mean_u = sum(uv_layer.data[li].uv.x for li in poly.loop_indices) / len(poly.loop_indices)
+       shift_u = math.floor(mean_u)  # 将 [-1, 0) 精确平移 +1.0 回 [0, 1]，且绝不撕裂跨缝边
+       ```
+  2. **前臂非等比拉伸沿层级污染手掌（`Hand` Shear）与 `Biped` 指骨“全反手折断 / 拇指消失”大坑**：
+     * **现象表征**：
+       1. 若在 Blender 对 `UpperArm -> Forearm` 进行 `pose_segment_world` 拉长对位威震天手腕 `Hand`（或连带用 `pose_segment_world(Hand -> Finger2)`），父骨非等比缩放沿着骨骼层级传递给子指骨，直接把五指剪爆/拉离 4 米（初版真机“四指变形”主因）；
+       2. 转为轨道 B 在 Blender 中弯指握拳时，若误在加了额外 `Rz(-90°)` 的脚本测试角度再抄回无 `Rz` 主脚本、或未区分 `Bip001 L/R` 镜像骨骼局部轴正反，左右手四指会全部朝**手背外侧反关节折断 175°**，大拇指斜插入腕内消失。
+     * **标准解法（正交隔离 `pose_hand_rigid_world` + 世界空间铰链轴 `curl_bone_world_axis`）**：
+       1. 对齐 `UpperArm -> Forearm -> Hand` 后，立刻执行 `pose_hand_rigid_world`：提取 `Hand` 世界矩阵 `3x3` 旋转并强制**四元数正交归一化（`Scale = (1, 1, 1)`）**，将前臂非等比拉伸彻底隔绝于腕关节之上；
+       2. 弃用易左右混淆的 Biped 局部欧拉角，直接实时读取世界中 `Finger1`（食指根）到 `Finger4`（小指根）的矢量构造**确定性世界空间铰链轴**：左拳取 `(f4_pos - f1_pos).normalized()`、右拳取 `(f1_pos - f4_pos).normalized()`，用右手定则正角（如 `58° / 68° / 52°`）驱动四指精准向**掌心内侧**自然扣拢；
+       3. 大拇指 `Finger0..02` 围绕世界内折轴向轻扣（`14° / 26° / 28°`）平稳环抱于食指中指正面，随后 `Apply Armature` 并 100% 合并权重至 `LeftHand` / `RightHand`。导出后**必须在 Blender 中多角度渲染双手正面与掌心内侧微距图并 `read_file` 验图**。
+  3. **材质兜底脚本无差别覆写载具贴图槽（Tank 误采 Robot 黄胸块）**：
+     * **现象表征**：坦克全身呈现人形紫色，右履带莫名出现一小块人形胸口的亮黄色涂装。
+     * **根本原因**：`generate_*_bundle.py` 末尾的材质兜底循环未设白名单且调用 `patch_kabam_character_mat(mat, TEX_ROBOT_DIFF_PID, ...)`，顺手把已独立配置好的载具材质 `MAT_VEHICLE_PID`（`1722215546450231611`）的主贴图指针强制覆盖成了 `TEX_ROBOT_DIFF_PID`。
+     * **标准解法**：兜底循环必须使用只改自发光参数而不碰 `m_TexEnvs` 的 `neutralize_emissive_only(mat)`，并将主要角色与载具材质加入豁免集合；出包验证末尾增加强制断言核对 `MAT_VEHICLE_PID._base_tex == TEX_VEH_DIFF_PID`。
+  4. **非全金属浅色漆面误设高金属度导致的“载具高光过曝泛白”问题**：
+     * **根本原因**：Kabam `EB/Character/PBR` Shader（尤其是载具独立 Shader）以 `_base_col ≈ 0.50` 为原色基准、以法线贴图 `NM.B` 区分金属度；当全局 `_metallic_range` 被人为抬高到 `0.65`、`_clearcoat_reflectance_range = 0.10`、`_base_col = 0.72` 时，坦克/战机大面积哑光沙黄装甲在强方向灯照射下泛出刺眼白边与银灰过曝。
+     * **标准调校准则**：参考官方母版及 Brawl/Swoop 成功经验，设为 `_metallic_range = 0.0`（完全由 `NM.B` 精准驱动关节/履带金属反光）、`_roughness_range = 0.90`、`_clearcoat_reflectance_range = 0.03`、`_Color = 0.72`（满足 Gate 4 `>= 0.65` 阈值）且 `_base_col = 0.56`，即可完美还原原模醇厚的沙土黄与深紫漆面。
+  5. **A 字外八字源模“脚踝杠杆偏心悬空”与机械脚靴开裂根治（Ground-First 对位 + 锥头深嵌球窝渐变）**：
+     * **现象与双重机理**：原模站姿常带较宽外八字（脚踝中心在 `X = ±2.20m`），而 TFTF 宿主垂直双腿骨（如威震天 `LeftFoot`）位于 `X = ±0.838m`，**横偏 `1.36 米`**；且原模小腿末端仅带一截浅插 15cm 的锥形球头。未对正下肢直接绑骨后，在真机大跨步下蹲/斜踢动作下，`LeftLeg` 与 `LeftFoot` 的 `1.36m` 杠杆臂差叠加浅插销使整条小腿向上漂浮脱离脚窝悬空（并连带 `ToeBase` 将刚性前脚甲与侧翼撕开）。
+     * **标准解法（三合一闭环）**：
+       1. 严格执行 **Ground-First** 先对齐下肢：在对齐双臂之前，先把 `Thigh -> Calf -> Foot` 对齐至接近宿主垂轴的挺拔站位（如 `X = ±1.05m`，保留双脚舒适间距的同时缩减偏心距 85%+），保持 `Foot` 水平踩平地面并重置 `Z = 0`；
+       2. 刚性整靴并入 **`LeftFoot` / `RightFoot`**：无分体前趾需求的机械坦克靴部件（前甲、后跟、外侧尾翼）统一绑回 `Foot`，消除脚面开裂；
+       3. **脚踝插头深嵌 + 球形渐变权重**：将小腿底端 `Bone005*` 最末圈锥头顶点垂直延伸深扎入脚窝底部（留足离底安全距 `>= 0.28m`），并对靠近脚踝旋转心的插柱区域（`Z ∈ [0.65, 1.15]`）做 `LeftLeg <-> LeftFoot` 线性渐变柔顺权重，实现全角度弯折无死角、零悬空实心联动！
+
+
+---
+
+### 11.21 爆炸（Blast Off / FOC Combaticons）基于高大母壳（震天尊）的四重隔离、等比缩放与自发光防白化铁律
+* **适用模具**：赛博坦陨落（FOC）战车队 **爆炸（Blast Off，`blastoff_gs`，爆破系 `demo`）** 等需要大幅下调身高体格、且多角色打包同源的 UE3/FOC 角色模具（宿主：`megatronus_gs_kabam`）。参考实现：`tools/blastoff/build_blastoff_atlased_textures.py`、`tools/blastoff/build_aligned_blastoff_robot.py`、`tools/blastoff/generate_blastoff_bundle.py`。
+* **五大核心攻坚复盘、暗坑机制与标准解法**：
+  1. **严禁在 Blender 预缩网格破坏宿主 BindPose（“侏儒矮人 + 手指缩进前臂”灾难根治与 `character_model` 等比缩放铁律）**：
+     * **现象与血泪教训**：当需要让大母壳衍生角色（如 12.84m 震天尊骨架上的爆炸）在身高上低于队友（袭击 10.61m、吵闹 12.58m，原版设定爆炸处于 10.5m 区间）时，**绝对严禁在 Blender 对网格尺寸和骨骼坐标乘以 `SCALE_FACTOR = 0.80` 后导出！**
+     * **数学根因**：Unity 运行时蒙皮公式为 $\mathbf{v}_{\text{world}} = \sum w_i \cdot \mathbf{M}_{\text{bone\_i}} \cdot \mathbf{M}_{\text{bind\_i}}^{-1} \cdot \mathbf{v}_{\text{mesh}}$。Prefab 骨骼在 `megatronus_gs_kabam` 预制体中仍维持 $1.0\times$ 长度，而若 `m_BindPose` 在 Blender 被压缩至 $0.80\times$，两者就会产生严重错位：过长的宿主小臂骨把 $0.80\times$ 网格的手腕向外拖拽，将**全部手指活生生吸进前臂护甲内部**；过长的大腿骨将双膝向外掰开并把胸腰下压，使挺拔身材退化成严重的**蹲姿“侏儒”畸变**！
+     * **标准解法（1.0x 纯正网格 + `character_model.m_LocalScale` 容器级等比缩放）**：
+       1. Blender 对齐阶段必须严格维持 `SCALE_FACTOR = 1.0` 与宿主 55 骨 1:1 吻合（确保 $\mathbf{M}_{\text{bone}} \cdot \mathbf{M}_{\text{bind}}^{-1} \equiv \mathbf{I}$、30 节手指完全舒展）；
+       2. 在 `generate_blastoff_bundle.py` 中，直接对**标准版与轻量化双 Prefab 内的 `character_model` 子节点 `Transform.m_LocalScale`** 设置统一等比系数（如 `(0.82, 0.82, 0.82)`，输出 $12.84\text{m} \times 0.82 = 10.53\text{m}$）；
+       3. **原理优势**：`character_model` 坐标原点位于地面 `(0, 0, 0)`，且同时统领 `cha_*_00`、`Reference` 全身骨骼与 `transformed` 载具；同时游戏代码仅通过 `PropsController.SetActive` 控制其显隐、从不覆写 `character_model.localScale`（不同于根节点和 `Reference` 会在 `CharacterDetailScreen` / `BattleArbiter` 被动态重设）。从而实现 100% 零畸变的真·等比例缩小！
+  2. **母体同场共存四重物理隔离（根治爆炸与震天尊同台双隐形崩溃）**：
+     * **根因**：仅在代码中声明新的 `CAB` 字符串变量而不改写 `env.file.files` 底层字典键名，导致运行时两个包在 Unity 底层产生相同 CAB 命名空间冲突，双机同时上场即全部隐形；未保护重写 `AssetBundle.m_Container` 或未改名根节点亦会导致加载空指针。
+     * **标准四重隔离**：
+       1. 分配全局唯一 `NEW_CAB`（如 `CAB-7b0f00007b0f00007b0f00007b0f0001`）；
+       2. 保存前遍历全包对象替换 typetree 内的 `m_StreamData.path` / `m_Resource.m_Source` 字符串，并在写出前对 **`env.file.files` 执行 100% 字典键名与 `.resS`/`.resource` 重映射**；
+       3. 独立重命名双 Prefab 根 GameObject（`<Bot>_GS`、`<Bot>_GS_lw`）与网格节点（`cha_<bot>_00`、`cha_<bot>_01`）；
+       4. 同步重写 `AssetBundle.m_Name`、`m_AssetBundleName`、`m_Container` 键名（含 `_lw` 轻量化容器），按闭包精确重建 `m_PreloadTable` 切片。
+  3. **多角色合包中 FOC `*_e.jpg` 错配陷阱与“骨骼+UV+色度”三合一精准发光提取（修复头顶误亮、肩/胸/腿暗哑）**：
+     * **隐蔽大坑**：FOC 战车队多角色解包贴图目录（`O:\agent\transformers-fall-of-cybertron-combaticons\textures`）中的通用名称发光图（如 `head_e.jpg`、`chest_e.jpg`、`armup_e.jpg`、`legs_e.jpg`、`armlo_e.jpg`、`vh.jpg`）**实际属于包内其他角色**而非爆炸！若直接将其作为爆炸的 `RAOE.B` 掩码，会导致**头顶散热孔误点亮**，而真正的**肩甲齿轮弧、胸口格栅竖条、下胸双月牙散热槽、小腿竖光条、前臂腕部光槽全部熄灭不亮**！
+     * **标准定位与提取方法**：
+       1. 先用 Blender 读取 FBX 网格各多边形的真实**主导骨骼权重 + 3D 空间坐标**并绘制 UV 分区图，直接锁定目标人物独有的漫反射原图（如 `rb_blastoff_*_cust_matinst.jpg`）内的真实发光结构所在 UV 区域（胸格栅 `[0..375, 350..495]`、下胸月牙 `[340..488, 415..535]`、肩甲弧 `[92..200, 240..348]` & 轮辐、小腿条纹、前臂槽、双眼、航天飞机进气/喷口）；
+       2. 在目标区域内提取紫蓝通道差值信号（`B - G >= 5` 且 `B >= R * 0.84`），将其漫反射微提饱和至纯紫 `[155, 25, 245]` 并写入 `RAOE.B`；
+       3. **严格剔除哑光紫色涂装区**：明确跳过 `bip_pelvis`（胯部）与 `Lumbar02Robo02`（衣领）及头顶皇冠区域（`Y < 195`），确保胯部、衣领和头顶保持哑光紫/铜质感而不误发亮。
+  4. **高饱纯紫防白化校准铁律（根治“白眼”与“粉白胸标”过曝）**：
+     * **根因**：对 `RAOE.B` 满涂 `230~255`、底图 Diffuse 使用高亮粉紫 `[245, 60, 255]`、并将材质设为 `_emissive_overbright_range >= 20.0` 且 `_emissive_intensity_col.g = 0.15`（同时漏设 `_emissive_range = 1.0`）时，HDR 通道叠加 `G = 3.0+ > 1.0`，经由手游后处理 Bloom 直接全通道裁剪成**刺眼纯白或淡粉白**。
+     * **黄金校准配方**：
+       * 发光区 `RAOE.B` 精准控制在 **`105 ~ 155`**（双眼 `150`、霸天虎标 `105`、胸/肩/腿槽 `125~150`），底图漫反射赋高饱纯紫 `[145..165, 22..32, 235..255]`；
+       * 材质强制开启 **`_emissive_range = 1.0`**，`_emissive_overbright_range` 收敛至 **`15.0`**，并将 `_emissive_intensity_col` 的绿通道压死为 **`0.02`**（`{"r": 0.62, "g": 0.02, "b": 1.0, "a": 0.0}`）；确保所有部位发光在战斗与展厅界面皆呈现饱满深邃的赛博坦霓虹紫色、绝不泛白。
+  5. **驼背宽胸宿主颈胸净空保护（Spine/Neck Natural Clearance）**：
+     * 在对齐震天尊等宽胸宽肩基模时，保持新角色躯干、锁骨与颈/头部自然高度，绝不把 `Spine/Spine1` 强行拉伸或压向宿主高低肩部位，防止胸甲/领口上移遮挡下巴与面部轮廓。

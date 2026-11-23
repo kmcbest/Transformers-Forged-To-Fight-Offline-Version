@@ -17,7 +17,7 @@
     "sp1": {
       "name_zh": "能量炮",
       "name_en": "Energy Blast",
-      "desc_zh": "发射高能粒子能量炮，最后一击不可防御，且命中时向对手施加1层暴击抗性减益（受暴击几率提升40%，持续6秒）。",
+      "desc_zh": "发射高能粒子能量炮，最后一击不可防御，且技能期间暴击伤害提升35%。",
       "pua_icon": "0xe41f",
       "ui_trigger": "onSpecial1Hit",
       "effects": [
@@ -28,10 +28,10 @@
           "pua_icon": "0xe41f"
         },
         {
-          "title_zh": "暴击抗性减益",
-          "title_en": "Crit Resistance Debuff",
-          "desc_zh": "最后一击命中时，向对手施加1层暴击抗性减益，在对手身上打出暴击的几率提升40%，持续6秒",
-          "pua_icon": "E409"
+          "title_zh": "暴击伤害",
+          "title_en": "Crit Damage",
+          "desc_zh": "技能期间提升35%的暴击伤害",
+          "pua_icon": "0xe906"
         }
       ]
     },
@@ -253,12 +253,12 @@
       "sort_order": 15
     },
     {
-      "id": 1794966881667,
-      "title_zh": "暴击抗性减益",
-      "title_en": "Crit Resistance Debuff",
-      "desc_zh": "最后一击命中时，向对手施加1层暴击抗性减益，在对手身上打出暴击的几率提升40%，持续6秒",
+      "id": 1794966881668,
+      "title_zh": "暴击伤害",
+      "title_en": "Crit Damage",
+      "desc_zh": "技能期间提升35%的暴击伤害",
       "desc_en": "",
-      "pua_icon": "E409",
+      "pua_icon": "0xe906",
       "category": "sp1",
       "status": "priority",
       "sort_order": 16

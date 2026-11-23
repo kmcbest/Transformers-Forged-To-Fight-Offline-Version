@@ -1,540 +1,587 @@
 {
-    "fte_optimus_gs_t3": {
-        "en": "Optimus Prime",
-        "zh": "G1擎天柱",
-        "faction": "汽车人",
-        "note": "G1 经典战术系"
-    },
-    "fte_stars_gs_t3": {
-        "en": "Starscream",
-        "zh": "红蜘蛛",
-        "faction": "霸天虎",
-        "note": "G1 经典战术系"
-    },
-    "starscream_ghost_gs": {
-        "en": "Ghost Starscream",
-        "zh": "鬼魂红蜘蛛",
-        "faction": "霸天虎",
-        "note": "经典G1 侦查系",
-        "desc": "在被惊破天的巨炮化为灰烬后，红蜘蛛那不可磨灭的火种怨念化作不死鬼魂游荡在宇宙之间。拥有穿透实体防御的幽能，以及鬼魅般的全时悬浮飞行机动。"
-    },
-    "arcee_gs_deluxe2014": {
-        "en": "Arcee",
-        "zh": "阿尔茜",
-        "faction": "汽车人",
-        "note": "经典G1 战士系"
-    },
-    "lifeline_gs_deluxe2014": {
-        "en": "Lifeline",
-        "zh": "回春手",
-        "faction": "汽车人",
-        "note": "帕拉德隆医官 科技系",
-        "desc": "回春手是帕拉德隆星上硕果仅存的医官。从火种深处来说，她是一位绝对的和平主义者，对暴力的厌恶甚至让她在救治士兵时感到不安——因为她深知，一旦将伤员治愈，他们又将被重新送回残酷的战场。然而她绝非软弱之辈；她那敏锐而务实的理性，让她能够在面对毫无生还希望、徒增痛苦的伤员时，毫不犹豫地为他们执行安乐关闭程序。"
-    },
-    "blaster_gs_leader2016": {
-        "en": "Blaster",
-        "zh": "录音机",
-        "faction": "汽车人",
-        "note": "科技系"
-    },
-    "bumblebee_cin_dotm": {
-        "en": "Bumblebee (DOTM)",
-        "zh": "大黄蜂",
-        "faction": "汽车人",
-        "note": "真人电影3·月黑之时"
-    },
-    "bumblebee_gs_kabam": {
-        "en": "Bumblebee",
-        "zh": "小黄蜂",
-        "faction": "汽车人",
-        "note": "经典G1 侦察系"
-    },
-    "cheetor_bw_transmetal": {
-        "en": "Cheetor",
-        "zh": "黄豹",
-        "faction": "巨无霸",
-        "note": "超能勇士·金属变异"
-    },
-    "chromia_gs_kabam": {
-        "en": "Chromia",
-        "zh": "克劳莉娅",
-        "faction": "汽车人",
-        "note": "经典G1 勇士系"
-    },
-    "cliffjumper_gs_kabam": {
-        "en": "Cliffjumper",
-        "zh": "飞过山",
-        "faction": "汽车人",
-        "note": "经典G1 爆破系"
-    },
-    "dinobot_bw_kabam": {
-        "en": "Dinobot",
-        "zh": "恐龙勇士",
-        "faction": "巨无霸",
-        "note": "超能勇士 战术系"
-    },
-    "drift_cin_aoe": {
-        "en": "Drift",
-        "zh": "漂移",
-        "faction": "汽车人",
-        "note": "真人电影4·绝迹重生"
-    },
-    "grimlock_gs_mp08": {
-        "en": "Grimlock",
-        "zh": "钢锁",
-        "faction": "汽车人",
-        "note": "恐龙派领袖 格斗系"
-    },
-    "hotrod_cin_tlk": {
-        "en": "Hot Rod",
-        "zh": "热破",
-        "faction": "汽车人",
-        "note": "真人电影5·最后的骑士"
-    },
-    "hound_cin_tlk": {
-        "en": "Hound",
-        "zh": "探长",
-        "faction": "汽车人",
-        "note": "真人电影5·最后的骑士"
-    },
-    "ironhide_cin_rotf": {
-        "en": "Ironhide (ROTF)",
-        "zh": "电影铁皮",
-        "faction": "汽车人",
-        "note": "真人电影2·卷土重来"
-    },
-    "ironhide_gs_kabam": {
-        "en": "Ironhide",
-        "zh": "G1铁皮",
-        "faction": "汽车人",
-        "note": "经典G1 格斗系"
-    },
-    "jazz_gs_twm05": {
-        "en": "Jazz",
-        "zh": "爵士",
-        "faction": "汽车人",
-        "note": "经典G1 侦察系"
-    },
-    "jetfire_gs_leader2014": {
-        "en": "Jetfire",
-        "zh": "天火",
-        "faction": "汽车人",
-        "note": "经典G1 科技系"
-    },
-    "mirage_gs_deluxe2016": {
-        "en": "Mirage",
-        "zh": "幻影",
-        "faction": "汽车人",
-        "note": "经典G1 科技系"
-    },
-    "optimusprimal_bw_mp32": {
-        "en": "Optimus Primal",
-        "zh": "猩猩队长",
-        "faction": "巨无霸",
-        "note": "超能勇士 巨无霸领袖"
-    },
-    "optimusprime_cin_tf": {
-        "en": "Optimus Prime (MV1)",
-        "zh": "电影擎天柱",
-        "faction": "汽车人",
-        "note": "真人电影1代 格斗系"
-    },
-    "optimusprime_sg_voyager2015": {
-        "en": "SG Optimus Prime",
-        "zh": "倾天柱",
-        "faction": "欺扯人",
-        "note": "镜面世界 战术系"
-    },
-    "prowl_gs_deluxe2016": {
-        "en": "Prowl",
-        "zh": "警车",
-        "faction": "汽车人",
-        "note": "经典G1 侦察系"
-    },
-    "ratchet_gs_kabam": {
-        "en": "Ratchet",
-        "zh": "救护车",
-        "faction": "汽车人",
-        "note": "经典G1 科技系"
-    },
-    "rhinox_gs_voyager2014": {
-        "en": "Rhinox",
-        "zh": "犀牛",
-        "faction": "巨无霸",
-        "note": "超能勇士 科技系"
-    },
-    "rodimusprime_gs_mp09": {
-        "en": "Rodimus Prime",
-        "zh": "补天士",
-        "faction": "汽车人",
-        "note": "经典G1 战术系"
-    },
-    "sideswipe_gs": {
-        "en": "Sideswipe",
-        "zh": "横炮",
-        "faction": "汽车人",
-        "note": "经典G1 侦察系"
-    },
-    "sunstreaker_gs_deluxe2008": {
-        "en": "Sunstreaker",
-        "zh": "飞毛腿",
-        "faction": "汽车人",
-        "note": "经典G1 格斗系"
-    },
-    "ultramagnus_gs_leader": {
-        "en": "Ultra Magnus",
-        "zh": "通天晓",
-        "faction": "汽车人",
-        "note": "经典G1 战术系"
-    },
-    "ultramagnus_sg_leader": {
-        "en": "SG Ultra Magnus",
-        "zh": "捅天枭",
-        "faction": "汽车人",
-        "note": "碎玻璃/镜像宇宙 爆破系"
-    },
-    "wheeljack_gs_mp20": {
-        "en": "Wheeljack",
-        "zh": "千斤顶",
-        "faction": "汽车人",
-        "note": "经典G1 科技系"
-    },
-    "windblade_gs": {
-        "en": "Windblade",
-        "zh": "风刃",
-        "faction": "汽车人",
-        "note": "风刃 勇士系"
-    },
-    "barricade_cin_dotm": {
-        "en": "Barricade",
-        "zh": "路障",
-        "faction": "霸天虎",
-        "note": "真人电影3·月黑之时"
-    },
-    "bludgeon_gs_rd20": {
-        "en": "Bludgeon",
-        "zh": "雷震",
-        "faction": "霸天虎",
-        "note": "武士浪人 勇士系"
-    },
-    "bonecrusher_cin_rotf": {
-        "en": "Bonecrusher",
-        "zh": "碎骨魔",
-        "faction": "霸天虎",
-        "note": "真人电影2·卷土重来"
-    },
-    "cyclonus_gs_uw06": {
-        "en": "Cyclonus",
-        "zh": "狂飙",
-        "faction": "霸天虎",
-        "note": "经典G1 战术系"
-    },
-    "deadend_gs_deluxe2015": {
-        "en": "Dead End",
-        "zh": "封锁",
-        "faction": "霸天虎",
-        "note": "组合战争 爆破系 飞虎队"
-    },
-    "dragstrip_gs_deluxe2016": {
-        "en": "Dragstrip",
-        "zh": "抢劫",
-        "faction": "霸天虎",
-        "note": "飞虎队 勇士系"
-    },
-    "wildrider_gs_deluxe2016": {
-        "en": "Wildrider",
-        "zh": "莽撞",
-        "faction": "霸天虎",
-        "note": "飞虎队 格斗系"
-    },
-    "breakdown_gs": {
-        "en": "Breakdown",
-        "zh": "打击",
-        "faction": "霸天虎",
-        "note": "飞虎队 侦查系"
-    },
-    "dirge_gs_deluxe2008": {
-        "en": "Dirge",
-        "zh": "挽歌",
-        "faction": "雇佣兵",
-        "note": "挽歌 勇士系"
-    },
-    "galvatron_gs_voyager2016": {
-        "en": "Galvatron",
-        "zh": "惊破天",
-        "faction": "霸天虎",
-        "note": "经典G1 爆破系"
-    },
-    "grindor_cin_rotf": {
-        "en": "Grindor",
-        "zh": "碾碎器",
-        "faction": "霸天虎",
-        "note": "真人电影2 (眩晕同型)"
-    },
-    "kickback_gs_kabam": {
-        "en": "Kickback",
-        "zh": "反冲",
-        "faction": "霸天虎",
-        "note": "昆虫部队 侦察系"
-    },
-    "megatron_cin_rotf": {
-        "en": "Megatron (ROTF)",
-        "zh": "电影威震天",
-        "faction": "霸天虎",
-        "note": "真人电影2·卷土重来 坦克型"
-    },
-    "megatron_gs_leader2015": {
-        "en": "Megatron",
-        "zh": "G1威震天",
-        "faction": "霸天虎",
-        "note": "经典G1 战术系"
-    },
-    "blitzwing_gs": {
-        "en": "Blitzwing",
-        "zh": "闪电",
-        "faction": "霸天虎",
-        "note": "经典G1 战术系三变战士"
-    },
-    "megatronus_gs_kabam": {
-        "en": "Megatronus",
-        "zh": "震天尊",
-        "faction": "霸天虎",
-        "note": "十三元祖 震天尊"
-    },
-    "mixmaster_cin_rotf": {
-        "en": "Mixmaster",
-        "zh": "搅拌者",
-        "faction": "霸天虎",
-        "note": "大力神挖掘部队 爆破系"
-    },
-    "motormaster_gs_voyager2015": {
-        "en": "Motormaster",
-        "zh": "汽车大师",
-        "faction": "霸天虎",
-        "note": "飞虎队领袖 格斗系"
-    },
-    "necrotronus_gs_kabam": {
-        "en": "Necrotronus",
-        "zh": "亡灵天尊",
-        "faction": "霸天虎",
-        "note": "殁天仇 勇士系"
-    },
-    "nemesisprime_gs_voyager2015": {
-        "en": "Nemesis Prime",
-        "zh": "暗天陨",
-        "faction": "霸天虎",
-        "note": "暗黑煞 战术系"
-    },
-    "ramjet_gs_deluxe2008": {
-        "en": "Ramjet",
-        "zh": "喷气机",
-        "faction": "雇佣兵",
-        "note": "经典G1 爆破系"
-    },
-    "scorponok_bw_kabam": {
-        "en": "Scorponok",
-        "zh": "巨蝎勇士",
-        "faction": "原始兽",
-        "note": "超能勇士 原始兽"
-    },
-    "shockwave_gs": {
-        "en": "Shockwave",
-        "zh": "震荡波",
-        "faction": "霸天虎",
-        "note": "经典G1 科技系"
-    },
-    "skywarp_gs_leader2015": {
-        "en": "Skywarp",
-        "zh": "闹翻天",
-        "faction": "霸天虎",
-        "note": "经典G1 科技系"
-    },
-    "slipstream_gs": {
-        "en": "Slipstream",
-        "zh": "滑流",
-        "faction": "霸天虎",
-        "note": "狂派女寻猎者 侦察系"
-    },
-    "soundblaster_gs_mp13b": {
-        "en": "Soundblaster",
-        "zh": "音板",
-        "faction": "雇佣兵",
-        "note": "经典G1 战术系"
-    },
-    "soundwave_gs": {
-        "en": "Soundwave",
-        "zh": "声波",
-        "faction": "霸天虎",
-        "note": "经典G1 科技系"
-    },
-    "starsaber_gs_leader2014": {
-        "en": "Star Saber",
-        "zh": "史达",
-        "faction": "汽车人",
-        "note": "胜利之斗争 战术系"
-    },
-    "thundercracker_gs_leader2015": {
-        "en": "Thundercracker",
-        "zh": "惊天雷",
-        "faction": "霸天虎",
-        "note": "经典G1 格斗系"
-    },
-    "tantrum_gs_kabam": {
-        "en": "Tantrum",
-        "zh": "野牛",
-        "faction": "霸天虎",
-        "note": "巨兽部队 格斗系"
-    },
-    "waspinator_gs_deluxe": {
-        "en": "Waspinator",
-        "zh": "黄蜂勇士",
-        "faction": "原始兽",
-        "note": "超能勇士 爆破系"
-    },
-    "sharkticon_gs_kabam": {
-        "en": "Sharkticon",
-        "zh": "饿鲨1000",
-        "faction": "杂兵 (Sharkticon)",
-        "note": "五面怪侍卫 侦查系"
-    },
-    "sharkticon_gs_brawler": {
-        "en": "Sharkticon (Brawler)",
-        "zh": "饿鲨",
-        "faction": "杂兵 (Sharkticon)",
-        "note": "格斗系"
-    },
-    "sharkticon_gs_demolition": {
-        "en": "Sharkticon (Demolition)",
-        "zh": "饿鲨",
-        "faction": "杂兵 (Sharkticon)",
-        "note": "爆破系"
-    },
-    "sharkticon_gs_scout": {
-        "en": "Sharkticon (Scout)",
-        "zh": "饿鲨",
-        "faction": "杂兵 (Sharkticon)",
-        "note": "侦察系"
-    },
-    "sharkticon_gs_tactician": {
-        "en": "Sharkticon (Tactician)",
-        "zh": "饿鲨",
-        "faction": "杂兵 (Sharkticon)",
-        "note": "战术系"
-    },
-    "sharkticon_gs_tech": {
-        "en": "Sharkticon (Tech)",
-        "zh": "饿鲨",
-        "faction": "杂兵 (Sharkticon)",
-        "note": "科技系"
-    },
-    "sharkticon_gs_warrior": {
-        "en": "Sharkticon (Warrior)",
-        "zh": "饿鲨",
-        "faction": "杂兵 (Sharkticon)",
-        "note": "勇士系"
-    },
-    "thrust_gs_deluxe2008": {
-        "en": "Thrust",
-        "zh": "冲锋",
-        "faction": "雇佣兵",
-        "note": "侦察系"
-    },
-    "acidstorm_gs_leader2015": {
-        "en": "Acid Storm",
-        "zh": "酸雨",
-        "faction": "霸天虎",
-        "note": "科技系"
-    },
-    "ionstorm_gs_leader2015": {
-        "en": "Ion Storm",
-        "zh": "离子风",
-        "faction": "霸天虎",
-        "note": "战术系"
-    },
-    "novastorm_gs_leader2015": {
-        "en": "Nova Storm",
-        "zh": "新星风",
-        "faction": "霸天虎",
-        "note": "爆破系"
-    },
-    "sunstorm_gs_leader2015": {
-        "en": "Sunstorm",
-        "zh": "太阳风",
-        "faction": "霸天虎",
-        "note": "勇士系"
-    },
-    "bitstream_gs_leader2015": {
-        "en": "Bitstream",
-        "zh": "比特流",
-        "faction": "霸天虎",
-        "note": "科技系"
-    },
-    "hotlink_gs_leader2015": {
-        "en": "Hotlink",
-        "zh": "热链接",
-        "faction": "霸天虎",
-        "note": "格斗系"
-    },
-    "elita_one_gs": {
-        "en": "Elita One",
-        "zh": "艾丽塔",
-        "faction": "汽车人",
-        "note": "抵抗军女领袖·战术系",
-        "desc": "艾丽塔是塞伯坦女性汽车人反抗军的勇敢领袖之一，擎天柱最信赖的战斗伴侣与挚友。她拥有敏锐卓越的战术头脑、冷酷果决的战斗技巧，以及传说中足以扭转战局的神秘时间停滞核心力场。"
-    },
-    "bugbite_gs_kabam": {
-        "en": "Bug Bite",
-        "zh": "杀人蜂",
-        "faction": "雇佣兵",
-        "note": "雇佣兵 格斗系"
-    },
-    "onslaught_gs": {
-        "en": "Onslaught",
-        "zh": "袭击",
-        "faction": "霸天虎",
-        "note": "塞伯坦陨落·爆破系",
-        "desc": "战车队冷酷沉着的战术指挥官，重装炮火专家。他擅长制定周密残忍的突袭计划，身披重甲，背负双联防空火箭炮与小臂转轮重机炮，在战场上以压倒性的火力粉碎一切阻碍。"
-    },
-    "vortex_gs": {
-        "en": "Vortex",
-        "zh": "旋风",
-        "faction": "霸天虎",
-        "note": "塞伯坦陨落·战士系",
-        "desc": "战车队阴险狂暴的突击兵与空中支援专家。旋风性格残忍好斗，狂热嗜杀，装备高频旋转离子切刃与重型导弹发射器，能够在半空化作杀戮旋风将一切敌人绞为碎片。"
-    },
-    "strongarm_gs": {
-        "en": "Strongarm",
-        "zh": "铁腕",
-        "faction": "汽车人",
-        "note": "领袖的挑战·战术系",
-        "desc": "“根据塞伯坦警例，你已经违反了安全条例！”\n作为精英卫队的优秀毕业生，铁腕严守规章，时刻准备着执行长官的每道指令。这名充满热忱的年轻执法官或许偶尔显得不知变通，但在战场上，她重装突击的正义重拳从来不会对霸天虎留情。"
-    },
-    "blackout_cin_tf": {
-        "en": "Blackout",
-        "zh": "眩晕",
-        "faction": "霸天虎",
-        "note": "真人世电影·爆破系",
-        "desc": "眩晕是一个巨大的霸天虎。通常会默默出现在威震天的右肩侧，他是首领的猎犬。他以不懈的效率追踪任何目标，没有什么事情可以阻止他完成任务。那些蔑视他的人要小心：他的愤怒是无止境的。他会让空气中弥漫着火焰并烧毁地面上的一切以进行报复。与他的爪牙巨蝎一起，他是一个危险而致命的敌人。",
-        "desc_en": "BLACKOUT is one of the tallest of the DECEPTICONS. Most often seen looming silently over the right shoulder of MEGATRON, he is his leader's hound. He pursues any target he is given with relentless efficiency, allowing nothing to stop him in his task. Those who defy him beware: his rage knows no bounds.He will fill the air with fire and burn the land clear to take his revenge. Paired with his minion SCORPONOK, he is a dangerous and deadly foe."
-    },
-    "tarn_gs": {
-        "en": "Tarn",
-        "zh": "塔恩",
-        "faction": "霸天虎",
-        "note": "黑狗队领袖·斗士系"
-    },
-    "brawl_gs": {
-        "en": "Brawl",
-        "zh": "吵闹",
-        "faction": "霸天虎",
-        "note": "战车队·斗士系",
-        "desc": "战车队暴躁凶悍的重装突击兵。吵闹热衷喧嚣与破坏，搭载高威能塞伯坦主炮与背部副炮群，能够在战场上撕裂敌阵并进行毁灭性火力压制。"
-    },
-    "brawl": {
-        "en": "Brawl",
-        "zh": "吵闹",
-        "faction": "霸天虎",
-        "note": "战车队·斗士系",
-        "desc": "战车队暴躁凶悍的重装突击兵。吵闹热衷喧嚣与破坏，搭载高威能塞伯坦主炮与背部副炮群，能够在战场上撕裂敌阵并进行毁灭性火力压制。"
-    }
+  "fte_optimus_gs_t3": {
+    "en": "Optimus Prime",
+    "zh": "G1擎天柱",
+    "faction": "汽车人",
+    "note": "G1 经典战术系"
+  },
+  "fte_stars_gs_t3": {
+    "en": "Starscream",
+    "zh": "红蜘蛛",
+    "faction": "霸天虎",
+    "note": "G1 经典战术系"
+  },
+  "starscream_ghost_gs": {
+    "en": "Ghost Starscream",
+    "zh": "鬼魂红蜘蛛",
+    "faction": "霸天虎",
+    "note": "经典G1 侦查系",
+    "desc": "在被惊破天的巨炮化为灰烬后，红蜘蛛那不可磨灭的火种怨念化作不死鬼魂游荡在宇宙之间。拥有穿透实体防御的幽能，以及鬼魅般的全时悬浮飞行机动。"
+  },
+  "arcee_gs_deluxe2014": {
+    "en": "Arcee",
+    "zh": "阿尔茜",
+    "faction": "汽车人",
+    "note": "经典G1 战士系"
+  },
+  "lifeline_gs_deluxe2014": {
+    "en": "Lifeline",
+    "zh": "回春手",
+    "faction": "汽车人",
+    "note": "帕拉德隆医官 科技系",
+    "desc": "回春手是帕拉德隆星上硕果仅存的医官。从火种深处来说，她是一位绝对的和平主义者，对暴力的厌恶甚至让她在救治士兵时感到不安——因为她深知，一旦将伤员治愈，他们又将被重新送回残酷的战场。然而她绝非软弱之辈；她那敏锐而务实的理性，让她能够在面对毫无生还希望、徒增痛苦的伤员时，毫不犹豫地为他们执行安乐关闭程序。"
+  },
+  "blaster_gs_leader2016": {
+    "en": "Blaster",
+    "zh": "录音机",
+    "faction": "汽车人",
+    "note": "科技系"
+  },
+  "bumblebee_cin_dotm": {
+    "en": "Bumblebee (DOTM)",
+    "zh": "大黄蜂",
+    "faction": "汽车人",
+    "note": "真人电影3·月黑之时"
+  },
+  "bumblebee_gs_kabam": {
+    "en": "Bumblebee",
+    "zh": "小黄蜂",
+    "faction": "汽车人",
+    "note": "经典G1 侦察系"
+  },
+  "cheetor_bw_transmetal": {
+    "en": "Cheetor",
+    "zh": "黄豹",
+    "faction": "巨无霸",
+    "note": "超能勇士·金属变异"
+  },
+  "chromia_gs_kabam": {
+    "en": "Chromia",
+    "zh": "克劳莉娅",
+    "faction": "汽车人",
+    "note": "经典G1 勇士系"
+  },
+  "cliffjumper_gs_kabam": {
+    "en": "Cliffjumper",
+    "zh": "飞过山",
+    "faction": "汽车人",
+    "note": "经典G1 爆破系"
+  },
+  "dinobot_bw_kabam": {
+    "en": "Dinobot",
+    "zh": "恐龙勇士",
+    "faction": "巨无霸",
+    "note": "超能勇士 战术系"
+  },
+  "drift_cin_aoe": {
+    "en": "Drift",
+    "zh": "漂移",
+    "faction": "汽车人",
+    "note": "真人电影4·绝迹重生"
+  },
+  "grimlock_gs_mp08": {
+    "en": "Grimlock",
+    "zh": "钢锁",
+    "faction": "汽车人",
+    "note": "恐龙派领袖 格斗系"
+  },
+  "hotrod_cin_tlk": {
+    "en": "Hot Rod",
+    "zh": "热破",
+    "faction": "汽车人",
+    "note": "真人电影5·最后的骑士"
+  },
+  "hound_cin_tlk": {
+    "en": "Hound",
+    "zh": "探长",
+    "faction": "汽车人",
+    "note": "真人电影5·最后的骑士"
+  },
+  "ironhide_cin_rotf": {
+    "en": "Ironhide (ROTF)",
+    "zh": "电影铁皮",
+    "faction": "汽车人",
+    "note": "真人电影2·卷土重来"
+  },
+  "ironhide_gs_kabam": {
+    "en": "Ironhide",
+    "zh": "G1铁皮",
+    "faction": "汽车人",
+    "note": "经典G1 格斗系"
+  },
+  "jazz_gs_twm05": {
+    "en": "Jazz",
+    "zh": "爵士",
+    "faction": "汽车人",
+    "note": "经典G1 侦察系"
+  },
+  "jetfire_gs_leader2014": {
+    "en": "Jetfire",
+    "zh": "天火",
+    "faction": "汽车人",
+    "note": "经典G1 科技系"
+  },
+  "mirage_gs_deluxe2016": {
+    "en": "Mirage",
+    "zh": "幻影",
+    "faction": "汽车人",
+    "note": "经典G1 科技系"
+  },
+  "optimusprimal_bw_mp32": {
+    "en": "Optimus Primal",
+    "zh": "猩猩队长",
+    "faction": "巨无霸",
+    "note": "超能勇士 巨无霸领袖"
+  },
+  "optimusprime_cin_tf": {
+    "en": "Optimus Prime (MV1)",
+    "zh": "电影擎天柱",
+    "faction": "汽车人",
+    "note": "真人电影1代 格斗系"
+  },
+  "optimusprime_sg_voyager2015": {
+    "en": "SG Optimus Prime",
+    "zh": "倾天柱",
+    "faction": "欺扯人",
+    "note": "镜面世界 战术系"
+  },
+  "prowl_gs_deluxe2016": {
+    "en": "Prowl",
+    "zh": "警车",
+    "faction": "汽车人",
+    "note": "经典G1 侦察系"
+  },
+  "ratchet_gs_kabam": {
+    "en": "Ratchet",
+    "zh": "救护车",
+    "faction": "汽车人",
+    "note": "经典G1 科技系"
+  },
+  "rhinox_gs_voyager2014": {
+    "en": "Rhinox",
+    "zh": "犀牛",
+    "faction": "巨无霸",
+    "note": "超能勇士 科技系"
+  },
+  "rodimusprime_gs_mp09": {
+    "en": "Rodimus Prime",
+    "zh": "补天士",
+    "faction": "汽车人",
+    "note": "经典G1 战术系"
+  },
+  "sideswipe_gs": {
+    "en": "Sideswipe",
+    "zh": "横炮",
+    "faction": "汽车人",
+    "note": "经典G1 侦察系"
+  },
+  "sunstreaker_gs_deluxe2008": {
+    "en": "Sunstreaker",
+    "zh": "飞毛腿",
+    "faction": "汽车人",
+    "note": "经典G1 格斗系"
+  },
+  "ultramagnus_gs_leader": {
+    "en": "Ultra Magnus",
+    "zh": "通天晓",
+    "faction": "汽车人",
+    "note": "经典G1 战术系"
+  },
+  "ultramagnus_sg_leader": {
+    "en": "SG Ultra Magnus",
+    "zh": "捅天枭",
+    "faction": "汽车人",
+    "note": "碎玻璃/镜像宇宙 爆破系"
+  },
+  "wheeljack_gs_mp20": {
+    "en": "Wheeljack",
+    "zh": "千斤顶",
+    "faction": "汽车人",
+    "note": "经典G1 科技系"
+  },
+  "windblade_gs": {
+    "en": "Windblade",
+    "zh": "风刃",
+    "faction": "汽车人",
+    "note": "风刃 勇士系"
+  },
+  "barricade_cin_dotm": {
+    "en": "Barricade",
+    "zh": "路障",
+    "faction": "霸天虎",
+    "note": "真人电影3·月黑之时"
+  },
+  "bludgeon_gs_rd20": {
+    "en": "Bludgeon",
+    "zh": "雷震",
+    "faction": "霸天虎",
+    "note": "武士浪人 勇士系"
+  },
+  "bonecrusher_cin_rotf": {
+    "en": "Bonecrusher",
+    "zh": "碎骨魔",
+    "faction": "霸天虎",
+    "note": "真人电影2·卷土重来"
+  },
+  "cyclonus_gs_uw06": {
+    "en": "Cyclonus",
+    "zh": "狂飙",
+    "faction": "霸天虎",
+    "note": "经典G1 战术系"
+  },
+  "deadend_gs_deluxe2015": {
+    "en": "Dead End",
+    "zh": "封锁",
+    "faction": "霸天虎",
+    "note": "组合战争 爆破系 飞虎队"
+  },
+  "dragstrip_gs_deluxe2016": {
+    "en": "Dragstrip",
+    "zh": "抢劫",
+    "faction": "霸天虎",
+    "note": "飞虎队 勇士系"
+  },
+  "wildrider_gs_deluxe2016": {
+    "en": "Wildrider",
+    "zh": "莽撞",
+    "faction": "霸天虎",
+    "note": "飞虎队 格斗系"
+  },
+  "breakdown_gs": {
+    "en": "Breakdown",
+    "zh": "打击",
+    "faction": "霸天虎",
+    "note": "飞虎队 侦查系"
+  },
+  "dirge_gs_deluxe2008": {
+    "en": "Dirge",
+    "zh": "挽歌",
+    "faction": "雇佣兵",
+    "note": "挽歌 勇士系"
+  },
+  "galvatron_gs_voyager2016": {
+    "en": "Galvatron",
+    "zh": "惊破天",
+    "faction": "霸天虎",
+    "note": "经典G1 爆破系"
+  },
+  "grindor_cin_rotf": {
+    "en": "Grindor",
+    "zh": "碾碎器",
+    "faction": "霸天虎",
+    "note": "真人电影2 (眩晕同型)"
+  },
+  "kickback_gs_kabam": {
+    "en": "Kickback",
+    "zh": "反冲",
+    "faction": "霸天虎",
+    "note": "昆虫部队 侦察系"
+  },
+  "megatron_cin_rotf": {
+    "en": "Megatron (ROTF)",
+    "zh": "电影威震天",
+    "faction": "霸天虎",
+    "note": "真人电影2·卷土重来 坦克型"
+  },
+  "megatron_gs_leader2015": {
+    "en": "Megatron",
+    "zh": "G1威震天",
+    "faction": "霸天虎",
+    "note": "经典G1 战术系"
+  },
+  "blitzwing_gs": {
+    "en": "Blitzwing",
+    "zh": "闪电",
+    "faction": "霸天虎",
+    "note": "经典G1 战术系三变战士"
+  },
+  "megatronus_gs_kabam": {
+    "en": "Megatronus",
+    "zh": "震天尊",
+    "faction": "霸天虎",
+    "note": "十三元祖 震天尊"
+  },
+  "mixmaster_cin_rotf": {
+    "en": "Mixmaster",
+    "zh": "搅拌者",
+    "faction": "霸天虎",
+    "note": "大力神挖掘部队 爆破系"
+  },
+  "motormaster_gs_voyager2015": {
+    "en": "Motormaster",
+    "zh": "汽车大师",
+    "faction": "霸天虎",
+    "note": "飞虎队领袖 格斗系"
+  },
+  "necrotronus_gs_kabam": {
+    "en": "Necrotronus",
+    "zh": "亡灵天尊",
+    "faction": "霸天虎",
+    "note": "殁天仇 勇士系"
+  },
+  "nemesisprime_gs_voyager2015": {
+    "en": "Nemesis Prime",
+    "zh": "暗天陨",
+    "faction": "霸天虎",
+    "note": "暗黑煞 战术系"
+  },
+  "ramjet_gs_deluxe2008": {
+    "en": "Ramjet",
+    "zh": "喷气机",
+    "faction": "雇佣兵",
+    "note": "经典G1 爆破系"
+  },
+  "scorponok_bw_kabam": {
+    "en": "Scorponok",
+    "zh": "巨蝎勇士",
+    "faction": "原始兽",
+    "note": "超能勇士 原始兽"
+  },
+  "shockwave_gs": {
+    "en": "Shockwave",
+    "zh": "震荡波",
+    "faction": "霸天虎",
+    "note": "经典G1 科技系"
+  },
+  "skywarp_gs_leader2015": {
+    "en": "Skywarp",
+    "zh": "闹翻天",
+    "faction": "霸天虎",
+    "note": "经典G1 科技系"
+  },
+  "slipstream_gs": {
+    "en": "Slipstream",
+    "zh": "滑流",
+    "faction": "霸天虎",
+    "note": "狂派女寻猎者 侦察系"
+  },
+  "soundblaster_gs_mp13b": {
+    "en": "Soundblaster",
+    "zh": "音板",
+    "faction": "雇佣兵",
+    "note": "经典G1 战术系"
+  },
+  "soundwave_gs": {
+    "en": "Soundwave",
+    "zh": "声波",
+    "faction": "霸天虎",
+    "note": "经典G1 科技系"
+  },
+  "starsaber_gs_leader2014": {
+    "en": "Star Saber",
+    "zh": "史达",
+    "faction": "汽车人",
+    "note": "胜利之斗争 战术系"
+  },
+  "thundercracker_gs_leader2015": {
+    "en": "Thundercracker",
+    "zh": "惊天雷",
+    "faction": "霸天虎",
+    "note": "经典G1 格斗系"
+  },
+  "tantrum_gs_kabam": {
+    "en": "Tantrum",
+    "zh": "野牛",
+    "faction": "霸天虎",
+    "note": "巨兽部队 格斗系"
+  },
+  "waspinator_gs_deluxe": {
+    "en": "Waspinator",
+    "zh": "黄蜂勇士",
+    "faction": "原始兽",
+    "note": "超能勇士 爆破系"
+  },
+  "sharkticon_gs_kabam": {
+    "en": "Sharkticon",
+    "zh": "饿鲨1000",
+    "faction": "杂兵 (Sharkticon)",
+    "note": "五面怪侍卫 侦查系"
+  },
+  "sharkticon_gs_brawler": {
+    "en": "Sharkticon (Brawler)",
+    "zh": "饿鲨",
+    "faction": "杂兵 (Sharkticon)",
+    "note": "格斗系"
+  },
+  "sharkticon_gs_demolition": {
+    "en": "Sharkticon (Demolition)",
+    "zh": "饿鲨",
+    "faction": "杂兵 (Sharkticon)",
+    "note": "爆破系"
+  },
+  "sharkticon_gs_scout": {
+    "en": "Sharkticon (Scout)",
+    "zh": "饿鲨",
+    "faction": "杂兵 (Sharkticon)",
+    "note": "侦察系"
+  },
+  "sharkticon_gs_tactician": {
+    "en": "Sharkticon (Tactician)",
+    "zh": "饿鲨",
+    "faction": "杂兵 (Sharkticon)",
+    "note": "战术系"
+  },
+  "sharkticon_gs_tech": {
+    "en": "Sharkticon (Tech)",
+    "zh": "饿鲨",
+    "faction": "杂兵 (Sharkticon)",
+    "note": "科技系"
+  },
+  "sharkticon_gs_warrior": {
+    "en": "Sharkticon (Warrior)",
+    "zh": "饿鲨",
+    "faction": "杂兵 (Sharkticon)",
+    "note": "勇士系"
+  },
+  "thrust_gs_deluxe2008": {
+    "en": "Thrust",
+    "zh": "冲锋",
+    "faction": "雇佣兵",
+    "note": "侦察系"
+  },
+  "acidstorm_gs_leader2015": {
+    "en": "Acid Storm",
+    "zh": "酸雨",
+    "faction": "霸天虎",
+    "note": "科技系"
+  },
+  "ionstorm_gs_leader2015": {
+    "en": "Ion Storm",
+    "zh": "离子风",
+    "faction": "霸天虎",
+    "note": "战术系"
+  },
+  "novastorm_gs_leader2015": {
+    "en": "Nova Storm",
+    "zh": "新星风",
+    "faction": "霸天虎",
+    "note": "爆破系"
+  },
+  "sunstorm_gs_leader2015": {
+    "en": "Sunstorm",
+    "zh": "太阳风",
+    "faction": "霸天虎",
+    "note": "勇士系"
+  },
+  "bitstream_gs_leader2015": {
+    "en": "Bitstream",
+    "zh": "比特流",
+    "faction": "霸天虎",
+    "note": "科技系"
+  },
+  "hotlink_gs_leader2015": {
+    "en": "Hotlink",
+    "zh": "热链接",
+    "faction": "霸天虎",
+    "note": "格斗系"
+  },
+  "elita_one_gs": {
+    "en": "Elita One",
+    "zh": "艾丽塔",
+    "faction": "汽车人",
+    "note": "抵抗军女领袖·战术系",
+    "desc": "艾丽塔是塞伯坦女性汽车人反抗军的勇敢领袖之一，擎天柱最信赖的战斗伴侣与挚友。她拥有敏锐卓越的战术头脑、冷酷果决的战斗技巧，以及传说中足以扭转战局的神秘时间停滞核心力场。"
+  },
+  "bugbite_gs_kabam": {
+    "en": "Bug Bite",
+    "zh": "杀人蜂",
+    "faction": "雇佣兵",
+    "note": "雇佣兵 格斗系"
+  },
+  "onslaught_gs": {
+    "en": "Onslaught",
+    "zh": "袭击",
+    "faction": "霸天虎",
+    "note": "塞伯坦陨落·爆破系",
+    "desc": "战车队冷酷沉着的战术指挥官，重装炮火专家。他擅长制定周密残忍的突袭计划，身披重甲，背负双联防空火箭炮与小臂转轮重机炮，在战场上以压倒性的火力粉碎一切阻碍。"
+  },
+  "vortex_gs": {
+    "en": "Vortex",
+    "zh": "旋风",
+    "faction": "霸天虎",
+    "note": "塞伯坦陨落·战士系",
+    "desc": "战车队阴险狂暴的突击兵与空中支援专家。旋风性格残忍好斗，狂热嗜杀，装备高频旋转离子切刃与重型导弹发射器，能够在半空化作杀戮旋风将一切敌人绞为碎片。"
+  },
+  "strongarm_gs": {
+    "en": "Strongarm",
+    "zh": "铁腕",
+    "faction": "汽车人",
+    "note": "领袖的挑战·战术系",
+    "desc": "“根据塞伯坦警例，你已经违反了安全条例！”\n作为精英卫队的优秀毕业生，铁腕严守规章，时刻准备着执行长官的每道指令。这名充满热忱的年轻执法官或许偶尔显得不知变通，但在战场上，她重装突击的正义重拳从来不会对霸天虎留情。"
+  },
+  "blackout_cin_tf": {
+    "en": "Blackout",
+    "zh": "眩晕",
+    "faction": "霸天虎",
+    "note": "真人世电影·爆破系",
+    "desc": "眩晕是一个巨大的霸天虎。通常会默默出现在威震天的右肩侧，他是首领的猎犬。他以不懈的效率追踪任何目标，没有什么事情可以阻止他完成任务。那些蔑视他的人要小心：他的愤怒是无止境的。他会让空气中弥漫着火焰并烧毁地面上的一切以进行报复。与他的爪牙巨蝎一起，他是一个危险而致命的敌人。",
+    "desc_en": "BLACKOUT is one of the tallest of the DECEPTICONS. Most often seen looming silently over the right shoulder of MEGATRON, he is his leader's hound. He pursues any target he is given with relentless efficiency, allowing nothing to stop him in his task. Those who defy him beware: his rage knows no bounds.He will fill the air with fire and burn the land clear to take his revenge. Paired with his minion SCORPONOK, he is a dangerous and deadly foe."
+  },
+  "tarn_gs": {
+    "en": "Tarn",
+    "zh": "塔恩",
+    "faction": "霸天虎",
+    "note": "黑狗队领袖·斗士系"
+  },
+  "brawl_gs": {
+    "en": "Brawl",
+    "zh": "吵闹",
+    "faction": "霸天虎",
+    "note": "战车队·斗士系",
+    "desc": "战车队暴躁凶悍的重装突击兵。吵闹热衷喧嚣与破坏，搭载高威能塞伯坦主炮与背部副炮群，能够在战场上撕裂敌阵并进行毁灭性火力压制。"
+  },
+  "brawl": {
+    "en": "Brawl",
+    "zh": "吵闹",
+    "faction": "霸天虎",
+    "note": "战车队·斗士系",
+    "desc": "战车队暴躁凶悍的重装突击兵。吵闹热衷喧嚣与破坏，搭载高威能塞伯坦主炮与背部副炮群，能够在战场上撕裂敌阵并进行毁灭性火力压制。"
+  },
+  "sideswipe_cin_rotf": {
+    "en": "Sideswipe (ROTF)",
+    "zh": "电影横炮",
+    "faction": "汽车人",
+    "note": "变2 战士系"
+  },
+  "swoop_gs_deluxe2008": {
+    "en": "Swoop",
+    "zh": "飞标",
+    "faction": "汽车人",
+    "note": "机器恐龙 科技系",
+    "desc": "汽车人机器恐龙中的空中侦察与对地轰炸专家。飞标在人形下可从胸口翼龙嘴喷吐烈火，在载具形态下化身机械翼龙撕裂苍穹。"
+  },
+  "swoop": {
+    "en": "Swoop",
+    "zh": "飞标",
+    "faction": "汽车人",
+    "note": "机器恐龙 科技系"
+  },
+  "swindle_gs": {
+    "en": "Swindle",
+    "zh": "诈骗",
+    "faction": "霸天虎",
+    "note": "战车队·科技系",
+    "desc": "战车队狡诈贪婪的军火专家与科技战术兵。诈骗掌握尖端塞伯坦改装军火与电磁震荡科技，装备高能陀螺破坏重炮，变形为塞伯坦高机动格斗战车。"
+  },
+  "swindle": {
+    "en": "Swindle",
+    "zh": "诈骗",
+    "faction": "霸天虎",
+    "note": "战车队·科技系",
+    "desc": "战车队狡诈贪婪的军火专家与科技战术兵。诈骗掌握尖端塞伯坦改装军火与电磁震荡科技，装备高能陀螺破坏重炮，变形为塞伯坦高机动格斗战车。"
+  },
+  "blastoff_gs": {
+    "en": "Blast Off",
+    "zh": "爆炸",
+    "faction": "霸天虎",
+    "note": "战车队·爆破系",
+    "desc": "战车队傲慢冷酷的空天打击与轨道轰炸兵。爆炸凭借卓越的空天航行能力与高能离子爆轰武器，能够从高空甚至轨道对敌军实施毁灭性的精准覆盖打击。"
+  },
+  "blastoff": {
+    "en": "Blast Off",
+    "zh": "爆炸",
+    "faction": "霸天虎",
+    "note": "战车队·爆破系",
+    "desc": "战车队傲慢冷酷的空天打击与轨道轰炸兵。爆炸凭借卓越的空天航行能力与高能离子爆轰武器，能够从高空甚至轨道对敌军实施毁灭性的精准覆盖打击。"
+  }
 }

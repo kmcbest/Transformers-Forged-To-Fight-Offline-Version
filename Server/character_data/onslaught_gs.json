@@ -1,0 +1,44 @@
+{
+  "bot_id": "onslaught_gs",
+  "name_zh": "袭击",
+  "name_en": "Onslaught",
+  "faction": "decepticon",
+  "class": "demo",
+  "signature": {
+    "title_zh": "名称待定",
+    "title_en": "TBD",
+    "desc_zh": "技能暂未实现",
+    "pua_icon": "",
+    "ui_trigger": "none"
+  },
+  "special_attacks": {
+    "sp1": {
+      "name_zh": "转轮重炮压制",
+      "name_en": "Rotary Cannon Suppression",
+      "desc_zh": "",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial1Hit",
+      "effects": []
+    },
+    "sp2": {
+      "name_zh": "战术重装轰击",
+      "name_en": "Tactical Heavy Bombardment",
+      "desc_zh": "",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial2Hit",
+      "effects": []
+    },
+    "sp3": {
+      "name_zh": "战车队·饱和歼灭令",
+      "name_en": "Combaticon Saturation Annihilation",
+      "desc_zh": "",
+      "pua_icon": "",
+      "ui_trigger": "onSpecial3Hit",
+      "effects": []
+    }
+  },
+  "basic_abilities": [],
+  "game_abilities": [],
+  "abilities": [],
+  "synergies": []
+}
