@@ -53,6 +53,8 @@
    * 11.16 ~ 11.17 第三方持械角色（史达 Star Saber）Unity HITL 握剑精调台与 Alliance 模具
    * 11.18 飞标（Swoop）与飞行动物/鸟兽模具
    * 11.19 横炮（Sideswipe ROTF）双刀刺客与反关节轮滑模具：3 指非对称手掌安全收敛、正面朝向确认门禁、跨角色直立待机（Necrotronus）反关节自适应、SP3 跨角色 Stage 借用载具变形三重齿轮与混合连招招式缝合
+   * 11.20 闪电（Eternal War Blitzwing）三变模具：跨周期负 U 镜像平铺还原、世界轴心拳头烘焙、双 Prefab 重父化防闪退、C# 打包防二次 UV 花屏/陷地、动态枪剑与多投射物防覆盖铁律
+   * 11.21 爆炸（Blast Off / FOC Combaticons）基于高大母壳（震天尊）的四重隔离、等比缩放与自发光防白化铁律
 
 ---
 
@@ -1419,6 +1421,22 @@ FOC 等虚幻 3（UE3）模型的四根主手指在骨架上只有两节骨骼�
        1. 严格执行 **Ground-First** 先对齐下肢：在对齐双臂之前，先把 `Thigh -> Calf -> Foot` 对齐至接近宿主垂轴的挺拔站位（如 `X = ±1.05m`，保留双脚舒适间距的同时缩减偏心距 85%+），保持 `Foot` 水平踩平地面并重置 `Z = 0`；
        2. 刚性整靴并入 **`LeftFoot` / `RightFoot`**：无分体前趾需求的机械坦克靴部件（前甲、后跟、外侧尾翼）统一绑回 `Foot`，消除脚面开裂；
        3. **脚踝插头深嵌 + 球形渐变权重**：将小腿底端 `Bone005*` 最末圈锥头顶点垂直延伸深扎入脚窝底部（留足离底安全距 `>= 0.28m`），并对靠近脚踝旋转心的插柱区域（`Z ∈ [0.65, 1.15]`）做 `LeftLeg <-> LeftFoot` 线性渐变柔顺权重，实现全角度弯折无死角、零悬空实心联动！
+  6. **双 Prefab（Showcase vs Combat）骨骼交错重父化闪退与“节点零交集”门禁**：
+     * **现象与根因**：威震天等母包内部包含两棵完全独立的骨骼树——展厅标准 Prefab（`PROPS_SHOWCASE_PID = -8490429130128858862`，`RightHand` PID `-8402135396370300167`）与战斗轻量化 Prefab（`PROPS_COMBAT_PID = -3021806434293993593`，`RightHand` PID `-4088132481749495149`）。在重父化外挂武器（如将 `staticCannon` 改名为 `sword` 并从 `RightForeArm` 移至 `RightHand`）时，一旦把 Showcase 与 Combat 两条记录的 `rh_tr_pid` 写反，就会把战斗 Prefab 的武器塞进展示 Prefab 的 `RightHand`（或反之），在实例化角色或 `PropsController.InitProps()` 阶段直接引发**进入游戏/开战闪退**！
+     * **铁律**：重父化前后必须在脚本中递归遍历 Showcase 与 Combat 两条树的全量 `Transform` 与 `GameObject` PID，强制断言两者集合严格零交集（`Overlap transforms == 0, Overlap GOs == 0`）。
+  7. **Unity C# 打包脚本禁止重复 `RemapSubmeshUVs`、严禁残留高度偏置入地、Mesh 落盘必用 `DeleteAsset + CreateAsset`**：
+     * **重复 UV 重映射导致人形全身贴图彻底花屏**：当模型已经在 Blender 预处理脚本中按图集象限完成了 UV 归一化（例如 `cha_blitzwing_gs_00` UV 已收敛在 `U ∈ [0.004, 0.496], V ∈ [0.004, 0.996]`），Unity 侧打包脚本（如 [`PackBlitzwingBundle.cs`](file:///e:/Agent/TFTF-blender/toolchain/unity_build_project/Assets/Editor/PackBlitzwingBundle.cs)）中**绝对不可再次调用 `RemapSubmeshUVs`**，否则会把已就位的图集 UV 二次缩放并加上偏移量，导致游戏内人形全身贴图完全错乱；
+     * **载具坐标严禁叠加过时高度偏置**：若 Blender 侧已将坦克底部接地至局部 `Z = 0.0`（且展厅视角对齐正常），Unity C# 旋转 `(x, y, z) -> (x, z, -y)` 时不可叠加遗留负偏置（如 `-1.549f`），否则坦克模型会沿竖直轴深陷地下甚至掉出屏幕外；
+     * **Unity 2020 Mesh 覆写**：保存 `.asset` 一律使用 `AssetDatabase.DeleteAsset(path)` + `AssetDatabase.CreateAsset(mesh, path)`，配合临时验证脚本用完即删，避免残留 `.cs` 或旧顶点流。
+  8. **动态武器（`gun@LeftHand` / `sword@RightHand`）与外部依赖特效精准映射**：
+     * 当角色需要按动作临时掏出武器（左手配汽车大师手枪 `gun` 仅在远程普攻显形、右手配大剑 `sword` 仅在指定 SP 技显形）时，两者在 `PropsController._props` 中均设为 `InitFlags = 0, _startActive = False`，由动作 `moves` 中的 `PropMoveEvent` 驱动显隐（参见 [`TRIPLE_CHANGER_ARCHITECTURE_GUIDE.md`](file:///e:/Agent/TFTF-blender/re_notes/TRIPLE_CHANGER_ARCHITECTURE_GUIDE.md) **第十一节**）；
+     * 引用外部特效 Prefab（如 `fx_p_optimus_muzzle_flash` 在 `character_fx` FileID `9` 下的真实 PathID `3861076792284877566`）时，必须先查实其真实 `FileID`（`3=cfxp, 5=animp, 7=moves, 9=cfx`）与 `PathID`，不可凭记忆填写，且需同步加入根节点 `PrefabList` 与 `AssetBundle.m_PreloadTable`（同步更新 `m_Container` 的 `preloadSize`）。
+  9. **禁止就地覆盖仍在使用的母体投射物（坦克重击炮弹消失根因）与 `UnityPy` 单次读改写防脏读铁律**：
+     * **现象与根因**：威震天母包原本只有 3 个投射物预制体（坦克重击 `projectile_megatron_gs_bullet` `9003878510878022874`、普通远程 `4196009027374098921`、SP2 `2836027833803039595`）。为闪电扩充“坦克重击 + 左手枪远程 + 坦克 S1 + 飞机 S2”共 4 套投射需求时，若把原 `9003878510878022874` 就地改名为 `projectile_special_bullet` 给坦克 S1 使用，就会直接导致坦克重击 `move_heavy_megatron_gs_shoot`（在 `f=12` 请求发射 `projectile_megatron_gs_bullet`）在对象池查无此弹，游戏内表现为**开炮有火光却射不出炮弹**！
+     * **`UnityPy` 克隆组件二次 `read_typetree()` 脏读陷阱**：当通过 `clone_object` 克隆第 4 个投射物预制体（6 个对象：`GameObject` + `Transform` + `Projectile` + `MoveSet` + `PrefabLib` + `MoveSequencer`）时，若先在一个循环里调用 `save_typetree()` 写入克隆后的 `m_GameObject`，紧接着在第二个循环里对同一个对象再次调用 `read_typetree()` 修改其余属性，**`UnityPy` 第二次 `read_typetree()` 仍会从旧的 `self.reader` 字节读取旧内容**，结果第二次 `save_typetree()` 会把刚才更新好的 `m_GameObject` 覆盖回母体旧 PID！
+     * **铁律解法**：
+       1. 原 `9003878510878022874`（`projectile_megatron_gs_bullet`）保持完整不动，为第 4 个投射物 `projectile_special_bullet` 整套克隆独立 PathID（`-8888888888888888920..-925`），并将全部 4 个投射物一同登记在 `Root PrefabList`；
+       2. 在同一脚本运行周期内，每个对象严格做到**单次 `read_typetree` -> 合并修改所有字段 -> 单次 `save_typetree` 落盘**（如将 `m_GameObject` 修正直接合并进配置循环一起写回），并在保存后重新 `UnityPy.load` 验证 4 个投射物的名称、挂载组件以及每条组件的 `m_GameObject == go_pid`。
 
 
 ---

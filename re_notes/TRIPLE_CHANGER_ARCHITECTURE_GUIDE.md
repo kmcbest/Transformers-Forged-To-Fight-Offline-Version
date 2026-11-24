@@ -341,3 +341,30 @@ flowchart LR
 | **5** | **坦克砸下后“对手僵直躺在地里不消失”** | 仅将 `Actor1` 留在地面 `y=-0.15` 等待收招，未复刻汽车大师原版消失机制。实测 `mm_actor1_bw.json` 原版并未隐藏对手模型，而是在砸扁瞬间后把 `Hips_y` 直接拉至 **`-12.68m`**。 | `sp3_timeline.py` 保留 `f=155..159` 压扁在地面（`y = -0.15`）供镜头展示撞击质感，`f=160` 过渡至 `-4.5`，**`f=161..222` 直接深埋至地下 `y = -14.0m`**，实现与原版汽车大师一致的“压扁后瞬失”表现。 |
 | **6** | **对手消失后“闪电坦克仍浮在半空 1.2m，未能压实地面”** | `cha_blitzwing_gs_01` 在 `generate_blitzwing_bundle.py` 中已把履带底面置于局部 `Y=0.00`（`bounds Y=[0.00, 2.59]`），且汽车大师 `BodyBase` 在砸地期（`mm=166..179`）本就贴地（`y ≈ -0.05..+0.07m`）；`export_sp3_vehicle_targets.py` 残留的 `+1.199 * up` 偏置误将坦克整车托起 `1.2m`。 | 移除 `+1.199` 过时高度补偿，改用微贴地余量 **`+0.06 * up`**，使压地保持帧 `f=158..171` 的 `tankPos.y` 精准落回 `-0.055..+0.130m`，履带紧贴地面与裂纹。 |
 | **7** | **全流程伤害分布与包体自动化校验** | 增删连招或扫射次数后若 `sum(dp) != 1.00`，会导致 SP3 总伤害异常；Unity 编译与包内轨道任何改动也需防止回退。 | 全流程 `13` 次 `MatineeHitEvent`（Robot 2 次 `0.07+0.08` + Jet 10 次 `0.045×10` + Tank 终砸 `0.40, db=True`）严格锁定 **`sum(dp) == 1.00`**；每次打包前自动校验 `Duration == 7.4s`、`track_41 == 0`、互斥违例 `== 0` 及 APK 内 `blitzwing_gs.assetbundle` CRC32 一致。 |
+
+---
+
+## 十一、 三变形态双 SP 技分流与动态枪剑切换实战避坑（2026-11 闪电验收沉淀）
+
+> 闪电在实现双模式切换重击的基础上，进一步落地了**“双形态各异 S1 / S2 + 副手枪远程动态显隐 + 主手剑按 SP 动态抽剑 + 混剪近战连招”**，完整实装涉及 [`patch_blitzwing_moves.py`](file:///e:/Agent/TFTF-blender/tools/blitzwing/patch_blitzwing_moves.py)、[`generate_blitzwing_bundle.py`](file:///e:/Agent/TFTF-blender/tools/blitzwing/generate_blitzwing_bundle.py) 与 `tools/nativehook/hook.c`。
+
+### 1. 双形态双 SP 技与动态武器架构总览
+
+1. **动作与状态机通道分配（AOC `Misc01/02/03` + `MoveSet` + `hook.c` 双重分流）**：
+   - **近战缝合（双形态共享）**：`L1` 警车（`move_tactical_attack_light_01`）、`L2` 黄豹（`move_cheetor_attack_light_02`）、`L3` 犀牛（`move_military_attack_light_03`）、`L4` 犀牛 M2（`move_military_attack_medium_02`）、`M1` 千斤顶（`move_wheeljack_attack_medium_01`）、`M2` 反冲（`move_kickback_attack_medium_02`）。
+   - **坦克形态（`mode == 0`）**：保持原生通道——重击 `Base.HeavyAttack`（`move_heavy_megatron_gs_shoot`）、`S1` `Base.SpecialAttack01`（`move_blitzwing_tank_s1`，借搅拌者，**不拿剑**）、`S2` `Base.SpecialAttack02`（`move_blitzwing_tank_s2`，借雷震，**期间拔剑**）。
+   - **飞机形态（`mode == 1`）**：重击 `Base.Misc01`（`move_heavy_ramjet_donut`）、`S1` `Base.Misc02`（`move_blitzwing_jet_s1`，借风刃，**期间拔剑**）、`S2` `Base.Misc03`（`move_blitzwing_jet_s2`，借横炮，**不拿剑**）。
+   - **Animator 与 `hook.c` 协同**：在 `CHAR_FIGHT_AC`（`-6923321525341018075`）中同步 `HeavyAttack -> Misc01`、`SpecialAttack01 -> Misc02`、`SpecialAttack02 -> Misc03` 的退出过渡与 Tag；在 `hook.c` 中同时 Hook `PlayerController.PlayAnimatorState`（重定向动画哈希）与 `MoveSequencer.EnterMove`（动态替换坦克/飞机双版本 `MoveInfo`）。
+2. **`moves.assetbundle` 自定义 SP 招式克隆与事件清洗铁律**：
+   - 借用他角 SP 招式时（[`patch_blitzwing_moves.py`](file:///e:/Agent/TFTF-blender/tools/blitzwing/patch_blitzwing_moves.py)），必须剔除源角色的 `PlayPropAnimatorStateMoveEvent` 与原生 `PropMoveEvent`，将挂点路径（搅拌者 `sheildgun/.../fx`、风刃 `/RightHand/Sword`、横炮 `rocketBase/.../FX`）重定向至闪电有效骨骼节点，并仅在需要拔剑的 `move_blitzwing_tank_s2`（`d=93`）与 `move_blitzwing_jet_s1`（`d=58`）插入 `"p": "sword", "en": True` 的 `PropMoveEvent`。
+3. **动态武器挂载规范**：
+   - 左手枪 `gun`（`InitFlags=0, _startActive=False`）挂载至 `LeftHand`，由汽车大师左手开枪动作 `move_attackRanged_handGun_left_XL_01..03B` 自动显隐；右手剑 `sword`（`InitFlags=0, _startActive=False`）从 `RightForeArm` 重父化至 `RightHand`，常态绝对隐形，仅在坦克 S2 / 飞机 S1 触发瞬间亮出。
+
+### 2. 本轮新增实机踩坑与排查避坑表
+
+| # | 踩坑现象 | 精确根因 | 铁律解法与校验门禁 |
+|---|---|---|---|
+| **1** | **展厅能显示或角色不可见，一进战斗立即闪退** | Showcase（`PROPS_SHOWCASE_PID`）与 Combat（`PROPS_COMBAT_PID`）两份 Prefab 各自的 `RightHand` Transform PID（`-8402135396370300167` vs `-4088132481749495149`）被写反，导致 `sword` 跨预制体交错重父化。 | 重父化脚本严格锁定每棵树自身节点，并在生成末尾递归断言 Showcase 与 Combat 的全部 `Transform` 与 `GameObject` PID **零交集**。 |
+| **2** | **进战斗不再闪退，但人形贴图全花屏、坦克向下陷出画面** | ① 网格在 Blender 已完成图集 UV 重映射，C# 打包脚本 `PackBlitzwingBundle.cs` 又误调用二次 `RemapSubmeshUVs` 致 UV 错位；<br>② 坦克转换 `(x, z, -y)` 时残留过时 `-1.549f` 高度偏置；<br>③ 错用 `CopySerialized` 或写错外部粒子路径（如 `fx_p_optimus_muzzle_flash` 真实 PID 为 `9:3861076792284877566`）。 | 移除 C# 重复 `RemapSubmeshUVs` 与坦克 `-1.549f` 偏置；Mesh 落盘必用 `DeleteAsset + CreateAsset`；外部 FX 一律先查真包确定 `FileID/PathID` 再入 `Root PrefabList` 与 `m_PreloadTable`。 |
+| **3** | **一切看似正常，但坦克形态重击炮弹没了** | 母包仅 3 个投射物 Prefab，`generate_blitzwing_bundle.py` 直接将原 `9003878510878022874`（`projectile_megatron_gs_bullet`）改名覆写为坦克 S1 的 `projectile_special_bullet`，导致 `move_heavy_megatron_gs_shoot` 运行时找不到炮弹。 | 严禁覆写仍在使用的母体投射物。完整保留 `9003878510878022874`（`projectile_megatron_gs_bullet`），整套 `clone_object` 出第 4 个投射物 `-8888888888888888920..-925`（`projectile_special_bullet`）并与其余 3 个投射物共同注册进 `Root PrefabList`。 |
+| **4** | **克隆第 4 个投射物后组件 `m_GameObject` 神秘回弹指向旧对象** | `UnityPy` 对同一 `ObjectReader` 调用 `save_typetree()` 后未重载，同一脚本内第二次调用 `read_typetree()` 仍读取旧 `self.reader` 字节，导致二次写回冲掉前面刚改好的 `m_GameObject`。 | 同一次运行内对每个对象做到**单次读、合并全字段改动、单次 `save_typetree()` 写回**，且出包后立即 `UnityPy.load` 二次回读核对 4 个投射物的 `m_Name` 与全组件 `m_GameObject` 一致。 |
