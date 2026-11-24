@@ -10,14 +10,14 @@
 // 职业: 破坏分子 (Demolitions / demo) | 阵营: 霸天虎 (Decepticon)
 // ===========================================================================
 // 1. [被动 - 暴击几率 & 暴击伤害]
-//    - 连击数每增加 5，获得 1 层 8% 暴击率与 1 层 16% 暴击伤害 (上限 99 层)。
+//    - 连击数每增加 5，获得 1 层 6% 暴击率与 1 层 12% 暴击伤害 (上限 99 层)。
 //    - 被敌人命中打断连击时，全部移除。
 // 2. [被动 - 无尽怒火] (Infinite Fury)
 //    - 真实暴击率 > 100% 时点亮图标，hook_179 实时将溢出暴击率 1:1 转为暴击伤害。
 //    - 暴击率回落 <= 100% 或连击打断受创时立即移除。
 // 3. [特殊技 1 - 能量炮]
 //    - 最后一击不可防御：最后一击时间窗内点亮浅紫色不可防御图标 (E41F)，最后一击结束立即熄灭。
-//    - 技能期间提升 35% 暴击伤害 (E906)：SP1 进入激活，SP1 退出瞬间立即移除。
+//    - 技能期间提升 30% 暴击伤害 (E906)：SP1 进入激活，SP1 退出瞬间立即移除。
 //    - 纯净门禁：SP1 期间严禁触发流血。
 // 4. [特殊技 2 - 翼刃回旋]
 //    - 技能期间提升 60% 暴击伤害：SP2 进入激活，SP2 退出瞬间立即移除。
@@ -28,7 +28,7 @@
 //    - 由引擎终态结算回调 on_attack_ended 精准驱动：
 //      仅普通攻击 (轻/中/重/远程, 排除 S1/S2/S3) 落空 (非Hit、非Blocked、非对波抵消、非被反射；
 //      包含对手前冲/近战穿弹躲过) 时触发。
-//    - 获得 1 层 50% 能量功率增益，持续 5 秒；最大 1 层，再次触发刷新倒计时。
+//    - 获得 1 层 60% 能量功率增益，持续 4 秒；最大 1 层，再次触发刷新倒计时。
 // ===========================================================================
 
 static int      s_blackout_combo[2]               = {0, 0};
@@ -57,26 +57,26 @@ static void blackout_show_sp1_unblockable(int p, const char* reason) {
     if (s_blackout_sp1_unblockable_on[p]) return;
     s_blackout_sp1_unblockable_on[p] = 1;
     skill_apply_buff_dur(p, "blackout_sp1_unblockable", 3.5f);
-    skill_overlay("[%s] 能量炮终击！不可防御！", p == 0 ? "眩晕" : "敌方眩晕");
+    skill_overlay("[%s] 能量波炮终击！不可防御！", p == 0 ? "眩晕" : "敌方眩晕");
     skill_log("BLACKOUT: P%d showed SP1 light-purple unblockable icon (%s)", p, reason);
 }
 
-// 触发觉醒技“追猎” (普通攻击落空获得 1 层 50% 能量功率增益，持续 5 秒；最大 1 层，再次触发刷新倒计时)
+// 触发觉醒技“追猎” (普通攻击落空获得 1 层 60% 能量功率增益，持续 4 秒；最大 1 层，再次触发刷新倒计时)
 void blackout_trigger_hunt_if_ready(int blackout_p, const char* reason) {
     if (blackout_p < 0 || blackout_p >= 2) return;
     const char* bid = skill_get_bot_id(blackout_p);
     if (!bid || strstr(bid, "blackout") == NULL) return;
 
-    // 刷新或施加 5 秒 50% 能量功率增益 (最大 1 层，再次触发刷新倒计时)
+    // 刷新或施加 4 秒 60% 能量功率增益 (最大 1 层，再次触发刷新倒计时)
     if (skill_has_buff(blackout_p, "blackout_sig_whiff_power_gain")) {
         skill_consume_buff(blackout_p, "blackout_sig_whiff_power_gain", 1);
-        skill_log("BLACKOUT: P%d Hunt refreshed 5.0s countdown (%s)", blackout_p, reason);
+        skill_log("BLACKOUT: P%d Hunt refreshed 4.0s countdown (%s)", blackout_p, reason);
     } else {
-        skill_log("BLACKOUT: P%d Hunt gained +50%% power rate buff 5.0s (%s)", blackout_p, reason);
+        skill_log("BLACKOUT: P%d Hunt gained +60%% power rate buff 4.0s (%s)", blackout_p, reason);
     }
 
-    skill_apply_buff_dur(blackout_p, "blackout_sig_whiff_power_gain", 5.0f);
-    skill_overlay("[%s] 追猎！获得50%%能量功率增益 (5秒)！", blackout_p == 0 ? "眩晕" : "敌方眩晕");
+    skill_apply_buff_dur(blackout_p, "blackout_sig_whiff_power_gain", 4.0f);
+    skill_overlay("[%s] 追猎！获得60%%能量功率增益 (4秒)！", blackout_p == 0 ? "眩晕" : "敌方眩晕");
 }
 
 // 战斗重置
@@ -139,7 +139,7 @@ static void blackout_on_special_state(int player_index, int sp_level, int entere
             if (!skill_has_buff(player_index, "blackout_sp1_crit_damage")) {
                 skill_apply_buff_dur(player_index, "blackout_sp1_crit_damage", 3.5f);
             }
-            skill_log("BLACKOUT: P%d entered SP1 (+35%% crit damage active, tracking last-hit unblockable window)", player_index);
+            skill_log("BLACKOUT: P%d entered SP1 (+30%% crit damage active, tracking last-hit unblockable window)", player_index);
         } else if (sp_level == 2) {
             // SP2 进入：确保 +60% 暴击伤害增益已激活 (仅技能期间生效)
             if (!skill_has_buff(player_index, "blackout_sp2_crit_damage")) {
@@ -156,7 +156,7 @@ static void blackout_on_special_state(int player_index, int sp_level, int entere
             s_blackout_sp1_exit_ms[player_index] = now_ms;
             if (skill_has_buff(player_index, "blackout_sp1_crit_damage")) {
                 skill_consume_buff(player_index, "blackout_sp1_crit_damage", 99);
-                skill_log("BLACKOUT: P%d exited SP1 -> removed SP1 +35%% crit damage buff", player_index);
+                skill_log("BLACKOUT: P%d exited SP1 -> removed SP1 +30%% crit damage buff", player_index);
             }
             skill_log("BLACKOUT: P%d exited SP1 state (waiting for last-hit projectile resolution)", player_index);
         } else if (sp_level == 2) {
@@ -182,14 +182,14 @@ static void blackout_on_hit_connected(SkillHitContext* ctx) {
         if (!ctx->is_blocked) {
             s_blackout_combo[ap]++;
 
-            // 每增加 5 连击叠加 1 层 8% 暴击率与 16% 暴击伤害
+            // 每增加 5 连击叠加 1 层 6% 暴击率与 12% 暴击伤害
             if (s_blackout_combo[ap] % 5 == 0) {
                 int stacks = s_blackout_combo[ap] / 5;
                 if (stacks > 99) stacks = 99;
 
                 skill_apply_buff_dur(ap, "blackout_combo_crit_rate", -1.0f);
                 skill_apply_buff_dur(ap, "blackout_combo_crit_dmg", -1.0f);
-                skill_overlay("[%s] %d 连击！暴击几率+8%%, 暴击伤害+16%% (第%d层)！",
+                skill_overlay("[%s] %d 连击！暴击几率+6%%, 暴击伤害+12%% (第%d层)！",
                               ap == 0 ? "眩晕" : "敌方眩晕", s_blackout_combo[ap], stacks);
                 skill_log("BLACKOUT: P%d combo reached %d -> applied crit rate & dmg layer %d",
                           ap, s_blackout_combo[ap], stacks);

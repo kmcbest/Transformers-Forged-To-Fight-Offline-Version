@@ -81,34 +81,43 @@ def load_translations():
         bots = custom.get('bots', {})
         for bot_id, bdata in bots.items():
             b_upper = bot_id.upper()
+            variants = {b_upper}
+            parts = b_upper.split('_')
+            if len(parts) >= 2:
+                variants.add(f"{parts[0]}_{parts[1]}")  # e.g. BLACKOUT_CIN, SIDESWIPE_CIN, SWOOP_GS
+                variants.add(parts[0])                  # e.g. BLACKOUT, SIDESWIPE, SWOOP
+            if len(parts) == 3 and parts[1] == 'CIN':
+                variants.add(f"{parts[0]}_C_{parts[2]}")  # e.g. BLACKOUT_C_TF
+                variants.add(f"{parts[0]}_C")
             specials = bdata.get('specials', [])
             for idx, sp in enumerate(specials):
                 name = sp.get('name', '')
                 desc = sp.get('desc', '')
-                if name:
-                    for key_fmt in [
-                        f"ID_SPECIAL_ATTACK_{b_upper}_{idx}",
-                        f"MS_ID_SPECIAL_ATTACK_{b_upper}_{idx}",
-                        f"ID_SPECIAL_ATTACK_{b_upper}_GS_{idx}",
-                        f"MS_ID_SPECIAL_ATTACK_{b_upper}_GS_{idx}",
-                        f"ID_SPECIAL_ATTACK_MOVE_{b_upper}_SPECIAL_{idx}",
-                        f"MS_ID_SPECIAL_ATTACK_MOVE_{b_upper}_SPECIAL_{idx}",
-                        f"ID_SPECIAL_ATTACK_MOVE_{b_upper}_GS_SPECIAL_{idx}",
-                        f"MS_ID_SPECIAL_ATTACK_MOVE_{b_upper}_GS_SPECIAL_{idx}",
-                    ]:
-                        table[key_fmt] = name
-                if desc:
-                    for key_fmt in [
-                        f"ID_SPECIAL_ATTACK_DESCRIPTION_{b_upper}_{idx}",
-                        f"MS_ID_SPECIAL_ATTACK_DESCRIPTION_{b_upper}_{idx}",
-                        f"ID_SPECIAL_ATTACK_DESCRIPTION_{b_upper}_GS_{idx}",
-                        f"MS_ID_SPECIAL_ATTACK_DESCRIPTION_{b_upper}_GS_{idx}",
-                        f"ID_SPECIAL_ATTACK_DESCRIPTION_MOVE_{b_upper}_SPECIAL_{idx}",
-                        f"MS_ID_SPECIAL_ATTACK_DESCRIPTION_MOVE_{b_upper}_SPECIAL_{idx}",
-                        f"ID_SPECIAL_ATTACK_DESCRIPTION_MOVE_{b_upper}_GS_SPECIAL_{idx}",
-                        f"MS_ID_SPECIAL_ATTACK_DESCRIPTION_MOVE_{b_upper}_GS_SPECIAL_{idx}",
-                    ]:
-                        table[key_fmt] = desc
+                for v in variants:
+                    if name:
+                        for key_fmt in [
+                            f"ID_SPECIAL_ATTACK_{v}_{idx}",
+                            f"MS_ID_SPECIAL_ATTACK_{v}_{idx}",
+                            f"ID_SPECIAL_ATTACK_{v}_GS_{idx}",
+                            f"MS_ID_SPECIAL_ATTACK_{v}_GS_{idx}",
+                            f"ID_SPECIAL_ATTACK_MOVE_{v}_SPECIAL_{idx}",
+                            f"MS_ID_SPECIAL_ATTACK_MOVE_{v}_SPECIAL_{idx}",
+                            f"ID_SPECIAL_ATTACK_MOVE_{v}_GS_SPECIAL_{idx}",
+                            f"MS_ID_SPECIAL_ATTACK_MOVE_{v}_GS_SPECIAL_{idx}",
+                        ]:
+                            table[key_fmt] = name
+                    if desc:
+                        for key_fmt in [
+                            f"ID_SPECIAL_ATTACK_DESCRIPTION_{v}_{idx}",
+                            f"MS_ID_SPECIAL_ATTACK_DESCRIPTION_{v}_{idx}",
+                            f"ID_SPECIAL_ATTACK_DESCRIPTION_{v}_GS_{idx}",
+                            f"MS_ID_SPECIAL_ATTACK_DESCRIPTION_{v}_GS_{idx}",
+                            f"ID_SPECIAL_ATTACK_DESCRIPTION_MOVE_{v}_SPECIAL_{idx}",
+                            f"MS_ID_SPECIAL_ATTACK_DESCRIPTION_MOVE_{v}_SPECIAL_{idx}",
+                            f"ID_SPECIAL_ATTACK_DESCRIPTION_MOVE_{v}_GS_SPECIAL_{idx}",
+                            f"MS_ID_SPECIAL_ATTACK_DESCRIPTION_MOVE_{v}_GS_SPECIAL_{idx}",
+                        ]:
+                            table[key_fmt] = desc
 
         # B. raw keys dict
         raw_keys = custom.get('raw_keys', {})
@@ -187,6 +196,20 @@ def expand_aliases(table: dict) -> dict:
         ('MOTOMASTER', 'MOTORMASTER'),
         ('OPTIMUSPRIME_SG', 'OPTIMUS_SG'),
         ('OPTIMUS_SG', 'OPTIMUSPRIME_SG'),
+        ('BLACKOUT_CIN_TF', 'BLACKOUT_CIN'),
+        ('BLACKOUT_CIN', 'BLACKOUT_CIN_TF'),
+        ('BLACKOUT_CIN', 'BLACKOUT'),
+        ('BLACKOUT', 'BLACKOUT_CIN'),
+        ('BLACKOUT_CIN', 'BLACKOUT_C_TF'),
+        ('BLACKOUT_C_TF', 'BLACKOUT_CIN'),
+        ('BLACKOUT', 'BLACKOUT_C'),
+        ('BLACKOUT_C', 'BLACKOUT'),
+        ('SIDESWIPE_CIN_ROTF', 'SIDESWIPE_CIN'),
+        ('SIDESWIPE_CIN', 'SIDESWIPE_CIN_ROTF'),
+        ('SIDESWIPE_CIN', 'SIDES_CIN'),
+        ('SIDES_CIN', 'SIDESWIPE_CIN'),
+        ('SIDESWIPE_CIN', 'SIDESWIPE_C_ROTF'),
+        ('SIDESWIPE_C_ROTF', 'SIDESWIPE_CIN'),
     ]
 
     for src, dst in aliases:

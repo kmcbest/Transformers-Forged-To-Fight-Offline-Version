@@ -7512,6 +7512,7 @@ void* hook_161(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
 }
 
 #include "special_attacks_zh.h"
+#include "character_bios_zh.h"
 
 void* hook_162(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7) {
     void* r = H[162].orig(a0,a1,a2,a3,a4,a5,a6,a7);
@@ -7523,6 +7524,13 @@ void* hook_162(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
             if (tr && tr[0]) {
                 LOG("LOCALIZE sp: %s -> %s", k, tr);
                 return g_strnew ? g_strnew(tr) : r;
+            }
+        }
+        if (strncmp(k, "ID_CHARACTER_BIOS_", 18) == 0 || strncmp(k, "MS_ID_CHARACTER_BIOS_", 21) == 0) {
+            const char* bio = lookup_character_bio_zh(k);
+            if (bio && bio[0]) {
+                LOG("LOCALIZE bio: %s -> %s", k, bio);
+                return g_strnew ? g_strnew(bio) : r;
             }
         }
         const char* sub_prefix = "ID_UI_STAT_ATTRIBUTE_TRIGGER_SUBTITLE_";
@@ -7541,62 +7549,49 @@ void* hook_162(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
                 }
             }
         }
-        if (strstr(k, "DRAGSTRIP") || strstr(k, "dragstrip") || strstr(k, "Dragstrip")) {
-            if (strstr(k, "BIO") || strstr(k, "desc") || strstr(k, "DESC") || strstr(k, "Bio")) {
-                return g_strnew ? g_strnew("飞虎队成员抢劫。他是个极度渴望胜利的战士，为了获胜不惜采用一切手段。第一名就是一切，第二名就是头号输家。") : r;
-            }
-            return g_strnew ? g_strnew("抢劫") : r;
-        }
-        if (strstr(k, "ONSLAUGHT") || strstr(k, "onslaught") || strstr(k, "Onslaught")) {
-            if (strstr(k, "BIO") || strstr(k, "desc") || strstr(k, "DESC") || strstr(k, "Bio")) {
-                return g_strnew ? g_strnew("战车队冷酷沉着的战术指挥官，重装炮火专家。他擅长制定周密残忍的突袭计划，身披重甲，背负双联防空火箭炮与小臂转轮重机炮，在战场上以压倒性的火力粉碎一切阻碍。") : r;
-            }
-            return g_strnew ? g_strnew("袭击") : r;
-        }
-        if (strstr(k, "VORTEX") || strstr(k, "vortex") || strstr(k, "Vortex")) {
-            if (strstr(k, "BIO") || strstr(k, "desc") || strstr(k, "DESC") || strstr(k, "Bio")) {
-                return g_strnew ? g_strnew("战车队阴险狂暴的突击兵与空中支援专家。旋风性格残忍好斗，狂热嗜杀，装备高频旋转离子切刃与重型导弹发射器，能够在半空化作杀戮旋风将一切敌人绞为碎片。") : r;
-            }
-            return g_strnew ? g_strnew("旋风") : r;
-        }
-        if (strstr(k, "STRONGARM") || strstr(k, "strongarm") || strstr(k, "Strongarm")) {
-            if (strstr(k, "BIO") || strstr(k, "desc") || strstr(k, "DESC") || strstr(k, "Bio")) {
-                return g_strnew ? g_strnew("“根据塞伯坦警例，你已经违反了安全条例！”\n作为精英卫队的优秀毕业生，铁腕严守规章，时刻准备着执行长官的每道指令。这名充满热忱的年轻执法官或许偶尔显得不知变通，但在战场上，她重装突击的正义重拳从来不会对霸天虎留情。") : r;
-            }
-            return g_strnew ? g_strnew("铁腕") : r;
-        }
-        if (strstr(k, "TARN") || strstr(k, "tarn") || strstr(k, "Tarn")) {
-            if (strstr(k, "BIO") || strstr(k, "desc") || strstr(k, "DESC") || strstr(k, "Bio")) {
-                return g_strnew ? g_strnew("霸天虎黑狗队 (D.J.D.) 领袖，狂热的霸天虎教条处刑者。右臂搭载标志性双联融合炮，能以谐振声波直接瓦解敌方火种，变形为塞伯坦重型战地双管坦克。") : r;
-            }
-            return g_strnew ? g_strnew("塔恩") : r;
-        }
-        if (strstr(k, "BRAWL") || strstr(k, "brawl") || strstr(k, "Brawl")) {
-            if (strstr(k, "BIO") || strstr(k, "desc") || strstr(k, "DESC") || strstr(k, "Bio")) {
-                return g_strnew ? g_strnew("战车队暴躁凶悍的重装突击兵。吵闹热衷破坏，脾气火爆，搭载塞伯坦重型突击加农炮，变形为重装塞伯坦坦克，在战场上以纯粹的暴力粉碎一切敌人。") : r;
-            }
-            return g_strnew ? g_strnew("吵闹") : r;
-        }
-        if (strstr(k, "BLACKOUT") || strstr(k, "blackout") || strstr(k, "Blackout")) {
-            if (strstr(k, "BIO") || strstr(k, "desc") || strstr(k, "DESC") || strstr(k, "Bio")) {
-                int is_en = 0;
-                if (g_base) {
-                    typedef void* (*fn_get_lang)(void);
-                    fn_get_lang get_lang = (fn_get_lang)(g_base + 0x1268020);
-                    void* l_obj = get_lang ? get_lang() : NULL;
-                    char l_buf[32];
-                    if (l_obj && read_str_utf8(l_obj, l_buf, sizeof(l_buf))) {
-                        if (strstr(l_buf, "English") || strstr(l_buf, "en") || strstr(l_buf, "En")) {
-                            is_en = 1;
-                        }
-                    }
+        if (strncmp(k, "ID_SPECIAL_", 11) != 0 && strncmp(k, "MS_ID_SPECIAL_", 14) != 0) {
+            if (strstr(k, "DRAGSTRIP") || strstr(k, "dragstrip") || strstr(k, "Dragstrip")) {
+                if (strstr(k, "BIO") || strstr(k, "desc") || strstr(k, "DESC") || strstr(k, "Bio")) {
+                    return g_strnew ? g_strnew("飞虎队成员抢劫。他是个极度渴望胜利的战士，为了获胜不惜采用一切手段。第一名就是一切，第二名就是头号输家。") : r;
                 }
-                if (is_en) {
-                    return g_strnew ? g_strnew("BLACKOUT is one of the tallest of the DECEPTICONS. Most often seen looming silently over the right shoulder of MEGATRON, he is his leader's hound. He pursues any target he is given with relentless efficiency, allowing nothing to stop him in his task. Those who defy him beware: his rage knows no bounds.He will fill the air with fire and burn the land clear to take his revenge. Paired with his minion SCORPONOK, he is a dangerous and deadly foe.") : r;
-                }
-                return g_strnew ? g_strnew("眩晕是一个巨大的霸天虎。通常会默默出现在威震天的右肩侧，他是首领的猎犬。他以不懈的效率追踪任何目标，没有什么事情可以阻止他完成任务。那些蔑视他的人要小心：他的愤怒是无止境的。他会让空气中弥漫着火焰并烧毁地面上的一切以进行报复。与他的爪牙巨蝎一起，他是一个危险而致命的敌人。") : r;
+                return g_strnew ? g_strnew("抢劫") : r;
             }
-            return g_strnew ? g_strnew("眩晕") : r;
+            if (strstr(k, "ONSLAUGHT") || strstr(k, "onslaught") || strstr(k, "Onslaught")) {
+                if (strstr(k, "BIO") || strstr(k, "desc") || strstr(k, "DESC") || strstr(k, "Bio")) {
+                    return g_strnew ? g_strnew("战车队冷酷沉着的战术指挥官，重装炮火专家。他擅长制定周密残忍的突袭计划，身披重甲，背负双联防空火箭炮与小臂转轮重机炮，在战场上以压倒性的火力粉碎一切阻碍。") : r;
+                }
+                return g_strnew ? g_strnew("袭击") : r;
+            }
+            if (strstr(k, "VORTEX") || strstr(k, "vortex") || strstr(k, "Vortex")) {
+                if (strstr(k, "BIO") || strstr(k, "desc") || strstr(k, "DESC") || strstr(k, "Bio")) {
+                    return g_strnew ? g_strnew("战车队阴险狂暴的突击兵与空中支援专家。旋风性格残忍好斗，狂热嗜杀，装备高频旋转离子切刃与重型导弹发射器，能够在半空化作杀戮旋风将一切敌人绞为碎片。") : r;
+                }
+                return g_strnew ? g_strnew("旋风") : r;
+            }
+            if (strstr(k, "STRONGARM") || strstr(k, "strongarm") || strstr(k, "Strongarm")) {
+                if (strstr(k, "BIO") || strstr(k, "desc") || strstr(k, "DESC") || strstr(k, "Bio")) {
+                    return g_strnew ? g_strnew("“根据塞伯坦警例，你已经违反了安全条例！”\n作为精英卫队的优秀毕业生，铁腕严守规章，时刻准备着执行长官的每道指令。这名充满热忱的年轻执法官或许偶尔显得不知变通，但在战场上，她重装突击的正义重拳从来不会对霸天虎留情。") : r;
+                }
+                return g_strnew ? g_strnew("铁腕") : r;
+            }
+            if (strstr(k, "TARN") || strstr(k, "tarn") || strstr(k, "Tarn")) {
+                if (strstr(k, "BIO") || strstr(k, "desc") || strstr(k, "DESC") || strstr(k, "Bio")) {
+                    return g_strnew ? g_strnew("霸天虎黑狗队 (D.J.D.) 领袖，狂热的霸天虎教条处刑者。右臂搭载标志性双联融合炮，能以谐振声波直接瓦解敌方火种，变形为塞伯坦重型战地双管坦克。") : r;
+                }
+                return g_strnew ? g_strnew("塔恩") : r;
+            }
+            if (strstr(k, "BRAWL") || strstr(k, "brawl") || strstr(k, "Brawl")) {
+                if (strstr(k, "BIO") || strstr(k, "desc") || strstr(k, "DESC") || strstr(k, "Bio")) {
+                    return g_strnew ? g_strnew("战车队暴躁凶悍的重装突击兵。吵闹热衷破坏，脾气火爆，搭载塞伯坦重型突击加农炮，变形为重装塞伯坦坦克，在战场上以纯粹的暴力粉碎一切敌人。") : r;
+                }
+                return g_strnew ? g_strnew("吵闹") : r;
+            }
+            if (strstr(k, "BLACKOUT") || strstr(k, "blackout") || strstr(k, "Blackout")) {
+                if (strstr(k, "BIO") || strstr(k, "desc") || strstr(k, "DESC") || strstr(k, "Bio")) {
+                    return g_strnew ? g_strnew("眩晕是一个巨大的霸天虎。通常会默默出现在威震天的右肩侧，他是首领的猎犬。他以不懈的效率追踪任何目标，没有什么事情可以阻止他完成任务。那些蔑视他的人要小心：他的愤怒是无止境的。他会让空气中弥漫着火焰并烧毁地面上的一切以进行报复。与他的爪牙巨蝎一起，他是一个危险而致命的敌人。") : r;
+                }
+                return g_strnew ? g_strnew("眩晕") : r;
+            }
         }
     }
     // Check if Localization.Get prepended "MS_" on missing string lookup
@@ -10731,6 +10726,10 @@ static const SPMoveHitEntry s_sp_moves[] = {
     { "move_blaster_special_02", 3 },
     { "move_bludgeon_special_01", 4 },
     { "move_bludgeon_special_02", 3 },
+    { "move_blitzwing_jet_s1", 2 },
+    { "move_blitzwing_jet_s2", 3 },
+    { "move_blitzwing_tank_s1", 1 },
+    { "move_blitzwing_tank_s2", 3 },
     { "move_bonecrusher_special_01", 2 },
     { "move_bonecrusher_special_02", 3 },
     { "move_bugbite_special_01", 3 },
@@ -11566,15 +11565,30 @@ static void hooked_PC_PlayAnimatorState(void* pc, int32_t hash, float normalized
         if (p >= 0) {
             const char* bid = (p == 0) ? g_p0_bot_id : g_p1_bot_id;
             if (bid && strstr(bid, "blitzwing") != NULL) {
-                // Animator.StringToHash("HeavyAttack") == (int32_t)2579208148u == -1715759148
-                // Animator.StringToHash("Misc01")      == 732291567
+                // Animator.StringToHash("HeavyAttack")     == (int32_t)2579208148u  -> "Misc01" (732291567)
+                // Animator.StringToHash("SpecialAttack01") == 1809527195           -> "Misc02" ((int32_t)2997661781u)
+                // Animator.StringToHash("SpecialAttack02") == (int32_t)4073873441u -> "Misc03" ((int32_t)3316351171u)
+                int mode = skill_blitzwing_get_mode(p);
                 if (hash == (int32_t)2579208148u) {
-                    int mode = skill_blitzwing_get_mode(p);
                     if (mode == 1) {
-                        hash = 732291567; // "Misc01" -> plays Ramjet_Normal_attackHeavy & triggers move_heavy_ramjet_donut
-                        flog("BLITZWING_ANIM: P%d redirected HeavyAttack anim state to Misc01 (Ramjet_Normal_attackHeavy) in Jet Mode", p);
+                        hash = 732291567;
+                        flog("BLITZWING_ANIM: P%d HeavyAttack -> Misc01 (Jet Mode)", p);
                     } else {
-                        flog("BLITZWING_ANIM: P%d playing HeavyAttack anim state (megatron_GS_attackHeavy) in Tank Mode", p);
+                        flog("BLITZWING_ANIM: P%d HeavyAttack (Tank Mode)", p);
+                    }
+                } else if (hash == 1809527195) {
+                    if (mode == 1) {
+                        hash = (int32_t)2997661781u;
+                        flog("BLITZWING_ANIM: P%d SpecialAttack01 -> Misc02 (Windblade S1, Jet Mode)", p);
+                    } else {
+                        flog("BLITZWING_ANIM: P%d SpecialAttack01 (Mixmaster S1, Tank Mode)", p);
+                    }
+                } else if (hash == (int32_t)4073873441u) {
+                    if (mode == 1) {
+                        hash = (int32_t)3316351171u;
+                        flog("BLITZWING_ANIM: P%d SpecialAttack02 -> Misc03 (Sideswipe S2, Jet Mode)", p);
+                    } else {
+                        flog("BLITZWING_ANIM: P%d SpecialAttack02 (Bludgeon S2, Tank Mode)", p);
                     }
                 }
             }
@@ -11636,40 +11650,38 @@ static void hooked_EnterMove(void* seq, void* move_info, float offset, int queue
                 const char* bid = (p == 0) ? g_p0_bot_id : g_p1_bot_id;
                 if (bid && strstr(bid, "blitzwing") != NULL) {
                     int mode = skill_blitzwing_get_mode(p);
-                    int is_tank_move = il2cpp_string_equals_ascii(move_name, "move_heavy_megatron_gs_shoot");
-                    int is_jet_move  = il2cpp_string_equals_ascii(move_name, "move_heavy_ramjet_donut");
-                    if (is_tank_move || is_jet_move) {
-                        flog("BLITZWING_HEAVY: P%d EnterMove('%s') in mode=%d (0=Tank, 1=Jet)",
-                             p, is_tank_move ? "move_heavy_megatron_gs_shoot" : "move_heavy_ramjet_donut", mode);
-                        if (mode == 1 && is_tank_move) {
+                    static const struct {
+                        const char* tank;
+                        const char* jet;
+                    } bw_mode_moves[3] = {
+                        { "move_heavy_megatron_gs_shoot", "move_heavy_ramjet_donut" },
+                        { "move_blitzwing_tank_s1",       "move_blitzwing_jet_s1"   },
+                        { "move_blitzwing_tank_s2",       "move_blitzwing_jet_s2"   },
+                    };
+                    for (int mi = 0; mi < 3; mi++) {
+                        int is_tank_move = il2cpp_string_equals_ascii(move_name, bw_mode_moves[mi].tank);
+                        int is_jet_move  = il2cpp_string_equals_ascii(move_name, bw_mode_moves[mi].jet);
+                        if (!is_tank_move && !is_jet_move) continue;
+                        const char* target_mv = (mode == 1 && is_tank_move) ? bw_mode_moves[mi].jet
+                                              : (mode == 0 && is_jet_move)  ? bw_mode_moves[mi].tank
+                                              : NULL;
+                        if (target_mv) {
                             void* moveset = *(void**)((char*)seq + 0x20);
                             if (moveset && obj_ok(moveset)) {
                                 typedef void* (*fn_get_move_t)(void* ms, void* name, void* method);
                                 fn_get_move_t get_move = (fn_get_move_t)(g_base + 0x100A648);
-                                void* jet_str = g_strnew("move_heavy_ramjet_donut");
-                                if (jet_str) {
-                                    void* jet_move = get_move(moveset, jet_str, NULL);
-                                    if (jet_move && obj_ok(jet_move)) {
-                                        flog("BLITZWING_HEAVY: P%d swapped heavy move to move_heavy_ramjet_donut (Jet Mode)", p);
-                                        move_info = jet_move;
-                                    }
-                                }
-                            }
-                        } else if (mode == 0 && is_jet_move) {
-                            void* moveset = *(void**)((char*)seq + 0x20);
-                            if (moveset && obj_ok(moveset)) {
-                                typedef void* (*fn_get_move_t)(void* ms, void* name, void* method);
-                                fn_get_move_t get_move = (fn_get_move_t)(g_base + 0x100A648);
-                                void* tank_str = g_strnew("move_heavy_megatron_gs_shoot");
-                                if (tank_str) {
-                                    void* tank_move = get_move(moveset, tank_str, NULL);
-                                    if (tank_move && obj_ok(tank_move)) {
-                                        flog("BLITZWING_HEAVY: P%d swapped heavy move to move_heavy_megatron_gs_shoot (Tank Mode)", p);
-                                        move_info = tank_move;
+                                void* swap_str = g_strnew(target_mv);
+                                if (swap_str) {
+                                    void* swap_move = get_move(moveset, swap_str, NULL);
+                                    if (swap_move && obj_ok(swap_move)) {
+                                        flog("BLITZWING_MODE: P%d swapped '%s' -> '%s' (mode=%d)",
+                                             p, is_tank_move ? bw_mode_moves[mi].tank : bw_mode_moves[mi].jet, target_mv, mode);
+                                        move_info = swap_move;
                                     }
                                 }
                             }
                         }
+                        break;
                     }
                 }
             }

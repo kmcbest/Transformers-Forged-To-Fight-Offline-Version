@@ -62,15 +62,17 @@ mods, appears, _ = build_blackout_abilities()
 assert_true("blackout_gatling_ranged_buff" not in mods, "加特林机枪已彻底移除")
 assert_true("blackout_sp2_crit_resist_debuff" not in mods, "SP2 暴击抗性减益不存在")
 assert_true("blackout_sp1_crit_resist_debuff" not in mods, "SP1 暴击抗性减益已彻底从 mods 中移除")
-assert_true("blackout_sp1_crit_damage" in mods and mods["blackout_sp1_crit_damage"]["m"] == 0.35 and mods["blackout_sp1_crit_damage"]["d"] == 3.5, "SP1 暴击伤害 (+35%, 3.5s) 定义正确")
+assert_true("blackout_sp1_crit_damage" in mods and mods["blackout_sp1_crit_damage"]["m"] == 0.30 and mods["blackout_sp1_crit_damage"]["d"] == 3.5, "SP1 暴击伤害 (+30%, 3.5s) 定义正确")
+assert_true(mods["blackout_combo_crit_rate"]["m"] == 0.06, "被动暴击率每层修正为 6%")
+assert_true(mods["blackout_combo_crit_dmg"]["m"] == 0.12, "被动暴击伤害每层修正为 12%")
 assert_true(mods["blackout_sp2_crit_damage"]["m"] == 0.60, "SP2 暴击伤害已修正为 60%")
 assert_true(mods["blackout_sp2_crit_bleed"]["st"] >= 10, "SP2 暴击流血支持可叠加 (st=%d)" % mods["blackout_sp2_crit_bleed"]["st"])
 assert_true(mods["blackout_sp3_crit_resist_debuff"]["st"] >= 10 and "onSpecial3Hit" in mods["blackout_sp3_crit_resist_debuff"]["tr"] and "LastHit" in mods["blackout_sp3_crit_resist_debuff"]["trs"], "SP3 永久暴抗减益由最后一击命中(onSpecial3Hit/LastHit)触发且可叠加")
 assert_true(appears["appr_blackout_sp1_unblockable"]["tc"] == "C4BBF8", "SP1 不可防御图标为浅紫色 (C4BBF8)")
-assert_true(mods["blackout_sig_whiff_power_gain"]["t"] == "power_rate" and mods["blackout_sig_whiff_power_gain"]["m"] == 0.50 and mods["blackout_sig_whiff_power_gain"]["d"] == 5.0 and mods["blackout_sig_whiff_power_gain"]["st"] == 1, "获得1层50%能量功率增益持续5秒 (st=1)")
+assert_true(mods["blackout_sig_whiff_power_gain"]["t"] == "power_rate" and mods["blackout_sig_whiff_power_gain"]["m"] == 0.60 and mods["blackout_sig_whiff_power_gain"]["d"] == 4.0 and mods["blackout_sig_whiff_power_gain"]["st"] == 1, "获得1层60%能量功率增益持续4秒 (st=1)")
 
 # 2. Unified Miss State Machine (追猎)
-print("\n--- [TEST 2] 统一“落空”状态机 & 追猎 (50%能量功率增益 5秒，再次触发刷新倒计时) ---")
+print("\n--- [TEST 2] 统一“落空”状态机 & 追猎 (60%能量功率增益 4秒，再次触发刷新倒计时) ---")
 g_engine.init("blackout_cin_tf", "ironhide_gs_kabam", 40519.0, 40000.0, 3272.0, 3000.0)
 g_engine.reset()
 g_engine.tick(100)
@@ -87,17 +89,17 @@ st = g_engine.get_state()
 assert_true(not has_buff(st, "p0", "blackout_sig_whiff_power_gain"),
             "Hit / Blocked / 对波Cancelled / 反射Reflected / S1~S3落空 均不触发追猎")
 
-# 2b. 近战轻击落空 -> 获得 50% 能量功率增益 (5秒)
+# 2b. 近战轻击落空 -> 获得 60% 能量功率增益 (4秒)
 lib.sim_fire_attack_ended(0, 1, 0, HIT_FLAG_MISSED, 0.0)
 st = g_engine.get_state()
 assert_true(has_buff(st, "p0", "blackout_sig_whiff_power_gain"),
-            "近战轻击落空获得 50% 能量功率增益")
+            "近战轻击落空获得 60% 能量功率增益")
 
 # 2c. 2 秒后再次远程落空 (含前冲穿弹) -> 再次触发并刷新倒计时
 g_engine.tick(2000)
 lib.sim_fire_attack_ended(0, 8, 0, HIT_FLAG_PROJECTILE | HIT_FLAG_MISSED, 0.0)
 st = g_engine.get_state()
-assert_true(has_buff(st, "p0", "blackout_sig_whiff_power_gain"), "再次远程落空刷新 50% 能量功率增益倒计时")
+assert_true(has_buff(st, "p0", "blackout_sig_whiff_power_gain"), "再次远程落空刷新 60% 能量功率增益倒计时")
 
 # 2d. 重击被规避 (Evaded) -> 再次刷新增益
 g_engine.tick(2000)
@@ -105,13 +107,13 @@ lib.sim_fire_attack_ended(0, 4, 0, HIT_FLAG_INVULNERABLE | HIT_FLAG_EVADED, 0.0)
 st = g_engine.get_state()
 assert_true(has_buff(st, "p0", "blackout_sig_whiff_power_gain"), "重击被规避 (Evaded) 触发追猎能量功率增益")
 
-# 3. SP1 浅紫色不可防御时间窗 + 技能期间 35% 暴击伤害
-print("\n--- [TEST 3] SP1 浅紫色不可防御图标时间窗 & 技能期间 35% 暴伤 ---")
+# 3. SP1 浅紫色不可防御时间窗 + 技能期间 30% 暴击伤害
+print("\n--- [TEST 3] SP1 浅紫色不可防御图标时间窗 & 技能期间 30% 暴伤 ---")
 g_engine.reset()
 g_engine.tick(100)
 lib.sim_fire_special_state(0, 1, 1) # SP1 enter
 st = g_engine.get_state()
-assert_true(has_buff(st, "p0", "blackout_sp1_crit_damage"), "SP1 启动 -> 获得 35% 暴击伤害增益")
+assert_true(has_buff(st, "p0", "blackout_sp1_crit_damage"), "SP1 启动 -> 获得 30% 暴击伤害增益")
 assert_true(not has_buff(st, "p0", "blackout_sp1_unblockable"), "SP1 刚起手第一击前，不提前亮不可防御图标")
 
 # SP1 Hit 0 ends -> last-hit unblockable window opens!
@@ -129,7 +131,7 @@ lib.sim_fire_attack_ended(0, 16, 100, HIT_FLAG_PROJECTILE | HIT_FLAG_HIT | HIT_F
 lib.sim_fire_special_state(0, 1, 0) # SP1 exit
 st = g_engine.get_state()
 assert_true(not has_buff(st, "p0", "blackout_sp1_unblockable"), "SP1 最后一击结算完毕 -> 浅紫色不可防御图标立即消失")
-assert_true(not has_buff(st, "p0", "blackout_sp1_crit_damage"), "SP1 退出瞬间 -> 35% 暴击伤害增益立即移除，绝不残留")
+assert_true(not has_buff(st, "p0", "blackout_sp1_crit_damage"), "SP1 退出瞬间 -> 30% 暴击伤害增益立即移除，绝不残留")
 
 # 4. SP2 60% 暴伤严格限定在技能期间
 print("\n--- [TEST 4] SP2 60% 暴击伤害严格限定在技能期间 ---")

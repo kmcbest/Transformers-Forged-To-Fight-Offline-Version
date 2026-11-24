@@ -295,7 +295,7 @@ float skill_get_total_crit_chance(int player_index) {
         const char* id = self->buffs[i].mod_id;
         int st = self->buffs[i].stacks;
         if (strstr(id, "blackout_combo_crit_rate") != NULL) {
-            total += 0.08f * st;
+            total += 0.06f * st;
         } else if (strstr(id, "crit_rate") != NULL && strstr(id, "crit_resist") == NULL) {
             total += 0.30f * st;
         }
