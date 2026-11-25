@@ -246,6 +246,7 @@ def build(
     *,
     bundle_server: bool = False,
     payload_bin: Path | None = None,
+    hook_override: Path | None = None,
 ) -> list[str]:
     if source.resolve() == destination.resolve():
         raise ValueError("destination must differ from source; the original APK is preserved")
@@ -257,7 +258,7 @@ def build(
         raise ValueError("bundled server binds loopback only; --server-host must be 127.0.0.1")
     destination.parent.mkdir(parents=True, exist_ok=True)
     payload = _resolve_payload(server_port, payload_bin) if bundle_server else None
-    hook_path = ABIS[abi][0]
+    hook_path = hook_override if hook_override is not None else ABIS[abi][0]
     if not hook_path.is_file():
         raise ValueError(f"current runtime hook is missing: {hook_path}")
     hook = hook_path.read_bytes()
@@ -888,6 +889,12 @@ def main() -> None:
         default=None,
         help="reuse a pre-built payload binary from export_payload.py (requires --bundle-server)",
     )
+    parser.add_argument(
+        "--hook-path",
+        type=Path,
+        default=None,
+        help="override runtime hook .so path (e.g. tools/nativehook/libdothook-autotest.so)",
+    )
     args = parser.parse_args()
     # Intelligent default: if neither --server-host nor --bundle-server was explicitly specified,
     # and build/libil2cpp-arm64-patched.so exists, automatically build the standalone in-APK offline server build.
@@ -915,8 +922,9 @@ def main() -> None:
         server_port=args.server_port,
         bundle_server=args.bundle_server,
         payload_bin=args.payload_bin,
+        hook_override=args.hook_path,
     )
-    hook_path = ABIS[args.abi][0]
+    hook_path = args.hook_path if args.hook_path is not None else ABIS[args.abi][0]
     print(f"wrote unsigned APK: {args.destination}")
     print(f"abi: {args.abi}" + ("" if args.keep_other_abi else " (other ABI's libraries dropped)"))
     print("redirected: " + ", ".join(hosts))

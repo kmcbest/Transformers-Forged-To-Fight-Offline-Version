@@ -3,11 +3,17 @@
 Dynamically sets output APK name based on current git branch.
 """
 
+import argparse
 import os
 import shutil
 import subprocess
 import sys
 from pathlib import Path
+
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
+if hasattr(sys.stderr, 'reconfigure'):
+    sys.stderr.reconfigure(encoding='utf-8')
 
 ROOT = Path(__file__).resolve().parent
 BUILD_DIR = ROOT / "build"
@@ -71,32 +77,49 @@ def get_git_branch() -> str:
 
 
 def main():
+    parser = argparse.ArgumentParser(description="Build offline TFTF APK")
+    parser.add_argument("--autotest", action="store_true", help="Build dedicated -DTFTF_AUTOTEST=1 self-test APK")
+    parser.add_argument("--reuse-payload", action="store_true", help="Reuse cached build/payload_test.bin & build/classes3.dex if present")
+    args = parser.parse_args()
+
     branch = get_git_branch()
-    if branch == "redeco":
+    if args.autotest:
+        output_apk_name = "Transformers-9.2-autotest.apk"
+    elif branch == "redeco":
         output_apk_name = "Transformers-9.2-offline-redeco-edition.apk"
     else:
         output_apk_name = f'Transformers-9.2-offline-{branch}.apk'
     output_apk_path = OUT_DIR / output_apk_name
-    print(f"=== Building Offline APK for branch [{branch}] ===")
+    print(f"=== Building {'AUTOTEST ' if args.autotest else ''}Offline APK for branch [{branch}] ===")
     print(f"Target APK: {output_apk_path}")
 
     # 1. Compile native hook
-    print("\n[1/5] Compiling libdothook.so...")
-    subprocess.run([sys.executable, "tools/build_hook.py"], check=True, cwd=ROOT)
+    hook_cmd = [sys.executable, "tools/build_hook.py"]
+    if args.autotest:
+        hook_cmd.append("--autotest")
+    print(f"\n[1/5] Compiling {'libdothook-autotest.so' if args.autotest else 'libdothook.so'}...")
+    subprocess.run(hook_cmd, check=True, cwd=ROOT)
 
     # 2. Export offline payload
-    print("\n[2/5] Regenerating responses and exporting offline payload...")
-    subprocess.run([sys.executable, "Server/gamedata.py"], check=True, cwd=ROOT)
     payload_bin = BUILD_DIR / "payload_test.bin"
-    subprocess.run([
-        sys.executable, "Server/export_payload.py", "--out", str(payload_bin)
-    ], check=True, cwd=ROOT)
+    if args.reuse_payload and payload_bin.exists():
+        print(f"\n[2/5] Reusing cached payload: {payload_bin}")
+    else:
+        print("\n[2/5] Regenerating responses and exporting offline payload...")
+        subprocess.run([sys.executable, "Server/gamedata.py"], check=True, cwd=ROOT)
+        subprocess.run([
+            sys.executable, "Server/export_payload.py", "--out", str(payload_bin)
+        ], check=True, cwd=ROOT)
 
     # 2.5. Build launcher DEX
-    print("\n[2.5/5] Building launcher DEX (classes3.dex)...")
-    subprocess.run([
-        sys.executable, "tools/build_launcher_dex.py", str(BUILD_DIR / "classes3.dex")
-    ], check=True, cwd=ROOT)
+    dex_path = BUILD_DIR / "classes3.dex"
+    if args.reuse_payload and dex_path.exists():
+        print(f"\n[2.5/5] Reusing cached launcher DEX: {dex_path}")
+    else:
+        print("\n[2.5/5] Building launcher DEX (classes3.dex)...")
+        subprocess.run([
+            sys.executable, "tools/build_launcher_dex.py", str(dex_path)
+        ], check=True, cwd=ROOT)
 
     # 3. Build phone unsigned APK
     print("\n[3/5] Packaging unsigned APK...")
@@ -104,7 +127,7 @@ def main():
     unsigned_apk = OUT_DIR / "phone-unsigned.apk"
     patched_il2cpp = BUILD_DIR / "libil2cpp-arm64-patched.so"
 
-    subprocess.run([
+    pack_cmd = [
         sys.executable, "Server/build_phone_apk.py",
         str(base_apk), str(unsigned_apk),
         "--scheme", "http",
@@ -112,8 +135,11 @@ def main():
         "--server-port", "8080",
         "--bundle-server",
         "--payload-bin", str(payload_bin),
-        "--patched-il2cpp", str(patched_il2cpp)
-    ], check=True, cwd=ROOT)
+        "--patched-il2cpp", str(patched_il2cpp),
+    ]
+    if args.autotest:
+        pack_cmd.extend(["--hook-path", str(ROOT / "tools" / "nativehook" / "libdothook-autotest.so")])
+    subprocess.run(pack_cmd, check=True, cwd=ROOT)
 
     # Prepare tools and keystore on C: SSD to ensure 100% silent, zero-HDD steps 4 & 5
     zipalign, apksigner = sync_tools_to_out(OUT_DIR, ROOT)

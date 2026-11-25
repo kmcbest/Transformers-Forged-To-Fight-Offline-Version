@@ -23,6 +23,7 @@
 #include "inapk_server.h"
 #include "skills/skill_dispatcher.h"
 #include "skills/skill_env.h"
+#include "autotest.h"
 #include <jni.h>
 #include <math.h>
 
@@ -58,6 +59,15 @@ static void flog(const char* fmt, ...){
     char buf[1024];
     va_list ap; va_start(ap, fmt); vsnprintf(buf, sizeof buf, fmt, ap); va_end(ap);
     __android_log_print(ANDROID_LOG_INFO, "TFTFHOOK", "%s", buf);
+#ifdef TFTF_AUTOTEST
+    if (strstr(buf, "[AUTOTEST]") || strstr(buf, "SIDESWIPE_") ||
+        strstr(buf, "SKILL_") || strstr(buf, "APPLY_BUFF") ||
+        strstr(buf, "REMOVE_BUFF") || strstr(buf, "HIT_RESULT") ||
+        strstr(buf, "FAULT") || strstr(buf, "VIOLATION") ||
+        strstr(buf, "EVADE") || strstr(buf, "ROLL_CRIT")) {
+        autotest_log_append(buf);
+    }
+#endif
 
     int level = tftf_get_log_level();
     if (level == 0) {
@@ -4580,7 +4590,9 @@ void* hook_123(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
 }
 void* hook_124(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
     tshide_hide(0);
-    return H[124].orig(a0,a1,a2,a3,a4,a5,a6,a7);
+    void* r = H[124].orig(a0,a1,a2,a3,a4,a5,a6,a7);
+    autotest_on_team_select_intro(a0);
+    return r;
 }
 void* hook_125(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
     if (g_ts_screen_active == 0) tshide_restore("TSSHOW");
@@ -5355,6 +5367,7 @@ void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     } else {
         g_p1_controller = NULL;
     }
+    autotest_on_combat_start();
     g_intended_special_tier = 0;
     g_sp_touch_tracking = 0;
     g_p0_block_enter_ms = 0;
@@ -6174,6 +6187,12 @@ void* hook_145(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
                 on_portrait_press_down(g_active_hud_screen);
             }
         }
+#ifdef TFTF_AUTOTEST
+        if (g_p0_controller && obj_ok(g_p0_controller) &&
+            *(uint8_t*)((uintptr_t)g_p0_controller + 0x139) == 1) {
+            autotest_on_simulate_tick(g_p0_controller, 0);
+        }
+#endif
     });
     return r;
 }
@@ -8664,7 +8683,8 @@ void* hook_186(void* this_pc, void* hitResult, void* method) {
             int flags = *(int32_t*)((uintptr_t)hitResult + 0x20);     // HitResultData.Flags
             int hit_idx = *(int32_t*)((uintptr_t)hitResult + 0x30);   // HitResultData.HitIndex
             float dmg = *(float*)((uintptr_t)hitResult + 0x3C);       // HitResultData.Damage
-            if (p_idx == 0 && tftf_get_player_invincible()) {
+            if ((p_idx == 0 && tftf_get_player_invincible()) ||
+                (p_idx == 1 && autotest_is_dummy_invincible())) {
                 *(float*)((uintptr_t)hitResult + 0x3C) = 0.0f;
                 dmg = 0.0f;
             }
@@ -9000,6 +9020,15 @@ void skill_log(const char* fmt, ...) {
     char buf[1024];
     va_list ap; va_start(ap, fmt); vsnprintf(buf, sizeof buf, fmt, ap); va_end(ap);
     __android_log_print(ANDROID_LOG_INFO, "TFTFHOOK", "%s", buf);
+#ifdef TFTF_AUTOTEST
+    if (strstr(buf, "[AUTOTEST]") || strstr(buf, "SIDESWIPE_") ||
+        strstr(buf, "SKILL_") || strstr(buf, "APPLY_BUFF") ||
+        strstr(buf, "REMOVE_BUFF") || strstr(buf, "HIT_RESULT") ||
+        strstr(buf, "FAULT") || strstr(buf, "VIOLATION") ||
+        strstr(buf, "EVADE") || strstr(buf, "ROLL_CRIT")) {
+        autotest_log_append(buf);
+    }
+#endif
     flog("%s", buf);
 }
 
@@ -9278,7 +9307,11 @@ void skill_add_mana(int player_index, float norm_mana) {
             if (next_mana > 1.0f) next_mana = 1.0f;
             if (next_mana < 0.0f) next_mana = 0.0f;
             set_mana(attr, next_mana, NULL);
+#ifdef TFTF_AUTOTEST
+            if (fabsf(norm_mana) >= 0.01f) {
+#else
             if (fabsf(norm_mana) >= 0.1f) {
+#endif
                 flog("SKILL_ADD_MANA: Player %d mana +%.2f (Mana: %.2f -> %.2f)", player_index, norm_mana, cur * 3.0f, next_mana * 3.0f);
             }
         }
@@ -12476,6 +12509,7 @@ static void* hooked_PreFightScreen_WindowEnter(void* self, void* isFirstEntry, v
 static fn8 orig_PreFightScreen_WindowExit = NULL;
 static void* hooked_PreFightScreen_WindowExit(void* self, void* method, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     flog("PREFIGHT_WINDOW_EXIT (0x0E395BC): self=%p", self);
+    autotest_on_prefight_exit();
     PROTECT({
         if (self && obj_ok(self)) {
             void* pres = *(void**)((char*)self + 0xA0); // _presentation
@@ -12579,10 +12613,12 @@ static fn8 orig_PreFightScreen_OnIntroTransitionComplete = NULL;
 static void* hooked_PreFightScreen_OnIntroTransitionComplete(void* self, void* method, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     flog("PREFIGHT_INTRO_COMPLETE (0x00E393C0): self=%p caller=%p", self, __builtin_return_address(0));
     ensure_active_hierarchy(self, "PreFightScreen.OnIntroTransitionComplete");
+    void* ret = NULL;
     if (orig_PreFightScreen_OnIntroTransitionComplete) {
-        return orig_PreFightScreen_OnIntroTransitionComplete(self, method, a2, a3, a4, a5, a6, a7);
+        ret = orig_PreFightScreen_OnIntroTransitionComplete(self, method, a2, a3, a4, a5, a6, a7);
     }
-    return NULL;
+    autotest_on_prefight_ready(self);
+    return ret;
 }
 
 static fn8 orig_PrefightScreenPresentation_InitTowers = NULL;
@@ -14134,6 +14170,7 @@ static void* installer(void* arg){
 
     LOG("install done (%d hooks)", NH);
     skill_dispatcher_init(g_base);
+    autotest_install_hooks(g_base, (autotest_inline_hook_fn)inline_hook, (autotest_strnew_fn)g_strnew, (autotest_objnew_fn)g_objnew);
     return NULL;
 }
 
@@ -14256,6 +14293,7 @@ static void* launcher_thread(void* arg) {
     }
     LOG("[Launcher] Loaded LauncherDialog class: %p", launcherClass);
 
+#ifndef TFTF_AUTOTEST
     jmethodID showMethod = (*env)->GetStaticMethodID(env, launcherClass, "show", "(Landroid/app/Activity;)V");
     if (showMethod) {
         (*env)->CallStaticVoidMethod(env, launcherClass, showMethod, act);
@@ -14263,6 +14301,10 @@ static void* launcher_thread(void* arg) {
     } else {
         LOG("[Launcher] LauncherDialog.show method not found");
     }
+#else
+    (void)launcherClass;
+    LOG("[AUTOTEST] Skipped LauncherDialog.show");
+#endif
 
     // Cache JavaVM and CustomMusicPlayer JNI references
     s_jvm = vm;

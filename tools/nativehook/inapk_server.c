@@ -7,6 +7,7 @@
 #include "inapk_server.h"
 #include "inapk_pvp.h"
 #include "bot_info.h"
+#include "autotest.h"
 
 #include <arpa/inet.h>
 #include <ctype.h>
@@ -545,6 +546,10 @@ int tftf_get_log_level(void) {
 }
 
 int tftf_get_player_invincible(void) {
+#ifdef TFTF_AUTOTEST
+    int at_inv = autotest_override_player_invincible();
+    if (at_inv >= 0) return at_inv;
+#endif
     if (!g_settings_loaded) load_user_settings();
     if (g_user_settings.player_invincible) return 1;
     static const char *paths[] = {
@@ -561,6 +566,10 @@ int tftf_get_player_invincible(void) {
 }
 
 int tftf_get_freeze_enemy_ai(void) {
+#ifdef TFTF_AUTOTEST
+    int at_freeze = autotest_override_freeze_enemy_ai();
+    if (at_freeze >= 0) return at_freeze;
+#endif
     if (!g_settings_loaded) load_user_settings();
     if (g_user_settings.freeze_enemy_ai) return 1;
     static const char *paths[] = {
@@ -1239,6 +1248,17 @@ static int resolve_team(Team *team) {
     roster = lookup("@roster", &rn);
     if (!defaults || !roster || !team_from_lines(defaults, dn, team)) return 0;
 
+#ifdef TFTF_AUTOTEST
+    {
+        const char *at_p0 = autotest_get_p0_bid();
+        if (at_p0 && safe_id(at_p0) && list_has(roster, rn, at_p0)) {
+            team->count = 1;
+            snprintf(team->bid[0], sizeof team->bid[0], "%s", at_p0);
+            return 1;
+        }
+    }
+#endif
+
     pthread_mutex_lock(&g_pos_lock);
     if (!g_config_loaded) {
         g_config_loaded = 1;
@@ -1493,6 +1513,36 @@ static int detect_and_store_lang(const char *headers, const char *query) {
 }
 
 static const unsigned char *dynamic(const char *headers, const char *method, const char *p, const char *query, const char *body, size_t bn, Out *o, size_t *outn) {
+#ifdef TFTF_AUTOTEST
+    if (strstr(p, "/__autotest/scenario")) {
+        if (!ci_equal(method, "GET")) {
+            int rc = autotest_set_scenario_json(body, bn);
+            const char *resp = (rc == 0) ? "{\"ok\":true}" : "{\"ok\":false}";
+            *outn = strlen(resp);
+            return (const unsigned char*)resp;
+        }
+        if (out_reserve(o, 8192)) {
+            size_t len = autotest_get_scenario_json((char*)o->p, 8192);
+            o->n = len;
+            *outn = len;
+            return o->p;
+        }
+    }
+    if (strstr(p, "/__autotest/log")) {
+        if (out_reserve(o, 128 * 1024)) {
+            size_t len = autotest_get_logs((char*)o->p, 128 * 1024);
+            o->n = len;
+            *outn = len;
+            return o->p;
+        }
+    }
+    if (strstr(p, "/__autotest/reset")) {
+        autotest_log_clear();
+        const char *resp = "{\"ok\":true}";
+        *outn = strlen(resp);
+        return (const unsigned char*)resp;
+    }
+#endif
     /* PVP Arena endpoints */
     const unsigned char *pvp_resp = handle_pvp_request(method, p, body, bn, outn);
     if (pvp_resp) {
@@ -2405,6 +2455,18 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
                 snprintf(g_pos[slot].e_bid[k], sizeof g_pos[slot].e_bid[k], "%s", g_enemy_pool[cand]);
                 snprintf(e_bid[k], sizeof e_bid[k], "%s", g_enemy_pool[cand]);
             }
+#ifdef TFTF_AUTOTEST
+            {
+                const char *at_p1 = autotest_get_p1_bid();
+                if (at_p1 && safe_id(at_p1)) {
+                    for (int k = 0; k < 6; k++) {
+                        snprintf(g_pos[slot].e_bid[k], sizeof g_pos[slot].e_bid[k], "%s", at_p1);
+                        snprintf(e_bid[k], sizeof e_bid[k], "%s", at_p1);
+                    }
+                    logmsg("AUTOTEST: forced quest-begin %s enemies -> %s", qid, at_p1);
+                }
+            }
+#endif
         }
         pthread_mutex_unlock(&g_pos_lock);
         snprintf(key,sizeof key,"%s /quests/quest-begin/%s",method,qid);v=lookup(key,&n);if(!v){snprintf(key,sizeof key,"POST /quests/quest-begin/%s",qid);v=lookup(key,&n);}
@@ -2465,6 +2527,16 @@ static const unsigned char *dynamic(const char *headers, const char *method, con
                 if(g_pos[slot].e_bid[k][0]) snprintf(e_bid[k], sizeof e_bid[k], "%s", g_pos[slot].e_bid[k]);
             }
         }
+#ifdef TFTF_AUTOTEST
+        {
+            const char *at_p1 = autotest_get_p1_bid();
+            if (at_p1 && safe_id(at_p1)) {
+                for (int k = 0; k < 6; k++) {
+                    snprintf(e_bid[k], sizeof e_bid[k], "%s", at_p1);
+                }
+            }
+        }
+#endif
         snprintf(key,sizeof key,"@quest:moves:%s",qid);v=lookup(key,&n);int found=0;
         if(v){char *copy=malloc(n+1);if(copy){memcpy(copy,v,n);copy[n]=0;char *line=copy;while(line&&*line){int ax,ay,ad,ae,bx,by;char *next=strchr(line,'\n');if(next)*next++=0;if(sscanf(line,"%d %d %d %d %d %d",&ax,&ay,&ad,&ae,&bx,&by)==6&&ax==sx&&ay==sy&&ad==dx&&ae==dy){nx=bx;ny=by;found=1;break;}line=next;}free(copy);}}
         int blocked_by_battle = 0;

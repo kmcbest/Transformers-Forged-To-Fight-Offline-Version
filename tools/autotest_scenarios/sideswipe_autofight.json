@@ -1,0 +1,15 @@
+{
+  "active": true,
+  "name": "sideswipe_autofight",
+  "qid": "1.1.1",
+  "p0": {
+    "bid": "sideswipe_cin_rotf"
+  },
+  "p1": {
+    "bid": "sideswipe_gs"
+  },
+  "auto_fight": true,
+  "freeze_enemy_ai": false,
+  "dummy_invincible": false,
+  "max_duration_ms": 25000
+}

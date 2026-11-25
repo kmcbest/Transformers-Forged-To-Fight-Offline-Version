@@ -1,0 +1,20 @@
+{
+  "active": true,
+  "name": "sideswipe_ranged_evade",
+  "qid": "1.1.1",
+  "p0": {
+    "bid": "sideswipe_cin_rotf"
+  },
+  "p1": {
+    "bid": "sideswipe_gs"
+  },
+  "auto_fight": true,
+  "freeze_enemy_ai": false,
+  "dummy_invincible": false,
+  "max_duration_ms": 20000,
+  "p0_script": [
+    { "action": "DODGE", "repeat": 1 },
+    { "action": "RANGED", "repeat": 4 },
+    { "action": "WAIT", "duration_ms": 2000 }
+  ]
+}
