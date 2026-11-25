@@ -56,6 +56,7 @@ static void optimus_mv_on_hit_connected(SkillHitContext* ctx) {
     // -----------------------------------------------------------------------
     if (ctx->attacker_bot_id && strstr(ctx->attacker_bot_id, "optimusprime_cin_tf") != NULL) {
         int ap = ctx->attacker_player_index;
+        int tp = ctx->target_player_index;
 
         // 2. [2725] 所有攻击 10% 几率触发近战增益 (4s)
         if (skill_random_float() < 0.10f) {
@@ -97,14 +98,18 @@ static void optimus_mv_on_hit_connected(SkillHitContext* ctx) {
 
             // [2713] SP1 60% 几率施加流血 4 秒
             if (skill_random_float() < 0.60f) {
+                skill_apply_buff(tp, "optimusprime_cin_tf_sp1_bleed");
                 skill_overlay("[%s] SP1 剑舞流血！(60%% 触发, 4s)", ap == 0 ? "电影擎天柱" : "敌方擎天柱");
+                skill_log("OPTIMUS_MV: SP1 applied bleed to P%d", tp);
             }
         }
 
         // 5. [2727] SP2 前两击 90% 几率施加流血 4 秒
-        if (ctx->special_index == 2 && ctx->hit_index < 2) {
+        if (ctx->special_index == 2 && ctx->hit_index >= 0 && ctx->hit_index < 2) {
             if (skill_random_float() < 0.90f) {
+                skill_apply_buff(tp, "optimusprime_cin_tf_sp2_bleed");
                 skill_overlay("[%s] SP2 守卫斩击流血！(90%% 触发, 4s)", ap == 0 ? "电影擎天柱" : "敌方擎天柱");
+                skill_log("OPTIMUS_MV: SP2 hit=%d applied bleed to P%d", ctx->hit_index, tp);
             }
         }
     }

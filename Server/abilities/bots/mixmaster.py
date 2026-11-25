@@ -117,7 +117,7 @@ def build_mixmaster_abilities(base_hp: float = 32402.0, base_atk: float = 2306.0
         total_dmg=float(round(base_atk * 1.34)),
         chance=1.0,
         trigger="onSpecial3Hit",
-        trigger_scope="dmgFlags=LastHit",
+        trigger_scope="",
         callout_text="强酸",
         stackable=True,
         pua_icon="\uE41D",
@@ -136,7 +136,7 @@ def build_mixmaster_abilities(base_hp: float = 32402.0, base_atk: float = 2306.0
         total_dmg=float(round(base_atk * 0.80)),
         chance=0.50,
         trigger="onSpecial1Hit",
-        trigger_scope="dmgFlags=LastHit",
+        trigger_scope="",
         callout_text="酸液",
         stackable=True,
         pua_icon="\uE41D",
@@ -232,7 +232,7 @@ def build_mixmaster_abilities(base_hp: float = 32402.0, base_atk: float = 2306.0
         "uit": ["onSpecial1Hit", "onSpecial2Hit", "onSpecial3Hit"],
         "pri": 0,
         "trm": 0.0,
-        "trs": "dmgFlags=LastHit",
+        "trs": "",
         "trr": "repeat",
         "c": 1.0,
         "m": 1.0,
@@ -264,7 +264,7 @@ def build_mixmaster_abilities(base_hp: float = 32402.0, base_atk: float = 2306.0
         "uit": ["onSpecial1Hit", "onSpecial2Hit", "onSpecial3Hit"],
         "pri": 0,
         "trm": 0.0,
-        "trs": "dmgFlags=LastHit",
+        "trs": "",
         "trr": "repeat",
         "c": 1.0,
         "m": 1.0,
@@ -289,15 +289,15 @@ def build_mixmaster_abilities(base_hp: float = 32402.0, base_atk: float = 2306.0
     mods["mixmaster_consume_crit_buffs"] = mod_sp_consume2
 
     # -------------------------------------------------------------------------
-    # 9. 被动 - 破防暴击 (ID: 3186): 目标有伤害减益时暴击率 +50%
+    # 9. 被动 - 破防暴击 (ID: 3186): 目标有伤害减益时暴击率 +50% (由 skill_mixmaster.c 触发)
     # -------------------------------------------------------------------------
     m_debuff_crit, a_debuff_crit = make_crit_rate_statmod(
         mod_id="mixmaster_debuff_crit_rate",
-        duration=0.0,
+        duration=4.0,
         crit_bonus=0.50,
         chance=1.0,
-        trigger="always",
-        trigger_scope="target_has_debuff=True",
+        trigger="",
+        trigger_scope="",
         appr_id="appr_mixmaster_debuff_crit",
         callout_text="暴击几率",
         pua_icon="\uE406",

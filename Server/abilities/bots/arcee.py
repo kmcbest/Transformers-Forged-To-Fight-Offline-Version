@@ -38,13 +38,19 @@ Bot ID: arcee_gs_deluxe2014
 -----------------------------------------------------------------------------
 """
 
-from ..core import make_bleed_statmod, make_direct_dmg_statmod, make_ranged_boost_statmod
+from ..core import (
+    AbilityColor,
+    make_bleed_statmod,
+    make_crit_rate_statmod,
+    make_direct_dmg_statmod,
+    make_ranged_boost_statmod,
+)
 from ..registry import register_bot
 
 BOT_ID = "arcee_gs_deluxe2014"
 
 
-@register_bot(BOT_ID, name_zh="阿尔茜", desc="爆头直伤与流血、冲锋反制、SP1特技射击远程增益与SP3狙击")
+@register_bot(BOT_ID, name_zh="阿尔茜", desc="远程规避、爆头流血、前冲+50%暴击、暴击回能、SP1远程增益、SP2/3流血与觉醒残暴反规避")
 def build_arcee_abilities(base_hp: float = 34850.0, base_atk: float = 3485.0):
     """
     根据基准属性生成阿尔茜全部专属能力修饰器。
@@ -122,28 +128,26 @@ def build_arcee_abilities(base_hp: float = 34850.0, base_atk: float = 3485.0):
     # 1. 保留原有被动能力：爆头与冲锋反制
     # ==========================================
     # (1) 爆头直接扣血 (60% ATK: 3485 * 0.6 = 2091)
-    # (1) 爆头直接扣血 (60% ATK: 3485 * 0.6 = 2091)
-    # 限制为飞弹/射击判定 (dmgFlags=Projectile)，排除 SP1 起手踢击
+    # 1. 被动能力：爆头与冲锋反制 (由 skill_arcee.c 精确区分踢击、飞弹与冲刺状态并施加)
     m1, a1 = make_direct_dmg_statmod(
         mod_id="arcee_headshot_direct",
         dmg=base_atk * 0.60,
-        chance=0.5,
-        trigger="onCrit",
-        trigger_scope="dmgFlags=Projectile;level=Ranged,Special1",
+        chance=1.0,
+        trigger="",
+        trigger_scope="",
         buff_id="dmg_direct",
+        stackable=True,
     )
     mods.update(m1)
     appears.update(a1)
 
-    # (2) 爆头流血 3 秒 DOT (60% ATK, 50% 几率, 敌非前冲状态)
-    # 限制为飞弹/射击判定 (dmgFlags=Projectile)，排除 SP1 起手踢击
     m2, a2 = make_bleed_statmod(
         mod_id="arcee_headshot_dot",
         duration=3.0,
         total_dmg=base_atk * 0.60,
-        chance=0.5,
-        trigger="onCrit",
-        trigger_scope="dmgFlags=Projectile;level=Ranged,Special1;opponent:state!=Dash,Run",
+        chance=1.0,
+        trigger="",
+        trigger_scope="",
         appr_id="appr_arcee_bleed",
         callout_text="流血",
         buff_id="dmg_bleed",
@@ -151,15 +155,13 @@ def build_arcee_abilities(base_hp: float = 34850.0, base_atk: float = 3485.0):
     mods.update(m2)
     appears.update(a2)
 
-    # (3) 爆头冲锋反制 3 秒流血 (60% ATK, 100% 必发, 敌处于 Dash/Run 状态)
-    # 限制为飞弹/射击判定 (dmgFlags=Projectile)，排除 SP1 起手踢击
     m3, a3 = make_bleed_statmod(
         mod_id="arcee_headshot_rush",
         duration=3.0,
         total_dmg=base_atk * 0.60,
         chance=1.0,
-        trigger="onCrit",
-        trigger_scope="dmgFlags=Projectile;level=Ranged,Special1;opponent:state=Dash,Run",
+        trigger="",
+        trigger_scope="",
         appr_id="appr_arcee_headshot",
         callout_text="爆头",
         buff_id="dmg_bleed",
@@ -206,30 +208,25 @@ def build_arcee_abilities(base_hp: float = 34850.0, base_atk: float = 3485.0):
     mods.update(m_sp2)
     appears.update(a_sp2)
 
-    # ==========================================
-    # 4. 特殊技 3 (SP3): 狙击爆头直伤 + 9 秒流血
-    # ==========================================
-    # 前两击为体术踢腿 (index 0, 1) 不触发，后续4发手枪及1发狙击 (index 2..6) 触发
-    # (1) SP3 爆头直接额外伤害 135% ATK
+    # 4. 特殊技 3 (SP3): 狙击爆头直伤 + 9 秒流血 (由 skill_arcee.c 跳过踢腿段后触发)
     m_sp3_dir, a_sp3_dir = make_direct_dmg_statmod(
         mod_id="arcee_sp3_snipe_direct",
         dmg=float(round(base_atk * 1.35)),
         chance=1.0,
-        trigger="onSpecial3Hit",
-        trigger_scope="index!=0,1",
+        trigger="",
+        trigger_scope="",
         buff_id="dmg_direct",
     )
     mods.update(m_sp3_dir)
     appears.update(a_sp3_dir)
 
-    # (2) SP3 爆头流血 9 秒 DOT 135% ATK
     m_sp3_dot, a_sp3_dot = make_bleed_statmod(
         mod_id="arcee_sp3_snipe_bleed",
         duration=9.0,
         total_dmg=float(round(base_atk * 1.35)),
         chance=1.0,
-        trigger="onSpecial3Hit",
-        trigger_scope="index!=0,1",
+        trigger="",
+        trigger_scope="",
         appr_id="appr_arcee_sp3_bleed",
         callout_text="狙击",
         pua_icon="\uE401",
@@ -237,5 +234,22 @@ def build_arcee_abilities(base_hp: float = 34850.0, base_atk: float = 3485.0):
     )
     mods.update(m_sp3_dot)
     appears.update(a_sp3_dot)
+
+    # 5. 觉醒技 (Signature): 守卫者的残暴 (由 skill_arcee.c 在释放 SP 时 80% 概率触发: +25% 暴击率 + 反规避, 10s)
+    m_sig, a_sig = make_crit_rate_statmod(
+        mod_id="arcee_sig_ferocity",
+        duration=10.0,
+        crit_bonus=0.25,
+        chance=1.0,
+        trigger="",
+        trigger_scope="",
+        appr_id="appr_arcee_sig_ferocity",
+        callout_text="守卫者残暴",
+        pua_icon="\uE40D",
+        color_hex=AbilityColor.YELLOW_STATUS_TC,
+        gradient_bottom=AbilityColor.YELLOW_STATUS_GB,
+    )
+    mods.update(m_sig)
+    appears.update(a_sig)
 
     return mods, appears, buffs

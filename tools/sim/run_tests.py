@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 """
-TFTF Combat Simulator Automated Quality Gate Test Suite (Enhanced)
-==================================================================
-Tests all native skill logic, data contracts, and IL2CPP engine lifecycles
-in < 0.5s without needing a mobile device or APK installation.
+TFTF Combat Simulator Math & Formula Test Suite
+================================================
+注意 (二层收口架构定位调整):
+  本模拟器 (tools/sim/) 仅用于验证复杂纯数学公式与私有时间状态机算术
+  (如吸血百分比、充能层数计时、伤害倍率公式)。
+  它不执行真实 IL2CPP StatModifierController / BuffTriggerFactory 条件解析，
+  不能代替真实能力触发链路验收；真实触发与伤害终验以 tools/run_autotest.py 为准。
 """
 import sys
 import json

@@ -104,8 +104,8 @@ def build_sunstreaker_abilities(base_hp: float = 30000.0, base_atk: float = 3000
     m_unstopp, a_unstopp = make_unstoppable_statmod(
         mod_id="sunstreaker_low_hp_unstoppable",
         duration=5.0,
-        trigger="onHealthThreshold",
-        trigger_scope="hp_threshold=0.40",
+        trigger="",
+        trigger_scope="",
         appr_id="appr_sunstreaker_unstoppable",
         callout_text="不可阻挡",
         show_callout=True,

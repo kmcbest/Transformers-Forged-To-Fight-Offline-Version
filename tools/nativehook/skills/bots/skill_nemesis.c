@@ -121,6 +121,22 @@ static void nemesis_on_buff_applied(SkillBuffAppliedContext* ctx) {
     }
 }
 
+static int nemesis_on_test_roll(SkillTestRollContext* ctx, int* out_res) {
+    if (!ctx || !ctx->modifier_id || !out_res) return 0;
+
+    if (strcmp(ctx->modifier_id, "nemesisprime_dark_cd") == 0) {
+        if (ctx->p_chance) *ctx->p_chance = 1.0f;
+        if (ctx->p_roll) *ctx->p_roll = 0.0f;
+        *out_res = 1; // 开局自动激活紫色 E407 倒计时图标
+        return 1;
+    }
+    if (strcmp(ctx->modifier_id, "nemesisprime_dark_energy") == 0) {
+        *out_res = 0; // 待倒计时走完后叠加
+        return 1;
+    }
+    return 0;
+}
+
 static void nemesis_on_fight_reset(int player_index) {
     if (player_index >= 0 && player_index < 2) {
         s_nemesis_active[player_index]           = 0;
@@ -132,11 +148,12 @@ static void nemesis_on_fight_reset(int player_index) {
 
 BotSkillModule g_module_nemesis = {
     .bot_prefix         = "nemesisprime",
+    .display_name_zh    = "暗黑擎天柱",
     .on_hit_connected   = nemesis_on_hit_connected,
     .on_buff_gated      = NULL,
     .on_buff_applied    = nemesis_on_buff_applied,
     .on_evade_check     = NULL,
-    .on_test_roll       = NULL,
+    .on_test_roll       = nemesis_on_test_roll,
     .on_fight_reset     = nemesis_on_fight_reset,
     .on_simulation_tick = nemesis_on_simulation_tick,
 };

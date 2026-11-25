@@ -50,6 +50,7 @@ static void bludgeon_on_hit_connected(SkillHitContext* ctx) {
     const char* atk_id = ctx->attacker_bot_id;
 
     if (atk_id && strstr(atk_id, "bludgeon") != NULL) {
+        int tp = ctx->target_player_index;
         s_bludgeon_attack_connected[ap] = 1;
 
         // 钢铠法消耗：下一次暴击命中时消耗 +250% 暴伤增益
@@ -59,6 +60,39 @@ static void bludgeon_on_hit_connected(SkillHitContext* ctx) {
                 skill_overlay("[%s] 钢铠法爆发！+250%%暴击斩击！", ap == 0 ? "雷震" : "敌方雷震");
                 skill_log("BLUDGEON: Metallikato consumed on critical hit by P%d (+250%% crit damage proc)", ap);
             }
+        }
+
+        // SP1 末击：50% 几率施加 6 秒流血
+        if (ctx->special_index == 1 && ctx->is_last_hit) {
+            if (skill_random_float() < 0.50f) {
+                skill_apply_buff_dur(tp, "bludgeon_sp1_bleed", 6.0f);
+                skill_log("BLUDGEON: SP1 lastHit applied bludgeon_sp1_bleed (6.0s) to P%d", tp);
+            }
+        }
+
+        // SP2 末击：64% 几率施加 2.5 秒眩晕
+        if (ctx->special_index == 2 && ctx->is_last_hit) {
+            if (skill_random_float() < 0.64f) {
+                skill_apply_buff_dur(tp, "bludgeon_sp2_stun", 2.5f);
+                skill_log("BLUDGEON: SP2 lastHit applied bludgeon_sp2_stun (2.5s) to P%d", tp);
+            }
+        }
+
+        // SP3 末击：90% 几率施加 3.5 秒眩晕
+        if (ctx->special_index == 3 && ctx->is_last_hit) {
+            if (skill_random_float() < 0.90f) {
+                skill_apply_buff_dur(tp, "bludgeon_sp3_stun", 3.5f);
+                skill_log("BLUDGEON: SP3 lastHit applied bludgeon_sp3_stun (3.5s) to P%d", tp);
+            }
+        }
+    }
+
+    // 雷震作为防守方：被暴击命中时 60% 几率获得 7 秒 51% 护甲增益
+    if (ctx->target_bot_id && strstr(ctx->target_bot_id, "bludgeon") != NULL && ctx->is_crit) {
+        int tp = ctx->target_player_index;
+        if (skill_random_float() < 0.60f) {
+            skill_apply_buff_dur(tp, "bludgeon_crit_struck_armor", 7.0f);
+            skill_log("BLUDGEON: Struck crit by P%d, gained bludgeon_crit_struck_armor (7.0s) on P%d", ap, tp);
         }
     }
 }

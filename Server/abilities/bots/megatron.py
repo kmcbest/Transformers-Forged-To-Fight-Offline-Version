@@ -151,11 +151,11 @@ def build_megatron_abilities(base_hp: float = 31000.0, base_atk: float = 2450.0)
         "id": "megatron_sp2_atk_debuff",
         "t": "attack_debuff",
         "tm": "",
-        "tr": ["onHit"],
-        "uit": ["onHit"],
+        "tr": ["onSpecial2Hit"],
+        "uit": ["onSpecial2Hit"],
         "pri": 0,
         "trm": 0.0,
-        "trs": "level=Special2;isLastHit=true",
+        "trs": "",
         "trr": "repeat",
         "c": 1.0,
         "m": 0.44,
@@ -186,8 +186,8 @@ def build_megatron_abilities(base_hp: float = 31000.0, base_atk: float = 2450.0)
         duration=20.0,
         total_dmg=float(round(base_atk * 3.00)),
         chance=1.0,
-        trigger="onHit",
-        trigger_scope="level=Special3;isLastHit=true",
+        trigger="onSpecial3Hit",
+        trigger_scope="",
         appr_id="appr_megatron_sp3_shock",
         callout_text="震击",
         show_callout=True,
@@ -204,8 +204,8 @@ def build_megatron_abilities(base_hp: float = 31000.0, base_atk: float = 2450.0)
         duration=10.0,
         break_amount=0.38,
         chance=1.0,
-        trigger="onHit",
-        trigger_scope="level=Special1;isLastHit=true",
+        trigger="onSpecial1Hit",
+        trigger_scope="",
         appr_id="appr_megatron_sp1_armor_break",
         callout_text="破甲",
         show_callout=True,
@@ -304,11 +304,11 @@ def build_megatron_abilities(base_hp: float = 31000.0, base_atk: float = 2450.0)
     mods["megatron_fusion_overload"] = mod_overload
     appears["appr_megatron_fusion_overload"] = appr_overload
 
-    # 7. ID 3126: 被击倒后触发 3 秒不可阻挡
+    # 7. ID 3126: 被击倒后触发 3 秒不可阻挡 (由 skill_megatron.c on_hitreact_enter 施加)
     m_unstoppable, a_unstoppable = make_unstoppable_statmod(
         mod_id="megatron_knockdown_unstoppable",
         duration=3.0,
-        trigger="onKnockdown",
+        trigger="",
         trigger_scope="",
         appr_id="appr_megatron_unstoppable",
         callout_text="不可阻挡",

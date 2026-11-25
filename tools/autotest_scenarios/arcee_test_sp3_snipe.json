@@ -1,0 +1,38 @@
+{
+  "active": true,
+  "name": "arcee_test_sp3_snipe",
+  "qid": "1.1.1",
+  "player_invincible": 1,
+  "p0": {
+    "bid": "arcee_gs_deluxe2014",
+    "mana": 3.0
+  },
+  "p1": {
+    "bid": "bonecrusher_cin_rotf",
+    "freeze_ai": true,
+    "invincible_dummy": true
+  },
+  "auto_fight": false,
+  "max_duration_ms": 16000,
+  "p0_script": [
+    { "action": "WAIT", "duration_ms": 1000 },
+    { "action": "SP3", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 8000 }
+  ],
+  "assertions": {
+    "must_hit_connected": [
+      { "attacker": "P0", "sp": 3, "min_count": 1 }
+    ],
+    "must_apply_buffs": [
+      { "target": "P1", "mod_substr": "arcee_sp3_snipe_direct", "min_count": 1 },
+      { "target": "P1", "mod_substr": "arcee_sp3_snipe_bleed", "min_count": 1 }
+    ],
+    "must_dot_tick": [
+      { "target": "P1", "min_ticks": 3, "min_dmg": 1.0 }
+    ],
+    "must_log_substrings": [
+      { "substr": "ARCEE_SP3_SNIPE", "min_count": 1 }
+    ],
+    "min_p1_damage": 2000.0
+  }
+}

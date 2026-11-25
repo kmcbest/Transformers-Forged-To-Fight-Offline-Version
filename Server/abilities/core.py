@@ -9,7 +9,13 @@ TFTF Combat Ability Core Engine & Mechanic Templates
   3. 执行严格的底层契约与类型安全校验（颜色纯6位十六进制、数值截断防护、列表包装等）。
 """
 
+import json
+import re
+from pathlib import Path
 from typing import Dict, Any, Tuple, List, Optional, Union
+
+_CONTRACT_SCHEMA_CACHE: Optional[Dict[str, Any]] = None
+_TRS_COND_RE = re.compile(r"^([\w\.]+)(=|<=|>=|!=|>|<)(.+)$")
 
 
 # ===========================================================================
@@ -111,6 +117,105 @@ def validate_appear(appr: Dict[str, Any]):
             validate_color_code(appr[c_field], f"{appr_id}.{c_field}")
 
 
+def load_ability_contract_schema() -> Dict[str, Any]:
+    """加载仓库内唯一机器契约白名单 Server/abilities/contract_schema.json。"""
+    global _CONTRACT_SCHEMA_CACHE
+    if _CONTRACT_SCHEMA_CACHE is None:
+        schema_path = Path(__file__).resolve().parent / "contract_schema.json"
+        _CONTRACT_SCHEMA_CACHE = json.loads(schema_path.read_text(encoding="utf-8"))
+    return _CONTRACT_SCHEMA_CACHE
+
+
+def _strip_target_prefix(expr: str) -> str:
+    """剥离客户端 BuffUtils.SplitTargetFromOperand 支持的 self:/opponent: 前缀。"""
+    for prefix in ("self:", "opponent:"):
+        if expr.startswith(prefix):
+            return expr[len(prefix):]
+    return expr
+
+
+def _norm_tr(trigger: Union[str, List[str], Tuple[str, ...], None]) -> List[str]:
+    """将触发器参数归一化为 List[str]；当传入空字符串/None/[] 时返回 [] 供 C 模块主动施加。"""
+    if not trigger:
+        return []
+    if isinstance(trigger, (list, tuple)):
+        return [str(x) for x in trigger if str(x)]
+    s = str(trigger).strip()
+    return [s] if s else []
+
+
+def validate_statmod_schema(mod: Dict[str, Any], schema: Optional[Dict[str, Any]] = None) -> List[str]:
+    """
+    依据 contract_schema.json 对机器人 StatMod 执行二层收口白名单校验。
+    返回契约违规错误列表（空列表表示通过）。
+    """
+    if schema is None:
+        schema = load_ability_contract_schema()
+
+    errors: List[str] = []
+    mod_id = str(mod.get("id", "unknown"))
+
+    allowed_triggers = set(schema.get("allowed_triggers", []))
+    allowed_trs_keys = set(schema.get("allowed_trs_keys_bots", []))
+    forbidden_trs_keys = schema.get("forbidden_trs_keys", {})
+    allowed_levels = set(schema.get("allowed_attack_levels", []))
+
+    for field in ("tr", "uit"):
+        trig_list = mod.get(field) or []
+        if not isinstance(trig_list, list):
+            errors.append(f"StatMod [{mod_id}] 字段 '{field}' 必须为 list")
+            continue
+        for raw_trig in trig_list:
+            base_trig = _strip_target_prefix(str(raw_trig))
+            if base_trig and base_trig not in allowed_triggers:
+                errors.append(
+                    f"StatMod [{mod_id}] {field} 包含未在契约白名单中的触发器 '{raw_trig}'"
+                )
+
+    trs = str(mod.get("trs", "") or "")
+    if trs:
+        for segment in trs.split(";"):
+            seg = segment.strip()
+            if not seg:
+                errors.append(f"StatMod [{mod_id}] trs='{trs}' 含多余空分号或空白")
+                continue
+            if seg != segment:
+                errors.append(f"StatMod [{mod_id}] trs='{trs}' 含非法前后空格（客户端正则会解析失败）")
+                continue
+            match = _TRS_COND_RE.match(seg)
+            if not match:
+                errors.append(
+                    f"StatMod [{mod_id}] trs 段 '{seg}' 不符合客户端正则 ([\\w\\.]+)(=|<=|>=|!=|>|<)(.+)"
+                )
+                continue
+
+            lhs = match.group(1)
+            op = match.group(2)
+            rhs = match.group(3)
+            bare_key = _strip_target_prefix(lhs)
+
+            if op == "==":
+                errors.append(f"StatMod [{mod_id}] trs='{seg}' 禁止使用 '=='，客户端仅支持单等号 '='")
+
+            if lhs in forbidden_trs_keys:
+                errors.append(f"StatMod [{mod_id}] trs='{seg}' 违规键 '{lhs}': {forbidden_trs_keys[lhs]}")
+            elif bare_key in forbidden_trs_keys:
+                errors.append(f"StatMod [{mod_id}] trs='{seg}' 违规键 '{bare_key}': {forbidden_trs_keys[bare_key]}")
+            elif bare_key not in allowed_trs_keys:
+                errors.append(
+                    f"StatMod [{mod_id}] trs='{seg}' 使用了未列入二层收口白名单的键 '{lhs}' "
+                    f"(仅允许: {', '.join(sorted(allowed_trs_keys))})"
+                )
+            elif bare_key == "level":
+                for lv in rhs.split(","):
+                    if lv not in allowed_levels:
+                        errors.append(
+                            f"StatMod [{mod_id}] trs='{seg}' 含未知 AttackLevel '{lv}'"
+                        )
+
+    return errors
+
+
 def make_statmod_appearance(
     appr_id: str,
     callout_text: str = "",
@@ -174,12 +279,10 @@ def make_condition_scope(
     extra: str = "",
 ) -> str:
     """
-    生成标准触发作用域/前置条件字符串 (Trigger Scope / trs):
-    - self_status: 自身所需处于的 buff/debuff 状态 (如 "dmg_bleed", "armor_up") -> "self.status=dmg_bleed"
-    - opp_status: 对手所需处于的 buff/debuff 状态 (如 "dmg_burn", "armor_break") -> "opp.status=dmg_burn"
-    - level: 攻击类型 (如 "Light,Medium,Heavy", "Special1", "Heavy") -> "level=Heavy"
-    - is_last_hit: 是否为连招或特殊技最终击 (True -> "isLastHit=true")
-    - state: 角色姿态状态 (如 "Block", "Dodge") -> "state=Block"
+    [DEPRECATED] 生成触发作用域/前置条件字符串 (Trigger Scope / trs)。
+    注意：按极简二层收口规范，严禁再使用 is_last_hit=True / self_status / opp_status 等参数；
+    多段命中与动态状态联动必须收口到 tools/nativehook/skills/bots/skill_*.c 中处理。
+    本函数仅在存量清账期间暂保留兼容，清零后将移除上述旧参数。
     """
     parts = []
     if level:
@@ -255,7 +358,7 @@ def make_bleed_statmod(
         "id": mod_id,
         "t": buff_id,        # 绑定至 buffs_set 中的 dmg_bleed
         "tm": "",
-        "tr": [trigger],
+        "tr": _norm_tr(trigger),
         "uit": [],
         "pri": 0,
         "trm": 0.0,
@@ -297,6 +400,8 @@ def make_direct_dmg_statmod(
     target_scope: str = "none",
     target_actor: str = "opponent",
     mod_type: str = "passive",
+    stackable: bool = False,
+    duration: float = 0.5,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """
     通用即时额外直接伤害 (Direct Damage) 工厂：
@@ -306,21 +411,21 @@ def make_direct_dmg_statmod(
         "id": mod_id,
         "t": buff_id,
         "tm": "",
-        "tr": [trigger],
-        "uit": [trigger],
+        "tr": _norm_tr(trigger),
+        "uit": _norm_tr(trigger),
         "pri": 0,
         "trm": 0.0,
         "trs": trigger_scope,
         "trr": "repeat",
         "c": float(chance),
         "m": float(dmg),
-        "d": 0.5,            # 短持续时间
+        "d": float(duration),
         "s": target_scope,
         "ta": target_actor,
         "mt": mod_type,
         "v": "",
         "ms": "",
-        "st": 0,
+        "st": 10 if stackable else 0,
         "g": "",
         "gc": 0.0,
         "gcv": "",
@@ -381,7 +486,7 @@ def make_unstoppable_statmod(
         "id": mod_id,
         "t": "unstoppable",
         "tm": "",
-        "tr": [trigger],
+        "tr": _norm_tr(trigger),
         "uit": [],
         "pri": 0,
         "trm": 0.0,
@@ -419,7 +524,7 @@ def make_unstoppable_statmod(
             "id": vfx_mod_id,
             "t": "play_move",
             "tm": vfx_move,
-            "tr": [trigger],
+            "tr": _norm_tr(trigger),
             "uit": [],
             "pri": 0,
             "trm": 0.0,
@@ -495,8 +600,8 @@ def make_ranged_boost_statmod(
         "id": mod_id,
         "t": "ranged_buff",
         "tm": "",
-        "tr": [trigger],
-        "uit": [trigger] if show_callout else [],
+        "tr": _norm_tr(trigger),
+        "uit": _norm_tr(trigger) if show_callout else [],
         "pri": 0,
         "trm": 0.0,
         "trs": trigger_scope,
@@ -576,7 +681,7 @@ def make_shock_statmod(
         "id": mod_id,
         "t": "dmg_shock",
         "tm": "",
-        "tr": [trigger],
+        "tr": _norm_tr(trigger),
         "uit": [],
         "pri": 0,
         "trm": 0.0,
@@ -653,8 +758,8 @@ def make_power_leak_statmod(
         "id": mod_id,
         "t": "power_gain",
         "tm": "",
-        "tr": [trigger],
-        "uit": [trigger],
+        "tr": _norm_tr(trigger),
+        "uit": _norm_tr(trigger),
         "pri": 0,
         "trm": 0.0,
         "trs": trigger_scope,
@@ -727,7 +832,7 @@ def make_stun_statmod(
         "id": mod_id,
         "t": "stun",
         "tm": "",
-        "tr": [trigger],
+        "tr": _norm_tr(trigger),
         "uit": [],
         "pri": 0,
         "trm": 0.0,
@@ -805,8 +910,8 @@ def make_nullify_statmod(
         "id": mod_id,
         "t": "nullify",
         "tm": "",
-        "tr": [trigger],
-        "uit": [trigger],
+        "tr": _norm_tr(trigger),
+        "uit": _norm_tr(trigger),
         "pri": 0,
         "trm": 0.0,
         "trs": trigger_scope,
@@ -901,8 +1006,8 @@ def make_evade_grant_statmod(
         "id": mod_id,
         "t": buff_template_id,
         "tm": "",
-        "tr": [trigger],
-        "uit": [trigger],
+        "tr": _norm_tr(trigger),
+        "uit": _norm_tr(trigger),
         "pri": 0,
         "trm": 0.0,
         "trs": trigger_scope,
@@ -1047,7 +1152,7 @@ def make_crit_rate_statmod(
         "id": mod_id,
         "t": "crit_rate",
         "tm": "",
-        "tr": [trigger],
+        "tr": _norm_tr(trigger),
         "uit": [],
         "pri": 0,
         "trm": 0.0,
@@ -1122,7 +1227,7 @@ def make_crit_damage_statmod(
         "id": mod_id,
         "t": "crit_damage",
         "tm": "",
-        "tr": [trigger],
+        "tr": _norm_tr(trigger),
         "uit": [],
         "pri": 0,
         "trm": 0.0,
@@ -1197,7 +1302,7 @@ def make_remove_statmod(
         "id": mod_id,
         "t": "remove",
         "tm": target_mod_id,
-        "tr": [trigger],
+        "tr": _norm_tr(trigger),
         "uit": [],
         "pri": 0,
         "trm": 0.0,
@@ -1277,7 +1382,7 @@ def make_armor_up_statmod(
         "id": mod_id,
         "t": "armor_up",
         "tm": "",
-        "tr": [trigger],
+        "tr": _norm_tr(trigger),
         "uit": [],
         "pri": 0,
         "trm": 0.0,
@@ -1357,7 +1462,7 @@ def make_armor_break_statmod(
         "id": mod_id,
         "t": "armor_break",
         "tm": "",
-        "tr": [trigger],
+        "tr": _norm_tr(trigger),
         "uit": [],
         "pri": 0,
         "trm": 0.0,
@@ -1438,7 +1543,7 @@ def make_attack_boost_statmod(
         "id": mod_id,
         "t": "attack_buff",
         "tm": "",
-        "tr": [trigger],
+        "tr": _norm_tr(trigger),
         "uit": [],
         "pri": 0,
         "trm": 0.0,
@@ -1521,7 +1626,7 @@ def make_burn_statmod(
         "id": mod_id,
         "t": "dmg_burn",
         "tm": "",
-        "tr": [trigger],
+        "tr": _norm_tr(trigger),
         "uit": [],
         "pri": 0,
         "trm": 0.0,
@@ -1593,8 +1698,8 @@ def make_power_lock_statmod(
         "id": mod_id,
         "t": "power_lock",
         "tm": "",
-        "tr": [trigger],
-        "uit": [trigger],
+        "tr": _norm_tr(trigger),
+        "uit": _norm_tr(trigger),
         "pri": 0,
         "trm": 0.0,
         "trs": trigger_scope,
@@ -1680,8 +1785,8 @@ def make_heal_statmod(
         "id": mod_id,
         "t": buff_id,
         "tm": "",
-        "tr": [trigger],
-        "uit": [trigger] if show_callout else [],
+        "tr": _norm_tr(trigger),
+        "uit": _norm_tr(trigger) if show_callout else [],
         "pri": 0,
         "trm": 0.0,
         "trs": trigger_scope,

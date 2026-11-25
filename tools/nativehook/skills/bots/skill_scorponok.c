@@ -89,6 +89,15 @@ static void scorponok_on_fight_reset(int player_index) {
     }
 }
 
+static void scorponok_on_special_state(int player_index, int sp_level, int entered) {
+    if (player_index < 0 || player_index >= 2 || entered != 0 || sp_level != 2) return;
+    const char* bid = skill_get_bot_id(player_index);
+    if (!bid || strstr(bid, "scorponok") == NULL) return;
+    int opp = 1 - player_index;
+    skill_apply_buff_dur(opp, "scorponok_venom_backfire_sp2", 12.0f);
+    skill_log("SCORPONOK: P%d SP2 expired -> applied scorponok_venom_backfire_sp2 (12.0s) to P%d", player_index, opp);
+}
+
 BotSkillModule g_module_scorponok = {
     .bot_prefix       = "scorponok",
     .on_hit_connected = scorponok_on_hit_connected,
@@ -97,4 +106,5 @@ BotSkillModule g_module_scorponok = {
     .on_evade_check   = NULL,
     .on_test_roll     = NULL,
     .on_fight_reset   = scorponok_on_fight_reset,
+    .on_special_state = scorponok_on_special_state,
 };

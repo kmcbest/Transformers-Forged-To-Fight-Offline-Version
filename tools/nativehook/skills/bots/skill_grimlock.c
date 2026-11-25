@@ -48,6 +48,12 @@ static void grimlock_on_hit_connected(SkillHitContext* ctx) {
     // 钢锁作为攻击方：应用恐龙之怒及各项近战增益加成 (受击近战+25%、SP1+40%、SP2+60%、怒气+30%/层)
     if (ctx->attacker_bot_id && strstr(ctx->attacker_bot_id, "grimlock") != NULL) {
         int ap = ctx->attacker_player_index;
+        int tp = ctx->target_player_index;
+        if (ctx->special_index == 1 && ctx->is_last_hit) {
+            skill_apply_buff_dur(tp, "grimlock_sp1_burn", 4.0f);
+            skill_overlay("[%s] 烈焰吐息！施加燃烧！", ap == 0 ? "钢锁" : "敌方钢锁");
+            skill_log("GRIMLOCK: SP1 lastHit applied grimlock_sp1_burn (4.0s) to P%d", tp);
+        }
         if (!ctx->is_ranged) {
             float boost = 1.0f;
             if (s_rage_melee_stacks[ap] > 0) {

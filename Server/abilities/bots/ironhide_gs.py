@@ -39,7 +39,7 @@ def build_ironhide_gs_abilities(base_hp: float = 32000.0, base_atk: float = 2400
         duration=8.0,
         attack_bonus=0.35,
         chance=1.0,
-        trigger="onSpecial1Expiry",
+        trigger="",
         appr_id="appr_ironhide_sp1_melee_buff",
         callout_text="近战增益",
         show_callout=True,
@@ -52,7 +52,7 @@ def build_ironhide_gs_abilities(base_hp: float = 32000.0, base_atk: float = 2400
     m_sp2_u, a_sp2_u = make_unstoppable_statmod(
         mod_id="ironhide_sp2_unstoppable",
         duration=7.0,
-        trigger="onSpecial2Expiry",
+        trigger="",
         appr_id="appr_ironhide_sp2_unstoppable",
         callout_text="不可阻挡",
         show_callout=True,
@@ -67,7 +67,7 @@ def build_ironhide_gs_abilities(base_hp: float = 32000.0, base_atk: float = 2400
         duration=10.0,
         armor_bonus=0.12,  # 3层各4% = 12%
         chance=1.0,
-        trigger="onSpecial2Expiry",
+        trigger="",
         appr_id="appr_ironhide_sp2_armor_up",
         callout_text="护甲",
         show_callout=True,

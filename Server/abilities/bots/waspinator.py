@@ -61,8 +61,8 @@ def build_waspinator_abilities(base_hp: float = 29598.0, base_atk: float = 2191.
         duration=5.0,
         total_dmg=float(round(base_atk * 1.00)),
         chance=1.0,
-        trigger="onHit",
-        trigger_scope="level=Special3;dmgFlags=LastHit",
+        trigger="onSpecial3Hit",
+        trigger_scope="",
         callout_text="燃烧",
         stackable=True,
         pua_icon="\uE41D",
@@ -71,14 +71,14 @@ def build_waspinator_abilities(base_hp: float = 29598.0, base_atk: float = 2191.
     appears.update(a1)
 
     # -------------------------------------------------------------------------
-    # 2. 觉醒技 - 远程射速增益 (ID: 3471): HP < 50% 射速 +50%
+    # 2. 觉醒技 - 远程射速增益 (ID: 3471): HP < 50% 射速 +50% (由 skill_waspinator.c 触发)
     # -------------------------------------------------------------------------
     m_sig_rng, a_sig_rng = make_ranged_boost_statmod(
         mod_id="waspinator_sig_ranged_speed",
         duration=0.0,
         speed_bonus=0.50,
-        trigger="always",
-        trigger_scope="hp<=0.50",
+        trigger="",
+        trigger_scope="",
         appr_id="appr_waspinator_sig_ranged",
         callout_text="远程增益",
         pua_icon="\uE41B",
@@ -89,14 +89,14 @@ def build_waspinator_abilities(base_hp: float = 29598.0, base_atk: float = 2191.
     appears.update(a_sig_rng)
 
     # -------------------------------------------------------------------------
-    # 3. 被动 - 远程射速增益 (ID: 3472): HP < 50% 获得远程增益
+    # 3. 被动 - 远程射速增益 (ID: 3472): HP < 50% 获得远程增益 (由 skill_waspinator.c 触发)
     # -------------------------------------------------------------------------
     m_pass_rng, a_pass_rng = make_ranged_boost_statmod(
         mod_id="waspinator_passive_ranged_speed",
         duration=0.0,
         speed_bonus=0.50,
-        trigger="always",
-        trigger_scope="hp<=0.50",
+        trigger="",
+        trigger_scope="",
         appr_id="appr_waspinator_pass_ranged",
         callout_text="远程增益",
         pua_icon="\uE41B",
@@ -133,11 +133,11 @@ def build_waspinator_abilities(base_hp: float = 29598.0, base_atk: float = 2191.
         "id": "waspinator_low_hp_sp_dmg",
         "t": "special_damage",
         "tm": "",
-        "tr": ["always"],
-        "uit": ["always"],
+        "tr": [],
+        "uit": [],
         "pri": 0,
         "trm": 0.0,
-        "trs": "hp<=0.25",
+        "trs": "",
         "trr": "repeat",
         "c": 1.0,
         "m": 1.30,
@@ -245,7 +245,7 @@ def build_waspinator_abilities(base_hp: float = 29598.0, base_atk: float = 2191.
         "uit": ["onSpecial1Hit"],
         "pri": 0,
         "trm": 0.0,
-        "trs": "dmgFlags=LastHit",
+        "trs": "",
         "trr": "repeat",
         "c": 1.0,
         "m": 0.30,
@@ -278,7 +278,7 @@ def build_waspinator_abilities(base_hp: float = 29598.0, base_atk: float = 2191.
         break_amount=0.30,
         chance=1.0,
         trigger="onSpecial2Hit",
-        trigger_scope="dmgFlags=LastHit",
+        trigger_scope="",
         appr_id="appr_waspinator_sp2_resist",
         callout_text="抗性削减",
         pua_icon="\uE60A",

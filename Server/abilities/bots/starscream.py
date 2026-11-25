@@ -62,8 +62,8 @@ def build_starscream_abilities(base_hp: float = 34626.0, base_atk: float = 2859.
         evade_type="melee",
         duration=0.5,
         chance=0.20,
-        trigger="onIncomingHit",
-        trigger_scope="level=Heavy",
+        trigger="",
+        trigger_scope="",
         appr_id="appr_starscream_evade",
         callout_text="规避",
     )

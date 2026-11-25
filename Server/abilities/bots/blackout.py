@@ -21,9 +21,9 @@ Bot ID: blackout_cin_tf
 4. [被动 - 燃烧 / Heavy Attack Burn] (PUA: \uE41D)
    - 重击如果暴击，100%概率造成燃烧，施加攻击力80%的伤害，持续6秒。
 
-5. [特殊技 1 - 能量炮 / SP1 Unblockable & Crit Damage Boost] (PUA: \uE41F, \uE906)
+5. [特殊技 1 - 能量炮 / SP1 Unblockable & Special Damage Boost] (PUA: \uE41F, \uE41C)
    - 最后1击不可防御 // 最后一击的时间内出现浅紫色图标 (由 skill_blackout.c 精准控制时间窗)
-   - 技能期间提升30%的暴击伤害 (SP1 进入挂载，SP1 退出立即移除)。
+   - 技能期间提升30%的特殊伤害 (SP1 进入挂载，SP1 退出立即移除)。
 
 6. [特殊技 2 - 翼刃回旋 / SP2 Crit Damage & Stackable Bleed] (PUA: \uE906, \uE401)
    - 技能期间提升60%的暴击伤害 (SP2 启动挂载，SP2 退出立即移除)
@@ -34,7 +34,7 @@ Bot ID: blackout_cin_tf
    - 最后一击命中时，向对手施加1层永久暴击抗性减益，在对手身上打出暴击的几率提升20%。//可叠加 (st=99, 由 SP3 终击或退出结算施加 1 层)
 
 8. [觉醒能力 - 追猎 / I'll Hunt You Down!] (PUA: \uE608)
-   - 当眩晕的普通攻击落空时，他猎杀对手的渴望变得更强，获得1层60%的能量功率增益，持续4秒
+   - 当眩晕的普通攻击落空时，他猎杀对手的渴望变得更强，获得1层60%的能量功率增益，持续3秒
    - //仅近战、远程、重击落空（未命中且未被防视为落空，排除对波抵消与反射，包含对手前冲穿弹）时触发，
      S技落空不触发。最大1层，再次触发时刷新倒计时。
 -----------------------------------------------------------------------------
@@ -51,6 +51,7 @@ except Exception:
 
 from ..core import (
     AbilityColor,
+    make_attack_boost_statmod,
     make_bleed_statmod,
     make_burn_statmod,
     make_crit_rate_statmod,
@@ -120,7 +121,7 @@ def build_blackout_abilities(base_hp: float = 40519.0, base_atk: float = 3272.0)
     m_rem_crit_rate, _ = make_remove_statmod(
         mod_id="blackout_crit_rate_remove_on_hit",
         target_mod_id="blackout_combo_crit_rate",
-        trigger="onReceiveHit",
+        trigger="",
         trigger_scope="",
         show_callout=False,
     )
@@ -175,7 +176,7 @@ def build_blackout_abilities(base_hp: float = 40519.0, base_atk: float = 3272.0)
     m_rem_crit_dmg, _ = make_remove_statmod(
         mod_id="blackout_crit_dmg_remove_on_hit",
         target_mod_id="blackout_combo_crit_dmg",
-        trigger="onReceiveHit",
+        trigger="",
         trigger_scope="",
         show_callout=False,
     )
@@ -230,7 +231,7 @@ def build_blackout_abilities(base_hp: float = 40519.0, base_atk: float = 3272.0)
     m_rem_fury, _ = make_remove_statmod(
         mod_id="blackout_fury_remove_on_hit",
         target_mod_id="blackout_infinite_fury_crit_dmg",
-        trigger="onReceiveHit",
+        trigger="",
         trigger_scope="",
         show_callout=False,
     )
@@ -305,24 +306,24 @@ def build_blackout_abilities(base_hp: float = 40519.0, base_atk: float = 3272.0)
     mods[mod_sp1_unblockable["id"]] = mod_sp1_unblockable
 
     # =========================================================================
-    # 6. [ID: 1794966881668] 特殊技 1 (能量炮) - 暴击伤害 (Crit Damage)
-    #    技能期间提升30%的暴击伤害 (SP1 激活挂载，SP1 退出由 skill_blackout.c 立即移除)
+    # 6. [ID: 1794966881668] 特殊技 1 (能量炮) - 特殊伤害 (Special Damage)
+    #    技能期间提升30%的特殊伤害 (SP1 激活挂载，SP1 退出由 skill_blackout.c 立即移除)
     # =========================================================================
-    m_sp1_crit_dmg, a_sp1_crit_dmg = make_crit_damage_statmod(
-        mod_id="blackout_sp1_crit_damage",
+    m_sp1_spec_dmg, a_sp1_spec_dmg = make_attack_boost_statmod(
+        mod_id="blackout_sp1_special_damage",
         duration=3.5,
-        crit_dmg_bonus=0.30,
+        attack_bonus=0.30,
         chance=1.0,
         trigger="onSpecial1Activate",
         trigger_scope="",
-        appr_id="appr_blackout_sp1_crit_dmg",
-        callout_text="暴击强化",
-        pua_icon="\uE906",
+        appr_id="appr_blackout_sp1_special_dmg",
+        callout_text="特殊伤害",
+        pua_icon="\uE41C",
         color_hex=AbilityColor.ORANGE_DAMAGE_TC,
         gradient_bottom=AbilityColor.ORANGE_DAMAGE_GB,
     )
-    mods.update(m_sp1_crit_dmg)
-    appears.update(a_sp1_crit_dmg)
+    mods.update(m_sp1_spec_dmg)
+    appears.update(a_sp1_spec_dmg)
 
     # =========================================================================
     # 7. [ID: 1794966881662 & 1794966881663] 特殊技 2 (翼刃回旋) - 暴击伤害与可叠加暴击流血
@@ -375,8 +376,8 @@ def build_blackout_abilities(base_hp: float = 40519.0, base_atk: float = 3272.0)
         duration=2.0,
         crit_bonus=0.50,
         chance=1.0,
-        trigger="onHitStarted",
-        trigger_scope="level=Special3;dmgFlags=LastHit",
+        trigger="",
+        trigger_scope="",
         appr_id="appr_blackout_sp3_crit_rate",
         callout_text="锁定暴击",
         pua_icon="\uE40D",
@@ -391,8 +392,8 @@ def build_blackout_abilities(base_hp: float = 40519.0, base_atk: float = 3272.0)
         duration=6.0,
         total_dmg=float(round(base_atk * 0.80)),
         chance=1.0,
-        trigger="onCrit",
-        trigger_scope="level=Special3;dmgFlags=LastHit",
+        trigger="",
+        trigger_scope="",
         appr_id="appr_blackout_sp3_burn",
         callout_text="地毯焚烧",
         pua_icon="\uE41D",
@@ -414,11 +415,11 @@ def build_blackout_abilities(base_hp: float = 40519.0, base_atk: float = 3272.0)
         "id": "blackout_sp3_crit_resist_debuff",
         "t": "crit_rate",
         "tm": "",
-        "tr": ["onSpecial3Hit"],
-        "uit": ["onSpecial3Hit"],
+        "tr": [],
+        "uit": [],
         "pri": 0,
         "trm": 0.0,
-        "trs": "level=Special3;dmgFlags=LastHit",
+        "trs": "",
         "trr": "repeat",
         "c": 1.0,
         "m": 0.20,
@@ -446,13 +447,13 @@ def build_blackout_abilities(base_hp: float = 40519.0, base_atk: float = 3272.0)
 
     # =========================================================================
     # 9. [ID: 1794966881665] 觉醒能力 - 追猎 (I'll Hunt You Down!)
-    #    普通攻击（近战/远程/重击）落空时，获得 1 层 60% 能量功率增益，持续 4 秒；
+    #    普通攻击（近战/远程/重击）落空时，获得 1 层 60% 能量功率增益，持续 3 秒；
     #    最大 1 层，再次触发时刷新倒计时。
     # =========================================================================
     appr_sig_power = make_statmod_appearance(
         appr_id="appr_blackout_sig_power",
         callout_text="能量功率",
-        desc="普通攻击落空获得60%能量功率增益持续4秒，再次触发刷新倒计时",
+        desc="普通攻击落空获得60%能量功率增益持续3秒，再次触发刷新倒计时",
         pua_icon="\uE608",
         color=AbilityColor.LIGHT_PURPLE_POWER,
         show_callout=True,
@@ -469,7 +470,7 @@ def build_blackout_abilities(base_hp: float = 40519.0, base_atk: float = 3272.0)
         "trr": "repeat",
         "c": 1.0,
         "m": 0.60,
-        "d": 4.0,
+        "d": 3.0,
         "s": "none",
         "ta": "self",
         "mt": "buff",

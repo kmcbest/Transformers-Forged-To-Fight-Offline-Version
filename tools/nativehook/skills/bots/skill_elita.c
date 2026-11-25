@@ -22,6 +22,17 @@
 static int s_elita_applying_counter_stun = 0;
 static int s_elita_applying_atk_debuff = 0;
 static uint64_t s_last_grant_attempt_ms[2] = {0, 0};
+static int s_flame_50_used[2] = {0, 0};
+static int s_flame_25_used[2] = {0, 0};
+static int s_interrupt_used[2] = {0, 0};
+
+static int elita_is_brawler_id(const char* bid) {
+    if (!bid) return 0;
+    return (strstr(bid, "rhinox") != NULL || strstr(bid, "grindor") != NULL ||
+            strstr(bid, "motormaster") != NULL || strstr(bid, "bonecrusher") != NULL ||
+            strstr(bid, "ramjet") != NULL || strstr(bid, "tantrum") != NULL ||
+            strstr(bid, "grimlock") != NULL);
+}
 
 static void elita_try_grant_counter_pouch(int elita_idx, const char* reason) {
     if (elita_idx < 0 || elita_idx >= 2) return;
@@ -104,7 +115,55 @@ static void elita_on_attack_start(int attacker_index, int action_type) {
                 return;
             }
         }
+
+        // 分支 C: 抵抗军之火 HP <= 25% 打断对手 SP1 / SP2
+        if (!s_interrupt_used[elita_idx] &&
+            (action_type == 16 || action_type == 32 || action_type == 0x201 || action_type == 0x202)) {
+            float hp_r = skill_get_hp_ratio(elita_idx);
+            if (hp_r > 0.0f && hp_r <= 0.25f) {
+                int opp_is_braw = elita_is_brawler_id(skill_get_bot_id(attacker_index));
+                float chance = opp_is_braw ? 0.70f : 0.40f;
+                if (skill_random_float() < chance) {
+                    s_interrupt_used[elita_idx] = 1;
+                    skill_apply_buff_dur(attacker_index,
+                        opp_is_braw ? "elita_sig_flame_interrupt_stun_braw" : "elita_sig_flame_interrupt_stun", 1.5f);
+                    skill_stun_player(attacker_index, 1.5f);
+                    skill_log("ELITA: Resistance Flame interrupted SP on P%d (1.5s stun)", attacker_index);
+                }
+            }
+        }
     }
+}
+
+static void elita_on_simulation_tick(uint64_t now_ms) {
+    (void)now_ms;
+    for (int p = 0; p < 2; p++) {
+        const char* bid = skill_get_bot_id(p);
+        if (!bid || strstr(bid, "elita") == NULL) continue;
+        float hp_r = skill_get_hp_ratio(p);
+        if (hp_r <= 0.0f) continue;
+        if (!s_flame_50_used[p] && hp_r <= 0.50f) {
+            s_flame_50_used[p] = 1;
+            skill_apply_buff_dur(p, "elita_sig_flame_atk_50", 6.0f);
+            skill_apply_buff_dur(p, "elita_sig_flame_crit_50", 6.0f);
+        }
+        if (!s_flame_25_used[p] && hp_r <= 0.25f) {
+            s_flame_25_used[p] = 1;
+            skill_apply_buff_dur(p, "elita_sig_flame_armor_25", 6.0f);
+        }
+    }
+}
+
+static int elita_on_evade_check(SkillEvadeContext* ctx, int* out_evade) {
+    if (!ctx || !out_evade || !ctx->bot_id || strstr(ctx->bot_id, "elita") == NULL) return 0;
+    if (!ctx->is_ranged && skill_is_unstoppable(1 - ctx->player_index)) {
+        *out_evade = 1;
+        skill_apply_buff_dur(ctx->player_index, "elita_tactical_insight_evade", 0.5f);
+        skill_apply_buff_dur(ctx->player_index, "elita_tactical_insight_melee_buff", 3.0f);
+        skill_log("ELITA: Tactical Insight evaded unstoppable melee on P%d", ctx->player_index);
+        return 1;
+    }
+    return 0;
 }
 
 static void elita_on_hit_connected(SkillHitContext* ctx) {
@@ -140,6 +199,23 @@ static void elita_on_hit_connected(SkillHitContext* ctx) {
 
             // 立即消耗反击锦囊，防止连招后续攻击无限连晕
             skill_consume_buff(ap, "elita_counter_pouch", 99);
+        }
+
+        // SP1 追加斗士破甲 & 满能量燃烧 (二层收口 C 侧判定)
+        if (ctx->special_index == 1) {
+            if (elita_is_brawler_id(ctx->target_bot_id)) {
+                skill_apply_buff_dur(tp, "elita_sp1_armor_break_braw", 7.0f);
+            }
+            if (skill_get_mana(tp) >= 2.999f) {
+                skill_add_mana(tp, -0.15f);
+                skill_apply_buff_dur(tp, "elita_sp1_power_burn", 0.5f);
+            }
+        }
+
+        // 领袖威仪: 处于 DOT 状态时命中对手触发图标
+        if (skill_has_buff(ap, "dmg_bleed") || skill_has_buff(ap, "dmg_burn") ||
+            skill_has_buff(ap, "dmg_shock") || skill_has_buff(ap, "acid")) {
+            skill_apply_buff_dur(ap, "elita_commanders_presence", 0.5f);
         }
     }
 }
@@ -180,22 +256,55 @@ static int elita_on_buff_gated(SkillBuffGateContext* ctx) {
     return 0;
 }
 
+static int elita_on_test_roll(SkillTestRollContext* ctx, int* out_res) {
+    if (!ctx || !ctx->modifier_id || !out_res) return 0;
+
+    if (strstr(ctx->modifier_id, "elita_counter_stun") != NULL ||
+        strstr(ctx->modifier_id, "elita_counter_atk_debuff") != NULL) {
+        if (!skill_has_buff(ctx->owner_player_index, "elita_counter_pouch")) {
+            *out_res = 0;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static void elita_on_evade_triggered(int evader_player_index, int is_ranged) {
+    (void)is_ranged;
+    int atker_idx = 1 - evader_player_index;
+    const char* atker_id = skill_get_bot_id(atker_idx);
+    if (atker_id && strstr(atker_id, "elita") != NULL && skill_has_buff(atker_idx, "elita_counter_pouch")) {
+        skill_apply_buff_dur(evader_player_index, "elita_counter_atk_debuff", 3.0f);
+        skill_consume_buff(atker_idx, "elita_counter_pouch", 99);
+        skill_overlay("[%s] 攻击被闪避！施加50%%攻击减益！", atker_idx == 0 ? "艾丽塔" : "敌方艾丽塔");
+        skill_log("ELITA_COUNTER_EVADED: P%d's attack was evaded by P%d while holding counter pouch -> applied 3s atk debuff",
+                  atker_idx, evader_player_index);
+    }
+}
+
 static void elita_on_fight_reset(int player_index) {
     (void)player_index;
     s_elita_applying_counter_stun = 0;
     s_elita_applying_atk_debuff = 0;
     s_last_grant_attempt_ms[0] = 0;
     s_last_grant_attempt_ms[1] = 0;
+    s_flame_50_used[0] = s_flame_50_used[1] = 0;
+    s_flame_25_used[0] = s_flame_25_used[1] = 0;
+    s_interrupt_used[0] = s_interrupt_used[1] = 0;
 }
 
 BotSkillModule g_module_elita = {
     .bot_prefix         = "elita",
+    .display_name_zh    = "艾丽塔",
     .on_hit_connected   = elita_on_hit_connected,
     .on_attack_start    = elita_on_attack_start,
     .on_dodge_enter     = elita_on_dodge_enter,
-    .on_evade_check     = NULL,
+    .on_evade_check     = elita_on_evade_check,
+    .on_evade_triggered = elita_on_evade_triggered,
+    .on_test_roll       = elita_on_test_roll,
     .on_buff_gated      = elita_on_buff_gated,
     .on_buff_applied    = NULL,
     .on_hitreact_enter  = NULL,
+    .on_simulation_tick = elita_on_simulation_tick,
     .on_fight_reset     = elita_on_fight_reset,
 };

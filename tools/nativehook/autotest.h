@@ -27,7 +27,10 @@ typedef enum {
     AT_ACT_SIDESTEP_RIGHT,
     AT_ACT_SP1,
     AT_ACT_SP2,
-    AT_ACT_SP3
+    AT_ACT_SP3,
+    AT_ACT_APPLY_BUFF,
+    AT_ACT_SET_MANA,
+    AT_ACT_SET_HP
 } AutotestActionType;
 
 typedef struct {
@@ -41,16 +44,23 @@ typedef struct {
     AutotestActionType action;
     int duration_ms; // hold duration for BLOCK or wait duration for WAIT
     int repeat;
+    int target_player; // -1 = script owner, 0 = P0, 1 = P1
+    char mod_id[64];
+    float float_val;
+    int stacks;
 } AutotestScriptStep;
 
 typedef struct {
     int active;
     char name[64];
+    char banner[128];
     char qid[32];
     char p0_bid[64];
     char p1_bid[64];
-    float p0_mana; // < 0 means leave default
-    float p1_mana; // < 0 means leave default
+    float p0_mana;     // < 0 means leave default
+    float p1_mana;     // < 0 means leave default
+    float p0_hp_ratio; // < 0 means leave default
+    float p1_hp_ratio; // < 0 means leave default
     int auto_fight;
     int freeze_enemy_ai; // -1 = use user_settings, 0 = off, 1 = on
     int dummy_invincible;
@@ -60,6 +70,8 @@ typedef struct {
     AutotestInitBuff initial_buffs[AUTOTEST_MAX_INITIAL_BUFFS];
     int script_len;
     AutotestScriptStep script[AUTOTEST_MAX_SCRIPT_STEPS];
+    int p1_script_len;
+    AutotestScriptStep p1_script[AUTOTEST_MAX_SCRIPT_STEPS];
 } AutotestScenario;
 
 void autotest_init(void);
@@ -87,6 +99,7 @@ void autotest_on_prefight_ready(void* pfs);
 void autotest_on_prefight_exit(void);
 void autotest_on_combat_start(void);
 void autotest_on_simulate_tick(void* player_pc, int pidx);
+void autotest_set_intended_special_tier(int tier);
 
 #else
 

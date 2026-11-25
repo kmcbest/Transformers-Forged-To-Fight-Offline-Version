@@ -93,9 +93,16 @@ static void kickback_on_hit_connected(SkillHitContext* ctx) {
             }
         }
 
+        // 1.5. L4 / M2 踢击命中赋予暴击几率增益
+        if (!ctx->is_ranged && ctx->special_index == 0 && !ctx->is_heavy &&
+            (ctx->hit_index == 1 || ctx->hit_index >= 3 || ctx->is_last_hit)) {
+            skill_apply_buff_dur(ap, "kickback_crit_rate", 0.5f);
+        }
+
         // 2. 对手处于能量流失时，反冲近战攻击能量获取提升 50%
         if (!ctx->is_ranged && ctx->special_index == 0 && skill_has_buff(tp, "power_leak")) {
             skill_add_mana(ap, 0.05f * 0.50f); // 额外补充 50% 能量获取
+            skill_apply_buff_dur(ap, "kickback_power_rate", 1.0f);
         }
 
         // 3. 重击命中对手：驱散对手所有能量增益并转化为自身能量获取；80% 触发 T-齿轮破坏
@@ -194,6 +201,16 @@ static int kickback_on_evade_check(SkillEvadeContext* ctx, int* out_evade) {
     return 0;
 }
 
+static int kickback_on_test_roll(SkillTestRollContext* ctx, int* out_res) {
+    (void)out_res;
+    if (!ctx || !ctx->owner_bot_id || strstr(ctx->owner_bot_id, "kickback") == NULL) return 0;
+    if (!ctx->is_ranged && ctx->current_special_index == 0 && !ctx->is_heavy &&
+        (ctx->last_hit_index == 1 || ctx->last_hit_index >= 3) && ctx->p_chance) {
+        *ctx->p_chance += 0.30f;
+    }
+    return 0;
+}
+
 static void kickback_on_fight_reset(int player_index) {
     if (player_index >= 0 && player_index < 2) {
         s_tcog_end_ms[player_index] = 0;
@@ -207,5 +224,6 @@ BotSkillModule g_module_kickback = {
     .on_attack_start    = kickback_on_attack_start,
     .on_dodge_enter     = kickback_on_dodge_enter,
     .on_evade_check     = kickback_on_evade_check,
+    .on_test_roll       = kickback_on_test_roll,
     .on_fight_reset     = kickback_on_fight_reset,
 };

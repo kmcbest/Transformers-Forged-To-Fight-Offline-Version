@@ -151,6 +151,43 @@ static int megatron_on_projectile_speed(int player_index, int is_heavy, float* o
     return 0;
 }
 
+static int megatron_on_test_roll(SkillTestRollContext* ctx, int* out_res) {
+    if (!ctx || !ctx->modifier_id || !out_res) return 0;
+
+    if (strcmp(ctx->modifier_id, "megatron_fusion_cd") == 0) {
+        if (ctx->p_chance) *ctx->p_chance = 1.0f;
+        if (ctx->p_roll) *ctx->p_roll = 0.0f;
+        *out_res = 1; // 开局自动激活 6 秒灰色融合炮倒计时图标
+        return 1;
+    }
+    if (strcmp(ctx->modifier_id, "megatron_fusion_cannon") == 0 ||
+        strcmp(ctx->modifier_id, "megatron_debuff_fusion") == 0 ||
+        strcmp(ctx->modifier_id, "megatron_fusion_overload") == 0) {
+        *out_res = 0; // 由 C 逻辑精确触发
+        return 1;
+    }
+    if (strstr(ctx->modifier_id, "megatron_sp1_armor_break") != NULL ||
+        strstr(ctx->modifier_id, "megatron_sp2_atk_debuff") != NULL ||
+        strstr(ctx->modifier_id, "megatron_sp3_shock") != NULL) {
+        if (!ctx->current_hit_is_last) {
+            skill_log("MEGATRON_GATE: non-last hit, skip roll for %s", ctx->modifier_id);
+            *out_res = 0;
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+static void megatron_on_hitreact_enter(int player_index) {
+    if (player_index < 0 || player_index >= 2) return;
+    const char* bid = skill_get_bot_id(player_index);
+    if (!bid || strstr(bid, "megatron") == NULL || strstr(bid, "cin_rotf") != NULL) return;
+    if (!skill_is_unstoppable(player_index) && skill_random_float() < 0.30f) {
+        skill_apply_buff_dur(player_index, "megatron_knockdown_unstoppable", 3.0f);
+    }
+}
+
 static void megatron_on_fight_reset(int player_index) {
     if (player_index >= 0 && player_index < 2) {
         s_megatron_active[player_index]         = 0;
@@ -162,14 +199,16 @@ static void megatron_on_fight_reset(int player_index) {
 
 BotSkillModule g_module_megatron = {
     .bot_prefix          = "megatron",
+    .display_name_zh     = "威震天",
     .on_hit_connected    = megatron_on_hit_connected,
     .on_buff_gated       = NULL,
     .on_buff_applied     = megatron_on_buff_applied,
     .on_evade_check      = NULL,
-    .on_test_roll        = NULL,
+    .on_test_roll        = megatron_on_test_roll,
     .on_power_gain_rate  = NULL,
     .on_reflect_proj     = NULL,
     .on_projectile_speed = megatron_on_projectile_speed,
+    .on_hitreact_enter   = megatron_on_hitreact_enter,
     .on_fight_reset      = megatron_on_fight_reset,
     .on_simulation_tick  = megatron_on_simulation_tick,
 };

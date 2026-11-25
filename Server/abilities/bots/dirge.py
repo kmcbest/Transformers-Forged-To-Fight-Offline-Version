@@ -181,7 +181,7 @@ def build_dirge_abilities(base_hp: float = 44950.0, base_atk: float = 2945.0):
         duration=5.0,
         attack_bonus=0.60,
         chance=1.0,
-        trigger="onEvade",
+        trigger="",
         appr_id="appr_dirge_sig_mockery",
         callout_text="冷酷嘲讽",
         show_callout=True,

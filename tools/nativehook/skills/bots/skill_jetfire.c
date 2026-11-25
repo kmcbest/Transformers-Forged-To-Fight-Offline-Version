@@ -130,6 +130,13 @@ static void jetfire_on_hit_connected(SkillHitContext* ctx) {
                           s_jetfire_energy_charges[ap], tp);
             }
         }
+
+        // SP3 最后一击：赋予 3 层能量充能并转化震击
+        if (ctx->special_index == 3 && ctx->is_last_hit) {
+            skill_apply_buff(ap, "jetfire_sp3_grant_charge");
+            skill_apply_buff(tp, "jetfire_sp3_shock");
+            skill_log("JETFIRE: SP3 last hit granted charge & applied shock on P%d", tp);
+        }
     }
 }
 
@@ -143,6 +150,22 @@ static int jetfire_on_power_gain_rate(int player_index, float* out_mult) {
     return 0;
 }
 
+static int jetfire_on_test_roll(SkillTestRollContext* ctx, int* out_res) {
+    if (!ctx || !ctx->modifier_id || !out_res) return 0;
+    if (strstr(ctx->modifier_id, "jetfire_energy_charge") != NULL) {
+        *out_res = 0; // 手动招架触发，阻止自动掷骰施加（由总线缓存 SM 指针）
+        return 1;
+    }
+    if (strstr(ctx->modifier_id, "jetfire_sp1_power_lock") != NULL ||
+        strstr(ctx->modifier_id, "jetfire_sp2_heal_block") != NULL) {
+        if (!ctx->current_hit_is_last) {
+            *out_res = 0;
+            return 1;
+        }
+    }
+    return 0;
+}
+
 static void jetfire_on_fight_reset(int player_index) {
     if (player_index >= 0 && player_index < 2) {
         s_jetfire_energy_charges[player_index] = 0;
@@ -152,11 +175,12 @@ static void jetfire_on_fight_reset(int player_index) {
 
 BotSkillModule g_module_jetfire = {
     .bot_prefix          = "jetfire",
+    .display_name_zh     = "天火",
     .on_hit_connected    = jetfire_on_hit_connected,
     .on_buff_gated       = NULL,
     .on_buff_applied     = NULL,
     .on_evade_check      = NULL,
-    .on_test_roll        = NULL,
+    .on_test_roll        = jetfire_on_test_roll,
     .on_power_gain_rate  = jetfire_on_power_gain_rate,
     .on_reflect_proj     = jetfire_on_reflect_proj,
     .on_fight_reset      = jetfire_on_fight_reset,

@@ -45,6 +45,8 @@ static void dinobot_on_hit_connected(SkillHitContext* ctx) {
         // 前冲攻击判定 (action_type == 32 或 2, 或距离极速接近)
         int is_dash = (ctx->action_type == 32 || ctx->action_type == 2);
         if (is_dash) {
+            // 格挡前冲攻击：100% 施加 40% 破甲 9 秒
+            skill_apply_buff_dur(ap, "dinobot_dash_block_break", 9.0f);
             // 格挡前冲攻击：100% 概率反弹 20% 对手攻击力
             float opp_atk = skill_get_attack(ap);
             if (opp_atk <= 0.0f) opp_atk = 3000.0f;

@@ -761,6 +761,7 @@ static volatile uint64_t s_p0_last_sidestep_ms = 0;
 
 static volatile uint64_t s_sideswipe_last_power_evade_ms = 0;
 static volatile uint64_t s_sideswipe_last_dash_evade_ms = 0;
+static volatile uint64_t s_last_direct_hit_ms[2] = {0, 0};
 
 // --- AI 5-Hit Combo Commitment System (按步就班打完5连保证最大伤害) ---
 static volatile int g_p1_combo_committed = 0;
@@ -986,8 +987,6 @@ static volatile int s_current_hit_is_ranged = 0;
 static volatile int s_last_hit_flags = 0;
 static volatile int s_last_hit_index = 0;
 static volatile int s_last_atk_level = 0;
-static volatile int s_ironhide_burned_this_hit = 0;
-static volatile int s_ramjet_s1_stacks = 0;
 static volatile uint64_t s_p0_burn_expire_ms = 0;
 static volatile uint64_t s_p1_burn_expire_ms = 0;
 
@@ -1004,39 +1003,51 @@ static volatile int g_p1_prowl_charge_stacks = 0;
 static volatile uint64_t g_p1_prowl_melee_buff_end_ms = 0;
 static volatile int g_p1_prowl_melee_buff_stacks = 0;
 
-static void* s_prowl_charge_sm_p0 = NULL;
-static void* s_prowl_charge_sm_p1 = NULL;
-static void* s_prowl_passive_sm_p0 = NULL;
-static void* s_prowl_passive_sm_p1 = NULL;
+// 通用 StatModifier 指针缓存 (按 player_index + mod_id 动态缓存，取代所有角色硬编码全局变量)
+#define MAX_SM_CACHE 128
+typedef struct {
+    int player_index;
+    char mod_id[80];
+    void* sm;
+} SmCacheEntry;
+static SmCacheEntry s_sm_cache[MAX_SM_CACHE];
+static int s_sm_cache_count = 0;
 
-static void* s_jetfire_charge_sm_p0 = NULL;
-static void* s_jetfire_charge_sm_p1 = NULL;
-static void* s_tantrum_charge_sm_p0 = NULL;
-static void* s_tantrum_charge_sm_p1 = NULL;
-static void* s_tantrum_unstop_sm_p0 = NULL;
-static void* s_tantrum_unstop_sm_p1 = NULL;
-static void* s_bumblebee_burst_sm_p0 = NULL;
-static void* s_bumblebee_burst_sm_p1 = NULL;
-static void* s_bumblebee_calib_melee_sm_p0 = NULL;
-static void* s_bumblebee_calib_melee_sm_p1 = NULL;
-static void* s_bumblebee_calib_ranged_sm_p0 = NULL;
-static void* s_bumblebee_calib_ranged_sm_p1 = NULL;
-static void* s_bumblebee_calib_melee_cd_sm_p0 = NULL;
-static void* s_bumblebee_calib_melee_cd_sm_p1 = NULL;
-static void* s_bumblebee_calib_ranged_cd_sm_p0 = NULL;
-static void* s_bumblebee_calib_ranged_cd_sm_p1 = NULL;
-static void* s_megatron_fusion_cd_sm_p0 = NULL;
-static void* s_megatron_fusion_cd_sm_p1 = NULL;
-static void* s_megatron_fusion_stack_sm_p0 = NULL;
-static void* s_megatron_fusion_stack_sm_p1 = NULL;
-static void* s_megatron_debuff_fusion_sm_p0 = NULL;
-static void* s_megatron_debuff_fusion_sm_p1 = NULL;
-static void* s_megatron_overload_sm_p0 = NULL;
-static void* s_megatron_overload_sm_p1 = NULL;
-static void* s_nemesis_dark_cd_sm_p0 = NULL;
-static void* s_nemesis_dark_cd_sm_p1 = NULL;
-static void* s_nemesis_dark_stack_sm_p0 = NULL;
-static void* s_nemesis_dark_stack_sm_p1 = NULL;
+static void skill_cache_store_sm(int player_index, const char* mod_id, void* sm) {
+    if (!mod_id || !mod_id[0] || !sm || !obj_ok(sm)) return;
+    if (player_index < 0 || player_index >= 2) return;
+    for (int i = 0; i < s_sm_cache_count; i++) {
+        if (s_sm_cache[i].player_index == player_index && strcmp(s_sm_cache[i].mod_id, mod_id) == 0) {
+            s_sm_cache[i].sm = sm;
+            return;
+        }
+    }
+    if (s_sm_cache_count < MAX_SM_CACHE) {
+        s_sm_cache[s_sm_cache_count].player_index = player_index;
+        strncpy(s_sm_cache[s_sm_cache_count].mod_id, mod_id, sizeof(s_sm_cache[0].mod_id) - 1);
+        s_sm_cache[s_sm_cache_count].mod_id[sizeof(s_sm_cache[0].mod_id) - 1] = '\0';
+        s_sm_cache[s_sm_cache_count].sm = sm;
+        s_sm_cache_count++;
+    }
+}
+
+static void* skill_cache_find_sm(int player_index, const char* mod_id) {
+    if (!mod_id || !mod_id[0] || player_index < 0 || player_index >= 2) return NULL;
+    for (int i = 0; i < s_sm_cache_count; i++) {
+        if (s_sm_cache[i].player_index == player_index && strcmp(s_sm_cache[i].mod_id, mod_id) == 0) {
+            return obj_ok(s_sm_cache[i].sm) ? s_sm_cache[i].sm : NULL;
+        }
+    }
+    return NULL;
+}
+
+int skill_is_burning(int player_index) {
+    if (player_index < 0 || player_index >= 2) return 0;
+    uint64_t now_ms = propgo_now_ms();
+    uint64_t exp = (player_index == 0) ? s_p0_burn_expire_ms : s_p1_burn_expire_ms;
+    if (now_ms < exp) return 1;
+    return skill_has_buff(player_index, "burn");
+}
 
 // BuffsController.ApplyBuff(BuffsController this, BuffsController applicant, StatModifier statModifier, bool updateAttributes, bool useOverrideDuration, float overrideDuration, void* method) @ RVA 0x00EEFB44
 typedef void* (*fn_apply_statmod_buff)(void* this_bc, void* applicant_bc, void* statModifier, int32_t updateAttributes, int32_t useOverrideDuration, float overrideDuration, void* method);
@@ -5372,34 +5383,8 @@ void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     g_sp_touch_tracking = 0;
     g_p0_block_enter_ms = 0;
     g_p1_block_enter_ms = 0;
-    s_jetfire_charge_sm_p0 = NULL;
-    s_jetfire_charge_sm_p1 = NULL;
-    s_tantrum_charge_sm_p0 = NULL;
-    s_tantrum_charge_sm_p1 = NULL;
-    s_tantrum_unstop_sm_p0 = NULL;
-    s_tantrum_unstop_sm_p1 = NULL;
-    s_bumblebee_burst_sm_p0 = NULL;
-    s_bumblebee_burst_sm_p1 = NULL;
-    s_bumblebee_calib_melee_sm_p0 = NULL;
-    s_bumblebee_calib_melee_sm_p1 = NULL;
-    s_bumblebee_calib_ranged_sm_p0 = NULL;
-    s_bumblebee_calib_ranged_sm_p1 = NULL;
-    s_bumblebee_calib_melee_cd_sm_p0 = NULL;
-    s_bumblebee_calib_melee_cd_sm_p1 = NULL;
-    s_bumblebee_calib_ranged_cd_sm_p0 = NULL;
-    s_bumblebee_calib_ranged_cd_sm_p1 = NULL;
-    s_megatron_fusion_cd_sm_p0 = NULL;
-    s_megatron_fusion_cd_sm_p1 = NULL;
-    s_megatron_fusion_stack_sm_p0 = NULL;
-    s_megatron_fusion_stack_sm_p1 = NULL;
-    s_megatron_debuff_fusion_sm_p0 = NULL;
-    s_megatron_debuff_fusion_sm_p1 = NULL;
-    s_megatron_overload_sm_p0 = NULL;
-    s_megatron_overload_sm_p1 = NULL;
-    s_nemesis_dark_cd_sm_p0 = NULL;
-    s_nemesis_dark_cd_sm_p1 = NULL;
-    s_nemesis_dark_stack_sm_p0 = NULL;
-    s_nemesis_dark_stack_sm_p1 = NULL;
+    memset(s_sm_cache, 0, sizeof(s_sm_cache));
+    s_sm_cache_count = 0;
     g_p0_block_reset_done = 0;
     g_p0_after_heavy = 0;
     g_p0_combo_ended = 0;
@@ -5437,8 +5422,8 @@ void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     s_current_hit_is_ranged = 0;
     s_last_hit_flags = 0;
     s_last_hit_index = 0;
-    s_ironhide_burned_this_hit = 0;
-    s_ramjet_s1_stacks = 0;
+    s_p0_burn_expire_ms = 0;
+    s_p1_burn_expire_ms = 0;
     g_p0_last_shot_ms = 0;
     g_p0_last_shot_index = 0;
     g_p0_ranged_recovery_ms = 0;
@@ -5470,6 +5455,8 @@ void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     s_p1_last_sidestep_ms = 0;
     s_sideswipe_last_power_evade_ms = 0;
     s_sideswipe_last_dash_evade_ms = 0;
+    s_last_direct_hit_ms[0] = 0;
+    s_last_direct_hit_ms[1] = 0;
 
     g_p1_combo_committed = 0;
     g_p1_combo_hit_count = 0;
@@ -5681,17 +5668,31 @@ static void sp3_update_character_weapons(void* pc, int active) {
     }
 }
 
+void autotest_set_intended_special_tier(int tier) {
+    g_intended_special_tier = tier;
+    g_intended_special_time_ms = propgo_now_ms();
+}
+
 void* hook_142(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
     void* r = H[142].orig(a0,a1,a2,a3,a4,a5,a6,a7);
     PROTECT({
         void* pc = fld_p(a0, 0x18);
         if (obj_ok(pc)) {
-            if (pc == g_p0_controller) {
+            int pidx = *(int32_t*)((uintptr_t)pc + 0xF4);
+            if (pc == g_p0_controller || pidx == 0) {
                 g_intended_special_tier = 0;
+                g_p0_current_special_index = 3;
+                pidx = 0;
+            } else if (pc == g_p1_controller || pidx == 1) {
+                g_p1_current_special_index = 3;
+                pidx = 1;
             }
             sp3_xf_add(pc);
             sp3_update_character_weapons(pc, 1);
-            flog("SP3_ENTER pc=%p tms=%llu", pc, (unsigned long long)propgo_now_ms());
+            flog("SP3_ENTER pc=%p pidx=%d tms=%llu", pc, pidx, (unsigned long long)propgo_now_ms());
+            if (pidx == 0 || pidx == 1) {
+                skill_dispatch_special_state(pidx, 3, 1);
+            }
         }
     });
     return r;
@@ -5729,6 +5730,11 @@ void* hook_143(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
         }
     });
     if (sp3_exit_pidx >= 0 && sp3_exit_pidx < 2) {
+        if (sp3_exit_pidx == 0 && g_p0_current_special_index == 3) {
+            g_p0_current_special_index = 0;
+        } else if (sp3_exit_pidx == 1 && g_p1_current_special_index == 3) {
+            g_p1_current_special_index = 0;
+        }
         skill_dispatch_special_state(sp3_exit_pidx, 3, 0);
     }
     return r;
@@ -5831,7 +5837,7 @@ static void prowl_start_charge(int is_p0) {
 
     void* pc = is_p0 ? g_p0_controller : g_p1_controller;
     void* bc = (pc && obj_ok(pc)) ? *(void**)((char*)pc + 0x88) : NULL;
-    void* sm = is_p0 ? s_prowl_charge_sm_p0 : s_prowl_charge_sm_p1;
+    void* sm = skill_cache_find_sm(is_p0 ? 0 : 1, "prowl_melee_charge");
     flog("PROWL_CHARGE_START: who=%s pc=%p bc=%p sm=%p", who, pc, bc, sm);
     if (sm && obj_ok(sm) && bc && obj_ok(bc) && g_base) {
         PROTECT({
@@ -5872,7 +5878,7 @@ static void prowl_finish_charge(int is_p0, const char* reason) {
     expire_prowl_charge_buffs(pc, bc);
 
     // 2. 挂载橙色近战增益 (prowl_passive_melee_buff): 持续 6 秒，叠加 stacks 层
-    void* p_sm = is_p0 ? s_prowl_passive_sm_p0 : s_prowl_passive_sm_p1;
+    void* p_sm = skill_cache_find_sm(is_p0 ? 0 : 1, "prowl_passive_melee_buff");
     flog("PROWL_CHARGE_FINISH: who=%s pc=%p bc=%p p_sm=%p stacks=%d", who, pc, bc, p_sm, stacks);
     if (p_sm && obj_ok(p_sm) && bc && obj_ok(bc) && g_base) {
         PROTECT({
@@ -6075,7 +6081,7 @@ void* hook_145(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
                 g_p0_prowl_charge_stacks = new_stacks;
                 void* pc = g_p0_controller;
                 void* bc = (pc && obj_ok(pc)) ? *(void**)((char*)pc + 0x88) : NULL;
-                void* sm = s_prowl_charge_sm_p0;
+                void* sm = skill_cache_find_sm(0, "prowl_melee_charge");
                 if (sm && obj_ok(sm) && bc && obj_ok(bc) && g_base) {
                     PROTECT({
                         fn_apply_statmod_buff apply_buff = (fn_apply_statmod_buff)(g_base + 0x00EEFB44);
@@ -6101,7 +6107,7 @@ void* hook_145(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
                 g_p1_prowl_charge_stacks = new_stacks;
                 void* pc = g_p1_controller;
                 void* bc = (pc && obj_ok(pc)) ? *(void**)((char*)pc + 0x88) : NULL;
-                void* sm = s_prowl_charge_sm_p1;
+                void* sm = skill_cache_find_sm(1, "prowl_melee_charge");
                 if (sm && obj_ok(sm) && bc && obj_ok(bc) && g_base) {
                     PROTECT({
                         fn_apply_statmod_buff apply_buff = (fn_apply_statmod_buff)(g_base + 0x00EEFB44);
@@ -6191,6 +6197,10 @@ void* hook_145(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
         if (g_p0_controller && obj_ok(g_p0_controller) &&
             *(uint8_t*)((uintptr_t)g_p0_controller + 0x139) == 1) {
             autotest_on_simulate_tick(g_p0_controller, 0);
+        }
+        if (g_p1_controller && obj_ok(g_p1_controller) &&
+            *(uint8_t*)((uintptr_t)g_p1_controller + 0x139) == 1) {
+            autotest_on_simulate_tick(g_p1_controller, 1);
         }
 #endif
     });
@@ -7206,6 +7216,9 @@ void* hook_156(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
 
     int atk_level = (int)(intptr_t)a1;
     float cc_bonus = (player_idx >= 0 && player_idx < 2) ? get_live_crit_chance_bonus(player_idx, owner) : 0.0f;
+    if (player_idx >= 0 && player_idx < 2) {
+        cc_bonus += skill_dispatch_crit_chance_mod(player_idx, atk_level);
+    }
 
     // 眩晕 SP3 终击保底 +50% 暴击率 (防止 onHitStarted 未覆盖时遗漏)
     if (player_idx >= 0 && player_idx < 2 && bid && strstr(bid, "blackout") != NULL && atk_level == 64) {
@@ -8138,6 +8151,14 @@ float hook_177(void* self, float damage, void* damageType, int32_t blocked, void
                     if (!hit_ctx.is_crit) {
                         isCrit = 0;
                     }
+                    if (hit_ctx.target_player_index >= 0 && hit_ctx.target_player_index < 2) {
+                        s_last_direct_hit_ms[hit_ctx.target_player_index] = propgo_now_ms();
+                    }
+                    flog("[AB_TRACE] EVT=HIT_CONNECTED att=P%d tgt=P%d sp=%d hit=%d last=%d crit=%d blk=%d dmg=%.1f",
+                         hit_ctx.attacker_player_index, hit_ctx.target_player_index,
+                         hit_ctx.special_index, hit_ctx.hit_index,
+                         hit_ctx.is_last_hit ? 1 : 0, hit_ctx.is_crit ? 1 : 0,
+                         hit_ctx.is_blocked ? 1 : 0, damage);
                 }
                 // Reset transient hit state so lingering flags cannot leak into subsequent DOT ticks or passive damage calculations
                 s_current_hit_is_heavy = 0;
@@ -8248,7 +8269,7 @@ float hook_167(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
 
 void* hook_168(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     uint64_t now = propgo_now_ms();
-    if (tftf_get_enable_swipe_specials() && self == g_p0_controller && g_intended_special_tier > 0 && (now - g_intended_special_time_ms < 600)) {
+    if ((autotest_is_active() || tftf_get_enable_swipe_specials()) && self == g_p0_controller && g_intended_special_tier > 0 && (now - g_intended_special_time_ms < 600)) {
         int target_tier = g_intended_special_tier;
         void* power_meter = *(void**)((char*)self + 0x80);
         if (power_meter_can_use_special(power_meter, target_tier)) {
@@ -8763,8 +8784,7 @@ void* hook_186(void* this_pc, void* hitResult, void* method) {
             if (p_idx == 0 && (atk_level == 1 || atk_level == 2 || atk_level == 4 || atk_level == 8)) {
                 g_p0_current_special_index = -1;
             }
-            s_ironhide_burned_this_hit = 0;
-            s_ramjet_s1_stacks = 0;
+            skill_dispatch_hit_begin();
             int is_hit = ((flags & 5) != 0); // Hit (1) or Blocked (4)
             int is_unblocked_hit = ((flags & 1) != 0);
             int is_blocked = ((flags & 4) != 0);
@@ -9038,11 +9058,22 @@ void skill_overlay(const char* fmt, ...) {
     combat_overlay_push("%s", buf);
 }
 
+void skill_hud_banner(const char* text) {
+    combat_overlay_show_hud(text);
+}
+
 uint64_t skill_now_ms(void) {
     return propgo_now_ms();
 }
 
 float skill_random_float(void) {
+    static volatile int s_skill_rng_seeded = 0;
+    if (!s_skill_rng_seeded) {
+        s_skill_rng_seeded = 1;
+        struct timespec ts;
+        clock_gettime(CLOCK_MONOTONIC, &ts);
+        srand((unsigned int)(ts.tv_nsec ^ (uint64_t)ts.tv_sec ^ propgo_now_ms()));
+    }
     return ((float)rand()) / (float)RAND_MAX;
 }
 
@@ -9334,6 +9365,21 @@ void skill_set_mana(int player_index, float norm_mana) {
     }
 }
 
+void skill_set_hp_ratio(int player_index, float ratio) {
+    void* pc = (player_index == 0) ? g_p0_controller : g_p1_controller;
+    if (pc && obj_ok(pc)) {
+        void* attr = *(void**)((char*)pc + 0x80);
+        if (attr && obj_ok(attr) && g_base) {
+            typedef void (*fn_set_norm)(void*, float, void*);
+            fn_set_norm set_norm = (fn_set_norm)(g_base + 0xDAC6B0);
+            float target = ratio;
+            if (target > 1.0f) target = 1.0f;
+            if (target < 0.01f) target = 0.01f;
+            set_norm(attr, target, NULL);
+        }
+    }
+}
+
 const char* skill_get_bot_id(int player_index) {
     if (player_index == 0) return g_p0_bot_id;
     if (player_index == 1) return g_p1_bot_id;
@@ -9422,37 +9468,8 @@ void skill_apply_buff_dur(int player_index, const char* mod_id, float override_d
     void* bc = *(void**)((char*)pc + 0x88);
     if (!bc || !obj_ok(bc)) return;
 
-    // 1. Direct apply if StatModifier pointer was captured
-    void* sm = NULL;
-    if (strcmp(mod_id, "bumblebee_cin_dotm_calib_melee") == 0) {
-        sm = (player_index == 0) ? s_bumblebee_calib_melee_sm_p0 : s_bumblebee_calib_melee_sm_p1;
-    } else if (strcmp(mod_id, "bumblebee_cin_dotm_calib_ranged") == 0) {
-        sm = (player_index == 0) ? s_bumblebee_calib_ranged_sm_p0 : s_bumblebee_calib_ranged_sm_p1;
-    } else if (strcmp(mod_id, "bumblebee_cin_dotm_calib_melee_cd") == 0) {
-        sm = (player_index == 0) ? s_bumblebee_calib_melee_cd_sm_p0 : s_bumblebee_calib_melee_cd_sm_p1;
-    } else if (strcmp(mod_id, "bumblebee_cin_dotm_calib_ranged_cd") == 0) {
-        sm = (player_index == 0) ? s_bumblebee_calib_ranged_cd_sm_p0 : s_bumblebee_calib_ranged_cd_sm_p1;
-    } else if (strcmp(mod_id, "bumblebee_cin_dotm_burst_atk") == 0) {
-        sm = (player_index == 0) ? s_bumblebee_burst_sm_p0 : s_bumblebee_burst_sm_p1;
-    } else if (strcmp(mod_id, "megatron_fusion_cd") == 0) {
-        sm = (player_index == 0) ? s_megatron_fusion_cd_sm_p0 : s_megatron_fusion_cd_sm_p1;
-    } else if (strcmp(mod_id, "megatron_fusion_cannon") == 0) {
-        sm = (player_index == 0) ? s_megatron_fusion_stack_sm_p0 : s_megatron_fusion_stack_sm_p1;
-    } else if (strcmp(mod_id, "megatron_debuff_fusion") == 0) {
-        sm = (player_index == 0) ? s_megatron_debuff_fusion_sm_p0 : s_megatron_debuff_fusion_sm_p1;
-    } else if (strcmp(mod_id, "megatron_fusion_overload") == 0) {
-        sm = (player_index == 0) ? s_megatron_overload_sm_p0 : s_megatron_overload_sm_p1;
-    } else if (strcmp(mod_id, "nemesisprime_dark_cd") == 0) {
-        sm = (player_index == 0) ? s_nemesis_dark_cd_sm_p0 : s_nemesis_dark_cd_sm_p1;
-    } else if (strcmp(mod_id, "nemesisprime_dark_energy") == 0) {
-        sm = (player_index == 0) ? s_nemesis_dark_stack_sm_p0 : s_nemesis_dark_stack_sm_p1;
-    } else if (strstr(mod_id, "jetfire") != NULL) {
-        sm = (player_index == 0) ? s_jetfire_charge_sm_p0 : s_jetfire_charge_sm_p1;
-    } else if (strstr(mod_id, "tantrum_block_charge") != NULL) {
-        sm = (player_index == 0) ? s_tantrum_charge_sm_p0 : s_tantrum_charge_sm_p1;
-    } else if (strstr(mod_id, "tantrum_block_unstoppable") != NULL) {
-        sm = (player_index == 0) ? s_tantrum_unstop_sm_p0 : s_tantrum_unstop_sm_p1;
-    }
+    // 1. Direct apply if StatModifier pointer was cached in s_sm_cache
+    void* sm = skill_cache_find_sm(player_index, mod_id);
 
     if (sm && obj_ok(sm)) {
         PROTECT({
@@ -9866,6 +9883,9 @@ buff_gate_done: ;
     });
 
     if (suppress_buff) {
+        int is_tgt_p0 = is_player0_bc(self);
+        flog("[AB_TRACE] EVT=APPLY_BUFF tgt=P%d mod=%s res=0 dur=%.2f gated=1",
+             is_tgt_p0 ? 0 : 1, mod_id[0] ? mod_id : "unknown", overrideDuration);
         return 0; // BuffResult.Failed
     }
 
@@ -9873,8 +9893,12 @@ buff_gate_done: ;
     int res = H[188].orig ? ((fn_apply_buff)H[188].orig)(self, applicant, statModifier, updateAttributes, useOverrideDuration, overrideDuration, method) : 0;
 
     PROTECT({
+        int is_target_p0 = is_player0_bc(self);
+        if (mod_id[0]) {
+            flog("[AB_TRACE] EVT=APPLY_BUFF tgt=P%d mod=%s res=%d dur=%.2f gated=0",
+                 is_target_p0 ? 0 : 1, mod_id, res, overrideDuration);
+        }
         if (res == 3 || res != 0) { // 3 = BuffResult.Success
-            int is_target_p0 = is_player0_bc(self);
             if (strstr(mod_id, "optimus_") == NULL && strstr(mod_id, "ultramagnus_") == NULL && strstr(mod_id, "grindor_") == NULL) {
                 combat_overlay_push("BUFF -> %s on %s (APPLIED)", mod_id[0] ? mod_id : "unknown", is_target_p0 ? "P0" : "P1");
             }
@@ -9966,6 +9990,20 @@ int hook_189(void* self, int32_t testType, void* testParams, int32_t numBuffsToR
     return res;
 }
 
+static void record_evade_trace_and_dispatch(int tgt_pidx, int is_ranged, int dispatch_event) {
+    if (tgt_pidx < 0 || tgt_pidx > 1) return;
+    static uint64_t s_last_ev_trace_ms[2][2] = {{0, 0}, {0, 0}};
+    uint64_t now_ms = propgo_now_ms();
+    int r = is_ranged ? 1 : 0;
+    if (now_ms - s_last_ev_trace_ms[tgt_pidx][r] >= 120) {
+        s_last_ev_trace_ms[tgt_pidx][r] = now_ms;
+        flog("[AB_TRACE] EVT=EVADE tgt=P%d ranged=%d res=1", tgt_pidx, r);
+        if (dispatch_event) {
+            skill_dispatch_evade_triggered(tgt_pidx, r);
+        }
+    }
+}
+
 // slot 190 (0x00DACC74): PlayerAttributes.get_EvadeMelee
 int hook_190(void* self) {
     if (!self || !obj_ok(self)) return 0;
@@ -9988,6 +10026,9 @@ int hook_190(void* self) {
     };
     int evade_res = 0;
     if (skill_dispatch_evade_check(&ev_ctx, &evade_res)) {
+        if (evade_res) {
+            record_evade_trace_and_dispatch(is_p0 ? 0 : 1, 0, 1);
+        }
         return evade_res;
     }
 
@@ -10031,6 +10072,7 @@ int hook_190(void* self) {
         flog("EVADE_MELEE_CHECK: guaranteed 100%% for %s (chance=%.3f)", who, chance);
         combat_overlay_push("[%s] EVADE Melee (100%% GUARANTEED)", who);
         *last_res = 1;
+        record_evade_trace_and_dispatch(is_p0 ? 0 : 1, 0, 0);
         if (charging) {
             prowl_finish_charge(is_p0, "evade melee triggered");
         }
@@ -10045,14 +10087,8 @@ int hook_190(void* self) {
         if (charging) {
             prowl_finish_charge(is_p0, "evade melee triggered");
         }
-        int atker_idx = 1 - is_p0;
-        const char* atker_id = skill_get_bot_id(atker_idx);
-        if (atker_id && strstr(atker_id, "elita") != NULL && skill_has_buff(atker_idx, "elita_counter_pouch")) {
-            skill_apply_buff_dur(is_p0 ? 0 : 1, "elita_counter_atk_debuff", 3.0f);
-            skill_consume_buff(atker_idx, "elita_counter_pouch", 99);
-            skill_overlay("[%s] 攻击被闪避！施加50%%攻击减益！", atker_idx == 0 ? "艾丽塔" : "敌方艾丽塔");
-            skill_log("ELITA_COUNTER_EVADED: P%d's attack was evaded by P%d while holding counter pouch -> applied 3s atk debuff", atker_idx, is_p0 ? 0 : 1);
-        }
+        record_evade_trace_and_dispatch(is_p0 ? 0 : 1, 0, 0);
+        skill_dispatch_evade_triggered(is_p0 ? 0 : 1, 0);
         return 1;
     } else {
         flog("EVADE_MELEE_CHECK: MISSED! [%s] roll=%.3f >= chance=%.3f (NORMAL HIT)", who, r, chance);
@@ -10084,6 +10120,9 @@ int hook_191(void* self) {
     };
     int evade_res = 0;
     if (skill_dispatch_evade_check(&ev_ctx, &evade_res)) {
+        if (evade_res) {
+            record_evade_trace_and_dispatch(is_p0 ? 0 : 1, 1, 1);
+        }
         return evade_res;
     }
 
@@ -10125,6 +10164,7 @@ int hook_191(void* self) {
         flog("EVADE_RANGED_CHECK: guaranteed 100%% for %s (chance=%.3f)", who, chance);
         combat_overlay_push("[%s] EVADE Ranged (100%% GUARANTEED)", who);
         *last_res = 1;
+        record_evade_trace_and_dispatch(is_p0 ? 0 : 1, 1, 0);
         if (charging) {
             prowl_finish_charge(is_p0, "evade ranged triggered");
         }
@@ -10139,14 +10179,8 @@ int hook_191(void* self) {
         if (charging) {
             prowl_finish_charge(is_p0, "evade ranged triggered");
         }
-        int atker_idx = 1 - is_p0;
-        const char* atker_id = skill_get_bot_id(atker_idx);
-        if (atker_id && strstr(atker_id, "elita") != NULL && skill_has_buff(atker_idx, "elita_counter_pouch")) {
-            skill_apply_buff_dur(is_p0 ? 0 : 1, "elita_counter_atk_debuff", 3.0f);
-            skill_consume_buff(atker_idx, "elita_counter_pouch", 99);
-            skill_overlay("[%s] 攻击被闪避！施加50%%攻击减益！", atker_idx == 0 ? "艾丽塔" : "敌方艾丽塔");
-            skill_log("ELITA_COUNTER_EVADED: P%d's attack was evaded by P%d while holding counter pouch -> applied 3s atk debuff", atker_idx, is_p0 ? 0 : 1);
-        }
+        record_evade_trace_and_dispatch(is_p0 ? 0 : 1, 1, 0);
+        skill_dispatch_evade_triggered(is_p0 ? 0 : 1, 1);
         return 1;
     } else {
         flog("EVADE_RANGED_CHECK: MISSED! [%s] roll=%.3f >= chance=%.3f (NORMAL HIT)", who, r, chance);
@@ -10157,10 +10191,16 @@ int hook_191(void* self) {
 }
 
 // slot 192 (0x00CCF35C): StatModifierController.TestForConditionsAndRoll
+// [FROZEN BUS] 严禁在此新增任何角色名硬编码特判，全部委托给 skill_dispatch_test_roll / on_test_roll_post
 int hook_192(void* self, void* statModifier, float* pRoll, float* pChance, void* triggerParams, void* method) {
     char mod_id[80] = {0};
+    void* owner_bc = NULL;
+    int owner_pidx = 0;
+
     PROTECT({
         if (statModifier && obj_ok(statModifier)) {
+            owner_bc = *(void**)((char*)statModifier + 0x10);
+            owner_pidx = is_player0_bc(owner_bc) ? 0 : 1;
             void* bcg_sm = *(void**)((char*)statModifier + 0x18);
             if (bcg_sm && obj_ok(bcg_sm)) {
                 void* id_str_obj = *(void**)((char*)bcg_sm + 0x10);
@@ -10168,439 +10208,83 @@ int hook_192(void* self, void* statModifier, float* pRoll, float* pChance, void*
                     read_str(id_str_obj, mod_id, sizeof(mod_id));
                 }
             }
+            if (mod_id[0]) {
+                skill_cache_store_sm(owner_pidx, mod_id, statModifier);
+            }
         }
     });
 
-    // 动作分段打击过滤 (Action Hit Gating)
-    // 艾丽塔 (Elita-1): 灵动反击门禁 - 必须持有【反击锦囊】才允许掷骰施加眩晕或攻击减益
-    if (mod_id[0] && (strstr(mod_id, "elita_counter_stun") != NULL || strstr(mod_id, "elita_counter_atk_debuff") != NULL)) {
-        void* owner_bc = (statModifier && obj_ok(statModifier)) ? *(void**)((char*)statModifier + 0x10) : NULL;
-        int is_p0 = is_player0_bc(owner_bc);
-        int ap = is_p0 ? 0 : 1;
-        if (!skill_has_buff(ap, "elita_counter_pouch")) {
-            return 0; // 未持反击锦囊，彻底阻止！
+    const char* owner_bot = (owner_pidx == 0) ? g_p0_bot_id : g_p1_bot_id;
+    int curr_sp = 0;
+    if (s_last_atk_level == 16) curr_sp = 1;
+    else if (s_last_atk_level == 32) curr_sp = 2;
+    else if (s_last_atk_level == 64) curr_sp = 3;
+    else if (owner_pidx == 0 && g_p0_current_special_index > 0) curr_sp = g_p0_current_special_index;
+
+    SkillTestRollContext roll_ctx = {
+        .self = self,
+        .stat_modifier = statModifier,
+        .modifier_id = mod_id,
+        .owner_bot_id = owner_bot,
+        .owner_player_index = owner_pidx,
+        .target_player_index = 1 - owner_pidx,
+        .current_special_index = curr_sp,
+        .last_hit_index = s_last_hit_index,
+        .current_hit_is_last = (s_current_hit_is_last != 0),
+        .is_ranged = (s_current_hit_is_ranged != 0),
+        .is_heavy = (s_current_hit_is_heavy != 0),
+        .p_roll = pRoll,
+        .p_chance = pChance,
+        .trigger_params = triggerParams,
+        .method = method
+    };
+
+    int res = 0;
+    int handled = 0;
+    if (mod_id[0]) {
+        handled = skill_dispatch_test_roll(&roll_ctx, &res);
+    }
+
+    if (!handled) {
+        typedef int (*fn_test_roll)(void*, void*, float*, float*, void*, void*);
+        res = H[192].orig ? ((fn_test_roll)H[192].orig)(self, statModifier, pRoll, pChance, triggerParams, method) : 0;
+        if (mod_id[0]) {
+            skill_dispatch_test_roll_post(&roll_ctx, res);
         }
     }
 
-    if (mod_id[0] && strstr(mod_id, "jetfire_energy_charge") != NULL) {
-        void* owner_bc = *(void**)((char*)statModifier + 0x10);
-        int is_p0 = is_player0_bc(owner_bc);
-        if (is_p0) s_jetfire_charge_sm_p0 = statModifier;
-        else s_jetfire_charge_sm_p1 = statModifier;
-        flog("JETFIRE_CAPTURE_SM: energy_charge captured for %s -> sm=%p (owner_bc=%p)",
-             is_p0 ? "P0" : "P1", statModifier, owner_bc);
-        return 0; // 手动招架触发，阻止自动掷骰施加
-    }
-
-    // 1. 擎天柱 SP1 破甲: 仅后两击巨斧劈砍 (hit 1, 2) 破甲，第一击 (hit 0) 拳击不破甲
-    if (mod_id[0] && strstr(mod_id, "optimus_sp1_armor_break") != NULL) {
-        if (s_last_hit_index == 0) {
-            flog("OPTIMUS_SP1_GATE: hit 0 is punch, skip armor break roll");
-            return 0;
-        }
-    }
-    // 2. 擎天柱 SP3 破甲: 仅最后一击触发永久破甲
-    if (mod_id[0] && strstr(mod_id, "optimus_sp3_armor_break") != NULL) {
-        if (!s_current_hit_is_last) {
-            flog("OPTIMUS_SP3_GATE: non-last hit, skip armor break roll");
-            return 0;
-        }
-    }
-    // 3. 通天晓 SP2: 第一下槌击 (hit 0) 破甲，第二下 (最后一下) 导弹燃烧
-    if (mod_id[0] && strstr(mod_id, "ultramagnus_sp2_armor_break") != NULL) {
-        if (s_last_hit_index != 0) return 0;
-    }
-    if (mod_id[0] && strstr(mod_id, "ultramagnus_sp2_burn") != NULL) {
-        if (!s_current_hit_is_last && s_last_hit_index == 0) return 0;
-    }
-    // 4. 通天晓 SP3: 第一下槌击 (hit 0) 破甲，后面几下 (hit > 0) 导弹燃烧
-    if (mod_id[0] && strstr(mod_id, "ultramagnus_sp3_armor_break") != NULL) {
-        if (s_last_hit_index != 0) return 0;
-    }
-    if (mod_id[0] && strstr(mod_id, "ultramagnus_sp3_burn") != NULL) {
-        if (s_last_hit_index == 0) return 0;
-    }
-    // 5. 电影铁皮 (Ironhide ROTF):
-    // a) SP1 仅最后一击算导弹攻击 (前置近战拳脚不触发燃烧与导弹暴击)
-    if (mod_id[0] && strstr(mod_id, "ironhide_missile_") != NULL) {
-        if (g_p0_current_special_index == 1 && !s_current_hit_is_last) {
-            flog("IRONHIDE_GATE: SP1 non-last hit, skip missile roll: %s", mod_id);
-            return 0;
-        }
-    }
-    // b) 初次燃烧与叠层燃烧互斥逻辑:
-    // 官方真理源: "若对手在燃烧中，则燃烧可叠加，每层伤害为30%; 未在燃烧中则施加80%"
-    // 单次打击绝对不能同时施加 80% 和 30% 燃烧
-    if (mod_id[0] && strstr(mod_id, "ironhide_missile_burn") != NULL) {
-        void* owner_bc = (statModifier && obj_ok(statModifier)) ? *(void**)((char*)statModifier + 0x10) : NULL;
-        int is_p0 = is_player0_bc(owner_bc);
-        uint64_t target_burn_exp = is_p0 ? s_p1_burn_expire_ms : s_p0_burn_expire_ms;
-        int target_already_burning = (propgo_now_ms() < target_burn_exp);
-
-        if (strstr(mod_id, "ironhide_missile_burn_stack") != NULL) {
-            // 叠层燃烧: 若目标在本次打击前并未处于燃烧状态，或者本次打击已经施加过燃烧，直接跳过
-            if (!target_already_burning || s_ironhide_burned_this_hit) {
-                flog("IRONHIDE_GATE: skip burn_stack (target_burning=%d, burned_this_hit=%d)", target_already_burning, s_ironhide_burned_this_hit);
-                return 0;
-            }
-        } else {
-            // 初次燃烧 (80% ATK): 若目标在本次打击前已经处于燃烧状态，跳过初次燃烧，留给 stack 判定
-            if (target_already_burning) {
-                flog("IRONHIDE_GATE: skip initial burn because target is already burning");
-                return 0;
-            }
-        }
-    }
-
-    // 6. 横炮 (Sideswipe):
-    // SP1 仅最后一击闪踢 ROLL DICE 眩晕; SP2 和 SP3 仅最后一击 ROLL DICE 燃烧
-    if (mod_id[0] && (strstr(mod_id, "sideswipe_s1_stun") != NULL ||
-                      strstr(mod_id, "sideswipe_s2_burn") != NULL ||
-                      strstr(mod_id, "sideswipe_s3_burn") != NULL)) {
-        if (!s_current_hit_is_last) {
-            flog("SIDESWIPE_GATE: non-last hit, skip roll: %s", mod_id);
-            return 0;
-        }
-    }
-    // SP3 驱散: 除最后一击外，每一击概率驱散
-    if (mod_id[0] && strstr(mod_id, "sideswipe_s3_nullify") != NULL) {
-        if (s_current_hit_is_last) {
-            flog("SIDESWIPE_GATE: last hit, skip nullify roll: %s", mod_id);
-            return 0;
-        }
-    }
-
-    // 7. 搅拌者 (Mixmaster ROTF):
-    // SP2 仅后面两击 (Molotov idx=100 与地雷 LastHit) ROLL DICE 燃烧，第 1 击近战拳击 (hit 0 且非末击) 不燃烧
-    if (mod_id[0] && strstr(mod_id, "mixmaster_s2_burn") != NULL) {
-        if (s_last_hit_index == 0 && !s_current_hit_is_last) {
-            flog("MIXMASTER_GATE: hit 0 is punch, skip burn roll");
-            return 0;
-        }
-    }
-
-    // 8. 黄蜂勇士 (Waspinator):
-    // SP3 仅最后一击施加燃烧，前面的攻击不 ROLL DICE 燃烧
-    if (mod_id[0] && strstr(mod_id, "waspinator_s3_burn") != NULL) {
-        if (!s_current_hit_is_last) {
-            flog("WASPINATOR_GATE: non-last hit, skip burn roll");
-            return 0;
-        }
-    }
-
-    // 9. 喷气机 (Ramjet):
-    // SP1 额外燃烧叠层门禁: 依赖主燃烧判定决定的目标总层数 (1~4)
-    if (mod_id[0] && strstr(mod_id, "ramjet_s1_burn_stack_") != NULL) {
-        int stack_idx = 2;
-        if (strstr(mod_id, "stack_3") != NULL) stack_idx = 3;
-        else if (strstr(mod_id, "stack_4") != NULL) stack_idx = 4;
-        if (s_ramjet_s1_stacks < stack_idx) {
-            return 0; // 随机层数未达此阶，跳过
-        }
-        return 1; // 达到此阶，通过引擎原生机制自然叠加
-    }
-
-    // 10. 警车 (Prowl):
-    // a) 充能与近战增益门禁:
-    if (mod_id[0] && strstr(mod_id, "prowl_melee_charge") != NULL) {
-        void* owner_bc = (statModifier && obj_ok(statModifier)) ? *(void**)((char*)statModifier + 0x10) : NULL;
-        int is_p0 = is_player0_bc(owner_bc);
-        if (is_p0) {
-            s_prowl_charge_sm_p0 = statModifier;
-        } else {
-            s_prowl_charge_sm_p1 = statModifier;
-        }
-        flog("PROWL_CAPTURE_SM: melee_charge captured for %s -> sm=%p (owner_bc=%p)",
-             is_p0 ? "P0" : "P1", statModifier, owner_bc);
-        return 0; // 阻止开局与原生自动触发，由玩家主动后闪时通过 prowl_start_charge 施加
-    }
-    if (mod_id[0] && strstr(mod_id, "prowl_passive_melee_buff") != NULL) {
-        void* owner_bc = (statModifier && obj_ok(statModifier)) ? *(void**)((char*)statModifier + 0x10) : NULL;
-        int is_p0 = is_player0_bc(owner_bc);
-        if (is_p0) {
-            s_prowl_passive_sm_p0 = statModifier;
-        } else {
-            s_prowl_passive_sm_p1 = statModifier;
-        }
-        flog("PROWL_CAPTURE_SM: passive_melee_buff captured for %s -> sm=%p (owner_bc=%p)",
-             is_p0 ? "P0" : "P1", statModifier, owner_bc);
-        return 0; // 阻止原生自动触发，由 prowl_finish_charge 统一施加
-    }
-    // b) 远程眩晕: 仅远程射击生效 (s_current_hit_is_ranged); 连开三枪仅第一枪 roll dice; 充能中几率 80%，否则 10%
-    if (mod_id[0] && strstr(mod_id, "prowl_ranged_stun") != NULL) {
-        if (!s_current_hit_is_ranged) {
-            return 0; // 严格门禁：近战普通攻击绝不触发远程眩晕判定
-        }
-        void* owner_bc = (statModifier && obj_ok(statModifier)) ? *(void**)((char*)statModifier + 0x10) : NULL;
-        int is_p0 = is_player0_bc(owner_bc);
-        uint64_t now_ms = propgo_now_ms();
-        static uint64_t s_prowl_last_shot_ms_p0 = 0;
-        static uint64_t s_prowl_last_shot_ms_p1 = 0;
-        uint64_t* last_shot_ms = is_p0 ? &s_prowl_last_shot_ms_p0 : &s_prowl_last_shot_ms_p1;
-
-        if (now_ms - *last_shot_ms < 1000) {
-            flog("PROWL_RANGED_STUN: skipping non-first shot in volley (elapsed=%llu ms)", (unsigned long long)(now_ms - *last_shot_ms));
-            return 0;
-        }
-        *last_shot_ms = now_ms;
-
-        int is_charging = prowl_is_charging(is_p0);
-        float chance = is_charging ? 0.80f : 0.10f;
-        if (pChance) *pChance = chance;
-
-        float r = ((float)rand()) / (float)RAND_MAX;
-        if (pRoll) *pRoll = r;
-
-        flog("PROWL_RANGED_STUN_ROLL: [%s] charging=%d chance=%.2f roll=%.3f",
-             is_p0 ? "P0" : "P1", is_charging, chance, r);
-        if (r < chance) {
-            flog("PROWL_RANGED_STUN: STUN TRIGGERED! (1.5s)");
-            combat_overlay_push("[%s] 远程眩晕命中！(几率: %.0f%%)", is_p0 ? "P0" : "P1", chance * 100.0f);
-            return 1;
-        } else {
-            flog("PROWL_RANGED_STUN: roll failed");
-            return 0;
-        }
-    }
-
-        // 11. 电影大黄蜂 / G1威震天 / 暗天陨 开局与动态 Buff 捕获及门禁:
-    if (mod_id[0] && strcmp(mod_id, "bumblebee_cin_dotm_calib_melee") == 0) {
-        void* owner_bc = (statModifier && obj_ok(statModifier)) ? *(void**)((char*)statModifier + 0x10) : NULL;
-        int is_p0 = is_player0_bc(owner_bc);
-        if (is_p0) s_bumblebee_calib_melee_sm_p0 = statModifier;
-        else s_bumblebee_calib_melee_sm_p1 = statModifier;
-        if (pChance) *pChance = 1.0f;
-        if (pRoll) *pRoll = 0.0f;
-        flog("BUMBLEBEE_CAPTURE_SM: calib_melee captured & applied at start for %s -> sm=%p", is_p0 ? "P0" : "P1", statModifier);
-        return 1; // 开局自动激活近战规避图标
-    }
-    if (mod_id[0] && strcmp(mod_id, "bumblebee_cin_dotm_calib_ranged") == 0) {
-        void* owner_bc = (statModifier && obj_ok(statModifier)) ? *(void**)((char*)statModifier + 0x10) : NULL;
-        int is_p0 = is_player0_bc(owner_bc);
-        if (is_p0) s_bumblebee_calib_ranged_sm_p0 = statModifier;
-        else s_bumblebee_calib_ranged_sm_p1 = statModifier;
-        flog("BUMBLEBEE_CAPTURE_SM: calib_ranged captured for %s -> sm=%p", is_p0 ? "P0" : "P1", statModifier);
-        return 0; // 开局不激活，待受到远程攻击 1.5s 后施加
-    }
-    if (mod_id[0] && strcmp(mod_id, "bumblebee_cin_dotm_calib_melee_cd") == 0) {
-        void* owner_bc = (statModifier && obj_ok(statModifier)) ? *(void**)((char*)statModifier + 0x10) : NULL;
-        int is_p0 = is_player0_bc(owner_bc);
-        if (is_p0) s_bumblebee_calib_melee_cd_sm_p0 = statModifier;
-        else s_bumblebee_calib_melee_cd_sm_p1 = statModifier;
-        return 0;
-    }
-    if (mod_id[0] && strcmp(mod_id, "bumblebee_cin_dotm_calib_ranged_cd") == 0) {
-        void* owner_bc = (statModifier && obj_ok(statModifier)) ? *(void**)((char*)statModifier + 0x10) : NULL;
-        int is_p0 = is_player0_bc(owner_bc);
-        if (is_p0) s_bumblebee_calib_ranged_cd_sm_p0 = statModifier;
-        else s_bumblebee_calib_ranged_cd_sm_p1 = statModifier;
-        return 0;
-    }
-    if (mod_id[0] && strcmp(mod_id, "megatron_fusion_cd") == 0) {
-        void* owner_bc = (statModifier && obj_ok(statModifier)) ? *(void**)((char*)statModifier + 0x10) : NULL;
-        int is_p0 = is_player0_bc(owner_bc);
-        if (is_p0) s_megatron_fusion_cd_sm_p0 = statModifier;
-        else s_megatron_fusion_cd_sm_p1 = statModifier;
-        if (pChance) *pChance = 1.0f;
-        if (pRoll) *pRoll = 0.0f;
-        flog("MEGATRON_CAPTURE_SM: fusion_cd captured & applied at start for %s -> sm=%p", is_p0 ? "P0" : "P1", statModifier);
-        return 1; // 开局自动激活 6 秒灰色融合炮倒计时图标
-    }
-    if (mod_id[0] && strcmp(mod_id, "megatron_fusion_cannon") == 0) {
-        void* owner_bc = (statModifier && obj_ok(statModifier)) ? *(void**)((char*)statModifier + 0x10) : NULL;
-        int is_p0 = is_player0_bc(owner_bc);
-        if (is_p0) s_megatron_fusion_stack_sm_p0 = statModifier;
-        else s_megatron_fusion_stack_sm_p1 = statModifier;
-        flog("MEGATRON_CAPTURE_SM: fusion_cannon stack captured for %s -> sm=%p", is_p0 ? "P0" : "P1", statModifier);
-        return 0; // 开局不激活，待每 6 秒倒计时走完后叠加
-    }
-    if (mod_id[0] && strcmp(mod_id, "megatron_debuff_fusion") == 0) {
-        void* owner_bc = (statModifier && obj_ok(statModifier)) ? *(void**)((char*)statModifier + 0x10) : NULL;
-        int is_p0 = is_player0_bc(owner_bc);
-        if (is_p0) s_megatron_debuff_fusion_sm_p0 = statModifier;
-        else s_megatron_debuff_fusion_sm_p1 = statModifier;
-        flog("MEGATRON_CAPTURE_SM: debuff_fusion captured for %s -> sm=%p", is_p0 ? "P0" : "P1", statModifier);
-        return 0; // 开局绝不激活！仅在有融合炮重击命中成功融合对手减益时由 skill_apply_buff 触发
-    }
-    if (mod_id[0] && strcmp(mod_id, "megatron_fusion_overload") == 0) {
-        void* owner_bc = (statModifier && obj_ok(statModifier)) ? *(void**)((char*)statModifier + 0x10) : NULL;
-        int is_p0 = is_player0_bc(owner_bc);
-        if (is_p0) s_megatron_overload_sm_p0 = statModifier;
-        else s_megatron_overload_sm_p1 = statModifier;
-        flog("MEGATRON_CAPTURE_SM: fusion_overload captured for %s -> sm=%p", is_p0 ? "P0" : "P1", statModifier);
-        return 0; // 开局绝不激活！仅在 SP3 施放时由 skill_apply_buff 触发
-    }
-    if (mod_id[0] && strcmp(mod_id, "nemesisprime_dark_cd") == 0) {
-        void* owner_bc = (statModifier && obj_ok(statModifier)) ? *(void**)((char*)statModifier + 0x10) : NULL;
-        int is_p0 = is_player0_bc(owner_bc);
-        if (is_p0) s_nemesis_dark_cd_sm_p0 = statModifier;
-        else s_nemesis_dark_cd_sm_p1 = statModifier;
-        if (pChance) *pChance = 1.0f;
-        if (pRoll) *pRoll = 0.0f;
-        flog("NEMESIS_CAPTURE_SM: dark_cd captured & applied at start for %s -> sm=%p", is_p0 ? "P0" : "P1", statModifier);
-        return 1; // 开局自动激活紫色 E407 倒计时图标
-    }
-    if (mod_id[0] && strcmp(mod_id, "nemesisprime_dark_energy") == 0) {
-        void* owner_bc = (statModifier && obj_ok(statModifier)) ? *(void**)((char*)statModifier + 0x10) : NULL;
-        int is_p0 = is_player0_bc(owner_bc);
-        if (is_p0) s_nemesis_dark_stack_sm_p0 = statModifier;
-        else s_nemesis_dark_stack_sm_p1 = statModifier;
-        flog("NEMESIS_CAPTURE_SM: dark_energy stack captured for %s -> sm=%p", is_p0 ? "P0" : "P1", statModifier);
-        return 0; // 开局不激活，待倒计时走完后叠加紫色 E90A 层数图标
-    }
-
-    // a) 第 16 层爆发增益: 捕获 StatModifier，由满 15 层后通过 skill_apply_buff 施加
-    if (mod_id[0] && strstr(mod_id, "bumblebee_cin_dotm_burst_atk") != NULL) {
-        void* owner_bc = (statModifier && obj_ok(statModifier)) ? *(void**)((char*)statModifier + 0x10) : NULL;
-        int is_p0 = is_player0_bc(owner_bc);
-        if (is_p0) {
-            s_bumblebee_burst_sm_p0 = statModifier;
-        } else {
-            s_bumblebee_burst_sm_p1 = statModifier;
-        }
-        flog("BUMBLEBEE_CAPTURE_SM: burst_atk captured for %s -> sm=%p (owner_bc=%p)",
-             is_p0 ? "P0" : "P1", statModifier, owner_bc);
-        return 0; // 手动触发，阻止自动掷骰施加
-    }
-    // b) 击倒攻击增益: 必须为重击或必杀技最终击 (造成击倒)
-    if (mod_id[0] && strstr(mod_id, "bumblebee_cin_dotm_knockdown_atk") != NULL) {
-        if (!s_current_hit_is_last || (!s_current_hit_is_heavy && g_p0_current_special_index <= 0)) {
-            flog("BUMBLEBEE_GATE: non-knockdown hit, skip roll for %s (last=%d heavy=%d sp=%d)",
-                 mod_id, s_current_hit_is_last, s_current_hit_is_heavy, g_p0_current_special_index);
-            return 0;
-        }
-    }
-    // c) SP2 和 SP3 震击: 仅最后一击施加
-    if (mod_id[0] && (strstr(mod_id, "bumblebee_cin_dotm_sp2_shock") != NULL ||
-                      strstr(mod_id, "bumblebee_cin_dotm_sp3_shock") != NULL)) {
-        if (!s_current_hit_is_last) {
-            flog("BUMBLEBEE_GATE: non-last hit, skip roll for %s", mod_id);
-            return 0;
-        }
-    }
-
-    // 威震天 (Megatron Leader 2015): SP1破甲, SP2虚弱, SP3震击 仅最后一击命中时施加
-    if (mod_id[0] && (strstr(mod_id, "megatron_sp1_armor_break") != NULL ||
-                      strstr(mod_id, "megatron_sp2_atk_debuff") != NULL ||
-                      strstr(mod_id, "megatron_sp3_shock") != NULL)) {
-        if (!s_current_hit_is_last) {
-            flog("MEGATRON_GATE: non-last hit, skip roll for %s", mod_id);
-            return 0;
-        }
-    }
-
-    // 12. 野牛 (Tantrum):
-    if (mod_id[0] && strstr(mod_id, "tantrum_block_charge") != NULL) {
-        void* owner_bc = (statModifier && obj_ok(statModifier)) ? *(void**)((char*)statModifier + 0x10) : NULL;
-        int is_p0 = is_player0_bc(owner_bc);
-        if (is_p0) {
-            s_tantrum_charge_sm_p0 = statModifier;
-        } else {
-            s_tantrum_charge_sm_p1 = statModifier;
-        }
-        flog("TANTRUM_CAPTURE_SM: block_charge captured for %s -> sm=%p (owner_bc=%p)",
-             is_p0 ? "P0" : "P1", statModifier, owner_bc);
-        return 0; // 阻止开局与原生自动触发，由防御状态驱动通过 skill_apply_buff 施加
-    }
-    if (mod_id[0] && strstr(mod_id, "tantrum_block_unstoppable") != NULL) {
-        void* owner_bc = (statModifier && obj_ok(statModifier)) ? *(void**)((char*)statModifier + 0x10) : NULL;
-        int is_p0 = is_player0_bc(owner_bc);
-        if (is_p0) {
-            s_tantrum_unstop_sm_p0 = statModifier;
-        } else {
-            s_tantrum_unstop_sm_p1 = statModifier;
-        }
-        flog("TANTRUM_CAPTURE_SM: block_unstoppable captured for %s -> sm=%p (owner_bc=%p)",
-             is_p0 ? "P0" : "P1", statModifier, owner_bc);
-        return 0; // 阻止原生自动触发，由 1.5s 蓄力完成后统一施加
-    }
-
-    typedef int (*fn_test_roll)(void*, void*, float*, float*, void*, void*);
-    int res = H[192].orig ? ((fn_test_roll)H[192].orig)(self, statModifier, pRoll, pChance, triggerParams, method) : 0;
-
-    if (res && mod_id[0] && strstr(mod_id, "ironhide_missile_burn") != NULL) {
-        s_ironhide_burned_this_hit = 1;
-    }
-
-    // 喷气机 SP1 主燃烧掷骰判定: 成功时随机抽取本发导弹的总层数 (1~4 层)
-    if (mod_id[0] && strcmp(mod_id, "ramjet_s1_burn") == 0) {
-        if (res) {
-            s_ramjet_s1_stacks = 1 + (rand() % 4); // 随机 1~4 层
-            flog("RAMJET_SP1_ROLL: passed, decided target stacks = %d", s_ramjet_s1_stacks);
-        } else {
-            s_ramjet_s1_stacks = 0;
-        }
-    }
-
-    // 通用技能概率掷骰 HUD 播报 (全游戏通用拦截，对所有机器人全自动生效)
+    // 通用结构化日志与骰子 HUD 播报
     PROTECT({
-        if (pChance && *pChance < 0.999f && *pChance > 0.0001f && pRoll) {
-            float roll = *pRoll;
-            float chance = *pChance;
-            int pass = res;
+        if (mod_id[0]) {
+            float roll_v = pRoll ? *pRoll : -1.0f;
+            float chance_v = pChance ? *pChance : -1.0f;
+            flog("[AB_TRACE] EVT=TEST_ROLL owner=P%d mod=%s res=%d roll=%.3f chance=%.3f handled=%d",
+                 owner_pidx, mod_id, res, roll_v, chance_v, handled);
 
-            void* owner_bc = statModifier && obj_ok(statModifier) ? *(void**)((char*)statModifier + 0x10) : NULL;
-            int is_p0 = is_player0_bc(owner_bc);
-            const char* bot_id = is_p0 ? (g_p0_bot_id[0] ? g_p0_bot_id : "P0") : (g_p1_bot_id[0] ? g_p1_bot_id : "P1");
+            if (pChance && *pChance < 0.999f && *pChance > 0.0001f && pRoll) {
+                const char* hero = skill_dispatch_get_display_name(owner_bot);
+                const char* skill = "技能";
+                if (strstr(mod_id, "armor_break") != NULL) skill = "破甲";
+                else if (strstr(mod_id, "armor") != NULL) skill = "护甲";
+                else if (strstr(mod_id, "burn") != NULL) skill = "燃烧";
+                else if (strstr(mod_id, "bleed") != NULL) skill = "流血";
+                else if (strstr(mod_id, "stun") != NULL) skill = "眩晕";
+                else if (strstr(mod_id, "shock") != NULL) skill = "冲击";
+                else if (strstr(mod_id, "leak") != NULL) skill = "能量汲取";
+                else if (strstr(mod_id, "evade") != NULL) skill = "规避";
+                else if (strstr(mod_id, "nullify") != NULL) skill = "驱散";
+                else skill = mod_id;
 
-            const char* hero = "英雄";
-            if (strstr(bot_id, "optimus") != NULL) hero = "擎天柱";
-            else if (strstr(bot_id, "ultramagnus") != NULL) hero = "通天晓";
-            else if (strstr(bot_id, "blackout") != NULL) hero = "眩晕";
-            else if (strstr(bot_id, "grindor") != NULL) hero = "碾碎器";
-            else if (strstr(bot_id, "bumblebee") != NULL) hero = "大黄蜂";
-            else if (strstr(bot_id, "barricade") != NULL) hero = "路障";
-            else if (strstr(bot_id, "megatron") != NULL) hero = "威震天";
-            else if (strstr(bot_id, "rhinox") != NULL) hero = "犀牛";
-            else if (strstr(bot_id, "arcee") != NULL) hero = "阿尔茜";
-            else if (strstr(bot_id, "wheeljack") != NULL) hero = "千斤顶";
-            else if (strstr(bot_id, "soundwave") != NULL) hero = "声波";
-            else if (strstr(bot_id, "starscream") != NULL) hero = "红蜘蛛";
-            else if (strstr(bot_id, "shockwave") != NULL) hero = "震荡波";
-            else if (strstr(bot_id, "ironhide") != NULL) hero = "铁皮";
-            else if (strstr(bot_id, "ratchet") != NULL) hero = "救护车";
-            else if (strstr(bot_id, "windblade") != NULL) hero = "风刃";
-            else if (strstr(bot_id, "drift") != NULL) hero = "漂移";
-            else if (strstr(bot_id, "dinobot") != NULL) hero = "恐龙勇士";
-            else if (strstr(bot_id, "scorponok") != NULL) hero = "巨蝎勇士";
-            else if (strstr(bot_id, "sideswipe") != NULL) hero = "横炮";
-            else if (strstr(bot_id, "ramjet") != NULL) hero = "喷气机";
-            else if (strstr(bot_id, "mixmaster") != NULL) hero = "搅拌者";
-            else if (strstr(bot_id, "waspinator") != NULL) hero = "黄蜂勇士";
-            else if (strstr(bot_id, "bonecrusher") != NULL) hero = "碎骨魔";
-            else if (strstr(bot_id, "swindle") != NULL) hero = "诈骗";
-            else if (strstr(bot_id, "blastoff") != NULL) hero = "爆炸";
-            else if (strstr(bot_id, "brawl") != NULL) hero = "吵闹";
-            else if (strstr(bot_id, "motormaster") != NULL) hero = "汽车大师";
-            else if (bot_id[0]) hero = bot_id;
-
-            const char* skill = "技能";
-            if (strstr(mod_id, "armor_break") != NULL) skill = "破甲";
-            else if (strstr(mod_id, "armor") != NULL) skill = "护甲";
-            else if (strstr(mod_id, "burn") != NULL) skill = "燃烧";
-            else if (strstr(mod_id, "bleed") != NULL) skill = "流血";
-            else if (strstr(mod_id, "stun") != NULL) skill = "眩晕";
-            else if (strstr(mod_id, "shock") != NULL) skill = "冲击";
-            else if (strstr(mod_id, "leak") != NULL) skill = "能量汲取";
-            else if (strstr(mod_id, "evade") != NULL) skill = "规避";
-            else if (strstr(mod_id, "nullify") != NULL) skill = "驱散";
-            else if (mod_id[0]) skill = mod_id;
-
-            if (pass) {
-                if (strcmp(mod_id, "ramjet_s1_burn") == 0) {
-                    flog("ROLL_DICE_PASS: [%s] SP1 燃烧 PASS! +%d层! (Roll: %.1f%% < %.1f%%, mod=%s)", hero, s_ramjet_s1_stacks, roll * 100.0f, chance * 100.0f, mod_id);
-                    combat_overlay_push("[喷气机] SP1 燃烧 PASS! +%d层! (Roll: %.1f%% < %.1f%%)", s_ramjet_s1_stacks, roll * 100.0f, chance * 100.0f);
+                if (res) {
+                    flog("ROLL_DICE_PASS: [%s] %s PASS! (Roll: %.1f%% < %.1f%%, mod=%s)",
+                         hero, skill, roll_v * 100.0f, chance_v * 100.0f, mod_id);
+                    combat_overlay_push("[%s] %s PASS! (Roll: %.1f%% < %.1f%%)",
+                                        hero, skill, roll_v * 100.0f, chance_v * 100.0f);
                 } else {
-                    flog("ROLL_DICE_PASS: [%s] %s PASS! (Roll: %.1f%% < %.1f%%, mod=%s)", hero, skill, roll * 100.0f, chance * 100.0f, mod_id);
-                    combat_overlay_push("[%s] %s PASS! (Roll: %.1f%% < %.1f%%)", hero, skill, roll * 100.0f, chance * 100.0f);
-                }
-            } else {
-                if (strcmp(mod_id, "ramjet_s1_burn") == 0) {
-                    flog("ROLL_DICE_FAIL: [%s] SP1 燃烧 FAIL (Roll: %.1f%% >= %.1f%%, mod=%s)", hero, roll * 100.0f, chance * 100.0f, mod_id);
-                    combat_overlay_push("[喷气机] SP1 燃烧 FAIL (Roll: %.1f%% >= %.1f%%)", roll * 100.0f, chance * 100.0f);
-                } else {
-                    flog("ROLL_DICE_FAIL: [%s] %s FAIL (Roll: %.1f%% >= %.1f%%, mod=%s)", hero, skill, roll * 100.0f, chance * 100.0f, mod_id);
-                    combat_overlay_push("[%s] %s FAIL (Roll: %.1f%% >= %.1f%%)", hero, skill, roll * 100.0f, chance * 100.0f);
+                    flog("ROLL_DICE_FAIL: [%s] %s FAIL (Roll: %.1f%% >= %.1f%%, mod=%s)",
+                         hero, skill, roll_v * 100.0f, chance_v * 100.0f, mod_id);
+                    combat_overlay_push("[%s] %s FAIL (Roll: %.1f%% >= %.1f%%)",
+                                        hero, skill, roll_v * 100.0f, chance_v * 100.0f);
                 }
             }
         }
@@ -12733,17 +12417,36 @@ static void* hooked_BattleArbiterOnToggleAutoFight(void* a0, void* a1, void* a2,
 // ==================== Projectile Collision Penetration ====================
 // ==================== Player Invincibility Direct Hooks ====================
 // PlayerController.ApplyDamage (0x01179630)
+static volatile int s_in_pc_apply_damage = 0;
 static fn8 orig_PlayerController_ApplyDamage = NULL;
 static bool hooked_PlayerController_ApplyDamage(void* self, float amount, bool knockoutIfDead, void* method) {
+    int pidx = -1;
     if (self && obj_ok(self)) {
-        int pidx = *(int32_t*)((char*)self + 0xF4);
+        pidx = *(int32_t*)((char*)self + 0xF4);
         if (pidx == 0 && tftf_get_player_invincible()) {
             return false;
         }
     }
+    if ((pidx == 0 || pidx == 1) && amount > 0.0f) {
+        uint64_t now_ms = propgo_now_ms();
+        uint64_t last_hit = s_last_direct_hit_ms[pidx];
+        if (last_hit == 0 || now_ms < last_hit || (now_ms - last_hit) > 40) {
+            flog("[AB_TRACE] EVT=DOT_TICK tgt=P%d dmg=%.1f", pidx, amount);
+        }
+    }
+    if (pidx == 1 && autotest_is_dummy_invincible()) {
+        knockoutIfDead = false;
+        float cur_hp = skill_get_hp(1);
+        float max_dmg = (cur_hp > 200.0f) ? (cur_hp - 200.0f) : 0.0f;
+        if (amount > max_dmg) amount = max_dmg;
+        if (amount <= 0.0f) return false;
+    }
     if (orig_PlayerController_ApplyDamage) {
         typedef bool (*fn_apply_dmg)(void*, float, bool, void*);
-        return ((fn_apply_dmg)orig_PlayerController_ApplyDamage)(self, amount, knockoutIfDead, method);
+        s_in_pc_apply_damage++;
+        bool r = ((fn_apply_dmg)orig_PlayerController_ApplyDamage)(self, amount, knockoutIfDead, method);
+        s_in_pc_apply_damage--;
+        return r;
     }
     return false;
 }
@@ -12751,12 +12454,26 @@ static bool hooked_PlayerController_ApplyDamage(void* self, float amount, bool k
 // PlayerAttributes.ApplyDamage (0x00DAD08C)
 static fn8 orig_PlayerAttributes_ApplyDamage = NULL;
 static void hooked_PlayerAttributes_ApplyDamage(void* self, float amount, void* method) {
+    int pidx = -1;
     if (self && obj_ok(self)) {
         void* owner = *(void**)((char*)self + 0x28);
-        int pidx = (owner && obj_ok(owner)) ? *(int32_t*)((char*)owner + 0xF4) : -1;
+        pidx = (owner && obj_ok(owner)) ? *(int32_t*)((char*)owner + 0xF4) : -1;
         if (pidx == 0 && tftf_get_player_invincible()) {
             return;
         }
+    }
+    if (!s_in_pc_apply_damage && (pidx == 0 || pidx == 1) && amount > 0.0f) {
+        uint64_t now_ms = propgo_now_ms();
+        uint64_t last_hit = s_last_direct_hit_ms[pidx];
+        if (last_hit == 0 || now_ms < last_hit || (now_ms - last_hit) > 40) {
+            flog("[AB_TRACE] EVT=DOT_TICK tgt=P%d dmg=%.1f", pidx, amount);
+        }
+    }
+    if (pidx == 1 && autotest_is_dummy_invincible()) {
+        float cur_hp = skill_get_hp(1);
+        float max_dmg = (cur_hp > 200.0f) ? (cur_hp - 200.0f) : 0.0f;
+        if (amount > max_dmg) amount = max_dmg;
+        if (amount <= 0.0f) return;
     }
     if (orig_PlayerAttributes_ApplyDamage) {
         typedef void (*fn_pa_apply_dmg)(void*, float, void*);

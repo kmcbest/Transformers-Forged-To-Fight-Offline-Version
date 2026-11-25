@@ -1,0 +1,44 @@
+{
+  "active": true,
+  "name": "arcee_test_sp1_sp2",
+  "qid": "1.1.1",
+  "player_invincible": 1,
+  "p0": {
+    "bid": "arcee_gs_deluxe2014",
+    "mana": 3.0
+  },
+  "p1": {
+    "bid": "bonecrusher_cin_rotf",
+    "freeze_ai": true,
+    "invincible_dummy": true
+  },
+  "auto_fight": false,
+  "max_duration_ms": 18000,
+  "p0_script": [
+    { "action": "WAIT", "duration_ms": 1000 },
+    { "action": "SP1", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 1800 },
+    { "action": "RANGED", "repeat": 4 },
+    { "action": "WAIT", "duration_ms": 800 },
+    { "action": "SP2", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 4000 }
+  ],
+  "assertions": {
+    "must_hit_connected": [
+      { "attacker": "P0", "sp": 1, "min_count": 1 },
+      { "attacker": "P0", "sp": 2, "min_count": 1 }
+    ],
+    "must_apply_buffs": [
+      { "target": "P0", "mod_substr": "arcee_sp1_trick_shot", "min_count": 1 },
+      { "target": "P0", "mod_substr": "arcee_sig_ferocity", "min_count": 1 },
+      { "target": "P1", "mod_substr": "arcee_s2_bleed", "min_count": 1 }
+    ],
+    "must_dot_tick": [
+      { "target": "P1", "min_ticks": 2, "min_dmg": 1.0 }
+    ],
+    "must_log_substrings": [
+      { "substr": "RANGED_BOOST_ACTIVATED", "min_count": 1 },
+      { "substr": "ARCEE_SIG_FEROCITY", "min_count": 1 }
+    ]
+  }
+}

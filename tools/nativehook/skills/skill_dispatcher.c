@@ -41,6 +41,37 @@ extern BotSkillModule g_module_drift;
 extern BotSkillModule g_module_bludgeon;
 extern BotSkillModule g_module_blitzwing;
 extern BotSkillModule g_module_blackout;
+extern BotSkillModule g_module_optimus_g1;
+extern BotSkillModule g_module_ultramagnus;
+extern BotSkillModule g_module_ironhide;
+extern BotSkillModule g_module_mixmaster;
+extern BotSkillModule g_module_waspinator;
+extern BotSkillModule g_module_ramjet;
+extern BotSkillModule g_module_megatron_rotf;
+extern BotSkillModule g_module_acidstorm;
+extern BotSkillModule g_module_bitstream;
+extern BotSkillModule g_module_hotlink;
+extern BotSkillModule g_module_ionstorm;
+extern BotSkillModule g_module_novastorm;
+extern BotSkillModule g_module_skywarp;
+extern BotSkillModule g_module_sunstorm;
+extern BotSkillModule g_module_starscream;
+extern BotSkillModule g_module_bumblebee_g1;
+extern BotSkillModule g_module_chromia;
+extern BotSkillModule g_module_cliffjumper;
+extern BotSkillModule g_module_optimus_sg;
+extern BotSkillModule g_module_ratchet;
+extern BotSkillModule g_module_rodimus;
+extern BotSkillModule g_module_sunstreaker;
+extern BotSkillModule g_module_barricade;
+extern BotSkillModule g_module_blaster;
+extern BotSkillModule g_module_breakdown;
+extern BotSkillModule g_module_dragstrip;
+extern BotSkillModule g_module_galvatron;
+extern BotSkillModule g_module_grindor;
+extern BotSkillModule g_module_shockwave;
+extern BotSkillModule g_module_soundwave;
+extern BotSkillModule g_module_swindle;
 
 static const BotSkillModule* s_registry[] = {
     &g_module_arcee,
@@ -48,6 +79,37 @@ static const BotSkillModule* s_registry[] = {
     &g_module_wheeljack,
     &g_module_prowl,
     &g_module_optimus_mv,
+    &g_module_optimus_g1,
+    &g_module_ultramagnus,
+    &g_module_ironhide,
+    &g_module_mixmaster,
+    &g_module_waspinator,
+    &g_module_ramjet,
+    &g_module_megatron_rotf,
+    &g_module_acidstorm,
+    &g_module_bitstream,
+    &g_module_hotlink,
+    &g_module_ionstorm,
+    &g_module_novastorm,
+    &g_module_skywarp,
+    &g_module_sunstorm,
+    &g_module_starscream,
+    &g_module_bumblebee_g1,
+    &g_module_chromia,
+    &g_module_cliffjumper,
+    &g_module_optimus_sg,
+    &g_module_ratchet,
+    &g_module_rodimus,
+    &g_module_sunstreaker,
+    &g_module_barricade,
+    &g_module_blaster,
+    &g_module_breakdown,
+    &g_module_dragstrip,
+    &g_module_galvatron,
+    &g_module_grindor,
+    &g_module_shockwave,
+    &g_module_soundwave,
+    &g_module_swindle,
     &g_module_bumblebee_dotm,
     &g_module_scorponok,
     &g_module_hotrod,
@@ -158,18 +220,39 @@ void skill_dispatch_hit_connected(SkillHitContext* ctx) {
 
 int skill_dispatch_buff_gate(SkillBuffGateContext* ctx, int* out_allowed) {
     if (!ctx || !out_allowed) return 0;
-    // 优先按 modifier_id 匹配，次选按 target_bot_id
-    const BotSkillModule* mod = find_module_by_modifier(ctx->modifier_id);
-    if (!mod) {
-        mod = find_module_by_bot(ctx->target_bot_id);
+
+    const BotSkillModule* mod_owner = find_module_by_modifier(ctx->modifier_id);
+    const BotSkillModule* mod_target = ctx->target_bot_id ? find_module_by_bot(ctx->target_bot_id) : NULL;
+    if (!mod_target && ctx->target_player_index >= 0 && ctx->target_player_index < 2) {
+        mod_target = find_module_by_bot(skill_get_bot_id(ctx->target_player_index));
     }
-    if (mod && mod->on_buff_gated) {
-        int handled = mod->on_buff_gated(ctx);
-        if (handled) {
+    const BotSkillModule* mod_attacker = (ctx->attacker_player_index >= 0 && ctx->attacker_player_index < 2) ?
+                                         find_module_by_bot(skill_get_bot_id(ctx->attacker_player_index)) : NULL;
+
+    // 1. 优先由 Modifier 属主模块进行门禁判定 (如阿尔茜踢击门禁、千斤顶终段门禁)
+    if (mod_owner && mod_owner->on_buff_gated) {
+        if (mod_owner->on_buff_gated(ctx)) {
             *out_allowed = ctx->allow_application ? 1 : 0;
             return 1;
         }
     }
+
+    // 2. 目标受体模块判定 (如闪电被施加减益时通过战机夹钳反制拦截、黄豹被施加燃烧/流失时免疫)
+    if (mod_target && mod_target != mod_owner && mod_target->on_buff_gated) {
+        if (mod_target->on_buff_gated(ctx)) {
+            *out_allowed = ctx->allow_application ? 1 : 0;
+            return 1;
+        }
+    }
+
+    // 3. 施加方/对手模块判定 (如对手尝试获得增益时通过坦克夹钳拦截)
+    if (mod_attacker && mod_attacker != mod_owner && mod_attacker != mod_target && mod_attacker->on_buff_gated) {
+        if (mod_attacker->on_buff_gated(ctx)) {
+            *out_allowed = ctx->allow_application ? 1 : 0;
+            return 1;
+        }
+    }
+
     return 0;
 }
 
@@ -188,6 +271,14 @@ void skill_dispatch_buff_applied(SkillBuffAppliedContext* ctx) {
 
 int skill_dispatch_evade_check(SkillEvadeContext* ctx, int* out_evade) {
     if (!ctx || !out_evade) return 0;
+    int attacker_idx = (ctx->player_index == 0) ? 1 : 0;
+    const BotSkillModule* att_mod = find_module_by_bot(skill_get_bot_id(attacker_idx));
+    if (att_mod && att_mod->on_anti_evade_check) {
+        if (att_mod->on_anti_evade_check(attacker_idx, ctx)) {
+            *out_evade = 0;
+            return 1;
+        }
+    }
     const BotSkillModule* mod = find_module_by_bot(ctx->bot_id);
     if (mod && mod->on_evade_check) {
         return mod->on_evade_check(ctx, out_evade);
@@ -197,14 +288,56 @@ int skill_dispatch_evade_check(SkillEvadeContext* ctx, int* out_evade) {
 
 int skill_dispatch_test_roll(SkillTestRollContext* ctx, int* out_res) {
     if (!ctx || !out_res) return 0;
-    const BotSkillModule* mod = find_module_by_modifier(ctx->modifier_id);
+    const BotSkillModule* mod = find_module_by_bot(ctx->owner_bot_id);
     if (!mod) {
-        mod = find_module_by_bot(ctx->owner_bot_id);
+        mod = find_module_by_modifier(ctx->modifier_id);
     }
     if (mod && mod->on_test_roll) {
         return mod->on_test_roll(ctx, out_res);
     }
     return 0;
+}
+
+void skill_dispatch_test_roll_post(SkillTestRollContext* ctx, int roll_result) {
+    if (!ctx) return;
+    const BotSkillModule* mod = find_module_by_bot(ctx->owner_bot_id);
+    if (!mod) {
+        mod = find_module_by_modifier(ctx->modifier_id);
+    }
+    if (mod && mod->on_test_roll_post) {
+        mod->on_test_roll_post(ctx, roll_result);
+    }
+}
+
+void skill_dispatch_hit_begin(void) {
+    for (int i = 0; s_registry[i] != NULL; i++) {
+        if (s_registry[i]->on_hit_begin) {
+            s_registry[i]->on_hit_begin();
+        }
+    }
+}
+
+void skill_dispatch_evade_triggered(int evader_player_index, int is_ranged) {
+    if (evader_player_index < 0 || evader_player_index >= 2) return;
+    int opp_idx = 1 - evader_player_index;
+    const char* opp_bot = skill_get_bot_id(opp_idx);
+    const BotSkillModule* opp_mod = find_module_by_bot(opp_bot);
+    if (opp_mod && opp_mod->on_evade_triggered) {
+        opp_mod->on_evade_triggered(evader_player_index, is_ranged);
+    }
+    const char* self_bot = skill_get_bot_id(evader_player_index);
+    const BotSkillModule* self_mod = find_module_by_bot(self_bot);
+    if (self_mod && self_mod != opp_mod && self_mod->on_evade_triggered) {
+        self_mod->on_evade_triggered(evader_player_index, is_ranged);
+    }
+}
+
+const char* skill_dispatch_get_display_name(const char* bot_id) {
+    const BotSkillModule* mod = find_module_by_bot(bot_id);
+    if (mod && mod->display_name_zh && mod->display_name_zh[0]) {
+        return mod->display_name_zh;
+    }
+    return (bot_id && bot_id[0]) ? bot_id : "英雄";
 }
 
 extern char g_p0_bot_id[80];
@@ -360,4 +493,17 @@ void skill_dispatch_special_state(int player_index, int sp_level, int entered) {
     if (mod && mod->on_special_state) {
         mod->on_special_state(player_index, sp_level, entered);
     }
+}
+
+float skill_dispatch_crit_chance_mod(int player_index, int atk_level) {
+    if (player_index < 0 || player_index >= 2) return 0.0f;
+    const char* bot_id = (player_index == 0) ? g_p0_bot_id : g_p1_bot_id;
+    const BotSkillModule* mod = find_module_by_bot(bot_id);
+    if (mod && mod->on_crit_chance_mod) {
+        float bonus = 0.0f;
+        if (mod->on_crit_chance_mod(player_index, atk_level, &bonus)) {
+            return bonus;
+        }
+    }
+    return 0.0f;
 }

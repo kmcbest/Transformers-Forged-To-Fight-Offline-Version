@@ -139,14 +139,14 @@ def build_rhinox_abilities(base_hp: float = 37703.0, base_atk: float = 2187.0):
     mods.update(m_shield)
     appears.update(a_shield)
 
-    # 6. 被动 - 流血增伤 (ID: 2774): 近战对流血目标造成 20% 额外近战伤害
+    # 6. 被动 - 流血增伤 (ID: 2774): 近战对流血目标造成 20% 额外近战伤害 (由 skill_rhinox.c 精确触发)
     m_extra_dmg, a_extra_dmg = make_attack_boost_statmod(
         mod_id="rhinox_bleed_extra_dmg",
         duration=0.0,
         attack_bonus=0.20,
         chance=1.0,
-        trigger="onHit",
-        trigger_scope="level=Light,Medium,Heavy;target_has_bleed=True",
+        trigger="",
+        trigger_scope="",
         appr_id="appr_rhinox_bleed_extra_dmg",
         callout_text="",
         show_callout=False,
@@ -154,13 +154,13 @@ def build_rhinox_abilities(base_hp: float = 37703.0, base_atk: float = 2187.0):
     mods.update(m_extra_dmg)
     appears.update(a_extra_dmg)
 
-    # 7. 觉醒技 - 超频震击 (ID: 2779): 受创过高反弹 160% ATK 震击 4s
+    # 7. 觉醒技 - 超频震击 (ID: 2779): 受创过高反弹 160% ATK 震击 4s (由 skill_rhinox.c 精确触发)
     m_overclock, a_overclock = make_shock_statmod(
         mod_id="rhinox_overclock_shock",
         duration=4.0,
         total_dmg=float(round(base_atk * 1.60)),
         chance=1.0,
-        trigger="onHitTaken",
+        trigger="",
         trigger_scope="",
         appr_id="appr_rhinox_overclock_shock",
         callout_text="超频震击",
@@ -171,14 +171,14 @@ def build_rhinox_abilities(base_hp: float = 37703.0, base_atk: float = 2187.0):
     mods.update(m_overclock)
     appears.update(a_overclock)
 
-    # 8. 特殊技 3 - 流血 (ID: 2792): 30% 几率 12 秒 45% ATK 流血
+    # 8. 特殊技 3 - 流血 (ID: 2792): 30% 几率 12 秒 45% ATK 流血 (由 skill_rhinox.c SP3 末击触发)
     m_sp3_bleed, a_sp3_bleed = make_bleed_statmod(
         mod_id="rhinox_sp3_bleed",
         duration=12.0,
         total_dmg=float(round(base_atk * 0.45)),
-        chance=0.30,
-        trigger="onSpecial3Hit",
-        trigger_scope="dmgFlags=LastHit",
+        chance=1.0,
+        trigger="",
+        trigger_scope="",
         appr_id="appr_rhinox_sp3_bleed",
         callout_text="流血",
         pua_icon="\uE401",

@@ -1,6 +1,6 @@
 ---
 name: tftf_ability_authoring
-description: "Standard authoring pipeline and quality gate guide for implementing character abilities in Transformers: Forged to Fight (TFTF). Use when creating or updating bot-specific abilities under Server/abilities/bots/, querying official Chinese skill descriptions from the database, adhering to IL2CPP combat contracts, and validating via tools/validate_bot_ability.py."
+description: "Standard authoring pipeline and quality gate guide for implementing character abilities in Transformers: Forged to Fight (TFTF). Use when creating or updating bot-specific abilities under Server/abilities/bots/, querying official Chinese skill descriptions from the database, adhering to the two-layer contract (re_notes/ability_engine_contract.md & Server/abilities/contract_schema.json), and validating via tools/validate_bot_ability.py and tools/snapshot_abilities.py."
 ---
 
 # TFTF Character Ability Authoring Guide & Standard Protocol
@@ -285,16 +285,35 @@ def build_arcee_abilities(base_hp: float = 34850.0, base_atk: float = 3485.0):
 
 完成代码编写后，必须在终端执行以下门禁检验。**有任何错误（Error）均不得合并！**
 
-```bash
-# 1. 验证目标角色的契约与数据完整性
-python tools/validate_bot_ability.py <bot_id>
+> [!IMPORTANT]
+> **二层收口铁律（必读）**：
+> - 所有允许的 `tr` 和 `trs` 均固化在 `Server/abilities/contract_schema.json` 与 `re_notes/ability_engine_contract.md` 中。
+> - **禁止**在 Python `trs` 中使用 `isLastHit`、`dmgFlags=`、`index=`、`count=`、`opp.status`、`self.status`、`target_has_bleed`；多段与状态条件联动**一律设 `tr: []` 并写入 `tools/nativehook/skills/bots/skill_<bot>.c`**，由 C 主动调用 `skill_apply_buff`。
+> - **严禁**修改 `tools/nativehook/hook.c` 添加任何角色特判（总线已冻结）。
 
-# 2. 运行单测回归套件
-python Server/test_arcee_ability.py
-python Server/test_sp_callout.py
+```powershell
+# 1. 验证目标角色的 Schema 与底层契约（默认严格阻断模式）
+$env:PYTHONIOENCODING="utf-8"; python tools/validate_bot_ability.py <bot_id> --strict
 
-# 3. 全量校验所有已注册角色
-python tools/validate_bot_ability.py --all
+# 2. 验证全库快照，确保没有误伤其他老角色
+$env:PYTHONIOENCODING="utf-8"; python tools/snapshot_abilities.py --check --allow <bot_id>
+
+# 3. 全量严格门禁与 NativeHook 双目标编译
+$env:PYTHONIOENCODING="utf-8"; python tools/validate_bot_ability.py --all --strict
+$env:PYTHONIOENCODING="utf-8"; python tools/build_hook.py
+$env:PYTHONIOENCODING="utf-8"; python tools/build_hook.py --autotest
 ```
 
-通过上述校验后，新角色技能将自动被 `Server/gamedata.py` 动态加载并烘焙至离线数据包中，无需手动修改任何其他配置文件。
+通过上述校验后，新角色技能将自动被 `Server/gamedata.py` 动态加载并烘焙至离线数据包中，C 模块会随 `build_hook.py` 自动扫描 `tools/nativehook/skills/` 编入 `libdothook.so`。
+
+---
+
+## 5. 靶场实机验收流程与 MuMu 15 热部署 (Autotest Workflow)
+
+在提交真机重打包之前，应按 [AUTOTEST_SKILL_WORKFLOW.md](file:///e:/Agent/TFTF/re_notes/AUTOTEST_SKILL_WORKFLOW.md) 执行靶场验证：
+- **默认工作流（先审后验）**：先从技能描述拆解出编号测试剧本表给用户审阅，确认后再转为 `tools/autotest_scenarios/<bot>_test_*.json` 逐条执行。
+- **特指工作流（先验后审）**：仅当用户明确要求时先自主生成 JSON 自测，严格遵守 **3 轮失败熔断**（连续 3 次修改后仍失败立即停止汇报）。
+- **秒级热部署执行**（无需重编 1.39GB APK）：
+  ```powershell
+  $env:PYTHONIOENCODING="utf-8"; python tools/run_autotest.py --deploy --serial 127.0.0.1:7555 --scenarios <scenario1.json> [<scenario2.json> ...] [--only 1,3]
+  ```

@@ -62,7 +62,7 @@ def build_tantrum_abilities(base_hp: float = 36000.0, base_atk: float = 2150.0):
         "id": "tantrum_block_charge",
         "t": "attack_buff",
         "tm": "",
-        "tr": ["manual"],
+        "tr": [],
         "uit": [],
         "pri": 0,
         "trm": 0.0,
@@ -94,7 +94,7 @@ def build_tantrum_abilities(base_hp: float = 36000.0, base_atk: float = 2150.0):
     m_unstop, a_unstop = make_unstoppable_statmod(
         mod_id="tantrum_block_unstoppable",
         duration=4.5,
-        trigger="manual",
+        trigger="",
         trigger_scope="",
         appr_id="appr_tantrum_block_unstoppable",
         callout_text="不可阻挡",

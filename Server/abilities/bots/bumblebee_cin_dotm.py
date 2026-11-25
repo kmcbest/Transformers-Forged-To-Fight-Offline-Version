@@ -74,7 +74,7 @@ def build_bumblebee_cin_dotm_abilities(base_hp: float = 28550.0, base_atk: float
         attack_bonus=0.135,
         chance=1.0,
         trigger="onHit",
-        trigger_scope="isLastHit=true;level=Heavy,Special1,Special2,Special3",
+        trigger_scope="level=Heavy,Special1,Special2,Special3",
         appr_id="appr_bumblebee_cin_dotm_knockdown_atk",
         callout_text="攻击加成",
         show_callout=True,
@@ -195,14 +195,14 @@ def build_bumblebee_cin_dotm_abilities(base_hp: float = 28550.0, base_atk: float
     mods.update(m_sp1_ab)
     appears.update(a_sp1_ab)
 
-    # 5. SP2 震击 (ID: 2427): 最后一击 100% 施加 10 秒震击 (80% ATK 伤害)
+    # 5. SP2 震击 (ID: 2427): 最后一击 100% 施加 10 秒震击 (由 skill_bumblebee_dotm.c 过滤非末击)
     m_sp2_shk, a_sp2_shk = make_shock_statmod(
         mod_id="bumblebee_cin_dotm_sp2_shock",
         duration=10.0,
         total_dmg=float(round(base_atk * 0.80)),
         chance=1.0,
-        trigger="onHit",
-        trigger_scope="level=Special2;isLastHit=true",
+        trigger="onSpecial2Hit",
+        trigger_scope="",
         appr_id="appr_bumblebee_cin_dotm_sp2_shock",
         callout_text="震击",
         show_callout=True,
@@ -211,14 +211,14 @@ def build_bumblebee_cin_dotm_abilities(base_hp: float = 28550.0, base_atk: float
     mods.update(m_sp2_shk)
     appears.update(a_sp2_shk)
 
-    # 6. SP3 震击 (ID: 2436): 最后一击 100% 施加 10 秒震击 (80% ATK 伤害)
+    # 6. SP3 震击 (ID: 2436): 最后一击 100% 施加 10 秒震击 (由 skill_bumblebee_dotm.c 过滤非末击)
     m_sp3_shk, a_sp3_shk = make_shock_statmod(
         mod_id="bumblebee_cin_dotm_sp3_shock",
         duration=10.0,
         total_dmg=float(round(base_atk * 0.80)),
         chance=1.0,
-        trigger="onHit",
-        trigger_scope="level=Special3;isLastHit=true",
+        trigger="onSpecial3Hit",
+        trigger_scope="",
         appr_id="appr_bumblebee_cin_dotm_sp3_shock",
         callout_text="震击",
         show_callout=True,

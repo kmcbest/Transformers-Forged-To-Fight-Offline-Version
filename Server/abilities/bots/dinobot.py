@@ -160,8 +160,8 @@ def build_dinobot_abilities(base_hp: float = 40154.0, base_atk: float = 3157.0):
         duration=9.0,
         break_amount=0.40,
         chance=1.0,
-        trigger="onBlock",
-        trigger_scope="opp.action=Dash",
+        trigger="",
+        trigger_scope="",
         appr_id="appr_dinobot_dash_block_break",
         callout_text="破甲",
     )
@@ -209,8 +209,8 @@ def build_dinobot_abilities(base_hp: float = 40154.0, base_atk: float = 3157.0):
         duration=9.0,
         crit_bonus=0.30,
         chance=1.0,
-        trigger="onSpecial2",
-        trigger_scope="level=Special2",
+        trigger="onSpecial2Activate",
+        trigger_scope="",
         appr_id="appr_dinobot_sp2_crit",
         callout_text="暴击几率",
     )
@@ -225,8 +225,8 @@ def build_dinobot_abilities(base_hp: float = 40154.0, base_atk: float = 3157.0):
         duration=16.0,
         crit_bonus=0.30,
         chance=1.0,
-        trigger="onSpecial3",
-        trigger_scope="level=Special3",
+        trigger="onSpecial3Activate",
+        trigger_scope="",
         appr_id="appr_dinobot_sp3_crit",
         callout_text="暴击几率",
     )

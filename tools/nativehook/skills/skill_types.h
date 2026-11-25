@@ -83,6 +83,7 @@ typedef struct {
     int last_hit_index;
     bool current_hit_is_last;
     bool is_ranged;
+    bool is_heavy;
     float* p_roll;               // 传入的骰子点数指针
     float* p_chance;             // 传入的判定概率指针
     void* trigger_params;
@@ -126,9 +127,13 @@ typedef struct {
 // ---------------------------------------------------------------------------
 typedef struct {
     const char* bot_prefix;      // 角色前缀匹配 (如 "arcee", "rhinox", "wheeljack", "prowl")
+    const char* display_name_zh; // 可选中文显示名 (用于通用 HUD 播报，避免在总线硬编码英雄名)
 
     // 命中前/后回调
     void (*on_hit_connected)(SkillHitContext* ctx);
+
+    // 新一轮打击命中解析开始 (用于重置单次打击局部状态)
+    void (*on_hit_begin)(void);
 
     // Buff 施加过滤门禁 (返回 1 表示已处理并输出 ctx->allow_application, 返回 0 表示非本模块管辖)
     int (*on_buff_gated)(SkillBuffGateContext* ctx);
@@ -139,8 +144,14 @@ typedef struct {
     // 闪避几率检定 (返回 1 表示已处理，*out_evade 为 0 或 1; 返回 0 表示非本模块管辖)
     int (*on_evade_check)(SkillEvadeContext* ctx, int* out_evade);
 
-    // TestRoll 触发判定 (返回 1 表示已接管判定并输出 *out_res; 返回 0 表示非本模块管辖)
+    // 闪避真实触发成功后的协同回调 (evader_player_index 为触发闪避的一方)
+    void (*on_evade_triggered)(int evader_player_index, int is_ranged);
+
+    // TestRoll 触发判定 (返回 1 表示已接管判定并输出 *out_res; 返回 0 表示非本模块管辖，继续原生流程)
     int (*on_test_roll)(SkillTestRollContext* ctx, int* out_res);
+
+    // 原生 TestRoll 完成后的后置回调 (roll_result 为原版返回的 0 或 1)
+    void (*on_test_roll_post)(SkillTestRollContext* ctx, int roll_result);
 
     // 能量获取率倍率修正 (返回 1 表示已处理并输出 *out_mult, 返回 0 表示非本模块管辖)
     int (*on_power_gain_rate)(int player_index, float* out_mult);
@@ -169,4 +180,9 @@ typedef struct {
     void (*on_attack_ended)(SkillAttackEndContext* ctx);
     // 必杀技状态机进出回调 (sp_level: 1=SP1, 2=SP2, 3=SP3; entered: 1=进入, 0=退出)
     void (*on_special_state)(int player_index, int sp_level, int entered);
+
+    // 攻击方反规避判定 (返回 1 表示阻止防守方触发任何规避; 返回 0 表示不干涉)
+    int (*on_anti_evade_check)(int attacker_player_index, const SkillEvadeContext* ctx);
+    // 动态被动暴击率加权回调 (返回 1 并累加到 *out_bonus; 返回 0 表示无加成)
+    int (*on_crit_chance_mod)(int player_index, int atk_level, float* out_bonus);
 } BotSkillModule;

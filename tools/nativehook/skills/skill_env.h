@@ -19,6 +19,7 @@ extern "C" {
 // 日志与 HUD Overlay 提示
 void skill_log(const char* fmt, ...);
 void skill_overlay(const char* fmt, ...);
+void skill_hud_banner(const char* text);
 
 // 时间与随机数
 uint64_t skill_now_ms(void);
@@ -52,6 +53,7 @@ void skill_heal(int player_index, float amount);
 void skill_deal_damage(int target_player_index, float damage);
 void skill_add_mana(int player_index, float norm_mana);
 void skill_set_mana(int player_index, float norm_mana);
+void skill_set_hp_ratio(int player_index, float ratio);
 float skill_get_mana(int player_index);
 int skill_is_special_attacking(int player_index);
 
@@ -62,6 +64,7 @@ void skill_stun_player(int target_player_index, float duration_s);
 // Buff / Debuff 活性与层数查询
 int skill_has_buff(int player_index, const char* buff_id_substr);
 int skill_count_buffs(int player_index, const char* buff_id_substr);
+int skill_is_burning(int player_index);
 float skill_get_total_crit_chance(int player_index);
 
 // Buff 与修饰器主动施加与消耗

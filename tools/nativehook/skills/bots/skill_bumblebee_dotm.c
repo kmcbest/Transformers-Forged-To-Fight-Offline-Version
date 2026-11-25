@@ -231,6 +231,44 @@ static void bumblebee_dotm_on_buff_applied(SkillBuffAppliedContext* ctx) {
     }
 }
 
+static int bumblebee_dotm_on_test_roll(SkillTestRollContext* ctx, int* out_res) {
+    if (!ctx || !ctx->modifier_id || !out_res) return 0;
+
+    if (strcmp(ctx->modifier_id, "bumblebee_cin_dotm_calib_melee") == 0) {
+        if (ctx->p_chance) *ctx->p_chance = 1.0f;
+        if (ctx->p_roll) *ctx->p_roll = 0.0f;
+        *out_res = 1; // 开局自动激活近战规避图标
+        return 1;
+    }
+    if (strcmp(ctx->modifier_id, "bumblebee_cin_dotm_calib_ranged") == 0 ||
+        strcmp(ctx->modifier_id, "bumblebee_cin_dotm_calib_melee_cd") == 0 ||
+        strcmp(ctx->modifier_id, "bumblebee_cin_dotm_calib_ranged_cd") == 0 ||
+        strstr(ctx->modifier_id, "bumblebee_cin_dotm_burst_atk") != NULL) {
+        *out_res = 0; // 手动时机触发，阻止原生自动施加
+        return 1;
+    }
+
+    if (strstr(ctx->modifier_id, "bumblebee_cin_dotm_knockdown_atk") != NULL) {
+        if (!ctx->current_hit_is_last || (!ctx->is_heavy && ctx->current_special_index <= 0)) {
+            skill_log("BUMBLEBEE_GATE: non-knockdown hit, skip roll for %s (last=%d heavy=%d sp=%d)",
+                      ctx->modifier_id, ctx->current_hit_is_last, ctx->is_heavy, ctx->current_special_index);
+            *out_res = 0;
+            return 1;
+        }
+    }
+
+    if (strstr(ctx->modifier_id, "bumblebee_cin_dotm_sp2_shock") != NULL ||
+        strstr(ctx->modifier_id, "bumblebee_cin_dotm_sp3_shock") != NULL) {
+        if (!ctx->current_hit_is_last) {
+            skill_log("BUMBLEBEE_GATE: non-last hit, skip roll for %s", ctx->modifier_id);
+            *out_res = 0;
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
 static void bumblebee_dotm_on_fight_reset(int player_index) {
     if (player_index >= 0 && player_index < 2) {
         s_dotm_mode[player_index]              = CALIB_MODE_MELEE; // 开局默认近战模式
@@ -243,11 +281,12 @@ static void bumblebee_dotm_on_fight_reset(int player_index) {
 
 BotSkillModule g_module_bumblebee_dotm = {
     .bot_prefix         = "bumblebee_cin_dotm",
+    .display_name_zh    = "大黄蜂",
     .on_hit_connected   = bumblebee_dotm_on_hit_connected,
     .on_buff_gated      = bumblebee_dotm_on_buff_gated,
     .on_buff_applied    = bumblebee_dotm_on_buff_applied,
     .on_evade_check     = bumblebee_dotm_on_evade_check,
-    .on_test_roll       = NULL,
+    .on_test_roll       = bumblebee_dotm_on_test_roll,
     .on_fight_reset     = bumblebee_dotm_on_fight_reset,
     .on_simulation_tick = bumblebee_dotm_on_simulation_tick,
 };

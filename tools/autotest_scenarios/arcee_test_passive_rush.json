@@ -1,0 +1,71 @@
+{
+  "active": true,
+  "name": "arcee_test_passive_rush",
+  "qid": "1.1.1",
+  "player_invincible": 1,
+  "p0": {
+    "bid": "arcee_gs_deluxe2014",
+    "mana": 0.0
+  },
+  "p1": {
+    "bid": "optimusprime_cin_tf",
+    "freeze_ai": true,
+    "invincible_dummy": true
+  },
+  "auto_fight": false,
+  "max_duration_ms": 23000,
+  "p1_script": [
+    { "action": "DODGE", "repeat": 2 },
+    { "action": "RANGED", "repeat": 20 },
+    { "action": "WAIT", "duration_ms": 400 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 500 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 500 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 500 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 500 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 500 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 500 },
+    { "action": "DASH", "repeat": 1 }
+  ],
+  "p0_script": [
+    { "action": "DODGE", "repeat": 2 },
+    { "action": "WAIT", "duration_ms": 7200 },
+    { "action": "RANGED", "repeat": 3 },
+    { "action": "WAIT", "duration_ms": 450 },
+    { "action": "RANGED", "repeat": 3 },
+    { "action": "WAIT", "duration_ms": 450 },
+    { "action": "RANGED", "repeat": 3 },
+    { "action": "WAIT", "duration_ms": 450 },
+    { "action": "RANGED", "repeat": 3 },
+    { "action": "WAIT", "duration_ms": 450 },
+    { "action": "RANGED", "repeat": 3 },
+    { "action": "WAIT", "duration_ms": 450 },
+    { "action": "RANGED", "repeat": 4 }
+  ],
+  "assertions": {
+    "must_hit_connected": [
+      { "attacker": "P0", "sp": 0, "min_count": 5 }
+    ],
+    "must_crit": [
+      { "attacker": "P0", "min_count": 1 }
+    ],
+    "must_evade": [
+      { "target": "P0", "ranged": 1, "min_count": 1 }
+    ],
+    "must_apply_buffs": [
+      { "target": "P1", "mod_substr": "arcee_headshot_rush", "min_count": 1 }
+    ],
+    "must_dot_tick": [
+      { "target": "P1", "min_ticks": 2, "min_dmg": 1.0 }
+    ],
+    "must_log_substrings": [
+      { "substr": "ARCEE_DASH_PUNISHMENT", "min_count": 1 },
+      { "substr": "ARCEE_CRIT_POWER_GAIN", "min_count": 1 }
+    ]
+  }
+}

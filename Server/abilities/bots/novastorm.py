@@ -86,8 +86,8 @@ def build_novastorm_abilities(base_hp: float = 33500.0, base_atk: float = 2450.0
         duration=6.0,
         crit_bonus=1.0,
         chance=1.0,
-        trigger="onComboCount",
-        trigger_scope="combo%5==0",
+        trigger="",
+        trigger_scope="",
         callout_text="爆轰充能",
         pua_icon="\uE404",
     )
@@ -99,8 +99,8 @@ def build_novastorm_abilities(base_hp: float = 33500.0, base_atk: float = 2450.0
         duration=6.0,
         crit_dmg_bonus=0.35,
         chance=1.0,
-        trigger="onComboCount",
-        trigger_scope="combo%5==0",
+        trigger="",
+        trigger_scope="",
         callout_text="爆轰强化",
         pua_icon="\uE404",
     )
@@ -128,8 +128,8 @@ def build_novastorm_abilities(base_hp: float = 33500.0, base_atk: float = 2450.0
         mod_id="novastorm_sig_detonate",
         dmg=detonate_dmg,
         chance=1.0,
-        trigger="onCrit",
-        trigger_scope="level=Special1,Special2,Special3;opp.status=dmg_burn",
+        trigger="",
+        trigger_scope="",
     )
     mods.update(m_sig_detonate)
     appears.update(a_sig_detonate)

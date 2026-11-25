@@ -35,7 +35,12 @@ if str(SERVER_DIR) not in sys.path:
     sys.path.insert(0, str(SERVER_DIR))
 
 import abilities
-from abilities.core import validate_color_code, validate_statmod, validate_appear
+from abilities.core import (
+    validate_color_code,
+    validate_statmod,
+    validate_appear,
+    validate_statmod_schema,
+)
 from abilities.registry import _BOT_REGISTRY, load_all_bots
 
 
@@ -89,37 +94,42 @@ def query_ground_truth(bot_id: str):
     return [], "None"
 
 
-def validate_single_bot(bot_id: str, verbose: bool = True) -> bool:
-    """验证单个机器人的能力实现，返回 True 表示全部通过，False 表示存在严重契约违规。"""
-    print("=" * 80)
-    print(f"🤖 开始校验机器人能力模块: [{bot_id}]")
-    print("=" * 80)
+def validate_single_bot(bot_id: str, verbose: bool = True, strict: bool = True):
+    """验证单个机器人的能力实现；verbose=True 打印详情；返回 (ok, errors, warnings)。"""
+    if verbose:
+        print("=" * 80)
+        print(f"🤖 开始校验机器人能力模块: [{bot_id}] (strict={strict})")
+        print("=" * 80)
 
     # 1. 查找真理源
-    gt_rows, source_name = query_ground_truth(bot_id)
-    if gt_rows:
-        print(f"📖 【官方技能真理源】来源: {source_name} (共收录 {len(gt_rows)} 个官方技能):")
-        for cat, t_zh, t_en, d_zh, d_en, pua, order in gt_rows:
-            pua_str = f" [图标: {pua}]" if pua else ""
-            print(f"   • [{cat}] {t_zh} ({t_en}){pua_str}")
-            print(f"     官方描述: {d_zh}")
-    else:
-        print(f"⚠️  未在真理源（本地数据库与在线 CDN）中检索到 [{bot_id}] 的官方描述。")
+    if verbose:
+        gt_rows, source_name = query_ground_truth(bot_id)
+        if gt_rows:
+            print(f"📖 【官方技能真理源】来源: {source_name} (共收录 {len(gt_rows)} 个官方技能):")
+            for cat, t_zh, t_en, d_zh, d_en, pua, order in gt_rows:
+                pua_str = f" [图标: {pua}]" if pua else ""
+                print(f"   • [{cat}] {t_zh} ({t_en}){pua_str}")
+                print(f"     官方描述: {d_zh}")
+        else:
+            print(f"⚠️  未在真理源（本地数据库与在线 CDN）中检索到 [{bot_id}] 的官方描述。")
 
-    print("-" * 80)
+        print("-" * 80)
 
     # 2. 检查模块与注册
     load_all_bots()
     if bot_id not in _BOT_REGISTRY:
-        print(f"❌ [FAIL] 机器人 [{bot_id}] 未在 Server/abilities/registry.py 注册！")
-        print("   请确保在 Server/abilities/bots/ 下创建对应 py 文件并添加 @register_bot 装饰器。")
-        return False
+        msg = f"机器人 [{bot_id}] 未在 Server/abilities/registry.py 注册！"
+        if verbose:
+            print(f"❌ [FAIL] {msg}")
+            print("   请确保在 Server/abilities/bots/ 下创建对应 py 文件并添加 @register_bot 装饰器。")
+        return False, [msg], []
 
     reg = _BOT_REGISTRY[bot_id]
     builder = reg["builder"]
     bot_name = reg.get("name_zh", "")
     bot_desc = reg.get("desc", "")
-    print(f"✅ 注册信息检查通过: {bot_name} - {bot_desc}")
+    if verbose:
+        print(f"✅ 注册信息检查通过: {bot_name} - {bot_desc}")
 
     # 3. 执行能力生成测试
     test_hp = 34850.0
@@ -127,10 +137,12 @@ def validate_single_bot(bot_id: str, verbose: bool = True) -> bool:
     try:
         res = builder(base_hp=test_hp, base_atk=test_atk)
     except Exception as e:
-        print(f"❌ [FAIL] 调用 builder(base_hp, base_atk) 抛出异常: {e}")
-        import traceback
-        traceback.print_exc()
-        return False
+        msg = f"调用 builder(base_hp, base_atk) 抛出异常: {e}"
+        if verbose:
+            print(f"❌ [FAIL] {msg}")
+            import traceback
+            traceback.print_exc()
+        return False, [msg], []
 
     if isinstance(res, (tuple, list)) and len(res) == 2:
         mods, appears = res
@@ -138,10 +150,13 @@ def validate_single_bot(bot_id: str, verbose: bool = True) -> bool:
     elif isinstance(res, (tuple, list)) and len(res) >= 3:
         mods, appears, buffs = res[0], res[1], res[2]
     else:
-        print(f"❌ [FAIL] builder 必须返回 (mods, appears) 或 (mods, appears, buffs)，得到类型: {type(res)}")
-        return False
+        msg = f"builder 必须返回 (mods, appears) 或 (mods, appears, buffs)，得到类型: {type(res)}"
+        if verbose:
+            print(f"❌ [FAIL] {msg}")
+        return False, [msg], []
 
-    print(f"📦 生成产物统计: {len(mods)} 个 StatMods, {len(appears)} 个 Appears, {len(buffs)} 个 Buffs")
+    if verbose:
+        print(f"📦 生成产物统计: {len(mods)} 个 StatMods, {len(appears)} 个 Appears, {len(buffs)} 个 Buffs")
 
     # 4. 严格契约审查
     errors = []
@@ -153,6 +168,14 @@ def validate_single_bot(bot_id: str, verbose: bool = True) -> bool:
             validate_statmod(mod)
         except Exception as e:
             errors.append(f"StatMod [{mod_id}] 契约校验失败: {e}")
+
+        # 二层收口 Schema 硬校验 (tr / trs 白名单)
+        schema_errs = validate_statmod_schema(mod)
+        if schema_errs:
+            if strict:
+                errors.extend(schema_errs)
+            else:
+                warnings.extend(schema_errs)
 
         # 检查列表类型 (tr, uit, a, au)
         for field in ("tr", "uit", "a", "au"):
@@ -200,50 +223,85 @@ def validate_single_bot(bot_id: str, verbose: bool = True) -> bool:
             errors.append(f"Buff [{buff_id}] 缺少必需字段 'id' 或 'buffType'")
 
     # 5. 汇报审查结果
-    if warnings:
-        print("\n⚠️  【契约警告 (Warnings)】:")
-        for w in warnings:
-            print(f"   [WARN] {w}")
+    if verbose:
+        if warnings:
+            print("\n⚠️  【契约警告 (Warnings)】:")
+            for w in warnings:
+                print(f"   [WARN] {w}")
 
-    if errors:
-        print("\n❌ 【契约严重违规 (Errors)】:")
-        for err in errors:
-            print(f"   [FAIL] {err}")
-        print(f"\n🚫 校验未通过！共发现 {len(errors)} 个严重错误，{len(warnings)} 个警告。")
-        return False
-    else:
-        print(f"\n✨ 恭喜！机器人 [{bot_id}] 能力模块通过全部底层契约与数据完整性校验！")
-        return True
+        if errors:
+            print("\n❌ 【契约严重违规 (Errors)】:")
+            for err in errors:
+                print(f"   [FAIL] {err}")
+            print(f"\n🚫 校验未通过！共发现 {len(errors)} 个严重错误，{len(warnings)} 个警告。")
+        else:
+            print(f"\n✨ 恭喜！机器人 [{bot_id}] 能力模块通过全部底层契约与数据完整性校验！")
+
+    return (len(errors) == 0), errors, warnings
+
+
+def print_legacy_report():
+    load_all_bots()
+    bots = sorted(_BOT_REGISTRY.keys())
+    dirty = []
+    clean = []
+    for b in bots:
+        ok, errs, _ = validate_single_bot(b, verbose=False, strict=True)
+        if ok:
+            clean.append(b)
+        else:
+            dirty.append((b, errs))
+
+    print("=" * 80)
+    print(f"📊 TFTF 二层收口 Schema 清账进度报告 (总计 {len(bots)} 个注册角色)")
+    print(f"   ✅ 合规清零: {len(clean)} 个 | ❌ 待收口整改: {len(dirty)} 个")
+    print("=" * 80)
+    for b, errs in dirty:
+        print(f" - [{b}] ({len(errs)} 项违规)")
+        for e in errs[:4]:
+            print(f"     • {e}")
+        if len(errs) > 4:
+            print(f"     • ... 另有 {len(errs) - 4} 项")
+    return 0 if not dirty else 1
 
 
 def main():
     parser = argparse.ArgumentParser(description="TFTF Bot Ability Quality Gate")
     parser.add_argument("bot_id", nargs="?", default="", help="机器人唯一 ID (如 arcee_gs_deluxe2014)")
     parser.add_argument("--all", action="store_true", help="校验所有已注册的机器人模块")
+    parser.add_argument("--strict", dest="strict", action="store_true", default=True, help="启用二层收口 Schema 硬阻断（默认开启）")
+    parser.add_argument("--no-strict", dest="strict", action="store_false", help="降级 Schema 违规为警告（仅诊断用）")
+    parser.add_argument("--legacy-report", action="store_true", help="打印全库二层收口清账进度清单")
     args = parser.parse_args()
+
+    if args.legacy_report:
+        sys.exit(print_legacy_report())
 
     if args.all:
         load_all_bots()
-        bots = list(_BOT_REGISTRY.keys())
+        bots = sorted(_BOT_REGISTRY.keys())
         if not bots:
             print("未在 Server/abilities/bots/ 目录下发现任何注册的机器人模块。")
             sys.exit(1)
         all_passed = True
+        failed_bots = []
         for b in bots:
-            ok = validate_single_bot(b)
+            ok, errs, _ = validate_single_bot(b, verbose=True, strict=args.strict)
             if not ok:
                 all_passed = False
+                failed_bots.append((b, len(errs)))
+        print("\n" + "=" * 80)
+        print(f"📋 全库校验汇总: {len(bots) - len(failed_bots)}/{len(bots)} 通过")
+        if failed_bots:
+            for b, cnt in failed_bots:
+                print(f"   ❌ {b}: {cnt} 个错误")
         sys.exit(0 if all_passed else 1)
 
+    target = args.bot_id or "arcee_gs_deluxe2014"
     if not args.bot_id:
-        # 默认测试 arcee
-        target = "arcee_gs_deluxe2014"
         print(f"未指定 bot_id，默认校验标杆角色: [{target}]")
-        ok = validate_single_bot(target)
-        sys.exit(0 if ok else 1)
-    else:
-        ok = validate_single_bot(args.bot_id)
-        sys.exit(0 if ok else 1)
+    ok, _, _ = validate_single_bot(target, verbose=True, strict=args.strict)
+    sys.exit(0 if ok else 1)
 
 
 if __name__ == "__main__":

@@ -56,8 +56,8 @@ def build_barricade_abilities(base_hp: float = 30000.0, base_atk: float = 3000.0
         grant_chance=0.85,              # 85% 概率获得该增益
         evade_chance=0.85,              # 拥有增益时 85% 触发近战规避
         duration=3.0,                   # 起身后持续 3.0 秒
-        trigger="onAnimStateEnter",
-        trigger_scope="currAnim=StandupFromBack,StandupFromFront",
+        trigger="",
+        trigger_scope="",
         appr_id="appr_barricade_knockdown_evade_melee",
         callout_text="近战规避",
         pua_icon="\uE509",
@@ -75,8 +75,8 @@ def build_barricade_abilities(base_hp: float = 30000.0, base_atk: float = 3000.0
         grant_chance=0.85,              # 85% 概率获得该增益
         evade_chance=0.85,              # 拥有增益时 85% 触发远程规避
         duration=3.0,                   # 起身后持续 3.0 秒
-        trigger="onAnimStateEnter",
-        trigger_scope="currAnim=StandupFromBack,StandupFromFront",
+        trigger="",
+        trigger_scope="",
         appr_id="appr_barricade_knockdown_evade_ranged",
         callout_text="远程规避",
         pua_icon="\uE518",
@@ -93,8 +93,8 @@ def build_barricade_abilities(base_hp: float = 30000.0, base_atk: float = 3000.0
         duration=7.5,                   # 起身后持续 7.5 秒
         crit_bonus=0.30,
         chance=0.40,                    # 40% 概率获得该增益
-        trigger="onAnimStateEnter",
-        trigger_scope="currAnim=StandupFromBack,StandupFromFront",
+        trigger="",
+        trigger_scope="",
         appr_id="appr_barricade_knockdown_crit_rate",
         callout_text="暴击几率",
         pua_icon="\uE406",

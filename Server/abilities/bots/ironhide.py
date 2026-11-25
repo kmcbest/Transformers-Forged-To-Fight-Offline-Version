@@ -64,7 +64,7 @@ def build_ironhide_abilities(base_hp: float = 33602.0, base_atk: float = 2531.0)
         total_dmg=float(round(base_atk * 0.30)),
         chance=0.70,
         trigger="onHit",
-        trigger_scope="level=Heavy,Special1,Special2;opp.status=dmg_burn",
+        trigger_scope="level=Heavy,Special1,Special2",
         callout_text="燃烧",
         stackable=True,
         pua_icon="\uE41D",
@@ -72,14 +72,14 @@ def build_ironhide_abilities(base_hp: float = 33602.0, base_atk: float = 2531.0)
     mods.update(m1_stack)
     appears.update(a1_stack)
 
-    # 2. 导弹攻击 +100% 暴击几率
+    # 2. 导弹攻击 +100% 暴击几率 (由 skill_ironhide.c on_attack_start 施加)
     m2, a2 = make_crit_rate_statmod(
         mod_id="ironhide_missile_crit",
         duration=0.8,
         crit_bonus=1.00,
         chance=1.0,
-        trigger="onAttackStarted",
-        trigger_scope="level=Heavy,Special1,Special2",
+        trigger="",
+        trigger_scope="",
         callout_text="导弹暴击",
         pua_icon="\uE40D",
     )

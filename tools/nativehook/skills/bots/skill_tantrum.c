@@ -178,6 +178,17 @@ static int tantrum_on_buff_gated(SkillBuffGateContext* ctx) {
     return 0;
 }
 
+static int tantrum_on_test_roll(SkillTestRollContext* ctx, int* out_res) {
+    if (!ctx || !ctx->modifier_id || !out_res) return 0;
+
+    if (strstr(ctx->modifier_id, "tantrum_block_charge") != NULL ||
+        strstr(ctx->modifier_id, "tantrum_block_unstoppable") != NULL) {
+        *out_res = 0; // 由防御状态机驱动施加
+        return 1;
+    }
+    return 0;
+}
+
 static void tantrum_on_fight_reset(int player_index) {
     if (player_index >= 0 && player_index < 2) {
         s_tantrum_block_start_ms[player_index] = 0;
@@ -188,11 +199,12 @@ static void tantrum_on_fight_reset(int player_index) {
 
 BotSkillModule g_module_tantrum = {
     .bot_prefix          = "tantrum",
+    .display_name_zh     = "野牛",
     .on_hit_connected    = tantrum_on_hit_connected,
     .on_buff_gated       = tantrum_on_buff_gated,
     .on_buff_applied     = tantrum_on_buff_applied,
     .on_evade_check      = NULL,
-    .on_test_roll        = NULL,
+    .on_test_roll        = tantrum_on_test_roll,
     .on_power_gain_rate  = NULL,
     .on_reflect_proj     = NULL,
     .on_fight_reset      = tantrum_on_fight_reset,

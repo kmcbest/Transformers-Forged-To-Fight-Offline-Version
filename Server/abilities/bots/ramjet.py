@@ -47,13 +47,13 @@ def build_ramjet_abilities(base_hp: float = 33025.0, base_atk: float = 2237.0):
     appears = {}
     buffs = {}
 
-    # 1. 重击命中燃烧对手 100% 眩晕 3 秒
+    # 1. 重击命中燃烧对手 100% 眩晕 3 秒 (燃烧前置由 skill_ramjet.c 判定)
     m1, a1 = make_stun_statmod(
         mod_id="ramjet_heavy_burn_stun",
         duration=3.0,
         chance=1.0,
-        trigger="onHit",
-        trigger_scope="level=Heavy;opp.status=dmg_burn",
+        trigger="onHeavyHit",
+        trigger_scope="",
         callout_text="眩晕",
         pua_icon="\uE605",
     )

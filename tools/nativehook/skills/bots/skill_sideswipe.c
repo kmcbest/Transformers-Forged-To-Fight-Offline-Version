@@ -80,11 +80,29 @@ static void sideswipe_on_hit_connected(SkillHitContext* ctx) {
             }
         }
 
-        // SP2 命中：获得 8 秒 35% 近战规避增益
+        // SP1 末击 40% 概率眩晕
+        if (ctx->special_index == 1 && ctx->is_last_hit && !ctx->is_blocked) {
+            if (skill_random_float() < 0.40f) {
+                skill_apply_buff(tp, "sideswipe_s1_stun");
+                skill_log("SIDESWIPE_SP1_STUN: last hit stunned P%d", tp);
+            }
+        }
+
+        // SP2 命中：获得 8 秒 35% 近战规避增益，末击 100% 燃烧
         if (ctx->special_index == 2 && ctx->is_last_hit) {
             skill_apply_buff_dur(ap, "sideswipe_s2_melee_evade", 8.0f);
             skill_overlay("[%s] SP2 近战规避！获得8秒规避增益！", ap == 0 ? "横炮" : "敌方横炮");
             skill_log("SIDESWIPE_SP2_EVADE: P%d gained 8s melee evade (35%%)", ap);
+            if (!ctx->is_blocked) {
+                skill_apply_buff(tp, "sideswipe_s2_burn");
+                skill_log("SIDESWIPE_SP2_BURN: last hit burned P%d", tp);
+            }
+        }
+
+        // SP3 末击 100% 燃烧
+        if (ctx->special_index == 3 && ctx->is_last_hit && !ctx->is_blocked) {
+            skill_apply_buff(tp, "sideswipe_s3_burn");
+            skill_log("SIDESWIPE_SP3_BURN: last hit burned P%d", tp);
         }
     }
 }
@@ -139,12 +157,39 @@ static void sideswipe_on_fight_reset(int player_index) {
     }
 }
 
+static int sideswipe_on_test_roll(SkillTestRollContext* ctx, int* out_res) {
+    if (!ctx || !ctx->modifier_id || !out_res) return 0;
+
+    // SP1 仅最后一击闪踢眩晕; SP2 和 SP3 仅最后一击燃烧
+    if (strstr(ctx->modifier_id, "sideswipe_s1_stun") != NULL ||
+        strstr(ctx->modifier_id, "sideswipe_s2_burn") != NULL ||
+        strstr(ctx->modifier_id, "sideswipe_s3_burn") != NULL) {
+        if (!ctx->current_hit_is_last) {
+            skill_log("SIDESWIPE_GATE: non-last hit, skip roll: %s", ctx->modifier_id);
+            *out_res = 0;
+            return 1;
+        }
+    }
+    // SP3 驱散: 除最后一击外，每一击概率驱散
+    if (strstr(ctx->modifier_id, "sideswipe_s3_nullify") != NULL) {
+        if (ctx->current_hit_is_last) {
+            skill_log("SIDESWIPE_GATE: last hit, skip nullify roll: %s", ctx->modifier_id);
+            *out_res = 0;
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
 BotSkillModule g_module_sideswipe = {
     .bot_prefix         = "sideswipe",
+    .display_name_zh    = "横炮",
     .on_hit_connected   = sideswipe_on_hit_connected,
     .on_attack_start    = sideswipe_on_attack_start,
     .on_dodge_enter     = sideswipe_on_dodge_enter,
     .on_evade_check     = sideswipe_on_evade_check,
+    .on_test_roll       = sideswipe_on_test_roll,
     .on_hitreact_enter  = sideswipe_on_hitreact_enter,
     .on_fight_reset     = sideswipe_on_fight_reset,
 };

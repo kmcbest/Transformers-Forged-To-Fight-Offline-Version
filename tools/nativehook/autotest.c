@@ -33,7 +33,7 @@ static const char* s_scenario_paths[] = {
 static pthread_mutex_t s_at_lock = PTHREAD_MUTEX_INITIALIZER;
 static AutotestScenario s_sc;
 static int s_sc_initialized = 0;
-static char s_sc_raw[8192] = {0};
+static char s_sc_raw[16384] = {0};
 
 static char s_ring[AT_RING_CAP];
 static size_t s_ring_len = 0;
@@ -197,6 +197,9 @@ static AutotestActionType parse_action_name(const char* s) {
     if (!strcasecmp(s, "SP1")) return AT_ACT_SP1;
     if (!strcasecmp(s, "SP2")) return AT_ACT_SP2;
     if (!strcasecmp(s, "SP3")) return AT_ACT_SP3;
+    if (!strcasecmp(s, "APPLY_BUFF") || !strcasecmp(s, "BUFF")) return AT_ACT_APPLY_BUFF;
+    if (!strcasecmp(s, "SET_MANA")) return AT_ACT_SET_MANA;
+    if (!strcasecmp(s, "SET_HP") || !strcasecmp(s, "SET_HP_RATIO")) return AT_ACT_SET_HP;
     return AT_ACT_NONE;
 }
 
@@ -209,6 +212,8 @@ static void set_default_scenario(AutotestScenario* sc) {
     snprintf(sc->p1_bid, sizeof(sc->p1_bid), "sideswipe_gs");
     sc->p0_mana = -1.0f;
     sc->p1_mana = -1.0f;
+    sc->p0_hp_ratio = -1.0f;
+    sc->p1_hp_ratio = -1.0f;
     sc->auto_fight = 1;
     sc->freeze_enemy_ai = 0;
     sc->dummy_invincible = 0;
@@ -247,6 +252,62 @@ static void parse_buffs_array(const char* arr, const char* arr_end, int target_p
     }
 }
 
+static void parse_script_array(const char* arr, const char* arr_end, AutotestScriptStep* out_steps, int* out_len) {
+    if (!arr || !arr_end || *arr != '[' || !out_steps || !out_len) return;
+    const char* p = arr + 1;
+    while (p < arr_end && *out_len < AUTOTEST_MAX_SCRIPT_STEPS) {
+        p = skip_ws(p, arr_end);
+        if (p >= arr_end || *p == ']') break;
+        if (*p == '{') {
+            const char* oe = find_block_end(p, arr_end);
+            if (!oe) break;
+            AutotestScriptStep st;
+            memset(&st, 0, sizeof(st));
+            st.repeat = 1;
+            st.duration_ms = 500;
+            st.target_player = -1;
+            st.float_val = -1.0f;
+            st.stacks = 1;
+            char act_name[32] = {0};
+            const char* sv;
+            if ((sv = find_json_val(p, oe, "action")) && parse_jstr(sv, oe, act_name, sizeof(act_name))) {
+                st.action = parse_action_name(act_name);
+            }
+            if ((sv = find_json_val(p, oe, "duration_ms"))) parse_jint(sv, oe, &st.duration_ms);
+            if ((sv = find_json_val(p, oe, "hold_ms"))) parse_jint(sv, oe, &st.duration_ms);
+            if ((sv = find_json_val(p, oe, "repeat"))) parse_jint(sv, oe, &st.repeat);
+            if ((sv = find_json_val(p, oe, "target"))) {
+                char tbuf[16] = {0};
+                int ti = -1;
+                if (parse_jstr(sv, oe, tbuf, sizeof(tbuf))) {
+                    if (!strcasecmp(tbuf, "P0") || !strcmp(tbuf, "0")) st.target_player = 0;
+                    else if (!strcasecmp(tbuf, "P1") || !strcmp(tbuf, "1")) st.target_player = 1;
+                } else if (parse_jint(sv, oe, &ti) && (ti == 0 || ti == 1)) {
+                    st.target_player = ti;
+                }
+            }
+            if ((sv = find_json_val(p, oe, "id"))) parse_jstr(sv, oe, st.mod_id, sizeof(st.mod_id));
+            if ((sv = find_json_val(p, oe, "mod_id"))) parse_jstr(sv, oe, st.mod_id, sizeof(st.mod_id));
+            if ((sv = find_json_val(p, oe, "dur"))) parse_jfloat(sv, oe, &st.float_val);
+            if ((sv = find_json_val(p, oe, "mana"))) parse_jfloat(sv, oe, &st.float_val);
+            if ((sv = find_json_val(p, oe, "hp_ratio"))) parse_jfloat(sv, oe, &st.float_val);
+            if ((sv = find_json_val(p, oe, "ratio"))) parse_jfloat(sv, oe, &st.float_val);
+            if ((sv = find_json_val(p, oe, "val"))) parse_jfloat(sv, oe, &st.float_val);
+            if ((sv = find_json_val(p, oe, "stacks"))) parse_jint(sv, oe, &st.stacks);
+            if (st.stacks < 1) st.stacks = 1;
+            if (st.stacks > 20) st.stacks = 20;
+            if (st.repeat < 1) st.repeat = 1;
+            if (st.repeat > 20) st.repeat = 20;
+            if (st.action != AT_ACT_NONE) {
+                out_steps[(*out_len)++] = st;
+            }
+            p = oe;
+        } else {
+            p++;
+        }
+    }
+}
+
 static void parse_scenario_json_into(const char* json, size_t len, AutotestScenario* sc) {
     set_default_scenario(sc);
     if (!json || len == 0) return;
@@ -257,6 +318,7 @@ static void parse_scenario_json_into(const char* json, size_t len, AutotestScena
     const char* v;
     if ((v = find_json_val(start, end, "active"))) parse_jint(v, end, &sc->active);
     if ((v = find_json_val(start, end, "name"))) parse_jstr(v, end, sc->name, sizeof(sc->name));
+    if ((v = find_json_val(start, end, "banner"))) parse_jstr(v, end, sc->banner, sizeof(sc->banner));
     if ((v = find_json_val(start, end, "qid"))) parse_jstr(v, end, sc->qid, sizeof(sc->qid));
     if ((v = find_json_val(start, end, "auto_fight"))) parse_jint(v, end, &sc->auto_fight);
     if ((v = find_json_val(start, end, "freeze_enemy_ai"))) parse_jint(v, end, &sc->freeze_enemy_ai);
@@ -270,6 +332,7 @@ static void parse_scenario_json_into(const char* json, size_t len, AutotestScena
             const char* pv;
             if ((pv = find_json_val(v, oe, "bid"))) parse_jstr(pv, oe, sc->p0_bid, sizeof(sc->p0_bid));
             if ((pv = find_json_val(v, oe, "mana"))) parse_jfloat(pv, oe, &sc->p0_mana);
+            if ((pv = find_json_val(v, oe, "hp_ratio"))) parse_jfloat(pv, oe, &sc->p0_hp_ratio);
             if ((pv = find_json_val(v, oe, "initial_buffs")) && *pv == '[') {
                 const char* ae = find_block_end(pv, oe);
                 if (ae) parse_buffs_array(pv, ae, 0, sc);
@@ -282,6 +345,7 @@ static void parse_scenario_json_into(const char* json, size_t len, AutotestScena
             const char* pv;
             if ((pv = find_json_val(v, oe, "bid"))) parse_jstr(pv, oe, sc->p1_bid, sizeof(sc->p1_bid));
             if ((pv = find_json_val(v, oe, "mana"))) parse_jfloat(pv, oe, &sc->p1_mana);
+            if ((pv = find_json_val(v, oe, "hp_ratio"))) parse_jfloat(pv, oe, &sc->p1_hp_ratio);
             if ((pv = find_json_val(v, oe, "freeze_ai"))) parse_jint(pv, oe, &sc->freeze_enemy_ai);
             if ((pv = find_json_val(v, oe, "invincible_dummy"))) parse_jint(pv, oe, &sc->dummy_invincible);
             if ((pv = find_json_val(v, oe, "initial_buffs")) && *pv == '[') {
@@ -292,37 +356,11 @@ static void parse_scenario_json_into(const char* json, size_t len, AutotestScena
     }
     if ((v = find_json_val(start, end, "p0_script")) && *v == '[') {
         const char* ae = find_block_end(v, end);
-        if (ae) {
-            const char* p = v + 1;
-            while (p < ae && sc->script_len < AUTOTEST_MAX_SCRIPT_STEPS) {
-                p = skip_ws(p, ae);
-                if (p >= ae || *p == ']') break;
-                if (*p == '{') {
-                    const char* oe = find_block_end(p, ae);
-                    if (!oe) break;
-                    AutotestScriptStep st;
-                    memset(&st, 0, sizeof(st));
-                    st.repeat = 1;
-                    st.duration_ms = 500;
-                    char act_name[32] = {0};
-                    const char* sv;
-                    if ((sv = find_json_val(p, oe, "action")) && parse_jstr(sv, oe, act_name, sizeof(act_name))) {
-                        st.action = parse_action_name(act_name);
-                    }
-                    if ((sv = find_json_val(p, oe, "duration_ms"))) parse_jint(sv, oe, &st.duration_ms);
-                    if ((sv = find_json_val(p, oe, "hold_ms"))) parse_jint(sv, oe, &st.duration_ms);
-                    if ((sv = find_json_val(p, oe, "repeat"))) parse_jint(sv, oe, &st.repeat);
-                    if (st.repeat < 1) st.repeat = 1;
-                    if (st.repeat > 20) st.repeat = 20;
-                    if (st.action != AT_ACT_NONE) {
-                        sc->script[sc->script_len++] = st;
-                    }
-                    p = oe;
-                } else {
-                    p++;
-                }
-            }
-        }
+        if (ae) parse_script_array(v, ae, sc->script, &sc->script_len);
+    }
+    if ((v = find_json_val(start, end, "p1_script")) && *v == '[') {
+        const char* ae = find_block_end(v, end);
+        if (ae) parse_script_array(v, ae, sc->p1_script, &sc->p1_script_len);
     }
 }
 
@@ -531,9 +569,10 @@ static void* hooked_QuestFlow_GameBoardReady(void* self, void* method, void* a2,
         if (ptr_sane(gb)) {
             s_gameboard = gb;
             s_last_board_step_ms = at_now_ms();
-            AT_LOG("[AUTOTEST] QuestFlow.GameBoardReady gb=%p -> enabling AutoMission + AutoFight", gb);
+            int want_af = (s_sc.script_len == 0 && s_sc.auto_fight) ? 1 : 0;
+            AT_LOG("[AUTOTEST] QuestFlow.GameBoardReady gb=%p -> enabling AutoMission (AutoFight=%d)", gb, want_af);
             ((void(*)(int, void*))(s_base + 0xC9D6E8))(1, NULL); // AutoFightManager.ToggleAutoMission(true)
-            ((void(*)(int, void*))(s_base + 0xC9D9A0))(1, NULL); // AutoFightManager.ToggleAutoFight(true)
+            ((void(*)(int, void*))(s_base + 0xC9D9A0))(want_af, NULL); // AutoFightManager.ToggleAutoFight
         }
     }
     return r;
@@ -758,10 +797,11 @@ static volatile int s_combat_injected = 0;
 static volatile uint64_t s_combat_start_ms = 0;
 static volatile uint64_t s_last_snap_ms = 0;
 static volatile int s_scenario_done = 0;
-static volatile int s_script_idx = 0;
-static volatile int s_script_rep = 0;
-static volatile uint64_t s_script_step_start_ms = 0;
-static volatile int s_block_holding = 0;
+static volatile int s_banner_shown = 0;
+static volatile int s_script_idx[2] = {0, 0};
+static volatile int s_script_rep[2] = {0, 0};
+static volatile uint64_t s_script_step_start_ms[2] = {0, 0};
+static volatile int s_block_holding[2] = {0, 0};
 
 void autotest_on_combat_start(void) {
     s_in_combat = 1;
@@ -771,13 +811,15 @@ void autotest_on_combat_start(void) {
     s_combat_start_ms = 0;
     s_last_snap_ms = 0;
     s_scenario_done = 0;
-    s_script_idx = 0;
-    s_script_rep = 0;
-    s_script_step_start_ms = 0;
-    s_block_holding = 0;
+    s_banner_shown = 0;
+    s_script_idx[0] = s_script_idx[1] = 0;
+    s_script_rep[0] = s_script_rep[1] = 0;
+    s_script_step_start_ms[0] = s_script_step_start_ms[1] = 0;
+    s_block_holding[0] = s_block_holding[1] = 0;
     autotest_init();
-    AT_LOG("[AUTOTEST] FIGHT_ENTER scenario=%s p0=%s p1=%s auto_fight=%d",
-           s_sc.name, skill_get_bot_id(0), skill_get_bot_id(1), s_sc.auto_fight);
+    AT_LOG("[AUTOTEST] FIGHT_ENTER scenario=%s p0=%s p1=%s auto_fight=%d p0_steps=%d p1_steps=%d",
+           s_sc.name, skill_get_bot_id(0), skill_get_bot_id(1), s_sc.auto_fight,
+           s_sc.script_len, s_sc.p1_script_len);
 }
 
 static void emit_snapshot(uint64_t elapsed_ms) {
@@ -791,21 +833,23 @@ static void emit_snapshot(uint64_t elapsed_ms) {
            skill_get_bot_id(1), p1_hp, p1_m);
 }
 
-static void drive_script_step(void* player_pc, uint64_t now_ms) {
-    if (!ptr_sane(player_pc) || !s_base) return;
-    if (s_script_idx >= s_sc.script_len) return;
+static void drive_script_step(void* player_pc, int pidx, uint64_t now_ms) {
+    if (!ptr_sane(player_pc) || !s_base || pidx < 0 || pidx > 1) return;
+    int script_len = (pidx == 0) ? s_sc.script_len : s_sc.p1_script_len;
+    AutotestScriptStep* steps = (pidx == 0) ? s_sc.script : s_sc.p1_script;
+    if (s_script_idx[pidx] >= script_len) return;
 
-    AutotestScriptStep* st = &s_sc.script[s_script_idx];
-    if (s_script_step_start_ms == 0) {
-        s_script_step_start_ms = now_ms;
+    AutotestScriptStep* st = &steps[s_script_idx[pidx]];
+    if (s_script_step_start_ms[pidx] == 0) {
+        s_script_step_start_ms[pidx] = now_ms;
     }
 
     if (st->action == AT_ACT_WAIT) {
-        if ((int)(now_ms - s_script_step_start_ms) >= st->duration_ms) {
-            AT_LOG("[AUTOTEST] STEP_DONE idx=%d action=WAIT(%dms)", s_script_idx, st->duration_ms);
-            s_script_idx++;
-            s_script_rep = 0;
-            s_script_step_start_ms = 0;
+        if ((int)(now_ms - s_script_step_start_ms[pidx]) >= st->duration_ms) {
+            AT_LOG("[AUTOTEST] P%d STEP_DONE idx=%d action=WAIT(%dms)", pidx, s_script_idx[pidx], st->duration_ms);
+            s_script_idx[pidx]++;
+            s_script_rep[pidx] = 0;
+            s_script_step_start_ms[pidx] = 0;
         }
         return;
     }
@@ -813,45 +857,78 @@ static void drive_script_step(void* player_pc, uint64_t now_ms) {
     if (st->action == AT_ACT_BLOCK) {
         typedef int (*fn_act)(void*, int, void*);
         fn_act try_act = (fn_act)(s_base + 0x1179AF4);
-        if (!s_block_holding) {
+        if (!s_block_holding[pidx]) {
             if (try_act(player_pc, 2, NULL)) {
-                s_block_holding = 1;
-                s_script_step_start_ms = now_ms;
-                AT_LOG("[AUTOTEST] STEP_EXEC idx=%d action=BLOCK_START", s_script_idx);
+                s_block_holding[pidx] = 1;
+                s_script_step_start_ms[pidx] = now_ms;
+                AT_LOG("[AUTOTEST] P%d STEP_EXEC idx=%d action=BLOCK_START", pidx, s_script_idx[pidx]);
             }
-        } else if ((int)(now_ms - s_script_step_start_ms) >= st->duration_ms) {
+        } else if ((int)(now_ms - s_script_step_start_ms[pidx]) >= st->duration_ms) {
             try_act(player_pc, 4, NULL);
-            s_block_holding = 0;
-            AT_LOG("[AUTOTEST] STEP_DONE idx=%d action=BLOCK_RELEASE", s_script_idx);
-            s_script_idx++;
-            s_script_rep = 0;
-            s_script_step_start_ms = 0;
+            s_block_holding[pidx] = 0;
+            AT_LOG("[AUTOTEST] P%d STEP_DONE idx=%d action=BLOCK_RELEASE", pidx, s_script_idx[pidx]);
+            s_script_idx[pidx]++;
+            s_script_rep[pidx] = 0;
+            s_script_step_start_ms[pidx] = 0;
         }
         return;
     }
 
-    if ((now_ms - s_script_step_start_ms) < 180) return;
+    if (st->action == AT_ACT_APPLY_BUFF || st->action == AT_ACT_SET_MANA || st->action == AT_ACT_SET_HP) {
+        int tgt = (st->target_player == 0 || st->target_player == 1) ? st->target_player : pidx;
+        if (st->action == AT_ACT_APPLY_BUFF) {
+            if (st->mod_id[0]) {
+                for (int k = 0; k < st->stacks; k++) {
+                    skill_apply_buff_dur(tgt, st->mod_id, st->float_val);
+                }
+            }
+            AT_LOG("[AUTOTEST] P%d STEP_EXEC idx=%d action=APPLY_BUFF target=P%d id=%s dur=%.2f stacks=%d",
+                   pidx, s_script_idx[pidx], tgt, st->mod_id, st->float_val, st->stacks);
+        } else if (st->action == AT_ACT_SET_MANA) {
+            float m = (st->float_val >= 0.0f) ? st->float_val : 0.0f;
+            skill_set_mana(tgt, m);
+            AT_LOG("[AUTOTEST] P%d STEP_EXEC idx=%d action=SET_MANA target=P%d mana=%.2f",
+                   pidx, s_script_idx[pidx], tgt, m);
+        } else {
+            float r = (st->float_val >= 0.0f) ? st->float_val : 1.0f;
+            skill_set_hp_ratio(tgt, r);
+            AT_LOG("[AUTOTEST] P%d STEP_EXEC idx=%d action=SET_HP target=P%d ratio=%.2f",
+                   pidx, s_script_idx[pidx], tgt, r);
+        }
+        s_script_idx[pidx]++;
+        s_script_rep[pidx] = 0;
+        s_script_step_start_ms[pidx] = 0;
+        return;
+    }
+
+    if ((now_ms - s_script_step_start_ms[pidx]) < 180) return;
 
     int can_act = ((int(*)(void*, void*))(s_base + 0x1175714))(player_pc, NULL);
     int can_att = ((int(*)(void*, void*))(s_base + 0x11737B4))(player_pc, NULL);
     int att_win = ((int(*)(void*, void*))(s_base + 0x1173F94))(player_pc, NULL);
+    int in_melee = ((int(*)(void*, void*))(s_base + 0x1175078))(player_pc, NULL);
+    int can_shoot = ((int(*)(void*, void*))(s_base + 0x1174FEC))(player_pc, NULL);
     float dist = ((float(*)(void*, void*))(s_base + 0x1175A28))(player_pc, NULL);
 
     typedef int (*fn_act)(void*, int, void*);
-    typedef int (*fn_sp)(void*, int, void*);
     fn_act try_act = (fn_act)(s_base + 0x1179AF4);
-    fn_sp use_sp = (fn_sp)(s_base + 0x1174300);
 
     int fired = 0;
     if (st->action == AT_ACT_RANGED) {
-        if (dist < 3.6f) {
+        if (in_melee || !can_shoot) {
             if (can_act) try_act(player_pc, 8, NULL); // Dodge back to ranged distance first
             return;
         }
         if (can_act || can_att) fired = try_act(player_pc, 1, NULL);
     } else if (st->action == AT_ACT_LIGHT) {
         if (can_act || can_att || att_win) fired = try_act(player_pc, 1, NULL);
-    } else if (st->action == AT_ACT_DASH || st->action == AT_ACT_MEDIUM) {
+    } else if (st->action == AT_ACT_DASH) {
+        if (in_melee) {
+            if (can_act) try_act(player_pc, 8, NULL); // Step back so Action 32 becomes a true Dash
+            return;
+        }
+        if (can_act || can_att) fired = try_act(player_pc, 32, NULL);
+    } else if (st->action == AT_ACT_MEDIUM) {
         if (can_act || can_att || att_win) fired = try_act(player_pc, 32, NULL);
     } else if (st->action == AT_ACT_HEAVY) {
         if (can_act || can_att || att_win) fired = try_act(player_pc, 0x100, NULL);
@@ -862,28 +939,44 @@ static void drive_script_step(void* player_pc, uint64_t now_ms) {
     } else if (st->action == AT_ACT_SIDESTEP_RIGHT) {
         if (can_act) fired = try_act(player_pc, 128, NULL);
     } else if (st->action == AT_ACT_SP1) {
-        if (can_act || att_win) fired = use_sp(player_pc, 1, NULL);
+        if (can_act || att_win) {
+            autotest_set_intended_special_tier(1);
+            fired = try_act(player_pc, 0x200, NULL);
+        }
     } else if (st->action == AT_ACT_SP2) {
-        if (can_act || att_win) fired = use_sp(player_pc, 2, NULL);
+        if (can_act || att_win) {
+            autotest_set_intended_special_tier(2);
+            fired = try_act(player_pc, 0x200, NULL);
+        }
     } else if (st->action == AT_ACT_SP3) {
-        if (can_act || att_win) fired = use_sp(player_pc, 3, NULL);
+        if (can_act || att_win) {
+            autotest_set_intended_special_tier(3);
+            fired = try_act(player_pc, 0x200, NULL);
+        }
     }
 
     if (fired) {
-        AT_LOG("[AUTOTEST] STEP_EXEC idx=%d rep=%d/%d action=%d dist=%.2f",
-               s_script_idx, s_script_rep + 1, st->repeat, (int)st->action, dist);
-        s_script_rep++;
-        s_script_step_start_ms = now_ms;
-        if (s_script_rep >= st->repeat) {
-            s_script_idx++;
-            s_script_rep = 0;
+        AT_LOG("[AUTOTEST] P%d STEP_EXEC idx=%d rep=%d/%d action=%d dist=%.2f melee=%d shoot=%d",
+               pidx, s_script_idx[pidx], s_script_rep[pidx] + 1, st->repeat, (int)st->action, dist, in_melee, can_shoot);
+        s_script_rep[pidx]++;
+        s_script_step_start_ms[pidx] = now_ms;
+        if (s_script_rep[pidx] >= st->repeat) {
+            s_script_idx[pidx]++;
+            s_script_rep[pidx] = 0;
         }
     }
 }
 
 void autotest_on_simulate_tick(void* player_pc, int pidx) {
-    if (!autotest_is_active() || pidx != 0 || !ptr_sane(player_pc) || !s_base) return;
+    if (!autotest_is_active() || (pidx != 0 && pidx != 1) || !ptr_sane(player_pc) || !s_base) return;
     uint64_t now_ms = at_now_ms();
+
+    if (pidx == 1) {
+        if (s_combat_injected && s_sc.p1_script_len > 0 && s_script_idx[1] < s_sc.p1_script_len) {
+            drive_script_step(player_pc, 1, now_ms);
+        }
+        return;
+    }
 
     if (!s_combat_injected) {
         s_combat_injected = 1;
@@ -897,6 +990,14 @@ void autotest_on_simulate_tick(void* player_pc, int pidx) {
         if (s_sc.p1_mana >= 0.0f) {
             skill_set_mana(1, s_sc.p1_mana);
             AT_LOG("[AUTOTEST] INJECT_MANA target=P1 mana=%.2f", s_sc.p1_mana);
+        }
+        if (s_sc.p0_hp_ratio >= 0.0f) {
+            skill_set_hp_ratio(0, s_sc.p0_hp_ratio);
+            AT_LOG("[AUTOTEST] INJECT_HP target=P0 ratio=%.2f", s_sc.p0_hp_ratio);
+        }
+        if (s_sc.p1_hp_ratio >= 0.0f) {
+            skill_set_hp_ratio(1, s_sc.p1_hp_ratio);
+            AT_LOG("[AUTOTEST] INJECT_HP target=P1 ratio=%.2f", s_sc.p1_hp_ratio);
         }
         for (int i = 0; i < s_sc.initial_buff_count; i++) {
             AutotestInitBuff* b = &s_sc.initial_buffs[i];
@@ -914,9 +1015,9 @@ void autotest_on_simulate_tick(void* player_pc, int pidx) {
         emit_snapshot(0);
     }
 
-    if (s_sc.script_len > 0 && s_script_idx < s_sc.script_len) {
-        drive_script_step(player_pc, now_ms);
-        if (s_script_idx >= s_sc.script_len && s_sc.auto_fight) {
+    if (s_sc.script_len > 0 && s_script_idx[0] < s_sc.script_len) {
+        drive_script_step(player_pc, 0, now_ms);
+        if (s_script_idx[0] >= s_sc.script_len && s_sc.auto_fight) {
             ((void(*)(int, void*))(s_base + 0xC9D9A0))(1, NULL); // Hand over to AutoFight after script finishes
             AT_LOG("[AUTOTEST] SCRIPT_FINISHED -> handing off to AutoFight");
         }
@@ -928,6 +1029,13 @@ void autotest_on_simulate_tick(void* player_pc, int pidx) {
     }
 
     uint64_t elapsed = now_ms - s_combat_start_ms;
+    if (!s_banner_shown && elapsed >= 600) {
+        s_banner_shown = 1;
+        char bbuf[160];
+        snprintf(bbuf, sizeof(bbuf), "[AUTOTEST] %s", s_sc.banner[0] ? s_sc.banner : s_sc.name);
+        skill_hud_banner(bbuf);
+        AT_LOG("[AUTOTEST] HUD_BANNER text=%s", bbuf);
+    }
     if (now_ms - s_last_snap_ms >= 500) {
         s_last_snap_ms = now_ms;
         emit_snapshot(elapsed);

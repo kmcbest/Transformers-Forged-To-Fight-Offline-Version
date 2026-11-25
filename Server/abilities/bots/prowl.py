@@ -48,14 +48,14 @@ def build_prowl_abilities(base_hp: float = 30533.0, base_atk: float = 2329.0):
     appears = {}
     buffs = {}
 
-    # 1. SP1 能量燃烧: 第一击命中对手时触发，0.5 秒内抽取三格满气的 40.5% (1.215 格 = 364.5 Mana)
+    # 1. SP1 能量燃烧: 第一击命中对手时触发 (由 skill_prowl.c 精确在 hit_index==0 时施加)
     m1, a1 = make_power_leak_statmod(
         mod_id="prowl_s1_power_burn",
         duration=0.5,
         drain_bars=1.215,  # 三格总能量扣除 40.5% (0.405 * 3 = 1.215 格 = 364.5 Mana)
         chance=1.0,
-        trigger="onSpecial1Hit",
-        trigger_scope="index=0",  # 仅第一击触发
+        trigger="",
+        trigger_scope="",
         appr_id="appr_prowl_s1_power_burn",
         callout_text="能量燃烧",
         pua_icon="\uE607",

@@ -113,6 +113,21 @@ static void drift_on_hit_connected(SkillHitContext* ctx) {
             drift_update_focus(ap);
         }
 
+        // SP2 / SP3 多段及终结击流血 (二层收口 C 侧判定)
+        float dur_mult = (s_drift_focus_level[ap] >= 3) ? 2.5f : 1.0f;
+        if (ctx->special_index == 2 && ctx->is_last_hit) {
+            skill_apply_buff_dur(tp, "drift_sp2_bleed", 10.0f * dur_mult);
+            skill_log("DRIFT: SP2 lastHit applied drift_sp2_bleed (%.1fs) to P%d", 10.0f * dur_mult, tp);
+        } else if (ctx->special_index == 3 && !ctx->is_last_hit) {
+            if (skill_random_float() < 0.60f) {
+                skill_apply_buff_dur(tp, "drift_sp3_bleed_multi", 2.0f * dur_mult);
+                skill_log("DRIFT: SP3 midHit applied drift_sp3_bleed_multi (%.1fs) to P%d", 2.0f * dur_mult, tp);
+            }
+        } else if (ctx->special_index == 3 && ctx->is_last_hit) {
+            skill_apply_buff_dur(tp, "drift_sp3_bleed_finisher", 10.0f * dur_mult);
+            skill_log("DRIFT: SP3 lastHit applied drift_sp3_bleed_finisher (%.1fs) to P%d", 10.0f * dur_mult, tp);
+        }
+
         // 击中时立即驱动一次规避状态同步
         drift_on_simulation_tick(0);
     }

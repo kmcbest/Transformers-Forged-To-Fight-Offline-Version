@@ -311,6 +311,10 @@ float skill_get_total_crit_chance(int player_index) {
     return total;
 }
 
+int skill_is_burning(int player_index) {
+    return skill_has_buff(player_index, "burn");
+}
+
 void skill_deal_damage(int target_player_index, float damage) {
     if (target_player_index >= 0 && target_player_index < 2 && damage > 0.0f) {
         g_players[target_player_index].hp -= damage;

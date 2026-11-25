@@ -92,6 +92,17 @@
   在执行 `build_apk.py`、大型打包或长耗时后台命令时，严禁使用 `schedule` / `timer` 频繁打断并轮询检查进度。系统会在后台长任务执行完毕后自动触发唤醒与通知，直接静默等待任务返回，并依据该后台 task 的最终执行结果进行下一步即可。
 
 
+## Ability system two-layer contract & hook.c freeze (能力系统二层收口与总线冻结铁律)
+
+- **Two-Layer Consolidation (极简二层收口边界)**:
+  - `Server/abilities/bots/*.py` **仅允许**定义 Buff 外观/数值与单一无条件或极简静态原生触发（白名单见 `Server/abilities/contract_schema.json` 与 `re_notes/ability_engine_contract.md`）。
+  - 凡涉及**多段命中限定**（第几击/末击）、**动态状态条件联动**（流血增伤/驱散触发/血线判定）、**计时/充能**，严禁在 Python `trs` 中使用 `isLastHit`、`dmgFlags=`、`index=`、`count=`、`opp.status`、`self.status` 等条件；必须留空 `tr: []` 并收口到 `tools/nativehook/skills/bots/skill_<bot>.c` 主动调用 `skill_apply_buff` 触发。
+- **Frozen `hook.c` Event Bus (`hook.c` 事件总线冻结线)**:
+  - `tools/nativehook/hook.c` 仅作为纯净底层事件派发总线，**严禁在 `hook.c` 中新增任何特定角色名硬编码特判**。所有角色专属逻辑必须落在 `tools/nativehook/skills/bots/skill_*.c`。
+- **Mandatory Quality Gates (能力改动必跑门禁)**:
+  - 任何能力代码改动必须通过：`python tools/validate_bot_ability.py --all --strict`、`python tools/snapshot_abilities.py --check`、以及 `python tools/build_hook.py` 与 `python tools/build_hook.py --autotest`。
+
+
 ## Cross-repository boundary isolation protocol (跨仓库边界物理隔离铁律)
 
 - **Zero-Cross-Directory Contamination (严禁跨仓库跨目录文件写入与同步)**:

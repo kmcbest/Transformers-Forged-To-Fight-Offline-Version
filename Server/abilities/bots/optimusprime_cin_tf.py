@@ -136,7 +136,7 @@ def build_optimusprime_cin_tf_abilities(base_hp: float = 29334.0, base_atk: floa
         "uit": ["always"],
         "pri": 0,
         "trm": 0.0,
-        "trs": make_condition_scope(self_status="dmg_bleed"),
+        "trs": "",
         "trr": "repeat",
         "c": 1.0,
         "m": 0.35,
@@ -205,14 +205,14 @@ def build_optimusprime_cin_tf_abilities(base_hp: float = 29334.0, base_atk: floa
     mods["optimusprime_cin_tf_purify"] = mod_purify
     appears["appr_optimusprime_cin_tf_purify"] = appr_purify
 
-    # 4. SP1 流血 (ID: 2713): 60% 几率施加流血 4 秒 (40% ATK 伤害) - 与 Dinobot / Arcee 对齐
+    # 4. SP1 流血 (ID: 2713): 60% 几率施加流血 4 秒 (40% ATK 伤害) - 由 skill_optimus_mv.c 触发
     m_sp1_b, a_sp1_b = make_bleed_statmod(
         mod_id="optimusprime_cin_tf_sp1_bleed",
         duration=4.0,
         total_dmg=float(round(base_atk * 0.40)),
-        chance=0.60,
-        trigger="onHit",
-        trigger_scope="level=Special1",
+        chance=1.0,
+        trigger="",
+        trigger_scope="",
         appr_id="appr_optimusprime_cin_tf_sp1_bleed",
         callout_text="流血",
         buff_id="dmg_bleed",
@@ -239,14 +239,14 @@ def build_optimusprime_cin_tf_abilities(base_hp: float = 29334.0, base_atk: floa
     mods.update(m_sp1_bst)
     appears.update(a_sp1_bst)
 
-    # 6. SP2 流血 (ID: 2727): 前两击每一击 90% 概率施加流血 4 秒 (40% ATK 伤害)
+    # 6. SP2 流血 (ID: 2727): 前两击每一击 90% 概率施加流血 4 秒 (由 skill_optimus_mv.c 触发)
     m_sp2_b, a_sp2_b = make_bleed_statmod(
         mod_id="optimusprime_cin_tf_sp2_bleed",
         duration=4.0,
         total_dmg=float(round(base_atk * 0.40)),
-        chance=0.90,
-        trigger="onHit",
-        trigger_scope="level=Special2;index=0,1",
+        chance=1.0,
+        trigger="",
+        trigger_scope="",
         appr_id="appr_optimusprime_cin_tf_sp2_bleed",
         callout_text="流血",
         buff_id="dmg_bleed",

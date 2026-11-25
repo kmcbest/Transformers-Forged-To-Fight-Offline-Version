@@ -1,0 +1,36 @@
+{
+  "active": true,
+  "name": "canary_blackout",
+  "qid": "1.1.1",
+  "p0": {
+    "bid": "blackout_cin_tf",
+    "mana": 3.0
+  },
+  "p1": {
+    "bid": "sideswipe_gs",
+    "freeze_ai": true,
+    "invincible_dummy": true
+  },
+  "auto_fight": false,
+  "max_duration_ms": 20000,
+  "p0_script": [
+    { "action": "LIGHT", "repeat": 4 },
+    { "action": "SP1", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 2000 },
+    { "action": "SP2", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 3000 }
+  ],
+  "assertions": {
+    "must_hit_connected": [
+      { "attacker": "P0", "sp": 1, "min_count": 1 },
+      { "attacker": "P0", "sp": 2, "min_count": 1 }
+    ],
+    "must_apply_buffs": [
+      { "target": "P0", "mod_substr": "blackout_sp1_crit_damage", "min_count": 1 },
+      { "target": "P0", "mod_substr": "blackout_sp2_crit_damage", "min_count": 1 }
+    ],
+    "must_not_apply_buffs": [
+      { "target": "P1", "mod_substr": "blackout_sp1_bleed" }
+    ]
+  }
+}

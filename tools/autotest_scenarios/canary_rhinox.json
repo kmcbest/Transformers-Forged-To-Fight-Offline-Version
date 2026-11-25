@@ -1,0 +1,38 @@
+{
+  "active": true,
+  "name": "canary_rhinox",
+  "qid": "1.1.1",
+  "p0": {
+    "bid": "rhinox_gs_voyager2014",
+    "mana": 3.0
+  },
+  "p1": {
+    "bid": "optimusprime_cin_tf",
+    "freeze_ai": true,
+    "invincible_dummy": true,
+    "initial_buffs": [
+      { "id": "optimusprime_cin_tf_melee_buff", "dur": 12.0, "stacks": 1 }
+    ]
+  },
+  "auto_fight": false,
+  "max_duration_ms": 20000,
+  "p0_script": [
+    { "action": "SP1", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 3000 },
+    { "action": "SP2", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 4000 }
+  ],
+  "assertions": {
+    "must_hit_connected": [
+      { "attacker": "P0", "sp": 1, "min_count": 1 },
+      { "attacker": "P0", "sp": 2, "min_count": 1 }
+    ],
+    "must_apply_buffs": [
+      { "target": "P1", "mod_substr": "rhinox_sp1_nullify_bleed", "min_count": 1 },
+      { "target": "P1", "mod_substr": "rhinox_sp2_bleed", "min_count": 1 }
+    ],
+    "must_dot_tick": [
+      { "target": "P1", "min_ticks": 3, "min_dmg": 1.0 }
+    ]
+  }
+}

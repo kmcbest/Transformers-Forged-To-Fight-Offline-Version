@@ -25,6 +25,12 @@ int skill_dispatch_evade_check(SkillEvadeContext* ctx, int* out_evade);
 
 // TestRoll 触发判定分发 (返回 1 表示已被某技能接管判定，*out_res 为结果；返回 0 表示未接管，走原生逻辑)
 int skill_dispatch_test_roll(SkillTestRollContext* ctx, int* out_res);
+void skill_dispatch_test_roll_post(SkillTestRollContext* ctx, int roll_result);
+
+// 新一轮打击命中解析开始通知 & 闪避触发通知 & 通用英雄名解析
+void skill_dispatch_hit_begin(void);
+void skill_dispatch_evade_triggered(int evader_player_index, int is_ranged);
+const char* skill_dispatch_get_display_name(const char* bot_id);
 
 // 能量获取率倍率修正分发 (返回倍率，默认 1.0f)
 float skill_dispatch_power_gain_rate_mod(int player_index);
@@ -48,6 +54,9 @@ void skill_dispatch_attack_start(int player_index, int action_type);
 void skill_dispatch_attack_ended(SkillAttackEndContext* ctx);
 // 必杀技状态机进出分发 (sp_level: 1=SP1, 2=SP2, 3=SP3; entered: 1=进入, 0=退出)
 void skill_dispatch_special_state(int player_index, int sp_level, int entered);
+
+// 动态被动暴击率加权分发
+float skill_dispatch_crit_chance_mod(int player_index, int atk_level);
 
 #ifdef __cplusplus
 }

@@ -17,6 +17,43 @@
 
 static uint64_t s_last_dash_ms[2] = {0, 0};
 static uint64_t s_last_sp2_ms[2] = {0, 0};
+static int s_king_stacks[2] = {0, 0};
+
+static void motormaster_on_simulation_tick(uint64_t now_ms) {
+    (void)now_ms;
+    for (int p = 0; p < 2; p++) {
+        const char* bid = skill_get_bot_id(p);
+        if (!bid || strstr(bid, "motormaster") == NULL) continue;
+        float hp_r = skill_get_hp_ratio(p);
+        if (hp_r > 0.0f && hp_r <= 0.80f) {
+            int target_stacks = (int)((1.0f - hp_r + 0.001f) / 0.20f);
+            if (target_stacks > 4) target_stacks = 4;
+            while (s_king_stacks[p] < target_stacks) {
+                s_king_stacks[p]++;
+                skill_apply_buff(p, "motormaster_king_of_road");
+            }
+        }
+    }
+}
+
+static void motormaster_on_hit_connected(SkillHitContext* ctx) {
+    if (!ctx || !ctx->attacker_bot_id || strstr(ctx->attacker_bot_id, "motormaster") == NULL) return;
+    int ap = ctx->attacker_player_index;
+    int tp = ctx->target_player_index;
+    if (ctx->special_index == 1 && ctx->is_last_hit) {
+        skill_add_mana(tp, -0.06f);
+        skill_apply_buff_dur(tp, "motormaster_sp1_power_burn", 1.0f);
+    } else if (ctx->special_index == 3 && ctx->is_last_hit) {
+        ctx->modified_damage *= 2.50f;
+        skill_apply_buff_dur(ap, "motormaster_sp3_burst_atk", 1.0f);
+        skill_apply_buff_dur(tp, "motormaster_sp3_ram_armor", 6.0f);
+        float atk = skill_get_attack(ap);
+        float self_hp = skill_get_hp(ap);
+        float recoil = atk * 0.90f;
+        if (self_hp - recoil < 1.0f) recoil = (self_hp > 1.0f) ? (self_hp - 1.0f) : 0.0f;
+        if (recoil > 0.0f) skill_deal_damage(ap, recoil);
+    }
+}
 
 static void motormaster_on_attack_start(int player_index, int action_type) {
     if (player_index < 0 || player_index >= 2) return;
@@ -59,13 +96,14 @@ static void motormaster_on_fight_reset(int player_index) {
     if (player_index >= 0 && player_index < 2) {
         s_last_dash_ms[player_index] = 0;
         s_last_sp2_ms[player_index] = 0;
+        s_king_stacks[player_index] = 0;
         skill_clear_motormaster_dash_unstoppable(player_index);
     }
 }
 
 BotSkillModule g_module_motormaster = {
     .bot_prefix = "motormaster",
-    .on_hit_connected = NULL,
+    .on_hit_connected = motormaster_on_hit_connected,
     .on_buff_gated = NULL,
     .on_buff_applied = NULL,
     .on_evade_check = NULL,
@@ -73,7 +111,7 @@ BotSkillModule g_module_motormaster = {
     .on_power_gain_rate = NULL,
     .on_reflect_proj = NULL,
     .on_fight_reset = motormaster_on_fight_reset,
-    .on_simulation_tick = NULL,
+    .on_simulation_tick = motormaster_on_simulation_tick,
     .on_block_state = NULL,
     .on_dodge_enter = NULL,
     .on_hitreact_enter = NULL,

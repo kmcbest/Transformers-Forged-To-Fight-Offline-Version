@@ -61,22 +61,22 @@ static void blackout_show_sp1_unblockable(int p, const char* reason) {
     skill_log("BLACKOUT: P%d showed SP1 light-purple unblockable icon (%s)", p, reason);
 }
 
-// 触发觉醒技“追猎” (普通攻击落空获得 1 层 60% 能量功率增益，持续 4 秒；最大 1 层，再次触发刷新倒计时)
+// 触发觉醒技“追猎” (普通攻击落空获得 1 层 60% 能量功率增益，持续 3 秒；最大 1 层，再次触发刷新倒计时)
 void blackout_trigger_hunt_if_ready(int blackout_p, const char* reason) {
     if (blackout_p < 0 || blackout_p >= 2) return;
     const char* bid = skill_get_bot_id(blackout_p);
     if (!bid || strstr(bid, "blackout") == NULL) return;
 
-    // 刷新或施加 4 秒 60% 能量功率增益 (最大 1 层，再次触发刷新倒计时)
+    // 刷新或施加 3 秒 60% 能量功率增益 (最大 1 层，再次触发刷新倒计时)
     if (skill_has_buff(blackout_p, "blackout_sig_whiff_power_gain")) {
         skill_consume_buff(blackout_p, "blackout_sig_whiff_power_gain", 1);
-        skill_log("BLACKOUT: P%d Hunt refreshed 4.0s countdown (%s)", blackout_p, reason);
+        skill_log("BLACKOUT: P%d Hunt refreshed 3.0s countdown (%s)", blackout_p, reason);
     } else {
-        skill_log("BLACKOUT: P%d Hunt gained +60%% power rate buff 4.0s (%s)", blackout_p, reason);
+        skill_log("BLACKOUT: P%d Hunt gained +60%% power rate buff 3.0s (%s)", blackout_p, reason);
     }
 
-    skill_apply_buff_dur(blackout_p, "blackout_sig_whiff_power_gain", 4.0f);
-    skill_overlay("[%s] 追猎！获得60%%能量功率增益 (4秒)！", blackout_p == 0 ? "眩晕" : "敌方眩晕");
+    skill_apply_buff_dur(blackout_p, "blackout_sig_whiff_power_gain", 3.0f);
+    skill_overlay("[%s] 追猎！获得60%%能量功率增益 (3秒)！", blackout_p == 0 ? "眩晕" : "敌方眩晕");
 }
 
 // 战斗重置
@@ -89,6 +89,9 @@ static void blackout_on_fight_reset(int player_index) {
     s_blackout_sp1_unblockable_on[player_index] = 0;
     s_blackout_sp1_start_ms[player_index] = 0;
     s_blackout_sp1_exit_ms[player_index] = 0;
+    if (skill_has_buff(player_index, "blackout_sp1_special_damage")) {
+        skill_consume_buff(player_index, "blackout_sp1_special_damage", 99);
+    }
     if (skill_has_buff(player_index, "blackout_sp1_crit_damage")) {
         skill_consume_buff(player_index, "blackout_sp1_crit_damage", 99);
     }
@@ -136,16 +139,22 @@ static void blackout_on_special_state(int player_index, int sp_level, int entere
             s_blackout_sp1_window_active[player_index] = 1;
             s_blackout_sp1_start_ms[player_index] = now_ms;
             s_blackout_sp1_exit_ms[player_index] = 0;
-            if (!skill_has_buff(player_index, "blackout_sp1_crit_damage")) {
-                skill_apply_buff_dur(player_index, "blackout_sp1_crit_damage", 3.5f);
+            if (!skill_has_buff(player_index, "blackout_sp1_special_damage")) {
+                skill_apply_buff_dur(player_index, "blackout_sp1_special_damage", 3.5f);
             }
-            skill_log("BLACKOUT: P%d entered SP1 (+30%% crit damage active, tracking last-hit unblockable window)", player_index);
+            skill_log("BLACKOUT: P%d entered SP1 (+30%% special damage active, tracking last-hit unblockable window)", player_index);
         } else if (sp_level == 2) {
             // SP2 进入：确保 +60% 暴击伤害增益已激活 (仅技能期间生效)
             if (!skill_has_buff(player_index, "blackout_sp2_crit_damage")) {
                 skill_apply_buff_dur(player_index, "blackout_sp2_crit_damage", 4.0f);
             }
             skill_log("BLACKOUT: P%d entered SP2 (+60%% crit damage active)", player_index);
+        } else if (sp_level == 3) {
+            // SP3 进入：准备终击暴击率提升 (+50%, 2s)
+            if (!skill_has_buff(player_index, "blackout_sp3_last_crit_rate")) {
+                skill_apply_buff_dur(player_index, "blackout_sp3_last_crit_rate", 4.0f);
+            }
+            skill_log("BLACKOUT: P%d entered SP3 (+50%% crit rate active)", player_index);
         }
     } else {
         if (s_blackout_active_sp[player_index] == sp_level) {
@@ -154,9 +163,12 @@ static void blackout_on_special_state(int player_index, int sp_level, int entere
         if (sp_level == 1) {
             // SP1 动画退出：终击能量炮投射物可能仍在飞行，记录退出时间，等终击结算回调立即熄灭或兜底 1.2s 熄灭
             s_blackout_sp1_exit_ms[player_index] = now_ms;
+            if (skill_has_buff(player_index, "blackout_sp1_special_damage")) {
+                skill_consume_buff(player_index, "blackout_sp1_special_damage", 99);
+                skill_log("BLACKOUT: P%d exited SP1 -> removed SP1 +30%% special damage buff", player_index);
+            }
             if (skill_has_buff(player_index, "blackout_sp1_crit_damage")) {
                 skill_consume_buff(player_index, "blackout_sp1_crit_damage", 99);
-                skill_log("BLACKOUT: P%d exited SP1 -> removed SP1 +30%% crit damage buff", player_index);
             }
             skill_log("BLACKOUT: P%d exited SP1 state (waiting for last-hit projectile resolution)", player_index);
         } else if (sp_level == 2) {
@@ -164,6 +176,10 @@ static void blackout_on_special_state(int player_index, int sp_level, int entere
             if (skill_has_buff(player_index, "blackout_sp2_crit_damage")) {
                 skill_consume_buff(player_index, "blackout_sp2_crit_damage", 99);
                 skill_log("BLACKOUT: P%d exited SP2 -> removed SP2 +60%% crit damage buff", player_index);
+            }
+        } else if (sp_level == 3) {
+            if (skill_has_buff(player_index, "blackout_sp3_last_crit_rate")) {
+                skill_consume_buff(player_index, "blackout_sp3_last_crit_rate", 99);
             }
         }
     }
@@ -178,6 +194,14 @@ static void blackout_on_hit_connected(SkillHitContext* ctx) {
     const char* atk_id = ctx->attacker_bot_id;
 
     if (atk_id && strstr(atk_id, "blackout") != NULL) {
+        // SP1 特殊攻击期间：提升 30% 特殊伤害
+        if (ctx->special_index == 1 || ctx->action_type == 16 || skill_has_buff(ap, "blackout_sp1_special_damage")) {
+            float old_dmg = ctx->modified_damage;
+            ctx->modified_damage *= 1.30f;
+            skill_log("BLACKOUT: SP1 Special Damage boost (+30%%) applied on P%d: %.1f -> %.1f",
+                      ap, old_dmg, ctx->modified_damage);
+        }
+
         // 连击数自增 (仅非格挡真实命中计入连击)
         if (!ctx->is_blocked) {
             s_blackout_combo[ap]++;
@@ -193,6 +217,16 @@ static void blackout_on_hit_connected(SkillHitContext* ctx) {
                               ap == 0 ? "眩晕" : "敌方眩晕", s_blackout_combo[ap], stacks);
                 skill_log("BLACKOUT: P%d combo reached %d -> applied crit rate & dmg layer %d",
                           ap, s_blackout_combo[ap], stacks);
+            }
+        }
+
+        // SP3 最后一击：施加永久暴击抗性减益；若暴击额外施加 6s 燃烧
+        if (ctx->special_index == 3 && ctx->is_last_hit) {
+            skill_apply_buff_dur(tp, "blackout_sp3_crit_resist_debuff", -1.0f);
+            skill_log("BLACKOUT: SP3 last hit applied crit_resist_debuff to P%d", tp);
+            if (ctx->is_crit) {
+                skill_apply_buff_dur(tp, "blackout_sp3_crit_burn", 6.0f);
+                skill_log("BLACKOUT: SP3 last hit crit applied burn to P%d", tp);
             }
         }
 
@@ -244,6 +278,9 @@ static void blackout_on_hitreact_enter(int player_index) {
 
     if (s_blackout_sp1_unblockable_on[player_index]) {
         blackout_clear_sp1_unblockable(player_index, "hitreact_interrupted");
+    }
+    if (skill_has_buff(player_index, "blackout_sp1_special_damage")) {
+        skill_consume_buff(player_index, "blackout_sp1_special_damage", 99);
     }
     if (skill_has_buff(player_index, "blackout_sp1_crit_damage")) {
         skill_consume_buff(player_index, "blackout_sp1_crit_damage", 99);
