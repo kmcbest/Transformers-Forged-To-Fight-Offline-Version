@@ -14,12 +14,12 @@ Bot ID: elita_one_gs / elita_one_gs_kabam
      b) elita_tactical_insight_melee_buff: 规避后获得 30% 近战增益持续 3 秒。
 
 2. [被动 - 灵动反击 / Nimble Counter] (ID: 4002, pua_icon: E50A)
-   - 官方描述: "闪避对手前冲攻击或近战攻击时，有50%的概率得到一个反击锦囊，持续1秒，
-     此时间内如果击中对手，可将对手眩晕1.5秒；如果攻击被对手闪避，则对对手施加1层50%的攻击减益，持续3秒。"
+   - 官方描述: "闪避对手前冲攻击或近战攻击时，有50%的概率得到一个反击锦囊，持续2秒，
+     此时间内如果击中对手，可将对手眩晕1.5秒；如果艾丽塔的任何攻击落空，则对对手施加1层50%的攻击减益，持续3秒。"
    - 实现方案:
      c) elita_counter_pouch_buff: 闪避冲锋或近战攻击时 50% 获得反击锦囊持续 2.0 秒 (黄色图标 E50A)。
      d) elita_counter_stun: 持有反击锦囊击中对手时造成 1.5 秒眩晕。
-     e) elita_counter_atk_debuff: 持有反击锦囊被对手规避时对对手施加 50% 攻击减益持续 3.0 秒。
+     e) elita_counter_atk_debuff: 持有反击锦囊期间艾丽塔任何攻击落空时，对对手施加 50% 攻击减益持续 3.0 秒。
 
 3. [被动 - 关节狙击 / Joint Aim] (ID: 4003, pua_icon: E409)
    - 官方描述: "远程攻击100%护甲穿透\n远程攻击命中或被防均有70%概率刷新对手身上的减益持续时间。"
@@ -78,17 +78,6 @@ Bot ID: elita_one_gs / elita_one_gs_kabam
     - 官方描述: "技能结束后封印对手全部特殊攻击8秒。"
     - 实现方案:
       u) elita_sp3_tactical_lockdown: SP3 结束后封印对手特殊攻击 8 秒。
-
-13. [协同 - 永恒誓言 / Eternal Bond] (ID: 4015, pua_icon: E815)
-    - 官方描述: "战斗开始时，获得相当于自身最大生命值15%的能量护盾，优先承受普通攻击的伤害，直到消耗完。"
-    - 实现方案:
-      v) elita_synergy_eternal_bond_shield: 开局获得 15% base_hp 能量护盾。
-
-14. [协同 - 抵抗军姐妹 / Resistance Sisters] (ID: 4016, pua_icon: 0xe40d)
-    - 官方描述: "暴击率额外提升10%，重击伤害增益25%。"
-    - 实现方案:
-      w) elita_synergy_sisters_crit: 常驻提升 10% 暴击率。
-      x) elita_synergy_sisters_heavy: 重击攻击力提升 25%。
 -----------------------------------------------------------------------------
 """
 
@@ -127,167 +116,7 @@ def _build_elita_abilities_impl(
     mods = {}
     appears = {}
     buffs = {
-        # 流血效果
-        "dmg_bleed": {
-            "id": "dmg_bleed",
-            "iconTexture": "",
-            "image": "",
-            "images3": False,
-            "modeAvail": [],
-            "scope": "global",
-            "valueType": "multiplier",
-            "displayValue": 1.0,
-            "c": 1,
-            "value": 1.0,
-            "buffType": "damage_over_time",
-            "group": "dmg_bleed",
-            "p": {},
-        },
-        # 震击效果
-        "dmg_shock": {
-            "id": "dmg_shock",
-            "iconTexture": "",
-            "image": "",
-            "images3": False,
-            "modeAvail": [],
-            "scope": "global",
-            "valueType": "multiplier",
-            "displayValue": 1.0,
-            "c": 1,
-            "value": 1.0,
-            "buffType": "damage_over_time",
-            "group": "dmg_shock",
-            "p": {},
-        },
-        # 破甲效果
-        "armor_break": {
-            "id": "armor_break",
-            "iconTexture": "",
-            "image": "",
-            "images3": False,
-            "modeAvail": [],
-            "scope": "global",
-            "valueType": "additive",
-            "displayValue": 1.0,
-            "c": 1,
-            "value": 1.0,
-            "buffType": "debuff",
-            "group": "armor_break",
-            "p": {},
-        },
-        # 能量燃烧/能量流失
-        "power_leak": {
-            "id": "power_leak",
-            "iconTexture": "",
-            "image": "",
-            "images3": False,
-            "modeAvail": [],
-            "scope": "global",
-            "valueType": "additive",
-            "displayValue": 1.0,
-            "c": 1,
-            "value": 1.0,
-            "buffType": "debuff",
-            "group": "power_leak",
-            "p": {},
-        },
-        # 特殊攻击封印/能量锁定
-        "power_lock": {
-            "id": "power_lock",
-            "iconTexture": "",
-            "image": "",
-            "images3": False,
-            "modeAvail": [],
-            "scope": "global",
-            "valueType": "absolute",
-            "displayValue": 1.0,
-            "c": 1,
-            "value": 1.0,
-            "buffType": "power_lock",
-            "group": "power_lock",
-            "p": {},
-        },
-        # 眩晕
-        "stun": {
-            "id": "stun",
-            "iconTexture": "",
-            "image": "",
-            "images3": False,
-            "modeAvail": [],
-            "scope": "global",
-            "valueType": "absolute",
-            "displayValue": 1.0,
-            "c": 1,
-            "value": 1.0,
-            "buffType": "stun",
-            "group": "stun",
-            "p": {},
-        },
-        # 护甲提升
-        "armor_up": {
-            "id": "armor_up",
-            "iconTexture": "",
-            "image": "",
-            "images3": False,
-            "modeAvail": [],
-            "scope": "global",
-            "valueType": "additive",
-            "displayValue": 1.0,
-            "c": 1,
-            "value": 1.0,
-            "buffType": "buff",
-            "group": "armor_up",
-            "p": {},
-        },
-        # 攻击力提升
-        "attack_buff": {
-            "id": "attack_buff",
-            "iconTexture": "",
-            "image": "",
-            "images3": False,
-            "modeAvail": [],
-            "scope": "global",
-            "valueType": "additive",
-            "displayValue": 1.0,
-            "c": 1,
-            "value": 1.0,
-            "buffType": "buff",
-            "group": "attack_buff",
-            "p": {},
-        },
-        # 攻击减益
-        "attack_debuff": {
-            "id": "attack_debuff",
-            "iconTexture": "",
-            "image": "",
-            "images3": False,
-            "modeAvail": [],
-            "scope": "global",
-            "valueType": "additive",
-            "displayValue": 1.0,
-            "c": 1,
-            "value": 1.0,
-            "buffType": "debuff",
-            "group": "attack_debuff",
-            "p": {},
-        },
-        # 暴击几率提升
-        "crit_rate": {
-            "id": "crit_rate",
-            "iconTexture": "",
-            "image": "",
-            "images3": False,
-            "modeAvail": [],
-            "scope": "global",
-            "valueType": "additive",
-            "displayValue": 1.0,
-            "c": 1,
-            "value": 1.0,
-            "buffType": "buff",
-            "group": "crit_rate",
-            "p": {},
-        },
-        # 反击锦囊状态
+        # 反击锦囊状态 (艾丽塔私有标记 Buff；标准全局 Buff 统一由 Server/abilities/__init__.py 提供)
         "elita_counter_pouch": {
             "id": "elita_counter_pouch",
             "iconTexture": "",
@@ -308,15 +137,15 @@ def _build_elita_abilities_impl(
     # =========================================================================
     # 1. [SP1] 等离子疾射 (Plasma Burst)
     #    a) 破甲: 最后一击 100% 施加 35% 破甲持续 7 秒 (对斗士系 50%)
-    #    b) 能量燃烧: 对手 3 格满能量时扣除其 5% 能量
+    #    b) 能量燃烧: 对手 3 格满能量时，最后一击立即扣除其最大能量的 5%
     # =========================================================================
     m_sp1_ab, a_sp1_ab = make_armor_break_statmod(
         mod_id="elita_sp1_armor_break",
         duration=7.0,
         break_amount=0.35,
         chance=1.0,
-        trigger="onHit",
-        trigger_scope="level=Special1",
+        trigger="",
+        trigger_scope="",
         appr_id="appr_elita_sp1_ab",
         callout_text="破甲",
         pua_icon="\uE516",
@@ -327,16 +156,16 @@ def _build_elita_abilities_impl(
     mods.update(m_sp1_ab)
     appears.update(a_sp1_ab)
 
-    # 针对斗士系追加 15% 破甲 (共计 50%)
+    # 针对斗士系破甲提升至 50% (由 C 侧二选一独立施加，避免重复叠加)
     m_sp1_braw, a_sp1_braw = make_armor_break_statmod(
         mod_id="elita_sp1_armor_break_braw",
         duration=7.0,
-        break_amount=0.15,
+        break_amount=0.50,
         chance=1.0,
         trigger="",
         trigger_scope="",
         appr_id="appr_elita_sp1_braw",
-        callout_text="战术压制",
+        callout_text="破甲",
         pua_icon="\uE516",
         color_hex=AbilityColor.RED_DEBUFF_TC,
         gradient_bottom=AbilityColor.RED_DEBUFF_GB,
@@ -382,14 +211,14 @@ def _build_elita_abilities_impl(
     mods.update(m_sp2_null)
     appears.update(a_sp2_null)
 
-    # 震击 10 秒 DOT (100% ATK = 2780.0, 单跳 139.0 > 1.0)
+    # 震击 10 秒 DOT (100% ATK = 2780.0, 最后一击触发)
     m_sp2_shk, a_sp2_shk = make_shock_statmod(
         mod_id="elita_sp2_shock",
         duration=10.0,
         total_dmg=float(round(base_atk * 1.00)),
         chance=1.0,
-        trigger="onHit",
-        trigger_scope="level=Special2",
+        trigger="",
+        trigger_scope="",
         appr_id="appr_elita_sp2_shk",
         callout_text="震击",
         pua_icon="\uE914",
@@ -401,16 +230,16 @@ def _build_elita_abilities_impl(
 
     # =========================================================================
     # 3. [SP3] 塞伯坦和平年代 (Pax Cybertronia)
-    #    a) 流血: 最后一击 120% ATK 持续 6 秒 (单跳 278.0 > 1.0)
-    #    b) 战术封锁: 技能结束后封印对手全部特殊攻击 8 秒
+    #    a) 流血: 最后一击 120% ATK 持续 6 秒
+    #    b) 战术封锁: 技能结束后封印对手全部特殊攻击 8 秒 (红色图标 E419，不锁能量获取)
     # =========================================================================
     m_sp3_bld, a_sp3_bld = make_bleed_statmod(
         mod_id="elita_sp3_bleed",
         duration=6.0,
         total_dmg=float(round(base_atk * 1.20)),
         chance=1.0,
-        trigger="onHit",
-        trigger_scope="level=Special3",
+        trigger="",
+        trigger_scope="",
         appr_id="appr_elita_sp3_bld",
         callout_text="流血",
         pua_icon="\uE401",
@@ -420,20 +249,44 @@ def _build_elita_abilities_impl(
     mods.update(m_sp3_bld)
     appears.update(a_sp3_bld)
 
-    m_sp3_lock, a_sp3_lock = make_power_lock_statmod(
-        mod_id="elita_sp3_tactical_lockdown",
-        duration=8.0,
-        chance=1.0,
-        trigger="onHit",
-        trigger_scope="level=Special3",
+    appr_sp3_lock = make_statmod_appearance(
         appr_id="appr_elita_sp3_lock",
         callout_text="战术封锁",
+        desc="SP3结束后封印对手全部特殊攻击8秒",
         pua_icon="\uE419",
-        color_hex=AbilityColor.RED_DEBUFF_TC,
-        gradient_bottom=AbilityColor.RED_DEBUFF_GB,
+        color=AbilityColor.RED_DEBUFF,
+        short_desc="战术封锁",
     )
-    mods.update(m_sp3_lock)
-    appears.update(a_sp3_lock)
+    appears[appr_sp3_lock["id"]] = appr_sp3_lock
+    mods["elita_sp3_tactical_lockdown"] = {
+        "id": "elita_sp3_tactical_lockdown",
+        "t": "combat",
+        "tm": "",
+        "tr": [],
+        "uit": [],
+        "pri": 0,
+        "trm": 0.0,
+        "trs": "",
+        "trr": "repeat",
+        "c": 1.0,
+        "m": 1.0,
+        "d": 8.0,
+        "s": "none",
+        "ta": "opponent",
+        "mt": "debuff",
+        "v": "",
+        "ms": "",
+        "st": 1,
+        "g": "power_lock",
+        "gc": 0.0,
+        "gcv": "",
+        "rcv": "",
+        "ti": 0,
+        "a": [appr_sp3_lock["id"]],
+        "au": [],
+        "rh": 0.0,
+        "ra": 0.0,
+    }
 
     # =========================================================================
     # 4. [被动] 战术洞察 (Tactical Insight)
@@ -457,10 +310,11 @@ def _build_elita_abilities_impl(
     mods.update(m_insight_evd)
     appears.update(a_insight_evd)
 
+    # 近战增益 UI 指示器（实际 +30% 仅对近战由 skill_elita.c 精确加伤，避免误加到远程/SP）
     m_insight_buff, a_insight_buff = make_attack_boost_statmod(
         mod_id="elita_tactical_insight_melee_buff",
         duration=3.0,
-        attack_bonus=0.30,
+        attack_bonus=0.0,
         chance=1.0,
         trigger="",
         trigger_scope="",
@@ -471,6 +325,8 @@ def _build_elita_abilities_impl(
         gradient_bottom=AbilityColor.ORANGE_DAMAGE_GB,
         stackable=False,
     )
+    m_insight_buff["elita_tactical_insight_melee_buff"]["t"] = "combat"
+    m_insight_buff["elita_tactical_insight_melee_buff"]["s"] = "none"
     mods.update(m_insight_buff)
     appears.update(a_insight_buff)
 
@@ -478,14 +334,14 @@ def _build_elita_abilities_impl(
     # 5. [被动] 灵动反击 (Nimble Counter)
     #    - 闪避冲锋或近战 50% 获得反击锦囊 (持续 2.0s, 黄色图标 E50A)
     #    - 持有反击锦囊击中对手眩晕 1.5s ("反击眩晕", 黄色图标 E50A)
-    #    - 持有反击锦囊被对手闪避施加 50% 攻击削弱持续 3s ("攻击减益", 红色图标)
+    #    - 持有反击锦囊攻击落空时施加 50% 攻击削弱持续 3s ("攻击减益", 红色图标 E916)
     #    - 由 NativeHook 底层状态机精准驱动与门禁拦截，
     #      statmod 保持 tr: [] 空触发列表，防止 IL2CPP 误判在每次普通命中时常驻连晕！
     # =========================================================================
     appr_pouch = make_statmod_appearance(
         appr_id="appr_elita_counter_pouch",
         callout_text="反击锦囊",
-        desc="闪避后获得反击锦囊，命中可眩晕对手，若被闪避则削弱对手攻击",
+        desc="闪避后获得反击锦囊，命中可眩晕对手，若任何攻击落空则削弱对手攻击",
         pua_icon="\uE50A",
         color=AbilityColor.YELLOW_STATUS,
         short_desc="反击锦囊",
@@ -546,7 +402,7 @@ def _build_elita_abilities_impl(
         appr_id="appr_elita_counter_weaken",
         callout_text="攻击减益",
         desc="受到灵动反击削弱，攻击力降低 50%",
-        pua_icon="\uE50A",
+        pua_icon="\uE916",
         color=AbilityColor.RED_DEBUFF,
         short_desc="攻击减益",
     )
@@ -555,7 +411,7 @@ def _build_elita_abilities_impl(
         "id": "elita_counter_atk_debuff",
         "AppearanceID": appr_weaken["id"],
         "Type": "combat",
-        "t": "mod_attack_rating",
+        "t": "attack_debuff",
         "tm": "",
         "tr": [],
         "uit": [],
@@ -564,9 +420,9 @@ def _build_elita_abilities_impl(
         "trs": "",
         "trr": "repeat",
         "c": 1.0,
-        "m": -0.50,
+        "m": 0.50,
         "d": 3.0,
-        "s": "none",
+        "s": "Attack",
         "ta": "opponent",
         "mt": "debuff",
         "v": "",
@@ -585,8 +441,8 @@ def _build_elita_abilities_impl(
 
     # =========================================================================
     # 6. [被动] 关节狙击 (Joint Aim)
-    #    - 远程攻击 100% 护甲穿透
-    #    - 远程攻击命中或被防 70% 刷新对手减益持续时间
+    #    - 远程攻击 100% 护甲穿透 (由 C 侧 skill_elita.c 注入 hit_ctx.armor_penetration=1.0)
+    #    - 远程攻击命中或被防 70% 刷新对手减益持续时间 (由 C 侧 skill_refresh_target_debuffs 驱动)
     # =========================================================================
     appr_aim = make_statmod_appearance(
         appr_id="appr_elita_joint_aim",
@@ -601,12 +457,12 @@ def _build_elita_abilities_impl(
         "id": "elita_joint_aim_pierce",
         "AppearanceID": appr_aim["id"],
         "Type": "combat",
-        "t": "mod_armor_pierce",
+        "t": "combat",
         "d": 0.0,
         "m": 1.0,
         "p": 1.0,
-        "tr": ["always"],
-        "trs": "level=Ranged",
+        "tr": [],
+        "trs": "",
         "uit": [],
         "a": [appr_aim["id"]],
         "au": [],
@@ -630,12 +486,12 @@ def _build_elita_abilities_impl(
         "id": "elita_joint_aim_refresh",
         "AppearanceID": appr_refresh["id"],
         "Type": "combat",
-        "t": "refresh_debuffs",
-        "d": 0.0,
+        "t": "combat",
+        "d": 0.5,
         "m": 1.0,
-        "p": 0.70,
-        "tr": ["onHit", "onBlocked"],
-        "trs": "level=Ranged",
+        "p": 1.0,
+        "tr": [],
+        "trs": "",
         "uit": [],
         "a": [appr_refresh["id"]],
         "au": [],
@@ -685,8 +541,8 @@ def _build_elita_abilities_impl(
         "id": "elita_commanders_presence",
         "AppearanceID": appr_presence["id"],
         "Type": "combat",
-        "t": "accelerate_dot",
-        "d": 0.0,
+        "t": "combat",
+        "d": 0.5,
         "m": 0.20,
         "p": 1.0,
         "tr": [],
@@ -697,7 +553,7 @@ def _build_elita_abilities_impl(
         "rh": 0.0,
         "ra": 0.0,
         "ta": "self",
-        "mt": "passive",
+        "mt": "buff",
         "s": "none",
     }
 
@@ -760,7 +616,7 @@ def _build_elita_abilities_impl(
     m_flame_stn, a_flame_stn = make_stun_statmod(
         mod_id="elita_sig_flame_interrupt_stun",
         duration=1.5,
-        chance=0.40,
+        chance=1.0,
         trigger="",
         trigger_scope="",
         appr_id="appr_elita_flame_stn",
@@ -775,7 +631,7 @@ def _build_elita_abilities_impl(
     m_flame_braw, a_flame_braw = make_stun_statmod(
         mod_id="elita_sig_flame_interrupt_stun_braw",
         duration=1.5,
-        chance=0.30,
+        chance=1.0,
         trigger="",
         trigger_scope="",
         appr_id="appr_elita_flame_braw",
@@ -786,70 +642,6 @@ def _build_elita_abilities_impl(
     )
     mods.update(m_flame_braw)
     appears.update(a_flame_braw)
-
-    # =========================================================================
-    # 10. [协同] 永恒誓言 & 抵抗军姐妹
-    # =========================================================================
-    appr_bond = make_statmod_appearance(
-        appr_id="appr_elita_bond_shield",
-        callout_text="永恒誓言",
-        desc="与擎天柱协同：战斗开局获得 15% 最大生命值护盾",
-        pua_icon="\uE815",
-        color=AbilityColor.BLUE_DEFENSE,
-        short_desc="永恒誓言",
-    )
-    appears[appr_bond["id"]] = appr_bond
-    mods["elita_synergy_eternal_bond_shield"] = {
-        "id": "elita_synergy_eternal_bond_shield",
-        "AppearanceID": appr_bond["id"],
-        "Type": "combat",
-        "t": "mod_shield",
-        "d": 0.0,
-        "m": float(round(base_hp * 0.15)),
-        "p": 1.0,
-        "tr": ["onStart"],
-        "trs": "",
-        "uit": [],
-        "a": [appr_bond["id"]],
-        "au": [],
-        "rh": 0.0,
-        "ra": 0.0,
-        "ta": "self",
-        "mt": "buff",
-        "s": "none",
-    }
-
-    m_sis_crt, a_sis_crt = make_crit_rate_statmod(
-        mod_id="elita_synergy_sisters_crit",
-        duration=0.0,
-        crit_bonus=0.10,
-        chance=1.0,
-        trigger="always",
-        appr_id="appr_elita_sis_crt",
-        callout_text="抵抗军姐妹",
-        pua_icon="\uE40D",
-        color_hex=AbilityColor.ORANGE_DAMAGE_TC,
-        gradient_bottom=AbilityColor.ORANGE_DAMAGE_GB,
-    )
-    mods.update(m_sis_crt)
-    appears.update(a_sis_crt)
-
-    m_sis_hvy, a_sis_hvy = make_attack_boost_statmod(
-        mod_id="elita_synergy_sisters_heavy",
-        duration=0.0,
-        attack_bonus=0.25,
-        chance=1.0,
-        trigger="always",
-        trigger_scope="level=Heavy",
-        appr_id="appr_elita_sis_hvy",
-        callout_text="重击强化",
-        pua_icon="\uE40D",
-        color_hex=AbilityColor.ORANGE_DAMAGE_TC,
-        gradient_bottom=AbilityColor.ORANGE_DAMAGE_GB,
-        stackable=False,
-    )
-    mods.update(m_sis_hvy)
-    appears.update(a_sis_hvy)
 
     # 校验所有产物符合 IL2CPP 底层契约
     for m in mods.values():

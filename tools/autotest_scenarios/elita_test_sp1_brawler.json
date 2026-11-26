@@ -1,0 +1,41 @@
+{
+  "active": true,
+  "name": "elita_test_sp1_brawler",
+  "banner": "#6a Elita SP1 vs Brawler (50% Armor Break Last Hit + Full Power 5% Burn)",
+  "qid": "1.1.1",
+  "player_invincible": 1,
+  "p0": {
+    "bid": "elita_one_gs",
+    "mana": 1.0
+  },
+  "p1": {
+    "bid": "optimusprime_cin_tf",
+    "mana": 0.0,
+    "freeze_ai": 1,
+    "invincible_dummy": 1
+  },
+  "auto_fight": 0,
+  "max_duration_ms": 15000,
+  "p0_script": [
+    { "action": "WAIT", "duration_ms": 800 },
+    { "action": "SP1", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 3000 },
+    { "action": "SET_MANA", "target": "P0", "mana": 1.0 },
+    { "action": "SET_MANA", "target": "P1", "mana": 3.0 },
+    { "action": "SP1", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 3000 }
+  ],
+  "assertions": {
+    "must_hit_connected": [
+      { "attacker": "P0", "sp": 1, "min_count": 2 }
+    ],
+    "must_apply_buffs": [
+      { "target": "P1", "mod_substr": "elita_sp1_armor_break_braw", "min_count": 2, "max_count": 2 },
+      { "target": "P1", "mod_substr": "elita_sp1_power_burn", "min_count": 1, "max_count": 1 }
+    ],
+    "must_log_substrings": [
+      { "substr": "ELITA_SP1: Last hit vs brawler", "min_count": 2, "max_count": 2 },
+      { "substr": "ELITA_SP1: Last hit burned 5% max power", "min_count": 1, "max_count": 1 }
+    ]
+  }
+}

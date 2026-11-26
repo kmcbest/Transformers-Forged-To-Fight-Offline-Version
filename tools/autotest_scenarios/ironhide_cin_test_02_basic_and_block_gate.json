@@ -1,0 +1,48 @@
+{
+  "active": true,
+  "name": "ironhide_cin_test_02_basic_and_block_gate",
+  "banner": "#2 Movie Ironhide No Missile Crit on Dash/Basic & No Burn/Stun on Blocked SP1",
+  "qid": "1.1.1",
+  "player_invincible": 1,
+  "p0": {
+    "bid": "ironhide_cin_rotf",
+    "mana": 1.2
+  },
+  "p1": {
+    "bid": "optimusprime_cin_tf",
+    "mana": 0.0,
+    "freeze_ai": 1,
+    "invincible_dummy": 1
+  },
+  "auto_fight": 0,
+  "max_duration_ms": 14000,
+  "p0_script": [
+    { "action": "WAIT", "duration_ms": 600 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "LIGHT", "repeat": 3 },
+    { "action": "MEDIUM", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 1800 },
+    { "action": "SP1", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 3400 }
+  ],
+  "p1_script": [
+    { "action": "WAIT", "duration_ms": 2800 },
+    { "action": "BLOCK", "duration_ms": 7000 }
+  ],
+  "assertions": {
+    "must_hit_connected": [
+      { "attacker": "P0", "sp": 0, "min_count": 4 },
+      { "attacker": "P0", "sp": 1, "min_count": 2 }
+    ],
+    "must_not_apply_buffs": [
+      { "target": "P1", "mod_substr": "ironhide_missile_burn" },
+      { "target": "P1", "mod_substr": "ironhide_missile_burn_stack" },
+      { "target": "P1", "mod_substr": "ironhide_sp1_stun" },
+      { "target": "P1", "mod_substr": "ironhide_s3_burn" }
+    ],
+    "must_log_substrings": [
+      { "substr": "IRONHIDE_CIN: P0 missile crit +100% (al=2", "min_count": 0, "max_count": 0 },
+      { "substr": "IRONHIDE_CIN: P0 missile crit +100% (al=1", "min_count": 0, "max_count": 0 }
+    ]
+  }
+}

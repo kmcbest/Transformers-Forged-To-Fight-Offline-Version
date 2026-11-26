@@ -33,6 +33,8 @@
    - 运行时在屏幕上通过 `skill_overlay` 展示 `[AUTOTEST] <banner>`，方便用户旁观比对。
 5. **输出逐条验收报告**：
    - 汇总每条编号用例的断言结果、关键 `[AB_TRACE]` / `[AUTOTEST]` 证据以及人眼观察反馈（如发现异常记录缺陷并进入修复）。
+6. **代表角色归档与物理锁定**：
+   - 经用户确认“验收完成”的代表角色，登记至 [ACCEPTED_BOTS_REGISTRY.md](file:///e:/Agent/TFTF/re_notes/ACCEPTED_BOTS_REGISTRY.md) 与 `Server/abilities/accepted_bots_lock.json`，并运行 `python tools/check_accepted_lock.py --lock <bot_id>` 锁定其 `.py`、`skill_*.c` 与全部剧本 `.json` 的 SHA-256（门禁默认自动校验防篡改）。
 
 ---
 

@@ -1,0 +1,57 @@
+{
+  "active": true,
+  "name": "blackout_test_callouts",
+  "banner": "Blackout Verify Heavy Burn, SP3 Burn & Sig Hunt Callouts",
+  "qid": "1.1.1",
+  "player_invincible": 1,
+  "p0": {
+    "bid": "blackout_cin_tf",
+    "mana": 3.0
+  },
+  "p1": {
+    "bid": "optimusprime_cin_tf",
+    "mana": 0.0,
+    "freeze_ai": 1,
+    "invincible_dummy": 1
+  },
+  "auto_fight": 0,
+  "max_duration_ms": 22000,
+  "p0_script": [
+    { "action": "WAIT", "duration_ms": 400 },
+    { "action": "APPLY_BUFF", "target": "P0", "id": "blackout_combo_crit_rate", "dur": -1.0, "stacks": 15 },
+    { "action": "HEAVY", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 1800 },
+    { "action": "RANGED", "repeat": 4 },
+    { "action": "WAIT", "duration_ms": 1200 },
+    { "action": "SP3", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 7500 }
+  ],
+  "p1_script": [
+    { "action": "WAIT", "duration_ms": 2600 },
+    { "action": "SIDESTEP_LEFT", "repeat": 2 },
+    { "action": "DODGE", "repeat": 2 },
+    { "action": "SIDESTEP_RIGHT", "repeat": 2 },
+    { "action": "WAIT", "duration_ms": 3000 }
+  ],
+  "assertions": {
+    "must_hit_connected": [
+      { "attacker": "P0", "sp": 0, "min_count": 1 },
+      { "attacker": "P0", "sp": 3, "min_count": 1 }
+    ],
+    "must_crit": [
+      { "attacker": "P0", "sp": 3, "min_count": 1 }
+    ],
+    "must_apply_buffs": [
+      { "target": "P0", "mod_substr": "blackout_infinite_fury_crit_dmg", "min_count": 1 },
+      { "target": "P1", "mod_substr": "blackout_heavy_crit_burn", "min_count": 1 },
+      { "target": "P0", "mod_substr": "blackout_sig_whiff_power_gain", "min_count": 1 },
+      { "target": "P1", "mod_substr": "blackout_sp3_crit_burn", "min_count": 1 }
+    ],
+    "must_not_apply_buffs": [
+      { "target": "P0", "mod_substr": "blackout_sp3_last_crit_rate" }
+    ],
+    "must_dot_tick": [
+      { "target": "P1", "min_ticks": 3, "min_dmg": 1.0 }
+    ]
+  }
+}

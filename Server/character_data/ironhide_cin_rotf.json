@@ -5,9 +5,9 @@
   "faction": "autobot",
   "class": "demo",
   "signature": {
-    "title_zh": "湮灭",
+    "title_zh": "抹杀",
     "title_en": "Obliteration",
-    "desc_zh": "特殊技：铁皮的特殊技有 {{var_10}} 几率消灭对手，造成 +{{var_11}} 暴击伤害。每场战斗可能会发生一次。\n\n每级 +{{var_12}}。",
+    "desc_zh": "特殊技有50%的概率造成额外600%的暴击伤害，每场战斗只会触发一次。 //只在特殊技最后一击计算概率，如果最后一击不暴击，则不计算概率，如果一次计算概率没有触发600%的暴击伤害，下次特殊技还可以ROLL。",
     "pua_icon": "",
     "ui_trigger": "none"
   },

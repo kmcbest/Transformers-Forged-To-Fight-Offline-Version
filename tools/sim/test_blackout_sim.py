@@ -67,7 +67,8 @@ assert_true(mods["blackout_combo_crit_rate"]["m"] == 0.06, "被动暴击率每�
 assert_true(mods["blackout_combo_crit_dmg"]["m"] == 0.12, "被动暴击伤害每层修正为 12%")
 assert_true(mods["blackout_sp2_crit_damage"]["m"] == 0.60, "SP2 暴击伤害已修正为 60%")
 assert_true(mods["blackout_sp2_crit_bleed"]["st"] >= 10, "SP2 暴击流血支持可叠加 (st=%d)" % mods["blackout_sp2_crit_bleed"]["st"])
-assert_true(mods["blackout_sp3_crit_resist_debuff"]["st"] >= 10 and "onSpecial3Hit" in mods["blackout_sp3_crit_resist_debuff"]["tr"] and "LastHit" in mods["blackout_sp3_crit_resist_debuff"]["trs"], "SP3 永久暴抗减益由最后一击命中(onSpecial3Hit/LastHit)触发且可叠加")
+assert_true(mods["blackout_sp3_crit_resist_debuff"]["st"] >= 10 and mods["blackout_sp3_crit_resist_debuff"]["tr"] == [], "SP3 永久暴抗减益支持可叠加且收口至 C 侧最后一击触发 (st=%d)" % mods["blackout_sp3_crit_resist_debuff"]["st"])
+assert_true("blackout_sp3_last_crit_rate" not in mods, "SP3 末击+50%暴击率不再作为挂图标/倒计时 Buff，仅在 C 侧单次暴击检定生效")
 assert_true(appears["appr_blackout_sp1_unblockable"]["tc"] == "C4BBF8", "SP1 不可防御图标为浅紫色 (C4BBF8)")
 assert_true(mods["blackout_sig_whiff_power_gain"]["t"] == "power_rate" and mods["blackout_sig_whiff_power_gain"]["m"] == 0.60 and mods["blackout_sig_whiff_power_gain"]["d"] == 3.0 and mods["blackout_sig_whiff_power_gain"]["st"] == 1, "获得1层60%能量功率增益持续3秒 (st=1)")
 

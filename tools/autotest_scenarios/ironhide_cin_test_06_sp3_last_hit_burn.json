@@ -1,0 +1,62 @@
+{
+  "active": true,
+  "name": "ironhide_cin_test_06_sp3_last_hit_burn",
+  "banner": "#6 Movie Ironhide SP3 Full Metal Arsenal Last-Hit Burn (30% 100% ATK 8s)",
+  "qid": "1.1.1",
+  "player_invincible": 1,
+  "p0": {
+    "bid": "ironhide_cin_rotf",
+    "mana": 3.0
+  },
+  "p1": {
+    "bid": "optimusprime_cin_tf",
+    "mana": 0.0,
+    "freeze_ai": 1,
+    "invincible_dummy": 1
+  },
+  "auto_fight": 0,
+  "max_duration_ms": 72000,
+  "p0_script": [
+    { "action": "WAIT", "duration_ms": 600 },
+    { "action": "SP3", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 7200 },
+    { "action": "SET_MANA", "target": "P0", "mana": 3.0 },
+    { "action": "SP3", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 7200 },
+    { "action": "SET_MANA", "target": "P0", "mana": 3.0 },
+    { "action": "SP3", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 7200 },
+    { "action": "SET_MANA", "target": "P0", "mana": 3.0 },
+    { "action": "SP3", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 7200 },
+    { "action": "SET_MANA", "target": "P0", "mana": 3.0 },
+    { "action": "SP3", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 7200 },
+    { "action": "SET_MANA", "target": "P0", "mana": 3.0 },
+    { "action": "SP3", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 7200 },
+    { "action": "SET_MANA", "target": "P0", "mana": 3.0 },
+    { "action": "SP3", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 7200 },
+    { "action": "SET_MANA", "target": "P0", "mana": 3.0 },
+    { "action": "SP3", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 7200 },
+    { "action": "SET_MANA", "target": "P0", "mana": 3.0 },
+    { "action": "SP3", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 7500 }
+  ],
+  "assertions": {
+    "must_hit_connected": [
+      { "attacker": "P0", "sp": 3, "min_count": 10 }
+    ],
+    "must_apply_buffs": [
+      { "target": "P1", "mod_substr": "ironhide_s3_burn", "min_count": 1 }
+    ],
+    "must_dot_tick": [
+      { "target": "P1", "min_ticks": 3, "min_dmg": 1.0 }
+    ],
+    "must_log_substrings": [
+      { "substr": "IRONHIDE_CIN: P0 SP3 lastHit burned P1", "min_count": 1 }
+    ]
+  }
+}

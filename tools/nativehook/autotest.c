@@ -364,6 +364,12 @@ static void parse_scenario_json_into(const char* json, size_t len, AutotestScena
     }
 }
 
+static volatile int s_hot_launch_pending = 0;
+static volatile uint64_t s_hot_launch_after_ms = 0;
+static volatile int s_fight_started_once = 0;
+static char s_active_p0[64] = {0};
+static char s_active_p1[64] = {0};
+
 void autotest_init(void) {
     pthread_mutex_lock(&s_at_lock);
     if (!s_sc_initialized) {
@@ -387,6 +393,9 @@ void autotest_init(void) {
                     break;
                 }
             }
+        }
+        if (s_sc.active) {
+            s_hot_launch_pending = 1;
         }
         AT_LOG("[AUTOTEST] Init active=%d name=%s p0=%s p1=%s auto_fight=%d script_steps=%d",
                s_sc.active, s_sc.name, s_sc.p0_bid, s_sc.p1_bid, s_sc.auto_fight, s_sc.script_len);
@@ -424,7 +433,7 @@ int autotest_is_dummy_invincible(void) {
     return s_sc.active && s_sc.dummy_invincible;
 }
 
-int autotest_set_scenario_json(const char* json, size_t len) {
+static int update_scenario_locked(const char* json, size_t len, int trigger_hot_run) {
     if (!json || len == 0 || len >= sizeof(s_sc_raw)) return -1;
     pthread_mutex_lock(&s_at_lock);
     s_sc_initialized = 1;
@@ -439,10 +448,26 @@ int autotest_set_scenario_json(const char* json, size_t len) {
             break;
         }
     }
+    if (trigger_hot_run) {
+        s_hot_launch_pending = 1;
+        s_hot_launch_after_ms = at_now_ms() + 80;
+    }
     pthread_mutex_unlock(&s_at_lock);
-    AT_LOG("[AUTOTEST] Scenario updated via HTTP: p0=%s p1=%s auto_fight=%d buffs=%d script=%d",
-           s_sc.p0_bid, s_sc.p1_bid, s_sc.auto_fight, s_sc.initial_buff_count, s_sc.script_len);
+    if (trigger_hot_run) {
+        autotest_log_clear();
+    }
+    AT_LOG("[AUTOTEST] Scenario %s via HTTP: name=%s p0=%s p1=%s auto_fight=%d buffs=%d script=%d",
+           trigger_hot_run ? "queued" : "updated",
+           s_sc.name, s_sc.p0_bid, s_sc.p1_bid, s_sc.auto_fight, s_sc.initial_buff_count, s_sc.script_len);
     return 0;
+}
+
+int autotest_set_scenario_json(const char* json, size_t len) {
+    return update_scenario_locked(json, len, 0);
+}
+
+int autotest_run_scenario_json(const char* json, size_t len) {
+    return update_scenario_locked(json, len, 1);
 }
 
 size_t autotest_get_scenario_json(char* out, size_t max_out) {
@@ -557,9 +582,16 @@ static void* hooked_HomeFlow_OpenScreens(void* self, void* method, void* a2, voi
     if (!s_home_entered) {
         s_home_entered = 1;
         s_home_entered_ms = at_now_ms();
-        AT_LOG("[AUTOTEST] HomeFlow.OpenScreens reached; arming QuestFlow launch for %s", s_sc.qid);
+        if (s_hot_launch_after_ms < s_home_entered_ms + 250) {
+            s_hot_launch_after_ms = s_home_entered_ms + 250;
+        }
+        AT_LOG("[AUTOTEST] HomeFlow.OpenScreens reached; ready for direct FightFlow launch (name=%s)", s_sc.name);
     }
     return r;
+}
+
+int autotest_is_ready(void) {
+    return s_home_entered ? 1 : 0;
 }
 
 static void* hooked_QuestFlow_GameBoardReady(void* self, void* method, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
@@ -621,6 +653,129 @@ void autotest_on_prefight_ready(void* pfs) {
 
 void autotest_on_prefight_exit(void) {
     s_pending_prefight = NULL;
+}
+
+static void* build_fighter_data(void* fighter_klass, const char* bid, int is_player) {
+    if (!s_base || !s_strnew || !s_objnew || !fighter_klass || !bid || !bid[0]) return NULL;
+    void* bid_str = s_strnew(bid);
+    if (!bid_str) return NULL;
+    typedef void* (*fn_get_hero)(void*, void*, void*);
+    void* hd = ((fn_get_hero)(s_base + 0xC0D788))(bid_str, NULL, NULL); // BCGHelper.GetHero(bid, null)
+    if (!ptr_sane(hd)) {
+        AT_LOG("[AUTOTEST] Direct FightFlow: BCGHelper.GetHero(%s) returned NULL", bid);
+        return NULL;
+    }
+
+    void* bp = ((void*(*)(void*, void*))(s_base + 0x12AC764))(hd, NULL);     // get_blueprint
+    void* attrs = ((void*(*)(void*, void*))(s_base + 0x12AD058))(hd, NULL);  // get_attributes
+    void* uh = ((void*(*)(void*, void*))(s_base + 0x12AC754))(hd, NULL);     // get_userHero
+    if (!ptr_sane(bp) || !ptr_sane(attrs)) {
+        AT_LOG("[AUTOTEST] Direct FightFlow: missing bp=%p or attrs=%p for %s", bp, attrs, bid);
+        return NULL;
+    }
+
+    *(float*)((char*)attrs + 0x34) = 1.0f; // BCGAttributeDataBase.<HP>k__BackingField = 1.0f
+    void* bp_id = *(void**)((char*)bp + 0x10); // BCGBlueprintBase.<Blueprint>k__BackingField
+    int32_t sig = ptr_sane(uh) ? *(int32_t*)((char*)uh + 0x28) : 100; // BCGUserHeroBase.<SigLvl>k__BackingField
+
+    void* fd = s_objnew(fighter_klass);
+    if (!ptr_sane(fd)) return NULL;
+    ((void(*)(void*, void*))(s_base + 0xEB7E58))(fd, NULL); // FighterData..ctor()
+    *(void**)((char*)fd + 0x10) = ptr_sane(bp_id) ? bp_id : bid_str; // Id
+    *(void**)((char*)fd + 0x30) = attrs; // BaseAttributes
+    *(void**)((char*)fd + 0x38) = attrs; // Attributes
+    *(void**)((char*)fd + 0x40) = bp;    // Blueprint
+    *(int32_t*)((char*)fd + 0x48) = (sig > 0) ? sig : 100; // SigLevel
+
+    void* ai_prof = NULL;
+    if (is_player) {
+        ai_prof = ((void*(*)(void*))(s_base + 0xC9D630))(NULL); // AutoFightManager.GetAIProfile()
+    } else {
+        void* tai = ((void*(*)(void*))(s_base + 0x1423F3C))(NULL); // TuningAI.get_Instance()
+        if (ptr_sane(tai)) {
+            ai_prof = *(void**)((char*)tai + 0x30); // TuningAI.DefaultProfile
+        }
+    }
+    *(void**)((char*)fd + 0x50) = ptr_sane(ai_prof) ? ai_prof : NULL; // AIProfile
+    return fd;
+}
+
+static int try_start_direct_fight(const char* sc_name, const char* p0_bid, const char* p1_bid) {
+    if (!s_base || !s_strnew || !s_objnew) return 0;
+    void* fm = ((void*(*)(void*))(s_base + 0xDC8D58))(NULL); // FlowManager.get_Instance()
+    if (!ptr_sane(fm)) return 0;
+    int in_prog = ((int(*)(void*, void*))(s_base + 0xDC91BC))(fm, NULL); // get_IsInProgress()
+    if (in_prog) return 0;
+
+    void* fighter_klass = find_class_by_name("FighterData");
+    void* ff_klass = find_class_by_name("FightFlow");
+    void* init_klass = find_nested_class(ff_klass, "FightInitInfo");
+    if (!fighter_klass || !ff_klass || !init_klass) {
+        AT_LOG("[AUTOTEST] Direct FightFlow: class lookup failed (fd=%p ff=%p ii=%p)", fighter_klass, ff_klass, init_klass);
+        return 0;
+    }
+
+    void* fd0 = build_fighter_data(fighter_klass, p0_bid, 1);
+    void* fd1 = build_fighter_data(fighter_klass, p1_bid, 0);
+    if (!ptr_sane(fd0) || !ptr_sane(fd1)) return 0;
+
+    void* ii = s_objnew(init_klass);
+    if (!ptr_sane(ii)) return 0;
+    ((void(*)(void*, void*))(s_base + 0xAE9FFC))(ii, NULL); // FightInitInfo..ctor()
+    *(void**)((char*)ii + 0x28) = fd0;                  // playerFigher
+    *(void**)((char*)ii + 0x30) = fd1;                  // enemyFigher
+    *(void**)((char*)ii + 0x40) = s_strnew("karnak");   // sceneName
+    *(int32_t*)((char*)ii + 0x48) = 1;                  // timeOfDay
+    *(int32_t*)((char*)ii + 0x4C) = 7;                  // fightType = FIGHT_TYPE.TEST
+
+    void* ff = s_objnew(ff_klass);
+    if (!ptr_sane(ff)) return 0;
+    ((void(*)(void*, void*, void*))(s_base + 0xB5B690))(ff, ii, NULL); // FightFlow..ctor(initInfo)
+
+    // Exit existing BattleArbiter cleanly if transitioning from a prior fight (matches FTEFight1LoadState)
+    int ba_init = ((int(*)(void*))(s_base + 0xCF90A0))(NULL); // BattleArbiter.get_IsInitialized()
+    if (ba_init) {
+        void* ba = ((void*(*)(void*))(s_base + 0xCF8E28))(NULL); // BattleArbiter.get_Instance()
+        if (ptr_sane(ba)) {
+            ((void(*)(void*, void*))(s_base + 0xCF9D20))(ba, NULL); // BattleArbiter.Exit()
+        }
+    }
+
+    s_quest_pushed = 1;
+    s_in_combat = 0;
+    snprintf(s_active_p0, sizeof(s_active_p0), "%s", p0_bid);
+    snprintf(s_active_p1, sizeof(s_active_p1), "%s", p1_bid);
+    AT_LOG("[AUTOTEST] RUN_START name=%s mode=direct p0=%s p1=%s", sc_name, p0_bid, p1_bid);
+    ((void(*)(void*, void*, void*, void*))(s_base + 0xDC9378))(fm, ff, NULL, NULL); // FlowManager.StartFlow(ff, null)
+    return 1;
+}
+
+static int try_restart_current_fight(const char* sc_name, const char* p0_bid, const char* p1_bid) {
+    if (!s_base) return 0;
+    int ba_init = ((int(*)(void*))(s_base + 0xCF90A0))(NULL); // BattleArbiter.get_IsInitialized()
+    if (!ba_init) return 0;
+    void* ba = ((void*(*)(void*))(s_base + 0xCF8E28))(NULL); // BattleArbiter.get_Instance()
+    if (!ptr_sane(ba)) return 0;
+
+    void* fdata = *(void**)((char*)ba + 0x88); // BattleArbiter.<FightData>k__BackingField
+    if (ptr_sane(fdata)) {
+        void* fighters = *(void**)((char*)fdata + 0x30); // FightData.Fighters
+        if (ptr_sane(fighters)) {
+            for (int i = 0; i < 2; i++) {
+                void* f = *(void**)((char*)fighters + 0x20 + i * sizeof(void*));
+                if (ptr_sane(f)) {
+                    void* attrs = *(void**)((char*)f + 0x38); // FighterData.Attributes
+                    if (ptr_sane(attrs)) {
+                        *(float*)((char*)attrs + 0x34) = 1.0f; // Reset normalized HP to 100%
+                    }
+                }
+            }
+        }
+    }
+
+    AT_LOG("[AUTOTEST] RUN_START name=%s mode=restart p0=%s p1=%s", sc_name, p0_bid, p1_bid);
+    ((void(*)(void*, void*))(s_base + 0xCF9D74))(ba, NULL); // BattleArbiter.RestartFight()
+    return 1;
 }
 
 static void try_push_quest_flow(void) {
@@ -732,8 +887,29 @@ static void* hooked_FlowManager_Update(void* self, void* method, void* a2, void*
 
     uint64_t now_ms = at_now_ms();
 
-    if (s_home_entered && !s_quest_pushed && (now_ms - s_home_entered_ms >= 600)) {
-        try_push_quest_flow();
+    if (s_home_entered && s_hot_launch_pending && (now_ms >= s_hot_launch_after_ms)) {
+        void* fm_inst = ((void*(*)(void*))(s_base + 0xDC8D58))(NULL);
+        int in_prog = ptr_sane(fm_inst) ? ((int(*)(void*, void*))(s_base + 0xDC91BC))(fm_inst, NULL) : 1;
+        if (!in_prog) {
+            char sc_name[64], p0[64], p1[64];
+            pthread_mutex_lock(&s_at_lock);
+            s_hot_launch_pending = 0;
+            snprintf(sc_name, sizeof(sc_name), "%s", s_sc.name);
+            snprintf(p0, sizeof(p0), "%s", s_sc.p0_bid);
+            snprintf(p1, sizeof(p1), "%s", s_sc.p1_bid);
+            pthread_mutex_unlock(&s_at_lock);
+
+            int same_pair = (s_fight_started_once && s_in_combat &&
+                             strcmp(s_active_p0, p0) == 0 && strcmp(s_active_p1, p1) == 0);
+            if (same_pair && try_restart_current_fight(sc_name, p0, p1)) {
+                return r;
+            }
+            if (try_start_direct_fight(sc_name, p0, p1)) {
+                return r;
+            }
+            AT_LOG("[AUTOTEST] Direct FightFlow unavailable; falling back to QuestFlow (%s)", s_sc.qid);
+            try_push_quest_flow();
+        }
     }
 
     if (s_pending_team_pres && !s_team_confirmed && (now_ms - s_pending_team_pres_ms >= 400)) {
@@ -805,6 +981,7 @@ static volatile int s_block_holding[2] = {0, 0};
 
 void autotest_on_combat_start(void) {
     s_in_combat = 1;
+    s_fight_started_once = 1;
     s_pending_prefight = NULL;
     s_pending_node_popup = NULL;
     s_combat_injected = 0;
@@ -816,7 +993,12 @@ void autotest_on_combat_start(void) {
     s_script_rep[0] = s_script_rep[1] = 0;
     s_script_step_start_ms[0] = s_script_step_start_ms[1] = 0;
     s_block_holding[0] = s_block_holding[1] = 0;
-    autotest_init();
+    if (skill_get_bot_id(0) && skill_get_bot_id(0)[0]) {
+        snprintf(s_active_p0, sizeof(s_active_p0), "%s", skill_get_bot_id(0));
+    }
+    if (skill_get_bot_id(1) && skill_get_bot_id(1)[0]) {
+        snprintf(s_active_p1, sizeof(s_active_p1), "%s", skill_get_bot_id(1));
+    }
     AT_LOG("[AUTOTEST] FIGHT_ENTER scenario=%s p0=%s p1=%s auto_fight=%d p0_steps=%d p1_steps=%d",
            s_sc.name, skill_get_bot_id(0), skill_get_bot_id(1), s_sc.auto_fight,
            s_sc.script_len, s_sc.p1_script_len);
@@ -970,6 +1152,8 @@ static void drive_script_step(void* player_pc, int pidx, uint64_t now_ms) {
 void autotest_on_simulate_tick(void* player_pc, int pidx) {
     if (!autotest_is_active() || (pidx != 0 && pidx != 1) || !ptr_sane(player_pc) || !s_base) return;
     uint64_t now_ms = at_now_ms();
+
+    if (s_scenario_done) return;
 
     if (pidx == 1) {
         if (s_combat_injected && s_sc.p1_script_len > 0 && s_script_idx[1] < s_sc.p1_script_len) {

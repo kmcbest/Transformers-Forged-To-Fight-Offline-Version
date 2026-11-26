@@ -150,11 +150,7 @@ static void blackout_on_special_state(int player_index, int sp_level, int entere
             }
             skill_log("BLACKOUT: P%d entered SP2 (+60%% crit damage active)", player_index);
         } else if (sp_level == 3) {
-            // SP3 进入：准备终击暴击率提升 (+50%, 2s)
-            if (!skill_has_buff(player_index, "blackout_sp3_last_crit_rate")) {
-                skill_apply_buff_dur(player_index, "blackout_sp3_last_crit_rate", 4.0f);
-            }
-            skill_log("BLACKOUT: P%d entered SP3 (+50%% crit rate active)", player_index);
+            skill_log("BLACKOUT: P%d entered SP3 (last-hit +50%% crit rate armed via on_crit_chance_mod)", player_index);
         }
     } else {
         if (s_blackout_active_sp[player_index] == sp_level) {
@@ -177,12 +173,22 @@ static void blackout_on_special_state(int player_index, int sp_level, int entere
                 skill_consume_buff(player_index, "blackout_sp2_crit_damage", 99);
                 skill_log("BLACKOUT: P%d exited SP2 -> removed SP2 +60%% crit damage buff", player_index);
             }
-        } else if (sp_level == 3) {
-            if (skill_has_buff(player_index, "blackout_sp3_last_crit_rate")) {
-                skill_consume_buff(player_index, "blackout_sp3_last_crit_rate", 99);
-            }
         }
     }
+}
+
+// SP3 最后一击暴击率额外提升 +50% (单次命中几率加成：不出图标、不出倒计时、不出呼出大字)
+static int blackout_on_crit_chance_mod(int player_index, int atk_level, float* out_bonus) {
+    if (player_index < 0 || player_index > 1 || !out_bonus) return 0;
+    const char* bid = skill_get_bot_id(player_index);
+    if (!bid || strstr(bid, "blackout") == NULL) return 0;
+
+    if (atk_level == 64 && skill_is_current_hit_last()) {
+        *out_bonus += 0.50f;
+        skill_log("BLACKOUT: P%d SP3 last-hit crit +50%% applied (no buff/icon)", player_index);
+        return 1;
+    }
+    return 0;
 }
 
 // 命中连接
@@ -379,4 +385,5 @@ BotSkillModule g_module_blackout = {
     .on_attack_start         = NULL,
     .on_attack_ended         = blackout_on_attack_ended,
     .on_special_state        = blackout_on_special_state,
+    .on_crit_chance_mod      = blackout_on_crit_chance_mod,
 };

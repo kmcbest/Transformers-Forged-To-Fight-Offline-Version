@@ -27,17 +27,18 @@ static void arcee_on_hit_connected(SkillHitContext* ctx) {
     int ap = ctx->attacker_player_index;
     int tp = ctx->target_player_index;
     uint64_t now_ms = skill_now_ms();
+    int is_blocked = (ctx->is_blocked || (ctx->hit_flags & HIT_FLAG_BLOCKED) != 0);
 
     // 1. 暴击额外回能 4% 最大能量 (0.12 格)
-    if (ctx->is_crit && ap >= 0 && ap < 2) {
+    if (!is_blocked && ctx->is_crit && ap >= 0 && ap < 2) {
         skill_add_mana(ap, 0.12f);
         skill_log("ARCEE_CRIT_POWER_GAIN: P%d crit hit -> +4%% max power (+0.12 mana)", ap);
     }
 
-    // 2. 爆头与前冲流血反制 (远程普攻、SP1 射击段、SP3 中间 4 发手枪射击; 不需要暴击，直接命中计算 49.7% 概率)
+    // 2. 爆头与前冲流血反制 (远程普攻、SP1 射击段、SP3 中间 4 发手枪射击; 不需要暴击，但被对方格挡时不触发)
     int is_sp1_shot = (ctx->special_index == 1 && ctx->hit_index > 0);
     int is_sp3_pistol_shot = (ctx->special_index == 3 && ctx->hit_index >= 2 && !ctx->is_last_hit);
-    if (ctx->is_ranged || is_sp1_shot || is_sp3_pistol_shot) {
+    if (!is_blocked && (ctx->is_ranged || is_sp1_shot || is_sp3_pistol_shot)) {
         int opp_dashing = arcee_opp_is_dashing(tp, now_ms);
         float hs_roll = skill_random_float();
         if (hs_roll < 0.497f) {
@@ -71,6 +72,11 @@ static int arcee_on_buff_gated(SkillBuffGateContext* ctx) {
     if (!ctx->modifier_id || !ctx->modifier_id[0]) return 0;
 
     if (strstr(ctx->modifier_id, "arcee_") != NULL) {
+        if (strstr(ctx->modifier_id, "headshot_") != NULL && (ctx->last_hit_flags & HIT_FLAG_BLOCKED) != 0) {
+            skill_log("ARCEE_HEADSHOT_BLOCK_GATE: suppressed %s on blocked hit", ctx->modifier_id);
+            ctx->allow_application = false;
+            return 1;
+        }
         if (strstr(ctx->modifier_id, "sp1_") != NULL || strstr(ctx->modifier_id, "headshot_") != NULL) {
             if (ctx->current_special_index == 1 && ctx->last_hit_index == 0) {
                 skill_log("ARCEE_SP1_KICK_GATE: suppressed %s on hit_index=%d (kick)", ctx->modifier_id, ctx->last_hit_index);
@@ -128,6 +134,14 @@ static int arcee_on_evade_check(SkillEvadeContext* ctx, int* out_evade) {
     return 0;
 }
 
+static void arcee_on_evade_triggered(int evader_player_index, int is_ranged) {
+    (void)is_ranged;
+    const char* evader_bot = skill_get_bot_id(evader_player_index);
+    if (!evader_bot || strstr(evader_bot, "arcee") == NULL) return;
+    skill_apply_buff_dur(evader_player_index, "gp_evade_callout", 1.0f);
+    skill_log("ARCEE_EVADE_CALLOUT: P%d triggered green evade callout", evader_player_index);
+}
+
 static int arcee_on_anti_evade_check(int attacker_player_index, const SkillEvadeContext* ctx) {
     if (attacker_player_index < 0 || attacker_player_index > 1 || !ctx) return 0;
     if (skill_has_buff(attacker_player_index, "arcee_sig_ferocity")) {
@@ -182,6 +196,7 @@ BotSkillModule g_module_arcee = {
     .on_test_roll = NULL,
     .on_fight_reset = arcee_on_fight_reset,
     .on_special_state = arcee_on_special_state,
+    .on_evade_triggered = arcee_on_evade_triggered,
     .on_anti_evade_check = arcee_on_anti_evade_check,
     .on_crit_chance_mod = arcee_on_crit_chance_mod
 };

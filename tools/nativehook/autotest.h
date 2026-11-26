@@ -83,6 +83,8 @@ int autotest_override_player_invincible(void);
 int autotest_is_dummy_invincible(void);
 
 int autotest_set_scenario_json(const char* json, size_t len);
+int autotest_run_scenario_json(const char* json, size_t len);
+int autotest_is_ready(void);
 size_t autotest_get_scenario_json(char* out, size_t max_out);
 
 void autotest_log_append(const char* line);

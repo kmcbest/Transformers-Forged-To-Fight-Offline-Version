@@ -1,0 +1,43 @@
+{
+  "active": true,
+  "name": "elita_test_nimble_counter_missed",
+  "banner": "#3 Elita Nimble Counter (Any Missed Attack Applies 50% Atk Debuff)",
+  "qid": "1.1.1",
+  "player_invincible": 0,
+  "p0": {
+    "bid": "elita_one_gs",
+    "mana": 0.0
+  },
+  "p1": {
+    "bid": "bonecrusher_cin_rotf",
+    "freeze_ai": 1,
+    "invincible_dummy": 1
+  },
+  "auto_fight": 0,
+  "max_duration_ms": 14000,
+  "p1_script": [
+    { "action": "WAIT", "duration_ms": 1700 },
+    { "action": "DODGE", "repeat": 2 },
+    { "action": "WAIT", "duration_ms": 900 },
+    { "action": "DASH", "repeat": 2 },
+    { "action": "LIGHT", "repeat": 4 }
+  ],
+  "p0_script": [
+    { "action": "WAIT", "duration_ms": 500 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 700 },
+    { "action": "APPLY_BUFF", "target": "P0", "id": "elita_counter_pouch_buff", "dur": 6.0 },
+    { "action": "WAIT", "duration_ms": 400 },
+    { "action": "HEAVY", "repeat": 2 },
+    { "action": "WAIT", "duration_ms": 5000 }
+  ],
+  "assertions": {
+    "must_apply_buffs": [
+      { "target": "P1", "mod_substr": "elita_counter_atk_debuff", "min_count": 1, "max_count": 1 }
+    ],
+    "must_log_substrings": [
+      { "substr": "ELITA_COUNTER_MISSED:", "min_count": 1, "max_count": 1 },
+      { "substr": "ELITA_WEAKEN:", "min_count": 1 }
+    ]
+  }
+}

@@ -977,6 +977,7 @@ static volatile float g_p0_power_lock_mana = 0.0f;
 static volatile uint64_t g_p1_power_lock_end_ms = 0; // P1 is power locked (cannot gain power)
 static volatile float g_p1_power_lock_mana = 0.0f;
 #define g_enemy_power_lock_end_ms g_p1_power_lock_end_ms
+static volatile uint64_t g_special_lock_end_ms[2] = {0, 0}; // 封印全部特殊技截止时间
 static volatile uint64_t g_p0_unstoppable_end_ms = 0; // P0 unstoppable (immune to hit reaction/stun)
 static volatile uint64_t g_p1_unstoppable_end_ms = 0; // P1 unstoppable (immune to hit reaction/stun)
 static volatile int g_p1_buffs_nullified_this_attack = 0;
@@ -5508,6 +5509,8 @@ void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     g_p0_retreat_execute_ms = 0;
     g_p1_last_dodge_ms = 0;
     g_p0_last_hitreact_ms = 0;
+    g_special_lock_end_ms[0] = 0;
+    g_special_lock_end_ms[1] = 0;
     g_combat_sim_clock_ms = 1000;
     skill_dispatch_fight_reset();
     return H[140].orig(a0,a1,a2,a3,a4,a5,a6,a7);
@@ -6759,6 +6762,22 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
         int is_p0_act = (self == g_p0_controller) || (obj_ok(self) && *(int32_t*)((uintptr_t)self + 0xF4) == 0);
         int is_p1_act = (self == g_p1_controller) || (obj_ok(self) && *(int32_t*)((uintptr_t)self + 0xF4) == 1);
 
+        // 通用特殊技封印门禁 (战术封锁 / Disable Specials)
+        if (action == 0x200) {
+            int act_pidx = is_p0_act ? 0 : (is_p1_act ? 1 : -1);
+            if (act_pidx >= 0 && g_special_lock_end_ms[act_pidx] > 0) {
+                uint64_t lock_now = propgo_now_ms();
+                if (lock_now < g_special_lock_end_ms[act_pidx]) {
+                    flog("SPECIAL_LOCK: P%d suppressed 0x200 SpecialAttack (remaining=%llums)",
+                         act_pidx, (unsigned long long)(g_special_lock_end_ms[act_pidx] - lock_now));
+                    suppress_action = 1;
+                    break;
+                } else {
+                    g_special_lock_end_ms[act_pidx] = 0;
+                }
+            }
+        }
+
         // Track retreat / dodge timestamps
         if (is_p0_act && (action == 8 || action == 64 || action == 128)) {
             g_p0_last_dodge_ms = propgo_now_ms();
@@ -7220,13 +7239,6 @@ void* hook_156(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
         cc_bonus += skill_dispatch_crit_chance_mod(player_idx, atk_level);
     }
 
-    // 眩晕 SP3 终击保底 +50% 暴击率 (防止 onHitStarted 未覆盖时遗漏)
-    if (player_idx >= 0 && player_idx < 2 && bid && strstr(bid, "blackout") != NULL && atk_level == 64) {
-        if (!skill_has_buff(player_idx, "blackout_sp3_last_crit_rate")) {
-            cc_bonus += 0.50f;
-        }
-    }
-
     float total_cc = base_crit_chance + cc_bonus;
     if (total_cc < 0.0f) total_cc = 0.0f;
 
@@ -7246,6 +7258,9 @@ void* hook_156(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
 
     if (player_idx == 0) {
         g_p0_last_hit_is_crit = is_crit;
+    }
+    if (player_idx >= 0 && player_idx < 2) {
+        skill_dispatch_crit_rolled(player_idx, atk_level, skill_is_current_hit_last(), is_crit);
     }
 
     static int s_crit_log_cnt = 0;
@@ -8002,6 +8017,7 @@ typedef float (*fn_get_damage_received)(void* self, float damage, void* damageTy
 // Melee attacks (light combo, medium dash, heavy charge) deal 0 damage.
 float hook_177(void* self, float damage, void* damageType, int32_t blocked, void* isPerfectBlock, int32_t isCrit, int32_t isArmorIgnoring, void* method, float critPenetration, float armorPenetration) {
     int is_enemy = 0;
+    int p0_invinc = 0;
     PROTECT({
         if (self && obj_ok(self)) {
             void* owner = *(void**)((char*)self + 0x28);
@@ -8011,7 +8027,7 @@ float hook_177(void* self, float damage, void* damageType, int32_t blocked, void
                 is_enemy = 1;
             }
             if (!is_enemy && tftf_get_player_invincible()) {
-                return 0.0f;
+                p0_invinc = 1;
             }
             if (is_enemy) {
                 if (tftf_is_picnic_quest_active()) {
@@ -8127,6 +8143,24 @@ float hook_177(void* self, float damage, void* damageType, int32_t blocked, void
 
                 int is_missed_hit = ((s_last_hit_flags & (2 | 512 | 1024)) != 0);
                 if (!is_missed_hit) {
+                    int sp_idx = is_enemy ? (g_p0_current_special_index > 0 ? g_p0_current_special_index : 0)
+                                          : (g_p1_current_special_index > 0 ? g_p1_current_special_index : 0);
+                    int hit_is_melee = (sp_idx == 0 && !s_current_hit_is_ranged);
+                    char dt_buf[128] = {0};
+                    if (damageType && obj_ok(damageType)) {
+                        typedef void* (*fn_dt_tostring)(void*, void*);
+                        void* dt_str = ((fn_dt_tostring)(g_base + 0x00BB0C88))(damageType, NULL);
+                        if (dt_str && obj_ok(dt_str)) {
+                            read_str(dt_str, dt_buf, sizeof(dt_buf));
+                        }
+                    }
+                    if (dt_buf[0]) {
+                        if (strstr(dt_buf, "ranged") != NULL) {
+                            hit_is_melee = 0;
+                        } else if (strstr(dt_buf, "melee") != NULL) {
+                            hit_is_melee = 1;
+                        }
+                    }
                     SkillHitContext hit_ctx = {
                         .attacker_entity = is_enemy ? g_p0_controller : g_p1_controller,
                         .target_entity = owner,
@@ -8134,26 +8168,33 @@ float hook_177(void* self, float damage, void* damageType, int32_t blocked, void
                         .target_bot_id = is_enemy ? g_p1_bot_id : g_p0_bot_id,
                         .attacker_player_index = is_enemy ? 0 : 1,
                         .target_player_index = is_enemy ? 1 : 0,
-                        .special_index = is_enemy ? (g_p0_current_special_index > 0 ? g_p0_current_special_index : 0) : 0,
+                        .special_index = sp_idx,
                         .hit_index = s_last_hit_index,
                         .is_last_hit = (s_current_hit_is_last != 0),
                         .is_ranged = (s_current_hit_is_ranged != 0),
+                        .is_melee = (hit_is_melee != 0),
                         .is_heavy = (s_current_hit_is_heavy != 0),
                         .is_crit = (isCrit != 0),
                         .is_blocked = (blocked != 0),
                         .base_damage = damage,
                         .modified_damage = damage,
+                        .armor_penetration = armorPenetration,
                         .hit_flags = s_last_hit_flags,
                         .action_type = s_last_atk_level
                     };
                     skill_dispatch_hit_connected(&hit_ctx);
                     damage = hit_ctx.modified_damage;
+                    armorPenetration = hit_ctx.armor_penetration;
                     if (!hit_ctx.is_crit) {
                         isCrit = 0;
                     }
                     if (hit_ctx.target_player_index >= 0 && hit_ctx.target_player_index < 2) {
                         s_last_direct_hit_ms[hit_ctx.target_player_index] = propgo_now_ms();
                     }
+                    flog("SKILL_HIT_DMGTYPE: sp=%d hit=%d dt=%s melee=%d ranged=%d",
+                         hit_ctx.special_index, hit_ctx.hit_index,
+                         dt_buf[0] ? dt_buf : "<none>",
+                         hit_ctx.is_melee ? 1 : 0, hit_ctx.is_ranged ? 1 : 0);
                     flog("[AB_TRACE] EVT=HIT_CONNECTED att=P%d tgt=P%d sp=%d hit=%d last=%d crit=%d blk=%d dmg=%.1f",
                          hit_ctx.attacker_player_index, hit_ctx.target_player_index,
                          hit_ctx.special_index, hit_ctx.hit_index,
@@ -8212,6 +8253,9 @@ float hook_177(void* self, float damage, void* damageType, int32_t blocked, void
 
     extern float skill_wheeljack_filter_damage(int target_player_index, float final_damage);
     res = skill_wheeljack_filter_damage(is_enemy ? 1 : 0, res);
+    if (p0_invinc) {
+        res = 0.0f;
+    }
     return res;
 }
 
@@ -8722,23 +8766,6 @@ void* hook_186(void* this_pc, void* hitResult, void* method) {
                 s_current_hit_is_heavy = 0;
                 s_current_hit_is_last = 0;
 
-                // --- 艾丽塔原生规避/挥空判定联动 (RegisterHitResult 判定未命中/规避) ---
-                const char* victim_id_elita = (p_idx == 0) ? g_p0_bot_id : g_p1_bot_id;
-                if (victim_id_elita && strstr(victim_id_elita, "elita") != NULL) {
-                    uint64_t now_ms = propgo_now_ms();
-                    uint64_t last_side = (p_idx == 0) ? s_p0_last_sidestep_ms : s_p1_last_sidestep_ms;
-                    uint64_t last_back = (p_idx == 0) ? g_p0_last_backdash_ms : g_p1_last_backdash_ms;
-                    int is_dash = (atk_level == 32 || atk_level == 2);
-                    int is_melee = (atk_level == 1 || atk_level == 2 || atk_level == 4);
-                    if (is_dash && (now_ms - last_side <= 800)) {
-                        skill_dispatch_attack_start(1 - p_idx, 32);
-                    } else if (is_melee && (now_ms - last_back)) {
-                        if (now_ms - last_back <= 700) {
-                            skill_dispatch_attack_start(1 - p_idx, 1);
-                        }
-                    }
-                }
-
                 // --- 横炮实机真实规避确认 (RegisterHitResult 判定未命中/规避) ---
                 const char* victim_id = (p_idx == 0) ? g_p0_bot_id : g_p1_bot_id;
                 if (victim_id && strstr(victim_id, "sideswipe") != NULL) {
@@ -9039,16 +9066,6 @@ float hook_187(void* self, float baseSpeed, void* method) {
 void skill_log(const char* fmt, ...) {
     char buf[1024];
     va_list ap; va_start(ap, fmt); vsnprintf(buf, sizeof buf, fmt, ap); va_end(ap);
-    __android_log_print(ANDROID_LOG_INFO, "TFTFHOOK", "%s", buf);
-#ifdef TFTF_AUTOTEST
-    if (strstr(buf, "[AUTOTEST]") || strstr(buf, "SIDESWIPE_") ||
-        strstr(buf, "SKILL_") || strstr(buf, "APPLY_BUFF") ||
-        strstr(buf, "REMOVE_BUFF") || strstr(buf, "HIT_RESULT") ||
-        strstr(buf, "FAULT") || strstr(buf, "VIOLATION") ||
-        strstr(buf, "EVADE") || strstr(buf, "ROLL_CRIT")) {
-        autotest_log_append(buf);
-    }
-#endif
     flog("%s", buf);
 }
 
@@ -9115,6 +9132,16 @@ void skill_set_power_leak(int player_index, uint64_t duration_ms, float step) {
 void skill_set_power_lock(int target_player_index, uint64_t duration_ms) {
     (void)target_player_index;
     (void)duration_ms;
+}
+
+void skill_set_special_lock(int target_player_index, uint64_t duration_ms) {
+    if (target_player_index < 0 || target_player_index >= 2 || duration_ms == 0) return;
+    uint64_t end = propgo_now_ms() + duration_ms;
+    if (end > g_special_lock_end_ms[target_player_index]) {
+        g_special_lock_end_ms[target_player_index] = end;
+    }
+    flog("SKILL_SPECIAL_LOCK: P%d special attacks sealed for %llums",
+         target_player_index, (unsigned long long)duration_ms);
 }
 
 static volatile uint64_t g_mm_dash_unstoppable_end_ms[2] = {0, 0};
@@ -9386,6 +9413,37 @@ const char* skill_get_bot_id(int player_index) {
     return "";
 }
 
+int skill_get_bot_class(int player_index) {
+    if (player_index < 0 || player_index >= 2) return 0;
+    void* pc = (player_index == 0) ? g_p0_controller : g_p1_controller;
+    if (pc && obj_ok(pc) && g_base) {
+        void* attr = *(void**)((char*)pc + 0x80);
+        if (attr && obj_ok(attr)) {
+            typedef int32_t (*fn_get_class)(void*, void*);
+            int32_t cls = 0;
+            PROTECT({
+                cls = ((fn_get_class)(g_base + 0xDAC608))(attr, NULL);
+            });
+            if (cls != 0) return cls;
+        }
+    }
+    const char* bid = skill_get_bot_id(player_index);
+    if (bid && bid[0]) {
+        for (int i = 0; i < NUM_ENEMY_STATS; i++) {
+            if (strcmp(ENEMY_STATS[i].id, bid) == 0 && ENEMY_STATS[i].klass) {
+                const char* k = ENEMY_STATS[i].klass;
+                if (strcmp(k, "braw") == 0) return BOT_CLASS_BRAW;
+                if (strcmp(k, "tact") == 0) return BOT_CLASS_TACT;
+                if (strcmp(k, "scou") == 0) return BOT_CLASS_SCOU;
+                if (strcmp(k, "demo") == 0) return BOT_CLASS_DEMO;
+                if (strcmp(k, "warr") == 0) return BOT_CLASS_WARR;
+                if (strcmp(k, "tech") == 0) return BOT_CLASS_TECH;
+            }
+        }
+    }
+    return 0;
+}
+
 float skill_get_mana(int player_index) {
     void* pc = (player_index == 0) ? g_p0_controller : g_p1_controller;
     if (pc && obj_ok(pc)) {
@@ -9455,6 +9513,86 @@ void skill_stun_player(int target_player_index, float duration_s) {
         combat_overlay_push("%s 眩晕 %.1f秒！", target_player_index == 0 ? "P0" : "P1", duration_s);
         flog("SKILL_STUN: Player %d stunned for %.1fs via ApplyHitStun(0x1179730)", target_player_index, duration_s);
     }
+}
+
+void skill_interrupt_special(int target_player_index, float stun_duration_s) {
+    if (target_player_index < 0 || target_player_index >= 2 || !g_base) return;
+    void* pc = (target_player_index == 0) ? g_p0_controller : g_p1_controller;
+    if (!pc || !obj_ok(pc)) return;
+    PROTECT({
+        void* seq = *(void**)((char*)pc + 0xA8);
+        if (seq && obj_ok(seq)) {
+            typedef void (*fn_seq_interrupt)(void*, void*);
+            ((fn_seq_interrupt)(g_base + 0x100CB20))(seq, NULL);
+            flog("SKILL_INTERRUPT_SPECIAL: P%d MoveSequencer.Interrupt(0x100CB20) executed", target_player_index);
+        }
+    });
+    if (stun_duration_s > 0.0f) {
+        skill_stun_player(target_player_index, stun_duration_s);
+    }
+}
+
+int skill_refresh_target_debuffs(int target_player_index) {
+    if (target_player_index < 0 || target_player_index >= 2 || !g_base) return 0;
+    void* pc = (target_player_index == 0) ? g_p0_controller : g_p1_controller;
+    if (!pc || !obj_ok(pc)) return 0;
+    void* bc = *(void**)((char*)pc + 0x88);
+    if (!bc || !obj_ok(bc)) return 0;
+    int refreshed = 0;
+    PROTECT({
+        // BuffsController.RefreshBuffs(BuffModTypes modType = 2 (debuff), int numBuffsToRefresh = -1) @ 0xEEED6C
+        typedef bool (*fn_refresh_mod)(void*, int32_t, int32_t, void*);
+        fn_refresh_mod refresh_mod = (fn_refresh_mod)(g_base + 0xEEED6C);
+        refreshed = refresh_mod(bc, 2, -1, NULL) ? 1 : 0;
+        flog("SKILL_REFRESH_DEBUFFS: P%d RefreshBuffs(debuff, -1) -> %d", target_player_index, refreshed);
+    });
+    return refreshed;
+}
+
+int skill_accelerate_dots(int player_index, float accel_pct) {
+    if (player_index < 0 || player_index >= 2 || accel_pct <= 0.0f || !g_base) return 0;
+    if (accel_pct > 0.95f) accel_pct = 0.95f;
+    void* pc = (player_index == 0) ? g_p0_controller : g_p1_controller;
+    if (!pc || !obj_ok(pc)) return 0;
+    void* bc = *(void**)((char*)pc + 0x88);
+    if (!bc || !obj_ok(bc)) return 0;
+    int count = 0;
+    PROTECT({
+        void* list = *(void**)((char*)bc + 0x40);
+        if (!list || !obj_ok(list)) list = *(void**)((char*)bc + 0x20);
+        if (list && obj_ok(list)) {
+            void* items = *(void**)((char*)list + 0x10);
+            int32_t size = *(int32_t*)((char*)list + 0x18);
+            void* ref_del = *(void**)((char*)bc + 0x30); // BuffRefreshed delegate
+            typedef void (*fn_action_buff_invoke)(void*, void*, void*);
+            fn_action_buff_invoke del_inv = (fn_action_buff_invoke)(g_base + 0x01539C40);
+            if (items && obj_ok(items) && size > 0 && size < 128) {
+                for (int i = 0; i < size; i++) {
+                    void* buff = *(void**)((char*)items + 0x20 + i * 8);
+                    if (!buff || !obj_ok(buff)) continue;
+                    if (*(uint8_t*)((char*)buff + 0x6C)) continue; // _isStopped
+                    void* bt_obj = *(void**)((char*)buff + 0x10);  // _buffType
+                    char bt[64] = {0};
+                    if (bt_obj && obj_ok(bt_obj)) read_str(bt_obj, bt, sizeof(bt));
+                    if (strncmp(bt, "dmg_", 4) != 0 && strcmp(bt, "acid") != 0) continue;
+                    float dur = *(float*)((char*)buff + 0x48);
+                    float elapsed = *(float*)((char*)buff + 0x50);
+                    if (dur > 0.0f && elapsed < dur) {
+                        float rem = dur - elapsed;
+                        *(float*)((char*)buff + 0x50) = elapsed + rem * accel_pct;
+                        if (ref_del && obj_ok(ref_del) && del_inv) {
+                            del_inv(ref_del, buff, NULL);
+                        }
+                        count++;
+                    }
+                }
+            }
+        }
+        if (count > 0) {
+            flog("SKILL_ACCEL_DOTS: P%d accelerated %d DOT buff(s) by %.0f%%", player_index, count, accel_pct * 100.0f);
+        }
+    });
+    return count;
 }
 
 uint64_t skill_get_block_enter_ms(int player_index) {
@@ -9653,6 +9791,10 @@ int skill_is_heavy_attacking(int player_index) {
         }
     });
     return is_heavy;
+}
+
+int skill_is_current_hit_last(void) {
+    return (s_current_hit_is_last != 0) ? 1 : 0;
 }
 
 int skill_is_special_attacking(int player_index) {
@@ -12661,6 +12803,9 @@ static void dispatch_attack_end_event(int p_idx, int event_id, int attack_level,
     end_ctx.hit_index             = hit_idx;
     end_ctx.attack_count          = attack_count;
     end_ctx.flags                 = flags;
+    end_ctx.is_last_hit           = ((flags & HIT_FLAG_LAST_HIT) != 0);
+    end_ctx.is_missed             = ((flags & (HIT_FLAG_MISSED | HIT_FLAG_AVOIDED | HIT_FLAG_EVADED | HIT_FLAG_INVULNERABLE)) != 0)
+                                    && ((flags & (HIT_FLAG_HIT | HIT_FLAG_BLOCKED | HIT_FLAG_CANCELLED | HIT_FLAG_REFLECTED)) == 0);
     end_ctx.damage                = damage;
 
     flog("ATTACK_ENDED: P%d(%s) ev=%d al=%d hit_idx=%d flags=0x%x dmg=%.1f (src=%s)",

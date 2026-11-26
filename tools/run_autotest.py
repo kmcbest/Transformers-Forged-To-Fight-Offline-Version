@@ -89,6 +89,14 @@ def parse_only_indices(spec: str, total: int) -> list[int]:
     return sorted(chosen)
 
 
+def is_inapk_alive(port: int) -> bool:
+    try:
+        res = http_get(f"http://127.0.0.1:{port}/__autotest/ping")
+        return '"ok":true' in res
+    except Exception:
+        return False
+
+
 def run_single_scenario(
     adb: str,
     serial: str | None,
@@ -97,38 +105,45 @@ def run_single_scenario(
     scenario: dict,
     upload_custom: bool,
     out_log: Path | None,
+    reuse_running: bool = False,
 ) -> int:
     if serial and ":" in serial:
         adb_cmd(adb, None, "connect", serial, check=False)
     adb_cmd(adb, serial, "wait-for-device", check=False)
     adb_cmd(adb, serial, "forward", f"tcp:{port}", "tcp:8080")
 
-    if upload_custom:
-        print(f"[*] Uploading scenario '{scenario.get('name', 'custom')}' via inapk_server...")
+    sc_name = scenario.get("name", "custom")
+    alive = reuse_running and is_inapk_alive(port)
+
+    if alive:
+        adb_cmd(adb, serial, "logcat", "-c", check=False)
+        print(f"[*] Hot-switching scenario '{sc_name}' via /__autotest/run (no app restart)...")
+        res = http_post_json(f"http://127.0.0.1:{port}/__autotest/run", scenario)
+        print(f"[*] Scenario queue reply: {res}")
+    else:
         adb_cmd(adb, serial, "shell", "am", "force-stop", PKG, check=False)
+        adb_cmd(adb, serial, "logcat", "-c", check=False)
+        print(f"[*] Cold-launching {ACTIVITY} for '{sc_name}'...")
         adb_cmd(adb, serial, "shell", "am", "start", "-n", ACTIVITY)
-        pushed = False
-        for _ in range(30):
-            try:
-                res = http_post_json(f"http://127.0.0.1:{port}/__autotest/scenario", scenario)
-                print(f"[*] Scenario upload reply: {res}")
-                pushed = True
-                break
-            except Exception:
-                time.sleep(0.5)
-        if not pushed:
-            print("[!] Could not reach inapk_server HTTP endpoint; falling back to external files dir push")
-            tmp_json = Path("build/tmp_test_scenario.json")
-            tmp_json.parent.mkdir(parents=True, exist_ok=True)
-            tmp_json.write_text(json.dumps(scenario, ensure_ascii=False, indent=2), encoding="utf-8")
-            adb_cmd(adb, serial, "push", str(tmp_json), f"/sdcard/Android/data/{PKG}/files/test_scenario.json", check=False)
-
-    adb_cmd(adb, serial, "shell", "am", "force-stop", PKG, check=False)
-    adb_cmd(adb, serial, "logcat", "-c", check=False)
-    print(f"[*] Launching {ACTIVITY} ...")
-    adb_cmd(adb, serial, "shell", "am", "start", "-n", ACTIVITY)
-
-    adb_cmd(adb, serial, "forward", f"tcp:{port}", "tcp:8080", check=False)
+        adb_cmd(adb, serial, "forward", f"tcp:{port}", "tcp:8080", check=False)
+        if upload_custom:
+            pushed = False
+            for _ in range(40):
+                try:
+                    res = http_post_json(f"http://127.0.0.1:{port}/__autotest/run", scenario)
+                    print(f"[*] Scenario queued during boot ({sc_name}): {res}")
+                    pushed = True
+                    break
+                except Exception:
+                    time.sleep(0.25)
+            if not pushed:
+                print("[!] Could not reach inapk_server HTTP endpoint; falling back to external files dir push")
+                tmp_json = Path("build/tmp_test_scenario.json")
+                tmp_json.parent.mkdir(parents=True, exist_ok=True)
+                tmp_json.write_text(json.dumps(scenario, ensure_ascii=False, indent=2), encoding="utf-8")
+                adb_cmd(adb, serial, "push", str(tmp_json), f"/sdcard/Android/data/{PKG}/files/test_scenario.json", check=False)
+                adb_cmd(adb, serial, "shell", "am", "force-stop", PKG, check=False)
+                adb_cmd(adb, serial, "shell", "am", "start", "-n", ACTIVITY)
 
     cmd = [adb]
     if serial:
@@ -140,6 +155,7 @@ def run_single_scenario(
     start_t = time.time()
     done = False
     faulted = False
+    started_run = False
 
     keywords = (
         "[AUTOTEST]",
@@ -148,6 +164,8 @@ def run_single_scenario(
         "[OVERLAY]",
         "SIDESWIPE_",
         "ARCEE_",
+        "ELITA_",
+        "SPECIAL_LOCK",
         "SKILL_",
         "APPLY_BUFF",
         "REMOVE_BUFF",
@@ -170,10 +188,13 @@ def run_single_scenario(
                 time.sleep(0.05)
                 continue
             line_s = line.rstrip("\r\n")
+            if not started_run and f"[AUTOTEST] RUN_START name={sc_name}" in line_s:
+                started_run = True
+                captured.clear()
             captured.append(line_s)
             if any(k in line_s for k in keywords):
                 print(line_s)
-            if "[AUTOTEST] SCENARIO_DONE" in line_s:
+            if "[AUTOTEST] SCENARIO_DONE" in line_s and (f"name={sc_name}" in line_s or started_run):
                 done = True
                 break
             if "FAULT sig=" in line_s or "COMBAT_RULE_VIOLATION" in line_s:
@@ -260,16 +281,17 @@ def main() -> int:
             print(f"[!] --only '{args.only}' matched 0 of {len(all_paths)} scenarios.")
             return 1
         results: list[tuple[int, str, int]] = []
-        for idx in indices:
+        suite_t0 = time.time()
+        for pos, idx in enumerate(indices):
             sc_path = all_paths[idx]
             scenario = json.loads(sc_path.read_text(encoding="utf-8"))
             print(f"\n==================== [{idx + 1}/{len(all_paths)}] {scenario.get('name', sc_path.stem)} ({sc_path.name}) ====================")
             log_path = None
             if args.out_log:
                 log_path = args.out_log.parent / f"{args.out_log.stem}_{idx + 1}_{sc_path.stem}{args.out_log.suffix or '.log'}"
-            rc = run_single_scenario(adb, args.serial, args.port, args.timeout, scenario, True, log_path)
+            rc = run_single_scenario(adb, args.serial, args.port, args.timeout, scenario, True, log_path, reuse_running=(pos > 0))
             results.append((idx + 1, sc_path.name, rc))
-        print("\n==================== AUTOTEST SUITE SUMMARY ====================")
+        print(f"\n==================== AUTOTEST SUITE SUMMARY ({time.time() - suite_t0:.2f}s) ====================")
         overall_rc = 0
         for num, name, rc in results:
             status = "PASS" if rc == 0 else f"FAIL(rc={rc})"
@@ -315,12 +337,15 @@ def evaluate_assertions(scenario: dict, lines: list[str]) -> tuple[bool, list[st
         tgt = req.get("target")
         substr = req.get("mod_substr", "")
         min_cnt = int(req.get("min_count", 1))
+        max_cnt = req.get("max_count")
         matched = [
             e for e in apply_events
             if (not tgt or e.get("tgt") == tgt) and substr in e.get("mod", "")
         ]
         if len(matched) < min_cnt:
             errors.append(f"must_apply_buffs failed: tgt={tgt}, substr='{substr}', expected>={min_cnt}, got={len(matched)}")
+        if max_cnt is not None and len(matched) > int(max_cnt):
+            errors.append(f"must_apply_buffs failed: tgt={tgt}, substr='{substr}', expected<={int(max_cnt)}, got={len(matched)}")
 
     for forbid in assertions.get("must_not_apply_buffs", []):
         tgt = forbid.get("target")
@@ -394,10 +419,14 @@ def evaluate_assertions(scenario: dict, lines: list[str]) -> tuple[bool, list[st
 
     for sub_req in assertions.get("must_log_substrings", []):
         substr = sub_req.get("substr", "")
-        min_cnt = int(sub_req.get("min_count", 1))
+        default_min = 0 if "max_count" in sub_req else 1
+        min_cnt = int(sub_req.get("min_count", default_min))
+        max_cnt = sub_req.get("max_count")
         matched = [ln for ln in lines if substr in ln]
         if len(matched) < min_cnt:
             errors.append(f"must_log_substrings failed: substr='{substr}', expected>={min_cnt}, got={len(matched)}")
+        if max_cnt is not None and len(matched) > int(max_cnt):
+            errors.append(f"must_log_substrings failed: substr='{substr}', expected<={int(max_cnt)}, got={len(matched)}")
 
     return len(errors) == 0, errors
 

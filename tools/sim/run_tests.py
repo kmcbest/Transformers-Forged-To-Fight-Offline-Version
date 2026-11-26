@@ -485,6 +485,7 @@ def test_slipstream_abilities():
     # 5. [门禁1] 利用弱点：对方无减益时不ROLL、不刷新
     g_engine.init("slipstream_gs", "prowl", 32402.0, 15000.0, 2306.0, 1000.0)
     g_engine.reset()
+    g_engine.set_crit_rate(0, 0.0) # 隔离暴击背刺触发，专注验证无减益不触发利用弱点
     st0 = g_engine.get_state()
     assert_true(len(st0["p1"]["buffs"]) == 0, "Opponent has 0 debuffs initially")
     g_engine.attack(0, 1, 0, 1, 0) # 轻击

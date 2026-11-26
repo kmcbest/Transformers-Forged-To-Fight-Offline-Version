@@ -1,0 +1,43 @@
+{
+  "active": true,
+  "name": "arcee_test_sp2_bleed",
+  "banner": "#5 Arcee SP2 Femmes Fatality Bleed",
+  "qid": "1.1.1",
+  "player_invincible": 1,
+  "p0": {
+    "bid": "arcee_gs_deluxe2014",
+    "mana": 2.5,
+    "initial_buffs": [
+      { "id": "arcee_sig_ferocity", "dur": 12.0, "stacks": 1 }
+    ]
+  },
+  "p1": {
+    "bid": "bonecrusher_cin_rotf",
+    "freeze_ai": 1,
+    "invincible_dummy": 1
+  },
+  "auto_fight": 0,
+  "max_duration_ms": 15000,
+  "p0_script": [
+    { "action": "WAIT", "duration_ms": 800 },
+    { "action": "SP2", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 3000 },
+    { "action": "SET_MANA", "target": "P0", "mana": 2.5 },
+    { "action": "SP2", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 4000 }
+  ],
+  "assertions": {
+    "must_hit_connected": [
+      { "attacker": "P0", "sp": 2, "min_count": 2 }
+    ],
+    "must_crit": [
+      { "attacker": "P0", "sp": 2, "min_count": 1 }
+    ],
+    "must_apply_buffs": [
+      { "target": "P1", "mod_substr": "arcee_s2_bleed", "min_count": 1 }
+    ],
+    "must_dot_tick": [
+      { "target": "P1", "min_ticks": 3, "min_dmg": 1.0 }
+    ]
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "active": true,
+  "name": "elita_test_sp2_sp3_lockdown",
+  "banner": "#7 Elita SP2 Nullify+Shock & SP3 Bleed+8s Tactical Lockdown",
+  "qid": "1.1.1",
+  "player_invincible": 1,
+  "p0": {
+    "bid": "elita_one_gs",
+    "mana": 2.0
+  },
+  "p1": {
+    "bid": "optimusprime_cin_tf",
+    "mana": 0.0,
+    "freeze_ai": 1,
+    "invincible_dummy": 1
+  },
+  "auto_fight": 0,
+  "max_duration_ms": 22000,
+  "p0_script": [
+    { "action": "WAIT", "duration_ms": 500 },
+    { "action": "APPLY_BUFF", "target": "P1", "id": "elita_sig_flame_armor_25", "dur": 10.0 },
+    { "action": "APPLY_BUFF", "target": "P1", "id": "elita_sig_flame_atk_50", "dur": 10.0 },
+    { "action": "SP2", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 3800 },
+    { "action": "SET_MANA", "target": "P0", "mana": 3.0 },
+    { "action": "SP3", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 11000 }
+  ],
+  "p1_script": [
+    { "action": "WAIT", "duration_ms": 14000 },
+    { "action": "SET_MANA", "target": "P1", "mana": 3.0 },
+    { "action": "SP1", "repeat": 3 },
+    { "action": "WAIT", "duration_ms": 800 },
+    { "action": "SP2", "repeat": 2 }
+  ],
+  "assertions": {
+    "must_hit_connected": [
+      { "attacker": "P0", "sp": 2, "min_count": 2 },
+      { "attacker": "P0", "sp": 3, "min_count": 1 }
+    ],
+    "must_apply_buffs": [
+      { "target": "P1", "mod_substr": "elita_sp2_nullify", "min_count": 1 },
+      { "target": "P1", "mod_substr": "elita_sp2_shock", "min_count": 1, "max_count": 1 },
+      { "target": "P1", "mod_substr": "elita_sp3_bleed", "min_count": 1, "max_count": 1 },
+      { "target": "P1", "mod_substr": "elita_sp3_tactical_lockdown", "min_count": 1, "max_count": 1 }
+    ],
+    "must_dot_tick": [
+      { "target": "P1", "min_ticks": 3, "min_dmg": 1.0 }
+    ],
+    "must_log_substrings": [
+      { "substr": "ELITA_SP2: Last hit inflicted Shock", "min_count": 1, "max_count": 1 },
+      { "substr": "ELITA_SP3: Last hit inflicted Bleed", "min_count": 1, "max_count": 1 },
+      { "substr": "ELITA_SP3: P0 exited SP3 -> applied 8.0s Tactical Lockdown", "min_count": 1, "max_count": 1 },
+      { "substr": "SPECIAL_LOCK: P1 suppressed 0x200 SpecialAttack", "min_count": 1 }
+    ]
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "active": true,
+  "name": "elita_test_joint_aim",
+  "banner": "#4 Elita Joint Aim (100% Ranged Armor Pen + 70% Refresh on Hit/Block + Ranged Crit Break)",
+  "qid": "1.1.1",
+  "player_invincible": 1,
+  "p0": {
+    "bid": "elita_one_gs",
+    "mana": 0.0
+  },
+  "p1": {
+    "bid": "rhinox_gs_voyager2014",
+    "freeze_ai": 1,
+    "invincible_dummy": 1
+  },
+  "auto_fight": 0,
+  "max_duration_ms": 17000,
+  "p1_script": [
+    { "action": "DODGE", "repeat": 2 },
+    { "action": "WAIT", "duration_ms": 4500 },
+    { "action": "BLOCK", "hold_ms": 6000 }
+  ],
+  "p0_script": [
+    { "action": "DODGE", "repeat": 2 },
+    { "action": "WAIT", "duration_ms": 600 },
+    { "action": "APPLY_BUFF", "target": "P1", "id": "elita_sp1_armor_break", "dur": 12.0 },
+    { "action": "APPLY_BUFF", "target": "P0", "id": "elita_sig_flame_crit_50", "dur": 10.0 },
+    { "action": "RANGED", "repeat": 8 },
+    { "action": "WAIT", "duration_ms": 1800 },
+    { "action": "RANGED", "repeat": 8 },
+    { "action": "WAIT", "duration_ms": 2000 }
+  ],
+  "assertions": {
+    "must_hit_connected": [
+      { "attacker": "P0", "sp": 0, "min_count": 10 }
+    ],
+    "must_crit": [
+      { "attacker": "P0", "sp": 0, "min_count": 1 }
+    ],
+    "must_apply_buffs": [
+      { "target": "P1", "mod_substr": "elita_ranged_crit_armor_break", "min_count": 1 },
+      { "target": "P1", "mod_substr": "elita_joint_aim_refresh", "min_count": 2 }
+    ],
+    "must_log_substrings": [
+      { "substr": "ELITA_JOINT_AIM:", "min_count": 2 },
+      { "substr": "blk=0", "min_count": 2 },
+      { "substr": "blk=1", "min_count": 2 }
+    ]
+  }
+}

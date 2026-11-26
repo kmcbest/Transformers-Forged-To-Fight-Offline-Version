@@ -172,6 +172,9 @@ for ab in bot.get("abilities", []):
 4. **目标与演员 (Target Actor)**：
    - 负面效果 / 流血 / 扣血：`ta: "opponent"`，`mt: "debuff"`，`s: "none"`。
    - 自身增益 / 护盾 / 呼出：`ta: "self"`，`mt: "buff"` 或 `"passive"`。
+5. **呼出大字 `callout_text` 禁止自编术语铁律 (Use Official DB Basic/Skill Terms Only)**：
+   - `callout_text`（最终映射到外观字典的 `st` / `a` / `ps`）**严禁由 AI 顺手杜撰文艺或修饰性词组**（例如将“燃烧”写成“导弹灼烧”“地毯焚烧”，将“流血”写成“撕裂流血”等）。
+   - **一律优先直接取自该角色真理源的 `basic_abilities`（基础能力词条）或对应技能的官方 `title_zh`**（如“燃烧”、“流血”、“眩晕”、“破甲”、“震击”、“追猎”）；仅当数据库中确实找不到对应词条时，方可采用最朴素准确的通用游戏术语补全。
 
 ---
 
