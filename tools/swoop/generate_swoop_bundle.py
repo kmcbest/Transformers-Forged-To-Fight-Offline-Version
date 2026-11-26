@@ -69,6 +69,16 @@ STARSCREAM_HEAVY_CLIP_PID = 7645321843667068633
 
 # Injected local / moves PIDs
 SWOOP_WING_FLAP_PID = 7111222233334444555
+SWOOP_WRAPPED_CAR_CLIPS = [
+    # (slot_idx, orig_pid, new_pid, clip_name)
+    (4,  5620803938405291589,  7111222233334444556, "Swoop_Vehicle_SP3_transformed"),
+    (10, 5051485932175143884,  7111222233334444557, "Swoop_Vehicle_HitBack_transformed"),
+    (11, -8575900432944827290, 7111222233334444558, "Swoop_Vehicle_HitKnockdown_transformed"),
+    (13, 6372851878398872443,  7111222233334444559, "Swoop_Vehicle_GachaReveal_transformed"),
+    (14, -2012374896484064676, 7111222233334444560, "Swoop_Vehicle_LevelupExit_transformed"),
+    (15, 6073306910817336135,  7111222233334444561, "Swoop_Vehicle_LevelupEnter_transformed"),
+    (17, 8516921728443142186,  7111222233334444562, "Swoop_Vehicle_BattleIntro_transformed"),
+]
 SWOOP_HEAVY_MOVE_PID = -7777777777777777701
 
 # Cloned Fireball Projectile PIDs from Grimlock
@@ -255,12 +265,18 @@ def build_swoop_bundle():
     assert "cha_swoop_gs_00" in mesh_objs, "Missing cha_swoop_gs_00 in mesh bundle!"
     assert "cha_swoop_gs_01" in mesh_objs, "Missing cha_swoop_gs_01 in mesh bundle!"
     assert "Swoop_Vehicle_WingFlap_transformed" in mesh_objs, "Missing Swoop_Vehicle_WingFlap_transformed in mesh bundle!"
+    for _, _, _, cname in SWOOP_WRAPPED_CAR_CLIPS:
+        assert cname in mesh_objs, f"Missing wrapped clip '{cname}' in mesh bundle!"
 
     swoop_meshes = {
         "cha_swoop_gs_00": mesh_objs["cha_swoop_gs_00"].read_typetree(),
         "cha_swoop_gs_01": mesh_objs["cha_swoop_gs_01"].read_typetree(),
     }
     wing_flap_clip_tt = mesh_objs["Swoop_Vehicle_WingFlap_transformed"].read_typetree()
+    wrapped_clip_tts = {
+        cname: mesh_objs[cname].read_typetree()
+        for _, _, _, cname in SWOOP_WRAPPED_CAR_CLIPS
+    }
 
     print(f"Loading Grimlock Bundle: {GRIM_BUNDLE}")
     env_grim = UnityPy.load(str(GRIM_BUNDLE))
@@ -473,8 +489,8 @@ def build_swoop_bundle():
         obj_map[tr_pid].save_typetree(tr_tt)
     print(f"  [+] Scaled Main & LW transformed/Reference uniformly to ({VEHICLE_SCALE}, {VEHICLE_SCALE}, {VEHICLE_SCALE})")
 
-    # 6. Inject Swoop Wing-Flap AnimationClip into SerializedFile
-    print("[*] Injecting Swoop_Vehicle_WingFlap_transformed...")
+    # 6. Inject Swoop Wing-Flap & Wrapped CAR_AOC Clips into SerializedFile
+    print("[*] Injecting Swoop_Vehicle_WingFlap_transformed + 7 wrapped CAR_AOC clips...")
     clip_template = next(o for o in sf.objects.values() if o.type.name == "AnimationClip")
     wing_flap_reader = copy.copy(clip_template)
     wing_flap_reader.path_id = SWOOP_WING_FLAP_PID
@@ -484,9 +500,19 @@ def build_swoop_bundle():
     wing_flap_reader.save_typetree(wing_flap_clip_tt)
     print(f"  [+] Injected Swoop_Vehicle_WingFlap_transformed as PID {SWOOP_WING_FLAP_PID}")
 
+    for _, _, new_pid, cname in SWOOP_WRAPPED_CAR_CLIPS:
+        w_reader = copy.copy(clip_template)
+        w_reader.path_id = new_pid
+        w_reader.type_id = 6
+        sf.objects[new_pid] = w_reader
+        ctt = copy.deepcopy(wrapped_clip_tts[cname])
+        ctt["m_Name"] = cname
+        w_reader.save_typetree(ctt)
+        print(f"  [+] Injected {cname} as PID {new_pid}")
+
     # 7. Wire Controllers & MoveSet
     print("[*] Wiring AnimatorOverrideControllers & MoveSet...")
-    # Jet AOC: wire prop_idle (slot 5), prop_attackHeavy (slot 12), prop_levelup_transformIdle (slot 16)
+    # Jet AOC: wire idle/heavy/transformIdle (5,12,16) + all 7 transition/intro/hit/sp3 clips (4,10,11,13,14,15,17)
     jet_aoc_tt = obj_map[JET_AOC_PID].read_typetree()
     jet_clips = jet_aoc_tt["m_Clips"]
     assert jet_clips[5]["m_OriginalClip"]["m_PathID"] == 3658090888164254241    # prop_idle
@@ -497,9 +523,16 @@ def build_swoop_bundle():
 
     assert jet_clips[16]["m_OriginalClip"]["m_PathID"] == -8823098701810809179  # prop_levelup_transformIdle
     jet_clips[16]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": SWOOP_WING_FLAP_PID}
+
+    for slot_idx, orig_pid, new_pid, cname in SWOOP_WRAPPED_CAR_CLIPS:
+        assert jet_clips[slot_idx]["m_OriginalClip"]["m_PathID"] == orig_pid, (
+            f"Jet AOC slot[{slot_idx}] orig mismatch: {jet_clips[slot_idx]['m_OriginalClip']['m_PathID']} != {orig_pid}"
+        )
+        jet_clips[slot_idx]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": new_pid}
+
     jet_aoc_tt["m_Clips"] = jet_clips
     obj_map[JET_AOC_PID].save_typetree(jet_aoc_tt)
-    print(f"  [+] Wired Jet AOC slots 5, 12, 16 to Wing Flap clip")
+    print(f"  [+] Wired Jet AOC slots [5,12,16]=WingFlap and [4,10,11,13,14,15,17]=Wrapped Swoop clips")
 
     # Fight AOC: wire slot 58 (char_attackHeavy) to StarScream_Normal_attackHeavy (m_FileID=5 = character_anim_procedural.assetbundle!)
     fight_aoc_tt = obj_map[FIGHT_AOC_PID].read_typetree()
@@ -584,7 +617,7 @@ def build_swoop_bundle():
     for cname, cinfo in ab_tree.get("m_Container", []):
         rpid = int(cinfo["asset"]["m_PathID"])
         if rpid == ROOT_MAIN_PID:
-            roots_to_collect = [ROOT_MAIN_PID, SWOOP_WING_FLAP_PID] + FIREBALL_PIDS
+            roots_to_collect = [ROOT_MAIN_PID, SWOOP_WING_FLAP_PID] + [x[2] for x in SWOOP_WRAPPED_CAR_CLIPS] + FIREBALL_PIDS
         else:
             roots_to_collect = [rpid]
         _, closure_pptrs = collect_closure(sf, roots_to_collect)

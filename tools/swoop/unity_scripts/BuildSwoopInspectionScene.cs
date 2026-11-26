@@ -322,6 +322,179 @@ public static class BuildSwoopInspectionScene {
 
         AnimationClip wingFlapClip = BuildSwoopWingFlapClip();
 
+        string[] swoopActiveChopBones = {
+            "chop1_chest_center",
+            "chop1_back_center",
+            "chop1_forearm_left",
+            "chop1_cannon_left",
+            "chop1_forearm_right",
+            "chop1_cannon_right",
+            "chop1_calf_left",
+            "chop1_calf_right",
+            "chop1_foot_left",
+            "chop1_foot_right",
+        };
+
+        AnimationClip BuildWrappedTransformClip(string donorClipName, string newClipName, string animAssetPath, bool animateFlap) {
+            AnimationClip donorClip = null;
+            if (procBundle != null) {
+                foreach (string ap in procBundle.GetAllAssetNames()) {
+                    foreach (var sub in procBundle.LoadAssetWithSubAssets(ap)) {
+                        if (sub is AnimationClip ac && ac.name == donorClipName) {
+                            donorClip = ac;
+                            break;
+                        }
+                    }
+                    if (donorClip != null) break;
+                }
+            }
+            if (donorClip == null) {
+                throw new Exception("[WrappedClip] Missing donor clip in procBundle: " + donorClipName);
+            }
+            if (wingFlapClip == null || trRamjet == null || trSwoop == null) {
+                throw new Exception("[WrappedClip] Missing wingFlapClip or transformed Hierarchy!");
+            }
+
+            bool prevRamActive = trRamjet.gameObject.activeSelf;
+            bool prevSwoopActive = trSwoop.gameObject.activeSelf;
+            trRamjet.gameObject.SetActive(true);
+            trSwoop.gameObject.SetActive(true);
+
+            Transform ramRef = FindChildRecursive(trRamjet, "Reference");
+            Transform ramCog = ramRef != null ? FindChildRecursive(ramRef, "COG") : null;
+            Transform swoopRef = FindChildRecursive(trSwoop, "Reference");
+            Transform swoopCog = swoopRef != null ? FindChildRecursive(swoopRef, "COG") : null;
+            if (ramRef == null || ramCog == null || swoopCog == null) {
+                throw new Exception("[WrappedClip] Missing Reference/COG in transformed prefab!");
+            }
+
+            Dictionary<string, Transform> swoopChopMap = new Dictionary<string, Transform>();
+            foreach (string bn in swoopActiveChopBones) {
+                Transform ct = FindChildRecursive(swoopCog, bn);
+                if (ct == null) throw new Exception("[WrappedClip] Missing Swoop bone: " + bn);
+                swoopChopMap[bn] = ct;
+            }
+
+            AnimationClip clip = AssetDatabase.LoadAssetAtPath<AnimationClip>(animAssetPath);
+            if (clip == null) {
+                clip = new AnimationClip { name = newClipName, frameRate = 30f };
+                AssetDatabase.CreateAsset(clip, animAssetPath);
+            } else {
+                clip.ClearCurves();
+                clip.name = newClipName;
+                clip.frameRate = 30f;
+            }
+
+            float dur = Mathf.Max(0.1f, donorClip.length);
+            int sampleCount = Mathf.Max(2, Mathf.CeilToInt(dur * 30f) + 1);
+
+            AnimationCurve refPx = new AnimationCurve(), refPy = new AnimationCurve(), refPz = new AnimationCurve();
+            AnimationCurve refRx = new AnimationCurve(), refRy = new AnimationCurve(), refRz = new AnimationCurve(), refRw = new AnimationCurve();
+            AnimationCurve cogPx = new AnimationCurve(), cogPy = new AnimationCurve(), cogPz = new AnimationCurve();
+            AnimationCurve cogRx = new AnimationCurve(), cogRy = new AnimationCurve(), cogRz = new AnimationCurve(), cogRw = new AnimationCurve();
+            AnimationCurve cogSx = new AnimationCurve(), cogSy = new AnimationCurve(), cogSz = new AnimationCurve();
+
+            var chopCurves = new Dictionary<string, AnimationCurve[]>();
+            foreach (string bn in swoopActiveChopBones) {
+                chopCurves[bn] = new[] {
+                    new AnimationCurve(), new AnimationCurve(), new AnimationCurve(),
+                    new AnimationCurve(), new AnimationCurve(), new AnimationCurve(), new AnimationCurve()
+                };
+            }
+
+            for (int i = 0; i < sampleCount; i++) {
+                float t = (i == sampleCount - 1) ? dur : Mathf.Min(i / 30f, dur);
+                EvalPairGraph(animTrRamjet, null, donorClip, t);
+
+                refPx.AddKey(t, ramRef.localPosition.x);
+                refPy.AddKey(t, ramRef.localPosition.y);
+                refPz.AddKey(t, ramRef.localPosition.z);
+                refRx.AddKey(t, ramRef.localRotation.x);
+                refRy.AddKey(t, ramRef.localRotation.y);
+                refRz.AddKey(t, ramRef.localRotation.z);
+                refRw.AddKey(t, ramRef.localRotation.w);
+
+                cogPx.AddKey(t, ramCog.localPosition.x);
+                cogPy.AddKey(t, ramCog.localPosition.y);
+                cogPz.AddKey(t, ramCog.localPosition.z);
+                cogRx.AddKey(t, ramCog.localRotation.x);
+                cogRy.AddKey(t, ramCog.localRotation.y);
+                cogRz.AddKey(t, ramCog.localRotation.z);
+                cogRw.AddKey(t, ramCog.localRotation.w);
+                cogSx.AddKey(t, ramCog.localScale.x);
+                cogSy.AddKey(t, ramCog.localScale.y);
+                cogSz.AddKey(t, ramCog.localScale.z);
+
+                float flapT = animateFlap ? (t % Mathf.Max(0.1f, wingFlapClip.length)) : 0f;
+                wingFlapClip.SampleAnimation(trSwoop.gameObject, flapT);
+                foreach (string bn in swoopActiveChopBones) {
+                    Transform ct = swoopChopMap[bn];
+                    var arr = chopCurves[bn];
+                    arr[0].AddKey(t, ct.localPosition.x);
+                    arr[1].AddKey(t, ct.localPosition.y);
+                    arr[2].AddKey(t, ct.localPosition.z);
+                    arr[3].AddKey(t, ct.localRotation.x);
+                    arr[4].AddKey(t, ct.localRotation.y);
+                    arr[5].AddKey(t, ct.localRotation.z);
+                    arr[6].AddKey(t, ct.localRotation.w);
+                }
+            }
+
+            clip.SetCurve("Reference", typeof(Transform), "localPosition.x", refPx);
+            clip.SetCurve("Reference", typeof(Transform), "localPosition.y", refPy);
+            clip.SetCurve("Reference", typeof(Transform), "localPosition.z", refPz);
+            clip.SetCurve("Reference", typeof(Transform), "localRotation.x", refRx);
+            clip.SetCurve("Reference", typeof(Transform), "localRotation.y", refRy);
+            clip.SetCurve("Reference", typeof(Transform), "localRotation.z", refRz);
+            clip.SetCurve("Reference", typeof(Transform), "localRotation.w", refRw);
+
+            clip.SetCurve("Reference/COG", typeof(Transform), "localPosition.x", cogPx);
+            clip.SetCurve("Reference/COG", typeof(Transform), "localPosition.y", cogPy);
+            clip.SetCurve("Reference/COG", typeof(Transform), "localPosition.z", cogPz);
+            clip.SetCurve("Reference/COG", typeof(Transform), "localRotation.x", cogRx);
+            clip.SetCurve("Reference/COG", typeof(Transform), "localRotation.y", cogRy);
+            clip.SetCurve("Reference/COG", typeof(Transform), "localRotation.z", cogRz);
+            clip.SetCurve("Reference/COG", typeof(Transform), "localRotation.w", cogRw);
+            clip.SetCurve("Reference/COG", typeof(Transform), "localScale.x", cogSx);
+            clip.SetCurve("Reference/COG", typeof(Transform), "localScale.y", cogSy);
+            clip.SetCurve("Reference/COG", typeof(Transform), "localScale.z", cogSz);
+
+            foreach (string bn in swoopActiveChopBones) {
+                var arr = chopCurves[bn];
+                string rel = "Reference/COG/" + bn;
+                clip.SetCurve(rel, typeof(Transform), "localPosition.x", arr[0]);
+                clip.SetCurve(rel, typeof(Transform), "localPosition.y", arr[1]);
+                clip.SetCurve(rel, typeof(Transform), "localPosition.z", arr[2]);
+                clip.SetCurve(rel, typeof(Transform), "localRotation.x", arr[3]);
+                clip.SetCurve(rel, typeof(Transform), "localRotation.y", arr[4]);
+                clip.SetCurve(rel, typeof(Transform), "localRotation.z", arr[5]);
+                clip.SetCurve(rel, typeof(Transform), "localRotation.w", arr[6]);
+            }
+
+            clip.EnsureQuaternionContinuity();
+            var settings = AnimationUtility.GetAnimationClipSettings(clip);
+            settings.loopTime = false;
+            AnimationUtility.SetAnimationClipSettings(clip, settings);
+            EditorUtility.SetDirty(clip);
+
+            trRamjet.gameObject.SetActive(prevRamActive);
+            trSwoop.gameObject.SetActive(prevSwoopActive);
+            Debug.Log($"[✓] Built wrapped CAR_AOC clip '{newClipName}' ({dur:F2}s, {sampleCount} frames) from '{donorClipName}'");
+            return clip;
+        }
+
+        var wrappedSpec = new (string donor, string name, string path, bool flap)[] {
+            ("frontend_Ramjet_levelup_enter_transformed", "Swoop_Vehicle_LevelupEnter_transformed", "Assets/Swoop/Swoop_Vehicle_LevelupEnter_transformed.anim", true),
+            ("frontend_Ramjet_levelup_exit_transformed", "Swoop_Vehicle_LevelupExit_transformed", "Assets/Swoop/Swoop_Vehicle_LevelupExit_transformed.anim", true),
+            ("BattleIntro_Jets_Ramjet_transformed", "Swoop_Vehicle_BattleIntro_transformed", "Assets/Swoop/Swoop_Vehicle_BattleIntro_transformed.anim", true),
+            ("Ramjet_G1_attackSpecial_03_transformed", "Swoop_Vehicle_SP3_transformed", "Assets/Swoop/Swoop_Vehicle_SP3_transformed.anim", true),
+            ("Ramjet_hitReaction_transition_back_transformed", "Swoop_Vehicle_HitBack_transformed", "Assets/Swoop/Swoop_Vehicle_HitBack_transformed.anim", false),
+            ("Ramjet_hitReaction_transition_knockdown_transformed", "Swoop_Vehicle_HitKnockdown_transformed", "Assets/Swoop/Swoop_Vehicle_HitKnockdown_transformed.anim", false),
+            ("frontend_Ramjet_Gacha_Reveal_transformed", "Swoop_Vehicle_GachaReveal_transformed", "Assets/Swoop/Swoop_Vehicle_GachaReveal_transformed.anim", true),
+        };
+        var wrappedClipPaths = new List<string>();
+        var wrappedClips = new List<AnimationClip>();
+
         GameObject ctrlGo = new GameObject("SwoopPreviewController");
         var ctrl = ctrlGo.AddComponent<SwoopPreviewController>();
         ctrl.animOfficialRamjet = animRamjet;
@@ -360,6 +533,16 @@ public static class BuildSwoopInspectionScene {
             swoopInst.transform.SetPositionAndRotation(new Vector3(-4.4f, 0f, 0f), Quaternion.identity);
         }
 
+        // Build all 7 wrapped CAR_AOC clips now that initial pose is cleanly captured
+        foreach (var ws in wrappedSpec) {
+            RestoreInitialPose();
+            var wc = BuildWrappedTransformClip(ws.donor, ws.name, ws.path, ws.flap);
+            wrappedClips.Add(wc);
+            wrappedClipPaths.Add(ws.path);
+            allClips[wc.name] = wc;
+        }
+        RestoreInitialPose();
+
         // 6. Render Synchronized Action Screenshots (CPU BakeMesh + PlayableGraph!)
         int w = 1920, h = 1080;
         RenderTexture rt = new RenderTexture(w, h, 24, RenderTextureFormat.ARGB32) { antiAliasing = 8 };
@@ -386,7 +569,7 @@ public static class BuildSwoopInspectionScene {
                 Debug.LogWarning($"[Shot {fileName}] Missing root clip '{clipName}'");
             }
             if (vehicleMode && transClipName != null && allClips.TryGetValue(transClipName, out AnimationClip tc)) {
-                if (transClipName == "Swoop_Vehicle_WingFlap_transformed" && trSwoop != null) {
+                if (transClipName.StartsWith("Swoop_Vehicle_") && trSwoop != null) {
                     tc.SampleAnimation(trSwoop.gameObject, sampleTime);
                 } else if (animTrRamjet != null && animTrSwoop != null) {
                     EvalPairGraph(animTrRamjet, animTrSwoop, tc, sampleTime);
@@ -427,7 +610,7 @@ public static class BuildSwoopInspectionScene {
                 bm.RecalculateBounds();
                 GameObject bgo = new GameObject("TempBaked_" + smr.name);
                 // In pure vehicle showcase (clipName == null), anchor centered on ground; when testing live Fighter+Prop clip (clipName != null), use live world transform!
-                bool liveWorldPose = (vehicleMode && clipName != null);
+                bool liveWorldPose = vehicleMode && (clipName != null || (transClipName != null && transClipName != "Swoop_Vehicle_WingFlap_transformed"));
                 bgo.transform.SetPositionAndRotation(
                     (vehicleMode && !liveWorldPose) ? Vector3.zero : smr.transform.position,
                     (vehicleMode && !liveWorldPose) ? Quaternion.identity : smr.transform.rotation
@@ -537,6 +720,9 @@ public static class BuildSwoopInspectionScene {
         RenderPoseShot(null, 0.300f, vehCam, vehTarg, "09b_vehicle_flap_up_sbs.png", vehicleMode: true, transClipName: "Swoop_Vehicle_WingFlap_transformed");
         RenderPoseShot(null, 0.733f, vehCam, vehTarg, "09c_vehicle_flap_down_sbs.png", vehicleMode: true, transClipName: "Swoop_Vehicle_WingFlap_transformed");
         RenderPoseShot(null, 0.000f, new Vector3(-13.5f, 6.2f, 15.5f), new Vector3(-2.5f, 2.2f, 0f), "09d_vehicle_side_sbs.png", vehicleMode: true, transClipName: "Swoop_Vehicle_WingFlap_transformed");
+        RenderPoseShot(null, 0.000f, new Vector3(-7.6f, 4.0f, -12.8f), new Vector3(-5.8f, 1.6f, 0f), "09e_vehicle_back_legs.png", vehicleMode: true, transClipName: "Swoop_Vehicle_WingFlap_transformed", hideRamjet: true);
+        RenderPoseShot(null, 0.733f, new Vector3(-7.0f, 7.5f, 18.0f), new Vector3(0.0f, 5.0f, 0f), "09f_levelup_enter_t073.png", vehicleMode: true, transClipName: "Swoop_Vehicle_LevelupEnter_transformed", hideRamjet: true);
+        RenderPoseShot(null, 0.700f, new Vector3(-7.0f, 7.5f, 18.0f), new Vector3(0.0f, 5.0f, 0f), "09g_levelup_exit_t070.png", vehicleMode: true, transClipName: "Swoop_Vehicle_LevelupExit_transformed", hideRamjet: true);
 
         // 10. Left Hand Open vs Curled Close-Up & 11. Face Eyes + 12. Right Hand Close-Up
         RestoreInitialPose();
@@ -569,7 +755,9 @@ public static class BuildSwoopInspectionScene {
         Directory.CreateDirectory(outAbDir);
         AssetBundleBuild[] builds = new AssetBundleBuild[1];
         builds[0].assetBundleName = "swoop_mesh.assetbundle";
-        builds[0].assetNames = new[] { ROBOT_ASSET, VH_ASSET, "Assets/Swoop/Swoop_Vehicle_WingFlap_transformed.anim" };
+        var abAssetNames = new List<string> { ROBOT_ASSET, VH_ASSET, "Assets/Swoop/Swoop_Vehicle_WingFlap_transformed.anim" };
+        abAssetNames.AddRange(wrappedClipPaths);
+        builds[0].assetNames = abAssetNames.ToArray();
         var manifest = BuildPipeline.BuildAssetBundles(
             outAbDir,
             builds,

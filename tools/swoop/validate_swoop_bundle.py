@@ -133,6 +133,11 @@ def validate():
     jet_aoc = obj_map[-6340484879223379266].read_typetree()
     for slot in (5, 12, 16):
         assert jet_aoc["m_Clips"][slot]["m_OverrideClip"] == {"m_FileID": 0, "m_PathID": 7111222233334444555}
+    for slot, expected_pid in ((4, 7111222233334444556), (10, 7111222233334444557), (11, 7111222233334444558), (13, 7111222233334444559), (14, 7111222233334444560), (15, 7111222233334444561), (17, 7111222233334444562)):
+        assert jet_aoc["m_Clips"][slot]["m_OverrideClip"] == {"m_FileID": 0, "m_PathID": expected_pid}, (
+            f"Jet AOC slot[{slot}] not wrapped: {jet_aoc['m_Clips'][slot]['m_OverrideClip']}"
+        )
+        assert any(p["m_FileID"] == 0 and p["m_PathID"] == expected_pid for p in pt), f"Wrapped clip {expected_pid} missing from PreloadTable!"
     go_names = {o.read_typetree().get("m_Name") for o in sf.objects.values() if o.type.name == "GameObject"}
     assert "projectile_grimlock_fireball" in go_names, "projectile_grimlock_fireball missing from GameObjects!"
     for tr_pid in (-6891910190203298850, -6726056130619506655):

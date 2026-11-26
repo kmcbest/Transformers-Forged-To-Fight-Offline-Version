@@ -34,9 +34,10 @@
 2. **`0.01x` `*_pbr` 外壳容器与正反面校验**
    * Alliance 源网格常带有 `0.01` 全局缩放的 `*_pbr` 父容器，而骨架坐标位于 Armature 空间。读取骨骼关节世界坐标转入网格局部空间时，必须显式使用 `mesh.matrix_local.inverted() @ b.head_local`。
    * **正反面铁律**：导入并转轴落地后，必须第一时间确认**胸甲/面罩朝向 `+Z`（正面）、翅膀/背包位于 `-Z`（背面）**，严禁把人形正反面装反！
-3. **3ds Max 非单位骨骼 `Lcl Scaling != 1.0` 剥离大爆炸（鸟兽/细长件高危）**
-   * Alliance 鸟兽、长颈、鸟喙或尾翼骨骼常被 3ds Max 使用非等比缩放调整长度（如 `bird_neck = 0.3366`、`bird_Head = 0.6236`、`beak = 0.4659`）。Blender 的 `EditBone` 结构会强制丢弃 Rest Scale（归 `1.0`），但顶点 `BindPose` 仍按旧缩放计算，导致直接按 Pose 变形时**头部、鸟喙飞出数米发生断头爆炸**。
-   * **标准解法**：使用 `io_scene_fbx.parse_fbx` 直接读取原始 FBX `Properties70` 中的 `Lcl Scaling`，在纯 Python 内存中按递推全局 Rest/Pose 矩阵完成 Forward Kinematics 与局部 Linear Blend Skinning（LBS）顶点烘焙，彻底绕开 Blender `EditBone` 缩放剥离（公式详见 [`BIRD_BEAST_TRANSFORMATION_PIPELINE.md §3`](file:///e:/Agent/TFTF-blender/re_notes/BIRD_BEAST_TRANSFORMATION_PIPELINE.md#L93-L140)，源码样板见 [`build_aligned_swoop_vh.py`](file:///e:/Agent/TFTF-blender/tools/swoop/build_aligned_swoop_vh.py)）。
+3. **3ds Max 非单位与负镜像骨骼 `Lcl Scaling` 剥离大爆炸（鸟兽/细长件/右腿高危）**
+   * **正/非等比缩放爆炸**：Alliance 鸟兽、长颈、鸟喙或尾翼骨骼常被 3ds Max 使用非等比缩放调整长度（如 `bird_neck = 0.3366`、`bird_Head = 0.6236`、`beak = 0.4659`）。Blender `EditBone` 强行把 Rest Scale 归 `1.0`，导致头部、鸟喙飞出数米发生断头爆炸。
+   * **🚨 负镜像缩放 `Lcl Scaling = (-1, -1, -1)` 右肢漂移陷阱（Swoop 右腿血案）**：右侧肢体骨骼（如 `Bone_R_Thigh`、`Bone_R_UpperArm`、`Bone_R_Hand`、`Bone_Pistol`）常带 `Lcl Scaling = (-1.0, -1.0, -1.0)` 与 `Lcl Rotation Z = 180°`（行列式 `det = -1`）。Blender `EditBone` 强制正交化保持 `det = +1`，**即使手动补回 `scale_mat((-1,-1,-1))`，仍因 `b.matrix_local` 与 `pb.matrix_basis` 坐标轴已被 Blender 篡改，导致 `Bone_R_Thigh` 在第 1 帧与动画中被错误抬升漂浮至膝盖上方**！
+   * **唯一正解**：**彻底脱离 Blender `EditBone` / `PoseBone` 算子**！直接用 `io_scene_fbx.parse_fbx` 读取 FBX 原始 `Properties70`（`Lcl Translation` / `PreRotation` / `Lcl Rotation` / `PostRotation` / `Lcl Scaling`）以及 `AnimationCurveNode` 关键帧，在纯 Python 中按 Catmull-Rom 样条与递推矩阵完成 FK + LBS 烘焙及 58 帧提取（`Rx(+90°)` 转换至 Blender `Z-up`），并硬性断言左右对称部位中心误差 `< 0.02m`（源码见 [`build_aligned_swoop_vh.py`](file:///e:/Agent/TFTF-blender/tools/swoop/build_aligned_swoop_vh.py)）。
 4. **杂件清理与 `det = -1` Y/Z 轴交换绕序守卫**
    * 清理源包自带废对象（如 `Symbol_DC`、`Shadow`、`*_Weapon` 占位壳等）。
    * Blender `(x, y, z)` 映射 Unity `(x, z, y)` 时矩阵行列式 $\det = -1$，在 Unity 导入后必须同步翻转三角形索引并取反切线 `.w`，校验 $\sum \text{Cross}(p_1 - p_0, p_2 - p_0) \cdot n_0 > 0$，确保实测 `fn · vn > +0.85`（[`THIRD_PARTY_3D_MODEL_PIPELINE.md §11.12`](file:///e:/Agent/TFTF-blender/re_notes/THIRD_PARTY_3D_MODEL_PIPELINE.md#L1098-L1106)）。
@@ -133,7 +134,9 @@ Alliance 原生贴图与 TFTF Kabam `EB/Character/PBR` 管线存在结构性差�
 ### 5.1 提取原生拍翅/载具循环动作与战机骨架映射
 
 * **提取原则**：对于 Swoop 这类自带 `vehicle_idle01` 循环动画（58 帧、双振翅周期）的模具，先用 `§1.3` 的 FBX 原始 `Lcl Scaling` 逆解算法恢复无畸变局部旋转，再按解剖对应关系重映射到借壳战机 `COG` 子骨链（例如内翼/外翼/翼尖导弹分别绑定对称翅膀骨，且内-外翼过渡带使用 **50/50 线性渐变权重**消除向下扑动时的折角黑线）。
-* **注入状态机**：导出 Unity `AnimationClip` 覆盖战机 `Jet/Car AOC` 对应飞行槽位（如槽位 `[5, 12, 16]`），所有曲线路径必须保留母体 `ORIGINAL` 骨架路径前缀并匹配 `m_BoneNameHashes`。
+* **注入状态机与 🚨 `CAR_AOC` 过渡拆件全槽位包装铁律（防变形瞬间散架）**：
+  * 仅覆盖 `Jet/Car AOC` 的循环待机/重击槽位（`[5, 12, 16]`）**绝对不够**！供体战机在展厅点击变形进入/退出（`slot[15]` `prop_levelup_transformEnter` / `slot[14]` `prop_levelup_transformExit`）、战斗入场（`slot[17]`）、抽卡（`slot[13]`）、SP3（`slot[04]`）及受击倒地（`slot[10, 11]`）时会播放供体原版 `_transformed` 动画，把 `chop1_*` 子骨按战机零件拆成十块飞散！
+  * **标准解法**：在 Unity 工具脚本（[`BuildSwoopInspectionScene.cs`](file:///e:/Agent/TFTF-blender/tools/swoop/unity_scripts/BuildSwoopInspectionScene.cs) `BuildWrappedTransformClip`）中用 `PlayableGraph` 采样上述 7 个供体动画，**仅保留 `Reference` 与 `Reference/COG` 的整机翻转/飞行轨迹（不覆盖 `Reference` 缩放以免破坏 `1.53x`）**，而将全部有效 `Reference/COG/chop1_*` 子骨锁定采样为飞标完整拍翅姿态；导出并注入后将 `CAR_AOC` 全部 `[4, 10, 11, 13, 14, 15, 17]` + `[5, 12, 16]` 槽位完整接管并纳入 `m_PreloadTable` 闭环！
 
 ### 5.2 载具真实比例对齐（不破 `BindPose` 的安全缩放法）
 
@@ -176,4 +179,4 @@ python tools\validate_port_gates.py bundle --bundle assets_redeco\<bot>.assetbun
 - [ ] **红线 3（双眼 ROI 与防误亮额头）**：近景头部确认发光像素精准落在双目眼眶，**额头/眉骨零蓝块误亮**。
 - [ ] **红线 4（`Symbol_AB` 双色分层与防粉红）**：胸口 `Symbol_AB` `UV0` 与主网合并正常、无黑底或 Z-Fighting 闪烁；`SubMesh 1` 使用压低后的 `Overbright ≈ 9` 发出纯正红光，未过曝成粉红色。
 - [ ] **红线 5（Grimlock 级金属质感）**：与官方 `grimlock_gs_mp08` 并排对比，呈厚重饱和的金属漆光泽，绝无发白灰模过曝感，黑色机械沟壑对比鲜明。
-- [ ] **红线 6（载具尺度与发射口实测）**：载具共件（如双侧导弹）比例与人形协调（如 `1.53x` 对齐）；重击演示帧确认载具实体正常显现（`m_FileID` 正确）、空中悬停高度正确、火球/弹道从实测嘴尖/炮口顶点正中喷出。
+- [ ] **红线 6（载具尺度、对称完整性与变形连贯）**：载具共件（如双侧导弹）比例与人形协调（如 `1.53x` 对齐）；后视微距确认左右后腿等带负缩放镜像件 100% 对称无飘移；`LevelupEnter/Exit` 中途帧完整无拆件散架；重击演示帧确认载具实体正常显现（`m_FileID` 正确）、空中悬停高度正确、火球/弹道从实测嘴尖/炮口顶点正中喷出。

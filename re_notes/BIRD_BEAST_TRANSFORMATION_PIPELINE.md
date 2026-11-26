@@ -138,6 +138,8 @@ $$\mathbf{v}' = \sum_{i} w_i \cdot \left[ \mathbf{W}_{\text{pose}}(B_i) \cdot \m
 
 通过这套数学公式，顶点坐标在纯 Python 内存中直接完成 100% 绝对精确的几何位移计算，将翼龙的黄金骷髅、红色羽冠、上下鸟嘴、眼球与颈部完美焊接为浑然一体的刚性体态，误差小于 $0.0001\text{mm}$。
 
+> **⚠️ 补充铁律（负镜像缩放 `Lcl Scaling = (-1, -1, -1)` 避坑）**：`Bone_R_Thigh` 等右侧镜像骨带有负缩放与 $180^\circ$ 旋转（行列式 `-1`），Blender `EditBone`/`PoseBone` 会强制正交化到 `+1` 行列式从而篡改局部坐标轴。**因此不仅 Rest 矩阵、连同动画曲线采样（58 帧 `eval_fbx_scalar`）也必须 100% 在纯 Python FBX 空间内完成**，严禁再引用 `b.matrix_local` 或 `pb.matrix_basis`，否则翼龙右腿部件（`chop1_foot_right`）会向上飘浮至膝盖高度！
+
 ---
 
 ## 4. 翼龙飞行动画：原生 58 帧拍翅循环提取与战机 10 骨重映射
@@ -176,8 +178,8 @@ Alliance 飞标模型内部附带完整的载具待机动画剪辑：
 - 经 Unity 烘焙测试，50/50 渐变使翼膜在全行程扑动中呈现出自然的生物柔韧曲面。
 
 ### 4.4 Unity 动画剪辑合成与 Car AOC 状态机注入
-在 `BuildSwoopInspectionScene.cs` 中，`BuildSwoopWingFlapClip()` 脚本将逆向提取的 58 帧欧拉角按四元数重组并生成标准 Unity `AnimationClip`（`Assets/Swoop/Swoop_Vehicle_WingFlap_transformed.anim`）。
-通过该剪辑覆盖母体战机的待机循环动画（`ramjet_jet_idle01`），使飞标在变形为翼龙进入游戏场景后，立即展现灵动的双翼振翅飞行效果。
+在 `BuildSwoopInspectionScene.cs` 中，`BuildSwoopWingFlapClip()` 脚本将逆向提取的 58 帧欧拉角按四元数重组并生成标准 Unity `AnimationClip`（`Assets/Swoop/Swoop_Vehicle_WingFlap_transformed.anim`），覆盖母体战机 `CAR_AOC` 待机/重击循环动画（槽位 `[5, 12, 16]`）。
+> **⚠️ 全过渡槽位防散架封装**：仅替换 `[5, 12, 16]` 会导致展厅点击变形切换（`slot[15]` `transformEnter` / `slot[14]` `transformExit`）及 `slot[4, 10, 11, 13, 17]` 在变身瞬间播放 Ramjet 原版拆件动画造成模型短暂“散架”。正式版已在 `BuildSwoopInspectionScene.cs` 中用 `BuildWrappedTransformClip()` 提取供体 `Reference`/`COG` 翻转轨迹并将 10 根 `chop1_*` 子骨锁定为飞标拍翅，全数接入这 7 个槽位后变形全程零拆件（另见 [`ALLIANCE_MODEL_PORTING_GUIDE.md §5.1`](file:///e:/Agent/TFTF-blender/re_notes/ALLIANCE_MODEL_PORTING_GUIDE.md)）。
 
 ---
 

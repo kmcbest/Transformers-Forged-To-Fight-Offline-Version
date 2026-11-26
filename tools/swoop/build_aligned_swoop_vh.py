@@ -41,24 +41,134 @@ for bname, binfo in donor_bones.items():
     p = binfo["parent"]
     donor_parent_map[bname] = p if p != "None" and p != "Reference" else None
 
-# 1. Parse raw FBX Model Properties70 Lcl Scaling to invert Blender io_scene_fbx EditBone scale stripping
+# 1. Parse raw FBX Model Properties70 + AnimationStack("vehicle_idle01") curves directly in pure Python
+#    This completely bypasses Blender io_scene_fbx EditBone/PoseBone orthonormalization that corrupts
+#    bones with negative 3ds Max Lcl Scaling (e.g. Bone_R_Thigh: S=(-1,-1,-1), Rz=180 deg).
+import bisect
+from mathutils import Euler
+
 elem, _ = parse_fbx.parse(str(FBX_SRC))
 objects = next(e for e in elem.elems if e.id == b'Objects')
+conns = next(e for e in elem.elems if e.id == b'Connections')
+FBX_SECOND = 46186158000
 
-lcl_scales = {}
+id_to_elem = {int(e.props[0]): e for e in objects.elems if e.props and isinstance(e.props[0], (int,))}
+parent_to_children = {}
+child_to_parents = {}
+for c in conns.elems:
+    if c.id == b'C' and len(c.props) >= 3:
+        ch, pa = int(c.props[1]), int(c.props[2])
+        prop = c.props[3].decode('utf-8', errors='replace') if len(c.props) >= 4 else ""
+        parent_to_children.setdefault(pa, []).append((ch, prop))
+        child_to_parents.setdefault(ch, []).append((pa, prop))
+
+fbx_models = {}
+fbx_name_to_id = {}
 for e in objects.elems:
     if e.id == b'Model':
-        name = e.props[1].split(b'\x00')[0].decode('utf-8', errors='replace')
+        mid = int(e.props[0])
+        nm = e.props[1].split(b'\x00')[0].decode('utf-8', errors='replace')
         p70 = next((s for s in e.elems if s.id == b'Properties70'), None)
+        tr = Vector((0.0, 0.0, 0.0))
+        rot = Vector((0.0, 0.0, 0.0))
+        pre = Vector((0.0, 0.0, 0.0))
+        post = Vector((0.0, 0.0, 0.0))
         sca = Vector((1.0, 1.0, 1.0))
         if p70:
             for p in p70.elems:
-                pname = p.props[0].decode('utf-8', errors='replace')
-                if pname == 'Lcl Scaling':
+                pn = p.props[0].decode('utf-8', errors='replace')
+                if pn == 'Lcl Translation':
+                    tr = Vector((float(p.props[4]), float(p.props[5]), float(p.props[6])))
+                elif pn == 'Lcl Rotation':
+                    rot = Vector((float(p.props[4]), float(p.props[5]), float(p.props[6])))
+                elif pn == 'PreRotation':
+                    pre = Vector((float(p.props[4]), float(p.props[5]), float(p.props[6])))
+                elif pn == 'PostRotation':
+                    post = Vector((float(p.props[4]), float(p.props[5]), float(p.props[6])))
+                elif pn == 'Lcl Scaling':
                     sca = Vector((float(p.props[4]), float(p.props[5]), float(p.props[6])))
-        lcl_scales[name] = sca
+        fbx_models[mid] = {"name": nm, "T": tr, "R": rot, "Pre": pre, "Post": post, "S": sca}
+        fbx_name_to_id[nm] = mid
 
-# 2. Import Swoop source FBX into clean scene
+fbx_model_parent = {
+    ch: pa
+    for pa, clist in parent_to_children.items() if pa in fbx_models
+    for ch, _ in clist if ch in fbx_models
+}
+
+idle_stack = next(e for e in objects.elems if e.id == b'AnimationStack' and b'vehicle_idle01' in e.props[1])
+idle_layers = set(
+    ch for ch, _ in parent_to_children[int(idle_stack.props[0])]
+    if id_to_elem[ch].id == b'AnimationLayer'
+)
+
+fbx_curves = {}
+for mid in fbx_models:
+    for ch, prop in parent_to_children.get(mid, []):
+        ce = id_to_elem.get(ch)
+        if ce and ce.id == b'AnimationCurveNode':
+            if any(pa in idle_layers for pa, _ in child_to_parents.get(ch, [])):
+                for cch, cprop in parent_to_children.get(ch, []):
+                    cce = id_to_elem.get(cch)
+                    if cce and cce.id == b'AnimationCurve':
+                        kt = [t / FBX_SECOND for t in next(x.props[0] for x in cce.elems if x.id == b'KeyTime')]
+                        kv = list(next(x.props[0] for x in cce.elems if x.id == b'KeyValueFloat'))
+                        fbx_curves[(mid, prop, cprop)] = (kt, kv)
+
+def eval_fbx_scalar(mid: int, prop_name: str, axis_idx: int, t_sec: float, default_val: float) -> float:
+    axis_key = ('d|X', 'd|Y', 'd|Z')[axis_idx]
+    entry = fbx_curves.get((mid, prop_name, axis_key))
+    if not entry:
+        return default_val
+    kt, kv = entry
+    n = len(kt)
+    if n == 0:
+        return default_val
+    if t_sec <= kt[0]:
+        return kv[0]
+    if t_sec >= kt[-1]:
+        return kv[-1]
+    i = bisect.bisect_right(kt, t_sec) - 1
+    i = max(0, min(i, n - 2))
+    t0, t1 = kt[i], kt[i + 1]
+    v0, v1 = kv[i], kv[i + 1]
+    u = (t_sec - t0) / max(t1 - t0, 1e-9)
+    def slope(idx):
+        if idx == 0:
+            return (kv[1] - kv[0]) / max(kt[1] - kt[0], 1e-9) if n > 1 else 0.0
+        if idx == n - 1:
+            return (kv[-1] - kv[-2]) / max(kt[-1] - kt[-2], 1e-9)
+        return (kv[idx + 1] - kv[idx - 1]) / max(kt[idx + 1] - kt[idx - 1], 1e-9)
+    m0 = slope(i) * (t1 - t0)
+    m1 = slope(i + 1) * (t1 - t0)
+    u2, u3 = u * u, u * u * u
+    return (2 * u3 - 3 * u2 + 1) * v0 + (u3 - 2 * u2 + u) * m0 + (-2 * u3 + 3 * u2) * v1 + (u3 - u2) * m1
+
+def euler_deg_xyz(v: Vector) -> Matrix:
+    return Euler((math.radians(v.x), math.radians(v.y), math.radians(v.z)), 'XYZ').to_matrix().to_4x4()
+
+def scale_mat(s: Vector) -> Matrix:
+    m = Matrix.Identity(4)
+    m[0][0], m[1][1], m[2][2] = s.x, s.y, s.z
+    return m
+
+def fbx_local_mat(mid: int, t_sec=None) -> Matrix:
+    info = fbx_models[mid]
+    if t_sec is None:
+        t, r, s = info["T"], info["R"], info["S"]
+    else:
+        t = Vector((eval_fbx_scalar(mid, 'Lcl Translation', i, t_sec, info["T"][i]) for i in range(3)))
+        r = Vector((eval_fbx_scalar(mid, 'Lcl Rotation', i, t_sec, info["R"][i]) for i in range(3)))
+        s = Vector((eval_fbx_scalar(mid, 'Lcl Scaling', i, t_sec, info["S"][i]) for i in range(3)))
+    return (
+        Matrix.Translation(t)
+        @ euler_deg_xyz(info["Pre"])
+        @ euler_deg_xyz(r)
+        @ euler_deg_xyz(info["Post"]).inverted()
+        @ scale_mat(s)
+    )
+
+# 2. Import Swoop source FBX into clean scene (for Swoop.001 vertices, UVs & vertex groups)
 bpy.ops.wm.read_factory_settings(use_empty=True)
 bpy.ops.import_scene.fbx(filepath=str(FBX_SRC))
 
@@ -69,59 +179,42 @@ for o in list(bpy.data.objects):
     if o.name in ["Symbol_DC", "Shadow", "Swoop_Weapon", "Symbol_AB"]:
         bpy.data.objects.remove(o, do_unlink=True)
 
-def scale_mat(s: Vector) -> Matrix:
-    m = Matrix.Identity(4)
-    m[0][0], m[1][1], m[2][2] = s.x, s.y, s.z
+# 3. Compute exact FBX Rest Pose & 58-frame Anim matrices purely in FBX math, then convert Y-up -> Blender Z-up via Rx(+90 deg)
+Rx90 = Euler((math.radians(90.0), 0.0, 0.0), 'XYZ').to_matrix().to_4x4()
+
+fbx_w_rest = {}
+def get_fbx_rest(mid: int) -> Matrix:
+    if mid in fbx_w_rest:
+        return fbx_w_rest[mid]
+    m = fbx_local_mat(mid, None)
+    if mid in fbx_model_parent:
+        m = get_fbx_rest(fbx_model_parent[mid]) @ m
+    fbx_w_rest[mid] = m
     return m
 
-# 3. Compute exact FBX Rest Pose matrices in Armature space (recovering non-unit Lcl Scaling stripped by EditBone)
-w_rest = {}
-def get_w_rest(b):
-    if b.name in w_rest:
-        return w_rest[b.name]
-    s = lcl_scales.get(b.name, Vector((1.0, 1.0, 1.0)))
-    if b.parent is None:
-        w = b.matrix_local @ scale_mat(s)
-    else:
-        eb_rel = b.parent.matrix_local.inverted() @ b.matrix_local
-        w = get_w_rest(b.parent) @ eb_rel @ scale_mat(s)
-    w_rest[b.name] = w
-    return w
-
-for b in arm.data.bones:
-    get_w_rest(b)
-
-act = bpy.data.actions.get("Bip001|vehicle_idle01|Base Layer")
-assert act is not None, "Missing Bip001|vehicle_idle01|Base Layer action!"
-arm.animation_data.action = act
-
-mat_mesh_to_arm = arm.matrix_world.inverted() @ swoop_mesh.matrix_world
-mat_arm_to_world100 = Matrix.Scale(100.0, 4) @ arm.matrix_world
+mesh_model_id = fbx_name_to_id["Swoop"]
+m_mesh_fbx = get_fbx_rest(mesh_model_id)
 
 def evaluate_frame_matrices(frame_num: int):
-    bpy.context.scene.frame_set(frame_num)
-    bpy.context.view_layer.update()
-    w_anim = {}
-    def get_w_anim(pb):
-        if pb.name in w_anim:
-            return w_anim[pb.name]
-        b = pb.bone
-        s = lcl_scales.get(b.name, Vector((1.0, 1.0, 1.0)))
-        if b.parent is None:
-            w = b.matrix_local @ scale_mat(s) @ pb.matrix_basis
-        else:
-            eb_rel = b.parent.matrix_local.inverted() @ b.matrix_local
-            w = get_w_anim(pb.parent) @ eb_rel @ scale_mat(s) @ pb.matrix_basis
-        w_anim[pb.name] = w
-        return w
-    for pb in arm.pose.bones:
-        get_w_anim(pb)
+    t_sec = (frame_num - 1) / 30.0
+    fbx_w_anim = {}
+    def get_fbx_anim(mid: int) -> Matrix:
+        if mid in fbx_w_anim:
+            return fbx_w_anim[mid]
+        m = fbx_local_mat(mid, t_sec)
+        if mid in fbx_model_parent:
+            m = get_fbx_anim(fbx_model_parent[mid]) @ m
+        fbx_w_anim[mid] = m
+        return m
+
     skin_m = {}
     world_b = {}
-    for bname, wr in w_rest.items():
-        wa = w_anim[bname]
-        skin_m[bname] = mat_arm_to_world100 @ wa @ wr.inverted() @ mat_mesh_to_arm
-        world_b[bname] = mat_arm_to_world100 @ wa
+    for mid, minfo in fbx_models.items():
+        bname = minfo["name"]
+        wr = get_fbx_rest(mid)
+        wa = get_fbx_anim(mid)
+        skin_m[bname] = Rx90 @ wa @ wr.inverted() @ m_mesh_fbx
+        world_b[bname] = Rx90 @ wa
     return skin_m, world_b
 
 # 4. Evaluate exact FBX skinning at Frame 1 of vehicle_idle01 into upright horizontal world orientation (+Z=Up, -Y=Forward)
