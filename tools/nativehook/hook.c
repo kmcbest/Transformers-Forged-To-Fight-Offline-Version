@@ -3645,6 +3645,20 @@ void* hook_56(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,voi
             }
             flog("FIXFIGHT_POST: a0=%p pidx=%d bid=%s cc=%.2f",
                  a0, player_idx, cur_bid ? cur_bid : "unknown", post_cc);
+            // Raid nodes attach TowerAttributes (+0x60), whose BlockProficiency gets added onto
+            // the defender's base 0.50 in PlayerAttributes.Init. Guard against bogus >=1.00 stacks.
+            void* tower_attr = *(void**)((char*)a0 + 0x60);
+            void* bp_stat = *(void**)((char*)a0 + 0x108);
+            if (tower_attr && obj_ok(tower_attr) && bp_stat && obj_ok(bp_stat)) {
+                typedef float (*fn_get_bp_t)(void*, void*);
+                float cur_bp = ((fn_get_bp_t)(g_base + 0xDAC90C))(a0, NULL); // get_BlockProficiency
+                if (cur_bp >= 0.99f) {
+                    ((void(*)(void*, float, float, void*))(g_base + 0xCCD998))(bp_stat, 0.5f, 0.5f, NULL); // InitBaseValues
+                    ((void(*)(void*, void*))(g_base + 0xCC48DC))(bp_stat, NULL); // ResetToModifiedBase
+                    ((void(*)(void*, void*))(g_base + 0xCC4908))(bp_stat, NULL); // Commit
+                    flog("FIXFIGHT_TOWER_BP: pidx=%d tower=%p block_proficiency %.2f -> 0.50", player_idx, tower_attr, cur_bp);
+                }
+            }
             if (player_idx == 0) {
                 const char* cur_qid = tftf_quest_get_current_qid();
                 int is_fembots = (cur_qid && strcmp(cur_qid, "1.1.6") == 0);
