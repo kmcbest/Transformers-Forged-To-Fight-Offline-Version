@@ -146,23 +146,12 @@
       "id": 1794966881655,
       "title_zh": "暴击几率",
       "title_en": "Crit Rate",
-      "desc_zh": "连击数每增加5，获得1层6%的暴击几率增益，被敌人命中打断连击时全部移除。",
+      "desc_zh": "连击数每增加5，获得1层12%的暴击几率增益，被敌人命中打断连击时全部移除。",
       "desc_en": "",
       "pua_icon": "E40D",
       "category": "passive",
       "status": "implemented",
       "sort_order": 5
-    },
-    {
-      "id": 1794966881656,
-      "title_zh": "暴击伤害",
-      "title_en": "Crit Damage",
-      "desc_zh": "连击数每增加5，获得1层12%的暴击伤害增益，被敌人命中打断连击时全部移除。",
-      "desc_en": "",
-      "pua_icon": "E906",
-      "category": "passive",
-      "status": "implemented",
-      "sort_order": 6
     },
     {
       "id": 1794966881657,

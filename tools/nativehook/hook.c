@@ -759,8 +759,6 @@ static volatile uint64_t s_p0_last_dash_ms = 0;
 static volatile uint64_t s_p0_last_melee_ms = 0;
 static volatile uint64_t s_p0_last_sidestep_ms = 0;
 
-static volatile uint64_t s_sideswipe_last_power_evade_ms = 0;
-static volatile uint64_t s_sideswipe_last_dash_evade_ms = 0;
 static volatile uint64_t s_last_direct_hit_ms[2] = {0, 0};
 
 // --- AI 5-Hit Combo Commitment System (按步就班打完5连保证最大伤害) ---
@@ -5453,8 +5451,6 @@ void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     s_p0_last_melee_ms = 0;
     s_p0_last_sidestep_ms = 0;
     s_p1_last_sidestep_ms = 0;
-    s_sideswipe_last_power_evade_ms = 0;
-    s_sideswipe_last_dash_evade_ms = 0;
     s_last_direct_hit_ms[0] = 0;
     s_last_direct_hit_ms[1] = 0;
 
@@ -7846,31 +7842,6 @@ void* hook_172(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
                 reset_player_attack_chain(pc);
                 skill_dispatch_dodge_enter(1);
             }
-
-            // --- Sideswipe Precision Reactive Evade Gate ---
-            // 严格门禁：普通空闪、闪避近战绝不获得能量；
-            // 唯有当对方刚刚射出远程子弹 (600ms内) 或发动冲锋 (500ms内) 时才激活回能与暴伤！
-            const char* who_dodge = (pidx == 0) ? g_p0_bot_id : g_p1_bot_id;
-            if (who_dodge && strstr(who_dodge, "sideswipe") != NULL) {
-                uint64_t now_ms = propgo_now_ms();
-                uint64_t opp_shot_ms = (pidx == 0) ? g_p1_last_shot_ms : g_p0_last_shot_ms;
-                uint64_t opp_dash_ms = (pidx == 0) ? s_p1_last_dash_ms : s_p0_last_dash_ms;
-                // 1. 闪避远程普通攻击和远程重击: 获得13%能量 (1秒内)
-                if (opp_shot_ms > 0 && now_ms >= opp_shot_ms && (now_ms - opp_shot_ms <= 600) && (now_ms - s_sideswipe_last_power_evade_ms > 700)) {
-                    s_sideswipe_last_power_evade_ms = now_ms;
-                    skill_add_mana(pidx, 0.39f);
-                    skill_apply_buff_dur(pidx, "sideswipe_evade_ranged_power", 1.0f);
-                    combat_overlay_push("[%s] 极速闪避远程！获得+13%%能量！", pidx == 0 ? "横炮" : "敌方横炮");
-                    flog("SIDESWIPE_EVADE_RANGED (DODGE_ENTER): P%d evaded shot (dt=%llu), gained 13%% power", pidx, (unsigned long long)(now_ms - opp_shot_ms));
-                }
-                // 2. 闪避冲锋攻击: 获得 +108% 暴击伤害 (6秒内)
-                if (opp_dash_ms > 0 && now_ms >= opp_dash_ms && (now_ms - opp_dash_ms <= 500) && (now_ms - s_sideswipe_last_dash_evade_ms > 700)) {
-                    s_sideswipe_last_dash_evade_ms = now_ms;
-                    skill_apply_buff_dur(pidx, "sideswipe_evade_dash_crit_damage", 6.0f);
-                    combat_overlay_push("[%s] 闪避冲锋！暴击伤害提升+108%%！", pidx == 0 ? "横炮" : "敌方横炮");
-                    flog("SIDESWIPE_EVADE_DASH (DODGE_ENTER): P%d evaded dash (dt=%llu), gained +108%% crit dmg", pidx, (unsigned long long)(now_ms - opp_dash_ms));
-                }
-            }
         }
     });
     return r;
@@ -8739,28 +8710,7 @@ void* hook_186(void* this_pc, void* hitResult, void* method) {
                     }
                 }
 
-                // --- 横炮实机真实规避确认 (RegisterHitResult 判定未命中/规避) ---
-                const char* victim_id = (p_idx == 0) ? g_p0_bot_id : g_p1_bot_id;
-                if (victim_id && strstr(victim_id, "sideswipe") != NULL) {
-                    uint64_t now_ms = propgo_now_ms();
-                    int is_ranged_attack = (atk_level == 8 || (atk_level == 4 && bot_has_ranged_heavy(p_idx == 0 ? g_p1_bot_id : g_p0_bot_id)));
-                    if (is_ranged_attack && (now_ms - s_sideswipe_last_power_evade_ms > 700)) {
-                        s_sideswipe_last_power_evade_ms = now_ms;
-                        skill_add_mana(p_idx, 0.39f);
-                        skill_apply_buff_dur(p_idx, "sideswipe_evade_ranged_power", 1.0f);
-                        combat_overlay_push("[%s] 极速闪避远程！获得+13%%能量！", p_idx == 0 ? "横炮" : "敌方横炮");
-                        flog("SIDESWIPE_EVADE_RANGED (REG_HIT): P%d evaded ranged attack (al=%d), gained 13%% power", p_idx, atk_level);
-                    }
-                    int is_dash_attack = (atk_level == 32 || atk_level == 2);
-                    if (is_dash_attack && (now_ms - s_sideswipe_last_dash_evade_ms > 700)) {
-                        s_sideswipe_last_dash_evade_ms = now_ms;
-                        skill_apply_buff_dur(p_idx, "sideswipe_evade_dash_crit_damage", 6.0f);
-                        combat_overlay_push("[%s] 闪避冲锋！暴击伤害提升+108%%！", p_idx == 0 ? "横炮" : "敌方横炮");
-                        flog("SIDESWIPE_EVADE_DASH (REG_HIT): P%d evaded dash attack (al=%d), gained +108%% crit dmg", p_idx, atk_level);
-                    }
-                }
-
-                // 注：眩晕【追猎】已迁移至统一的终态结算状态机 (ResolveHitResult + ResolveAttackEvent / Projectile.OnDisable -> on_attack_ended)
+                // 注：横炮闪避判定与眩晕【追猎】已迁移至统一的终态结算状态机 (ResolveHitResult + ResolveAttackEvent / Projectile.OnDisable -> on_attack_ended)
                 // 严禁在 RegisterHitResult 逐帧脏回调中判定落空！
             } else {
                 s_current_hit_active = 1;
@@ -9834,6 +9784,16 @@ uint64_t skill_get_last_sidestep_ms(int player_index) {
     if (player_index == 0) return s_p0_last_sidestep_ms;
     if (player_index == 1) return s_p1_last_sidestep_ms;
     return 0;
+}
+
+uint64_t skill_get_last_shot_ms(int player_index) {
+    if (player_index == 0) return g_p0_last_shot_ms;
+    if (player_index == 1) return g_p1_last_shot_ms;
+    return 0;
+}
+
+int skill_bot_has_ranged_heavy(const char* bot_id) {
+    return bot_has_ranged_heavy(bot_id);
 }
 
 // slot 188 (0x00EEFB44): BuffsController.ApplyBuff(BuffsController applicant, StatModifier statModifier, bool updateAttributes, bool useOverrideDuration, float overrideDuration)

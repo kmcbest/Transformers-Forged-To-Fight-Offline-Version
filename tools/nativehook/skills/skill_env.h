@@ -91,6 +91,8 @@ uint64_t skill_get_last_dash_ms(int player_index);
 uint64_t skill_get_last_melee_ms(int player_index);
 uint64_t skill_get_last_backdash_ms(int player_index);
 uint64_t skill_get_last_sidestep_ms(int player_index);
+uint64_t skill_get_last_shot_ms(int player_index);
+int skill_bot_has_ranged_heavy(const char* bot_id);
 
 #ifdef __cplusplus
 }

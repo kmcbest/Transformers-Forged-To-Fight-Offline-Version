@@ -10,30 +10,27 @@ Bot ID: blackout_cin_tf
 【官方技能真理源对照 (来自 character_abilities 数据库，共 14 条)】：
 -----------------------------------------------------------------------------
 1. [被动 - 暴击几率 / Crit Rate] (PUA: \uE40D)
-   - 连击数每增加5，获得1层6%的暴击几率增益，被敌人命中打断连击时全部移除。
+   - 连击数每增加5，获得1层12%的暴击几率增益，被敌人命中打断连击时全部移除。
 
-2. [被动 - 暴击伤害 / Crit Damage] (PUA: \uE906)
-   - 连击数每增加5，获得1层12%的暴击伤害增益，被敌人命中打断连击时全部移除。
-
-3. [被动 - 无尽怒火 / Infinite Fury] (PUA: \uE906)
+2. [被动 - 无尽怒火 / Infinite Fury] (PUA: \uE906)
    - 当暴击率超过100%时，溢出的每1%暴击率会转化为1%暴击伤害增益，这个增益会在暴击率低于100%时移除。
 
-4. [被动 - 燃烧 / Heavy Attack Burn] (PUA: \uE41D)
+3. [被动 - 燃烧 / Heavy Attack Burn] (PUA: \uE41D)
    - 重击如果暴击，100%概率造成燃烧，施加攻击力80%的伤害，持续6秒。
 
-5. [特殊技 1 - 能量炮 / SP1 Unblockable & Special Damage Boost] (PUA: \uE41F, \uE41C)
+4. [特殊技 1 - 能量炮 / SP1 Unblockable & Special Damage Boost] (PUA: \uE41F, \uE41C)
    - 最后1击不可防御 // 最后一击的时间内出现浅紫色图标 (由 skill_blackout.c 精准控制时间窗)
    - 技能期间提升30%的特殊伤害 (SP1 进入挂载，SP1 退出立即移除)。
 
-6. [特殊技 2 - 翼刃回旋 / SP2 Crit Damage & Stackable Bleed] (PUA: \uE906, \uE401)
+5. [特殊技 2 - 翼刃回旋 / SP2 Crit Damage & Stackable Bleed] (PUA: \uE906, \uE401)
    - 技能期间提升60%的暴击伤害 (SP2 启动挂载，SP2 退出立即移除)
    - 每1击暴击时有100%的概率触发流血，可叠加，在3秒内造成攻击力60%的伤害。
 
-7. [特殊技 3 - 猎杀 / SP3 Burn & Stackable Permanent Crit Resistance Debuff] (PUA: \uE41D, \uE409)
+6. [特殊技 3 - 猎杀 / SP3 Burn & Stackable Permanent Crit Resistance Debuff] (PUA: \uE41D, \uE409)
    - 最后一击的暴击率增加50%，如果暴击，100%概率造成燃烧，施加攻击力80%的伤害，持续6秒。
    - 最后一击命中时，向对手施加1层永久暴击抗性减益，在对手身上打出暴击的几率提升20%。//可叠加 (st=99, 由 SP3 终击或退出结算施加 1 层)
 
-8. [觉醒能力 - 追猎 / I'll Hunt You Down!] (PUA: \uE608)
+7. [觉醒能力 - 追猎 / I'll Hunt You Down!] (PUA: \uE608)
    - 当眩晕的普通攻击落空时，他猎杀对手的渴望变得更强，获得1层60%的能量功率增益，持续3秒
    - //仅近战、远程、重击落空（未命中且未被防视为落空，排除对波抵消与反射，包含对手前冲穿弹）时触发，
      S技落空不触发。最大1层，再次触发时刷新倒计时。
@@ -74,12 +71,12 @@ def build_blackout_abilities(base_hp: float = 40519.0, base_atk: float = 3272.0)
 
     # =========================================================================
     # 1. [ID: 1794966881655] 被动 - 连击暴击几率 (Crit Rate)
-    #    连击数每增加5，获得1层6%的暴击几率增益，被敌人命中打断连击时全部移除
+    #    连击数每增加5，获得1层12%的暴击几率增益，被敌人命中打断连击时全部移除
     # =========================================================================
     appr_combo_crit_rate = make_statmod_appearance(
         appr_id="appr_blackout_combo_crit_rate",
         callout_text="暴击几率",
-        desc="连击数每增加5，暴击几率提升6%，连招被打断时移除",
+        desc="连击数每增加5，暴击几率提升12%，连招被打断时移除",
         pua_icon="\uE40D",
         color=AbilityColor.ORANGE_DAMAGE,
         show_callout=True,
@@ -95,7 +92,7 @@ def build_blackout_abilities(base_hp: float = 40519.0, base_atk: float = 3272.0)
         "trs": "",
         "trr": "repeat",
         "c": 1.0,
-        "m": 0.06,
+        "m": 0.12,
         "d": -1.0,
         "s": "none",
         "ta": "self",
@@ -128,62 +125,7 @@ def build_blackout_abilities(base_hp: float = 40519.0, base_atk: float = 3272.0)
     mods.update(m_rem_crit_rate)
 
     # =========================================================================
-    # 2. [ID: 1794966881656] 被动 - 连击暴击伤害 (Crit Damage)
-    #    连击数每增加5，获得1层12%的暴击伤害增益，被敌人命中打断连击时全部移除
-    # =========================================================================
-    appr_combo_crit_dmg = make_statmod_appearance(
-        appr_id="appr_blackout_combo_crit_dmg",
-        callout_text="暴击伤害",
-        desc="连击数每增加5，暴击伤害提升12%，连招被打断时移除",
-        pua_icon="\uE906",
-        color=AbilityColor.ORANGE_DAMAGE,
-        show_callout=True,
-    )
-    mod_combo_crit_dmg = {
-        "id": "blackout_combo_crit_dmg",
-        "t": "crit_damage",
-        "tm": "",
-        "tr": [],
-        "uit": [],
-        "pri": 0,
-        "trm": 0.0,
-        "trs": "",
-        "trr": "repeat",
-        "c": 1.0,
-        "m": 0.12,
-        "d": -1.0,
-        "s": "none",
-        "ta": "self",
-        "mt": "buff",
-        "v": "",
-        "ms": "",
-        "st": 99,
-        "g": "crit_damage",
-        "gc": 0.0,
-        "gcv": "",
-        "rcv": "",
-        "ti": 0,
-        "a": ["appr_blackout_combo_crit_dmg"],
-        "au": [],
-        "rh": 0.0,
-        "ra": 0.0,
-    }
-    validate_appear(appr_combo_crit_dmg)
-    validate_statmod(mod_combo_crit_dmg)
-    appears[appr_combo_crit_dmg["id"]] = appr_combo_crit_dmg
-    mods[mod_combo_crit_dmg["id"]] = mod_combo_crit_dmg
-
-    m_rem_crit_dmg, _ = make_remove_statmod(
-        mod_id="blackout_crit_dmg_remove_on_hit",
-        target_mod_id="blackout_combo_crit_dmg",
-        trigger="",
-        trigger_scope="",
-        show_callout=False,
-    )
-    mods.update(m_rem_crit_dmg)
-
-    # =========================================================================
-    # 3. [ID: 1794966881657] 被动 - 无尽怒火 (Infinite Fury)
+    # 2. [ID: 1794966881657] 被动 - 无尽怒火 (Infinite Fury)
     #    当暴击率超过100%时，溢出的每1%转化为1%暴伤增益，低于100%时移除
     # =========================================================================
     appr_infinite_fury = make_statmod_appearance(

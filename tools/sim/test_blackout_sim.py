@@ -63,11 +63,12 @@ assert_true("blackout_gatling_ranged_buff" not in mods, "加特林机枪已彻�
 assert_true("blackout_sp2_crit_resist_debuff" not in mods, "SP2 暴击抗性减益不存在")
 assert_true("blackout_sp1_crit_resist_debuff" not in mods, "SP1 暴击抗性减益已彻底从 mods 中移除")
 assert_true("blackout_sp1_special_damage" in mods and mods["blackout_sp1_special_damage"]["m"] == 0.30 and mods["blackout_sp1_special_damage"]["d"] == 3.5, "SP1 特殊伤害 (+30%, 3.5s) 定义正确")
-assert_true(mods["blackout_combo_crit_rate"]["m"] == 0.06, "被动暴击率每层修正为 6%")
-assert_true(mods["blackout_combo_crit_dmg"]["m"] == 0.12, "被动暴击伤害每层修正为 12%")
+assert_true(mods["blackout_combo_crit_rate"]["m"] == 0.12, "被动暴击率每层修正为 12%")
+assert_true("blackout_combo_crit_dmg" not in mods and "blackout_crit_dmg_remove_on_hit" not in mods, "被动 5 连击叠加暴击伤害技能已移除")
+assert_true("appr_blackout_combo_crit_dmg" not in appears, "被动 5 连击暴击伤害外观已移除")
 assert_true(mods["blackout_sp2_crit_damage"]["m"] == 0.60, "SP2 暴击伤害已修正为 60%")
 assert_true(mods["blackout_sp2_crit_bleed"]["st"] >= 10, "SP2 暴击流血支持可叠加 (st=%d)" % mods["blackout_sp2_crit_bleed"]["st"])
-assert_true(mods["blackout_sp3_crit_resist_debuff"]["st"] >= 10 and "onSpecial3Hit" in mods["blackout_sp3_crit_resist_debuff"]["tr"] and "LastHit" in mods["blackout_sp3_crit_resist_debuff"]["trs"], "SP3 永久暴抗减益由最后一击命中(onSpecial3Hit/LastHit)触发且可叠加")
+assert_true(mods["blackout_sp3_crit_resist_debuff"]["st"] >= 10 and mods["blackout_sp3_crit_resist_debuff"]["tr"] == [] and mods["blackout_sp3_crit_resist_debuff"]["trs"] == "", "SP3 永久暴抗减益遵循二层契约 (tr=[], 可叠加)")
 assert_true(appears["appr_blackout_sp1_unblockable"]["tc"] == "C4BBF8", "SP1 不可防御图标为浅紫色 (C4BBF8)")
 assert_true(mods["blackout_sig_whiff_power_gain"]["t"] == "power_rate" and mods["blackout_sig_whiff_power_gain"]["m"] == 0.60 and mods["blackout_sig_whiff_power_gain"]["d"] == 3.0 and mods["blackout_sig_whiff_power_gain"]["st"] == 1, "获得1层60%能量功率增益持续3秒 (st=1)")
 
@@ -150,6 +151,16 @@ for _ in range(4):
     g_engine.tick(200)
 st = g_engine.get_state()
 assert_true(not has_buff(st, "p0", "gatling"), "连续远程射击不再触发已删除的加特林机枪")
+
+# 6. 被动 5 连击只叠加 12% 暴击几率（不再叠加暴击伤害）与无尽怒火联动
+print("\n--- [TEST 6] 被动 5 连击叠加 12% 暴击几率（无暴伤叠加）与无尽怒火 ---")
+g_engine.reset()
+g_engine.tick(100)
+for _ in range(5):
+    g_engine.attack(0, 1, 0, 1, 0)
+st = g_engine.get_state()
+assert_true(get_buff_stacks(st, "p0", "blackout_combo_crit_rate") == 1, "5 连击获得 1 层暴击几率增益")
+assert_true(not has_buff(st, "p0", "blackout_combo_crit_dmg"), "5 连击不再叠加暴击伤害增益")
 
 print("\n===========================================================================")
 print("✨ 恭喜！眩晕全机制与统一“落空”状态机全部通过自动化门禁测试！")

@@ -9,8 +9,8 @@
 // Bot ID: blackout_cin_tf
 // 职业: 破坏分子 (Demolitions / demo) | 阵营: 霸天虎 (Decepticon)
 // ===========================================================================
-// 1. [被动 - 暴击几率 & 暴击伤害]
-//    - 连击数每增加 5，获得 1 层 6% 暴击率与 1 层 12% 暴击伤害 (上限 99 层)。
+// 1. [被动 - 暴击几率]
+//    - 连击数每增加 5，获得 1 层 12% 暴击几率增益 (上限 99 层)。
 //    - 被敌人命中打断连击时，全部移除。
 // 2. [被动 - 无尽怒火] (Infinite Fury)
 //    - 真实暴击率 > 100% 时点亮图标，hook_179 实时将溢出暴击率 1:1 转为暴击伤害。
@@ -206,16 +206,15 @@ static void blackout_on_hit_connected(SkillHitContext* ctx) {
         if (!ctx->is_blocked) {
             s_blackout_combo[ap]++;
 
-            // 每增加 5 连击叠加 1 层 6% 暴击率与 12% 暴击伤害
+            // 每增加 5 连击叠加 1 层 12% 暴击几率增益
             if (s_blackout_combo[ap] % 5 == 0) {
                 int stacks = s_blackout_combo[ap] / 5;
                 if (stacks > 99) stacks = 99;
 
                 skill_apply_buff_dur(ap, "blackout_combo_crit_rate", -1.0f);
-                skill_apply_buff_dur(ap, "blackout_combo_crit_dmg", -1.0f);
-                skill_overlay("[%s] %d 连击！暴击几率+6%%, 暴击伤害+12%% (第%d层)！",
+                skill_overlay("[%s] %d 连击！暴击几率+12%% (第%d层)！",
                               ap == 0 ? "眩晕" : "敌方眩晕", s_blackout_combo[ap], stacks);
-                skill_log("BLACKOUT: P%d combo reached %d -> applied crit rate & dmg layer %d",
+                skill_log("BLACKOUT: P%d combo reached %d -> applied crit rate +12%% layer %d",
                           ap, s_blackout_combo[ap], stacks);
             }
         }
@@ -296,7 +295,6 @@ static void blackout_on_hitreact_enter(int player_index) {
         s_blackout_fury_active[player_index] = 0;
 
         skill_consume_buff(player_index, "blackout_combo_crit_rate", 99);
-        skill_consume_buff(player_index, "blackout_combo_crit_dmg", 99);
         skill_consume_buff(player_index, "blackout_infinite_fury_crit_dmg", 99);
     }
 }

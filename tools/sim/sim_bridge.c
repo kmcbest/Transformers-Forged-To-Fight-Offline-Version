@@ -295,7 +295,7 @@ float skill_get_total_crit_chance(int player_index) {
         const char* id = self->buffs[i].mod_id;
         int st = self->buffs[i].stacks;
         if (strstr(id, "blackout_combo_crit_rate") != NULL) {
-            total += 0.06f * st;
+            total += 0.12f * st;
         } else if (strstr(id, "crit_rate") != NULL && strstr(id, "crit_resist") == NULL) {
             total += 0.30f * st;
         }
@@ -516,6 +516,29 @@ uint64_t skill_get_last_backdash_ms(int player_index) {
 
 uint64_t skill_get_last_sidestep_ms(int player_index) {
     (void)player_index;
+    return 0;
+}
+
+uint64_t skill_get_last_shot_ms(int player_index) {
+    if (player_index >= 0 && player_index < 2) {
+        return g_players[player_index].last_shot_ms;
+    }
+    return 0;
+}
+
+int skill_bot_has_ranged_heavy(const char* bot_id) {
+    if (!bot_id || !bot_id[0]) return 0;
+    static const char* s_ranged_heavy_bots[] = {
+        "barricade", "blaster", "bludgeon", "cliffjumper", "galvatron",
+        "grimlock", "hound", "ironhide", "jazz", "jetfire",
+        "megatron", "megatronus", "mixmaster", "necrotronus", "plane",
+        "rodimus", "scorponok", "sharkticon", "shockwave", "starscream",
+        "slipstream", "soundwave", "soundblast", "tantrum", "thundercracker",
+        "ultramagnus", "waspinator", NULL
+    };
+    for (int i = 0; s_ranged_heavy_bots[i]; i++) {
+        if (strstr(bot_id, s_ranged_heavy_bots[i]) != NULL) return 1;
+    }
     return 0;
 }
 
@@ -856,7 +879,7 @@ SIM_API int sim_dodge(int player_idx, int dodge_type) {
         }
         push_floater(player_idx, 4, 0.0f, "闪避");
         skill_log("SIM: P%d reactively EVADED incoming ranged shot from P%d!", player_idx, opp_idx);
-        if (strstr(c->bot_id, "sideswipe") != NULL) {
+        if (strstr(c->bot_id, "sideswipe_gs") != NULL) {
             skill_add_mana(player_idx, 0.39f); // 13% 能量
             sim_inject_buff(player_idx, "sideswipe_evade_ranged_power", 1.0f, 1);
             skill_overlay("[横炮] 极速闪避远程！获得+13%%能量！");
@@ -867,7 +890,7 @@ SIM_API int sim_dodge(int player_idx, int dodge_type) {
 
     // 响应式规避对方刚刚发起的冲锋攻击 (500ms 内):
     if (g_sim_clock_ms - opp->last_dash_ms <= 500) {
-        if (strstr(c->bot_id, "sideswipe") != NULL) {
+        if (strstr(c->bot_id, "sideswipe_gs") != NULL) {
             sim_inject_buff(player_idx, "sideswipe_evade_dash_crit_damage", 6.0f, 1);
             skill_overlay("[横炮] 闪避冲锋！暴击伤害提升108%！");
             push_floater(player_idx, 1, 0.0f, "+108% 暴击伤害");
@@ -1081,7 +1104,7 @@ SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
         if (g_sim_clock_ms < victim->dodge_end_ms) {
             out_evade = 1;
             skill_log("SIM_ATTACK: P%d ranged shot was EVADED by P%d (active dodge window)!", attacker_idx, target_idx);
-            if (strstr(victim->bot_id, "sideswipe") != NULL) {
+            if (strstr(victim->bot_id, "sideswipe_gs") != NULL) {
                 skill_add_mana(target_idx, 0.39f);
                 sim_inject_buff(target_idx, "sideswipe_evade_ranged_power", 1.0f, 1);
                 skill_overlay("[横炮] 极速闪避远程！获得+13%%能量！");
@@ -1095,7 +1118,7 @@ SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
         atker->last_dash_ms = g_sim_clock_ms;
         if (g_sim_clock_ms < victim->dodge_end_ms) {
             out_evade = 1;
-            if (strstr(victim->bot_id, "sideswipe") != NULL) {
+            if (strstr(victim->bot_id, "sideswipe_gs") != NULL) {
                 sim_inject_buff(target_idx, "sideswipe_evade_dash_crit_damage", 6.0f, 1);
                 skill_overlay("[横炮] 闪避冲锋！暴击伤害提升108%！");
                 push_floater(target_idx, 1, 0.0f, "+108% 暴击伤害");

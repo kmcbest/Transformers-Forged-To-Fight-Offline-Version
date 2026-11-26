@@ -753,6 +753,23 @@ def test_sideswipe_abilities():
             assert_true(dec.get("pua") == expected_sideswipe_puas[mid],
                         f"{mid} PUA icon mismatch: expected {expected_sideswipe_puas[mid]}, got {dec.get('pua')}")
 
+    # 6. 验证电影横炮 (sideswipe_cin_rotf) 严格隔离，绝不误触发任何 G1 横炮技能
+    g_engine.init("sideswipe_cin_rotf", "sideswipe_gs", 39343.0, 34882.0, 3366.0, 3515.0)
+    g_engine.reset()
+    for _ in range(7):
+        g_engine.attack(1, 1, 0, 0, 0) # P1 打 P0 电影横炮 7 次
+    g_engine.attack(0, 32, 0, 1, 0)    # P0 电影横炮打 SP2
+    g_engine.dodge(0, 1)               # P0 侧闪
+    mana_cin_before_shot = g_engine.get_state()["p0"]["mana"]
+    g_engine.attack(1, 8, 0, 1, 0)     # P1 对着侧闪中的 P0 电影横炮开枪
+    st_cin = g_engine.get_state()
+    p0_cin_buffs = [b["id"] for b in st_cin["p0"]["buffs"]]
+    assert_true("sideswipe_evade_counter" not in p0_cin_buffs, "Movie Sideswipe strictly does NOT gain sideswipe_evade_counter")
+    assert_true("sideswipe_melee_evade" not in p0_cin_buffs, "Movie Sideswipe strictly does NOT gain sideswipe_melee_evade")
+    assert_true("sideswipe_s2_melee_evade" not in p0_cin_buffs, "Movie Sideswipe strictly does NOT gain sideswipe_s2_melee_evade")
+    assert_true("sideswipe_evade_ranged_power" not in p0_cin_buffs, "Movie Sideswipe strictly does NOT gain sideswipe_evade_ranged_power")
+    assert_true(abs(st_cin["p0"]["mana"] - mana_cin_before_shot) < 0.01, f"Movie Sideswipe strictly does NOT trigger G1 evade mana gain (got {st_cin['p0']['mana']:.2f})")
+
 def test_necrotronus_abilities():
     print("\n--- [TEST 13] Necrotronus: Titan Charges, Overwhelming Power & Bleed, Power Debuff, SP Consumption ---")
     g_engine.init("necrotronus_gs_kabam", "bonecrusher_cin_rotf", 35484.0, 15000.0, 2519.0, 1000.0)

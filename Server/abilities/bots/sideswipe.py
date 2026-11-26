@@ -65,7 +65,7 @@ Bot ID: sideswipe_gs
 12. [被动 - 闪避远程回能] (ID: 2839, category: passive)
     - 官方描述: "闪避远程普通攻击和远程重击时，1秒内获得最大能量的13%。"
     - 实现方案:
-      sideswipe_evade_ranged_power: 闪避远程攻击获得 13% 能量 (39 点 Mana)。
+      sideswipe_evade_ranged_power: 闪避远程攻击获得 13% 能量 (117 点 Mana / 900 满槽)。
 
 13. [被动 - 闪避冲锋暴伤] (ID: 2840, pua_icon: 0xe406, category: passive)
     - 官方描述: "闪避对方前冲攻击时，获得暴击伤害增益，提升108%的暴击伤害，持续6秒"
@@ -423,7 +423,7 @@ def build_sideswipe_abilities(base_hp: float = 26794.0, base_atk: float = 2698.0
         "trs": "",
         "trr": "repeat",
         "c": 1.0,
-        "m": 39.0, # 13% 能量 (39 点 Mana)
+        "m": 117.0, # 13% 最大能量 (117 点 Mana, 满槽 900)
         "d": 1.0,
         "s": "none",
         "ta": "self",
