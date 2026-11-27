@@ -21,9 +21,9 @@ Bot ID: nemesisprime_gs_voyager2015
 
 from ..core import (
     AbilityColor,
+    make_armor_break_statmod,
     make_statmod_appearance,
-    make_heal_statmod,
-    validate_color_code,
+    validate_appear,
     validate_statmod,
 )
 from ..registry import register_bot
@@ -31,7 +31,7 @@ from ..registry import register_bot
 BOT_ID = "nemesisprime_gs_voyager2015"
 
 
-@register_bot(BOT_ID, name_zh="暗天陨", desc="战术系堕落领袖，黑暗能量周期涌动，重击驱散增益并增伤，赝品领导模块特技吸血，SP3全普攻不可防御")
+@register_bot(BOT_ID, name_zh="暗天陨", desc="战术系堕落领袖，黑暗能量周期涌动与脉冲克隆，重击/SP2驱散，SP1复刻减益，赝品领导模块特技吸血，SP3全普攻不可防御")
 def build_nemesisprime_abilities(base_hp: float = 31500.0, base_atk: float = 2380.0):
     mods = {}
     appears = {}
@@ -94,8 +94,8 @@ def build_nemesisprime_abilities(base_hp: float = 31500.0, base_atk: float = 238
         "id": "nemesisprime_dark_energy",
         "t": "attack_buff",
         "tm": "",
-        "tr": ["onStart"],
-        "uit": ["onStart"],
+        "tr": [],
+        "uit": [],
         "pri": 0,
         "trm": 0.0,
         "trs": "",
@@ -123,11 +123,56 @@ def build_nemesisprime_abilities(base_hp: float = 31500.0, base_atk: float = 238
     mods["nemesisprime_dark_energy"] = mod_dark
     appears["appr_nemesisprime_dark_energy"] = appr_dark
 
-    # 2. 重击驱散 (ID: 3218): 重击命中驱散近战/护甲增益
+    # 1c. 被动 - 亚空间脉冲克隆体 (ID: 3217): 复制对手近战或护甲增益 (25% + 5%/层)
+    appr_cloner = make_statmod_appearance(
+        appr_id="appr_nemesisprime_subspace_cloner",
+        callout_text="亚空间脉冲克隆",
+        desc="对手获得近战增益或护甲增益时，有概率复制同强度同时长增益至自身",
+        short_desc="克隆近战/护甲增益",
+        pua_icon="\uE90A",
+        color=AbilityColor.DARK_PURPLE_SPECIAL,
+        show_callout=True,
+        active_desc="亚空间克隆成功",
+    )
+    mod_cloner = {
+        "id": "nemesisprime_subspace_cloner",
+        "t": "combat",
+        "tm": "",
+        "tr": [],
+        "uit": [],
+        "pri": 0,
+        "trm": 0.0,
+        "trs": "",
+        "trr": "repeat",
+        "c": 1.0,
+        "m": 0.0,
+        "d": 1.5,
+        "s": "none",
+        "ta": "self",
+        "mt": "buff",
+        "v": "",
+        "ms": "",
+        "st": 1,
+        "g": "subspace_cloner",
+        "gc": 0.0,
+        "gcv": "",
+        "rcv": "",
+        "ti": 0,
+        "a": ["appr_nemesisprime_subspace_cloner"],
+        "au": [],
+        "rh": 0.0,
+        "ra": 0.0,
+    }
+    validate_appear(appr_cloner)
+    validate_statmod(mod_cloner)
+    mods["nemesisprime_subspace_cloner"] = mod_cloner
+    appears["appr_nemesisprime_subspace_cloner"] = appr_cloner
+
+    # 2. 重击驱散 (ID: 3218): 重击命中随机驱散近战/护甲增益 (仅实际驱散成功时呼出)
     appr_dispel = make_statmod_appearance(
         appr_id="appr_nemesisprime_heavy_dispel",
         callout_text="重击驱散",
-        desc="重击驱散目标一个近战或护甲增益",
+        desc="重击随机驱散目标一个近战或护甲增益",
         short_desc="重击增益驱散",
         pua_icon="\uE950",
         color=AbilityColor.RED_DEBUFF,
@@ -136,20 +181,20 @@ def build_nemesisprime_abilities(base_hp: float = 31500.0, base_atk: float = 238
     )
     mod_dispel = {
         "id": "nemesisprime_heavy_dispel",
-        "t": "passive",
+        "t": "combat",
         "tm": "",
-        "tr": ["onHit"],
-        "uit": ["onHit"],
+        "tr": [],
+        "uit": [],
         "pri": 0,
         "trm": 0.0,
-        "trs": "level=Heavy",
+        "trs": "",
         "trr": "repeat",
         "c": 1.0,
-        "m": 1.0,
-        "d": 0.0,
+        "m": 0.0,
+        "d": 1.0,
         "s": "none",
-        "ta": "self",
-        "mt": "passive",
+        "ta": "opponent",
+        "mt": "debuff",
         "v": "",
         "ms": "",
         "st": 1,
@@ -168,30 +213,30 @@ def build_nemesisprime_abilities(base_hp: float = 31500.0, base_atk: float = 238
     appears["appr_nemesisprime_heavy_dispel"] = appr_dispel
 
     # 3. 觉醒赝品领导模块 (ID: 3221, pua_icon: 0xe503):
-    # a) 特殊技激活时显现 6 秒生命汲取增益 (血条下方显现 E503 倒计时圆环图标与呼出条)
-    appr_mat_buff = make_statmod_appearance(
-        appr_id="appr_nemesisprime_matrix_buff",
+    # 由 skill_nemesis.c 在每段特殊技命中时按实际伤害 25% 调用 skill_heal 精准回血并闪现绿字 503
+    appr_matrix = make_statmod_appearance(
+        appr_id="appr_nemesisprime_matrix_lifesteal",
         callout_text="赝品领导模块",
-        desc="特殊技造成伤害的25%转化为生命值",
+        desc="将特殊技实际造成伤害的25%转化为生命值",
         short_desc="特技吸血25%",
         pua_icon="\uE503",
         color=AbilityColor.GREEN_HEALTH,
-        show_callout=False,
-        active_desc="生命汲取生效中",
+        show_callout=True,
+        active_desc="赝品领导模块回血",
     )
-    mod_mat_buff = {
-        "id": "nemesisprime_matrix_buff",
-        "t": "buff",
+    mod_matrix = {
+        "id": "nemesisprime_matrix_lifesteal",
+        "t": "combat",
         "tm": "",
-        "tr": ["onSpecialActivate"],
+        "tr": [],
         "uit": [],
         "pri": 0,
         "trm": 0.0,
         "trs": "",
         "trr": "repeat",
         "c": 1.0,
-        "m": 1.0,
-        "d": 6.0,
+        "m": 0.0,
+        "d": 1.2,
         "s": "none",
         "ta": "self",
         "mt": "buff",
@@ -203,50 +248,139 @@ def build_nemesisprime_abilities(base_hp: float = 31500.0, base_atk: float = 238
         "gcv": "",
         "rcv": "",
         "ti": 0,
-        "a": ["appr_nemesisprime_matrix_buff"],
+        "a": ["appr_nemesisprime_matrix_lifesteal"],
         "au": [],
         "rh": 0.0,
         "ra": 0.0,
     }
-    validate_statmod(mod_mat_buff)
-    mods["nemesisprime_matrix_buff"] = mod_mat_buff
-    appears["appr_nemesisprime_matrix_buff"] = appr_mat_buff
+    validate_appear(appr_matrix)
+    validate_statmod(mod_matrix)
+    mods["nemesisprime_matrix_lifesteal"] = mod_matrix
+    appears["appr_nemesisprime_matrix_lifesteal"] = appr_matrix
 
-    # b) 特殊技命中即时回血与跳绿字 (与救护车对齐，接入底层 Heal_BuffEffect，每击回复 25% ATK)
-    matrix_heal_amount = float(round(base_atk * 0.25, 2))
-    m_matrix, a_matrix = make_heal_statmod(
-        mod_id="nemesisprime_matrix_lifesteal",
-        duration=0.0,
-        heal_amount=matrix_heal_amount,
-        chance=1.0,
-        trigger="onSpecialHit",
-        trigger_scope="",
-        buff_id="heal",
-        appr_id="appr_nemesisprime_matrix_lifesteal",
-        callout_text="赝品领导模块",
-        pua_icon="\uE503",
+    # 4. SP1 黑暗能量斩: 末击复制自身全部减益至对手 (30%+3%/层, 原强度原时间) + 结束获2层充能
+    appr_sp1_clone = make_statmod_appearance(
+        appr_id="appr_nemesisprime_sp1_clone_debuff",
+        callout_text="黑暗能量斩",
+        desc="把暗天陨身上的全部减益按原强度与原时间复制到对手身上",
+        short_desc="减益转移复刻",
+        pua_icon="\uE90A",
+        color=AbilityColor.DARK_PURPLE_SPECIAL,
         show_callout=True,
+        active_desc="黑暗能量斩复刻",
     )
-    mods.update(m_matrix)
-    appears.update(a_matrix)
+    mod_sp1_clone = {
+        "id": "nemesisprime_sp1_clone_debuff",
+        "t": "combat",
+        "tm": "",
+        "tr": [],
+        "uit": [],
+        "pri": 0,
+        "trm": 0.0,
+        "trs": "",
+        "trr": "repeat",
+        "c": 1.0,
+        "m": 0.0,
+        "d": 1.5,
+        "s": "none",
+        "ta": "opponent",
+        "mt": "debuff",
+        "v": "",
+        "ms": "",
+        "st": 1,
+        "g": "dark_clone_debuff",
+        "gc": 0.0,
+        "gcv": "",
+        "rcv": "",
+        "ti": 0,
+        "a": ["appr_nemesisprime_sp1_clone_debuff"],
+        "au": [],
+        "rh": 0.0,
+        "ra": 0.0,
+    }
+    validate_appear(appr_sp1_clone)
+    validate_statmod(mod_sp1_clone)
+    mods["nemesisprime_sp1_clone_debuff"] = mod_sp1_clone
+    appears["appr_nemesisprime_sp1_clone_debuff"] = appr_sp1_clone
 
-    # 4. SP3 不可防御 (ID: 3224): 基础攻击不可防御 7s (+0.5s/层)
+    # 5. SP2 邪恶之斧: 驱散近战增益 -> 5% 近战减益(4s); 驱散护甲增益 -> 5% 破甲(4s)
+    appr_sp2_melee_debuff = make_statmod_appearance(
+        appr_id="appr_nemesisprime_sp2_melee_debuff",
+        callout_text="近战减益",
+        desc="近战攻击伤害降低 5%（可叠加），持续 4 秒",
+        short_desc="近战减益5%",
+        pua_icon="\uE950",
+        color=AbilityColor.RED_DEBUFF,
+        show_callout=True,
+        active_desc="近战减益生效中",
+    )
+    mod_sp2_melee_debuff = {
+        "id": "nemesisprime_sp2_melee_debuff",
+        "t": "attack_debuff",
+        "tm": "",
+        "tr": [],
+        "uit": [],
+        "pri": 0,
+        "trm": 0.0,
+        "trs": "",
+        "trr": "repeat",
+        "c": 1.0,
+        "m": 0.05,
+        "d": 4.0,
+        "s": "none",
+        "ta": "opponent",
+        "mt": "debuff",
+        "v": "",
+        "ms": "",
+        "st": 10,
+        "g": "melee_debuff",
+        "gc": 0.0,
+        "gcv": "",
+        "rcv": "",
+        "ti": 0,
+        "a": ["appr_nemesisprime_sp2_melee_debuff"],
+        "au": [],
+        "rh": 0.0,
+        "ra": 0.0,
+    }
+    validate_appear(appr_sp2_melee_debuff)
+    validate_statmod(mod_sp2_melee_debuff)
+    mods["nemesisprime_sp2_melee_debuff"] = mod_sp2_melee_debuff
+    appears["appr_nemesisprime_sp2_melee_debuff"] = appr_sp2_melee_debuff
+
+    m_sp2_ab, a_sp2_ab = make_armor_break_statmod(
+        mod_id="nemesisprime_sp2_armor_break",
+        duration=4.0,
+        break_amount=0.05,
+        chance=1.0,
+        trigger="",
+        trigger_scope="",
+        appr_id="appr_nemesisprime_sp2_armor_break",
+        callout_text="破甲",
+        pua_icon="\uE516",
+        stackable=True,
+        max_stacks=10,
+    )
+    mods.update(m_sp2_ab)
+    appears.update(a_sp2_ab)
+
+    # 6. SP3 不可防御 (ID: 3224): 技能结束后基础攻击全部不可防御 7s (+0.5s/层), 消耗全部黑暗能量
     appr_unbl = make_statmod_appearance(
         appr_id="appr_nemesisprime_sp3_unblockable",
-        callout_text="绝对破防",
+        callout_text="不可防御",
         desc="技能结束后基础攻击全部不可防御，持续7秒以上",
-        short_desc="全攻击破防",
+        short_desc="不可防御",
         pua_icon="\uE41F",
         color=AbilityColor.ORANGE_DAMAGE,
         show_callout=True,
-        active_desc="绝对破防生效中",
+        active_desc="不可防御生效中",
     )
     mod_unbl = {
         "id": "nemesisprime_sp3_unblockable",
-        "t": "buff",
+        "t": "unblockable",
         "tm": "",
-        "tr": ["onSpecial3Expiry"],
-        "uit": ["onSpecial3Expiry"],
+        "tr": [],
+        "uit": [],
         "pri": 0,
         "trm": 0.0,
         "trs": "",

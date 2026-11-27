@@ -1,0 +1,51 @@
+{
+  "active": true,
+  "name": "blitzwing_test_04_sp3_universal_clamp_exempt",
+  "banner": "#4 Blitzwing SP3 5层通用永久夹钳(双重阻塞) + 充能/遗迹豁免",
+  "qid": "1.1.1",
+  "auto_fight": 0,
+  "freeze_enemy_ai": 1,
+  "dummy_invincible": 1,
+  "player_invincible": 1,
+  "max_duration_ms": 20000,
+  "p0": {
+    "bid": "blitzwing_gs",
+    "mana": 3.0
+  },
+  "p1": {
+    "bid": "jetfire_gs_leader2014",
+    "mana": 0.0
+  },
+  "p0_script": [
+    { "action": "WAIT", "duration_ms": 500 },
+    { "action": "SP3", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 11000 }
+  ],
+  "p1_script": [
+    { "action": "WAIT", "duration_ms": 8000 },
+    { "action": "APPLY_BUFF", "target": "P1", "id": "jetfire_energy_charge", "dur": -1.0 },
+    { "action": "WAIT", "duration_ms": 400 },
+    { "action": "APPLY_BUFF", "target": "P1", "id": "jetfire_sp1_ranged_buff", "dur": 10.0 },
+    { "action": "WAIT", "duration_ms": 400 },
+    { "action": "APPLY_BUFF", "target": "P0", "id": "jetfire_heavy_shock", "dur": 4.0 },
+    { "action": "WAIT", "duration_ms": 1000 }
+  ],
+  "assertions": {
+    "must_hit_connected": [
+      { "attacker": "P0", "sp": 3, "min_count": 1 }
+    ],
+    "must_apply_buffs": [
+      { "target": "P1", "mod_substr": "blitzwing_clamp_sp3", "min_count": 5 },
+      { "target": "P1", "mod_substr": "jetfire_energy_charge", "min_count": 1 }
+    ],
+    "must_not_apply_buffs": [
+      { "target": "P1", "mod_substr": "jetfire_sp1_ranged_buff" },
+      { "target": "P0", "mod_substr": "jetfire_heavy_shock" }
+    ],
+    "must_log_substrings": [
+      { "substr": "BLITZWING_SP3: P0 SP3 lastHit -> applied 5x blitzwing_clamp_sp3 on P1", "min_count": 1 },
+      { "substr": "BLITZWING_CLAMP: blocked opponent buff 'jetfire_sp1_ranged_buff' via SP3 clamp", "min_count": 1 },
+      { "substr": "BLITZWING_CLAMP: blocked incoming debuff 'jetfire_heavy_shock' via SP3 clamp", "min_count": 1 }
+    ]
+  }
+}

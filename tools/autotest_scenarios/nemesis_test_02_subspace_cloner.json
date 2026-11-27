@@ -1,0 +1,44 @@
+{
+  "active": true,
+  "name": "nemesis_test_02_subspace_cloner",
+  "banner": "#2 Nemesis Prime 亚空间脉冲克隆体 (复制对手护甲与近战增益)",
+  "qid": "1.1.1",
+  "auto_fight": 0,
+  "freeze_enemy_ai": 1,
+  "dummy_invincible": 1,
+  "player_invincible": 1,
+  "max_duration_ms": 16000,
+  "p0": {
+    "bid": "nemesisprime_gs_voyager2015",
+    "mana": 0.0
+  },
+  "p1": {
+    "bid": "ironhide_gs_kabam",
+    "mana": 0.0
+  },
+  "p0_script": [
+    { "action": "WAIT", "duration_ms": 300 },
+    { "action": "APPLY_BUFF", "target": "P0", "id": "nemesisprime_dark_energy", "dur": -1.0, "stacks": 10 },
+    { "action": "WAIT", "duration_ms": 8000 }
+  ],
+  "p1_script": [
+    { "action": "WAIT", "duration_ms": 900 },
+    { "action": "APPLY_BUFF", "target": "P1", "id": "ironhide_sp2_armor_up", "dur": 10.0 },
+    { "action": "WAIT", "duration_ms": 400 },
+    { "action": "APPLY_BUFF", "target": "P1", "id": "ironhide_sp1_melee_buff", "dur": 8.0 },
+    { "action": "WAIT", "duration_ms": 400 },
+    { "action": "APPLY_BUFF", "target": "P1", "id": "ironhide_sp2_armor_up", "dur": 10.0 },
+    { "action": "WAIT", "duration_ms": 400 },
+    { "action": "APPLY_BUFF", "target": "P1", "id": "ironhide_sp1_melee_buff", "dur": 8.0 },
+    { "action": "WAIT", "duration_ms": 400 },
+    { "action": "APPLY_BUFF", "target": "P1", "id": "ironhide_sp2_armor_up", "dur": 10.0 }
+  ],
+  "assertions": {
+    "must_apply_buffs": [
+      { "target": "P0", "mod_substr": "nemesisprime_subspace_cloner", "min_count": 1 }
+    ],
+    "must_log_substrings": [
+      { "substr": "NEMESIS_CLONER: P0 cloned", "min_count": 1 }
+    ]
+  }
+}

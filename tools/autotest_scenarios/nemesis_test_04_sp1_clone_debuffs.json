@@ -1,0 +1,47 @@
+{
+  "active": true,
+  "name": "nemesis_test_04_sp1_clone_debuffs",
+  "banner": "#4 Nemesis Prime SP1 黑暗能量斩 (复制自身减益至对手 + 结束加2层充能)",
+  "qid": "1.1.1",
+  "auto_fight": 0,
+  "freeze_enemy_ai": 1,
+  "dummy_invincible": 1,
+  "player_invincible": 1,
+  "max_duration_ms": 18000,
+  "p0": {
+    "bid": "nemesisprime_gs_voyager2015",
+    "mana": 3.0
+  },
+  "p1": {
+    "bid": "acidstorm_gs_leader2015",
+    "mana": 0.0
+  },
+  "p0_script": [
+    { "action": "WAIT", "duration_ms": 400 },
+    { "action": "APPLY_BUFF", "target": "P0", "id": "nemesisprime_dark_energy", "dur": -1.0, "stacks": 10 },
+    { "action": "APPLY_BUFF", "target": "P0", "id": "acidstorm_heavy_acid", "dur": 8.0 },
+    { "action": "WAIT", "duration_ms": 300 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "SP1", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 3000 },
+    { "action": "SET_MANA", "target": "P0", "mana": 2.0 },
+    { "action": "SP1", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 3000 },
+    { "action": "SET_MANA", "target": "P0", "mana": 2.0 },
+    { "action": "SP1", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 3000 }
+  ],
+  "p1_script": [],
+  "assertions": {
+    "must_hit_connected": [
+      { "attacker": "P0", "sp": 1, "min_count": 3 }
+    ],
+    "must_apply_buffs": [
+      { "target": "P1", "mod_substr": "nemesisprime_sp1_clone_debuff", "min_count": 1 }
+    ],
+    "must_log_substrings": [
+      { "substr": "NEMESIS_SP1: P0 lastHit cloned", "min_count": 1 },
+      { "substr": "NEMESIS_SP1: P0 SP1 ended -> gained +2 dark stacks", "min_count": 3 }
+    ]
+  }
+}

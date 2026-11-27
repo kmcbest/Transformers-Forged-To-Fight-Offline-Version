@@ -1,0 +1,50 @@
+{
+  "active": true,
+  "name": "blitzwing_test_02_clamp_apply_l4_m2_heavy",
+  "banner": "#2 Blitzwing 抑制夹钳命中门禁 (格挡不施加 / L4-M2-破防重击施加)",
+  "qid": "1.1.1",
+  "auto_fight": 0,
+  "freeze_enemy_ai": 1,
+  "dummy_invincible": 1,
+  "player_invincible": 1,
+  "max_duration_ms": 26000,
+  "p0": {
+    "bid": "blitzwing_gs",
+    "mana": 0.0
+  },
+  "p1": {
+    "bid": "ironhide_gs_kabam",
+    "mana": 0.0
+  },
+  "p0_script": [
+    { "action": "WAIT", "duration_ms": 500 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "LIGHT", "repeat": 4 },
+    { "action": "WAIT", "duration_ms": 1200 },
+    { "action": "MEDIUM", "repeat": 2 },
+    { "action": "WAIT", "duration_ms": 2200 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "HEAVY", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 1600 },
+    { "action": "HEAVY", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 1600 },
+    { "action": "HEAVY", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 1600 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "MEDIUM", "repeat": 2 },
+    { "action": "LIGHT", "repeat": 4 },
+    { "action": "WAIT", "duration_ms": 1200 }
+  ],
+  "p1_script": [
+    { "action": "BLOCK", "hold_ms": 4800 },
+    { "action": "WAIT", "duration_ms": 14000 }
+  ],
+  "assertions": {
+    "must_hit_connected": [
+      { "attacker": "P0", "sp": 0, "min_count": 7 }
+    ],
+    "must_apply_buffs": [
+      { "target": "P1", "mod_substr": "blitzwing_clamp_tank", "min_count": 1 }
+    ]
+  }
+}

@@ -128,7 +128,7 @@ def build_blitzwing_abilities(base_hp: float = 38250.0, base_atk: float = 2795.0
         show_callout=True,
     )
     mods["blitzwing_clamp_tank"] = {
-        "id": "blitzwing_clamp_tank", "t": "armor_break", "tm": "", "tr": [],
+        "id": "blitzwing_clamp_tank", "t": "combat", "tm": "", "tr": [],
         "uit": [], "pri": 0, "trm": 0.0, "trs": "", "trr": "repeat",
         "c": 1.0, "m": 0.0, "d": 4.0, "s": "none", "ta": "opponent", "mt": "debuff",
         "v": "", "ms": "", "st": 10, "g": "blitzwing_clamp", "gc": 0.0, "gcv": "",
@@ -147,7 +147,7 @@ def build_blitzwing_abilities(base_hp: float = 38250.0, base_atk: float = 2795.0
         show_callout=True,
     )
     mods["blitzwing_clamp_jet"] = {
-        "id": "blitzwing_clamp_jet", "t": "armor_break", "tm": "", "tr": [],
+        "id": "blitzwing_clamp_jet", "t": "combat", "tm": "", "tr": [],
         "uit": [], "pri": 0, "trm": 0.0, "trs": "", "trr": "repeat",
         "c": 1.0, "m": 0.0, "d": 4.0, "s": "none", "ta": "opponent", "mt": "debuff",
         "v": "", "ms": "", "st": 10, "g": "blitzwing_clamp", "gc": 0.0, "gcv": "",
@@ -166,7 +166,7 @@ def build_blitzwing_abilities(base_hp: float = 38250.0, base_atk: float = 2795.0
         show_callout=True,
     )
     mods["blitzwing_clamp_sp3"] = {
-        "id": "blitzwing_clamp_sp3", "t": "armor_break", "tm": "", "tr": [],
+        "id": "blitzwing_clamp_sp3", "t": "combat", "tm": "", "tr": [],
         "uit": [], "pri": 0, "trm": 0.0, "trs": "", "trr": "repeat",
         "c": 1.0, "m": 0.0, "d": -1.0, "s": "none", "ta": "opponent", "mt": "debuff",
         "v": "", "ms": "", "st": 5, "g": "blitzwing_clamp_sp3", "gc": 0.0, "gcv": "",
@@ -184,10 +184,10 @@ def build_blitzwing_abilities(base_hp: float = 38250.0, base_atk: float = 2795.0
         pua_icon="\uE517", color=AbilityColor.BLUE_DEFENSE, show_callout=True,
     )
     mods["blitzwing_tank_armor"] = {
-        "id": "blitzwing_tank_armor", "t": "armor_buff", "tm": "", "tr": [], "uit": [],
+        "id": "blitzwing_tank_armor", "t": "armor_up", "tm": "", "tr": [], "uit": [],
         "pri": 0, "trm": 0.0, "trs": "", "trr": "repeat", "c": 1.0, "m": 0.20, "d": 5.0,
-        "s": "Armor", "ta": "self", "mt": "buff", "v": "", "ms": "", "st": 1,
-        "g": "", "gc": 0.0, "gcv": "", "rcv": "", "ti": 0, "a": ["appr_blitzwing_tank_armor"],
+        "s": "none", "ta": "self", "mt": "buff", "v": "", "ms": "", "st": 1,
+        "g": "armor_up", "gc": 0.0, "gcv": "", "rcv": "", "ti": 0, "a": ["appr_blitzwing_tank_armor"],
         "au": [], "rh": 0.0, "ra": 0.0,
     }
     appears["appr_blitzwing_tank_armor"] = appr_tank_armor
@@ -199,10 +199,10 @@ def build_blitzwing_abilities(base_hp: float = 38250.0, base_atk: float = 2795.0
         pua_icon="\uE40D", color=AbilityColor.YELLOW_STATUS, show_callout=True,
     )
     mods["blitzwing_jet_crit"] = {
-        "id": "blitzwing_jet_crit", "t": "crit_rate_buff", "tm": "", "tr": [], "uit": [],
+        "id": "blitzwing_jet_crit", "t": "crit_rate", "tm": "", "tr": [], "uit": [],
         "pri": 0, "trm": 0.0, "trs": "", "trr": "repeat", "c": 1.0, "m": 0.30, "d": 7.0,
-        "s": "CritChance", "ta": "self", "mt": "buff", "v": "", "ms": "", "st": 1,
-        "g": "", "gc": 0.0, "gcv": "", "rcv": "", "ti": 0, "a": ["appr_blitzwing_jet_crit"],
+        "s": "none", "ta": "self", "mt": "buff", "v": "", "ms": "", "st": 1,
+        "g": "crit_rate", "gc": 0.0, "gcv": "", "rcv": "", "ti": 0, "a": ["appr_blitzwing_jet_crit"],
         "au": [], "rh": 0.0, "ra": 0.0,
     }
     appears["appr_blitzwing_jet_crit"] = appr_jet_crit
@@ -259,10 +259,10 @@ def build_blitzwing_abilities(base_hp: float = 38250.0, base_atk: float = 2795.0
         pua_icon="\uE517", color=AbilityColor.BLUE_DEFENSE, show_callout=True,
     )
     mods["blitzwing_sw_armor"] = {
-        "id": "blitzwing_sw_armor", "t": "armor_buff", "tm": "", "tr": [], "uit": [],
+        "id": "blitzwing_sw_armor", "t": "armor_up", "tm": "", "tr": [], "uit": [],
         "pri": 0, "trm": 0.0, "trs": "", "trr": "repeat", "c": 1.0, "m": 0.75, "d": 8.0,
-        "s": "Armor", "ta": "self", "mt": "buff", "v": "", "ms": "", "st": 1,
-        "g": "", "gc": 0.0, "gcv": "", "rcv": "", "ti": 0, "a": ["appr_blitzwing_sw_armor"],
+        "s": "none", "ta": "self", "mt": "buff", "v": "", "ms": "", "st": 1,
+        "g": "armor_up", "gc": 0.0, "gcv": "", "rcv": "", "ti": 0, "a": ["appr_blitzwing_sw_armor"],
         "au": [], "rh": 0.0, "ra": 0.0,
     }
     appears["appr_blitzwing_sw_armor"] = appr_sw_armor

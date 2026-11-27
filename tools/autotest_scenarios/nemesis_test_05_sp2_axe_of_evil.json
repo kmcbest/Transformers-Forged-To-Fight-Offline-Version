@@ -1,0 +1,42 @@
+{
+  "active": true,
+  "name": "nemesis_test_05_sp2_axe_of_evil",
+  "banner": "#5 Nemesis Prime SP2 邪恶之斧 (逐击驱散近战/护甲 -> 减益/破甲 + 消耗3层)",
+  "qid": "1.1.1",
+  "auto_fight": 0,
+  "freeze_enemy_ai": 1,
+  "dummy_invincible": 1,
+  "player_invincible": 1,
+  "max_duration_ms": 15000,
+  "p0": {
+    "bid": "nemesisprime_gs_voyager2015",
+    "mana": 2.0
+  },
+  "p1": {
+    "bid": "ironhide_gs_kabam",
+    "mana": 0.0
+  },
+  "p0_script": [
+    { "action": "WAIT", "duration_ms": 400 },
+    { "action": "APPLY_BUFF", "target": "P0", "id": "nemesisprime_dark_energy", "dur": -1.0, "stacks": 10 },
+    { "action": "APPLY_BUFF", "target": "P1", "id": "ironhide_sp1_melee_buff", "dur": 10.0, "stacks": 2 },
+    { "action": "APPLY_BUFF", "target": "P1", "id": "ironhide_sp2_armor_up", "dur": 10.0, "stacks": 2 },
+    { "action": "WAIT", "duration_ms": 300 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "SP2", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 4000 }
+  ],
+  "p1_script": [],
+  "assertions": {
+    "must_hit_connected": [
+      { "attacker": "P0", "sp": 2, "min_count": 2 }
+    ],
+    "must_apply_buffs": [
+      { "target": "P1", "mod_substr": "nemesisprime_sp2_melee_debuff", "min_count": 1 },
+      { "target": "P1", "mod_substr": "nemesisprime_sp2_armor_break", "min_count": 1 }
+    ],
+    "must_log_substrings": [
+      { "substr": "NEMESIS_SP2: P0 hit", "min_count": 2 }
+    ]
+  }
+}

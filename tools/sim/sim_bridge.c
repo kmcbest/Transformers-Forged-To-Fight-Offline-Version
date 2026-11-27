@@ -252,6 +252,84 @@ int skill_accelerate_dots(int player_index, float accel_pct) {
     return count;
 }
 
+static int sim_match_buff_category(const char* b_id, int want_melee, int want_armor) {
+    if (!b_id || !b_id[0]) return 0;
+    if (strstr(b_id, "debuff") != NULL || strstr(b_id, "break") != NULL ||
+        strstr(b_id, "pierce") != NULL || strstr(b_id, "evade") != NULL ||
+        strstr(b_id, "resist") != NULL || strstr(b_id, "gp_") != NULL) {
+        return 0;
+    }
+    int is_armor = strstr(b_id, "armor_up") != NULL || strstr(b_id, "armor_buff") != NULL ||
+                   strstr(b_id, "block_armor") != NULL || strstr(b_id, "_armor") != NULL;
+    int is_melee = strstr(b_id, "melee_buff") != NULL || strstr(b_id, "melee_bonus") != NULL ||
+                   (strstr(b_id, "melee") != NULL && (strstr(b_id, "buff") != NULL || strstr(b_id, "boost") != NULL));
+    return (want_armor && is_armor) || (want_melee && is_melee);
+}
+
+int skill_clone_buff_from_opponent(int dst_player_index, int src_player_index, const char* mod_id) {
+    if (dst_player_index < 0 || dst_player_index > 1 || src_player_index < 0 || src_player_index > 1) return 0;
+    if (!mod_id || !mod_id[0]) return 0;
+    SimCombatant* src = &g_players[src_player_index];
+    for (int i = src->buff_count - 1; i >= 0; i--) {
+        if (strcmp(src->buffs[i].mod_id, mod_id) == 0) {
+            float dur = (src->buffs[i].remaining_ms < 0) ? -1.0f : src->buffs[i].duration_s;
+            return sim_inject_buff(dst_player_index, src->buffs[i].mod_id, dur, 1);
+        }
+    }
+    return 0;
+}
+
+int skill_dispel_random_buff_by_category(int target_player_index, int dispel_melee, int dispel_armor, char* out_removed_id, int out_len) {
+    if (out_removed_id && out_len > 0) out_removed_id[0] = '\0';
+    if (target_player_index < 0 || target_player_index > 1) return 0;
+    SimCombatant* c = &g_players[target_player_index];
+    int cands[MAX_BUFFS];
+    int n = 0;
+    for (int i = 0; i < c->buff_count && n < MAX_BUFFS; i++) {
+        if (sim_match_buff_category(c->buffs[i].mod_id, dispel_melee, dispel_armor)) {
+            cands[n++] = i;
+        }
+    }
+    if (n == 0) return 0;
+    int pick_idx = cands[rand() % n];
+    if (out_removed_id && out_len > 0) {
+        snprintf(out_removed_id, out_len, "%s", c->buffs[pick_idx].mod_id);
+    }
+    if (c->buffs[pick_idx].stacks > 1) {
+        c->buffs[pick_idx].stacks--;
+    } else {
+        for (int j = pick_idx; j < c->buff_count - 1; j++) {
+            c->buffs[j] = c->buffs[j + 1];
+        }
+        c->buff_count--;
+    }
+    return 1;
+}
+
+int skill_copy_self_debuffs_to_opponent(int src_player_index, int dst_player_index) {
+    if (src_player_index < 0 || src_player_index > 1 || dst_player_index < 0 || dst_player_index > 1) return 0;
+    SimCombatant* src = &g_players[src_player_index];
+    static SimBuff snap[MAX_BUFFS];
+    int n = 0;
+    for (int i = 0; i < src->buff_count && n < MAX_BUFFS; i++) {
+        const char* id = src->buffs[i].mod_id;
+        if (strstr(id, "gp_") != NULL || strstr(id, "stun") != NULL) continue;
+        if (strstr(id, "debuff") || strstr(id, "bleed") || strstr(id, "burn") ||
+            strstr(id, "shock") || strstr(id, "acid") || strstr(id, "break") ||
+            strstr(id, "leak") || strstr(id, "lock") || strstr(id, "backfire")) {
+            snap[n++] = src->buffs[i];
+        }
+    }
+    int copied = 0;
+    for (int k = 0; k < n; k++) {
+        float dur = (snap[k].remaining_ms < 0) ? -1.0f : snap[k].duration_s;
+        if (sim_inject_buff(dst_player_index, snap[k].mod_id, dur, snap[k].stacks)) {
+            copied++;
+        }
+    }
+    return copied;
+}
+
 static float s_sim_opponent_distance = 25.0f;
 static int s_sim_in_melee = 0;
 static int s_sim_in_combo = 0;
@@ -810,7 +888,10 @@ SIM_API int sim_inject_buff(int target_idx, const char* mod_id, float duration_s
                                   strstr(mod_id, "tantrum_dash_melee_buff") != NULL ||
                                   strstr(mod_id, "sideswipe_evade_counter") != NULL ||
                                   strstr(mod_id, "dirge_fear_shadow") != NULL ||
-                                  strstr(mod_id, "venom_charge") != NULL);
+                                  strstr(mod_id, "venom_charge") != NULL ||
+                                  strstr(mod_id, "blitzwing_clamp") != NULL ||
+                                  strstr(mod_id, "nemesisprime_dark_energy") != NULL ||
+                                  strstr(mod_id, "nemesisprime_sp2_") != NULL);
             // 滑流专属减益与风刃震击严格限制为单层 (严禁多重叠加，刷新仅重置持续时间)
             if (strstr(mod_id, "slipstream_") != NULL || strstr(mod_id, "windblade_") != NULL) {
                 is_multi_stack = 0;

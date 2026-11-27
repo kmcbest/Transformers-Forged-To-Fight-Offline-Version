@@ -33,11 +33,15 @@ static void blitzwing_on_fight_reset(int player_index) {
         s_switched_this_block[player_index] = 0;
         s_second_wind_triggered[player_index] = 0;
         s_last_debuff_blocked_ms[player_index] = 0;
-        s_opening_armor_pending[player_index] = 1; // 标记正式开战后发放护甲
+        s_opening_armor_pending[player_index] = 2; // 第1 tick 由 sim_reset 跳过，第2 tick (正式开战) 发放护甲
 
         skill_consume_buff(player_index, "blitzwing_jet_mode", 99);
         skill_consume_buff(player_index, "blitzwing_tank_mode", 99);
         skill_consume_buff(player_index, "blitzwing_tank_armor", 99);
+        skill_consume_buff(player_index, "blitzwing_jet_crit", 99);
+        skill_consume_buff(player_index, "blitzwing_sp2_attack_buff", 99);
+        skill_consume_buff(player_index, "blitzwing_sw_armor", 99);
+        skill_consume_buff(player_index, "blitzwing_sw_special", 99);
         skill_apply_buff_dur(player_index, "blitzwing_tank_mode", -1.0f);
 
         skill_overlay("[%s] 登场！默认【坦克形态】(E902)", player_index == 0 ? "闪电" : "敌方闪电");
@@ -59,25 +63,50 @@ static void blitzwing_on_fight_reset(int player_index) {
 static void blitzwing_on_hit_connected(SkillHitContext* ctx) {
     if (!ctx) return;
 
-    // A. 闪电作为受击方 (Defender): 护甲减伤判定
+    int p = ctx->attacker_player_index;
     int def_p = ctx->target_player_index;
+
+    // A. 受击方/攻击方攻击与防御数值修饰
+    // 1. 攻击方持有闪电 SP1 攻击减益: 降低 30% 攻击伤害 (C# 引擎不自动结算 attack_debuff)
+    if (p >= 0 && p < 2 && skill_has_buff(p, "blitzwing_sp1_attack_debuff")) {
+        ctx->modified_damage *= 0.70f;
+        skill_log("BLITZWING: P%d weakened by blitzwing_sp1_attack_debuff (-30%% ATK -> dmg=%.1f)", p, ctx->modified_damage);
+    }
+
+    // 2. 闪电作为受击方 (Defender): 护甲减伤判定
+    // 注: 实机 Android 由 C# PlayerAttributes.GetArmorDR() 原生读取 t="armor_up" 自动扣减;
+    // 桌面模拟器无 C# GetArmorDR()，在 #ifndef __ANDROID__ 中补足精确 75%/20% 减伤与破甲增伤。
+#ifndef __ANDROID__
     if (def_p >= 0 && def_p < 2 && s_blitzwing_active[def_p]) {
-        // 绝处逢生坦克护甲：降低 75% 受到伤害
         if (skill_has_buff(def_p, "blitzwing_sw_armor")) {
             ctx->modified_damage *= 0.25f;
             skill_log("BLITZWING: P%d Second Wind Armor reduced incoming dmg to 25%%", def_p);
         } else if (skill_has_buff(def_p, "blitzwing_tank_armor")) {
-            // 坦克模式 20% 护甲减伤
             ctx->modified_damage *= 0.80f;
             skill_log("BLITZWING: P%d Tank Armor reduced incoming dmg to 80%%", def_p);
         }
     }
+    if (def_p >= 0 && def_p < 2 && skill_has_buff(def_p, "blitzwing_sp1_armor_break")) {
+        ctx->modified_damage *= 1.30f;
+    }
+#endif
 
-    // B. 闪电作为攻击方 (Attacker): 命中与夹钳判定
-    int p = ctx->attacker_player_index;
+    // B. 闪电作为攻击方 (Attacker): 自身攻击/SP增益 + 命中施加夹钳与状态
     if (p < 0 || p >= 2 || !s_blitzwing_active[p]) return;
     int opp = ctx->target_player_index;
     if (opp < 0 || opp >= 2) return;
+
+    // SP2 坦克攻击增益 (+30% 攻击力，C# 引擎不自动结算 attack_buff)
+    if (skill_has_buff(p, "blitzwing_sp2_attack_buff")) {
+        ctx->modified_damage *= 1.30f;
+        skill_log("BLITZWING: P%d blitzwing_sp2_attack_buff (+30%% ATK -> dmg=%.1f)", p, ctx->modified_damage);
+    }
+    // 绝处逢生战机特攻增益 (+75% 特殊伤害)
+    int is_special_hit = (ctx->special_index > 0 || ctx->action_type == 16 || ctx->action_type == 32 || ctx->action_type == 64);
+    if (is_special_hit && skill_has_buff(p, "blitzwing_sw_special")) {
+        ctx->modified_damage *= 1.75f;
+        skill_log("BLITZWING: P%d blitzwing_sw_special (+75%% SP DMG -> dmg=%.1f)", p, ctx->modified_damage);
+    }
 
     // 关键门禁：对方格挡防御 (is_blocked) 时绝不施加抑制夹钳，也绝不触发命中掷骰！
     if (ctx->is_blocked) return;
@@ -120,9 +149,11 @@ static void blitzwing_on_hit_connected(SkillHitContext* ctx) {
         if (current_mode == 1) {
             skill_apply_buff_dur(opp, "blitzwing_sp1_armor_break", 7.0f); // 战机：30% 破甲 7s (E516)
             skill_overlay("[%s] SP1 空袭撕裂！施加【破甲】(E516) + 夹钳(6秒)", p == 0 ? "我方" : "敌方");
+            skill_log("BLITZWING_SP1: P%d Jet SP1 lastHit -> blitzwing_sp1_armor_break + %s (6s) on P%d", p, clamp_id, opp);
         } else {
             skill_apply_buff_dur(opp, "blitzwing_sp1_attack_debuff", 7.0f); // 坦克：30% 攻击减益 7s (E916)
             skill_overlay("[%s] SP1 重炮压制！施加【攻击减益】(E916) + 夹钳(6秒)", p == 0 ? "我方" : "敌方");
+            skill_log("BLITZWING_SP1: P%d Tank SP1 lastHit -> blitzwing_sp1_attack_debuff + %s (6s) on P%d", p, clamp_id, opp);
         }
     }
 
@@ -132,14 +163,17 @@ static void blitzwing_on_hit_connected(SkillHitContext* ctx) {
             if (current_mode == 1) {
                 skill_apply_buff_dur(p, "blitzwing_jet_crit", 7.0f); // 战机首击：30% 暴击率 7s (E40D)
                 skill_overlay("[%s] SP2 破空！获得【暴击几率】(E40D) 7秒！", p == 0 ? "我方" : "敌方");
+                skill_log("BLITZWING_SP2: P%d Jet SP2 hit0 -> blitzwing_jet_crit (+30%% crit, 7s)", p);
             } else {
                 skill_apply_buff_dur(p, "blitzwing_sp2_attack_buff", 7.0f); // 坦克首击：30% 攻击增益 7s (E406)
                 skill_overlay("[%s] SP2 咆哮！获得【攻击增益】(E406) 7秒！", p == 0 ? "我方" : "敌方");
+                skill_log("BLITZWING_SP2: P%d Tank SP2 hit0 -> blitzwing_sp2_attack_buff (+30%% atk, 7s)", p);
             }
         }
         if (ctx->is_last_hit) {
             skill_apply_buff_dur(opp, clamp_id, 8.0f); // 100% 施加 8s 夹钳
             skill_overlay("[%s] SP2 终结！施加【抑制夹钳】(8秒)", p == 0 ? "我方" : "敌方");
+            skill_log("BLITZWING_SP2: P%d SP2 lastHit -> %s (8s) on P%d", p, clamp_id, opp);
         }
     }
 
@@ -149,6 +183,7 @@ static void blitzwing_on_hit_connected(SkillHitContext* ctx) {
             skill_apply_buff_dur(opp, "blitzwing_clamp_sp3", -1.0f);
         }
         skill_overlay("[%s] SP3 三变歼灭！对手植入 5 层【通用永久夹钳】！", p == 0 ? "我方" : "敌方");
+        skill_log("BLITZWING_SP3: P%d SP3 lastHit -> applied 5x blitzwing_clamp_sp3 on P%d", p, opp);
     }
 }
 
@@ -198,6 +233,8 @@ static int skill_is_debuff_modifier(const char* mod_id, void* stat_modifier) {
         strstr(mod_id, "anti_evade") != NULL ||
         strstr(mod_id, "heal_block") != NULL ||
         strstr(mod_id, "repair_block") != NULL ||
+        strstr(mod_id, "lock") != NULL ||
+        strstr(mod_id, "backfire") != NULL ||
         strstr(mod_id, "confuse") != NULL) {
         return 1;
     }
@@ -214,7 +251,9 @@ static int skill_is_buff_modifier(const char* mod_id, void* stat_modifier) {
         strstr(mod_id, "break") != NULL ||
         strstr(mod_id, "leak") != NULL ||
         strstr(mod_id, "drain") != NULL ||
-        strstr(mod_id, "steal") != NULL) {
+        strstr(mod_id, "steal") != NULL ||
+        strstr(mod_id, "lock") != NULL ||
+        strstr(mod_id, "backfire") != NULL) {
         return 0;
     }
     if (stat_modifier && skill_obj_ok(stat_modifier)) {
@@ -254,9 +293,11 @@ static int skill_is_buff_modifier(const char* mod_id, void* stat_modifier) {
 static int blitzwing_on_buff_gated(SkillBuffGateContext* ctx) {
     if (!ctx || !ctx->modifier_id || !ctx->modifier_id[0]) return 0;
 
-    // 豁免黑名单校验
+    // 豁免黑名单校验 (震天尊遗迹 / 天火·震荡波·录音机·暗天陨充能 / 形态)
     if (strstr(ctx->modifier_id, "relic") != NULL ||
         strstr(ctx->modifier_id, "charge") != NULL ||
+        strstr(ctx->modifier_id, "nemesisprime_dark_") != NULL ||
+        strstr(ctx->modifier_id, "allspark") != NULL ||
         strstr(ctx->modifier_id, "stance") != NULL ||
         strstr(ctx->modifier_id, "blitzwing_") != NULL) {
         return 0; // 核心机制不予抵消
@@ -298,8 +339,10 @@ static int blitzwing_on_buff_gated(SkillBuffGateContext* ctx) {
         // -------------------------------------------------------------------
         if (ctx->target_player_index == p) {
             if (skill_is_debuff_modifier(ctx->modifier_id, ctx->stat_modifier)) {
-                // 同一次攻击多层减益同免时间窗 (200ms)
-                if (now_ms - s_last_debuff_blocked_ms[p] < 200) {
+                // 同一次攻击多层减益同免时间窗 (200ms，需已有过有效拦截时间)
+                if (s_last_debuff_blocked_ms[p] > 0 &&
+                    now_ms >= s_last_debuff_blocked_ms[p] &&
+                    (now_ms - s_last_debuff_blocked_ms[p] < 200)) {
                     ctx->allow_application = false;
                     skill_log("BLITZWING_CLAMP: batch blocked debuff '%s'", ctx->modifier_id);
                     return 1;
@@ -337,8 +380,10 @@ static void blitzwing_on_simulation_tick(uint64_t now_ms) {
         if (!s_blitzwing_active[p]) continue;
         int opp = (p == 0) ? 1 : 0;
 
-        // 0. 开局护甲：正式开战后（首个 simulation tick）再触发判定与倒计时，绝不在选人动画或倒计时阶段空转浪费
-        if (s_opening_armor_pending[p]) {
+        // 0. 开局护甲：跳过重置瞬间首帧，在正式开战 tick 触发判定与倒计时
+        if (s_opening_armor_pending[p] == 2) {
+            s_opening_armor_pending[p] = 1;
+        } else if (s_opening_armor_pending[p] == 1) {
             s_opening_armor_pending[p] = 0;
             if (s_blitzwing_mode[p] == 0) {
                 if (skill_random_float() < 0.50f) {
@@ -382,8 +427,10 @@ static void blitzwing_on_simulation_tick(uint64_t now_ms) {
             // 1. 赋予自身 75% 极速增益
             if (s_blitzwing_mode[p] == 0) {
                 skill_apply_buff_dur(p, "blitzwing_sw_armor", 8.0f);
+                skill_log("BLITZWING_SECOND_WIND: P%d HP<=25%% Tank Mode -> blitzwing_sw_armor (75%% armor, 8s)", p);
             } else {
                 skill_apply_buff_dur(p, "blitzwing_sw_special", 8.0f);
+                skill_log("BLITZWING_SECOND_WIND: P%d HP<=25%% Jet Mode -> blitzwing_sw_special (75%% SP dmg, 8s)", p);
             }
 
             // 2. 引爆对手身上所有抑制夹钳
@@ -427,6 +474,18 @@ static void blitzwing_on_hitreact_enter(int player_index) {
     }
 }
 
+#ifndef __ANDROID__
+static int blitzwing_on_crit_chance_mod(int player_index, int atk_level, float* out_bonus) {
+    (void)atk_level;
+    if (player_index < 0 || player_index > 1 || !out_bonus || !s_blitzwing_active[player_index]) return 0;
+    if (skill_has_buff(player_index, "blitzwing_jet_crit")) {
+        *out_bonus += 0.30f;
+        return 1;
+    }
+    return 0;
+}
+#endif
+
 BotSkillModule g_module_blitzwing = {
     .bot_prefix              = "blitzwing",
     .on_hit_connected        = blitzwing_on_hit_connected,
@@ -444,5 +503,10 @@ BotSkillModule g_module_blitzwing = {
     .on_opponent_block_state = NULL,
     .on_opponent_dodge_enter = NULL,
     .on_hitreact_enter       = blitzwing_on_hitreact_enter,
-    .on_attack_start         = NULL
+    .on_attack_start         = NULL,
+#ifndef __ANDROID__
+    .on_crit_chance_mod      = blitzwing_on_crit_chance_mod
+#else
+    .on_crit_chance_mod      = NULL
+#endif
 };

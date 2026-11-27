@@ -9952,6 +9952,185 @@ int skill_bot_has_ranged_heavy(const char* bot_id) {
     return bot_has_ranged_heavy(bot_id);
 }
 
+static int skill_match_buff_category(const char* b_id, const char* b_type, int32_t mod_type, int want_melee, int want_armor) {
+    if (!b_id || !b_id[0]) return 0;
+    if (mod_type == 2 || mod_type == 16) return 0;
+    if (strstr(b_id, "debuff") != NULL || strstr(b_id, "break") != NULL ||
+        strstr(b_id, "pierce") != NULL || strstr(b_id, "evade") != NULL ||
+        strstr(b_id, "resist") != NULL || strstr(b_id, "gp_") != NULL) {
+        return 0;
+    }
+    int is_armor = (b_type && strcmp(b_type, "armor_up") == 0) ||
+                   strstr(b_id, "armor_up") != NULL || strstr(b_id, "armor_buff") != NULL ||
+                   strstr(b_id, "block_armor") != NULL || strstr(b_id, "_armor") != NULL;
+    int is_melee = (b_type && strcmp(b_type, "melee_bonus") == 0) ||
+                   strstr(b_id, "melee_buff") != NULL || strstr(b_id, "melee_bonus") != NULL ||
+                   (strstr(b_id, "melee") != NULL && (strstr(b_id, "buff") != NULL || strstr(b_id, "boost") != NULL));
+    return (want_armor && is_armor) || (want_melee && is_melee);
+}
+
+int skill_clone_buff_from_opponent(int dst_player_index, int src_player_index, const char* mod_id) {
+    if (!g_base || !mod_id || !mod_id[0]) return 0;
+    if (dst_player_index < 0 || dst_player_index > 1 || src_player_index < 0 || src_player_index > 1) return 0;
+    void* dst_pc = (dst_player_index == 0) ? g_p0_controller : g_p1_controller;
+    void* src_pc = (src_player_index == 0) ? g_p0_controller : g_p1_controller;
+    if (!dst_pc || !obj_ok(dst_pc) || !src_pc || !obj_ok(src_pc)) return 0;
+    void* dst_bc = *(void**)((char*)dst_pc + 0x88);
+    void* src_bc = *(void**)((char*)src_pc + 0x88);
+    if (!dst_bc || !obj_ok(dst_bc) || !src_bc || !obj_ok(src_bc)) return 0;
+
+    int cloned = 0;
+    PROTECT({
+        void* list = *(void**)((char*)src_bc + 0x40);
+        if (!list || !obj_ok(list)) list = *(void**)((char*)src_bc + 0x20);
+        if (list && obj_ok(list)) {
+            void* items = *(void**)((char*)list + 0x10);
+            int32_t size = *(int32_t*)((char*)list + 0x18);
+            if (items && obj_ok(items) && size > 0 && size < 128) {
+                for (int i = size - 1; i >= 0; i--) {
+                    void* buff = *(void**)((char*)items + 0x20 + i * 8);
+                    if (!buff || !obj_ok(buff)) continue;
+                    bool is_stopped = *(uint8_t*)((char*)buff + 0x6C);
+                    if (is_stopped) continue;
+                    void* id_str_obj = *(void**)((char*)buff + 0x28);
+                    char b_id[64] = {0};
+                    if (id_str_obj && obj_ok(id_str_obj)) read_str(id_str_obj, b_id, sizeof(b_id));
+                    if (strcmp(b_id, mod_id) == 0) {
+                        float dur = *(float*)((char*)buff + 0x48);
+                        float clone_dur = (dur < 0.0f) ? -1.0f : dur;
+                        typedef int32_t (*fn_clone_apply)(void*, void*, void*, float, void*);
+                        fn_clone_apply clone_apply = (fn_clone_apply)(g_base + 0x00EEFEDC);
+                        int32_t res = clone_apply(dst_bc, dst_bc, buff, clone_dur, NULL);
+                        if (res == 3 || res != 0) {
+                            cloned = 1;
+                            flog("SKILL_CLONE_BUFF: P%d <- P%d '%s' (dur=%.2f)", dst_player_index, src_player_index, b_id, clone_dur);
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+    });
+    return cloned;
+}
+
+int skill_dispel_random_buff_by_category(int target_player_index, int dispel_melee, int dispel_armor, char* out_removed_id, int out_len) {
+    if (out_removed_id && out_len > 0) out_removed_id[0] = '\0';
+    if (!g_base || target_player_index < 0 || target_player_index > 1) return 0;
+    void* pc = (target_player_index == 0) ? g_p0_controller : g_p1_controller;
+    if (!pc || !obj_ok(pc)) return 0;
+    void* bc = *(void**)((char*)pc + 0x88);
+    if (!bc || !obj_ok(bc)) return 0;
+
+    int dispelled = 0;
+    PROTECT({
+        void* list = *(void**)((char*)bc + 0x40);
+        if (!list || !obj_ok(list)) list = *(void**)((char*)bc + 0x20);
+        if (list && obj_ok(list)) {
+            void* items = *(void**)((char*)list + 0x10);
+            int32_t size = *(int32_t*)((char*)list + 0x18);
+            if (items && obj_ok(items) && size > 0 && size < 128) {
+                void* cands[64];
+                char cand_ids[64][64];
+                int n = 0;
+                for (int i = 0; i < size && n < 64; i++) {
+                    void* buff = *(void**)((char*)items + 0x20 + i * 8);
+                    if (!buff || !obj_ok(buff)) continue;
+                    bool is_stopped = *(uint8_t*)((char*)buff + 0x6C);
+                    if (is_stopped) continue;
+                    int32_t mod_type = *(int32_t*)((char*)buff + 0x18);
+                    void* id_str_obj = *(void**)((char*)buff + 0x28);
+                    void* bt_str_obj = *(void**)((char*)buff + 0x10);
+                    char b_id[64] = {0};
+                    char b_type[64] = {0};
+                    if (id_str_obj && obj_ok(id_str_obj)) read_str(id_str_obj, b_id, sizeof(b_id));
+                    if (bt_str_obj && obj_ok(bt_str_obj)) read_str(bt_str_obj, b_type, sizeof(b_type));
+                    if (skill_match_buff_category(b_id, b_type, mod_type, dispel_melee, dispel_armor)) {
+                        cands[n] = buff;
+                        snprintf(cand_ids[n], sizeof(cand_ids[n]), "%s", b_id);
+                        n++;
+                    }
+                }
+                if (n > 0) {
+                    int pick = rand() % n;
+                    void* victim_buff = cands[pick];
+                    typedef void (*fn_pc_remove_buff)(void*, void*, void*);
+                    typedef void (*fn_bc_stop_buff)(void*, void*, int32_t, void*);
+                    typedef void (*fn_action_buff_invoke)(void*, void*, void*);
+                    fn_pc_remove_buff pc_remove = (fn_pc_remove_buff)(g_base + 0x0117D8B0);
+                    fn_bc_stop_buff bc_stop = (fn_bc_stop_buff)(g_base + 0x00EED3C8);
+                    fn_action_buff_invoke del_inv = (fn_action_buff_invoke)(g_base + 0x01539C40);
+                    void* del = *(void**)((char*)bc + 0x20);
+                    if (pc_remove) pc_remove(pc, victim_buff, NULL);
+                    if (del && obj_ok(del) && del_inv) del_inv(del, victim_buff, NULL);
+                    if (bc_stop) bc_stop(bc, victim_buff, 1, NULL); // 1 = BuffRemoveFlags.nullify
+                    float dur = *(float*)((char*)victim_buff + 0x48);
+                    *(float*)((char*)victim_buff + 0x50) = dur + 10.0f;
+                    *(uint8_t*)((char*)victim_buff + 0x6c) = 1;
+                    if (out_removed_id && out_len > 0) {
+                        snprintf(out_removed_id, out_len, "%s", cand_ids[pick]);
+                    }
+                    dispelled = 1;
+                    flog("SKILL_DISPEL: Removed buff '%s' on P%d (melee=%d armor=%d)", cand_ids[pick], target_player_index, dispel_melee, dispel_armor);
+                }
+            }
+        }
+    });
+    return dispelled;
+}
+
+int skill_copy_self_debuffs_to_opponent(int src_player_index, int dst_player_index) {
+    if (!g_base || src_player_index < 0 || src_player_index > 1 || dst_player_index < 0 || dst_player_index > 1) return 0;
+    void* src_pc = (src_player_index == 0) ? g_p0_controller : g_p1_controller;
+    void* dst_pc = (dst_player_index == 0) ? g_p0_controller : g_p1_controller;
+    if (!src_pc || !obj_ok(src_pc) || !dst_pc || !obj_ok(dst_pc)) return 0;
+    void* src_bc = *(void**)((char*)src_pc + 0x88);
+    void* dst_bc = *(void**)((char*)dst_pc + 0x88);
+    if (!src_bc || !obj_ok(src_bc) || !dst_bc || !obj_ok(dst_bc)) return 0;
+
+    int copied = 0;
+    PROTECT({
+        void* list = *(void**)((char*)src_bc + 0x40);
+        if (!list || !obj_ok(list)) list = *(void**)((char*)src_bc + 0x20);
+        if (list && obj_ok(list)) {
+            void* items = *(void**)((char*)list + 0x10);
+            int32_t size = *(int32_t*)((char*)list + 0x18);
+            if (items && obj_ok(items) && size > 0 && size < 128) {
+                void* snap_buffs[64];
+                float snap_durs[64];
+                int n = 0;
+                for (int i = 0; i < size && n < 64; i++) {
+                    void* buff = *(void**)((char*)items + 0x20 + i * 8);
+                    if (!buff || !obj_ok(buff)) continue;
+                    bool is_stopped = *(uint8_t*)((char*)buff + 0x6C);
+                    if (is_stopped) continue;
+                    int32_t mod_type = *(int32_t*)((char*)buff + 0x18);
+                    void* id_str_obj = *(void**)((char*)buff + 0x28);
+                    char b_id[64] = {0};
+                    if (id_str_obj && obj_ok(id_str_obj)) read_str(id_str_obj, b_id, sizeof(b_id));
+                    if (strstr(b_id, "gp_") != NULL || strstr(b_id, "stun") != NULL) continue;
+                    if (mod_type == 2 || mod_type == 16) {
+                        float orig_dur = *(float*)((char*)buff + 0x4C);
+                        float cur_dur = *(float*)((char*)buff + 0x48);
+                        float d = (orig_dur != 0.0f) ? orig_dur : cur_dur;
+                        snap_buffs[n] = buff;
+                        snap_durs[n] = (d < 0.0f) ? -1.0f : d;
+                        n++;
+                    }
+                }
+                typedef int32_t (*fn_clone_apply)(void*, void*, void*, float, void*);
+                fn_clone_apply clone_apply = (fn_clone_apply)(g_base + 0x00EEFEDC);
+                for (int k = 0; k < n; k++) {
+                    int32_t res = clone_apply(dst_bc, src_bc, snap_buffs[k], snap_durs[k], NULL);
+                    if (res == 3 || res != 0) copied++;
+                }
+                flog("SKILL_COPY_DEBUFFS: P%d -> P%d copied %d/%d debuffs", src_player_index, dst_player_index, copied, n);
+            }
+        }
+    });
+    return copied;
+}
+
 // slot 188 (0x00EEFB44): BuffsController.ApplyBuff(BuffsController applicant, StatModifier statModifier, bool updateAttributes, bool useOverrideDuration, float overrideDuration)
 int hook_188(void* self, void* applicant, void* statModifier, int32_t updateAttributes, int32_t useOverrideDuration, float overrideDuration, void* method) {
     char mod_id[80] = {0};

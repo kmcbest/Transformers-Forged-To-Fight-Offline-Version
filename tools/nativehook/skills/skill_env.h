@@ -77,6 +77,9 @@ void skill_consume_buff(int player_index, const char* mod_id, int count);
 int skill_fuse_target_debuffs(int target_player_index);
 int skill_refresh_target_debuffs(int target_player_index);
 int skill_accelerate_dots(int player_index, float accel_pct);
+int skill_clone_buff_from_opponent(int dst_player_index, int src_player_index, const char* mod_id);
+int skill_dispel_random_buff_by_category(int target_player_index, int dispel_melee, int dispel_armor, char* out_removed_id, int out_len);
+int skill_copy_self_debuffs_to_opponent(int src_player_index, int dst_player_index);
 
 // 警车近战增益层数与充能状态查询/打断
 int skill_get_prowl_melee_stacks(int player_index);

@@ -52,6 +52,12 @@ assert_true(appears["appr_blitzwing_sp1_armor_break"]["t"] == "\uE516", "SP1 破
 assert_true(appears["appr_blitzwing_sp1_attack_debuff"]["t"] == "\uE916", "SP1 攻击减益图标为 E916")
 assert_true(appears["appr_blitzwing_sp2_attack_buff"]["t"] == "\uE406", "SP2 攻击增益图标为 E406")
 assert_true(appears["appr_blitzwing_sw_armor"]["t"] == "\uE517", "绝处逢生护甲图标为 E517")
+assert_true(mods["blitzwing_tank_armor"]["t"] == "armor_up", "坦克护甲类型为 armor_up (原生兼容破甲)")
+assert_true(mods["blitzwing_sw_armor"]["t"] == "armor_up", "绝处逢生护甲类型为 armor_up")
+assert_true(mods["blitzwing_jet_crit"]["t"] == "crit_rate", "战机暴击增益类型为 crit_rate (原生暴击接口识别)")
+assert_true(mods["blitzwing_clamp_tank"]["t"] == "combat", "抑制夹钳使用纯净 combat 标记 (不误拔护甲)")
+assert_true(mods["blitzwing_clamp_jet"]["t"] == "combat", "战机夹钳使用纯净 combat 标记")
+assert_true(mods["blitzwing_clamp_sp3"]["t"] == "combat", "SP3 通用夹钳使用纯净 combat 标记")
 
 # 2. 开局护甲机制核验 (reset 阶段不提前发放，正式战斗首帧才触发倒计时)
 print("\n--- [TEST 2] 开局护甲延迟发放核验 ---")
@@ -162,6 +168,57 @@ res_boost = g_engine.inject_buff(1, "acidstorm_acid_boost", 5.0, 1)
 assert_true(res_boost == 0, "坦克夹钳成功拦截对手正向增益 (acidstorm_acid_boost)")
 st = g_engine.get_state()
 assert_true(not has_buff(st, "p1", "blitzwing_clamp_tank"), "抵消增益后坦克夹钳正确被消耗")
+
+# 4d. now_ms=100 无战机夹钳时不得误拦截敌方减益，且震天尊遗迹/天火充能豁免
+g_engine.reset()
+g_engine.tick(100)
+res_normal_bleed = g_engine.inject_buff(0, "arcee_sp2_bleed", 4.0, 1)
+assert_true(res_normal_bleed == 1, "无战机夹钳时即使 now_ms<200 也不得误拦截减益")
+g_engine.inject_buff(1, "blitzwing_clamp_tank", 4.0, 1)
+res_relic = g_engine.inject_buff(1, "megatronus_relic_fury", -1.0, 1)
+res_charge = g_engine.inject_buff(1, "jetfire_energy_charge", -1.0, 1)
+assert_true(res_relic == 1 and res_charge == 1, "震天尊遗迹与天火充能正确豁免夹钳拦截")
+
+# 5. SP1/SP2 攻击增益与减益及绝处逢生数值/引爆核验
+print("\n--- [TEST 5] SP1/SP2 攻击增减益与绝处逢生引爆核验 ---")
+g_engine.reset()
+g_engine.tick(100)
+# SP1 坦克模式施加攻击减益 (-30% ATK)
+g_engine.attack(0, 16, 0, 1, 0)
+st = g_engine.get_state()
+assert_true(has_buff(st, "p1", "blitzwing_sp1_attack_debuff"), "坦克 SP1 末击对敌施加攻击减益")
+assert_true(has_buff(st, "p1", "blitzwing_clamp_tank"), "坦克 SP1 末击对敌施加 6 秒坦克夹钳")
+# SP2 坦克模式首击攻击增益 (+30% ATK) + 末击夹钳
+g_engine.attack(0, 32, 0, 1, 0)
+st = g_engine.get_state()
+assert_true(has_buff(st, "p0", "blitzwing_sp2_attack_buff"), "坦克 SP2 首击获得攻击增益")
+# 验证攻击增益确实放大闪电伤害 (对比基线)
+g_engine.reset()
+g_engine.tick(100)
+hp_before_base = g_engine.get_state()["p1"]["hp"]
+g_engine.attack(0, 1, 0, 0, 0)
+dmg_base = hp_before_base - g_engine.get_state()["p1"]["hp"]
+g_engine.reset()
+g_engine.tick(100)
+g_engine.inject_buff(0, "blitzwing_sp2_attack_buff", 7.0, 1)
+hp_before_buff = g_engine.get_state()["p1"]["hp"]
+g_engine.attack(0, 1, 0, 0, 0)
+dmg_buffed = hp_before_buff - g_engine.get_state()["p1"]["hp"]
+assert_true(dmg_buffed > dmg_base * 1.15, f"SP2 攻击增益实际放大输出伤害 ({dmg_base:.1f} -> {dmg_buffed:.1f})")
+
+# 验证 SP1 攻击减益实际削弱敌人伤害
+g_engine.reset()
+g_engine.tick(100)
+hp0_base = g_engine.get_state()["p0"]["hp"]
+g_engine.attack(1, 1, 0, 0, 0)
+p1_dmg_base = hp0_base - g_engine.get_state()["p0"]["hp"]
+g_engine.reset()
+g_engine.tick(100)
+g_engine.inject_buff(1, "blitzwing_sp1_attack_debuff", 7.0, 1)
+hp0_weak = g_engine.get_state()["p0"]["hp"]
+g_engine.attack(1, 1, 0, 0, 0)
+p1_dmg_weak = hp0_weak - g_engine.get_state()["p0"]["hp"]
+assert_true(p1_dmg_weak < p1_dmg_base * 0.85, f"SP1 攻击减益实际降低敌人伤害 ({p1_dmg_base:.1f} -> {p1_dmg_weak:.1f})")
 
 print("\n===========================================================================")
 print("✨ 恭喜！闪电技能与机制全部通过自动化门禁测试！")

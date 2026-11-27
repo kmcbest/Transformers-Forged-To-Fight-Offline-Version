@@ -1,0 +1,55 @@
+{
+  "active": true,
+  "name": "blitzwing_test_03_clamp_gate_and_batch",
+  "banner": "#3 Blitzwing 坦克[增益阻塞] & 战机[减益阻塞]+同击多层全免",
+  "qid": "1.1.1",
+  "auto_fight": 0,
+  "freeze_enemy_ai": 1,
+  "dummy_invincible": 1,
+  "player_invincible": 1,
+  "max_duration_ms": 20000,
+  "p0": {
+    "bid": "blitzwing_gs",
+    "mana": 2.0
+  },
+  "p1": {
+    "bid": "acidstorm_gs_leader2015",
+    "mana": 0.0
+  },
+  "p0_script": [
+    { "action": "WAIT", "duration_ms": 500 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "SP1", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 3500 },
+    { "action": "BLOCK", "hold_ms": 1300 },
+    { "action": "WAIT", "duration_ms": 400 },
+    { "action": "SET_MANA", "target": "P0", "mana": 2.0 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "SP1", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 4500 }
+  ],
+  "p1_script": [
+    { "action": "WAIT", "duration_ms": 2800 },
+    { "action": "APPLY_BUFF", "target": "P1", "id": "acidstorm_vapor_shield", "dur": 5.0 },
+    { "action": "WAIT", "duration_ms": 5500 },
+    { "action": "APPLY_BUFF", "target": "P0", "id": "acidstorm_heavy_acid", "dur": 5.0 },
+    { "action": "APPLY_BUFF", "target": "P0", "id": "acidstorm_heavy_acid_break", "dur": 5.0 },
+    { "action": "WAIT", "duration_ms": 1500 }
+  ],
+  "assertions": {
+    "must_apply_buffs": [
+      { "target": "P1", "mod_substr": "blitzwing_clamp_tank", "min_count": 1 },
+      { "target": "P1", "mod_substr": "blitzwing_clamp_jet", "min_count": 1 }
+    ],
+    "must_not_apply_buffs": [
+      { "target": "P1", "mod_substr": "acidstorm_vapor_shield" },
+      { "target": "P0", "mod_substr": "acidstorm_heavy_acid" },
+      { "target": "P0", "mod_substr": "acidstorm_heavy_acid_break" }
+    ],
+    "must_log_substrings": [
+      { "substr": "BLITZWING_CLAMP: blocked opponent buff 'acidstorm_vapor_shield' via tank clamp", "min_count": 1 },
+      { "substr": "BLITZWING_CLAMP: blocked incoming debuff 'acidstorm_heavy_acid' via jet clamp", "min_count": 1 },
+      { "substr": "BLITZWING_CLAMP: batch blocked debuff 'acidstorm_heavy_acid_break'", "min_count": 1 }
+    ]
+  }
+}

@@ -151,6 +151,7 @@ typedef struct {
 
     // Buff 施加成功后回调 (激活计时器、增益、特效等)
     void (*on_buff_applied)(SkillBuffAppliedContext* ctx);
+    void (*on_opponent_buff_applied)(SkillBuffAppliedContext* ctx);
 
     // 闪避几率检定 (返回 1 表示已处理，*out_evade 为 0 或 1; 返回 0 表示非本模块管辖)
     int (*on_evade_check)(SkillEvadeContext* ctx, int* out_evade);

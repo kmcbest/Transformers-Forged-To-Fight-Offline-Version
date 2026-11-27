@@ -1,0 +1,44 @@
+{
+  "active": true,
+  "name": "nemesis_test_01_dark_energy_and_heavy",
+  "banner": "#1 Nemesis Prime 黑暗能量周期充能(10s/5s) + 重击驱散护甲与增伤",
+  "qid": "1.1.1",
+  "auto_fight": 0,
+  "freeze_enemy_ai": 1,
+  "dummy_invincible": 1,
+  "player_invincible": 1,
+  "max_duration_ms": 22000,
+  "p0": {
+    "bid": "nemesisprime_gs_voyager2015",
+    "mana": 0.0
+  },
+  "p1": {
+    "bid": "ironhide_gs_kabam",
+    "mana": 0.0
+  },
+  "p0_script": [
+    { "action": "WAIT", "duration_ms": 10300 },
+    { "action": "SET_HP", "target": "P0", "hp_ratio": 0.12 },
+    { "action": "WAIT", "duration_ms": 5300 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "HEAVY", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 1500 }
+  ],
+  "p1_script": [
+    { "action": "WAIT", "duration_ms": 14000 },
+    { "action": "APPLY_BUFF", "target": "P1", "id": "ironhide_sp2_armor_up", "dur": 10.0 }
+  ],
+  "assertions": {
+    "must_apply_buffs": [
+      { "target": "P0", "mod_substr": "nemesisprime_dark_cd", "min_count": 2 },
+      { "target": "P0", "mod_substr": "nemesisprime_dark_energy", "min_count": 2 },
+      { "target": "P1", "mod_substr": "nemesisprime_heavy_dispel", "min_count": 1 }
+    ],
+    "must_log_substrings": [
+      { "substr": "NEMESIS: P0 gained Dark Energy stack 1/10", "min_count": 1 },
+      { "substr": "NEMESIS: P0 gained Dark Energy stack 2/10", "min_count": 1 },
+      { "substr": "NEMESIS_HEAVY: P0 2 dark stacks -> heavy dmg +10%", "min_count": 1 },
+      { "substr": "NEMESIS_HEAVY_DISPEL: P0 dispelled", "min_count": 1 }
+    ]
+  }
+}

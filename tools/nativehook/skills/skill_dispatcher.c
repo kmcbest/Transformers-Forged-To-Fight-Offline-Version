@@ -266,6 +266,13 @@ void skill_dispatch_buff_applied(SkillBuffAppliedContext* ctx) {
     if (tgt_mod && tgt_mod != mod && tgt_mod->on_buff_applied) {
         tgt_mod->on_buff_applied(ctx);
     }
+    if (ctx->target_player_index >= 0 && ctx->target_player_index < 2) {
+        const char* opp_id = skill_get_bot_id(1 - ctx->target_player_index);
+        const BotSkillModule* opp_mod = find_module_by_bot(opp_id);
+        if (opp_mod && opp_mod->on_opponent_buff_applied) {
+            opp_mod->on_opponent_buff_applied(ctx);
+        }
+    }
 }
 
 
