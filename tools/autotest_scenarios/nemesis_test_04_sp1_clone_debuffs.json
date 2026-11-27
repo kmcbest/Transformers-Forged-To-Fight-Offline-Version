@@ -41,7 +41,8 @@
     ],
     "must_log_substrings": [
       { "substr": "NEMESIS_SP1: P0 lastHit cloned", "min_count": 1 },
-      { "substr": "NEMESIS_SP1: P0 SP1 ended -> gained +2 dark stacks", "min_count": 3 }
+      { "substr": "NEMESIS_SP1: P0 SP1 ended -> gained +2 dark stacks", "min_count": 3 },
+      { "substr": "EVT=DOT_TICK tgt=P1", "min_count": 3 }
     ]
   }
 }

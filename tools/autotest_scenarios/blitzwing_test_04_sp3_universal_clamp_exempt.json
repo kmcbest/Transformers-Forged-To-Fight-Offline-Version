@@ -36,7 +36,9 @@
     ],
     "must_apply_buffs": [
       { "target": "P1", "mod_substr": "blitzwing_clamp_sp3", "min_count": 5 },
-      { "target": "P1", "mod_substr": "jetfire_energy_charge", "min_count": 1 }
+      { "target": "P1", "mod_substr": "jetfire_energy_charge", "min_count": 1 },
+      { "target": "P1", "mod_substr": "blitzwing_clamp_buff_blocked", "min_count": 1 },
+      { "target": "P1", "mod_substr": "blitzwing_clamp_debuff_blocked", "min_count": 1 }
     ],
     "must_not_apply_buffs": [
       { "target": "P1", "mod_substr": "jetfire_sp1_ranged_buff" },

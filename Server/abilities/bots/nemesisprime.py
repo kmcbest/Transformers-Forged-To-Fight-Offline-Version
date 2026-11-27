@@ -48,7 +48,7 @@ def build_nemesisprime_abilities(base_hp: float = 31500.0, base_atk: float = 238
     )
     mod_dark_cd = {
         "id": "nemesisprime_dark_cd",
-        "t": "attack_buff",
+        "t": "nemesis_dark_cd",
         "tm": "",
         "tr": ["onStart"],
         "uit": ["onStart"],
@@ -92,7 +92,7 @@ def build_nemesisprime_abilities(base_hp: float = 31500.0, base_atk: float = 238
     )
     mod_dark = {
         "id": "nemesisprime_dark_energy",
-        "t": "attack_buff",
+        "t": "nemesis_dark_energy",
         "tm": "",
         "tr": [],
         "uit": [],
@@ -371,7 +371,7 @@ def build_nemesisprime_abilities(base_hp: float = 31500.0, base_atk: float = 238
         desc="技能结束后基础攻击全部不可防御，持续7秒以上",
         short_desc="不可防御",
         pua_icon="\uE41F",
-        color=AbilityColor.ORANGE_DAMAGE,
+        color=AbilityColor.LIGHT_PURPLE_POWER,
         show_callout=True,
         active_desc="不可防御生效中",
     )

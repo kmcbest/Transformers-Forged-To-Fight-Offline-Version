@@ -87,7 +87,7 @@ def build_blitzwing_abilities(base_hp: float = 38250.0, base_atk: float = 2795.0
         active_desc="坦克形态",
     )
     mods["blitzwing_tank_mode"] = {
-        "id": "blitzwing_tank_mode", "t": "attack_buff", "tm": "", "tr": ["onStart"],
+        "id": "blitzwing_tank_mode", "t": "blitzwing_tank_mode", "tm": "", "tr": ["onStart"],
         "uit": ["onStart"], "pri": 0, "trm": 0.0, "trs": "", "trr": "repeat",
         "c": 1.0, "m": 0.0, "d": -1.0, "s": "none", "ta": "self", "mt": "buff",
         "v": "", "ms": "", "st": 1, "g": "blitzwing_stance", "gc": 0.0, "gcv": "",
@@ -106,7 +106,7 @@ def build_blitzwing_abilities(base_hp: float = 38250.0, base_atk: float = 2795.0
         active_desc="战机形态",
     )
     mods["blitzwing_jet_mode"] = {
-        "id": "blitzwing_jet_mode", "t": "attack_buff", "tm": "", "tr": [],
+        "id": "blitzwing_jet_mode", "t": "blitzwing_jet_mode", "tm": "", "tr": [],
         "uit": [], "pri": 0, "trm": 0.0, "trs": "", "trr": "repeat",
         "c": 1.0, "m": 0.0, "d": -1.0, "s": "none", "ta": "self", "mt": "buff",
         "v": "", "ms": "", "st": 1, "g": "blitzwing_stance", "gc": 0.0, "gcv": "",
@@ -174,6 +174,43 @@ def build_blitzwing_abilities(base_hp: float = 38250.0, base_atk: float = 2795.0
     }
     appears["appr_blitzwing_clamp_sp3"] = appr_clamp_sp3
 
+    # 2.4 夹钳阻断呼出大字 (d=0.0 仅在对方侧弹出红字呼出，不占 HUD 图标槽)
+    appr_clamp_buff_blocked = make_statmod_appearance(
+        appr_id="appr_blitzwing_clamp_buff_blocked",
+        callout_text="增益阻断",
+        desc="抑制夹钳触发：抵消了对方即将获得的增益",
+        short_desc="增益阻断",
+        pua_icon="",
+        color=AbilityColor.RED_DEBUFF,
+        show_callout=True,
+    )
+    mods["blitzwing_clamp_buff_blocked"] = {
+        "id": "blitzwing_clamp_buff_blocked", "t": "blitzwing_clamp_buff_blocked", "tm": "", "tr": [],
+        "uit": [], "pri": 0, "trm": 0.0, "trs": "", "trr": "repeat",
+        "c": 1.0, "m": 0.0, "d": 0.0, "s": "none", "ta": "self", "mt": "debuff",
+        "v": "", "ms": "", "st": 1, "g": "", "gc": 0.0, "gcv": "",
+        "rcv": "", "ti": 0, "a": ["appr_blitzwing_clamp_buff_blocked"], "au": [], "rh": 0.0, "ra": 0.0,
+    }
+    appears["appr_blitzwing_clamp_buff_blocked"] = appr_clamp_buff_blocked
+
+    appr_clamp_debuff_blocked = make_statmod_appearance(
+        appr_id="appr_blitzwing_clamp_debuff_blocked",
+        callout_text="减益阻断",
+        desc="抑制夹钳触发：抵消了对方试图施加的减益",
+        short_desc="减益阻断",
+        pua_icon="",
+        color=AbilityColor.RED_DEBUFF,
+        show_callout=True,
+    )
+    mods["blitzwing_clamp_debuff_blocked"] = {
+        "id": "blitzwing_clamp_debuff_blocked", "t": "blitzwing_clamp_debuff_blocked", "tm": "", "tr": [],
+        "uit": [], "pri": 0, "trm": 0.0, "trs": "", "trr": "repeat",
+        "c": 1.0, "m": 0.0, "d": 0.0, "s": "none", "ta": "self", "mt": "debuff",
+        "v": "", "ms": "", "st": 1, "g": "", "gc": 0.0, "gcv": "",
+        "rcv": "", "ti": 0, "a": ["appr_blitzwing_clamp_debuff_blocked"], "au": [], "rh": 0.0, "ra": 0.0,
+    }
+    appears["appr_blitzwing_clamp_debuff_blocked"] = appr_clamp_debuff_blocked
+
     # -------------------------------------------------------------------------
     # 3. 伴生被动与 SP 增益/减益
     # -------------------------------------------------------------------------
@@ -207,11 +244,11 @@ def build_blitzwing_abilities(base_hp: float = 38250.0, base_atk: float = 2795.0
     }
     appears["appr_blitzwing_jet_crit"] = appr_jet_crit
 
-    # 3.3 SP1 战机破甲 (7s, 30%, 蓝色 \uE516)
+    # 3.3 SP1 战机破甲 (7s, 30%, 红色 \uE516)
     appr_sp1_armor_break = make_statmod_appearance(
         appr_id="appr_blitzwing_sp1_armor_break", callout_text="破甲",
         desc="SP1战机破甲：削减目标 30% 护甲评级", short_desc="破甲",
-        pua_icon="\uE516", color=AbilityColor.BLUE_DEFENSE, show_callout=True,
+        pua_icon="\uE516", color=AbilityColor.RED_DEBUFF, show_callout=True,
     )
     mods["blitzwing_sp1_armor_break"] = {
         "id": "blitzwing_sp1_armor_break", "t": "armor_break", "tm": "", "tr": [], "uit": [],

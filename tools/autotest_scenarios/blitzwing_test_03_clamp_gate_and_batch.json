@@ -29,9 +29,9 @@
     { "action": "WAIT", "duration_ms": 4500 }
   ],
   "p1_script": [
-    { "action": "WAIT", "duration_ms": 2800 },
-    { "action": "APPLY_BUFF", "target": "P1", "id": "acidstorm_vapor_shield", "dur": 5.0 },
-    { "action": "WAIT", "duration_ms": 5500 },
+    { "action": "WAIT", "duration_ms": 3600 },
+    { "action": "APPLY_BUFF", "target": "P1", "id": "acidstorm_acid_atk_boost", "dur": 5.0 },
+    { "action": "WAIT", "duration_ms": 5600 },
     { "action": "APPLY_BUFF", "target": "P0", "id": "acidstorm_heavy_acid", "dur": 5.0 },
     { "action": "APPLY_BUFF", "target": "P0", "id": "acidstorm_heavy_acid_break", "dur": 5.0 },
     { "action": "WAIT", "duration_ms": 1500 }
@@ -39,15 +39,17 @@
   "assertions": {
     "must_apply_buffs": [
       { "target": "P1", "mod_substr": "blitzwing_clamp_tank", "min_count": 1 },
-      { "target": "P1", "mod_substr": "blitzwing_clamp_jet", "min_count": 1 }
+      { "target": "P1", "mod_substr": "blitzwing_clamp_jet", "min_count": 1 },
+      { "target": "P1", "mod_substr": "blitzwing_clamp_buff_blocked", "min_count": 1 },
+      { "target": "P1", "mod_substr": "blitzwing_clamp_debuff_blocked", "min_count": 1 }
     ],
     "must_not_apply_buffs": [
-      { "target": "P1", "mod_substr": "acidstorm_vapor_shield" },
+      { "target": "P1", "mod_substr": "acidstorm_acid_atk_boost" },
       { "target": "P0", "mod_substr": "acidstorm_heavy_acid" },
       { "target": "P0", "mod_substr": "acidstorm_heavy_acid_break" }
     ],
     "must_log_substrings": [
-      { "substr": "BLITZWING_CLAMP: blocked opponent buff 'acidstorm_vapor_shield' via tank clamp", "min_count": 1 },
+      { "substr": "BLITZWING_CLAMP: blocked opponent buff 'acidstorm_acid_atk_boost' via tank clamp", "min_count": 1 },
       { "substr": "BLITZWING_CLAMP: blocked incoming debuff 'acidstorm_heavy_acid' via jet clamp", "min_count": 1 },
       { "substr": "BLITZWING_CLAMP: batch blocked debuff 'acidstorm_heavy_acid_break'", "min_count": 1 }
     ]

@@ -58,7 +58,7 @@ def adb_cmd(adb: str, serial: str | None, *args: str, check: bool = True) -> sub
 
 
 def http_post_json(url: str, payload: dict) -> str:
-    data = json.dumps(payload).encode("utf-8")
+    data = json.dumps(payload, ensure_ascii=False).encode("utf-8")
     req = urllib.request.Request(url, data=data, method="POST", headers={"Content-Type": "application/json"})
     with urllib.request.urlopen(req, timeout=5) as resp:
         return resp.read().decode("utf-8", errors="replace")

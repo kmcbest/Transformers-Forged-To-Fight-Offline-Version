@@ -6707,6 +6707,11 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
             flog("ACTION pre act=%d l=%u m=%u r=%u", action, pre_l, pre_m,
                  *(uint32_t*)((uintptr_t)self + 0x1c8));
 
+            if (action == 4 && autotest_is_block_holding(0)) {
+                suppress_action = 1;
+                break;
+            }
+
             if (action == 2) {
                 // Action 2 = Swipe back / Dodge input request.
                 // Attack chain is reset when the robot actually enters PlayerDodgeState (hook_165 @ 0x0D34E6C).
@@ -6845,6 +6850,11 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
         if (is_p1_act) {
             g_p1_controller = self;
             uint64_t now_ms = propgo_now_ms();
+
+            if (action == 4 && autotest_is_block_holding(1)) {
+                suppress_action = 1;
+                break;
+            }
 
             // 汽车大师前冲保护：在前冲霸体有效期间，绝对禁止打断进入格挡姿态 (Action.Block 2 / ReleaseBlock 4)
             if (action == 2 || action == 4) {
@@ -10260,7 +10270,9 @@ int skill_copy_self_debuffs_to_opponent(int src_player_index, int dst_player_ind
                 typedef int32_t (*fn_clone_apply)(void*, void*, void*, float, void*);
                 fn_clone_apply clone_apply = (fn_clone_apply)(g_base + 0x00EEFEDC);
                 for (int k = 0; k < n; k++) {
-                    int32_t res = clone_apply(dst_bc, src_bc, snap_buffs[k], snap_durs[k], NULL);
+                    // C# BuffsController.CloneBuff calls buff2.Effect.InitTarget(applicant);
+                    // passing dst_bc as applicant ensures Damage_BuffEffect._player binds to dst (P1) instead of src (P0).
+                    int32_t res = clone_apply(dst_bc, dst_bc, snap_buffs[k], snap_durs[k], NULL);
                     if (res == 3 || res != 0) copied++;
                 }
                 flog("SKILL_COPY_DEBUFFS: P%d -> P%d copied %d/%d debuffs", src_player_index, dst_player_index, copied, n);

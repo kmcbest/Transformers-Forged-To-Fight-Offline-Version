@@ -16,6 +16,9 @@
 | 1 | 阿尔茜 (Arcee) | `arcee_gs_deluxe2014` | **暴击率联动 / DOT(流血) / 远程规避 Callout** | 🔒 已验收锁定 | 2026-11-26 | 6 |
 | 2 | 艾丽塔 (Elita-1) | `elita_one_gs` (`elita_one_gs_kabam`) | **动态职业判定 / 霸体近战规避 / 落空减益 / 技能打断与封锁** | 🧪 自动化通过，待人工验证 *(未锁定)* | 2026-11-26 | 10 |
 | 3 | 电影铁皮 (Ironhide ROTF) | `ironhide_cin_rotf` | **单次命中暴击率门控 / 叠层燃烧 / 黄色暴伤与每局一次 SP 暴击觉醒** | 🔒 已验收锁定 | 2026-11-26 | 7 |
+| 4 | 闪电 (Blitzwing) | `blitzwing_gs` | **双形态长按防御切换 / 抑制夹钳(增益阻断·减益阻断·SP3通用) / 绝处逢生全数引爆眩晕** | 🧪 自动化通过，待人工验收 *(未锁定)* | 2026-11-27 | 7 |
+| 5 | 暗天陨 (Nemesis Prime) | `nemesisprime_gs_voyager2015` | **血线变速暗能量充能 / 亚空间脉冲克隆 / SP1减益复制复刻 / SP2双驱散 / 赝品领导模块吸血 / SP3浅紫不可防御** | 🧪 自动化通过，待人工验收 *(未锁定)* | 2026-11-27 | 6 |
+| 6 | 眩晕 (Blackout) | `blackout_cin_tf` | **连击暴击与无尽怒火溢出转暴伤 / 重击与SP3末击+50%暴击燃烧 / 追猎落空回能 / SP1浅紫不可防御** | 🧪 自动化通过，待人工验收 *(未锁定)* | 2026-11-27 | 1 |
 | — | *(预留代表位)* | — | 破甲 / 震撼 / 护甲减伤类代表 | 待验收 | — | — |
 | — | *(预留代表位)* | — | 治疗 / 净化 / 减益转化类代表 | 待验收 | — | — |
 | — | *(预留代表位)* | — | 聚气充能 / 双形态切换类代表 | 待验收 | — | — |
@@ -112,3 +115,50 @@ python tools/check_accepted_lock.py --run-device --serial 127.0.0.1:7555
   ```powershell
   python tools/check_accepted_lock.py --run-device --bot ironhide_cin_rotf --serial 127.0.0.1:7555
   ```
+
+---
+
+### 4. 闪电 (`blitzwing_gs`) —— *(未锁定，自动化通过，待人工验收)*
+
+- **当前状态**：`🧪 自动化通过，待人工验收`（未加入 `accepted_bots_lock.json` 哈希锁）
+- **自动化验证环境**：MuMu 15 (`127.0.0.1:7555`)，7/7 剧本全绿通过
+- **关联源码**：
+  - 技能定义：[blitzwing.py](file:///e:/Agent/TFTF/Server/abilities/bots/blitzwing.py)
+  - 运行时状态机：[skill_blitzwing.c](file:///e:/Agent/TFTF/tools/nativehook/skills/bots/skill_blitzwing.c)
+- **靶场验证剧本（7 条）**：
+  - [blitzwing_test_01_transform_armor_crit.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/blitzwing_test_01_transform_armor_crit.json)（#1 开局坦克护甲 + 长按防御1秒切换战机/坦克形态与暴击增益）
+  - [blitzwing_test_02_clamp_apply_l4_m2_heavy.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/blitzwing_test_02_clamp_apply_l4_m2_heavy.json)（#2 抑制夹钳命中门禁：格挡不施加 / L4-M2-重击施加）
+  - [blitzwing_test_03_clamp_gate_and_batch.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/blitzwing_test_03_clamp_gate_and_batch.json)（#3 坦克阻断对手增益与“增益阻断”红字呼出 + 战机同击批量阻断减益与“减益阻断”红字呼出）
+  - [blitzwing_test_04_sp3_universal_clamp_exempt.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/blitzwing_test_04_sp3_universal_clamp_exempt.json)（#4 SP3 五层通用永久夹钳双向阻断红字呼出 + 充能/遗迹豁免）
+  - [blitzwing_test_05_sp1_sp2_modes.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/blitzwing_test_05_sp1_sp2_modes.json)（#5 双形态 SP1 攻击减益/红色破甲与 SP2 攻击增益/暴击几率）
+  - [blitzwing_test_06_second_wind_tank_detonate.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/blitzwing_test_06_second_wind_tank_detonate.json)（#6 绝处逢生坦克形态 75% 护甲与引爆夹钳 2.5s 眩晕）
+  - [blitzwing_test_07_second_wind_jet_special.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/blitzwing_test_07_second_wind_jet_special.json)（#7 绝处逢生战机形态 75% 特殊伤害增益）
+
+---
+
+### 5. 暗天陨 (`nemesisprime_gs_voyager2015`) —— *(未锁定，自动化通过，待人工验收)*
+
+- **当前状态**：`🧪 自动化通过，待人工验收`（未加入 `accepted_bots_lock.json` 哈希锁）
+- **自动化验证环境**：MuMu 15 (`127.0.0.1:7555`)，6/6 剧本全绿通过
+- **关联源码**：
+  - 技能定义：[nemesisprime.py](file:///e:/Agent/TFTF/Server/abilities/bots/nemesisprime.py)
+  - 运行时状态机：[skill_nemesis.c](file:///e:/Agent/TFTF/tools/nativehook/skills/bots/skill_nemesis.c)
+- **靶场验证剧本（6 条）**：
+  - [nemesis_test_01_dark_energy_and_heavy.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/nemesis_test_01_dark_energy_and_heavy.json)（#1 黑暗能量 10s/7s/5s 周期充能与上限 10 层 + 重击驱散/增伤）
+  - [nemesis_test_02_subspace_cloner.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/nemesis_test_02_subspace_cloner.json)（#2 亚空间脉冲克隆对手护甲与近战增益，且不与黑暗能量计数合并）
+  - [nemesis_test_03_matrix_lifesteal.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/nemesis_test_03_matrix_lifesteal.json)（#3 觉醒赝品领导模块特技 25% 逐段吸血）
+  - [nemesis_test_04_sp1_clone_debuffs.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/nemesis_test_04_sp1_clone_debuffs.json)（#4 SP1 复制自身减益至对手并正确在对手侧持续跳红字 DOT + 结束 +2 层充能）
+  - [nemesis_test_05_sp2_axe_of_evil.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/nemesis_test_05_sp2_axe_of_evil.json)（#5 SP2 邪恶之斧双驱散施加近战减益/破甲与消耗黑暗能量）
+  - [nemesis_test_06_sp3_unblockable.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/nemesis_test_06_sp3_unblockable.json)（#6 SP3 消耗全部黑暗能量与 7s+0.5s/层浅紫色不可防御）
+
+---
+
+### 6. 眩晕 (`blackout_cin_tf`) —— *(未锁定，自动化通过，待人工验收)*
+
+- **当前状态**：`🧪 自动化通过，待人工验收`（未加入 `accepted_bots_lock.json` 哈希锁）
+- **自动化验证环境**：MuMu 15 (`127.0.0.1:7555`)，核心连击/暴击燃烧/追猎落空回能/SP3末击+50%暴击率靶场验证通过
+- **关联源码**：
+  - 技能定义：[blackout.py](file:///e:/Agent/TFTF/Server/abilities/bots/blackout.py)
+  - 运行时状态机：[skill_blackout.c](file:///e:/Agent/TFTF/tools/nativehook/skills/bots/skill_blackout.c)
+- **靶场验证剧本（1 条）**：
+  - [blackout_test_callouts.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/blackout_test_callouts.json)（连击暴击与无尽怒火、重击暴击燃烧、追猎落空能量功率增益、SP3 末击+50%暴击率与燃烧）

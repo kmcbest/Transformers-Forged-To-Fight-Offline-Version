@@ -81,6 +81,7 @@ const char* autotest_get_p1_bid(void);
 int autotest_override_freeze_enemy_ai(void);
 int autotest_override_player_invincible(void);
 int autotest_is_dummy_invincible(void);
+int autotest_is_block_holding(int pidx);
 
 int autotest_set_scenario_json(const char* json, size_t len);
 int autotest_run_scenario_json(const char* json, size_t len);
@@ -112,6 +113,7 @@ static inline const char* autotest_get_p1_bid(void) { return NULL; }
 static inline int autotest_override_freeze_enemy_ai(void) { return -1; }
 static inline int autotest_override_player_invincible(void) { return -1; }
 static inline int autotest_is_dummy_invincible(void) { return 0; }
+static inline int autotest_is_block_holding(int pidx) { (void)pidx; return 0; }
 static inline void autotest_log_append(const char* line) { (void)line; }
 static inline void autotest_install_hooks(uintptr_t il2cpp_base, autotest_inline_hook_fn hook_fn, autotest_strnew_fn strnew_fn, autotest_objnew_fn objnew_fn) {
     (void)il2cpp_base; (void)hook_fn; (void)strnew_fn; (void)objnew_fn;

@@ -2402,6 +2402,68 @@
     "blitzwing_gs": {
       "name_zh": "闪电",
       "mods": {
+        "blitzwing_clamp_buff_blocked": {
+          "a": [
+            "appr_blitzwing_clamp_buff_blocked"
+          ],
+          "au": [],
+          "c": 1.0,
+          "d": 0.0,
+          "g": "",
+          "gc": 0.0,
+          "gcv": "",
+          "id": "blitzwing_clamp_buff_blocked",
+          "m": 0.0,
+          "ms": "",
+          "mt": "debuff",
+          "pri": 0,
+          "ra": 0.0,
+          "rcv": "",
+          "rh": 0.0,
+          "s": "none",
+          "st": 1,
+          "t": "blitzwing_clamp_buff_blocked",
+          "ta": "self",
+          "ti": 0,
+          "tm": "",
+          "tr": [],
+          "trm": 0.0,
+          "trr": "repeat",
+          "trs": "",
+          "uit": [],
+          "v": ""
+        },
+        "blitzwing_clamp_debuff_blocked": {
+          "a": [
+            "appr_blitzwing_clamp_debuff_blocked"
+          ],
+          "au": [],
+          "c": 1.0,
+          "d": 0.0,
+          "g": "",
+          "gc": 0.0,
+          "gcv": "",
+          "id": "blitzwing_clamp_debuff_blocked",
+          "m": 0.0,
+          "ms": "",
+          "mt": "debuff",
+          "pri": 0,
+          "ra": 0.0,
+          "rcv": "",
+          "rh": 0.0,
+          "s": "none",
+          "st": 1,
+          "t": "blitzwing_clamp_debuff_blocked",
+          "ta": "self",
+          "ti": 0,
+          "tm": "",
+          "tr": [],
+          "trm": 0.0,
+          "trr": "repeat",
+          "trs": "",
+          "uit": [],
+          "v": ""
+        },
         "blitzwing_clamp_jet": {
           "a": [
             "appr_blitzwing_clamp_jet"
@@ -2546,7 +2608,7 @@
           "rh": 0.0,
           "s": "none",
           "st": 1,
-          "t": "attack_buff",
+          "t": "blitzwing_jet_mode",
           "ta": "self",
           "ti": 0,
           "tm": "",
@@ -2763,7 +2825,7 @@
           "rh": 0.0,
           "s": "none",
           "st": 1,
-          "t": "attack_buff",
+          "t": "blitzwing_tank_mode",
           "ta": "self",
           "ti": 0,
           "tm": "",
@@ -2780,6 +2842,36 @@
         }
       },
       "appears": {
+        "appr_blitzwing_clamp_buff_blocked": {
+          "a": "增益阻断",
+          "f": "",
+          "gb": "B91C1C",
+          "gt": "EF4444",
+          "id": "appr_blitzwing_clamp_buff_blocked",
+          "l": "抑制夹钳触发：抵消了对方即将获得的增益",
+          "pl": "",
+          "ps": "增益阻断",
+          "s": "",
+          "ss": "增益阻断",
+          "st": "增益阻断",
+          "t": "",
+          "tc": "EF4444"
+        },
+        "appr_blitzwing_clamp_debuff_blocked": {
+          "a": "减益阻断",
+          "f": "",
+          "gb": "B91C1C",
+          "gt": "EF4444",
+          "id": "appr_blitzwing_clamp_debuff_blocked",
+          "l": "抑制夹钳触发：抵消了对方试图施加的减益",
+          "pl": "",
+          "ps": "减益阻断",
+          "s": "",
+          "ss": "减益阻断",
+          "st": "减益阻断",
+          "t": "",
+          "tc": "EF4444"
+        },
         "appr_blitzwing_clamp_jet": {
           "a": "抑制夹钳",
           "f": "",
@@ -2858,8 +2950,8 @@
         "appr_blitzwing_sp1_armor_break": {
           "a": "破甲",
           "f": "",
-          "gb": "00C5E8",
-          "gt": "29EBF4",
+          "gb": "B91C1C",
+          "gt": "EF4444",
           "id": "appr_blitzwing_sp1_armor_break",
           "l": "SP1战机破甲：削减目标 30% 护甲评级",
           "pl": "",
@@ -2868,7 +2960,7 @@
           "ss": "破甲",
           "st": "破甲",
           "t": "",
-          "tc": "29EBF4"
+          "tc": "EF4444"
         },
         "appr_blitzwing_sp1_attack_debuff": {
           "a": "攻击减益",
@@ -19828,7 +19920,7 @@
           "rh": 0.0,
           "s": "none",
           "st": 1,
-          "t": "attack_buff",
+          "t": "nemesis_dark_cd",
           "ta": "self",
           "ti": 0,
           "tm": "",
@@ -19863,7 +19955,7 @@
           "rh": 0.0,
           "s": "none",
           "st": 10,
-          "t": "attack_buff",
+          "t": "nemesis_dark_energy",
           "ta": "self",
           "ti": 0,
           "tm": "",
@@ -20201,8 +20293,8 @@
         "appr_nemesisprime_sp3_unblockable": {
           "a": "不可防御",
           "f": "",
-          "gb": "DD6600",
-          "gt": "FF8800",
+          "gb": "7E22CE",
+          "gt": "C4BBF8",
           "id": "appr_nemesisprime_sp3_unblockable",
           "l": "技能结束后基础攻击全部不可防御，持续7秒以上",
           "pl": "不可防御生效中",
@@ -20211,7 +20303,7 @@
           "ss": "不可防御",
           "st": "不可防御",
           "t": "",
-          "tc": "FF8800"
+          "tc": "C4BBF8"
         },
         "appr_nemesisprime_subspace_cloner": {
           "a": "亚空间脉冲克隆",

@@ -149,16 +149,93 @@ static const char* find_block_end(const char* open, const char* end) {
     return NULL;
 }
 
+static int hex4_val(const char* p, unsigned int* out) {
+    unsigned int v = 0;
+    for (int i = 0; i < 4; i++) {
+        unsigned char c = (unsigned char)p[i];
+        v <<= 4;
+        if (c >= '0' && c <= '9') v |= (unsigned int)(c - '0');
+        else if (c >= 'a' && c <= 'f') v |= (unsigned int)(c - 'a' + 10);
+        else if (c >= 'A' && c <= 'F') v |= (unsigned int)(c - 'A' + 10);
+        else return 0;
+    }
+    *out = v;
+    return 1;
+}
+
+static size_t encode_utf8_cp(unsigned int cp, char* dst, size_t rem) {
+    if (cp <= 0x7Fu) {
+        if (rem < 1) return 0;
+        dst[0] = (char)cp;
+        return 1;
+    } else if (cp <= 0x7FFu) {
+        if (rem < 2) return 0;
+        dst[0] = (char)(0xC0u | (cp >> 6));
+        dst[1] = (char)(0x80u | (cp & 0x3Fu));
+        return 2;
+    } else if (cp <= 0xFFFFu) {
+        if (rem < 3) return 0;
+        dst[0] = (char)(0xE0u | (cp >> 12));
+        dst[1] = (char)(0x80u | ((cp >> 6) & 0x3Fu));
+        dst[2] = (char)(0x80u | (cp & 0x3Fu));
+        return 3;
+    } else if (cp <= 0x10FFFFu) {
+        if (rem < 4) return 0;
+        dst[0] = (char)(0xF0u | (cp >> 18));
+        dst[1] = (char)(0x80u | ((cp >> 12) & 0x3Fu));
+        dst[2] = (char)(0x80u | ((cp >> 6) & 0x3Fu));
+        dst[3] = (char)(0x80u | (cp & 0x3Fu));
+        return 4;
+    }
+    return 0;
+}
+
 static int parse_jstr(const char* val, const char* end, char* out, size_t max_out) {
     if (!val || val >= end || *val != '"' || max_out == 0) return 0;
     const char* s = val + 1;
     const char* e = s;
-    while (e < end && !(*e == '"' && e[-1] != '\\')) e++;
+    while (e < end) {
+        if (*e == '\\' && e + 1 < end) {
+            e += 2;
+            continue;
+        }
+        if (*e == '"') break;
+        e++;
+    }
     if (e >= end) return 0;
-    size_t n = (size_t)(e - s);
-    if (n >= max_out) n = max_out - 1;
-    memcpy(out, s, n);
-    out[n] = '\0';
+    size_t w = 0;
+    const char* p = s;
+    while (p < e && w + 1 < max_out) {
+        if (*p == '\\' && p + 1 < e) {
+            char esc = p[1];
+            if (esc == 'u' && p + 6 <= e) {
+                unsigned int cp = 0;
+                if (hex4_val(p + 2, &cp)) {
+                    if (cp >= 0xD800u && cp <= 0xDBFFu && p + 12 <= e && p[6] == '\\' && p[7] == 'u') {
+                        unsigned int lo = 0;
+                        if (hex4_val(p + 8, &lo) && lo >= 0xDC00u && lo <= 0xDFFFu) {
+                            cp = 0x10000u + (((cp - 0xD800u) << 10) | (lo - 0xDC00u));
+                            p += 6;
+                        }
+                    }
+                    size_t n = encode_utf8_cp(cp, out + w, max_out - 1 - w);
+                    if (n == 0) break;
+                    w += n;
+                    p += 6;
+                    continue;
+                }
+            }
+            char ch = esc;
+            if (esc == 'n') ch = '\n';
+            else if (esc == 'r') ch = '\r';
+            else if (esc == 't') ch = '\t';
+            out[w++] = ch;
+            p += 2;
+            continue;
+        }
+        out[w++] = *p++;
+    }
+    out[w] = '\0';
     return 1;
 }
 
@@ -979,6 +1056,10 @@ static volatile int s_script_rep[2] = {0, 0};
 static volatile uint64_t s_script_step_start_ms[2] = {0, 0};
 static volatile int s_block_holding[2] = {0, 0};
 
+int autotest_is_block_holding(int pidx) {
+    return (pidx >= 0 && pidx < 2) ? s_block_holding[pidx] : 0;
+}
+
 void autotest_on_combat_start(void) {
     s_in_combat = 1;
     s_fight_started_once = 1;
@@ -1046,8 +1127,8 @@ static void drive_script_step(void* player_pc, int pidx, uint64_t now_ms) {
                 AT_LOG("[AUTOTEST] P%d STEP_EXEC idx=%d action=BLOCK_START", pidx, s_script_idx[pidx]);
             }
         } else if ((int)(now_ms - s_script_step_start_ms[pidx]) >= st->duration_ms) {
-            try_act(player_pc, 4, NULL);
             s_block_holding[pidx] = 0;
+            try_act(player_pc, 4, NULL);
             AT_LOG("[AUTOTEST] P%d STEP_DONE idx=%d action=BLOCK_RELEASE", pidx, s_script_idx[pidx]);
             s_script_idx[pidx]++;
             s_script_rep[pidx] = 0;

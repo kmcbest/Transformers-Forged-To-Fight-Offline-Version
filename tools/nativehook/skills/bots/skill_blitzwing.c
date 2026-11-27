@@ -319,7 +319,8 @@ static int blitzwing_on_buff_gated(SkillBuffGateContext* ctx) {
                 if (skill_has_buff(opp, "blitzwing_clamp_tank")) {
                     skill_consume_buff(opp, "blitzwing_clamp_tank", 1);
                     ctx->allow_application = false;
-                    skill_overlay("[增益阻塞] 抑制夹钳抵消了对手的 %s！", ctx->modifier_id);
+                    skill_apply_buff_dur(opp, "blitzwing_clamp_buff_blocked", 0.0f);
+                    skill_overlay("[增益阻断] 抑制夹钳抵消了对手的 %s！", ctx->modifier_id);
                     skill_log("BLITZWING_CLAMP: blocked opponent buff '%s' via tank clamp", ctx->modifier_id);
                     return 1;
                 }
@@ -327,7 +328,8 @@ static int blitzwing_on_buff_gated(SkillBuffGateContext* ctx) {
                 if (skill_has_buff(opp, "blitzwing_clamp_sp3")) {
                     skill_consume_buff(opp, "blitzwing_clamp_sp3", 1);
                     ctx->allow_application = false;
-                    skill_overlay("[双重阻塞] 通用夹钳抵消了对手的 %s！", ctx->modifier_id);
+                    skill_apply_buff_dur(opp, "blitzwing_clamp_buff_blocked", 0.0f);
+                    skill_overlay("[增益阻断] 通用夹钳抵消了对手的 %s！", ctx->modifier_id);
                     skill_log("BLITZWING_CLAMP: blocked opponent buff '%s' via SP3 clamp", ctx->modifier_id);
                     return 1;
                 }
@@ -352,7 +354,8 @@ static int blitzwing_on_buff_gated(SkillBuffGateContext* ctx) {
                     skill_consume_buff(opp, "blitzwing_clamp_jet", 1);
                     s_last_debuff_blocked_ms[p] = now_ms;
                     ctx->allow_application = false;
-                    skill_overlay("[减益阻塞] 战机夹钳抵消了受到的 %s！", ctx->modifier_id);
+                    skill_apply_buff_dur(opp, "blitzwing_clamp_debuff_blocked", 0.0f);
+                    skill_overlay("[减益阻断] 战机夹钳抵消了受到的 %s！", ctx->modifier_id);
                     skill_log("BLITZWING_CLAMP: blocked incoming debuff '%s' via jet clamp", ctx->modifier_id);
                     return 1;
                 }
@@ -361,7 +364,8 @@ static int blitzwing_on_buff_gated(SkillBuffGateContext* ctx) {
                     skill_consume_buff(opp, "blitzwing_clamp_sp3", 1);
                     s_last_debuff_blocked_ms[p] = now_ms;
                     ctx->allow_application = false;
-                    skill_overlay("[双重阻塞] 通用夹钳抵消了受到的 %s！", ctx->modifier_id);
+                    skill_apply_buff_dur(opp, "blitzwing_clamp_debuff_blocked", 0.0f);
+                    skill_overlay("[减益阻断] 通用夹钳抵消了受到的 %s！", ctx->modifier_id);
                     skill_log("BLITZWING_CLAMP: blocked incoming debuff '%s' via SP3 clamp", ctx->modifier_id);
                     return 1;
                 }
