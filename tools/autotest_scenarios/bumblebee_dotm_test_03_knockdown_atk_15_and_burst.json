@@ -1,0 +1,50 @@
+{
+  "active": true,
+  "name": "bumblebee_dotm_test_03_knockdown_atk_15_and_burst",
+  "banner": "#3 Movie Bumblebee 击倒永久+13.5%攻击(上限15层) + 16层3秒倒计时爆发",
+  "qid": "1.1.1",
+  "auto_fight": 0,
+  "freeze_enemy_ai": 1,
+  "dummy_invincible": 1,
+  "player_invincible": 1,
+  "max_duration_ms": 20000,
+  "p0": {
+    "bid": "bumblebee_cin_dotm",
+    "mana": 0.0
+  },
+  "p1": {
+    "bid": "optimusprime_cin_tf",
+    "mana": 0.0
+  },
+  "p0_script": [
+    { "action": "WAIT", "duration_ms": 500 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "LIGHT", "repeat": 3 },
+    { "action": "WAIT", "duration_ms": 400 },
+    { "action": "HEAVY", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 1800 },
+    { "action": "APPLY_BUFF", "target": "P0", "id": "bumblebee_cin_dotm_knockdown_atk", "dur": -1.0, "stacks": 13 },
+    { "action": "WAIT", "duration_ms": 300 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "HEAVY", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 1800 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "HEAVY", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 1200 },
+    { "action": "LIGHT", "repeat": 2 },
+    { "action": "WAIT", "duration_ms": 1000 }
+  ],
+  "p1_script": [],
+  "assertions": {
+    "must_apply_buffs": [
+      { "target": "P0", "mod_substr": "bumblebee_cin_dotm_knockdown_atk", "min_count": 15, "max_count": 15 },
+      { "target": "P0", "mod_substr": "bumblebee_cin_dotm_burst_atk", "min_count": 1 }
+    ],
+    "must_log_substrings": [
+      { "substr": "BUMBLEBEE_DOTM: Knockdown atk buff applied to P0! stacks=0->1", "min_count": 1 },
+      { "substr": "BUMBLEBEE_DOTM: Knockdown atk buff applied to P0! stacks=14->15", "min_count": 1 },
+      { "substr": "BUMBLEBEE_DOTM: P0 at 15 perm stacks, applied 3.0s burst_atk (burst_stacks=0->1)", "min_count": 1 },
+      { "substr": "BUMBLEBEE_DOTM: Damage boosted x3.160", "min_count": 1 }
+    ]
+  }
+}

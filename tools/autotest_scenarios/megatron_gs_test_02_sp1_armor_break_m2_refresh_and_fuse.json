@@ -1,0 +1,51 @@
+{
+  "active": true,
+  "name": "megatron_gs_test_02_sp1_armor_break_m2_refresh_and_fuse",
+  "banner": "#2 G1 威震天 SP1清甲破甲(10s) -> M2近战刷新倒计时 -> 重击减益融合永久化",
+  "qid": "1.1.1",
+  "auto_fight": 0,
+  "freeze_enemy_ai": 1,
+  "dummy_invincible": 1,
+  "player_invincible": 1,
+  "max_duration_ms": 22000,
+  "p0": {
+    "bid": "megatron_gs_leader2015",
+    "mana": 1.0
+  },
+  "p1": {
+    "bid": "ironhide_gs_kabam",
+    "mana": 0.0
+  },
+  "p0_script": [
+    { "action": "WAIT", "duration_ms": 6500 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "SP1", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 4000 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "MEDIUM", "repeat": 2 },
+    { "action": "WAIT", "duration_ms": 1800 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "HEAVY", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 2000 }
+  ],
+  "p1_script": [
+    { "action": "APPLY_BUFF", "target": "P1", "id": "ironhide_sp2_armor_up", "dur": 20.0, "stacks": 2 },
+    { "action": "WAIT", "duration_ms": 18000 }
+  ],
+  "assertions": {
+    "must_apply_buffs": [
+      { "target": "P1", "mod_substr": "megatron_sp1_armor_break", "min_count": 1 },
+      { "target": "P0", "mod_substr": "megatron_melee_refresh", "min_count": 1 },
+      { "target": "P0", "mod_substr": "megatron_debuff_fusion", "min_count": 1 }
+    ],
+    "must_hit_connected": [
+      { "attacker": "P0", "sp": 1, "min_count": 1 },
+      { "attacker": "P0", "sp": 0, "min_count": 2 }
+    ],
+    "must_log_substrings": [
+      { "substr": "MEGATRON_SP1: P0 lastHit dispelled armor & applied 38% armor break (10s) to P1", "min_count": 1 },
+      { "substr": "MEGATRON_MELEE_REFRESH: P0 M2 refreshed timed debuffs on P1", "min_count": 1 },
+      { "substr": "MEGATRON: P0 successfully FUSED", "min_count": 1 }
+    ]
+  }
+}

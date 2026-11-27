@@ -1,0 +1,54 @@
+{
+  "active": true,
+  "name": "sideswipe_cin_test_04_sp1_nullify_and_sp2_anti_evade",
+  "banner": "#4 Movie Sideswipe SP1/SP2 规避克制 + 技能期暴伤(+75%退出即清) + SP1 85%驱散护甲",
+  "qid": "1.1.1",
+  "auto_fight": 0,
+  "freeze_enemy_ai": 1,
+  "dummy_invincible": 1,
+  "player_invincible": 1,
+  "max_duration_ms": 22000,
+  "p0": {
+    "bid": "sideswipe_cin_rotf",
+    "mana": 3.0
+  },
+  "p1": {
+    "bid": "ironhide_gs_kabam",
+    "mana": 0.0
+  },
+  "p0_script": [
+    { "action": "WAIT", "duration_ms": 400 },
+    { "action": "APPLY_BUFF", "target": "P1", "id": "bumblebee_dodge_evade_melee", "dur": -1.0 },
+    { "action": "APPLY_BUFF", "target": "P1", "id": "ironhide_sp2_armor_up", "dur": 15.0, "stacks": 2 },
+    { "action": "WAIT", "duration_ms": 300 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "SP1", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 3400 },
+    { "action": "SET_MANA", "target": "P0", "mana": 2.0 },
+    { "action": "APPLY_BUFF", "target": "P1", "id": "ironhide_sp2_armor_up", "dur": 12.0, "stacks": 1 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "SP1", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 3400 },
+    { "action": "SET_MANA", "target": "P0", "mana": 2.0 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "SP2", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 4000 }
+  ],
+  "p1_script": [],
+  "assertions": {
+    "must_hit_connected": [
+      { "attacker": "P0", "sp": 1, "min_count": 2 },
+      { "attacker": "P0", "sp": 2, "min_count": 2 }
+    ],
+    "must_apply_buffs": [
+      { "target": "P0", "mod_substr": "sideswipe_cin_sp_crit_dmg", "min_count": 3 },
+      { "target": "P0", "mod_substr": "sideswipe_cin_sp_anti_evade", "min_count": 3 }
+    ],
+    "must_log_substrings": [
+      { "substr": "SIDESWIPE_CIN_SP1_NULLIFY:", "min_count": 1 },
+      { "substr": "SIDESWIPE_CIN_ANTI_EVADE: P0 SP", "min_count": 1 },
+      { "substr": "exited SP1 -> cleared SP crit dmg & anti-evade", "min_count": 2 },
+      { "substr": "exited SP2 -> cleared SP crit dmg & anti-evade", "min_count": 1 }
+    ]
+  }
+}

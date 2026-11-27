@@ -10,8 +10,8 @@ Bot ID: dinobot_bw_kabam
 1. [被动 - 护甲穿透] (ID: 2501, pua_icon: 0xe409, category: passive)
    - 官方描述: "近战攻击自带65%的护甲穿透属性；近战暴击100%护甲穿透。"
    - 实现方案:
-     a) dinobot_armor_pierce_melee: 近战攻击自带 65% 护甲穿透 (level=Light,Medium,Heavy)。
-     b) dinobot_armor_pierce_crit: 近战暴击 100% 护甲穿透 (level=Light,Medium,Heavy;onCrit)。
+     由 skill_dinobot.c 在 on_hit_connected 判定 ctx->is_melee 后直接注入 ctx->armor_penetration
+     (常规近战 0.65，近战暴击 1.00)，Python 定义保留静态元数据 ("tr": [])，防止泄漏至远程/SP。
 
 2. [被动 - 格挡反伤] (ID: 2502, pua_icon: 0xe50f, category: passive)
    - 官方描述: "格挡对方近战攻击时，有60%的概率反向造成相当于对手攻击力10%的伤害，如果格挡对方的前冲攻击，概率为100%，伤害变为20%。"
@@ -44,15 +44,15 @@ Bot ID: dinobot_bw_kabam
      f) dinobot_sp2_crit_rate: 触发 onSpecial2, 赋予自身 30% 暴击几率增益持续 9.0 秒。
 
 8. [特殊技 3 - 修复与暴击几率] (ID: 2508, pua_icon: 0xe503/0xe40d, category: special_3)
-   - 官方描述: "除第一击和最后一击外，每次攻击有50%的概率得到1层修复，4秒内修复最大生命值的3%；发动时得到30%暴击几率增益持续16秒。"
+   - 官方描述: "每次咬击有50%的概率得到1层修复，4秒内修复最大生命值的3%；发动时得到30%暴击几率增益持续16秒。"
    - 实现方案:
-     g) dinobot_sp3_crit_rate: 触发 onSpecial3, 赋予自身 30% 暴击几率增益持续 16.0 秒。
-     h) dinobot_sp3_repair: 触发 onHit, level=Special3, 50% 几率在 4.0 秒内修复最大生命值的 3.0%。
+     g) dinobot_sp3_crit_rate: 触发 onSpecial3Activate, 赋予自身 30% 暴击几率增益持续 16.0 秒 (E40D)。
+     h) dinobot_sp3_repair: tr 留空由 skill_dinobot.c 仅在 SP3 咬击段 (hit_index == 1, 2, 3；排除 hit=0 与眼射激光 hit=4..7) 按 50% 概率施加 4.0s 修复。
 
 9. [觉醒 - 适者生存] (ID: 2509, pua_icon: 0xe41f, category: signature)
    - 官方描述: "如果对手在破甲状态下格挡恐龙勇士的任何攻击，格挡伤害提高20%，并且恐龙勇士的攻击有20%的概率不可防御。"
    - 实现方案:
-     由 skill_dinobot.c 针对破甲状态下的防御对手注入 20% 格挡穿透增伤与 20% 破防判定。
+     由 skill_dinobot.c 针对破甲状态下的防御对手注入 20% 格挡穿透增伤与 20% 破防判定；成功破防时在我方侧弹出“适者生存” Callout (dinobot_sig_callout，无持久图标)。
 -----------------------------------------------------------------------------
 """
 
@@ -63,6 +63,7 @@ from ..core import (
     make_crit_rate_statmod,
     make_heal_statmod,
     make_statmod_appearance,
+    validate_appear,
     validate_statmod,
 )
 from ..registry import register_bot
@@ -91,11 +92,11 @@ def build_dinobot_abilities(base_hp: float = 40154.0, base_atk: float = 3157.0):
         "id": "dinobot_armor_pierce_melee",
         "t": "armor_pierce",
         "tm": "",
-        "tr": ["onHit"],
-        "uit": ["onHit"],
+        "tr": [],
+        "uit": [],
         "pri": 0,
         "trm": 0.0,
-        "trs": "level=Light,Medium,Heavy",
+        "trs": "",
         "trr": "repeat",
         "c": 1.0,
         "m": 0.65,
@@ -123,11 +124,11 @@ def build_dinobot_abilities(base_hp: float = 40154.0, base_atk: float = 3157.0):
         "id": "dinobot_armor_pierce_crit",
         "t": "armor_pierce",
         "tm": "",
-        "tr": ["onCrit"],
-        "uit": ["onCrit"],
+        "tr": [],
+        "uit": [],
         "pri": 0,
         "trm": 0.0,
-        "trs": "level=Light,Medium,Heavy",
+        "trs": "",
         "trr": "repeat",
         "c": 1.0,
         "m": 1.00,
@@ -202,7 +203,7 @@ def build_dinobot_abilities(base_hp: float = 40154.0, base_atk: float = 3157.0):
     appears.update(a_sp1_break)
 
     # -------------------------------------------------------------------------
-    # 5. SP2 发动获得 30% 暴击几率 9 秒
+    # 5. SP2 发动获得 30% 暴击几率 9 秒 (图标: 0xe40d)
     # -------------------------------------------------------------------------
     m_sp2_crit, a_sp2_crit = make_crit_rate_statmod(
         mod_id="dinobot_sp2_crit_rate",
@@ -213,12 +214,13 @@ def build_dinobot_abilities(base_hp: float = 40154.0, base_atk: float = 3157.0):
         trigger_scope="",
         appr_id="appr_dinobot_sp2_crit",
         callout_text="暴击几率",
+        pua_icon="\uE40D",
     )
     mods.update(m_sp2_crit)
     appears.update(a_sp2_crit)
 
     # -------------------------------------------------------------------------
-    # 6. SP3 发动获得 30% 暴击几率 16 秒
+    # 6. SP3 发动获得 30% 暴击几率 16 秒 (图标: 0xe40d)
     # -------------------------------------------------------------------------
     m_sp3_crit, a_sp3_crit = make_crit_rate_statmod(
         mod_id="dinobot_sp3_crit_rate",
@@ -229,12 +231,13 @@ def build_dinobot_abilities(base_hp: float = 40154.0, base_atk: float = 3157.0):
         trigger_scope="",
         appr_id="appr_dinobot_sp3_crit",
         callout_text="暴击几率",
+        pua_icon="\uE40D",
     )
     mods.update(m_sp3_crit)
     appears.update(a_sp3_crit)
 
     # -------------------------------------------------------------------------
-    # 7. SP3 每次命中 50% 获得 4 秒 3% 最大生命值修复 (跳过首击和末击)
+    # 7. SP3 每次咬击 (hit=1,2,3) 50% 获得 4 秒 3% 最大生命值修复 (二层收口由 C 触发)
     # -------------------------------------------------------------------------
     heal_amount = float(round(base_hp * 0.03, 2))
     m_sp3_rep, a_sp3_rep = make_heal_statmod(
@@ -242,13 +245,65 @@ def build_dinobot_abilities(base_hp: float = 40154.0, base_atk: float = 3157.0):
         duration=4.0,
         heal_amount=heal_amount,
         chance=0.50,
-        trigger="onHit",
-        trigger_scope="level=Special3",
+        trigger="",
+        trigger_scope="",
         appr_id="appr_dinobot_sp3_repair",
         callout_text="修复",
         buff_id="heal",
     )
     mods.update(m_sp3_rep)
     appears.update(a_sp3_rep)
+
+    # -------------------------------------------------------------------------
+    # 8. 觉醒 [适者生存] 成功破防时我方弹出“适者生存” Callout (不占血条图标位)
+    # -------------------------------------------------------------------------
+    appr_sig_callout = {
+        "id": "appr_dinobot_sig_callout",
+        "a": "适者生存",
+        "s": "",
+        "l": "",
+        "ss": "",
+        "t": "",
+        "f": "",
+        "st": "适者生存",
+        "ps": "",
+        "pl": "",
+        "tc": "FFE066",
+        "gt": "FFFFFF",
+        "gb": "FFAA00",
+    }
+    mod_sig_callout = {
+        "id": "dinobot_sig_callout",
+        "t": "sp_callout",
+        "tm": "",
+        "tr": [],
+        "uit": [],
+        "pri": 0,
+        "trm": 0.0,
+        "trs": "",
+        "trr": "repeat",
+        "c": 1.0,
+        "m": 0.0,
+        "d": 0.8,
+        "s": "none",
+        "ta": "self",
+        "mt": "buff",
+        "v": "",
+        "ms": "",
+        "st": 0,
+        "g": "",
+        "gc": 0.0,
+        "gcv": "",
+        "rcv": "",
+        "ti": 0,
+        "a": ["appr_dinobot_sig_callout"],
+        "au": [],
+        "rh": 0.0,
+        "ra": 0.0,
+    }
+    validate_appear(appr_sig_callout)
+    validate_statmod(mod_sig_callout)
+    appears["appr_dinobot_sig_callout"] = appr_sig_callout
+    mods["dinobot_sig_callout"] = mod_sig_callout
 
     return mods, appears, buffs

@@ -256,8 +256,31 @@ void skill_interrupt_special(int target_player_index, float stun_duration_s) {
     }
 }
 
+static int sim_is_debuff_id(const char* id) {
+    if (!id || !id[0]) return 0;
+    if (strstr(id, "gp_") != NULL || strstr(id, "stun") != NULL) return 0;
+    return (strstr(id, "debuff") != NULL || strstr(id, "bleed") != NULL ||
+            strstr(id, "burn") != NULL || strstr(id, "shock") != NULL ||
+            strstr(id, "acid") != NULL || strstr(id, "break") != NULL ||
+            strstr(id, "leak") != NULL || strstr(id, "lock") != NULL ||
+            strstr(id, "weakness") != NULL);
+}
+
 int skill_refresh_target_debuffs(int target_player_index) {
-    return skill_fuse_target_debuffs(target_player_index);
+    if (target_player_index < 0 || target_player_index >= 2) return 0;
+    SimCombatant* c = &g_players[target_player_index];
+    int refreshed = 0;
+    for (int i = 0; i < c->buff_count; i++) {
+        const char* id = c->buffs[i].mod_id;
+        if (sim_is_debuff_id(id) && c->buffs[i].remaining_ms > 0 && c->buffs[i].duration_s > 0.0f) {
+            c->buffs[i].remaining_ms = (int64_t)(c->buffs[i].duration_s * 1000.0f);
+            refreshed++;
+        }
+    }
+    if (refreshed > 0) {
+        skill_log("SIM_REFRESH_DEBUFFS: Refreshed %d timed debuff(s) on P%d", refreshed, target_player_index);
+    }
+    return refreshed;
 }
 
 int skill_accelerate_dots(int player_index, float accel_pct) {
@@ -354,6 +377,54 @@ int skill_copy_self_debuffs_to_opponent(int src_player_index, int dst_player_ind
         }
     }
     return copied;
+}
+
+int skill_has_fused_debuff(int target_player_index) {
+    if (target_player_index < 0 || target_player_index >= 2) return 0;
+    SimCombatant* c = &g_players[target_player_index];
+    for (int i = 0; i < c->buff_count; i++) {
+        if (sim_is_debuff_id(c->buffs[i].mod_id) && c->buffs[i].remaining_ms < 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int skill_steal_random_buff(int dst_player_index, int src_player_index, float duration_s, char* out_stolen_id, int out_len) {
+    if (out_stolen_id && out_len > 0) out_stolen_id[0] = '\0';
+    if (dst_player_index < 0 || dst_player_index > 1 || src_player_index < 0 || src_player_index > 1) return 0;
+    SimCombatant* src = &g_players[src_player_index];
+    int cands[MAX_BUFFS];
+    int n = 0;
+    for (int i = 0; i < src->buff_count && n < MAX_BUFFS; i++) {
+        const char* id = src->buffs[i].mod_id;
+        if (sim_is_debuff_id(id)) continue;
+        if (strstr(id, "gp_") != NULL || strstr(id, "stun") != NULL ||
+            strstr(id, "nullify") != NULL || strstr(id, "_vfx") != NULL ||
+            strstr(id, "_cd") != NULL || strstr(id, "callout") != NULL) {
+            continue;
+        }
+        cands[n++] = i;
+    }
+    if (n == 0) return 0;
+    int pick = cands[rand() % n];
+    char stolen_id[80];
+    snprintf(stolen_id, sizeof(stolen_id), "%s", src->buffs[pick].mod_id);
+    float dur = (duration_s > 0.0f) ? duration_s : 5.0f;
+    if (!sim_inject_buff(dst_player_index, stolen_id, dur, 1)) return 0;
+    if (src->buffs[pick].stacks > 1) {
+        src->buffs[pick].stacks--;
+    } else {
+        for (int j = pick; j < src->buff_count - 1; j++) {
+            src->buffs[j] = src->buffs[j + 1];
+        }
+        src->buff_count--;
+    }
+    if (out_stolen_id && out_len > 0) {
+        snprintf(out_stolen_id, out_len, "%s", stolen_id);
+    }
+    skill_log("SIM_STEAL_BUFF: P%d <- P%d stole '%s' for %.2fs", dst_player_index, src_player_index, stolen_id, dur);
+    return 1;
 }
 
 static float s_sim_opponent_distance = 25.0f;
@@ -710,7 +781,7 @@ int skill_fuse_target_debuffs(int target_player_index) {
     SimCombatant* c = &g_players[target_player_index];
     int fused = 0;
     for (int i = 0; i < c->buff_count; i++) {
-        if (c->buffs[i].remaining_ms > 0) { // 带倒计时的减益
+        if (sim_is_debuff_id(c->buffs[i].mod_id) && c->buffs[i].remaining_ms > 0) { // 带倒计时的减益
             c->buffs[i].remaining_ms = -1; // 转化为永久！
             fused++;
             skill_log("SIM: Debuff '%s' on P%d FUSED to PERMANENT!", c->buffs[i].mod_id, target_player_index);
@@ -1266,7 +1337,7 @@ SIM_API int sim_dodge(int player_idx, int dodge_type) {
             sim_inject_buff(player_idx, "prowl_melee_charge", 6.0f, 1);
             skill_overlay("[P%d] 立即投降！(近战充能: 1/10层, 规避率: 54%%)", player_idx);
             push_floater(player_idx, 5, 0.0f, "💨 警车后闪充能 (1/10)");
-        } else if (strstr(c->bot_id, "bumblebee") != NULL) {
+        } else if (strstr(c->bot_id, "bumblebee") != NULL && strstr(c->bot_id, "bumblebee_cin_dotm") == NULL) {
             sim_inject_buff(player_idx, "bumblebee_dodge_evade_melee", -1.0f, 1);
             push_floater(player_idx, 5, 0.0f, "🛡️ 近战规避 (32%)");
             skill_overlay("[P%d] 小黄蜂后闪！获得常驻近战规避 (32%%)", player_idx);
@@ -1279,7 +1350,7 @@ SIM_API int sim_dodge(int player_idx, int dodge_type) {
         return 1;
     } else if (dodge_type == 1) { // 1 = 侧闪 (Sidestep)
         c->last_sidestep_ms = g_sim_clock_ms;
-        if (strstr(c->bot_id, "bumblebee") != NULL) {
+        if (strstr(c->bot_id, "bumblebee") != NULL && strstr(c->bot_id, "bumblebee_cin_dotm") == NULL) {
             int stacks = skill_count_buffs(player_idx, "bumblebee_crit_buff");
             if (stacks < 3) {
                 sim_inject_buff(player_idx, "bumblebee_crit_buff", 8.0f, 1);
@@ -1364,7 +1435,7 @@ SIM_API void sim_tick(uint32_t dt_ms) {
                 }
             }
         }
-        if (strstr(c->bot_id, "bumblebee") != NULL) {
+        if (strstr(c->bot_id, "bumblebee") != NULL && strstr(c->bot_id, "bumblebee_cin_dotm") == NULL) {
             int c_stacks = skill_count_buffs(p, "bumblebee_crit_buff");
             c->crit_rate = 0.20f + 0.28f * (float)c_stacks;
         }
@@ -1462,12 +1533,12 @@ SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
         }
     }
     if (auto_block_mode && is_blocked) {
-        if (is_heavy || sp_idx == 3 || skill_has_buff(attacker_idx, "unblockable")) {
+        if (is_heavy || sp_idx == 3 || skill_has_buff(attacker_idx, "unblockable") || skill_dispatch_unblockable_check(attacker_idx)) {
             is_blocked = 0;
             victim->is_blocking = 0;
             skill_dispatch_block_state(target_check_idx, 0);
             skill_log("SIM_ATTACK: P%d broke P%d block (heavy=%d sp=%d unblockable=%d)",
-                      attacker_idx, target_check_idx, is_heavy, sp_idx, skill_has_buff(attacker_idx, "unblockable"));
+                      attacker_idx, target_check_idx, is_heavy, sp_idx, skill_has_buff(attacker_idx, "unblockable") || skill_dispatch_unblockable_check(attacker_idx));
         }
     }
     s_sim_current_hit_is_last = is_last_hit ? 1 : 0;
@@ -1720,10 +1791,11 @@ SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
             final_dmg *= 1.30f;
         }
     }
-    // 通用被动护甲减伤托底 (对未在独立 bot 模块中减免的角色生效)
+    // 通用被动护甲减伤托底 (对未在独立 bot 模块中减免的角色生效，支持 armor_penetration 穿透)
     if (final_dmg == base_dmg) {
         if (skill_has_buff(target_idx, "block_armor") || skill_has_buff(target_idx, "armor_up")) {
-            final_dmg *= (1.0f - 0.165f);
+            float dr = 0.165f * (1.0f - (hit_ctx.armor_penetration > 1.0f ? 1.0f : (hit_ctx.armor_penetration < 0.0f ? 0.0f : hit_ctx.armor_penetration)));
+            final_dmg *= (1.0f - dr);
         }
     }
     if (is_blocked && !is_heavy) {

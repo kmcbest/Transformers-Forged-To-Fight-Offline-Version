@@ -540,3 +540,16 @@ int skill_dispatch_ranged_pierce_check(int player_index, int atk_level) {
     }
     return 0;
 }
+
+int skill_dispatch_unblockable_check(int player_index) {
+    if (player_index < 0 || player_index >= 2) return 0;
+    const char* bot_id = (player_index == 0) ? g_p0_bot_id : g_p1_bot_id;
+    const BotSkillModule* mod = find_module_by_bot(bot_id);
+    if (mod && mod->on_unblockable_check) {
+        int out_unblockable = 0;
+        if (mod->on_unblockable_check(player_index, &out_unblockable) && out_unblockable) {
+            return 1;
+        }
+    }
+    return 0;
+}

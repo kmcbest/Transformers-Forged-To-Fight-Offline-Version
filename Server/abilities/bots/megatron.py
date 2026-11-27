@@ -136,12 +136,12 @@ def build_megatron_abilities(base_hp: float = 31000.0, base_atk: float = 2450.0)
     mods["megatron_fusion_cannon"] = mod_fusion
     appears["appr_megatron_fusion_cannon"] = appr_fusion
 
-    # 2. SP2 攻击减益 (ID: 3129): 最后一击 100% 施加 44% 攻击减益 10 秒，设为 stackable 避免重置已融合的永久攻击减益
+    # 2. SP2 攻击减益 (ID: 3129): 最后一击 100% 施加 44% 攻击减益 10 秒 (由 skill_megatron.c 末击精准施加)
     appr_sp2_atk = make_statmod_appearance(
         appr_id="appr_megatron_sp2_atk_debuff",
-        callout_text="虚弱",
+        callout_text="攻击减益",
         desc="降低对手44%的攻击力",
-        short_desc="攻击力削弱",
+        short_desc="攻击减益",
         pua_icon="\uE916",
         color=AbilityColor.RED_DEBUFF,
         show_callout=True,
@@ -151,8 +151,8 @@ def build_megatron_abilities(base_hp: float = 31000.0, base_atk: float = 2450.0)
         "id": "megatron_sp2_atk_debuff",
         "t": "attack_debuff",
         "tm": "",
-        "tr": ["onSpecial2Hit"],
-        "uit": ["onSpecial2Hit"],
+        "tr": [],
+        "uit": [],
         "pri": 0,
         "trm": 0.0,
         "trs": "",
@@ -165,7 +165,7 @@ def build_megatron_abilities(base_hp: float = 31000.0, base_atk: float = 2450.0)
         "mt": "debuff",
         "v": "",
         "ms": "",
-        "st": 5,                     # 改为 stackable (上限 5 层)，不会重置冲掉已融合的永久攻击减益
+        "st": 5,                     # stackable (上限 5 层)，不冲掉已融合的永久攻击减益
         "g": "attack_debuff",
         "gc": 0.0,
         "gcv": "",
@@ -180,13 +180,13 @@ def build_megatron_abilities(base_hp: float = 31000.0, base_atk: float = 2450.0)
     mods["megatron_sp2_atk_debuff"] = mod_sp2_atk
     appears["appr_megatron_sp2_atk_debuff"] = appr_sp2_atk
 
-    # 3. SP3 震击与过载 (ID: 3130): 最后一击 100% 施加 300% 震击 20s
+    # 3. SP3 震击与过载 (ID: 3130): 最后一击 100% 施加 300% 震击 20s (由 skill_megatron.c 末击精准施加)
     m_sp3_s, a_sp3_s = make_shock_statmod(
         mod_id="megatron_sp3_shock",
         duration=20.0,
         total_dmg=float(round(base_atk * 3.00)),
         chance=1.0,
-        trigger="onSpecial3Hit",
+        trigger="",
         trigger_scope="",
         appr_id="appr_megatron_sp3_shock",
         callout_text="震击",
@@ -198,13 +198,13 @@ def build_megatron_abilities(base_hp: float = 31000.0, base_atk: float = 2450.0)
     mods.update(m_sp3_s)
     appears.update(a_sp3_s)
 
-    # 4. SP1 破甲 (ID: 3137): 最后一击 100% 施加 38% 破甲 10 秒
+    # 4. SP1 破甲 (ID: 3137): 移除对手护甲并 100% 施加 38% 破甲 10 秒 (由 skill_megatron.c 末击精准施加)
     m_sp1_ab, a_sp1_ab = make_armor_break_statmod(
         mod_id="megatron_sp1_armor_break",
         duration=10.0,
         break_amount=0.38,
         chance=1.0,
-        trigger="onSpecial1Hit",
+        trigger="",
         trigger_scope="",
         appr_id="appr_megatron_sp1_armor_break",
         callout_text="破甲",
@@ -282,7 +282,7 @@ def build_megatron_abilities(base_hp: float = 31000.0, base_atk: float = 2450.0)
         "trs": "",
         "trr": "repeat",
         "c": 1.0,
-        "m": 0.30,
+        "m": 0.0,                    # 重击 +30% 伤害由 skill_megatron.c 统一结算，防止普攻/SP 连坐或重击双倍 1.69x
         "d": -1.0,                   # 本局永久常驻
         "s": "none",
         "ta": "self",
@@ -304,7 +304,7 @@ def build_megatron_abilities(base_hp: float = 31000.0, base_atk: float = 2450.0)
     mods["megatron_fusion_overload"] = mod_overload
     appears["appr_megatron_fusion_overload"] = appr_overload
 
-    # 7. ID 3126: 被击倒后触发 3 秒不可阻挡 (由 skill_megatron.c on_hitreact_enter 施加)
+    # 7. ID 3126: 被击倒后触发 3 秒不可阻挡 (官方图标 E915，由 skill_megatron.c 按损失生命百分比*0.7触发)
     m_unstoppable, a_unstoppable = make_unstoppable_statmod(
         mod_id="megatron_knockdown_unstoppable",
         duration=3.0,
@@ -312,40 +312,41 @@ def build_megatron_abilities(base_hp: float = 31000.0, base_atk: float = 2450.0)
         trigger_scope="",
         appr_id="appr_megatron_unstoppable",
         callout_text="不可阻挡",
-        pua_icon="\uE514",
+        pua_icon="\uE915",
     )
     mods.update(m_unstoppable)
     appears.update(a_unstoppable)
 
-    # 8. ID 3127: 觉醒技【毫不留情】对手有融合减益时近战 60% 偷取一个增益 5.0 秒
+    # 8. ID 3127: 觉醒技【毫不留情】对手有融合减益时近战(命中或被防) 60% 窃取对方一个增益持续 5 秒 (由 C 层窃取并触发呼出)
     appr_no_mercy = make_statmod_appearance(
         appr_id="appr_megatron_no_mercy_steal",
         callout_text="毫不留情",
-        desc="对手有融合减益时，近战攻击60%概率窃取对方一个增益，持续5秒",
+        desc="对手有融合减益时，近战攻击(命中或被防)60%概率窃取对方一个增益，持续5秒",
+        short_desc="毫不留情",
         pua_icon="\uE412",
         color=AbilityColor.RED_DEBUFF,
         show_callout=True,
     )
     mod_no_mercy = {
         "id": "megatron_no_mercy_steal",
-        "t": "buff_steal",
+        "t": "buff",
         "tm": "",
-        "tr": ["onHit"],
-        "uit": ["onHit"],
+        "tr": [],
+        "uit": [],
         "pri": 0,
         "trm": 0.0,
-        "trs": "level=Light,Medium,Heavy",
+        "trs": "",
         "trr": "repeat",
-        "c": 0.60,
+        "c": 1.0,
         "m": 1.0,
-        "d": 5.0,
+        "d": 1.5,
         "s": "none",
         "ta": "self",
         "mt": "buff",
         "v": "",
         "ms": "",
-        "st": 5,
-        "g": "buff_steal",
+        "st": 1,
+        "g": "no_mercy_callout",
         "gc": 0.0,
         "gcv": "",
         "rcv": "",
@@ -358,5 +359,48 @@ def build_megatron_abilities(base_hp: float = 31000.0, base_atk: float = 2450.0)
     validate_statmod(mod_no_mercy)
     mods["megatron_no_mercy_steal"] = mod_no_mercy
     appears["appr_megatron_no_mercy_steal"] = appr_no_mercy
+
+    # 9. 被动【近战刷新】：M2 命中刷新对方所有倒计时减益 (由 C 层在刷新成功后短时呼出)
+    appr_melee_refresh = make_statmod_appearance(
+        appr_id="appr_megatron_melee_refresh",
+        callout_text="近战刷新",
+        desc="用M2击中对手刷新其身上所有减益的倒计时",
+        short_desc="减益刷新",
+        pua_icon="\uE60F",
+        color=AbilityColor.LIGHT_PURPLE_POWER,
+        show_callout=True,
+    )
+    mod_melee_refresh = {
+        "id": "megatron_melee_refresh",
+        "t": "buff",
+        "tm": "",
+        "tr": [],
+        "uit": [],
+        "pri": 0,
+        "trm": 0.0,
+        "trs": "",
+        "trr": "repeat",
+        "c": 1.0,
+        "m": 1.0,
+        "d": 1.2,
+        "s": "none",
+        "ta": "self",
+        "mt": "buff",
+        "v": "",
+        "ms": "",
+        "st": 1,
+        "g": "melee_refresh_callout",
+        "gc": 0.0,
+        "gcv": "",
+        "rcv": "",
+        "ti": 0,
+        "a": ["appr_megatron_melee_refresh"],
+        "au": [],
+        "rh": 0.0,
+        "ra": 0.0,
+    }
+    validate_statmod(mod_melee_refresh)
+    mods["megatron_melee_refresh"] = mod_melee_refresh
+    appears["appr_megatron_melee_refresh"] = appr_melee_refresh
 
     return mods, appears

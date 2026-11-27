@@ -1,0 +1,57 @@
+{
+  "active": true,
+  "name": "megatron_gs_test_03_sp2_atk_debuff_and_sp3_overload",
+  "banner": "#3 G1 威震天 SP2攻击减益(-44%实减) + SP3震击(300%/20s)与绿色融合炮过载无限重击",
+  "qid": "1.1.1",
+  "auto_fight": 0,
+  "freeze_enemy_ai": 1,
+  "dummy_invincible": 1,
+  "player_invincible": 0,
+  "max_duration_ms": 22000,
+  "p0": {
+    "bid": "megatron_gs_leader2015",
+    "mana": 2.0
+  },
+  "p1": {
+    "bid": "ironhide_gs_kabam",
+    "mana": 0.0
+  },
+  "p0_script": [
+    { "action": "WAIT", "duration_ms": 500 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "SP2", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 4800 },
+    { "action": "SET_MANA", "target": "P0", "mana": 3.0 },
+    { "action": "SP3", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 5500 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "HEAVY", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 2000 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "HEAVY", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 1500 }
+  ],
+  "p1_script": [
+    { "action": "WAIT", "duration_ms": 3400 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "LIGHT", "repeat": 2 },
+    { "action": "WAIT", "duration_ms": 12000 }
+  ],
+  "assertions": {
+    "must_apply_buffs": [
+      { "target": "P1", "mod_substr": "megatron_sp2_atk_debuff", "min_count": 1 },
+      { "target": "P1", "mod_substr": "megatron_sp3_shock", "min_count": 1 },
+      { "target": "P0", "mod_substr": "megatron_fusion_overload", "min_count": 1 }
+    ],
+    "must_hit_connected": [
+      { "attacker": "P0", "sp": 2, "min_count": 1 },
+      { "attacker": "P0", "sp": 3, "min_count": 1 }
+    ],
+    "must_log_substrings": [
+      { "substr": "MEGATRON_SP2: P0 lastHit applied 44% atk debuff (10s) to P1", "min_count": 1 },
+      { "substr": "MEGATRON_ATK_DEBUFF: Attacker P1 weakened x0.56", "min_count": 1 },
+      { "substr": "MEGATRON: P0 activated SP3 Fusion Cannon Overload!", "min_count": 1 },
+      { "substr": "MEGATRON: P0 heavy hit connected (last=1, overload=1", "min_count": 2 }
+    ]
+  }
+}

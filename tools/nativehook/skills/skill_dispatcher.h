@@ -61,6 +61,8 @@ float skill_dispatch_crit_chance_mod(int player_index, int atk_level);
 void skill_dispatch_crit_rolled(int player_index, int atk_level, int is_last_hit, int is_crit);
 // 远程穿透判定分发 (返回 1 表示前冲/重击期间穿透对方远程攻击，无视碰撞与伤害)
 int skill_dispatch_ranged_pierce_check(int player_index, int atk_level);
+// 攻击方动态不可防御判定分发 (返回 1 表示攻击无视对手格挡)
+int skill_dispatch_unblockable_check(int player_index);
 
 #ifdef __cplusplus
 }

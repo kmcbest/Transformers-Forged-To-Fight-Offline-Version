@@ -1,0 +1,47 @@
+{
+  "active": true,
+  "name": "bumblebee_dotm_test_06_sp3_shock_normal_vs_armored",
+  "banner": "#6 Movie Bumblebee SP3 炮弹冲击波：末击80%震击 vs 对方有护甲+100%(160%震击)",
+  "qid": "1.1.1",
+  "auto_fight": 0,
+  "freeze_enemy_ai": 1,
+  "dummy_invincible": 1,
+  "player_invincible": 1,
+  "max_duration_ms": 26000,
+  "p0": {
+    "bid": "bumblebee_cin_dotm",
+    "mana": 3.0
+  },
+  "p1": {
+    "bid": "optimusprime_cin_tf",
+    "mana": 0.0
+  },
+  "p0_script": [
+    { "action": "WAIT", "duration_ms": 600 },
+    { "action": "SP3", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 9000 },
+    { "action": "APPLY_BUFF", "target": "P1", "id": "optimusprime_cin_tf_block_armor", "dur": 12.0, "stacks": 1 },
+    { "action": "SET_MANA", "target": "P0", "mana": 3.0 },
+    { "action": "WAIT", "duration_ms": 400 },
+    { "action": "SP3", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 9000 }
+  ],
+  "p1_script": [],
+  "assertions": {
+    "must_hit_connected": [
+      { "attacker": "P0", "sp": 3, "min_count": 2 }
+    ],
+    "must_apply_buffs": [
+      { "target": "P1", "mod_substr": "bumblebee_cin_dotm_sp3_shock", "min_count": 1, "max_count": 2 },
+      { "target": "P1", "mod_substr": "bumblebee_cin_dotm_sp3_shock_armored", "min_count": 1, "max_count": 1 },
+      { "target": "P0", "mod_substr": "bumblebee_cin_dotm_knockdown_atk", "min_count": 2 }
+    ],
+    "must_dot_tick": [
+      { "target": "P1", "min_ticks": 4, "min_dmg": 1.0 }
+    ],
+    "must_log_substrings": [
+      { "substr": "BUMBLEBEE_DOTM_SP3: P0 lastHit -> bumblebee_cin_dotm_sp3_shock (opp_armored=0) on P1", "min_count": 1 },
+      { "substr": "BUMBLEBEE_DOTM_SP3: P0 lastHit -> bumblebee_cin_dotm_sp3_shock_armored (opp_armored=1) on P1", "min_count": 1 }
+    ]
+  }
+}

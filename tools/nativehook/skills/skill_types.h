@@ -202,4 +202,6 @@ typedef struct {
     void (*on_crit_rolled)(int player_index, int atk_level, int is_last_hit, int is_crit);
     // 远程穿透判定回调 (前冲/重击期间穿透敌方远程，返回 1 表示穿透无视碰撞与伤害)
     int (*on_ranged_pierce_check)(int player_index, int atk_level);
+    // 攻击方动态不可防御判定回调 (返回 1 并输出 *out_unblockable = 1 表示本次攻击无视格挡且不挂战斗图标)
+    int (*on_unblockable_check)(int attacker_player_index, int* out_unblockable);
 } BotSkillModule;

@@ -80,6 +80,84 @@
         "tools/autotest_scenarios/ironhide_cin_test_06_sp3_last_hit_burn.json": "f0c337af228a2032f9c44849505bfacd00b9262aab730bfde44fdafe114cbee3",
         "tools/autotest_scenarios/ironhide_cin_test_07_sig_obliteration_once.json": "893b4777a5bc98ff0ea83f1c4fc1f71ce72dcf904874ae1804b5ccf8905e3b7f"
       }
+    },
+    "bumblebee_cin_dotm": {
+      "name_zh": "电影大黄蜂",
+      "archetypes": [
+        "双模校准切换规避",
+        "闪避可刷新攻击增益觉醒",
+        "击倒叠层增益与15层+爆发",
+        "破甲清甲",
+        "有护甲震击增伤"
+      ],
+      "accepted_at": "2026-11-27",
+      "verification_device": "MuMu 15 (127.0.0.1:7555)",
+      "locked": true,
+      "verified_rules": [
+        "战斗开局进入近战校准态(42%规避近战攻击)，远程校准态(42%规避远程攻击)；未觉醒1.5s切换，觉醒后1.26s切换且倒计时与规避图标类型物理隔离",
+        "敏捷觉醒：主动侧闪/后闪成功规避近战攻击获得5.0s +75%攻击增益(不可叠加，上限1层可刷新，格挡不触发，80ms去重)",
+        "击倒对手后获得永久+5%攻击增益，叠加至15层达上限；第16层及以后击倒改为获得3.0s临时攻击增益",
+        "SP1命中(非格挡)施加8s破甲(-35%护甲)，并立即清除对手全部剩余护甲增益",
+        "SP2命中施加5s震击(基础50% ATK)，若对手当前持有护甲增益则+150%效果提升至200% ATK",
+        "SP3命中施加5s震击(基础60% ATK)，若对手当前持有护甲增益则+100%效果提升至160% ATK"
+      ],
+      "scenarios": [
+        "tools/autotest_scenarios/bumblebee_dotm_test_01_calibration_switch_and_evade.json",
+        "tools/autotest_scenarios/bumblebee_dotm_test_02_alacrity_dodge_melee.json",
+        "tools/autotest_scenarios/bumblebee_dotm_test_03_knockdown_atk_15_and_burst.json",
+        "tools/autotest_scenarios/bumblebee_dotm_test_04_sp1_armor_break_clear_all.json",
+        "tools/autotest_scenarios/bumblebee_dotm_test_05_sp2_shock_normal_vs_armored.json",
+        "tools/autotest_scenarios/bumblebee_dotm_test_06_sp3_shock_normal_vs_armored.json"
+      ],
+      "files": {
+        "Server/abilities/bots/bumblebee_cin_dotm.py": "f92c909863072a66a960fd448e8d4f37cfef7a8011b5c3e0d641b78b0acffad4",
+        "tools/nativehook/skills/bots/skill_bumblebee_dotm.c": "51e2fe6b583f41f1c3767d3311442388771d6cfc437efaf522f7fe7d39deaaf6",
+        "tools/autotest_scenarios/bumblebee_dotm_test_01_calibration_switch_and_evade.json": "f300d7b1af8089f1636571f2e771706d5105034a44efaef955c65a7cacffbac8",
+        "tools/autotest_scenarios/bumblebee_dotm_test_02_alacrity_dodge_melee.json": "e352bb3e6775f71e934b213f3a635e1d3eedab7b4d3e4152cfa71aac12aed95e",
+        "tools/autotest_scenarios/bumblebee_dotm_test_03_knockdown_atk_15_and_burst.json": "dc79145b8743d62f66bce67bcf623997a16a9417f74f3e1fe969eb6a28d81ff2",
+        "tools/autotest_scenarios/bumblebee_dotm_test_04_sp1_armor_break_clear_all.json": "83f287820f80f812cdf5b1ae4379606db66b15d988e516cc8e0265c5c4064479",
+        "tools/autotest_scenarios/bumblebee_dotm_test_05_sp2_shock_normal_vs_armored.json": "35a9ec7273e8a5a0e3f0c293bbfd099e74b7a7ee280ccbe31b527af83f7c4f8f",
+        "tools/autotest_scenarios/bumblebee_dotm_test_06_sp3_shock_normal_vs_armored.json": "a8a025b1a0d4396b55475037460ef9b38145886d7bd653d359e051a1332f0ae5"
+      },
+      "locked_at": "2026-11-27"
+    },
+    "dinobot_bw_kabam": {
+      "name_zh": "恐龙勇士",
+      "archetypes": [
+        "近战/暴击护甲穿透",
+        "即时格挡精通与前冲/近战反伤破甲",
+        "重击暴击流血",
+        "SP3咬击段修复",
+        "觉醒破甲目标格挡增伤与不可防御破防Callout"
+      ],
+      "accepted_at": "2026-11-28",
+      "verification_device": "MuMu 15 (127.0.0.1:7555)",
+      "locked": true,
+      "verified_rules": [
+        "近战护甲穿透：仅近战攻击附带65%护甲穿透，近战暴击提升至100%（严格隔离远程与SP）",
+        "格挡前冲攻击(action=32/DashAttack)：100%施加1层9s 40%破甲并反弹对手20%攻击力；格挡常规近战：60%概率反弹10%攻击力",
+        "即时格挡精通：380ms窗口内即时格挡降低格挡伤害50%",
+        "重击暴击100%施加5s 80% ATK流血；SP1每击80%施加8s 30%破甲并原生抵消护甲",
+        "SP2发动获得9s 30%暴击几率增益(0xe40d)；SP3发动获得16s 30%暴击几率增益(0xe40d)且仅3下咬击段(hit=1,2,3)各有50%概率获4s 3%最大生命值修复，排除起手与末尾4段眼射激光(hit=4..7)",
+        "觉醒“适者生存”：对手处于破甲状态格挡任意攻击时格挡穿透伤害提高20%，且非重击攻击有20%概率真实不可防御；仅当真实突破格挡(blk=0)时在我方侧弹出“适者生存”Callout（无持久HUD图标）"
+      ],
+      "scenarios": [
+        "tools/autotest_scenarios/dinobot_bw_test_01_armor_pierce_and_heavy_bleed.json",
+        "tools/autotest_scenarios/dinobot_bw_test_02_well_timed_block_reflect_and_dash_break.json",
+        "tools/autotest_scenarios/dinobot_bw_test_03_sp1_armor_break_and_dispel.json",
+        "tools/autotest_scenarios/dinobot_bw_test_04_sp3_crit_and_midhit_repair.json",
+        "tools/autotest_scenarios/dinobot_bw_test_05_sig_survival_of_the_fittest.json"
+      ],
+      "files": {
+        "Server/abilities/bots/dinobot.py": "97dac78543fe67525edfb3760fefe8a42f4a7b396305906e67c7f1c7aa119fbf",
+        "tools/nativehook/skills/bots/skill_dinobot.c": "e3eba09b367eaa18482ec302d62af8b3bb368bf49ef766c6eb5032eb011c562a",
+        "tools/autotest_scenarios/dinobot_bw_test_01_armor_pierce_and_heavy_bleed.json": "b3423df4f6f00ff1875ed0f0f45087a3ca6345b452eb79de1d72a5cd04359b30",
+        "tools/autotest_scenarios/dinobot_bw_test_02_well_timed_block_reflect_and_dash_break.json": "89cd83b682447050b6a42f295f4457ee1678b4ab0effa15bb467066ea4f40d76",
+        "tools/autotest_scenarios/dinobot_bw_test_03_sp1_armor_break_and_dispel.json": "0ada6b199263a7c2a547f2f04b6409a044ec011f4ab0bad0eeb2817ff1840d62",
+        "tools/autotest_scenarios/dinobot_bw_test_04_sp3_crit_and_midhit_repair.json": "36a76dbc58d145d0ac51cc608ddc7211c1859431544ff7f6557e4540706dd76a",
+        "tools/autotest_scenarios/dinobot_bw_test_05_sig_survival_of_the_fittest.json": "4cecc36254fcd01a61e23154fe4497eeac037caf426ea5e4b84e578b2f6c12ef"
+      },
+      "locked_at": "2026-11-28"
     }
   }
 }

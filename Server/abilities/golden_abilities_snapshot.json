@@ -4382,14 +4382,12 @@
           "rcv": "",
           "rh": 0.0,
           "s": "none",
-          "st": 1,
+          "st": 15,
           "t": "attack_buff",
           "ta": "self",
           "ti": 0,
           "tm": "",
-          "tr": [
-            "onStart"
-          ],
+          "tr": [],
           "trm": 0.0,
           "trr": "repeat",
           "trs": "",
@@ -4439,9 +4437,7 @@
           ],
           "au": [],
           "c": 1.0,
-          "consume_on_evade": false,
-          "d": 1.5,
-          "evade_type": "melee",
+          "d": 1.26,
           "g": "dotm_calib_melee_cd",
           "gc": 0.0,
           "gcv": "",
@@ -4455,19 +4451,15 @@
           "rh": 0.0,
           "s": "none",
           "st": 1,
-          "t": "evade_melee",
+          "t": "dotm_calib_melee_cd",
           "ta": "self",
           "ti": 0,
           "tm": "",
-          "tr": [
-            "onStart"
-          ],
+          "tr": [],
           "trm": 0.0,
           "trr": "repeat",
           "trs": "",
-          "uit": [
-            "onStart"
-          ],
+          "uit": [],
           "v": ""
         },
         "bumblebee_cin_dotm_calib_ranged": {
@@ -4496,15 +4488,11 @@
           "ta": "self",
           "ti": 0,
           "tm": "",
-          "tr": [
-            "onStart"
-          ],
+          "tr": [],
           "trm": 0.0,
           "trr": "repeat",
           "trs": "",
-          "uit": [
-            "onStart"
-          ],
+          "uit": [],
           "v": ""
         },
         "bumblebee_cin_dotm_calib_ranged_cd": {
@@ -4513,9 +4501,7 @@
           ],
           "au": [],
           "c": 1.0,
-          "consume_on_evade": false,
-          "d": 1.5,
-          "evade_type": "ranged",
+          "d": 1.26,
           "g": "dotm_calib_ranged_cd",
           "gc": 0.0,
           "gcv": "",
@@ -4529,19 +4515,15 @@
           "rh": 0.0,
           "s": "none",
           "st": 1,
-          "t": "evade_ranged",
+          "t": "dotm_calib_ranged_cd",
           "ta": "self",
           "ti": 0,
           "tm": "",
-          "tr": [
-            "onStart"
-          ],
+          "tr": [],
           "trm": 0.0,
           "trr": "repeat",
           "trs": "",
-          "uit": [
-            "onStart"
-          ],
+          "uit": [],
           "v": ""
         },
         "bumblebee_cin_dotm_knockdown_atk": {
@@ -4568,12 +4550,41 @@
           "ta": "self",
           "ti": 0,
           "tm": "",
-          "tr": [
-            "onHit"
-          ],
+          "tr": [],
           "trm": 0.0,
           "trr": "repeat",
-          "trs": "level=Heavy,Special1,Special2,Special3",
+          "trs": "",
+          "uit": [],
+          "v": ""
+        },
+        "bumblebee_cin_dotm_sig_atk": {
+          "a": [
+            "appr_bumblebee_cin_dotm_sig_atk"
+          ],
+          "au": [],
+          "c": 1.0,
+          "d": 5.0,
+          "g": "attack_buff",
+          "gc": 0.0,
+          "gcv": "",
+          "id": "bumblebee_cin_dotm_sig_atk",
+          "m": 0.75,
+          "ms": "",
+          "mt": "buff",
+          "pri": 0,
+          "ra": 0.0,
+          "rcv": "",
+          "rh": 0.0,
+          "s": "none",
+          "st": 1,
+          "t": "attack_buff",
+          "ta": "self",
+          "ti": 0,
+          "tm": "",
+          "tr": [],
+          "trm": 0.0,
+          "trr": "repeat",
+          "trs": "",
           "uit": [],
           "v": ""
         },
@@ -4601,12 +4612,10 @@
           "ta": "opponent",
           "ti": 0,
           "tm": "",
-          "tr": [
-            "onHit"
-          ],
+          "tr": [],
           "trm": 0.0,
           "trr": "repeat",
-          "trs": "level=Special1",
+          "trs": "",
           "uit": [],
           "v": ""
         },
@@ -4634,9 +4643,38 @@
           "ta": "opponent",
           "ti": 0,
           "tm": "",
-          "tr": [
-            "onSpecial2Hit"
+          "tr": [],
+          "trm": 0.0,
+          "trr": "repeat",
+          "trs": "",
+          "uit": [],
+          "v": ""
+        },
+        "bumblebee_cin_dotm_sp2_shock_armored": {
+          "a": [
+            "appr_bumblebee_cin_dotm_sp2_shock_armored"
           ],
+          "au": [],
+          "c": 1.0,
+          "d": 10.0,
+          "g": "shock_debuff",
+          "gc": 0.0,
+          "gcv": "",
+          "id": "bumblebee_cin_dotm_sp2_shock_armored",
+          "m": 6970.0,
+          "ms": "",
+          "mt": "debuff",
+          "pri": 0,
+          "ra": 0.0,
+          "rcv": "",
+          "rh": 0.0,
+          "s": "none",
+          "st": 10,
+          "t": "dmg_shock",
+          "ta": "opponent",
+          "ti": 0,
+          "tm": "",
+          "tr": [],
           "trm": 0.0,
           "trr": "repeat",
           "trs": "",
@@ -4667,9 +4705,38 @@
           "ta": "opponent",
           "ti": 0,
           "tm": "",
-          "tr": [
-            "onSpecial3Hit"
+          "tr": [],
+          "trm": 0.0,
+          "trr": "repeat",
+          "trs": "",
+          "uit": [],
+          "v": ""
+        },
+        "bumblebee_cin_dotm_sp3_shock_armored": {
+          "a": [
+            "appr_bumblebee_cin_dotm_sp3_shock_armored"
           ],
+          "au": [],
+          "c": 1.0,
+          "d": 10.0,
+          "g": "shock_debuff",
+          "gc": 0.0,
+          "gcv": "",
+          "id": "bumblebee_cin_dotm_sp3_shock_armored",
+          "m": 5576.0,
+          "ms": "",
+          "mt": "debuff",
+          "pri": 0,
+          "ra": 0.0,
+          "rcv": "",
+          "rh": 0.0,
+          "s": "none",
+          "st": 10,
+          "t": "dmg_shock",
+          "ta": "opponent",
+          "ti": 0,
+          "tm": "",
+          "tr": [],
           "trm": 0.0,
           "trr": "repeat",
           "trs": "",
@@ -4679,19 +4746,19 @@
       },
       "appears": {
         "appr_bumblebee_cin_dotm_burst_atk": {
-          "a": "攻击加成",
+          "a": "攻击增益",
           "f": "",
-          "gb": "B91C1C",
-          "gt": "EF4444",
+          "gb": "DD6600",
+          "gt": "FF8800",
           "id": "appr_bumblebee_cin_dotm_burst_atk",
           "l": "",
-          "pl": "攻击加成生效中",
-          "ps": "攻击加成",
+          "pl": "攻击增益生效中",
+          "ps": "攻击增益",
           "s": "",
           "ss": "",
-          "st": "攻击加成",
+          "st": "攻击增益",
           "t": "",
-          "tc": "EF4444"
+          "tc": "FF8800"
         },
         "appr_bumblebee_cin_dotm_calib_melee": {
           "a": "近战校准",
@@ -4715,10 +4782,10 @@
           "gt": "CBD5E1",
           "id": "appr_bumblebee_cin_dotm_calib_melee_cd",
           "l": "",
-          "pl": "近战校准切换生效中",
+          "pl": "近战校准切换中",
           "ps": "近战校准切换",
           "s": "",
-          "ss": "",
+          "ss": "近战校准切换",
           "st": "",
           "t": "",
           "tc": "CBD5E1"
@@ -4745,26 +4812,41 @@
           "gt": "CBD5E1",
           "id": "appr_bumblebee_cin_dotm_calib_ranged_cd",
           "l": "",
-          "pl": "远程校准切换生效中",
+          "pl": "远程校准切换中",
           "ps": "远程校准切换",
           "s": "",
-          "ss": "",
+          "ss": "远程校准切换",
           "st": "",
           "t": "",
           "tc": "CBD5E1"
         },
         "appr_bumblebee_cin_dotm_knockdown_atk": {
-          "a": "攻击加成",
+          "a": "攻击增益",
           "f": "",
           "gb": "DD6600",
           "gt": "FF8800",
           "id": "appr_bumblebee_cin_dotm_knockdown_atk",
           "l": "",
-          "pl": "攻击加成生效中",
-          "ps": "攻击加成",
+          "pl": "攻击增益生效中",
+          "ps": "攻击增益",
           "s": "",
           "ss": "",
-          "st": "攻击加成",
+          "st": "攻击增益",
+          "t": "",
+          "tc": "FF8800"
+        },
+        "appr_bumblebee_cin_dotm_sig_atk": {
+          "a": "攻击增益",
+          "f": "",
+          "gb": "DD6600",
+          "gt": "FF8800",
+          "id": "appr_bumblebee_cin_dotm_sig_atk",
+          "l": "",
+          "pl": "攻击增益生效中",
+          "ps": "攻击增益",
+          "s": "",
+          "ss": "",
+          "st": "攻击增益",
           "t": "",
           "tc": "FF8800"
         },
@@ -4798,12 +4880,42 @@
           "t": "",
           "tc": "EF4444"
         },
+        "appr_bumblebee_cin_dotm_sp2_shock_armored": {
+          "a": "震击",
+          "f": "",
+          "gb": "B91C1C",
+          "gt": "EF4444",
+          "id": "appr_bumblebee_cin_dotm_sp2_shock_armored",
+          "l": "",
+          "pl": "震击生效中",
+          "ps": "震击",
+          "s": "",
+          "ss": "",
+          "st": "震击",
+          "t": "",
+          "tc": "EF4444"
+        },
         "appr_bumblebee_cin_dotm_sp3_shock": {
           "a": "震击",
           "f": "",
           "gb": "B91C1C",
           "gt": "EF4444",
           "id": "appr_bumblebee_cin_dotm_sp3_shock",
+          "l": "",
+          "pl": "震击生效中",
+          "ps": "震击",
+          "s": "",
+          "ss": "",
+          "st": "震击",
+          "t": "",
+          "tc": "EF4444"
+        },
+        "appr_bumblebee_cin_dotm_sp3_shock_armored": {
+          "a": "震击",
+          "f": "",
+          "gb": "B91C1C",
+          "gt": "EF4444",
+          "id": "appr_bumblebee_cin_dotm_sp3_shock_armored",
           "l": "",
           "pl": "震击生效中",
           "ps": "震击",
@@ -7034,15 +7146,11 @@
           "ta": "self",
           "ti": 0,
           "tm": "",
-          "tr": [
-            "onCrit"
-          ],
+          "tr": [],
           "trm": 0.0,
           "trr": "repeat",
-          "trs": "level=Light,Medium,Heavy",
-          "uit": [
-            "onCrit"
-          ],
+          "trs": "",
+          "uit": [],
           "v": ""
         },
         "dinobot_armor_pierce_melee": {
@@ -7069,15 +7177,11 @@
           "ta": "self",
           "ti": 0,
           "tm": "",
-          "tr": [
-            "onHit"
-          ],
+          "tr": [],
           "trm": 0.0,
           "trr": "repeat",
-          "trs": "level=Light,Medium,Heavy",
-          "uit": [
-            "onHit"
-          ],
+          "trs": "",
+          "uit": [],
           "v": ""
         },
         "dinobot_dash_block_break": {
@@ -7141,6 +7245,37 @@
           "trm": 0.0,
           "trr": "repeat",
           "trs": "level=Heavy",
+          "uit": [],
+          "v": ""
+        },
+        "dinobot_sig_callout": {
+          "a": [
+            "appr_dinobot_sig_callout"
+          ],
+          "au": [],
+          "c": 1.0,
+          "d": 0.8,
+          "g": "",
+          "gc": 0.0,
+          "gcv": "",
+          "id": "dinobot_sig_callout",
+          "m": 0.0,
+          "ms": "",
+          "mt": "buff",
+          "pri": 0,
+          "ra": 0.0,
+          "rcv": "",
+          "rh": 0.0,
+          "s": "none",
+          "st": 0,
+          "t": "sp_callout",
+          "ta": "self",
+          "ti": 0,
+          "tm": "",
+          "tr": [],
+          "trm": 0.0,
+          "trr": "repeat",
+          "trs": "",
           "uit": [],
           "v": ""
         },
@@ -7267,15 +7402,11 @@
           "ta": "self",
           "ti": 0,
           "tm": "",
-          "tr": [
-            "onHit"
-          ],
+          "tr": [],
           "trm": 0.0,
           "trr": "repeat",
-          "trs": "level=Special3",
-          "uit": [
-            "onHit"
-          ],
+          "trs": "",
+          "uit": [],
           "v": ""
         }
       },
@@ -7325,6 +7456,21 @@
           "t": "",
           "tc": "EF4444"
         },
+        "appr_dinobot_sig_callout": {
+          "a": "适者生存",
+          "f": "",
+          "gb": "FFAA00",
+          "gt": "FFFFFF",
+          "id": "appr_dinobot_sig_callout",
+          "l": "",
+          "pl": "",
+          "ps": "",
+          "s": "",
+          "ss": "",
+          "st": "适者生存",
+          "t": "",
+          "tc": "FFE066"
+        },
         "appr_dinobot_sp1_break": {
           "a": "破甲",
           "f": "",
@@ -7352,7 +7498,7 @@
           "s": "",
           "ss": "",
           "st": "暴击几率",
-          "t": "",
+          "t": "",
           "tc": "FF8800"
         },
         "appr_dinobot_sp3_crit": {
@@ -7367,7 +7513,7 @@
           "s": "",
           "ss": "",
           "st": "暴击几率",
-          "t": "",
+          "t": "",
           "tc": "FF8800"
         },
         "appr_dinobot_sp3_repair": {
@@ -16170,7 +16316,7 @@
           "gc": 0.0,
           "gcv": "",
           "id": "megatron_fusion_overload",
-          "m": 0.3,
+          "m": 0.0,
           "ms": "",
           "mt": "buff",
           "pri": 0,
@@ -16225,14 +16371,45 @@
           "uit": [],
           "v": ""
         },
+        "megatron_melee_refresh": {
+          "a": [
+            "appr_megatron_melee_refresh"
+          ],
+          "au": [],
+          "c": 1.0,
+          "d": 1.2,
+          "g": "melee_refresh_callout",
+          "gc": 0.0,
+          "gcv": "",
+          "id": "megatron_melee_refresh",
+          "m": 1.0,
+          "ms": "",
+          "mt": "buff",
+          "pri": 0,
+          "ra": 0.0,
+          "rcv": "",
+          "rh": 0.0,
+          "s": "none",
+          "st": 1,
+          "t": "buff",
+          "ta": "self",
+          "ti": 0,
+          "tm": "",
+          "tr": [],
+          "trm": 0.0,
+          "trr": "repeat",
+          "trs": "",
+          "uit": [],
+          "v": ""
+        },
         "megatron_no_mercy_steal": {
           "a": [
             "appr_megatron_no_mercy_steal"
           ],
           "au": [],
-          "c": 0.6,
-          "d": 5.0,
-          "g": "buff_steal",
+          "c": 1.0,
+          "d": 1.5,
+          "g": "no_mercy_callout",
           "gc": 0.0,
           "gcv": "",
           "id": "megatron_no_mercy_steal",
@@ -16244,20 +16421,16 @@
           "rcv": "",
           "rh": 0.0,
           "s": "none",
-          "st": 5,
-          "t": "buff_steal",
+          "st": 1,
+          "t": "buff",
           "ta": "self",
           "ti": 0,
           "tm": "",
-          "tr": [
-            "onHit"
-          ],
+          "tr": [],
           "trm": 0.0,
           "trr": "repeat",
-          "trs": "level=Light,Medium,Heavy",
-          "uit": [
-            "onHit"
-          ],
+          "trs": "",
+          "uit": [],
           "v": ""
         },
         "megatron_sp1_armor_break": {
@@ -16284,9 +16457,7 @@
           "ta": "opponent",
           "ti": 0,
           "tm": "",
-          "tr": [
-            "onSpecial1Hit"
-          ],
+          "tr": [],
           "trm": 0.0,
           "trr": "repeat",
           "trs": "",
@@ -16317,15 +16488,11 @@
           "ta": "opponent",
           "ti": 0,
           "tm": "",
-          "tr": [
-            "onSpecial2Hit"
-          ],
+          "tr": [],
           "trm": 0.0,
           "trr": "repeat",
           "trs": "",
-          "uit": [
-            "onSpecial2Hit"
-          ],
+          "uit": [],
           "v": ""
         },
         "megatron_sp3_shock": {
@@ -16352,9 +16519,7 @@
           "ta": "opponent",
           "ti": 0,
           "tm": "",
-          "tr": [
-            "onSpecial3Hit"
-          ],
+          "tr": [],
           "trm": 0.0,
           "trr": "repeat",
           "trs": "",
@@ -16423,13 +16588,28 @@
           "t": "",
           "tc": "10B981"
         },
+        "appr_megatron_melee_refresh": {
+          "a": "近战刷新",
+          "f": "",
+          "gb": "7E22CE",
+          "gt": "C4BBF8",
+          "id": "appr_megatron_melee_refresh",
+          "l": "用M2击中对手刷新其身上所有减益的倒计时",
+          "pl": "",
+          "ps": "近战刷新",
+          "s": "",
+          "ss": "减益刷新",
+          "st": "近战刷新",
+          "t": "",
+          "tc": "C4BBF8"
+        },
         "appr_megatron_no_mercy_steal": {
           "a": "毫不留情",
           "f": "",
           "gb": "B91C1C",
           "gt": "EF4444",
           "id": "appr_megatron_no_mercy_steal",
-          "l": "对手有融合减益时，近战攻击60%概率窃取对方一个增益，持续5秒",
+          "l": "对手有融合减益时，近战攻击(命中或被防)60%概率窃取对方一个增益，持续5秒",
           "pl": "",
           "ps": "毫不留情",
           "s": "",
@@ -16454,17 +16634,17 @@
           "tc": "EF4444"
         },
         "appr_megatron_sp2_atk_debuff": {
-          "a": "虚弱",
+          "a": "攻击减益",
           "f": "",
           "gb": "B91C1C",
           "gt": "EF4444",
           "id": "appr_megatron_sp2_atk_debuff",
           "l": "降低对手44%的攻击力",
           "pl": "攻击减益生效中",
-          "ps": "虚弱",
+          "ps": "攻击减益",
           "s": "",
-          "ss": "攻击力削弱",
-          "st": "虚弱",
+          "ss": "攻击减益",
+          "st": "攻击减益",
           "t": "",
           "tc": "EF4444"
         },
@@ -16495,7 +16675,7 @@
           "s": "",
           "ss": "",
           "st": "不可阻挡",
-          "t": "",
+          "t": "",
           "tc": "FFE000"
         }
       },

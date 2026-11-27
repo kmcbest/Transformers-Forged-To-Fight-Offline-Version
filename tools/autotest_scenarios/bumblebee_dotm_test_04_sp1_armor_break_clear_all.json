@@ -1,0 +1,52 @@
+{
+  "active": true,
+  "name": "bumblebee_dotm_test_04_sp1_armor_break_clear_all",
+  "banner": "#4 Movie Bumblebee SP1 速踢：格挡门禁 + 60% 施加35%破甲(6秒)清空全额护甲",
+  "qid": "1.1.1",
+  "auto_fight": 0,
+  "freeze_enemy_ai": 1,
+  "dummy_invincible": 1,
+  "player_invincible": 1,
+  "max_duration_ms": 22000,
+  "p0": {
+    "bid": "bumblebee_cin_dotm",
+    "mana": 3.0
+  },
+  "p1": {
+    "bid": "ironhide_gs_kabam",
+    "mana": 0.0
+  },
+  "p0_script": [
+    { "action": "WAIT", "duration_ms": 500 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "SP1", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 3800 },
+    { "action": "SET_MANA", "target": "P0", "mana": 3.0 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "SP1", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 3800 },
+    { "action": "SET_MANA", "target": "P0", "mana": 3.0 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "SP1", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 2500 }
+  ],
+  "p1_script": [
+    { "action": "APPLY_BUFF", "target": "P1", "id": "ironhide_sp2_armor_up", "dur": 20.0, "stacks": 3 },
+    { "action": "WAIT", "duration_ms": 300 },
+    { "action": "BLOCK", "hold_ms": 3400 },
+    { "action": "WAIT", "duration_ms": 10000 }
+  ],
+  "assertions": {
+    "must_hit_connected": [
+      { "attacker": "P0", "sp": 1, "min_count": 4 }
+    ],
+    "must_apply_buffs": [
+      { "target": "P1", "mod_substr": "ironhide_sp2_armor_up", "min_count": 3 },
+      { "target": "P1", "mod_substr": "bumblebee_cin_dotm_sp1_armor_break", "min_count": 1 }
+    ],
+    "must_log_substrings": [
+      { "substr": "BUMBLEBEE_DOTM_SP1: Cleared all remaining armor buffs on P1", "min_count": 1 },
+      { "substr": "EXPIRE_CHARGE: hiding icon & expiring buff", "min_count": 1 }
+    ]
+  }
+}

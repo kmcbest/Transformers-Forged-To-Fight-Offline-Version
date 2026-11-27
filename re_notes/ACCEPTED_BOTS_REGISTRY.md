@@ -19,6 +19,9 @@
 | 4 | 闪电 (Blitzwing) | `blitzwing_gs` | **双形态长按防御切换 / 抑制夹钳(增益阻断·减益阻断·SP3通用) / 绝处逢生全数引爆眩晕** | 🧪 自动化通过，待人工验收 *(未锁定)* | 2026-11-27 | 7 |
 | 5 | 暗天陨 (Nemesis Prime) | `nemesisprime_gs_voyager2015` | **血线变速暗能量充能 / 亚空间脉冲克隆 / SP1减益复制复刻 / SP2双驱散 / 赝品领导模块吸血 / SP3浅紫不可防御** | 🧪 自动化通过，待人工验收 *(未锁定)* | 2026-11-27 | 6 |
 | 6 | 眩晕 (Blackout) | `blackout_cin_tf` | **连击暴击与无尽怒火溢出转暴伤 / 重击与SP3末击+50%暴击燃烧 / 追猎落空回能 / SP1浅紫不可防御** | 🧪 自动化通过，待人工验收 *(未锁定)* | 2026-11-27 | 1 |
+| 7 | 电影大黄蜂 (Bumblebee DOTM) | `bumblebee_cin_dotm` | **双模校准切换规避 / 闪避可刷新增攻觉醒 / 击倒叠层与爆发 / SP1清甲 / SP2·SP3有护甲震击增伤** | 🔒 已验收锁定 | 2026-11-27 | 6 |
+| 8 | G1 威震天 (Megatron GS) | `megatron_gs_leader2015` | **融合炮重击过载 / M2刷新&重击永久融合 / SP1清甲破甲 / SP2减攻 / SP3震击 / 起身霸体 / 偷取Buff觉醒** | 🧪 阶段性自动化通过，待人工验收 *(未锁定)* | 2026-11-27 | 5 |
+| 9 | 恐龙勇士 (Dinobot BW) | `dinobot_bw_kabam` | **近战穿甲 / 即时格挡精通 / 格挡前冲反伤破甲 / 重击暴击流血 / SP3咬击段修复 / 觉醒破防Callout** | 🔒 已验收锁定 | 2026-11-28 | 5 |
 | — | *(预留代表位)* | — | 破甲 / 震撼 / 护甲减伤类代表 | 待验收 | — | — |
 | — | *(预留代表位)* | — | 治疗 / 净化 / 减益转化类代表 | 待验收 | — | — |
 | — | *(预留代表位)* | — | 聚气充能 / 双形态切换类代表 | 待验收 | — | — |
@@ -162,3 +165,52 @@ python tools/check_accepted_lock.py --run-device --serial 127.0.0.1:7555
   - 运行时状态机：[skill_blackout.c](file:///e:/Agent/TFTF/tools/nativehook/skills/bots/skill_blackout.c)
 - **靶场验证剧本（1 条）**：
   - [blackout_test_callouts.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/blackout_test_callouts.json)（连击暴击与无尽怒火、重击暴击燃烧、追猎落空能量功率增益、SP3 末击+50%暴击率与燃烧）
+
+---
+
+### 7. 电影大黄蜂 (`bumblebee_cin_dotm`)
+
+- **锁定时间**：2026-11-27 | **实机环境**：MuMu 15 (`127.0.0.1:7555`)
+- **关联源码**：
+  - 技能定义：[bumblebee_cin_dotm.py](file:///e:/Agent/TFTF/Server/abilities/bots/bumblebee_cin_dotm.py)
+  - 运行时状态机：[skill_bumblebee_dotm.c](file:///e:/Agent/TFTF/tools/nativehook/skills/bots/skill_bumblebee_dotm.c)
+- **靶场回归剧本（6 条）**：
+  - [bumblebee_dotm_test_01_calibration_switch_and_evade.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/bumblebee_dotm_test_01_calibration_switch_and_evade.json)（双模校准切换计时与近/远程攻击规避）
+  - [bumblebee_dotm_test_02_alacrity_dodge_melee.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/bumblebee_dotm_test_02_alacrity_dodge_melee.json)（敏捷觉醒：主动侧闪/后闪规避近战触发 +75% 攻击增益，1 层可刷新不叠加）
+  - [bumblebee_dotm_test_03_knockdown_atk_15_and_burst.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/bumblebee_dotm_test_03_knockdown_atk_15_and_burst.json)（击倒永久攻击增益叠至 15 层上限，第 16 层+改为 3s 临时攻击增益）
+  - [bumblebee_dotm_test_04_sp1_armor_break_clear_all.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/bumblebee_dotm_test_04_sp1_armor_break_clear_all.json)（SP1 破甲 -35% 并清除对手全部护甲增益）
+  - [bumblebee_dotm_test_05_sp2_shock_normal_vs_armored.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/bumblebee_dotm_test_05_sp2_shock_normal_vs_armored.json)（SP2 常态 50% 震击 vs 对手带护甲 +150% 提升至 200% ATK）
+  - [bumblebee_dotm_test_06_sp3_shock_normal_vs_armored.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/bumblebee_dotm_test_06_sp3_shock_normal_vs_armored.json)（SP3 常态 60% 震击 vs 对手带护甲 +100% 提升至 160% ATK）
+- **一键真机复验**：`python tools/check_accepted_lock.py --run-device --bot bumblebee_cin_dotm --serial 127.0.0.1:7555`
+
+---
+
+### 8. G1 威震天 (`megatron_gs_leader2015`) —— *(未锁定，阶段性自动化通过，待人工验收)*
+
+- **当前状态**：`🧪 阶段性自动化通过，待人工验收`（未加入 `accepted_bots_lock.json` 哈希锁；招牌「毫不留情」偷取 Buff 白名单与护盾转护甲规则待原版进一步核实后补充复验）
+- **自动化验证环境**：MuMu 15 (`127.0.0.1:7555`)，5/5 剧本全绿通过（`145.57s`）
+- **关联源码**：
+  - 技能定义：[megatron.py](file:///e:/Agent/TFTF/Server/abilities/bots/megatron.py)
+  - 运行时状态机：[skill_megatron.c](file:///e:/Agent/TFTF/tools/nativehook/skills/bots/skill_megatron.c)
+- **靶场验证剧本（5 条）**：
+  - [megatron_gs_test_01_fusion_cannon_charge_and_heavy.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/megatron_gs_test_01_fusion_cannon_charge_and_heavy.json)（#1 融合炮蓄力叠层与重击/SP3 消耗过载）
+  - [megatron_gs_test_02_sp1_armor_break_m2_refresh_and_fuse.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/megatron_gs_test_02_sp1_armor_break_m2_refresh_and_fuse.json)（#2 SP1 清除全部护甲并破甲 + M2 近战刷新 + 重击永久融合）
+  - [megatron_gs_test_03_sp2_atk_debuff_and_sp3_overload.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/megatron_gs_test_03_sp2_atk_debuff_and_sp3_overload.json)（#3 SP2 减攻降低敌方实打伤害 + SP3 震击）
+  - [megatron_gs_test_04_sig_no_mercy_steal.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/megatron_gs_test_04_sig_no_mercy_steal.json)（#4 招牌「毫不留情」近战对已融合减益目标偷取敌方正面增益 5s）
+  - [megatron_gs_test_05_passive_knockdown_unstoppable.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/megatron_gs_test_05_passive_knockdown_unstoppable.json)（#5 低血被重击击倒后起身阶段触发 3.0s 不可阻挡）
+
+---
+
+### 9. 恐龙勇士 (`dinobot_bw_kabam`) —— 穿甲刀客 + 即时格挡反伤破甲 + SP3咬击修复 + 觉醒破防Callout代表
+
+- **锁定时间**：2026-11-28 | **实机环境**：MuMu 15 (`127.0.0.1:7555`)，5/5 场景全绿通过（`141.66s`）
+- **锁定源码与资产**：
+  - 技能定义：[dinobot.py](file:///e:/Agent/TFTF/Server/abilities/bots/dinobot.py)
+  - 运行时状态机：[skill_dinobot.c](file:///e:/Agent/TFTF/tools/nativehook/skills/bots/skill_dinobot.c)
+- **靶场回归剧本（5 条）**：
+  - [dinobot_bw_test_01_armor_pierce_and_heavy_bleed.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/dinobot_bw_test_01_armor_pierce_and_heavy_bleed.json)（#1 近战 65%/暴击 100% 护甲穿透、重击暴击 5s 流血与远程穿透隔离）
+  - [dinobot_bw_test_02_well_timed_block_reflect_and_dash_break.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/dinobot_bw_test_02_well_timed_block_reflect_and_dash_break.json)（#2 即时格挡减伤 50%、格挡前冲 20% 反伤与 40% 破甲、格挡近战 10% 反伤）
+  - [dinobot_bw_test_03_sp1_armor_break_and_dispel.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/dinobot_bw_test_03_sp1_armor_break_and_dispel.json)（#3 SP1 80% 施加 30% 破甲并原生抵消护甲）
+  - [dinobot_bw_test_04_sp3_crit_and_midhit_repair.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/dinobot_bw_test_04_sp3_crit_and_midhit_repair.json)（#4 SP3 16s 暴击几率增益与仅 3 下咬击段 `hit=1,2,3` 触发 4s 修复，起手与激光段均跳过）
+  - [dinobot_bw_test_05_sig_survival_of_the_fittest.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/dinobot_bw_test_05_sig_survival_of_the_fittest.json)（#5 觉醒「适者生存」破甲格挡增伤 +20%、20% 真实不可防御破防且我方弹出“适者生存” Callout）
+- **一键真机复验**：`python tools/check_accepted_lock.py --run-device --bot dinobot_bw_kabam --serial 127.0.0.1:7555`

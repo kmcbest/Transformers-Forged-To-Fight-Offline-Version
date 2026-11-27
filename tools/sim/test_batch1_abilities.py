@@ -82,12 +82,12 @@ def test_megatron_unstoppable_and_no_mercy():
     assert_true("megatron_knockdown_unstoppable" in mods, "megatron_knockdown_unstoppable exists in mods")
     unst_mod = mods["megatron_knockdown_unstoppable"]
     assert_true(unst_mod["d"] == 3.0, f"Unstoppable duration is 3.0s (got {unst_mod['d']}s)")
-    assert_true("onKnockdown" in unst_mod["tr"], "Triggered on knockdown")
+    assert_true(unst_mod["tr"] == [], "Knockdown unstoppable controlled in skill_megatron.c (tr=[])")
     # ID 3127
     assert_true("megatron_no_mercy_steal" in mods, "megatron_no_mercy_steal exists in mods")
     steal_mod = mods["megatron_no_mercy_steal"]
-    assert_true(steal_mod["d"] == 5.0, f"Buff steal duration is 5.0s (got {steal_mod['d']}s)")
-    assert_true(steal_mod["c"] == 0.60, f"Buff steal chance is 60% (got {steal_mod['c']})")
+    assert_true(steal_mod["d"] == 1.5, f"No Mercy callout duration is 1.5s (actual steal=5.0s in C, got {steal_mod['d']}s)")
+    assert_true(steal_mod["tr"] == [], "No Mercy controlled in skill_megatron.c (tr=[])")
 
 def test_cheetor_all_priority_abilities():
     print("\n--- [TEST 6] Cheetor (IDs 2472~2480): Full Suite Verification in Simulator ---")

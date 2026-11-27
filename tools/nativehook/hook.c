@@ -760,6 +760,10 @@ static volatile uint64_t s_p0_last_melee_ms = 0;
 static volatile uint64_t s_p0_last_sidestep_ms = 0;
 
 static volatile uint64_t s_last_direct_hit_ms[2] = {0, 0};
+static volatile int g_p0_m2_active = 0;
+static volatile int g_p1_m2_active = 0;
+static volatile uint64_t g_p0_true_dash_enter_ms = 0;
+static volatile uint64_t g_p1_true_dash_enter_ms = 0;
 
 // --- AI 5-Hit Combo Commitment System (按步就班打完5连保证最大伤害) ---
 static volatile int g_p1_combo_committed = 0;
@@ -6634,12 +6638,14 @@ static void reset_player_attack_chain(void* pc) {
     if (p_idx == 0) {
         g_p0_controller = pc;
         g_p0_last_attack_ms = 0;                 // the idle window restarts from the next attack
+        g_p0_m2_active = 0;
         *(uint32_t*)((uintptr_t)pc + 0x1c0) = 0; // _lightAttackIndex = 0
         *(uint32_t*)((uintptr_t)pc + 0x1c4) = 0; // _mediumAttackIndex = 0
         *(uint32_t*)((uintptr_t)pc + 0x1c8) = 0; // _rangedAttackIndex = 0
         flog("RESET_ATTACK_CHAIN on p0 pc=%p (caller=%p)", pc, __builtin_return_address(0));
     } else if (p_idx == 1) {
         g_p1_controller = pc;
+        g_p1_m2_active = 0;
         *(uint32_t*)((uintptr_t)pc + 0x1c0) = 0; // _lightAttackIndex = 0
         *(uint32_t*)((uintptr_t)pc + 0x1c4) = 0; // _mediumAttackIndex = 0
         *(uint32_t*)((uintptr_t)pc + 0x1c8) = 0; // _rangedAttackIndex = 0
@@ -7081,8 +7087,15 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
             // how M2 ends the medium chain, confirmed by the M1,M2,L1 test giving L1 afterwards).
             if (!did_reset && (post_l >= 4 || post_m >= 2 || post_l < pre_l || post_m < pre_m)) {
                 g_p0_combo_ended = 1;
+                if (action == 32 && (post_m >= 2 || (post_m < pre_m && pre_m >= 1))) {
+                    g_p0_m2_active = 1;
+                }
                 flog("COMBAT_GATE: combo ender CONFIRMED (action=%d, pre l=%u m=%u -> post l=%u m=%u) -> g_p0_combo_ended = 1",
                      action, pre_l, pre_m, post_l, post_m);
+            } else if (action_ok && (action == 1 || action == 0x100 || action == 0x200)) {
+                g_p0_m2_active = 0;
+            } else if (action_ok && action == 32 && post_m == 1) {
+                g_p0_m2_active = 0;
             }
         }
     });
@@ -10076,6 +10089,41 @@ int skill_is_dashing(int player_index) {
     return dashing;
 }
 
+int skill_is_dash_attacking(int player_index) {
+    if (!g_base || player_index < 0 || player_index > 1) return 0;
+    void* pc = (player_index == 0) ? g_p0_controller : g_p1_controller;
+    if (!pc || !obj_ok(pc)) return 0;
+    int dash_atk = 0;
+    PROTECT({
+        typedef bool (*fn_is_dash_att)(void*, void*);
+        fn_is_dash_att is_dash_att = (fn_is_dash_att)(g_base + 0x1175508); // PlayerController.get_IsDashAttacking
+        if (is_dash_att && is_dash_att(pc, NULL)) {
+            dash_atk = 1;
+        } else {
+            void* cur_state = *(void**)((char*)pc + 0x48);
+            if (cur_state && obj_ok(cur_state)) {
+                void* sname_obj = *(void**)((char*)cur_state + 0x10);
+                if (sname_obj && obj_ok(sname_obj)) {
+                    char sname[32] = {0};
+                    read_str(sname_obj, sname, sizeof(sname));
+                    if (strcmp(sname, "Dash") == 0) {
+                        dash_atk = 1;
+                    }
+                }
+            }
+        }
+    });
+    if (!dash_atk) {
+        uint64_t tms = (player_index == 0) ? g_p0_true_dash_enter_ms : g_p1_true_dash_enter_ms;
+        uint64_t now = propgo_now_ms();
+        if (tms > 0 && now >= tms && (now - tms <= 850) &&
+            !skill_is_special_attacking(player_index) && !skill_is_in_combo(player_index)) {
+            dash_atk = 1;
+        }
+    }
+    return dash_atk;
+}
+
 int skill_get_current_action(int player_index) {
     (void)player_index;
     return s_last_atk_level;
@@ -10094,6 +10142,10 @@ int skill_get_combo_medium_index(int player_index) {
     if (!pc || !obj_ok(pc)) return 0;
     int m = 0;
     PROTECT({ m = *(int32_t*)((uintptr_t)pc + 0x1c4); });
+    if (m == 0) {
+        if (player_index == 0 && g_p0_m2_active) return 2;
+        if (player_index == 1 && g_p1_m2_active) return 2;
+    }
     return m;
 }
 
@@ -10280,6 +10332,161 @@ int skill_copy_self_debuffs_to_opponent(int src_player_index, int dst_player_ind
         }
     });
     return copied;
+}
+
+int skill_has_fused_debuff(int target_player_index) {
+    if (!g_base || target_player_index < 0 || target_player_index > 1) return 0;
+    void* pc = (target_player_index == 0) ? g_p0_controller : g_p1_controller;
+    if (!pc || !obj_ok(pc)) return 0;
+    void* bc = *(void**)((char*)pc + 0x88);
+    if (!bc || !obj_ok(bc)) return 0;
+
+    int found = 0;
+    PROTECT({
+        void* list = *(void**)((char*)bc + 0x40);
+        if (!list || !obj_ok(list)) list = *(void**)((char*)bc + 0x20);
+        if (list && obj_ok(list)) {
+            void* items = *(void**)((char*)list + 0x10);
+            int32_t size = *(int32_t*)((char*)list + 0x18);
+            if (items && obj_ok(items) && size > 0 && size < 128) {
+                for (int i = 0; i < size; i++) {
+                    void* buff = *(void**)((char*)items + 0x20 + i * 8);
+                    if (!buff || !obj_ok(buff)) continue;
+                    bool is_stopped = *(uint8_t*)((char*)buff + 0x6C);
+                    if (is_stopped) continue;
+                    int32_t mod_type = *(int32_t*)((char*)buff + 0x18);
+                    float dur = *(float*)((char*)buff + 0x48);
+                    if (dur >= 0.0f) continue;
+
+                    void* id_str_obj = *(void**)((char*)buff + 0x28);
+                    char b_id[64] = {0};
+                    if (id_str_obj && obj_ok(id_str_obj)) read_str(id_str_obj, b_id, sizeof(b_id));
+                    if (strstr(b_id, "gp_") != NULL || strstr(b_id, "stun") != NULL) continue;
+
+                    int is_debuff = (mod_type == 2);
+                    if (!is_debuff && mod_type != 1) {
+                        if (strstr(b_id, "debuff") != NULL ||
+                            strstr(b_id, "armor_break") != NULL ||
+                            strstr(b_id, "shock") != NULL ||
+                            strstr(b_id, "bleed") != NULL ||
+                            strstr(b_id, "leak") != NULL ||
+                            strstr(b_id, "burn") != NULL ||
+                            strstr(b_id, "weakness") != NULL) {
+                            is_debuff = 1;
+                        }
+                    }
+                    if (is_debuff) {
+                        found = 1;
+                        break;
+                    }
+                }
+            }
+        }
+    });
+    return found;
+}
+
+int skill_steal_random_buff(int dst_player_index, int src_player_index, float duration_s, char* out_stolen_id, int out_len) {
+    if (out_stolen_id && out_len > 0) out_stolen_id[0] = '\0';
+    if (!g_base || dst_player_index < 0 || dst_player_index > 1 || src_player_index < 0 || src_player_index > 1) return 0;
+    void* dst_pc = (dst_player_index == 0) ? g_p0_controller : g_p1_controller;
+    void* src_pc = (src_player_index == 0) ? g_p0_controller : g_p1_controller;
+    if (!dst_pc || !obj_ok(dst_pc) || !src_pc || !obj_ok(src_pc)) return 0;
+    void* dst_bc = *(void**)((char*)dst_pc + 0x88);
+    void* src_bc = *(void**)((char*)src_pc + 0x88);
+    if (!dst_bc || !obj_ok(dst_bc) || !src_bc || !obj_ok(src_bc)) return 0;
+
+    int stolen = 0;
+    PROTECT({
+        void* list = *(void**)((char*)src_bc + 0x40);
+        if (!list || !obj_ok(list)) list = *(void**)((char*)src_bc + 0x20);
+        if (list && obj_ok(list)) {
+            void* items = *(void**)((char*)list + 0x10);
+            int32_t size = *(int32_t*)((char*)list + 0x18);
+            if (items && obj_ok(items) && size > 0 && size < 128) {
+                void* cands[64];
+                char cand_ids[64][64];
+                int n = 0;
+                for (int i = 0; i < size && n < 64; i++) {
+                    void* buff = *(void**)((char*)items + 0x20 + i * 8);
+                    if (!buff || !obj_ok(buff)) continue;
+                    bool is_stopped = *(uint8_t*)((char*)buff + 0x6C);
+                    if (is_stopped) continue;
+                    int32_t mod_type = *(int32_t*)((char*)buff + 0x18);
+                    if (mod_type != 1 && mod_type != 8) continue; // Only steal active positive Buffs (buff=1, passive_buff=8)
+                    void* id_str_obj = *(void**)((char*)buff + 0x28);
+                    void* bt_str_obj = *(void**)((char*)buff + 0x10);
+                    char b_id[64] = {0};
+                    char b_type[64] = {0};
+                    if (id_str_obj && obj_ok(id_str_obj)) read_str(id_str_obj, b_id, sizeof(b_id));
+                    if (bt_str_obj && obj_ok(bt_str_obj)) read_str(bt_str_obj, b_type, sizeof(b_type));
+                    if (!b_id[0]) continue;
+                    if (strstr(b_id, "gp_") != NULL || strstr(b_id, "stun") != NULL ||
+                        strstr(b_id, "debuff") != NULL || strstr(b_id, "break") != NULL ||
+                        strstr(b_id, "nullify") != NULL || strstr(b_id, "_vfx") != NULL ||
+                        strstr(b_id, "_cd") != NULL || strstr(b_id, "callout") != NULL ||
+                        strncmp(b_type, "dmg_", 4) == 0) {
+                        continue;
+                    }
+                    cands[n] = buff;
+                    snprintf(cand_ids[n], sizeof(cand_ids[n]), "%s", b_id);
+                    n++;
+                }
+                if (n > 0) {
+                    int pick = rand() % n;
+                    void* victim_buff = cands[pick];
+                    float steal_dur = (duration_s > 0.0f) ? duration_s : 5.0f;
+                    typedef int32_t (*fn_clone_apply)(void*, void*, void*, float, void*);
+                    fn_clone_apply clone_apply = (fn_clone_apply)(g_base + 0x00EEFEDC);
+                    int32_t res = clone_apply(dst_bc, dst_bc, victim_buff, steal_dur, NULL);
+                    if (res == 0 && g_strnew) {
+                        typedef void* (*fn_get_statmod)(void*, void*, void*);
+                        fn_get_statmod get_sm = (fn_get_statmod)(g_base + 0x00CCEEE0);
+                        void* smc_src = *(void**)((char*)src_bc + 0xA8);
+                        void* smc_dst = *(void**)((char*)dst_bc + 0xA8);
+                        void* id_str = g_strnew(cand_ids[pick]);
+                        void* found_sm = (id_str && get_sm && smc_src && obj_ok(smc_src)) ? get_sm(smc_src, id_str, NULL) : NULL;
+                        if (!found_sm && id_str && get_sm && smc_dst && obj_ok(smc_dst)) {
+                            found_sm = get_sm(smc_dst, id_str, NULL);
+                        }
+                        if (found_sm && obj_ok(found_sm)) {
+                            typedef int32_t (*fn_apply_buff_res)(void*, void*, void*, int32_t, int32_t, float, void*);
+                            fn_apply_buff_res apply_buff_res = (fn_apply_buff_res)(g_base + 0x00EEFB44);
+                            int32_t ares = apply_buff_res(dst_bc, dst_bc, found_sm, 1, 1, steal_dur, NULL);
+                            flog("SKILL_STEAL_DBG: clone_apply res=0 fallback ApplyBuff('%s') -> ares=%d", cand_ids[pick], ares);
+                            if (ares != 0) res = ares;
+                        } else {
+                            flog("SKILL_STEAL_DBG: clone_apply res=0 and GetStatModifier('%s') returned NULL", cand_ids[pick]);
+                        }
+                    }
+                    if (res == 3 || res != 0) {
+                        typedef void (*fn_pc_remove_buff)(void*, void*, void*);
+                        typedef void (*fn_bc_stop_buff)(void*, void*, int32_t, void*);
+                        typedef void (*fn_action_buff_invoke)(void*, void*, void*);
+                        fn_pc_remove_buff pc_remove = (fn_pc_remove_buff)(g_base + 0x0117D8B0);
+                        fn_bc_stop_buff bc_stop = (fn_bc_stop_buff)(g_base + 0x00EED3C8);
+                        fn_action_buff_invoke del_inv = (fn_action_buff_invoke)(g_base + 0x01539C40);
+                        void* del = *(void**)((char*)src_bc + 0x20);
+                        if (pc_remove) pc_remove(src_pc, victim_buff, NULL);
+                        if (del && obj_ok(del) && del_inv) del_inv(del, victim_buff, NULL);
+                        if (bc_stop) bc_stop(src_bc, victim_buff, 1, NULL);
+                        float old_dur = *(float*)((char*)victim_buff + 0x48);
+                        *(float*)((char*)victim_buff + 0x50) = old_dur + 10.0f;
+                        *(uint8_t*)((char*)victim_buff + 0x6c) = 1;
+                        if (out_stolen_id && out_len > 0) {
+                            snprintf(out_stolen_id, out_len, "%s", cand_ids[pick]);
+                        }
+                        stolen = 1;
+                        flog("SKILL_STEAL_BUFF: P%d <- P%d stole '%s' for %.2fs",
+                             dst_player_index, src_player_index, cand_ids[pick], steal_dur);
+                    }
+                } else {
+                    flog("SKILL_STEAL_DBG: src P%d had size=%d buffs but n=0 stealable candidates", src_player_index, size);
+                }
+            }
+        }
+    });
+    return stolen;
 }
 
 // slot 188 (0x00EEFB44): BuffsController.ApplyBuff(BuffsController applicant, StatModifier statModifier, bool updateAttributes, bool useOverrideDuration, float overrideDuration)
@@ -11679,11 +11886,13 @@ void* hook_212(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
             uint64_t now_ms = propgo_now_ms();
             if (pidx == 0) {
                 s_p0_last_dash_ms = now_ms;
+                g_p0_true_dash_enter_ms = now_ms;
                 g_p0_controller = pc;
                 skill_dispatch_attack_start(0, 32);
                 flog("DASH_ENTER (0x0117E4AC) on P0: dash timestamp updated (now_ms=%llu)", (unsigned long long)now_ms);
             } else if (pidx == 1) {
                 s_p1_last_dash_ms = now_ms;
+                g_p1_true_dash_enter_ms = now_ms;
                 g_p1_controller = pc;
                 skill_dispatch_attack_start(1, 32);
                 flog("DASH_ENTER (0x0117E4AC) on P1: dash timestamp updated (now_ms=%llu)", (unsigned long long)now_ms);
@@ -13291,6 +13500,24 @@ static void hooked_PlayerController_ResolveAttackEvent(void* self, int32_t event
     add_waiting_attack_event(p_idx, event_id, al, in_special, now_ms);
 }
 
+// PlayerAttributes.get_Unblockable (RVA: 0x00DACBB4, Pure-Query Getter)
+extern int skill_dispatch_unblockable_check(int player_index);
+static fn8 orig_PlayerAttributes_get_Unblockable = NULL;
+static int hooked_PlayerAttributes_get_Unblockable(void* self) {
+    if (!self || !obj_ok(self)) return 0;
+    typedef int (*fn_get_bool)(void*);
+    int orig_val = orig_PlayerAttributes_get_Unblockable ? ((fn_get_bool)orig_PlayerAttributes_get_Unblockable)(self) : 0;
+    if (orig_val) return 1;
+    int ret_val = 0;
+    PROTECT({
+        int pidx = is_player0_attr(self) ? 0 : 1;
+        if (skill_dispatch_unblockable_check(pidx)) {
+            ret_val = 1;
+        }
+    });
+    return ret_val;
+}
+
 // PlayerSpecialAttackState.OnEnter (RVA: 0x00E339D8) & OnExit (RVA: 0x00E33D60)
 static fn8 orig_PlayerSpecialAttackState_OnEnter = NULL;
 static void hooked_PlayerSpecialAttackState_OnEnter(void* self, void* initArgs, void* method) {
@@ -14332,6 +14559,7 @@ static void* installer(void* arg){
     inline_hook((void*)(g_base + 0x00EA0DB8), (void*)hooked_PropsController_SetActive, (fn8*)&orig_PropsController_SetActive);
     inline_hook((void*)(g_base + 0x00EA1734), (void*)hooked_PropsController_PlayAnimatorState, (fn8*)&orig_PropsController_PlayAnimatorState);
     inline_hook((void*)(g_base + 0x00EA1090), (void*)hooked_PropsController_SetScale, (fn8*)&orig_PropsController_SetScale);
+    inline_hook((void*)(g_base + 0x00DACBB4), (void*)hooked_PlayerAttributes_get_Unblockable, (fn8*)&orig_PlayerAttributes_get_Unblockable);
 
     // Auto-enter on splash screen overlay (Play Now / OnDismiss):
     inline_hook((void*)(g_base + 0x00CC49BC), (void*)hooked_SplashScreenOverlay_SetupWindow, &orig_SplashScreenOverlay_SetupWindow);

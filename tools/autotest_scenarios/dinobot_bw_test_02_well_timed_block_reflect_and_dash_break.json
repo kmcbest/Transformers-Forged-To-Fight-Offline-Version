@@ -1,0 +1,59 @@
+{
+  "active": true,
+  "name": "dinobot_bw_test_02_well_timed_block_reflect_and_dash_break",
+  "banner": "#2 恐龙勇士 即时格挡减伤50%(<=380ms) + 格挡近战反伤10% + 格挡前冲反伤20%与破甲(9s)",
+  "qid": "1.1.1",
+  "auto_fight": 0,
+  "freeze_enemy_ai": 1,
+  "dummy_invincible": 1,
+  "player_invincible": 0,
+  "max_duration_ms": 25000,
+  "p0": {
+    "bid": "dinobot_bw_kabam",
+    "mana": 0.0
+  },
+  "p1": {
+    "bid": "ironhide_gs_kabam",
+    "mana": 2.0
+  },
+  "p0_script": [
+    { "action": "WAIT", "duration_ms": 800 },
+    { "action": "BLOCK", "hold_ms": 2200 },
+    { "action": "WAIT", "duration_ms": 1400 },
+    { "action": "BLOCK", "hold_ms": 3800 },
+    { "action": "WAIT", "duration_ms": 1200 },
+    { "action": "BLOCK", "hold_ms": 4000 },
+    { "action": "WAIT", "duration_ms": 1200 },
+    { "action": "BLOCK", "hold_ms": 4000 },
+    { "action": "WAIT", "duration_ms": 2000 }
+  ],
+  "p1_script": [
+    { "action": "APPLY_BUFF", "target": "P1", "id": "ironhide_sp2_armor_up", "dur": 40.0, "stacks": 2 },
+    { "action": "WAIT", "duration_ms": 500 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 2800 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "LIGHT", "repeat": 4 },
+    { "action": "WAIT", "duration_ms": 1400 },
+    { "action": "SP2", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 2800 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "LIGHT", "repeat": 4 },
+    { "action": "WAIT", "duration_ms": 2000 }
+  ],
+  "assertions": {
+    "must_apply_buffs": [
+      { "target": "P1", "mod_substr": "dinobot_dash_block_break", "min_count": 1 }
+    ],
+    "must_hit_connected": [
+      { "attacker": "P1", "sp": 0, "min_count": 4 },
+      { "attacker": "P1", "sp": 2, "min_count": 1 }
+    ],
+    "must_log_substrings": [
+      { "substr": "DINOBOT_WELL_TIMED_BLOCK: P0 well-timed block", "min_count": 1 },
+      { "substr": "DINOBOT_DASH_BLOCK: P0 blocked Dash attack from P1 -> 40% Armor Break (9s) + reflect", "min_count": 1 },
+      { "substr": "DINOBOT_MELEE_BLOCK: P0 blocked Melee attack from P1", "min_count": 1 },
+      { "substr": "SKILL_DEAL_DAMAGE: Player 1 took", "min_count": 2 }
+    ]
+  }
+}

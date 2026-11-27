@@ -1,0 +1,49 @@
+{
+  "active": true,
+  "name": "megatron_gs_test_05_passive_knockdown_unstoppable",
+  "banner": "#5 G1 威震天 被动不可阻挡：轻击不触发；低血被重击击倒按 0.7*失血% 触发3秒(E915)",
+  "qid": "1.1.1",
+  "auto_fight": 0,
+  "freeze_enemy_ai": 1,
+  "dummy_invincible": 1,
+  "player_invincible": 1,
+  "max_duration_ms": 22000,
+  "p0": {
+    "bid": "megatron_gs_leader2015",
+    "mana": 0.0
+  },
+  "p1": {
+    "bid": "optimusprime_cin_tf",
+    "mana": 0.0
+  },
+  "p0_script": [
+    { "action": "SET_HP", "target": "P0", "hp_ratio": 0.10 },
+    { "action": "WAIT", "duration_ms": 20000 }
+  ],
+  "p1_script": [
+    { "action": "WAIT", "duration_ms": 600 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "LIGHT", "repeat": 3 },
+    { "action": "WAIT", "duration_ms": 900 },
+    { "action": "HEAVY", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 3400 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "HEAVY", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 3400 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "HEAVY", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 3400 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "HEAVY", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 2000 }
+  ],
+  "assertions": {
+    "must_apply_buffs": [
+      { "target": "P0", "mod_substr": "megatron_knockdown_unstoppable", "min_count": 1 }
+    ],
+    "must_log_substrings": [
+      { "substr": "MEGATRON_KD_UNSTOPPABLE: P0 knocked down", "min_count": 2 },
+      { "substr": "-> 3.0s unstoppable", "min_count": 1 }
+    ]
+  }
+}

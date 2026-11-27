@@ -1,0 +1,40 @@
+{
+  "active": true,
+  "name": "dinobot_bw_test_03_sp1_armor_break_and_dispel",
+  "banner": "#3 恐龙勇士 SP1 每击80%施加30%破甲(8s，含先抵消护甲)",
+  "qid": "1.1.1",
+  "auto_fight": 0,
+  "freeze_enemy_ai": 1,
+  "dummy_invincible": 1,
+  "player_invincible": 1,
+  "max_duration_ms": 18000,
+  "p0": {
+    "bid": "dinobot_bw_kabam",
+    "mana": 3.0
+  },
+  "p1": {
+    "bid": "ironhide_gs_kabam",
+    "mana": 0.0
+  },
+  "p0_script": [
+    { "action": "WAIT", "duration_ms": 600 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "SP1", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 3200 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "SP1", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 3500 }
+  ],
+  "p1_script": [
+    { "action": "APPLY_BUFF", "target": "P1", "id": "ironhide_sp2_armor_up", "dur": 30.0, "stacks": 2 },
+    { "action": "WAIT", "duration_ms": 15000 }
+  ],
+  "assertions": {
+    "must_apply_buffs": [
+      { "target": "P1", "mod_substr": "dinobot_sp1_armor_break", "min_count": 1 }
+    ],
+    "must_hit_connected": [
+      { "attacker": "P0", "sp": 1, "min_count": 3 }
+    ]
+  }
+}

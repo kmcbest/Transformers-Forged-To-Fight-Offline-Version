@@ -80,6 +80,8 @@ int skill_accelerate_dots(int player_index, float accel_pct);
 int skill_clone_buff_from_opponent(int dst_player_index, int src_player_index, const char* mod_id);
 int skill_dispel_random_buff_by_category(int target_player_index, int dispel_melee, int dispel_armor, char* out_removed_id, int out_len);
 int skill_copy_self_debuffs_to_opponent(int src_player_index, int dst_player_index);
+int skill_has_fused_debuff(int target_player_index);
+int skill_steal_random_buff(int dst_player_index, int src_player_index, float duration_s, char* out_stolen_id, int out_len);
 
 // 警车近战增益层数与充能状态查询/打断
 int skill_get_prowl_melee_stacks(int player_index);
@@ -97,6 +99,7 @@ int skill_is_special_attacking(int player_index);
 int skill_is_attacking(int player_index);
 int skill_is_melee_attacking(int player_index);
 int skill_is_dashing(int player_index);
+int skill_is_dash_attacking(int player_index);
 int skill_get_current_action(int player_index);
 int skill_get_combo_light_index(int player_index);
 int skill_get_combo_medium_index(int player_index);

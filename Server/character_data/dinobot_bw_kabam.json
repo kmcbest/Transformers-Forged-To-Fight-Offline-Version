@@ -45,14 +45,14 @@
     "sp3": {
       "name_zh": "白垩纪大屠杀",
       "name_en": "Cretaceous Carnage",
-      "desc_zh": "除第一击和最后一击外，每次攻击有50%的概率得到1层修复，4秒内修复最大生命值的3%",
+      "desc_zh": "每次咬击有50%的概率得到1层修复，4秒内修复最大生命值的3%",
       "pua_icon": "E503",
       "ui_trigger": "onSpecial3Hit",
       "effects": [
         {
           "title_zh": "修复",
           "title_en": "Repair",
-          "desc_zh": "除第一击和最后一击外，每次攻击有50%的概率得到1层修复，4秒内修复最大生命值的3%",
+          "desc_zh": "每次咬击有50%的概率得到1层修复，4秒内修复最大生命值的3%",
           "pua_icon": "E503"
         },
         {
