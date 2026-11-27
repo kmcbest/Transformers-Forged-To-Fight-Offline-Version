@@ -3,6 +3,8 @@
 #include "../nativehook/skills/skill_types.h"
 #include "../nativehook/skills/skill_dispatcher.h"
 #include "../nativehook/bot_info.h"
+#include "sim_roster_data.h"
+#include "sim_mods_data.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
@@ -87,6 +89,8 @@ typedef struct {
     uint64_t next_prowl_tick_ms;
 
     uint64_t dodge_end_ms;
+    uint64_t last_backdash_ms;
+    uint64_t last_sidestep_ms;
     uint64_t last_shot_ms;
     uint64_t last_dash_ms;
     float last_ranged_dmg;
@@ -94,6 +98,11 @@ typedef struct {
 
     int buff_count;
     SimBuff buffs[MAX_BUFFS];
+    int bot_class;
+    uint64_t stun_end_ms;
+    uint64_t knockdown_end_ms;
+    uint64_t action_busy_end_ms;
+    const SimRosterEntry* roster;
 } SimCombatant;
 
 typedef struct {
@@ -106,6 +115,23 @@ typedef struct {
 static SimCombatant g_players[2];
 static uint64_t g_sim_clock_ms = 1000; // 从 1000ms 起算
 static int g_p1_buffs_nullified = 0;
+static int s_authentic_mode = 0;
+
+static const SimRosterEntry* find_sim_roster(const char* bot_id) {
+    if (!bot_id || !bot_id[0]) return NULL;
+    for (int i = 0; i < NUM_SIM_ROSTER; i++) {
+        if (strcmp(SIM_ROSTER[i].bot_id, bot_id) == 0) {
+            return &SIM_ROSTER[i];
+        }
+    }
+    for (int i = 0; i < NUM_SIM_ROSTER; i++) {
+        if (strstr(SIM_ROSTER[i].bot_id, bot_id) != NULL ||
+            strstr(bot_id, SIM_ROSTER[i].bot_id) != NULL) {
+            return &SIM_ROSTER[i];
+        }
+    }
+    return NULL;
+}
 
 static char g_logs[MAX_LOG_LINES][LOG_LINE_LEN];
 static int g_log_head = 0;
@@ -405,8 +431,85 @@ float skill_get_attack(int player_index) {
     return 2000.0f;
 }
 
+static const SimModMeta* find_sim_mod_meta(const char* mod_id) {
+    if (!mod_id || !mod_id[0]) return NULL;
+    for (int i = 0; i < NUM_SIM_MODS; i++) {
+        if (strcmp(SIM_MODS[i].mod_id, mod_id) == 0) {
+            return &SIM_MODS[i];
+        }
+    }
+    return NULL;
+}
+
+static float sim_get_crit_rate_from_buffs(int attacker_idx, int target_idx) {
+    if (attacker_idx < 0 || attacker_idx >= 2 || target_idx < 0 || target_idx >= 2) return 0.0f;
+    float bonus = 0.0f;
+    SimCombatant* self = &g_players[attacker_idx];
+    for (int i = 0; i < self->buff_count; i++) {
+        const char* id = self->buffs[i].mod_id;
+        int st = self->buffs[i].stacks;
+        // Skip modifiers already returned by skill_*.c on_crit_chance_mod
+        if (strcmp(id, "blitzwing_jet_crit") == 0 || strcmp(id, "ironhide_missile_crit") == 0) {
+            continue;
+        }
+        const SimModMeta* meta = find_sim_mod_meta(id);
+        if (meta && meta->kind == SMOD_CRIT_RATE) {
+            bonus += meta->magnitude * (float)st;
+        }
+    }
+    SimCombatant* opp = &g_players[target_idx];
+    for (int i = 0; i < opp->buff_count; i++) {
+        const SimModMeta* meta = find_sim_mod_meta(opp->buffs[i].mod_id);
+        if (meta && meta->kind == SMOD_CRIT_RATE_DEBUFF) {
+            bonus += meta->magnitude * (float)opp->buffs[i].stacks;
+        }
+    }
+    return bonus;
+}
+
+static float sim_get_crit_damage_bonus_from_buffs(int attacker_idx, float raw_total_crit_rate) {
+    if (attacker_idx < 0 || attacker_idx >= 2) return 0.0f;
+    float bonus = 0.0f;
+    SimCombatant* self = &g_players[attacker_idx];
+    for (int i = 0; i < self->buff_count; i++) {
+        const char* id = self->buffs[i].mod_id;
+        int st = self->buffs[i].stacks;
+        if (strcmp(id, "blackout_infinite_fury_crit_dmg") == 0) {
+            if (raw_total_crit_rate > 1.0f) {
+                bonus += (raw_total_crit_rate - 1.0f);
+            }
+            continue;
+        }
+        const SimModMeta* meta = find_sim_mod_meta(id);
+        if (meta && meta->kind == SMOD_CRIT_DAMAGE) {
+            bonus += meta->magnitude * (float)st;
+        }
+    }
+    return bonus;
+}
+
+static void sim_dispatch_python_triggers(int attacker_idx, uint32_t trig_mask, uint32_t cur_lvl_mask) {
+    if (!s_authentic_mode || attacker_idx < 0 || attacker_idx >= 2) return;
+    SimCombatant* atker = &g_players[attacker_idx];
+    for (int i = 0; i < NUM_SIM_MODS; i++) {
+        const SimModMeta* meta = &SIM_MODS[i];
+        if (meta->is_state_only) continue;
+        if ((meta->tr_mask & trig_mask) == 0) continue;
+        if ((meta->lvl_mask & cur_lvl_mask) == 0) continue;
+        if (strcmp(meta->owner_bot_id, atker->bot_id) != 0) continue;
+        if (meta->kind == SMOD_OTHER && strstr(meta->mod_id, "callout") != NULL) continue;
+        if (meta->chance >= 1.0f || skill_random_float() < meta->chance) {
+            int tgt = meta->target_opp ? (1 - attacker_idx) : attacker_idx;
+            sim_inject_buff(tgt, meta->mod_id, meta->duration_s, 1);
+        }
+    }
+}
+
 float skill_get_total_crit_chance(int player_index) {
     if (player_index < 0 || player_index >= 2) return 0.25f;
+    if (s_authentic_mode) {
+        return g_players[player_index].crit_rate + sim_get_crit_rate_from_buffs(player_index, 1 - player_index);
+    }
     float total = 0.25f; // 默认基础暴击率 25%
     SimCombatant* self = &g_players[player_index];
     for (int i = 0; i < self->buff_count; i++) {
@@ -524,13 +627,53 @@ uint64_t skill_get_block_enter_ms(int player_index) {
 
 void skill_stun_player(int target_player_index, float duration_s) {
     if (target_player_index >= 0 && target_player_index < 2) {
-        g_players[target_player_index].is_blocking = 0;
+        SimCombatant* c = &g_players[target_player_index];
+        c->is_blocking = 0;
+        uint64_t new_end = g_sim_clock_ms + (uint64_t)(duration_s > 0.0f ? duration_s * 1000.0f : 0.0f);
+        if (new_end > c->stun_end_ms) {
+            c->stun_end_ms = new_end;
+        }
         // 若受击方尚未持有任何眩晕类 Buff (如 windblade_bleed_remote_stun)，才挂载通用 "stun" 占位
         if (!skill_has_buff(target_player_index, "stun")) {
             skill_apply_buff_dur(target_player_index, "stun", duration_s);
         }
         push_floater(target_player_index, 5, duration_s, "眩晕");
     }
+}
+
+SIM_API void sim_set_authentic_mode(int enabled) {
+    s_authentic_mode = enabled ? 1 : 0;
+}
+
+SIM_API int sim_get_authentic_mode(void) {
+    return s_authentic_mode;
+}
+
+SIM_API int sim_is_stunned(int player_idx) {
+    if (player_idx < 0 || player_idx >= 2) return 0;
+    if (g_sim_clock_ms < g_players[player_idx].stun_end_ms) return 1;
+    if (skill_has_buff(player_idx, "stun")) return 1;
+    return 0;
+}
+
+SIM_API int sim_is_knocked_down(int player_idx) {
+    if (player_idx < 0 || player_idx >= 2) return 0;
+    return (g_sim_clock_ms < g_players[player_idx].knockdown_end_ms) ? 1 : 0;
+}
+
+SIM_API int sim_can_act(int player_idx) {
+    if (player_idx < 0 || player_idx >= 2) return 0;
+    SimCombatant* c = &g_players[player_idx];
+    if (c->hp <= 0.0f) return 0;
+    if (sim_is_stunned(player_idx)) return 0;
+    if (sim_is_knocked_down(player_idx)) return 0;
+    if (g_sim_clock_ms < c->action_busy_end_ms) return 0;
+    return 1;
+}
+
+SIM_API float sim_get_hp(int player_idx) {
+    if (player_idx < 0 || player_idx >= 2) return 0.0f;
+    return g_players[player_idx].hp;
 }
 
 int skill_has_buff(int player_index, const char* buff_id_substr) {
@@ -642,7 +785,9 @@ int skill_is_melee_attacking(int player_index) {
 }
 
 uint64_t skill_get_last_dash_ms(int player_index) {
-    (void)player_index;
+    if (player_index >= 0 && player_index < 2) {
+        return g_players[player_index].last_dash_ms;
+    }
     return 0;
 }
 
@@ -652,13 +797,42 @@ uint64_t skill_get_last_melee_ms(int player_index) {
 }
 
 uint64_t skill_get_last_backdash_ms(int player_index) {
-    (void)player_index;
+    if (player_index >= 0 && player_index < 2) {
+        return g_players[player_index].last_backdash_ms;
+    }
     return 0;
 }
 
 uint64_t skill_get_last_sidestep_ms(int player_index) {
-    (void)player_index;
+    if (player_index >= 0 && player_index < 2) {
+        return g_players[player_index].last_sidestep_ms;
+    }
     return 0;
+}
+
+int skill_is_dashing(int player_index) {
+    if (player_index < 0 || player_index >= 2) return 0;
+    uint64_t dms = g_players[player_index].last_dash_ms;
+    return (dms > 0 && g_sim_clock_ms >= dms && (g_sim_clock_ms - dms <= 500)) ? 1 : 0;
+}
+
+int skill_get_current_action(int player_index) {
+    if (player_index >= 0 && player_index < 2) {
+        return g_players[player_index].current_action;
+    }
+    return 0;
+}
+
+int skill_get_combo_light_index(int player_index) {
+    if (player_index < 0 || player_index >= 2) return 0;
+    if (g_players[player_index].current_action != 1) return 0;
+    return s_sim_current_hit_is_last ? 4 : 1;
+}
+
+int skill_get_combo_medium_index(int player_index) {
+    if (player_index < 0 || player_index >= 2) return 0;
+    if (g_players[player_index].current_action != 2) return 0;
+    return s_sim_current_hit_is_last ? 2 : 1;
 }
 
 uint64_t skill_get_last_shot_ms(int player_index) {
@@ -763,18 +937,25 @@ SIM_API int sim_init(const char* p0_bot_id, const char* p1_bot_id,
     strncpy(g_p0_bot_id, g_players[0].bot_id, sizeof(g_p0_bot_id) - 1);
     strncpy(g_p1_bot_id, g_players[1].bot_id, sizeof(g_p1_bot_id) - 1);
 
-    g_players[0].max_hp = p0_max_hp > 0.0f ? p0_max_hp : 15000.0f;
+    const SimRosterEntry* r0 = find_sim_roster(g_players[0].bot_id);
+    const SimRosterEntry* r1 = find_sim_roster(g_players[1].bot_id);
+    g_players[0].roster = r0;
+    g_players[1].roster = r1;
+    g_players[0].bot_class = r0 ? r0->bot_class : 0;
+    g_players[1].bot_class = r1 ? r1->bot_class : 0;
+
+    g_players[0].max_hp = p0_max_hp > 0.0f ? p0_max_hp : (r0 ? (float)r0->hp : 15000.0f);
     g_players[0].hp = g_players[0].max_hp;
-    g_players[0].atk = p0_atk > 0.0f ? p0_atk : 1000.0f;
-    g_players[0].crit_rate = 0.20f;
-    g_players[0].crit_damage_mult = 1.50f;
+    g_players[0].atk = p0_atk > 0.0f ? p0_atk : (r0 ? (float)r0->atk : 1000.0f);
+    g_players[0].crit_rate = (r0 && (s_authentic_mode || p0_max_hp <= 0.0f)) ? r0->crit_chance : 0.20f;
+    g_players[0].crit_damage_mult = (r0 && (s_authentic_mode || p0_max_hp <= 0.0f)) ? r0->crit_damage : 1.50f;
     g_players[0].block_reduction = 0.50f;
 
-    g_players[1].max_hp = p1_max_hp > 0.0f ? p1_max_hp : 15000.0f;
+    g_players[1].max_hp = p1_max_hp > 0.0f ? p1_max_hp : (r1 ? (float)r1->hp : 15000.0f);
     g_players[1].hp = g_players[1].max_hp;
-    g_players[1].atk = p1_atk > 0.0f ? p1_atk : 1000.0f;
-    g_players[1].crit_rate = 0.16f;
-    g_players[1].crit_damage_mult = 1.50f;
+    g_players[1].atk = p1_atk > 0.0f ? p1_atk : (r1 ? (float)r1->atk : 1000.0f);
+    g_players[1].crit_rate = (r1 && (s_authentic_mode || p1_max_hp <= 0.0f)) ? r1->crit_chance : 0.16f;
+    g_players[1].crit_damage_mult = (r1 && (s_authentic_mode || p1_max_hp <= 0.0f)) ? r1->crit_damage : 1.50f;
     g_players[1].block_reduction = 0.50f;
 
     g_players[0].power_leak_end_ms = 0;
@@ -828,6 +1009,12 @@ SIM_API void sim_reset(void) {
     g_players[1].last_ranged_dmg = 0.0f;
     g_players[0].last_ranged_hit_ms = 0;
     g_players[1].last_ranged_hit_ms = 0;
+    g_players[0].stun_end_ms = 0;
+    g_players[1].stun_end_ms = 0;
+    g_players[0].knockdown_end_ms = 0;
+    g_players[1].knockdown_end_ms = 0;
+    g_players[0].action_busy_end_ms = 0;
+    g_players[1].action_busy_end_ms = 0;
 
     g_sim_clock_ms = 1000;
     g_floater_count = 0;
@@ -876,6 +1063,7 @@ SIM_API int sim_inject_buff(int target_idx, const char* mod_id, float duration_s
     }
 
     // 检查是否已有相同 mod_id (非多层减益严格保持为1层，严禁溢出堆叠)
+    const SimModMeta* meta_existing = s_authentic_mode ? find_sim_mod_meta(mod_id) : NULL;
     for (int i = 0; i < c->buff_count; i++) {
         if (strcmp(c->buffs[i].mod_id, mod_id) == 0) {
             int is_multi_stack = (strstr(mod_id, "bleed") != NULL ||
@@ -892,6 +1080,9 @@ SIM_API int sim_inject_buff(int target_idx, const char* mod_id, float duration_s
                                   strstr(mod_id, "blitzwing_clamp") != NULL ||
                                   strstr(mod_id, "nemesisprime_dark_energy") != NULL ||
                                   strstr(mod_id, "nemesisprime_sp2_") != NULL);
+            if (meta_existing && meta_existing->max_stacks > 1) {
+                is_multi_stack = 1;
+            }
             // 滑流专属减益与风刃震击严格限制为单层 (严禁多重叠加，刷新仅重置持续时间)
             if (strstr(mod_id, "slipstream_") != NULL || strstr(mod_id, "windblade_") != NULL) {
                 is_multi_stack = 0;
@@ -902,6 +1093,9 @@ SIM_API int sim_inject_buff(int target_idx, const char* mod_id, float duration_s
             }
             if (is_multi_stack) {
                 c->buffs[i].stacks += stacks;
+                if (meta_existing && meta_existing->max_stacks > 1 && c->buffs[i].stacks > meta_existing->max_stacks) {
+                    c->buffs[i].stacks = meta_existing->max_stacks;
+                }
             } else {
                 c->buffs[i].stacks = 1; // 单层减益严格限制为 1 层！
             }
@@ -923,12 +1117,22 @@ SIM_API int sim_inject_buff(int target_idx, const char* mod_id, float duration_s
         b->applied_ms = g_sim_clock_ms;
         b->dot_damage_per_sec = 0.0f;
 
-        // 如果是流血、震击、灼烧等 DOT，设置每秒伤害
-        if (strstr(mod_id, "bleed") != NULL) {
+        // 如果是流血、震击、灼烧、酸化等 DOT，优先从 StatMod 规范提取精确总伤倍率；
+        // 若已知为官方注册的 non-DOT StatMod (如 drift_focus_bleed_boost / bleed_immune / remote_stun)，严禁误触名称子串兜底！
+        if (meta_existing) {
+            if (meta_existing->kind >= SMOD_DOT_BLEED && meta_existing->kind <= SMOD_DOT_ACID && meta_existing->magnitude > 0.0f) {
+                float dur = (duration_s > 0.0f) ? duration_s : (meta_existing->duration_s > 0.0f ? meta_existing->duration_s : 4.0f);
+                b->dot_damage_per_sec = g_players[1 - target_idx].atk * meta_existing->magnitude / dur;
+                b->next_dot_ms = g_sim_clock_ms + 500;
+            }
+        } else if (strstr(mod_id, "bleed") != NULL) {
             b->dot_damage_per_sec = g_players[1 - target_idx].atk * 0.40f;
             b->next_dot_ms = g_sim_clock_ms + 1000;
         } else if (strstr(mod_id, "shock") != NULL) {
             b->dot_damage_per_sec = g_players[1 - target_idx].atk * 0.50f;
+            b->next_dot_ms = g_sim_clock_ms + 500;
+        } else if (strstr(mod_id, "burn") != NULL || strstr(mod_id, "acid") != NULL || strstr(mod_id, "incinerat") != NULL) {
+            b->dot_damage_per_sec = g_players[1 - target_idx].atk * 0.40f;
             b->next_dot_ms = g_sim_clock_ms + 500;
         }
         skill_log("SIM: Buff '%s' applied to P%d (dur=%.1fs, stacks=%d)", mod_id, target_idx, duration_s, b->stacks);
@@ -981,6 +1185,9 @@ SIM_API int sim_remove_buff(int target_idx, const char* mod_id, int count) {
                 skill_log("SIM: Consumed %d stack(s) of '%s' on P%d, left %d", count, mod_id, target_idx, c->buffs[i].stacks);
             } else {
                 skill_log("SIM: Removed '%s' from P%d", c->buffs[i].mod_id, target_idx);
+                if (strstr(c->buffs[i].mod_id, "stun") != NULL) {
+                    c->stun_end_ms = 0;
+                }
                 for (int j = i; j < c->buff_count - 1; j++) {
                     c->buffs[j] = c->buffs[j + 1];
                 }
@@ -994,6 +1201,10 @@ SIM_API int sim_remove_buff(int target_idx, const char* mod_id, int count) {
 
 SIM_API void sim_set_block(int player_idx, int is_blocking) {
     if (player_idx < 0 || player_idx >= 2) return;
+    if (s_authentic_mode && is_blocking && !sim_can_act(player_idx)) {
+        skill_log("SIM: P%d block ignored (stunned/knocked down/busy)", player_idx);
+        return;
+    }
     g_players[player_idx].is_blocking = is_blocking;
     if (is_blocking) {
         g_players[player_idx].block_enter_ms = g_sim_clock_ms;
@@ -1007,6 +1218,7 @@ SIM_API void sim_set_block(int player_idx, int is_blocking) {
 
 SIM_API int sim_dodge(int player_idx, int dodge_type) {
     if (player_idx < 0 || player_idx >= 2) return 0;
+    if (s_authentic_mode && !sim_can_act(player_idx)) return 0;
     SimCombatant* c = &g_players[player_idx];
     int opp_idx = 1 - player_idx;
     SimCombatant* opp = &g_players[opp_idx];
@@ -1044,6 +1256,7 @@ SIM_API int sim_dodge(int player_idx, int dodge_type) {
     }
 
     if (dodge_type == 0) { // 0 = 后闪 (Dash Back)
+        c->last_backdash_ms = g_sim_clock_ms;
         if (strstr(c->bot_id, "prowl") != NULL) {
             c->prowl_charging = 1;
             c->prowl_charge_start_ms = g_sim_clock_ms;
@@ -1065,6 +1278,7 @@ SIM_API int sim_dodge(int player_idx, int dodge_type) {
         skill_log("SIM: P%d performed Dash Back (后闪)", player_idx);
         return 1;
     } else if (dodge_type == 1) { // 1 = 侧闪 (Sidestep)
+        c->last_sidestep_ms = g_sim_clock_ms;
         if (strstr(c->bot_id, "bumblebee") != NULL) {
             int stacks = skill_count_buffs(player_idx, "bumblebee_crit_buff");
             if (stacks < 3) {
@@ -1088,16 +1302,16 @@ SIM_API int sim_dodge(int player_idx, int dodge_type) {
 SIM_API void sim_tick(uint32_t dt_ms) {
     g_sim_clock_ms += dt_ms;
 
-    // 1. 驱动时钟到所有技能模块 (如电影擎天柱的 1s 净化定时器，威震天的 6s 充能等)
-    skill_dispatch_simulation_tick(g_sim_clock_ms);
-
-    // 2. 检查两方 Buff 倒计时与 DOT 扣血
+    // 1. 先检查两方 Buff 倒计时与 DOT 扣血，再派发模拟时钟 (确保到期移除立即反映给各模块)
     for (int p = 0; p < 2; p++) {
         SimCombatant* c = &g_players[p];
         for (int i = 0; i < c->buff_count; ) {
             // DOT 跳伤害
             if (c->buffs[i].dot_damage_per_sec > 0.0f && g_sim_clock_ms >= c->buffs[i].next_dot_ms) {
                 float tick_dmg = c->buffs[i].dot_damage_per_sec * 0.5f; // 0.5s 一跳
+                if (s_authentic_mode && c->buffs[i].stacks > 1) {
+                    tick_dmg *= (float)c->buffs[i].stacks;
+                }
                 c->hp -= tick_dmg;
                 if (c->hp < 0.0f) c->hp = 0.0f;
                 c->buffs[i].next_dot_ms = g_sim_clock_ms + 500;
@@ -1109,6 +1323,9 @@ SIM_API void sim_tick(uint32_t dt_ms) {
                 c->buffs[i].remaining_ms -= (int64_t)dt_ms;
                 if (c->buffs[i].remaining_ms <= 0) {
                     skill_log("SIM: Buff '%s' on P%d EXPIRED", c->buffs[i].mod_id, p);
+                    if (strstr(c->buffs[i].mod_id, "stun") != NULL) {
+                        c->stun_end_ms = 0;
+                    }
                     for (int j = i; j < c->buff_count - 1; j++) {
                         c->buffs[j] = c->buffs[j + 1];
                     }
@@ -1118,7 +1335,14 @@ SIM_API void sim_tick(uint32_t dt_ms) {
             }
             i++;
         }
+        if (c->is_blocking && (sim_is_stunned(p) || sim_is_knocked_down(p))) {
+            c->is_blocking = 0;
+            skill_dispatch_block_state(p, 0);
+        }
     }
+
+    // 2. 驱动时钟到所有技能模块 (如电影擎天柱的 1s 净化定时器，漂移/横炮流血联动等)
+    skill_dispatch_simulation_tick(g_sim_clock_ms);
 
     // 3. 警车充能递增与小黄蜂暴击 Buff 检查
     for (int p = 0; p < 2; p++) {
@@ -1169,6 +1393,7 @@ SIM_API void sim_tick(uint32_t dt_ms) {
 SIM_API int sim_dash(int player_idx) {
     if (player_idx < 0 || player_idx >= 2) return 0;
     SimCombatant* c = &g_players[player_idx];
+    c->last_dash_ms = g_sim_clock_ms;
     // 主动前冲，打断充能
     if (c->prowl_charging) {
         prowl_finish_charge_sim(player_idx, "dash forward");
@@ -1190,6 +1415,11 @@ SIM_API int sim_attack_start(int attacker_idx, int action_type) {
     if (atker->in_special && atker->prowl_charging) {
         prowl_finish_charge_sim(attacker_idx, "special attack start");
     }
+    if (s_authentic_mode) {
+        if (action_type == 16) sim_dispatch_python_triggers(attacker_idx, STRIG_ON_SP1_ACTIVATE, SLVL_ALL);
+        else if (action_type == 32) sim_dispatch_python_triggers(attacker_idx, STRIG_ON_SP2_ACTIVATE, SLVL_ALL);
+        else if (action_type == 64) sim_dispatch_python_triggers(attacker_idx, STRIG_ON_SP3_ACTIVATE, SLVL_ALL);
+    }
     skill_dispatch_attack_start(attacker_idx, action_type);
     skill_log("SIM_ATTACK_START: P%d started action %d (%s)", attacker_idx, action_type, atker->bot_id);
     return 1;
@@ -1207,6 +1437,12 @@ SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
     else if (action_type == 32) sp_idx = 2;
     else if (action_type == 64) sp_idx = 3;
 
+    int target_check_idx = target_idx;
+    int auto_block_mode = (is_blocked < 0) || s_authentic_mode;
+    if (is_blocked < 0) {
+        is_blocked = victim->is_blocking ? 1 : 0;
+    }
+
     // 放S技：触发 attack_start (含充能打断与逆火反噬)
     if (sp_idx > 0) {
         if (hit_index == 0) {
@@ -1216,6 +1452,24 @@ SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
 
     int is_heavy = (action_type == 4);
     int is_ranged = (action_type == 8);
+    if (s_authentic_mode && atker->roster) {
+        if (is_heavy && hit_index >= 0 && hit_index < atker->roster->heavy_hits) {
+            is_ranged = atker->roster->heavy_ranged[hit_index];
+        } else if (sp_idx == 1 && hit_index >= 0 && hit_index < atker->roster->sp1_hits) {
+            is_ranged = atker->roster->sp1_ranged[hit_index];
+        } else if (sp_idx == 2 && hit_index >= 0 && hit_index < atker->roster->sp2_hits) {
+            is_ranged = atker->roster->sp2_ranged[hit_index];
+        }
+    }
+    if (auto_block_mode && is_blocked) {
+        if (is_heavy || sp_idx == 3 || skill_has_buff(attacker_idx, "unblockable")) {
+            is_blocked = 0;
+            victim->is_blocking = 0;
+            skill_dispatch_block_state(target_check_idx, 0);
+            skill_log("SIM_ATTACK: P%d broke P%d block (heavy=%d sp=%d unblockable=%d)",
+                      attacker_idx, target_check_idx, is_heavy, sp_idx, skill_has_buff(attacker_idx, "unblockable"));
+        }
+    }
     s_sim_current_hit_is_last = is_last_hit ? 1 : 0;
 
     atker->current_action = action_type;
@@ -1240,7 +1494,7 @@ SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
     };
 
     int penetrated = 0;
-    if (is_ranged && (skill_is_heavy_attacking(target_idx) || skill_has_buff(target_idx, "windblade_heavy_range_immune") || skill_has_buff(target_idx, "slipstream_heavy_range_immune"))) {
+    if (is_ranged && (skill_is_heavy_attacking(target_idx) || skill_has_buff(target_idx, "windblade_heavy_range_immune") || skill_has_buff(target_idx, "slipstream_heavy_range_immune") || skill_dispatch_ranged_pierce_check(target_idx, action_type))) {
         penetrated = 1;
     }
 
@@ -1282,7 +1536,7 @@ SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
 
     if (penetrated || out_evade || (skill_dispatch_evade_check(&evade_ctx, &out_evade) && out_evade)) {
         skill_log("SIM_ATTACK: P%d attack was EVADED/PENETRATED by P%d (%s)!", attacker_idx, target_idx, victim->bot_id);
-        if ((strstr(victim->bot_id, "windblade") != NULL || strstr(victim->bot_id, "slipstream") != NULL) && is_ranged) {
+        if ((penetrated || strstr(victim->bot_id, "windblade") != NULL || strstr(victim->bot_id, "slipstream") != NULL) && is_ranged) {
             push_floater(target_idx, 4, 0.0f, "💨 穿透规避");
         } else {
             push_floater(target_idx, 4, 0.0f, "规避");
@@ -1302,13 +1556,42 @@ SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
         int charges = skill_count_buffs(attacker_idx, "necrotronus_titan_charge");
         base_dmg *= (1.0f + 0.015f * (float)charges);
     }
-    if (action_type == 1) base_dmg *= 0.25f;       // 轻击
-    else if (action_type == 2) base_dmg *= 0.40f;  // 中击
-    else if (action_type == 4) base_dmg *= 1.00f;  // 重击
-    else if (action_type == 8) base_dmg *= 0.35f;  // 远程射击 (Ranged)
-    else if (sp_idx == 1) base_dmg *= 1.80f;       // SP1
-    else if (sp_idx == 2) base_dmg *= 2.80f;       // SP2
-    else if (sp_idx == 3) base_dmg *= 4.50f;       // SP3
+    if (s_authentic_mode) {
+        float split = 1.0f;
+        const SimRosterEntry* r = atker->roster;
+        if (action_type == 1) base_dmg *= 0.20f;
+        else if (action_type == 2) base_dmg *= 0.40f;
+        else if (action_type == 4) {
+            if (r && hit_index >= 0 && hit_index < r->heavy_hits && r->heavy_splits[hit_index] > 0.0f) {
+                split = r->heavy_splits[hit_index];
+            }
+            base_dmg *= 0.80f * split;
+        } else if (action_type == 8) base_dmg *= 0.20f;
+        else if (sp_idx == 1) {
+            if (r && hit_index >= 0 && hit_index < r->sp1_hits && r->sp1_splits[hit_index] > 0.0f) {
+                split = r->sp1_splits[hit_index];
+            }
+            base_dmg *= 1.50f * split;
+        } else if (sp_idx == 2) {
+            if (r && hit_index >= 0 && hit_index < r->sp2_hits && r->sp2_splits[hit_index] > 0.0f) {
+                split = r->sp2_splits[hit_index];
+            }
+            base_dmg *= 3.00f * split;
+        } else if (sp_idx == 3) {
+            if (r && hit_index >= 0 && hit_index < r->sp3_hits && r->sp3_splits[hit_index] > 0.0f) {
+                split = r->sp3_splits[hit_index];
+            }
+            base_dmg *= 3.00f * split;
+        }
+    } else {
+        if (action_type == 1) base_dmg *= 0.25f;       // 轻击
+        else if (action_type == 2) base_dmg *= 0.40f;  // 中击
+        else if (action_type == 4) base_dmg *= 1.00f;  // 重击
+        else if (action_type == 8) base_dmg *= 0.35f;  // 远程射击 (Ranged)
+        else if (sp_idx == 1) base_dmg *= 1.80f;       // SP1
+        else if (sp_idx == 2) base_dmg *= 2.80f;       // SP2
+        else if (sp_idx == 3) base_dmg *= 4.50f;       // SP3
+    }
 
     // 暴击率构成计算 (Crit Rate Breakdown & Roll Dice)
     float base_crit = atker->crit_rate;
@@ -1339,10 +1622,12 @@ SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
     }
 
     float module_crit = skill_dispatch_crit_chance_mod(attacker_idx, action_type);
-    float total_crit_rate = base_crit + blade_crit + resolution_crit + necro_heavy_crit + module_crit;
+    float buff_crit = s_authentic_mode ? sim_get_crit_rate_from_buffs(attacker_idx, target_idx) : 0.0f;
+    float raw_total_crit_rate = base_crit + blade_crit + resolution_crit + necro_heavy_crit + module_crit + buff_crit;
     if (is_thundercracker && !is_ranged && sp_idx == 0) {
-        total_crit_rate = 0.0f; // 惊天雷近战 0 暴击
+        raw_total_crit_rate = 0.0f; // 惊天雷近战 0 暴击
     }
+    float total_crit_rate = raw_total_crit_rate;
     if (total_crit_rate < 0.0f) total_crit_rate = 0.0f;
     if (total_crit_rate > 1.0f) total_crit_rate = 1.0f;
 
@@ -1356,8 +1641,14 @@ SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
 
     if (is_crit) {
         float crit_mult = atker->crit_damage_mult;
+        if (s_authentic_mode) {
+            crit_mult += sim_get_crit_damage_bonus_from_buffs(attacker_idx, raw_total_crit_rate);
+        }
         if (strstr(atker->bot_id, "necrotronus") != NULL && skill_has_buff(attacker_idx, "necrotronus_overwhelming_power")) {
-            crit_mult += 0.803f; // 觉醒愤怒：势不可挡激活时暴伤增加 80.3%
+            if (!s_authentic_mode || find_sim_mod_meta("necrotronus_overwhelming_power") == NULL ||
+                find_sim_mod_meta("necrotronus_overwhelming_power")->kind != SMOD_CRIT_DAMAGE) {
+                crit_mult += 0.803f; // 觉醒愤怒：势不可挡激活时暴伤增加 80.3%
+            }
         }
         base_dmg *= crit_mult;
         if (blade_crit > 0.0f || resolution_crit > 0.0f) {
@@ -1404,6 +1695,24 @@ SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
 
     skill_dispatch_hit_connected(&hit_ctx);
 
+    if (s_authentic_mode && !is_blocked) {
+        uint32_t cur_lvl = SLVL_MEDIUM;
+        if (sp_idx == 1) cur_lvl = SLVL_SP1;
+        else if (sp_idx == 2) cur_lvl = SLVL_SP2;
+        else if (sp_idx == 3) cur_lvl = SLVL_SP3;
+        else if (is_heavy) cur_lvl = SLVL_HEAVY;
+        else if (is_ranged) cur_lvl = SLVL_RANGED;
+        else if (action_type == 1) cur_lvl = SLVL_LIGHT;
+
+        uint32_t trig = STRIG_ON_HIT;
+        if (is_heavy) trig |= STRIG_ON_HEAVY_HIT;
+        if (sp_idx == 1) trig |= STRIG_ON_SP1_HIT;
+        else if (sp_idx == 2) trig |= STRIG_ON_SP2_HIT;
+        else if (sp_idx == 3) trig |= STRIG_ON_SP3_HIT;
+        if (is_crit) trig |= STRIG_ON_CRIT;
+        sim_dispatch_python_triggers(attacker_idx, trig, cur_lvl);
+    }
+
     float final_dmg = hit_ctx.modified_damage;
     // 亡灵天尊势不可挡模式：受到近战伤害放大 30%
     if (!is_ranged && sp_idx == 0 && strstr(victim->bot_id, "necrotronus") != NULL) {
@@ -1430,6 +1739,9 @@ SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
 
     victim->hp -= final_dmg;
     if (victim->hp < 0.0f) victim->hp = 0.0f;
+    if (s_authentic_mode && !is_blocked && final_dmg > 0.0f) {
+        skill_dispatch_hitreact_enter(target_idx);
+    }
     if (is_ranged) {
         victim->last_ranged_dmg = final_dmg;
         victim->last_ranged_hit_ms = g_sim_clock_ms;
@@ -1469,18 +1781,30 @@ SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
         if (atker->mana > 3.0f) atker->mana = 3.0f;
     } else {
         // 扣除释放 SP 消耗的能量
-        atker->mana -= (float)sp_idx;
-        if (atker->mana < 0.0f) atker->mana = 0.0f;
+        if (!s_authentic_mode || hit_index == 0) {
+            atker->mana -= (float)sp_idx;
+            if (atker->mana < 0.0f) atker->mana = 0.0f;
+        }
     }
 
     // 受击方防守加气结算 (对齐 hook_198 官方原版基准: 基础比进攻方多 20%，即 1.2 倍速)
     float def_gain = 0.06f;
-    if (sp_idx == 1) {
-        def_gain = 0.20f; // SP1 受击 60点 = 0.20格
-    } else if (sp_idx == 2) {
-        def_gain = 0.40f; // SP2 受击 120点 = 0.40格
-    } else if (sp_idx == 3) {
-        def_gain = 0.50f; // SP3 受击 150点 = 0.50格
+    if (sp_idx > 0) {
+        float sp_total_def = (sp_idx == 1) ? 0.20f : (sp_idx == 2 ? 0.40f : 0.50f);
+        if (s_authentic_mode && atker->roster) {
+            const SimRosterEntry* r = atker->roster;
+            float sp_split = 1.0f;
+            if (sp_idx == 1 && r->sp1_hits > 0 && hit_index >= 0 && hit_index < r->sp1_hits && r->sp1_splits[hit_index] > 0.0f) {
+                sp_split = r->sp1_splits[hit_index];
+            } else if (sp_idx == 2 && r->sp2_hits > 0 && hit_index >= 0 && hit_index < r->sp2_hits && r->sp2_splits[hit_index] > 0.0f) {
+                sp_split = r->sp2_splits[hit_index];
+            } else if (sp_idx == 3 && r->sp3_hits > 0 && hit_index >= 0 && hit_index < r->sp3_hits && r->sp3_splits[hit_index] > 0.0f) {
+                sp_split = r->sp3_splits[hit_index];
+            }
+            def_gain = sp_total_def * sp_split;
+        } else {
+            def_gain = sp_total_def;
+        }
     } else {
         if (action_type == 1) def_gain = 0.06f;        // 轻击受击 18点 = 0.06格 (15 * 1.2)
         else if (action_type == 2) def_gain = 0.12f;   // 中击受击 36点 = 0.12格 (30 * 1.2)
@@ -1509,6 +1833,14 @@ SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
               attacker_idx, action_type, sp_idx, is_heavy, is_last_hit,
               target_idx, final_dmg, effective_crit, crit_rate_pct, is_blocked, victim->hp);
 
+    if ((is_heavy || sp_idx == 3) && is_last_hit && !is_blocked) {
+        uint64_t kd_end = g_sim_clock_ms + 1400;
+        if (kd_end > victim->knockdown_end_ms) {
+            victim->knockdown_end_ms = kd_end;
+        }
+        victim->is_blocking = 0;
+    }
+
     if (is_last_hit) {
         atker->current_action = 0;
         atker->is_heavy = 0;
@@ -1516,6 +1848,46 @@ SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
     }
 
     return (int)final_dmg;
+}
+
+SIM_API int sim_exec_special(int attacker_idx, int sp_tier) {
+    if (attacker_idx < 0 || attacker_idx >= 2 || sp_tier < 1 || sp_tier > 3) return 0;
+    SimCombatant* atker = &g_players[attacker_idx];
+    if (atker->hp <= 0.0f) return 0;
+    const SimRosterEntry* r = atker->roster ? atker->roster : find_sim_roster(atker->bot_id);
+    atker->roster = r;
+
+    int action_type = (sp_tier == 1) ? 16 : (sp_tier == 2) ? 32 : 64;
+    int hits = (sp_tier == 3) ? 1 : 2;
+    int dur_ms = (sp_tier == 1) ? 1800 : (sp_tier == 2) ? 2400 : 4500;
+    if (r) {
+        if (sp_tier == 1 && r->sp1_hits > 0) {
+            hits = r->sp1_hits;
+            dur_ms = (r->sp1_dur_ms > 0) ? r->sp1_dur_ms : 1800;
+        } else if (sp_tier == 2 && r->sp2_hits > 0) {
+            hits = r->sp2_hits;
+            dur_ms = (r->sp2_dur_ms > 0) ? r->sp2_dur_ms : 2400;
+        } else if (sp_tier == 3 && r->sp3_hits > 0) {
+            hits = r->sp3_hits;
+            dur_ms = (r->sp3_dur_ms > 0) ? r->sp3_dur_ms : 4500;
+        }
+    }
+    if (hits > 8) hits = 8;
+
+    sim_attack_start(attacker_idx, action_type);
+    skill_dispatch_special_state(attacker_idx, sp_tier, 1);
+    if (g_sim_clock_ms + (uint64_t)dur_ms > atker->action_busy_end_ms) {
+        atker->action_busy_end_ms = g_sim_clock_ms + (uint64_t)dur_ms;
+    }
+
+    int total_dmg = 0;
+    for (int h = 0; h < hits; h++) {
+        int is_last = (h == hits - 1) ? 1 : 0;
+        total_dmg += sim_attack(attacker_idx, action_type, h, is_last, -1);
+    }
+
+    skill_dispatch_special_state(attacker_idx, sp_tier, 0);
+    return total_dmg;
 }
 
 SIM_API void sim_fire_attack_ended(int attacker_idx, int attack_level, int hit_index, uint32_t flags, float damage) {

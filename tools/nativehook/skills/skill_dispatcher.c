@@ -32,6 +32,7 @@ extern BotSkillModule g_module_kickback;
 extern BotSkillModule g_module_slipstream;
 extern BotSkillModule g_module_cheetor;
 extern BotSkillModule g_module_sideswipe;
+extern BotSkillModule g_module_sideswipe_cin;
 extern BotSkillModule g_module_necrotronus;
 extern BotSkillModule g_module_motormaster;
 extern BotSkillModule g_module_elita;
@@ -127,6 +128,7 @@ static const BotSkillModule* s_registry[] = {
     &g_module_slipstream,
     &g_module_cheetor,
     &g_module_sideswipe,
+    &g_module_sideswipe_cin,
     &g_module_necrotronus,
     &g_module_motormaster,
     &g_module_elita,
@@ -527,4 +529,14 @@ void skill_dispatch_crit_rolled(int player_index, int atk_level, int is_last_hit
     if (mod && mod->on_crit_rolled) {
         mod->on_crit_rolled(player_index, atk_level, is_last_hit, is_crit);
     }
+}
+
+int skill_dispatch_ranged_pierce_check(int player_index, int atk_level) {
+    if (player_index < 0 || player_index >= 2) return 0;
+    const char* bot_id = (player_index == 0) ? g_p0_bot_id : g_p1_bot_id;
+    const BotSkillModule* mod = find_module_by_bot(bot_id);
+    if (mod && mod->on_ranged_pierce_check) {
+        return mod->on_ranged_pierce_check(player_index, atk_level);
+    }
+    return 0;
 }

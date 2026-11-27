@@ -21,6 +21,14 @@ SIM_API void sim_reset(void);
 
 SIM_API void sim_tick(uint32_t dt_ms);
 
+SIM_API void sim_set_authentic_mode(int enabled);
+SIM_API int sim_get_authentic_mode(void);
+SIM_API int sim_can_act(int player_idx);
+SIM_API int sim_is_stunned(int player_idx);
+SIM_API int sim_is_knocked_down(int player_idx);
+SIM_API float sim_get_hp(int player_idx);
+SIM_API int sim_exec_special(int attacker_idx, int sp_tier);
+
 SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
                        int is_last_hit, int is_blocked);
 

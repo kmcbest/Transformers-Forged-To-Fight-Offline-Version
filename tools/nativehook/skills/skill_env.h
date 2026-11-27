@@ -96,6 +96,10 @@ int skill_is_special_attacking(int player_index);
 // 普攻/近战/前冲实时动作状态查询
 int skill_is_attacking(int player_index);
 int skill_is_melee_attacking(int player_index);
+int skill_is_dashing(int player_index);
+int skill_get_current_action(int player_index);
+int skill_get_combo_light_index(int player_index);
+int skill_get_combo_medium_index(int player_index);
 uint64_t skill_get_last_dash_ms(int player_index);
 uint64_t skill_get_last_melee_ms(int player_index);
 uint64_t skill_get_last_backdash_ms(int player_index);

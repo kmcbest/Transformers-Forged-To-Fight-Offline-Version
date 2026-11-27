@@ -322,6 +322,38 @@ class SimEngine:
             self.dll.sim_get_projectile_speed.argtypes = [ctypes.c_int, ctypes.c_float, ctypes.c_int]
             self.dll.sim_get_projectile_speed.restype = ctypes.c_float
 
+        if hasattr(self.dll, 'sim_set_authentic_mode'):
+            self.dll.sim_set_authentic_mode.argtypes = [ctypes.c_int]
+            self.dll.sim_set_authentic_mode.restype = None
+
+        if hasattr(self.dll, 'sim_get_authentic_mode'):
+            self.dll.sim_get_authentic_mode.argtypes = []
+            self.dll.sim_get_authentic_mode.restype = ctypes.c_int
+
+        if hasattr(self.dll, 'sim_can_act'):
+            self.dll.sim_can_act.argtypes = [ctypes.c_int]
+            self.dll.sim_can_act.restype = ctypes.c_int
+
+        if hasattr(self.dll, 'sim_is_stunned'):
+            self.dll.sim_is_stunned.argtypes = [ctypes.c_int]
+            self.dll.sim_is_stunned.restype = ctypes.c_int
+
+        if hasattr(self.dll, 'sim_is_knocked_down'):
+            self.dll.sim_is_knocked_down.argtypes = [ctypes.c_int]
+            self.dll.sim_is_knocked_down.restype = ctypes.c_int
+
+        if hasattr(self.dll, 'sim_get_hp'):
+            self.dll.sim_get_hp.argtypes = [ctypes.c_int]
+            self.dll.sim_get_hp.restype = ctypes.c_float
+
+        if hasattr(self.dll, 'sim_exec_special'):
+            self.dll.sim_exec_special.argtypes = [ctypes.c_int, ctypes.c_int]
+            self.dll.sim_exec_special.restype = ctypes.c_int
+
+        if hasattr(self.dll, 'sim_fire_attack_ended'):
+            self.dll.sim_fire_attack_ended.argtypes = [ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_uint32, ctypes.c_float]
+            self.dll.sim_fire_attack_ended.restype = None
+
     def recompile(self):
         import _ctypes
         if self.dll:
@@ -448,6 +480,44 @@ class SimEngine:
             return json.loads(buf.value.decode("utf-8"))
         except Exception:
             return []
+
+    def set_authentic_mode(self, enabled: bool):
+        if hasattr(self.dll, 'sim_set_authentic_mode'):
+            self.dll.sim_set_authentic_mode(1 if enabled else 0)
+
+    def get_authentic_mode(self) -> int:
+        if hasattr(self.dll, 'sim_get_authentic_mode'):
+            return int(self.dll.sim_get_authentic_mode())
+        return 0
+
+    def can_act(self, player_idx: int) -> int:
+        if hasattr(self.dll, 'sim_can_act'):
+            return int(self.dll.sim_can_act(int(player_idx)))
+        return 1
+
+    def is_stunned(self, player_idx: int) -> int:
+        if hasattr(self.dll, 'sim_is_stunned'):
+            return int(self.dll.sim_is_stunned(int(player_idx)))
+        return 0
+
+    def is_knocked_down(self, player_idx: int) -> int:
+        if hasattr(self.dll, 'sim_is_knocked_down'):
+            return int(self.dll.sim_is_knocked_down(int(player_idx)))
+        return 0
+
+    def get_hp(self, player_idx: int) -> float:
+        if hasattr(self.dll, 'sim_get_hp'):
+            return float(self.dll.sim_get_hp(int(player_idx)))
+        return 0.0
+
+    def exec_special(self, attacker_idx: int, sp_tier: int) -> int:
+        if hasattr(self.dll, 'sim_exec_special'):
+            return int(self.dll.sim_exec_special(int(attacker_idx), int(sp_tier)))
+        return 0
+
+    def fire_attack_ended(self, attacker_idx: int, attack_level: int, hit_index: int, flags: int, damage: float = 0.0):
+        if hasattr(self.dll, 'sim_fire_attack_ended'):
+            self.dll.sim_fire_attack_ended(int(attacker_idx), int(attack_level), int(hit_index), int(flags), float(damage))
 
 g_engine = SimEngine(DLL_PATH)
 

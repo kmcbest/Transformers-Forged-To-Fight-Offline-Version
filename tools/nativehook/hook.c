@@ -5366,6 +5366,10 @@ void* hook_139(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     });
     return r;
 }
+static int s_sim_trace_fight_started = 0;
+static int s_sim_trace_fight_ended = 0;
+static uint64_t s_sim_trace_fight_start_ms = 0;
+
 void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,void* a7){
     // DIAGNOSTIC ONLY -- no behavior change. Per-combat delimiter: every fight re-enters
     // Simulation.RegisterComponents, which resets the entire P0 combo state below, so this line
@@ -5522,6 +5526,9 @@ void* hook_140(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
     g_special_lock_end_ms[0] = 0;
     g_special_lock_end_ms[1] = 0;
     g_combat_sim_clock_ms = 1000;
+    s_sim_trace_fight_started = 0;
+    s_sim_trace_fight_ended = 0;
+    s_sim_trace_fight_start_ms = 0;
     skill_dispatch_fight_reset();
     return H[140].orig(a0,a1,a2,a3,a4,a5,a6,a7);
 }
@@ -6196,6 +6203,26 @@ void* hook_145(void* a0,void* a1,void* a2,void* a3,void* a4,void* a5,void* a6,vo
             typedef float (*fn_get_hp)(void*, void*);
             fn_get_hp get_hp = (fn_get_hp)(g_base + 0xDAC660); // get_Health
             g_p1_last_hp = get_hp(g_p1_combat_character, NULL);
+        }
+        if (g_p0_controller && obj_ok(g_p0_controller) && g_p1_controller && obj_ok(g_p1_controller)) {
+            if (!s_sim_trace_fight_started && is_fight_running() && g_p0_last_hp > 0.001f && g_p1_last_hp > 0.001f) {
+                s_sim_trace_fight_started = 1;
+                s_sim_trace_fight_start_ms = propgo_now_ms();
+                flog("[SIM_TRACE] FIGHT_START p0=%s p1=%s hp0=%.0f hp1=%.0f tms=%llu",
+                     g_p0_bot_id[0] ? g_p0_bot_id : "?",
+                     g_p1_bot_id[0] ? g_p1_bot_id : "?",
+                     g_p0_last_hp, g_p1_last_hp,
+                     (unsigned long long)s_sim_trace_fight_start_ms);
+            } else if (s_sim_trace_fight_started && !s_sim_trace_fight_ended &&
+                       (g_p0_last_hp <= 0.001f || g_p1_last_hp <= 0.001f)) {
+                s_sim_trace_fight_ended = 1;
+                uint64_t end_ms = propgo_now_ms();
+                uint64_t dur = (end_ms >= s_sim_trace_fight_start_ms) ? (end_ms - s_sim_trace_fight_start_ms) : 0;
+                int winner = (g_p1_last_hp <= 0.001f) ? 0 : 1;
+                flog("[SIM_TRACE] FIGHT_END winner=P%d hp0=%.0f hp1=%.0f dur_ms=%llu tms=%llu",
+                     winner, g_p0_last_hp, g_p1_last_hp,
+                     (unsigned long long)dur, (unsigned long long)end_ms);
+            }
         }
 
         // Poll GetMouseButtonDown in hook_145 for resilient portrait double-tap detection (HUD visible or hidden)
@@ -6958,6 +6985,21 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
     void* r = H[154].orig(self, a1, a2, a3, a4, a5, a6, a7);
     PROTECT({
         int action_ok = ((uintptr_t)r != 0);
+        if (action_ok && obj_ok(self) &&
+            (action == 1 || action == 8 || action == 32 || action == 64 ||
+             action == 128 || action == 0x100 || action == 0x200)) {
+            int p_tr = *(int32_t*)((uintptr_t)self + 0xF4);
+            if (p_tr == 0 || p_tr == 1) {
+                uint32_t tr_l = *(uint32_t*)((uintptr_t)self + 0x1c0);
+                uint32_t tr_m = *(uint32_t*)((uintptr_t)self + 0x1c4);
+                uint32_t tr_r = *(uint32_t*)((uintptr_t)self + 0x1c8);
+                int tr_melee = ((int(*)(void*,void*))(g_base + 0x1175078))(self, NULL);
+                int tr_sp = (action == 0x200) ? ((p_tr == 0) ? g_intended_special_tier : g_p1_current_special_index) : 0;
+                flog("[SIM_TRACE] ACT p=P%d act=%d l=%u m=%u r=%u in_melee=%d sp=%d tms=%llu",
+                     p_tr, action, tr_l, tr_m, tr_r, tr_melee, tr_sp,
+                     (unsigned long long)propgo_now_ms());
+            }
+        }
         if (g_p1_force_dodge_after_block && action_ok &&
             (self == g_p1_controller || (obj_ok(self) && *(int32_t*)((uintptr_t)self + 0xF4) == 1))) {
             // ONLY clear when the action was ACTUALLY Dodge or Sidestep! NEVER on ReleaseBlock(4)!
@@ -7779,6 +7821,7 @@ void* hook_171(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
                 g_p0_block_reset_done = 0;
                 flog("BLOCK_ENTER (0x1173848): P0 started guarding at %llu ms (timer armed, hold >= 200ms required)",
                      (unsigned long long)g_p0_block_enter_ms);
+                flog("[SIM_TRACE] BLOCK_ENTER p=P0 tms=%llu", (unsigned long long)g_p0_block_enter_ms);
                 skill_dispatch_block_state(0, 1);
             } else if (pidx == 1) {
                 g_p1_controller = pc;
@@ -7786,6 +7829,7 @@ void* hook_171(void* a0, void* a1, void* a2, void* a3, void* a4, void* a5, void*
                 s_p1_block_hit_count = 0;
                 flog("BLOCK_ENTER (0x1173848): P1 started guarding at %llu ms",
                      (unsigned long long)g_p1_block_enter_ms);
+                flog("[SIM_TRACE] BLOCK_ENTER p=P1 tms=%llu", (unsigned long long)g_p1_block_enter_ms);
                 skill_dispatch_block_state(1, 1);
             }
         }
@@ -7800,12 +7844,17 @@ static void* hooked_PlayerBlockState_OnExit(void* a0, void* a1, void* a2, void* 
     PROTECT({
         if (obj_ok(pc)) {
             int32_t pidx = *(int32_t*)((uintptr_t)pc + 0xF4);
+            uint64_t exit_ms = propgo_now_ms();
             if (pidx == 0) {
+                uint64_t held_ms = (g_p0_block_enter_ms > 0 && exit_ms >= g_p0_block_enter_ms) ? (exit_ms - g_p0_block_enter_ms) : 0;
+                flog("[SIM_TRACE] BLOCK_EXIT p=P0 held_ms=%llu tms=%llu", (unsigned long long)held_ms, (unsigned long long)exit_ms);
                 if (g_p0_block_enter_ms > 0) {
                     g_p0_block_enter_ms = 0;
                 }
                 skill_dispatch_block_state(0, 0);
             } else if (pidx == 1) {
+                uint64_t held_ms = (g_p1_block_enter_ms > 0 && exit_ms >= g_p1_block_enter_ms) ? (exit_ms - g_p1_block_enter_ms) : 0;
+                flog("[SIM_TRACE] BLOCK_EXIT p=P1 held_ms=%llu tms=%llu", (unsigned long long)held_ms, (unsigned long long)exit_ms);
                 if (g_p1_block_enter_ms > 0) {
                     g_p1_block_enter_ms = 0;
                 }
@@ -8003,6 +8052,17 @@ typedef float (*fn_get_damage_received)(void* self, float damage, void* damageTy
 float hook_177(void* self, float damage, void* damageType, int32_t blocked, void* isPerfectBlock, int32_t isCrit, int32_t isArmorIgnoring, void* method, float critPenetration, float armorPenetration) {
     int is_enemy = 0;
     int p0_invinc = 0;
+    int sim_tr_direct = 0;
+    int sim_tr_att = 0;
+    int sim_tr_tgt = 0;
+    int sim_tr_act = 0;
+    int sim_tr_sp = 0;
+    int sim_tr_melee = 0;
+    int sim_tr_ranged = 0;
+    int sim_tr_heavy = 0;
+    int sim_tr_crit = 0;
+    int sim_tr_blk = 0;
+    float sim_tr_raw = damage;
     PROTECT({
         if (self && obj_ok(self)) {
             void* owner = *(void**)((char*)self + 0x28);
@@ -8173,6 +8233,17 @@ float hook_177(void* self, float damage, void* damageType, int32_t blocked, void
                     if (!hit_ctx.is_crit) {
                         isCrit = 0;
                     }
+                    sim_tr_direct = 1;
+                    sim_tr_att = hit_ctx.attacker_player_index;
+                    sim_tr_tgt = hit_ctx.target_player_index;
+                    sim_tr_act = hit_ctx.action_type;
+                    sim_tr_sp = hit_ctx.special_index;
+                    sim_tr_melee = hit_ctx.is_melee ? 1 : 0;
+                    sim_tr_ranged = hit_ctx.is_ranged ? 1 : 0;
+                    sim_tr_heavy = hit_ctx.is_heavy ? 1 : 0;
+                    sim_tr_crit = hit_ctx.is_crit ? 1 : 0;
+                    sim_tr_blk = hit_ctx.is_blocked ? 1 : 0;
+                    sim_tr_raw = damage;
                     if (hit_ctx.target_player_index >= 0 && hit_ctx.target_player_index < 2) {
                         s_last_direct_hit_ms[hit_ctx.target_player_index] = propgo_now_ms();
                     }
@@ -8240,6 +8311,16 @@ float hook_177(void* self, float damage, void* damageType, int32_t blocked, void
     res = skill_wheeljack_filter_damage(is_enemy ? 1 : 0, res);
     if (p0_invinc) {
         res = 0.0f;
+    }
+    if (sim_tr_direct) {
+        flog("[SIM_TRACE] HIT att=P%d tgt=P%d act=%d sp=%d melee=%d ranged=%d heavy=%d crit=%d blk=%d raw=%.1f final=%.1f tms=%llu",
+             sim_tr_att, sim_tr_tgt, sim_tr_act, sim_tr_sp,
+             sim_tr_melee, sim_tr_ranged, sim_tr_heavy,
+             sim_tr_crit, sim_tr_blk, sim_tr_raw, res,
+             (unsigned long long)propgo_now_ms());
+    } else if (res > 0.5f && obj_ok(g_p0_controller) && obj_ok(g_p1_controller)) {
+        flog("[SIM_TRACE] DOT tgt=P%d final=%.1f tms=%llu",
+             is_enemy ? 1 : 0, res, (unsigned long long)propgo_now_ms());
     }
     return res;
 }
@@ -8948,6 +9029,15 @@ void* hook_186(void* this_pc, void* hitResult, void* method) {
                 }
             }
 
+            // Generic Skill Module Ranged Penetration (穿透敌方远程普攻与远程重击):
+            int is_ranged_hit = (atk_level == 8 || hit_idx == 100 || (atk_level == 4 && skill_bot_has_ranged_heavy((p_idx == 0) ? g_p1_bot_id : g_p0_bot_id)));
+            if (is_ranged_hit && skill_dispatch_ranged_pierce_check(p_idx, atk_level)) {
+                *(int32_t*)((uintptr_t)hitResult + 0x20) = 24; // HitResultFlags.Invulnerable (IgnoreDamage | IgnoreHitReaction)
+                *(float*)((uintptr_t)hitResult + 0x3C) = 0.0f;   // Damage = 0
+                flog("REG_HIT_RES: Skill module P%d penetrated incoming ranged attack (al=%d hit_idx=%d)!",
+                     p_idx, atk_level, hit_idx);
+                return NULL;
+            }
             // Windblade Heavy Attack Ranged Penetration (穿透敌方远程普攻与远程重击):
             const char* victim_id = (p_idx == 0) ? g_p0_bot_id : g_p1_bot_id;
             if (victim_id && (strstr(victim_id, "windblade") != NULL || strstr(victim_id, "slipstream") != NULL)) {
@@ -9946,6 +10036,55 @@ uint64_t skill_get_last_shot_ms(int player_index) {
     if (player_index == 0) return g_p0_last_shot_ms;
     if (player_index == 1) return g_p1_last_shot_ms;
     return 0;
+}
+
+int skill_is_dashing(int player_index) {
+    if (!g_base || player_index < 0 || player_index > 1) return 0;
+    void* pc = (player_index == 0) ? g_p0_controller : g_p1_controller;
+    if (!pc || !obj_ok(pc)) return 0;
+    int dashing = 0;
+    PROTECT({
+        void* cur_state = *(void**)((char*)pc + 0x48);
+        if (cur_state && obj_ok(cur_state)) {
+            void* sname_obj = *(void**)((char*)cur_state + 0x10);
+            if (sname_obj && obj_ok(sname_obj)) {
+                char sname[32] = {0};
+                read_str(sname_obj, sname, sizeof(sname));
+                if (strcmp(sname, "Dash") == 0) {
+                    dashing = 1;
+                }
+            }
+        }
+    });
+    if (!dashing) {
+        uint64_t dms = skill_get_last_dash_ms(player_index);
+        uint64_t now = propgo_now_ms();
+        if (dms > 0 && now >= dms && (now - dms <= 500)) {
+            dashing = 1;
+        }
+    }
+    return dashing;
+}
+
+int skill_get_current_action(int player_index) {
+    (void)player_index;
+    return s_last_atk_level;
+}
+
+int skill_get_combo_light_index(int player_index) {
+    void* pc = (player_index == 0) ? g_p0_controller : g_p1_controller;
+    if (!pc || !obj_ok(pc)) return 0;
+    int l = 0;
+    PROTECT({ l = *(int32_t*)((uintptr_t)pc + 0x1c0); });
+    return l;
+}
+
+int skill_get_combo_medium_index(int player_index) {
+    void* pc = (player_index == 0) ? g_p0_controller : g_p1_controller;
+    if (!pc || !obj_ok(pc)) return 0;
+    int m = 0;
+    PROTECT({ m = *(int32_t*)((uintptr_t)pc + 0x1c4); });
+    return m;
 }
 
 int skill_bot_has_ranged_heavy(const char* bot_id) {
@@ -12802,6 +12941,10 @@ static bool hooked_Projectile_IgnoreCollisionDetection(void* self, void* method)
                     res = true;
                     flog("PROJ_PENETRATE: Projectile %p ignored collision with Windblade (P%d) during heavy attack!", self, opp_idx);
                 }
+            }
+            if (!res && skill_dispatch_ranged_pierce_check(opp_idx, 8)) {
+                res = true;
+                flog("PROJ_PENETRATE: Projectile %p ignored collision via generic pierce for P%d!", self, opp_idx);
             }
         }
     });

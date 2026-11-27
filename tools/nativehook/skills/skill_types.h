@@ -200,4 +200,6 @@ typedef struct {
     int (*on_crit_chance_mod)(int player_index, int atk_level, float* out_bonus);
     // 暴击判定结果出炉回调 (在计算暴击伤害倍率前同步派发，用于暴击专属觉醒技如抹杀)
     void (*on_crit_rolled)(int player_index, int atk_level, int is_last_hit, int is_crit);
+    // 远程穿透判定回调 (前冲/重击期间穿透敌方远程，返回 1 表示穿透无视碰撞与伤害)
+    int (*on_ranged_pierce_check)(int player_index, int atk_level);
 } BotSkillModule;

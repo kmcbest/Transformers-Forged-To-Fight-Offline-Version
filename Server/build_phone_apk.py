@@ -302,7 +302,6 @@ def build(
                 raise ValueError(f"APK is missing {required}")
 
         changed_hosts: list[str] = []
-        char_bundle_data = None
         for info in zin.infolist():
             # Old JAR signatures are invalid after modification. apksigner will add new ones.
             upper = info.filename.upper()
@@ -310,13 +309,16 @@ def build(
                 continue
             if not keep_other_abi and info.filename.startswith(other_abi_prefix):
                 continue
+            # Drop any legacy duplicate optimusprime_gs_v_odr / starscream_gs_odr entries
+            # (both characters already live in mount:Auto characters/characters.assetbundle;
+            # duplicating them with identical CAB- headers deadlocks Unity AssetBundle loading).
+            if any(x in info.filename for x in ("optimusprime_gs_v_odr/", "starscream_gs_odr/")):
+                continue
             # Rebuilding a bundled APK must replace the payload, rather than
             # retaining a stale duplicate asset that Unity might mmap first.
             if bundle_server and info.filename == PAYLOAD_ASSET:
                 continue
             data = zin.read(info)
-            if info.filename == "assets/assetpack/characters/characters.assetbundle":
-                char_bundle_data = data
             if info.filename == METADATA:
                 data, metadata_hosts = patch_metadata(data, server_host, server_port)
                 changed_hosts.extend(metadata_hosts)
@@ -463,14 +465,14 @@ def build(
                         "ionstorm_gs_leader2015_odr",
                         "lifeline_gs_deluxe2014_odr",
                         "novastorm_gs_leader2015_odr",
-                        "optimusprime_gs_v_odr",
                         "optimusprime_sg_voyager2015_odr",
                         "starsaber_gs_leader2014_odr",
-                        "starscream_gs_odr",
                         "sunstorm_gs_leader2015_odr",
                         "thrust_gs_deluxe2008_odr",
                     ]:
                         packs[pkey] = pkey
+                    packs.pop("optimusprime_gs_v_odr", None)
+                    packs.pop("starscream_gs_odr", None)
                     # Dynamically add all assetbundles in assets_redeco as packs
                     _rdir = Path("assets_redeco")
                     if _rdir.is_dir():
@@ -612,57 +614,11 @@ def build(
         if wanted_hook not in names:
             zout.writestr(wanted_hook, hook)
 
-        # Ensure G1 Optimus Prime and G1 Starscream ODR packages are registered and available
-        if char_bundle_data is not None:
-            # Optimus Prime G1
-            op_bundle_path = "assets/assetpack/optimusprime_gs_v_odr/optimusprime_gs_v.assetbundle"
-            op_toc_path = "assets/optimusprime_gs_v_odr/toc.txt"
-            if op_bundle_path not in names:
-                zout.writestr(op_bundle_path, char_bundle_data)
-            if op_toc_path not in names:
-                op_toc_json = json.dumps({
-                    "tags": [], "pack": "optimusprime_gs_v_odr", "scenes": {},
-                    "bundles": {
-                        "optimusprime_gs_v": {
-                            "crc": 0, "compression": "LZ4", "typetreehash": None,
-                            "file": "optimusprime_gs_v_odr/optimusprime_gs_v.assetbundle",
-                            "ts": 637933503540000000, "deterministic": False, "manifest": "manifest_main",
-                            "paths": {
-                                "bundles/characters/merged/optimusprime_gs_v_lw": "Assets/Bundles/Characters/Merged/OptimusPrime_GS_V/OptimusPrime_GS_V_lw.prefab",
-                                "bundles/characters/merged/optimusprime_gs_v": "Assets/Bundles/Characters/Merged/OptimusPrime_GS_V/OptimusPrime_GS_V.prefab"
-                            },
-                            "directory": "odr", "deps": ["character_fx", "moves", "character_audio"],
-                            "contenthash": None, "size": len(char_bundle_data), "hash": 0, "parent": "", "mount": "None"
-                        }
-                    },
-                    "files": [], "pad": {"deliverymode": 1, "assetpack": "default"}, "version": "9.2.0"
-                }, indent=4)
-                zout.writestr(op_toc_path, op_toc_json)
-
-            # Starscream G1
-            ss_bundle_path = "assets/assetpack/starscream_gs_odr/starscream_gs.assetbundle"
-            ss_toc_path = "assets/starscream_gs_odr/toc.txt"
-            if ss_bundle_path not in names:
-                zout.writestr(ss_bundle_path, char_bundle_data)
-            if ss_toc_path not in names:
-                ss_toc_json = json.dumps({
-                    "tags": [], "pack": "starscream_gs_odr", "scenes": {},
-                    "bundles": {
-                        "starscream_gs": {
-                            "crc": 0, "compression": "LZ4", "typetreehash": None,
-                            "file": "starscream_gs_odr/starscream_gs.assetbundle",
-                            "ts": 637933503540000000, "deterministic": False, "manifest": "manifest_main",
-                            "paths": {
-                                "bundles/characters/merged/starscream_gs_lw": "Assets/Bundles/Characters/Merged/Starscream_GS/Starscream_GS_lw.prefab",
-                                "bundles/characters/merged/starscream_gs": "Assets/Bundles/Characters/Merged/Starscream_GS/Starscream_GS.prefab"
-                            },
-                            "directory": "odr", "deps": ["character_fx", "moves", "character_audio"],
-                            "contenthash": None, "size": len(char_bundle_data), "hash": 0, "parent": "", "mount": "None"
-                        }
-                    },
-                    "files": [], "pad": {"deliverymode": 1, "assetpack": "default"}, "version": "9.2.0"
-                }, indent=4)
-                zout.writestr(ss_toc_path, ss_toc_json)
+        # G1 Optimus Prime (optimusprime_gs_v) and G1 Starscream (starscream_gs) already ship inside
+        # assets/assetpack/characters/characters.assetbundle (mount: Auto in assets/characters/toc.txt).
+        # Do NOT emit duplicate optimusprime_gs_v_odr / starscream_gs_odr copies of that same bundle:
+        # sharing an identical internal CAB- header with Auto-mounted characters.assetbundle triggers a
+        # Unity duplicate-AssetBundle load error that intermittently stalls CharacterWorldLoader.
 
         # Inject Netflix Edition characters: Chromia and Dead End
         netflix_dir = Path("assets_netflix")
