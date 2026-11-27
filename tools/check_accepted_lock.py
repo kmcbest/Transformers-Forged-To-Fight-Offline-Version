@@ -46,12 +46,15 @@ from abilities.registry import _BOT_REGISTRY, load_all_bots  # noqa: E402
 from tools.snapshot_abilities import _canonicalize  # noqa: E402
 
 
+_TEXT_EXTS = {".py", ".c", ".h", ".cpp", ".hpp", ".json", ".md", ".txt", ".sh", ".yml", ".yaml"}
+
+
 def sha256_file(path: Path) -> str:
-    h = hashlib.sha256()
-    with path.open("rb") as f:
-        for chunk in iter(lambda: f.read(65536), b""):
-            h.update(chunk)
-    return h.hexdigest()
+    """Compute file SHA-256, normalizing CRLF -> LF for text files so Git autocrlf cannot drift locks."""
+    data = path.read_bytes()
+    if path.suffix.lower() in _TEXT_EXTS or b"\x00" not in data:
+        data = data.replace(b"\r\n", b"\n")
+    return hashlib.sha256(data).hexdigest()
 
 
 def load_lock() -> Dict[str, Any]:

@@ -1,0 +1,44 @@
+# Align repository and working-tree line endings to LF across Windows / Linux / Android NDK
+* text=auto eol=lf
+
+# Windows batch / PowerShell scripts keep CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Explicit LF for source code, configs, JSON payloads, docs, and shell scripts
+*.py text eol=lf
+*.c text eol=lf
+*.h text eol=lf
+*.cpp text eol=lf
+*.hpp text eol=lf
+*.cs text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.sh text eol=lf
+*.txt text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# Binary files must never undergo EOL translation
+*.db binary
+*.sqlite binary
+*.so binary
+*.dll binary
+*.exe binary
+*.apk binary
+*.jar binary
+*.dex binary
+*.bin binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ogg binary
+*.wav binary
+*.mp3 binary
+*.ttf binary
+*.otf binary
+*.assetbundle binary
+*.xlsx binary
+*.zip binary

@@ -11,7 +11,7 @@
       "accepted_at": "2026-11-26",
       "verification_device": "MuMu 15 (127.0.0.1:7555)",
       "locked": true,
-      "locked_at": "2026-11-26",
+      "locked_at": "2026-11-27",
       "verified_rules": [
         "20.7% 几率规避对手远程普攻与特殊远程攻击，仅弹出绿色“规避”Callout（appr_evade_callout t=\"\"，不显示血条图标）",
         "49.7% 几率在远程普攻/SP1/SP3 前序手枪射击命中（非格挡）时触发爆头射击：60% ATK 直伤（st=10 可连发叠加不顶掉）+ 60% ATK 3秒流血",
@@ -30,8 +30,8 @@
         "tools/autotest_scenarios/arcee_test_sp3_snipe.json"
       ],
       "files": {
-        "Server/abilities/bots/arcee.py": "e4ac658b29cb708803b0ba0f5c49846a538860c83a430e21c3c80d42a8568ea0",
-        "tools/nativehook/skills/bots/skill_arcee.c": "e484d6324875d89487a7b056f219c294027e11492701428d496117b8d181452f",
+        "Server/abilities/bots/arcee.py": "0df0cb91d92de561702b09ea3cb4e0220f0f939a1f03f5eef0176405d3a610b4",
+        "tools/nativehook/skills/bots/skill_arcee.c": "c78a74f16c26c14da7f51f7934aeea9ee1d295b30c776335322ffae8711a6e47",
         "tools/autotest_scenarios/arcee_test_blocked_ranged.json": "7f16843d814ecfd4f97c65096551af37a79a92650b377f18cb93e43763db72c4",
         "tools/autotest_scenarios/arcee_test_headshot_stack.json": "0f0b3a5e5b1f70eaab224ee009d8638bdf35b8f514d5f7b574db6177c4ed1051",
         "tools/autotest_scenarios/arcee_test_passive_rush.json": "fcd31ac86b0c74d081cf86036359722f0d7d5f9424a8aeb241f9156a50581fde",
