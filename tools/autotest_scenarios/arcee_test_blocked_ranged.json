@@ -1,0 +1,41 @@
+{
+  "active": true,
+  "name": "arcee_test_blocked_ranged",
+  "banner": "#1 Arcee Blocked Ranged (No Bleed)",
+  "qid": "1.1.1",
+  "player_invincible": 1,
+  "p0": {
+    "bid": "arcee_gs_deluxe2014",
+    "mana": 0.0
+  },
+  "p1": {
+    "bid": "bonecrusher_cin_rotf",
+    "freeze_ai": 1,
+    "invincible_dummy": 1
+  },
+  "auto_fight": 0,
+  "max_duration_ms": 14000,
+  "p1_script": [
+    { "action": "DODGE", "repeat": 1 },
+    { "action": "BLOCK", "hold_ms": 9000 }
+  ],
+  "p0_script": [
+    { "action": "DODGE", "repeat": 2 },
+    { "action": "WAIT", "duration_ms": 1000 },
+    { "action": "RANGED", "repeat": 8 },
+    { "action": "WAIT", "duration_ms": 3000 }
+  ],
+  "assertions": {
+    "must_hit_connected": [
+      { "attacker": "P0", "sp": 0, "min_count": 5 }
+    ],
+    "must_log_substrings": [
+      { "substr": "blk=1", "min_count": 5 }
+    ],
+    "must_not_apply_buffs": [
+      { "target": "P1", "mod_substr": "arcee_headshot_direct" },
+      { "target": "P1", "mod_substr": "arcee_headshot_dot" },
+      { "target": "P1", "mod_substr": "arcee_headshot_rush" }
+    ]
+  }
+}

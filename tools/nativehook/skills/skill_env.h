@@ -30,6 +30,7 @@ int skill_is_p0_bc(void* bc);
 int skill_is_p0_attr(void* attr);
 int skill_obj_ok(void* ptr);
 const char* skill_get_bot_id(int player_index);
+int skill_get_bot_class(int player_index);
 
 // 全局战斗状态访问器 (读/写)
 int skill_get_p1_buffs_nullified(void);
@@ -39,6 +40,7 @@ void skill_set_p1_buffs_nullified(int val);
 void skill_set_ranged_boost(int player_index, uint64_t duration_ms, float dmg_bonus, float spd_bonus);
 void skill_set_power_leak(int player_index, uint64_t duration_ms, float step);
 void skill_set_power_lock(int target_player_index, uint64_t duration_ms);
+void skill_set_special_lock(int target_player_index, uint64_t duration_ms);
 
 // 不可阻挡霸体状态设置与查询
 void skill_set_unstoppable(int player_index, uint64_t duration_ms);
@@ -60,6 +62,7 @@ int skill_is_special_attacking(int player_index);
 // 格挡与控制
 uint64_t skill_get_block_enter_ms(int player_index);
 void skill_stun_player(int target_player_index, float duration_s);
+void skill_interrupt_special(int target_player_index, float stun_duration_s);
 
 // Buff / Debuff 活性与层数查询
 int skill_has_buff(int player_index, const char* buff_id_substr);
@@ -72,6 +75,8 @@ void skill_apply_buff(int player_index, const char* mod_id);
 void skill_apply_buff_dur(int player_index, const char* mod_id, float override_dur);
 void skill_consume_buff(int player_index, const char* mod_id, int count);
 int skill_fuse_target_debuffs(int target_player_index);
+int skill_refresh_target_debuffs(int target_player_index);
+int skill_accelerate_dots(int player_index, float accel_pct);
 
 // 警车近战增益层数与充能状态查询/打断
 int skill_get_prowl_melee_stacks(int player_index);
@@ -80,6 +85,7 @@ void skill_prowl_finish_charge(int player_index, const char* reason);
 
 // 重击状态实时查询 (包括蓄力与飞行/动作全程)
 int skill_is_heavy_attacking(int player_index);
+int skill_is_current_hit_last(void);
 
 // 特殊技状态实时查询 (0=未放, 1=正在释放 S1/S2/S3)
 int skill_is_special_attacking(int player_index);

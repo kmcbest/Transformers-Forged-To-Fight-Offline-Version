@@ -51,7 +51,6 @@ from ..core import (
     make_attack_boost_statmod,
     make_bleed_statmod,
     make_burn_statmod,
-    make_crit_rate_statmod,
     make_crit_damage_statmod,
     make_remove_statmod,
     make_statmod_appearance,
@@ -191,7 +190,7 @@ def build_blackout_abilities(base_hp: float = 40519.0, base_atk: float = 3272.0)
         trigger="onCrit",
         trigger_scope="level=Heavy",
         appr_id="appr_blackout_heavy_burn",
-        callout_text="导弹灼烧",
+        callout_text="燃烧",
         pua_icon="\uE41D",
         color_hex=AbilityColor.RED_DEBUFF_TC,
         gradient_bottom=AbilityColor.RED_DEBUFF_GB,
@@ -309,26 +308,11 @@ def build_blackout_abilities(base_hp: float = 40519.0, base_atk: float = 3272.0)
 
     # =========================================================================
     # 8. [ID: 1794966881660 & 1794966881661] 特殊技 3 (猎杀) - 暴击燃烧与可叠加永久暴抗减益
-    #    a) 最后一击暴击率+50%
+    #    a) 最后一击暴击率+50% (单次命中几率提升，由 skill_blackout.c blackout_on_crit_chance_mod
+    #       在暴击检定时精准注入，不挂 Buff 图标、不出倒计时、不出呼出大字)
     #    b) 最后一击暴击造成持续6秒80%攻击力燃烧伤害
     #    c) 最后一击命中向对手施加1层永久暴击抗性减益 (对手受暴击率提升20%，可叠加)
     # =========================================================================
-    m_sp3_crit_rate, a_sp3_crit_rate = make_crit_rate_statmod(
-        mod_id="blackout_sp3_last_crit_rate",
-        duration=2.0,
-        crit_bonus=0.50,
-        chance=1.0,
-        trigger="",
-        trigger_scope="",
-        appr_id="appr_blackout_sp3_crit_rate",
-        callout_text="锁定暴击",
-        pua_icon="\uE40D",
-        color_hex=AbilityColor.ORANGE_DAMAGE_TC,
-        gradient_bottom=AbilityColor.ORANGE_DAMAGE_GB,
-    )
-    mods.update(m_sp3_crit_rate)
-    appears.update(a_sp3_crit_rate)
-
     m_sp3_burn, a_sp3_burn = make_burn_statmod(
         mod_id="blackout_sp3_crit_burn",
         duration=6.0,
@@ -337,7 +321,7 @@ def build_blackout_abilities(base_hp: float = 40519.0, base_atk: float = 3272.0)
         trigger="",
         trigger_scope="",
         appr_id="appr_blackout_sp3_burn",
-        callout_text="地毯焚烧",
+        callout_text="燃烧",
         pua_icon="\uE41D",
         color_hex=AbilityColor.RED_DEBUFF_TC,
         gradient_bottom=AbilityColor.RED_DEBUFF_GB,
@@ -394,7 +378,7 @@ def build_blackout_abilities(base_hp: float = 40519.0, base_atk: float = 3272.0)
     # =========================================================================
     appr_sig_power = make_statmod_appearance(
         appr_id="appr_blackout_sig_power",
-        callout_text="能量功率",
+        callout_text="追猎",
         desc="普通攻击落空获得60%能量功率增益持续3秒，再次触发刷新倒计时",
         pua_icon="\uE608",
         color=AbilityColor.LIGHT_PURPLE_POWER,

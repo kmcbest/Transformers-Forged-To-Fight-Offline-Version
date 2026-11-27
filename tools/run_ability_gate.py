@@ -149,6 +149,9 @@ def main():
     if not run_step("门禁 2/4: 能力基准快照防回归校验 (--check)", snap_cmd):
         sys.exit(1)
 
+    if not run_step("门禁 2B/4: 已验收锁定角色防篡改校验 (check_accepted_lock.py)", [py, "tools/check_accepted_lock.py", "--check"]):
+        sys.exit(1)
+
     if not check_hook_c_freeze():
         sys.exit(1)
 

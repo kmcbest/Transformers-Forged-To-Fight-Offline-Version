@@ -493,6 +493,11 @@ void skill_dispatch_special_state(int player_index, int sp_level, int entered) {
     if (mod && mod->on_special_state) {
         mod->on_special_state(player_index, sp_level, entered);
     }
+    const char* opp_id = (player_index == 0) ? g_p1_bot_id : g_p0_bot_id;
+    const BotSkillModule* opp_mod = find_module_by_bot(opp_id);
+    if (opp_mod && opp_mod->on_opponent_special_state) {
+        opp_mod->on_opponent_special_state(player_index, sp_level, entered);
+    }
 }
 
 float skill_dispatch_crit_chance_mod(int player_index, int atk_level) {
@@ -506,4 +511,13 @@ float skill_dispatch_crit_chance_mod(int player_index, int atk_level) {
         }
     }
     return 0.0f;
+}
+
+void skill_dispatch_crit_rolled(int player_index, int atk_level, int is_last_hit, int is_crit) {
+    if (player_index < 0 || player_index >= 2) return;
+    const char* bot_id = (player_index == 0) ? g_p0_bot_id : g_p1_bot_id;
+    const BotSkillModule* mod = find_module_by_bot(bot_id);
+    if (mod && mod->on_crit_rolled) {
+        mod->on_crit_rolled(player_index, atk_level, is_last_hit, is_crit);
+    }
 }

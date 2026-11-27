@@ -1,0 +1,38 @@
+{
+  "active": true,
+  "name": "elita_test_sp1_non_brawler",
+  "banner": "#6b Elita SP1 vs Non-Brawler (35% Armor Break Last Hit Only)",
+  "qid": "1.1.1",
+  "player_invincible": 1,
+  "p0": {
+    "bid": "elita_one_gs",
+    "mana": 1.0
+  },
+  "p1": {
+    "bid": "bonecrusher_cin_rotf",
+    "mana": 0.0,
+    "freeze_ai": 1,
+    "invincible_dummy": 1
+  },
+  "auto_fight": 0,
+  "max_duration_ms": 11000,
+  "p0_script": [
+    { "action": "WAIT", "duration_ms": 800 },
+    { "action": "SP1", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 3000 }
+  ],
+  "assertions": {
+    "must_hit_connected": [
+      { "attacker": "P0", "sp": 1, "min_count": 1 }
+    ],
+    "must_apply_buffs": [
+      { "target": "P1", "mod_substr": "elita_sp1_armor_break", "min_count": 1, "max_count": 1 }
+    ],
+    "must_not_apply_buffs": [
+      { "target": "P1", "mod_substr": "elita_sp1_armor_break_braw" }
+    ],
+    "must_log_substrings": [
+      { "substr": "ELITA_SP1: Last hit vs P1 -> 35% armor break", "min_count": 1, "max_count": 1 }
+    ]
+  }
+}

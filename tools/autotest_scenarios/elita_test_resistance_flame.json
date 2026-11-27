@@ -1,0 +1,50 @@
+{
+  "active": true,
+  "name": "elita_test_resistance_flame",
+  "banner": "#8 Elita Resistance Flame (HP<=50%/<=25% Buffs + Once-Per-Fight Brawler SP Interrupt)",
+  "qid": "1.1.1",
+  "player_invincible": 1,
+  "p0": {
+    "bid": "elita_one_gs",
+    "mana": 0.0
+  },
+  "p1": {
+    "bid": "brawl_gs",
+    "mana": 1.0,
+    "freeze_ai": 1,
+    "invincible_dummy": 1
+  },
+  "auto_fight": 0,
+  "max_duration_ms": 17000,
+  "p0_script": [
+    { "action": "WAIT", "duration_ms": 600 },
+    { "action": "SET_HP", "target": "P0", "ratio": 0.45 },
+    { "action": "WAIT", "duration_ms": 1000 },
+    { "action": "SET_HP", "target": "P0", "ratio": 0.20 },
+    { "action": "WAIT", "duration_ms": 12000 }
+  ],
+  "p1_script": [
+    { "action": "WAIT", "duration_ms": 2200 },
+    { "action": "SP1", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 2800 },
+    { "action": "SET_MANA", "target": "P1", "mana": 1.0 },
+    { "action": "SP1", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 2800 },
+    { "action": "SET_MANA", "target": "P1", "mana": 1.0 },
+    { "action": "SP1", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 2800 }
+  ],
+  "assertions": {
+    "must_apply_buffs": [
+      { "target": "P0", "mod_substr": "elita_sig_flame_atk_50", "min_count": 1, "max_count": 1 },
+      { "target": "P0", "mod_substr": "elita_sig_flame_crit_50", "min_count": 1, "max_count": 1 },
+      { "target": "P0", "mod_substr": "elita_sig_flame_armor_25", "min_count": 1, "max_count": 1 },
+      { "target": "P1", "mod_substr": "elita_sig_flame_interrupt_stun_braw", "min_count": 1, "max_count": 1 }
+    ],
+    "must_log_substrings": [
+      { "substr": "ELITA_FLAME_50:", "min_count": 1, "max_count": 1 },
+      { "substr": "ELITA_FLAME_25:", "min_count": 1, "max_count": 1 },
+      { "substr": "ELITA_INTERRUPT:", "min_count": 1, "max_count": 1 }
+    ]
+  }
+}

@@ -57,6 +57,8 @@ void skill_dispatch_special_state(int player_index, int sp_level, int entered);
 
 // 动态被动暴击率加权分发
 float skill_dispatch_crit_chance_mod(int player_index, int atk_level);
+// 暴击判定结果分发 (在 GetDamageInflicted 计算暴击伤害倍率前调用)
+void skill_dispatch_crit_rolled(int player_index, int atk_level, int is_last_hit, int is_crit);
 
 #ifdef __cplusplus
 }

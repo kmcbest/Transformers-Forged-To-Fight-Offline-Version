@@ -1,0 +1,53 @@
+{
+  "active": true,
+  "name": "ironhide_cin_test_03_sp1_last_hit_stun_burn",
+  "banner": "#3 Movie Ironhide SP1 Last-Hit Stun (80% 2.5s), Missile Crit & Burn",
+  "qid": "1.1.1",
+  "player_invincible": 1,
+  "p0": {
+    "bid": "ironhide_cin_rotf",
+    "mana": 1.2
+  },
+  "p1": {
+    "bid": "optimusprime_cin_tf",
+    "mana": 0.0,
+    "freeze_ai": 1,
+    "invincible_dummy": 1
+  },
+  "auto_fight": 0,
+  "max_duration_ms": 18000,
+  "p0_script": [
+    { "action": "WAIT", "duration_ms": 600 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 400 },
+    { "action": "SP1", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 3400 },
+    { "action": "SET_MANA", "target": "P0", "mana": 1.2 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 400 },
+    { "action": "SP1", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 3400 },
+    { "action": "SET_MANA", "target": "P0", "mana": 1.2 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 400 },
+    { "action": "SP1", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 3400 }
+  ],
+  "assertions": {
+    "must_hit_connected": [
+      { "attacker": "P0", "sp": 1, "min_count": 6 }
+    ],
+    "must_crit": [
+      { "attacker": "P0", "sp": 1, "min_count": 3 }
+    ],
+    "must_apply_buffs": [
+      { "target": "P1", "mod_substr": "ironhide_sp1_stun", "min_count": 1 },
+      { "target": "P1", "mod_substr": "ironhide_missile_burn", "min_count": 1 }
+    ],
+    "must_log_substrings": [
+      { "substr": "IRONHIDE_CIN: P0 missile crit +100% (al=16 last=1)", "min_count": 3 },
+      { "substr": "IRONHIDE_CIN: P0 missile crit +100% (al=16 last=0)", "min_count": 0, "max_count": 0 },
+      { "substr": "IRONHIDE_CIN: P0 SP1 lastHit stunned P1 for 2.5s", "min_count": 1 }
+    ]
+  }
+}

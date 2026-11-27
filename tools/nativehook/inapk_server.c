@@ -1514,6 +1514,20 @@ static int detect_and_store_lang(const char *headers, const char *query) {
 
 static const unsigned char *dynamic(const char *headers, const char *method, const char *p, const char *query, const char *body, size_t bn, Out *o, size_t *outn) {
 #ifdef TFTF_AUTOTEST
+    if (strstr(p, "/__autotest/ping")) {
+        char buf[128];
+        snprintf(buf, sizeof(buf), "{\"ok\":true,\"ready\":%s}", autotest_is_ready() ? "true" : "false");
+        if (out_add(o, buf, strlen(buf))) {
+            *outn = o->n;
+            return o->p;
+        }
+    }
+    if (strstr(p, "/__autotest/run")) {
+        int rc = autotest_run_scenario_json(body, bn);
+        const char *resp = (rc == 0) ? "{\"ok\":true}" : "{\"ok\":false}";
+        *outn = strlen(resp);
+        return (const unsigned char*)resp;
+    }
     if (strstr(p, "/__autotest/scenario")) {
         if (!ci_equal(method, "GET")) {
             int rc = autotest_set_scenario_json(body, bn);

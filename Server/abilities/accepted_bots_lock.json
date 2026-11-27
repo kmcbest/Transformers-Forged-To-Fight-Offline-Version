@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "bots": {
+    "arcee_gs_deluxe2014": {
+      "name_zh": "阿尔茜",
+      "archetypes": [
+        "暴击 (Crit)",
+        "持续伤害 (DOT / 流血)",
+        "远程规避绿字 Callout"
+      ],
+      "accepted_at": "2026-11-26",
+      "verification_device": "MuMu 15 (127.0.0.1:7555)",
+      "locked": true,
+      "locked_at": "2026-11-26",
+      "verified_rules": [
+        "20.7% 几率规避对手远程普攻与特殊远程攻击，仅弹出绿色“规避”Callout（appr_evade_callout t=\"\"，不显示血条图标）",
+        "49.7% 几率在远程普攻/SP1/SP3 前序手枪射击命中（非格挡）时触发爆头射击：60% ATK 直伤（st=10 可连发叠加不顶掉）+ 60% ATK 3秒流血",
+        "命中前冲对手时 +50% 暴击率（含普通/远程/SP）；格挡命中不触发爆头或暴击回能",
+        "觉醒技“守卫者的残暴”：释放任意 SP 时 80% 概率获得黄色精准图标（+25% 暴击率 + 反规避，持续 10s）",
+        "SP1“特技射击”：释放后远程伤害 +35%、射速/弹道速度 +40%，持续 6.5s",
+        "SP2“黑寡妇”：仅当暴击命中时 100% 触发 108% ATK 4秒流血",
+        "SP3“狙击”：仅最后一发狙击命中时 100% 触发 135% ATK 直伤与 135% ATK 9秒流血；前序小手枪按 49.7% 爆头判定，且非近战暴击绝不触发碎骨魔近战暴击反流血"
+      ],
+      "scenarios": [
+        "tools/autotest_scenarios/arcee_test_blocked_ranged.json",
+        "tools/autotest_scenarios/arcee_test_headshot_stack.json",
+        "tools/autotest_scenarios/arcee_test_passive_rush.json",
+        "tools/autotest_scenarios/arcee_test_sp1_trick_shot.json",
+        "tools/autotest_scenarios/arcee_test_sp2_bleed.json",
+        "tools/autotest_scenarios/arcee_test_sp3_snipe.json"
+      ],
+      "files": {
+        "Server/abilities/bots/arcee.py": "e4ac658b29cb708803b0ba0f5c49846a538860c83a430e21c3c80d42a8568ea0",
+        "tools/nativehook/skills/bots/skill_arcee.c": "e484d6324875d89487a7b056f219c294027e11492701428d496117b8d181452f",
+        "tools/autotest_scenarios/arcee_test_blocked_ranged.json": "7f16843d814ecfd4f97c65096551af37a79a92650b377f18cb93e43763db72c4",
+        "tools/autotest_scenarios/arcee_test_headshot_stack.json": "0f0b3a5e5b1f70eaab224ee009d8638bdf35b8f514d5f7b574db6177c4ed1051",
+        "tools/autotest_scenarios/arcee_test_passive_rush.json": "fcd31ac86b0c74d081cf86036359722f0d7d5f9424a8aeb241f9156a50581fde",
+        "tools/autotest_scenarios/arcee_test_sp1_trick_shot.json": "0c9b789723fecfdb69a058b4385c44f04163869fe9b54ff626646a47d12bbb37",
+        "tools/autotest_scenarios/arcee_test_sp2_bleed.json": "d5ef96a69bdbbf1865ab3160bb8c4488c1a6326eb2b812ca37e035e5c5d7c6f2",
+        "tools/autotest_scenarios/arcee_test_sp3_snipe.json": "18cc4f3b8476d6d4119a98e862ecd50aa5b00f5c3b7f71712f9d87eec6123dde"
+      }
+    },
+    "ironhide_cin_rotf": {
+      "name_zh": "电影铁皮",
+      "archetypes": [
+        "暴击伤害爆发 (Crit Damage)",
+        "可叠加燃烧 DOT (Stacking Burn)",
+        "SP 末击条件控制与每局一次爆发觉醒 (Obliteration)"
+      ],
+      "accepted_at": "2026-11-26",
+      "verification_device": "MuMu 15 (127.0.0.1:7555)",
+      "locked": true,
+      "locked_at": "2026-11-26",
+      "verified_rules": [
+        "导弹暴击（重击 / SP1 最后一击 / SP2 全段）精准 +100% 暴击率（on_crit_chance_mod 实时判定，前冲/轻中击与 SP1 前两拳绝不触发，严格隔离 G1 铁皮）",
+        "导弹燃烧（重击 / SP1 最后一击 / SP2 全段非格挡命中）：70% 概率施加 4 秒 80% ATK 初次燃烧；若目标已燃烧则叠加 4 秒 30% ATK 燃烧",
+        "被动受击暴击伤害（0xe906 黄色）：未格挡受击时 12% 概率获得 8 秒 +140% 暴击伤害增益",
+        "SP1 感觉走运（0xe605）：最后一击未格挡命中 80% 概率眩晕对手 2.5 秒",
+        "SP2 打破僵持（0xe406 黄色）：76% 概率获得 4 秒 +75% 暴击伤害增益",
+        "SP3 全金属军械库：最后一击未格挡命中 30% 概率施加 8 秒 100% ATK 燃烧",
+        "觉醒技“抹杀 Obliteration”（0xe406 黄色）：仅在特殊技最后一击且该击暴击时 ROLL 50%，触发后整局仅限 1 次 +600% 暴击伤害即时作用于当击并在退出 SP 时回收；未暴击不 ROLL，ROLL 失败可于下次特殊技继续 ROLL"
+      ],
+      "scenarios": [
+        "tools/autotest_scenarios/ironhide_cin_test_01_heavy_crit_burn.json",
+        "tools/autotest_scenarios/ironhide_cin_test_02_basic_and_block_gate.json",
+        "tools/autotest_scenarios/ironhide_cin_test_03_sp1_last_hit_stun_burn.json",
+        "tools/autotest_scenarios/ironhide_cin_test_04_sp2_missiles_crit_dmg.json",
+        "tools/autotest_scenarios/ironhide_cin_test_05_passive_struck_crit_dmg.json",
+        "tools/autotest_scenarios/ironhide_cin_test_06_sp3_last_hit_burn.json",
+        "tools/autotest_scenarios/ironhide_cin_test_07_sig_obliteration_once.json"
+      ],
+      "files": {
+        "Server/abilities/bots/ironhide.py": "2beb3c278935e30c87e8ede346f2b39bc1450129b96ab917e782b8c37811a970",
+        "tools/nativehook/skills/bots/skill_ironhide.c": "c0a22fee4159fff737216d420a1f9d323a1a31eb53c5b7a1ccae921d9baa194a",
+        "tools/autotest_scenarios/ironhide_cin_test_01_heavy_crit_burn.json": "61cf5076c89d0c9d61d63ad8f1c013f57b6d9b22328cc434f7d0452d88e0af03",
+        "tools/autotest_scenarios/ironhide_cin_test_02_basic_and_block_gate.json": "e8dcc8f50a185e7c30cf8684b7d1e6d63abbf3c3bceb0249449515aa163ef89a",
+        "tools/autotest_scenarios/ironhide_cin_test_03_sp1_last_hit_stun_burn.json": "14febf7fa3bb48ac2500072a5dc64820569d4ab6c44851826cbecc5566c36934",
+        "tools/autotest_scenarios/ironhide_cin_test_04_sp2_missiles_crit_dmg.json": "cb48ab1018abdbef40ec88e8299201eefaecc1787d15197478045fe738cc701c",
+        "tools/autotest_scenarios/ironhide_cin_test_05_passive_struck_crit_dmg.json": "2af34884e70aa95c511721006d7598adcb7b3d467aa244ffe08d508c078eca47",
+        "tools/autotest_scenarios/ironhide_cin_test_06_sp3_last_hit_burn.json": "f0c337af228a2032f9c44849505bfacd00b9262aab730bfde44fdafe114cbee3",
+        "tools/autotest_scenarios/ironhide_cin_test_07_sig_obliteration_once.json": "893b4777a5bc98ff0ea83f1c4fc1f71ce72dcf904874ae1804b5ccf8905e3b7f"
+      }
+    }
+  }
+}

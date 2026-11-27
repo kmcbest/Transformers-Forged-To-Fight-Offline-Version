@@ -100,7 +100,13 @@
 - **Frozen `hook.c` Event Bus (`hook.c` 事件总线冻结线)**:
   - `tools/nativehook/hook.c` 仅作为纯净底层事件派发总线，**严禁在 `hook.c` 中新增任何特定角色名硬编码特判**。所有角色专属逻辑必须落在 `tools/nativehook/skills/bots/skill_*.c`。
 - **Mandatory Quality Gates (能力改动必跑门禁)**:
-  - 任何能力代码改动必须通过：`python tools/validate_bot_ability.py --all --strict`、`python tools/snapshot_abilities.py --check`、以及 `python tools/build_hook.py` 与 `python tools/build_hook.py --autotest`。
+  - 任何能力代码改动必须通过：`python tools/validate_bot_ability.py --all --strict`、`python tools/snapshot_abilities.py --check`、`python tools/check_accepted_lock.py --check`、以及 `python tools/build_hook.py` 与 `python tools/build_hook.py --autotest`。
+- **Accepted & Locked Bots Protection (已验收代表角色物理锁定铁律)**:
+  - `Server/abilities/accepted_bots_lock.json`（台账见 `re_notes/ACCEPTED_BOTS_REGISTRY.md`）记录了所有已通过实机靶场验收的标杆角色及其 `.py`、`skill_*.c`、靶场剧本 `.json` 的 SHA-256 哈希。
+  - **严禁未经用户明确同意擅自修改任何 `locked: true` 角色的源码或剧本**。若确经用户授权修改并完成复验，必须执行 `python tools/check_accepted_lock.py --lock <bot_id>` 更新锁定哈希。
+- **Callout Text Ground-Truth Discipline (战斗呼出大字 `callout_text` 官方术语铁律)**:
+  - 编写或修改 `Server/abilities/bots/*.py` 中的 `callout_text`（对应客户端 `st`/`a`/`ps`）时，**严禁 AI 顺手自编修辞词**（如把燃烧编成“导弹灼烧”“地毯焚烧”“日冕风暴”，把流血编成“撕裂流血”“辐射撕裂”）。
+  - 必须优先严格沿用该角色数据库 `basic` 基础能力（`basic_abilities`）或对应技能条目的官方中文 `title_zh` 原词（如“燃烧”、“流血”、“破甲”、“震击”、“眩晕”、“追猎”、“无尽怒火”）；**仅当角色基础能力与技能真理源确无对应词条时**，才允许按最简洁标准词补充。
 
 
 ## Cross-repository boundary isolation protocol (跨仓库边界物理隔离铁律)

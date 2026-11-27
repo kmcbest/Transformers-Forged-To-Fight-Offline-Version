@@ -1,0 +1,60 @@
+{
+  "active": true,
+  "name": "ironhide_cin_test_01_heavy_crit_burn",
+  "banner": "#1 Movie Ironhide Heavy Missile Crit +100% & Burn Stack (80% -> 30%)",
+  "qid": "1.1.1",
+  "player_invincible": 1,
+  "p0": {
+    "bid": "ironhide_cin_rotf",
+    "mana": 0.0
+  },
+  "p1": {
+    "bid": "optimusprime_cin_tf",
+    "mana": 0.0,
+    "freeze_ai": 1,
+    "invincible_dummy": 1
+  },
+  "auto_fight": 0,
+  "max_duration_ms": 20000,
+  "p0_script": [
+    { "action": "WAIT", "duration_ms": 500 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 350 },
+    { "action": "HEAVY", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 1400 },
+    { "action": "HEAVY", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 1400 },
+    { "action": "HEAVY", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 1400 },
+    { "action": "HEAVY", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 1400 },
+    { "action": "HEAVY", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 1400 },
+    { "action": "HEAVY", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 1400 },
+    { "action": "HEAVY", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 2000 }
+  ],
+  "assertions": {
+    "must_hit_connected": [
+      { "attacker": "P0", "sp": 0, "min_count": 6 }
+    ],
+    "must_crit": [
+      { "attacker": "P0", "sp": 0, "min_count": 6 }
+    ],
+    "must_apply_buffs": [
+      { "target": "P1", "mod_substr": "ironhide_missile_burn", "min_count": 1 },
+      { "target": "P1", "mod_substr": "ironhide_missile_burn_stack", "min_count": 1 }
+    ],
+    "must_not_apply_buffs": [
+      { "target": "P0", "mod_substr": "ironhide_sp1_melee_buff" },
+      { "target": "P0", "mod_substr": "ironhide_sp2_unstoppable" }
+    ],
+    "must_dot_tick": [
+      { "target": "P1", "min_ticks": 4, "min_dmg": 1.0 }
+    ],
+    "must_log_substrings": [
+      { "substr": "IRONHIDE_CIN: P0 missile crit +100% (al=4", "min_count": 6 }
+    ]
+  }
+}

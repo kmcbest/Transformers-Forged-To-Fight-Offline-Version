@@ -3,6 +3,15 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+// 官方职业枚举位掩码 (源自 CharacterMetaData.Class)
+#define BOT_CLASS_NONE     0
+#define BOT_CLASS_BRAW     1
+#define BOT_CLASS_TACT     2
+#define BOT_CLASS_SCOU     4
+#define BOT_CLASS_DEMO     8
+#define BOT_CLASS_WARR     16
+#define BOT_CLASS_TECH     32
+
 // ---------------------------------------------------------------------------
 // 1. 上下文结构体定义 (Context Structures)
 // ---------------------------------------------------------------------------
@@ -19,11 +28,13 @@ typedef struct {
     int hit_index;               // 当前段数 (0-indexed)
     bool is_last_hit;            // 是否为当前动作的收招最终击
     bool is_ranged;              // 是否为远程射击
+    bool is_melee;               // 是否为近战攻击 (DamageType 含 melee，或普攻非远程)
     bool is_heavy;               // 是否为重击 (Heavy Attack)
     bool is_crit;                // 是否暴击
     bool is_blocked;             // 是否被格挡
     float base_damage;           // 原始计算伤害
     float modified_damage;       // 技能修改后的伤害输出
+    float armor_penetration;     // 护甲穿透倍率 (0.0..1.0+)
     uint32_t hit_flags;          // 原生命中标志
     int action_type;             // 动作类别 (1=L, 2=M, 4=Heavy, 8=Ranged, 16=SP1, 32=SP2, 64=SP3)
 } SkillHitContext;
@@ -180,9 +191,12 @@ typedef struct {
     void (*on_attack_ended)(SkillAttackEndContext* ctx);
     // 必杀技状态机进出回调 (sp_level: 1=SP1, 2=SP2, 3=SP3; entered: 1=进入, 0=退出)
     void (*on_special_state)(int player_index, int sp_level, int entered);
+    void (*on_opponent_special_state)(int opponent_player_index, int sp_level, int entered);
 
     // 攻击方反规避判定 (返回 1 表示阻止防守方触发任何规避; 返回 0 表示不干涉)
     int (*on_anti_evade_check)(int attacker_player_index, const SkillEvadeContext* ctx);
     // 动态被动暴击率加权回调 (返回 1 并累加到 *out_bonus; 返回 0 表示无加成)
     int (*on_crit_chance_mod)(int player_index, int atk_level, float* out_bonus);
+    // 暴击判定结果出炉回调 (在计算暴击伤害倍率前同步派发，用于暴击专属觉醒技如抹杀)
+    void (*on_crit_rolled)(int player_index, int atk_level, int is_last_hit, int is_crit);
 } BotSkillModule;

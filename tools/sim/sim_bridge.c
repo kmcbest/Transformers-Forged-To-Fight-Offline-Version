@@ -2,6 +2,7 @@
 #include "../nativehook/skills/skill_env.h"
 #include "../nativehook/skills/skill_types.h"
 #include "../nativehook/skills/skill_dispatcher.h"
+#include "../nativehook/bot_info.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
@@ -212,6 +213,45 @@ void skill_set_power_lock(int target_player_index, uint64_t duration_ms) {
     }
 }
 
+void skill_set_special_lock(int target_player_index, uint64_t duration_ms) {
+    (void)target_player_index;
+    (void)duration_ms;
+}
+
+void skill_interrupt_special(int target_player_index, float stun_duration_s) {
+    if (target_player_index >= 0 && target_player_index < 2) {
+        g_players[target_player_index].in_special = 0;
+        if (g_players[target_player_index].current_action >= 16) {
+            g_players[target_player_index].current_action = 0;
+        }
+        if (stun_duration_s > 0.0f) {
+            skill_stun_player(target_player_index, stun_duration_s);
+        }
+    }
+}
+
+int skill_refresh_target_debuffs(int target_player_index) {
+    return skill_fuse_target_debuffs(target_player_index);
+}
+
+int skill_accelerate_dots(int player_index, float accel_pct) {
+    if (player_index < 0 || player_index >= 2 || accel_pct <= 0.0f) return 0;
+    SimCombatant* c = &g_players[player_index];
+    int count = 0;
+    for (int i = 0; i < c->buff_count; i++) {
+        const char* id = c->buffs[i].mod_id;
+        if ((strstr(id, "bleed") || strstr(id, "burn") || strstr(id, "shock") || strstr(id, "acid")) &&
+            c->buffs[i].remaining_ms > 0) {
+            int64_t dec = (int64_t)((float)c->buffs[i].remaining_ms * accel_pct);
+            if (dec < 1) dec = 1;
+            c->buffs[i].remaining_ms -= dec;
+            if (c->buffs[i].remaining_ms < 0) c->buffs[i].remaining_ms = 0;
+            count++;
+        }
+    }
+    return count;
+}
+
 static float s_sim_opponent_distance = 25.0f;
 static int s_sim_in_melee = 0;
 static int s_sim_in_combo = 0;
@@ -346,6 +386,24 @@ const char* skill_get_bot_id(int player_index) {
     return "";
 }
 
+int skill_get_bot_class(int player_index) {
+    const char* bid = skill_get_bot_id(player_index);
+    if (bid && bid[0]) {
+        for (int i = 0; i < NUM_ENEMY_STATS; i++) {
+            if (strcmp(ENEMY_STATS[i].id, bid) == 0 && ENEMY_STATS[i].klass) {
+                const char* k = ENEMY_STATS[i].klass;
+                if (strcmp(k, "braw") == 0) return BOT_CLASS_BRAW;
+                if (strcmp(k, "tact") == 0) return BOT_CLASS_TACT;
+                if (strcmp(k, "scou") == 0) return BOT_CLASS_SCOU;
+                if (strcmp(k, "demo") == 0) return BOT_CLASS_DEMO;
+                if (strcmp(k, "warr") == 0) return BOT_CLASS_WARR;
+                if (strcmp(k, "tech") == 0) return BOT_CLASS_TECH;
+            }
+        }
+    }
+    return 0;
+}
+
 float skill_get_mana(int player_index) {
     if (player_index >= 0 && player_index < 2) {
         return g_players[player_index].mana;
@@ -478,9 +536,15 @@ void skill_prowl_finish_charge(int player_index, const char* reason) {
     prowl_finish_charge_sim(player_index, reason);
 }
 
+static int s_sim_current_hit_is_last = 0;
+
 int skill_is_heavy_attacking(int player_index) {
     if (player_index < 0 || player_index >= 2) return 0;
     return (g_players[player_index].is_heavy || g_players[player_index].current_action == 4);
+}
+
+int skill_is_current_hit_last(void) {
+    return s_sim_current_hit_is_last ? 1 : 0;
 }
 
 int skill_is_special_attacking(int player_index) {
@@ -1071,6 +1135,7 @@ SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
 
     int is_heavy = (action_type == 4);
     int is_ranged = (action_type == 8);
+    s_sim_current_hit_is_last = is_last_hit ? 1 : 0;
 
     atker->current_action = action_type;
     atker->is_heavy = is_heavy;
@@ -1192,7 +1257,8 @@ SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
         necro_heavy_crit = 0.01f * (float)charges;
     }
 
-    float total_crit_rate = base_crit + blade_crit + resolution_crit + necro_heavy_crit;
+    float module_crit = skill_dispatch_crit_chance_mod(attacker_idx, action_type);
+    float total_crit_rate = base_crit + blade_crit + resolution_crit + necro_heavy_crit + module_crit;
     if (is_thundercracker && !is_ranged && sp_idx == 0) {
         total_crit_rate = 0.0f; // 惊天雷近战 0 暴击
     }
@@ -1204,6 +1270,8 @@ SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
     float roll_pct = roll * 100.0f;
     float crit_rate_pct = total_crit_rate * 100.0f;
     int is_crit = (roll < total_crit_rate);
+
+    skill_dispatch_crit_rolled(attacker_idx, action_type, is_last_hit ? 1 : 0, is_crit);
 
     if (is_crit) {
         float crit_mult = atker->crit_damage_mult;
@@ -1242,11 +1310,13 @@ SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
         .hit_index = hit_index,
         .is_last_hit = (bool)is_last_hit,
         .is_ranged = (bool)is_ranged,
+        .is_melee = (!is_ranged && sp_idx == 0),
         .is_heavy = (bool)is_heavy,
         .is_crit = (bool)is_crit,
         .is_blocked = (bool)is_blocked,
         .base_damage = base_dmg,
         .modified_damage = base_dmg,
+        .armor_penetration = 0.0f,
         .hit_flags = 0x2180 | (is_last_hit ? 0x80 : 0) | (is_crit ? 32 : 0) | (is_blocked ? 4 : 1),
         .action_type = action_type
     };

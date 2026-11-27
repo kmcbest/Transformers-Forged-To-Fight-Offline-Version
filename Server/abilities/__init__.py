@@ -653,14 +653,14 @@ def build_stat_mod_appears():
     # 3. 官方英雄招牌技能外观与 UI 基础能力外观
     appears.update(_get_character_profiles().get_profile_stat_mod_appears())
 
-    # 4. 全局规避呼出文字外观
+    # 4. 全局规避呼出文字外观（无图标纹理，仅弹绿色“规避”Callout）
     appears["appr_evade_callout"] = {
         "id": "appr_evade_callout",
         "a": "规避",
         "s": "",
         "l": "",
         "ss": "",
-        "t": "\uE509",
+        "t": "",
         "f": "",
         "st": "规避",
         "ps": "",
