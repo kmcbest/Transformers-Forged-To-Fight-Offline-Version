@@ -1,0 +1,7 @@
+ManifestFileVersion: 0
+CRC: 2440791565
+AssetBundleManifest:
+  AssetBundleInfos:
+    Info_0:
+      Name: dragstrip_mesh.assetbundle
+      Dependencies: {}

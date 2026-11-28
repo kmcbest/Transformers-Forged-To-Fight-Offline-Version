@@ -3,17 +3,21 @@
 """
 generate_dragstrip_assets.py
 
-Custom composite grafting pipeline for Decepticon Dragstrip (抢劫).
+Stage 4 Production AssetBundle Grafting for Decepticon Dragstrip (抢劫):
 Class: Warrior (warr)
 Faction: Decepticons (霸天虎)
 
-1. Base Body & Vehicle Mode:
-   - Cloned from Mirage (mirage_gs_deluxe2016.assetbundle)
-2. Combat Animation & Moveset Grafting:
+1. 3D Model & PBR Textures (Transformers: Alliance grafted onto Mirage 59-bone rig):
+   - Robot 00 (59 bones, Swoosh Track-B symmetrical combat fists, Symbol_DC on LeftArm)
+   - Vehicle 01 (30 bones, Unity-baked seamless Tyrrell P34 6-wheel F1 chassis)
+   - Dual Purple Blasters (blaster_right & blaster_left forward-aligned to Mirage X=-X)
+   - Mirage hologram cube hidden cleanly (SMR disabled + Transform scale 0.0001 + PropsController cleared)
+   - 2048x2048 Main PBR + 1024x1024 Weapon PBR (Diffuse + NM.B metallic + RGB24 RAOE)
+2. Preserved Combat Animation & Moveset Grafting:
    - Heavy Attack: Cliffjumper (Ironhide_Normal_attackHeavy / move_heavy_cliffjumper_gs_shoot)
    - S1: Mirage (Preserved)
    - S2: Hot Rod (Hotrod_cin_attackSpecial_02 / move_hotrod_special_02)
-   - S3: Bumblebee GS (bumblebee_gs_attackSpecial_03 / SP3 timings borrowed)
+   - S3: Mirage (Preserved)
    - L1: Jazz L3 (Jazz_GS_attackLight_03_leftKick / move_jazz_attack_light_03)
    - L2: Blaster L2 (blaster_GS_attackLight_02_leftKick / move_blaster_attack_light_02)
    - L3: Blaster L3 (blaster_GS_attackLight_03_rightKick / move_blaster_attack_light_03)
@@ -21,66 +25,200 @@ Faction: Decepticons (霸天虎)
    - M1: Cheetor M1 (Cheetor_BW_attackMedium_01_FrontKick / move_cheetor_attack_medium_01)
    - M2: Mirage M2 (Preserved)
    - Ranged Gunshots: Mirage (Preserved)
-   - Victory Pose: Sideswipe (Brawler_Normal_Victory / Brawler_Normal_Victory_Idle)
-3. UI Portraits:
-   - Generated from Mirage base portrait (neutral colors for now)
+   - Victory Pose: Mirage's Agile_Backflip_Victory (Preserved)
 """
+
+import sys
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8")
 
 import argparse
 import copy
-import glob
 import io
-import os
-import sys
 import zipfile
-import struct
-import numpy as np
+from collections import deque
 from pathlib import Path
 from PIL import Image
 
 try:
     import UnityPy
+    from UnityPy.enums import TextureFormat
 except ImportError:
     print("Error: UnityPy is required. Install it using: pip install UnityPy lz4 pillow numpy")
     sys.exit(1)
 
-# Force UTF-8 on Windows
-sys.stdout.reconfigure(encoding='utf-8')
+ROOT = Path(__file__).resolve().parent.parent
+DS_DIR = ROOT / "3rd-party-models" / "DragStrip"
+MESH_BUNDLE = DS_DIR / "04_unity_bundles" / "dragstrip_mesh.assetbundle"
+TEX_DIR = DS_DIR / "02_textures"
+
+BOT_ID = "dragstrip_gs_deluxe2016"
+NEW_CAB = "CAB-dragstrip2016gs00001122334455"
+
+# Mirage donor Mesh / Texture / Material / SMR PIDs
+MESH_ROBOT_PID = -7047427799269870338      # cha_mirage_gs_deluxe2016_00 (59 bones)
+MESH_VEH_PID = -7919032722081793131        # cha_mirage_gs_deluxe2016_01 (30 bones)
+MESH_GUN_R_PID = -708779048876715111       # cha_mirage_gs_deluxe2016_wpns_blaster_right (2 bones)
+MESH_GUN_L_PID = 3991515401293144586       # cha_mirage_gs_deluxe2016_wpns_blaster_left (2 bones)
+
+TEX_MAIN_DIFF_PID = 4395477768874757111    # cha_mirage_gs_deluxe2016_main_a
+TEX_MAIN_NM_PID = -6978092715990138129     # main_NM (NM.B = Kabam metallic)
+TEX_MAIN_RAOE_PID = -850837903824500791    # main_tform_misc_RAOE (RGB24)
+
+TEX_WPNS_DIFF_PID = 5622234077790621728    # cha_mirage_gs_deluxe2016_wpns_a
+TEX_WPNS_NM_PID = -2093198935828166547     # wpns_NM (NM.B = Kabam metallic)
+TEX_WPNS_RAOE_PID = 6915329565936758037    # wpns_RAOE (RGB24)
+
+MAT_MAIN_PID = 7175098081916666581         # Main robot material
+MAT_MISC_PID = -8318600222494959541        # Misc body parts material
+MAT_VEH_PID = 3475926521476801325          # Vehicle material
+MAT_WPNS_PID = 6410552648699303269         # Weapons material
+
+SMR_ROBOT_PIDS = (-4162633114742165930, -360973636754071276)
+SMR_VEH_PIDS = (7623886199718479523, 7962935959443397066)
+SMR_GUN_PIDS = (-5139469930961036181, 6504325044332464931, 8763026051381471918, 9151386682529925607)
+SMR_CUBE_PIDS = (-842429708391054887, 505331748733393460, 6460812292277991026)
+
+
+def iter_pptrs_in_tree(node):
+    if isinstance(node, dict):
+        if "m_FileID" in node and "m_PathID" in node:
+            yield node
+        else:
+            for v in node.values():
+                yield from iter_pptrs_in_tree(v)
+    elif isinstance(node, (list, tuple)):
+        for x in node:
+            yield from iter_pptrs_in_tree(x)
+
+
+def collect_closure(sf, root_pids):
+    visited = set()
+    all_pptrs = set()
+    queue = deque()
+    for r in root_pids:
+        all_pptrs.add((0, r))
+        visited.add(r)
+        queue.append(r)
+    while queue:
+        cur = queue.popleft()
+        obj = sf.objects.get(cur)
+        if obj is None:
+            continue
+        try:
+            tree = obj.read_typetree()
+        except Exception:
+            continue
+        for pptr in iter_pptrs_in_tree(tree):
+            fid, tpid = int(pptr.get("m_FileID", 0)), int(pptr.get("m_PathID", 0))
+            if tpid == 0:
+                continue
+            all_pptrs.add((fid, tpid))
+            if fid == 0 and tpid not in visited:
+                visited.add(tpid)
+                queue.append(tpid)
+    return visited, all_pptrs
 
 
 def replace_str_in_tree(tree_obj, old_s, new_s):
     if isinstance(tree_obj, dict):
         for k, v in tree_obj.items():
-            if isinstance(v, str) and old_s in v:
-                tree_obj[k] = v.replace(old_s, new_s)
+            if isinstance(v, str) and (old_s in v or old_s.lower() in v.lower()):
+                tree_obj[k] = v.replace(old_s, new_s).replace(old_s.lower(), new_s.lower())
             else:
                 replace_str_in_tree(v, old_s, new_s)
     elif isinstance(tree_obj, list):
         for idx, item in enumerate(tree_obj):
-            if isinstance(item, str) and old_s in item:
-                tree_obj[idx] = item.replace(old_s, new_s)
+            if isinstance(item, str) and (old_s in item or old_s.lower() in item.lower()):
+                tree_obj[idx] = item.replace(old_s, new_s).replace(old_s.lower(), new_s.lower())
             else:
                 replace_str_in_tree(item, old_s, new_s)
 
 
+def patch_kabam_character_mat(mat_tt: dict, tex_overrides: dict, custom_floats: dict = None, custom_colors: dict = None):
+    old_envs = mat_tt.get("m_SavedProperties", {}).get("m_TexEnvs", [])
+    new_envs = []
+    for item in old_envs:
+        if isinstance(item, (tuple, list)) and len(item) == 2:
+            prop_name, prop_data = item
+            if prop_name in tex_overrides:
+                override_pid = tex_overrides[prop_name]
+                if override_pid is not None:
+                    prop_data["m_Texture"] = {"m_FileID": 0, "m_PathID": override_pid}
+                prop_data["m_Scale"] = {"x": 1.0, "y": 1.0}
+                prop_data["m_Offset"] = {"x": 0.0, "y": 0.0}
+            new_envs.append((prop_name, prop_data))
+    mat_tt["m_SavedProperties"]["m_TexEnvs"] = new_envs
+
+    float_overrides = {
+        "_Mode": 3.0,
+        "_ZWrite": 1.0,
+        "_metallic_range": 0.0,
+        "_metallic_toggle": 0.0,
+        "_roughness_range": 0.85,
+        "_clearcoat_reflectance_range": 0.08,
+        "_emissive_range": 0.0,
+        "_emissive_none": 0.0,
+        "_emissive_overbright_range": 18.0,
+    }
+    if custom_floats:
+        float_overrides.update(custom_floats)
+
+    floats = mat_tt["m_SavedProperties"]["m_Floats"]
+    existing_keys = {k for k, _ in floats}
+    new_floats = [(k, float_overrides[k] if k in float_overrides else v) for k, v in floats]
+    for k, v in float_overrides.items():
+        if k not in existing_keys:
+            new_floats.append((k, v))
+    mat_tt["m_SavedProperties"]["m_Floats"] = new_floats
+
+    color_overrides = {
+        "_Color": {"r": 0.95, "g": 0.95, "b": 0.95, "a": 1.0},
+        "_base_col": {"r": 1.0, "g": 1.0, "b": 1.0, "a": 1.0},
+        "_emissive_intensity_col": {"r": 1.0, "g": 0.08, "b": 0.08, "a": 0.0},
+    }
+    if custom_colors:
+        color_overrides.update(custom_colors)
+
+    colors = mat_tt["m_SavedProperties"]["m_Colors"]
+    mat_tt["m_SavedProperties"]["m_Colors"] = [
+        (k, dict(color_overrides[k]) if k in color_overrides else v) for k, v in colors
+    ]
+
+
 def generate_dragstrip_assets(apk_path: str | None = None, output_dir: str = "assets_redeco") -> None:
     out_dir = Path(output_dir)
+    if not out_dir.is_absolute():
+        out_dir = ROOT / out_dir
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    extracted = Path("extracted_apk/assets/assetpack")
+    assert MESH_BUNDLE.is_file(), f"Missing Stage 3 mesh bundle: {MESH_BUNDLE}"
+    for tf in (
+        "cha_dragstrip_main_Diffuse.png", "cha_dragstrip_main_Normal.png", "cha_dragstrip_main_RAOE.png",
+        "cha_dragstrip_wpns_Diffuse.png", "cha_dragstrip_wpns_Normal.png", "cha_dragstrip_wpns_RAOE.png",
+    ):
+        assert (TEX_DIR / tf).is_file(), f"Missing texture: {TEX_DIR / tf}"
+
+    extracted_candidates = [
+        ROOT / "extracted_apk" / "assets" / "assetpack",
+        Path(r"E:\Agent\TFTF\extracted_apk\assets\assetpack"),
+    ]
+
     def load_bundle(rel_path: str) -> bytes:
-        if (extracted / rel_path).is_file():
-            return (extracted / rel_path).read_bytes()
+        for base in extracted_candidates:
+            if (base / rel_path).is_file():
+                return (base / rel_path).read_bytes()
         if apk_path and Path(apk_path).is_file():
             with zipfile.ZipFile(apk_path, "r") as z:
                 return z.read(f"assets/assetpack/{rel_path}")
-        raise FileNotFoundError(f"Cannot find {rel_path} in extracted_apk or {apk_path}")
+        raise FileNotFoundError(f"Cannot find {rel_path} in {extracted_candidates} or {apk_path}")
 
-    print("[*] Loading component assetbundles...")
+    print("[*] Loading component assetbundles & Stage 3 DragStrip mesh bundle...")
     mirage_bytes = load_bundle("mirage_gs_deluxe2016_odr/mirage_gs_deluxe2016.assetbundle")
     cliff_bytes = load_bundle("cliffjumper_gs_kabam_odr/cliffjumper_gs_kabam.assetbundle")
     hotrod_bytes = load_bundle("hotrod_cin_tlk_odr/hotrod_cin_tlk.assetbundle")
-    bee_bytes = load_bundle("bumblebee_gs_kabam_odr/bumblebee_gs_kabam.assetbundle")
     jazz_bytes = load_bundle("jazz_gs_twm05_odr/jazz_gs_twm05.assetbundle")
     blaster_bytes = load_bundle("blaster_gs_leader2016_odr/blaster_gs_leader2016.assetbundle")
     cheetor_bytes = load_bundle("cheetor_bw_transmetal_odr/cheetor_bw_transmetal.assetbundle")
@@ -89,43 +227,40 @@ def generate_dragstrip_assets(apk_path: str | None = None, output_dir: str = "as
     m_env = UnityPy.load(mirage_bytes)
     c_env = UnityPy.load(cliff_bytes)
     h_env = UnityPy.load(hotrod_bytes)
-    b_env = UnityPy.load(bee_bytes)
     j_env = UnityPy.load(jazz_bytes)
     bl_env = UnityPy.load(blaster_bytes)
     ch_env = UnityPy.load(cheetor_bytes)
+    mesh_env = UnityPy.load(str(MESH_BUNDLE))
 
-    # 1. Extract required AnimationClips
-    print("[*] Extracting external animation clips...")
+    ds_meshes = {}
+    for obj in mesh_env.objects:
+        if obj.type.name == "Mesh":
+            tt = obj.read_typetree()
+            ds_meshes[tt["m_Name"]] = tt
+    for req in (
+        "cha_mirage_gs_deluxe2016_00",
+        "cha_mirage_gs_deluxe2016_01",
+        "cha_mirage_gs_deluxe2016_wpns_blaster_right",
+        "cha_mirage_gs_deluxe2016_wpns_blaster_left",
+    ):
+        assert req in ds_meshes, f"Missing '{req}' in {MESH_BUNDLE}: {list(ds_meshes.keys())}"
 
-    # Cliffjumper Heavy: Ironhide_Normal_attackHeavy (-2721040065330547388)
-    clip_heavy = None
-    for obj in c_env.objects:
-        if obj.path_id == -2721040065330547388 and obj.type.name == "AnimationClip":
-            clip_heavy = obj.read_typetree()
-            clip_heavy["m_Name"] = "dragstrip_Normal_attackHeavy"
-            break
+    # 1. Extract required AnimationClips (preserve existing Dragstrip kick/gunshot combat flow)
+    print("[*] Extracting external combat animation clips...")
+    clip_heavy = next(
+        (obj.read_typetree() for obj in c_env.objects if obj.path_id == -2721040065330547388 and obj.type.name == "AnimationClip"),
+        None,
+    )
+    assert clip_heavy is not None
+    clip_heavy["m_Name"] = "dragstrip_Normal_attackHeavy"
 
-    # Hotrod S2: Hotrod_cin_attackSpecial_02 (3923599842407920377)
-    clip_s2 = None
-    for obj in h_env.objects:
-        if obj.path_id == 3923599842407920377 and obj.type.name == "AnimationClip":
-            clip_s2 = obj.read_typetree()
-            clip_s2["m_Name"] = "dragstrip_Normal_attackSpecial_02"
-            break
+    clip_s2 = next(
+        (obj.read_typetree() for obj in h_env.objects if obj.path_id == 3923599842407920377 and obj.type.name == "AnimationClip"),
+        None,
+    )
+    assert clip_s2 is not None
+    clip_s2["m_Name"] = "dragstrip_Normal_attackSpecial_02"
 
-    # Bumblebee S3: bumblebee_gs_attackSpecial_03 (3809667128409547372) and HitReaction (-9071274386392300993)
-    clip_s3 = None
-    clip_s3_hit = None
-    for obj in b_env.objects:
-        if obj.path_id == 3809667128409547372 and obj.type.name == "AnimationClip":
-            clip_s3 = obj.read_typetree()
-            clip_s3["m_Name"] = "dragstrip_gs_attackSpecial_03"
-        elif obj.path_id == -9071274386392300993 and obj.type.name == "AnimationClip":
-            clip_s3_hit = obj.read_typetree()
-            clip_s3_hit["m_Name"] = "dragstrip_gs_attackSpecial_03_hitReaction"
-
-    # Jazz L3: Jazz_GS_attackLight_03_leftKick (6919999024148056483)
-    # Jazz L4: Jazz_GS_attackLight_04_KickBackFlip (-491266744809317325)
     clip_l1_jazz = None
     clip_l4_jazz = None
     for obj in j_env.objects:
@@ -136,8 +271,6 @@ def generate_dragstrip_assets(apk_path: str | None = None, output_dir: str = "as
             clip_l4_jazz = obj.read_typetree()
             clip_l4_jazz["m_Name"] = "dragstrip_GS_attackLight_04_backflip"
 
-    # Blaster L2: blaster_GS_attackLight_02_leftKick (2310569694197683561)
-    # Blaster L3: blaster_GS_attackLight_03_rightKick (285458249171271195)
     clip_l2_blaster = None
     clip_l3_blaster = None
     for obj in bl_env.objects:
@@ -148,33 +281,24 @@ def generate_dragstrip_assets(apk_path: str | None = None, output_dir: str = "as
             clip_l3_blaster = obj.read_typetree()
             clip_l3_blaster["m_Name"] = "dragstrip_GS_attackLight_03_kick"
 
-    # Cheetor M1: Cheetor_BW_attackMedium_01_FrontKick (-82464947619687576)
-    clip_m1_cheetor = None
-    for obj in ch_env.objects:
-        if obj.path_id == -82464947619687576 and obj.type.name == "AnimationClip":
-            clip_m1_cheetor = obj.read_typetree()
-            clip_m1_cheetor["m_Name"] = "dragstrip_BW_attackMedium_01_frontkick"
-            break
+    clip_m1_cheetor = next(
+        (obj.read_typetree() for obj in ch_env.objects if obj.path_id == -82464947619687576 and obj.type.name == "AnimationClip"),
+        None,
+    )
+    assert clip_m1_cheetor is not None
+    clip_m1_cheetor["m_Name"] = "dragstrip_BW_attackMedium_01_frontkick"
 
-    print("[+] Extracted all custom combat animation clips!")
-
-    # 2. Re-wire Mirage bundle
-    print("[*] Grafting Dragstrip into Mirage's physical rig...")
-    bf = list(m_env.files.values())[0]
+    # 2. Re-wire Mirage donor bundle CAB & inject AnimationClips + Projectile entities
     m_asset = list(m_env.assets)[0]
+    obj_map = {o.path_id: o for o in m_env.objects}
 
-    old_cab = "CAB-136f0ac5ca5202757facd548b71d4a43"
-    for subfname in bf.files.keys():
-        if subfname.startswith("CAB-") and not subfname.endswith((".resS", ".resource")):
-            old_cab = subfname
-            break
+    cab_files = [k for k in m_env.file.files.keys() if k.lower().startswith("cab-") and "." not in k]
+    assert cab_files, "Could not find CAB file in Mirage donor bundle!"
+    old_cab = cab_files[0]
+    old_cab_low = old_cab.lower()
+    new_cab_low = NEW_CAB.lower()
+    print(f"[*] Remapping CAB: {old_cab} -> {NEW_CAB}")
 
-    new_cab = "CAB-dragstrip2016gs00001122334455"
-    print(f"[*] Remapping CAB: {old_cab} -> {new_cab}")
-
-    # Dedicated new PathIDs for the 7 injected combat AnimationClips.
-    # We DO NOT overwrite any existing Mirage clips! All 13 original clips
-    # (including BattleIntro, car transitions, and S3 hologram cutscene) remain untouched!
     PID_HEAVY = 991001
     PID_S2 = 991002
     PID_L1_JAZZ = 991005
@@ -193,23 +317,17 @@ def generate_dragstrip_assets(apk_path: str | None = None, output_dir: str = "as
         (PID_M1_CHEETOR, clip_m1_cheetor),
     ]
 
-    # Pick a template AnimationClip from Mirage to clone ObjectReader metadata
-    template_clip = [o for o in m_asset.objects.values() if o.type.name == "AnimationClip"][0]
-
+    template_clip = next(o for o in m_asset.objects.values() if o.type.name == "AnimationClip")
     for pid, ctree in new_clips:
         new_obj = copy.copy(template_clip)
         new_obj.path_id = pid
-        replace_str_in_tree(ctree, old_cab, new_cab)
+        replace_str_in_tree(ctree, old_cab, new_cab_low)
         new_obj.save_typetree(ctree)
         m_asset.objects[pid] = new_obj
-    print(f"[+] Injected {len(new_clips)} new AnimationClips as standalone objects into asset!")
+    print(f"[+] Injected {len(new_clips)} custom combat AnimationClips into Dragstrip bundle")
 
-    # Projectile bullet entities injection:
-    # 1. Cliffjumper Heavy: projectile_megatron_gs_bullet (GameObject: 9003878510878022874 + 5 components)
-    # 2. Hot Rod S2: projectile_hotrod_bullet (GameObject: -8172610782387618255 + 5 components)
     c_asset = list(c_env.assets)[0]
     h_asset = list(h_env.assets)[0]
-
     tmpl_go = m_asset.objects[8211146528821479566]
     tmpl_tr = m_asset.objects[7833009063040620157]
     tmpl_fire_explode = m_asset.objects[6911381496922764941]
@@ -220,20 +338,19 @@ def generate_dragstrip_assets(apk_path: str | None = None, output_dir: str = "as
     def get_template(obj_type, tree):
         if obj_type == "GameObject":
             return tmpl_go
-        elif obj_type == "Transform":
+        if obj_type == "Transform":
             return tmpl_tr
-        elif obj_type == "MonoBehaviour":
+        if obj_type == "MonoBehaviour":
             script_pid = tree.get("m_Script", {}).get("m_PathID")
             if script_pid == -3660570848581127988:
                 return tmpl_fire_explode
-            elif script_pid == 2297153707519481197:
+            if script_pid == 2297153707519481197:
                 return tmpl_moves
-            elif script_pid == -3815473324432562333:
+            if script_pid == -3815473324432562333:
                 return tmpl_prefablist
-            elif script_pid == 4113389322536752908:
+            if script_pid == 4113389322536752908:
                 return tmpl_combat
-            else:
-                raise ValueError(f"Unknown script pid {script_pid}")
+            raise ValueError(f"Unknown script pid {script_pid}")
         raise ValueError(f"Unknown type {obj_type}")
 
     cj_proj_pids = [9003878510878022874, -3703404665488950760, 7614484081745325141, -2714705455090383668, -4642064524079818382, 5864972968936471992]
@@ -253,7 +370,7 @@ def generate_dragstrip_assets(apk_path: str | None = None, output_dir: str = "as
         tmpl = get_template(obj.type.name, tree)
         new_obj = copy.copy(tmpl)
         new_obj.path_id = pid
-        replace_str_in_tree(tree, old_cab, new_cab)
+        replace_str_in_tree(tree, old_cab, new_cab_low)
         new_obj.save_typetree(tree)
         m_asset.objects[pid] = new_obj
 
@@ -267,129 +384,225 @@ def generate_dragstrip_assets(apk_path: str | None = None, output_dir: str = "as
         tmpl = get_template(obj.type.name, tree)
         new_obj = copy.copy(tmpl)
         new_obj.path_id = pid
-        replace_str_in_tree(tree, old_cab, new_cab)
+        replace_str_in_tree(tree, old_cab, new_cab_low)
         new_obj.save_typetree(tree)
         m_asset.objects[pid] = new_obj
+    print(f"[+] Injected {len(cj_proj_pids) + len(hr_proj_pids)} projectile objects into Dragstrip bundle")
 
-    injected_proj_pids = cj_proj_pids + hr_proj_pids
-    print(f"[+] Injected {len(injected_proj_pids)} projectile entities and components into Dragstrip bundle!")
+    # 3. Graft 3D Alliance Meshes (Robot 00, F1 Car 01, Dual Blasters) cleanly
+    mesh_specs = (
+        (MESH_ROBOT_PID, "cha_mirage_gs_deluxe2016_00", "cha_dragstrip_gs_deluxe2016_00", 3.0),
+        (MESH_VEH_PID, "cha_mirage_gs_deluxe2016_01", "cha_dragstrip_gs_deluxe2016_01", 0.5),
+        (MESH_GUN_R_PID, "cha_mirage_gs_deluxe2016_wpns_blaster_right", "cha_dragstrip_gs_deluxe2016_wpns_blaster_right", -10.0),
+        (MESH_GUN_L_PID, "cha_mirage_gs_deluxe2016_wpns_blaster_left", "cha_dragstrip_gs_deluxe2016_wpns_blaster_left", -10.0),
+    )
+    for dst_pid, src_name, dst_name, y_floor in mesh_specs:
+        src_tt = copy.deepcopy(ds_meshes[src_name])
+        dst_obj = obj_map[dst_pid]
+        dst_tt = dst_obj.read_typetree()
 
+        keep_hashes = list(dst_tt["m_BoneNameHashes"])
+        keep_root_hash = int(dst_tt["m_RootBoneNameHash"])
+        assert len(src_tt["m_BindPose"]) == len(keep_hashes), (
+            f"{src_name} bindpose len {len(src_tt['m_BindPose'])} != donor hashes len {len(keep_hashes)}"
+        )
+        c_y = src_tt["m_LocalAABB"]["m_Center"]["y"]
+        assert c_y > y_floor, f"{src_name} center.y={c_y:.3f} failed height guard (>{y_floor})"
+
+        dst_tt["m_Name"] = dst_name
+        for field in (
+            "m_SubMeshes", "m_Shapes", "m_BindPose", "m_BonesAABB",
+            "m_VariableBoneCountWeights", "m_MeshCompression", "m_IndexFormat",
+            "m_IndexBuffer", "m_VertexData", "m_CompressedMesh",
+            "m_LocalAABB", "m_StreamData",
+        ):
+            dst_tt[field] = src_tt[field]
+        dst_tt["m_BoneNameHashes"] = keep_hashes
+        dst_tt["m_RootBoneNameHash"] = keep_root_hash
+        dst_tt["m_IsReadable"] = True
+        dst_tt["m_KeepVertices"] = True
+        dst_tt["m_KeepIndices"] = True
+        dst_tt["m_MeshUsageFlags"] = 1
+        dst_obj.save_typetree(dst_tt)
+        print(f"[✓] Grafted Mesh '{dst_name}': PID={dst_pid}, verts={src_tt['m_VertexData']['m_VertexCount']}, bones={len(keep_hashes)}")
+
+    # 4. Inject 2048x2048 Main & 1024x1024 Weapon PBR Atlases
+    def set_texture(obj, img_path: Path, name: str, is_raoe: bool = False):
+        t = obj.read()
+        img = Image.open(img_path)
+        if is_raoe:
+            img = img.convert("RGB")
+            target_fmt = TextureFormat.RGB24
+        else:
+            img = img.convert("RGBA")
+            r, g, b, _ = img.split()
+            img = Image.merge("RGBA", (r, g, b, Image.new("L", img.size, 255)))
+            target_fmt = TextureFormat.RGBA32
+
+        t.m_Name = name
+        t.m_StreamData.offset = 0
+        t.m_StreamData.size = 0
+        t.m_StreamData.path = ""
+        t.set_image(img, target_format=target_fmt, mipmap_count=1)
+        t.save()
+        print(f"  [Tex] {obj.path_id}: '{name}' {img.size[0]}x{img.size[1]} fmt={int(target_fmt)}")
+
+    print("[*] Injecting DragStrip Main 2048 & Weapon 1024 PBR textures...")
+    set_texture(obj_map[TEX_MAIN_DIFF_PID], TEX_DIR / "cha_dragstrip_main_Diffuse.png", "cha_dragstrip_main_Diffuse", is_raoe=False)
+    set_texture(obj_map[TEX_MAIN_NM_PID], TEX_DIR / "cha_dragstrip_main_Normal.png", "cha_dragstrip_main_Normal", is_raoe=False)
+    set_texture(obj_map[TEX_MAIN_RAOE_PID], TEX_DIR / "cha_dragstrip_main_RAOE.png", "cha_dragstrip_main_RAOE", is_raoe=True)
+
+    set_texture(obj_map[TEX_WPNS_DIFF_PID], TEX_DIR / "cha_dragstrip_wpns_Diffuse.png", "cha_dragstrip_wpns_Diffuse", is_raoe=False)
+    set_texture(obj_map[TEX_WPNS_NM_PID], TEX_DIR / "cha_dragstrip_wpns_Normal.png", "cha_dragstrip_wpns_Normal", is_raoe=False)
+    set_texture(obj_map[TEX_WPNS_RAOE_PID], TEX_DIR / "cha_dragstrip_wpns_RAOE.png", "cha_dragstrip_wpns_RAOE", is_raoe=True)
+
+    # 5. Patch Main/Veh/Misc Materials & Weapon Material
+    main_tex_overrides = {
+        "_base_tex": TEX_MAIN_DIFF_PID,
+        "_normal_tex": TEX_MAIN_NM_PID,
+        "_pbr_composite_tex": TEX_MAIN_RAOE_PID,
+    }
+    for mpid in (MAT_MAIN_PID, MAT_MISC_PID, MAT_VEH_PID):
+        m_obj = obj_map[mpid]
+        m_tt = m_obj.read_typetree()
+        patch_kabam_character_mat(m_tt, main_tex_overrides)
+        m_obj.save_typetree(m_tt)
+
+    wpn_tex_overrides = {
+        "_base_tex": TEX_WPNS_DIFF_PID,
+        "_normal_tex": TEX_WPNS_NM_PID,
+        "_pbr_composite_tex": TEX_WPNS_RAOE_PID,
+    }
+    w_obj = obj_map[MAT_WPNS_PID]
+    w_tt = w_obj.read_typetree()
+    patch_kabam_character_mat(
+        w_tt,
+        wpn_tex_overrides,
+        custom_floats={"_emissive_overbright_range": 0.0},
+        custom_colors={"_emissive_intensity_col": {"r": 0.0, "g": 0.0, "b": 0.0, "a": 0.0}},
+    )
+    w_obj.save_typetree(w_tt)
+    print("[✓] Patched DragStrip Main/Veh/Weapon Materials (Scale=(1,1), Offset=(0,0), Crimson Visor Emissive)")
+
+    # 6. Configure SMRs (1 submesh each) & hide Mirage hologram cube
+    generous_aabb = {"m_Center": {"x": 0.0, "y": 0.0, "z": 0.0}, "m_Extent": {"x": 10.0, "y": 10.0, "z": 10.0}}
+    for pid in SMR_ROBOT_PIDS + SMR_VEH_PIDS:
+        smr_obj = obj_map[pid]
+        smr_tt = smr_obj.read_typetree()
+        smr_tt["m_Materials"] = [{"m_FileID": 0, "m_PathID": MAT_MAIN_PID}]
+        smr_tt["m_AABB"] = generous_aabb
+        smr_tt["m_UpdateWhenOffscreen"] = True
+        smr_obj.save_typetree(smr_tt)
+
+    for pid in SMR_GUN_PIDS:
+        smr_obj = obj_map[pid]
+        smr_tt = smr_obj.read_typetree()
+        smr_tt["m_Materials"] = [{"m_FileID": 0, "m_PathID": MAT_WPNS_PID}]
+        smr_tt["m_AABB"] = generous_aabb
+        smr_tt["m_UpdateWhenOffscreen"] = True
+        smr_obj.save_typetree(smr_tt)
+
+    hidden_transform_pids = set()
+    for pid in SMR_CUBE_PIDS:
+        smr_obj = obj_map.get(pid)
+        if smr_obj is None:
+            continue
+        smr_tt = smr_obj.read_typetree()
+        smr_tt["m_Enabled"] = False
+        smr_tt["m_Materials"] = []
+        go_pid = smr_tt["m_GameObject"]["m_PathID"]
+        smr_obj.save_typetree(smr_tt)
+        go_obj = obj_map.get(go_pid)
+        if go_obj:
+            go_tt = go_obj.read_typetree()
+            for comp in go_tt.get("m_Component", []):
+                comp_pid = comp.get("component", {}).get("m_PathID")
+                if comp_pid in obj_map and obj_map[comp_pid].type.name == "Transform":
+                    hidden_transform_pids.add(comp_pid)
+    for tpid in hidden_transform_pids:
+        t_obj = obj_map[tpid]
+        t_tt = t_obj.read_typetree()
+        t_tt["m_LocalScale"] = {"x": 0.0001, "y": 0.0001, "z": 0.0001}
+        t_obj.save_typetree(t_tt)
+    print(f"[✓] Updated Robot/Veh/Blaster SMRs & silenced {len(SMR_CUBE_PIDS)} Mirage hologram cube renderers")
+
+    # 7. Configure Fight AOC, Car AOC, MoveSet, Root PrefabList, PropsController, Container, & stream paths
+    replaced_pids = {
+        MESH_ROBOT_PID, MESH_VEH_PID, MESH_GUN_R_PID, MESH_GUN_L_PID,
+        TEX_MAIN_DIFF_PID, TEX_MAIN_NM_PID, TEX_MAIN_RAOE_PID,
+        TEX_WPNS_DIFF_PID, TEX_WPNS_NM_PID, TEX_WPNS_RAOE_PID,
+    }
+    injected_set = {pid for pid, _ in new_clips} | set(cj_proj_pids) | set(hr_proj_pids)
     for obj in list(m_env.objects):
-        # Configure AnimatorOverrideController (Robot Fight AOC: PathID=740305678794743262)
         if obj.path_id == 740305678794743262 and obj.type.name == "AnimatorOverrideController":
             tree = obj.read_typetree()
             clips = tree.get("m_Clips", [])
-
-            # L1: Jazz L3
             clips[2]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": PID_L1_JAZZ}
-            # L2: Blaster L2
             clips[3]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": PID_L2_BLASTER}
-            # S1: Mirage S1 (Preserved in Slot 4: -8916200897996993922)
-            # S2: Hot Rod S2
             clips[5]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": PID_S2}
-            # S3 & S3 Hit: Mirage S3 (Preserved in Slots 31 & 32 so TFormStage_Mirage_Special03 finds them)
-            # Victory Pose: Preserve Mirage's Agile_Backflip_Victory (Slots 39 & 40)
-            # MatineeStage PreInitializeMatinee requires Agile_Backflip_Victory to match VictoryStagePrefab
             clips[39]["m_OverrideClip"] = {"m_FileID": 2, "m_PathID": -3005405672129804380}
             clips[40]["m_OverrideClip"] = {"m_FileID": 2, "m_PathID": 5259930176709765285}
-            # L3: Blaster L3
             clips[41]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": PID_L3_BLASTER}
-            # M1: Cheetor M1
             clips[42]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": PID_M1_CHEETOR}
-            # L4: Jazz L4
             clips[43]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": PID_L4_JAZZ}
-            # M2: Mirage M2 (Preserved in Slot 44: 628965653697985842)
-            # Ranged 01..03: Mirage (Preserved in Slots 51, 52, 53)
-            # Heavy Attack: Cliffjumper Heavy
             clips[58]["m_OverrideClip"] = {"m_FileID": 0, "m_PathID": PID_HEAVY}
-
             tree["m_Clips"] = clips
-            replace_str_in_tree(tree, old_cab, new_cab)
+            replace_str_in_tree(tree, old_cab, new_cab_low)
             obj.save_typetree(tree)
-            print("[+] Configured Dragstrip Fight AOC with all custom combat animations & Sideswipe victory pose!")
+            print("[+] Configured Dragstrip Fight AOC (preserved kicks, S1/S2/S3, Heavy & victory)")
 
-        # Vehicle / Car AnimatorOverrideController (PathID=-6155136737816236521)
-        # Keep ALL original car animation slot overrides intact so BattleIntro & car transitions work!
         elif obj.path_id == -6155136737816236521 and obj.type.name == "AnimatorOverrideController":
             tree = obj.read_typetree()
-            replace_str_in_tree(tree, old_cab, new_cab)
+            replace_str_in_tree(tree, old_cab, new_cab_low)
             obj.save_typetree(tree)
-            print("[+] Preserved Dragstrip Car AOC with pristine BattleIntro & vehicle rig bindings!")
 
-        # Configure MoveSet: PathID=1840605340213205441
         elif obj.path_id == 1840605340213205441 and obj.type.name == "MonoBehaviour":
             tree = obj.read_typetree()
             moves = tree.get("_moves", [])
-
-            # [0] LightAttack01: Jazz L3
             moves[0]["_name"] = "move_jazz_attack_light_03"
             moves[0]["_asset"] = {"m_FileID": 5, "m_PathID": 4591432870569280388}
-
-            # [1] LightAttack02: Blaster L2
             moves[1]["_name"] = "move_blaster_attack_light_02"
             moves[1]["_asset"] = {"m_FileID": 5, "m_PathID": -5768502813711380021}
-
-            # [2] LightAttack03: Blaster L3
             moves[2]["_name"] = "move_blaster_attack_light_03"
             moves[2]["_asset"] = {"m_FileID": 5, "m_PathID": -7697654508267001063}
-
-            # [3] LightAttack04: Jazz L4
             moves[3]["_name"] = "move_jazz_attack_light_04"
             moves[3]["_asset"] = {"m_FileID": 5, "m_PathID": -7349256443508413755}
-
-            # [4] MediumAttack01: Cheetor M1
             moves[4]["_name"] = "move_cheetor_attack_medium_01"
             moves[4]["_asset"] = {"m_FileID": 5, "m_PathID": 7744598786624021798}
-
-            # [5] MediumAttack02: Mirage M2 (Preserved: move_agile_attack_medium_02)
-            # [6] SpecialAttack01: Mirage S1 (Preserved: move_mirage_special_01)
-
-            # [7] SpecialAttack02: Hot Rod S2
             moves[7]["_name"] = "move_hotrod_special_02"
             moves[7]["_asset"] = {"m_FileID": 5, "m_PathID": 7236302885264655572}
-
-            # [41] HeavyAttack: Cliffjumper Heavy Shot
             moves[41]["_name"] = "move_heavy_cliffjumper_gs_shoot"
             moves[41]["_asset"] = {"m_FileID": 5, "m_PathID": 3468014272436761367}
-
-            # [42..44] RangedAttack01..03: Mirage (Preserved)
-
             tree["_moves"] = moves
-            replace_str_in_tree(tree, old_cab, new_cab)
+            replace_str_in_tree(tree, old_cab, new_cab_low)
             obj.save_typetree(tree)
-            print("[+] Configured Dragstrip MoveSet with hitboxes and damage frames!")
+            print("[+] Configured Dragstrip MoveSet hitboxes and damage frames")
 
-        # Root PrefabList (Pool manager): PathID=-2249602606274241856
         elif obj.path_id == -2249602606274241856 and obj.type.name == "MonoBehaviour":
             tree = obj.read_typetree()
             plist = tree.get("PrefabList", [])
             extra_prefabs = [
-                # Cliffjumper heavy muzzle ignition
                 {"Prefab": {"m_FileID": 3, "m_PathID": -1408646010089090896}, "Amount": 1},
-                # Cliffjumper heavy projectile bullet
                 {"Prefab": {"m_FileID": 0, "m_PathID": 9003878510878022874}, "Amount": 1},
-                # Hot Rod S2 blue hit light
                 {"Prefab": {"m_FileID": 3, "m_PathID": -2054079777877699854}, "Amount": 1},
-                # Hot Rod S2 muzzle blue flash
                 {"Prefab": {"m_FileID": 4, "m_PathID": 4727641465992916545}, "Amount": 1},
-                # Hot Rod S2 special small trail
                 {"Prefab": {"m_FileID": 4, "m_PathID": -5363481920856949953}, "Amount": 2},
-                # Hot Rod S2 projectile bullet
                 {"Prefab": {"m_FileID": 0, "m_PathID": -8172610782387618255}, "Amount": 1},
             ]
             plist.extend(extra_prefabs)
             tree["PrefabList"] = plist
-            replace_str_in_tree(tree, old_cab, new_cab)
+            replace_str_in_tree(tree, old_cab, new_cab_low)
             obj.save_typetree(tree)
-            print("[+] Extended root PrefabList with projectile pools for Cliffjumper Heavy & Hot Rod S2!")
 
-        # Root Props Manager: PathID=-3532403574792160156
-        elif obj.path_id == -3532403574792160156 and obj.type.name == "MonoBehaviour":
+        elif obj.path_id in (-3532403574792160156, 7448022809538486323) and obj.type.name == "MonoBehaviour":
             tree = obj.read_typetree()
             props = tree.get("_props", {})
             keys = props.get("_serializedKeys", [])
             values = props.get("_serializedValues", [])
-            if "gunRight" not in keys:
+            for k, v in zip(keys, values):
+                if k == "cube" and isinstance(v, dict):
+                    v["_renderers"] = []
+            if obj.path_id == -3532403574792160156 and "gunRight" not in keys:
                 for val in values:
                     if val.get("Name") == "rightgun":
                         gun_right_val = copy.deepcopy(val)
@@ -397,293 +610,102 @@ def generate_dragstrip_assets(apk_path: str | None = None, output_dir: str = "as
                         keys.append("gunRight")
                         values.append(gun_right_val)
                         break
-            replace_str_in_tree(tree, old_cab, new_cab)
+            replace_str_in_tree(tree, old_cab, new_cab_low)
             obj.save_typetree(tree)
-            print("[+] Configured gunRight weapon alias in root _props!")
 
         elif obj.type.name == "AssetBundle":
             tree = obj.read_typetree()
-            bundle_name = "data/dragstrip_gs_deluxe2016_odr/dragstrip_gs_deluxe2016.assetbundle"
-            tree["m_Name"] = bundle_name
-            tree["m_AssetBundleName"] = bundle_name
-
-            orig_table = tree.get("m_PreloadTable", [])
-            all_new_pids = [pid for pid, _ in new_clips] + injected_proj_pids
-            new_entries = [{"m_FileID": 0, "m_PathID": pid} for pid in all_new_pids]
-
-            # In Mirage, main prefab preloaded 1124 items (index 0..1123), lw prefab preloaded 507 items (index 1124..1630).
-            # Insert the new clips and projectile entities at index 1124 so main prefab preloads them seamlessly.
-            insert_idx = 1124
-            merged_table = orig_table[:insert_idx] + new_entries + orig_table[insert_idx:]
-            tree["m_PreloadTable"] = merged_table
-
+            ab_name = f"data/{BOT_ID}_odr/{BOT_ID}.assetbundle"
+            tree["m_Name"] = ab_name
+            tree["m_AssetBundleName"] = ab_name
             new_container = []
-            for k, v in tree.get("m_Container", []):
-                new_k = k.replace("mirage_gs_deluxe2016", "dragstrip_gs_deluxe2016")
-                entry_info = dict(v)
-                if "mirage_gs_deluxe2016.prefab" in k:
-                    entry_info["preloadSize"] = entry_info.get("preloadSize", 1124) + len(all_new_pids)
-                elif "mirage_gs_deluxe2016_lw.prefab" in k:
-                    entry_info["preloadIndex"] = entry_info.get("preloadIndex", 1124) + len(all_new_pids)
-                new_container.append((new_k, entry_info))
+            for item in tree.get("m_Container", []):
+                path_str = item[0].replace("mirage_gs_deluxe2016", BOT_ID).replace("Mirage_GS_Deluxe2016", BOT_ID)
+                new_container.append([path_str, item[1]])
             tree["m_Container"] = new_container
-
-            replace_str_in_tree(tree, old_cab, new_cab)
+            replace_str_in_tree(tree, old_cab, new_cab_low)
             obj.save_typetree(tree)
-            print("[+] Configured Dragstrip AssetBundle container and extended preload table!")
 
-        # Root GameObjects: Keep names intact so MatineeStage hierarchy entity lookups (e.g. Actor0_locator) succeed
-        elif obj.path_id in [8113032789630995797, 8776030576437937903] and obj.type.name == "GameObject":
+        elif obj.path_id in injected_set:
+            # Never overwrite newly cloned AnimationClips / Projectile objects with template bytes
+            continue
+
+        elif obj.type.name in ("AudioClip", "Texture2D", "Mesh") and obj.path_id not in replaced_pids:
             tree = obj.read_typetree()
-            replace_str_in_tree(tree, old_cab, new_cab)
+            replace_str_in_tree(tree, old_cab, new_cab_low)
             obj.save_typetree(tree)
 
-        # For stream-backed or linked assets, update the CAB archive path
-        elif obj.type.name in ["Mesh", "Texture2D", "AudioClip"]:
-            tree = obj.read_typetree()
-            replace_str_in_tree(tree, old_cab, new_cab)
-            obj.save_typetree(tree)
+        elif obj.type.name in ("AnimatorController", "MonoBehaviour", "GameObject"):
+            try:
+                tree = obj.read_typetree()
+                replace_str_in_tree(tree, old_cab, new_cab_low)
+                obj.save_typetree(tree)
+            except Exception:
+                pass
 
-        # Texture compositing:
-        # 1. Recolor Mirage main body from Blue to Dragstrip Yellow
-        # 2. Recolor Mirage head helmet from Blue to Dragstrip Red (with clean silver faceplate & glowing ruby red optic)
-        # 3. Recolor weapons from gray to Decepticon Purple
-        from PIL import ImageDraw
+    # 8. Flush & rebuild exact AssetBundle m_PreloadTable slices & CAB filenames
+    print("[*] Rebuilding exact AssetBundle m_PreloadTable & CAB filenames...")
+    raw_saved = m_env.file.save(packer="none")
+    m_env = UnityPy.load(io.BytesIO(raw_saved))
+    sf = [f for f in m_env.file.files.values() if hasattr(f, "objects")][0]
+    ab_obj = next(o for o in sf.objects.values() if o.type.name == "AssetBundle")
+    ab_tree = ab_obj.read_typetree()
 
-        # A. Recolor and blend main_a
-        user_main_path = out_dir / "cha_dragstrip_gs_deluxe2016_main_a.png"
-        for obj in m_env.objects:
-            if obj.type.name == "Texture2D" and obj.read_typetree().get("m_Name") == "cha_mirage_gs_deluxe2016_main_a":
-                tex = obj.read()
-                if user_main_path.is_file():
-                    print(f"[*] Using existing custom Dragstrip main texture: {user_main_path}")
-                    tex.image = Image.open(user_main_path).convert("RGBA")
-                    tex.save()
-                    break
+    new_preload = []
+    for cname, cinfo in ab_tree.get("m_Container", []):
+        rpid = int(cinfo["asset"]["m_PathID"])
+        _, closure_pptrs = collect_closure(sf, [rpid])
+        sorted_pptrs = sorted(closure_pptrs)
+        cinfo["preloadIndex"] = len(new_preload)
+        cinfo["preloadSize"] = len(sorted_pptrs)
+        for fid, pid in sorted_pptrs:
+            new_preload.append({"m_FileID": fid, "m_PathID": pid})
+        print(f"  [Preload Slice] {cname}: size={len(sorted_pptrs)} (index={cinfo['preloadIndex']})")
+    ab_tree["m_PreloadTable"] = new_preload
+    ab_obj.save_typetree(ab_tree)
 
-                m_img = tex.image.convert("RGBA")
-                m_arr = np.array(m_img).astype(np.float32)
-
-                r = m_arr[:, :, 0] / 255.0
-                g = m_arr[:, :, 1] / 255.0
-                b = m_arr[:, :, 2] / 255.0
-                mx = np.maximum(np.maximum(r, g), b)
-                mn = np.minimum(np.minimum(r, g), b)
-                df = mx - mn
-
-                sat = np.zeros_like(mx)
-                nz = mx > 1e-5
-                sat[nz] = df[nz] / mx[nz]
-
-                hue = np.zeros_like(mx)
-                mr = (mx == r) & (df > 1e-5)
-                mg = (mx == g) & (df > 1e-5)
-                mb = (mx == b) & (df > 1e-5)
-                hue[mr] = (60.0 * ((g[mr] - b[mr]) / df[mr]) + 360.0) % 360.0
-                hue[mg] = (60.0 * ((b[mg] - r[mg]) / df[mg]) + 120.0) % 360.0
-                hue[mb] = (60.0 * ((r[mb] - g[mb]) / df[mb]) + 240.0) % 360.0
-
-                # 1. Blue paint mask: captures all blue body parts & reflections
-                blue_mask = (hue >= 160.0) & (hue <= 275.0) & (sat > 0.10) & (mx > 0.10)
-
-                # 2. White / light armor mask: captures all white body panels (excluding dark mechanical frame)
-                # Keep faction insignia (red) if present
-                is_red_insignia = ((hue < 25.0) | (hue > 335.0)) & (sat > 0.25) & (mx > 0.5)
-                white_mask = (sat < 0.25) & (mx >= 0.42) & (~is_red_insignia)
-
-                yellow_mask = blue_mask | white_mask
-
-                # Mirage Head: Recolor helmet from Blue to Dragstrip Red (Hue = 356 deg) & optics to glowing ruby red
-                head_box = np.zeros_like(mx, dtype=bool)
-                head_box[:300, :510] = True
-
-                optics_box = np.zeros_like(mx, dtype=bool)
-                optics_box[20:65, 80:135] = True
-                optics_mask = (hue >= 170.0) & (hue <= 220.0) & (sat > 0.45) & (mx > 0.45) & optics_box
-
-                helmet_blue = head_box & blue_mask & (~optics_mask)
-
-                # Red helmet target (Hue = 356 deg)
-                th = 356.0 / 360.0
-                ts = np.clip(np.maximum(sat * 1.2, 0.85), 0.0, 1.0)
-                tv = np.clip(mx * 0.95, 0.0, 1.0)
-                rc = tv * ts
-                rx = rc * (1.0 - np.abs((th * 6.0) % 2.0 - 1.0))
-                rm = tv - rc
-                red_r = np.clip((rc + rm) * 255.0, 0, 255).astype(np.uint8)
-                red_g = np.clip((rx + rm) * 255.0, 0, 255).astype(np.uint8)
-                red_b = np.clip(rm * 255.0, 0, 255).astype(np.uint8)
-
-                # Exclude head area from yellow body paint
-                yellow_mask = yellow_mask & (~head_box)
-
-                # Target Dragstrip Warm Canary Yellow (Hue = 44 deg)
-                target_h = 44.0 / 360.0
-                target_s = np.where(blue_mask, np.clip(np.maximum(sat * 1.15, 0.88), 0.0, 1.0), 0.88)
-                target_v = np.clip(mx * 0.96, 0.0, 1.0)
-
-                c = target_v * target_s
-                x_val = c * (1.0 - np.abs((target_h * 6.0) % 2.0 - 1.0))
-                m_val = target_v - c
-
-                new_r = np.clip((c + m_val) * 255.0, 0, 255)
-                new_g = np.clip((x_val + m_val) * 255.0, 0, 255)
-                new_b = np.clip((m_val) * 255.0, 0, 255)
-
-                res_arr = np.array(m_img).copy()
-                res_arr[yellow_mask, 0] = new_r[yellow_mask].astype(np.uint8)
-                res_arr[yellow_mask, 1] = new_g[yellow_mask].astype(np.uint8)
-                res_arr[yellow_mask, 2] = new_b[yellow_mask].astype(np.uint8)
-
-                # Apply red helmet and ruby red optics
-                res_arr[helmet_blue, 0] = red_r[helmet_blue]
-                res_arr[helmet_blue, 1] = red_g[helmet_blue]
-                res_arr[helmet_blue, 2] = red_b[helmet_blue]
-
-                res_arr[optics_mask, 0] = 255
-                res_arr[optics_mask, 1] = 20
-                res_arr[optics_mask, 2] = 30
-                print("[+] Applied Mirage red-helmet head (Metallic Red Helmet, Ruby Red Optics, Silver Face)!")
-
-                tex.image = Image.fromarray(res_arr)
-                tex.save()
-                print(f"[+] Converted {np.sum(yellow_mask)} body pixels to Dragstrip Yellow on main_a!")
-                break
-
-        # B. Recolor and Blend onto tform_misc_A (back, feet, spoiler, misc chassis)
-        user_misc_path = out_dir / "cha_dragstrip_gs_deluxe2016_tform_misc_a.png"
-        for obj in m_env.objects:
-            if obj.type.name == "Texture2D" and obj.read_typetree().get("m_Name") == "tform_misc_A":
-                tex = obj.read()
-                if user_misc_path.is_file():
-                    print(f"[*] Using existing custom Dragstrip vehicle texture: {user_misc_path}")
-                    tex.image = Image.open(user_misc_path).convert("RGBA")
-                    tex.save()
-                    break
-
-                misc_img = tex.image.convert("RGBA")
-                misc_arr = np.array(misc_img).astype(np.float32)
-
-                mr = misc_arr[:, :, 0] / 255.0
-                mg = misc_arr[:, :, 1] / 255.0
-                mb = misc_arr[:, :, 2] / 255.0
-                mmx = np.maximum(np.maximum(mr, mg), mb)
-                mmn = np.minimum(np.minimum(mr, mg), mb)
-                mdf = mmx - mmn
-
-                msat = np.zeros_like(mmx)
-                mnz = mmx > 1e-5
-                msat[mnz] = mdf[mnz] / mmx[mnz]
-
-                mhue = np.zeros_like(mmx)
-                mmr = (mmx == mr) & (mdf > 1e-5)
-                mmg = (mmx == mg) & (mdf > 1e-5)
-                mmb = (mmx == mb) & (mdf > 1e-5)
-                mhue[mmr] = (60.0 * ((mg[mmr] - mb[mmr]) / mdf[mmr]) + 360.0) % 360.0
-                mhue[mmg] = (60.0 * ((mb[mmg] - mr[mmg]) / mdf[mmg]) + 120.0) % 360.0
-                mhue[mmb] = (60.0 * ((mr[mmb] - mg[mmb]) / mdf[mmb]) + 240.0) % 360.0
-
-                # All blue pixels in tform_misc_A (back, soles/feet, chassis)
-                misc_blue_mask = (mhue >= 160.0) & (mhue <= 275.0) & (msat > 0.08) & (mmx > 0.10)
-
-                # All white/light armor panels (back, rear wing, body panels)
-                # Keep red insignia if present
-                is_red_insignia = ((mhue < 25.0) | (mhue > 335.0)) & (msat > 0.25) & (mmx > 0.5)
-                misc_white_mask = (msat < 0.25) & (mmx >= 0.42) & (~is_red_insignia)
-
-                misc_yellow_mask = misc_blue_mask | misc_white_mask
-                target_h = 44.0 / 360.0
-                target_s = np.where(misc_blue_mask, np.clip(np.maximum(msat * 1.15, 0.88), 0.0, 1.0), 0.88)
-                target_v = np.clip(mmx * 0.96, 0.0, 1.0)
-
-                c = target_v * target_s
-                x_val = c * (1.0 - np.abs((target_h * 6.0) % 2.0 - 1.0))
-                m_val = target_v - c
-
-                new_r = np.clip((c + m_val) * 255.0, 0, 255)
-                new_g = np.clip((x_val + m_val) * 255.0, 0, 255)
-                new_b = np.clip((m_val) * 255.0, 0, 255)
-
-                res_misc = np.array(misc_img).copy()
-                res_misc[misc_yellow_mask, 0] = new_r[misc_yellow_mask].astype(np.uint8)
-                res_misc[misc_yellow_mask, 1] = new_g[misc_yellow_mask].astype(np.uint8)
-                res_misc[misc_yellow_mask, 2] = new_b[misc_yellow_mask].astype(np.uint8)
-
-                tex.image = Image.fromarray(res_misc)
-                tex.save()
-                print(f"[+] Converted {np.sum(misc_yellow_mask)} pixels (back, feet, white panels) to Dragstrip Yellow on tform_misc_A!")
-                break
-
-        # C. Recolor weapons (cha_mirage_gs_deluxe2016_wpns_a) to Decepticon Purple
-        user_wpns_path = out_dir / "cha_dragstrip_gs_deluxe2016_wpns_a.png"
-        for obj in m_env.objects:
-            if obj.type.name == "Texture2D" and obj.read_typetree().get("m_Name") == "cha_mirage_gs_deluxe2016_wpns_a":
-                tex = obj.read()
-                if user_wpns_path.is_file():
-                    print(f"[*] Using existing custom Dragstrip weapons texture: {user_wpns_path}")
-                    tex.image = Image.open(user_wpns_path).convert("RGBA")
-                    tex.save()
-                    break
-
-                w_img = tex.image.convert("RGBA")
-                w_arr = np.array(w_img).astype(np.float32)
-                # Compute luminance
-                w_gray = (0.299 * w_arr[:, :, 0] + 0.587 * w_arr[:, :, 1] + 0.114 * w_arr[:, :, 2]) / 255.0
-                # Decepticon weapon purple tint (R: 95, G: 45, B: 155)
-                purp_r = np.clip(w_gray * 95, 0, 255).astype(np.uint8)
-                purp_g = np.clip(w_gray * 45, 0, 255).astype(np.uint8)
-                purp_b = np.clip(w_gray * 155, 0, 255).astype(np.uint8)
-
-                out_w = np.array(w_img).copy()
-                out_w[:, :, 0] = purp_r
-                out_w[:, :, 1] = purp_g
-                out_w[:, :, 2] = purp_b
-                tex.image = Image.fromarray(out_w)
-                tex.save()
-                print("[+] Recolored Dragstrip blasters to Decepticon Purple!")
-                break
-
-    # Save rebuilt AssetBundle
     new_files = {}
-    for subfname, subf in bf.files.items():
-        new_subfname = subfname.replace(old_cab, new_cab)
-        if hasattr(subf, "name"):
-            subf.name = new_subfname
-        new_files[new_subfname] = subf
+    for subfname, subf in m_env.file.files.items():
+        nk = subfname.replace(old_cab, NEW_CAB).replace(old_cab_low, new_cab_low)
+        if hasattr(subf, "name") and isinstance(subf.name, str):
+            subf.name = subf.name.replace(old_cab, NEW_CAB).replace(old_cab_low, new_cab_low)
+        new_files[nk] = subf
+    m_env.file.files = new_files
 
-    bf.files = new_files
-    bf.version = 7
-    bf.version_engine = "2020.3.31f1"
-    bf.version_player = "5.x.x"
+    target_bundle = out_dir / f"{BOT_ID}.assetbundle"
+    target_bundle.write_bytes(m_env.file.save(packer="lz4"))
+    size_mb = target_bundle.stat().st_size / (1024 * 1024)
+    print(f"[✓] Saved {target_bundle} ({size_mb:.2f} MB, packer='lz4', CAB={NEW_CAB})")
 
-    target_bundle = out_dir / "dragstrip_gs_deluxe2016.assetbundle"
-    target_bundle.write_bytes(bf.save(packer="lz4"))
-    print(f"[+] Rebuilt UnityFS AssetBundle -> {target_bundle} ({target_bundle.stat().st_size:,} bytes)")
+    # Verify injected projectile prefabs survived serialization intact
+    chk_sf = [f for f in m_env.file.files.values() if hasattr(f, "objects")][0]
+    hr_go = chk_sf.objects[-8172610782387618255].read_typetree()
+    cj_go = chk_sf.objects[9003878510878022874].read_typetree()
+    assert hr_go["m_Name"] == "projectile_hotrod_bullet", f"Corrupted HR proj: {hr_go['m_Name']}"
+    assert cj_go["m_Name"] == "projectile_megatron_gs_bullet", f"Corrupted CJ proj: {cj_go['m_Name']}"
+    print(f"[✓] Verified projectile prefabs intact: '{hr_go['m_Name']}' & '{cj_go['m_Name']}'")
 
-    # 3. Create Portraits
-    print("[*] Generating Dragstrip UI portraits...")
-    p_large_path = Path("extracted_apk/assets/assetpack/portraits_odr/portraits/portrait_mirage_gs_large.png")
-    p_small_path = Path("extracted_apk/assets/assetpack/portraits_odr/portraits/portrait_mirage_gs_small.jpg")
-    p_quest_path = Path("extracted_apk/assets/assetpack/questboard_odr/questboard/portrait_mirage_gs_quest.png")
+    # 9. Preserve existing custom Dragstrip UI Portraits if present; only create fallback if missing
+    p_large_path = next((b / "portraits_odr/portraits/portrait_mirage_gs_large.png" for b in extracted_candidates if (b / "portraits_odr/portraits/portrait_mirage_gs_large.png").is_file()), None)
+    p_small_path = next((b / "portraits_odr/portraits/portrait_mirage_gs_small.jpg" for b in extracted_candidates if (b / "portraits_odr/portraits/portrait_mirage_gs_small.jpg").is_file()), None)
+    p_quest_path = next((b / "questboard_odr/questboard/portrait_mirage_gs_quest.png" for b in extracted_candidates if (b / "questboard_odr/questboard/portrait_mirage_gs_quest.png").is_file()), None)
 
-    if p_large_path.is_file():
-        p_large = Image.open(p_large_path)
-        p_large.save(out_dir / "portrait_dragstrip_large.png")
-        p_large.save(out_dir / "dragstrip.png")
-    if p_small_path.is_file():
-        p_small = Image.open(p_small_path)
-        p_small.save(out_dir / "portrait_dragstrip_small.jpg")
-    if p_quest_path.is_file():
-        p_quest = Image.open(p_quest_path)
-        p_quest.save(out_dir / "portrait_dragstrip_quest.png")
-    elif p_large_path.is_file():
-        p_large.save(out_dir / "portrait_dragstrip_quest.png")
+    for fname, src_p in (
+        ("portrait_dragstrip_large.png", p_large_path),
+        ("dragstrip.png", p_large_path),
+        ("portrait_dragstrip_small.jpg", p_small_path),
+        ("portrait_dragstrip_quest.png", p_quest_path or p_large_path),
+    ):
+        dst_p = out_dir / fname
+        if not dst_p.is_file() and src_p is not None:
+            Image.open(src_p).save(dst_p)
+            print(f"[*] Generated fallback portrait: {dst_p}")
 
-    print("[+] All Dragstrip assets successfully generated!")
+    print("[+] All Dragstrip Stage 4 3D assets successfully generated!")
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Generate Dragstrip (抢劫) composite assets.")
+    parser = argparse.ArgumentParser(description="Generate Dragstrip (抢劫) Stage 4 3D grafted assetbundle.")
     parser.add_argument("--output", "-o", default="assets_redeco", help="Output directory")
     args = parser.parse_args()
     generate_dragstrip_assets(output_dir=args.output)

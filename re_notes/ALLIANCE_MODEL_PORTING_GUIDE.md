@@ -11,6 +11,8 @@
 
 | 目标模具特征 | 黄金参考角色 | 必须复制适配的脚本目录 / 文件 |
 | :--- | :--- | :--- |
+| **汽车跑车系 + 双枪/灵动开合手（Track A）** | **抢劫（Dragstrip）** | [`tools/dragstrip/`](file:///e:/Agent/TFTF-blender/tools/dragstrip/)（贴图 [`build_dragstrip_textures.py`](file:///e:/Agent/TFTF-blender/tools/dragstrip/build_dragstrip_textures.py)、人形 [`build_aligned_dragstrip_robot.py`](file:///e:/Agent/TFTF-blender/tools/dragstrip/build_aligned_dragstrip_robot.py)、载具 [`build_aligned_dragstrip_veh.py`](file:///e:/Agent/TFTF-blender/tools/dragstrip/build_aligned_dragstrip_veh.py)、打包 [`generate_dragstrip_assets.py`](file:///e:/Agent/TFTF-blender/tools/generate_dragstrip_assets.py)） |
+| **汽车跑车系 + 单/副手挂枪 + 灵动开合手（Track A）** | **野骑（WildRider） / 打击（Breakdown）** | [`tools/wildrider/`](file:///e:/Agent/TFTF-blender/tools/wildrider/) + [`tools/generate_wildrider_assets.py`](file:///e:/Agent/TFTF-blender/tools/generate_wildrider_assets.py) / [`tools/breakdown/`](file:///e:/Agent/TFTF-blender/tools/breakdown/) + [`tools/generate_breakdown_assets.py`](file:///e:/Agent/TFTF-blender/tools/generate_breakdown_assets.py) |
 | **近战持械 + 副手枪械 + 战机** | **史达（Star Saber）** | [`tools/starsaber/`](file:///e:/Agent/TFTF-blender/tools/starsaber/)（贴图 [`build_starsaber_textures.py`](file:///e:/Agent/TFTF-blender/tools/starsaber/build_starsaber_textures.py)、人形 [`build_aligned_starsaber_robot.py`](file:///e:/Agent/TFTF-blender/tools/starsaber/build_aligned_starsaber_robot.py)、载具 [`build_aligned_starsaber_veh.py`](file:///e:/Agent/TFTF-blender/tools/starsaber/build_aligned_starsaber_veh.py)、HITL [`build_hitl_starsaber_assets.py`](file:///e:/Agent/TFTF-blender/tools/starsaber/build_hitl_starsaber_assets.py) & [`BuildStarSaberHITLScene.cs`](file:///e:/Agent/TFTF-blender/tools/starsaber/unity_scripts/BuildStarSaberHITLScene.cs)、打包 [`generate_starsaber_bundle.py`](file:///e:/Agent/TFTF-blender/tools/starsaber/generate_starsaber_bundle.py)） |
 | **鸟兽 / 机器恐龙 + 原生变形动作** | **飞标（Swoop）** | [`tools/swoop/`](file:///e:/Agent/TFTF-blender/tools/swoop/)（贴图 [`build_swoop_atlased_textures.py`](file:///e:/Agent/TFTF-blender/tools/swoop/build_swoop_atlased_textures.py)、人形 [`build_aligned_swoop_robot.py`](file:///e:/Agent/TFTF-blender/tools/swoop/build_aligned_swoop_robot.py)、载具与拍翅提取 [`build_aligned_swoop_vh.py`](file:///e:/Agent/TFTF-blender/tools/swoop/build_aligned_swoop_vh.py)、注包 [`generate_swoop_bundle.py`](file:///e:/Agent/TFTF-blender/tools/swoop/generate_swoop_bundle.py)、重击火球补丁 [`patch_swoop_heavy_move.py`](file:///e:/Agent/TFTF-blender/tools/swoop/patch_swoop_heavy_move.py)、自检 [`validate_swoop_bundle.py`](file:///e:/Agent/TFTF-blender/tools/swoop/validate_swoop_bundle.py)、Unity [`BuildSwoopInspectionScene.cs`](file:///e:/Agent/TFTF-blender/toolchain/unity_build_project/Assets/Editor/BuildSwoopInspectionScene.cs)） |
 | **双色发光拆分与金属漆校色** | **横炮 / 飞标** | [`tools/sideswipe/generate_sideswipe_bundle.py`](file:///e:/Agent/TFTF-blender/tools/sideswipe/generate_sideswipe_bundle.py) + [`tools/swoop/build_swoop_atlased_textures.py`](file:///e:/Agent/TFTF-blender/tools/swoop/build_swoop_atlased_textures.py) |
@@ -38,9 +40,13 @@
    * **正/非等比缩放爆炸**：Alliance 鸟兽、长颈、鸟喙或尾翼骨骼常被 3ds Max 使用非等比缩放调整长度（如 `bird_neck = 0.3366`、`bird_Head = 0.6236`、`beak = 0.4659`）。Blender `EditBone` 强行把 Rest Scale 归 `1.0`，导致头部、鸟喙飞出数米发生断头爆炸。
    * **🚨 负镜像缩放 `Lcl Scaling = (-1, -1, -1)` 右肢漂移陷阱（Swoop 右腿血案）**：右侧肢体骨骼（如 `Bone_R_Thigh`、`Bone_R_UpperArm`、`Bone_R_Hand`、`Bone_Pistol`）常带 `Lcl Scaling = (-1.0, -1.0, -1.0)` 与 `Lcl Rotation Z = 180°`（行列式 `det = -1`）。Blender `EditBone` 强制正交化保持 `det = +1`，**即使手动补回 `scale_mat((-1,-1,-1))`，仍因 `b.matrix_local` 与 `pb.matrix_basis` 坐标轴已被 Blender 篡改，导致 `Bone_R_Thigh` 在第 1 帧与动画中被错误抬升漂浮至膝盖上方**！
    * **唯一正解**：**彻底脱离 Blender `EditBone` / `PoseBone` 算子**！直接用 `io_scene_fbx.parse_fbx` 读取 FBX 原始 `Properties70`（`Lcl Translation` / `PreRotation` / `Lcl Rotation` / `PostRotation` / `Lcl Scaling`）以及 `AnimationCurveNode` 关键帧，在纯 Python 中按 Catmull-Rom 样条与递推矩阵完成 FK + LBS 烘焙及 58 帧提取（`Rx(+90°)` 转换至 Blender `Z-up`），并硬性断言左右对称部位中心误差 `< 0.02m`（源码见 [`build_aligned_swoop_vh.py`](file:///e:/Agent/TFTF-blender/tools/swoop/build_aligned_swoop_vh.py)）。
-4. **杂件清理与 `det = -1` Y/Z 轴交换绕序守卫**
-   * 清理源包自带废对象（如 `Symbol_DC`、`Shadow`、`*_Weapon` 占位壳等）。
+4. **杂件清理、`Symbol_DC` 肩臂跟随与 `det = -1` Y/Z 轴交换绕序守卫**
+   * 清理源包自带废对象（如 `Shadow`、`*_Weapon` 占位壳等）。若模型带 `Symbol_DC`/`Symbol_AB` 阵营浮片且贴于左肩甲/胸甲：若左肩手臂在人形校准中执行了外展旋转（如 `2°`），`Symbol_DC` 必须**同步参与旋转**并绑定至实际父骨（如 `Point L Clavicle -> LeftArm`），切忌错绑到躯干引发肩部悬浮；若载具默认车头朝 `-Z`（如 **Dragstrip F1 重击倒车坑**），必须在载具脚本施加 `Matrix.Rotation(math.pi, 4, 'Z')`（`det = +1`）转正为车头朝 `+Z` 并并排对照供体车头。
    * Blender `(x, y, z)` 映射 Unity `(x, z, y)` 时矩阵行列式 $\det = -1$，在 Unity 导入后必须同步翻转三角形索引并取反切线 `.w`，校验 $\sum \text{Cross}(p_1 - p_0, p_2 - p_0) \cdot n_0 > 0$，确保实测 `fn · vn > +0.85`（[`THIRD_PARTY_3D_MODEL_PIPELINE.md §11.12`](file:///e:/Agent/TFTF-blender/re_notes/THIRD_PARTY_3D_MODEL_PIPELINE.md#L1098-L1106)）。
+5. **⚠️ 汽车模具手肘/小臂/膝盖“换名陷阱”与胸口直挺斜切防呆（WildRider / Dragstrip 实测血坑）**
+   * **骨骼名左右互换陷阱**：部分 Alliance 汽车人 FBX 膝盖修饰件名字左右颠倒（例如 **`Dummy_Knee_R002` 实际坐标位于 `+X` 左腿，`Dummy_Knee_L002` 位于 `-X` 右腿**）！编写 `VGROUP_MAP` 前必须打印每个顶点组真实重心 X 坐标，严禁盲信名字！
+   * **肩臂/锁骨映射区分**：`Point L/R Clavicle`（位于 `X ≈ ±1.91` 大臂顶端）应绑定 `LeftArm / RightArm`；真正位于内侧的 `Dummy_Shoulder_01_L/R001`（`X ≈ ±1.22`）才绑定 `LeftShoulder / RightShoulder`，否则摆臂/待机时整个胸肩会被拉斜（WildRider 胸腰斜切坑）。
+   * **躯干腰线渐变融合**：核心躯干 `Point Pelvis / Spine / Spine1` 跨 `Z ∈ [5.40, 6.70]` 必须做 `Hips ↔ Spine ↔ Spine1` 线性渐变权重，否则前倾站姿下胸腰接缝直接错位断裂。
 
 ---
 
@@ -67,6 +73,24 @@ Alliance 角色手部绝非 TFTF 标准的 5 指 30 骨，而是 **`Dummy_hand` 
   * **严禁对运行时 `new Mesh()` 调用 `EditorUtility.CopySerialized(built, existing)`**（Unity 2020 Editor 下会静默丢失 C++ `m_VertexData` 与索引更新，导致旧顶点+新索引撕裂甚至游戏隐形）。
   * 必须使用 **`existing.Clear(false)` 后逐属性写回**，或直接 **`AssetDatabase.DeleteAsset` + `AssetDatabase.CreateAsset` 全量重建**。
 
+### 2.3 轨道 A 进阶：跑车系灵动开合手（Dragstrip / Breakdown / WildRider —— 张手+握拳双兼顾，拒绝指节断层与拇指隐身）
+
+若角色复用母体完整 30 指骨动作（如展示待机、SP1 张手、艾丽塔/阿尔茜同款张手胜利动作、重击握拳），需采用 **Track A 灵动开合手**：
+1. **静态张开手势对齐供体 `m_BindPose`**：先清空 `Bip001` 载具动作，将默认半蜷 4 指按关节微调展开贴合竖直 `-Z`，并将下垂拇指按 Mesh 空间抬前至 `-Y`（同时严格按 `X=0` 镜像至右侧，源码见 [`build_aligned_dragstrip_robot.py`](file:///e:/Agent/TFTF-blender/tools/dragstrip/build_aligned_dragstrip_robot.py)、[`build_aligned_wildrider_robot.py`](file:///e:/Agent/TFTF-blender/tools/wildrider/build_aligned_wildrider_robot.py)）。
+2. **禁止强拆连体三指，统一绑定防撕裂**：
+   * 食指 `3/6/7`（或 `Finger1/11/12`）映射 `Index1/2/3`；连体三指套 `2/8/9`（或 `Finger2/21/22`）**统一锁定映射 `Middle1/2/3`**，绝不按 Y 轴切分。
+3. **🚨 拇指短节“全绑 `Thumb1` 后倒折隐身”血案与 `map_thumb_y` 分节对位（WildRider 莽撞实测坑）**：
+   * **误区复盘**：若把手掌整体偏薄/偏后（如 WildRider `Bone_*_Hand` 比 Prowl 靠后 `12~15cm`）的 Alliance 拇指短节直接全部映射到 `Thumb1`，会导致 `80%+` 的拇指体积停留在母体 `Thumb1` 旋转枢轴（如 Prowl `Y_b = -0.311`）**后方**！一旦播放 `TeamSelect_Agile_idle`、`char_idle` 或 `jab_L` 握拳动画，拇指顺应枢轴**反方向旋转折入手掌内部，实机画面中左右手大拇指会双双“消失”**！
+   * **标准解法（`map_thumb_y` + 枢轴软切分）**：
+     1. 先核查供体 `Thumb1/2/3` 是否沿 `-Y_b` 共线同向（Prowl / Mirage / Sideswipe 均成立）；
+     2. 实施 $C^0$ 分段线性 **`map_thumb_y`**：保持根部插座（`y >= -0.150`）与 `Bone_*_Hand` 焊接，将指身沿 `-Y_b` 平滑延展至 **`~ -0.74..-0.76m`**（略超 `Thumb2 = -0.656m`，切忌拉过长至 `-0.92m` 否则持枪搭胸动作 `TwoHnad_R_attackRanged_01` 中左手拇指会像天线一样过长翘起），同步略向手掌外侧（`±0.06m`）及上方（`+0.05m`）避让掌壁；
+     3. 在 `4b` 中按母体真实枢轴高度做 `±0.045m` 软过渡切分：**`Hand`（`y > -0.311`）↔ `Thumb1`（`-0.311 .. -0.656`）↔ `Thumb2`（`< -0.656`）**。凡落在 `Thumb1` 后方的根部顶点 100% 锁定给 `Hand`，彻底根治反折藏入掌心问题。
+4. **🚨 `map_finger_z` 必须锚定“近端关节枢轴（Bone Head）”而非几何中点（Dragstrip 指节断层血坑）**：
+   * 仅对齐各指节中点会导致 `Bone Finge_*_3/2` 底端与 `L_6/8` 铰链枢轴落在母体 `Index2/Middle2` 上方 `5~10cm`，一旦手指弯曲 `90°`，下段指骨向后甩出并撕开巨大黑缝！
+   * 必须实测 `Bip001` 原生手指各骨近端 `head.z`，用 $C^0$ 连续分段线性插值把腕缝以上冻结、三道近端关节枢轴严格映射对齐至母体 `m_BindPose` 的 `Index1/2/3` & `Middle1/2/3` 枢轴高度。
+5. **🚨 独立硬壳指节的 `±0.045m` 双权重融合**：
+   * Alliance 手指每节是互不共顶点的独立硬壳块，即使关节对准后，在 `90°~100°` 深握拳时硬直角端面仍可能露缝或上袖穿背；必须在 `Index1/2/3` 与 `Middle1/2/3` 三个关节高度 `±0.045m` 区间内施以线性双权重混合（上袖 `> +0.045m` 锁定归属上一节，枢纽处 `50%/50%` 过渡），实测实现从 `0°` 彻底张开到 `100°` 紧握全程零断裂。
+
 ---
 
 ## 3. 副手借用/外挂远程武器规范（`PropsController` + 对象池 + 图集 + 音效）
@@ -75,9 +99,14 @@ Alliance 角色手部绝非 TFTF 标准的 5 指 30 骨，而是 **`Dummy_hand` 
 
 1. **Main 与 `_lw` 双预制体同步挂载**：武器网格与骨骼节点必须**同时**绑定挂载到主 Prefab 与轻量化 `_lw` Prefab 的对应手腕节点（如 `LeftHand`）下。
 2. **同步修正 `PropsController` 初始化配置**：光改 Prefab Transform 无效！必须在角色蓝图/组件所属 `PropsController` 数据（如 `_props["gun"]`）中，精确写入 `InitProps()` 依赖的 **`RootPath`、`PositionOffset`、`RotationOffset`**，并把源枪械模型尺幅缩放到匹配母体尺度（如 `4.0x`）。
-3. **发射事件、投射物重命名与双 `PrefabList` 对象池注册**：
+3. **发射事件、投射物重命名、`UnityPy` 浅拷贝防回写覆盖与双 `PrefabList` 对象池**：
    * 远程动作帧中需配置匹配出手节奏的 `PropMoveEvent`；
    * 借用或定制的子弹 Prefab 需与招式配置名严格一致，并在双 `PrefabList` 对象池列表完成注册，否则开火瞬发空包弹或空指针闪退。
+   * **🚨 `UnityPy copy.copy(tmpl)` 克隆投射物/节点静默被覆盖致命坑（Dragstrip SP2 哑火血案）**：
+     * 借用他包投射物（如 `projectile_hotrod_bullet` / `projectile_megatron_gs_bullet`）时，用 `copy.copy(tmpl_go)` 克隆并修改 `path_id` + `save_typetree(tree)` 后，浅拷贝对象的底层 `.reader` **在重新保存重载前依然指向模板 `tmpl_go` 字节流**！
+     * 后续同一轮遍历若对 `GameObject` / `MonoBehaviour` 执行 `obj.read_typetree()` 替换 `CAB` 并写回，会直接把刚克隆好的新投射物静默还原覆盖成旧模板名（`projectile_optimus_bullet`），导致游戏内 SP2 最后一击直接哑火无子弹！
+     * **铁律**：注入克隆体后必须维护 `injected_set`，在后续全局 `CAB` 替换遍历中 **`if obj.path_id in injected_set: continue` 显式跳过**，并在保存后断言确认目标投射物 `m_Name` 完好保留。
+   * **🚨 双持枪口朝向翻转排查**：若远程开火时枪口朝向自身背后（例如 Alliance 枪管节点带有负缩放或 `+X/-X` 反向），优先检查骨骼/节点的 `LocalScale`（如 `sx = 1f` 与否）以及枪网在 Blender/Unity 中的枪口朝向是否与供体匹配（详见 [`build_dragstrip_weapons_fbx.py`](file:///e:/Agent/TFTF-blender/tools/dragstrip/build_dragstrip_weapons_fbx.py)）。
 4. **共享图集象限与 FSB5 音频追加**：
    * 武器贴图统一合入角色主图集的独立 UV 象限（如 `U ∈ [0.5, 1.0]`），共享同一个 PBR 材质避免额外材质槽溢出；
    * 补充远程开火音效时，将音频按 FSB5 流格式追加至对应 `.resource` 尾部并保持 `AudioClip` 元数据对齐。
@@ -145,7 +174,9 @@ Alliance 原生贴图与 TFTF Kabam `EB/Character/PBR` 管线存在结构性差�
 
 ### 5.3 动作高度借用、实测发射点与 `m_FileID` 跨供体铁律
 
-1. **禁止“只改发射不看动作高度”**：借用钢锁火球（`grimlock_fireball`）绝不等于借用钢锁贴地喷火动作！Swoop 等飞行类重击应借用红蜘蛛空中悬停动作（`StarScream_Normal_attackHeavy`），在战机悬空高度变形为翼龙后吐火球。
+1. **禁止“只改发射不看动作高度”与 🚨 汽车载具 180° 倒车重击坑**：
+   * 借用钢锁火球（`grimlock_fireball`）绝不等于借用钢锁贴地喷火动作！Swoop 等飞行类重击应借用红蜘蛛空中悬停动作（`StarScream_Normal_attackHeavy`），在战机悬空高度变形为翼龙后吐火球。
+   * **汽车载具默认朝 `-Z` 倒车坑**：部分 Alliance 汽车 FBX 清除动画 Rest 后车尾朝向 `+Z`、车头朝向 `-Z`（如 **Dragstrip 重击变形冲刺变成车尾倒行撞人**）。导出载具 FBX 前必须在载具对齐脚本中显式检验前鼻翼/挡风玻璃/车徽坐标在 `+Z`，若反向则施加 `Matrix.Rotation(math.pi, 4, 'Z')`（`det = +1`）转正，并在 Gate 3 与供体车头同框校验。
 2. **禁止凭脑补硬写投射物 `po` 偏移**：如果在游戏内发现火球从身体下方很远窜出而非从嘴巴吐出，根本原因是 `po` 偏移未按实机缩放与动作帧姿态算准。
    * **唯一正解**：在 Unity 无头场景中加载目标 Heavy 动画 Clip，于实际发射帧（如 `f=11/12`）调用 `BakeMesh()` **直接读取变形嘴尖/炮口顶点（`BeakMouth`）的世界/根节点坐标**（例如 Swoop 在 `patch_swoop_heavy_move.py` 中据此把火球 `po` 修正为 **`(0.0, 11.4, 2.8)`**），一针见血锁死发射点！
 3. **🚨 `m_FileID` 跨供体逐包核查铁律（重击载具隐形头号元凶）**：
@@ -175,7 +206,7 @@ python tools\validate_port_gates.py bundle --bundle assets_redeco\<bot>.assetbun
 ### 6.2 Alliance 专属 6 项视觉红线（Agent 必须用读图工具逐项核验后才能交付）
 
 - [ ] **红线 1（正反朝向）**：人形胸甲、面部确定面向 `+Z` 正前方，翅膀/背包在 `-Z` 背后。
-- [ ] **红线 2（三指与武器微距）**：左/右拳同框特写下双侧大拇指均自然向掌心收拢（绝无右手大拇指外翻指向大腿）；若持剑/枪，确认剑柄深入掌心且刃向旋转 `+90°` 正确、枪械 `PropsController` 与 `LeftHand` 无浮空穿模。
+- [ ] **红线 2（三指与武器微距）**：左/右拳同框特写、展示待机（`TeamSelect_*_idle` / `char_idle`）、轻拳握拳（`jab`）与张手（`SP1`）下均须核验**双侧大拇指清晰外露无倒折隐身**、四指紧握与张开均无指节裂口；若持剑/枪，确认剑柄深入掌心且刃向旋转 `+90°` 正确、枪械 `PropsController` 与 `LeftHand` 无浮空穿模且长比例手部动作（`ranged`）拇指无畸形长刺。
 - [ ] **红线 3（双眼 ROI 与防误亮额头）**：近景头部确认发光像素精准落在双目眼眶，**额头/眉骨零蓝块误亮**。
 - [ ] **红线 4（`Symbol_AB` 双色分层与防粉红）**：胸口 `Symbol_AB` `UV0` 与主网合并正常、无黑底或 Z-Fighting 闪烁；`SubMesh 1` 使用压低后的 `Overbright ≈ 9` 发出纯正红光，未过曝成粉红色。
 - [ ] **红线 5（Grimlock 级金属质感）**：与官方 `grimlock_gs_mp08` 并排对比，呈厚重饱和的金属漆光泽，绝无发白灰模过曝感，黑色机械沟壑对比鲜明。

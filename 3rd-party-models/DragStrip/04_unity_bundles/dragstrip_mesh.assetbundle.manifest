@@ -1,0 +1,20 @@
+ManifestFileVersion: 0
+CRC: 243391680
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: 3fa5a1f2c32476cbec0cbb50563e56c6
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 78b4eb24b215c292a3fbe4dfa013d0e8
+HashAppended: 0
+ClassTypes:
+- Class: 43
+  Script: {instanceID: 0}
+SerializeReferenceClassIdentifiers: []
+Assets:
+- Assets/DragStrip/cha_mirage_gs_deluxe2016_01.asset
+- Assets/DragStrip/cha_mirage_gs_deluxe2016_wpns_blaster_right.asset
+- Assets/DragStrip/cha_mirage_gs_deluxe2016_00.asset
+- Assets/DragStrip/cha_mirage_gs_deluxe2016_wpns_blaster_left.asset
+Dependencies: []
