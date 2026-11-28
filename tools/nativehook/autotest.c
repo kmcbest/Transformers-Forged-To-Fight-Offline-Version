@@ -1309,7 +1309,7 @@ void autotest_on_simulate_tick(void* player_pc, int pidx) {
     if (!s_scenario_done) {
         float p0_hp = skill_get_hp_ratio(0);
         float p1_hp = skill_get_hp_ratio(1);
-        if (elapsed >= (uint64_t)s_sc.max_duration_ms || p0_hp <= 0.001f || p1_hp <= 0.001f) {
+        if (elapsed >= (uint64_t)s_sc.max_duration_ms || p0_hp <= 0.000001f || p1_hp <= 0.000001f) {
             s_scenario_done = 1;
             emit_snapshot(elapsed);
             AT_LOG("[AUTOTEST] SCENARIO_DONE name=%s elapsed=%llums p0_hp=%.2f p1_hp=%.2f",

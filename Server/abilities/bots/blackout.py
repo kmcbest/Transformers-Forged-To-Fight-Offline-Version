@@ -10,10 +10,10 @@ Bot ID: blackout_cin_tf
 【官方技能真理源对照 (来自 character_abilities 数据库，共 14 条)】：
 -----------------------------------------------------------------------------
 1. [被动 - 暴击几率 / Crit Rate] (PUA: \uE40D)
-   - 连击数每增加5，获得1层12%的暴击几率增益，被敌人命中打断连击时全部移除。
+   - 连击数每增加5，获得1层14%的暴击几率增益，被敌人命中打断连击时全部移除。
 
 2. [被动 - 无尽怒火 / Infinite Fury] (PUA: \uE906)
-   - 当暴击率超过100%时，溢出的每1%暴击率会转化为1%暴击伤害增益，这个增益会在暴击率低于100%时移除。
+   - 当暴击率超过100%时，溢出的每1%暴击率会转化为1.5%暴击伤害增益，这个增益会在暴击率低于100%时移除。
 
 3. [被动 - 燃烧 / Heavy Attack Burn] (PUA: \uE41D)
    - 重击如果暴击，100%概率造成燃烧，施加攻击力80%的伤害，持续6秒。
@@ -70,12 +70,12 @@ def build_blackout_abilities(base_hp: float = 40519.0, base_atk: float = 3272.0)
 
     # =========================================================================
     # 1. [ID: 1794966881655] 被动 - 连击暴击几率 (Crit Rate)
-    #    连击数每增加5，获得1层12%的暴击几率增益，被敌人命中打断连击时全部移除
+    #    连击数每增加5，获得1层14%的暴击几率增益，被敌人命中打断连击时全部移除
     # =========================================================================
     appr_combo_crit_rate = make_statmod_appearance(
         appr_id="appr_blackout_combo_crit_rate",
         callout_text="暴击几率",
-        desc="连击数每增加5，暴击几率提升12%，连招被打断时移除",
+        desc="连击数每增加5，暴击几率提升14%，连招被打断时移除",
         pua_icon="\uE40D",
         color=AbilityColor.ORANGE_DAMAGE,
         show_callout=True,
@@ -91,7 +91,7 @@ def build_blackout_abilities(base_hp: float = 40519.0, base_atk: float = 3272.0)
         "trs": "",
         "trr": "repeat",
         "c": 1.0,
-        "m": 0.12,
+        "m": 0.14,
         "d": -1.0,
         "s": "none",
         "ta": "self",
@@ -125,12 +125,12 @@ def build_blackout_abilities(base_hp: float = 40519.0, base_atk: float = 3272.0)
 
     # =========================================================================
     # 2. [ID: 1794966881657] 被动 - 无尽怒火 (Infinite Fury)
-    #    当暴击率超过100%时，溢出的每1%转化为1%暴伤增益，低于100%时移除
+    #    当暴击率超过100%时，溢出的每1%转化为1.5%暴伤增益，低于100%时移除
     # =========================================================================
     appr_infinite_fury = make_statmod_appearance(
         appr_id="appr_blackout_infinite_fury",
         callout_text="无尽怒火",
-        desc="暴击率溢出100%部分转化为等额暴击伤害增益",
+        desc="暴击率溢出100%部分按1.5倍转化为暴击伤害增益",
         pua_icon="\uE906",
         color=AbilityColor.ORANGE_DAMAGE,
         show_callout=True,

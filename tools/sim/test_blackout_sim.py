@@ -63,7 +63,7 @@ assert_true("blackout_gatling_ranged_buff" not in mods, "加特林机枪已彻�
 assert_true("blackout_sp2_crit_resist_debuff" not in mods, "SP2 暴击抗性减益不存在")
 assert_true("blackout_sp1_crit_resist_debuff" not in mods, "SP1 暴击抗性减益已彻底从 mods 中移除")
 assert_true("blackout_sp1_special_damage" in mods and mods["blackout_sp1_special_damage"]["m"] == 0.30 and mods["blackout_sp1_special_damage"]["d"] == 3.5, "SP1 特殊伤害 (+30%, 3.5s) 定义正确")
-assert_true(mods["blackout_combo_crit_rate"]["m"] == 0.12, "被动暴击率每层修正为 12%")
+assert_true(mods["blackout_combo_crit_rate"]["m"] == 0.14, "被动暴击率每层修正为 14%")
 assert_true("blackout_combo_crit_dmg" not in mods and "blackout_crit_dmg_remove_on_hit" not in mods, "被动 5 连击叠加暴击伤害技能已移除")
 assert_true("appr_blackout_combo_crit_dmg" not in appears, "被动 5 连击暴击伤害外观已移除")
 assert_true(mods["blackout_sp2_crit_damage"]["m"] == 0.60, "SP2 暴击伤害已修正为 60%")
@@ -153,8 +153,8 @@ for _ in range(4):
 st = g_engine.get_state()
 assert_true(not has_buff(st, "p0", "gatling"), "连续远程射击不再触发已删除的加特林机枪")
 
-# 6. 被动 5 连击只叠加 12% 暴击几率（不再叠加暴击伤害）与无尽怒火联动
-print("\n--- [TEST 6] 被动 5 连击叠加 12% 暴击几率（无暴伤叠加）与无尽怒火 ---")
+# 6. 被动 5 连击只叠加 14% 暴击几率（不再叠加暴击伤害）与无尽怒火联动
+print("\n--- [TEST 6] 被动 5 连击叠加 14% 暴击几率（无暴伤叠加）与无尽怒火 ---")
 g_engine.reset()
 g_engine.tick(100)
 for _ in range(5):

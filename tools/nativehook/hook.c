@@ -4913,6 +4913,20 @@ static inline int power_meter_can_use_special(void* power_meter, int tier) {
     return ((fn_can_use_sp)(g_base + 0xDACE1C))(power_meter, tier, NULL);
 }
 
+int skill_has_buff(int player_index, const char* buff_id_substr);
+static int skill_is_special_tier_locked(int pidx, int tier) {
+    if (pidx < 0 || pidx >= 2) return 0;
+    if (g_special_lock_end_ms[pidx] > 0 && propgo_now_ms() < g_special_lock_end_ms[pidx]) {
+        return 1;
+    }
+    if (tier == 1) return skill_has_buff(pidx, "disable_sp1");
+    if (tier == 2) return skill_has_buff(pidx, "disable_sp2");
+    if (tier == 3) return skill_has_buff(pidx, "disable_sp3");
+    return skill_has_buff(pidx, "disable_sp1") &&
+           skill_has_buff(pidx, "disable_sp2") &&
+           skill_has_buff(pidx, "disable_sp3");
+}
+
 static volatile int g_sp_dispatching_internal = 0;
 static inline void trigger_special_action(void* controller) {
     if (!obj_ok(controller)) return;
@@ -6810,18 +6824,30 @@ void* hook_154(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
         int is_p0_act = (self == g_p0_controller) || (obj_ok(self) && *(int32_t*)((uintptr_t)self + 0xF4) == 0);
         int is_p1_act = (self == g_p1_controller) || (obj_ok(self) && *(int32_t*)((uintptr_t)self + 0xF4) == 1);
 
-        // 通用特殊技封印门禁 (战术封锁 / Disable Specials)
+        // 通用特殊技封印门禁 (战术封锁 / Disable Specials: 全封或按 SP1/SP2/SP3 分档封印)
         if (action == 0x200) {
             int act_pidx = is_p0_act ? 0 : (is_p1_act ? 1 : -1);
-            if (act_pidx >= 0 && g_special_lock_end_ms[act_pidx] > 0) {
+            if (act_pidx >= 0) {
                 uint64_t lock_now = propgo_now_ms();
-                if (lock_now < g_special_lock_end_ms[act_pidx]) {
-                    flog("SPECIAL_LOCK: P%d suppressed 0x200 SpecialAttack (remaining=%llums)",
-                         act_pidx, (unsigned long long)(g_special_lock_end_ms[act_pidx] - lock_now));
+                if (g_special_lock_end_ms[act_pidx] > 0) {
+                    if (lock_now < g_special_lock_end_ms[act_pidx]) {
+                        flog("SPECIAL_LOCK: P%d suppressed 0x200 SpecialAttack (remaining=%llums)",
+                             act_pidx, (unsigned long long)(g_special_lock_end_ms[act_pidx] - lock_now));
+                        suppress_action = 1;
+                        break;
+                    } else {
+                        g_special_lock_end_ms[act_pidx] = 0;
+                    }
+                }
+                int req_tier = ((autotest_is_active() || (act_pidx == 0 && tftf_get_enable_swipe_specials())) &&
+                                (lock_now - g_intended_special_time_ms < 600))
+                               ? g_intended_special_tier
+                               : 0;
+                if (skill_is_special_tier_locked(act_pidx, req_tier)) {
+                    flog("SPECIAL_LOCK: P%d suppressed 0x200 SpecialAttack (tier=%d locked)", act_pidx, req_tier);
+                    g_intended_special_tier = 0;
                     suppress_action = 1;
                     break;
-                } else {
-                    g_special_lock_end_ms[act_pidx] = 0;
                 }
             }
         }
@@ -7255,7 +7281,7 @@ static float get_live_crit_damage_bonus(int player_index, void* fallback_pc) {
                             if (type_obj && obj_ok(type_obj)) read_str(type_obj, b_type, sizeof(b_type));
                             if (id_obj && obj_ok(id_obj)) read_str(id_obj, b_id, sizeof(b_id));
 
-                            // 眩晕【无尽怒火】的暴击率溢出转化在 hook_179 中 1:1 实时动态计算，此处跳过防重复叠加
+                            // 眩晕【无尽怒火】的暴击率溢出转化在 hook_179 中 1:1.5 实时动态计算，此处跳过防重复叠加
                             if (strstr(b_id, "blackout_infinite_fury") != NULL) continue;
 
                             if (strcmp(b_type, "crit_damage") == 0 || strcmp(b_type, "crit_dmg") == 0) {
@@ -8402,14 +8428,19 @@ float hook_167(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, voi
 
 void* hook_168(void* self, void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, void* a7) {
     uint64_t now = propgo_now_ms();
-    if ((autotest_is_active() || tftf_get_enable_swipe_specials()) && self == g_p0_controller && g_intended_special_tier > 0 && (now - g_intended_special_time_ms < 600)) {
+    int pidx_168 = (self == g_p0_controller) ? 0 : ((autotest_is_active() && self == g_p1_controller) ? 1 : -1);
+    if ((autotest_is_active() || tftf_get_enable_swipe_specials()) && pidx_168 >= 0 && g_intended_special_tier > 0 && (now - g_intended_special_time_ms < 600)) {
         int target_tier = g_intended_special_tier;
+        if (skill_is_special_tier_locked(pidx_168, target_tier)) {
+            flog("GET_AVAIL_SP_TIER: P%d intended tier %d is locked", pidx_168, target_tier);
+            return (void*)(intptr_t)0;
+        }
         void* power_meter = *(void**)((char*)self + 0x80);
         if (power_meter_can_use_special(power_meter, target_tier)) {
-            flog("GET_AVAIL_SP_TIER: P0 overriding special tier to %d (valid power)", target_tier);
+            flog("GET_AVAIL_SP_TIER: P%d overriding special tier to %d (valid power)", pidx_168, target_tier);
             return (void*)(intptr_t)target_tier;
         } else {
-            flog("GET_AVAIL_SP_TIER: P0 intended tier %d not enough power, falling back to stock", target_tier);
+            flog("GET_AVAIL_SP_TIER: P%d intended tier %d not enough power, falling back to stock", pidx_168, target_tier);
             g_intended_special_tier = 0;
         }
     }
@@ -8568,7 +8599,7 @@ float hook_179(void* self, float oppCritDamageResist) {
     float cd_bonus = (player_idx >= 0 && player_idx < 2) ? get_live_crit_damage_bonus(player_idx, owner) : 0.0f;
     float fury_overflow = 0.0f;
 
-    // 眩晕【无尽怒火】：当真实暴击率 > 100% 时，溢出的每 1% 暴击率 1:1 转化为 +1% 暴击伤害增益
+    // 眩晕【无尽怒火】：当真实暴击率 > 100% 时，溢出的每 1% 暴击率按 1:1.5 转化为 +1.5% 暴击伤害增益
     if (player_idx >= 0 && player_idx < 2 && bid && strstr(bid, "blackout") != NULL) {
         uint64_t now_ms = propgo_now_ms();
         float eff_cc = skill_get_total_crit_chance(player_idx);
@@ -8579,7 +8610,7 @@ float hook_179(void* self, float oppCritDamageResist) {
             }
         }
         if (eff_cc > 1.0f) {
-            fury_overflow = eff_cc - 1.0f;
+            fury_overflow = (eff_cc - 1.0f) * 1.5f;
         }
     }
 
@@ -9708,38 +9739,57 @@ void skill_apply_buff_dur(int player_index, const char* mod_id, float override_d
         void* smc_self = *(void**)((char*)bc + 0xA8);
         void* smc_opp = (opp_bc && obj_ok(opp_bc)) ? *(void**)((char*)opp_bc + 0xA8) : NULL;
 
-        void* found_sm = NULL;
-        void* applicant_bc = bc;
+        void* sm_self = NULL;
+        void* sm_opp = NULL;
+        int32_t self_tt = 1;
+        int32_t opp_tt = 1;
 
         if (g_strnew && get_sm) {
             void* id_str = g_strnew(mod_id);
             if (id_str) {
-                // Check self SMC
                 if (smc_self && obj_ok(smc_self)) {
-                    found_sm = get_sm(smc_self, id_str, NULL);
+                    sm_self = get_sm(smc_self, id_str, NULL);
+                    if (sm_self && obj_ok(sm_self)) {
+                        void* bcg_sm = *(void**)((char*)sm_self + 0x18);
+                        self_tt = (bcg_sm && obj_ok(bcg_sm)) ? *(int32_t*)((char*)bcg_sm + 0x48) : 1;
+                    }
                 }
-                // If not found on self, check opponent SMC (e.g. retaliatory bleed / cross debuffs)
-                if (!found_sm && smc_opp && obj_ok(smc_opp)) {
-                    found_sm = get_sm(smc_opp, id_str, NULL);
-                    if (found_sm) {
-                        applicant_bc = opp_bc;
+                if (smc_opp && obj_ok(smc_opp)) {
+                    sm_opp = get_sm(smc_opp, id_str, NULL);
+                    if (sm_opp && obj_ok(sm_opp)) {
+                        void* bcg_sm = *(void**)((char*)sm_opp + 0x18);
+                        opp_tt = (bcg_sm && obj_ok(bcg_sm)) ? *(int32_t*)((char*)bcg_sm + 0x48) : 1;
                     }
                 }
             }
         }
 
-        if (found_sm && obj_ok(found_sm) && apply_buff) {
-            void* bcg_sm = *(void**)((char*)found_sm + 0x18);
-            int32_t target_type = (bcg_sm && obj_ok(bcg_sm)) ? *(int32_t*)((char*)bcg_sm + 0x48) : 1;
-            if (target_type == 2) {
-                // BuffTargetTypes.opponent: Instigator must be opp_bc so that opp_bc's opponent (player_index) receives the buff!
-                if (opp_bc && obj_ok(opp_bc)) {
-                    applicant_bc = opp_bc;
-                }
-            } else {
-                applicant_bc = bc;
-            }
+        // Select the StatModifier whose baked BuffEffect target matches player_index (bc):
+        // - self SMC binds Effect to player_index only when target_type != opponent (2)
+        // - opp SMC binds Effect to player_index only when target_type == opponent (2)
+        void* found_sm = NULL;
+        void* applicant_bc = bc;
+        int32_t target_type = 1;
 
+        if (sm_self && obj_ok(sm_self) && self_tt != 2) {
+            found_sm = sm_self;
+            applicant_bc = bc;
+            target_type = self_tt;
+        } else if (sm_opp && obj_ok(sm_opp) && opp_tt == 2) {
+            found_sm = sm_opp;
+            applicant_bc = (opp_bc && obj_ok(opp_bc)) ? opp_bc : bc;
+            target_type = opp_tt;
+        } else if (sm_self && obj_ok(sm_self)) {
+            found_sm = sm_self;
+            applicant_bc = (self_tt == 2 && opp_bc && obj_ok(opp_bc)) ? opp_bc : bc;
+            target_type = self_tt;
+        } else if (sm_opp && obj_ok(sm_opp)) {
+            found_sm = sm_opp;
+            applicant_bc = (opp_tt == 2 && opp_bc && obj_ok(opp_bc)) ? opp_bc : bc;
+            target_type = opp_tt;
+        }
+
+        if (found_sm && obj_ok(found_sm) && apply_buff) {
             apply_buff(bc, applicant_bc, found_sm, 1, override_dur > 0.0f ? 1 : 0, override_dur, NULL);
             flog("SKILL_APPLY_BUFF: Applied '%s' to P%d (target_type=%d, applicant=%s, sm=%p, dur=%.2f)",
                  mod_id, player_index, target_type, (applicant_bc == bc) ? "self" : "opp", found_sm, override_dur);

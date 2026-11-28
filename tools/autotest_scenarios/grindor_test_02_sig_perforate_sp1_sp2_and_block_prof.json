@@ -1,0 +1,56 @@
+{
+  "active": true,
+  "name": "grindor_test_02_sig_perforate_sp1_sp2_and_block_prof",
+  "banner": "#2 Grindor: Sig Perforate (+110%*OppMana), SP1 Crit Debuff (-15%/Stack Block Prof), SP2 +40%*OppMana & Lock",
+  "qid": "1.1.1",
+  "player_invincible": 1,
+  "p0": {
+    "bid": "grindor_cin_rotf",
+    "mana": 3.0
+  },
+  "p1": {
+    "bid": "optimusprime_cin_tf",
+    "mana": 3.0,
+    "freeze_ai": 1,
+    "invincible_dummy": 1
+  },
+  "auto_fight": 0,
+  "max_duration_ms": 24000,
+  "p0_script": [
+    { "action": "WAIT", "duration_ms": 500 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "LIGHT", "repeat": 3 },
+    { "action": "WAIT", "duration_ms": 700 },
+    { "action": "SET_MANA", "target": "P1", "mana": 3.0 },
+    { "action": "SP1", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 3400 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "LIGHT", "repeat": 3 },
+    { "action": "WAIT", "duration_ms": 1400 },
+    { "action": "SET_MANA", "target": "P0", "mana": 2.0 },
+    { "action": "SET_MANA", "target": "P1", "mana": 3.0 },
+    { "action": "SP2", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 4000 }
+  ],
+  "p1_script": [
+    { "action": "WAIT", "duration_ms": 6200 },
+    { "action": "BLOCK", "duration_ms": 3200 },
+    { "action": "WAIT", "duration_ms": 14000 }
+  ],
+  "assertions": {
+    "must_hit_connected": [
+      { "attacker": "P0", "sp": 0, "min_count": 3 },
+      { "attacker": "P0", "sp": 1, "min_count": 2 },
+      { "attacker": "P0", "sp": 2, "min_count": 3 }
+    ],
+    "must_apply_buffs": [
+      { "target": "P1", "mod_substr": "grindor_sp1_crit_debuff", "min_count": 1 }
+    ],
+    "must_log_substrings": [
+      { "substr": "GRINDOR_PERFORATE: P0 opp_mana=100% -> melee/sp_hit0 +110.0% dmg", "min_count": 2 },
+      { "substr": "GRINDOR_SP1: P0 crit_debuff(8s)", "min_count": 1 },
+      { "substr": "GRINDOR_BLOCK_PROF: P0 vs blocking P1", "min_count": 1 },
+      { "substr": "GRINDOR_SP2_DMG: P0 opp_mana=", "min_count": 1 }
+    ]
+  }
+}

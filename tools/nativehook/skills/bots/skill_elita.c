@@ -141,6 +141,8 @@ static void elita_on_special_state(int player_index, int sp_level, int entered) 
     if (entered == 0 && sp_level == 3 && actor_bid && strstr(actor_bid, "elita") != NULL) {
         int tp = 1 - player_index;
         skill_apply_buff_dur(tp, "elita_sp3_tactical_lockdown", 8.0f);
+        skill_apply_buff_dur(tp, "gp_disable_sp2_silent", 8.0f);
+        skill_apply_buff_dur(tp, "gp_disable_sp3_silent", 8.0f);
         skill_set_special_lock(tp, 8000);
         skill_overlay("[%s] 战术封锁！对手特殊技封印8秒！", player_index == 0 ? "艾丽塔" : "敌方艾丽塔");
         skill_log("ELITA_SP3: P%d exited SP3 -> applied 8.0s Tactical Lockdown on P%d", player_index, tp);

@@ -1,0 +1,45 @@
+{
+  "active": true,
+  "name": "motormaster_test_03_sp3_recoil_survival_and_6debuffs",
+  "banner": "#3 Motormaster: SP3 Last-Hit +150%, 6 Random 6s Debuffs & 90% ATK Recoil Leaving >=1 HP (No Self-KO)",
+  "qid": "1.1.1",
+  "player_invincible": 0,
+  "p0": {
+    "bid": "motormaster_gs_voyager2015",
+    "mana": 3.0,
+    "hp_ratio": 0.90
+  },
+  "p1": {
+    "bid": "optimusprime_cin_tf",
+    "mana": 0.0,
+    "freeze_ai": 1,
+    "invincible_dummy": 1
+  },
+  "auto_fight": 0,
+  "max_duration_ms": 24000,
+  "p0_script": [
+    { "action": "WAIT", "duration_ms": 500 },
+    { "action": "SP3", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 7500 },
+    { "action": "SET_HP", "target": "P0", "hp_ratio": 0.02 },
+    { "action": "SET_MANA", "target": "P0", "mana": 3.0 },
+    { "action": "WAIT", "duration_ms": 400 },
+    { "action": "SP3", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 7500 },
+    { "action": "LIGHT", "repeat": 2 },
+    { "action": "WAIT", "duration_ms": 1500 }
+  ],
+  "p1_script": [
+    { "action": "WAIT", "duration_ms": 24000 }
+  ],
+  "assertions": {
+    "must_hit_connected": [
+      { "attacker": "P0", "sp": 3, "min_count": 2 },
+      { "attacker": "P0", "sp": 0, "min_count": 1 }
+    ],
+    "must_log_substrings": [
+      { "substr": "MOTORMASTER_SP3: P0 last hit +150% dmg, recoil=", "min_count": 2 },
+      { "substr": "-> 1.0 /", "min_count": 1 }
+    ]
+  }
+}

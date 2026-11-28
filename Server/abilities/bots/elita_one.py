@@ -260,7 +260,7 @@ def _build_elita_abilities_impl(
     appears[appr_sp3_lock["id"]] = appr_sp3_lock
     mods["elita_sp3_tactical_lockdown"] = {
         "id": "elita_sp3_tactical_lockdown",
-        "t": "combat",
+        "t": "disable_sp1",
         "tm": "",
         "tr": [],
         "uit": [],

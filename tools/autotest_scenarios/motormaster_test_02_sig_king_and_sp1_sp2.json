@@ -1,0 +1,53 @@
+{
+  "active": true,
+  "name": "motormaster_test_02_sig_king_and_sp1_sp2",
+  "banner": "#2 Motormaster: King of the Road Scaling (+60%/20% Lost HP), SP1 Power Burn (-2%), SP2 4.5s Unstoppable",
+  "qid": "1.1.1",
+  "player_invincible": 1,
+  "p0": {
+    "bid": "motormaster_gs_voyager2015",
+    "mana": 3.0,
+    "hp_ratio": 0.55
+  },
+  "p1": {
+    "bid": "optimusprime_cin_tf",
+    "mana": 1.5,
+    "freeze_ai": 1,
+    "invincible_dummy": 1
+  },
+  "auto_fight": 0,
+  "max_duration_ms": 20000,
+  "p0_script": [
+    { "action": "WAIT", "duration_ms": 600 },
+    { "action": "SP1", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 2800 },
+    { "action": "SET_HP", "target": "P0", "hp_ratio": 0.18 },
+    { "action": "WAIT", "duration_ms": 600 },
+    { "action": "SET_MANA", "target": "P0", "mana": 2.0 },
+    { "action": "SP2", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 5000 }
+  ],
+  "p1_script": [
+    { "action": "WAIT", "duration_ms": 6000 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "LIGHT", "repeat": 3 },
+    { "action": "WAIT", "duration_ms": 10000 }
+  ],
+  "assertions": {
+    "must_hit_connected": [
+      { "attacker": "P0", "sp": 1, "min_count": 2 },
+      { "attacker": "P0", "sp": 2, "min_count": 3 }
+    ],
+    "must_apply_buffs": [
+      { "target": "P0", "mod_substr": "motormaster_sig_king", "min_count": 4, "max_count": 4 },
+      { "target": "P1", "mod_substr": "motormaster_sp1_power_burn", "min_count": 1 },
+      { "target": "P0", "mod_substr": "motormaster_sp2_unstoppable", "min_count": 1 }
+    ],
+    "must_log_substrings": [
+      { "substr": "King of the Road stacks=2 (+120% melee)", "min_count": 1 },
+      { "substr": "King of the Road stacks=4 (+240% melee)", "min_count": 1 },
+      { "substr": "MOTORMASTER_SP1: P0 power burned P1 (-2% max mana)", "min_count": 1 },
+      { "substr": "MOTORMASTER_SP2: P0 entered SP2 -> Unstoppable 4.5s", "min_count": 1 }
+    ]
+  }
+}

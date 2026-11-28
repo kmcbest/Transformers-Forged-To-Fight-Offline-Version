@@ -1,0 +1,47 @@
+{
+  "active": true,
+  "name": "motormaster_test_01_dash_and_heavy_ram",
+  "banner": "#1 Motormaster: Long-Range Dash Unstoppable & Heavy Attack 1-of-3 Ram Debuff (Atk/Armor/PowerRate)",
+  "qid": "1.1.1",
+  "player_invincible": 1,
+  "p0": {
+    "bid": "motormaster_gs_voyager2015",
+    "mana": 0.0
+  },
+  "p1": {
+    "bid": "optimusprime_cin_tf",
+    "mana": 0.0,
+    "freeze_ai": 1,
+    "invincible_dummy": 1
+  },
+  "auto_fight": 0,
+  "max_duration_ms": 25000,
+  "p0_script": [
+    { "action": "WAIT", "duration_ms": 500 },
+    { "action": "DODGE", "repeat": 2 },
+    { "action": "WAIT", "duration_ms": 900 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 1100 },
+    { "action": "HEAVY", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 2000 },
+    { "action": "HEAVY", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 2000 },
+    { "action": "HEAVY", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 2500 }
+  ],
+  "p1_script": [
+    { "action": "WAIT", "duration_ms": 25000 }
+  ],
+  "assertions": {
+    "must_hit_connected": [
+      { "attacker": "P0", "heavy": 1, "min_count": 3 }
+    ],
+    "must_apply_buffs": [
+      { "target": "P0", "mod_substr": "motormaster_dash_unstoppable", "min_count": 1 }
+    ],
+    "must_log_substrings": [
+      { "substr": "MOTORMASTER_DASH: P0 long dash", "min_count": 1 },
+      { "substr": "MOTORMASTER_HEAVY: P0 rammed P1 -> applied 1 random 6s debuff", "min_count": 3 }
+    ]
+  }
+}

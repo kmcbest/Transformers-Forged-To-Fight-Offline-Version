@@ -239,9 +239,15 @@ void skill_set_power_lock(int target_player_index, uint64_t duration_ms) {
     }
 }
 
+static uint64_t g_sim_special_lock_end_ms[2] = {0, 0};
+
 void skill_set_special_lock(int target_player_index, uint64_t duration_ms) {
-    (void)target_player_index;
-    (void)duration_ms;
+    if (target_player_index >= 0 && target_player_index < 2) {
+        uint64_t end_ms = g_sim_clock_ms + duration_ms;
+        if (end_ms > g_sim_special_lock_end_ms[target_player_index]) {
+            g_sim_special_lock_end_ms[target_player_index] = end_ms;
+        }
+    }
 }
 
 void skill_interrupt_special(int target_player_index, float stun_duration_s) {
@@ -524,15 +530,19 @@ static float sim_get_crit_rate_from_buffs(int attacker_idx, int target_idx) {
             continue;
         }
         const SimModMeta* meta = find_sim_mod_meta(id);
-        if (meta && meta->kind == SMOD_CRIT_RATE) {
+        if (meta && (meta->kind == SMOD_CRIT_RATE ||
+                     (meta->kind == SMOD_CRIT_RATE_DEBUFF && meta->magnitude < 0.0f && strstr(id, "crit_resist") == NULL))) {
             bonus += meta->magnitude * (float)st;
         }
     }
     SimCombatant* opp = &g_players[target_idx];
     for (int i = 0; i < opp->buff_count; i++) {
-        const SimModMeta* meta = find_sim_mod_meta(opp->buffs[i].mod_id);
-        if (meta && meta->kind == SMOD_CRIT_RATE_DEBUFF) {
-            bonus += meta->magnitude * (float)opp->buffs[i].stacks;
+        const char* id = opp->buffs[i].mod_id;
+        const SimModMeta* meta = find_sim_mod_meta(id);
+        if (meta && meta->kind == SMOD_CRIT_RATE_DEBUFF &&
+            (meta->magnitude > 0.0f || strstr(id, "crit_resist") != NULL)) {
+            float mag = (meta->magnitude >= 0.0f) ? meta->magnitude : -meta->magnitude;
+            bonus += mag * (float)opp->buffs[i].stacks;
         }
     }
     return bonus;
@@ -547,7 +557,7 @@ static float sim_get_crit_damage_bonus_from_buffs(int attacker_idx, float raw_to
         int st = self->buffs[i].stacks;
         if (strcmp(id, "blackout_infinite_fury_crit_dmg") == 0) {
             if (raw_total_crit_rate > 1.0f) {
-                bonus += (raw_total_crit_rate - 1.0f);
+                bonus += (raw_total_crit_rate - 1.0f) * 1.5f;
             }
             continue;
         }
@@ -587,7 +597,7 @@ float skill_get_total_crit_chance(int player_index) {
         const char* id = self->buffs[i].mod_id;
         int st = self->buffs[i].stacks;
         if (strstr(id, "blackout_combo_crit_rate") != NULL) {
-            total += 0.12f * st;
+            total += 0.14f * st;
         } else if (strstr(id, "crit_rate") != NULL && strstr(id, "crit_resist") == NULL) {
             total += 0.30f * st;
         }
@@ -1475,8 +1485,38 @@ SIM_API int sim_dash(int player_idx) {
     return 1;
 }
 
+static float sim_accumulate_power_rate_mod(int player_idx) {
+    if (player_idx < 0 || player_idx >= 2) return 1.0f;
+    SimCombatant* c = &g_players[player_idx];
+    float delta = 0.0f;
+    for (int i = 0; i < c->buff_count; i++) {
+        const SimModMeta* meta = find_sim_mod_meta(c->buffs[i].mod_id);
+        if (meta && meta->kind == SMOD_POWER_RATE) {
+            delta += meta->magnitude * (float)c->buffs[i].stacks;
+        }
+    }
+    float mult = 1.0f + delta;
+    if (mult < 0.0f) mult = 0.0f;
+    return mult;
+}
+
+static int sim_is_special_tier_locked(int player_idx, int sp_idx) {
+    if (player_idx < 0 || player_idx >= 2 || sp_idx < 1 || sp_idx > 3) return 0;
+    if (g_sim_special_lock_end_ms[player_idx] > 0 && g_sim_clock_ms < g_sim_special_lock_end_ms[player_idx]) {
+        return 1;
+    }
+    if (sp_idx == 1) return skill_has_buff(player_idx, "disable_sp1");
+    if (sp_idx == 2) return skill_has_buff(player_idx, "disable_sp2");
+    return skill_has_buff(player_idx, "disable_sp3");
+}
+
 SIM_API int sim_attack_start(int attacker_idx, int action_type) {
     if (attacker_idx < 0 || attacker_idx >= 2) return 0;
+    int start_sp_idx = (action_type == 16) ? 1 : ((action_type == 32) ? 2 : ((action_type == 64 || action_type == 0x203) ? 3 : ((action_type == 0x201) ? 1 : ((action_type == 0x202) ? 2 : 0))));
+    if (start_sp_idx > 0 && sim_is_special_tier_locked(attacker_idx, start_sp_idx)) {
+        skill_log("SPECIAL_LOCK: P%d suppressed SP%d attack_start", attacker_idx, start_sp_idx);
+        return 0;
+    }
     SimCombatant* atker = &g_players[attacker_idx];
     atker->current_action = action_type;
     int is_special = (action_type == 16 || action_type == 32 || action_type == 64 || action_type == 0x200);
@@ -1507,6 +1547,10 @@ SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
     if (action_type == 16) sp_idx = 1;
     else if (action_type == 32) sp_idx = 2;
     else if (action_type == 64) sp_idx = 3;
+    if (sp_idx > 0 && hit_index == 0 && sim_is_special_tier_locked(attacker_idx, sp_idx)) {
+        skill_log("SPECIAL_LOCK: P%d suppressed SP%d attack", attacker_idx, sp_idx);
+        return 0;
+    }
 
     int target_check_idx = target_idx;
     int auto_block_mode = (is_blocked < 0) || s_authentic_mode;
@@ -1845,7 +1889,7 @@ SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
         if (skill_has_buff(attacker_idx, "power_gain") || skill_has_buff(attacker_idx, "buff_power")) {
             atk_gain *= 1.5f; // 能量获取增益
         }
-        float rate_atk = skill_dispatch_power_gain_rate_mod(attacker_idx);
+        float rate_atk = skill_dispatch_power_gain_rate_mod(attacker_idx) * sim_accumulate_power_rate_mod(attacker_idx);
         if (rate_atk >= 0.0f) {
             atk_gain *= rate_atk;
         }
@@ -1890,7 +1934,7 @@ SIM_API int sim_attack(int attacker_idx, int action_type, int hit_index,
     if (skill_has_buff(target_idx, "power_gain") || skill_has_buff(target_idx, "buff_power")) {
         def_gain *= 1.5f;
     }
-    float rate_def = skill_dispatch_power_gain_rate_mod(target_idx);
+    float rate_def = skill_dispatch_power_gain_rate_mod(target_idx) * sim_accumulate_power_rate_mod(target_idx);
     if (rate_def >= 0.0f) {
         def_gain *= rate_def;
     }

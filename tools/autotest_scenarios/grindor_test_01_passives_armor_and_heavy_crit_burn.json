@@ -1,0 +1,54 @@
+{
+  "active": true,
+  "name": "grindor_test_01_passives_armor_and_heavy_crit_burn",
+  "banner": "#1 Grindor: 17% Unbreakable Natural Armor, Struck Armor(41%)/CritDebuff(-40%), Heavy Crit 80% Burn",
+  "qid": "1.1.1",
+  "player_invincible": 1,
+  "p0": {
+    "bid": "grindor_cin_rotf",
+    "mana": 0.0
+  },
+  "p1": {
+    "bid": "optimusprime_cin_tf",
+    "mana": 0.0,
+    "freeze_ai": 1,
+    "invincible_dummy": 1
+  },
+  "auto_fight": 0,
+  "max_duration_ms": 24000,
+  "p0_script": [
+    { "action": "WAIT", "duration_ms": 400 },
+    { "action": "APPLY_BUFF", "target": "P0", "id": "armor_break", "dur": 10.0, "stacks": 1 },
+    { "action": "WAIT", "duration_ms": 6000 },
+    { "action": "HEAVY", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 1600 },
+    { "action": "HEAVY", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 1600 },
+    { "action": "HEAVY", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 1600 },
+    { "action": "HEAVY", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 1600 },
+    { "action": "HEAVY", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 1600 },
+    { "action": "HEAVY", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 2500 }
+  ],
+  "p1_script": [
+    { "action": "WAIT", "duration_ms": 600 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "LIGHT", "repeat": 5 },
+    { "action": "WAIT", "duration_ms": 1200 },
+    { "action": "DASH", "repeat": 1 },
+    { "action": "LIGHT", "repeat": 5 },
+    { "action": "WAIT", "duration_ms": 15000 }
+  ],
+  "assertions": {
+    "must_hit_connected": [
+      { "attacker": "P1", "sp": 0, "min_count": 8 },
+      { "attacker": "P0", "heavy": 1, "min_count": 5 }
+    ],
+    "must_log_substrings": [
+      { "substr": "GRINDOR_NAT_ARMOR: P0 natural -17% dmg", "min_count": 8 }
+    ]
+  }
+}

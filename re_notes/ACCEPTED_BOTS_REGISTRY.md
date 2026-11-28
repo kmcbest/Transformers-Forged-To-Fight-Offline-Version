@@ -14,7 +14,7 @@
 | 序号 | 角色 | `bot_id` | 代表机制原型 | 状态 | 验收日期 | 回归剧本数 |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | 1 | 阿尔茜 (Arcee) | `arcee_gs_deluxe2014` | **暴击率联动 / DOT(流血) / 远程规避 Callout** | 🔒 已验收锁定 | 2026-11-26 | 6 |
-| 2 | 艾丽塔 (Elita-1) | `elita_one_gs` (`elita_one_gs_kabam`) | **动态职业判定 / 霸体近战规避 / 落空减益 / 技能打断与封锁** | 🧪 自动化通过，待人工验证 *(未锁定)* | 2026-11-26 | 10 |
+| 2 | 艾丽塔 (Elita-1) | `elita_one_gs` (`elita_one_gs_kabam`) | **动态职业判定 / 霸体近战规避 / 落空减益 / 技能打断与三档能量槽白锁封锁** | 🧪 阶段性自动化通过，待人工验收 *(未锁定)* | 2026-11-28 | 10 |
 | 3 | 电影铁皮 (Ironhide ROTF) | `ironhide_cin_rotf` | **单次命中暴击率门控 / 叠层燃烧 / 黄色暴伤与每局一次 SP 暴击觉醒** | 🔒 已验收锁定 | 2026-11-26 | 7 |
 | 4 | 闪电 (Blitzwing) | `blitzwing_gs` | **双形态长按防御切换 / 抑制夹钳(增益阻断·减益阻断·SP3通用) / 绝处逢生全数引爆眩晕** | 🧪 自动化通过，待人工验收 *(未锁定)* | 2026-11-27 | 7 |
 | 5 | 暗天陨 (Nemesis Prime) | `nemesisprime_gs_voyager2015` | **血线变速暗能量充能 / 亚空间脉冲克隆 / SP1减益复制复刻 / SP2双驱散 / 赝品领导模块吸血 / SP3浅紫不可防御** | 🧪 自动化通过，待人工验收 *(未锁定)* | 2026-11-27 | 6 |
@@ -22,6 +22,10 @@
 | 7 | 电影大黄蜂 (Bumblebee DOTM) | `bumblebee_cin_dotm` | **双模校准切换规避 / 闪避可刷新增攻觉醒 / 击倒叠层与爆发 / SP1清甲 / SP2·SP3有护甲震击增伤** | 🔒 已验收锁定 | 2026-11-27 | 6 |
 | 8 | G1 威震天 (Megatron GS) | `megatron_gs_leader2015` | **融合炮重击过载 / M2刷新&重击永久融合 / SP1清甲破甲 / SP2减攻 / SP3震击 / 起身霸体 / 偷取Buff觉醒** | 🧪 阶段性自动化通过，待人工验收 *(未锁定)* | 2026-11-27 | 5 |
 | 9 | 恐龙勇士 (Dinobot BW) | `dinobot_bw_kabam` | **近战穿甲 / 即时格挡精通 / 格挡前冲反伤破甲 / 重击暴击流血 / SP3咬击段修复 / 觉醒破防Callout** | 🔒 已验收锁定 | 2026-11-28 | 5 |
+| 10 | 电影擎天柱 (Optimus MV) | `optimusprime_cin_tf` | **格挡护甲 / 普攻强击Buff / 意志力流血吸血与多流血净化回能 / <20%每局一次双buff / 失血增伤SP1流血** | 🧪 阶段性自动化通过，待人工验收 *(未锁定)* | 2026-11-28 | 3 |
+| 11 | 钢锁 (Grimlock) | `grimlock_gs_mp08` | **受击强击 / 恐龙之怒1秒真实净化+强击 / 重击霸体刷新全强击与燃烧 / SP1-3强击与末击燃烧** | 🧪 阶段性自动化通过，待人工验收 *(未锁定)* | 2026-11-28 | 3 |
+| 12 | 汽车大师 (Motormaster) | `motormaster_gs_voyager2015` | **远距离前冲霸体 / 重击随机减益 / 公路之王永久近战层数 / SP1烧能 / SP2 4.5s霸体 / SP3末击反伤留1血+6减益** | 🧪 阶段性自动化通过，待人工验收 *(未锁定)* | 2026-11-28 | 3 |
+| 13 | 碾碎器 (Grindor) | `grindor_cin_rotf` | **17%不可破天然护甲 / 受击护甲与暴击减益削减格挡精通 / 贯穿随敌能增伤 / 重击SP3暴击燃烧 / SP1-3白锁封印** | 🧪 阶段性自动化通过，待人工验收 *(未锁定)* | 2026-11-28 | 4 |
 | — | *(预留代表位)* | — | 破甲 / 震撼 / 护甲减伤类代表 | 待验收 | — | — |
 | — | *(预留代表位)* | — | 治疗 / 净化 / 减益转化类代表 | 待验收 | — | — |
 | — | *(预留代表位)* | — | 聚气充能 / 双形态切换类代表 | 待验收 | — | — |
@@ -214,3 +218,60 @@ python tools/check_accepted_lock.py --run-device --serial 127.0.0.1:7555
   - [dinobot_bw_test_04_sp3_crit_and_midhit_repair.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/dinobot_bw_test_04_sp3_crit_and_midhit_repair.json)（#4 SP3 16s 暴击几率增益与仅 3 下咬击段 `hit=1,2,3` 触发 4s 修复，起手与激光段均跳过）
   - [dinobot_bw_test_05_sig_survival_of_the_fittest.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/dinobot_bw_test_05_sig_survival_of_the_fittest.json)（#5 觉醒「适者生存」破甲格挡增伤 +20%、20% 真实不可防御破防且我方弹出“适者生存” Callout）
 - **一键真机复验**：`python tools/check_accepted_lock.py --run-device --bot dinobot_bw_kabam --serial 127.0.0.1:7555`
+
+---
+
+### 10. 电影擎天柱 (`optimusprime_cin_tf`) —— *(未锁定，阶段性自动化通过，待人工验收)*
+
+- **当前状态**：`🧪 阶段性自动化通过，待人工验收`（未加入 `accepted_bots_lock.json` 哈希锁）
+- **自动化验证环境**：MuMu 15 (`127.0.0.1:7555`)，3/3 剧本全绿通过
+- **关联源码**：
+  - 技能定义：[optimusprime_cin_tf.py](file:///e:/Agent/TFTF/Server/abilities/bots/optimusprime_cin_tf.py)
+  - 运行时状态机：[skill_optimus_mv.c](file:///e:/Agent/TFTF/tools/nativehook/skills/bots/skill_optimus_mv.c)
+- **靶场验证剧本（3 条）**：
+  - [optimus_mv_test_01_willpower_and_passive.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/optimus_mv_test_01_willpower_and_passive.json)（#1 格挡护甲 16.5% + 全攻击 10% 近战增益（4s，上限1层）+ 意志力流血 35% 吸血与多流血净化回能 10%）
+  - [optimus_mv_test_02_specials_bleed_and_sp1_boost.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/optimus_mv_test_02_specials_bleed_and_sp1_boost.json)（#2 SP1 随已损失生命最高 +150% 增伤与流血 + SP2 前 2 击流血 + SP3 全段流血）
+  - [optimus_mv_test_03_sig_once_per_fight.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/optimus_mv_test_03_sig_once_per_fight.json)（#3 觉醒 HP<20% 每局一次 90% 护甲 + 3 层近战增益 7s）
+
+---
+
+### 11. 钢锁 (`grimlock_gs_mp08`) —— *(未锁定，阶段性自动化通过，待人工验收)*
+
+- **当前状态**：`🧪 阶段性自动化通过，待人工验收`（未加入 `accepted_bots_lock.json` 哈希锁）
+- **自动化验证环境**：MuMu 15 (`127.0.0.1:7555`)，3/3 剧本全绿通过
+- **关联源码**：
+  - 技能定义：[grimlock.py](file:///e:/Agent/TFTF/Server/abilities/bots/grimlock.py)
+  - 运行时状态机：[skill_grimlock.c](file:///e:/Agent/TFTF/tools/nativehook/skills/bots/skill_grimlock.c)
+- **靶场验证剧本（3 条）**：
+  - [grimlock_test_01_passive_hit_and_dino_rage.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/grimlock_test_01_passive_hit_and_dino_rage.json)（#1 受击 14% 强击(+16%) + 恐龙之怒 1 秒真实净化延时减益并 30% 转强击(+30%)）
+  - [grimlock_test_02_heavy_unstop_refresh_burn.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/grimlock_test_02_heavy_unstop_refresh_burn.json)（#2 重击不可阻挡刷新所有强击至 5s + 70% 概率 2s 燃烧）
+  - [grimlock_test_03_specials_melee_and_burn.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/grimlock_test_03_specials_melee_and_burn.json)（#3 SP1/SP2/SP3 近战增益(+12%/+18%/+30%)与 SP1/SP3 末击 100% 燃烧）
+
+---
+
+### 12. 汽车大师 (`motormaster_gs_voyager2015`) —— *(未锁定，阶段性自动化通过，待人工验收)*
+
+- **当前状态**：`🧪 阶段性自动化通过，待人工验收`（未加入 `accepted_bots_lock.json` 哈希锁）
+- **自动化验证环境**：MuMu 15 (`127.0.0.1:7555`)，3/3 剧本全绿通过
+- **关联源码**：
+  - 技能定义：[motormaster.py](file:///e:/Agent/TFTF/Server/abilities/bots/motormaster.py)
+  - 运行时状态机：[skill_motormaster.c](file:///e:/Agent/TFTF/tools/nativehook/skills/bots/skill_motormaster.c)
+- **靶场验证剧本（3 条）**：
+  - [motormaster_test_01_dash_and_heavy_ram.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/motormaster_test_01_dash_and_heavy_ram.json)（#1 远距离前冲(>=10m)不可阻挡 + 重击三选一随机减益）
+  - [motormaster_test_02_sig_king_and_sp1_sp2.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/motormaster_test_02_sig_king_and_sp1_sp2.json)（#2 公路之王每损失 20% 生命获 +60% 永久近战(上限4层) + SP1 2% 烧能 + SP2 4.5s 不可阻挡）
+  - [motormaster_test_03_sp3_recoil_survival_and_6debuffs.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/motormaster_test_03_sp3_recoil_survival_and_6debuffs.json)（#3 SP3 末击 +150% 伤害 + 90% ATK 自伤反噬最低留 1 血 + 6 个随机 6s 减益）
+
+---
+
+### 13. 碾碎器 (`grindor_cin_rotf`) —— *(未锁定，阶段性自动化通过，待人工验收)*
+
+- **当前状态**：`🧪 阶段性自动化通过，待人工验收`（未加入 `accepted_bots_lock.json` 哈希锁）
+- **自动化验证环境**：MuMu 15 (`127.0.0.1:7555`)，4/4 剧本全绿通过（含 SP2/SP3 能量条白色小锁 HUD 实机截图复核）
+- **关联源码**：
+  - 技能定义：[grindor.py](file:///e:/Agent/TFTF/Server/abilities/bots/grindor.py)
+  - 运行时状态机：[skill_grindor.c](file:///e:/Agent/TFTF/tools/nativehook/skills/bots/skill_grindor.c)
+- **靶场验证剧本（4 条）**：
+  - [grindor_test_01_passives_armor_and_heavy_crit_burn.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/grindor_test_01_passives_armor_and_heavy_crit_burn.json)（#1 17% 不可破天然护甲 + 受击护甲/暴击率减益 + 重击暴击燃烧）
+  - [grindor_test_02_sig_perforate_sp1_sp2_and_block_prof.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/grindor_test_02_sig_perforate_sp1_sp2_and_block_prof.json)（#2 觉醒贯穿随敌方能量增伤 + 暴击减益削减 15%/层格挡精通 + SP1/SP2 减益与概率锁定）
+  - [grindor_test_03_sp3_padlocks_both_sides_and_burn.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/grindor_test_03_sp3_padlocks_both_sides_and_burn.json)（#3 SP3 末击 +50% 暴击燃烧 + 永久暴击减益 + 10s SP2/SP3 锁定敌方视角）
+  - [grindor_test_04_p1_sp3_locks_p0_padlocks.json](file:///e:/Agent/TFTF/tools/autotest_scenarios/grindor_test_04_p1_sp3_locks_p0_padlocks.json)（#4 敌方碾碎器 SP3 锁定玩家 HUD：SP2/SP3 显示白色填充与白色小锁，SP1 保持可用并正常释放）

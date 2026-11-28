@@ -1,0 +1,49 @@
+{
+  "active": true,
+  "name": "grindor_test_03_sp3_padlocks_both_sides_and_burn",
+  "banner": "#3 Grindor SP3 Locks Enemy SP2+SP3 (10s Padlocks) Leaving SP1 Usable, Perm -16% Crit Debuff, Last-Hit +50% Crit Burn",
+  "qid": "1.1.1",
+  "player_invincible": 1,
+  "p0": {
+    "bid": "grindor_cin_rotf",
+    "mana": 3.0
+  },
+  "p1": {
+    "bid": "grindor_cin_rotf",
+    "mana": 0.0,
+    "freeze_ai": 1,
+    "invincible_dummy": 1
+  },
+  "auto_fight": 0,
+  "max_duration_ms": 18000,
+  "p0_script": [
+    { "action": "WAIT", "duration_ms": 500 },
+    { "action": "SP3", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 13000 }
+  ],
+  "p1_script": [
+    { "action": "WAIT", "duration_ms": 6200 },
+    { "action": "SET_MANA", "target": "P1", "mana": 3.0 },
+    { "action": "SP1", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 3000 },
+    { "action": "SET_MANA", "target": "P1", "mana": 3.0 },
+    { "action": "SP3", "repeat": 1 },
+    { "action": "WAIT", "duration_ms": 3000 }
+  ],
+  "assertions": {
+    "must_hit_connected": [
+      { "attacker": "P0", "sp": 3, "min_count": 1 },
+      { "attacker": "P1", "sp": 1, "min_count": 1 }
+    ],
+    "must_apply_buffs": [
+      { "target": "P1", "mod_substr": "grindor_sp3_disable_sp2", "min_count": 1, "max_count": 1 },
+      { "target": "P1", "mod_substr": "gp_disable_sp3_silent", "min_count": 1, "max_count": 1 },
+      { "target": "P1", "mod_substr": "grindor_sp3_crit_debuff", "min_count": 1, "max_count": 1 }
+    ],
+    "must_log_substrings": [
+      { "substr": "GRINDOR_SP3: P0 last hit +50% crit chance", "min_count": 1 },
+      { "substr": "GRINDOR_SP3: P0 locked P1 SP2+SP3(10s) + perm crit_debuff", "min_count": 1 },
+      { "substr": "SPECIAL_LOCK: P1 suppressed 0x200 SpecialAttack (tier=3 locked)", "min_count": 1 }
+    ]
+  }
+}

@@ -1,119 +1,182 @@
-#include "../skill_types.h"
 #include "../skill_env.h"
+#include "../skill_types.h"
 #include <string.h>
 
-// ===========================================================================
-// 汽车大师 (Motormaster) 技能模块
-// Bot ID: motormaster_gs_voyager2015
-// ===========================================================================
-// 1. [被动 - 前冲 / Dashing]:
-//    - 严格限定：从远距离发起前冲攻击（进入原生 PlayerDashState），发起到结束的过程获得不可阻挡；
-//    - 霸体时间不能超时（硬上限 600ms），一旦前冲命中、被格挡或退出前冲攻击状态，霸体立即归零清空；
-//    - 贴脸近战出招、原地轻重击绝不给霸体。
-// 2. [特殊技 2 - 大师级工艺 / A Master Craft]:
-//    - SP2 (0x202 / 320) 发动时获得 4.0 秒不可阻挡霸体；
-//    - 严格禁止 SP1 (0x201 / 16)、SP3 (0x203 / 64) 以及其他任何行为触发霸体。
-// ===========================================================================
+/*
+ * 汽车大师 (motormaster_gs_voyager2015) 战斗逻辑模块：
+ * 1. 前冲不可阻挡：远距主动前冲进入不可阻挡状态
+ * 2. 重击冲压：非格挡重击命中随机施加 3 选 1 减益（6 秒：21.6% 攻击减益 / 29.7% 破甲 / 24.3% 能量功率减益）
+ * 3. 觉醒 公路之王：每损失 20% 生命得 1 层 +60% 近战增益（最大 4 层，无倒计时，随血量动态增减）
+ * 4. SP1：末击非格挡即时扣除对手 2% 最大能量 (-0.06)
+ * 5. SP2：发动进入 4.5 秒不可阻挡状态
+ * 6. SP3：最后一击伤害 +150%，自伤 90% 攻击力（最低保留 1 点生命），并随机施加 6 层 6 秒冲压减益
+ */
 
-static uint64_t s_last_dash_ms[2] = {0, 0};
-static uint64_t s_last_sp2_ms[2] = {0, 0};
-static int s_king_stacks[2] = {0, 0};
+static int is_motormaster(const char* bot_id) {
+    return bot_id && strstr(bot_id, "motormaster") != NULL;
+}
 
-static void motormaster_on_simulation_tick(uint64_t now_ms) {
-    (void)now_ms;
+static uint64_t s_mm_sp2_unstop_end[2] = {0, 0};
+
+static void mm_fight_reset(int player_index) {
+    if (player_index >= 0 && player_index < 2) {
+        s_mm_sp2_unstop_end[player_index] = 0;
+    }
+}
+
+static void mm_simulation_tick(uint64_t now_ms) {
     for (int p = 0; p < 2; p++) {
-        const char* bid = skill_get_bot_id(p);
-        if (!bid || strstr(bid, "motormaster") == NULL) continue;
+        if (!is_motormaster(skill_get_bot_id(p))) continue;
+
+        if (s_mm_sp2_unstop_end[p] > 0 && now_ms >= s_mm_sp2_unstop_end[p]) {
+            s_mm_sp2_unstop_end[p] = 0;
+            skill_set_unstoppable(p, 0);
+        }
+
         float hp_r = skill_get_hp_ratio(p);
-        if (hp_r > 0.0f && hp_r <= 0.80f) {
-            int target_stacks = (int)((1.0f - hp_r + 0.001f) / 0.20f);
-            if (target_stacks > 4) target_stacks = 4;
-            while (s_king_stacks[p] < target_stacks) {
-                s_king_stacks[p]++;
-                skill_apply_buff(p, "motormaster_king_of_road");
+        if (hp_r < 0.0f) hp_r = 0.0f;
+        if (hp_r > 1.0f) hp_r = 1.0f;
+        int desired = (int)((1.0f - hp_r) / 0.20f);
+        if (desired > 4) desired = 4;
+        if (desired < 0) desired = 0;
+        int cur = skill_count_buffs(p, "motormaster_sig_king");
+        if (cur < desired) {
+            for (int k = cur; k < desired; k++) {
+                skill_apply_buff_dur(p, "motormaster_sig_king", -1.0f);
             }
+            skill_log("MOTORMASTER_SIG: P%d HP %.1f%% -> King of the Road stacks=%d (+%d%% melee)",
+                      p, hp_r * 100.0f, desired, desired * 60);
+        } else if (cur > desired) {
+            skill_consume_buff(p, "motormaster_sig_king", cur - desired);
+            skill_log("MOTORMASTER_SIG: P%d HP %.1f%% -> King of the Road reduced to stacks=%d (+%d%% melee)",
+                      p, hp_r * 100.0f, desired, desired * 60);
         }
     }
 }
 
-static void motormaster_on_hit_connected(SkillHitContext* ctx) {
-    if (!ctx || !ctx->attacker_bot_id || strstr(ctx->attacker_bot_id, "motormaster") == NULL) return;
-    int ap = ctx->attacker_player_index;
-    int tp = ctx->target_player_index;
-    if (ctx->special_index == 1 && ctx->is_last_hit) {
-        skill_add_mana(tp, -0.06f);
-        skill_apply_buff_dur(tp, "motormaster_sp1_power_burn", 1.0f);
-    } else if (ctx->special_index == 3 && ctx->is_last_hit) {
-        ctx->modified_damage *= 2.50f;
-        skill_apply_buff_dur(ap, "motormaster_sp3_burst_atk", 1.0f);
-        skill_apply_buff_dur(tp, "motormaster_sp3_ram_armor", 6.0f);
-        float atk = skill_get_attack(ap);
-        float self_hp = skill_get_hp(ap);
-        float recoil = atk * 0.90f;
-        if (self_hp - recoil < 1.0f) recoil = (self_hp > 1.0f) ? (self_hp - 1.0f) : 0.0f;
-        if (recoil > 0.0f) skill_deal_damage(ap, recoil);
-    }
-}
-
-static void motormaster_on_attack_start(int player_index, int action_type) {
+static void mm_attack_start(int player_index, int action_type) {
     if (player_index < 0 || player_index >= 2) return;
-    const char* bid = skill_get_bot_id(player_index);
-    if (!bid || strstr(bid, "motormaster") == NULL) return;
+    if (!is_motormaster(skill_get_bot_id(player_index))) return;
 
-    uint64_t now_ms = skill_now_ms();
-
-    // 汽车大师前冲霸体：严格限定从中远距离发起前冲攻击 (dist >= 10.0f, 非近战范围, 非连招中) 时获得，上限 600ms；
-    // 贴脸近战出招、原地连招 (M1/M2) 绝不给霸体。
     if (action_type == 2) {
-        if (!skill_is_in_combo(player_index) && !skill_is_in_melee_range(player_index)) {
-            float dist = skill_get_opponent_distance(player_index);
-            if (dist >= 10.0f) {
-                if (s_last_dash_ms[player_index] == 0 || now_ms - s_last_dash_ms[player_index] >= 800) {
-                    s_last_dash_ms[player_index] = now_ms;
-                    skill_set_motormaster_dash_unstoppable(player_index, 600);
-                    skill_apply_buff_dur(player_index, "motormaster_dash_unstoppable", 0.6f);
-                    skill_log("MOTORMASTER: P%d remote dash (dist=%.2f >= 10.0m) -> granted 600ms dash unstoppable", player_index, dist);
-                }
-            } else {
-                skill_log("MOTORMASTER: P%d rejected dash unstoppable: dist=%.2f < 10.0m", player_index, dist);
-            }
-        } else {
-            skill_log("MOTORMASTER: P%d rejected dash unstoppable: in combo or melee range", player_index);
+        float dist = skill_get_opponent_distance(player_index);
+        if (dist >= 10.0f) {
+            skill_set_motormaster_dash_unstoppable(player_index, 600);
+            skill_apply_buff_dur(player_index, "motormaster_dash_unstoppable", 0.6f);
+            skill_log("MOTORMASTER_DASH: P%d long dash (dist=%.1f) -> Unstoppable 0.6s", player_index, dist);
         }
     } else if (action_type == 320 || action_type == 0x202) {
-        // SP2 (特殊技 2) 释放时获得 4.0 秒真正定时的不可阻挡霸体 (严格限定 320 / 0x202，绝不包含 Action.Dash 32 与 SP1/SP3)
-        if (s_last_sp2_ms[player_index] == 0 || now_ms - s_last_sp2_ms[player_index] >= 2000) {
-            s_last_sp2_ms[player_index] = now_ms;
-            skill_set_unstoppable(player_index, 4000);
-            skill_apply_buff_dur(player_index, "motormaster_sp2_unstoppable", 4.0f);
-            skill_overlay("[%s] 汽车大师SP2霸体激活！(4.0s)", player_index == 0 ? "我方" : "敌方");
-            skill_log("MOTORMASTER: P%d SP2 -> gained unstoppable 4.0s", player_index);
-        }
+        s_mm_sp2_unstop_end[player_index] = skill_now_ms() + 4500ULL;
+        skill_set_unstoppable(player_index, 4500);
+        skill_apply_buff_dur(player_index, "motormaster_sp2_unstoppable", 4.5f);
+        skill_log("MOTORMASTER_SP2: P%d started SP2 -> Unstoppable 4.5s", player_index);
     }
 }
 
-static void motormaster_on_fight_reset(int player_index) {
-    if (player_index >= 0 && player_index < 2) {
-        s_last_dash_ms[player_index] = 0;
-        s_last_sp2_ms[player_index] = 0;
-        s_king_stacks[player_index] = 0;
-        skill_clear_motormaster_dash_unstoppable(player_index);
+static void mm_special_state(int player_index, int sp_level, int entered) {
+    if (player_index < 0 || player_index >= 2 || !entered) return;
+    if (!is_motormaster(skill_get_bot_id(player_index))) return;
+    if (sp_level == 2) {
+        s_mm_sp2_unstop_end[player_index] = skill_now_ms() + 4500ULL;
+        skill_set_unstoppable(player_index, 4500);
+        skill_apply_buff_dur(player_index, "motormaster_sp2_unstoppable", 4.5f);
+        skill_log("MOTORMASTER_SP2: P%d entered SP2 -> Unstoppable 4.5s", player_index);
+    }
+}
+
+static void mm_apply_random_ram_debuff(int target_p, const char* atk_id, const char* arm_id, const char* pwr_id) {
+    int choice = (int)(skill_random_float() * 3.0f);
+    if (choice < 0) choice = 0;
+    if (choice > 2) choice = 2;
+    if (choice == 0) {
+        skill_apply_buff_dur(target_p, atk_id, 6.0f);
+    } else if (choice == 1) {
+        skill_apply_buff_dur(target_p, arm_id, 6.0f);
+    } else {
+        skill_apply_buff_dur(target_p, pwr_id, 6.0f);
+    }
+}
+
+static void mm_hit_connected(SkillHitContext* ctx) {
+    if (!ctx) return;
+    int ap = ctx->attacker_player_index;
+    int tp = ctx->target_player_index;
+
+    // 1. 汽车大师作为防守方：结算攻击方身上来自汽车大师的攻击减益 (-21.6%/层)
+    if (tp >= 0 && tp < 2 && is_motormaster(ctx->target_bot_id) && ap >= 0 && ap < 2) {
+        int atk_debuffs = skill_count_buffs(ap, "motormaster_heavy_atk_debuff") +
+                          skill_count_buffs(ap, "motormaster_sp3_atk_debuff");
+        if (atk_debuffs > 0) {
+            float scale = 1.0f - 0.216f * (float)atk_debuffs;
+            if (scale < 0.10f) scale = 0.10f;
+            ctx->modified_damage *= scale;
+        }
+    }
+
+    // 2. 汽车大师作为攻击方
+    if (ap >= 0 && ap < 2 && is_motormaster(ctx->attacker_bot_id)) {
+        // 觉醒 公路之王：每层 +60% 近战伤害
+        if (ctx->is_melee) {
+            int king_stacks = skill_count_buffs(ap, "motormaster_sig_king");
+            if (king_stacks > 0) {
+                ctx->modified_damage *= (1.0f + 0.60f * (float)king_stacks);
+            }
+        }
+
+        // 重击冲压：非格挡重击命中随机施加 3 选 1 减益 (6s)
+        if (ctx->is_heavy && !ctx->is_blocked) {
+            mm_apply_random_ram_debuff(
+                tp,
+                "motormaster_heavy_atk_debuff",
+                "motormaster_heavy_armor_break",
+                "motormaster_heavy_power_debuff"
+            );
+            skill_log("MOTORMASTER_HEAVY: P%d rammed P%d -> applied 1 random 6s debuff", ap, tp);
+        }
+
+        // SP1：末击非格挡即时扣除对手 2% 最大能量
+        if (ctx->special_index == 1 && ctx->is_last_hit && !ctx->is_blocked) {
+            skill_add_mana(tp, -0.06f);
+            skill_apply_buff_dur(tp, "motormaster_sp1_power_burn", 0.5f);
+            skill_log("MOTORMASTER_SP1: P%d power burned P%d (-2%% max mana)", ap, tp);
+        }
+
+        // SP3：末击 +150% 伤害、自伤 90% 攻击力(最低留 1 HP)、随机施加 6 层 6s 冲压减益
+        if (ctx->special_index == 3 && ctx->is_last_hit) {
+            ctx->modified_damage *= 2.50f;
+            float cur_hp = skill_get_hp(ap);
+            float self_atk = skill_get_attack(ap);
+            float recoil = self_atk * 0.90f;
+            if (cur_hp > 1.0f) {
+                if (recoil >= cur_hp - 1.0f) {
+                    recoil = cur_hp - 1.0f;
+                }
+                if (recoil > 0.0f) {
+                    skill_deal_damage(ap, recoil);
+                }
+            }
+            for (int k = 0; k < 6; k++) {
+                mm_apply_random_ram_debuff(
+                    tp,
+                    "motormaster_sp3_atk_debuff",
+                    "motormaster_sp3_ram_armor",
+                    "motormaster_sp3_power_debuff"
+                );
+            }
+            skill_overlay("[%s] 冲压全开！+150%%终结并施加6层减益！",
+                          ap == 0 ? "汽车大师" : "敌方汽车大师");
+            skill_log("MOTORMASTER_SP3: P%d last hit +150%% dmg, recoil=%.1f, applied 6 random debuffs to P%d",
+                      ap, recoil, tp);
+        }
     }
 }
 
 BotSkillModule g_module_motormaster = {
-    .bot_prefix = "motormaster",
-    .on_hit_connected = motormaster_on_hit_connected,
-    .on_buff_gated = NULL,
-    .on_buff_applied = NULL,
-    .on_evade_check = NULL,
-    .on_test_roll = NULL,
-    .on_power_gain_rate = NULL,
-    .on_reflect_proj = NULL,
-    .on_fight_reset = motormaster_on_fight_reset,
-    .on_simulation_tick = motormaster_on_simulation_tick,
-    .on_block_state = NULL,
-    .on_dodge_enter = NULL,
-    .on_hitreact_enter = NULL,
-    .on_attack_start = motormaster_on_attack_start
+    .bot_prefix         = "motormaster",
+    .display_name_zh    = "汽车大师",
+    .on_hit_connected   = mm_hit_connected,
+    .on_fight_reset     = mm_fight_reset,
+    .on_simulation_tick = mm_simulation_tick,
+    .on_attack_start    = mm_attack_start,
+    .on_special_state   = mm_special_state,
 };
